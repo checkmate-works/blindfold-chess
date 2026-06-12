@@ -172,61 +172,60 @@ export function GameStatsOverview({
         </div>
       )}
 
-      {/* Opponent + initial settings, inlined from the old Game Details modal.
-          Both are optional. Shown identically on the result page and the shared
-          replay; the shared replay additionally keeps its own position-aware
-          settings indicator under the board (the start-of-game snapshot here and
-          the live, per-position view there are complementary, not duplicates). */}
+      {/* Initial settings — the opponent (engine + difficulty), the side the
+          player had with the opening reached, and the blindfold display
+          settings: everything configured before the game. Grouped under one h3
+          so it reads at the same level as By Move / Change Log, and so the
+          engine / colour rows aren't left heading-less. On the shared replay the
+          under-board position-aware indicator complements (not duplicates) this
+          static start-of-game snapshot. */}
       {(engineConfig || (playSettings && playerColor)) && (
-        <div className="flex flex-col gap-2">
-          {engineConfig && (
-            <span
-              className="inline-flex items-center gap-1.5 text-xs"
-              title={`${engineName} ${engineDifficulty}`}
-            >
-              <Image
-                src={ENGINE_LOGO_SRC[engineConfig.kind]}
-                alt=""
-                width={18}
-                height={18}
-                className="object-contain"
-              />
-              <span className="font-medium text-foreground">{engineName}</span>
-              <span className="text-muted-foreground">{engineDifficulty}</span>
-            </span>
-          )}
-          {/* Which side the player had, plus the opening they reached. The
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-foreground">
+            {t('operationLog.initialSettings.title')}
+          </h3>
+          <div className="flex flex-col gap-2">
+            {engineConfig && (
+              <span
+                className="inline-flex items-center gap-1.5 text-xs"
+                title={`${engineName} ${engineDifficulty}`}
+              >
+                <Image
+                  src={ENGINE_LOGO_SRC[engineConfig.kind]}
+                  alt=""
+                  width={18}
+                  height={18}
+                  className="object-contain"
+                />
+                <span className="font-medium text-foreground">{engineName}</span>
+                <span className="text-muted-foreground">{engineDifficulty}</span>
+              </span>
+            )}
+            {/* Which side the player had, plus the opening they reached. The
               colour chip removes the "who was white?" ambiguity of the bare
               engine line; the opening links to its topic page. Shared with the
               gallery card so both render identically. */}
-          {playerColor && opening !== undefined && locale && (
-            <GameColorOpeningRow
-              playerColor={playerColor}
-              colorLabel={t(`playerColor.${playerColor}`)}
-              opening={opening}
-              openingDisplayName={
-                opening
-                  ? getOpeningDisplayName(openingNameT, opening.slug, opening.name)
-                  : undefined
-              }
-              locale={locale}
-            />
-          )}
-          {playSettings && playerColor && (
-            <div className="space-y-2">
-              {/* Standalone h3 (matching By Move / Change Log) rather than the
-                  indicator's inline label, so the three sub-sections read at the
-                  same heading level. */}
-              <h3 className="text-sm font-semibold text-foreground">
-                {t('operationLog.initialSettings.title')}
-              </h3>
+            {playerColor && opening !== undefined && locale && (
+              <GameColorOpeningRow
+                playerColor={playerColor}
+                colorLabel={t(`playerColor.${playerColor}`)}
+                opening={opening}
+                openingDisplayName={
+                  opening
+                    ? getOpeningDisplayName(openingNameT, opening.slug, opening.name)
+                    : undefined
+                }
+                locale={locale}
+              />
+            )}
+            {playSettings && playerColor && (
               <PlaySettingsIndicator
                 settings={playSettings}
                 playerColor={playerColor}
                 label={null}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
