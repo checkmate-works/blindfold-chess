@@ -304,11 +304,12 @@ export function GameStatsOverview({
       )}
 
       {/* Change log — only when the player edited a blindfold setting mid-game
-          (rare). One row per change point: a move-number badge plus how the
-          setup looked from that move onward (folded snapshot), rendered with the
-          same icons as the initial settings above. Placed under the By Move
-          strip so the timeline reads top-to-bottom: where effort clustered,
-          then where the setup changed. */}
+          (rare). One row per change point, move-number badge plus what changed:
+          on the result page (full log with `from`) the exact "Label: from → to"
+          transition(s) for the keys that changed at that move; on the shared
+          page (only the `to` subset persisted) the folded state-snapshot icons
+          instead. Placed under the By Move strip so the timeline reads
+          top-to-bottom: where effort clustered, then where the setup changed. */}
       {playSettings && playerColor && changePoints.length > 0 && (
         <div className="space-y-2">
           <span className="text-xs font-medium text-muted-foreground">
@@ -330,24 +331,30 @@ export function GameStatsOverview({
                   >
                     {atMoveIndex}
                   </span>
-                  <div className="flex flex-col gap-1">
+                  {deltas.length > 0 ? (
+                    // Result page: the full log carries `from`, so show only the
+                    // exact transition(s) for the keys that actually changed at
+                    // this move. No folded-state icons — the always-on board
+                    // visibility chip read as "changed" even when it was not.
+                    <ul className="flex flex-col gap-0.5 pt-0.5">
+                      {deltas.map((e, i) => (
+                        <li key={i} className="text-xs text-muted-foreground">
+                          <span className="text-foreground">{settingLabel(e.key)}</span>
+                          {': '}
+                          {settingValue(e, 'from')} → {settingValue(e, 'to')}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    // Shared page: only the `to` subset is persisted (no `from`),
+                    // so a transition cannot be shown — fall back to the folded
+                    // state snapshot icons (how the setup looked from here on).
                     <PlaySettingsIndicator
                       settings={playSettingsAtHalfMove(playSettings, playSettingsLog, atMoveIndex)}
                       playerColor={playerColor}
                       label={null}
                     />
-                    {deltas.length > 0 && (
-                      <ul className="flex flex-col gap-0.5">
-                        {deltas.map((e, i) => (
-                          <li key={i} className="text-xs text-muted-foreground">
-                            <span className="text-foreground">{settingLabel(e.key)}</span>
-                            {': '}
-                            {settingValue(e, 'from')} → {settingValue(e, 'to')}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                  )}
                 </li>
               );
             })}

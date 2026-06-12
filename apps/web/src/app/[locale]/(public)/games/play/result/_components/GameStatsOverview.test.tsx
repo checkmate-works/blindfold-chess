@@ -79,6 +79,7 @@ describe('GameStatsOverview change log — pawn-hide direction', () => {
         playerColor="white"
         playSettingsLog={PLAY_SETTINGS_LOG}
         preferenceChangeLog={FULL_LOG}
+        showInitialSettings={false}
       />
     );
     const text = container.textContent ?? '';
@@ -86,6 +87,10 @@ describe('GameStatsOverview change log — pawn-hide direction', () => {
     // unambiguous, which the icon snapshot alone could not express.
     expect(text).toContain('pawnHideModes.none → pawnHideModes.own');
     expect(text).toContain('pawnHideModes.own → pawnHideModes.none');
+    // No folded-state snapshot on the result page: the always-on board
+    // visibility chip ('visibility.*') would read as "changed" even on a move
+    // that only touched pawns, so it is dropped in favour of the deltas.
+    expect(text).not.toContain('visibility.');
   });
 
   it('omits the from→to text when no full log is passed (shared-page case)', () => {
@@ -98,9 +103,13 @@ describe('GameStatsOverview change log — pawn-hide direction', () => {
         playSettings={PLAY_SETTINGS}
         playerColor="white"
         playSettingsLog={PLAY_SETTINGS_LOG}
+        showInitialSettings={false}
       />
     );
-    // No `from` available → no arrow text; the icon snapshot still renders.
-    expect(container.textContent ?? '').not.toContain('→');
+    // No `from` available → no arrow text; the icon snapshot still renders
+    // (the folded board-visibility chip is present).
+    const text = container.textContent ?? '';
+    expect(text).not.toContain('→');
+    expect(text).toContain('visibility.');
   });
 });
