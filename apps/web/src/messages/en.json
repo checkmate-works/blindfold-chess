@@ -2164,6 +2164,7 @@
       "pawnsHidden": "Pawns hidden",
       "reproduceView": "As played"
     },
+    "openPosition": "Open this position",
     "statsGate": {
       "title": "Members-only feature",
       "description": "Create a free account to view this game's stats and per-move breakdown."

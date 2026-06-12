@@ -2160,6 +2160,7 @@
       "pawnsHidden": "Peones ocultos",
       "reproduceView": "Como se jugó"
     },
+    "openPosition": "Abrir esta posición",
     "statsGate": {
       "title": "Función exclusiva para miembros",
       "description": "Crea una cuenta gratuita para ver las estadísticas de esta partida y el desglose por jugada."
