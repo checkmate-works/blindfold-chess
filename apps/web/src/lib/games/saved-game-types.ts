@@ -20,6 +20,7 @@ export type GamePlaySettings = {
   showOpponentPieces: boolean;
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors: 'normal' | 'white-only' | 'black-only';
+  pawnHideMode: 'none' | 'all' | 'own' | 'opponent';
 };
 
 /**
@@ -40,6 +41,7 @@ export type PlaySettingsChangeEntry =
   | { atMoveIndex: number; key: 'showOwnPieces' | 'showOpponentPieces'; to: boolean }
   | { atMoveIndex: number; key: 'pieceShapeMode'; to: GamePlaySettings['pieceShapeMode'] }
   | { atMoveIndex: number; key: 'pieceColors'; to: GamePlaySettings['pieceColors'] }
+  | { atMoveIndex: number; key: 'pawnHideMode'; to: GamePlaySettings['pawnHideMode'] }
   | { atMoveIndex: number; key: 'boardVisibility'; to: BoardVisibility };
 
 // Re-export the canonical SkillLevel type from @blindfold-chess/features
@@ -96,6 +98,12 @@ export type PreferenceChangeLogEntry =
       key: 'pieceColors';
       from: PerGamePreferences['pieceColors'];
       to: PerGamePreferences['pieceColors'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'pawnHideMode';
+      from: PerGamePreferences['pawnHideMode'];
+      to: PerGamePreferences['pawnHideMode'];
     }
   | {
       atMoveIndex: number;

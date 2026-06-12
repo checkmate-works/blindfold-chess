@@ -86,6 +86,10 @@ export function usePlayClientPreferences({
       showOpponentPieces: perGamePrefs.showOpponentPieces,
       pieceShapeMode: perGamePrefs.pieceShapeMode,
       pieceColors: perGamePrefs.pieceColors,
+      // pawnHideMode entered PerGamePreferences after the field set settled, so
+      // legacy `gamePreferences` records may not carry it; fall back to the
+      // global until the user toggles it in this game.
+      pawnHideMode: perGamePrefs.pawnHideMode ?? globalPreferences.pawnHideMode,
       // moveInputMode was promoted to per-game after the field set settled, so
       // legacy `gamePreferences` records may not carry it; fall back to the
       // global until the user toggles in this game.

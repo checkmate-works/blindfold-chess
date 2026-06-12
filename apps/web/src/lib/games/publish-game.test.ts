@@ -152,6 +152,7 @@ describe('validatePublishSnapshot play settings', () => {
           showOpponentPieces: false,
           pieceShapeMode: 'circles-all',
           pieceColors: 'black-only',
+          pawnHideMode: 'own',
           // Extra preference fields are dropped — only the display subset is kept.
           peekMode: 'modal',
           moveInputMode: 'text',
@@ -166,6 +167,7 @@ describe('validatePublishSnapshot play settings', () => {
       showOpponentPieces: false,
       pieceShapeMode: 'circles-all',
       pieceColors: 'black-only',
+      pawnHideMode: 'own',
     });
   });
 

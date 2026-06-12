@@ -37,6 +37,9 @@ export function foldPreferences(
       case 'pieceColors':
         result.pieceColors = entry.to;
         break;
+      case 'pawnHideMode':
+        result.pawnHideMode = entry.to;
+        break;
       case 'boardVisibility':
         result.boardVisibility = entry.to;
         break;

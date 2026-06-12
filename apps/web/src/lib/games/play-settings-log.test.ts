@@ -14,6 +14,7 @@ const DEFAULT_SETTINGS: GamePlaySettings = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  pawnHideMode: 'none',
 };
 
 describe('normalizePlaySettingsLog', () => {

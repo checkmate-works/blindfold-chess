@@ -62,6 +62,7 @@ const REVEALED_BOARD_PREFS: GamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  pawnHideMode: 'none',
   moveInputMode: 'text',
   enabledMoveInputModes: ['text'],
   buttonInputPieceLabel: 'icon',
@@ -222,6 +223,8 @@ function ResultContent({
       showOpponentPieces: gp.showOpponentPieces,
       pieceShapeMode: gp.pieceShapeMode,
       pieceColors: gp.pieceColors,
+      // Legacy snapshots predate pawnHideMode; treat as 'none' (shown).
+      pawnHideMode: gp.pawnHideMode ?? 'none',
     };
   }, [game.gamePreferences]);
 
@@ -245,6 +248,9 @@ function ResultContent({
           out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
           break;
         case 'pieceColors':
+          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
+          break;
+        case 'pawnHideMode':
           out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
           break;
         // highlightLastMove / showPieceDestinations / moveInputMode: non-display

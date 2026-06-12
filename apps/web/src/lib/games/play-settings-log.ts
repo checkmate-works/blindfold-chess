@@ -17,6 +17,7 @@ import type { GamePlaySettings, PlaySettingsChangeEntry } from './saved-game-typ
 
 const PIECE_SHAPE_MODES = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
 const PIECE_COLORS = ['normal', 'white-only', 'black-only'] as const;
+const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
 
 function isPieceShapeMode(v: unknown): v is GamePlaySettings['pieceShapeMode'] {
   return PIECE_SHAPE_MODES.includes(v as (typeof PIECE_SHAPE_MODES)[number]);
@@ -24,6 +25,10 @@ function isPieceShapeMode(v: unknown): v is GamePlaySettings['pieceShapeMode'] {
 
 function isPieceColors(v: unknown): v is GamePlaySettings['pieceColors'] {
   return PIECE_COLORS.includes(v as (typeof PIECE_COLORS)[number]);
+}
+
+function isPawnHideMode(v: unknown): v is GamePlaySettings['pawnHideMode'] {
+  return PAWN_HIDE_MODES.includes(v as (typeof PAWN_HIDE_MODES)[number]);
 }
 
 /**
@@ -73,6 +78,9 @@ export function normalizePlaySettingsLog(
       case 'pieceColors':
         if (isPieceColors(e.to)) entries.push({ atMoveIndex, key: e.key, to: e.to });
         break;
+      case 'pawnHideMode':
+        if (isPawnHideMode(e.to)) entries.push({ atMoveIndex, key: e.key, to: e.to });
+        break;
       // Non-display keys (highlightLastMove / peekMode / moveInputMode) and any
       // unknown key fall through and are discarded.
     }
@@ -113,6 +121,9 @@ export function playSettingsAtHalfMove(
       case 'pieceColors':
         result.pieceColors = entry.to;
         break;
+      case 'pawnHideMode':
+        result.pawnHideMode = entry.to;
+        break;
     }
   }
   return result;
@@ -129,7 +140,8 @@ export function playSettingsAreNotable(s: GamePlaySettings): boolean {
     !s.showOwnPieces ||
     !s.showOpponentPieces ||
     s.pieceShapeMode !== 'normal' ||
-    s.pieceColors !== 'normal'
+    s.pieceColors !== 'normal' ||
+    s.pawnHideMode !== 'none'
   );
 }
 

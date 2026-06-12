@@ -56,6 +56,7 @@ export function useReplayPreferences({
       showOpponentPieces: true,
       pieceShapeMode: 'normal',
       pieceColors: 'normal',
+      pawnHideMode: 'none',
       boardVisibility: 'always',
     }),
     [preferences]
@@ -79,6 +80,7 @@ export function useReplayPreferences({
       showOpponentPieces: effectivePlaySettings.showOpponentPieces,
       pieceShapeMode: effectivePlaySettings.pieceShapeMode,
       pieceColors: effectivePlaySettings.pieceColors,
+      pawnHideMode: effectivePlaySettings.pawnHideMode,
     };
   }, [preferences, effectivePlaySettings]);
 

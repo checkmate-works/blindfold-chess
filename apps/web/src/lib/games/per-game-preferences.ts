@@ -24,6 +24,7 @@ export const DEFAULT_PER_GAME_PREFERENCES: PerGamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  pawnHideMode: 'none',
   moveInputMode: 'text',
   aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
 };
@@ -39,6 +40,12 @@ const PIECE_COLORS = [
   'white-only',
   'black-only',
 ] as const satisfies readonly PerGamePreferences['pieceColors'][];
+const PAWN_HIDE_MODES = [
+  'none',
+  'all',
+  'own',
+  'opponent',
+] as const satisfies readonly PerGamePreferences['pawnHideMode'][];
 const MOVE_INPUT_MODES = [
   'text',
   'select',
@@ -103,6 +110,7 @@ export function normalisePerGamePreferences(
       ? p.pieceShapeMode
       : defaults.pieceShapeMode,
     pieceColors: isOneOf(p.pieceColors, PIECE_COLORS) ? p.pieceColors : defaults.pieceColors,
+    pawnHideMode: isOneOf(p.pawnHideMode, PAWN_HIDE_MODES) ? p.pawnHideMode : defaults.pawnHideMode,
     moveInputMode: isOneOf(p.moveInputMode, MOVE_INPUT_MODES)
       ? p.moveInputMode
       : defaults.moveInputMode,

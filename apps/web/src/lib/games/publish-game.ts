@@ -66,6 +66,7 @@ const COLORS: readonly PlayerColor[] = ['white', 'black'];
 
 const PIECE_SHAPE_MODES = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
 const PIECE_COLORS = ['normal', 'white-only', 'black-only'] as const;
+const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
 
 /**
  * Normalize the self-reported play settings into the validated display subset,
@@ -83,12 +84,19 @@ function normalizePlaySettings(raw: unknown): GamePlaySettings | null {
     return null;
   }
   if (!PIECE_COLORS.includes(r.pieceColors as (typeof PIECE_COLORS)[number])) return null;
+  // `pawnHideMode` was added after this shape settled, so older self-reported
+  // snapshots may omit it — default a missing / invalid value to 'none' rather
+  // than rejecting the whole settings blob (which would drop the indicator).
+  const pawnHideMode = PAWN_HIDE_MODES.includes(r.pawnHideMode as (typeof PAWN_HIDE_MODES)[number])
+    ? (r.pawnHideMode as GamePlaySettings['pawnHideMode'])
+    : 'none';
   return {
     boardVisibility: r.boardVisibility,
     showOwnPieces: r.showOwnPieces,
     showOpponentPieces: r.showOpponentPieces,
     pieceShapeMode: r.pieceShapeMode as GamePlaySettings['pieceShapeMode'],
     pieceColors: r.pieceColors as GamePlaySettings['pieceColors'],
+    pawnHideMode,
   };
 }
 

@@ -63,6 +63,7 @@ const preferences: GamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  pawnHideMode: 'none',
   moveInputMode: 'button',
   enabledMoveInputModes: ['button', 'text'],
   buttonInputPieceLabel: 'icon',

@@ -46,6 +46,12 @@ export function validatePreferences(parsed: unknown): Partial<GamePreferences> {
     result.pieceColors = p.pieceColors as GamePreferences['pieceColors'];
   }
   if (
+    typeof p.pawnHideMode === 'string' &&
+    ['none', 'all', 'own', 'opponent'].includes(p.pawnHideMode)
+  ) {
+    result.pawnHideMode = p.pawnHideMode as GamePreferences['pawnHideMode'];
+  }
+  if (
     typeof p.moveInputMode === 'string' &&
     ['text', 'select', 'button'].includes(p.moveInputMode)
   ) {

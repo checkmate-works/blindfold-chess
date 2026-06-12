@@ -145,6 +145,7 @@ describe('normalisePerGamePreferences', () => {
         'showOpponentPieces',
         'pieceShapeMode',
         'pieceColors',
+        'pawnHideMode',
         'moveInputMode',
         'aiReplyDuration',
       ];
@@ -164,6 +165,7 @@ describe('normalisePerGamePreferences', () => {
           'boardVisibility',
           'highlightLastMove',
           'moveInputMode',
+          'pawnHideMode',
           'pieceColors',
           'pieceShapeMode',
           'showOpponentPieces',
@@ -184,6 +186,7 @@ describe('normalisePerGamePreferences', () => {
         showOpponentPieces: false,
         pieceShapeMode: 'circles-all',
         pieceColors: 'white-only',
+        pawnHideMode: 'all',
         moveInputMode: 'button',
         aiReplyDuration: 10000,
       };

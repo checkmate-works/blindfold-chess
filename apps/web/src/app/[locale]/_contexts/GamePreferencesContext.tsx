@@ -47,6 +47,16 @@ export type PerGamePreferences = {
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors: 'normal' | 'white-only' | 'black-only';
   /**
+   * Which pawns are hidden during play — a partial-blindfold mode orthogonal to
+   * the all/own/opponent piece-visibility axis above. `'none'` (default) hides
+   * no pawns; `'all'` hides both sides' pawns; `'own'` / `'opponent'` hide only
+   * that side's pawns. Composes with the other obfuscation axes: a fully hidden
+   * side already hides its pawns, so this only narrows hiding to pawns on a side
+   * that is otherwise shown. Per-game (mirroring `pieceShapeMode`) because the
+   * blindfold intensity is dialled per session.
+   */
+  pawnHideMode: 'none' | 'all' | 'own' | 'opponent';
+  /**
    * Active move-input mode for this game. Per-game so mid-game switches
    * (text → button → select) accumulate in the preference change log
    * rather than mutating the user's global default. The user's per-game
@@ -80,6 +90,7 @@ export type GamePreferences = {
   // Piece appearance
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent'; // Piece shape mode
   pieceColors: 'normal' | 'white-only' | 'black-only'; // Piece color mode
+  pawnHideMode: 'none' | 'all' | 'own' | 'opponent'; // Hide pawns (none / both / own / opponent)
   // Move input
   moveInputMode: 'text' | 'select' | 'button'; // Move input mode
   enabledMoveInputModes: ('text' | 'select' | 'button')[]; // Which move input modes are available
@@ -106,6 +117,7 @@ const defaultPreferences: GamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  pawnHideMode: 'none',
   moveInputMode: DEFAULT_MOVE_INPUT_MODE,
   enabledMoveInputModes: [...DEFAULT_ENABLED_MOVE_INPUT_MODES],
   buttonInputPieceLabel: 'icon',
