@@ -256,7 +256,6 @@ export function GameReplay({
         locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
         headingAsSection
-        showInitialSettings={false}
       />
     ) : null;
 

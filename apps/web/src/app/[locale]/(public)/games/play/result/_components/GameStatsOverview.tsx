@@ -76,14 +76,6 @@ type Props = {
    * inline label + view-details button (its default).
    */
   headingAsSection?: boolean;
-  /**
-   * Whether to render the initial-settings icon row. Defaults to `true`. The
-   * shared game detail page sets it `false` because it already shows a richer,
-   * position-aware settings indicator under the board, so a static initial row
-   * here would duplicate it. `playSettings` is still consumed for the change
-   * log fold even when this is `false`.
-   */
-  showInitialSettings?: boolean;
 };
 
 /** Fill color for each effort marker (translucent so the board theme shows through). */
@@ -124,7 +116,6 @@ export function GameStatsOverview({
   locale,
   playSettingsLog,
   headingAsSection = false,
-  showInitialSettings = true,
 }: Props) {
   const t = useTranslations('play');
   const openingNameT = useTranslations('topics.openings.names');
@@ -182,10 +173,11 @@ export function GameStatsOverview({
       )}
 
       {/* Opponent + initial settings, inlined from the old Game Details modal.
-          Both are optional. The initial-settings row is suppressed on the
-          shared page (showInitialSettings=false), which shows a position-aware
-          indicator under the board instead. */}
-      {(engineConfig || (showInitialSettings && playSettings && playerColor)) && (
+          Both are optional. Shown identically on the result page and the shared
+          replay; the shared replay additionally keeps its own position-aware
+          settings indicator under the board (the start-of-game snapshot here and
+          the live, per-position view there are complementary, not duplicates). */}
+      {(engineConfig || (playSettings && playerColor)) && (
         <div className="flex flex-col gap-2">
           {engineConfig && (
             <span
@@ -220,7 +212,7 @@ export function GameStatsOverview({
               locale={locale}
             />
           )}
-          {showInitialSettings && playSettings && playerColor && (
+          {playSettings && playerColor && (
             <div className="space-y-2">
               {/* Standalone h3 (matching By Move / Change Log) rather than the
                   indicator's inline label, so the three sub-sections read at the

@@ -74,15 +74,11 @@ describe('GameStatsOverview change log', () => {
         playSettings={baseSettings({ boardVisibility: 'peek', pawnHideMode: 'own' })}
         playerColor="white"
         playSettingsLog={log}
-        showInitialSettings={false}
       />
     );
     const text = container.textContent ?? '';
     expect(text).toContain('boardVisibilities.peek → boardVisibilities.always');
     expect(text).toContain('pawnHideModes.own → pawnHideModes.none');
-    // No folded-state snapshot icons in the change log (their always-on board
-    // visibility chip used the `sharedGames.playSettings.visibility.*` keys).
-    expect(text).not.toContain('visibility.');
   });
 
   it('shows only the setting that changed at a move — not unrelated state', () => {
@@ -98,11 +94,13 @@ describe('GameStatsOverview change log', () => {
         playSettings={baseSettings()}
         playerColor="white"
         playSettingsLog={log}
-        showInitialSettings={false}
       />
     );
     const text = container.textContent ?? '';
     expect(text).toContain('pawnHideModes.none → pawnHideModes.own');
+    // The unchanged board visibility must not appear as a change-log transition.
+    // (The Initial Settings indicator uses the `visibility.*` keys, not
+    // `boardVisibilities.*`, so this stays specific to the change log.)
     expect(text).not.toContain('boardVisibilities');
   });
 });
