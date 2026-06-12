@@ -234,9 +234,9 @@ export function GameStatsOverview({
       {stats.totalMoves > 0 && (
         <div className="space-y-2">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs font-medium text-muted-foreground">
+            <h3 className="text-sm font-semibold text-foreground">
               {t('result.stats.timelineTitle')}
-            </span>
+            </h3>
             <span className="text-[0.65rem] text-muted-foreground">
               {t('result.stats.timelineHint')}
             </span>
@@ -283,9 +283,9 @@ export function GameStatsOverview({
           effort clustered, then where the setup changed. */}
       {resolvedChanges.length > 0 && (
         <div className="space-y-2">
-          <span className="text-xs font-medium text-muted-foreground">
+          <h3 className="text-sm font-semibold text-foreground">
             {t('operationLog.changeLog.title')}
-          </span>
+          </h3>
           <ul className="space-y-1.5">
             {changePoints.map((atMoveIndex) => {
               const entries = resolvedChanges.filter((e) => e.atMoveIndex === atMoveIndex);
