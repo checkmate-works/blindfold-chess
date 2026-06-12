@@ -68,6 +68,12 @@ const PIECE_SHAPE_MODES = ['normal', 'circles-all', 'circles-own', 'circles-oppo
 const PIECE_COLORS = ['normal', 'white-only', 'black-only'] as const;
 const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
 
+// Bounds for the self-reported `invalidAttempts` move texts before they are
+// persisted as public data: at most this many per move, each clipped to a SAN-
+// sized length (the longest real SAN, e.g. "exd8=Q+", is well under this).
+const MAX_INVALID_ATTEMPTS = 20;
+const MAX_INVALID_ATTEMPT_LEN = 12;
+
 /**
  * Normalize the self-reported play settings into the validated display subset,
  * or null if absent / malformed. Display-only metadata, so a bad value is
@@ -155,10 +161,21 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
 
   // operationLogs are self-reported aid counts; accept an array no longer than
   // the move list, else drop to null rather than rejecting (display tolerates
-  // missing logs). computeGameStats reads fields defensively.
+  // missing logs). computeGameStats reads fields defensively. The numeric
+  // fields are trusted as-is, but the new free-text `invalidAttempts` is bounded
+  // (count + length) before it becomes public data.
   let operationLogs: MoveOperationLog[] | null = null;
   if (Array.isArray(v.operationLogs) && v.operationLogs.length <= moves.length) {
-    operationLogs = v.operationLogs as MoveOperationLog[];
+    operationLogs = (v.operationLogs as MoveOperationLog[]).map((log) => {
+      if (!log || typeof log !== 'object') return log;
+      const raw = (log as { invalidAttempts?: unknown }).invalidAttempts;
+      if (!Array.isArray(raw)) return log;
+      const attempts = raw
+        .filter((s): s is string => typeof s === 'string')
+        .slice(0, MAX_INVALID_ATTEMPTS)
+        .map((s) => s.slice(0, MAX_INVALID_ATTEMPT_LEN));
+      return { ...log, invalidAttempts: attempts.length > 0 ? attempts : undefined };
+    });
   }
 
   return {

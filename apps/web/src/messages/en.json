@@ -2021,7 +2021,8 @@
         "legendIllegal": "Illegal",
         "legendTakeback": "Undo",
         "legendHint": "Hint",
-        "moveCell": "Move {number}"
+        "moveCell": "Move {number}",
+        "illegalTried": "tried: {moves}"
       },
       "viewDetails": "Game details",
       "statsGate": {

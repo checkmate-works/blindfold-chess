@@ -289,6 +289,7 @@ export function GameReplay({
       <GameStatsOverview
         stats={stats}
         playerMoveIndices={playerMoveIndices}
+        operationLogs={operationLogs ?? undefined}
         moves={notationMoves}
         onSelectMove={handleViewMove}
         engineConfig={engineConfig}

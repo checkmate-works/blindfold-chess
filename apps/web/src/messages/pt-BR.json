@@ -2017,7 +2017,8 @@
         "legendIllegal": "Ilegal",
         "legendTakeback": "Desfazer",
         "legendHint": "Dica",
-        "moveCell": "Lance {number}"
+        "moveCell": "Lance {number}",
+        "illegalTried": "tentou: {moves}"
       },
       "viewDetails": "Detalhes da partida",
       "statsGate": {

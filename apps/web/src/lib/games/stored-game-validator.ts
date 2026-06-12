@@ -115,7 +115,12 @@ export function isValidStoredGame(stored: unknown): stored is StoredGame {
             (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
               (log as Record<string, unknown>).movePeekCount === undefined) &&
             (typeof (log as Record<string, unknown>).invalidCount === 'number' ||
-              (log as Record<string, unknown>).invalidCount === undefined)
+              (log as Record<string, unknown>).invalidCount === undefined) &&
+            ((log as Record<string, unknown>).invalidAttempts === undefined ||
+              (Array.isArray((log as Record<string, unknown>).invalidAttempts) &&
+                ((log as Record<string, unknown>).invalidAttempts as unknown[]).every(
+                  (s) => typeof s === 'string'
+                )))
         ))) &&
     (g.preferenceChangeLog === undefined ||
       (Array.isArray(g.preferenceChangeLog) &&

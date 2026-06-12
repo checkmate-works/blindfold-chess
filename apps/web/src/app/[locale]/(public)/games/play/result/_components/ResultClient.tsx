@@ -375,6 +375,7 @@ function ResultContent({
             <GameStatsOverview
               stats={stats}
               playerMoveIndices={playerMoveIndices}
+              operationLogs={game.operationLogs ?? undefined}
               moves={moves}
               onSelectMove={handleViewMove}
               engineConfig={game.engineConfig}
@@ -390,6 +391,7 @@ function ResultContent({
               <GameStatsOverview
                 stats={stats}
                 playerMoveIndices={playerMoveIndices}
+                operationLogs={game.operationLogs ?? undefined}
                 moves={moves}
                 onSelectMove={handleViewMove}
                 engineConfig={game.engineConfig}

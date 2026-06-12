@@ -9,7 +9,11 @@ import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
 import type { GameStats, MoveMarker } from '@/lib/games/compute-game-stats';
 import { resolvePlaySettingsChanges } from '@/lib/games/play-settings-log';
-import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
+import type {
+  GamePlaySettings,
+  MoveOperationLog,
+  PlaySettingsChangeEntry,
+} from '@/lib/games/saved-game-types';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { useChangeLogFormat } from '@/app/[locale]/(public)/games/play/_hooks/use-change-log-format';
@@ -24,6 +28,13 @@ type Props = {
   stats: GameStats;
   /** moves[] index for each player move; cell i jumps to playerMoveIndices[i]. */
   playerMoveIndices: number[];
+  /**
+   * Per-player-move operation logs, index-aligned with {@link GameStats.perMove}
+   * (cell i ↔ operationLogs[i]). Used to surface the rejected move texts
+   * (`invalidAttempts`) in the effort-strip cell tooltip. Optional — cells fall
+   * back to the move SAN alone when absent.
+   */
+  operationLogs?: MoveOperationLog[];
   /** SAN per moves[] index, for the per-move cell tooltips. */
   moves: string[];
   /** Jump to a finished-game position (moves[] index). */
@@ -106,6 +117,7 @@ const MARKER_CLASS: Record<MoveMarker, string> = {
 export function GameStatsOverview({
   stats,
   playerMoveIndices,
+  operationLogs,
   moves,
   onSelectMove,
   onViewDetails,
@@ -245,13 +257,23 @@ export function GameStatsOverview({
               const movesIndex = playerMoveIndices[i];
               const san = movesIndex !== undefined ? moves[movesIndex] : undefined;
               const label = t('result.stats.moveCell', { number: i + 1 });
+              const base = san ? `${label} ${san}` : label;
+              // Append the rejected move texts for this move, when captured, so a
+              // hover over a red (illegal) cell shows what was tried.
+              const attempts = (operationLogs?.[i]?.invalidAttempts ?? []).filter(
+                (s) => typeof s === 'string'
+              );
+              const cellTitle =
+                attempts.length > 0
+                  ? `${base} · ${t('result.stats.illegalTried', { moves: attempts.join(', ') })}`
+                  : base;
               return (
                 <button
                   key={i}
                   type="button"
                   onClick={() => movesIndex !== undefined && onSelectMove(movesIndex)}
-                  title={san ? `${label} ${san}` : label}
-                  aria-label={san ? `${label} ${san}` : label}
+                  title={cellTitle}
+                  aria-label={cellTitle}
                   className={`w-5 h-5 rounded-sm transition-transform hover:scale-125 hover:ring-2 hover:ring-foreground/40 ${MARKER_CLASS[marker]}`}
                 />
               );

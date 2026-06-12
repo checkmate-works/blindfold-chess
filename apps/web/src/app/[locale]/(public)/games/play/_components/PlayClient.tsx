@@ -127,7 +127,9 @@ export function PlayClient({
     (move: AlgebraicNotation): boolean | void | Promise<void> => {
       const result = handleSubmitMove(move);
       if (result === false) {
-        recordInvalid();
+        // Capture the rejected move text (in scope here) so the operation log
+        // shows what was tried, not just how many times.
+        recordInvalid(move);
       }
       return result;
     },

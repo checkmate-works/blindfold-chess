@@ -113,6 +113,43 @@ describe('validatePublishSnapshot', () => {
     );
     expect(tooMany.ok && tooMany.game.operationLogs).toBeNull();
   });
+
+  it('keeps captured invalidAttempts on a published log, bounding count and length', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        operationLogs: [
+          log({ invalidCount: 2, invalidAttempts: ['Nf3', 'Bb4'] }),
+          // A crafted payload: too many entries and an over-long string.
+          log({
+            invalidCount: 30,
+            invalidAttempts: [...Array(30).fill('e4'), 'x'.repeat(50)],
+          }),
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const logs = res.game.operationLogs!;
+    expect(logs[0].invalidAttempts).toEqual(['Nf3', 'Bb4']);
+    expect(logs[1].invalidAttempts).toHaveLength(20); // capped
+    expect(logs[1].invalidAttempts!.every((s) => s.length <= 12)).toBe(true);
+  });
+
+  it('strips non-string / empty invalidAttempts to undefined', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        operationLogs: [
+          log({ invalidCount: 1, invalidAttempts: [123, null, 'Nf3'] as unknown as string[] }),
+          log({ invalidCount: 0, invalidAttempts: [] }),
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const logs = res.game.operationLogs!;
+    expect(logs[0].invalidAttempts).toEqual(['Nf3']); // non-strings dropped
+    expect(logs[1].invalidAttempts).toBeUndefined(); // empty → undefined
+  });
 });
 
 describe('deriveGameColumns', () => {

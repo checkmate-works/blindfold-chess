@@ -66,6 +66,16 @@ export type MoveOperationLog = {
    * board only fires `onMove` for legal destinations.
    */
   invalidCount?: number;
+  /**
+   * The actual rejected move texts behind {@link invalidCount}, in attempt
+   * order (e.g. `['Nf3', 'Bb4']`) — so a review can show *what* was tried, not
+   * just how many times. Only the text / select / button input paths populate
+   * this (the submitted SAN is in scope at rejection); board mis-grabs in
+   * blindfold mode have no SAN and only bump `invalidCount`. So
+   * `invalidAttempts.length` may be ≤ `invalidCount`. Omitted (undefined) when
+   * empty and on legacy records — consumers fall back to the bare count.
+   */
+  invalidAttempts?: string[];
 };
 
 /**
