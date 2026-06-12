@@ -389,6 +389,33 @@
         "own": "Own",
         "opponent": "Opponent"
       },
+      "tour": {
+        "label": "Settings guide",
+        "boardVisibility": {
+          "title": "Board visibility",
+          "text": "Show the board always, only on a peek, or hide it entirely — your blindfold baseline."
+        },
+        "pieceVisibility": {
+          "title": "Piece visibility",
+          "text": "Choose which side's pieces are shown. Hiding one side raises the difficulty."
+        },
+        "stones": {
+          "title": "Show as stones",
+          "text": "Turn pieces into stones to hide their type — you see where, not what."
+        },
+        "pieceColor": {
+          "title": "Piece color",
+          "text": "Force a single colour so the two sides are harder to tell apart."
+        },
+        "pawnHide": {
+          "title": "Hide pawns",
+          "text": "A partial blindfold that hides only pawns — both sides, your own, or the opponent's."
+        },
+        "preview": {
+          "title": "Preview",
+          "text": "See each setting take effect here — toggle the options to try the look."
+        }
+      },
       "preview": {
         "title": "Preview",
         "whiteView": "White's Perspective",

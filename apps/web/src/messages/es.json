@@ -385,6 +385,33 @@
         "own": "Propias",
         "opponent": "Rival"
       },
+      "tour": {
+        "label": "Guía de ajustes",
+        "boardVisibility": {
+          "title": "Visibilidad del tablero",
+          "text": "Muestra el tablero siempre, solo al espiar, u ocúltalo del todo: tu base a ciegas."
+        },
+        "pieceVisibility": {
+          "title": "Visibilidad de piezas",
+          "text": "Elige qué bando se muestra. Ocultar un bando aumenta la dificultad."
+        },
+        "stones": {
+          "title": "Mostrar como piedras",
+          "text": "Convierte las piezas en piedras para ocultar su tipo: ves dónde, no qué."
+        },
+        "pieceColor": {
+          "title": "Color de las piezas",
+          "text": "Fuerza un solo color para distinguir peor ambos bandos."
+        },
+        "pawnHide": {
+          "title": "Ocultar peones",
+          "text": "Un modo a ciegas parcial que oculta solo los peones: ambos, los tuyos o los del rival."
+        },
+        "preview": {
+          "title": "Vista previa",
+          "text": "Mira aquí el efecto de cada ajuste: cambia las opciones para probar."
+        }
+      },
       "preview": {
         "title": "Vista Previa",
         "whiteView": "Perspectiva de Blancas",

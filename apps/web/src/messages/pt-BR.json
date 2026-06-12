@@ -385,6 +385,33 @@
         "own": "Próprias",
         "opponent": "Oponente"
       },
+      "tour": {
+        "label": "Guia de ajustes",
+        "boardVisibility": {
+          "title": "Visibilidade do tabuleiro",
+          "text": "Mostre o tabuleiro sempre, só ao espiar, ou oculte por completo — sua base às cegas."
+        },
+        "pieceVisibility": {
+          "title": "Visibilidade das peças",
+          "text": "Escolha qual lado aparece. Ocultar um lado aumenta a dificuldade."
+        },
+        "stones": {
+          "title": "Mostrar como pedras",
+          "text": "Transforme as peças em pedras para ocultar o tipo — você vê onde, não o quê."
+        },
+        "pieceColor": {
+          "title": "Cor das peças",
+          "text": "Force uma só cor para distinguir menos os dois lados."
+        },
+        "pawnHide": {
+          "title": "Ocultar peões",
+          "text": "Um modo às cegas parcial que oculta só os peões — ambos, os seus ou os do oponente."
+        },
+        "preview": {
+          "title": "Visualização",
+          "text": "Veja o efeito de cada ajuste aqui — alterne as opções para testar."
+        }
+      },
       "preview": {
         "title": "Pré-visualização",
         "whiteView": "Perspectiva de Brancas",

@@ -244,7 +244,10 @@ export function GameSettingsContent({
               </h4>
               <div className="space-y-3">
                 {/* Piece Visibility */}
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <div
+                  data-tour-id="settings-piece-visibility"
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                >
                   <span className="text-sm text-foreground">{t('game.pieceVisibility')}</span>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     {PIECE_VISIBILITY_MODES.map((mode) => (
@@ -270,7 +273,10 @@ export function GameSettingsContent({
                 {/* Show as stones — the side selector only appears when both
                     sides are visible (the only case where stoning a single side
                     is meaningful). */}
-                <label className="flex cursor-pointer items-center justify-between gap-3">
+                <label
+                  data-tour-id="settings-stones"
+                  className="flex cursor-pointer items-center justify-between gap-3"
+                >
                   <span className="flex items-center gap-1.5 text-sm text-foreground">
                     <DiscPiece color={ownColor} size={16} />
                     {t('game.showAsStones')}
@@ -314,7 +320,10 @@ export function GameSettingsContent({
                 )}
 
                 {/* Piece Color */}
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <div
+                  data-tour-id="settings-piece-color"
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                >
                   <span className="text-sm text-foreground">{t('game.pieceColor')}</span>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
@@ -342,7 +351,10 @@ export function GameSettingsContent({
                 {/* Hide pawns — a partial blindfold orthogonal to the visibility
                     / shape / color axes above. The side selector (Both / Own /
                     Opponent) appears whenever the toggle is on. */}
-                <label className="flex cursor-pointer items-center justify-between gap-3">
+                <label
+                  data-tour-id="settings-pawn-hide"
+                  className="flex cursor-pointer items-center justify-between gap-3"
+                >
                   <span className="flex items-center gap-1.5 text-sm text-foreground">
                     <ChessPieceIcon type="p" color={ownColor} size={16} />
                     {t('game.hidePawns')}
@@ -412,7 +424,11 @@ export function GameSettingsContent({
             </div>
 
             {/* Preview */}
-            {showPreview && <BoardPreview settings={settings} playerSide={playerSide} />}
+            {showPreview && (
+              <div data-tour-id="settings-preview">
+                <BoardPreview settings={settings} playerSide={playerSide} />
+              </div>
+            )}
           </>
         )}
       </div>
