@@ -14,6 +14,7 @@ const initial: PerGamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  pawnHideMode: 'none',
   moveInputMode: 'text',
   aiReplyDuration: 5000,
 };

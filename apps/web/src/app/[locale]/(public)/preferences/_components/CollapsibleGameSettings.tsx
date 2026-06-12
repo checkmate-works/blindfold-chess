@@ -2,6 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -34,11 +35,63 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
     ...settings,
   };
 
+  // On-demand `?` walkthrough of the blindfold settings (driver.js via
+  // HelpTourButton). Steps target the `data-tour-id`s on each group — the board-
+  // visibility picker here plus the appearance groups inside GameSettingsContent
+  // (a global attribute, so a single tour spans both). The appearance steps are
+  // included only when those controls are actually rendered (`!== 'never'`). Not
+  // shown in the mid-game modal, which renders GameSettingsContent directly
+  // (without this wrapper) — a tour overlay inside a modal would be awkward.
+  const tourSteps: HelpStep[] = [
+    {
+      targetId: 'settings-board-visibility',
+      title: tPrefs('game.tour.boardVisibility.title'),
+      description: tPrefs('game.tour.boardVisibility.text'),
+    },
+  ];
+  if (settings.boardVisibility !== 'never') {
+    tourSteps.push(
+      {
+        targetId: 'settings-piece-visibility',
+        title: tPrefs('game.tour.pieceVisibility.title'),
+        description: tPrefs('game.tour.pieceVisibility.text'),
+      },
+      {
+        targetId: 'settings-stones',
+        title: tPrefs('game.tour.stones.title'),
+        description: tPrefs('game.tour.stones.text'),
+      },
+      {
+        targetId: 'settings-piece-color',
+        title: tPrefs('game.tour.pieceColor.title'),
+        description: tPrefs('game.tour.pieceColor.text'),
+      },
+      {
+        targetId: 'settings-pawn-hide',
+        title: tPrefs('game.tour.pawnHide.title'),
+        description: tPrefs('game.tour.pawnHide.text'),
+      },
+      {
+        targetId: 'settings-preview',
+        title: tPrefs('game.tour.preview.title'),
+        description: tPrefs('game.tour.preview.text'),
+      }
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* On-demand guide to the blindfold settings. */}
+      <div className="flex justify-end">
+        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          {tPrefs('game.tour.label')}
+          <HelpTourButton steps={tourSteps} label={tPrefs('game.tour.label')} />
+        </span>
+      </div>
+
       {/* Board visibility — 3-way picker. The primary choice that controls
           whether the rest of the visual settings are even relevant. */}
-      <div>
+      <div data-tour-id="settings-board-visibility">
         <h4 className="text-sm font-semibold text-foreground mb-2">
           {tPrefs('game.boardVisibility')}
         </h4>

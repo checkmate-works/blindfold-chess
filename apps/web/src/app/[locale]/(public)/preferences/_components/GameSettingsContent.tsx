@@ -45,6 +45,15 @@ const STONE_SIDE_TO_SHAPE: Record<
   opponent: 'circles-opponent',
 };
 
+// Pawn-hide is a "hide pawns" toggle plus a Both / Own / Opponent side selector.
+// The selector values map 1:1 to the non-'none' members of `pawnHideMode`, and
+// it stays visible whenever the toggle is on — hiding one side's pawns is
+// meaningful even if the other side is fully hidden, so (unlike stones) there is
+// no both-visible gate.
+const PAWN_HIDE_SIDE_MODES = ['all', 'own', 'opponent'] as const satisfies ReadonlyArray<
+  Exclude<GamePreferences['pawnHideMode'], 'none'>
+>;
+
 // Which colours to sample for each Piece Color option.
 const PIECE_COLOR_SAMPLES: Record<
   'normal' | 'white-only' | 'black-only',
@@ -154,6 +163,10 @@ export function GameSettingsContent({
         ? 'opponent'
         : 'all';
 
+  // Pawn-hide derived state: on for any non-'none' mode. The side is the mode
+  // itself (all / own / opponent); turning the toggle on defaults to 'all'.
+  const pawnHideOn = settings.pawnHideMode !== 'none';
+
   // Colour samples for the per-option glyphs: "own" follows the player's side.
   const ownColor: 'w' | 'b' = playerSide === 'white' ? 'w' : 'b';
   const oppColor: 'w' | 'b' = ownColor === 'w' ? 'b' : 'w';
@@ -231,7 +244,10 @@ export function GameSettingsContent({
               </h4>
               <div className="space-y-3">
                 {/* Piece Visibility */}
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <div
+                  data-tour-id="settings-piece-visibility"
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                >
                   <span className="text-sm text-foreground">{t('game.pieceVisibility')}</span>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     {PIECE_VISIBILITY_MODES.map((mode) => (
@@ -257,7 +273,10 @@ export function GameSettingsContent({
                 {/* Show as stones — the side selector only appears when both
                     sides are visible (the only case where stoning a single side
                     is meaningful). */}
-                <label className="flex cursor-pointer items-center justify-between gap-3">
+                <label
+                  data-tour-id="settings-stones"
+                  className="flex cursor-pointer items-center justify-between gap-3"
+                >
                   <span className="flex items-center gap-1.5 text-sm text-foreground">
                     <DiscPiece color={ownColor} size={16} />
                     {t('game.showAsStones')}
@@ -301,7 +320,10 @@ export function GameSettingsContent({
                 )}
 
                 {/* Piece Color */}
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <div
+                  data-tour-id="settings-piece-color"
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                >
                   <span className="text-sm text-foreground">{t('game.pieceColor')}</span>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
@@ -325,6 +347,51 @@ export function GameSettingsContent({
                     ))}
                   </div>
                 </div>
+
+                {/* Hide pawns — a partial blindfold orthogonal to the visibility
+                    / shape / color axes above. The side selector (Both / Own /
+                    Opponent) appears whenever the toggle is on. */}
+                <label
+                  data-tour-id="settings-pawn-hide"
+                  className="flex cursor-pointer items-center justify-between gap-3"
+                >
+                  <span className="flex items-center gap-1.5 text-sm text-foreground">
+                    <ChessPieceIcon type="p" color={ownColor} size={16} />
+                    {t('game.hidePawns')}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={pawnHideOn}
+                    onChange={(e) =>
+                      onSettingsChange({ pawnHideMode: e.target.checked ? 'all' : 'none' })
+                    }
+                    className="h-4 w-4 text-primary focus:ring-primary border-border"
+                  />
+                </label>
+                {pawnHideOn && (
+                  <div className="flex flex-col gap-2 border-l border-border pl-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                    <span className="text-sm text-muted-foreground">{t('game.stonesSide')}</span>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                      {PAWN_HIDE_SIDE_MODES.map((side) => (
+                        <label
+                          key={side}
+                          className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
+                        >
+                          <input
+                            type="radio"
+                            name="pawnHideSide"
+                            value={side}
+                            checked={settings.pawnHideMode === side}
+                            onChange={() => onSettingsChange({ pawnHideMode: side })}
+                            className="h-4 w-4 text-primary focus:ring-primary border-border"
+                          />
+                          <PieceGlyphs colors={sideSamples[side]} />
+                          <span>{t(`game.pieceVisibilityModes.${side}`)}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -357,7 +424,11 @@ export function GameSettingsContent({
             </div>
 
             {/* Preview */}
-            {showPreview && <BoardPreview settings={settings} playerSide={playerSide} />}
+            {showPreview && (
+              <div data-tour-id="settings-preview">
+                <BoardPreview settings={settings} playerSide={playerSide} />
+              </div>
+            )}
           </>
         )}
       </div>

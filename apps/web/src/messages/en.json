@@ -382,6 +382,40 @@
         "white-only": "Show all pieces as white",
         "black-only": "Show all pieces as black"
       },
+      "hidePawns": "Hide pawns",
+      "pawnHideModes": {
+        "none": "Off",
+        "all": "Both",
+        "own": "Own",
+        "opponent": "Opponent"
+      },
+      "tour": {
+        "label": "Settings guide",
+        "boardVisibility": {
+          "title": "Board visibility",
+          "text": "Show the board always, only on a peek, or hide it entirely — your blindfold baseline."
+        },
+        "pieceVisibility": {
+          "title": "Piece visibility",
+          "text": "Choose which side's pieces are shown. Hiding one side raises the difficulty."
+        },
+        "stones": {
+          "title": "Show as stones",
+          "text": "Turn pieces into stones to hide their type — you see where, not what."
+        },
+        "pieceColor": {
+          "title": "Piece color",
+          "text": "Force a single colour so the two sides are harder to tell apart."
+        },
+        "pawnHide": {
+          "title": "Hide pawns",
+          "text": "A partial blindfold that hides only pawns — both sides, your own, or the opponent's."
+        },
+        "preview": {
+          "title": "Preview",
+          "text": "See each setting take effect here — toggle the options to try the look."
+        }
+      },
       "preview": {
         "title": "Preview",
         "whiteView": "White's Perspective",
@@ -1955,6 +1989,7 @@
         "labelShowOpponentPieces": "Show opponent pieces",
         "labelPieceShape": "Piece shape",
         "labelPieceColor": "Piece color",
+        "labelPawnHide": "Hide pawns",
         "labelMoveInputMode": "Move input",
         "labelAiReplyDuration": "AI move display time"
       },
@@ -2013,7 +2048,8 @@
         "legendIllegal": "Illegal",
         "legendTakeback": "Undo",
         "legendHint": "Hint",
-        "moveCell": "Move {number}"
+        "moveCell": "Move {number}",
+        "illegalTried": "tried: {moves}"
       },
       "viewDetails": "Game details",
       "statsGate": {
@@ -2153,8 +2189,10 @@
       "own": "Your pieces",
       "opponent": "Opponent pieces",
       "hidden": "hidden",
+      "pawnsHidden": "Pawns hidden",
       "reproduceView": "As played"
     },
+    "openPosition": "Open this position",
     "statsGate": {
       "title": "Members-only feature",
       "description": "Create a free account to view this game's stats and per-move breakdown."

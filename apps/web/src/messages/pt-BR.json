@@ -378,6 +378,40 @@
         "white-only": "Mostrar todas as peças como brancas",
         "black-only": "Mostrar todas as peças como pretas"
       },
+      "hidePawns": "Ocultar peões",
+      "pawnHideModes": {
+        "none": "Não",
+        "all": "Ambas",
+        "own": "Próprias",
+        "opponent": "Oponente"
+      },
+      "tour": {
+        "label": "Guia de ajustes",
+        "boardVisibility": {
+          "title": "Visibilidade do tabuleiro",
+          "text": "Mostre o tabuleiro sempre, só ao espiar, ou oculte por completo — sua base às cegas."
+        },
+        "pieceVisibility": {
+          "title": "Visibilidade das peças",
+          "text": "Escolha qual lado aparece. Ocultar um lado aumenta a dificuldade."
+        },
+        "stones": {
+          "title": "Mostrar como pedras",
+          "text": "Transforme as peças em pedras para ocultar o tipo — você vê onde, não o quê."
+        },
+        "pieceColor": {
+          "title": "Cor das peças",
+          "text": "Force uma só cor para distinguir menos os dois lados."
+        },
+        "pawnHide": {
+          "title": "Ocultar peões",
+          "text": "Um modo às cegas parcial que oculta só os peões — ambos, os seus ou os do oponente."
+        },
+        "preview": {
+          "title": "Visualização",
+          "text": "Veja o efeito de cada ajuste aqui — alterne as opções para testar."
+        }
+      },
       "preview": {
         "title": "Pré-visualização",
         "whiteView": "Perspectiva de Brancas",
@@ -1951,6 +1985,7 @@
         "labelShowOpponentPieces": "Mostrar peças do oponente",
         "labelPieceShape": "Forma das peças",
         "labelPieceColor": "Cor das peças",
+        "labelPawnHide": "Ocultar peões",
         "labelMoveInputMode": "Entrada de movimento",
         "labelAiReplyDuration": "Tempo de exibição da jogada da IA"
       },
@@ -2009,7 +2044,8 @@
         "legendIllegal": "Ilegal",
         "legendTakeback": "Desfazer",
         "legendHint": "Dica",
-        "moveCell": "Lance {number}"
+        "moveCell": "Lance {number}",
+        "illegalTried": "tentou: {moves}"
       },
       "viewDetails": "Detalhes da partida",
       "statsGate": {
@@ -2149,8 +2185,10 @@
       "own": "Suas peças",
       "opponent": "Peças do oponente",
       "hidden": "oculto",
+      "pawnsHidden": "Peões ocultos",
       "reproduceView": "Como foi jogado"
     },
+    "openPosition": "Abrir esta posição",
     "statsGate": {
       "title": "Recurso exclusivo para membros",
       "description": "Crie uma conta gratuita para ver as estatísticas desta partida e a análise lance a lance."

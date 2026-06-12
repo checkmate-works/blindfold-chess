@@ -41,6 +41,10 @@ export function isValidPreferenceChangeEntry(entry: unknown): boolean {
       const colors = ['normal', 'white-only', 'black-only'];
       return colors.includes(e.from as string) && colors.includes(e.to as string);
     }
+    case 'pawnHideMode': {
+      const modes = ['none', 'all', 'own', 'opponent'];
+      return modes.includes(e.from as string) && modes.includes(e.to as string);
+    }
     case 'peekMode': {
       const modes = ['modal', 'inline'];
       return modes.includes(e.from as string) && modes.includes(e.to as string);
@@ -111,7 +115,12 @@ export function isValidStoredGame(stored: unknown): stored is StoredGame {
             (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
               (log as Record<string, unknown>).movePeekCount === undefined) &&
             (typeof (log as Record<string, unknown>).invalidCount === 'number' ||
-              (log as Record<string, unknown>).invalidCount === undefined)
+              (log as Record<string, unknown>).invalidCount === undefined) &&
+            ((log as Record<string, unknown>).invalidAttempts === undefined ||
+              (Array.isArray((log as Record<string, unknown>).invalidAttempts) &&
+                ((log as Record<string, unknown>).invalidAttempts as unknown[]).every(
+                  (s) => typeof s === 'string'
+                )))
         ))) &&
     (g.preferenceChangeLog === undefined ||
       (Array.isArray(g.preferenceChangeLog) &&

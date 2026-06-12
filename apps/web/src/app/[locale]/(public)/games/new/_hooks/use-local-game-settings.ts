@@ -15,6 +15,7 @@ export function useLocalGameSettings() {
     showOpponentPieces: preferences.showOpponentPieces,
     pieceShapeMode: preferences.pieceShapeMode,
     pieceColors: preferences.pieceColors,
+    pawnHideMode: preferences.pawnHideMode,
     // Snapshot the user's global moveInputMode default at
     // game start. Mid-game switches via the MoveInputPanel toggle accumulate
     // in the change log instead of mutating the global preference.

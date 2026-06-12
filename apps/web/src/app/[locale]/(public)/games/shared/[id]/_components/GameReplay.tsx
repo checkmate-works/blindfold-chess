@@ -1,12 +1,13 @@
 'use client';
 
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
+import { FaArrowRight } from 'react-icons/fa';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
@@ -20,6 +21,7 @@ import type {
 } from '@/lib/games/saved-game-types';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
+import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MovesPanel } from '@/app/[locale]/(public)/games/play/_components/MovesPanel';
 import {
@@ -133,6 +135,16 @@ export function GameReplay({
     navigateToEnd,
   } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
 
+  // Independent navigation state for the By Move quick-peek modal, so previewing
+  // a position there never disturbs the live replay (board, comments, URL). The
+  // modal commits to the live replay only via its footer CTA.
+  const modalNav = useMoveNavigation({
+    moves: notationMoves,
+    startingFen: startingFen ?? undefined,
+  });
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
+  const boardColumnRef = useRef<HTMLDivElement>(null);
+
   // Seed the board orientation from the `?color=white|black` param:
   // `effectiveFlipped` means "black is at the bottom", and the default (no
   // param) is the player's own side. Convert the requested orientation into
@@ -168,14 +180,44 @@ export function GameReplay({
     effectiveFlipped,
   });
 
-  // Highlight the move that produced the displayed position.
-  const lastMove = useMemo(() => {
-    if (currentPosition === -2) return null;
-    const upto =
-      currentPosition === -1 ? notationMoves : notationMoves.slice(0, currentPosition + 1);
-    if (upto.length === 0) return null;
-    return getLastMoveDetails(upto as string[], startingFen ?? undefined);
-  }, [currentPosition, notationMoves, startingFen]);
+  // Highlight the move that produced a given navigation position. Shared by the
+  // live board and the quick-peek modal (each with its own position).
+  const lastMoveAt = useCallback(
+    (position: number) => {
+      if (position === -2) return null;
+      const upto = position === -1 ? notationMoves : notationMoves.slice(0, position + 1);
+      if (upto.length === 0) return null;
+      return getLastMoveDetails(upto as string[], startingFen ?? undefined);
+    },
+    [notationMoves, startingFen]
+  );
+  const lastMove = useMemo(() => lastMoveAt(currentPosition), [lastMoveAt, currentPosition]);
+  const modalLastMove = useMemo(
+    () => lastMoveAt(modalNav.currentPosition),
+    [lastMoveAt, modalNav.currentPosition]
+  );
+
+  // By Move tap → quick-peek the position in a modal (matches the result page),
+  // leaving the live replay untouched. The modal drives `modalNav`.
+  const handleViewMove = useCallback(
+    (movesIndex: number) => {
+      modalNav.navigateToPosition(movesIndex);
+      setIsBoardModalOpen(true);
+    },
+    [modalNav]
+  );
+
+  // Modal footer CTA → commit the modal's position to the live replay (board +
+  // comment thread), close the modal, and scroll the board into view so the
+  // comments below it are reachable. rAF defers the scroll until the modal's
+  // scroll-lock has been released on this render.
+  const handleOpenModalPosition = useCallback(() => {
+    navigateToPosition(modalNav.currentPosition);
+    setIsBoardModalOpen(false);
+    requestAnimationFrame(() => {
+      boardColumnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [navigateToPosition, modalNav]);
 
   const lichessAnalysisUrl = fenToLichessUrl(
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
@@ -247,8 +289,9 @@ export function GameReplay({
       <GameStatsOverview
         stats={stats}
         playerMoveIndices={playerMoveIndices}
+        operationLogs={operationLogs ?? undefined}
         moves={notationMoves}
-        onSelectMove={navigateToPosition}
+        onSelectMove={handleViewMove}
         engineConfig={engineConfig}
         playSettings={playSettings ?? undefined}
         playerColor={playerColor}
@@ -256,14 +299,13 @@ export function GameReplay({
         locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
         headingAsSection
-        showInitialSettings={false}
       />
     ) : null;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2" ref={boardColumnRef}>
           <InlineBoardView
             fen={displayFen ?? latestFen}
             playerSide={playerColor}
@@ -432,6 +474,38 @@ export function GameReplay({
           </div>
         )
       )}
+
+      {/* By Move quick-peek modal (mirrors the result page). Runs its own
+          navigation so previewing never moves the live replay; the footer CTA
+          commits the position to the page, where per-move comments live. */}
+      <BoardViewModal
+        isOpen={isBoardModalOpen}
+        onClose={() => setIsBoardModalOpen(false)}
+        fen={modalNav.displayFen ?? latestFen}
+        playerSide={playerColor}
+        flipped={effectiveFlipped}
+        lastMove={modalLastMove}
+        preferences={boardPreferences}
+        movesLength={notationMoves.length}
+        currentPosition={modalNav.currentPosition}
+        formattedPgn={formattedPgn}
+        onNavigateToStart={modalNav.navigateToStart}
+        onNavigatePrevious={modalNav.navigatePrevious}
+        onNavigateNext={modalNav.navigateNext}
+        onNavigateToEnd={modalNav.navigateToEnd}
+        onNavigateToPosition={modalNav.navigateToPosition}
+        onFlipBoard={toggleFlip}
+        footer={
+          <button
+            type="button"
+            onClick={handleOpenModalPosition}
+            className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          >
+            {t('openPosition')}
+            <FaArrowRight className="h-3 w-3" aria-hidden />
+          </button>
+        }
+      />
     </div>
   );
 }

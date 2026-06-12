@@ -37,6 +37,7 @@ export function AppearanceSettings() {
           showOpponentPieces: true,
           pieceShapeMode: 'normal',
           pieceColors: 'normal',
+          pawnHideMode: 'none',
         }}
       />
     </div>

@@ -8,10 +8,15 @@ import { FaClipboardList } from 'react-icons/fa';
 import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
 import type { GameStats, MoveMarker } from '@/lib/games/compute-game-stats';
-import { playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
-import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
+import { resolvePlaySettingsChanges } from '@/lib/games/play-settings-log';
+import type {
+  GamePlaySettings,
+  MoveOperationLog,
+  PlaySettingsChangeEntry,
+} from '@/lib/games/saved-game-types';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
+import { useChangeLogFormat } from '@/app/[locale]/(public)/games/play/_hooks/use-change-log-format';
 import { PlaySettingsIndicator } from '@/app/[locale]/(public)/games/shared/[id]/_components/PlaySettingsIndicator';
 import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
@@ -23,6 +28,13 @@ type Props = {
   stats: GameStats;
   /** moves[] index for each player move; cell i jumps to playerMoveIndices[i]. */
   playerMoveIndices: number[];
+  /**
+   * Per-player-move operation logs, index-aligned with {@link GameStats.perMove}
+   * (cell i ↔ operationLogs[i]). Used to surface the rejected move texts
+   * (`invalidAttempts`) in the effort-strip cell tooltip. Optional — cells fall
+   * back to the move SAN alone when absent.
+   */
+  operationLogs?: MoveOperationLog[];
   /** SAN per moves[] index, for the per-move cell tooltips. */
   moves: string[];
   /** Jump to a finished-game position (moves[] index). */
@@ -59,11 +71,13 @@ type Props = {
   /** Locale for the opening link. Required to render the {@link opening} row. */
   locale?: Locale;
   /**
-   * Mid-game blindfold-setting changes (display subset). When non-empty, a
-   * "change log" renders under the By Move strip: one icon row per change
-   * point showing how the setup looked from that move onward (folded snapshot),
-   * using the same {@link PlaySettingsIndicator} icons as the initial settings.
-   * Empty / undefined for the common case (no mid-game edits) — nothing shown.
+   * Mid-game blindfold-setting changes (display subset, `to`-only). When
+   * non-empty, a change log renders under the By Move strip: one row per change
+   * point listing the exact "Label: from → to" transition(s) for the settings
+   * edited at that move. The `from` of each transition is reconstructed by
+   * folding this log over {@link playSettings} (see `resolvePlaySettingsChanges`),
+   * so the result page and the shared replay render an identical change log from
+   * the same inputs. Empty / undefined for the common case (no mid-game edits).
    */
   playSettingsLog?: PlaySettingsChangeEntry[];
   /**
@@ -73,14 +87,6 @@ type Props = {
    * inline label + view-details button (its default).
    */
   headingAsSection?: boolean;
-  /**
-   * Whether to render the initial-settings icon row. Defaults to `true`. The
-   * shared game detail page sets it `false` because it already shows a richer,
-   * position-aware settings indicator under the board, so a static initial row
-   * here would duplicate it. `playSettings` is still consumed for the change
-   * log fold even when this is `false`.
-   */
-  showInitialSettings?: boolean;
 };
 
 /** Fill color for each effort marker (translucent so the board theme shows through). */
@@ -104,13 +110,14 @@ const MARKER_CLASS: Record<MoveMarker, string> = {
  * and initial-settings summary (compact engine badge + icon-based
  * {@link PlaySettingsIndicator}) via the optional `engineConfig` / `playSettings`
  * props, and — when the player changed a blindfold setting mid-game — a
- * `playSettingsLog`-driven change log under the By Move strip that shows each
- * change point as the same settings icons. The shared game detail page omits
- * those and keeps its own modal.
+ * `playSettingsLog`-driven change log under the By Move strip listing each
+ * edit as a "Label: from → to" transition. Both the result page and the shared
+ * detail page render it from the same (snapshot + to-only log) inputs.
  */
 export function GameStatsOverview({
   stats,
   playerMoveIndices,
+  operationLogs,
   moves,
   onSelectMove,
   onViewDetails,
@@ -121,18 +128,21 @@ export function GameStatsOverview({
   locale,
   playSettingsLog,
   headingAsSection = false,
-  showInitialSettings = true,
 }: Props) {
   const t = useTranslations('play');
   const openingNameT = useTranslations('topics.openings.names');
+  // Localised "Label: from → to" formatting for the per-change-point delta text,
+  // shared with the Game Details modal so the wording stays in lockstep.
+  const { settingLabel, settingValue } = useChangeLogFormat();
 
-  // Distinct change points (a single move may carry several simultaneous edits;
-  // collapse them into one snapshot row per move). Set preserves insertion
+  // Reconstruct the full from→to transitions from the start-of-game snapshot
+  // plus the to-only log (works on the result page and the shared replay alike),
+  // then group them by move into change-point rows. Set preserves insertion
   // order, and the log is already in move order.
-  const changePoints =
-    playSettings && playSettingsLog && playSettingsLog.length > 0
-      ? [...new Set(playSettingsLog.map((e) => e.atMoveIndex))]
-      : [];
+  const resolvedChanges = playSettings
+    ? resolvePlaySettingsChanges(playSettings, playSettingsLog)
+    : [];
+  const changePoints = [...new Set(resolvedChanges.map((e) => e.atMoveIndex))];
 
   // Compact engine label: "Maia 1600 ELO" / "Stockfish Level 5". The logo
   // carries the engine identity; the name + difficulty sit beside it on one line.
@@ -174,52 +184,60 @@ export function GameStatsOverview({
         </div>
       )}
 
-      {/* Opponent + initial settings, inlined from the old Game Details modal.
-          Both are optional. The initial-settings row is suppressed on the
-          shared page (showInitialSettings=false), which shows a position-aware
-          indicator under the board instead. */}
-      {(engineConfig || (showInitialSettings && playSettings && playerColor)) && (
-        <div className="flex flex-col gap-2">
-          {engineConfig && (
-            <span
-              className="inline-flex items-center gap-1.5 text-xs"
-              title={`${engineName} ${engineDifficulty}`}
-            >
-              <Image
-                src={ENGINE_LOGO_SRC[engineConfig.kind]}
-                alt=""
-                width={18}
-                height={18}
-                className="object-contain"
-              />
-              <span className="font-medium text-foreground">{engineName}</span>
-              <span className="text-muted-foreground">{engineDifficulty}</span>
-            </span>
-          )}
-          {/* Which side the player had, plus the opening they reached. The
+      {/* Initial settings — the opponent (engine + difficulty), the side the
+          player had with the opening reached, and the blindfold display
+          settings: everything configured before the game. Grouped under one h3
+          so it reads at the same level as By Move / Change Log, and so the
+          engine / colour rows aren't left heading-less. On the shared replay the
+          under-board position-aware indicator complements (not duplicates) this
+          static start-of-game snapshot. */}
+      {(engineConfig || (playSettings && playerColor)) && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-foreground">
+            {t('operationLog.initialSettings.title')}
+          </h3>
+          <div className="flex flex-col gap-2">
+            {engineConfig && (
+              <span
+                className="inline-flex items-center gap-1.5 text-xs"
+                title={`${engineName} ${engineDifficulty}`}
+              >
+                <Image
+                  src={ENGINE_LOGO_SRC[engineConfig.kind]}
+                  alt=""
+                  width={18}
+                  height={18}
+                  className="object-contain"
+                />
+                <span className="font-medium text-foreground">{engineName}</span>
+                <span className="text-muted-foreground">{engineDifficulty}</span>
+              </span>
+            )}
+            {/* Which side the player had, plus the opening they reached. The
               colour chip removes the "who was white?" ambiguity of the bare
               engine line; the opening links to its topic page. Shared with the
               gallery card so both render identically. */}
-          {playerColor && opening !== undefined && locale && (
-            <GameColorOpeningRow
-              playerColor={playerColor}
-              colorLabel={t(`playerColor.${playerColor}`)}
-              opening={opening}
-              openingDisplayName={
-                opening
-                  ? getOpeningDisplayName(openingNameT, opening.slug, opening.name)
-                  : undefined
-              }
-              locale={locale}
-            />
-          )}
-          {showInitialSettings && playSettings && playerColor && (
-            <PlaySettingsIndicator
-              settings={playSettings}
-              playerColor={playerColor}
-              label={t('operationLog.initialSettings.title')}
-            />
-          )}
+            {playerColor && opening !== undefined && locale && (
+              <GameColorOpeningRow
+                playerColor={playerColor}
+                colorLabel={t(`playerColor.${playerColor}`)}
+                opening={opening}
+                openingDisplayName={
+                  opening
+                    ? getOpeningDisplayName(openingNameT, opening.slug, opening.name)
+                    : undefined
+                }
+                locale={locale}
+              />
+            )}
+            {playSettings && playerColor && (
+              <PlaySettingsIndicator
+                settings={playSettings}
+                playerColor={playerColor}
+                label={null}
+              />
+            )}
+          </div>
         </div>
       )}
 
@@ -227,9 +245,9 @@ export function GameStatsOverview({
       {stats.totalMoves > 0 && (
         <div className="space-y-2">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs font-medium text-muted-foreground">
+            <h3 className="text-sm font-semibold text-foreground">
               {t('result.stats.timelineTitle')}
-            </span>
+            </h3>
             <span className="text-[0.65rem] text-muted-foreground">
               {t('result.stats.timelineHint')}
             </span>
@@ -239,13 +257,23 @@ export function GameStatsOverview({
               const movesIndex = playerMoveIndices[i];
               const san = movesIndex !== undefined ? moves[movesIndex] : undefined;
               const label = t('result.stats.moveCell', { number: i + 1 });
+              const base = san ? `${label} ${san}` : label;
+              // Append the rejected move texts for this move, when captured, so a
+              // hover over a red (illegal) cell shows what was tried.
+              const attempts = (operationLogs?.[i]?.invalidAttempts ?? []).filter(
+                (s) => typeof s === 'string'
+              );
+              const cellTitle =
+                attempts.length > 0
+                  ? `${base} · ${t('result.stats.illegalTried', { moves: attempts.join(', ') })}`
+                  : base;
               return (
                 <button
                   key={i}
                   type="button"
                   onClick={() => movesIndex !== undefined && onSelectMove(movesIndex)}
-                  title={san ? `${label} ${san}` : label}
-                  aria-label={san ? `${label} ${san}` : label}
+                  title={cellTitle}
+                  aria-label={cellTitle}
                   className={`w-5 h-5 rounded-sm transition-transform hover:scale-125 hover:ring-2 hover:ring-foreground/40 ${MARKER_CLASS[marker]}`}
                 />
               );
@@ -267,32 +295,41 @@ export function GameStatsOverview({
       )}
 
       {/* Change log — only when the player edited a blindfold setting mid-game
-          (rare). One row per change point: a move-number badge plus how the
-          setup looked from that move onward (folded snapshot), rendered with the
-          same icons as the initial settings above. Placed under the By Move
-          strip so the timeline reads top-to-bottom: where effort clustered,
-          then where the setup changed. */}
-      {playSettings && playerColor && changePoints.length > 0 && (
+          (rare). One row per change point: a move-number badge plus the exact
+          "Label: from → to" transition(s) for the settings edited at that move
+          (only what actually changed, so an unrelated setting never reads as
+          "changed"). Identical on the result page and the shared replay — both
+          fold the to-only log over the snapshot to recover each `from`. Placed
+          under the By Move strip so the timeline reads top-to-bottom: where
+          effort clustered, then where the setup changed. */}
+      {resolvedChanges.length > 0 && (
         <div className="space-y-2">
-          <span className="text-xs font-medium text-muted-foreground">
+          <h3 className="text-sm font-semibold text-foreground">
             {t('operationLog.changeLog.title')}
-          </span>
+          </h3>
           <ul className="space-y-1.5">
-            {changePoints.map((atMoveIndex) => (
-              <li key={atMoveIndex} className="flex items-center gap-2">
-                <span
-                  className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-muted px-1 text-[0.65rem] tabular-nums text-muted-foreground"
-                  title={t('operationLog.changeLog.columnAtMove')}
-                >
-                  {atMoveIndex}
-                </span>
-                <PlaySettingsIndicator
-                  settings={playSettingsAtHalfMove(playSettings, playSettingsLog, atMoveIndex)}
-                  playerColor={playerColor}
-                  label={null}
-                />
-              </li>
-            ))}
+            {changePoints.map((atMoveIndex) => {
+              const entries = resolvedChanges.filter((e) => e.atMoveIndex === atMoveIndex);
+              return (
+                <li key={atMoveIndex} className="flex items-start gap-2">
+                  <span
+                    className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-muted px-1 text-[0.65rem] tabular-nums text-muted-foreground"
+                    title={t('operationLog.changeLog.columnAtMove')}
+                  >
+                    {atMoveIndex}
+                  </span>
+                  <ul className="flex flex-col gap-0.5 pt-0.5">
+                    {entries.map((e, i) => (
+                      <li key={i} className="text-xs text-muted-foreground">
+                        <span className="text-foreground">{settingLabel(e.key)}</span>
+                        {': '}
+                        {settingValue(e, 'from')} → {settingValue(e, 'to')}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

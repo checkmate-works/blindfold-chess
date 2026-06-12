@@ -18,6 +18,10 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
   const undoCountRef = useRef(0);
   const movePeekCountRef = useRef(0);
   const invalidCountRef = useRef(0);
+  // The rejected move texts behind `invalidCountRef` (text/select/button paths
+  // only). Capped so one pathological turn can't bloat the persisted entry; the
+  // count still increments past the cap.
+  const invalidAttemptsRef = useRef<string[]>([]);
 
   // Reset every counter that accumulates during a single move. Called from
   // commit / undo / truncate / setLogsTo so the ref state stays in sync
@@ -28,6 +32,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     undoCountRef.current = 0;
     movePeekCountRef.current = 0;
     invalidCountRef.current = 0;
+    invalidAttemptsRef.current = [];
   }, []);
 
   /** Increment peek counter for the current move. */
@@ -45,9 +50,18 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     movePeekCountRef.current += 1;
   }, []);
 
-  /** Increment invalid-attempt counter for the current move. */
-  const recordInvalid = useCallback(() => {
+  /**
+   * Record an invalid-move attempt for the current move. Always bumps the
+   * count; when the attempted move text is known (text / select / button
+   * submissions — the SAN is in scope at rejection), it is also appended to
+   * `invalidAttemptsRef` (board mis-grabs pass none → count only). Capped at 20
+   * texts per move to keep the persisted entry small.
+   */
+  const recordInvalid = useCallback((attempt?: string) => {
     invalidCountRef.current += 1;
+    if (attempt && invalidAttemptsRef.current.length < 20) {
+      invalidAttemptsRef.current.push(attempt);
+    }
   }, []);
 
   /**
@@ -62,6 +76,10 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
         undoCount: undoCountRef.current,
         movePeekCount: movePeekCountRef.current,
         invalidCount: invalidCountRef.current,
+        // Only persist the texts when some were captured; otherwise leave the
+        // field off so legacy-shaped (count-only) entries stay clean.
+        invalidAttempts:
+          invalidAttemptsRef.current.length > 0 ? [...invalidAttemptsRef.current] : undefined,
       };
       setLogs((prev) => [...prev, entry]);
       resetCounters();
@@ -89,6 +107,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     peekCountRef.current = 0;
     movePeekCountRef.current = 0;
     invalidCountRef.current = 0;
+    invalidAttemptsRef.current = [];
   }, []);
 
   /**

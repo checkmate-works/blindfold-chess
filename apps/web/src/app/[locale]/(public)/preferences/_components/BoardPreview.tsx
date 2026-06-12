@@ -77,6 +77,7 @@ export function BoardPreview({ settings, playerSide = 'white' }: Props) {
             showOpponentPieces={settings.showOpponentPieces}
             pieceShapeMode={settings.pieceShapeMode}
             pieceColors={settings.pieceColors}
+            pawnHideMode={settings.pawnHideMode}
             boardTheme={settings.boardTheme}
             className="w-full h-full"
           />

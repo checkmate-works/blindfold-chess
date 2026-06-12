@@ -42,6 +42,8 @@ export function useChangeLogFormat() {
         return t('operationLog.initialSettings.labelPieceShape');
       case 'pieceColors':
         return t('operationLog.initialSettings.labelPieceColor');
+      case 'pawnHideMode':
+        return t('operationLog.initialSettings.labelPawnHide');
       case 'moveInputMode':
         return t('operationLog.initialSettings.labelMoveInputMode');
       case 'aiReplyDuration':
@@ -68,6 +70,8 @@ export function useChangeLogFormat() {
         return tPrefs(`pieceShapes.${value as PerGamePreferences['pieceShapeMode']}`);
       case 'pieceColors':
         return tPrefs(`pieceColors.${value as PerGamePreferences['pieceColors']}`);
+      case 'pawnHideMode':
+        return tPrefs(`pawnHideModes.${value as PerGamePreferences['pawnHideMode']}`);
       case 'moveInputMode':
         return value
           ? tPrefsControls(`moveInputModes.${value as PerGamePreferences['moveInputMode']}`)

@@ -20,6 +20,7 @@ export type GamePlaySettings = {
   showOpponentPieces: boolean;
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors: 'normal' | 'white-only' | 'black-only';
+  pawnHideMode: 'none' | 'all' | 'own' | 'opponent';
 };
 
 /**
@@ -40,6 +41,7 @@ export type PlaySettingsChangeEntry =
   | { atMoveIndex: number; key: 'showOwnPieces' | 'showOpponentPieces'; to: boolean }
   | { atMoveIndex: number; key: 'pieceShapeMode'; to: GamePlaySettings['pieceShapeMode'] }
   | { atMoveIndex: number; key: 'pieceColors'; to: GamePlaySettings['pieceColors'] }
+  | { atMoveIndex: number; key: 'pawnHideMode'; to: GamePlaySettings['pawnHideMode'] }
   | { atMoveIndex: number; key: 'boardVisibility'; to: BoardVisibility };
 
 // Re-export the canonical SkillLevel type from @blindfold-chess/features
@@ -64,6 +66,16 @@ export type MoveOperationLog = {
    * board only fires `onMove` for legal destinations.
    */
   invalidCount?: number;
+  /**
+   * The actual rejected move texts behind {@link invalidCount}, in attempt
+   * order (e.g. `['Nf3', 'Bb4']`) — so a review can show *what* was tried, not
+   * just how many times. Only the text / select / button input paths populate
+   * this (the submitted SAN is in scope at rejection); board mis-grabs in
+   * blindfold mode have no SAN and only bump `invalidCount`. So
+   * `invalidAttempts.length` may be ≤ `invalidCount`. Omitted (undefined) when
+   * empty and on legacy records — consumers fall back to the bare count.
+   */
+  invalidAttempts?: string[];
 };
 
 /**
@@ -96,6 +108,12 @@ export type PreferenceChangeLogEntry =
       key: 'pieceColors';
       from: PerGamePreferences['pieceColors'];
       to: PerGamePreferences['pieceColors'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'pawnHideMode';
+      from: PerGamePreferences['pawnHideMode'];
+      to: PerGamePreferences['pawnHideMode'];
     }
   | {
       atMoveIndex: number;

@@ -378,6 +378,40 @@
         "white-only": "Mostrar todas las piezas como blancas",
         "black-only": "Mostrar todas las piezas como negras"
       },
+      "hidePawns": "Ocultar peones",
+      "pawnHideModes": {
+        "none": "No",
+        "all": "Ambas",
+        "own": "Propias",
+        "opponent": "Rival"
+      },
+      "tour": {
+        "label": "Guía de ajustes",
+        "boardVisibility": {
+          "title": "Visibilidad del tablero",
+          "text": "Muestra el tablero siempre, solo al espiar, u ocúltalo del todo: tu base a ciegas."
+        },
+        "pieceVisibility": {
+          "title": "Visibilidad de piezas",
+          "text": "Elige qué bando se muestra. Ocultar un bando aumenta la dificultad."
+        },
+        "stones": {
+          "title": "Mostrar como piedras",
+          "text": "Convierte las piezas en piedras para ocultar su tipo: ves dónde, no qué."
+        },
+        "pieceColor": {
+          "title": "Color de las piezas",
+          "text": "Fuerza un solo color para distinguir peor ambos bandos."
+        },
+        "pawnHide": {
+          "title": "Ocultar peones",
+          "text": "Un modo a ciegas parcial que oculta solo los peones: ambos, los tuyos o los del rival."
+        },
+        "preview": {
+          "title": "Vista previa",
+          "text": "Mira aquí el efecto de cada ajuste: cambia las opciones para probar."
+        }
+      },
       "preview": {
         "title": "Vista Previa",
         "whiteView": "Perspectiva de Blancas",
@@ -1951,6 +1985,7 @@
         "labelShowOpponentPieces": "Mostrar piezas del oponente",
         "labelPieceShape": "Forma de las piezas",
         "labelPieceColor": "Color de las piezas",
+        "labelPawnHide": "Ocultar peones",
         "labelMoveInputMode": "Entrada de movimiento",
         "labelAiReplyDuration": "Tiempo de visualización de la jugada de la IA"
       },
@@ -2009,7 +2044,8 @@
         "legendIllegal": "Ilegal",
         "legendTakeback": "Deshacer",
         "legendHint": "Pista",
-        "moveCell": "Jugada {number}"
+        "moveCell": "Jugada {number}",
+        "illegalTried": "intentó: {moves}"
       },
       "viewDetails": "Detalles de la partida",
       "statsGate": {
@@ -2149,8 +2185,10 @@
       "own": "Tus piezas",
       "opponent": "Piezas del rival",
       "hidden": "oculto",
+      "pawnsHidden": "Peones ocultos",
       "reproduceView": "Como se jugó"
     },
+    "openPosition": "Abrir esta posición",
     "statsGate": {
       "title": "Función exclusiva para miembros",
       "description": "Crea una cuenta gratuita para ver las estadísticas de esta partida y el desglose por jugada."

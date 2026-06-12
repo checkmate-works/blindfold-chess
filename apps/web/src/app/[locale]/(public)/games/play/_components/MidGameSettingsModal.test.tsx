@@ -104,6 +104,7 @@ const PREFS: GamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  pawnHideMode: 'none',
   moveInputMode: 'button',
   enabledMoveInputModes: ['button'],
   buttonInputPieceLabel: 'icon',

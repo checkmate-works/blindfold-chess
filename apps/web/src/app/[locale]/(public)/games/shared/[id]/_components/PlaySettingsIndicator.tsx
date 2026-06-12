@@ -3,6 +3,7 @@
 import { DiscPiece } from '@/app/_components/chess/DiscPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
+import { FaEyeSlash } from 'react-icons/fa';
 
 import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
 import type { GamePlaySettings } from '@/lib/games/saved-game-types';
@@ -57,6 +58,13 @@ export function PlaySettingsIndicator({ settings, playerColor, label }: Props) {
   // Piece appearance only matters when the board was visible at some point.
   const showPieceSample = settings.boardVisibility !== 'never' && piecesDeviate;
 
+  // Pawn-hide is surfaced as its own chip (a slashed pawn per hidden side) since
+  // it is orthogonal to the whole-side visibility / shape / color sample above.
+  const pawnHideSides = (['own', 'opponent'] as const).filter(
+    (side) => settings.pawnHideMode === 'all' || settings.pawnHideMode === side
+  );
+  const showPawnHide = settings.boardVisibility !== 'never' && pawnHideSides.length > 0;
+
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
       {label !== null && <span className="font-medium text-foreground">{label ?? t('title')}</span>}
@@ -108,6 +116,26 @@ export function PlaySettingsIndicator({ settings, playerColor, label }: Props) {
               </span>
             );
           })}
+        </span>
+      )}
+
+      {showPawnHide && (
+        // Deliberately unlike the whole-side "hidden" sample above (boxed, red-
+        // slashed pawns): an eye-off pill with plain, un-slashed pawn glyph(s)
+        // reads as "only the pawns are blindfolded", not "this side is gone".
+        // The pawn colour(s) encode which side(s) — one glyph per hidden side.
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5"
+          title={t('pawnsHidden')}
+          aria-label={t('pawnsHidden')}
+        >
+          <FaEyeSlash className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+          <span className="inline-flex items-center gap-0.5" aria-hidden>
+            {pawnHideSides.map((side) => (
+              <ChessPieceIcon key={side} type="p" color={colorFor(side)} size={16} />
+            ))}
+          </span>
+          <span>{t('pawnsHidden')}</span>
         </span>
       )}
     </div>

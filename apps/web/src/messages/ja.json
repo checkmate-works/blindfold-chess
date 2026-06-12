@@ -382,6 +382,40 @@
         "white-only": "全ての駒を白で表示",
         "black-only": "全ての駒を黒で表示"
       },
+      "hidePawns": "ポーンを非表示",
+      "pawnHideModes": {
+        "none": "オフ",
+        "all": "両方",
+        "own": "自分",
+        "opponent": "相手"
+      },
+      "tour": {
+        "label": "設定ガイド",
+        "boardVisibility": {
+          "title": "盤面の見せ方",
+          "text": "盤面を常に表示／のぞき見だけ／完全に隠す、を選びます。ブラインド度の基本です。"
+        },
+        "pieceVisibility": {
+          "title": "駒の表示",
+          "text": "自分・相手のどちらの駒を見せるかを選びます。片方を隠すと難度が上がります。"
+        },
+        "stones": {
+          "title": "石で表示",
+          "text": "駒を石に変えて種類を隠します。位置は分かりますが、何の駒かは見えません。"
+        },
+        "pieceColor": {
+          "title": "駒の色",
+          "text": "すべて同じ色にして、敵味方を区別しにくくします。"
+        },
+        "pawnHide": {
+          "title": "ポーンを非表示",
+          "text": "ポーンだけを隠す部分ブラインドです。両方／自分／相手から選べます。"
+        },
+        "preview": {
+          "title": "プレビュー",
+          "text": "ここで設定の効き方をすぐ確認できます。トグルを変えて見え方を試しましょう。"
+        }
+      },
       "preview": {
         "title": "プレビュー",
         "whiteView": "白の視点",
@@ -1955,6 +1989,7 @@
         "labelShowOpponentPieces": "相手の駒を表示",
         "labelPieceShape": "駒の形状",
         "labelPieceColor": "駒の色",
+        "labelPawnHide": "ポーンの非表示",
         "labelMoveInputMode": "手入力方式",
         "labelAiReplyDuration": "AIの手の表示時間"
       },
@@ -2013,7 +2048,8 @@
         "legendIllegal": "イリーガル",
         "legendTakeback": "待った",
         "legendHint": "ヒント",
-        "moveCell": "{number}手目"
+        "moveCell": "{number}手目",
+        "illegalTried": "試した手: {moves}"
       },
       "viewDetails": "対局の詳細",
       "statsGate": {
@@ -2153,8 +2189,10 @@
       "own": "自分の駒",
       "opponent": "相手の駒",
       "hidden": "非表示",
+      "pawnsHidden": "ポーン非表示",
       "reproduceView": "プレイ時の見え方"
     },
+    "openPosition": "この局面を開く",
     "statsGate": {
       "title": "会員限定機能です",
       "description": "無料ユーザー登録で、この対局の統計や手ごとの内訳を見られます。"

@@ -80,6 +80,7 @@ function mergePerGamePreferences(
     showOpponentPieces: perGame.showOpponentPieces,
     pieceShapeMode: perGame.pieceShapeMode,
     pieceColors: perGame.pieceColors,
+    pawnHideMode: perGame.pawnHideMode ?? global.pawnHideMode,
     moveInputMode: perGame.moveInputMode ?? global.moveInputMode,
   };
 }

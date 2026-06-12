@@ -263,6 +263,7 @@ export function InlineBoardView({
               showPieceDestinations={preferences.showPieceDestinations}
               pieceShapeMode={preferences.pieceShapeMode}
               pieceColors={preferences.pieceColors}
+              pawnHideMode={preferences.pawnHideMode}
               boardTheme={preferences.boardTheme}
               rounded={false}
               // A masked board is non-interactive: the overlay sits on top and

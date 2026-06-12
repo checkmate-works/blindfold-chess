@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 
 import { ChessBoard, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -33,6 +33,13 @@ type Props = {
   onNavigateToEnd?: () => void;
   onNavigateToPosition?: (position: number) => void;
   onFlipBoard?: () => void;
+  /**
+   * Optional CTA rendered in a footer bar below the navigation controls. Used by
+   * the shared replay to offer a "open this position in the full view (with
+   * comments)" link out of the quick-peek modal; the result page omits it (its
+   * modal is the terminal detail — there is no richer per-position screen).
+   */
+  footer?: ReactNode;
 };
 
 export function BoardViewModal({
@@ -53,6 +60,7 @@ export function BoardViewModal({
   onNavigateToEnd,
   onNavigateToPosition,
   onFlipBoard,
+  footer,
 }: Props) {
   const t = useTranslations('play');
   useScrollLock(isOpen);
@@ -108,6 +116,7 @@ export function BoardViewModal({
             showOpponentPieces={preferences.showOpponentPieces}
             pieceShapeMode={preferences.pieceShapeMode}
             pieceColors={preferences.pieceColors}
+            pawnHideMode={preferences.pawnHideMode}
             boardTheme={preferences.boardTheme}
             rounded={false}
             evaluationMark={evaluationMark}
@@ -146,6 +155,18 @@ export function BoardViewModal({
                   className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                 />
               )}
+            </div>
+          )}
+
+          {/* Optional CTA bar (e.g. shared replay's "open this position" link).
+              Stop propagation so a tap here doesn't fall through to the backdrop
+              close handler. */}
+          {footer && (
+            <div
+              className="bg-card border-t border-border px-3 py-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {footer}
             </div>
           )}
         </div>

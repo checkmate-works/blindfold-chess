@@ -348,6 +348,80 @@ describe('useMoveOperationTracker', () => {
     });
   });
 
+  it('captures the rejected move texts passed to recordInvalid, in order', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.recordInvalid('Nf3');
+      result.current.recordInvalid('Bb4');
+      result.current.commitMove('text');
+    });
+
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'text',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+      invalidCount: 2,
+      invalidAttempts: ['Nf3', 'Bb4'],
+    });
+  });
+
+  it('counts text-less attempts (board mis-grabs) but records no text for them', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.recordInvalid(); // board mis-grab → count only
+      result.current.recordInvalid('Qd5'); // typed → count + text
+      result.current.commitMove('text');
+    });
+
+    // count covers both paths; attempts holds only the captured text.
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'text',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+      invalidCount: 2,
+      invalidAttempts: ['Qd5'],
+    });
+  });
+
+  it('discards captured attempts on undo', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.commitMove('text');
+      result.current.recordInvalid('Nf3');
+      result.current.handleUndoLog();
+      result.current.commitMove('button');
+    });
+
+    expect(result.current.logs).toHaveLength(1);
+    // No invalidAttempts on the fresh entry (toEqual ignores the undefined key).
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'button',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+      invalidCount: 0,
+    });
+    expect(result.current.logs[0].invalidAttempts).toBeUndefined();
+  });
+
+  it('caps captured attempt texts at 20 while the count keeps climbing', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      for (let i = 0; i < 25; i++) result.current.recordInvalid(`m${i}`);
+      result.current.commitMove('text');
+    });
+
+    expect(result.current.logs[0].invalidCount).toBe(25);
+    expect(result.current.logs[0].invalidAttempts).toHaveLength(20);
+    expect(result.current.logs[0].invalidAttempts?.[0]).toBe('m0');
+  });
+
   describe('truncateLogs', () => {
     it('should truncate logs to the specified count', () => {
       const { result } = renderHook(() => useMoveOperationTracker());
