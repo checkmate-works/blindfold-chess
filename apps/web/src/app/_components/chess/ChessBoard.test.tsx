@@ -834,3 +834,46 @@ describe('ChessBoard preview selection (non-interactive)', () => {
     expect(countHighlights(container, 'move-dest')).toBe(0);
   });
 });
+
+describe('ChessBoard — pawn hiding (pawnHideMode)', () => {
+  // Asymmetric position so own (white) vs opponent (black) hides distinguish:
+  // 3 white pawns (a2,b2,c2) + 5 black pawns (d7..h7) + 2 kings = 10 piece svgs.
+  // Pieces render as <svg> (normal display); coordinates/highlights are not svg,
+  // so counting svgs counts visible pieces.
+  const PAWN_FEN = '4k3/3ppppp/8/8/8/8/PPP5/4K3 w - - 0 1';
+  const countPieces = (c: HTMLElement) => c.querySelectorAll('svg').length;
+
+  it('shows every pawn by default', () => {
+    const { container } = render(<ChessBoard fen={PAWN_FEN} playerSide="white" />);
+    expect(countPieces(container)).toBe(10);
+  });
+
+  it("hides both sides' pawns with 'all' (kings remain)", () => {
+    const { container } = render(
+      <ChessBoard fen={PAWN_FEN} playerSide="white" pawnHideMode="all" />
+    );
+    expect(countPieces(container)).toBe(2);
+  });
+
+  it("hides only own pawns with 'own' (3 white pawns gone)", () => {
+    const { container } = render(
+      <ChessBoard fen={PAWN_FEN} playerSide="white" pawnHideMode="own" />
+    );
+    expect(countPieces(container)).toBe(7);
+  });
+
+  it("hides only opponent pawns with 'opponent' (5 black pawns gone)", () => {
+    const { container } = render(
+      <ChessBoard fen={PAWN_FEN} playerSide="white" pawnHideMode="opponent" />
+    );
+    expect(countPieces(container)).toBe(5);
+  });
+
+  it("'own' is relative to playerSide — black perspective hides the black pawns", () => {
+    const { container } = render(
+      <ChessBoard fen={PAWN_FEN} playerSide="black" pawnHideMode="own" />
+    );
+    // Own = black (5 pawns) → 10 - 5 = 5 remain.
+    expect(countPieces(container)).toBe(5);
+  });
+});

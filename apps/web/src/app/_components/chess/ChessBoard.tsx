@@ -54,6 +54,15 @@ type Props = {
   showPieceDestinations?: boolean;
   pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors?: 'normal' | 'white-only' | 'black-only';
+  /**
+   * Partial blindfold: which pawns are hidden entirely (rendered as empty
+   * squares). `'none'` (default) shows every pawn; `'all'` hides both sides';
+   * `'own'` / `'opponent'` hide only that side's pawns. Orthogonal to
+   * `showOwnPieces` / `showOpponentPieces` (which hide whole sides) and to the
+   * shape / color obfuscation — a hidden side already hides its pawns, so this
+   * only bites on a side that is otherwise shown.
+   */
+  pawnHideMode?: 'none' | 'all' | 'own' | 'opponent';
   boardTheme?: BoardTheme;
   rounded?: boolean;
   evaluationMark?: EvaluationMark | null;
@@ -154,6 +163,7 @@ export const ChessBoard = memo(function ChessBoard({
   showPieceDestinations = true,
   pieceShapeMode = 'normal',
   pieceColors = 'normal',
+  pawnHideMode = 'none',
   boardTheme = DEFAULT_BOARD_THEME,
   rounded = true,
   evaluationMark = null,
@@ -182,6 +192,7 @@ export const ChessBoard = memo(function ChessBoard({
   const obfuscated =
     pieceShapeMode !== 'normal' ||
     pieceColors !== 'normal' ||
+    pawnHideMode !== 'none' ||
     !showOwnPieces ||
     !showOpponentPieces;
 
@@ -191,7 +202,8 @@ export const ChessBoard = memo(function ChessBoard({
   // (stones) or pieces are hidden (a capture ring would expose a hidden
   // opponent). Single-color recolouring keeps every shape intact, so
   // destinations are safe to show there — hence `pieceColors` is excluded.
-  const destinationsObscured = pieceShapeMode !== 'normal' || !showOwnPieces || !showOpponentPieces;
+  const destinationsObscured =
+    pieceShapeMode !== 'normal' || pawnHideMode !== 'none' || !showOwnPieces || !showOpponentPieces;
 
   const board = useMemo(() => {
     try {
@@ -321,6 +333,17 @@ export const ChessBoard = memo(function ChessBoard({
       if (isOwnPiece && !showOwnPieces) return null;
       if (!isOwnPiece && !showOpponentPieces) return null;
 
+      // Partial blindfold: hide pawns of the configured side(s) entirely. Runs
+      // after the whole-side visibility gate (a hidden side is already gone) and
+      // before the shape/color transforms (a hidden pawn renders nothing at all).
+      if (piece.type === 'p') {
+        const hidePawn =
+          pawnHideMode === 'all' ||
+          (pawnHideMode === 'own' && isOwnPiece) ||
+          (pawnHideMode === 'opponent' && !isOwnPiece);
+        if (hidePawn) return null;
+      }
+
       // Determine if piece should be shown as circle
       const shouldShowAsCircle =
         pieceShapeMode === 'circles-all' ||
@@ -393,6 +416,7 @@ export const ChessBoard = memo(function ChessBoard({
       showOpponentPieces,
       pieceShapeMode,
       pieceColors,
+      pawnHideMode,
       dragFrom,
     ]
   );

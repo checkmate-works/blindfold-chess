@@ -108,6 +108,7 @@ export function BoardViewModal({
             showOpponentPieces={preferences.showOpponentPieces}
             pieceShapeMode={preferences.pieceShapeMode}
             pieceColors={preferences.pieceColors}
+            pawnHideMode={preferences.pawnHideMode}
             boardTheme={preferences.boardTheme}
             rounded={false}
             evaluationMark={evaluationMark}
