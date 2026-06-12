@@ -5,6 +5,7 @@ import {
   normalizePlaySettingsLog,
   playSettingsAreNotable,
   playSettingsAtHalfMove,
+  resolvePlaySettingsChanges,
 } from './play-settings-log';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from './saved-game-types';
 
@@ -97,5 +98,47 @@ describe('playSettingsAreNotable / gameUsedNotablePlaySettings', () => {
         { atMoveIndex: 4, key: 'boardVisibility', to: 'never' },
       ])
     ).toBe(true);
+  });
+});
+
+describe('resolvePlaySettingsChanges', () => {
+  it('returns [] for an empty / nullish log', () => {
+    expect(resolvePlaySettingsChanges(DEFAULT_SETTINGS, [])).toEqual([]);
+    expect(resolvePlaySettingsChanges(DEFAULT_SETTINGS, null)).toEqual([]);
+    expect(resolvePlaySettingsChanges(DEFAULT_SETTINGS, undefined)).toEqual([]);
+  });
+
+  it('reconstructs each `from` from the snapshot, then from the running state', () => {
+    const initial: GamePlaySettings = { ...DEFAULT_SETTINGS, boardVisibility: 'peek' };
+    const log: PlaySettingsChangeEntry[] = [
+      { atMoveIndex: 10, key: 'boardVisibility', to: 'always' },
+      { atMoveIndex: 20, key: 'boardVisibility', to: 'never' },
+      { atMoveIndex: 30, key: 'pawnHideMode', to: 'own' },
+    ];
+    expect(resolvePlaySettingsChanges(initial, log)).toEqual([
+      // first board change reads `from` from the snapshot...
+      { atMoveIndex: 10, key: 'boardVisibility', from: 'peek', to: 'always' },
+      // ...the second reads it from the running state set by the first.
+      { atMoveIndex: 20, key: 'boardVisibility', from: 'always', to: 'never' },
+      // pawn-hide `from` comes from the (unchanged) snapshot value.
+      { atMoveIndex: 30, key: 'pawnHideMode', from: 'none', to: 'own' },
+    ]);
+  });
+
+  it('skips a redundant write whose `to` equals the current effective value', () => {
+    const log: PlaySettingsChangeEntry[] = [
+      // DEFAULT_SETTINGS.pawnHideMode is already 'none' → no-op, dropped.
+      { atMoveIndex: 5, key: 'pawnHideMode', to: 'none' },
+      { atMoveIndex: 8, key: 'pawnHideMode', to: 'all' },
+    ];
+    expect(resolvePlaySettingsChanges(DEFAULT_SETTINGS, log)).toEqual([
+      { atMoveIndex: 8, key: 'pawnHideMode', from: 'none', to: 'all' },
+    ]);
+  });
+
+  it('does not mutate the initial snapshot', () => {
+    const initial: GamePlaySettings = { ...DEFAULT_SETTINGS };
+    resolvePlaySettingsChanges(initial, [{ atMoveIndex: 3, key: 'pawnHideMode', to: 'opponent' }]);
+    expect(initial.pawnHideMode).toBe('none');
   });
 });

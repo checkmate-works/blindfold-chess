@@ -1,5 +1,9 @@
 import { isBoardVisibility } from './board-visibility';
-import type { GamePlaySettings, PlaySettingsChangeEntry } from './saved-game-types';
+import type {
+  GamePlaySettings,
+  PlaySettingsChangeEntry,
+  PreferenceChangeLogEntry,
+} from './saved-game-types';
 
 /**
  * Per-position blindfold settings for a published game: the start-of-game
@@ -127,6 +131,61 @@ export function playSettingsAtHalfMove(
     }
   }
   return result;
+}
+
+/**
+ * Reconstruct full `from → to` transitions from a start-of-game snapshot plus
+ * the to-only change log. The persisted log records only each change's resulting
+ * value (`to`); the `from` is the key's effective value immediately before that
+ * change, recovered by folding the log in order. This lets the result page and
+ * the shared replay render the identical "Label: from → to" change log from the
+ * same (snapshot + to-only log) inputs — neither needs the original
+ * `from`-bearing `preferenceChangeLog`, which only the live play surface holds.
+ *
+ * Entries are returned in log order as the matching {@link PreferenceChangeLogEntry}
+ * display variants, so the shared `useChangeLogFormat` formatter consumes them
+ * directly. A redundant write whose `to` equals the current effective value is
+ * skipped (it changed nothing). Pure: `initial` is not mutated.
+ */
+export function resolvePlaySettingsChanges(
+  initial: GamePlaySettings,
+  log: readonly PlaySettingsChangeEntry[] | null | undefined
+): PreferenceChangeLogEntry[] {
+  if (!log || log.length === 0) return [];
+  const state: GamePlaySettings = { ...initial };
+  const out: PreferenceChangeLogEntry[] = [];
+  for (const entry of log) {
+    const from = state[entry.key];
+    if (from === entry.to) continue;
+    // `from` and `entry.to` share the key's value type by construction, so the
+    // assembled object is a valid PreferenceChangeLogEntry for that key.
+    out.push({
+      atMoveIndex: entry.atMoveIndex,
+      key: entry.key,
+      from,
+      to: entry.to,
+    } as PreferenceChangeLogEntry);
+    // Advance the running state. The switch keeps each key's value type aligned.
+    switch (entry.key) {
+      case 'showOwnPieces':
+      case 'showOpponentPieces':
+        state[entry.key] = entry.to;
+        break;
+      case 'boardVisibility':
+        state.boardVisibility = entry.to;
+        break;
+      case 'pieceShapeMode':
+        state.pieceShapeMode = entry.to;
+        break;
+      case 'pieceColors':
+        state.pieceColors = entry.to;
+        break;
+      case 'pawnHideMode':
+        state.pawnHideMode = entry.to;
+        break;
+    }
+  }
+  return out;
 }
 
 /**

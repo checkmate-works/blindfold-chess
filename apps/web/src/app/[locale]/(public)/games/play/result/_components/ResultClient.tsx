@@ -383,7 +383,6 @@ function ResultContent({
               opening={opening}
               locale={locale}
               playSettingsLog={playSettingsLog}
-              preferenceChangeLog={game.preferenceChangeLog}
               headingAsSection
             />
           ) : (

@@ -1,24 +1,24 @@
 /**
  * Tests for the result-page change log's per-change-point from→to text.
  *
- * The icon snapshot (PlaySettingsIndicator) shows the *resulting* state at each
- * change point and so cannot convey direction — e.g. a "Pawns hidden" chip tells
- * you pawns are hidden from that move, but not whether the edit turned the mode
- * ON or OFF. The from→to text resolves that. It is result-page only: published
- * games persist just the `to` subset, so the shared page passes no
- * `preferenceChangeLog` and shows icons alone.
+ * The change log lists only what actually changed at each move, as an explicit
+ * "Label: from → to" transition. The `from` is reconstructed by folding the
+ * to-only `playSettingsLog` over the start-of-game `playSettings` snapshot
+ * (see `resolvePlaySettingsChanges`), so the result page and the shared replay
+ * render the identical change log from the same inputs — no `from`-bearing log
+ * is needed. A setting that did not change at a given move never appears on that
+ * row (the earlier folded-state icons showed an always-on board-visibility chip
+ * that read as "changed" when it was not).
  *
- * Translations resolve through the safe-translations fallback (mocked to echo
- * the key path), so assertions key off the stable `pawnHideModes.*` value paths.
+ * Translations resolve through the mocked safe-translations fallback (echoes the
+ * key), so assertions key off the stable value paths (`boardVisibilities.*`,
+ * `pawnHideModes.*`).
  */
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { GameStats } from '@/lib/games/compute-game-stats';
-import type {
-  PlaySettingsChangeEntry,
-  PreferenceChangeLogEntry,
-} from '@/lib/games/saved-game-types';
+import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
 import { GameStatsOverview } from './GameStatsOverview';
 
@@ -44,72 +44,65 @@ const STATS: GameStats = {
   perMove: ['clean'],
 };
 
-const PLAY_SETTINGS = {
+const baseSettings = (over: Partial<GamePlaySettings> = {}): GamePlaySettings => ({
   boardVisibility: 'always',
   showOwnPieces: true,
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   pawnHideMode: 'none',
-} as const;
-
-// At move 5 the player enabled pawn-hide (none → own); at move 12 they turned it
-// back off (own → none). The display subset (to-only) drives the icon snapshot /
-// change-point list; the full log carries the `from` for the text.
-const PLAY_SETTINGS_LOG: PlaySettingsChangeEntry[] = [
-  { atMoveIndex: 5, key: 'pawnHideMode', to: 'own' },
-  { atMoveIndex: 12, key: 'pawnHideMode', to: 'none' },
-];
-const FULL_LOG: PreferenceChangeLogEntry[] = [
-  { atMoveIndex: 5, key: 'pawnHideMode', from: 'none', to: 'own' },
-  { atMoveIndex: 12, key: 'pawnHideMode', from: 'own', to: 'none' },
-];
+  ...over,
+});
 
 afterEach(() => cleanup());
 
-describe('GameStatsOverview change log — pawn-hide direction', () => {
-  it('renders an explicit from→to per change point when the full log is provided', () => {
+describe('GameStatsOverview change log', () => {
+  it('reconstructs from→to for each changed key from the snapshot + to-only log', () => {
+    // Start: board peekable, own pawns hidden. Board flips to always-visible at
+    // move 10; pawn-hide turned off at move 40. The `from` of each must come from
+    // the folded state, not be left blank.
+    const log: PlaySettingsChangeEntry[] = [
+      { atMoveIndex: 10, key: 'boardVisibility', to: 'always' },
+      { atMoveIndex: 40, key: 'pawnHideMode', to: 'none' },
+    ];
     const { container } = render(
       <GameStatsOverview
         stats={STATS}
         playerMoveIndices={[0]}
         moves={['e4']}
         onSelectMove={vi.fn()}
-        playSettings={PLAY_SETTINGS}
+        playSettings={baseSettings({ boardVisibility: 'peek', pawnHideMode: 'own' })}
         playerColor="white"
-        playSettingsLog={PLAY_SETTINGS_LOG}
-        preferenceChangeLog={FULL_LOG}
+        playSettingsLog={log}
         showInitialSettings={false}
       />
     );
     const text = container.textContent ?? '';
-    // Enable reads none → own; disable reads own → none — the two are now
-    // unambiguous, which the icon snapshot alone could not express.
-    expect(text).toContain('pawnHideModes.none → pawnHideModes.own');
+    expect(text).toContain('boardVisibilities.peek → boardVisibilities.always');
     expect(text).toContain('pawnHideModes.own → pawnHideModes.none');
-    // No folded-state snapshot on the result page: the always-on board
-    // visibility chip ('visibility.*') would read as "changed" even on a move
-    // that only touched pawns, so it is dropped in favour of the deltas.
+    // No folded-state snapshot icons in the change log (their always-on board
+    // visibility chip used the `sharedGames.playSettings.visibility.*` keys).
     expect(text).not.toContain('visibility.');
   });
 
-  it('omits the from→to text when no full log is passed (shared-page case)', () => {
+  it('shows only the setting that changed at a move — not unrelated state', () => {
+    // Only pawn-hide changes at move 40; board visibility is untouched, so the
+    // row must NOT mention board visibility at all (the user-reported bug).
+    const log: PlaySettingsChangeEntry[] = [{ atMoveIndex: 40, key: 'pawnHideMode', to: 'own' }];
     const { container } = render(
       <GameStatsOverview
         stats={STATS}
         playerMoveIndices={[0]}
         moves={['e4']}
         onSelectMove={vi.fn()}
-        playSettings={PLAY_SETTINGS}
+        playSettings={baseSettings()}
         playerColor="white"
-        playSettingsLog={PLAY_SETTINGS_LOG}
+        playSettingsLog={log}
         showInitialSettings={false}
       />
     );
-    // No `from` available → no arrow text; the icon snapshot still renders
-    // (the folded board-visibility chip is present).
     const text = container.textContent ?? '';
-    expect(text).not.toContain('→');
-    expect(text).toContain('visibility.');
+    expect(text).toContain('pawnHideModes.none → pawnHideModes.own');
+    expect(text).not.toContain('boardVisibilities');
   });
 });

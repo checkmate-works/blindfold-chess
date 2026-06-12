@@ -8,12 +8,8 @@ import { FaClipboardList } from 'react-icons/fa';
 import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
 import type { GameStats, MoveMarker } from '@/lib/games/compute-game-stats';
-import { playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
-import type {
-  GamePlaySettings,
-  PlaySettingsChangeEntry,
-  PreferenceChangeLogEntry,
-} from '@/lib/games/saved-game-types';
+import { resolvePlaySettingsChanges } from '@/lib/games/play-settings-log';
+import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { useChangeLogFormat } from '@/app/[locale]/(public)/games/play/_hooks/use-change-log-format';
@@ -64,22 +60,15 @@ type Props = {
   /** Locale for the opening link. Required to render the {@link opening} row. */
   locale?: Locale;
   /**
-   * Mid-game blindfold-setting changes (display subset). When non-empty, a
-   * "change log" renders under the By Move strip: one icon row per change
-   * point showing how the setup looked from that move onward (folded snapshot),
-   * using the same {@link PlaySettingsIndicator} icons as the initial settings.
-   * Empty / undefined for the common case (no mid-game edits) — nothing shown.
+   * Mid-game blindfold-setting changes (display subset, `to`-only). When
+   * non-empty, a change log renders under the By Move strip: one row per change
+   * point listing the exact "Label: from → to" transition(s) for the settings
+   * edited at that move. The `from` of each transition is reconstructed by
+   * folding this log over {@link playSettings} (see `resolvePlaySettingsChanges`),
+   * so the result page and the shared replay render an identical change log from
+   * the same inputs. Empty / undefined for the common case (no mid-game edits).
    */
   playSettingsLog?: PlaySettingsChangeEntry[];
-  /**
-   * Full mid-game preference change log (with `from` values), used to annotate
-   * each change-point row with the exact "Label: from → to" transition so the
-   * direction of each edit is unambiguous (the icon snapshot alone only shows
-   * the resulting state). Result-page only — published games persist just the
-   * `to` subset, so the shared detail page leaves this undefined and shows the
-   * icon snapshot alone.
-   */
-  preferenceChangeLog?: PreferenceChangeLogEntry[];
   /**
    * Render the heading as a page-level {@link SectionTitle} (underlined h2)
    * instead of the compact inline label. The result page uses this so Game
@@ -107,25 +96,6 @@ const MARKER_CLASS: Record<MoveMarker, string> = {
 };
 
 /**
- * Change-log keys whose from→to text is surfaced under each change-point row.
- * Scoped to the display-relevant blindfold settings so the text mirrors what the
- * icon snapshot above it shows (input-mode / aiReplyDuration edits stay in the
- * fuller Game Details modal). The icon snapshot is a *resulting state* and so
- * cannot convey direction (was a setting turned on or off?); the from→to text
- * resolves that — it's only available on the result page, where the full
- * `preferenceChangeLog` (with `from`) is in localStorage. Published games persist
- * only the `to` subset, so the shared page omits this prop and shows icons alone.
- */
-const DISPLAY_CHANGE_KEYS = new Set<PreferenceChangeLogEntry['key']>([
-  'boardVisibility',
-  'showOwnPieces',
-  'showOpponentPieces',
-  'pieceShapeMode',
-  'pieceColors',
-  'pawnHideMode',
-]);
-
-/**
  * Result-page overview of how the (finished) game was played — derived
  * entirely from the persisted per-move operation logs. A per-move "effort
  * strip" shows where peeks / mistakes clustered and links back into the
@@ -137,9 +107,9 @@ const DISPLAY_CHANGE_KEYS = new Set<PreferenceChangeLogEntry['key']>([
  * and initial-settings summary (compact engine badge + icon-based
  * {@link PlaySettingsIndicator}) via the optional `engineConfig` / `playSettings`
  * props, and — when the player changed a blindfold setting mid-game — a
- * `playSettingsLog`-driven change log under the By Move strip that shows each
- * change point as the same settings icons. The shared game detail page omits
- * those and keeps its own modal.
+ * `playSettingsLog`-driven change log under the By Move strip listing each
+ * edit as a "Label: from → to" transition. Both the result page and the shared
+ * detail page render it from the same (snapshot + to-only log) inputs.
  */
 export function GameStatsOverview({
   stats,
@@ -153,7 +123,6 @@ export function GameStatsOverview({
   opening,
   locale,
   playSettingsLog,
-  preferenceChangeLog,
   headingAsSection = false,
   showInitialSettings = true,
 }: Props) {
@@ -163,13 +132,14 @@ export function GameStatsOverview({
   // shared with the Game Details modal so the wording stays in lockstep.
   const { settingLabel, settingValue } = useChangeLogFormat();
 
-  // Distinct change points (a single move may carry several simultaneous edits;
-  // collapse them into one snapshot row per move). Set preserves insertion
+  // Reconstruct the full from→to transitions from the start-of-game snapshot
+  // plus the to-only log (works on the result page and the shared replay alike),
+  // then group them by move into change-point rows. Set preserves insertion
   // order, and the log is already in move order.
-  const changePoints =
-    playSettings && playSettingsLog && playSettingsLog.length > 0
-      ? [...new Set(playSettingsLog.map((e) => e.atMoveIndex))]
-      : [];
+  const resolvedChanges = playSettings
+    ? resolvePlaySettingsChanges(playSettings, playSettingsLog)
+    : [];
+  const changePoints = [...new Set(resolvedChanges.map((e) => e.atMoveIndex))];
 
   // Compact engine label: "Maia 1600 ELO" / "Stockfish Level 5". The logo
   // carries the engine identity; the name + difficulty sit beside it on one line.
@@ -304,25 +274,21 @@ export function GameStatsOverview({
       )}
 
       {/* Change log — only when the player edited a blindfold setting mid-game
-          (rare). One row per change point, move-number badge plus what changed:
-          on the result page (full log with `from`) the exact "Label: from → to"
-          transition(s) for the keys that changed at that move; on the shared
-          page (only the `to` subset persisted) the folded state-snapshot icons
-          instead. Placed under the By Move strip so the timeline reads
-          top-to-bottom: where effort clustered, then where the setup changed. */}
-      {playSettings && playerColor && changePoints.length > 0 && (
+          (rare). One row per change point: a move-number badge plus the exact
+          "Label: from → to" transition(s) for the settings edited at that move
+          (only what actually changed, so an unrelated setting never reads as
+          "changed"). Identical on the result page and the shared replay — both
+          fold the to-only log over the snapshot to recover each `from`. Placed
+          under the By Move strip so the timeline reads top-to-bottom: where
+          effort clustered, then where the setup changed. */}
+      {resolvedChanges.length > 0 && (
         <div className="space-y-2">
           <span className="text-xs font-medium text-muted-foreground">
             {t('operationLog.changeLog.title')}
           </span>
           <ul className="space-y-1.5">
             {changePoints.map((atMoveIndex) => {
-              // The exact edits made at this move (display-relevant only), each
-              // shown as "Label: from → to" so the direction is explicit. Empty
-              // on the shared page (no full log passed) → icon snapshot alone.
-              const deltas = (preferenceChangeLog ?? []).filter(
-                (e) => e.atMoveIndex === atMoveIndex && DISPLAY_CHANGE_KEYS.has(e.key)
-              );
+              const entries = resolvedChanges.filter((e) => e.atMoveIndex === atMoveIndex);
               return (
                 <li key={atMoveIndex} className="flex items-start gap-2">
                   <span
@@ -331,30 +297,15 @@ export function GameStatsOverview({
                   >
                     {atMoveIndex}
                   </span>
-                  {deltas.length > 0 ? (
-                    // Result page: the full log carries `from`, so show only the
-                    // exact transition(s) for the keys that actually changed at
-                    // this move. No folded-state icons — the always-on board
-                    // visibility chip read as "changed" even when it was not.
-                    <ul className="flex flex-col gap-0.5 pt-0.5">
-                      {deltas.map((e, i) => (
-                        <li key={i} className="text-xs text-muted-foreground">
-                          <span className="text-foreground">{settingLabel(e.key)}</span>
-                          {': '}
-                          {settingValue(e, 'from')} → {settingValue(e, 'to')}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    // Shared page: only the `to` subset is persisted (no `from`),
-                    // so a transition cannot be shown — fall back to the folded
-                    // state snapshot icons (how the setup looked from here on).
-                    <PlaySettingsIndicator
-                      settings={playSettingsAtHalfMove(playSettings, playSettingsLog, atMoveIndex)}
-                      playerColor={playerColor}
-                      label={null}
-                    />
-                  )}
+                  <ul className="flex flex-col gap-0.5 pt-0.5">
+                    {entries.map((e, i) => (
+                      <li key={i} className="text-xs text-muted-foreground">
+                        <span className="text-foreground">{settingLabel(e.key)}</span>
+                        {': '}
+                        {settingValue(e, 'from')} → {settingValue(e, 'to')}
+                      </li>
+                    ))}
+                  </ul>
                 </li>
               );
             })}
