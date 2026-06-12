@@ -9,9 +9,14 @@ import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
 import type { GameStats, MoveMarker } from '@/lib/games/compute-game-stats';
 import { playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
-import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
+import type {
+  GamePlaySettings,
+  PlaySettingsChangeEntry,
+  PreferenceChangeLogEntry,
+} from '@/lib/games/saved-game-types';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
+import { useChangeLogFormat } from '@/app/[locale]/(public)/games/play/_hooks/use-change-log-format';
 import { PlaySettingsIndicator } from '@/app/[locale]/(public)/games/shared/[id]/_components/PlaySettingsIndicator';
 import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
@@ -67,6 +72,15 @@ type Props = {
    */
   playSettingsLog?: PlaySettingsChangeEntry[];
   /**
+   * Full mid-game preference change log (with `from` values), used to annotate
+   * each change-point row with the exact "Label: from → to" transition so the
+   * direction of each edit is unambiguous (the icon snapshot alone only shows
+   * the resulting state). Result-page only — published games persist just the
+   * `to` subset, so the shared detail page leaves this undefined and shows the
+   * icon snapshot alone.
+   */
+  preferenceChangeLog?: PreferenceChangeLogEntry[];
+  /**
    * Render the heading as a page-level {@link SectionTitle} (underlined h2)
    * instead of the compact inline label. The result page uses this so Game
    * Stats reads as a top-level section; the shared game detail page keeps the
@@ -91,6 +105,25 @@ const MARKER_CLASS: Record<MoveMarker, string> = {
   takeback: 'bg-warning/70',
   hint: 'bg-violet-400/60',
 };
+
+/**
+ * Change-log keys whose from→to text is surfaced under each change-point row.
+ * Scoped to the display-relevant blindfold settings so the text mirrors what the
+ * icon snapshot above it shows (input-mode / aiReplyDuration edits stay in the
+ * fuller Game Details modal). The icon snapshot is a *resulting state* and so
+ * cannot convey direction (was a setting turned on or off?); the from→to text
+ * resolves that — it's only available on the result page, where the full
+ * `preferenceChangeLog` (with `from`) is in localStorage. Published games persist
+ * only the `to` subset, so the shared page omits this prop and shows icons alone.
+ */
+const DISPLAY_CHANGE_KEYS = new Set<PreferenceChangeLogEntry['key']>([
+  'boardVisibility',
+  'showOwnPieces',
+  'showOpponentPieces',
+  'pieceShapeMode',
+  'pieceColors',
+  'pawnHideMode',
+]);
 
 /**
  * Result-page overview of how the (finished) game was played — derived
@@ -120,11 +153,15 @@ export function GameStatsOverview({
   opening,
   locale,
   playSettingsLog,
+  preferenceChangeLog,
   headingAsSection = false,
   showInitialSettings = true,
 }: Props) {
   const t = useTranslations('play');
   const openingNameT = useTranslations('topics.openings.names');
+  // Localised "Label: from → to" formatting for the per-change-point delta text,
+  // shared with the Game Details modal so the wording stays in lockstep.
+  const { settingLabel, settingValue } = useChangeLogFormat();
 
   // Distinct change points (a single move may carry several simultaneous edits;
   // collapse them into one snapshot row per move). Set preserves insertion
@@ -278,21 +315,42 @@ export function GameStatsOverview({
             {t('operationLog.changeLog.title')}
           </span>
           <ul className="space-y-1.5">
-            {changePoints.map((atMoveIndex) => (
-              <li key={atMoveIndex} className="flex items-center gap-2">
-                <span
-                  className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-muted px-1 text-[0.65rem] tabular-nums text-muted-foreground"
-                  title={t('operationLog.changeLog.columnAtMove')}
-                >
-                  {atMoveIndex}
-                </span>
-                <PlaySettingsIndicator
-                  settings={playSettingsAtHalfMove(playSettings, playSettingsLog, atMoveIndex)}
-                  playerColor={playerColor}
-                  label={null}
-                />
-              </li>
-            ))}
+            {changePoints.map((atMoveIndex) => {
+              // The exact edits made at this move (display-relevant only), each
+              // shown as "Label: from → to" so the direction is explicit. Empty
+              // on the shared page (no full log passed) → icon snapshot alone.
+              const deltas = (preferenceChangeLog ?? []).filter(
+                (e) => e.atMoveIndex === atMoveIndex && DISPLAY_CHANGE_KEYS.has(e.key)
+              );
+              return (
+                <li key={atMoveIndex} className="flex items-start gap-2">
+                  <span
+                    className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-muted px-1 text-[0.65rem] tabular-nums text-muted-foreground"
+                    title={t('operationLog.changeLog.columnAtMove')}
+                  >
+                    {atMoveIndex}
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    <PlaySettingsIndicator
+                      settings={playSettingsAtHalfMove(playSettings, playSettingsLog, atMoveIndex)}
+                      playerColor={playerColor}
+                      label={null}
+                    />
+                    {deltas.length > 0 && (
+                      <ul className="flex flex-col gap-0.5">
+                        {deltas.map((e, i) => (
+                          <li key={i} className="text-xs text-muted-foreground">
+                            <span className="text-foreground">{settingLabel(e.key)}</span>
+                            {': '}
+                            {settingValue(e, 'from')} → {settingValue(e, 'to')}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
