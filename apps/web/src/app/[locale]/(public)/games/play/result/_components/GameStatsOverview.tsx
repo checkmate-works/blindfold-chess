@@ -221,11 +221,19 @@ export function GameStatsOverview({
             />
           )}
           {showInitialSettings && playSettings && playerColor && (
-            <PlaySettingsIndicator
-              settings={playSettings}
-              playerColor={playerColor}
-              label={t('operationLog.initialSettings.title')}
-            />
+            <div className="space-y-2">
+              {/* Standalone h3 (matching By Move / Change Log) rather than the
+                  indicator's inline label, so the three sub-sections read at the
+                  same heading level. */}
+              <h3 className="text-sm font-semibold text-foreground">
+                {t('operationLog.initialSettings.title')}
+              </h3>
+              <PlaySettingsIndicator
+                settings={playSettings}
+                playerColor={playerColor}
+                label={null}
+              />
+            </div>
           )}
         </div>
       )}
