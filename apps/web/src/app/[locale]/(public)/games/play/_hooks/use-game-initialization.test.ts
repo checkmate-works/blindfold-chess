@@ -160,6 +160,7 @@ describe('parseUrlSearchParams', () => {
         showOpponentPieces: true,
         pieceShapeMode: 'normal',
         pieceColors: 'normal',
+        pawnHideMode: 'none',
         moveInputMode: 'button',
         aiReplyDuration: 5000,
       };

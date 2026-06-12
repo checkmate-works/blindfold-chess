@@ -378,6 +378,13 @@
         "white-only": "Mostrar todas las piezas como blancas",
         "black-only": "Mostrar todas las piezas como negras"
       },
+      "hidePawns": "Ocultar peones",
+      "pawnHideModes": {
+        "none": "No",
+        "all": "Ambas",
+        "own": "Propias",
+        "opponent": "Rival"
+      },
       "preview": {
         "title": "Vista Previa",
         "whiteView": "Perspectiva de Blancas",
@@ -1951,6 +1958,7 @@
         "labelShowOpponentPieces": "Mostrar piezas del oponente",
         "labelPieceShape": "Forma de las piezas",
         "labelPieceColor": "Color de las piezas",
+        "labelPawnHide": "Ocultar peones",
         "labelMoveInputMode": "Entrada de movimiento",
         "labelAiReplyDuration": "Tiempo de visualización de la jugada de la IA"
       },
@@ -2149,6 +2157,7 @@
       "own": "Tus piezas",
       "opponent": "Piezas del rival",
       "hidden": "oculto",
+      "pawnsHidden": "Peones ocultos",
       "reproduceView": "Como se jugó"
     },
     "statsGate": {

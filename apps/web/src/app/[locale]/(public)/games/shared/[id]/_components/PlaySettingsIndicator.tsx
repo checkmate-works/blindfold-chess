@@ -57,6 +57,13 @@ export function PlaySettingsIndicator({ settings, playerColor, label }: Props) {
   // Piece appearance only matters when the board was visible at some point.
   const showPieceSample = settings.boardVisibility !== 'never' && piecesDeviate;
 
+  // Pawn-hide is surfaced as its own chip (a slashed pawn per hidden side) since
+  // it is orthogonal to the whole-side visibility / shape / color sample above.
+  const pawnHideSides = (['own', 'opponent'] as const).filter(
+    (side) => settings.pawnHideMode === 'all' || settings.pawnHideMode === side
+  );
+  const showPawnHide = settings.boardVisibility !== 'never' && pawnHideSides.length > 0;
+
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
       {label !== null && <span className="font-medium text-foreground">{label ?? t('title')}</span>}
@@ -108,6 +115,38 @@ export function PlaySettingsIndicator({ settings, playerColor, label }: Props) {
               </span>
             );
           })}
+        </span>
+      )}
+
+      {showPawnHide && (
+        <span className="inline-flex items-center gap-1.5" title={t('pawnsHidden')}>
+          {pawnHideSides.map((side) => (
+            <span
+              key={side}
+              className="relative inline-flex h-7 w-7 items-center justify-center rounded-sm border border-border bg-muted"
+              aria-label={`${side === 'own' ? t('own') : t('opponent')} (${t('hidden')})`}
+            >
+              <span className="opacity-25">
+                <ChessPieceIcon type="p" color={colorFor(side)} size={20} />
+              </span>
+              <svg
+                viewBox="0 0 24 24"
+                className="absolute inset-0 h-full w-full text-destructive/70"
+                aria-hidden
+              >
+                <line
+                  x1="4"
+                  y1="20"
+                  x2="20"
+                  y2="4"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+          ))}
+          <span>{t('pawnsHidden')}</span>
         </span>
       )}
     </div>

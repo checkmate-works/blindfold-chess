@@ -382,6 +382,13 @@
         "white-only": "Show all pieces as white",
         "black-only": "Show all pieces as black"
       },
+      "hidePawns": "Hide pawns",
+      "pawnHideModes": {
+        "none": "Off",
+        "all": "Both",
+        "own": "Own",
+        "opponent": "Opponent"
+      },
       "preview": {
         "title": "Preview",
         "whiteView": "White's Perspective",
@@ -1955,6 +1962,7 @@
         "labelShowOpponentPieces": "Show opponent pieces",
         "labelPieceShape": "Piece shape",
         "labelPieceColor": "Piece color",
+        "labelPawnHide": "Hide pawns",
         "labelMoveInputMode": "Move input",
         "labelAiReplyDuration": "AI move display time"
       },
@@ -2153,6 +2161,7 @@
       "own": "Your pieces",
       "opponent": "Opponent pieces",
       "hidden": "hidden",
+      "pawnsHidden": "Pawns hidden",
       "reproduceView": "As played"
     },
     "statsGate": {
