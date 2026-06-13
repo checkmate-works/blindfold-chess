@@ -108,29 +108,68 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'youtube_handle_invalid_format' }, { status: 400 });
   }
 
-  await db
-    .update(profiles)
-    .set({
-      displayName,
-      bio,
-      country,
-      flair,
-      fideId,
-      chesscomUsername,
-      lichessUsername,
-      xUsername,
-      instagramUsername,
-      youtubeHandle,
-      updatedAt: new Date(),
+  const nextValues = {
+    displayName,
+    bio,
+    country,
+    flair,
+    fideId,
+    chesscomUsername,
+    lichessUsername,
+    xUsername,
+    instagramUsername,
+    youtubeHandle,
+  };
+
+  // Read the current values BEFORE overwriting them. Unlike UGC tables (which
+  // soft-delete and keep history), a profile row retains no record of prior
+  // values — once overwritten, the old displayName / social handles are
+  // unrecoverable. That makes a profile edit a genuinely non-derivable event,
+  // which is exactly what the activity log exists to capture (e.g. tracing an
+  // impersonation attempt that swaps display names). We therefore log the
+  // overwritten values, not just the bare fact that an edit happened.
+  const [previous] = await db
+    .select({
+      displayName: profiles.displayName,
+      bio: profiles.bio,
+      country: profiles.country,
+      flair: profiles.flair,
+      fideId: profiles.fideId,
+      chesscomUsername: profiles.chesscomUsername,
+      lichessUsername: profiles.lichessUsername,
+      xUsername: profiles.xUsername,
+      instagramUsername: profiles.instagramUsername,
+      youtubeHandle: profiles.youtubeHandle,
     })
+    .from(profiles)
     .where(eq(profiles.id, user.id));
 
-  logActivityEvent({
-    userId: user.id,
-    action: 'update_profile',
-    targetType: 'user',
-    targetId: user.id,
-  });
+  await db
+    .update(profiles)
+    .set({ ...nextValues, updatedAt: new Date() })
+    .where(eq(profiles.id, user.id));
+
+  // Record only the fields that actually changed, each with its overwritten
+  // ("from") and new ("to") value. If nothing changed there is nothing worth
+  // logging.
+  const changes: Record<string, { from: string | null; to: string | null }> = {};
+  for (const key of Object.keys(nextValues) as (keyof typeof nextValues)[]) {
+    const from = previous?.[key] ?? null;
+    const to = nextValues[key] ?? null;
+    if (from !== to) {
+      changes[key] = { from, to };
+    }
+  }
+
+  if (Object.keys(changes).length > 0) {
+    logActivityEvent({
+      userId: user.id,
+      action: 'update_profile',
+      targetType: 'user',
+      targetId: user.id,
+      metadata: { changes },
+    });
+  }
 
   return NextResponse.json({ success: true });
 }
