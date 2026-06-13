@@ -13,7 +13,6 @@ import {
   deletePostCore,
   purgePostImageAttachmentsFromStorage,
 } from '@/lib/topic-posts/delete-core';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { buildTopicDetailPath } from '../_lib/topic-paths';
 
@@ -41,14 +40,6 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
   // tab that re-submits the action lands on a no-op write rather than
   // re-stamping `deletedAt`.
   await deletePostCore(postId, user.id, { requireNotDeleted: true });
-
-  logActivityEvent({
-    userId: user.id,
-    action: 'delete_post',
-    targetType: 'topic_post',
-    targetId: postId,
-    metadata: { topicType: post.topicType, topicKey: post.topicKey },
-  });
 
   revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
 

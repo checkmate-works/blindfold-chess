@@ -189,18 +189,14 @@ describe('createChunkPost', () => {
       mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     });
 
-    it('should log create_post activity event with topicType=chunk', async () => {
+    it('should not log an activity event (the topic_post row is the record)', async () => {
       await expect(createChunkPost('en', testSlug, {}, makeFormData('hello'))).rejects.toThrow(
         'NEXT_REDIRECT'
       );
 
-      expect(logActivityEvent).toHaveBeenCalledWith({
-        userId: testUserId,
-        action: 'create_post',
-        targetType: 'topic_post',
-        targetId: generatedPostId,
-        metadata: { topicType: 'chunk', topicKey: testSlug },
-      });
+      // A post is a pure INSERT whose row survives in topic_posts, so it is
+      // intentionally not duplicated into the activity log.
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });
 });

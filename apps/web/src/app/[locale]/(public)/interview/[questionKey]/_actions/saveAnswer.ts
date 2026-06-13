@@ -10,7 +10,6 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
 import type { InterviewQuestionKey } from '@/app/[locale]/_lib/interview';
 import { INTERVIEW_QUESTION_KEYS, QUESTION_CONFIG } from '@/app/[locale]/_lib/interview';
@@ -61,21 +60,10 @@ export async function saveAnswerAction(
   // Insert new answer — relies on partial unique index
   // (uq_user_interview_answers_active) to prevent duplicates.
   try {
-    const [inserted] = await db
-      .insert(userInterviewAnswers)
-      .values({
-        userId: user.id,
-        questionKey,
-        answerValue: answerValue.trim(),
-      })
-      .returning({ id: userInterviewAnswers.id });
-
-    logActivityEvent({
+    await db.insert(userInterviewAnswers).values({
       userId: user.id,
-      action: 'save_interview_answer',
-      targetType: 'interview_answer',
-      targetId: inserted.id,
-      metadata: { questionKey, answerValue: answerValue.trim() },
+      questionKey,
+      answerValue: answerValue.trim(),
     });
   } catch (err: unknown) {
     if (isUniqueViolation(err)) {

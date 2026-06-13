@@ -372,23 +372,15 @@ describe('attachPostFen — edit-flow side effects', () => {
     expect(revalidatePath).not.toHaveBeenCalled();
   });
 
-  it('logs an activity event + revalidates the topic path when locale is provided', async () => {
+  it('revalidates the topic path (but writes no activity-log row) when locale is provided', async () => {
     const { logActivityEvent } = await import('@/lib/users/activity-log');
     const { revalidatePath } = await import('next/cache');
 
     await attachPostFen({ postId, fen: STARTING_FEN, locale: 'en' });
 
-    expect(logActivityEvent).toHaveBeenCalledWith({
-      userId,
-      action: 'attach_post_fen',
-      targetType: 'topic_post',
-      targetId: postId,
-      metadata: {
-        topicType: 'opening',
-        topicKey: 'sicilian',
-        attachmentId: 'attach-id',
-      },
-    });
+    // The FEN attachment row survives in post_fen_attachments, so attaching is
+    // not duplicated into the activity log.
+    expect(logActivityEvent).not.toHaveBeenCalled();
     expect(revalidatePath).toHaveBeenCalledWith('/en/topics/openings/sicilian');
   });
 });

@@ -198,7 +198,7 @@ describe('deletePost', () => {
     });
   });
 
-  it('should log activity event on successful deletion', async () => {
+  it('should not log an activity event on successful deletion (soft-delete row is the record)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockSelectFromWhereLimit.mockResolvedValue([
@@ -212,13 +212,9 @@ describe('deletePost', () => {
     ]);
 
     await deletePost(testPostId, 'en');
-    expect(logActivityEvent).toHaveBeenCalledWith({
-      userId: testUserId,
-      action: 'delete_post',
-      targetType: 'topic_post',
-      targetId: testPostId,
-      metadata: { topicType: 'opening', topicKey: 'sicilian-defense' },
-    });
+    // delete_post is a soft-delete (deletedAt), so the topic_posts row survives
+    // as the durable record; it is not duplicated into the activity log.
+    expect(logActivityEvent).not.toHaveBeenCalled();
   });
 
   it('should not log activity event when deletion fails', async () => {

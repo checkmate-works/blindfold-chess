@@ -207,6 +207,11 @@ export async function updateChunkEntry(
       slug: chunks.slug,
       status: chunks.status,
       deletedAt: chunks.deletedAt,
+      // Pre-update values, captured so the activity log can preserve
+      // whatever this in-place edit overwrites (chunks keep no history).
+      title: chunks.title,
+      description: chunks.description,
+      representativeFen: chunks.representativeFen,
     })
     .from(chunks)
     .where(eq(chunks.id, id))
@@ -282,12 +287,30 @@ export async function updateChunkEntry(
 
   const finalSlug = slugChanging ? requestedSlug! : chunk.slug;
 
+  // Diff the overwritten fields (old → new) so the activity log keeps the
+  // prior values this in-place edit discarded. Compared against the same
+  // normalized values written to the row (`buildChunkUpdateValues`).
+  const newValues = buildChunkUpdateValues(dataWithAuthor);
+  const changes: Record<string, { from: string | null; to: string | null }> = {};
+  const compareKeys = ['title', 'description', 'representativeFen'] as const;
+  for (const key of compareKeys) {
+    const from = chunk[key] ?? null;
+    const to = newValues[key] ?? null;
+    if (from !== to) {
+      changes[key] = { from, to };
+    }
+  }
+  if (slugChanging) {
+    changes.slug = { from: chunk.slug, to: requestedSlug! };
+  }
+
   dispatchChunkEvent({
     kind: 'updated',
     actorId: user.id,
     chunkId: id,
     slug: finalSlug,
     ...(slugChanging ? { previousSlug: chunk.slug } : {}),
+    changes,
   });
 
   return { success: true };
@@ -383,7 +406,6 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
     actorId: user.id,
     chunkId: id,
     slug: chunk.slug,
-    from: chunk.status,
   });
 
   return { success: true };
@@ -405,7 +427,6 @@ export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
       id: chunks.id,
       userId: chunks.userId,
       slug: chunks.slug,
-      title: chunks.title,
       deletedAt: chunks.deletedAt,
     })
     .from(chunks)
@@ -446,7 +467,6 @@ export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
     actorId: user.id,
     chunkId: id,
     slug: chunk.slug,
-    title: chunk.title,
   });
 
   return { success: true };

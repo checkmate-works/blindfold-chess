@@ -9,7 +9,6 @@ import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, userInterviewAnswers } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type DeleteAnswerResult = ActionResult;
 
@@ -40,13 +39,6 @@ export async function deleteAnswerAction(
   if (result.length === 0) {
     return { error: 'notFound' };
   }
-
-  logActivityEvent({
-    userId: user.id,
-    action: 'delete_interview_answer',
-    targetType: 'interview_answer',
-    targetId: result[0].id,
-  });
 
   revalidatePath(`/${locale}/interview`);
   revalidatePath(`/${locale}/interview/${result[0].questionKey}`);

@@ -269,7 +269,7 @@ describe('submitEditRequestEntry', () => {
     });
   });
 
-  it('logs a submit activity event and notifies the chunk owner', async () => {
+  it('notifies the chunk owner without writing an activity-log row', async () => {
     mockDraftChunk();
 
     const { submitEditRequestEntry } = await import('./mutations');
@@ -278,14 +278,9 @@ describe('submitEditRequestEntry', () => {
       payload: { proposedTitle: 'Kingside fianchetto' },
     });
 
-    expect(mockLogActivityEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: PROPOSER_ID,
-        action: 'submit_chunk_edit_request',
-        targetType: 'chunk_edit_request',
-        targetId: REQUEST_ID,
-      })
-    );
+    // The chunk_edit_requests row is itself the durable record of the
+    // submission, so it is not duplicated into the activity log.
+    expect(mockLogActivityEvent).not.toHaveBeenCalled();
     expect(mockCreateNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: OWNER_ID,

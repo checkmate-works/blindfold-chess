@@ -15,7 +15,6 @@ import { getChunkBySlug } from '@/lib/chunks/queries';
 import { db, topicPosts } from '@/lib/db';
 import { notifyFollowersOfNewPost } from '@/lib/notifications/notification';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
-import { logActivityEvent } from '@/lib/users/activity-log';
 import { validateContent } from '@/lib/validations/content';
 
 import { VALID_REPLY_PERMISSIONS } from '@/app/[locale]/(public)/topics/_lib/constants';
@@ -118,14 +117,6 @@ export async function createChunkPostForImageAttach(
     // when grant-types.ts was retired in favor of the point system.
 
     return post;
-  });
-
-  logActivityEvent({
-    userId: user.id,
-    action: 'create_post',
-    targetType: 'topic_post',
-    targetId: inserted.id,
-    metadata: { topicType: 'chunk', topicKey: slug },
   });
 
   notifyFollowersOfNewPost({

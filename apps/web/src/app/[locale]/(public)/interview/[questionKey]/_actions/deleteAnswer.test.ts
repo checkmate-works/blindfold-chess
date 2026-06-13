@@ -112,25 +112,9 @@ describe('deleteAnswerAction', () => {
 
       const result = await deleteAnswerAction(testAnswerId, testLocale);
       expect(result).toEqual({ success: true });
-    });
-  });
-
-  describe('activity logging', () => {
-    beforeEach(() => {
-      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-      mockIsUserBanned.mockResolvedValue(false);
-      mockUpdateReturning.mockResolvedValue([{ id: testAnswerId, questionKey: testQuestionKey }]);
-    });
-
-    it('should log activity event on successful delete', async () => {
-      await deleteAnswerAction(testAnswerId, testLocale);
-
-      expect(logActivityEvent).toHaveBeenCalledWith({
-        userId: testUserId,
-        action: 'delete_interview_answer',
-        targetType: 'interview_answer',
-        targetId: testAnswerId,
-      });
+      // Soft-delete (deletedAt) leaves the row in user_interview_answers as
+      // the durable record, so no activity-log row is written.
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });
 });
