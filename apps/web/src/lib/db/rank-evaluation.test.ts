@@ -15,11 +15,6 @@ vi.mock('server-only', () => ({}));
 const mockInsertValues = vi.fn();
 const mockOnConflictDoNothing = vi.fn();
 const mockSelectResult = vi.fn<() => unknown[]>().mockReturnValue([]);
-const mockLogActivityEvent = vi.fn();
-
-vi.mock('../users/activity-log', () => ({
-  logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
-}));
 
 vi.mock('./index', () => {
   const makeDbOps = () => ({
@@ -386,13 +381,6 @@ describe('checkAndGrantRanks', () => {
       rankId: 'rank-1',
     });
     expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(1);
-    expect(mockLogActivityEvent).toHaveBeenCalledWith({
-      userId,
-      action: 'rank_achieved',
-      targetType: 'rank',
-      targetId: 'rank-1',
-      metadata: { rankSlug: '5kyu', level: 10 },
-    });
   });
 
   it('should stop at the first rank whose requirements are NOT met', async () => {
@@ -497,7 +485,6 @@ describe('checkAndGrantRanks', () => {
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
     expect(mockInsertValues).toHaveBeenNthCalledWith(1, { userId, rankId: 'rank-1' });
     expect(mockInsertValues).toHaveBeenNthCalledWith(2, { userId, rankId: 'rank-2' });
-    expect(mockLogActivityEvent).toHaveBeenCalledTimes(2);
   });
 
   it('should skip ranks with empty requirements', async () => {
@@ -789,7 +776,6 @@ describe('checkAndGrantRanks', () => {
     expect(mockInsertValues).toHaveBeenNthCalledWith(3, { userId, rankId: 'rank-3' });
     expect(mockInsertValues).toHaveBeenNthCalledWith(4, { userId, rankId: 'rank-4' });
     expect(mockInsertValues).toHaveBeenNthCalledWith(5, { userId, rankId: 'rank-5' });
-    expect(mockLogActivityEvent).toHaveBeenCalledTimes(5);
   });
 
   it('should stop granting when a rank with multiple requirements has only some met', async () => {
@@ -1013,42 +999,5 @@ describe('checkAndGrantRanks', () => {
     expect(result).toEqual([{ slug: '9kyu', level: 2, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-2' });
-  });
-
-  it('should log activity event as fire-and-forget (does not await)', async () => {
-    let callCount = 0;
-    mockSelectResult.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) return [];
-      if (callCount === 2)
-        return [
-          {
-            id: 'rank-1',
-            slug: '5kyu',
-            level: 10,
-            requirements: [
-              {
-                type: 'challenge_score',
-                menuType: 'coordinate_quiz',
-                leaderboardKey: 'white',
-                minScore: 20,
-              },
-            ],
-          },
-        ];
-      // Call 3: allBestScores
-      if (callCount === 3)
-        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }];
-      return [];
-    });
-
-    // Even if logActivityEvent rejects, checkAndGrantRanks should not throw
-    mockLogActivityEvent.mockRejectedValue(new Error('logging failed'));
-
-    // Should not throw despite log failure
-    await checkAndGrantRanks(userId);
-
-    expect(mockInsertValues).toHaveBeenCalledTimes(1);
-    expect(mockLogActivityEvent).toHaveBeenCalledTimes(1);
   });
 });

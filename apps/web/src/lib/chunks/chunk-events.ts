@@ -33,6 +33,9 @@ export type ChunkCreatedEvent = {
   initialStatus: 'draft' | 'published';
 };
 
+/** A single overwritten field, captured as old (`from`) → new (`to`). */
+export type ChunkFieldChange = { from: string | null; to: string | null };
+
 export type ChunkUpdatedEvent = {
   kind: 'updated';
   actorId: string;
@@ -41,6 +44,13 @@ export type ChunkUpdatedEvent = {
   slug: string;
   /** Filled only when the slug changed in this mutation. */
   previousSlug?: string;
+  /**
+   * Overwritten field values, keyed by column. A chunk row keeps no
+   * revision history, so an in-place edit would otherwise lose the prior
+   * title / description / fen / slug. The activity log records them; empty
+   * when nothing actually changed (then no log row is written).
+   */
+  changes: Record<string, ChunkFieldChange>;
 };
 
 export type ChunkPublishedEvent = {
@@ -48,12 +58,6 @@ export type ChunkPublishedEvent = {
   actorId: string;
   chunkId: string;
   slug: string;
-  /**
-   * The status the chunk was promoted from. Always `'draft'` in the
-   * current code path (re-publish is short-circuited before the event
-   * fires) but kept explicit for the audit log.
-   */
-  from: string;
 };
 
 export type ChunkDeletedEvent = {
@@ -61,7 +65,6 @@ export type ChunkDeletedEvent = {
   actorId: string;
   chunkId: string;
   slug: string;
-  title: string;
 };
 
 export type ChunkEvent =

@@ -8,7 +8,6 @@ import { chunkEditRequests, chunks, db } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { applyAcceptedProposal } from './apply-edit-proposal';
 import { getEditRequestById, getViewerPendingEditRequestForChunk } from './queries';
@@ -130,19 +129,6 @@ export async function submitEditRequestEntry(params: {
     throw err;
   }
 
-  logActivityEvent({
-    userId: user.id,
-    action: 'submit_chunk_edit_request',
-    targetType: 'chunk_edit_request',
-    targetId: inserted.id,
-    metadata: {
-      chunkId: chunk.id,
-      slug: chunk.slug,
-      hasTitleProposal: validated.hasTitleProposal,
-      hasDescriptionProposal: validated.hasDescriptionProposal,
-    },
-  });
-
   // Fire-and-forget notification to the chunk owner. The application-
   // and RLS-level "owner exists" check at submit time means we only
   // reach this line when the owner is a live account.
@@ -165,12 +151,6 @@ export async function submitEditRequestEntry(params: {
 type ResolveParams = {
   requestId: string;
   action: 'accept' | 'reject' | 'withdraw';
-};
-
-const ACTIVITY_ACTION: Record<ResolveParams['action'], string> = {
-  accept: 'accept_chunk_edit_request',
-  reject: 'reject_chunk_edit_request',
-  withdraw: 'withdraw_chunk_edit_request',
 };
 
 const TERMINAL_STATUS: Record<ResolveParams['action'], 'accepted' | 'rejected' | 'withdrawn'> = {
@@ -254,21 +234,9 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
     }
   });
 
-  logActivityEvent({
-    userId: user.id,
-    action: ACTIVITY_ACTION[params.action],
-    targetType: 'chunk_edit_request',
-    targetId: request.id,
-    metadata: {
-      chunkId: chunk.id,
-      slug: chunk.slug,
-      // Snapshot the resolved values for forensic clarity — knowing
-      // what was accepted is more useful than re-querying the row
-      // later (which may have been further edited).
-      appliedTitle: params.action === 'accept' ? request.proposedTitle : null,
-      appliedDescription: params.action === 'accept' ? request.proposedDescription : null,
-    },
-  });
+  // No activity-log row: the chunk_edit_requests row is itself the durable,
+  // immutable record of the resolution (terminal `status`, `resolvedAt`,
+  // `resolverId`, plus the proposed values), so logging would duplicate it.
 
   // Fire-and-forget notification to the proposer on accept only.
   //

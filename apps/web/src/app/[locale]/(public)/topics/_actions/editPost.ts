@@ -94,6 +94,18 @@ export async function editPost(
     })
     .where(eq(topicPosts.id, postId));
 
+  // A topic_post edit overwrites content / isSpoiler in place with no
+  // revision history, so the activity log preserves the overwritten values
+  // (old → new). Only the fields that actually changed are recorded; the
+  // early no-op return above guarantees at least one did.
+  const changes: Record<string, { from: unknown; to: unknown }> = {};
+  if (contentChanged) {
+    changes.content = { from: post.content, to: contentResult.content };
+  }
+  if (spoilerChanged) {
+    changes.isSpoiler = { from: post.isSpoiler, to: nextIsSpoiler };
+  }
+
   logActivityEvent({
     userId: user.id,
     action: 'edit_post',
@@ -102,8 +114,7 @@ export async function editPost(
     metadata: {
       topicType: post.topicType,
       topicKey: post.topicKey,
-      contentChanged,
-      spoilerChanged,
+      changes,
     },
   });
 

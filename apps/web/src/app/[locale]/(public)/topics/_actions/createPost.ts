@@ -14,7 +14,6 @@ import {
 import { grantPointsForPost, isPointEligibleTopicType } from '@/lib/points';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { VALID_REPLY_PERMISSIONS } from '../_lib/constants';
 import type { TopicType } from '../_lib/constants';
@@ -157,14 +156,6 @@ export async function createPostBase(params: {
     }
 
     return post;
-  });
-
-  logActivityEvent({
-    userId: user.id,
-    action: 'create_post',
-    targetType: 'topic_post',
-    targetId: inserted.id,
-    metadata: { topicType, topicKey },
   });
 
   notifyFollowersOfNewPost({

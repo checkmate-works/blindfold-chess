@@ -27,7 +27,6 @@
 import { and, asc, count, eq } from 'drizzle-orm';
 import 'server-only';
 
-import { logActivityEvent } from '../users/activity-log';
 import type {
   ChallengeScoreRequirement,
   GrantedRank,
@@ -183,14 +182,11 @@ export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]>
 
     granted.push({ slug: rank.slug, level: rank.level, color: rank.color });
 
-    // 5. Log activity event (fire-and-forget)
-    logActivityEvent({
-      userId,
-      action: 'rank_achieved',
-      targetType: 'rank',
-      targetId: rank.id,
-      metadata: { rankSlug: rank.slug, level: rank.level },
-    });
+    // Note: rank achievements are NOT recorded in user_activity_log. The
+    // `user_ranks` table is itself an immutable, INSERT-only achievement
+    // history (with `achievedAt`), so logging here would only duplicate that
+    // authoritative source. user_activity_log is reserved for events that
+    // leave no other durable trace (auth) or are reversible (like/follow).
   }
 
   return granted;

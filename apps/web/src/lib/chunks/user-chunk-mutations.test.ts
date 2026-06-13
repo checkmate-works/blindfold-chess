@@ -279,17 +279,13 @@ describe('createChunkEntry', () => {
     );
   });
 
-  it('logs a create_chunk activity event and revalidates listing + detail paths', async () => {
+  it('revalidates listing + detail paths without writing an activity-log row', async () => {
     const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry(baseCreateInput);
 
-    expect(mockLogActivityEvent).toHaveBeenCalledWith({
-      userId: TEST_USER_ID,
-      action: 'create_chunk',
-      targetType: 'chunk',
-      targetId: TEST_CHUNK_ID,
-      metadata: { slug: TEST_SLUG },
-    });
+    // The chunks row itself is the durable record of a creation, so it is not
+    // duplicated into the activity log.
+    expect(mockLogActivityEvent).not.toHaveBeenCalled();
     expect(mockRevalidatePath).toHaveBeenCalledWith('/chunks');
     expect(mockRevalidatePath).toHaveBeenCalledWith(`/chunks/${TEST_SLUG}`);
   });
@@ -586,13 +582,15 @@ describe('updateChunkEntry', () => {
       values: Record<string, unknown>;
     };
     expect(topicPostsUpdate.values).toEqual({ topicKey: 'kingside-fianchetto' });
-    // Activity-log metadata records the rename for audit.
+    // Activity-log metadata records the overwritten slug (old → new) for audit.
     expect(mockLogActivityEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'update_chunk',
         metadata: expect.objectContaining({
           slug: 'kingside-fianchetto',
-          previousSlug: TEST_SLUG,
+          changes: expect.objectContaining({
+            slug: { from: TEST_SLUG, to: 'kingside-fianchetto' },
+          }),
         }),
       })
     );
@@ -640,9 +638,19 @@ describe('updateChunkEntry', () => {
     expect(result).toEqual({ error: 'slugTaken' });
   });
 
-  it('logs an update_chunk activity event and revalidates paths on success', async () => {
+  it('logs an update_chunk event with overwritten field values and revalidates paths', async () => {
+    // The pre-update row carries the prior values; an in-place edit overwrites
+    // them with no revision history, so the activity log captures old → new.
     mockSelectLimit.mockResolvedValue([
-      { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
+      {
+        id: TEST_CHUNK_ID,
+        userId: TEST_USER_ID,
+        slug: TEST_SLUG,
+        deletedAt: null,
+        title: 'Old Title',
+        description: 'Old Desc',
+        representativeFen: 'old-fen',
+      },
     ]);
 
     const { updateChunkEntry } = await import('./user-chunk-mutations');
@@ -657,7 +665,14 @@ describe('updateChunkEntry', () => {
       action: 'update_chunk',
       targetType: 'chunk',
       targetId: TEST_CHUNK_ID,
-      metadata: { slug: TEST_SLUG },
+      metadata: {
+        slug: TEST_SLUG,
+        changes: {
+          title: { from: 'Old Title', to: 'Title' },
+          description: { from: 'Old Desc', to: null },
+          representativeFen: { from: 'old-fen', to: VALID_FEN },
+        },
+      },
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith('/chunks');
     expect(mockRevalidatePath).toHaveBeenCalledWith(`/chunks/${TEST_SLUG}`);
@@ -840,7 +855,7 @@ describe('deleteChunkEntry', () => {
     });
   });
 
-  it('logs a delete_chunk activity event with slug + title metadata', async () => {
+  it('does not write an activity-log row on delete (soft-delete row is the record)', async () => {
     mockSelectLimit.mockResolvedValue([
       {
         id: TEST_CHUNK_ID,
@@ -854,13 +869,9 @@ describe('deleteChunkEntry', () => {
     const { deleteChunkEntry } = await import('./user-chunk-mutations');
     await deleteChunkEntry(TEST_CHUNK_ID);
 
-    expect(mockLogActivityEvent).toHaveBeenCalledWith({
-      userId: TEST_USER_ID,
-      action: 'delete_chunk',
-      targetType: 'chunk',
-      targetId: TEST_CHUNK_ID,
-      metadata: { slug: TEST_SLUG, title: 'Rook Battery' },
-    });
+    // delete_chunk is a soft-delete (deletedAt), so the chunks row survives as
+    // the durable record; it is not duplicated into the activity log.
+    expect(mockLogActivityEvent).not.toHaveBeenCalled();
   });
 
   it('auto-rejects any still-pending edit requests on delete', async () => {
@@ -1014,12 +1025,9 @@ describe('publishChunkEntry', () => {
       status: 'rejected',
       resolverId: TEST_USER_ID,
     });
-    expect(mockLogActivityEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: 'publish_chunk',
-        metadata: expect.objectContaining({ from: 'draft', to: 'published' }),
-      })
-    );
+    // No activity-log row for publishing: it is derivable from the chunks row
+    // itself (`status='published'` + `publishedAt`).
+    expect(mockLogActivityEvent).not.toHaveBeenCalled();
     // Publish emits a kind=published feed row alongside the draft's
     // earlier kind=created row, giving the home timeline two distinct
     // surface points for the same chunk.

@@ -11,7 +11,6 @@ import {
 } from '@/lib/games/build-pgn-attachment-values';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { loadAuthoredPost } from '@/lib/topic-posts';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { buildTopicDetailPath } from '../_lib/topic-paths';
 
@@ -87,19 +86,6 @@ export async function attachPostPgn(
       .insert(postGamePgnAttachments)
       .values({ postId: post.id, ...built.values })
       .returning({ id: postGamePgnAttachments.id, createdAt: postGamePgnAttachments.createdAt });
-
-    logActivityEvent({
-      userId: user.id,
-      action: 'attach_post_pgn',
-      targetType: 'topic_post',
-      targetId: postId,
-      metadata: {
-        topicType: post.topicType,
-        topicKey: post.topicKey,
-        attachmentId: row.id,
-        source: built.values.source,
-      },
-    });
 
     revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
 

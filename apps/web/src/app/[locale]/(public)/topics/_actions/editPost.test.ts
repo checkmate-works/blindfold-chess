@@ -283,6 +283,9 @@ describe('editPost', () => {
     ]);
 
     await editPost(testPostId, 'en', makeFormData('updated'));
+    // An edit overwrites content in place with no revision history, so the
+    // activity log preserves the overwritten value (old → new). Only the
+    // changed field is recorded.
     expect(logActivityEvent).toHaveBeenCalledWith({
       userId: testUserId,
       action: 'edit_post',
@@ -291,8 +294,7 @@ describe('editPost', () => {
       metadata: {
         topicType: 'opening',
         topicKey: 'sicilian-defense',
-        contentChanged: true,
-        spoilerChanged: false,
+        changes: { content: { from: 'original', to: 'updated' } },
       },
     });
   });

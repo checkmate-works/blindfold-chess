@@ -40,8 +40,13 @@ type PositionKindConfig = {
   pointType: 'position_memory' | 'puzzle';
   /** URL segment under `/practice` used for revalidation. */
   urlSegment: 'position-memory' | 'puzzle';
-  /** activity-log action verbs per CRUD operation. */
-  activityActions: { create: string; update: string; delete: string };
+  /**
+   * activity-log action verb for the update path. Create and delete are not
+   * logged (the positions row — live, or soft-deleted with `deletedAt` — is
+   * itself the durable record); only an in-place edit, which overwrites
+   * fields with no revision history, warrants an activity-log row.
+   */
+  activityActions: { update: string };
 };
 
 const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
@@ -50,9 +55,7 @@ const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
     pointType: 'position_memory',
     urlSegment: 'position-memory',
     activityActions: {
-      create: 'create_position',
       update: 'update_position',
-      delete: 'delete_position',
     },
   },
   puzzle: {
@@ -60,9 +63,7 @@ const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
     pointType: 'puzzle',
     urlSegment: 'puzzle',
     activityActions: {
-      create: 'create_puzzle',
       update: 'update_puzzle',
-      delete: 'delete_puzzle',
     },
   },
 };
@@ -185,13 +186,8 @@ export async function createPositionEntry(params: {
     positionType: config.type,
   });
 
-  logActivityEvent({
-    userId: user.id,
-    action: config.activityActions.create,
-    targetType: 'position',
-    targetId: txResult.position.id,
-    metadata: { type: config.type },
-  });
+  // No activity-log row: the positions row itself is the durable record of
+  // a creation, so logging here would only duplicate it.
 
   // Evaluate belt ranks AFTER the transaction commits, so that the freshly
   // inserted `positions` row counts toward `position_submission_count`
@@ -264,6 +260,11 @@ export async function updatePositionEntry(params: {
       userId: positions.userId,
       type: positions.type,
       deletedAt: positions.deletedAt,
+      // Pre-update values, captured so the activity log can preserve
+      // whatever this in-place edit overwrites (positions keep no history).
+      fen: positions.fen,
+      title: positions.title,
+      description: positions.description,
     })
     .from(positions)
     .where(eq(positions.id, data.id))
@@ -288,14 +289,16 @@ export async function updatePositionEntry(params: {
   }
   const { themeIds: dedupedThemeIds, chunkIds: dedupedChunkIds } = tagValidation.deduped;
 
+  const nextValues = {
+    fen: data.fen.trim(),
+    title: data.title.trim(),
+    description: data.description?.trim() || null,
+  };
+
   await db.transaction(async (tx) => {
     await tx
       .update(positions)
-      .set({
-        fen: data.fen.trim(),
-        title: data.title.trim(),
-        description: data.description?.trim() || null,
-      })
+      .set(nextValues)
       .where(
         and(eq(positions.id, data.id), eq(positions.userId, user.id), isNull(positions.deletedAt))
       );
@@ -305,13 +308,27 @@ export async function updatePositionEntry(params: {
     await replacePositionTags(tx, data.id, user.id, dedupedThemeIds, dedupedChunkIds);
   });
 
-  logActivityEvent({
-    userId: user.id,
-    action: config.activityActions.update,
-    targetType: 'position',
-    targetId: data.id,
-    metadata: { type: config.type },
-  });
+  // Diff the overwritten fields (old → new) so the activity log keeps the
+  // prior values this in-place edit discarded. A position row has no
+  // revision history. Nothing changed → nothing worth logging.
+  const changes: Record<string, { from: string | null; to: string | null }> = {};
+  for (const key of ['fen', 'title', 'description'] as const) {
+    const from = position[key] ?? null;
+    const to = nextValues[key] ?? null;
+    if (from !== to) {
+      changes[key] = { from, to };
+    }
+  }
+
+  if (Object.keys(changes).length > 0) {
+    logActivityEvent({
+      userId: user.id,
+      action: config.activityActions.update,
+      targetType: 'position',
+      targetId: data.id,
+      metadata: { type: config.type, changes },
+    });
+  }
 
   revalidatePath(`/practice/${config.urlSegment}`);
   revalidatePath(`/practice/${config.urlSegment}/${data.id}`);
@@ -345,7 +362,6 @@ export async function deletePositionEntry(params: {
       id: positions.id,
       userId: positions.userId,
       type: positions.type,
-      title: positions.title,
       deletedAt: positions.deletedAt,
     })
     .from(positions)
@@ -384,13 +400,8 @@ export async function deletePositionEntry(params: {
     });
   });
 
-  logActivityEvent({
-    userId: user.id,
-    action: config.activityActions.delete,
-    targetType: 'position',
-    targetId: positionId,
-    metadata: { type: config.type, title: position.title },
-  });
+  // No activity-log row: deletion is a soft-delete, so the positions row
+  // (with `deletedAt`) survives as the durable record.
 
   revalidatePath(`/${locale}/practice/${config.urlSegment}`);
   revalidatePath(`/${locale}/practice/${config.urlSegment}/${positionId}`);

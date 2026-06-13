@@ -171,7 +171,7 @@ describe('attachPostPgn', () => {
     expect(mockInsertReturning).not.toHaveBeenCalled();
   });
 
-  it('inserts the validated values and logs the activity event', async () => {
+  it('inserts the validated values (without writing an activity-log row)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockSelectLimit.mockResolvedValueOnce([ownedPostRow]);
@@ -184,18 +184,9 @@ describe('attachPostPgn', () => {
       success: true,
       attachment: { id: testAttachmentId, createdAt },
     });
-    expect(logActivityEvent).toHaveBeenCalledWith({
-      userId: testUserId,
-      action: 'attach_post_pgn',
-      targetType: 'topic_post',
-      targetId: testPostId,
-      metadata: {
-        topicType: 'opening',
-        topicKey: 'sicilian-defense',
-        attachmentId: testAttachmentId,
-        source: 'pgn',
-      },
-    });
+    // The PGN attachment row survives in post_game_pgn_attachments, so
+    // attaching is not duplicated into the activity log.
+    expect(logActivityEvent).not.toHaveBeenCalled();
   });
 
   it('maps a Postgres unique-violation to alreadyAttached', async () => {

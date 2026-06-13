@@ -12,7 +12,6 @@ import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { loadAuthoredPost } from '@/lib/topic-posts';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { buildTopicDetailPath } from '../_lib/topic-paths';
 
@@ -193,17 +192,6 @@ export async function attachPostFen(input: {
       });
 
     if (locale !== undefined) {
-      logActivityEvent({
-        userId: user.id,
-        action: 'attach_post_fen',
-        targetType: 'topic_post',
-        targetId: postId,
-        metadata: {
-          topicType: post.topicType,
-          topicKey: post.topicKey,
-          attachmentId: row.id,
-        },
-      });
       revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
     }
 

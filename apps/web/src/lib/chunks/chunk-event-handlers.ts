@@ -38,27 +38,25 @@ export function dispatchChunkEvent(event: ChunkEvent): void {
         slug: event.slug,
         kind: event.initialStatus === 'published' ? 'published' : 'created',
       });
-      logActivityEvent({
-        userId: event.actorId,
-        action: 'create_chunk',
-        targetType: 'chunk',
-        targetId: event.chunkId,
-        metadata: { slug: event.slug },
-      });
+      // No activity-log row: the chunks row itself is the durable record of
+      // a creation, so logging here would only duplicate it.
       revalidatePath('/chunks');
       revalidatePath(`/chunks/${event.slug}`);
       return;
     }
     case 'updated': {
-      logActivityEvent({
-        userId: event.actorId,
-        action: 'update_chunk',
-        targetType: 'chunk',
-        targetId: event.chunkId,
-        metadata: event.previousSlug
-          ? { slug: event.slug, previousSlug: event.previousSlug }
-          : { slug: event.slug },
-      });
+      // A chunk edit overwrites title / description / fen / slug in place
+      // with no revision history, so the activity log preserves the
+      // overwritten values. Nothing changed → nothing worth logging.
+      if (Object.keys(event.changes).length > 0) {
+        logActivityEvent({
+          userId: event.actorId,
+          action: 'update_chunk',
+          targetType: 'chunk',
+          targetId: event.chunkId,
+          metadata: { slug: event.slug, changes: event.changes },
+        });
+      }
       revalidatePath('/chunks');
       revalidatePath(`/chunks/${event.previousSlug ?? event.slug}`);
       // Revalidate the new URL too — without this the freshly-renamed
@@ -76,25 +74,15 @@ export function dispatchChunkEvent(event: ChunkEvent): void {
         slug: event.slug,
         kind: 'published',
       });
-      logActivityEvent({
-        userId: event.actorId,
-        action: 'publish_chunk',
-        targetType: 'chunk',
-        targetId: event.chunkId,
-        metadata: { slug: event.slug, from: event.from, to: 'published' },
-      });
+      // No activity-log row: publishing is derivable from the chunks row
+      // itself (`status='published'` + `publishedAt`).
       revalidatePath('/chunks');
       revalidatePath(`/chunks/${event.slug}`);
       return;
     }
     case 'deleted': {
-      logActivityEvent({
-        userId: event.actorId,
-        action: 'delete_chunk',
-        targetType: 'chunk',
-        targetId: event.chunkId,
-        metadata: { slug: event.slug, title: event.title },
-      });
+      // No activity-log row: deletion is a soft-delete, so the chunks row
+      // (with `deletedAt`) survives as the durable record.
       revalidatePath('/chunks');
       revalidatePath(`/chunks/${event.slug}`);
       return;

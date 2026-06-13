@@ -7,6 +7,9 @@ import { PUT } from './route';
 const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockWhere = vi.fn().mockResolvedValue(undefined);
+// Resolves the "previous profile" row read before the update. Defaults to an
+// empty result (no prior row); individual tests override with mockResolvedValueOnce.
+const mockSelectWhere = vi.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
 
 vi.mock('server-only', () => ({}));
 
@@ -73,6 +76,11 @@ vi.mock('@/lib/security/rate-limit', () => ({
 
 vi.mock('@/lib/db', () => ({
   db: {
+    select: () => ({
+      from: () => ({
+        where: mockSelectWhere,
+      }),
+    }),
     update: () => ({
       set: () => ({
         where: mockWhere,
@@ -981,7 +989,21 @@ describe('PUT /api/profile', () => {
       expect(mockWhere).toHaveBeenCalled();
     });
 
-    it('should log update_profile activity event on success', async () => {
+    it('should log update_profile with the overwritten (from) and new (to) values', async () => {
+      mockSelectWhere.mockResolvedValueOnce([
+        {
+          displayName: 'Old Name',
+          bio: null,
+          country: null,
+          flair: null,
+          fideId: null,
+          chesscomUsername: null,
+          lichessUsername: null,
+          xUsername: null,
+          instagramUsername: null,
+          youtubeHandle: null,
+        },
+      ]);
       const request = createRequest({ displayName: 'Chess Player' });
       await PUT(request);
 
@@ -990,7 +1012,57 @@ describe('PUT /api/profile', () => {
         action: 'update_profile',
         targetType: 'user',
         targetId: testUserId,
+        metadata: { changes: { displayName: { from: 'Old Name', to: 'Chess Player' } } },
       });
+    });
+
+    it('should log only the fields that actually changed', async () => {
+      mockSelectWhere.mockResolvedValueOnce([
+        {
+          displayName: 'Same Name',
+          bio: 'old bio',
+          country: 'JP',
+          flair: null,
+          fideId: null,
+          chesscomUsername: null,
+          lichessUsername: null,
+          xUsername: null,
+          instagramUsername: null,
+          youtubeHandle: null,
+        },
+      ]);
+      // displayName + country unchanged; only bio changes.
+      const request = createRequest({ displayName: 'Same Name', bio: 'new bio', country: 'jp' });
+      await PUT(request);
+
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'update_profile',
+        targetType: 'user',
+        targetId: testUserId,
+        metadata: { changes: { bio: { from: 'old bio', to: 'new bio' } } },
+      });
+    });
+
+    it('should not log when no fields changed', async () => {
+      mockSelectWhere.mockResolvedValueOnce([
+        {
+          displayName: 'Chess Player',
+          bio: null,
+          country: null,
+          flair: null,
+          fideId: null,
+          chesscomUsername: null,
+          lichessUsername: null,
+          xUsername: null,
+          instagramUsername: null,
+          youtubeHandle: null,
+        },
+      ]);
+      const request = createRequest({ displayName: 'Chess Player' });
+      await PUT(request);
+
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
 
     it('should not log activity event when validation fails', async () => {

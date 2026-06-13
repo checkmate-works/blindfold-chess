@@ -11,7 +11,6 @@ import { db, topicPosts, userFollows } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { logActivityEvent } from '@/lib/users/activity-log';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 import { UUID_RE, validateUUID } from '@/lib/validations/uuid';
 
@@ -208,14 +207,6 @@ export async function createReplyBase(params: {
     }
 
     return reply;
-  });
-
-  logActivityEvent({
-    userId: user.id,
-    action: 'create_reply',
-    targetType: 'topic_post',
-    targetId: inserted.id,
-    metadata: { parentId, topicKey },
   });
 
   if (notifyUserId !== user.id) {

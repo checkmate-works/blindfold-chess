@@ -397,18 +397,14 @@ describe('createReplyBase', () => {
       setupParentPostExists();
     });
 
-    it('should log create_reply activity event on success', async () => {
+    it('should not log an activity event on success (the topic_post row is the record)', async () => {
       await expect(
         createReplyBase({ ...baseParams, formData: makeFormData('My reply') })
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      expect(logActivityEvent).toHaveBeenCalledWith({
-        userId: testUserId,
-        action: 'create_reply',
-        targetType: 'topic_post',
-        targetId: generatedReplyId,
-        metadata: { parentId: validPostId, topicKey: 'test-topic' },
-      });
+      // A reply is a pure INSERT whose row survives in topic_posts, so it is
+      // intentionally not duplicated into the activity log.
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
 
     it('should not log activity event when validation fails', async () => {

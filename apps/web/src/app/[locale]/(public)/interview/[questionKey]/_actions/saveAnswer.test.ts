@@ -6,7 +6,7 @@ import { saveAnswerAction } from './saveAnswer';
 
 const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
-const mockInsertValuesReturning = vi.fn();
+const mockInsertValues = vi.fn();
 const mockSelectFromWhereLimit = vi.fn();
 
 vi.mock('@/lib/users/activity-log', () => ({
@@ -50,9 +50,7 @@ vi.mock('@/lib/db', () => {
   return {
     db: {
       insert: () => ({
-        values: () => ({
-          returning: () => mockInsertValuesReturning(),
-        }),
+        values: (...args: unknown[]) => mockInsertValues(...args),
       }),
       select: () => ({
         from: () => ({
@@ -79,7 +77,6 @@ vi.mock('next/cache', () => ({
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
-const testInsertedId = '22222222-2222-2222-2222-222222222222';
 const testQuestionKey = 'favorite_opening';
 const testLocale = 'en';
 const testAnswerValue = 'sicilian-defense';
@@ -173,7 +170,7 @@ describe('saveAnswerAction', () => {
     });
 
     it('should save answer and return success', async () => {
-      mockInsertValuesReturning.mockResolvedValue([{ id: testInsertedId }]);
+      mockInsertValues.mockResolvedValue(undefined);
 
       const result = await saveAnswerAction(
         testQuestionKey,
@@ -182,13 +179,17 @@ describe('saveAnswerAction', () => {
         createFormData(testAnswerValue)
       );
       expect(result).toEqual({ success: true });
-      expect(mockInsertValuesReturning).toHaveBeenCalled();
+      expect(mockInsertValues).toHaveBeenCalled();
+      // Interview answers are a pure INSERT whose row survives in
+      // user_interview_answers, so they are intentionally NOT recorded in the
+      // activity log (the table is the durable record).
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
 
     it('should return alreadyAnswered on unique violation', async () => {
       const uniqueError = new Error('unique_violation');
       (uniqueError as unknown as Record<string, unknown>).code = '23505';
-      mockInsertValuesReturning.mockRejectedValue(uniqueError);
+      mockInsertValues.mockRejectedValue(uniqueError);
 
       const result = await saveAnswerAction(
         testQuestionKey,
@@ -202,48 +203,12 @@ describe('saveAnswerAction', () => {
 
     it('should re-throw non-unique-violation errors', async () => {
       const otherError = new Error('connection_error');
-      mockInsertValuesReturning.mockRejectedValue(otherError);
+      mockInsertValues.mockRejectedValue(otherError);
 
       await expect(
         saveAnswerAction(testQuestionKey, testLocale, null, createFormData(testAnswerValue))
       ).rejects.toThrow('connection_error');
       expect(logActivityEvent).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('activity logging', () => {
-    beforeEach(() => {
-      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-      mockIsUserBanned.mockResolvedValue(false);
-      mockSelectFromWhereLimit.mockResolvedValue([{ slug: testAnswerValue }]);
-      mockInsertValuesReturning.mockResolvedValue([{ id: testInsertedId }]);
-    });
-
-    it('should log activity event on successful save', async () => {
-      await saveAnswerAction(testQuestionKey, testLocale, null, createFormData(testAnswerValue));
-
-      expect(logActivityEvent).toHaveBeenCalledWith({
-        userId: testUserId,
-        action: 'save_interview_answer',
-        targetType: 'interview_answer',
-        targetId: testInsertedId,
-        metadata: { questionKey: testQuestionKey, answerValue: testAnswerValue },
-      });
-    });
-
-    it('should trim answerValue in metadata', async () => {
-      await saveAnswerAction(
-        testQuestionKey,
-        testLocale,
-        null,
-        createFormData(`  ${testAnswerValue}  `)
-      );
-
-      expect(logActivityEvent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          metadata: { questionKey: testQuestionKey, answerValue: testAnswerValue },
-        })
-      );
     });
   });
 });

@@ -179,18 +179,12 @@ describe('createChunkReply', () => {
     expect(revalidatePath).toHaveBeenCalledWith(`/en/chunks/${testSlug}`);
   });
 
-  it('logs activity with topicType=chunk metadata', async () => {
+  it('does not write an activity-log row (the topic_post reply row is the record)', async () => {
     await expect(
       createChunkReply('en', testSlug, validPostId, {}, makeFormData('hi'))
     ).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(logActivityEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: 'create_reply',
-        targetType: 'topic_post',
-        targetId: generatedReplyId,
-      })
-    );
+    expect(logActivityEvent).not.toHaveBeenCalled();
   });
 
   it('returns postNotFound when the parent post is soft-deleted', async () => {
