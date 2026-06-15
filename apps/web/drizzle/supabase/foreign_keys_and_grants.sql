@@ -597,6 +597,49 @@ GRANT SELECT, INSERT, UPDATE ON TABLE public.chunk_edit_requests TO authenticate
 GRANT SELECT ON TABLE public.chunk_edit_requests TO anon;
 
 -- =============================================================================
+-- position_edit_requests
+-- =============================================================================
+
+-- FK constraint: position_edit_requests.proposer_id → auth.users(id) ON DELETE SET NULL
+-- Edit requests carry the proposer's audit trail for the position owner; if
+-- the proposer's account is hard-deleted, the request survives with
+-- `proposer_id = NULL` (the application layer renders such rows as
+-- "(deleted user)"). Mirrors the chunk_edit_requests.proposer_id rationale.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'position_edit_requests_proposer_id_fkey'
+  ) THEN
+    ALTER TABLE public.position_edit_requests
+      ADD CONSTRAINT position_edit_requests_proposer_id_fkey
+      FOREIGN KEY (proposer_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- FK constraint: position_edit_requests.resolver_id → auth.users(id) ON DELETE SET NULL
+-- Same rationale as proposer_id — preserves the history when the
+-- accepting / rejecting owner is later hard-deleted.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'position_edit_requests_resolver_id_fkey'
+  ) THEN
+    ALTER TABLE public.position_edit_requests
+      ADD CONSTRAINT position_edit_requests_resolver_id_fkey
+      FOREIGN KEY (resolver_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- The FK to positions is managed by Drizzle (ON DELETE CASCADE — physical
+-- position deletion takes its requests with it). Grants: open read so anyone
+-- can see the discussion; authenticated INSERT for proposers and authenticated
+-- UPDATE for the proposer-or-owner transitions (gated by the RLS policies).
+GRANT SELECT, INSERT, UPDATE ON TABLE public.position_edit_requests TO authenticated;
+GRANT SELECT ON TABLE public.position_edit_requests TO anon;
+
+-- =============================================================================
 -- chunk_feedback_topics
 -- =============================================================================
 

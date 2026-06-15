@@ -618,6 +618,124 @@ export type PositionChunk = typeof positionChunks.$inferSelect;
 export type NewPositionChunk = typeof positionChunks.$inferInsert;
 
 /**
+ * Position Edit Requests — Qiita-style suggestions for which chunks a
+ * position (memory / puzzle) should link to, from users other than the
+ * position's owner.
+ *
+ * @description
+ * A position's set of linked chunks (`position_chunks`) is curated by the
+ * owner, but other players often spot a pattern the owner missed ("this
+ * board also contains a fianchetto"). This table lets a non-owner propose
+ * a new *set* of linked chunks; the owner reviews it and either accepts it
+ * (the proposed set replaces the position's links via `replacePositionTags`
+ * in the same transaction) or rejects it. Proposers can withdraw their own
+ * pending requests.
+ *
+ * @design scope = chunk links only
+ * Unlike `chunk_edit_requests` (which proposes scalar title / description
+ * edits), the only thing a position edit request carries is the proposed
+ * set of chunk IDs (`proposed_chunk_ids`). Title / description / FEN /
+ * puzzle solution are intentionally out of scope for v1.
+ *
+ * @design proposed_chunk_ids jsonb snapshot
+ * The proposal stores an *absolute* set of chunk IDs (not a delta),
+ * following the jsonb-set idiom used by `chunks.annotations` and
+ * `puzzle_solutions.solution_moves`. On accept the set fully replaces the
+ * position's links (DELETE all + INSERT proposed). Because it is an
+ * absolute snapshot, accepting is last-writer-wins: if the owner changes
+ * the links between propose and accept, accepting overwrites that change.
+ * The review UI mitigates this by computing the added / removed diff
+ * against the *live* link set at render time, so the owner always sees the
+ * true effect of accepting right now. Chunk-set validity (existence,
+ * published, non-deleted) cannot live in a CHECK constraint over a jsonb
+ * array, so it is re-asserted at the application layer both at submit time
+ * and again immediately before the accept-time replace.
+ *
+ * @design no draft gating
+ * Positions have no draft / published lifecycle, so — unlike the chunk
+ * variant — submissions and accept / reject are allowed against any
+ * non-deleted position. The only gate is `positions.deleted_at`.
+ *
+ * @design proposer_id / resolver_id nullable + ON DELETE SET NULL
+ * Mirrors `chunk_edit_requests`: a hard-deleted proposer / resolver leaves
+ * the request intact with the id nulled out so the owner's audit trail
+ * survives ("(deleted user)"). FKs defined in custom Supabase SQL.
+ *
+ * @design positionId ON DELETE CASCADE
+ * Edit requests are 1:N to a position and have no value without it; a
+ * physical position delete (service-role only) takes its requests with it.
+ */
+export const positionEditRequests = pgTable(
+  'position_edit_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    positionId: uuid('position_id')
+      .notNull()
+      .references(() => positions.id, { onDelete: 'cascade' }),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL),
+    // following the same pattern as `chunk_edit_requests.proposer_id`.
+    proposerId: uuid('proposer_id'),
+    /**
+     * The proposed set of linked chunk IDs (absolute snapshot, not a
+     * delta). Validated at the application layer against published,
+     * non-deleted chunks. An empty array is a legitimate proposal
+     * ("remove all chunk links").
+     */
+    proposedChunkIds: jsonb('proposed_chunk_ids').$type<string[]>().notNull().default([]),
+    /**
+     * Optional rationale from the proposer (why these chunks belong on
+     * this position). Capped at 2,000 chars by the application layer.
+     */
+    comment: text('comment'),
+    /**
+     * Lifecycle: `pending` (default), `accepted`, `rejected`,
+     * `withdrawn`. All terminal states are immutable; idempotent at the
+     * application layer.
+     */
+    status: varchar('status', { length: 20 }).notNull().default('pending'),
+    /** Set when the request leaves `pending`. */
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    /**
+     * The user who moved the request out of `pending`. For accept /
+     * reject this is the position owner; for withdraw this is the
+     * proposer. NULL while pending or after the resolver's account is
+     * hard-deleted (FK SET NULL).
+     */
+    resolverId: uuid('resolver_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
+  },
+  (table) => [
+    // "List pending requests for this position, newest first" — the
+    // primary read on the owner's review surface.
+    index('idx_position_edit_requests_position_status_created').on(
+      table.positionId,
+      table.status,
+      table.createdAt.desc()
+    ),
+    // "My submitted requests" view for the proposer.
+    index('idx_position_edit_requests_proposer_created').on(
+      table.proposerId,
+      table.createdAt.desc()
+    ),
+    // One pending suggestion per (position, proposer). The partial
+    // predicate lets resolved rows accumulate freely while the single-
+    // pending invariant the UI assumes is enforced by the DB; the
+    // application layer reads it via `getViewerPendingEditRequestForPosition`
+    // and catches the 23505 unique-violation as a tab-race backstop.
+    uniqueIndex('uq_position_edit_requests_one_pending')
+      .on(table.positionId, table.proposerId)
+      .where(sql`status = 'pending'`),
+  ]
+);
+
+export type PositionEditRequest = typeof positionEditRequests.$inferSelect;
+export type NewPositionEditRequest = typeof positionEditRequests.$inferInsert;
+
+/**
  * Position Themes — junction between positions and the glossary terms
  * (themes) that describe them.
  *
