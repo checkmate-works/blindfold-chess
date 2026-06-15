@@ -351,6 +351,13 @@
       "when": 1781415504305,
       "tag": "20260614053824_create_position_edit_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1781513505281,
+      "tag": "20260615085145_add_resolved_base_chunk_ids_to_position_edit_requests",
+      "breakpoints": true
     }
   ]
 }

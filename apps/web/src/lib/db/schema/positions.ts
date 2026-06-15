@@ -696,6 +696,24 @@ export const positionEditRequests = pgTable(
     /** Set when the request leaves `pending`. */
     resolvedAt: timestamp('resolved_at', { withTimezone: true }),
     /**
+     * Snapshot of the position's linked-chunk set at the moment the
+     * request was resolved (captured pre-apply on accept). NULL while
+     * pending.
+     *
+     * @design why snapshot the base set
+     * The review UI computes a pending request's added / removed diff
+     * against the *live* link set so the owner sees the true effect of
+     * accepting right now. But once a request is accepted that live set
+     * becomes the proposed set, so a live-computed diff for a resolved
+     * row would collapse to "no change" and the history would not show
+     * what the acceptance actually added / removed. Storing the base set
+     * at resolution time lets the history render a stable
+     * `proposed vs base` diff for resolved rows. Rejected / withdrawn
+     * rows capture the base too, so their history shows what they would
+     * have changed at the time they were closed.
+     */
+    resolvedBaseChunkIds: jsonb('resolved_base_chunk_ids').$type<string[]>(),
+    /**
      * The user who moved the request out of `pending`. For accept /
      * reject this is the position owner; for withdraw this is the
      * proposer. NULL while pending or after the resolver's account is
