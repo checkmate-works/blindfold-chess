@@ -3432,7 +3432,9 @@
     "lineUpdated": "Line updated",
     "puzzleUpdated": "Changes saved",
     "puzzleDeleted": "Puzzle deleted",
-    "editRequestSubmitted": "Edit suggestion submitted"
+    "editRequestSubmitted": "Edit suggestion submitted",
+    "editRequestAccepted": "Edit suggestion accepted",
+    "editRequestRejected": "Edit suggestion rejected"
   },
   "setupUsername": {
     "title": "Create Your Account",

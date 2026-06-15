@@ -25,6 +25,9 @@ import { PositionEditRequestItem } from './PositionEditRequestItem';
 
 type Props = {
   positionId: string;
+  /** Detail-page path (no locale prefix), e.g. `/practice/puzzle/<id>`. The
+   * accept / reject flow redirects here with a `?toast=` confirmation. */
+  detailHref: string;
   /** Authenticated viewer's id; null when signed out. */
   viewerId: string | null;
   /** Position owner's id (positions.user_id is NOT NULL). */
@@ -44,7 +47,13 @@ type Props = {
  * effect of accepting right now even if the links changed since the
  * proposal was submitted.
  */
-export async function PositionEditRequestSection({ positionId, viewerId, ownerId, locale }: Props) {
+export async function PositionEditRequestSection({
+  positionId,
+  detailHref,
+  viewerId,
+  ownerId,
+  locale,
+}: Props) {
   const [rows, currentChunks, availableChunks, t, tTags] = await Promise.all([
     listEditRequestsForPosition(positionId),
     getLinkedChunkOptionsForPosition(positionId),
@@ -201,6 +210,7 @@ export async function PositionEditRequestSection({ positionId, viewerId, ownerId
                   createdAt={request.createdAt}
                   proposer={proposer ?? null}
                   proposerId={request.proposerId}
+                  detailHref={detailHref}
                   diff={renderDiff(resolveDiff(added), resolveDiff(removed))}
                   comment={request.comment}
                   viewerIsOwner={viewerIsOwner}

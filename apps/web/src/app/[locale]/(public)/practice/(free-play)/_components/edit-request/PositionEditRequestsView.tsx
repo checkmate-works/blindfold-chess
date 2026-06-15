@@ -59,6 +59,7 @@ export async function PositionEditRequestsView({ positionId, positionType, local
     >
       <PositionEditRequestSection
         positionId={position.id}
+        detailHref={detailPath}
         viewerId={user?.id ?? null}
         ownerId={position.userId}
         locale={locale}

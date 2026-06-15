@@ -3190,7 +3190,9 @@
     "positionUpdated": "Cambios guardados",
     "lineUpdated": "Línea actualizada",
     "puzzleUpdated": "Cambios guardados",
-    "puzzleDeleted": "Puzzle eliminado"
+    "puzzleDeleted": "Puzzle eliminado",
+    "editRequestAccepted": "Sugerencia de edición aceptada",
+    "editRequestRejected": "Sugerencia de edición rechazada"
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",

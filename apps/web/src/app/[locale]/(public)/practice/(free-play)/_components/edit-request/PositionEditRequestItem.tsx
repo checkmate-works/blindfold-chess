@@ -31,6 +31,8 @@ type Props = {
   /** Proposer profile, or null when the proposer's account was hard-deleted. */
   proposer: ProposerProfile;
   proposerId: string | null;
+  /** Detail-page path (no locale prefix) the accept / reject flow redirects to. */
+  detailHref: string;
   /**
    * The added / removed chunk diff, rendered server-side (standard chunk
    * cards) and passed through the client boundary so the visual stays
@@ -84,7 +86,17 @@ export function PositionEditRequestItem(props: Props) {
       setError(localizePositionEditRequestError(result.error, t, WELL_KNOWN_ERRORS));
       return;
     }
-    router.refresh();
+
+    // Accept / reject are owner resolutions: send the owner back to the
+    // position page with a toast confirming the outcome (the linked chunks
+    // there reflect an accepted change). Withdraw is the proposer dropping
+    // their own row — keep them on the list so they can submit a fresh one.
+    if (kind === 'withdraw') {
+      router.refresh();
+      return;
+    }
+    const toast = kind === 'accept' ? 'edit_request_accepted' : 'edit_request_rejected';
+    router.push(`${props.detailHref}?toast=${toast}` as '/practice/position-memory/[id]');
   }
 
   const proposerName =

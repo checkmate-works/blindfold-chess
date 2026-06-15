@@ -3432,7 +3432,9 @@
     "lineUpdated": "ラインを更新しました",
     "puzzleUpdated": "変更を保存しました",
     "puzzleDeleted": "パズルを削除しました",
-    "editRequestSubmitted": "編集リクエストを送信しました"
+    "editRequestSubmitted": "編集リクエストを送信しました",
+    "editRequestAccepted": "編集リクエストを承認しました",
+    "editRequestRejected": "編集リクエストを却下しました"
   },
   "setupUsername": {
     "title": "アカウント登録",
