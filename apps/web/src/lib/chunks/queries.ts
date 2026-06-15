@@ -335,6 +335,25 @@ export const getLinkedChunkOptionsForPosition = cache(
 );
 
 /**
+ * Resolve `ChunkOption`s for an arbitrary set of chunk IDs, regardless of
+ * status or soft-delete. Used to backfill labels in the position
+ * edit-request diff: a proposal may reference a chunk that has since been
+ * unlinked, unpublished, or soft-deleted, and the review UI still needs a
+ * human-readable label for it. Hard-deleted (physically removed) chunks
+ * simply don't come back in the result. Returns a `Map` keyed by id for
+ * O(1) lookup at the call site.
+ */
+export async function getChunkOptionsByIds(ids: string[]): Promise<Map<string, ChunkOption>> {
+  const valid = Array.from(new Set(ids)).filter((id) => UUID_RE.test(id));
+  if (valid.length === 0) return new Map();
+  const rows = await db
+    .select(chunkOptionSelectColumns)
+    .from(chunks)
+    .where(inArray(chunks.id, valid));
+  return new Map(rows.map((row) => [row.id, mapChunkOption(row)]));
+}
+
+/**
  * Load every published, non-deleted chunk for the picker catalog.
  * Draft chunks are intentionally excluded — they're still being
  * workshopped and surfacing them in the puzzle / position-memory

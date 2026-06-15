@@ -1,4 +1,5 @@
 import { and, eq, inArray, isNull } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 
 import { chunks, db, glossaryTerms } from '@/lib/db';
 
@@ -22,11 +23,21 @@ export type TagValidationResult =
  * the app layer for create + update flows. Returns deduped ID arrays
  * preserving `undefined` semantics (caller distinguishes "omitted" from
  * "explicit empty replacement").
+ *
+ * @param options.requirePublishedChunks When true, chunk IDs must also be
+ *   `status = 'published'` (not just non-deleted). The create / update
+ *   position flows leave this false so an owner can attach their own draft
+ *   chunks; the position edit-request flow sets it true because a non-owner
+ *   proposer may only reference chunks that are publicly available in the
+ *   picker catalog (`getAllAvailableChunkOptions`, which is published-only).
  */
-export async function validateAndDedupeTagIds(input: {
-  themeIds?: string[];
-  chunkIds?: string[];
-}): Promise<TagValidationResult> {
+export async function validateAndDedupeTagIds(
+  input: {
+    themeIds?: string[];
+    chunkIds?: string[];
+  },
+  options?: { requirePublishedChunks?: boolean }
+): Promise<TagValidationResult> {
   const themeIds = input.themeIds ? Array.from(new Set(input.themeIds)) : undefined;
   const chunkIds = input.chunkIds ? Array.from(new Set(input.chunkIds)) : undefined;
 
@@ -41,10 +52,14 @@ export async function validateAndDedupeTagIds(input: {
   }
 
   if (chunkIds && chunkIds.length > 0) {
+    const predicates: SQL[] = [inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)];
+    if (options?.requirePublishedChunks) {
+      predicates.push(eq(chunks.status, 'published'));
+    }
     const valid = await db
       .select({ id: chunks.id })
       .from(chunks)
-      .where(and(inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)));
+      .where(and(...predicates));
     if (valid.length !== chunkIds.length) {
       return { ok: false, error: 'invalidChunk' };
     }

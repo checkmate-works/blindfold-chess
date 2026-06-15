@@ -161,6 +161,25 @@ export const RATE_LIMITS = {
     windowMs: 3_600_000,
   },
   /**
+   * Per-user limit for submitting Qiita-style chunk-link edit requests on
+   * a position (memory / puzzle). Mirrors `submitChunkEditRequest` (10/hour)
+   * — the same spam-vs-genuine-ideas trade-off applies.
+   */
+  submitPositionEditRequest: {
+    action: 'submit_position_edit_request',
+    maxAttempts: 10,
+    windowMs: 3_600_000,
+  },
+  /**
+   * Per-user limit for the position owner's accept/reject and the
+   * proposer's withdraw. Mirrors `resolveChunkEditRequest` (30/hour).
+   */
+  resolvePositionEditRequest: {
+    action: 'resolve_position_edit_request',
+    maxAttempts: 30,
+    windowMs: 3_600_000,
+  },
+  /**
    * Per-user limit for point redemptions. Tight cap (10/hour) because each
    * redemption mutates `user_point_balances` + writes a `user_grants` row
    * + writes two ledger rows. A reasonable user never needs to redeem

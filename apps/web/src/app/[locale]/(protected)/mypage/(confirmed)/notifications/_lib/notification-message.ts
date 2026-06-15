@@ -58,6 +58,10 @@ export function buildNotificationMessage(
       return t('chunkEditRequestSubmittedMessage', { actor: actorName });
     case 'chunk_edit_request_accepted':
       return t('chunkEditRequestAcceptedMessage', { actor: actorName });
+    case 'position_edit_request_submitted':
+      return t('positionEditRequestSubmittedMessage', { actor: actorName });
+    case 'position_edit_request_accepted':
+      return t('positionEditRequestAcceptedMessage', { actor: actorName });
     case 'new_chunk_draft':
       return t('newChunkDraftMessage', { actor: actorName });
     case 'chunk_published':

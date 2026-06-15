@@ -460,6 +460,55 @@ CREATE POLICY "chunk_edit_requests_update" ON "chunk_edit_requests"
   );
 
 -- =============================================================================
+-- position_edit_requests (Qiita-style chunk-link suggestions on a position)
+-- =============================================================================
+-- SELECT is open so anyone can see what's already been proposed. INSERT is
+-- restricted to the proposer (non-owner, against a non-deleted position) and
+-- additionally gated at the application layer (rate limit, one-pending check,
+-- and validation that the proposed chunk set is published / non-deleted —
+-- which cannot be expressed in a CHECK over a jsonb array). UPDATE is granted
+-- to either the proposer (withdraw) or the position owner (accept / reject);
+-- the application layer enforces the per-transition preconditions. Unlike
+-- chunk_edit_requests there is no `status = 'draft'` gate (positions have no
+-- status column) and no `user_id IS NOT NULL` guard (positions.user_id is
+-- NOT NULL).
+ALTER TABLE "position_edit_requests" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "position_edit_requests_select" ON "position_edit_requests";
+CREATE POLICY "position_edit_requests_select" ON "position_edit_requests"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "position_edit_requests_insert" ON "position_edit_requests";
+CREATE POLICY "position_edit_requests_insert" ON "position_edit_requests"
+  FOR INSERT WITH CHECK (
+    auth.uid() = proposer_id
+    AND EXISTS (
+      SELECT 1 FROM positions p
+      WHERE p.id = position_id
+        AND p.deleted_at IS NULL
+        AND p.user_id != auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "position_edit_requests_update" ON "position_edit_requests";
+CREATE POLICY "position_edit_requests_update" ON "position_edit_requests"
+  FOR UPDATE
+  USING (
+    auth.uid() = proposer_id
+    OR EXISTS (
+      SELECT 1 FROM positions p
+      WHERE p.id = position_id AND p.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    auth.uid() = proposer_id
+    OR EXISTS (
+      SELECT 1 FROM positions p
+      WHERE p.id = position_id AND p.user_id = auth.uid()
+    )
+  );
+
+-- =============================================================================
 -- chunk_feedback_topics (author-flagged "I want feedback on these fields")
 -- =============================================================================
 -- SELECT is open so visitors can see which fields the author is workshopping

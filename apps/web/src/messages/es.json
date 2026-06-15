@@ -1751,6 +1751,72 @@
         "detach": "Quitar",
         "close": "Cerrar"
       }
+    },
+    "positionEditRequests": {
+      "sectionTitle": "Sugerencias de chunks",
+      "sectionHint": "Otros jugadores pueden sugerir qué chunks se vinculan a esta posición. El propietario revisa cada sugerencia.",
+      "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
+      "alreadyHasPendingNotice": "Tu sugerencia anterior sigue pendiente abajo. Retírala primero si quieres proponer algo diferente.",
+      "signInToSuggest": "Inicia sesión para sugerir chunks vinculados.",
+      "empty": "Aún no hay sugerencias.",
+      "formHint": "Ajusta los chunks vinculados abajo y envía. Una selección idéntica a los vínculos actuales se rechaza automáticamente.",
+      "deletedProposer": "(usuario eliminado)",
+      "deletedChunk": "(chunk eliminado)",
+      "proposerComment": "Motivo del proponente",
+      "justNow": "ahora mismo",
+      "status": {
+        "pending": "Pendiente",
+        "accepted": "Aceptada",
+        "rejected": "Rechazada",
+        "withdrawn": "Retirada"
+      },
+      "diff": {
+        "added": "Chunks para añadir",
+        "removed": "Chunks para quitar",
+        "noChange": "Sin cambios en los chunks vinculados."
+      },
+      "fields": {
+        "comment": "¿Por qué este cambio? (opcional)",
+        "commentPlaceholder": "Una breve explicación ayuda al propietario a decidir."
+      },
+      "actions": {
+        "submit": "Enviar sugerencia",
+        "cancel": "Cancelar",
+        "accept": "Aceptar",
+        "reject": "Rechazar",
+        "withdraw": "Retirar",
+        "acceptConfirmTitle": "¿Aceptar esta sugerencia?",
+        "acceptConfirmMessage": "Los chunks propuestos reemplazarán de inmediato los vínculos actuales de esta posición.",
+        "rejectConfirmTitle": "¿Rechazar esta sugerencia?",
+        "rejectConfirmMessage": "No se notificará al proponente. Verá el estado de rechazo si vuelve a esta página.",
+        "withdrawConfirmTitle": "¿Retirar tu sugerencia?",
+        "withdrawConfirmMessage": "No se notificará al propietario de la posición. Verá disminuir el recuento en su próxima visita."
+      },
+      "errors": {
+        "signInRequired": "Inicia sesión para enviar una sugerencia.",
+        "banned": "Tu cuenta está suspendida.",
+        "rateLimited": "Demasiadas sugerencias. Inténtalo más tarde.",
+        "notFound": "Esta sugerencia o posición ya no existe.",
+        "unauthorized": "No puedes realizar esta acción.",
+        "alreadyResolved": "Esta sugerencia ya se ha resuelto.",
+        "ownerCannotPropose": "No puedes sugerir cambios en tu propia posición; edítala directamente.",
+        "alreadyHasPending": "Ya tienes una sugerencia pendiente para esta posición. Retírala primero si quieres proponer algo diferente.",
+        "invalidChunk": "Uno o más chunks seleccionados no están disponibles. Actualiza e inténtalo de nuevo.",
+        "invalidChunkId": "Uno o más chunks seleccionados no son válidos.",
+        "identicalChunkSet": "Tu selección coincide con los chunks vinculados actuales. Cámbiala antes de enviar.",
+        "commentTooLong": "Tu comentario es demasiado largo."
+      },
+      "pageTitle": "Sugerencias de chunks · {name}",
+      "breadcrumb": "Sugerencias de chunks",
+      "callout": {
+        "body": "¿Viste un chunk que esta posición debería vincular? Sugiérelo: el propietario revisa cada sugerencia.",
+        "ownerBodyWithPending": "{count, plural, one {# sugerencia de chunks pendiente de tu revisión.} other {# sugerencias de chunks pendientes de tu revisión.}}",
+        "ctaOwner": "Revisar sugerencias",
+        "ctaHasPending": "Ver / retirar tu sugerencia",
+        "ctaCanSuggest": "Sugerir chunks vinculados",
+        "ctaSignedOut": "Inicia sesión para sugerir",
+        "historyLink": "Historial de sugerencias ({count})"
+      }
     }
   },
   "home": {
@@ -2090,13 +2156,21 @@
       "notAuthorized": "No tienes permiso para editar esta partida.",
       "backToGame": "Volver a la partida"
     },
-    "result": { "win": "Victoria", "loss": "Derrota", "draw": "Tablas" },
+    "result": {
+      "win": "Victoria",
+      "loss": "Derrota",
+      "draw": "Tablas"
+    },
     "list": {
       "title": "Partidas publicadas",
       "empty": "Aún no se ha compartido ninguna partida.",
       "sectionTitle": "Partidas",
       "sortBy": "Ordenar por",
-      "sort": { "new": "Más recientes", "clean": "Más limpias", "strong": "Fuerza del rival" }
+      "sort": {
+        "new": "Más recientes",
+        "clean": "Más limpias",
+        "strong": "Fuerza del rival"
+      }
     },
     "new": {
       "title": "Publicar partida",
@@ -2109,7 +2183,11 @@
       "titlePlaceholder": "ej. Victoria a ciegas vs Maia 1600",
       "descriptionLabel": "Descripción (opcional)",
       "descriptionPlaceholder": "Notas sobre esta partida…",
-      "summary": { "engine": "Rival", "result": "Resultado", "moves": "Jugadas" },
+      "summary": {
+        "engine": "Rival",
+        "result": "Resultado",
+        "moves": "Jugadas"
+      },
       "submit": "Publicar",
       "submitting": "Publicando…",
       "errors": {
@@ -3079,7 +3157,9 @@
     },
     "likeCoinGrantMessage": {
       "default": "Le gustó tu contenido: ganaste {count, plural, one {# moneda} other {# monedas}}"
-    }
+    },
+    "positionEditRequestSubmittedMessage": "{actor} sugirió chunks para tu posición",
+    "positionEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de chunks"
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",
@@ -3111,7 +3191,9 @@
     "positionUpdated": "Cambios guardados",
     "lineUpdated": "Línea actualizada",
     "puzzleUpdated": "Cambios guardados",
-    "puzzleDeleted": "Puzzle eliminado"
+    "puzzleDeleted": "Puzzle eliminado",
+    "editRequestAccepted": "Sugerencia de edición aceptada",
+    "editRequestRejected": "Sugerencia de edición rechazada"
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",
