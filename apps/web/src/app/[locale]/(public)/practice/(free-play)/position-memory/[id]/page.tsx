@@ -36,6 +36,7 @@ import { toggleLike } from '../../_actions/toggleLike';
 import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
 import { PositionAuthorAttribution } from '../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
+import { PositionEditRequestCallout } from '../../_components/edit-request/PositionEditRequestCallout';
 import { loadPositionDetail } from '../../_lib/load-position-detail';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
@@ -180,6 +181,14 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           badgeTheme: tTags('badge.theme'),
           badgeChunk: tTags('badge.chunk'),
         }}
+      />
+
+      <PositionEditRequestCallout
+        positionId={position.id}
+        positionType="memory"
+        viewerId={currentUser?.id ?? null}
+        ownerId={position.userId}
+        locale={locale}
       />
 
       <PositionAuthorAttribution

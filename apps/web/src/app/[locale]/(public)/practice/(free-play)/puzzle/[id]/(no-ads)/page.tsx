@@ -39,6 +39,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { ForkProvenanceNote } from '../../../_components/ForkProvenanceNote';
 import { PositionAuthorAttribution } from '../../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
+import { PositionEditRequestCallout } from '../../../_components/edit-request/PositionEditRequestCallout';
 import { loadPositionDetail } from '../../../_lib/load-position-detail';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
@@ -175,6 +176,14 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           badgeTheme: tTags('badge.theme'),
           badgeChunk: tTags('badge.chunk'),
         }}
+      />
+
+      <PositionEditRequestCallout
+        positionId={position.id}
+        positionType="puzzle"
+        viewerId={currentUser?.id ?? null}
+        ownerId={position.userId}
+        locale={locale}
       />
 
       <PositionAuthorAttribution
