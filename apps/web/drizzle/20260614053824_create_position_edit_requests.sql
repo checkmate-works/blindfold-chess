@@ -6,6 +6,7 @@ CREATE TABLE "position_edit_requests" (
 	"comment" text,
 	"status" varchar(20) DEFAULT 'pending' NOT NULL,
 	"resolved_at" timestamp with time zone,
+	"resolved_base_chunk_ids" jsonb,
 	"resolver_id" uuid,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL

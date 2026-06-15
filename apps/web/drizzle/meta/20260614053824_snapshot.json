@@ -5399,6 +5399,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "resolved_base_chunk_ids": {
+          "name": "resolved_base_chunk_ids",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
         "resolver_id": {
           "name": "resolver_id",
           "type": "uuid",

@@ -1,1 +1,0 @@
-ALTER TABLE "position_edit_requests" ADD COLUMN "resolved_base_chunk_ids" jsonb;
