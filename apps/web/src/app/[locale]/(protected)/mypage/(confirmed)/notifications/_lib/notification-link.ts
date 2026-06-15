@@ -199,6 +199,17 @@ export function buildNotificationLink(
     return `/chunks/${notification.metadata.slug}/edit-requests`;
   }
   if (
+    (notification.type === 'position_edit_request_submitted' ||
+      notification.type === 'position_edit_request_accepted') &&
+    isPositionMetadata(notification.metadata)
+  ) {
+    // Route to the position detail page, where the edit-request section is
+    // mounted (the owner reviews there; the accepted proposer sees the
+    // applied links there). `positionType` in metadata selects memory vs.
+    // puzzle; a missing type falls back to the memory URL.
+    return resolvePositionLinkFromMetadata(notification.metadata.positionId, notification.metadata);
+  }
+  if (
     (notification.type === 'new_chunk_draft' || notification.type === 'chunk_published') &&
     isChunkLifecycleMetadata(notification.metadata)
   ) {
