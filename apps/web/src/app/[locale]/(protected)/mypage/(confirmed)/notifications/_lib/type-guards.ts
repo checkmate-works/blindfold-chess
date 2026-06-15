@@ -44,6 +44,25 @@ export function isChunkLifecycleMetadata(m: unknown): m is ChunkLifecycleMetadat
   );
 }
 
+/**
+ * Metadata persisted with a `like` notification whose target is a chunk
+ * entity itself (`targetType = 'chunk'`) — i.e. someone liked the chunk,
+ * not a comment in its thread (that is `targetType = 'topic_post'` with
+ * `topicType = 'chunk'`). `slug` is snapshotted at notification time so
+ * the link target survives a later rename and renders without a DB lookup.
+ *
+ * Shares the `{ chunkId, slug }` shape with `ChunkEditRequestMetadata`,
+ * but is kept distinct so the like branch in `buildNotificationLink`
+ * reads by intent rather than borrowing an edit-request guard.
+ */
+export type ChunkLikeMetadata = { chunkId: string; slug: string };
+
+export function isChunkLikeMetadata(m: unknown): m is ChunkLikeMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.chunkId === 'string' && typeof r.slug === 'string';
+}
+
 export function isPositionMetadata(m: unknown): m is PositionMetadata {
   if (typeof m !== 'object' || m === null) return false;
   const r = m as Record<string, unknown>;

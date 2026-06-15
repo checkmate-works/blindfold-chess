@@ -8,6 +8,7 @@ import {
   isAnnouncementMetadata,
   isChunkEditRequestMetadata,
   isChunkLifecycleMetadata,
+  isChunkLikeMetadata,
   isGameCommentLikeMetadata,
   isPositionMetadata,
   isPostMetadata,
@@ -183,6 +184,18 @@ export function buildNotificationLink(
     // Deep-link to the liked comment: the detail page opens that comment's
     // move and scrolls to it (the threads are per-move).
     return `/games/shared/${notification.metadata.gameId}?comment=${notification.targetId}`;
+  }
+  if (
+    notification.type === 'like' &&
+    notification.targetType === 'chunk' &&
+    isChunkLikeMetadata(notification.metadata)
+  ) {
+    // Direct like on a chunk entity. Route to the chunk's canonical page
+    // via the snapshotted slug — `targetId` holds the chunk id, but the
+    // route is keyed by slug (`/chunks/[slug]`), so the id would 404.
+    // (A like on a comment in the chunk thread is `targetType: 'topic_post'`
+    // with `topicType: 'chunk'`, handled above by `buildPostDetailUrl`.)
+    return `/chunks/${notification.metadata.slug}`;
   }
   if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
     return `/announcements/${notification.metadata.slug}`;

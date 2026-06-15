@@ -366,6 +366,22 @@ describe('NotificationItem', () => {
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/chunks/knight-fork/posts/post-9');
     });
+
+    it('should link a direct chunk like to /chunks/{slug} via the snapshotted slug', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'chunk',
+        targetId: 'chunk-42',
+        metadata: { chunkId: 'chunk-42', slug: 'knight-fork' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      // Route is keyed by slug, not the chunk id in `targetId`.
+      expect(link!.getAttribute('href')).toBe('/chunks/knight-fork');
+    });
   });
 
   describe('like notification with isPostMetadata rename', () => {
