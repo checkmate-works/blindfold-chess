@@ -1818,7 +1818,8 @@
         "ctaOwner": "Review suggestions",
         "ctaHasPending": "View / withdraw your suggestion",
         "ctaCanSuggest": "Suggest linked chunks",
-        "ctaSignedOut": "Sign in to suggest"
+        "ctaSignedOut": "Sign in to suggest",
+        "historyLink": "Edit request history ({count})"
       }
     }
   },

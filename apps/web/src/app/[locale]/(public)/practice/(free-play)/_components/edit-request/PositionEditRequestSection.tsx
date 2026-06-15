@@ -79,7 +79,7 @@ export async function PositionEditRequestSection({
   }
   const missingIds = new Set<string>();
   for (const { request } of rows) {
-    for (const id of request.proposedChunkIds) {
+    for (const id of [...request.proposedChunkIds, ...(request.resolvedBaseChunkIds ?? [])]) {
       if (!labelMap.has(id)) missingIds.add(id);
     }
   }
@@ -199,9 +199,18 @@ export async function PositionEditRequestSection({
             const status: PositionEditRequestStatus = isPositionEditRequestStatus(request.status)
               ? request.status
               : 'pending';
+            // Pending rows diff against the live link set (true "accept now"
+            // effect for the reviewing owner). Resolved rows diff against the
+            // snapshot captured at resolution time, so the history shows what
+            // the resolution actually changed. Legacy resolved rows without a
+            // snapshot fall back to the live set.
+            const baseIds =
+              status !== 'pending' && request.resolvedBaseChunkIds
+                ? new Set(request.resolvedBaseChunkIds)
+                : currentChunkIds;
             const proposedSet = new Set(request.proposedChunkIds);
-            const added = request.proposedChunkIds.filter((id) => !currentChunkIds.has(id));
-            const removed = [...currentChunkIds].filter((id) => !proposedSet.has(id));
+            const added = request.proposedChunkIds.filter((id) => !baseIds.has(id));
+            const removed = [...baseIds].filter((id) => !proposedSet.has(id));
             return (
               <li key={request.id}>
                 <PositionEditRequestItem

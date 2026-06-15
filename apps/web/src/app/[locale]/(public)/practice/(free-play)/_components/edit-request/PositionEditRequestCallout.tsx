@@ -1,9 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
-import { FiGitPullRequest } from 'react-icons/fi';
+import { FiClock, FiGitPullRequest } from 'react-icons/fi';
 
 import {
+  countEditRequestsForPosition,
   countPendingEditRequestsForPosition,
   getViewerPendingEditRequestForPosition,
 } from '@/lib/position-edit-requests/queries';
@@ -46,10 +47,12 @@ function editRequestsPath(positionType: PositionType, id: string): string | null
  * review list live — the form is intentionally NOT inlined on the detail
  * page (matches the chunk detail / `EditRequestCallout` pattern).
  *
- * Owner-side, an empty queue carries no action, so the callout is
- * suppressed entirely (returns `null`) rather than showing a "No
- * suggestions yet" line on every visit to the owner's own position.
- * Non-owners always see it — it is their entry point into the flow.
+ * Owner-side, an empty *pending* queue carries no review action, so the
+ * amber action banner is suppressed — but if the position has resolved
+ * history (accepted / rejected / withdrawn requests), a quiet "history"
+ * link is shown instead so the trail of what was changed via edit requests
+ * stays discoverable from the position page. Non-owners always see the
+ * action banner — it is their entry point into the flow.
  */
 export async function PositionEditRequestCallout({
   positionId,
@@ -63,11 +66,13 @@ export async function PositionEditRequestCallout({
 
   const isOwner = !!viewerId && viewerId === ownerId;
 
-  const [pendingCount, viewerPendingId, t] = await Promise.all([
+  const [pendingCount, totalCount, viewerPendingId, t] = await Promise.all([
     countPendingEditRequestsForPosition(positionId),
+    countEditRequestsForPosition(positionId),
     isOwner ? Promise.resolve(null) : getViewerPendingEditRequestForPosition(positionId, viewerId),
     getTranslations({ locale, namespace: 'practice.positionEditRequests' }),
   ]);
+  const resolvedCount = totalCount - pendingCount;
 
   const viewerState: CalloutViewerState = !viewerId
     ? 'signedOut'
@@ -77,8 +82,22 @@ export async function PositionEditRequestCallout({
         ? 'hasPending'
         : 'canSuggest';
 
-  // Owner with an empty queue: nothing to act on — suppress the banner.
-  if (viewerState === 'owner' && pendingCount === 0) return null;
+  // Owner with an empty pending queue: no review action. Fall back to a
+  // quiet history link when there is resolved history, else suppress.
+  if (viewerState === 'owner' && pendingCount === 0) {
+    if (resolvedCount === 0) return null;
+    return (
+      <div>
+        <Link
+          href={href as '/practice/position-memory/[id]/edit-requests'}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <FiClock className="h-3 w-3" aria-hidden />
+          {t('callout.historyLink', { count: resolvedCount })}
+        </Link>
+      </div>
+    );
+  }
 
   const ctaByState: Record<CalloutViewerState, string> = {
     owner: t('callout.ctaOwner'),

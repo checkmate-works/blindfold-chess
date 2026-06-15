@@ -57,6 +57,21 @@ export const countPendingEditRequestsForPosition = cache(async (positionId: stri
 });
 
 /**
+ * Count all edit requests (any status) for a position. Used by the detail
+ * page to decide whether to surface a "history" entry point even when no
+ * request is currently pending.
+ */
+export const countEditRequestsForPosition = cache(async (positionId: string) => {
+  if (!UUID_RE.test(positionId)) return 0;
+
+  const [row] = await db
+    .select({ value: count() })
+    .from(positionEditRequests)
+    .where(eq(positionEditRequests.positionId, positionId));
+  return row?.value ?? 0;
+});
+
+/**
  * Fetch a single edit request by id. Used by the mutation core to load the
  * row before each transition. No caching — mutations need the freshest
  * read possible.

@@ -64,6 +64,7 @@ vi.mock('next/cache', () => ({
 
 const POSITION_EDIT_REQUESTS_TABLE = { __table: 'position_edit_requests' };
 const POSITIONS_TABLE = { __table: 'positions' };
+const POSITION_CHUNKS_TABLE = { positionId: 'pc.position_id', chunkId: 'pc.chunk_id' };
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -82,6 +83,9 @@ vi.mock('@/lib/db', () => ({
     }),
     transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
       const tx = {
+        // The resolve path snapshots the live linked-chunk set before the
+        // update; the mock returns an empty set (no current links).
+        select: () => ({ from: () => ({ where: () => Promise.resolve([]) }) }),
         update: (table: unknown) => ({
           set: (values: unknown) => ({
             where: (...args: unknown[]) => {
@@ -98,6 +102,7 @@ vi.mock('@/lib/db', () => ({
   },
   positionEditRequests: POSITION_EDIT_REQUESTS_TABLE,
   positions: POSITIONS_TABLE,
+  positionChunks: POSITION_CHUNKS_TABLE,
 }));
 
 const PROPOSER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -291,7 +296,13 @@ describe('acceptPositionEditRequestEntry', () => {
     expect(result).toEqual({ success: true });
     expect(mockTxUpdate).toHaveBeenCalledTimes(1);
     const reqUpdate = mockTxUpdate.mock.calls[0][0] as { values: Record<string, unknown> };
-    expect(reqUpdate.values).toMatchObject({ status: 'accepted', resolverId: OWNER_ID });
+    expect(reqUpdate.values).toMatchObject({
+      status: 'accepted',
+      resolverId: OWNER_ID,
+      // The live linked set is snapshotted onto the row at resolution time
+      // (empty here per the tx.select mock).
+      resolvedBaseChunkIds: [],
+    });
     expect(mockApplyAcceptedProposal).toHaveBeenCalledTimes(1);
     expect(mockCreateNotification).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -1814,7 +1814,8 @@
         "ctaOwner": "Revisar sugestões",
         "ctaHasPending": "Ver / retirar sua sugestão",
         "ctaCanSuggest": "Sugerir chunks vinculados",
-        "ctaSignedOut": "Entrar para sugerir"
+        "ctaSignedOut": "Entrar para sugerir",
+        "historyLink": "Histórico de sugestões ({count})"
       }
     }
   },

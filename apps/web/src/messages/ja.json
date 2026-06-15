@@ -1818,7 +1818,8 @@
         "ctaOwner": "提案を確認",
         "ctaHasPending": "提案を確認 / 取り下げ",
         "ctaCanSuggest": "チャンクを提案",
-        "ctaSignedOut": "サインインして提案"
+        "ctaSignedOut": "サインインして提案",
+        "historyLink": "編集リクエストの履歴 ({count})"
       }
     }
   },

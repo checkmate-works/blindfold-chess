@@ -4,7 +4,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, positionEditRequests, positions } from '@/lib/db';
+import { db, positionChunks, positionEditRequests, positions } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { createNotification } from '@/lib/notifications/notification';
 import { getPositionDetailPath } from '@/lib/positions/routes';
@@ -201,12 +201,23 @@ async function resolvePositionEditRequest(
     // position row first (mirrors the chunk_edit_requests accept path).
     await tx.execute(sql`SELECT 1 FROM positions WHERE id = ${position.id} FOR UPDATE`);
 
+    // Snapshot the live linked-chunk set at resolution time, before any
+    // apply, so the history can render a stable proposed-vs-base diff for
+    // this now-resolved row (a live diff would collapse to "no change"
+    // once an accept makes the live set equal the proposed set).
+    const baseRows = await tx
+      .select({ chunkId: positionChunks.chunkId })
+      .from(positionChunks)
+      .where(eq(positionChunks.positionId, position.id));
+    const resolvedBaseChunkIds = baseRows.map((row) => row.chunkId);
+
     await tx
       .update(positionEditRequests)
       .set({
         status: terminal,
         resolvedAt: now,
         resolverId: user.id,
+        resolvedBaseChunkIds,
       })
       .where(
         and(eq(positionEditRequests.id, request.id), eq(positionEditRequests.status, 'pending'))
