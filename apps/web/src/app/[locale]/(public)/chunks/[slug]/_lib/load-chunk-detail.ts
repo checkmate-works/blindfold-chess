@@ -4,6 +4,7 @@ import {
   countPendingEditRequestsForChunk,
   getViewerPendingEditRequestForChunk,
 } from '@/lib/chunk-edit-requests/queries';
+import { getChunkLikeMeta } from '@/lib/chunks/like-queries';
 import {
   getChunkBySlugWithProfile,
   getFeedbackTopicsForChunk,
@@ -65,6 +66,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
     pendingEditRequestCount,
     requestedFeedbackTopics,
     viewerPendingRequestId,
+    chunkLikeMeta,
   ] = await Promise.all([
     getLinkedPositionsForChunk(chunk.id),
     getPostCountByTopicKey('chunk', slug),
@@ -72,6 +74,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
     countPendingEditRequestsForChunk(chunk.id),
     getFeedbackTopicsForChunk(chunk.id),
     getViewerPendingEditRequestForChunk(chunk.id, userId ?? null),
+    getChunkLikeMeta(chunk.id, userId),
   ]);
 
   // Linked positions can mix puzzle and memory types. Reply meta is keyed by
@@ -119,6 +122,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
     pendingEditRequestCount,
     requestedFeedbackTopics,
     viewerPendingRequestId,
+    chunkLikeMeta,
     linkedLikeMetaMap,
     linkedReplyMetaMap,
     attachments,

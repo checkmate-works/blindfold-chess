@@ -19,6 +19,7 @@ import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
@@ -29,6 +30,7 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { toggleLike as toggleChunkEntityLike } from '../_actions/toggleLike';
 import { ChunkDeleteButton } from '../_components/ChunkDeleteButton';
 import { ChunkLifecycleControls } from '../_components/ChunkLifecycleControls';
 import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithAttachment';
@@ -94,6 +96,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     pendingEditRequestCount,
     requestedFeedbackTopics,
     viewerPendingRequestId,
+    chunkLikeMeta,
     linkedLikeMetaMap,
     linkedReplyMetaMap,
     attachments,
@@ -321,41 +324,60 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
        * actions" surface for the page rather than scattering controls
        * near the title.
        */}
-      <div className="flex flex-wrap items-center justify-end gap-4 text-xs text-muted-foreground">
-        {isOwner && isDraft && (
-          <Link
-            href={`/${locale}/chunks/${slug}/edit`}
-            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
-          >
-            <FiEdit2 className="h-3 w-3" aria-hidden />
-            {tChunks('editCta')}
-          </Link>
-        )}
-        {isOwner && (
-          <ChunkLifecycleControls
-            chunkId={chunk.id}
-            chunkSlug={chunk.slug}
-            status={status}
-            hasDescription={!!chunk.description && chunk.description.trim().length > 0}
-          />
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
         {/*
-         * Delete stays available to the owner in both draft and
-         * published states — publish is one-way and the edit page is
-         * 404 once published, so without this control the owner has
-         * no way to retire a mistakenly-published chunk.
+         * Chunk-entity like — sits on the left of the metadata row, the
+         * same slot the puzzle / position-memory detail pages place their
+         * LikeButton (`/practice/puzzle/[id]`,
+         * `/practice/position-memory/[id]`). `topics.chunks` is the same
+         * i18n namespace the home-feed ChunkFeedCard uses for its like
+         * affordance, so the label copy stays consistent across surfaces.
          */}
-        {isOwner && <ChunkDeleteButton chunkId={chunk.id} />}
-        <time dateTime={chunk.createdAt.toISOString()}>
-          {chunk.createdAt.toLocaleDateString(locale, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </time>
-        {chunk.updatedAt.getTime() - chunk.createdAt.getTime() > 1000 && (
-          <span>{tChunks('detail.edited')}</span>
-        )}
+        <LikeButton
+          postId={chunk.id}
+          locale={locale}
+          topicKey=""
+          initialLikeCount={chunkLikeMeta.likeCount}
+          initialLikedByMe={chunkLikeMeta.likedByMe}
+          toggleLikeAction={toggleChunkEntityLike}
+          i18nNamespace="topics.chunks"
+        />
+        <div className="flex flex-wrap items-center justify-end gap-4">
+          {isOwner && isDraft && (
+            <Link
+              href={`/${locale}/chunks/${slug}/edit`}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+            >
+              <FiEdit2 className="h-3 w-3" aria-hidden />
+              {tChunks('editCta')}
+            </Link>
+          )}
+          {isOwner && (
+            <ChunkLifecycleControls
+              chunkId={chunk.id}
+              chunkSlug={chunk.slug}
+              status={status}
+              hasDescription={!!chunk.description && chunk.description.trim().length > 0}
+            />
+          )}
+          {/*
+           * Delete stays available to the owner in both draft and
+           * published states — publish is one-way and the edit page is
+           * 404 once published, so without this control the owner has
+           * no way to retire a mistakenly-published chunk.
+           */}
+          {isOwner && <ChunkDeleteButton chunkId={chunk.id} />}
+          <time dateTime={chunk.createdAt.toISOString()}>
+            {chunk.createdAt.toLocaleDateString(locale, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+          {chunk.updatedAt.getTime() - chunk.createdAt.getTime() > 1000 && (
+            <span>{tChunks('detail.edited')}</span>
+          )}
+        </div>
       </div>
 
       <SectionTitle>{t('commentsTitle')}</SectionTitle>
