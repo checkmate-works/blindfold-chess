@@ -1751,6 +1751,71 @@
         "detach": "Remover",
         "close": "Fechar"
       }
+    },
+    "positionEditRequests": {
+      "sectionTitle": "Sugestões de chunks",
+      "sectionHint": "Outros jogadores podem sugerir quais chunks são vinculados a esta posição. O proprietário revisa cada sugestão.",
+      "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
+      "alreadyHasPendingNotice": "Sua sugestão anterior ainda está pendente abaixo. Retire-a primeiro se quiser propor algo diferente.",
+      "signInToSuggest": "Faça login para sugerir chunks vinculados.",
+      "empty": "Ainda não há sugestões.",
+      "formHint": "Ajuste os chunks vinculados abaixo e envie. Uma seleção idêntica aos vínculos atuais é rejeitada automaticamente.",
+      "deletedProposer": "(usuário excluído)",
+      "deletedChunk": "(chunk removido)",
+      "proposerComment": "Motivo do proponente",
+      "justNow": "agora mesmo",
+      "status": {
+        "pending": "Pendente",
+        "accepted": "Aceita",
+        "rejected": "Rejeitada",
+        "withdrawn": "Retirada"
+      },
+      "diff": {
+        "added": "Chunks para adicionar",
+        "removed": "Chunks para remover",
+        "noChange": "Sem alterações nos chunks vinculados."
+      },
+      "fields": {
+        "comment": "Por que esta mudança? (opcional)",
+        "commentPlaceholder": "Uma breve explicação ajuda o proprietário a decidir."
+      },
+      "actions": {
+        "submit": "Enviar sugestão",
+        "cancel": "Cancelar",
+        "accept": "Aceitar",
+        "reject": "Rejeitar",
+        "withdraw": "Retirar",
+        "acceptConfirmTitle": "Aceitar esta sugestão?",
+        "acceptConfirmMessage": "Os chunks propostos substituirão imediatamente os vínculos atuais desta posição.",
+        "rejectConfirmTitle": "Rejeitar esta sugestão?",
+        "rejectConfirmMessage": "O proponente não será notificado. Ele verá o status de rejeição se voltar a esta página.",
+        "withdrawConfirmTitle": "Retirar sua sugestão?",
+        "withdrawConfirmMessage": "O proprietário da posição não será notificado. Ele verá a contagem diminuir na próxima visita."
+      },
+      "errors": {
+        "signInRequired": "Faça login para enviar uma sugestão.",
+        "banned": "Sua conta está suspensa.",
+        "rateLimited": "Muitas sugestões. Tente novamente mais tarde.",
+        "notFound": "Esta sugestão ou posição não existe mais.",
+        "unauthorized": "Você não pode executar esta ação.",
+        "alreadyResolved": "Esta sugestão já foi resolvida.",
+        "ownerCannotPropose": "Você não pode sugerir alterações na sua própria posição — edite-a diretamente.",
+        "alreadyHasPending": "Você já tem uma sugestão pendente para esta posição. Retire-a primeiro se quiser propor algo diferente.",
+        "invalidChunk": "Um ou mais chunks selecionados estão indisponíveis. Atualize e tente novamente.",
+        "invalidChunkId": "Um ou mais chunks selecionados são inválidos.",
+        "identicalChunkSet": "Sua seleção corresponde aos chunks vinculados atuais. Altere antes de enviar.",
+        "commentTooLong": "Seu comentário é muito longo."
+      },
+      "pageTitle": "Sugestões de chunks · {name}",
+      "breadcrumb": "Sugestões de chunks",
+      "callout": {
+        "body": "Notou um chunk que esta posição deveria vincular? Sugira — o proprietário revisa cada sugestão.",
+        "ownerBodyWithPending": "{count, plural, one {# sugestão de chunks aguardando sua revisão.} other {# sugestões de chunks aguardando sua revisão.}}",
+        "ctaOwner": "Revisar sugestões",
+        "ctaHasPending": "Ver / retirar sua sugestão",
+        "ctaCanSuggest": "Sugerir chunks vinculados",
+        "ctaSignedOut": "Entrar para sugerir"
+      }
     }
   },
   "home": {
@@ -2090,13 +2155,21 @@
       "notAuthorized": "Você não tem permissão para editar esta partida.",
       "backToGame": "Voltar à partida"
     },
-    "result": { "win": "Vitória", "loss": "Derrota", "draw": "Empate" },
+    "result": {
+      "win": "Vitória",
+      "loss": "Derrota",
+      "draw": "Empate"
+    },
     "list": {
       "title": "Partidas publicadas",
       "empty": "Nenhuma partida foi compartilhada ainda.",
       "sectionTitle": "Partidas",
       "sortBy": "Ordenar por",
-      "sort": { "new": "Mais recentes", "clean": "Mais limpas", "strong": "Força do adversário" }
+      "sort": {
+        "new": "Mais recentes",
+        "clean": "Mais limpas",
+        "strong": "Força do adversário"
+      }
     },
     "new": {
       "title": "Publicar partida",
@@ -2109,7 +2182,11 @@
       "titlePlaceholder": "ex. Vitória às cegas vs Maia 1600",
       "descriptionLabel": "Descrição (opcional)",
       "descriptionPlaceholder": "Notas sobre esta partida…",
-      "summary": { "engine": "Adversário", "result": "Resultado", "moves": "Lances" },
+      "summary": {
+        "engine": "Adversário",
+        "result": "Resultado",
+        "moves": "Lances"
+      },
       "submit": "Publicar",
       "submitting": "Publicando…",
       "errors": {
@@ -3079,7 +3156,9 @@
     },
     "likeCoinGrantMessage": {
       "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
-    }
+    },
+    "positionEditRequestSubmittedMessage": "{actor} sugeriu chunks para a sua posição",
+    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de chunks"
   },
   "deleteAccount": {
     "title": "Excluir Conta",

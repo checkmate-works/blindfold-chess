@@ -1755,6 +1755,71 @@
         "detach": "外す",
         "close": "閉じる"
       }
+    },
+    "positionEditRequests": {
+      "sectionTitle": "チャンクの提案",
+      "sectionHint": "他のプレイヤーがこの局面に紐づけるチャンクを提案できます。作成者が各提案を確認します。",
+      "pendingCount": "{count, plural, other {# 件保留中}}",
+      "alreadyHasPendingNotice": "以前の提案がまだ下に保留されています。別の内容を提案したい場合は、先に取り下げてください。",
+      "signInToSuggest": "チャンクを提案するにはサインインしてください。",
+      "empty": "まだ提案はありません。",
+      "formHint": "下で紐づけるチャンクを調整して送信してください。現在の紐づけと同じ選択は自動的に拒否されます。",
+      "deletedProposer": "(削除されたユーザー)",
+      "deletedChunk": "(削除されたチャンク)",
+      "proposerComment": "提案者からの理由",
+      "justNow": "たった今",
+      "status": {
+        "pending": "保留中",
+        "accepted": "承認済み",
+        "rejected": "却下",
+        "withdrawn": "取り下げ"
+      },
+      "diff": {
+        "added": "追加するチャンク",
+        "removed": "削除するチャンク",
+        "noChange": "紐づけるチャンクに変更はありません。"
+      },
+      "fields": {
+        "comment": "変更の理由（任意）",
+        "commentPlaceholder": "簡単な説明があると作成者が判断しやすくなります。"
+      },
+      "actions": {
+        "submit": "提案を送信",
+        "cancel": "キャンセル",
+        "accept": "承認",
+        "reject": "却下",
+        "withdraw": "取り下げ",
+        "acceptConfirmTitle": "この提案を承認しますか？",
+        "acceptConfirmMessage": "提案されたチャンクの紐づけが、この局面の現在の紐づけをただちに置き換えます。",
+        "rejectConfirmTitle": "この提案を却下しますか？",
+        "rejectConfirmMessage": "提案者には通知されません。再度このページを開くと却下のステータスが表示されます。",
+        "withdrawConfirmTitle": "提案を取り下げますか？",
+        "withdrawConfirmMessage": "局面の作成者には通知されません。次回の訪問時に保留件数が減って表示されます。"
+      },
+      "errors": {
+        "signInRequired": "提案するにはサインインしてください。",
+        "banned": "アカウントが停止されています。",
+        "rateLimited": "提案が多すぎます。しばらくしてからお試しください。",
+        "notFound": "この提案または局面は存在しません。",
+        "unauthorized": "この操作は実行できません。",
+        "alreadyResolved": "この提案はすでに処理されています。",
+        "ownerCannotPropose": "自分の局面には提案できません。直接編集してください。",
+        "alreadyHasPending": "この局面にはすでに保留中の提案があります。別の内容を提案するには先に取り下げてください。",
+        "invalidChunk": "選択されたチャンクの一部が利用できません。再読み込みしてお試しください。",
+        "invalidChunkId": "選択されたチャンクの一部が不正です。",
+        "identicalChunkSet": "選択が現在の紐づけと同じです。送信前に変更してください。",
+        "commentTooLong": "コメントが長すぎます。"
+      },
+      "pageTitle": "チャンクの提案 · {name}",
+      "breadcrumb": "チャンクの提案",
+      "callout": {
+        "body": "この局面に紐づくチャンクに気づきましたか？提案できます。作成者がすべての提案を確認します。",
+        "ownerBodyWithPending": "{count, plural, other {確認待ちのチャンク提案が # 件あります。}}",
+        "ctaOwner": "提案を確認",
+        "ctaHasPending": "提案を確認 / 取り下げ",
+        "ctaCanSuggest": "チャンクを提案",
+        "ctaSignedOut": "サインインして提案"
+      }
     }
   },
   "home": {
@@ -2094,13 +2159,21 @@
       "notAuthorized": "この対局を編集する権限がありません。",
       "backToGame": "対局に戻る"
     },
-    "result": { "win": "勝ち", "loss": "負け", "draw": "引き分け" },
+    "result": {
+      "win": "勝ち",
+      "loss": "負け",
+      "draw": "引き分け"
+    },
     "list": {
       "title": "公開されたゲーム",
       "empty": "まだ公開された対局はありません。",
       "sectionTitle": "対局一覧",
       "sortBy": "並び替え",
-      "sort": { "new": "新着", "clean": "クリーン率", "strong": "相手の強さ" }
+      "sort": {
+        "new": "新着",
+        "clean": "クリーン率",
+        "strong": "相手の強さ"
+      }
     },
     "new": {
       "title": "ゲームの公開",
@@ -2113,7 +2186,11 @@
       "titlePlaceholder": "例：Maia 1600 に目隠しで勝利",
       "descriptionLabel": "説明（任意）",
       "descriptionPlaceholder": "この対局についての説明…",
-      "summary": { "engine": "相手", "result": "結果", "moves": "手数" },
+      "summary": {
+        "engine": "相手",
+        "result": "結果",
+        "moves": "手数"
+      },
       "submit": "公開する",
       "submitting": "公開中…",
       "errors": {
@@ -3320,7 +3397,9 @@
     },
     "likeCoinGrantMessage": {
       "default": "コンテンツが評価され、{count} コインを獲得しました"
-    }
+    },
+    "positionEditRequestSubmittedMessage": "{actor}さんがあなたの局面にチャンクを提案しました",
+    "positionEditRequestAcceptedMessage": "{actor}さんがあなたのチャンク提案を承認しました"
   },
   "deleteAccount": {
     "title": "退会",
