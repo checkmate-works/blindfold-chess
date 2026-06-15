@@ -41,23 +41,37 @@ export type RankStatsContext = {
  * rank-resolution context.
  */
 export function aggregateRankStats(users: User[], ctx: RankStatsContext): RankStat[] {
-  const rankCountMap = new Map<string, number>();
-  const rankedUserIds = new Set<string>();
-
-  for (const user of users) {
-    const slugs = ctx.userSlugs.get(user.id);
-    if (!slugs || slugs.size === 0) continue;
-    rankedUserIds.add(user.id);
-    for (const slug of slugs) {
-      rankCountMap.set(slug, (rankCountMap.get(slug) ?? 0) + 1);
-    }
-  }
-
   // Build level map from seed data + mukyu
   const levelMap = new Map<string, number>();
   levelMap.set(MUKYU_SLUG, 0);
   for (const seed of ranksSeedData) {
     levelMap.set(seed.slug, seed.level);
+  }
+
+  const rankCountMap = new Map<string, number>();
+  const rankedUserIds = new Set<string>();
+
+  // Ranks are linear and idempotently granted, so a user who reached e.g. 2級
+  // holds a user_ranks row for every lower rank too (5級, 4級, 3級, 2級).
+  // Count each user only at their highest-level rank so the buckets don't
+  // overlap — otherwise lower ranks double-count everyone above them.
+  for (const user of users) {
+    const slugs = ctx.userSlugs.get(user.id);
+    if (!slugs || slugs.size === 0) continue;
+    rankedUserIds.add(user.id);
+
+    let highestSlug: string | undefined;
+    let highestLevel = -Infinity;
+    for (const slug of slugs) {
+      const level = levelMap.get(slug) ?? 0;
+      if (level > highestLevel) {
+        highestLevel = level;
+        highestSlug = slug;
+      }
+    }
+    if (highestSlug !== undefined) {
+      rankCountMap.set(highestSlug, (rankCountMap.get(highestSlug) ?? 0) + 1);
+    }
   }
 
   // Build results for all ranks in ALL_RANK_SLUGS order
