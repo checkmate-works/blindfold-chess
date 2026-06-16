@@ -111,6 +111,36 @@ describe('DeletePostButton', () => {
     });
   });
 
+  it('stayOnPage: refreshes in place without navigating on success', async () => {
+    // Reply / comment deletes must NOT navigate to redirectPath (the
+    // listing) — that would yank the reader off the post-detail page and
+    // make every other comment appear to vanish. They refresh in place.
+    mockDeleteAction.mockResolvedValue({ success: true });
+
+    render(
+      <DeletePostButton
+        postId="reply-1"
+        locale="en"
+        redirectPath="/topics/openings/pirc-defense"
+        deletePostAction={mockDeleteAction}
+        i18nNamespace="topics.openings.deletePost"
+        stayOnPage
+      />
+    );
+
+    fireEvent.click(screen.getByText('button'));
+    fireEvent.click(screen.getByText('confirm'));
+
+    await waitFor(() => {
+      expect(mockDeleteAction).toHaveBeenCalledWith('reply-1', 'en');
+    });
+    await waitFor(() => {
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+    // The crux: no navigation away from the current page.
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it('should display error message when delete action fails', async () => {
     mockDeleteAction.mockResolvedValue({ error: 'unauthorized' });
 
