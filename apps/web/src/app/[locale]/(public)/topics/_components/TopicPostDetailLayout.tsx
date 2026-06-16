@@ -207,7 +207,12 @@ export async function TopicPostDetailLayout({
   const opId = rootWithMeta.id;
   const repliesAsRoots = replies.map((r) => (r.parentId === opId ? { ...r, parentId: null } : r));
   const replyRoots = buildCommentTree(repliesAsRoots, comments.sortBy);
-  const replyCount = replies.length;
+  // Count only live comments. `getRepliesByPostId` returns soft-deleted rows
+  // too (the tree keeps "[deleted]" tombstones that still have live
+  // descendants), but a tombstone is not a real comment — counting it would
+  // inflate the "Join the conversation" badge and keep an all-deleted thread
+  // out of the empty-state (reply-form) branch.
+  const replyCount = replies.filter((r) => !r.deletedAt).length;
 
   return (
     <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems} divider={false}>
