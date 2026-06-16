@@ -12,10 +12,11 @@ vi.mock('@/i18n/use-safe-translations', () => ({
 }));
 
 const mockPush = vi.fn();
+const mockRefresh = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
-    refresh: vi.fn(),
+    refresh: mockRefresh,
     replace: vi.fn(),
     prefetch: vi.fn(),
     back: vi.fn(),
@@ -102,6 +103,11 @@ describe('DeletePostButton', () => {
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/topics/openings/sicilian-defense');
+    });
+    // Forces a re-fetch so inline comment lists reflect the deletion
+    // without a manual reload (same-URL push alone does not re-fetch).
+    await waitFor(() => {
+      expect(mockRefresh).toHaveBeenCalled();
     });
   });
 

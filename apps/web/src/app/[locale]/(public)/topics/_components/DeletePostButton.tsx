@@ -43,7 +43,15 @@ export function DeletePostButton({
     } else {
       setIsOpen(false);
       setIsPending(false);
+      // `deletePost` soft-deletes and revalidates the topic detail path
+      // server-side, but on surfaces that list comments inline,
+      // `redirectPath` IS the current page — `router.push` to the same
+      // URL does not re-fetch, so the deleted comment lingers until a
+      // manual reload. `router.refresh()` forces the re-fetch; on the
+      // post-detail surface (where `redirectPath` differs) the push still
+      // navigates away as before.
       router.push(redirectPath);
+      router.refresh();
     }
   }
 
