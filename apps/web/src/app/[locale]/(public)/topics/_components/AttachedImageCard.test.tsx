@@ -53,29 +53,39 @@ describe('AttachedImageCard', () => {
     expect(img?.getAttribute('referrerpolicy')).toBe('no-referrer');
   });
 
-  // ─── Cardinality / layout pins (Tester Phase 1) ────────────────────────
+  // ─── Uniform thumbnail layout pins ─────────────────────────────────────
 
-  it('renders a 1-col layout for cardinality 1', () => {
-    const { container } = render(<AttachedImageCard attachments={[fixture()]} />);
-    const ul = container.querySelector('ul');
-    // The 1-image branch picks `grid-cols-1`; the 2+ branch picks
-    // `grid-cols-2 sm:grid-cols-3`. Pin the class so a refactor can't
-    // silently flatten the visual contrast.
-    expect(ul?.className).toMatch(/grid-cols-1/);
-    expect(ul?.className).not.toMatch(/grid-cols-2/);
+  it('lays thumbnails out in a flex-wrap row (not a per-cardinality grid)', () => {
+    // All cardinalities share one layout: a flex-wrap row of fixed-size
+    // thumbnails. Pin `flex`/`flex-wrap` so a refactor can't reintroduce
+    // the old cardinality-branched grid.
+    const r1 = render(<AttachedImageCard attachments={[fixture()]} />);
+    expect(r1.container.querySelector('ul')?.className).toMatch(/flex-wrap/);
+    expect(r1.container.querySelector('ul')?.className).not.toMatch(/grid-cols/);
+    cleanup();
+    const items3 = [fixture({ id: 'a' }), fixture({ id: 'b' }), fixture({ id: 'c' })];
+    const r3 = render(<AttachedImageCard attachments={items3} />);
+    expect(r3.container.querySelector('ul')?.className).toMatch(/flex-wrap/);
+    expect(r3.container.querySelectorAll('img').length).toBe(3);
   });
 
-  it('renders a 2-col / sm:3-col layout for cardinality 2 and 3', () => {
-    const items2 = [fixture({ id: 'a' }), fixture({ id: 'b' })];
-    const items3 = [fixture({ id: 'a' }), fixture({ id: 'b' }), fixture({ id: 'c' })];
-    const r2 = render(<AttachedImageCard attachments={items2} />);
-    expect(r2.container.querySelector('ul')?.className).toMatch(/grid-cols-2/);
-    expect(r2.container.querySelector('ul')?.className).toMatch(/sm:grid-cols-3/);
+  it('renders every thumbnail at the fixed w-32 square size (matches AttachedGameCard)', () => {
+    // Size parity with the game board thumbnail is the contract: every
+    // image — regardless of cardinality — is a w-32 (128px) square crop.
+    const items = [fixture({ id: 'a' }), fixture({ id: 'b' })];
+    const single = render(<AttachedImageCard attachments={[fixture()]} />);
+    for (const img of single.container.querySelectorAll('img')) {
+      expect(img.className).toMatch(/\bw-32\b/);
+      expect(img.className).toMatch(/aspect-square/);
+      expect(img.className).toMatch(/object-cover/);
+      expect(img.className).not.toMatch(/max-h-/);
+    }
     cleanup();
-    const r3 = render(<AttachedImageCard attachments={items3} />);
-    expect(r3.container.querySelector('ul')?.className).toMatch(/grid-cols-2/);
-    expect(r3.container.querySelector('ul')?.className).toMatch(/sm:grid-cols-3/);
-    expect(r3.container.querySelectorAll('img').length).toBe(3);
+    const multi = render(<AttachedImageCard attachments={items} />);
+    for (const img of multi.container.querySelectorAll('img')) {
+      expect(img.className).toMatch(/\bw-32\b/);
+      expect(img.className).toMatch(/aspect-square/);
+    }
   });
 
   it('uses attachment.id as the React key (one <li> per id)', () => {
