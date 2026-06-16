@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   AnimatedImageNotSupportedError,
   POST_IMAGE_MAX_LONG_EDGE,
+  POST_IMAGE_WEBP_QUALITY_LADDER,
   SHARP_INPUT_OPTIONS,
   isWithinMegapixelCap,
   normalizePostImageBuffer,
@@ -31,6 +32,7 @@ vi.mock('sharp', () => {
     metadataThrows: false,
     lastOptions: undefined as unknown,
     lastResizeArgs: undefined as unknown[] | undefined,
+    lastWebpArgs: undefined as unknown[] | undefined,
   };
 
   function chain() {
@@ -38,6 +40,10 @@ vi.mock('sharp', () => {
       rotate: () => chain(),
       resize: (...args: unknown[]) => {
         state.lastResizeArgs = args;
+        return chain();
+      },
+      webp: (...args: unknown[]) => {
+        state.lastWebpArgs = args;
         return chain();
       },
       toBuffer: async () => state.outputBuffer,
@@ -69,6 +75,7 @@ const mockState = (
       metadataThrows: boolean;
       lastOptions: unknown;
       lastResizeArgs: unknown[] | undefined;
+      lastWebpArgs: unknown[] | undefined;
     };
   }
 ).__mockState;
@@ -195,5 +202,33 @@ describe('normalizePostImageBuffer', () => {
       contentType: 'image/jpeg',
     });
     expect(mockState.lastOptions).toEqual(SHARP_INPUT_OPTIONS);
+  });
+
+  it('transcodes the output to WebP at the top of the quality ladder', async () => {
+    // A PNG/JPEG input must be re-encoded as WebP: the resize bounds
+    // dimensions but not bytes, and a lossless PNG re-encode can exceed
+    // the 2 MB Storage/DB cap. WebP is the single bounded output format.
+    mockState.outputBuffer = Buffer.from([1]); // tiny → fits on the first rung
+    mockState.lastWebpArgs = undefined;
+    await normalizePostImageBuffer({
+      buffer: Buffer.from([0]),
+      contentType: 'image/png',
+    });
+    expect(mockState.lastWebpArgs).toEqual([{ quality: POST_IMAGE_WEBP_QUALITY_LADDER[0] }]);
+  });
+
+  it('steps the WebP quality down until the output fits the byte budget', async () => {
+    // The mock returns the same (oversized) buffer at every quality, so the
+    // loop walks the entire ladder and the LAST recorded webp() call is the
+    // lowest rung — proving the byte-budget step-down runs to completion.
+    mockState.outputBuffer = Buffer.alloc(64); // 64 bytes
+    mockState.lastWebpArgs = undefined;
+    const ladder = POST_IMAGE_WEBP_QUALITY_LADDER;
+    await normalizePostImageBuffer({
+      buffer: Buffer.from([0]),
+      contentType: 'image/png',
+      maxBytes: 32, // smaller than the 64-byte output → never fits
+    });
+    expect(mockState.lastWebpArgs).toEqual([{ quality: ladder[ladder.length - 1] }]);
   });
 });
