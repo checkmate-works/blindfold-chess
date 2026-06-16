@@ -4,6 +4,7 @@ import { isNoAdsScope } from '@/lib/ads/no-ads-scope';
 
 import { AdPlaceholder } from './AdPlaceholder';
 import { AdSenseDisplay } from './AdSenseDisplay';
+import { AD_SLOT_DIMENSIONS } from './ad-slot-dimensions';
 
 type Props = {
   slot: 'content-middle' | 'content-bottom';
@@ -28,12 +29,22 @@ type Props = {
  * end-to-end locally — without the wrapper the CSS rule would have no
  * selector match and the placeholder would stay visible forever, masking
  * what is in fact a working hide.
+ *
+ * This wrapper is the one element in the ad stack that is server-rendered
+ * regardless of the storage probe or fill state, so it is also where the
+ * slot's height is reserved (`AD_SLOT_DIMENSIONS[slot].reserveMinH`). The
+ * `min-height` holds the space from first paint, so the later
+ * `AdSenseDisplay` mount and AdSense fill drop into a pre-sized box instead
+ * of shoving the page down — the fix for the mobile CLS regression. For
+ * opted-out viewers the `data-ads-hidden` no-flash rule sets
+ * `display:none`, which collapses the reserved height too, so they see no
+ * gap.
  */
 export async function AdSenseGuard({ slot, slotId, className }: Props) {
   if (isNoAdsScope()) return null;
 
   return (
-    <div className="ad-slot-wrapper" data-ad-slot={slot}>
+    <div className={`ad-slot-wrapper ${AD_SLOT_DIMENSIONS[slot].reserveMinH}`} data-ad-slot={slot}>
       {IS_LOCAL_DEV ? (
         <AdPlaceholder slot={slot} />
       ) : (
