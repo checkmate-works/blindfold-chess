@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
-import { renderAttachment } from './render-attachment';
+import { buildAttachmentNodeMap, renderAttachment } from './render-attachment';
 
 afterEach(() => {
   cleanup();
@@ -87,5 +87,29 @@ describe('renderAttachment — exhaustive kind routing', () => {
     const card = screen.getByTestId('video-card');
     expect(card.getAttribute('data-url')).toContain('youtube');
     expect(card.getAttribute('data-fallback')).toBe('Untitled clip');
+  });
+});
+
+describe('buildAttachmentNodeMap — keyed nodes', () => {
+  const imageAttachment = (count: number) =>
+    ({
+      kind: 'image',
+      data: Array.from({ length: count }, (_, i) => ({ id: `img-${i}` })),
+    }) as unknown as PostAttachment;
+
+  it('nodes carry a key so rendering them as an array does not warn', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const attachments = new Map<string, PostAttachment>([
+      ['p1', imageAttachment(2)],
+      ['p2', imageAttachment(1)],
+    ]);
+    const nodes = buildAttachmentNodeMap(['p1', 'p2'], attachments, 'fallback');
+    // Render the per-post nodes as a list — the shape callers use when a
+    // page lays out one attachment slot per reply.
+    render(<>{['p1', 'p2'].map((id) => nodes.get(id))}</>);
+    const warnedAboutKeys = spy.mock.calls.some((call) => String(call[0]).includes('unique "key"'));
+    spy.mockRestore();
+    expect(warnedAboutKeys).toBe(false);
+    expect(screen.getAllByTestId('image-card')).toHaveLength(2);
   });
 });

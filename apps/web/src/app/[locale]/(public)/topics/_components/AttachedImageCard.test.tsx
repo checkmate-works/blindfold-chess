@@ -1,4 +1,4 @@
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { AttachedImageCard } from './AttachedImageCard';
@@ -107,6 +107,60 @@ describe('AttachedImageCard', () => {
       'https://example.test/a.jpg',
       'https://example.test/m.jpg',
     ]);
+  });
+
+  // ─── Lightbox (click-to-view) ─────────────────────────────────────────
+
+  it('opens a fullscreen lightbox dialog when a thumbnail is clicked', () => {
+    render(
+      <AttachedImageCard
+        attachments={[fixture({ id: 'a', publicUrl: 'https://example.test/a.jpg' })]}
+      />
+    );
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    const thumb = document.querySelector(
+      'button[aria-label="View image full size"]'
+    ) as HTMLButtonElement;
+    fireEvent.click(thumb);
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    expect(dialog?.getAttribute('aria-modal')).toBe('true');
+    const lightboxImg = dialog?.querySelector('img');
+    expect(lightboxImg?.getAttribute('src')).toBe('https://example.test/a.jpg');
+  });
+
+  it('closes the lightbox on Escape', () => {
+    render(<AttachedImageCard attachments={[fixture()]} />);
+    fireEvent.click(
+      document.querySelector('button[aria-label="View image full size"]') as HTMLButtonElement
+    );
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('renders prev/next + counter for multiple images and advances on Next', () => {
+    const items = [
+      fixture({ id: 'a', publicUrl: 'https://example.test/a.jpg' }),
+      fixture({ id: 'b', publicUrl: 'https://example.test/b.jpg' }),
+    ];
+    render(<AttachedImageCard attachments={items} />);
+    const thumbs = document.querySelectorAll('button[aria-label="View image full size"]');
+    fireEvent.click(thumbs[0] as HTMLButtonElement);
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    expect(dialog.textContent).toContain('1 / 2');
+    fireEvent.click(dialog.querySelector('button[aria-label="Next image"]') as HTMLButtonElement);
+    expect(dialog.querySelector('img')?.getAttribute('src')).toBe('https://example.test/b.jpg');
+    expect(dialog.textContent).toContain('2 / 2');
+  });
+
+  it('shows no prev/next controls for a single image', () => {
+    render(<AttachedImageCard attachments={[fixture()]} />);
+    fireEvent.click(
+      document.querySelector('button[aria-label="View image full size"]') as HTMLButtonElement
+    );
+    expect(document.querySelector('button[aria-label="Next image"]')).toBeNull();
+    expect(document.querySelector('button[aria-label="Previous image"]')).toBeNull();
   });
 
   it('preserves altText with special characters (XSS-relevant chars are passed as text)', () => {
