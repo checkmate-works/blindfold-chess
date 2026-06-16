@@ -5,6 +5,10 @@ import { NewPostForm } from './NewPostForm';
 
 const mockCreateChunkPostWithFenAttachment = vi.fn();
 const mockCreateChunkPostWithAttachment = vi.fn();
+const mockCreateChunkPostForImageAttach = vi.fn();
+const mockRouterRefresh = vi.fn();
+const mockRouterPush = vi.fn();
+const mockRevalidatePathAction = vi.fn();
 
 vi.mock('../_actions/createChunkPostWithFenAttachment', () => ({
   createChunkPostWithFenAttachment: (...args: unknown[]) =>
@@ -12,6 +16,17 @@ vi.mock('../_actions/createChunkPostWithFenAttachment', () => ({
 }));
 vi.mock('../_actions/createChunkPostWithAttachment', () => ({
   createChunkPostWithAttachment: (...args: unknown[]) => mockCreateChunkPostWithAttachment(...args),
+}));
+vi.mock('../_actions/createChunkPostForImageAttach', () => ({
+  createChunkPostForImageAttach: (...args: unknown[]) => mockCreateChunkPostForImageAttach(...args),
+}));
+vi.mock('@/app/[locale]/(public)/topics/_actions/revalidatePathAction', () => ({
+  revalidatePathAction: (...args: unknown[]) => mockRevalidatePathAction(...args),
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: mockRouterRefresh, push: mockRouterPush }),
+  usePathname: () => '/en/chunks/rook-battery',
 }));
 
 // Stub MiniBoard so the FEN preview does not pull in the chess-piece icon stack.
@@ -323,6 +338,48 @@ describe('NewPostForm — paperclip + counter row layout (Phase 7)', () => {
     );
     expect(counters.length).toBe(1);
     expect(counters[0].textContent).toBe('5 / 2,000');
+  });
+});
+
+describe('NewPostForm — Images tab 2-step upload routing', () => {
+  it('creates the post then uploads each file to /api/posts/[id]/images and refreshes', async () => {
+    mockCreateChunkPostForImageAttach.mockResolvedValue({ ok: true, postId: 'post-123' });
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    openModal();
+    fireEvent.click(getTab(2));
+    const fileInput = document.querySelector('#attachmentImageFiles') as HTMLInputElement;
+    const file = new File(['x'], 'photo.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    clickApply();
+
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'look at this' } });
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockCreateChunkPostForImageAttach).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/posts/post-123/images',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+    await waitFor(() => {
+      expect(mockRevalidatePathAction).toHaveBeenCalledWith('/en/chunks/rook-battery');
+    });
+    await waitFor(() => {
+      expect(mockRouterRefresh).toHaveBeenCalled();
+    });
+    // No redirect path passed for the inline chunk form → refresh, not push.
+    expect(mockRouterPush).not.toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
   });
 });
 

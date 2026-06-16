@@ -2,6 +2,7 @@
 
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
+import { createMovePostForImageAttach } from '../_actions/createMovePostForImageAttach';
 import { createMovePostWithAttachment } from '../_actions/createMovePostWithAttachment';
 import { createMovePostWithFenAttachment } from '../_actions/createMovePostWithFenAttachment';
 
@@ -18,10 +19,11 @@ type Props = {
 export function NewMovePostForm({ locale, topicKey, lineNo, ply }: Props) {
   const pgn = createMovePostWithAttachment.bind(null, locale, topicKey, lineNo, ply);
   const fen = createMovePostWithFenAttachment.bind(null, locale, topicKey, lineNo, ply);
+  const image = createMovePostForImageAttach.bind(null, locale, topicKey, lineNo, ply);
 
   return (
     <BasePostForm
-      attachmentActions={{ pgn, fen }}
+      attachmentActions={{ pgn, fen, image }}
       translationNamespace="topics.repertoire_move.newPostForm"
       contentRequired
       enableSpoilerToggle={false}

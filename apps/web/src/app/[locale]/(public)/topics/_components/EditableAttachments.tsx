@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -13,8 +13,10 @@ import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import type { AttachmentKind } from '../_actions/removePostAttachment';
+import { revalidatePathAction } from '../_actions/revalidatePathAction';
 import type { AttachAction, RemoveAttachmentAction } from '../_lib/action-types';
 import { applyAttachmentMode } from '../_lib/attachment-form-data';
+import { uploadPostImages } from '../_lib/upload-post-images';
 import { AttachedEmbedCard } from './AttachedEmbedCard';
 import { AttachedFenCard } from './AttachedFenCard';
 import { AttachedGameCard } from './AttachedGameCard';
@@ -67,6 +69,7 @@ export function EditableAttachments({
   const t = useTranslations('topics.removeAttachment');
   const tAdd = useTranslations('topics.addAttachment');
   const router = useRouter();
+  const pathname = usePathname();
 
   const [local, setLocal] = useState<PostAttachment | null>(attachment);
   const [pendingConfirm, setPendingConfirm] = useState<{ id: string; kind: AttachmentKind } | null>(
@@ -125,6 +128,26 @@ export function EditableAttachments({
 
     setAttachError(null);
     setIsAttaching(true);
+
+    // Images attach to the existing post directly via the upload API —
+    // no Server Action / FormData synthesis (the post id is already in
+    // hand, so the 2-step create step the new-post flow needs is moot).
+    if (mode.kind === 'image') {
+      const upload = await uploadPostImages(postId, mode.files);
+      if (!upload.ok) {
+        setIsAttaching(false);
+        setAttachError(tAdd.has(upload.error) ? tAdd(upload.error) : tAdd('error'));
+        return;
+      }
+      // The upload API does not revalidate; bust the Full Route Cache for
+      // the current page so the new image shows on refresh (without a
+      // full reload), matching the PGN / FEN attach Server Actions.
+      await revalidatePathAction(pathname);
+      setIsAttaching(false);
+      setIsAttachModalOpen(false);
+      router.refresh();
+      return;
+    }
 
     const fd = new FormData();
     const applied = applyAttachmentMode(mode, fd);

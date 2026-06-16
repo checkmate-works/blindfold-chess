@@ -6,6 +6,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { getPostById } from '../../../_lib/queries';
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
+import { createReplyForImageAttach } from './_actions/createReplyForImageAttach';
 import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
 import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { toggleLike } from './_actions/toggleLike';
@@ -62,6 +63,7 @@ const { generateMetadata, Page } = createTopicPostDetailPage<
     replyAttachmentActions: {
       pgn: createReplyWithAttachment,
       fen: createReplyWithFenAttachment,
+      image: createReplyForImageAttach,
     },
   },
 });

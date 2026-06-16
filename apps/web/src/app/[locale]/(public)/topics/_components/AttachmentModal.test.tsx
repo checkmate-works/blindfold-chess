@@ -45,27 +45,40 @@ describe('AttachmentModal — rendering and aria roles', () => {
     expect(wrapper.getAttribute('aria-hidden')).toBe('true');
   });
 
-  // #84: Pre-release reduction → Media tab removed; only Game / Position
-  // tabs remain. The PGN-only Game tab and the unchanged FEN Position
-  // tab are the supported entry points for this release.
-  it('renders two tabs (Game / Position) with the first selected by default', () => {
+  // Game / Position / Images. Video stays retired; only still-image
+  // attachments are offered alongside the Game (PGN/URL) and Position
+  // (FEN) entry points.
+  it('renders three tabs (Game / Position / Images) with the first selected by default', () => {
     setup();
     const tablist = document.querySelector('[role="tablist"]');
     expect(tablist).not.toBeNull();
     const tabs = document.querySelectorAll('[role="tab"]');
-    expect(tabs.length).toBe(2);
+    expect(tabs.length).toBe(3);
     const labels = Array.from(tabs).map((t) => t.textContent?.trim());
-    expect(labels).toEqual(['Game', 'Position']);
+    expect(labels).toEqual(['Game', 'Position', 'Images']);
     expect(tabs[0].getAttribute('aria-selected')).toBe('true');
     expect(tabs[1].getAttribute('aria-selected')).toBe('false');
+    expect(tabs[2].getAttribute('aria-selected')).toBe('false');
   });
 
-  it('renders two tabpanels and shows only the active one', () => {
+  it('renders three tabpanels and shows only the active one', () => {
     setup();
     const panels = document.querySelectorAll('[role="tabpanel"]');
-    expect(panels.length).toBe(2);
+    expect(panels.length).toBe(3);
     const visible = Array.from(panels).filter((p) => !p.hasAttribute('hidden'));
     expect(visible.length).toBe(1);
+  });
+
+  it('Images tab exposes an image file input (still images only — no video)', () => {
+    setup();
+    const imagesTab = document.querySelectorAll('[role="tab"]')[2] as HTMLButtonElement;
+    fireEvent.click(imagesTab);
+    const fileInput = document.querySelector('#attachmentImageFiles') as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+    expect(fileInput.getAttribute('type')).toBe('file');
+    expect(fileInput.getAttribute('accept')).toBe('image/jpeg,image/png,image/webp');
+    // Video sub-mode is gone.
+    expect(document.querySelector('#attachmentVideoUrl')).toBeNull();
   });
 });
 
@@ -84,7 +97,7 @@ describe('AttachmentModal — keyboard navigation', () => {
     const firstTab = document.querySelectorAll('[role="tab"]')[0] as HTMLButtonElement;
     fireEvent.keyDown(firstTab, { key: 'ArrowLeft' });
     const tabs = document.querySelectorAll('[role="tab"]');
-    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[tabs.length - 1].getAttribute('aria-selected')).toBe('true');
   });
 
   it('Home jumps to the first tab', () => {
@@ -100,7 +113,7 @@ describe('AttachmentModal — keyboard navigation', () => {
     setup();
     const tabs = document.querySelectorAll('[role="tab"]');
     fireEvent.keyDown(tabs[0], { key: 'End' });
-    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[tabs.length - 1].getAttribute('aria-selected')).toBe('true');
   });
 });
 
@@ -165,6 +178,33 @@ describe('AttachmentModal — apply per tab', () => {
       expect(mode.pgn).toBe(PGN_SAMPLE);
       expect(mode.anonymize).toBe(false);
     }
+  });
+
+  it('Images tab apply with selected files emits an image mode carrying the files', async () => {
+    const { onApply, onClose } = setup();
+    const imagesTab = document.querySelectorAll('[role="tab"]')[2] as HTMLButtonElement;
+    fireEvent.click(imagesTab);
+
+    const fileInput = document.querySelector('#attachmentImageFiles') as HTMLInputElement;
+    const file = new File(['x'], 'photo.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(false);
+    fireEvent.click(applyBtn);
+
+    await waitFor(() => {
+      expect(onApply).toHaveBeenCalledTimes(1);
+    });
+    const mode = onApply.mock.calls[0][0];
+    expect(mode.kind).toBe('image');
+    if (mode.kind === 'image') {
+      expect(mode.files).toHaveLength(1);
+      expect(mode.files[0].name).toBe('photo.png');
+    }
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('apply with no input emits an empty mode', async () => {

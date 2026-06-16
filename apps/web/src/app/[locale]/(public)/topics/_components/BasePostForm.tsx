@@ -10,6 +10,8 @@ import {
   useState,
 } from 'react';
 
+import { usePathname, useRouter } from 'next/navigation';
+
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -17,11 +19,22 @@ import { FaPaperclip } from 'react-icons/fa';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
+import { revalidatePathAction } from '../_actions/revalidatePathAction';
 import { applyAttachmentMode } from '../_lib/attachment-form-data';
+import type { ImageAttachResult } from '../_lib/image-attach-types';
+import { uploadPostImages } from '../_lib/upload-post-images';
 import { AttachmentModal } from './AttachmentModal';
 import type { AggregatedAttachmentMode } from './AttachmentModal';
 
 type ServerAction = (prev: { error?: string }, formData: FormData) => Promise<{ error?: string }>;
+
+/**
+ * Image-attach action for the 2-step flow: create the post (no redirect)
+ * and return its id so the client can POST each file to
+ * `/api/posts/[id]/images`. Optional — surfaces that do not (yet) support
+ * image attachments simply omit it and the Images tab's Apply is inert.
+ */
+type ImageCreateAction = (formData: FormData) => Promise<ImageAttachResult>;
 
 /**
  * Per-form Server Actions for the attachment-enabled flow.
@@ -39,6 +52,12 @@ type ServerAction = (prev: { error?: string }, formData: FormData) => Promise<{ 
 export type AttachmentActions = {
   pgn: ServerAction;
   fen: ServerAction;
+  /**
+   * Optional image-attach action (2-step flow). When provided, the
+   * Images tab's Apply commits the selected files: this action creates
+   * the post and returns its id, then the client uploads each file.
+   */
+  image?: ImageCreateAction;
 };
 
 type Props = {
@@ -88,6 +107,15 @@ type Props = {
    * does not read this field, so emitting it would be inert noise.
    */
   emitReplyPermissionField?: boolean;
+  /**
+   * Destination after a successful image attachment (2-step flow). The
+   * PGN / FEN paths redirect server-side via the Server Action; the
+   * image path cannot (it must return the post id first), so navigation
+   * happens client-side here. New-post forms pass this to land on the
+   * created post's detail page, mirroring the PGN / FEN redirect. When
+   * omitted (e.g. inline reply forms), the thread is refreshed in place.
+   */
+  imageRedirectPath?: (postId: string) => string;
 };
 
 /**
@@ -123,11 +151,14 @@ export function BasePostForm({
   enableSpoilerToggle = false,
   textareaRows = 6,
   emitReplyPermissionField = true,
+  imageRedirectPath,
 }: Props) {
   const t = useTranslations(translationNamespace);
   const tTopics = useTranslations('topics');
   const tGlobal = useTranslations();
   const tUnsaved = useTranslations('unsavedChanges');
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Per-instance id so multiple BasePostForms can coexist on the same
   // page (every CommentNode renders its own inline ReplyForm — without
@@ -154,6 +185,30 @@ export function BasePostForm({
     async (prev, formData) => {
       if (attachmentActions) {
         const att = attachmentRef.current;
+
+        // Image attachments use the 2-step flow (create post → upload
+        // each file). Handled before `applyAttachmentMode` because the
+        // files are not serialised onto FormData.
+        if (att.kind === 'image') {
+          if (!attachmentActions.image) return { error: 'error' };
+          const created = await attachmentActions.image(formData);
+          if (!created.ok) return { error: created.error };
+          const upload = await uploadPostImages(created.postId, att.files);
+          if (!upload.ok) return { error: upload.error };
+          if (imageRedirectPath) {
+            // New-post pages navigate to the created post's detail page;
+            // the navigation re-fetches fresh data on its own.
+            router.push(imageRedirectPath(created.postId));
+          } else {
+            // Inline forms stay put: the upload API does not revalidate, so
+            // bust the Full Route Cache for the current page before refresh
+            // (mirrors what the PGN / FEN Server Actions do).
+            await revalidatePathAction(pathname);
+            router.refresh();
+          }
+          return {};
+        }
+
         const applied = applyAttachmentMode(att, formData);
         if (!applied.ok) {
           return { error: 'postFenAttachment.error.invalidFenStructure' };
@@ -167,7 +222,7 @@ export function BasePostForm({
       if (action) return action(prev, formData);
       return { error: 'error' };
     },
-    [attachmentActions, action]
+    [attachmentActions, action, imageRedirectPath, router, pathname]
   );
 
   const [state, formAction, isPending] = useActionState(wrappedAction, {});
@@ -314,6 +369,11 @@ function describeAttachment(mode: AggregatedAttachmentMode): string | null {
     case 'fen':
       // TODO(i18n): attachment.modal.summary.fen
       return mode.valid ? 'Position (FEN) attached.' : 'Position (FEN) attached (invalid).';
+    case 'image':
+      // TODO(i18n): attachment.modal.summary.image
+      return mode.files.length === 1
+        ? '1 image attached.'
+        : `${mode.files.length} images attached.`;
     default: {
       const _exhaustive: never = mode;
       return _exhaustive;

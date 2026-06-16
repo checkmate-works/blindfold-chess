@@ -7,6 +7,7 @@ import { OpeningBoardWithMoves } from '../../../_components/OpeningBoardWithMove
 import { getOpeningDisplayName } from '../../../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostById } from '../../../_lib/queries';
 import { RatingDisplay } from '../../_components';
+import { createReplyForImageAttach } from './_actions/createReplyForImageAttach';
 import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
 import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { toggleLike } from './_actions/toggleLike';
@@ -73,6 +74,7 @@ const { generateMetadata, Page } = createTopicPostDetailPage<
     replyAttachmentActions: {
       pgn: createReplyWithAttachment,
       fen: createReplyWithFenAttachment,
+      image: createReplyForImageAttach,
     },
   },
 });

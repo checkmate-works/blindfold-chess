@@ -2,6 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { ImageAttachResult } from '../_lib/image-attach-types';
 import { BasePostForm } from './BasePostForm';
 import type { AttachmentActions } from './BasePostForm';
 
@@ -14,6 +15,18 @@ type ReplyAction = (
 ) => Promise<{ error?: string }>;
 
 /**
+ * Reply-specific image-attach action. Mirrors `ReplyAction` minus the
+ * `prevState` arg (the 2-step image flow is not a `useActionState`
+ * action) and returns the new reply id instead of an error state.
+ */
+type ReplyImageAction = (
+  locale: string,
+  topicKey: string,
+  postId: string,
+  formData: FormData
+) => Promise<ImageAttachResult>;
+
+/**
  * Per-form Server Actions for the attachment-enabled reply flow.
  * Mirrors `AttachmentActions` on `BasePostForm` but with the
  * reply-specific `(locale, topicKey, postId, prevState, formData)`
@@ -22,6 +35,8 @@ type ReplyAction = (
 export type ReplyAttachmentActions = {
   pgn: ReplyAction;
   fen: ReplyAction;
+  /** Optional image-attach action (2-step flow). */
+  image?: ReplyImageAction;
 };
 
 type Props = {
@@ -83,6 +98,9 @@ export function ReplyForm({
   const boundActions: AttachmentActions = {
     pgn: attachmentActions.pgn.bind(null, locale, topicKey, postId),
     fen: attachmentActions.fen.bind(null, locale, topicKey, postId),
+    ...(attachmentActions.image
+      ? { image: attachmentActions.image.bind(null, locale, topicKey, postId) }
+      : {}),
   };
 
   return (

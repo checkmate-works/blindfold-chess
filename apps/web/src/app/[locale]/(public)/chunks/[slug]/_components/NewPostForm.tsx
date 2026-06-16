@@ -2,6 +2,7 @@
 
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
+import { createChunkPostForImageAttach } from '../_actions/createChunkPostForImageAttach';
 import { createChunkPostWithAttachment } from '../_actions/createChunkPostWithAttachment';
 import { createChunkPostWithFenAttachment } from '../_actions/createChunkPostWithFenAttachment';
 
@@ -24,10 +25,11 @@ type Props = {
 export function NewPostForm({ locale, slug }: Props) {
   const pgn = createChunkPostWithAttachment.bind(null, locale, slug);
   const fen = createChunkPostWithFenAttachment.bind(null, locale, slug);
+  const image = createChunkPostForImageAttach.bind(null, locale, slug);
 
   return (
     <BasePostForm
-      attachmentActions={{ pgn, fen }}
+      attachmentActions={{ pgn, fen, image }}
       translationNamespace="topics.chunks.newPostForm"
       contentRequired
     />

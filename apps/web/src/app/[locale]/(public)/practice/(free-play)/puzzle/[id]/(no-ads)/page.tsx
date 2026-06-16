@@ -42,6 +42,7 @@ import { PositionDetailLayout } from '../../../_components/PositionDetailLayout'
 import { PositionEditRequestCallout } from '../../../_components/edit-request/PositionEditRequestCallout';
 import { loadPositionDetail } from '../../../_lib/load-position-detail';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
+import { createReplyForImageAttach } from './_actions/createReplyForImageAttach';
 import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
 import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { togglePositionPuzzlePostLike } from './_actions/togglePositionPuzzlePostLike';
@@ -271,6 +272,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
             replyAttachmentActions={{
               pgn: createReplyWithAttachment,
               fen: createReplyWithFenAttachment,
+              image: createReplyForImageAttach,
             }}
             deletePostAction={deletePost}
             editPostAction={editPost}

@@ -1,7 +1,7 @@
 import type { AggregatedAttachmentMode } from '../_components/AttachmentModal';
 
 export type ApplyAttachmentResult =
-  | { ok: true; kind: 'pgn' | 'fen' | 'empty' }
+  | { ok: true; kind: 'pgn' | 'fen' | 'empty' | 'image' }
   | { ok: false; reason: 'invalid_fen' };
 
 /**
@@ -40,6 +40,12 @@ export function applyAttachmentMode(
       formData.set('attachmentFen', mode.fen);
       if (mode.caption !== null) formData.set('attachmentFenCaption', mode.caption);
       return { ok: true, kind: 'fen' };
+    case 'image':
+      // Images are NOT serialised onto FormData here — they are uploaded
+      // out-of-band to `/api/posts/[id]/images` after the post exists
+      // (2-step flow). Callers branch on `image` before reaching this
+      // helper; this arm only keeps the switch exhaustive.
+      return { ok: true, kind: 'image' };
     default: {
       const _exhaustive: never = mode;
       void _exhaustive;

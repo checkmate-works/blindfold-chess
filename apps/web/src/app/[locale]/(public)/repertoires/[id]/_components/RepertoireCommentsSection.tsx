@@ -19,6 +19,7 @@ import {
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { createReplyForImageAttach } from '../_actions/createReplyForImageAttach';
 import { createReplyWithAttachment } from '../_actions/createReplyWithAttachment';
 import { createReplyWithFenAttachment } from '../_actions/createReplyWithFenAttachment';
 import { toggleRepertoirePostLike } from '../_actions/toggleRepertoirePostLike';
@@ -84,6 +85,7 @@ export async function RepertoireCommentsSection({
             replyAttachmentActions={{
               pgn: createReplyWithAttachment,
               fen: createReplyWithFenAttachment,
+              image: createReplyForImageAttach,
             }}
             deletePostAction={deletePost}
             editPostAction={editPost}

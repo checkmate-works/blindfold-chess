@@ -17,6 +17,7 @@ import {
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { createMoveReplyForImageAttach } from '../_actions/createMoveReplyForImageAttach';
 import { createMoveReplyWithAttachment } from '../_actions/createMoveReplyWithAttachment';
 import { createMoveReplyWithFenAttachment } from '../_actions/createMoveReplyWithFenAttachment';
 import { toggleMovePostLike } from '../_actions/toggleMovePostLike';
@@ -88,6 +89,7 @@ export async function MoveCommentsSection({
           replyAttachmentActions={{
             pgn: createMoveReplyWithAttachment,
             fen: createMoveReplyWithFenAttachment,
+            image: createMoveReplyForImageAttach,
           }}
           deletePostAction={deletePost}
           editPostAction={editPost}
