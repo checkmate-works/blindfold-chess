@@ -7,6 +7,7 @@ import { ADSENSE_PUBLISHER_ID, IS_LOCAL_DEV } from '@/config';
 import { useStorageAvailabilityContext } from '@/lib/storage/StorageAvailabilityProvider';
 
 import { AdPlaceholder } from './AdPlaceholder';
+import { AD_SLOT_DIMENSIONS } from './ad-slot-dimensions';
 import './types';
 
 type AdSenseInFeedProps = {
@@ -69,7 +70,10 @@ export function AdSenseInFeed({ slotId, layoutKey }: AdSenseInFeedProps) {
   if (!availability?.all) return null;
 
   return (
-    <div className="ad-slot-wrapper max-w-full overflow-hidden" data-ad-slot="native-ad">
+    <div
+      className={`ad-slot-wrapper max-w-full overflow-hidden ${AD_SLOT_DIMENSIONS['native-ad'].reserveMinH}`}
+      data-ad-slot="native-ad"
+    >
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
