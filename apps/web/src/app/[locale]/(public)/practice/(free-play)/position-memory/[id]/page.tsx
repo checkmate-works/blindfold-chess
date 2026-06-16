@@ -40,6 +40,7 @@ import { PositionEditRequestCallout } from '../../_components/edit-request/Posit
 import { loadPositionDetail } from '../../_lib/load-position-detail';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
+import { createReplyForImageAttach } from './_actions/createReplyForImageAttach';
 import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
 import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { togglePositionMemoryPostLike } from './_actions/togglePositionMemoryPostLike';
@@ -275,6 +276,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             replyAttachmentActions={{
               pgn: createReplyWithAttachment,
               fen: createReplyWithFenAttachment,
+              image: createReplyForImageAttach,
             }}
             deletePostAction={deletePost}
             editPostAction={editPost}

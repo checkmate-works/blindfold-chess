@@ -15,12 +15,13 @@ import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 import { UUID_RE, validateUUID } from '@/lib/validations/uuid';
 
 import type { TopicType } from '../_lib/constants';
+import type { ImageAttachResult } from '../_lib/image-attach-types';
 
 export type CreateReplyState = {
   error?: string;
 };
 
-export async function createReplyBase(params: {
+type CreateReplyParams = {
   locale: string;
   topicIdentifier: string;
   postId: string;
@@ -57,17 +58,25 @@ export async function createReplyBase(params: {
    */
   afterInsert?: (tx: DbTx, replyId: string) => Promise<void>;
   formData: FormData;
-}): Promise<CreateReplyState> {
+};
+
+/**
+ * Shared validate/permission/insert/notify core for every create-reply
+ * path. Returns the new reply id instead of redirecting so both the
+ * legacy redirecting wrapper (`createReplyBase`) and the 2-step
+ * image-attach wrapper (`createReplyForImageAttachBase`) share one body
+ * and cannot drift on permission checks or notification fan-out.
+ */
+async function insertReply(
+  params: CreateReplyParams
+): Promise<{ error: string } | { ok: true; replyId: string }> {
   const {
     locale,
     topicIdentifier,
     postId,
     topicType,
     topicKey,
-    urlSegment,
     validateTopic,
-    redirectPath,
-    revalidate,
     isSpoiler,
     afterInsert,
     formData,
@@ -236,15 +245,53 @@ export async function createReplyBase(params: {
     }
   }
 
-  revalidatePath(
-    revalidate
-      ? revalidate(postId)
-      : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`
-  );
+  return { ok: true, replyId: inserted.id };
+}
+
+/**
+ * Default `revalidatePath` target shared by the redirecting and
+ * image-attach reply entry points.
+ */
+function replyRevalidatePath(params: CreateReplyParams): string {
+  return params.revalidate
+    ? params.revalidate(params.postId)
+    : `/${params.locale}/topics/${params.urlSegment}/${params.topicIdentifier}/posts/${params.postId}`;
+}
+
+export async function createReplyBase(params: CreateReplyParams): Promise<CreateReplyState> {
+  const result = await insertReply(params);
+  if ('error' in result) {
+    return { error: result.error };
+  }
+
+  revalidatePath(replyRevalidatePath(params));
 
   redirect(
-    redirectPath
-      ? redirectPath(postId, inserted.id)
-      : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created`
+    params.redirectPath
+      ? params.redirectPath(params.postId, result.replyId)
+      : `/${params.locale}/topics/${params.urlSegment}/${params.topicIdentifier}/posts/${params.postId}?toast=post_created`
   );
+}
+
+/**
+ * Create-reply entry point for the 2-step image-attachment flow.
+ *
+ * Mirrors `createReplyBase` (same permission checks, insert and
+ * notification fan-out via the shared `insertReply` core) but returns
+ * the new reply id instead of redirecting, so the client can POST each
+ * selected image to `/api/posts/[id]/images` (keyed on the reply id).
+ * `revalidatePath` still fires so the thread cache is fresh for the
+ * client's post-upload `router.refresh()`.
+ */
+export async function createReplyForImageAttachBase(
+  params: CreateReplyParams
+): Promise<ImageAttachResult> {
+  const result = await insertReply(params);
+  if ('error' in result) {
+    return { ok: false, error: result.error };
+  }
+
+  revalidatePath(replyRevalidatePath(params));
+
+  return { ok: true, postId: result.replyId };
 }

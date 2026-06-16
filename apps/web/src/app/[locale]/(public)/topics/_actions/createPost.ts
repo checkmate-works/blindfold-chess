@@ -17,12 +17,13 @@ import { checkRateLimit } from '@/lib/security/rate-limit';
 
 import { VALID_REPLY_PERMISSIONS } from '../_lib/constants';
 import type { TopicType } from '../_lib/constants';
+import type { ImageAttachResult } from '../_lib/image-attach-types';
 
 export type CreatePostState = {
   error?: string;
 };
 
-export async function createPostBase(params: {
+type CreatePostParams = {
   locale: string;
   topicIdentifier: string;
   topicType: TopicType;
@@ -64,20 +65,35 @@ export async function createPostBase(params: {
    */
   topicAuthorId?: string;
   formData: FormData;
-}): Promise<CreatePostState> {
+};
+
+/**
+ * Shared insert/notify/grant core for every create-post path.
+ *
+ * Returns the new post id (plus the point-grant result, which the
+ * redirecting entry point needs to route through `/thanks`) instead of
+ * redirecting, so both the legacy redirecting wrapper (`createPostBase`)
+ * and the 2-step image-attach wrapper (`createPostForImageAttachBase`)
+ * share one body. This keeps feed-item emission, point grants and
+ * notifications from drifting between the two paths.
+ */
+async function insertPost(
+  params: CreatePostParams
+): Promise<
+  | { error: string }
+  | { ok: true; postId: string; pointGrant: { pointEventId: string; amount: number } | null }
+> {
   const {
     locale,
     topicIdentifier,
     topicType,
     topicKey,
-    urlSegment,
     validateTopic,
     invalidTopicError,
     rateLimit,
     validateContent,
     afterInsert,
     emitFeedItem,
-    redirectPath,
     isSpoiler,
     topicAuthorId,
     formData,
@@ -175,24 +191,54 @@ export async function createPostBase(params: {
     });
   }
 
+  return { ok: true, postId: inserted.id, pointGrant: pointGrantResult };
+}
+
+export async function createPostBase(params: CreatePostParams): Promise<CreatePostState> {
+  const result = await insertPost(params);
+  if ('error' in result) {
+    return { error: result.error };
+  }
+
   // When a point grant fires we route through the generic /thanks page
   // (with the original destination preserved as `returnUrl`) so the user sees
   // how many points were earned. The post-created
   // toast is suppressed in that path — the thanks page is the celebration
   // moment. No-grant posts (chunks, rating-only opening posts, etc.) keep
   // the legacy in-place toast UX.
-  const grantApplied = pointGrantResult !== null;
-  const finalUrl = redirectPath
-    ? redirectPath(inserted.id, { toast: !grantApplied })
-    : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${inserted.id}${
+  const grantApplied = result.pointGrant !== null;
+  const finalUrl = params.redirectPath
+    ? params.redirectPath(result.postId, { toast: !grantApplied })
+    : `/${params.locale}/topics/${params.urlSegment}/${params.topicIdentifier}/posts/${result.postId}${
         !grantApplied ? '?toast=post_created' : ''
       }`;
 
-  if (pointGrantResult) {
-    const info: { pointEventId: string; amount: number } = pointGrantResult;
+  if (result.pointGrant) {
+    const info = result.pointGrant;
     redirect(
-      `/${locale}/thanks?pointEventId=${info.pointEventId}&returnUrl=${encodeURIComponent(finalUrl)}`
+      `/${params.locale}/thanks?pointEventId=${info.pointEventId}&returnUrl=${encodeURIComponent(finalUrl)}`
     );
   }
   redirect(finalUrl);
+}
+
+/**
+ * Create-post entry point for the 2-step image-attachment flow.
+ *
+ * Mirrors `createPostBase` (same validation, rate-limit bucket, feed
+ * item, point grant and notifications via the shared `insertPost` core)
+ * but returns the new post id instead of redirecting, so the client can
+ * POST each selected image to `/api/posts/[id]/images` after the post
+ * exists. Any earned points are still granted inside the transaction;
+ * the image flow simply skips the `/thanks` celebration redirect and
+ * lets the client refresh the thread in place once uploads finish.
+ */
+export async function createPostForImageAttachBase(
+  params: CreatePostParams
+): Promise<ImageAttachResult> {
+  const result = await insertPost(params);
+  if ('error' in result) {
+    return { ok: false, error: result.error };
+  }
+  return { ok: true, postId: result.postId };
 }

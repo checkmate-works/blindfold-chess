@@ -70,6 +70,10 @@ export function CommentActions({ node, isOwnComment, onReply, onEdit }: Props) {
           redirectPath={redirectPath}
           deletePostAction={deletePostAction}
           i18nNamespace={i18n.deleteNamespace}
+          // A reply lives ON the current page; deleting it must not
+          // navigate to `redirectPath` (the listing), or the whole thread
+          // appears to vanish. Stay put and refresh in place.
+          stayOnPage
         />
       )}
     </div>

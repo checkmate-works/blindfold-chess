@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
+import { createOpeningPostForImageAttach } from '../_actions/createOpeningPostForImageAttach';
 import { createOpeningPostWithAttachment } from '../_actions/createOpeningPostWithAttachment';
 import { createOpeningPostWithFenAttachment } from '../_actions/createOpeningPostWithFenAttachment';
 import { RatingInput } from './RatingInput';
@@ -19,6 +20,7 @@ export function NewOpeningPostForm({ locale, slug }: Props) {
   const t = useTranslations('topics.openings.newPostForm');
   const pgn = createOpeningPostWithAttachment.bind(null, locale, slug);
   const fen = createOpeningPostWithFenAttachment.bind(null, locale, slug);
+  const image = createOpeningPostForImageAttach.bind(null, locale, slug);
 
   const [hasContent, setHasContent] = useState(false);
   const [hasPreference, setHasPreference] = useState(false);
@@ -44,7 +46,10 @@ export function NewOpeningPostForm({ locale, slug }: Props) {
 
   return (
     <BasePostForm
-      attachmentActions={{ pgn, fen }}
+      attachmentActions={{ pgn, fen, image }}
+      imageRedirectPath={(postId) =>
+        `/${locale}/topics/openings/${slug}/posts/${postId}?toast=post_created`
+      }
       translationNamespace="topics.openings.newPostForm"
       contentRequired={false}
       submitDisabled={!hasAnyInput}

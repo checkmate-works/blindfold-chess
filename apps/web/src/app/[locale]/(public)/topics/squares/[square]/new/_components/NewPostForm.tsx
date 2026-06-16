@@ -2,6 +2,7 @@
 
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
+import { createSquarePostForImageAttach } from '../_actions/createSquarePostForImageAttach';
 import { createSquarePostWithAttachment } from '../_actions/createSquarePostWithAttachment';
 import { createSquarePostWithFenAttachment } from '../_actions/createSquarePostWithFenAttachment';
 
@@ -13,10 +14,14 @@ type Props = {
 export function NewPostForm({ locale, square }: Props) {
   const pgn = createSquarePostWithAttachment.bind(null, locale, square);
   const fen = createSquarePostWithFenAttachment.bind(null, locale, square);
+  const image = createSquarePostForImageAttach.bind(null, locale, square);
 
   return (
     <BasePostForm
-      attachmentActions={{ pgn, fen }}
+      attachmentActions={{ pgn, fen, image }}
+      imageRedirectPath={(postId) =>
+        `/${locale}/topics/squares/${square}/posts/${postId}?toast=post_created`
+      }
       translationNamespace="topics.squares.newPostForm"
       contentRequired
     />

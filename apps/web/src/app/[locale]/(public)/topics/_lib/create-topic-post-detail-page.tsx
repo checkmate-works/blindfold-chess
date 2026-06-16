@@ -202,7 +202,10 @@ export function createTopicPostDetailPage<
         i18n={view.i18n}
         comments={{
           sectionTitle: view.comments.sectionTitle,
-          count: replies.length,
+          // Exclude soft-deleted replies: `getRepliesByPostId` includes them
+          // (the tree keeps "[deleted]" tombstones with live descendants), but
+          // they are not real comments and must not inflate the badge count.
+          count: replies.filter((r) => !r.deletedAt).length,
           sortBy,
           sortBasePath: view.comments.sortBasePath,
           sortTranslationKey: view.comments.sortTranslationKey,

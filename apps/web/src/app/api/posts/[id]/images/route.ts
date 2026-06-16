@@ -7,6 +7,7 @@ import { authenticateAndGuardApi } from '@/lib/auth';
 import { db, postImageAttachments } from '@/lib/db';
 import {
   AnimatedImageNotSupportedError,
+  POST_IMAGE_OUTPUT_MIME,
   isWithinMegapixelCap,
   normalizePostImageBuffer,
   probeImageDimensions,
@@ -140,7 +141,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       buffer: arrayBuffer,
       contentType: file.type,
     });
-  } catch {
+  } catch (err) {
+    console.error('[post-images] image_processing_failed', {
+      postId,
+      contentType: file.type,
+      fileSize: file.size,
+      error: err,
+    });
     return NextResponse.json({ error: 'image_processing_failed' }, { status: 500 });
   }
 
@@ -158,11 +165,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       ? (formData.get('altText') as string).slice(0, 255) || null
       : null;
 
+  // The processed buffer is always WebP (normalizePostImageBuffer
+  // transcodes every input), so the stored object's extension, upload
+  // content-type, and DB row all use POST_IMAGE_OUTPUT_MIME — NOT the
+  // uploaded file.type, which only gates the *input* validation above.
   const storagePath = buildPostImageStoragePath({
     userId: user.id,
     postId,
     randomUuid: randomUUID(),
-    contentType: file.type,
+    contentType: POST_IMAGE_OUTPUT_MIME,
   });
 
   // User-session client — RLS still applies (the bucket policy enforces
@@ -171,11 +182,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { error: uploadError } = await sessionSupabase.storage
     .from(POST_IMAGES_BUCKET)
     .upload(storagePath, processedBuffer, {
-      contentType: file.type,
+      contentType: POST_IMAGE_OUTPUT_MIME,
       upsert: false,
     });
 
   if (uploadError) {
+    console.error('[post-images] upload_failed', {
+      postId,
+      storagePath,
+      bucket: POST_IMAGES_BUCKET,
+      processedBytes: processedBuffer.byteLength,
+      error: uploadError,
+    });
     return NextResponse.json({ error: 'upload_failed' }, { status: 500 });
   }
 
@@ -186,7 +204,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       .values({
         postId,
         storagePath,
-        contentType: file.type,
+        contentType: POST_IMAGE_OUTPUT_MIME,
         fileSize: processedBuffer.byteLength,
         width: finalDimensions.width,
         height: finalDimensions.height,
@@ -205,6 +223,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (message.includes('post_image_count_exceeded')) {
       return NextResponse.json({ error: 'too_many_images' }, { status: 409 });
     }
+    console.error('[post-images] insert_failed', {
+      postId,
+      storagePath,
+      error: err,
+    });
     return NextResponse.json({ error: 'insert_failed' }, { status: 500 });
   }
 

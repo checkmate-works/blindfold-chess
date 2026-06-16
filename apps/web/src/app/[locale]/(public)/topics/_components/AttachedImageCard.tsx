@@ -1,3 +1,9 @@
+'use client';
+
+import { useState } from 'react';
+
+import { ImageLightbox } from './ImageLightbox';
+
 /**
  * Subset of `post_image_attachments` columns the card needs.
  *
@@ -35,7 +41,20 @@ type Props = {
   attachments: readonly AttachedImageCardData[];
 };
 
+/**
+ * @design In-thread display sizing + lightbox
+ *
+ * Every image renders as a fixed 128px (`w-32`) square thumbnail —
+ * matching the board thumbnail in `AttachedGameCard` so all attachment
+ * kinds share one visual footprint in the thread. Thumbnails crop to
+ * square (`object-cover`); clicking any one opens `ImageLightbox` at that
+ * image (full, uncropped, with prev/next across the post's images). This
+ * mirrors the common OSS pattern (Discourse / Mastodon): a small, uniform
+ * inline preview with a full view on click.
+ */
 export function AttachedImageCard({ attachments }: Props) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
   if (attachments.length === 0) return null;
 
   return (
@@ -43,38 +62,53 @@ export function AttachedImageCard({ attachments }: Props) {
       <div className="p-3">
         {/* TODO(i18n): attachment.image.cardTitle */}
         <p className="text-sm font-medium text-foreground mb-2">Attached images</p>
-        <ul
-          className={
-            attachments.length === 1
-              ? 'grid grid-cols-1 gap-2'
-              : 'grid grid-cols-2 sm:grid-cols-3 gap-2'
-          }
-        >
-          {attachments.map((image) => (
+        <ul className="flex flex-wrap gap-2">
+          {attachments.map((image, index) => (
             <li key={image.id}>
-              {/*
-                Plain <img> rather than next/image: the public URL points at
-                Supabase Storage, which is not in next.config.js' image
-                optimizer remote pattern list. Adding it would route every
-                image through `/_next/image` (and pay the optimizer cost)
-                for content that is already user-supplied at a 2 MB cap.
-                The 50-megapixel server-side ceiling + 2 MB file cap make
-                a direct render the simpler choice.
-              */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={image.publicUrl}
-                alt={image.altText ?? ''}
-                width={image.width}
-                height={image.height}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="w-full h-auto rounded-sm border border-border bg-muted object-cover"
-              />
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(index)}
+                // TODO(i18n): attachment.image.openViewer
+                aria-label="View image full size"
+                className="block w-32 shrink-0 cursor-zoom-in rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-link-primary"
+              >
+                {/*
+                  Plain <img> rather than next/image: the public URL points at
+                  Supabase Storage, which is not in next.config.js' image
+                  optimizer remote pattern list. Adding it would route every
+                  image through `/_next/image` (and pay the optimizer cost)
+                  for content that is already user-supplied at a 2 MB cap.
+                  Uploads are capped to a 1600px long edge server-side, so a
+                  direct render is the simpler choice.
+
+                  Fixed w-32 square to match AttachedGameCard's board
+                  thumbnail; object-cover crops to the square box. The full,
+                  uncropped image is one click away in the lightbox.
+                */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={image.publicUrl}
+                  alt={image.altText ?? ''}
+                  width={image.width}
+                  height={image.height}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="aspect-square w-32 rounded-sm border border-border bg-muted object-cover"
+                />
+              </button>
             </li>
           ))}
         </ul>
       </div>
+
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          images={attachments}
+          index={lightboxIndex}
+          onIndexChange={setLightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
     </div>
   );
 }

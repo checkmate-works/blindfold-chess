@@ -1,3 +1,5 @@
+import { Fragment } from 'react';
+
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import { AttachedEmbedCard } from './AttachedEmbedCard';
@@ -52,7 +54,11 @@ export function buildAttachmentNodeMap(
   for (const id of postIds) {
     const att = attachments.get(id);
     if (att) {
-      out.set(id, renderAttachment(att, fallbackVideoTitle));
+      // Wrap in a keyed Fragment: some callers render these nodes as an
+      // array (e.g. one attachment slot per reply), and a bare node has
+      // no key, which trips React's "unique key" warning. The key is a
+      // no-op when the node is rendered as a single child.
+      out.set(id, <Fragment key={id}>{renderAttachment(att, fallbackVideoTitle)}</Fragment>);
     }
   }
   return out;
