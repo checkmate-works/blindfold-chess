@@ -171,6 +171,16 @@ export function BasePostForm({
   const [contentLength, setContentLength] = useState(0);
   const [isDirty, setIsDirty] = useState(false);
 
+  // Deferred post-submit navigation for the image flow. The image branch
+  // cannot navigate inline: it must first clear `isDirty` so the
+  // unsaved-changes guard (next-navigation-guard) is disabled, and that
+  // only takes effect on the next render. So it stashes the intended
+  // navigation here and a post-render effect performs it once the guard is
+  // off — otherwise a successful submit pops the "Unsaved Changes" dialog.
+  const [pendingNav, setPendingNav] = useState<
+    { kind: 'push'; path: string } | { kind: 'refresh' } | null
+  >(null);
+
   // Pin attachment in a ref so the wrapped action's identity is
   // stable across re-renders. `useActionState` memoises the action
   // it was first called with and ignores subsequent identity
@@ -195,16 +205,22 @@ export function BasePostForm({
           if (!created.ok) return { error: created.error };
           const upload = await uploadPostImages(created.postId, att.files);
           if (!upload.ok) return { error: upload.error };
+          // Clear dirty FIRST so the navigation guard is disabled, then hand
+          // the navigation to the deferred-nav effect (see `pendingNav`).
+          // Navigating here would race the guard, which still reads
+          // `enabled: true` until the next render, and pop the dialog on a
+          // successful submit. PGN/FEN avoid this by redirecting server-side.
+          setIsDirty(false);
           if (imageRedirectPath) {
             // New-post pages navigate to the created post's detail page;
             // the navigation re-fetches fresh data on its own.
-            router.push(imageRedirectPath(created.postId));
+            setPendingNav({ kind: 'push', path: imageRedirectPath(created.postId) });
           } else {
             // Inline forms stay put: the upload API does not revalidate, so
             // bust the Full Route Cache for the current page before refresh
             // (mirrors what the PGN / FEN Server Actions do).
             await revalidatePathAction(pathname);
-            router.refresh();
+            setPendingNav({ kind: 'refresh' });
           }
           return {};
         }
@@ -222,12 +238,22 @@ export function BasePostForm({
       if (action) return action(prev, formData);
       return { error: 'error' };
     },
-    [attachmentActions, action, imageRedirectPath, router, pathname]
+    [attachmentActions, action, imageRedirectPath, pathname]
   );
 
   const [state, formAction, isPending] = useActionState(wrappedAction, {});
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
   const markDirty = useCallback(() => setIsDirty(true), []);
+
+  // Run the deferred image-flow navigation once the dirty flag has cleared
+  // (which disables the unsaved-changes guard). Guard on `!isDirty` so the
+  // navigation never fires while the guard is still armed.
+  useEffect(() => {
+    if (!pendingNav || isDirty) return;
+    if (pendingNav.kind === 'push') router.push(pendingNav.path);
+    else router.refresh();
+    setPendingNav(null);
+  }, [pendingNav, isDirty, router]);
 
   const onApplyAttachment = useCallback((mode: AggregatedAttachmentMode) => {
     setAttachment(mode);
