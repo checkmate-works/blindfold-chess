@@ -114,9 +114,21 @@ export async function deleteAccount(
     return { ok: false, error: 'failed_to_delete_auth_user' };
   }
 
-  // Anonymise the profile: NULL out every user-entered column except the
-  // intentionally-retained `username` and `bannedAt` (see TSDoc). `PROFILE_PII_COLUMNS`
-  // is the exhaustive list so a future PII column is a compile error until handled.
+  // Immediate cleanup that should happen on deletion (not deferred to purge):
+  await anonymiseProfile(userId); // NULL the PII columns + stamp deletedAt
+  await deleteReceivedLikes(userId); // drop likes received on the user's content
+  await removeAvatarFiles(adminClient, userId); // best-effort Storage cleanup
+
+  return { ok: true };
+}
+
+/**
+ * Anonymise the profile: NULL out every user-entered column except the
+ * intentionally-retained `username` and `bannedAt` (see {@link deleteAccount}),
+ * and stamp `deletedAt`. `PROFILE_ANONYMISED_VALUES` is the exhaustive PII list,
+ * so a future PII column is a compile error (and a test failure) until handled.
+ */
+async function anonymiseProfile(userId: string): Promise<void> {
   await db
     .update(profiles)
     .set({
@@ -125,16 +137,6 @@ export async function deleteAccount(
       updatedAt: new Date(),
     })
     .where(eq(profiles.id, userId));
-
-  // Erase the likes this user *received* on their own content (the "given"
-  // likes are kept and anonymised on purge by the SET NULL FK — see TSDoc).
-  await deleteReceivedLikes(userId);
-
-  // Best-effort removal of the avatar file(s) from Storage. A failure here must
-  // not fail the deletion — the user is already unable to log in.
-  await removeAvatarFiles(adminClient, userId);
-
-  return { ok: true };
 }
 
 /**

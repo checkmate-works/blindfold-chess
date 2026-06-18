@@ -134,24 +134,10 @@ export async function purgeDeletedAccounts(
       timedOut = true;
       break;
     }
-
-    try {
-      // Hard delete (no second arg) — fires the FK cascade / set-null.
-      const { error } = await adminClient.auth.admin.deleteUser(id);
-      if (error) {
-        failed += 1;
-        console.error(`[purgeDeletedAccounts] hard delete failed for ${id}:`, error.message);
-        Sentry.captureException(error);
-      } else {
-        purged += 1;
-      }
-    } catch (err) {
+    if (await hardDeleteAccount(adminClient, id)) {
+      purged += 1;
+    } else {
       failed += 1;
-      console.error(
-        `[purgeDeletedAccounts] hard delete threw for ${id}:`,
-        err instanceof Error ? err.message : err
-      );
-      Sentry.captureException(err);
     }
   }
 
@@ -163,4 +149,34 @@ export async function purgeDeletedAccounts(
     cutoff: run.cutoff.toISOString(),
     ...run.stamps(),
   };
+}
+
+/**
+ * Hard-delete one account's `auth.users` row (no second arg → fires the FK
+ * cascade / set-null). Best-effort: a returned error or a thrown exception is
+ * logged + reported and swallowed, so one bad account never aborts the batch.
+ *
+ * @returns `true` when the account was purged, `false` on any failure (the
+ *   profile row survives, so the next run retries it).
+ */
+async function hardDeleteAccount(
+  adminClient: ReturnType<typeof createAdminClient>,
+  userId: string
+): Promise<boolean> {
+  try {
+    const { error } = await adminClient.auth.admin.deleteUser(userId);
+    if (error) {
+      console.error(`[purgeDeletedAccounts] hard delete failed for ${userId}:`, error.message);
+      Sentry.captureException(error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(
+      `[purgeDeletedAccounts] hard delete threw for ${userId}:`,
+      err instanceof Error ? err.message : err
+    );
+    Sentry.captureException(err);
+    return false;
+  }
 }
