@@ -94,7 +94,11 @@ export const positions = pgTable(
   'positions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    // Nullable: positions are a public catalog, so author deletion anonymises
+    // (FK ON DELETE SET NULL) rather than cascading the row away — mirrors
+    // `games.author_id` / `chunks.user_id`. The app renders NULL as
+    // "(deleted user)". FK defined in custom SQL.
+    userId: uuid('user_id'), // references auth.users — FK defined in custom SQL
     type: varchar('type', { length: 50 }).notNull(), // 'memory', 'puzzle', 'sequence', etc.
     fen: varchar('fen', { length: 100 }).notNull(),
     title: varchar('title', { length: 255 }).notNull(),

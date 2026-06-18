@@ -83,6 +83,13 @@ export async function reapOrphanedPostImages(now: Date = new Date()): Promise<Re
   // gap (the old `OR` predicate matched any non-null deleted_at, including
   // posts soft-deleted only minutes ago).
   //
+  // Anonymised-but-retained posts are intentionally NOT reaped: when an author
+  // deletes their account, their public posts survive with `user_id = NULL` but
+  // `deleted_at` stays NULL (the post is anonymised, not tombstoned — see the
+  // SET NULL FK on `topic_posts.user_id`). Because this predicate keys off
+  // `deleted_at IS NOT NULL`, such posts — and their image attachments — fall
+  // outside the reaper, so the attachments are preserved with the post.
+  //
   // TODO(#73-phase-b): iterate the `post-images` bucket via
   // `admin.storage.from(POST_IMAGES_BUCKET).list(prefix, { limit, offset })`,
   // batch the discovered keys, and reap any key that has no matching

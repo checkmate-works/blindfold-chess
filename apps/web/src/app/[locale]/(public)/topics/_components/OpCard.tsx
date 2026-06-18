@@ -35,7 +35,8 @@ type Props = {
   postId: string;
   locale: string;
   topicKey: string;
-  userId: string;
+  // Null when the author was anonymised (account purged) — nobody owns the post.
+  userId: string | null;
   currentUserId?: string;
   author: Author;
   initialContent: string;

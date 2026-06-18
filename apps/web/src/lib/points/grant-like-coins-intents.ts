@@ -39,7 +39,8 @@ export type LikeRow = {
 
 /** Owner + soft-delete state of a liked piece of content. */
 export type ContentRow = {
-  ownerId: string;
+  /** NULL once the owner's account is purged (anonymised content — no payee). */
+  ownerId: string | null;
   deletedAt: Date | null;
 };
 
@@ -94,8 +95,10 @@ export function buildGrantIntents(input: {
           ? topicPostById.get(like.targetId)
           : undefined;
 
-    // Missing (orphaned like) or soft-deleted at batch time — skip entirely.
-    if (!content || content.deletedAt !== null) continue;
+    // Missing (orphaned like), soft-deleted, or owner anonymised (no payee) at
+    // batch time — skip entirely. A null owner means the content's author has
+    // been purged, so there is nobody to pay the direct grant to.
+    if (!content || content.deletedAt !== null || content.ownerId === null) continue;
 
     // Direct grant to the liked content's owner (self-likes allowed).
     intents.push({
@@ -113,7 +116,7 @@ export function buildGrantIntents(input: {
     if (position.forkedFromId === null) continue;
 
     const parent = forkParentById.get(position.forkedFromId);
-    if (!parent || parent.deletedAt !== null) continue;
+    if (!parent || parent.deletedAt !== null || parent.ownerId === null) continue;
     if (parent.ownerId === position.ownerId) continue; // self-fork
     if (parent.ownerId === like.likerId) continue; // author farming own forks
 

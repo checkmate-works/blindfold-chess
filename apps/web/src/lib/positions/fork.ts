@@ -29,7 +29,10 @@ import { UUID_RE } from '@/lib/validations/uuid';
 import type { PositionType } from './types';
 
 export type ValidateForkSourceResult =
-  | { ok: true; source: { id: string; userId: string; title: string } }
+  // userId may be null when the source position's author was anonymised
+  // (account purged). Forking public content is still allowed; only `.id` is
+  // consumed downstream. The self-fork check tolerates a null author.
+  | { ok: true; source: { id: string; userId: string | null; title: string } }
   | {
       ok: false;
       reason: 'invalid_uuid' | 'not_found' | 'self_fork' | 'forks_disabled';

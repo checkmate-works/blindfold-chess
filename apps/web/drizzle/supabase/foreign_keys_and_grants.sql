@@ -36,18 +36,16 @@ GRANT SELECT ON TABLE public.profiles TO anon;
 -- topic_posts
 -- =============================================================================
 
--- FK constraint: topic_posts.user_id → auth.users(id)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'topic_posts_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.topic_posts
-      ADD CONSTRAINT topic_posts_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+-- FK constraint: topic_posts.user_id → auth.users(id) ON DELETE SET NULL
+-- Public forum content: an author's physical purge anonymises the post
+-- (user_id → NULL, rendered "(deleted user)") rather than cascading the thread
+-- away. Mirrors games.author_id / chunks.user_id. Replaces the original
+-- CASCADE, so this is an explicit DROP → re-ADD (the "ADD IF NOT EXISTS" guard
+-- alone would leave an existing CASCADE in place). Idempotent: safe to re-run.
+ALTER TABLE public.topic_posts DROP CONSTRAINT IF EXISTS topic_posts_user_id_fkey;
+ALTER TABLE public.topic_posts
+  ADD CONSTRAINT topic_posts_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 -- FK constraint: topic_posts.parent_id → topic_posts(id) (self-reference for replies)
 DO $$
@@ -503,21 +501,18 @@ GRANT SELECT ON TABLE public.user_exp TO anon;
 -- positions
 -- =============================================================================
 
--- FK constraint: positions.user_id → auth.users(id) ON DELETE CASCADE
--- Matches the topic_posts.user_id pattern: when a user is hard-deleted,
--- their submitted positions go with them. Logical delete via
--- `deleted_at` remains the usual deprecation path.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'positions_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.positions
-      ADD CONSTRAINT positions_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+-- FK constraint: positions.user_id → auth.users(id) ON DELETE SET NULL
+-- Matches the topic_posts.user_id pattern: submitted positions are a public
+-- catalog, so an author's physical purge anonymises the position (user_id →
+-- NULL, rendered "(deleted user)") rather than cascading it away. Mirrors
+-- games.author_id / chunks.user_id. Logical delete via `deleted_at` remains the
+-- usual deprecation path. Replaces the original CASCADE, so this is an explicit
+-- DROP → re-ADD (the "ADD IF NOT EXISTS" guard alone would leave an existing
+-- CASCADE in place). Idempotent: safe to re-run.
+ALTER TABLE public.positions DROP CONSTRAINT IF EXISTS positions_user_id_fkey;
+ALTER TABLE public.positions
+  ADD CONSTRAINT positions_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 -- Grant necessary permissions (public read for catalog listings; authenticated
 -- users create and edit their own positions; physical DELETE is service-role only)

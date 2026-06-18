@@ -112,7 +112,11 @@ export const topicPosts = pgTable(
   'topic_posts',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    // Nullable: topic posts are public forum content, so author deletion
+    // anonymises (FK ON DELETE SET NULL) rather than cascading the thread away
+    // — mirrors `games.author_id` / `chunks.user_id`. The app renders NULL as
+    // "(deleted user)". FK defined in custom SQL.
+    userId: uuid('user_id'), // references auth.users — FK defined in custom SQL
     topicType: varchar('topic_type', { length: 50 }).notNull(),
     topicKey: varchar('topic_key', { length: 50 }).notNull(),
     parentId: uuid('parent_id'), // self-referencing FK defined in custom SQL

@@ -14,12 +14,12 @@ const mockWhere = vi.fn().mockResolvedValue(undefined);
 // `db.delete(likes).where(...)` — capture the WHERE condition so we can read
 // back which target_type each received-likes deletion scoped to.
 const mockDeleteWhere = vi.fn().mockResolvedValue(undefined);
-const mockDelete = vi.fn(() => ({ where: mockDeleteWhere }));
+const mockDelete = vi.fn((..._args: unknown[]) => ({ where: mockDeleteWhere }));
 // `db.select({ id }).from(table).where(...)` — the owned-content subquery fed
 // to `inArray`. Records the `from` table and the owner-column predicate.
 const mockSelectWhere = vi.fn(() => 'owned-content-subquery');
 const mockSelectFrom = vi.fn(() => ({ where: mockSelectWhere }));
-const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
+const mockSelect = vi.fn((..._args: unknown[]) => ({ from: mockSelectFrom }));
 
 vi.mock('server-only', () => ({}));
 

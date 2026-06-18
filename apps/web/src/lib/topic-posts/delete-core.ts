@@ -89,7 +89,9 @@ export async function purgePostImageAttachmentsFromStorage(
  *   clawback ledger entry.
  * @param authorUserId The user whose points balance the clawback is
  *   debited from. On the user path this is `user.id`; on the admin path
- *   it is the post's own `userId`, NOT the admin actor.
+ *   it is the post's own `userId`, NOT the admin actor. `null` when the
+ *   author was anonymised (account purged) — the clawback is skipped, since
+ *   their ledger was already cascade-removed and there is no balance to debit.
  * @param options.requireNotDeleted When `true`, the soft-delete is
  *   gated on `deletedAt IS NULL`, so a re-delete is a no-op. The user
  *   path sets this to preserve idempotency; the admin path leaves it
@@ -103,7 +105,7 @@ export async function purgePostImageAttachmentsFromStorage(
  */
 export async function deletePostCore(
   postId: string,
-  authorUserId: string,
+  authorUserId: string | null,
   options: { requireNotDeleted: boolean; insideTransaction?: (tx: DbTx) => Promise<void> }
 ): Promise<void> {
   await db.transaction(async (tx: DbTx) => {
@@ -136,8 +138,11 @@ export async function deletePostCore(
     // the author's current `earned` balance, so coins already spent are
     // not pursued — the balance never goes negative and self-deletion
     // never lands a user in debt. A no-op for posts that never earned
-    // points (non point-eligible topic types).
-    await clawbackPointsForPost(tx, authorUserId, { type: 'topic_post', id: postId });
+    // points (non point-eligible topic types). Skipped when the author was
+    // anonymised — their balance was already cascade-removed on purge.
+    if (authorUserId) {
+      await clawbackPointsForPost(tx, authorUserId, { type: 'topic_post', id: postId });
+    }
 
     if (options.insideTransaction) {
       await options.insideTransaction(tx);

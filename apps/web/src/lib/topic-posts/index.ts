@@ -54,11 +54,15 @@ export async function loadAuthoredPost(
   if (!post) {
     return { error: 'notFound' };
   }
+  // `topic_posts.user_id` is nullable (anonymised on author purge — see schema).
+  // An anonymised post has no author, so the ownership guard fails for everyone;
+  // past it, `post.userId` is provably the live, non-null caller, so substitute
+  // the param to keep `AuthoredPost.userId` non-null for every downstream caller.
   if (post.userId !== userId) {
     return { error: 'unauthorized' };
   }
   if (post.deletedAt) {
     return { error: 'alreadyDeleted' };
   }
-  return { post };
+  return { post: { ...post, userId } };
 }
