@@ -1,9 +1,19 @@
 import * as Sentry from '@sentry/nextjs';
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import 'server-only';
 
 import { cancelAllActiveSubscriptions } from '@/lib/billing/cancel-subscriptions';
-import { db, profiles } from '@/lib/db';
+import {
+  chunks,
+  db,
+  gameComments,
+  games,
+  likes,
+  positions,
+  profiles,
+  repertoires,
+  topicPosts,
+} from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
@@ -30,7 +40,19 @@ import { createAdminClient } from '@/lib/supabase/admin';
  * | Keep (identity)  | `profiles.username`, `profiles.bannedAt`                | Never touched (see below)                |
  * | Anonymise (PII)  | every other user-entered `profiles` column              | NULL out immediately (this function)     |
  * | Physical delete  | avatar file in Storage (`avatars/${userId}/...`)        | Best-effort `remove()` (this function)   |
+ * | Physical delete  | likes *received* on the user's own content              | Deleted immediately (this function)      |
+ * | Keep (anonymise) | likes the user *gave* to others' content                | Kept; `user_id → NULL` on purge (FK)     |
  * | Keep public UGC  | games, comments, chunks, public repertoires, posts, ... | Retained, author anonymised (other SPEC) |
+ *
+ * ### Likes — given vs. received (the two halves are split by mechanism)
+ * The product rule is: a like the user *gave* survives (anonymised), and a like
+ * the user *received* on their own content is erased. The FK
+ * `likes.user_id → auth.users ON DELETE SET NULL` covers the *given* half on
+ * physical purge (SPEC5). The *received* half has no FK to ride — `likes` is
+ * polymorphic over `(target_type, target_id)` with no constraint on the target —
+ * so it is deleted explicitly here, synchronously at deletion time, by
+ * {@link deleteReceivedLikes}. (Coins already paid for those likes are NOT
+ * clawed back; the `point_events` ledger is append-only — see grant-like-coins.)
  *
  * ### Why `username` is kept (NOT nulled)
  * Retained deliberately to prevent re-registration under the same handle and
@@ -104,11 +126,59 @@ export async function deleteAccount(
     })
     .where(eq(profiles.id, userId));
 
+  // Erase the likes this user *received* on their own content (the "given"
+  // likes are kept and anonymised on purge by the SET NULL FK — see TSDoc).
+  await deleteReceivedLikes(userId);
+
   // Best-effort removal of the avatar file(s) from Storage. A failure here must
   // not fail the deletion — the user is already unable to log in.
   await removeAvatarFiles(adminClient, userId);
 
   return { ok: true };
+}
+
+/**
+ * The likeable content kinds keyed by their polymorphic `likes.target_type`
+ * value, each paired with the table and owner column that decide whose content
+ * it is. This is the exhaustive set of targets `toggleLikeForTarget` /
+ * `performEntityToggleLike` can write — keep it in sync if a new likeable
+ * entity is added. The string values are stored data (`likes.target_type`),
+ * matching the constants the like actions use: `'game'` = `GAME_LIKE_TARGET`
+ * (`@/lib/db/like-queries`), `'game_comment'` = `GAME_COMMENT_LIKE_TARGET`
+ * (`@/lib/db/game-comments`); `topic_post` / `position` / `chunk` / `repertoire`
+ * are written as literals by their respective `like-actions.ts`.
+ */
+const LIKEABLE_OWNED_CONTENT = [
+  { targetType: 'topic_post', table: topicPosts, ownerColumn: topicPosts.userId },
+  { targetType: 'position', table: positions, ownerColumn: positions.userId },
+  { targetType: 'chunk', table: chunks, ownerColumn: chunks.userId },
+  { targetType: 'repertoire', table: repertoires, ownerColumn: repertoires.userId },
+  { targetType: 'game', table: games, ownerColumn: games.authorId },
+  { targetType: 'game_comment', table: gameComments, ownerColumn: gameComments.authorId },
+] as const;
+
+/**
+ * Physically delete every like that targets content owned by `userId` — i.e.
+ * the likes the withdrawing user *received*. One scoped DELETE per likeable
+ * content kind: drop `likes` rows whose `(target_type, target_id)` points at a
+ * row the user owns. Runs synchronously at deletion time; soft-deleted content
+ * still counts as owned, so its received likes go too. The content rows
+ * themselves are untouched (they are kept + anonymised by other SPECs).
+ */
+async function deleteReceivedLikes(userId: string): Promise<void> {
+  for (const { targetType, table, ownerColumn } of LIKEABLE_OWNED_CONTENT) {
+    await db
+      .delete(likes)
+      .where(
+        and(
+          eq(likes.targetType, targetType),
+          inArray(
+            likes.targetId,
+            db.select({ id: table.id }).from(table).where(eq(ownerColumn, userId))
+          )
+        )
+      );
+  }
 }
 
 /**

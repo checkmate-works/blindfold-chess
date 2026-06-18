@@ -11,10 +11,29 @@ const mockCancelAllActiveSubscriptions = vi.fn();
 const mockSet = vi.fn();
 const mockWhere = vi.fn().mockResolvedValue(undefined);
 
+// `db.delete(likes).where(...)` — capture the WHERE condition so we can read
+// back which target_type each received-likes deletion scoped to.
+const mockDeleteWhere = vi.fn().mockResolvedValue(undefined);
+const mockDelete = vi.fn(() => ({ where: mockDeleteWhere }));
+// `db.select({ id }).from(table).where(...)` — the owned-content subquery fed
+// to `inArray`. Records the `from` table and the owner-column predicate.
+const mockSelectWhere = vi.fn(() => 'owned-content-subquery');
+const mockSelectFrom = vi.fn(() => ({ where: mockSelectWhere }));
+const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
+
 vi.mock('server-only', () => ({}));
 
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
+}));
+
+// drizzle-orm helpers are mocked as passthrough capturers: the mocked `db`
+// chain ignores the conditions, but we keep their raw args so assertions can
+// read the scoped target_type / owner column without a real query builder.
+vi.mock('drizzle-orm', () => ({
+  and: (...conds: unknown[]) => ({ __and: conds }),
+  eq: (column: unknown, value: unknown) => ({ __eq: [column, value] }),
+  inArray: (column: unknown, values: unknown) => ({ __inArray: [column, values] }),
 }));
 
 vi.mock('@/lib/billing/cancel-subscriptions', () => ({
@@ -29,8 +48,17 @@ vi.mock('@/lib/db', () => ({
         return { where: mockWhere };
       },
     }),
+    delete: (...args: unknown[]) => mockDelete(...args),
+    select: (...args: unknown[]) => mockSelect(...args),
   },
   profiles: { id: 'id' },
+  likes: { targetType: 'likes.targetType', targetId: 'likes.targetId', userId: 'likes.userId' },
+  topicPosts: { id: 'topicPosts.id', userId: 'topicPosts.userId' },
+  positions: { id: 'positions.id', userId: 'positions.userId' },
+  chunks: { id: 'chunks.id', userId: 'chunks.userId' },
+  repertoires: { id: 'repertoires.id', userId: 'repertoires.userId' },
+  games: { id: 'games.id', authorId: 'games.authorId' },
+  gameComments: { id: 'gameComments.id', authorId: 'gameComments.authorId' },
 }));
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -99,6 +127,7 @@ describe('deleteAccount', () => {
       expect(result).toEqual({ ok: false, error: 'failed_to_cancel_subscription' });
       expect(mockDeleteUser).not.toHaveBeenCalled();
       expect(mockSet).not.toHaveBeenCalled();
+      expect(mockDelete).not.toHaveBeenCalled();
       expect(mockRemove).not.toHaveBeenCalled();
       errorSpy.mockRestore();
     });
@@ -111,6 +140,7 @@ describe('deleteAccount', () => {
 
     expect(result).toEqual({ ok: false, error: 'failed_to_delete_auth_user' });
     expect(mockSet).not.toHaveBeenCalled();
+    expect(mockDelete).not.toHaveBeenCalled();
     expect(mockRemove).not.toHaveBeenCalled();
   });
 
@@ -152,6 +182,60 @@ describe('deleteAccount', () => {
       await deleteAccount(testUserId);
 
       expect(mockLogActivityEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('received likes (獲得したいいね) deletion', () => {
+    /** Read back the `target_type` each `db.delete(likes).where(...)` scoped to. */
+    const deletedTargetTypes = () =>
+      mockDeleteWhere.mock.calls.map((call) => {
+        const cond = call[0] as { __and: { __eq: [unknown, unknown] }[] };
+        return cond.__and[0].__eq[1];
+      });
+
+    it('deletes received likes for every likeable owned-content type', async () => {
+      await deleteAccount(testUserId);
+
+      // Every target_type a user can own + receive likes on. If a new likeable
+      // entity is added, this list (and LIKEABLE_OWNED_CONTENT) must grow.
+      expect(deletedTargetTypes()).toEqual([
+        'topic_post',
+        'position',
+        'chunk',
+        'repertoire',
+        'game',
+        'game_comment',
+      ]);
+    });
+
+    it('scopes each deletion to content owned by the withdrawing user', async () => {
+      await deleteAccount(testUserId);
+
+      // The owned-content subquery selects ids from the content table filtered
+      // by its owner column = the withdrawing user.
+      const ownerPredicates = mockSelectWhere.mock.calls.map(
+        (call) => (call as unknown as [{ __eq: [unknown, unknown] }])[0].__eq
+      );
+      expect(ownerPredicates).toEqual([
+        ['topicPosts.userId', testUserId],
+        ['positions.userId', testUserId],
+        ['chunks.userId', testUserId],
+        ['repertoires.userId', testUserId],
+        ['games.authorId', testUserId],
+        ['gameComments.authorId', testUserId],
+      ]);
+    });
+
+    it('deletes from the likes table, fed by the owned-content subquery', async () => {
+      await deleteAccount(testUserId);
+
+      // Each delete targets `likes`, matching target_id ∈ the owned-content
+      // subquery (the "given" likes — user_id-keyed — are left untouched).
+      expect(mockDelete).toHaveBeenCalledTimes(6);
+      for (const call of mockDeleteWhere.mock.calls) {
+        const cond = call[0] as { __and: { __inArray: [unknown, unknown] }[] };
+        expect(cond.__and[1].__inArray).toEqual(['likes.targetId', 'owned-content-subquery']);
+      }
     });
   });
 

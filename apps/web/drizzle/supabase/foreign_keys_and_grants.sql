@@ -289,18 +289,17 @@ BEGIN
 END;
 $$;
 
--- FK constraint: likes.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'likes_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.likes
-      ADD CONSTRAINT likes_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+-- FK constraint: likes.user_id → auth.users(id) ON DELETE SET NULL
+-- A *given* like must survive its author's deletion (anonymised), not cascade
+-- away — so when auth.users is physically purged (SPEC5) the like is kept with
+-- user_id = NULL and still counts toward the liked content's total. This
+-- replaces the original CASCADE, so the change is an explicit DROP → re-ADD
+-- (the "ADD IF NOT EXISTS" guard alone would leave an existing CASCADE in
+-- place). Idempotent: safe to re-run.
+ALTER TABLE public.likes DROP CONSTRAINT IF EXISTS likes_user_id_fkey;
+ALTER TABLE public.likes
+  ADD CONSTRAINT likes_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 -- Grant necessary permissions
 GRANT SELECT, INSERT, DELETE ON TABLE public.likes TO authenticated;
