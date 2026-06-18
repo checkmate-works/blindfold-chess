@@ -3404,7 +3404,13 @@
   },
   "deleteAccount": {
     "title": "Delete Account",
-    "warning": "This action is permanent and cannot be undone. All your personal data (display name, bio, country, chess accounts, etc.) will be erased. Your username will be retained to prevent reuse.",
+    "sectionTitle": "Final confirmation",
+    "warning": "This action cannot be undone.",
+    "consequences": {
+      "personalData": "All personal information — display name, bio, country, chess accounts, and so on — will be permanently erased",
+      "usernameLocked": "You cannot register again with the same username",
+      "canReregister": "You can register again with a Google account or an email address"
+    },
     "confirmButton": "Delete My Account",
     "confirmTitle": "Are you absolutely sure?",
     "confirmMessage": "This will permanently delete your account and erase all personal data. This action cannot be undone.",

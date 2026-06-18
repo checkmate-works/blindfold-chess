@@ -3163,7 +3163,13 @@
   },
   "deleteAccount": {
     "title": "Excluir Conta",
-    "warning": "Esta ação é permanente e não pode ser desfeita. Todos os seus dados pessoais (nome de exibição, biografia, país, contas de xadrez, etc.) serão excluídos. Seu nome de usuário será mantido para evitar sua reutilização.",
+    "sectionTitle": "Confirmação final",
+    "warning": "Esta ação não pode ser desfeita.",
+    "consequences": {
+      "personalData": "Todas as informações pessoais — nome de exibição, biografia, país, contas de xadrez, etc. — serão excluídas",
+      "usernameLocked": "Você não poderá se registrar novamente com o mesmo nome de usuário",
+      "canReregister": "Você pode se registrar novamente com uma conta do Google ou e-mail"
+    },
     "confirmButton": "Excluir Minha Conta",
     "confirmTitle": "Tem certeza absoluta?",
     "confirmMessage": "Isso excluirá permanentemente sua conta e apagará todos os dados pessoais. Esta ação não pode ser desfeita.",
