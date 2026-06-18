@@ -3163,7 +3163,13 @@
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",
-    "warning": "Esta acción es permanente y no se puede deshacer. Todos tus datos personales (nombre de usuario, biografía, país, cuentas de ajedrez, etc.) serán eliminados. Tu nombre de usuario se conservará para evitar su reutilización.",
+    "sectionTitle": "Confirmación final",
+    "warning": "Esta acción no se puede deshacer.",
+    "consequences": {
+      "personalData": "Toda la información personal —nombre de visualización, biografía, país, cuentas de ajedrez, etc.— será eliminada",
+      "usernameLocked": "No podrás volver a registrarte con el mismo nombre de usuario",
+      "canReregister": "Puedes volver a registrarte con una cuenta de Google o un correo electrónico"
+    },
     "confirmButton": "Eliminar Mi Cuenta",
     "confirmTitle": "¿Estás completamente seguro?",
     "confirmMessage": "Esto eliminará permanentemente tu cuenta y borrará todos los datos personales. Esta acción no se puede deshacer.",
