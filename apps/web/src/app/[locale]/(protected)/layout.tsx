@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { MypageLoadingFallback } from './_components/MypageLoadingFallback';
 import { MypageDashboardLoadingFallback } from './mypage/(confirmed)/_components/MypageDashboardLoadingFallback';
+import { ChallengesLoadingFallback } from './mypage/(confirmed)/challenges/_components/ChallengesLoadingFallback';
 import { ProfileLoadingFallback } from './mypage/(confirmed)/profile/_components/ProfileLoadingFallback';
 
 type Props = {
@@ -25,6 +26,10 @@ type Props = {
 function resolveLoadingFallback(pathname: string) {
   if (pathname.includes('/mypage/profile')) {
     return <ProfileLoadingFallback />;
+  }
+  // Covers `/mypage/challenges` and its `results` child (both use DashboardSkeleton).
+  if (pathname.includes('/mypage/challenges')) {
+    return <ChallengesLoadingFallback />;
   }
   // Dashboard top exactly (`/<locale>/mypage`), not its sub-routes.
   if (/\/mypage\/?$/.test(pathname)) {
