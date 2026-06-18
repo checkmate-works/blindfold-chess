@@ -358,6 +358,13 @@
       "when": 1781584042147,
       "tag": "20260616042722_assign_post_image_display_order",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1781764562755,
+      "tag": "20260618063602_likes_user_id_nullable",
+      "breakpoints": true
     }
   ]
 }

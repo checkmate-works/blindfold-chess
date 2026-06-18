@@ -184,12 +184,27 @@ export type NewTopicPost = typeof topicPosts.$inferInsert;
  * - FK on user_id → auth.users: defined in `drizzle/supabase/foreign_keys_and_grants.sql`
  *   following the established Supabase pattern.
  * - Existing data from `topic_post_likes` is migrated with `target_type = 'topic_post'`.
+ *
+ * @design user_id nullable + ON DELETE SET NULL — a *given* like survives its
+ *   author's deletion (anonymised), it is not erased. When a former member is
+ *   physically purged (SPEC5), the FK sets `user_id = NULL` instead of cascading
+ *   the row away, so the like still counts toward the liked content's total. The
+ *   complementary half of the policy — physically deleting likes a withdrawing
+ *   user *received* on their own content — is done in the app layer at deletion
+ *   time (`deleteAccount` → `deleteReceivedLikes`), because the polymorphic
+ *   `(target_type, target_id)` side has no FK to cascade through. NULL `user_id`
+ *   is correct everywhere likes are read: counts are `COUNT(*)` over a target,
+ *   and "did I like this" matches on the *current* user id (never NULL). The
+ *   `UNIQUE(user_id, target_type, target_id)` constraint is unaffected — Postgres
+ *   treats NULLs as distinct, so multiple anonymised likes on one target coexist.
  */
 export const likes = pgTable(
   'likes',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    // Nullable: ON DELETE SET NULL anonymises a like when its author is purged
+    // (see the table's @design note). FK defined in custom SQL.
+    userId: uuid('user_id'), // references auth.users — FK defined in custom SQL
     targetType: varchar('target_type', { length: 50 }).notNull(),
     targetId: uuid('target_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
