@@ -127,8 +127,12 @@ export default async function AdminTopicPostsPage({
         emptyMessage={t('topicPosts.noPostsFound')}
         renderRow={(post) => {
           const isDeleted = post.deletedAt != null;
-          const authorProfile = profileMap.get(post.userId);
-          const authorDisplay = authorProfile?.username ?? emailMap.get(post.userId) ?? post.userId;
+          // Anonymised post (author account purged): user_id is NULL, so there
+          // is no profile/email to resolve — show the deleted-user label.
+          const authorProfile = post.userId ? profileMap.get(post.userId) : undefined;
+          const authorDisplay = post.userId
+            ? (authorProfile?.username ?? emailMap.get(post.userId) ?? post.userId)
+            : '(deleted user)';
 
           return (
             <tr key={post.id} className={`border-t border-border ${isDeleted ? 'opacity-50' : ''}`}>

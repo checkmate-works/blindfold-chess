@@ -105,7 +105,11 @@ export async function getAdminTopicPostsPageData({
           .limit(limit)
           .offset(offset);
 
-  const authorIds = [...new Set(posts.map((p) => p.userId))];
+  // Anonymised posts (author purged) carry user_id = NULL and have no profile
+  // or email to resolve — drop them before the lookups.
+  const authorIds = [
+    ...new Set(posts.map((p) => p.userId).filter((id): id is string => id !== null)),
+  ];
 
   const [authorProfiles, emailMap, topicTypes] = await Promise.all([
     authorIds.length > 0

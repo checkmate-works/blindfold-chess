@@ -95,6 +95,9 @@ export async function attachPostMeta(
   const seenUsers = new Map<string, Set<string>>();
   for (const row of repliesWithAuthors) {
     if (!row.rootPostId) continue;
+    // Skip repliers whose author was anonymised (user_id NULL — account purged):
+    // there is no distinct profile to dedup by, avatar, or link in the preview.
+    if (!row.userId) continue;
     const seen = seenUsers.get(row.rootPostId) ?? new Set();
     if (seen.has(row.userId)) continue;
     seen.add(row.userId);

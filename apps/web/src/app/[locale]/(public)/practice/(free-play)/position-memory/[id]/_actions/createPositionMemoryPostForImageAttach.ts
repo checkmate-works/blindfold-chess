@@ -29,7 +29,7 @@ export async function createPositionMemoryPostForImageAttach(
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
-    topicAuthorId: position?.userId,
+    topicAuthorId: position?.userId ?? undefined,
     formData,
   });
 }

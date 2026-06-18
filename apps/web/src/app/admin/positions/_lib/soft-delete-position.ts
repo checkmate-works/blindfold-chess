@@ -79,8 +79,10 @@ export async function softDeletePosition(
 
     // Moderator removal claws back the position author's point grant (NOT
     // the admin actor's), capped at the author's current balance. No-op for
-    // position types that never earned points (e.g., `chunk`).
-    if (pointEntityType) {
+    // position types that never earned points (e.g., `chunk`). Skipped when
+    // the author was anonymised (account purged) — their balance was already
+    // cascade-removed, so there is nothing to claw back.
+    if (pointEntityType && position.userId) {
       await clawbackPointsForPost(tx, position.userId, {
         type: pointEntityType,
         id,
