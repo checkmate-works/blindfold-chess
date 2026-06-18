@@ -7,6 +7,7 @@ import { isUserBanned } from '@/lib/moderation/ban';
 import { createClient } from '@/lib/supabase/server';
 
 import { MypageLoadingFallback } from './_components/MypageLoadingFallback';
+import { MypageDashboardLoadingFallback } from './mypage/(confirmed)/_components/MypageDashboardLoadingFallback';
 import { ProfileLoadingFallback } from './mypage/(confirmed)/profile/_components/ProfileLoadingFallback';
 
 type Props = {
@@ -24,6 +25,10 @@ type Props = {
 function resolveLoadingFallback(pathname: string) {
   if (pathname.includes('/mypage/profile')) {
     return <ProfileLoadingFallback />;
+  }
+  // Dashboard top exactly (`/<locale>/mypage`), not its sub-routes.
+  if (/\/mypage\/?$/.test(pathname)) {
+    return <MypageDashboardLoadingFallback />;
   }
   return <MypageLoadingFallback />;
 }
