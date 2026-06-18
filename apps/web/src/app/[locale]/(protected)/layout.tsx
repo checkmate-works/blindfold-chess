@@ -1,11 +1,13 @@
 import { Suspense } from 'react';
 
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { isUserBanned } from '@/lib/moderation/ban';
 import { createClient } from '@/lib/supabase/server';
 
-import { MypageLoadingFallback } from './mypage/(confirmed)/_components/MypageDashboardSkeleton';
+import { MypageLoadingFallback } from './_components/MypageLoadingFallback';
+import { ProfileLoadingFallback } from './mypage/(confirmed)/profile/_components/ProfileLoadingFallback';
 
 type Props = {
   children: React.ReactNode;
@@ -13,25 +15,38 @@ type Props = {
 };
 
 /**
+ * Picks the Suspense fallback that matches the route being loaded. The auth
+ * gate below is shared by every mypage route, so on a hard load / refresh its
+ * fallback is what the user actually stares at for ~1–2s — a generic skeleton
+ * looks misaligned against, say, the profile form. Routes with a tailored
+ * skeleton are matched here; everything else gets the neutral fallback.
+ */
+function resolveLoadingFallback(pathname: string) {
+  if (pathname.includes('/mypage/profile')) {
+    return <ProfileLoadingFallback />;
+  }
+  return <MypageLoadingFallback />;
+}
+
+/**
  * Auth gate for the whole protected area (mypage).
  *
- * This layout is deliberately **synchronous** and wraps the actual gate in an
- * explicit `<Suspense>`. The gate (`ProtectedGate`) awaits
- * `supabase.auth.getUser()` — a network round-trip to the Auth server that can
- * take ~1–2s. If that await lived directly on an `async` layout, it would run
- * *before* React reached any Suspense boundary, so on a hard navigation (the
- * post-sign-in `window.location` redirect to `/mypage`) the main content area
- * stayed blank until it resolved. `loading.tsx` does NOT help here: it only
- * wraps a layout's *children*, not the layout's own await.
+ * The heavy await (`supabase.auth.getUser()`, a ~1–2s Auth round-trip) lives in
+ * the Suspense-wrapped `ProtectedGate`, NOT on this layout, so React reaches the
+ * boundary immediately and streams the skeleton while `getUser()` is in flight.
+ * If the await were on the layout itself it would run *before* any boundary,
+ * leaving the area blank on a hard navigation (e.g. the post-sign-in
+ * `window.location` redirect) — `loading.tsx` cannot cover a layout's own await.
  *
- * By keeping the layout sync and pushing the await into a Suspense-wrapped
- * child, React hits the boundary immediately and streams the skeleton while
- * `getUser()` is in flight. The same fallback covers the nested `(confirmed)`
- * layout auth + dashboard data fetch, so it's one continuous skeleton.
+ * The only thing this layout awaits is `headers()` (instant, no IO), to read the
+ * middleware-set `x-pathname` and choose a route-appropriate fallback. The same
+ * fallback also covers the nested `(confirmed)` layout auth + page data fetch,
+ * so it stays as one continuous skeleton until the real content is ready.
  */
-export default function ProtectedLayout({ children, params }: Props) {
+export default async function ProtectedLayout({ children, params }: Props) {
+  const pathname = (await headers()).get('x-pathname') ?? '';
   return (
-    <Suspense fallback={<MypageLoadingFallback />}>
+    <Suspense fallback={resolveLoadingFallback(pathname)}>
       <ProtectedGate params={params}>{children}</ProtectedGate>
     </Suspense>
   );
