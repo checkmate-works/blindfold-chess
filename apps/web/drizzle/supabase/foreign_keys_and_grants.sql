@@ -14,19 +14,29 @@
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user();
 
--- FK constraint: profiles.id → auth.users(id)
--- Using DO block to avoid errors if the constraint already exists.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'profiles_id_fkey'
-  ) THEN
-    ALTER TABLE public.profiles
-      ADD CONSTRAINT profiles_id_fkey
-      FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE RESTRICT;
-  END IF;
-END;
-$$;
+-- FK constraint: profiles.id → auth.users(id) ON DELETE CASCADE
+--
+-- CASCADE so the controlled physical purge (SPEC5: the
+-- `purge-deleted-accounts` cron → `auth.admin.deleteUser(id)` *hard* delete)
+-- can remove the auth.users row and have the profile go with it, which in turn
+-- lets every other user-data FK fire (CASCADE for private data, SET NULL for
+-- public content). This was previously RESTRICT, which *blocked* the hard
+-- delete outright (the profile row kept auth.users pinned), so the purge could
+-- never fire the cascade the policy depends on.
+--
+-- This is safe because the ONLY hard-delete path is the retention-gated purge
+-- cron; the退会 (account-deletion) flow uses `deleteUser(id, true)` (soft), which
+-- never removes the auth.users row and so never triggers this cascade. The
+-- username/bannedAt ban-evasion hold therefore lasts for the whole soft-delete
+-- retention window and is released only when the account is finally purged.
+--
+-- Replaces the original RESTRICT, so this is an explicit DROP → re-ADD (the
+-- "ADD IF NOT EXISTS" guard alone would leave an existing RESTRICT in place).
+-- Idempotent: safe to re-run.
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey;
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_id_fkey
+  FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 -- Grant necessary permissions
 GRANT SELECT, INSERT, UPDATE ON TABLE public.profiles TO authenticated;
