@@ -3,6 +3,7 @@ import { and, asc, isNotNull, lt } from 'drizzle-orm';
 import 'server-only';
 
 import { db, profiles } from '@/lib/db';
+import { startRetentionRun } from '@/lib/retention-run';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
@@ -104,13 +105,12 @@ export type PurgeDeletedAccountsReport = {
 export async function purgeDeletedAccounts(
   opts: { now?: Date; budgetMs?: number; maxPerRun?: number } = {}
 ): Promise<PurgeDeletedAccountsReport> {
-  const now = opts.now ?? new Date();
-  const budgetMs = opts.budgetMs ?? DEFAULT_BUDGET_MS;
   const maxPerRun = opts.maxPerRun ?? DEFAULT_MAX_PER_RUN;
-
-  const startedAt = new Date(now);
-  const cutoff = new Date(now.getTime() - ACCOUNT_PURGE_RETENTION_MS);
-  const deadline = Date.now() + budgetMs;
+  const run = startRetentionRun({
+    now: opts.now,
+    retentionMs: ACCOUNT_PURGE_RETENTION_MS,
+    budgetMs: opts.budgetMs ?? DEFAULT_BUDGET_MS,
+  });
 
   // Select eligible accounts once, oldest soft-delete first. Successful purges
   // cascade-remove the profile (so they never reappear); failures stay and are
@@ -119,7 +119,7 @@ export async function purgeDeletedAccounts(
   const targets = await db
     .select({ id: profiles.id })
     .from(profiles)
-    .where(and(isNotNull(profiles.deletedAt), lt(profiles.deletedAt, cutoff)))
+    .where(and(isNotNull(profiles.deletedAt), lt(profiles.deletedAt, run.cutoff)))
     .orderBy(asc(profiles.deletedAt))
     .limit(maxPerRun);
 
@@ -130,7 +130,7 @@ export async function purgeDeletedAccounts(
   let timedOut = false;
 
   for (const { id } of targets) {
-    if (Date.now() >= deadline) {
+    if (run.isOverBudget()) {
       timedOut = true;
       break;
     }
@@ -160,8 +160,7 @@ export async function purgeDeletedAccounts(
     failed,
     scanned: targets.length,
     timedOut,
-    cutoff: cutoff.toISOString(),
-    startedAt: startedAt.toISOString(),
-    finishedAt: new Date().toISOString(),
+    cutoff: run.cutoff.toISOString(),
+    ...run.stamps(),
   };
 }
