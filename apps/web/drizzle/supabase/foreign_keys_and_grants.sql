@@ -7,6 +7,65 @@
 -- and will fail on local PostgreSQL — this is intentional.
 
 -- =============================================================================
+-- Helper: idempotent FK to auth.users(id)
+-- =============================================================================
+-- Almost every user-owned table carries a single FK to auth.users(id) that
+-- differs only by (table, constraint, column, ON DELETE action). This helper
+-- collapses ~40 near-identical DO blocks into one call each.
+--
+-- Self-healing and idempotent: it no-ops when the constraint already exists
+-- with the desired ON DELETE action, and otherwise (re)creates it. So a policy
+-- change (e.g. CASCADE → SET NULL) is applied on the next migrate run with no
+-- manual DROP, while an unchanged FK is left untouched (no needless
+-- re-validation / locking on every deploy). The action keyword is mapped to a
+-- vetted `confdeltype` code first, so only a known keyword ever reaches the
+-- dynamic ALTER (no injection surface). Tables whose FK is NOT a plain
+-- auth.users(id) reference (self-references, ON UPDATE actions) keep their own
+-- explicit block below.
+CREATE OR REPLACE FUNCTION public.ensure_auth_users_fk(
+  p_table text,
+  p_constraint text,
+  p_column text,
+  p_on_delete text
+) RETURNS void
+LANGUAGE plpgsql
+AS $fn$
+DECLARE
+  v_want text;
+  v_have text;
+BEGIN
+  v_want := CASE upper(p_on_delete)
+    WHEN 'CASCADE'   THEN 'c'
+    WHEN 'SET NULL'  THEN 'n'
+    WHEN 'RESTRICT'  THEN 'r'
+    WHEN 'NO ACTION' THEN 'a'
+    ELSE NULL
+  END;
+  IF v_want IS NULL THEN
+    RAISE EXCEPTION 'ensure_auth_users_fk: unsupported ON DELETE action %', p_on_delete;
+  END IF;
+
+  SELECT confdeltype::text INTO v_have
+  FROM pg_constraint
+  WHERE conname = p_constraint
+    AND conrelid = format('public.%I', p_table)::regclass;
+
+  IF v_have IS NOT DISTINCT FROM v_want THEN
+    RETURN; -- already present with the desired action
+  END IF;
+
+  IF v_have IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT %I', p_table, p_constraint);
+  END IF;
+
+  EXECUTE format(
+    'ALTER TABLE public.%I ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES auth.users(id) ON DELETE %s',
+    p_table, p_constraint, p_column, upper(p_on_delete)
+  );
+END;
+$fn$;
+
+-- =============================================================================
 -- profiles
 -- =============================================================================
 
@@ -29,14 +88,7 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 -- never removes the auth.users row and so never triggers this cascade. The
 -- username/bannedAt ban-evasion hold therefore lasts for the whole soft-delete
 -- retention window and is released only when the account is finally purged.
---
--- Replaces the original RESTRICT, so this is an explicit DROP → re-ADD (the
--- "ADD IF NOT EXISTS" guard alone would leave an existing RESTRICT in place).
--- Idempotent: safe to re-run.
-ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey;
-ALTER TABLE public.profiles
-  ADD CONSTRAINT profiles_id_fkey
-  FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+SELECT public.ensure_auth_users_fk('profiles', 'profiles_id_fkey', 'id', 'CASCADE');
 
 -- Grant necessary permissions
 GRANT SELECT, INSERT, UPDATE ON TABLE public.profiles TO authenticated;
@@ -49,13 +101,8 @@ GRANT SELECT ON TABLE public.profiles TO anon;
 -- FK constraint: topic_posts.user_id → auth.users(id) ON DELETE SET NULL
 -- Public forum content: an author's physical purge anonymises the post
 -- (user_id → NULL, rendered "(deleted user)") rather than cascading the thread
--- away. Mirrors games.author_id / chunks.user_id. Replaces the original
--- CASCADE, so this is an explicit DROP → re-ADD (the "ADD IF NOT EXISTS" guard
--- alone would leave an existing CASCADE in place). Idempotent: safe to re-run.
-ALTER TABLE public.topic_posts DROP CONSTRAINT IF EXISTS topic_posts_user_id_fkey;
-ALTER TABLE public.topic_posts
-  ADD CONSTRAINT topic_posts_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+-- away. Mirrors games.author_id / chunks.user_id.
+SELECT public.ensure_auth_users_fk('topic_posts', 'topic_posts_user_id_fkey', 'user_id', 'SET NULL');
 
 -- FK constraint: topic_posts.parent_id → topic_posts(id) (self-reference for replies)
 DO $$
@@ -79,17 +126,7 @@ GRANT SELECT ON TABLE public.topic_posts TO anon;
 -- =============================================================================
 
 -- FK constraint: moderation_actions.actor_id → auth.users(id)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'moderation_actions_actor_id_fkey'
-  ) THEN
-    ALTER TABLE public.moderation_actions
-      ADD CONSTRAINT moderation_actions_actor_id_fkey
-      FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('moderation_actions', 'moderation_actions_actor_id_fkey', 'actor_id', 'CASCADE');
 
 -- Grant necessary permissions
 GRANT SELECT, INSERT ON TABLE public.moderation_actions TO authenticated;
@@ -99,56 +136,16 @@ GRANT SELECT, INSERT ON TABLE public.moderation_actions TO authenticated;
 -- =============================================================================
 
 -- FK constraint: user_follows.follower_id → auth.users(id)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_follows_follower_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_follows
-      ADD CONSTRAINT user_follows_follower_id_fkey
-      FOREIGN KEY (follower_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_follows', 'user_follows_follower_id_fkey', 'follower_id', 'CASCADE');
 
 -- FK constraint: user_follows.following_id → auth.users(id)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_follows_following_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_follows
-      ADD CONSTRAINT user_follows_following_id_fkey
-      FOREIGN KEY (following_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_follows', 'user_follows_following_id_fkey', 'following_id', 'CASCADE');
 
 -- FK constraint: user_blocks.blocker_id → auth.users(id)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_blocks_blocker_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_blocks
-      ADD CONSTRAINT user_blocks_blocker_id_fkey
-      FOREIGN KEY (blocker_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_blocks', 'user_blocks_blocker_id_fkey', 'blocker_id', 'CASCADE');
 
 -- FK constraint: user_blocks.blocked_id → auth.users(id)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_blocks_blocked_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_blocks
-      ADD CONSTRAINT user_blocks_blocked_id_fkey
-      FOREIGN KEY (blocked_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_blocks', 'user_blocks_blocked_id_fkey', 'blocked_id', 'CASCADE');
 
 -- Grant necessary permissions
 GRANT SELECT, INSERT, DELETE ON TABLE public.user_follows TO authenticated;
@@ -160,30 +157,10 @@ GRANT SELECT, INSERT, DELETE ON TABLE public.user_blocks TO authenticated;
 -- =============================================================================
 
 -- FK constraint: notifications.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'notifications_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.notifications
-      ADD CONSTRAINT notifications_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('notifications', 'notifications_user_id_fkey', 'user_id', 'CASCADE');
 
 -- FK constraint: notifications.actor_id → auth.users(id) ON DELETE SET NULL
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'notifications_actor_id_fkey'
-  ) THEN
-    ALTER TABLE public.notifications
-      ADD CONSTRAINT notifications_actor_id_fkey
-      FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('notifications', 'notifications_actor_id_fkey', 'actor_id', 'SET NULL');
 
 -- Grant necessary permissions (no INSERT — controlled by server-side only)
 GRANT SELECT, UPDATE, DELETE ON TABLE public.notifications TO authenticated;
@@ -193,17 +170,7 @@ GRANT SELECT, UPDATE, DELETE ON TABLE public.notifications TO authenticated;
 -- =============================================================================
 
 -- FK constraint: rate_limit_events.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'rate_limit_events_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.rate_limit_events
-      ADD CONSTRAINT rate_limit_events_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('rate_limit_events', 'rate_limit_events_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Server-side only writes; revoke any client-role grants (RLS deny-by-default).
 REVOKE ALL ON TABLE public.rate_limit_events FROM authenticated, anon;
@@ -222,17 +189,7 @@ REVOKE ALL ON TABLE public.rate_limit_key_events FROM authenticated, anon;
 -- =============================================================================
 
 -- FK constraint: user_activity_log.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_activity_log_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_activity_log
-      ADD CONSTRAINT user_activity_log_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_activity_log', 'user_activity_log_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant necessary permissions
 GRANT SELECT, INSERT ON TABLE public.user_activity_log TO authenticated;
@@ -242,17 +199,7 @@ GRANT SELECT, INSERT ON TABLE public.user_activity_log TO authenticated;
 -- =============================================================================
 
 -- FK constraint: user_roles.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_roles_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_roles
-      ADD CONSTRAINT user_roles_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_roles', 'user_roles_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Server-side only access; custom_access_token_hook reads via supabase_auth_admin
 -- (granted in custom_access_token_hook.sql). Revoke any client-role grants.
@@ -300,14 +247,8 @@ $$;
 -- FK constraint: likes.user_id → auth.users(id) ON DELETE SET NULL
 -- A *given* like must survive its author's deletion (anonymised), not cascade
 -- away — so when auth.users is physically purged (SPEC5) the like is kept with
--- user_id = NULL and still counts toward the liked content's total. This
--- replaces the original CASCADE, so the change is an explicit DROP → re-ADD
--- (the "ADD IF NOT EXISTS" guard alone would leave an existing CASCADE in
--- place). Idempotent: safe to re-run.
-ALTER TABLE public.likes DROP CONSTRAINT IF EXISTS likes_user_id_fkey;
-ALTER TABLE public.likes
-  ADD CONSTRAINT likes_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+-- user_id = NULL and still counts toward the liked content's total.
+SELECT public.ensure_auth_users_fk('likes', 'likes_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions
 GRANT SELECT, INSERT, DELETE ON TABLE public.likes TO authenticated;
@@ -318,17 +259,7 @@ GRANT SELECT ON TABLE public.likes TO anon;
 -- =============================================================================
 
 -- FK constraint: challenge_results.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'challenge_results_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.challenge_results
-      ADD CONSTRAINT challenge_results_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('challenge_results', 'challenge_results_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant necessary permissions (public read for leaderboard display)
 GRANT SELECT, INSERT ON TABLE public.challenge_results TO authenticated;
@@ -339,17 +270,7 @@ GRANT SELECT ON TABLE public.challenge_results TO anon;
 -- =============================================================================
 
 -- FK constraint: challenge_best_scores.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'challenge_best_scores_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.challenge_best_scores
-      ADD CONSTRAINT challenge_best_scores_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('challenge_best_scores', 'challenge_best_scores_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant necessary permissions (public read for leaderboard display, UPDATE for UPSERT)
 GRANT SELECT, INSERT, UPDATE ON TABLE public.challenge_best_scores TO authenticated;
@@ -360,17 +281,7 @@ GRANT SELECT ON TABLE public.challenge_best_scores TO anon;
 -- =============================================================================
 
 -- FK constraint: feed_items.actor_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'feed_items_actor_id_fkey'
-  ) THEN
-    ALTER TABLE public.feed_items
-      ADD CONSTRAINT feed_items_actor_id_fkey
-      FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('feed_items', 'feed_items_actor_id_fkey', 'actor_id', 'CASCADE');
 
 -- Grant necessary permissions (public read for timeline, server-side INSERT)
 GRANT SELECT, INSERT ON TABLE public.feed_items TO authenticated;
@@ -381,17 +292,7 @@ GRANT SELECT ON TABLE public.feed_items TO anon;
 -- =============================================================================
 
 -- FK constraint: stripe_customers.user_id -> auth.users(id)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'stripe_customers_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.stripe_customers
-      ADD CONSTRAINT stripe_customers_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('stripe_customers', 'stripe_customers_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Server-side only writes (no INSERT/UPDATE for authenticated)
 GRANT SELECT ON TABLE public.stripe_customers TO authenticated;
@@ -401,17 +302,7 @@ GRANT SELECT ON TABLE public.stripe_customers TO authenticated;
 -- =============================================================================
 
 -- FK constraint: subscriptions.user_id -> auth.users(id)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'subscriptions_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.subscriptions
-      ADD CONSTRAINT subscriptions_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('subscriptions', 'subscriptions_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Users can read their own subscriptions; writes are server-side only
 GRANT SELECT ON TABLE public.subscriptions TO authenticated;
@@ -421,17 +312,7 @@ GRANT SELECT ON TABLE public.subscriptions TO authenticated;
 -- =============================================================================
 
 -- FK constraint: user_interview_answers.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_interview_answers_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_interview_answers
-      ADD CONSTRAINT user_interview_answers_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_interview_answers', 'user_interview_answers_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant necessary permissions (public read, authenticated insert/delete)
 GRANT SELECT, INSERT, UPDATE ON TABLE public.user_interview_answers TO authenticated;
@@ -450,17 +331,7 @@ GRANT SELECT ON TABLE public.ranks TO anon;
 -- =============================================================================
 
 -- FK constraint: user_ranks.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_ranks_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_ranks
-      ADD CONSTRAINT user_ranks_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_ranks', 'user_ranks_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant read permissions (read-only for all, write via service role only)
 GRANT SELECT ON TABLE public.user_ranks TO authenticated;
@@ -471,17 +342,7 @@ GRANT SELECT ON TABLE public.user_ranks TO anon;
 -- =============================================================================
 
 -- FK constraint: exp_events.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'exp_events_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.exp_events
-      ADD CONSTRAINT exp_events_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('exp_events', 'exp_events_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant read permissions (authenticated can SELECT own rows via RLS, service role only write)
 GRANT SELECT ON TABLE public.exp_events TO authenticated;
@@ -491,17 +352,7 @@ GRANT SELECT ON TABLE public.exp_events TO authenticated;
 -- =============================================================================
 
 -- FK constraint: user_exp.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_exp_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_exp
-      ADD CONSTRAINT user_exp_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_exp', 'user_exp_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant read permissions (public read for leaderboard, service role only write)
 GRANT SELECT ON TABLE public.user_exp TO authenticated;
@@ -516,13 +367,8 @@ GRANT SELECT ON TABLE public.user_exp TO anon;
 -- catalog, so an author's physical purge anonymises the position (user_id →
 -- NULL, rendered "(deleted user)") rather than cascading it away. Mirrors
 -- games.author_id / chunks.user_id. Logical delete via `deleted_at` remains the
--- usual deprecation path. Replaces the original CASCADE, so this is an explicit
--- DROP → re-ADD (the "ADD IF NOT EXISTS" guard alone would leave an existing
--- CASCADE in place). Idempotent: safe to re-run.
-ALTER TABLE public.positions DROP CONSTRAINT IF EXISTS positions_user_id_fkey;
-ALTER TABLE public.positions
-  ADD CONSTRAINT positions_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+-- usual deprecation path.
+SELECT public.ensure_auth_users_fk('positions', 'positions_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions (public read for catalog listings; authenticated
 -- users create and edit their own positions; physical DELETE is service-role only)
@@ -539,17 +385,7 @@ GRANT SELECT ON TABLE public.positions TO anon;
 -- DELETE RESTRICT`, CASCADE here would also deadlock user hard-deletes via
 -- the FK graph. Orphaning (user_id → NULL) is the safer fallback; the
 -- normal deprecation path remains logical delete via `chunks.deleted_at`.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'chunks_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.chunks
-      ADD CONSTRAINT chunks_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('chunks', 'chunks_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions (public read for catalog listing; authenticated
 -- users create and edit their own chunks; physical DELETE is service-role only)
@@ -565,32 +401,12 @@ GRANT SELECT ON TABLE public.chunks TO anon;
 -- the proposer's account is hard-deleted, the request survives with
 -- `proposer_id = NULL` (the application layer renders such rows as
 -- "(deleted user)"). Mirrors the chunks.user_id rationale.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'chunk_edit_requests_proposer_id_fkey'
-  ) THEN
-    ALTER TABLE public.chunk_edit_requests
-      ADD CONSTRAINT chunk_edit_requests_proposer_id_fkey
-      FOREIGN KEY (proposer_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('chunk_edit_requests', 'chunk_edit_requests_proposer_id_fkey', 'proposer_id', 'SET NULL');
 
 -- FK constraint: chunk_edit_requests.resolver_id → auth.users(id) ON DELETE SET NULL
 -- Same rationale as proposer_id — preserves the history when the
 -- accepting / rejecting owner is later hard-deleted.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'chunk_edit_requests_resolver_id_fkey'
-  ) THEN
-    ALTER TABLE public.chunk_edit_requests
-      ADD CONSTRAINT chunk_edit_requests_resolver_id_fkey
-      FOREIGN KEY (resolver_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('chunk_edit_requests', 'chunk_edit_requests_resolver_id_fkey', 'resolver_id', 'SET NULL');
 
 -- The FK to chunks is managed by Drizzle (ON DELETE CASCADE — physical
 -- chunk deletion takes its requests with it). Grants: open read so
@@ -609,32 +425,12 @@ GRANT SELECT ON TABLE public.chunk_edit_requests TO anon;
 -- the proposer's account is hard-deleted, the request survives with
 -- `proposer_id = NULL` (the application layer renders such rows as
 -- "(deleted user)"). Mirrors the chunk_edit_requests.proposer_id rationale.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'position_edit_requests_proposer_id_fkey'
-  ) THEN
-    ALTER TABLE public.position_edit_requests
-      ADD CONSTRAINT position_edit_requests_proposer_id_fkey
-      FOREIGN KEY (proposer_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('position_edit_requests', 'position_edit_requests_proposer_id_fkey', 'proposer_id', 'SET NULL');
 
 -- FK constraint: position_edit_requests.resolver_id → auth.users(id) ON DELETE SET NULL
 -- Same rationale as proposer_id — preserves the history when the
 -- accepting / rejecting owner is later hard-deleted.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'position_edit_requests_resolver_id_fkey'
-  ) THEN
-    ALTER TABLE public.position_edit_requests
-      ADD CONSTRAINT position_edit_requests_resolver_id_fkey
-      FOREIGN KEY (resolver_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('position_edit_requests', 'position_edit_requests_resolver_id_fkey', 'resolver_id', 'SET NULL');
 
 -- The FK to positions is managed by Drizzle (ON DELETE CASCADE — physical
 -- position deletion takes its requests with it). Grants: open read so anyone
@@ -666,17 +462,7 @@ GRANT SELECT ON TABLE public.chunk_feedback_topics TO anon;
 -- hard-delete preserves the junction row itself (the chunk-position
 -- association remains valid even if the attaching user is gone) and
 -- mirrors the rationale used for `chunks.user_id`.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'position_chunks_attached_by_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.position_chunks
-      ADD CONSTRAINT position_chunks_attached_by_user_id_fkey
-      FOREIGN KEY (attached_by_user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('position_chunks', 'position_chunks_attached_by_user_id_fkey', 'attached_by_user_id', 'SET NULL');
 
 -- The FKs to positions and chunks are managed by Drizzle. Grants only: public
 -- read, authenticated INSERT/DELETE gated by RLS on the position's owner.
@@ -690,17 +476,7 @@ GRANT SELECT ON TABLE public.position_chunks TO anon;
 -- FK constraint: position_themes.attached_by_user_id → auth.users(id) ON DELETE SET NULL
 -- Same rationale as position_chunks.attached_by_user_id: preserve the
 -- tag association across user hard-deletes.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'position_themes_attached_by_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.position_themes
-      ADD CONSTRAINT position_themes_attached_by_user_id_fkey
-      FOREIGN KEY (attached_by_user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('position_themes', 'position_themes_attached_by_user_id_fkey', 'attached_by_user_id', 'SET NULL');
 
 -- The FKs to positions and glossary_terms are managed by Drizzle. Grants only:
 -- public read, authenticated INSERT/DELETE gated by RLS on the position's
@@ -716,17 +492,7 @@ GRANT SELECT ON TABLE public.position_themes TO anon;
 -- Matches the exp_events.user_id pattern: when a user is hard-deleted,
 -- their ledger rows are removed. The materialized cache
 -- (user_point_balances) cascades the same way.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'point_events_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.point_events
-      ADD CONSTRAINT point_events_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('point_events', 'point_events_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant read permissions (authenticated can SELECT own rows via RLS, service role only write)
 GRANT SELECT ON TABLE public.point_events TO authenticated;
@@ -736,17 +502,7 @@ GRANT SELECT ON TABLE public.point_events TO authenticated;
 -- =============================================================================
 
 -- FK constraint: user_point_balances.user_id → auth.users(id) ON DELETE CASCADE
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_point_balances_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.user_point_balances
-      ADD CONSTRAINT user_point_balances_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('user_point_balances', 'user_point_balances_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant read permissions (authenticated can SELECT own rows via RLS)
 GRANT SELECT ON TABLE public.user_point_balances TO authenticated;
@@ -757,17 +513,7 @@ GRANT SELECT ON TABLE public.user_point_balances TO authenticated;
 
 -- FK constraint: point_redemptions.user_id → auth.users(id) ON DELETE CASCADE
 -- The FKs to point_events and user_grants are managed by Drizzle.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'point_redemptions_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.point_redemptions
-      ADD CONSTRAINT point_redemptions_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('point_redemptions', 'point_redemptions_user_id_fkey', 'user_id', 'CASCADE');
 
 GRANT SELECT ON TABLE public.point_redemptions TO authenticated;
 
@@ -777,17 +523,7 @@ GRANT SELECT ON TABLE public.point_redemptions TO authenticated;
 
 -- FK constraint: point_purchases.user_id → auth.users(id) ON DELETE CASCADE
 -- The FK to point_events is managed by Drizzle.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'point_purchases_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.point_purchases
-      ADD CONSTRAINT point_purchases_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('point_purchases', 'point_purchases_user_id_fkey', 'user_id', 'CASCADE');
 
 GRANT SELECT ON TABLE public.point_purchases TO authenticated;
 
@@ -805,17 +541,7 @@ GRANT SELECT ON TABLE public.point_purchases TO authenticated;
 -- Shared games function as a public catalog, so author deletion should NOT
 -- cascade the row away. Account-less games have author_id = NULL from the
 -- start (owned via game_tokens). Mirrors the chunks.user_id rationale.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'games_author_id_fkey'
-  ) THEN
-    ALTER TABLE public.games
-      ADD CONSTRAINT games_author_id_fkey
-      FOREIGN KEY (author_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('games', 'games_author_id_fkey', 'author_id', 'SET NULL');
 
 -- Public catalog read. All writes go through service-role server actions
 -- (publish verifies move legality + grants coins; mutations check token /
@@ -839,17 +565,7 @@ GRANT SELECT ON TABLE public.games TO anon;
 -- Members-only writes (enforced in the action); nullable only so a hard-deleted
 -- commenter's advice survives, rendered "(deleted user)". Mirrors
 -- chunk_edit_requests.proposer_id.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'game_comments_author_id_fkey'
-  ) THEN
-    ALTER TABLE public.game_comments
-      ADD CONSTRAINT game_comments_author_id_fkey
-      FOREIGN KEY (author_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('game_comments', 'game_comments_author_id_fkey', 'author_id', 'SET NULL');
 
 -- The FK to games is managed by Drizzle (ON DELETE CASCADE). Writes go through
 -- a members-only, rate-limited server action, so service-role only.
@@ -862,17 +578,7 @@ GRANT SELECT ON TABLE public.game_comments TO anon;
 -- FK constraint: game_chunks.suggested_by_id → auth.users(id) ON DELETE SET NULL
 -- Nullable only so a hard-deleted member's link survives (attribution drops to
 -- anonymous). FKs to games (cascade) / chunks (restrict) are managed by Drizzle.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'game_chunks_suggested_by_id_fkey'
-  ) THEN
-    ALTER TABLE public.game_chunks
-      ADD CONSTRAINT game_chunks_suggested_by_id_fkey
-      FOREIGN KEY (suggested_by_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('game_chunks', 'game_chunks_suggested_by_id_fkey', 'suggested_by_id', 'SET NULL');
 
 -- Writes go through a members-only, rate-limited server action, so service-role
 -- only; reads are public.
@@ -885,17 +591,7 @@ GRANT SELECT ON TABLE public.game_chunks TO anon;
 -- FK: repertoires.user_id → auth.users(id) ON DELETE SET NULL. Modelled on
 -- games: a shared course survives its author's deletion as an orphan rather
 -- than cascade away; user_id is nullable for that reason.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'repertoires_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.repertoires
-      ADD CONSTRAINT repertoires_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('repertoires', 'repertoires_user_id_fkey', 'user_id', 'SET NULL');
 
 -- repertoire_lines / repertoire_chapters / repertoire_openings / annotations
 -- have no auth.users FK (ownership is the parent repertoire's; their other FKs
@@ -917,24 +613,8 @@ GRANT SELECT ON TABLE public.repertoire_annotations TO anon;
 -- Per-user learning state (reviews / deviations): user_id → auth.users
 -- ON DELETE CASCADE (the state is meaningless without its owner). These are
 -- private to the user — SELECT for authenticated only, never anon.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'repertoire_reviews_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.repertoire_reviews
-      ADD CONSTRAINT repertoire_reviews_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'repertoire_deviations_user_id_fkey'
-  ) THEN
-    ALTER TABLE public.repertoire_deviations
-      ADD CONSTRAINT repertoire_deviations_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  END IF;
-END;
-$$;
+SELECT public.ensure_auth_users_fk('repertoire_reviews', 'repertoire_reviews_user_id_fkey', 'user_id', 'CASCADE');
+SELECT public.ensure_auth_users_fk('repertoire_deviations', 'repertoire_deviations_user_id_fkey', 'user_id', 'CASCADE');
 
 GRANT SELECT ON TABLE public.repertoire_reviews TO authenticated;
 GRANT SELECT ON TABLE public.repertoire_deviations TO authenticated;
