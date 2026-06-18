@@ -129,18 +129,16 @@ export async function submitPositionEditRequestEntry(params: {
 
   // Fire-and-forget notification to the position owner. `positionType` is
   // carried in metadata so the notification link can route memory vs.
-  // puzzle (unlike chunks, which have a single route). Skipped when the owner
-  // was anonymised (account purged) — there is nobody to notify.
-  if (position.userId) {
-    createNotification({
-      userId: position.userId,
-      actorId: user.id,
-      type: 'position_edit_request_submitted',
-      targetType: 'position_edit_request',
-      targetId: inserted.id,
-      metadata: { positionId: position.id, positionType: position.type },
-    });
-  }
+  // puzzle (unlike chunks, which have a single route). `createNotification`
+  // no-ops when the owner was anonymised (account purged → user_id NULL).
+  createNotification({
+    userId: position.userId,
+    actorId: user.id,
+    type: 'position_edit_request_submitted',
+    targetType: 'position_edit_request',
+    targetId: inserted.id,
+    metadata: { positionId: position.id, positionType: position.type },
+  });
 
   revalidatePositionDetail(position.type, position.id);
 

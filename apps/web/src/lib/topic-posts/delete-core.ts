@@ -138,11 +138,9 @@ export async function deletePostCore(
     // the author's current `earned` balance, so coins already spent are
     // not pursued — the balance never goes negative and self-deletion
     // never lands a user in debt. A no-op for posts that never earned
-    // points (non point-eligible topic types). Skipped when the author was
-    // anonymised — their balance was already cascade-removed on purge.
-    if (authorUserId) {
-      await clawbackPointsForPost(tx, authorUserId, { type: 'topic_post', id: postId });
-    }
+    // points (non point-eligible topic types), and for an anonymised author
+    // (null id — clawbackPointsForPost no-ops, balance already cascade-removed).
+    await clawbackPointsForPost(tx, authorUserId, { type: 'topic_post', id: postId });
 
     if (options.insideTransaction) {
       await options.insideTransaction(tx);

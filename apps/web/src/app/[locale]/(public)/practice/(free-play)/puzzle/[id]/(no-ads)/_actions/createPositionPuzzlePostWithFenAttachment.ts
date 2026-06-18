@@ -30,7 +30,7 @@ export async function createPositionPuzzlePostWithFenAttachment(
     validateContent,
     emitFeedItem: false,
     isSpoiler,
-    topicAuthorId: position?.userId ?? undefined,
+    topicAuthorId: position?.userId,
     redirectPath: (postId, { toast }) =>
       `/${locale}/practice/puzzle/${positionId}${
         toast ? '?toast=post_created' : ''

@@ -26,7 +26,7 @@ export async function createPositionMemoryPostWithAttachment(
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
-    topicAuthorId: position?.userId ?? undefined,
+    topicAuthorId: position?.userId,
     redirectPath: (postId, { toast }) =>
       `/${locale}/practice/position-memory/${positionId}${
         toast ? '?toast=post_created' : ''

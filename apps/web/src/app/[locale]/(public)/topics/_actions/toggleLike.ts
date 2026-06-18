@@ -61,8 +61,8 @@ export async function toggleLikeBase(params: {
       .where(eq(topicPosts.id, postId))
       .limit(1);
 
-    // Skip when the post author was anonymised (user_id NULL — account purged).
-    if (post && post.userId && post.userId !== user.id) {
+    // (createNotification no-ops when post.userId is null — anonymised author.)
+    if (post && post.userId !== user.id) {
       createNotification({
         userId: post.userId,
         actorId: user.id,

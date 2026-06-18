@@ -71,7 +71,7 @@ export async function createPostWithAttachmentBase(args: {
   redirectPath?: (postId: string, opts: { toast: boolean }) => string;
   emitFeedItem?: boolean;
   isSpoiler?: boolean;
-  topicAuthorId?: string;
+  topicAuthorId?: string | null;
   /** Topic-specific extra rows to insert inside the same transaction
    *  as the post + PGN attachment (e.g. opening rating). */
   extraAfterInsert?: ExtraAfterInsert;

@@ -55,7 +55,7 @@ export async function createPostWithFenAttachmentBase(args: {
   redirectPath?: (postId: string, opts: { toast: boolean }) => string;
   emitFeedItem?: boolean;
   isSpoiler?: boolean;
-  topicAuthorId?: string;
+  topicAuthorId?: string | null;
   /** Topic-specific extra rows to insert inside the same transaction. */
   extraAfterInsert?: ExtraAfterInsert;
   formData: FormData;

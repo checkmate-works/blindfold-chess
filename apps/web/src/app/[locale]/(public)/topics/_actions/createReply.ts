@@ -225,8 +225,8 @@ async function insertReply(
     return reply;
   });
 
-  // Skip when the post author was anonymised (notifyUserId null) — nobody to notify.
-  if (notifyUserId && notifyUserId !== user.id) {
+  // (createNotification no-ops when notifyUserId is null — anonymised author.)
+  if (notifyUserId !== user.id) {
     createNotification({
       userId: notifyUserId,
       actorId: user.id,
@@ -239,9 +239,9 @@ async function insertReply(
 
   // Case B: Also notify the root post author (thread owner) if different
   if (parentId !== rootPostId) {
-    // This is a reply-to-reply; notify the thread owner too (skip if anonymised)
+    // This is a reply-to-reply; notify the thread owner too.
     const rootPostAuthorId = permissionPost.userId;
-    if (rootPostAuthorId && rootPostAuthorId !== user.id && rootPostAuthorId !== notifyUserId) {
+    if (rootPostAuthorId !== user.id && rootPostAuthorId !== notifyUserId) {
       createNotification({
         userId: rootPostAuthorId,
         actorId: user.id,

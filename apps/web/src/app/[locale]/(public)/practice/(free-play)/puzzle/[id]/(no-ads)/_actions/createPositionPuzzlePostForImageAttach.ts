@@ -34,7 +34,7 @@ export async function createPositionPuzzlePostForImageAttach(
     validateContent,
     emitFeedItem: false,
     isSpoiler,
-    topicAuthorId: position?.userId ?? undefined,
+    topicAuthorId: position?.userId,
     formData,
   });
 }
