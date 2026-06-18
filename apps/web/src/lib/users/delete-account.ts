@@ -1,6 +1,8 @@
+import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 import 'server-only';
 
+import { cancelAllActiveSubscriptions } from '@/lib/billing/cancel-subscriptions';
 import { db, profiles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -46,19 +48,45 @@ import { createAdminClient } from '@/lib/supabase/admin';
  *
  * ## Ordering / failure mode
  *
- * Auth soft-delete runs **first**; profile cleanup runs only if it succeeds.
- * That way a failed auth delete leaves profile data intact, and a failed
- * profile cleanup leaves a user that can no longer log in with leftover data
- * to be swept later — the safer failure direction. Avatar file removal is
- * best-effort: a Storage failure is logged and swallowed, never blocking the
- * deletion.
+ * 1. **Stripe subscriptions are canceled first**, before anything irreversible.
+ *    The whole point is to never leave a deleted account being billed, so we
+ *    must confirm billing has stopped *before* completing the deletion. A real
+ *    cancellation failure aborts the entire flow and returns an error (→ 500),
+ *    leaving the account fully intact so the user can retry. "No subscription"
+ *    and "already canceled" are not failures (handled idempotently in
+ *    {@link cancelAllActiveSubscriptions}); subscription-less users (the vast
+ *    majority) pass straight through. This step is deliberately NOT written to
+ *    `activity_log` — see `specs/account-deletion/OVERVIEW.md`.
+ * 2. **Auth soft-delete** runs next; profile cleanup runs only if it succeeds.
+ *    That way a failed auth delete leaves profile data intact, and a failed
+ *    profile cleanup leaves a user that can no longer log in with leftover data
+ *    to be swept later — the safer failure direction.
+ * 3. **Avatar file removal** is best-effort: a Storage failure is logged and
+ *    swallowed, never blocking the deletion.
+ *
+ * ### Why not a DB transaction
+ * The flow spans three systems (Stripe, Supabase Auth/GoTrue, Postgres); a DB
+ * transaction can only cover the Postgres writes. A succeeded Stripe cancellation
+ * is irreversible, so there is nothing to "roll back" — atomicity is achieved by
+ * ordering (irreversible external call first) + idempotent retry instead.
  */
 export async function deleteAccount(
   userId: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const adminClient = createAdminClient();
 
-  // Soft-delete the auth user first. If this fails, profile data stays intact.
+  // Cancel any active Stripe subscription BEFORE the irreversible auth delete.
+  // If this fails (anything other than "already gone"), abort the whole deletion
+  // so the user can retry — we must confirm billing has stopped first.
+  try {
+    await cancelAllActiveSubscriptions(userId);
+  } catch (err) {
+    console.error(`Failed to cancel subscriptions for user ${userId} during deletion:`, err);
+    Sentry.captureException(err);
+    return { ok: false, error: 'failed_to_cancel_subscription' };
+  }
+
+  // Soft-delete the auth user. If this fails, profile data stays intact.
   const { error } = await adminClient.auth.admin.deleteUser(userId, true);
   if (error) {
     return { ok: false, error: 'failed_to_delete_auth_user' };

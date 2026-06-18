@@ -6,11 +6,20 @@ const mockDeleteUser = vi.fn();
 const mockList = vi.fn();
 const mockRemove = vi.fn();
 const mockLogActivityEvent = vi.fn();
+const mockCancelAllActiveSubscriptions = vi.fn();
 
 const mockSet = vi.fn();
 const mockWhere = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('server-only', () => ({}));
+
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+}));
+
+vi.mock('@/lib/billing/cancel-subscriptions', () => ({
+  cancelAllActiveSubscriptions: (...args: unknown[]) => mockCancelAllActiveSubscriptions(...args),
+}));
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -54,6 +63,7 @@ describe('deleteAccount', () => {
     mockList.mockResolvedValue({ data: [{ name: 'avatar.webp' }] });
     mockRemove.mockResolvedValue({ data: [], error: null });
     mockWhere.mockResolvedValue(undefined);
+    mockCancelAllActiveSubscriptions.mockResolvedValue(undefined);
   });
 
   it('soft-deletes the auth user first', async () => {
@@ -61,6 +71,37 @@ describe('deleteAccount', () => {
 
     expect(result).toEqual({ ok: true });
     expect(mockDeleteUser).toHaveBeenCalledWith(testUserId, true);
+  });
+
+  describe('Stripe subscription cancellation', () => {
+    it('cancels subscriptions before soft-deleting the auth user', async () => {
+      const order: string[] = [];
+      mockCancelAllActiveSubscriptions.mockImplementation(async () => {
+        order.push('cancel');
+      });
+      mockDeleteUser.mockImplementation(async () => {
+        order.push('deleteUser');
+        return { error: null };
+      });
+
+      await deleteAccount(testUserId);
+
+      expect(mockCancelAllActiveSubscriptions).toHaveBeenCalledWith(testUserId);
+      expect(order).toEqual(['cancel', 'deleteUser']);
+    });
+
+    it('aborts and does not soft-delete when cancellation fails', async () => {
+      mockCancelAllActiveSubscriptions.mockRejectedValue(new Error('Stripe is down'));
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const result = await deleteAccount(testUserId);
+
+      expect(result).toEqual({ ok: false, error: 'failed_to_cancel_subscription' });
+      expect(mockDeleteUser).not.toHaveBeenCalled();
+      expect(mockSet).not.toHaveBeenCalled();
+      expect(mockRemove).not.toHaveBeenCalled();
+      errorSpy.mockRestore();
+    });
   });
 
   it('returns an error and skips cleanup when auth deletion fails', async () => {
