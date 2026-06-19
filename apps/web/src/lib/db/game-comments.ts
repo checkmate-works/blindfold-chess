@@ -8,7 +8,7 @@
  * `likes` table under `target_type = 'game_comment'`. Members-only writes
  * (enforced in the action); reads expose the author's public profile.
  */
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { db } from './index';
@@ -62,7 +62,7 @@ export async function listGameComments(
       authorAvatarUrl: profiles.avatarUrl,
     })
     .from(gameComments)
-    .leftJoin(profiles, eq(profiles.id, gameComments.authorId))
+    .leftJoin(profiles, and(eq(profiles.id, gameComments.authorId), isNull(profiles.deletedAt)))
     .where(eq(gameComments.gameId, gameId))
     .orderBy(asc(gameComments.id));
 

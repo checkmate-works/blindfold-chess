@@ -43,7 +43,7 @@ export async function loadChunksForFeed(
       },
     })
     .from(chunks)
-    .leftJoin(profiles, eq(chunks.userId, profiles.id))
+    .leftJoin(profiles, and(eq(chunks.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(and(inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)));
 
   const foundIds = chunkRows.map((r) => r.id);

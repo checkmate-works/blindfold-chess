@@ -73,7 +73,7 @@ export async function listRepertoiresForUser(userId: string): Promise<Repertoire
       },
     })
     .from(repertoires)
-    .leftJoin(profiles, eq(repertoires.userId, profiles.id))
+    .leftJoin(profiles, and(eq(repertoires.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(and(eq(repertoires.userId, userId), isNull(repertoires.deletedAt)))
     .orderBy(desc(repertoires.createdAt));
 

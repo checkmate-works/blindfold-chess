@@ -42,7 +42,7 @@ async function getTopLevelPostsByTopicKey(
       author: authorSelect,
     })
     .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(
       and(
         eq(topicPosts.topicType, topicType),
@@ -86,7 +86,7 @@ export const getPostByIdAndTopicKey = cache(
         author: authorSelect,
       })
       .from(topicPosts)
-      .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+      .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
       .where(
         and(
           eq(topicPosts.id, postId),
@@ -177,7 +177,7 @@ export async function getPostsWithReplyMetaPaginatedByTopicKey(
       author: authorSelect,
     })
     .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(
       and(
         eq(topicPosts.topicType, topicType),
@@ -214,7 +214,7 @@ export async function getPostsByTopicTypePaginated(
       author: authorSelect,
     })
     .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(
       and(
         eq(topicPosts.topicType, topicType),
@@ -265,7 +265,7 @@ export async function getCommentTreeForTopic(
       author: authorSelect,
     })
     .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(and(eq(topicPosts.topicType, topicType), eq(topicPosts.topicKey, topicKey)))
     .orderBy(asc(topicPosts.createdAt));
 
@@ -295,7 +295,7 @@ export async function getRepliesByPostId(
       author: authorSelect,
     })
     .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(eq(topicPosts.rootPostId, postId))
     .orderBy(asc(topicPosts.createdAt));
 

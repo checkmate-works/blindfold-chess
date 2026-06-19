@@ -60,7 +60,7 @@ export const getGameById = cache(async (id: string): Promise<SharedGameDetail | 
       authorAvatarUrl: profiles.avatarUrl,
     })
     .from(games)
-    .leftJoin(profiles, eq(profiles.id, games.authorId))
+    .leftJoin(profiles, and(eq(profiles.id, games.authorId), isNull(profiles.deletedAt)))
     .where(
       and(eq(games.id, id), isNull(games.deletedAt), inArray(games.status, [...VISIBLE_STATUSES]))
     )
@@ -141,7 +141,7 @@ function gameListQuery() {
       authorAvatarUrl: profiles.avatarUrl,
     })
     .from(games)
-    .leftJoin(profiles, eq(profiles.id, games.authorId));
+    .leftJoin(profiles, and(eq(profiles.id, games.authorId), isNull(profiles.deletedAt)));
 }
 
 type GameListRow = Awaited<ReturnType<typeof gameListQuery>>[number];

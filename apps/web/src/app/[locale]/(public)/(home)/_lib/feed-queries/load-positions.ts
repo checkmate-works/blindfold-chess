@@ -43,7 +43,7 @@ export async function loadPositionsForFeed(
       },
     })
     .from(positions)
-    .leftJoin(profiles, eq(positions.userId, profiles.id))
+    .leftJoin(profiles, and(eq(positions.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)));
 
   const foundIds = rows.map((r) => r.id);

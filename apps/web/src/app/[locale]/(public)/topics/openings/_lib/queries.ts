@@ -52,7 +52,7 @@ async function getPostsForOpening(slug: string): Promise<OpeningPostWithAuthor[]
       rating: ratingSelect,
     })
     .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .where(
       and(
@@ -100,7 +100,7 @@ export const getOpeningPostById = cache(
         rating: ratingSelect,
       })
       .from(topicPosts)
-      .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+      .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
       .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
       .where(
         and(

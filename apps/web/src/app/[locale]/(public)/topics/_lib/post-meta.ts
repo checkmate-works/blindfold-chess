@@ -50,7 +50,7 @@ export async function attachPostMeta(
         createdAt: topicPosts.createdAt,
       })
       .from(topicPosts)
-      .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+      .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
       .where(and(inArray(topicPosts.rootPostId, postIds), isNull(topicPosts.deletedAt)))
       .orderBy(desc(topicPosts.createdAt)),
     // Batch query 3: like counts per post
