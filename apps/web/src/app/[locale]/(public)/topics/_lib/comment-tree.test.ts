@@ -276,14 +276,16 @@ describe('flattenReplies', () => {
     expect(flattenReplies(tree[0]).map((r) => r.node.id)).toEqual(['r1', 'r1a', 'r1b', 'r2']);
   });
 
-  it('falls back to "Anonymous" when the parent has no displayName/username', () => {
+  it('suppresses the @-prefix (null) when the parent has no displayName/username', () => {
     const root = alice('root');
     const r1 = makePost({ id: 'r1', parentId: 'root', rootPostId: 'root', author: null });
     const r1a = bob('r1a', { parentId: 'r1', rootPostId: 'root' });
     const tree = buildCommentTree([root, r1, r1a]);
     const replies = flattenReplies(tree[0]);
-    // r1a's parent is r1, whose author is null → "Anonymous"
-    expect(replies.find((r) => r.node.id === 'r1a')?.replyToDisplayName).toBe('Anonymous');
+    // r1a's parent is r1, whose author is null (e.g. a withdrawn/anonymised
+    // author after the soft-deleted-profile join filter) → no name to attribute,
+    // so the "@parent" cue is suppressed rather than leaking a generic label.
+    expect(replies.find((r) => r.node.id === 'r1a')?.replyToDisplayName).toBe(null);
   });
 
   it('returns null replyToDisplayName when the parent is a deleted tombstone', () => {

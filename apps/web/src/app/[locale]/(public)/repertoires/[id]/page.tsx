@@ -13,7 +13,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
@@ -46,6 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function RepertoireDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
   const currentUser = await getOptionalUser();
   const sortParam = (await searchParams).sort;
 
@@ -100,7 +101,7 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
 
       <PositionAuthorAttribution
         profile={profile}
-        displayName={resolveDisplayName(profile)}
+        displayName={resolveAuthorName(profile, { fallback: tCommon('deletedUser') })}
         createdByLabel={t('detail.createdBy')}
         locale={locale}
       />

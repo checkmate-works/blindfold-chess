@@ -1,4 +1,7 @@
 {
+  "Common": {
+    "deletedUser": "(usuario eliminado)"
+  },
   "Repertoires": {
     "title": "Repertorios",
     "description": "Tus árboles de repertorio privados: líneas de apertura, patrones de mate y secuencias memorizadas.",

@@ -7,7 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
@@ -30,8 +30,9 @@ export const PositionFeedCard = memo(function PositionFeedCard({
   justNowLabel,
 }: Props) {
   const tFeed = useTranslations('home.feed.position');
+  const tCommon = useTranslations('Common');
   const { preferences } = useGamePreferences();
-  const displayName = resolveDisplayName(data.author);
+  const displayName = resolveAuthorName(data.author, { fallback: tCommon('deletedUser') });
   // Resolve the correct detail-page path based on the position's `type`.
   // Returns `null` for types without a detail page (e.g. `sequence`), in
   // which case the permalink slot renders a non-link <time>.

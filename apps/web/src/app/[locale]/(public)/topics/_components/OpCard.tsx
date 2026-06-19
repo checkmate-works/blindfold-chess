@@ -117,6 +117,7 @@ export function OpCard({
   deleteI18nNamespace,
 }: Props) {
   const tEdit = useTranslations('topics.edit');
+  const tCommon = useTranslations('Common');
 
   const [isEditing, setIsEditing] = useState(false);
   const [localContent, setLocalContent] = useState(initialContent);
@@ -126,7 +127,7 @@ export function OpCard({
   const canEdit = isOwnPost && editPostAction !== undefined;
   const wasEdited = localUpdatedAt.getTime() > createdAt.getTime();
 
-  const authorName = author?.displayName || author?.username || 'Anonymous';
+  const authorName = author?.displayName || author?.username || tCommon('deletedUser');
   const profileHref = author?.username ? `/u/${author.username}` : null;
 
   return (

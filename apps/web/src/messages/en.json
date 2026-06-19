@@ -1,4 +1,7 @@
 {
+  "Common": {
+    "deletedUser": "(deleted user)"
+  },
   "Repertoires": {
     "title": "Repertoires",
     "description": "Your private repertoire trees — opening lines, mate patterns, and memorized sequences.",

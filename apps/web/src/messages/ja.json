@@ -1,4 +1,7 @@
 {
+  "Common": {
+    "deletedUser": "(退会したユーザー)"
+  },
   "Repertoires": {
     "title": "型",
     "description": "あなた専用の定跡ツリー — オープニング、詰みパターン、覚えておきたい手順をまとめておけます。",
@@ -1764,7 +1767,7 @@
       "signInToSuggest": "チャンクを提案するにはサインインしてください。",
       "empty": "まだ提案はありません。",
       "formHint": "下で紐づけるチャンクを調整して送信してください。現在の紐づけと同じ選択は自動的に拒否されます。",
-      "deletedProposer": "(削除されたユーザー)",
+      "deletedProposer": "(退会したユーザー)",
       "deletedChunk": "(削除されたチャンク)",
       "proposerComment": "提案者からの理由",
       "justNow": "たった今",
@@ -3026,7 +3029,7 @@
       "suggestCta": "編集を提案する",
       "signInToSuggest": "編集を提案するにはサインインしてください。",
       "formHint": "変更したい箇所のみを編集してください。現在の内容と完全に同じ提案は自動的に拒否されます。",
-      "deletedProposer": "(削除されたユーザー)",
+      "deletedProposer": "(退会したユーザー)",
       "proposerComment": "提案者からの説明",
       "justNow": "たった今",
       "status": {

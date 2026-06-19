@@ -77,6 +77,7 @@ export function BaseTopicPostCard({
   expandInline = false,
 }: Props) {
   const tTopics = useTranslations('topics');
+  const tCommon = useTranslations('Common');
   const [isRevealed, setIsRevealed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   // CSS `line-clamp-3` can clip content that JS-side `truncateContent` left
@@ -86,7 +87,7 @@ export function BaseTopicPostCard({
   // can't see the full text.
   const [isClamped, setIsClamped] = useState(false);
   const bodyRef = useRef<HTMLParagraphElement>(null);
-  const displayName = author?.displayName || author?.username || 'Anonymous';
+  const displayName = author?.displayName || author?.username || tCommon('deletedUser');
   const profileHref = author?.username ? `/u/${author.username}` : null;
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);

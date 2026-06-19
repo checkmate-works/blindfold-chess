@@ -35,6 +35,7 @@ type Props = {
 export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplayName }: Props) {
   const { locale, currentUserId, reply, edit, remove } = useGameCommentContext();
   const t = useTranslations('sharedGames.comments');
+  const tCommon = useTranslations('Common');
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isReplyOpen, setIsReplyOpen] = useState(false);
@@ -44,7 +45,7 @@ export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplay
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const isDeleted = node.deletedAt !== null;
-  const displayName = node.author?.displayName || node.author?.username || 'Anonymous';
+  const displayName = node.author?.displayName || node.author?.username || tCommon('deletedUser');
   const profileHref = node.author?.username ? `/u/${node.author.username}` : null;
   const isOwnComment = !isDeleted && currentUserId !== undefined && currentUserId === node.authorId;
   const wasEdited = node.updatedAt.getTime() > node.createdAt.getTime();
