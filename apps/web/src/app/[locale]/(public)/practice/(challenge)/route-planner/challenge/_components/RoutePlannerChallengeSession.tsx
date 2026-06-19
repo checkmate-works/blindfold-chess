@@ -58,6 +58,7 @@ export default function RoutePlannerChallengeSession({
     isPaused,
     handleAnswer: hookHandleAnswer,
     togglePause,
+    finishSession,
   } = useRoutePlannerSession({
     selectedPieces: piecesForGeneration,
     timeLimit: initialTimeLimit,
@@ -72,11 +73,21 @@ export default function RoutePlannerChallengeSession({
     setProblemResults((prev) => [...prev, result]);
   }, []);
 
+  // Set when the user quits mid-run. The run still lands on the result/feedback
+  // screen, but `skipSave` below suppresses leaderboard recording, EXP, and rank
+  // evaluation — a voluntarily-abandoned run is not rewarded.
+  const [isAborted, setIsAborted] = useState(false);
+  const handleAbort = useCallback(() => {
+    setIsAborted(true);
+    finishSession();
+  }, [finishSession]);
+
   const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
     locale,
     moduleSlug: 'route-planner',
     isPaused,
     togglePause,
+    onConfirm: handleAbort,
   });
 
   const total = correctCount + incorrectCount;
@@ -123,6 +134,7 @@ export default function RoutePlannerChallengeSession({
     resultUrl,
     saveResult,
     moduleName: 'route_planner',
+    skipSave: isAborted,
   });
 
   if (!currentProblem || isFinished) {
