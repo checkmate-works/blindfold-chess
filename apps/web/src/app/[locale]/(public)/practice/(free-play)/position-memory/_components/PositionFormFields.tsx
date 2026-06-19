@@ -9,6 +9,7 @@ import { BoardSkeleton, FlipBoardButton } from '@/app/_components';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
+import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { TagPicker } from '@/app/[locale]/(public)/practice/(free-play)/_components/TagPicker';
 import type { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
@@ -98,34 +99,12 @@ export function PositionFormFields({
         />
       </div>
 
-      <nav className="flex rounded-lg bg-secondary p-1" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={board.activeTab === 'board'}
-          onClick={() => board.setActiveTab('board')}
-          className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-            board.activeTab === 'board'
-              ? 'bg-card text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          {t('tabBoard')}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={board.activeTab === 'fen'}
-          onClick={() => board.setActiveTab('fen')}
-          className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-            board.activeTab === 'fen'
-              ? 'bg-card text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          {t('tabFen')}
-        </button>
-      </nav>
+      <BoardFenTabs
+        activeTab={board.activeTab}
+        onTabChange={board.setActiveTab}
+        boardLabel={t('tabBoard')}
+        fenLabel={t('tabFen')}
+      />
 
       {board.activeTab === 'board' && (
         <>
