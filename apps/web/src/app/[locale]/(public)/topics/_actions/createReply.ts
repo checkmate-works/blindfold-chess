@@ -4,10 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
-import { and, eq, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, topicPosts, userFollows } from '@/lib/db';
+import { db, topicPosts } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -16,6 +15,7 @@ import { UUID_RE, validateUUID } from '@/lib/validations/uuid';
 
 import type { TopicType } from '../_lib/constants';
 import type { ImageAttachResult } from '../_lib/image-attach-types';
+import { enforceReplyPermission, resolveReplyTarget } from '../_lib/reply-resolution';
 
 export type CreateReplyState = {
   error?: string;
@@ -104,94 +104,16 @@ async function insertReply(
   }
   const { user } = guardResult;
 
-  // Determine parentId, rootPostId, and which post to check permissions on.
-  let parentId: string;
-  let rootPostId: string;
-  // userId is nullable: the target/root post's author may have been anonymised
-  // (account purged → user_id NULL). Notifications to a null author are skipped.
-  let permissionPost: { userId: string | null; replyPermission: string };
-  let notifyUserId: string | null;
-
-  if (targetId === postId) {
-    // Case A: Reply to a top-level post (existing behavior)
-    const [topLevelPost] = await db
-      .select({
-        id: topicPosts.id,
-        userId: topicPosts.userId,
-        replyPermission: topicPosts.replyPermission,
-      })
-      .from(topicPosts)
-      .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
-
-    if (!topLevelPost) {
-      return { error: 'postNotFound' };
-    }
-
-    parentId = postId;
-    rootPostId = postId;
-    permissionPost = topLevelPost;
-    notifyUserId = topLevelPost.userId;
-  } else {
-    // Case B: Reply to another reply
-    const [targetReply] = await db
-      .select({
-        id: topicPosts.id,
-        userId: topicPosts.userId,
-        rootPostId: topicPosts.rootPostId,
-      })
-      .from(topicPosts)
-      .where(and(eq(topicPosts.id, targetId), isNull(topicPosts.deletedAt)));
-
-    if (!targetReply) {
-      return { error: 'postNotFound' };
-    }
-
-    // The target reply's rootPostId tells us the top-level post.
-    // If rootPostId is null, the target is itself a top-level post (shouldn't happen
-    // in this branch since targetId != postId, but handle defensively).
-    rootPostId = targetReply.rootPostId ?? postId;
-    parentId = targetId;
-    notifyUserId = targetReply.userId;
-
-    // Permission check uses the root (top-level) post
-    const [rootPost] = await db
-      .select({
-        id: topicPosts.id,
-        userId: topicPosts.userId,
-        replyPermission: topicPosts.replyPermission,
-      })
-      .from(topicPosts)
-      .where(and(eq(topicPosts.id, rootPostId), isNull(topicPosts.deletedAt)));
-
-    if (!rootPost) {
-      return { error: 'postNotFound' };
-    }
-
-    permissionPost = rootPost;
+  // Determine parentId, rootPostId, and which post governs reply permission.
+  const targetResult = await resolveReplyTarget(targetId, postId);
+  if ('error' in targetResult) {
+    return targetResult;
   }
+  const { parentId, rootPostId, permissionPost, notifyUserId } = targetResult;
 
-  const isAuthor = permissionPost.userId === user.id;
-
-  if (!isAuthor && permissionPost.replyPermission === 'nobody') {
-    return { error: 'repliesDisabled' };
-  }
-
-  if (!isAuthor && permissionPost.replyPermission === 'followers') {
-    // An anonymised (purged) author can't be followed, so the gate can never
-    // be satisfied — and there is no id to match against.
-    if (!permissionPost.userId) {
-      return { error: 'followRequired' };
-    }
-    const [follow] = await db
-      .select({ id: userFollows.id })
-      .from(userFollows)
-      .where(
-        and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, permissionPost.userId))
-      );
-
-    if (!follow) {
-      return { error: 'followRequired' };
-    }
+  const permissionError = await enforceReplyPermission(permissionPost, user.id);
+  if (permissionError) {
+    return permissionError;
   }
 
   const content = formData.get('content');

@@ -71,6 +71,33 @@ export function createNotification(event: NotificationEvent): void {
 }
 
 /**
+ * Shared follower fan-out: load the actor's followers and emit one
+ * notification per follower via {@link createNotification}. The
+ * `notifyFollowersOf*` entry points differ only in the per-follower event
+ * they build and how a fan-out failure is surfaced.
+ *
+ * Each createNotification triggers up to 2 DB queries (dedup SELECT + INSERT).
+ * At current scale this is acceptable, but for large follower counts consider
+ * batching inserts instead of looping.
+ */
+function broadcastToFollowers(
+  actorId: string,
+  buildEvent: (followerId: string) => NotificationEvent,
+  onError: (error: unknown) => void = () => {}
+): void {
+  (async () => {
+    const followers = await db
+      .select({ followerId: userFollows.followerId })
+      .from(userFollows)
+      .where(eq(userFollows.followingId, actorId));
+
+    for (const follower of followers) {
+      createNotification(buildEvent(follower.followerId));
+    }
+  })().catch(onError);
+}
+
+/**
  * Notify all followers of a user about a new post.
  * Fire-and-forget — failures are silently caught.
  */
@@ -80,30 +107,18 @@ export function notifyFollowersOfNewPost(params: {
   topicType: string;
   topicKey: string;
 }): void {
-  (async () => {
-    const followers = await db
-      .select({ followerId: userFollows.followerId })
-      .from(userFollows)
-      .where(eq(userFollows.followingId, params.actorId));
-
-    // Each createNotification triggers up to 2 DB queries (dedup SELECT + INSERT).
-    // At current scale this is acceptable, but for large follower counts consider
-    // batching inserts instead of looping.
-    for (const follower of followers) {
-      createNotification({
-        userId: follower.followerId,
-        actorId: params.actorId,
-        type: 'new_post',
-        targetType: 'topic_post',
-        targetId: params.postId,
-        metadata: {
-          topicType: params.topicType,
-          topicKey: params.topicKey,
-          postId: params.postId,
-        },
-      });
-    }
-  })().catch(() => {});
+  broadcastToFollowers(params.actorId, (followerId) => ({
+    userId: followerId,
+    actorId: params.actorId,
+    type: 'new_post',
+    targetType: 'topic_post',
+    targetId: params.postId,
+    metadata: {
+      topicType: params.topicType,
+      topicKey: params.topicKey,
+      postId: params.postId,
+    },
+  }));
 }
 
 /**
@@ -115,28 +130,23 @@ export function notifyFollowersOfNewPosition(params: {
   positionId: string;
   positionType: 'memory' | 'puzzle';
 }): void {
-  (async () => {
-    const followers = await db
-      .select({ followerId: userFollows.followerId })
-      .from(userFollows)
-      .where(eq(userFollows.followingId, params.actorId));
-
-    for (const follower of followers) {
-      createNotification({
-        userId: follower.followerId,
-        actorId: params.actorId,
-        type: 'new_position',
-        targetType: 'position',
-        targetId: params.positionId,
-        metadata: {
-          positionType: params.positionType,
-          positionId: params.positionId,
-        },
-      });
+  broadcastToFollowers(
+    params.actorId,
+    (followerId) => ({
+      userId: followerId,
+      actorId: params.actorId,
+      type: 'new_position',
+      targetType: 'position',
+      targetId: params.positionId,
+      metadata: {
+        positionType: params.positionType,
+        positionId: params.positionId,
+      },
+    }),
+    (error) => {
+      console.error('[notifyFollowersOfNewPosition] failed:', error);
     }
-  })().catch((error) => {
-    console.error('[notifyFollowersOfNewPosition] failed:', error);
-  });
+  );
 }
 
 /**
@@ -155,31 +165,26 @@ export function notifyFollowersOfNewChunk(params: {
   slug: string;
   kind: 'created' | 'published';
 }): void {
-  (async () => {
-    const followers = await db
-      .select({ followerId: userFollows.followerId })
-      .from(userFollows)
-      .where(eq(userFollows.followingId, params.actorId));
+  const notificationType = params.kind === 'published' ? 'chunk_published' : 'new_chunk_draft';
 
-    const notificationType = params.kind === 'published' ? 'chunk_published' : 'new_chunk_draft';
-
-    for (const follower of followers) {
-      createNotification({
-        userId: follower.followerId,
-        actorId: params.actorId,
-        type: notificationType,
-        targetType: 'chunk',
-        targetId: params.chunkId,
-        metadata: {
-          chunkId: params.chunkId,
-          slug: params.slug,
-          kind: params.kind,
-        },
-      });
+  broadcastToFollowers(
+    params.actorId,
+    (followerId) => ({
+      userId: followerId,
+      actorId: params.actorId,
+      type: notificationType,
+      targetType: 'chunk',
+      targetId: params.chunkId,
+      metadata: {
+        chunkId: params.chunkId,
+        slug: params.slug,
+        kind: params.kind,
+      },
+    }),
+    (error) => {
+      console.error('[notifyFollowersOfNewChunk] failed:', error);
     }
-  })().catch((error) => {
-    console.error('[notifyFollowersOfNewChunk] failed:', error);
-  });
+  );
 }
 
 /**
@@ -188,25 +193,20 @@ export function notifyFollowersOfNewChunk(params: {
  * followers). Fire-and-forget — failures are logged but do not block publish.
  */
 export function notifyFollowersOfNewGame(params: { actorId: string; gameId: string }): void {
-  (async () => {
-    const followers = await db
-      .select({ followerId: userFollows.followerId })
-      .from(userFollows)
-      .where(eq(userFollows.followingId, params.actorId));
-
-    for (const follower of followers) {
-      createNotification({
-        userId: follower.followerId,
-        actorId: params.actorId,
-        type: 'new_game',
-        targetType: 'game',
-        targetId: params.gameId,
-        metadata: { gameId: params.gameId },
-      });
+  broadcastToFollowers(
+    params.actorId,
+    (followerId) => ({
+      userId: followerId,
+      actorId: params.actorId,
+      type: 'new_game',
+      targetType: 'game',
+      targetId: params.gameId,
+      metadata: { gameId: params.gameId },
+    }),
+    (error) => {
+      console.error('[notifyFollowersOfNewGame] failed:', error);
     }
-  })().catch((error) => {
-    console.error('[notifyFollowersOfNewGame] failed:', error);
-  });
+  );
 }
 
 /**
