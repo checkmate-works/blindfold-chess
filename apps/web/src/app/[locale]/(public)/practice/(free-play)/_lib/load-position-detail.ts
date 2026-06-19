@@ -84,8 +84,10 @@ export async function loadPositionDetail({
       countPositions({ type: kind, forkedFromId: position.id }),
     ]);
 
-  const canFork =
-    currentUserId != null && currentUserId !== position.userId && position.forksDisabledAt === null;
+  // Self-forking is allowed (owners can derive a variation of their own work),
+  // so ownership no longer gates the fork entry point — only auth state and the
+  // permanent forks-disabled lock do. See validateForkSource in @/lib/positions/fork.
+  const canFork = currentUserId != null && position.forksDisabledAt === null;
 
   // Fetch attachments for every post in the topic (root + every reply)
   // so attached PGN/FEN/embed/image cards render under each author
