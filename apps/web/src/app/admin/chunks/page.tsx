@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { countChunks, listChunks } from '@/lib/chunks/queries';
@@ -13,16 +13,12 @@ import { truncate } from '@/lib/text';
 
 import { DeleteChunkButton } from './_components/DeleteChunkButton';
 
-const searchParamsCache = createSearchParamsCache({
-  page: parseAsInteger.withDefault(1),
-});
-
 export default async function AdminChunksPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { page } = await searchParamsCache.parse(searchParams);
+  const { page } = await adminPageSearchParamsCache.parse(searchParams);
 
   const totalCount = await countChunks({});
 

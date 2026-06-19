@@ -41,8 +41,8 @@
  */
 import { getTranslations } from 'next-intl/server';
 
+import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
 import { desc, inArray, sql } from 'drizzle-orm';
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, profiles, userGrants } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
@@ -54,10 +54,6 @@ import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { BulkGrantForm } from './_components/BulkGrantForm';
 import { GrantForm } from './_components/GrantForm';
 import { RevokeButton } from './_components/RevokeButton';
-
-const searchParamsCache = createSearchParamsCache({
-  page: parseAsInteger.withDefault(1),
-});
 
 function getGrantStatus(
   grant: { revokedAt: Date | null; expiresAt: Date },
@@ -89,7 +85,7 @@ export default async function AdminGrantsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { page } = await searchParamsCache.parse(searchParams);
+  const { page } = await adminPageSearchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
   // Get total count
