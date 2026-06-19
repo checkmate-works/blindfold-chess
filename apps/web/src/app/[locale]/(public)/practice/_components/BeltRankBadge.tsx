@@ -31,7 +31,7 @@ type Props = {
  * lives inside the anchor text on purpose — it's part of the link
  * affordance, not a decorative sibling.
  */
-export function RankBadge({ slug, label, locale }: Props) {
+export function BeltRankBadge({ slug, label, locale }: Props) {
   const beltColor = getBeltColorHex(slug);
   const useDarkText = LIGHT_BELT_COLORS.has(RANK_COLORS[slug]);
 
