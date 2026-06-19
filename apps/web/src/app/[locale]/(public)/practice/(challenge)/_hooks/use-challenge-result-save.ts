@@ -22,6 +22,13 @@ type UseChallengeResultSaveOptions = {
   resultUrl: string;
   saveResult: () => Promise<SaveResultResponse>;
   moduleName: string;
+  /**
+   * When `true`, the result is NOT persisted — no leaderboard record, no EXP
+   * grant, no rank evaluation — and the hook redirects straight to the result
+   * page. Used by the "quit" flow so an aborted run still shows the same
+   * feedback screen without rewarding a partial, voluntarily-abandoned run.
+   */
+  skipSave?: boolean;
 };
 
 /**
@@ -50,16 +57,20 @@ export function useChallengeResultSave({
   resultUrl,
   saveResult,
   moduleName,
+  skipSave = false,
 }: UseChallengeResultSaveOptions) {
   const router = useRouter();
   const savedRef = useRef(false);
   const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!isFinished || savedRef.current || isLoading) return;
+    if (!isFinished || savedRef.current) return;
+    // Auth state only matters when we might persist; an aborted run redirects
+    // immediately without waiting for it to resolve.
+    if (!skipSave && isLoading) return;
     savedRef.current = true;
 
-    if (totalAnswers > 0 && user) {
+    if (!skipSave && totalAnswers > 0 && user) {
       let redirectUrl = resultUrl;
       saveResult()
         .then((result) => {
@@ -89,5 +100,15 @@ export function useChallengeResultSave({
     } else {
       router.push(resultUrl);
     }
-  }, [isFinished, totalAnswers, resultUrl, saveResult, moduleName, router, user, isLoading]);
+  }, [
+    isFinished,
+    totalAnswers,
+    resultUrl,
+    saveResult,
+    moduleName,
+    router,
+    user,
+    isLoading,
+    skipSave,
+  ]);
 }

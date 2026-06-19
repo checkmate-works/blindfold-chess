@@ -52,6 +52,13 @@ export type UseTimedSessionReturn<TQuestion> = {
   questionTimes: number[];
   handleAnswer: (correct: boolean) => void;
   togglePause: () => void;
+  /**
+   * Ends the session immediately at its current score, exactly as if the time
+   * limit had been reached. Used by the "quit" flow so an aborted run lands on
+   * the same result/feedback screen as a fully-completed one. Idempotent and a
+   * no-op once the session is already finished.
+   */
+  finishSession: () => void;
 };
 
 const DEFAULT_FEEDBACK_DURATION = 500;
@@ -156,6 +163,17 @@ export function useTimedSession<TQuestion>(
     setIsPaused((prev) => !prev);
   }, [isFinished, countdown]);
 
+  // End the session on demand (e.g. the user quits mid-run). Clears any pending
+  // feedback/advance timeout so a flash in flight can't resurrect the run after
+  // it has been marked finished.
+  const finishSession = useCallback(() => {
+    if (isFinishedRef.current) return;
+    if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
+    isFinishedRef.current = true;
+    setIsFinished(true);
+    setShowFeedback(false);
+  }, []);
+
   // End the session after the feedback flash for the answer that hit the
   // mistake limit. `onAdvance` is intentionally NOT called — there is no next
   // question.
@@ -249,5 +267,6 @@ export function useTimedSession<TQuestion>(
     questionTimes: questionTimesRef.current,
     handleAnswer,
     togglePause,
+    finishSession,
   };
 }
