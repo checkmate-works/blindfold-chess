@@ -1,6 +1,7 @@
 import { cache } from 'react';
 
 import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 
 import { chessOpenings, db, profiles, topicPostRatings, topicPosts } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
@@ -148,15 +149,25 @@ export async function getOpeningPostsWithReplyMeta(
 }
 
 /**
- * Get the count of top-level posts across all openings.
+ * Resolve the slugs of every opening whose first move lands on `square`.
+ * Shared by the first-move-square count and paginated-listing queries.
  */
-export const getPostCountAcrossOpenings = (): Promise<number> => getPostCountByTopicType('opening');
+async function getOpeningSlugsByFirstMoveSquare(square: string): Promise<string[]> {
+  const rows = await db
+    .select({ slug: chessOpenings.slug })
+    .from(chessOpenings)
+    .where(eq(chessOpenings.firstMoveSquare, square));
+
+  return rows.map((o) => o.slug);
+}
 
 /**
- * Get top-level posts across all openings with reply metadata, paginated.
- * Returns ProfilePostWithReplyMeta for use with TopicPostCard.
+ * Get top-level opening posts (with profile-card meta), paginated. `extra`
+ * narrows the set further (e.g. a first-move-square slug filter); pass
+ * `undefined` for all openings — `and()` drops the undefined operand.
  */
-export async function getPostsAcrossOpeningsPaginated(
+async function getProfileOpeningPostsPaginated(
+  extra: SQL | undefined,
   limit: number,
   offset: number,
   currentUserId?: string
@@ -165,6 +176,7 @@ export async function getPostsAcrossOpeningsPaginated(
     .where(
       and(
         eq(topicPosts.topicType, 'opening'),
+        extra,
         isNull(topicPosts.parentId),
         isNull(topicPosts.deletedAt)
       )
@@ -177,17 +189,28 @@ export async function getPostsAcrossOpeningsPaginated(
 }
 
 /**
+ * Get the count of top-level posts across all openings.
+ */
+export const getPostCountAcrossOpenings = (): Promise<number> => getPostCountByTopicType('opening');
+
+/**
+ * Get top-level posts across all openings with reply metadata, paginated.
+ * Returns ProfilePostWithReplyMeta for use with TopicPostCard.
+ */
+export const getPostsAcrossOpeningsPaginated = (
+  limit: number,
+  offset: number,
+  currentUserId?: string
+): Promise<ProfilePostWithReplyMeta[]> =>
+  getProfileOpeningPostsPaginated(undefined, limit, offset, currentUserId);
+
+/**
  * Get the count of top-level posts across openings filtered by first move square.
  */
 export async function getPostCountByFirstMoveSquare(square: string): Promise<number> {
-  const openingSlugs = await db
-    .select({ slug: chessOpenings.slug })
-    .from(chessOpenings)
-    .where(eq(chessOpenings.firstMoveSquare, square));
+  const slugs = await getOpeningSlugsByFirstMoveSquare(square);
 
-  if (openingSlugs.length === 0) return 0;
-
-  const slugs = openingSlugs.map((o) => o.slug);
+  if (slugs.length === 0) return 0;
 
   const [result] = await db
     .select({ count: count() })
@@ -212,27 +235,14 @@ export async function getPostsByFirstMoveSquarePaginated(
   offset: number,
   currentUserId?: string
 ): Promise<ProfilePostWithReplyMeta[]> {
-  const openingSlugs = await db
-    .select({ slug: chessOpenings.slug })
-    .from(chessOpenings)
-    .where(eq(chessOpenings.firstMoveSquare, square));
+  const slugs = await getOpeningSlugsByFirstMoveSquare(square);
 
-  if (openingSlugs.length === 0) return [];
+  if (slugs.length === 0) return [];
 
-  const slugs = openingSlugs.map((o) => o.slug);
-
-  const results = await buildProfilePostQuery()
-    .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        inArray(topicPosts.topicKey, slugs),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
-    .orderBy(desc(topicPosts.createdAt))
-    .limit(limit)
-    .offset(offset);
-
-  return attachProfilePostMeta(results, currentUserId);
+  return getProfileOpeningPostsPaginated(
+    inArray(topicPosts.topicKey, slugs),
+    limit,
+    offset,
+    currentUserId
+  );
 }
