@@ -55,7 +55,7 @@ describe('validateForkSource', () => {
     expect(result).toEqual({ ok: false, reason: 'not_found' });
   });
 
-  it('returns self_fork when the source row is owned by the current user', async () => {
+  it('allows self-forking (source owned by the current user) so authors can derive variations of their own work', async () => {
     mockLimit.mockResolvedValueOnce([
       {
         id: VALID_UUID_A,
@@ -69,7 +69,10 @@ describe('validateForkSource', () => {
       currentUserId: VALID_UUID_B,
       type: 'puzzle',
     });
-    expect(result).toEqual({ ok: false, reason: 'self_fork' });
+    expect(result).toEqual({
+      ok: true,
+      source: { id: VALID_UUID_A, userId: VALID_UUID_B, title: 'My Puzzle' },
+    });
   });
 
   it('returns forks_disabled when forks_disabled_at is set, even on a non-owned row', async () => {

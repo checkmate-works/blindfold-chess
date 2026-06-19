@@ -1,15 +1,19 @@
 /**
  * Fork-source validation and seed-loading for `positions`.
  *
- * `validateForkSource` enforces the four rules that every fork attempt must
+ * `validateForkSource` enforces the three rules that every fork attempt must
  * satisfy regardless of which route invokes the create action:
  *
  *   1. `forkedFromId` parses as a UUID.
  *   2. A row with that id exists, has matching `type`, and is not soft-deleted.
- *   3. The source's author is not the current user (no self-fork).
- *   4. The source's `forks_disabled_at` is NULL (the lock is permanent — once
+ *   3. The source's `forks_disabled_at` is NULL (the lock is permanent — once
  *      a row is locked, every fork attempt fails here even after the locking
  *      user's paid-plan privilege lapses).
+ *
+ * Self-forking (the source is owned by the current user) is intentionally
+ * allowed: it is the natural way to spin up a derived variation of one's own
+ * puzzle/position. The like-coin batch independently withholds fork-propagation
+ * coins when parent owner == fork owner, so no coin farming is opened up here.
  *
  * `loadPuzzleForkSeed` / `loadPositionForkSeed` apply the same rules at SSR
  * time on the `/new?from=<id>` pages, plus fetch the full set of fields the
@@ -31,19 +35,21 @@ import type { PositionType } from './types';
 export type ValidateForkSourceResult =
   // userId may be null when the source position's author was anonymised
   // (account purged). Forking public content is still allowed; only `.id` is
-  // consumed downstream. The self-fork check tolerates a null author.
+  // consumed downstream.
   | { ok: true; source: { id: string; userId: string | null; title: string } }
   | {
       ok: false;
-      reason: 'invalid_uuid' | 'not_found' | 'self_fork' | 'forks_disabled';
+      reason: 'invalid_uuid' | 'not_found' | 'forks_disabled';
     };
 
 export async function validateForkSource(params: {
   forkedFromId: string;
+  // Retained in the signature for call-site stability (seed loaders forward it),
+  // but no longer gates anything now that self-forking is allowed.
   currentUserId: string;
   type: PositionType;
 }): Promise<ValidateForkSourceResult> {
-  const { forkedFromId, currentUserId, type } = params;
+  const { forkedFromId, type } = params;
 
   if (!UUID_RE.test(forkedFromId)) {
     return { ok: false, reason: 'invalid_uuid' };
@@ -64,10 +70,6 @@ export async function validateForkSource(params: {
 
   if (!row) {
     return { ok: false, reason: 'not_found' };
-  }
-
-  if (row.userId === currentUserId) {
-    return { ok: false, reason: 'self_fork' };
   }
 
   if (row.forksDisabledAt !== null) {
