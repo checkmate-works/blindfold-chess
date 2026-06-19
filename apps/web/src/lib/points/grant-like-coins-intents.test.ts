@@ -17,12 +17,12 @@ function positionLike(targetId: string, likerId: string = LIKER): LikeRow {
   return { likerId, targetType: 'position', targetId };
 }
 
-function content(ownerId: string, deletedAt: Date | null = null): ContentRow {
+function content(ownerId: string | null, deletedAt: Date | null = null): ContentRow {
   return { ownerId, deletedAt };
 }
 
 function position(
-  ownerId: string,
+  ownerId: string | null,
   forkedFromId: string | null = null,
   deletedAt: Date | null = null
 ): PositionRow {
@@ -94,6 +94,15 @@ describe('buildGrantIntents — direct grants', () => {
     expect(intents).toEqual([]);
   });
 
+  it('skips content whose owner was anonymised (null ownerId — no payee)', () => {
+    const intents = run({
+      likeRows: [topicPostLike('post-1'), positionLike('pos-1')],
+      topicPostById: new Map([['post-1', content(null)]]),
+      positionById: new Map([['pos-1', position(null)]]),
+    });
+    expect(intents).toEqual([]);
+  });
+
   it('ignores unknown target types', () => {
     const intents = run({ likeRows: [{ likerId: LIKER, targetType: 'article', targetId: 'a-1' }] });
     expect(intents).toEqual([]);
@@ -150,6 +159,16 @@ describe('buildGrantIntents — fork propagation', () => {
     const intents = run({
       likeRows: [positionLike('fork-1')],
       positionById: new Map([['fork-1', position(OWNER, 'missing-parent')]]),
+    });
+    expect(intents).toHaveLength(1);
+    expect(intents[0].via).toBe('direct');
+  });
+
+  it('withholds the fork coin when the parent owner was anonymised (null)', () => {
+    const intents = run({
+      likeRows: [positionLike('fork-1')],
+      positionById: new Map([['fork-1', position(OWNER, 'parent-1')]]),
+      forkParentById: new Map([['parent-1', content(null)]]),
     });
     expect(intents).toHaveLength(1);
     expect(intents[0].via).toBe('direct');

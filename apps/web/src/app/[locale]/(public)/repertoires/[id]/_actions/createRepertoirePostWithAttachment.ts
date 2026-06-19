@@ -30,7 +30,7 @@ export async function createRepertoirePostWithAttachment(
     validateContent,
     emitFeedItem: false,
     isSpoiler,
-    topicAuthorId: repertoire?.userId ?? undefined,
+    topicAuthorId: repertoire?.userId,
     redirectPath: (postId, { toast }) =>
       `/${locale}/repertoires/${repertoireId}${toast ? '?toast=post_created' : ''}#post-${postId}`,
     formData,

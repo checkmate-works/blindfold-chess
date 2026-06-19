@@ -115,7 +115,8 @@ export async function performEntityToggleLike<TExtra>(params: {
 
   const owner = await fetchOwner(id);
 
-  if (liked && owner && owner.userId && owner.userId !== user.id) {
+  // (createNotification no-ops when owner.userId is null — anonymised owner.)
+  if (liked && owner && owner.userId !== user.id) {
     createNotification({
       userId: owner.userId,
       actorId: user.id,

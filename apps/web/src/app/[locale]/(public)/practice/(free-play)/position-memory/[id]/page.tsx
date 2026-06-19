@@ -11,7 +11,7 @@ import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
 import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
@@ -94,7 +94,8 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   }
 
   const { position, profile } = row;
-  const displayName = resolveDisplayName(profile);
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
+  const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();

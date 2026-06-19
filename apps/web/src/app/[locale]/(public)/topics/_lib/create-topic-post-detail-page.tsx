@@ -170,7 +170,8 @@ export function createTopicPostDetailPage<
         ? rt('replies.followRequired')
         : null;
 
-    const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
+    const tCommon = await getTranslations({ locale, namespace: 'Common' });
+    const authorName = post.author?.displayName || post.author?.username || tCommon('deletedUser');
 
     const view = await config.buildView({ locale, params: resolved, topic, post, authorName });
 

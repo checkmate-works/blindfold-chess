@@ -15,7 +15,7 @@ import { FaPlay, FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
@@ -96,7 +96,8 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   }
 
   const { position, profile } = row;
-  const displayName = resolveDisplayName(profile);
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
+  const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
   const currentUser = await getOptionalUser();
   const {

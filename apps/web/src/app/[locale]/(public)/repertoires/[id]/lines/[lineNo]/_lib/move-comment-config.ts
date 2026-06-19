@@ -67,7 +67,7 @@ export async function buildMovePostConfig(opts: {
     validateContent,
     emitFeedItem: false,
     isSpoiler: readSpoilerFlag(formData),
-    topicAuthorId: repertoire?.userId ?? undefined,
+    topicAuthorId: repertoire?.userId,
     redirectPath: (postId: string, { toast }: { toast: boolean }) =>
       `/${locale}/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}${
         toast ? '&toast=post_created' : ''

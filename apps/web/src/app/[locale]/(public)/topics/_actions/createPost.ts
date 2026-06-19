@@ -63,7 +63,7 @@ type CreatePostParams = {
    * Optional ID of the topic's author. When provided, the author will receive
    * a notification about the new post (comment).
    */
-  topicAuthorId?: string;
+  topicAuthorId?: string | null;
   formData: FormData;
 };
 
@@ -181,6 +181,10 @@ async function insertPost(
     topicKey,
   });
 
+  // Only paths that supply a topic author notify them — and a null id (the
+  // author was anonymised: account purged) is likewise skipped, since the
+  // guard treats it as "no author to notify". Self-notification is dropped
+  // inside notifyTopicAuthorOfNewComment.
   if (topicAuthorId) {
     notifyTopicAuthorOfNewComment({
       authorId: topicAuthorId,

@@ -358,6 +358,27 @@
       "when": 1781584042147,
       "tag": "20260616042722_assign_post_image_display_order",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1781764562755,
+      "tag": "20260618063602_likes_user_id_nullable",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1781767979516,
+      "tag": "20260618073259_topic_posts_positions_user_id_nullable",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1781827193767,
+      "tag": "20260618235953_interview_answers_user_id_nullable",
+      "breakpoints": true
     }
   ]
 }

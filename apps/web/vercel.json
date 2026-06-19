@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/reap-old-feed-items",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/purge-deleted-accounts",
+      "schedule": "0 6 * * *"
     }
   ]
 }

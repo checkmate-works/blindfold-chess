@@ -941,8 +941,9 @@ describe('fetchRankStats', () => {
 
     // user-1 holds ranks, user-2 does not → mukyu = 1
     expect(result.find((r) => r.slug === 'mukyu')!.count).toBe(1);
-    // user-1 counted once for each rank slug
-    expect(result.find((r) => r.slug === '5kyu')!.count).toBe(1);
+    // user-1 is bucketed once, at its HIGHEST held rank only (4kyu, level 20 >
+    // 5kyu's 10), so the distribution buckets don't double-count — 5kyu is 0.
+    expect(result.find((r) => r.slug === '5kyu')!.count).toBe(0);
     expect(result.find((r) => r.slug === '4kyu')!.count).toBe(1);
   });
 

@@ -107,8 +107,10 @@ async function insertReply(
   // Determine parentId, rootPostId, and which post to check permissions on.
   let parentId: string;
   let rootPostId: string;
-  let permissionPost: { userId: string; replyPermission: string };
-  let notifyUserId: string;
+  // userId is nullable: the target/root post's author may have been anonymised
+  // (account purged → user_id NULL). Notifications to a null author are skipped.
+  let permissionPost: { userId: string | null; replyPermission: string };
+  let notifyUserId: string | null;
 
   if (targetId === postId) {
     // Case A: Reply to a top-level post (existing behavior)
@@ -175,6 +177,11 @@ async function insertReply(
   }
 
   if (!isAuthor && permissionPost.replyPermission === 'followers') {
+    // An anonymised (purged) author can't be followed, so the gate can never
+    // be satisfied — and there is no id to match against.
+    if (!permissionPost.userId) {
+      return { error: 'followRequired' };
+    }
     const [follow] = await db
       .select({ id: userFollows.id })
       .from(userFollows)
@@ -218,6 +225,7 @@ async function insertReply(
     return reply;
   });
 
+  // (createNotification no-ops when notifyUserId is null — anonymised author.)
   if (notifyUserId !== user.id) {
     createNotification({
       userId: notifyUserId,
@@ -231,7 +239,7 @@ async function insertReply(
 
   // Case B: Also notify the root post author (thread owner) if different
   if (parentId !== rootPostId) {
-    // This is a reply-to-reply; notify the thread owner too
+    // This is a reply-to-reply; notify the thread owner too.
     const rootPostAuthorId = permissionPost.userId;
     if (rootPostAuthorId !== user.id && rootPostAuthorId !== notifyUserId) {
       createNotification({

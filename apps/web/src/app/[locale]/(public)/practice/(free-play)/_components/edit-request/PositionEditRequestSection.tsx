@@ -31,7 +31,7 @@ type Props = {
   /** Authenticated viewer's id; null when signed out. */
   viewerId: string | null;
   /** Position owner's id (positions.user_id is NOT NULL). */
-  ownerId: string;
+  ownerId: string | null;
   locale: Locale;
 };
 

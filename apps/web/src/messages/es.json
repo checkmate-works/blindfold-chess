@@ -1,4 +1,7 @@
 {
+  "Common": {
+    "deletedUser": "(usuario eliminado)"
+  },
   "Repertoires": {
     "title": "Repertorios",
     "description": "Tus árboles de repertorio privados: líneas de apertura, patrones de mate y secuencias memorizadas.",
@@ -2541,7 +2544,7 @@
   "terms": {
     "title": "Términos de Servicio",
     "description": "Términos de Servicio de Ajedrez a Ciegas",
-    "lastUpdated": "Última Actualización: 13 de marzo de 2026",
+    "lastUpdated": "Última Actualización: 19 de junio de 2026",
     "acceptanceTitle": "Aceptación de los Términos",
     "acceptanceDescription": "Al usar este Servicio, aceptas estar sujeto a estos Términos de Servicio. Si no estás de acuerdo con estos Términos, por favor no uses el Servicio.",
     "serviceDescriptionTitle": "Descripción del Servicio",
@@ -2559,6 +2562,11 @@
     "dataHandlingItem4": "Durante actualizaciones del navegador o debido a problemas del navegador",
     "dataHandlingItem5": "Cuando el Servicio cambia los métodos de almacenamiento de datos o las especificaciones",
     "dataHandlingNote": "Para usuarios registrados, los registros de práctica y la configuración se guardan de forma segura en nuestros servidores y se sincronizan entre dispositivos. Recomendamos crear una cuenta si deseas conservar tus datos. Los usuarios invitados deben usar el Servicio como un entorno de práctica temporal.",
+    "accountDeletionTitle": "Eliminación de cuenta y tratamiento del contenido",
+    "accountDeletionDescription": "Cuando eliminas tu cuenta, tus datos se tratan como se describe a continuación. Revísalo antes de usar las funciones de cuenta.",
+    "accountDeletionItem1": "La información personal asociada a tu cuenta (como tu nombre visible, los datos de tu perfil y tu imagen de avatar) se elimina o se anonimiza al eliminar la cuenta.",
+    "accountDeletionItem2": "El contenido que hayas compartido públicamente —como publicaciones del foro, comentarios, posiciones y problemas enviados, chunks y repertorios— puede permanecer disponible en el Servicio tras eliminar tu cuenta, con su autoría anonimizada (mostrada como usuario eliminado).",
+    "accountDeletionItem3": "Si deseas que se elimine algún contenido concreto que hayas creado, contáctanos y lo gestionaremos de forma individual.",
     "userResponsibilitiesTitle": "Responsabilidades del Usuario",
     "userResponsibilitiesDescription": "Al usar el Servicio, por favor ten en cuenta lo siguiente:",
     "userResponsibilitiesItem1": "El uso del Servicio es bajo tu propio riesgo",
@@ -3163,7 +3171,13 @@
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",
-    "warning": "Esta acción es permanente y no se puede deshacer. Todos tus datos personales (nombre de usuario, biografía, país, cuentas de ajedrez, etc.) serán eliminados. Tu nombre de usuario se conservará para evitar su reutilización.",
+    "sectionTitle": "Confirmación final",
+    "warning": "Esta acción no se puede deshacer.",
+    "consequences": {
+      "personalData": "Toda la información personal —nombre de visualización, biografía, país, cuentas de ajedrez, etc.— será eliminada",
+      "usernameLocked": "No podrás volver a registrarte con el mismo nombre de usuario",
+      "canReregister": "Puedes volver a registrarte con una cuenta de Google o un correo electrónico"
+    },
     "confirmButton": "Eliminar Mi Cuenta",
     "confirmTitle": "¿Estás completamente seguro?",
     "confirmMessage": "Esto eliminará permanentemente tu cuenta y borrará todos los datos personales. Esta acción no se puede deshacer.",

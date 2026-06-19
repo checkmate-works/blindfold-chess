@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, profiles, topicPostRatings, topicPosts } from '@/lib/db';
 
@@ -19,7 +19,7 @@ export function buildProfilePostQuery() {
       openingFen: chessOpenings.fen,
     })
     .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
     .$dynamic();

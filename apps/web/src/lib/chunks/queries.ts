@@ -129,7 +129,7 @@ export async function listChunksWithProfile({
       },
     })
     .from(chunks)
-    .leftJoin(profiles, eq(chunks.userId, profiles.id));
+    .leftJoin(profiles, and(eq(chunks.userId, profiles.id), isNull(profiles.deletedAt)));
   const rows = await (where ? query.where(where) : query)
     .orderBy(desc(chunks.createdAt))
     .limit(limit)
@@ -188,7 +188,7 @@ export const getChunkBySlugWithProfile = cache(async (slug: string) => {
       },
     })
     .from(chunks)
-    .leftJoin(profiles, eq(chunks.userId, profiles.id))
+    .leftJoin(profiles, and(eq(chunks.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(and(eq(chunks.slug, slug), isNull(chunks.deletedAt)))
     .limit(1);
 
@@ -397,7 +397,7 @@ export async function getLinkedPositionsForChunk(chunkId: string) {
     })
     .from(positionChunks)
     .innerJoin(positions, eq(positionChunks.positionId, positions.id))
-    .leftJoin(profiles, eq(positions.userId, profiles.id))
+    .leftJoin(profiles, and(eq(positions.userId, profiles.id), isNull(profiles.deletedAt)))
     .where(and(eq(positionChunks.chunkId, chunkId), isNull(positions.deletedAt)))
     .orderBy(desc(positions.createdAt));
 

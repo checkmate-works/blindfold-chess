@@ -33,7 +33,7 @@ export async function createRepertoirePostForImageAttach(
     validateContent,
     emitFeedItem: false,
     isSpoiler,
-    topicAuthorId: repertoire?.userId ?? undefined,
+    topicAuthorId: repertoire?.userId,
     formData,
   });
 }

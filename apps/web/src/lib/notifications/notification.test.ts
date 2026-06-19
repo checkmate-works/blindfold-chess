@@ -192,6 +192,24 @@ describe('createNotification', () => {
       })
     );
   });
+
+  // The recipient may be null when its account was anonymised (account purged →
+  // user_id NULL). The guard lives here so no caller has to repeat it.
+  it.each([
+    ['null', null],
+    ['undefined', undefined],
+  ])('no-ops when the recipient userId is %s (anonymised recipient)', async (_label, userId) => {
+    createNotification({
+      userId,
+      type: 'new_post',
+      targetType: 'topic_post',
+      targetId: 'post-1',
+    });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).not.toHaveBeenCalled();
+  });
 });
 
 /**

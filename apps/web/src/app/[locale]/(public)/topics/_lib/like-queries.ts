@@ -46,7 +46,7 @@ export async function getLikedPostsByUser(
     })
     .from(likes)
     .innerJoin(topicPosts, eq(likes.targetId, topicPosts.id))
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
     .where(

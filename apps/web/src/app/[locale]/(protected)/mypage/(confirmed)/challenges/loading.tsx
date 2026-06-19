@@ -1,14 +1,10 @@
-import { PagePanel } from '@/app/[locale]/_components';
+import { ChallengesLoadingFallback } from './_components/ChallengesLoadingFallback';
 
-import { DashboardSkeleton } from './_components/DashboardSkeleton';
-
+/**
+ * Pending UI for client-side navigations to `/mypage/challenges`. The hard-load
+ * / refresh case is handled by the `(protected)` layout's route-aware gate
+ * fallback, which renders the same {@link ChallengesLoadingFallback}.
+ */
 export default function Loading() {
-  return (
-    <div className="space-y-8">
-      <div className="animate-pulse rounded-md bg-muted h-7 md:h-8 w-40 mx-auto mb-8" />
-      <PagePanel>
-        <DashboardSkeleton />
-      </PagePanel>
-    </div>
-  );
+  return <ChallengesLoadingFallback />;
 }

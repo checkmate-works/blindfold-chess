@@ -107,7 +107,7 @@ export async function getReplyMetaMap(
         username: profiles.username,
       })
       .from(topicPosts)
-      .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+      .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
       .where(filter)
       .orderBy(asc(topicPosts.topicKey), asc(topicPosts.userId), desc(topicPosts.createdAt)),
   ]);
@@ -187,7 +187,7 @@ export async function getGameCommentMetaMap(gameIds: string[]): Promise<Map<stri
         username: profiles.username,
       })
       .from(gameComments)
-      .leftJoin(profiles, eq(gameComments.authorId, profiles.id))
+      .leftJoin(profiles, and(eq(gameComments.authorId, profiles.id), isNull(profiles.deletedAt)))
       .where(and(filter, isNotNull(gameComments.authorId)))
       .orderBy(asc(gameComments.gameId), asc(gameComments.authorId), desc(gameComments.createdAt)),
   ]);

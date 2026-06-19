@@ -70,6 +70,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
   } = useCommentTreeContext();
 
   const tTopics = useTranslations('topics');
+  const tCommon = useTranslations('Common');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isReplyOpen, setIsReplyOpen] = useState(false);
   const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false);
@@ -83,7 +84,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
   const [localUpdatedAt, setLocalUpdatedAt] = useState<Date>(new Date(node.updatedAt));
 
   const isDeleted = node.deletedAt !== null;
-  const displayName = node.author?.displayName || node.author?.username || 'Anonymous';
+  const displayName = node.author?.displayName || node.author?.username || tCommon('deletedUser');
   const profileHref = node.author?.username ? `/u/${node.author.username}` : null;
 
   // Tombstones never run spoiler / like / reply / delete affordances — those

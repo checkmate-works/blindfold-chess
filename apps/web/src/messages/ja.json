@@ -1,4 +1,7 @@
 {
+  "Common": {
+    "deletedUser": "(退会したユーザー)"
+  },
   "Repertoires": {
     "title": "型",
     "description": "あなた専用の定跡ツリー — オープニング、詰みパターン、覚えておきたい手順をまとめておけます。",
@@ -1764,7 +1767,7 @@
       "signInToSuggest": "チャンクを提案するにはサインインしてください。",
       "empty": "まだ提案はありません。",
       "formHint": "下で紐づけるチャンクを調整して送信してください。現在の紐づけと同じ選択は自動的に拒否されます。",
-      "deletedProposer": "(削除されたユーザー)",
+      "deletedProposer": "(退会したユーザー)",
       "deletedChunk": "(削除されたチャンク)",
       "proposerComment": "提案者からの理由",
       "justNow": "たった今",
@@ -2545,7 +2548,7 @@
   "terms": {
     "title": "利用規約",
     "description": "Blindfold Chessの利用規約",
-    "lastUpdated": "最終更新日: 2026年3月13日",
+    "lastUpdated": "最終更新日: 2026年6月19日",
     "acceptanceTitle": "規約の承諾",
     "acceptanceDescription": "本サービスをご利用いただくことで、本利用規約に同意したものとみなされます。本規約に同意いただけない場合は、本サービスのご利用をお控えください。",
     "serviceDescriptionTitle": "サービスの説明",
@@ -2563,6 +2566,11 @@
     "dataHandlingItem4": "ブラウザのアップデートや不具合が発生した場合",
     "dataHandlingItem5": "本サービス側でデータの保存方法などを仕様変更した場合",
     "dataHandlingNote": "アカウントを登録したユーザーについては、データはサーバーに安全に保管され、デバイス間での同期が可能です。練習記録を残したい場合はアカウントの作成を推奨いたします。ゲストユーザーは即席の練習環境としてご活用ください。",
+    "accountDeletionTitle": "退会とコンテンツの取り扱い",
+    "accountDeletionDescription": "退会（アカウント削除）時のデータの取り扱いは以下のとおりです。アカウント機能をご利用の前にご確認ください。",
+    "accountDeletionItem1": "表示名・プロフィール情報・アバター画像など、アカウントに紐づく個人情報は、退会時に削除または匿名化されます。",
+    "accountDeletionItem2": "フォーラムへの投稿・コメント・投稿した局面やパズル・チャンク・レパートリーなど、あなたが公開したコンテンツは、退会後も投稿者を匿名化した状態（「退会したユーザー」と表示）でサービス上に残る場合があります。",
+    "accountDeletionItem3": "あなたが作成した特定のコンテンツの削除をご希望の場合は、お問い合わせください。個別に対応いたします。",
     "userResponsibilitiesTitle": "ユーザーの責任",
     "userResponsibilitiesDescription": "本サービスをご利用いただくにあたり、以下の点についてご理解ください:",
     "userResponsibilitiesItem1": "本サービスの利用は、ユーザー自身の責任において行ってください",
@@ -3026,7 +3034,7 @@
       "suggestCta": "編集を提案する",
       "signInToSuggest": "編集を提案するにはサインインしてください。",
       "formHint": "変更したい箇所のみを編集してください。現在の内容と完全に同じ提案は自動的に拒否されます。",
-      "deletedProposer": "(削除されたユーザー)",
+      "deletedProposer": "(退会したユーザー)",
       "proposerComment": "提案者からの説明",
       "justNow": "たった今",
       "status": {
@@ -3404,7 +3412,13 @@
   },
   "deleteAccount": {
     "title": "退会",
-    "warning": "この操作は取り消すことができません。表示名、自己紹介、国、チェスアカウントなどの個人情報はすべて削除されます。ユーザー名は再利用防止のため保持されます。",
+    "sectionTitle": "最終確認",
+    "warning": "この操作は取り消すことができません。",
+    "consequences": {
+      "personalData": "表示名、自己紹介、国、チェスアカウントなどの個人情報はすべて削除されます",
+      "usernameLocked": "同じユーザー名では再登録できません",
+      "canReregister": "Google アカウントやメールアドレスで再登録することは可能です"
+    },
     "confirmButton": "アカウントを削除する",
     "confirmTitle": "本当に退会しますか？",
     "confirmMessage": "アカウントが完全に削除され、すべての個人情報が消去されます。この操作は取り消せません。",

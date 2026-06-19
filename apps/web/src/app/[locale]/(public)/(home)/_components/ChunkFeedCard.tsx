@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/chunks/_actions/toggleLike';
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
@@ -34,8 +34,9 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
   variant,
 }: Props) {
   const tFeed = useTranslations('home.feed.chunk');
+  const tCommon = useTranslations('Common');
   const { preferences } = useGamePreferences();
-  const displayName = resolveDisplayName(data.author);
+  const displayName = resolveAuthorName(data.author, { fallback: tCommon('deletedUser') });
   const href = `/chunks/${data.slug}`;
 
   const time = (

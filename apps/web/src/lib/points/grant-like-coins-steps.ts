@@ -1,4 +1,4 @@
-import { and, gt, inArray, isNull, lte } from 'drizzle-orm';
+import { and, gt, inArray, isNotNull, isNull, lte } from 'drizzle-orm';
 import 'server-only';
 
 import { db, likes, positions, profiles, topicPosts } from '@/lib/db';
@@ -28,6 +28,13 @@ import type { ContentRow, GrantIntent, LikeRow, PositionRow } from './grant-like
  * Filtered to target types that participate in the like-coin program
  * (currently `position` and `topic_post`); excludes likes on entities
  * — e.g. chunks — that are not part of the coin grant.
+ *
+ * Also excludes anonymised likes (`user_id IS NULL`): once a liker's account
+ * is physically purged the FK sets their likes' `user_id` to NULL, and such a
+ * like has no liker to seed an idempotency key or to self-like-check against —
+ * it must not mint a fresh coin grant. (In practice these are far outside any
+ * live scan window, since the watermark passed their `created_at` long before
+ * the purge; the filter is the correctness guarantee, not an optimisation.)
  */
 export async function loadLikesForBatch(watermark: Date, scanStartedAt: Date): Promise<LikeRow[]> {
   const rows = await db
@@ -41,10 +48,12 @@ export async function loadLikesForBatch(watermark: Date, scanStartedAt: Date): P
       and(
         gt(likes.createdAt, watermark),
         lte(likes.createdAt, scanStartedAt),
-        inArray(likes.targetType, LIKE_GRANT_TARGET_TYPES as readonly string[])
+        inArray(likes.targetType, LIKE_GRANT_TARGET_TYPES as readonly string[]),
+        isNotNull(likes.userId)
       )
     );
-  return rows;
+  // `isNotNull` guarantees `likerId` is non-null; reflect that in the type.
+  return rows as LikeRow[];
 }
 
 /**

@@ -34,7 +34,7 @@ export async function loadTopicPostsForFeed(
       openingFen: chessOpenings.fen,
     })
     .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
     .where(and(inArray(topicPosts.id, topicPostIds), isNull(topicPosts.deletedAt)));

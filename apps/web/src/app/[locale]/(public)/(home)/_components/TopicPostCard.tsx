@@ -48,7 +48,8 @@ export const TopicPostCard = memo(function TopicPostCard({
   attachment,
 }: Props) {
   const tTopics = useTranslations('topics');
-  const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
+  const tCommon = useTranslations('Common');
+  const displayName = post.author?.displayName || post.author?.username || tCommon('deletedUser');
   const contentPreview = truncateContent(post.content);
   const isTruncated = contentPreview !== post.content;
   const isOpening = post.topicType === 'opening';

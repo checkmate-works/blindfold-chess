@@ -4,7 +4,12 @@ import 'server-only';
 import { db, notifications, userFollows } from '../db';
 
 type NotificationEvent = {
-  userId: string;
+  /**
+   * Recipient. `null` / `undefined` when the would-be recipient was anonymised
+   * (account purged → `user_id` NULL): {@link createNotification} no-ops in that
+   * case, so callers do not need to null-check the recipient themselves.
+   */
+  userId: string | null | undefined;
   actorId?: string;
   type: string;
   targetType?: string;
@@ -25,6 +30,12 @@ const DEDUP_WINDOW_MS = 5 * 60 * 1000;
  * the insert is skipped.
  */
 export function createNotification(event: NotificationEvent): void {
+  // A notification must have a recipient. When the recipient was anonymised
+  // (account purged → user_id NULL) there is nobody to notify, so no-op.
+  // Centralising the guard here means callers never repeat it.
+  const { userId } = event;
+  if (!userId) return;
+
   (async () => {
     // Deduplication check
     const since = new Date(Date.now() - DEDUP_WINDOW_MS);
@@ -33,7 +44,7 @@ export function createNotification(event: NotificationEvent): void {
       .from(notifications)
       .where(
         and(
-          eq(notifications.userId, event.userId),
+          eq(notifications.userId, userId),
           eq(notifications.type, event.type),
           ...(event.actorId ? [eq(notifications.actorId, event.actorId)] : []),
           ...(event.targetType ? [eq(notifications.targetType, event.targetType)] : []),
@@ -48,7 +59,7 @@ export function createNotification(event: NotificationEvent): void {
     }
 
     await db.insert(notifications).values({
-      userId: event.userId,
+      userId,
       actorId: event.actorId ?? null,
       type: event.type,
       targetType: event.targetType ?? null,

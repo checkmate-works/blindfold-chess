@@ -96,12 +96,18 @@ export async function grantPointsForPost(
  * idempotency key, so a retried removal — or an admin removal of a post
  * the author already self-deleted — is a safe no-op. Also a no-op when
  * the grant was already clawed back (net `earned` for the source is 0).
+ *
+ * A `null` `userId` (the author was anonymised — account purged, so their
+ * ledger is already cascade-removed) is likewise a no-op, so callers that hold
+ * a nullable author id do not need to guard the call themselves.
  */
 export async function clawbackPointsForPost(
   tx: DbTx,
-  userId: string,
+  userId: string | null,
   entity: PointPostEntity
 ): Promise<void> {
+  if (!userId) return;
+
   const source = sourceForEntity(entity.type);
 
   const grantedNet = await readEarnedTotalForEntity(tx, userId, source, entity.id);

@@ -2,6 +2,7 @@ import { and, asc, eq, inArray, lt } from 'drizzle-orm';
 import 'server-only';
 
 import { db, feedItems } from '@/lib/db';
+import { startRetentionRun } from '@/lib/retention-run';
 
 /**
  * Reaper for old `feed_items` rows of type `challenge_rank_update`.
@@ -89,20 +90,19 @@ export async function reapOldRankUpdateFeedItems(
     batchSize?: number;
   } = {}
 ): Promise<RankUpdateReaperReport> {
-  const now = opts.now ?? new Date();
-  const budgetMs = opts.budgetMs ?? DEFAULT_BUDGET_MS;
   const batchSize = opts.batchSize ?? BATCH_SIZE;
-
-  const startedAt = new Date(now);
-  const cutoff = new Date(now.getTime() - RANK_UPDATE_RETENTION_MS);
-  const deadline = Date.now() + budgetMs;
+  const run = startRetentionRun({
+    now: opts.now,
+    retentionMs: RANK_UPDATE_RETENTION_MS,
+    budgetMs: opts.budgetMs ?? DEFAULT_BUDGET_MS,
+  });
 
   let removed = 0;
   let batches = 0;
   let timedOut = false;
 
   while (true) {
-    if (Date.now() >= deadline) {
+    if (run.isOverBudget()) {
       timedOut = true;
       break;
     }
@@ -111,7 +111,7 @@ export async function reapOldRankUpdateFeedItems(
       .select({ id: feedItems.id })
       .from(feedItems)
       .where(
-        and(eq(feedItems.entityType, RANK_UPDATE_ENTITY_TYPE), lt(feedItems.createdAt, cutoff))
+        and(eq(feedItems.entityType, RANK_UPDATE_ENTITY_TYPE), lt(feedItems.createdAt, run.cutoff))
       )
       .orderBy(asc(feedItems.createdAt))
       .limit(batchSize);
@@ -131,12 +131,10 @@ export async function reapOldRankUpdateFeedItems(
     if (targets.length < batchSize) break;
   }
 
-  const finishedAt = new Date();
   return {
     removed,
     batches,
     timedOut,
-    startedAt: startedAt.toISOString(),
-    finishedAt: finishedAt.toISOString(),
+    ...run.stamps(),
   };
 }

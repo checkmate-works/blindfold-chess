@@ -38,7 +38,7 @@ export async function loadGamesForFeed(
       },
     })
     .from(games)
-    .leftJoin(profiles, eq(games.authorId, profiles.id))
+    .leftJoin(profiles, and(eq(games.authorId, profiles.id), isNull(profiles.deletedAt)))
     .where(and(inArray(games.id, gameIds), isNull(games.deletedAt), eq(games.status, 'public')));
 
   const foundIds = rows.map((r) => r.id);

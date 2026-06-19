@@ -158,7 +158,7 @@ export async function listPositionsWithProfile({
       },
     })
     .from(positions)
-    .leftJoin(profiles, eq(positions.userId, profiles.id));
+    .leftJoin(profiles, and(eq(positions.userId, profiles.id), isNull(profiles.deletedAt)));
   const rows = await (where ? query.where(where) : query)
     .orderBy(...buildPositionOrderBy(sort, topicType))
     .limit(limit)
@@ -205,7 +205,7 @@ export const getPositionWithProfileById = cache(
         },
       })
       .from(positions)
-      .leftJoin(profiles, eq(positions.userId, profiles.id))
+      .leftJoin(profiles, and(eq(positions.userId, profiles.id), isNull(profiles.deletedAt)))
       .where(and(...conditions))
       .limit(1);
 

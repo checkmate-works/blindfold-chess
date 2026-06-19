@@ -50,7 +50,7 @@ export async function listGameChunks(gameId: string): Promise<GameChunkItem[]> {
     })
     .from(gameChunks)
     .innerJoin(chunks, eq(chunks.id, gameChunks.chunkId))
-    .leftJoin(profiles, eq(profiles.id, gameChunks.suggestedById))
+    .leftJoin(profiles, and(eq(profiles.id, gameChunks.suggestedById), isNull(profiles.deletedAt)))
     .where(and(eq(gameChunks.gameId, gameId), isNull(chunks.deletedAt)))
     .orderBy(asc(gameChunks.ply), asc(gameChunks.createdAt));
 

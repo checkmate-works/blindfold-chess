@@ -104,6 +104,11 @@ export async function proxy(request: NextRequest) {
   const nonce = generateCspNonce();
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
+  // Expose the request pathname to Server Components via `headers()`. Layouts
+  // use it to pick a route-appropriate Suspense fallback (loading skeleton),
+  // which a layout cannot otherwise derive (layouts only receive their own
+  // segment's params, not the active child path).
+  requestHeaders.set('x-pathname', pathname);
 
   const { response, authenticated, userId } = await updateSession(request, { requestHeaders });
 

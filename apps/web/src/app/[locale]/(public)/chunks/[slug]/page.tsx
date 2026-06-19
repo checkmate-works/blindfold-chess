@@ -12,7 +12,7 @@ import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parsePositionType } from '@/lib/positions/types';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
@@ -102,7 +102,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     attachments,
   } = data;
 
-  const displayName = resolveDisplayName(profile);
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
+  const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
   const { sort } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);

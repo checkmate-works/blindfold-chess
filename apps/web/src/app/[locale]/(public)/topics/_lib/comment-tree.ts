@@ -146,7 +146,7 @@ export type FlatReply = {
  */
 function displayNameOf(node: CommentTreeNode): string | null {
   if (node.deletedAt) return null;
-  return node.author?.displayName || node.author?.username || 'Anonymous';
+  return node.author?.displayName || node.author?.username || null;
 }
 
 /**

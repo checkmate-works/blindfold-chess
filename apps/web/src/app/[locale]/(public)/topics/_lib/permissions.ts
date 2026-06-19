@@ -16,7 +16,9 @@ export async function canUserReply({
   replyPermission,
 }: {
   userId: string | undefined;
-  postUserId: string;
+  // Null when the post's author was anonymised (account purged). Such a post
+  // has no author to be, or to follow.
+  postUserId: string | null;
   replyPermission: string;
 }): Promise<boolean> {
   const isAuthor = userId === postUserId;
@@ -25,6 +27,8 @@ export async function canUserReply({
   if (replyPermission === 'nobody') return false;
 
   if (replyPermission === 'followers' && userId) {
+    // An anonymised author can't be followed, so the gate can never be met.
+    if (!postUserId) return false;
     const [follow] = await db
       .select({ id: userFollows.id })
       .from(userFollows)
