@@ -17,6 +17,15 @@ type Args = {
   moduleSlug: string;
   isPaused: boolean;
   togglePause: () => void;
+  /**
+   * Optional override for what happens when the user confirms the quit.
+   * When provided, it runs instead of navigating to the challenge setup page —
+   * e.g. ending the session so the run lands on the result/feedback screen with
+   * its current score, identical to a fully-completed run. When omitted, the
+   * default navigation back to `/${locale}/practice/${moduleSlug}/challenge`
+   * is used.
+   */
+  onConfirm?: () => void;
 };
 
 type Return = {
@@ -32,15 +41,22 @@ type Return = {
  * Behavior:
  * - `handleQuitRequest`: pauses the session (if not already paused) and opens
  *   the modal.
- * - `handleQuitConfirm`: navigates to the module's challenge setup page.
- *   The modal stays mounted; the consumer unmounts naturally on navigation.
+ * - `handleQuitConfirm`: runs `onConfirm` if supplied, otherwise navigates to
+ *   the module's challenge setup page. The modal stays mounted; the consumer
+ *   unmounts naturally on navigation (or when the session finishes).
  * - `handleQuitCancel`: closes the modal and resumes the session if it was
  *   paused by the gate.
  *
  * The actual `<QuitConfirmModal>` rendering remains the consumer's
  * responsibility — this hook only owns the boolean and the callback wiring.
  */
-export function useQuitConfirm({ locale, moduleSlug, isPaused, togglePause }: Args): Return {
+export function useQuitConfirm({
+  locale,
+  moduleSlug,
+  isPaused,
+  togglePause,
+  onConfirm,
+}: Args): Return {
   const router = useRouter();
   const [showQuitModal, setShowQuitModal] = useState(false);
 
@@ -50,8 +66,12 @@ export function useQuitConfirm({ locale, moduleSlug, isPaused, togglePause }: Ar
   }, [isPaused, togglePause]);
 
   const handleQuitConfirm = useCallback(() => {
+    if (onConfirm) {
+      onConfirm();
+      return;
+    }
     router.push(`/${locale}/practice/${moduleSlug}/challenge`);
-  }, [router, locale, moduleSlug]);
+  }, [onConfirm, router, locale, moduleSlug]);
 
   const handleQuitCancel = useCallback(() => {
     setShowQuitModal(false);

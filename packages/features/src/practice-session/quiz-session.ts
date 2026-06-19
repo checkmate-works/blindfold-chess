@@ -27,6 +27,7 @@ export type TimedSessionFacade = {
   isFinished: boolean;
   isPaused: boolean;
   togglePause: () => void;
+  finishSession: () => void;
 };
 
 /** Project a `useTimedSession` return value down to the shared facade fields. */
@@ -44,5 +45,6 @@ export function toTimedSessionFacade(
     isFinished: session.isFinished,
     isPaused: session.isPaused,
     togglePause: session.togglePause,
+    finishSession: session.finishSession,
   };
 }

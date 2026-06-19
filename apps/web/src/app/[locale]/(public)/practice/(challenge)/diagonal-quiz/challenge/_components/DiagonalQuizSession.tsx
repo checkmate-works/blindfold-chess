@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useDiagonalQuizSession } from '@blindfold-chess/features/diagonal-quiz/client';
 
@@ -34,6 +34,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     isPaused,
     handleAnswer,
     togglePause,
+    finishSession,
     questionResults,
   } = useDiagonalQuizSession({
     timeLimit: initialTimeLimit,
@@ -42,11 +43,24 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
 
   useScrollToElement('diagonal-quiz-session');
 
+  // Set when the user quits mid-run. The run still lands on the result/feedback
+  // screen, but `skipSave` below suppresses leaderboard recording, EXP, and rank
+  // evaluation — a voluntarily-abandoned run is not rewarded.
+  const [isAborted, setIsAborted] = useState(false);
+  const handleAbort = useCallback(() => {
+    setIsAborted(true);
+    finishSession();
+  }, [finishSession]);
+
   const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
     locale,
     moduleSlug: 'diagonal-quiz',
     isPaused,
     togglePause,
+    // Quit ends the run at its current score and falls through to the same
+    // result/feedback screen as a full completion, instead of bailing back to
+    // the challenge setup page.
+    onConfirm: handleAbort,
   });
 
   // Save result and redirect on finish
@@ -90,6 +104,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     resultUrl,
     saveResult,
     moduleName: 'diagonal_quiz',
+    skipSave: isAborted,
   });
 
   if (!currentSquare || isFinished) {
