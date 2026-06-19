@@ -6,6 +6,7 @@ import 'server-only';
 import { authenticateAndGuard } from '@/lib/auth';
 import { chunkEditRequests, chunks, db } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
+import { EDIT_REQUEST_TERMINAL_STATUS, type EditRequestAction } from '@/lib/edit-requests/shared';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
@@ -150,13 +151,7 @@ export async function submitEditRequestEntry(params: {
 
 type ResolveParams = {
   requestId: string;
-  action: 'accept' | 'reject' | 'withdraw';
-};
-
-const TERMINAL_STATUS: Record<ResolveParams['action'], 'accepted' | 'rejected' | 'withdrawn'> = {
-  accept: 'accepted',
-  reject: 'rejected',
-  withdraw: 'withdrawn',
+  action: EditRequestAction;
 };
 
 async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditRequestResult> {
@@ -203,7 +198,7 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
   }
 
   const now = new Date();
-  const terminal = TERMINAL_STATUS[params.action];
+  const terminal = EDIT_REQUEST_TERMINAL_STATUS[params.action];
 
   await db.transaction(async (tx) => {
     // Serialize concurrent accepts on the same chunk by locking the
