@@ -1135,3 +1135,84 @@ ALTER TABLE "repertoire_deviations" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "repertoire_deviations_select" ON "repertoire_deviations";
 CREATE POLICY "repertoire_deviations_select" ON "repertoire_deviations"
   FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- Reference / taxonomy master data (public read, service-role-only write)
+-- =============================================================================
+-- These tables hold app-managed reference data: the glossary, the article
+-- taxonomy, and the tag vocabulary. They are seeded/edited exclusively through
+-- the privileged Drizzle connection (BYPASSRLS) and the admin glossary tooling
+-- (service role) — never through the anon/authenticated Supabase client.
+--
+-- WHY THIS BLOCK EXISTS: in Supabase the `public` schema's default privileges
+-- grant ALL (arwdDxtm) to `anon` and `authenticated` on every table created by
+-- the `postgres` role. A table that is NOT enrolled in RLS is therefore fully
+-- readable AND writable (INSERT/UPDATE/DELETE/TRUNCATE) by anyone holding the
+-- public anon key — which ships in the client bundle. These eleven tables were
+-- missing from this file, so they were silently exposed for anonymous writes.
+--
+-- Enabling RLS with a single permissive SELECT policy (and no write policy)
+-- closes that hole: anon/authenticated may read but cannot write, while the
+-- `postgres` owner and `service_role` (both BYPASSRLS) keep full write access
+-- for seeds and admin edits. This mirrors the existing master-data posture of
+-- `chess_openings` / `ranks` / `achievements` (RLS on, not FORCEd, public
+-- SELECT). FORCE is intentionally omitted so the BYPASSRLS owner connection
+-- used by Drizzle seeds is never affected.
+
+-- glossary_terms + related (glossary is public content rendered on /glossary)
+ALTER TABLE "glossary_terms" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "glossary_terms_select" ON "glossary_terms";
+CREATE POLICY "glossary_terms_select" ON "glossary_terms"
+  FOR SELECT USING (true);
+
+ALTER TABLE "glossary_term_translations" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "glossary_term_translations_select" ON "glossary_term_translations";
+CREATE POLICY "glossary_term_translations_select" ON "glossary_term_translations"
+  FOR SELECT USING (true);
+
+ALTER TABLE "glossary_term_aliases" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "glossary_term_aliases_select" ON "glossary_term_aliases";
+CREATE POLICY "glossary_term_aliases_select" ON "glossary_term_aliases"
+  FOR SELECT USING (true);
+
+ALTER TABLE "glossary_term_positions" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "glossary_term_positions_select" ON "glossary_term_positions";
+CREATE POLICY "glossary_term_positions_select" ON "glossary_term_positions"
+  FOR SELECT USING (true);
+
+ALTER TABLE "glossary_term_relations" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "glossary_term_relations_select" ON "glossary_term_relations";
+CREATE POLICY "glossary_term_relations_select" ON "glossary_term_relations"
+  FOR SELECT USING (true);
+
+-- article taxonomy (categories / tags / practice-module links — public listings)
+ALTER TABLE "article_categories" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "article_categories_select" ON "article_categories";
+CREATE POLICY "article_categories_select" ON "article_categories"
+  FOR SELECT USING (true);
+
+ALTER TABLE "article_category_translations" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "article_category_translations_select" ON "article_category_translations";
+CREATE POLICY "article_category_translations_select" ON "article_category_translations"
+  FOR SELECT USING (true);
+
+ALTER TABLE "article_tags" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "article_tags_select" ON "article_tags";
+CREATE POLICY "article_tags_select" ON "article_tags"
+  FOR SELECT USING (true);
+
+ALTER TABLE "article_practice_modules" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "article_practice_modules_select" ON "article_practice_modules";
+CREATE POLICY "article_practice_modules_select" ON "article_practice_modules"
+  FOR SELECT USING (true);
+
+-- tag vocabulary (public catalog filtering)
+ALTER TABLE "tags" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tags_select" ON "tags";
+CREATE POLICY "tags_select" ON "tags"
+  FOR SELECT USING (true);
+
+ALTER TABLE "position_tags" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "position_tags_select" ON "position_tags";
+CREATE POLICY "position_tags_select" ON "position_tags"
+  FOR SELECT USING (true);
