@@ -2842,6 +2842,241 @@
     "articleNotFound": "Artículo No Encontrado",
     "notTranslatedNotice": "Este artículo aún no ha sido traducido a tu idioma. Estás viendo la versión original."
   },
+  "chunks": {
+    "listTitle": "Chunks",
+    "listSubtitle": "Patrones de coordinación de piezas",
+    "editCta": "Editar",
+    "statusDraft": "Borrador",
+    "statusPublished": "Publicado",
+    "actions": {
+      "publish": "Publicar",
+      "publishPending": "Publicando…",
+      "publishConfirmTitle": "¿Publicar este chunk?",
+      "publishConfirmMessage": "Los demás usuarios lo verán como una entrada canónica del catálogo. El título, la descripción, el FEN y las anotaciones quedarán bloqueados: la publicación es irreversible, así que asegúrate de que todo esté correcto.",
+      "publishConfirmCta": "Publicar",
+      "publishConfirmCancel": "Cancelar",
+      "publishDescriptionRequired": "Añade una descripción antes de publicar.",
+      "publishNeedsDescriptionTitle": "Añade una descripción antes de publicar",
+      "publishNeedsDescriptionMessage": "Un chunk publicado es una entrada canónica del catálogo, por lo que necesita una descripción para que otros jugadores entiendan el patrón. Abre la página de edición para añadir una; podrás volver y publicar una vez guardada.",
+      "publishNeedsDescriptionCta": "Abrir página de edición"
+    },
+    "list": {
+      "newCta": "Crear chunk",
+      "empty": "Todavía no hay chunks.",
+      "emptyDrafts": "No hay borradores buscando comentarios por ahora.",
+      "filterAriaLabel": "Filtrar chunks por estado",
+      "filter": {
+        "all": "Todos",
+        "drafts": "Buscando comentarios",
+        "published": "Publicados"
+      },
+      "feedbackChip": {
+        "title": "Busca ideas para el título",
+        "description": "Busca ideas para la descripción"
+      },
+      "help": {
+        "label": "¿Qué son los chunks?",
+        "catalog": {
+          "title": "Un catálogo de chunks",
+          "description": "Los chunks son patrones recurrentes de coordinación de piezas: pequeñas formas (una batería de torres, un fianchetto, un puesto avanzado de caballo) que los jugadores fuertes reconocen de un vistazo. Esta página lista todos los chunks compartidos por la comunidad para que puedas explorarlos como un vocabulario de reconocimiento de patrones."
+        },
+        "create": {
+          "title": "Crea tu propio chunk",
+          "description": "¿Has detectado un patrón que ves una y otra vez en tus partidas? Cualquier usuario que haya iniciado sesión puede publicar uno desde este botón. Guárdalo primero como borrador para recibir sugerencias de título y descripción de otros jugadores, y publícalo cuando lo veas listo."
+        }
+      }
+    },
+    "new": {
+      "title": "Nuevo chunk"
+    },
+    "edit": {
+      "title": "Editar {name}",
+      "breadcrumb": "Editar"
+    },
+    "detail": {
+      "descriptionSection": "Descripción",
+      "noDescription": "Todavía no hay descripción.",
+      "edited": "Editado",
+      "createdBy": "Creado por",
+      "positionsSection": "Posiciones",
+      "positionsDescription": "Problemas donde este patrón de chunk es eficaz.",
+      "positionBadge": {
+        "puzzle": "Problema",
+        "memory": "Memoria"
+      }
+    },
+    "form": {
+      "fields": {
+        "fen": "FEN representativo",
+        "title": "Título",
+        "slug": "Slug",
+        "description": "Descripción"
+      },
+      "hints": {
+        "fen": "Un FEN que ilustre el patrón. Se permiten tableros sin rey.",
+        "slugCreate": "Letras ASCII minúsculas / números con guiones (p. ej. \"rook-battery\"). Editable mientras el chunk esté en borrador; se bloquea al publicarse.",
+        "slugLocked": "El slug queda fijo una vez publicado el chunk (se usa como URL permanente del catálogo).",
+        "slugDraftEditable": "Editable mientras este chunk esté en borrador. Al cambiarlo se actualiza la URL: tendrás que volver a compartir cualquier enlace que ya hayas difundido."
+      },
+      "actions": {
+        "create": "Crear chunk",
+        "creating": "Creando…",
+        "save": "Guardar cambios",
+        "saving": "Guardando…",
+        "delete": "Eliminar",
+        "deleting": "Eliminando…",
+        "generateFromTitle": "Generar a partir del título",
+        "continueToPreview": "Continuar a la vista previa"
+      },
+      "errors": {
+        "invalidFen": "El FEN no es una disposición de tablero válida.",
+        "titleRequired": "El título es obligatorio.",
+        "slugRequired": "El slug es obligatorio.",
+        "draftWriteFailed": "No se pudo guardar el borrador localmente. El almacenamiento del navegador puede estar lleno o no disponible.",
+        "signInRequired": "Inicia sesión para continuar.",
+        "banned": "Tu cuenta está suspendida.",
+        "rateLimited": "Demasiados envíos. Inténtalo de nuevo más tarde.",
+        "slugTaken": "Ese slug ya está en uso. Elige otro.",
+        "notFound": "Este chunk ya no existe.",
+        "unauthorized": "Solo puedes editar los chunks que hayas creado.",
+        "alreadyDeleted": "Este chunk ya se ha eliminado.",
+        "cannotEditPublished": "Este chunk está publicado y ya no se puede editar. La publicación es irreversible: para modificarlo, elimina este chunk y crea uno nuevo.",
+        "descriptionRequired": "Este chunk necesita una descripción antes de poder publicarse.",
+        "invalidFeedbackTopic": "Tema de comentarios desconocido. Actualiza la página e inténtalo de nuevo."
+      },
+      "draft": {
+        "toggleLabel": "Guardar como borrador",
+        "toggleHint": "Los borradores son visibles para los demás (para que puedan sugerir nombres) pero siguen siendo editables. Podrás publicarlo más tarde desde la página de detalle cuando el título y la descripción te convenzan."
+      },
+      "feedbackTopics": {
+        "legend": "¿Sobre qué quieres comentarios?",
+        "hint": "Los campos marcados se resaltan en la página de detalle para que los demás sepan dónde serían más útiles sus sugerencias.",
+        "options": {
+          "title": "No estoy seguro del título",
+          "description": "No estoy seguro de la descripción"
+        }
+      },
+      "delete": {
+        "confirmTitle": "¿Eliminar este chunk?",
+        "confirmBody": "El chunk se ocultará del catálogo. Las posiciones enlazadas conservan su referencia, pero ya no aparecerá públicamente.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar"
+      },
+      "tabBoard": "Tablero",
+      "tabFen": "FEN",
+      "sideToMove": "Turno de juego",
+      "sideWhite": "Blancas",
+      "sideBlack": "Negras",
+      "flipBoard": "Girar tablero",
+      "clearBoard": "Vaciar tablero",
+      "clearBoardConfirmTitle": "¿Vaciar el tablero?",
+      "clearBoardConfirmMessage": "Se quitarán todas las piezas. Esto no se puede deshacer desde este diálogo.",
+      "clearBoardConfirm": "Vaciar",
+      "clearBoardCancel": "Cancelar",
+      "draftRestoredBanner": "Hemos restaurado tu borrador sin guardar.",
+      "draftRestoredDiscard": "Descartar",
+      "startOverConfirmTitle": "¿Empezar de nuevo?",
+      "startOverConfirmMessage": "Tu borrador actual se borrará. Esto no se puede deshacer.",
+      "startOverConfirm": "Empezar de nuevo",
+      "startOverCancel": "Cancelar"
+    },
+    "preview": {
+      "title": "Vista previa del chunk",
+      "createDraftCta": "Guardar como borrador",
+      "createPublishedCta": "Publicar chunk",
+      "backToEditCta": "Volver a editar",
+      "createError": "Algo salió mal al crear el chunk. Inténtalo de nuevo.",
+      "statusLabel": "Estado",
+      "statusDraft": "Borrador",
+      "statusPublished": "Publicado"
+    },
+    "editRequests": {
+      "linkLabel": "Sugerencias de edición",
+      "pageTitle": "Sugerencias de edición · {name}",
+      "breadcrumb": "Sugerencias de edición",
+      "currentValuesTitle": "Valores actuales",
+      "currentValuesHint": "Título y descripción provisionales que muestra ahora el chunk. Las sugerencias enviadas más abajo se comparan con estos valores.",
+      "callout": {
+        "body": "Este chunk todavía es un borrador y agradece sugerencias para un título o una descripción más precisos.",
+        "ownerBodyWithPending": "{count, plural, one {# sugerencia de edición pendiente de tu revisión.} other {# sugerencias de edición pendientes de tu revisión.}}",
+        "ownerBodyEmpty": "Todavía no hay sugerencias de edición.",
+        "ctaOwner": "Ver sugerencias de edición",
+        "ctaHasPending": "Ver / retirar tu sugerencia",
+        "ctaCanSuggest": "Sugerir una edición",
+        "ctaSignedOut": "Inicia sesión para sugerir una edición",
+        "topicLeadIn": "El autor busca opiniones sobre:",
+        "topicLabels": {
+          "title": "Título",
+          "description": "Descripción"
+        }
+      },
+      "help": {
+        "label": "Cómo funcionan las sugerencias de edición",
+        "badge": {
+          "title": "Este chunk está en borrador",
+          "description": "Se agradecen sugerencias para el título y la descripción."
+        },
+        "editRequests": {
+          "title": "Sugiere un cambio",
+          "description": "Abre esta página para proponer un nuevo título o descripción."
+        }
+      },
+      "sectionTitle": "Sugerencias de edición",
+      "sectionHint": "Otros jugadores pueden sugerir un título o una descripción más precisos mientras este chunk esté en borrador. El propietario revisa cada sugerencia.",
+      "formWantedLabel": "Solicitado",
+      "alreadyHasPendingNotice": "Tu sugerencia anterior sigue pendiente más abajo. Retírala primero si quieres proponer algo diferente.",
+      "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
+      "empty": "Todavía no hay sugerencias.",
+      "suggestCta": "Sugerir una edición",
+      "signInToSuggest": "Inicia sesión para sugerir una edición.",
+      "formHint": "Edita solo lo que quieras cambiar. Los envíos idénticos a los valores actuales se rechazan automáticamente.",
+      "deletedProposer": "(usuario eliminado)",
+      "proposerComment": "Motivo del autor de la sugerencia",
+      "justNow": "ahora mismo",
+      "status": {
+        "pending": "Pendiente",
+        "accepted": "Aceptada",
+        "rejected": "Rechazada",
+        "withdrawn": "Retirada"
+      },
+      "diff": {
+        "titleLabel": "Título",
+        "descriptionLabel": "Descripción",
+        "current": "Actual",
+        "proposed": "Propuesto"
+      },
+      "fields": {
+        "title": "Título propuesto",
+        "description": "Descripción propuesta",
+        "comment": "¿Por qué este cambio? (opcional)",
+        "commentPlaceholder": "Una breve explicación ayuda al propietario a decidir."
+      },
+      "actions": {
+        "submit": "Enviar sugerencia",
+        "cancel": "Cancelar",
+        "accept": "Aceptar",
+        "reject": "Rechazar",
+        "withdraw": "Retirar",
+        "acceptConfirmTitle": "¿Aceptar esta sugerencia?",
+        "acceptConfirmMessage": "Los campos propuestos se aplicarán a este chunk de inmediato.",
+        "rejectConfirmTitle": "¿Rechazar esta sugerencia?",
+        "rejectConfirmMessage": "No se notificará al autor de la sugerencia. Verá el estado de rechazo si vuelve a esta página.",
+        "withdrawConfirmTitle": "¿Retirar tu sugerencia?",
+        "withdrawConfirmMessage": "No se notificará al propietario del chunk. Verá que el recuento de la cola baja en su próxima visita."
+      },
+      "errors": {
+        "signInRequired": "Inicia sesión para enviar una sugerencia.",
+        "banned": "Tu cuenta está suspendida.",
+        "rateLimited": "Demasiadas sugerencias. Inténtalo de nuevo más tarde.",
+        "notFound": "Esta sugerencia o este chunk ya no existe.",
+        "unauthorized": "No puedes realizar esta acción.",
+        "alreadyResolved": "Esta sugerencia ya se ha resuelto.",
+        "ownerCannotPropose": "No puedes sugerir ediciones a tu propio chunk; edítalo directamente.",
+        "chunkNotDraft": "Este chunk está publicado y no acepta sugerencias en este momento.",
+        "alreadyHasPending": "Ya tienes una sugerencia pendiente para este chunk. Retírala primero si quieres proponer algo diferente."
+      }
+    }
+  },
   "announcements": {
     "pageTitle": "Anuncios",
     "pageDescription": "Anuncios de Ajedrez a Ciegas",
