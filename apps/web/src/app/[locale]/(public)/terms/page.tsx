@@ -49,6 +49,14 @@ export default async function TermsPage({ params }: Props) {
         </ul>
         <p>{t('dataHandlingNote')}</p>
 
+        <SectionTitle>{t('accountDeletionTitle')}</SectionTitle>
+        <p>{t('accountDeletionDescription')}</p>
+        <ul className="list-disc ml-6 space-y-2">
+          <li className="text-foreground/90 pl-2">{t('accountDeletionItem1')}</li>
+          <li className="text-foreground/90 pl-2">{t('accountDeletionItem2')}</li>
+          <li className="text-foreground/90 pl-2">{t('accountDeletionItem3')}</li>
+        </ul>
+
         <SectionTitle>{t('userResponsibilitiesTitle')}</SectionTitle>
         <p>{t('userResponsibilitiesDescription')}</p>
         <ul className="list-disc ml-6 space-y-2">
