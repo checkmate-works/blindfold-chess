@@ -100,6 +100,17 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
     return { error: validationError };
   }
 
+  // Publishing on creation must satisfy the same description-required rule
+  // as the draft→published transition in `publishChunkEntry`. Without this
+  // guard a chunk created directly as published could ship with an empty
+  // description, an asymmetry with the dedicated publish path.
+  if (
+    dataWithAuthor.status === 'published' &&
+    (!dataWithAuthor.description || dataWithAuthor.description.trim().length === 0)
+  ) {
+    return { error: 'descriptionRequired' };
+  }
+
   // UX preflight only; the DB UNIQUE constraint is the canonical guarantee.
   // `findChunkBySlug` returns soft-deleted rows too, matching the column
   // constraint (the unique index has no `WHERE deleted_at IS NULL` clause).

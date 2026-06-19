@@ -230,6 +230,14 @@ export function ChunkForm(props: Props) {
         setError(t('errors.slugRequired'));
         return;
       }
+      // Mirror the server-side guard in `createChunkEntry` (and the
+      // draft→published rule in `publishChunkEntry`): a chunk published on
+      // creation must carry a description. Surfacing it here keeps the user
+      // on the field to fix instead of bouncing them off the preview step.
+      if (status === 'published' && description.trim() === '') {
+        setError(t('errors.descriptionRequired'));
+        return;
+      }
 
       const draft: ChunkDraftV1 = {
         version: 1,
