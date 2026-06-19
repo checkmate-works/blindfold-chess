@@ -6,37 +6,12 @@ import { redirect } from 'next/navigation';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { createClient } from '@/lib/supabase/server';
 
-import { MypageLoadingFallback } from './_components/MypageLoadingFallback';
-import { MypageDashboardLoadingFallback } from './mypage/(confirmed)/_components/MypageDashboardLoadingFallback';
-import { ChallengesLoadingFallback } from './mypage/(confirmed)/challenges/_components/ChallengesLoadingFallback';
-import { ProfileLoadingFallback } from './mypage/(confirmed)/profile/_components/ProfileLoadingFallback';
+import { resolveLoadingFallback } from './_lib/resolveLoadingFallback';
 
 type Props = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 };
-
-/**
- * Picks the Suspense fallback that matches the route being loaded. The auth
- * gate below is shared by every mypage route, so on a hard load / refresh its
- * fallback is what the user actually stares at for ~1–2s — a generic skeleton
- * looks misaligned against, say, the profile form. Routes with a tailored
- * skeleton are matched here; everything else gets the neutral fallback.
- */
-function resolveLoadingFallback(pathname: string) {
-  if (pathname.includes('/mypage/profile')) {
-    return <ProfileLoadingFallback />;
-  }
-  // Covers `/mypage/challenges` and its `results` child (both use DashboardSkeleton).
-  if (pathname.includes('/mypage/challenges')) {
-    return <ChallengesLoadingFallback />;
-  }
-  // Dashboard top exactly (`/<locale>/mypage`), not its sub-routes.
-  if (/\/mypage\/?$/.test(pathname)) {
-    return <MypageDashboardLoadingFallback />;
-  }
-  return <MypageLoadingFallback />;
-}
 
 /**
  * Auth gate for the whole protected area (mypage).
