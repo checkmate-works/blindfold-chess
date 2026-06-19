@@ -34,6 +34,7 @@ vi.mock('drizzle-orm', () => ({
   and: (...conds: unknown[]) => ({ __and: conds }),
   eq: (column: unknown, value: unknown) => ({ __eq: [column, value] }),
   inArray: (column: unknown, values: unknown) => ({ __inArray: [column, values] }),
+  isNull: (column: unknown) => ({ __isNull: column }),
 }));
 
 vi.mock('@/lib/billing/cancel-subscriptions', () => ({
@@ -55,7 +56,12 @@ vi.mock('@/lib/db', () => ({
   likes: { targetType: 'likes.targetType', targetId: 'likes.targetId', userId: 'likes.userId' },
   topicPosts: { id: 'topicPosts.id', userId: 'topicPosts.userId' },
   positions: { id: 'positions.id', userId: 'positions.userId' },
-  chunks: { id: 'chunks.id', userId: 'chunks.userId' },
+  chunks: {
+    id: 'chunks.id',
+    userId: 'chunks.userId',
+    status: 'chunks.status',
+    deletedAt: 'chunks.deletedAt',
+  },
   repertoires: { id: 'repertoires.id', userId: 'repertoires.userId' },
   games: { id: 'games.id', authorId: 'games.authorId' },
   gameComments: { id: 'gameComments.id', authorId: 'gameComments.authorId' },
@@ -236,6 +242,41 @@ describe('deleteAccount', () => {
         const cond = call[0] as { __and: { __inArray: [unknown, unknown] }[] };
         expect(cond.__and[1].__inArray).toEqual(['likes.targetId', 'owned-content-subquery']);
       }
+    });
+  });
+
+  describe('draft chunk cleanup', () => {
+    // The chunks soft-delete is the UPDATE that stamps only `deletedAt` (the
+    // profile anonymisation UPDATE also stamps `updatedAt`).
+    const draftChunkUpdate = () =>
+      mockSet.mock.calls.find((c) => 'deletedAt' in c[0] && !('updatedAt' in c[0]));
+    const draftChunkWhere = () =>
+      mockWhere.mock.calls
+        .map((c) => c[0] as { __and?: { __eq?: [unknown, unknown]; __isNull?: unknown }[] })
+        .find((w) => w.__and?.some((p) => p.__eq?.[0] === 'chunks.status'));
+
+    it('soft-deletes only the withdrawing user’s draft chunks', async () => {
+      await deleteAccount(testUserId);
+
+      // Stamps deletedAt (soft delete), not a hard DELETE.
+      expect(draftChunkUpdate()?.[0]).toEqual({ deletedAt: expect.any(Date) });
+
+      // Scoped to user_id = caller AND status = 'draft' AND not already deleted,
+      // so published chunks (and other users') are untouched.
+      const where = draftChunkWhere();
+      expect(where?.__and).toEqual([
+        { __eq: ['chunks.userId', testUserId] },
+        { __eq: ['chunks.status', 'draft'] },
+        { __isNull: 'chunks.deletedAt' },
+      ]);
+    });
+
+    it('does not soft-delete drafts when auth deletion fails', async () => {
+      mockDeleteUser.mockResolvedValue({ error: new Error('Admin API error') });
+
+      await deleteAccount(testUserId);
+
+      expect(draftChunkUpdate()).toBeUndefined();
     });
   });
 

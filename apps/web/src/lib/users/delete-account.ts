@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { cancelAllActiveSubscriptions } from '@/lib/billing/cancel-subscriptions';
@@ -41,8 +41,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
  * | Anonymise (PII)  | every other user-entered `profiles` column              | NULL out immediately (this function)     |
  * | Physical delete  | avatar file in Storage (`avatars/${userId}/...`)        | Best-effort `remove()` (this function)   |
  * | Physical delete  | likes *received* on the user's own content              | Deleted immediately (this function)      |
+ * | Soft delete      | the user's *draft* (unpublished) chunks                 | Retired immediately (this function)      |
  * | Keep (anonymise) | likes the user *gave* to others' content                | Kept; `user_id → NULL` on purge (FK)     |
- * | Keep public UGC  | games, comments, chunks, public repertoires, posts, ... | Retained, author anonymised (other SPEC) |
+ * | Keep public UGC  | games, comments, *published* chunks, posts, positions…  | Retained, author anonymised (other SPEC) |
  *
  * ### Likes — given vs. received (the two halves are split by mechanism)
  * The product rule is: a like the user *gave* survives (anonymised), and a like
@@ -116,10 +117,28 @@ export async function deleteAccount(
 
   // Immediate cleanup that should happen on deletion (not deferred to purge):
   await anonymiseProfile(userId); // NULL the PII columns + stamp deletedAt
+  await softDeleteDraftChunks(userId); // retire unpublished WIP chunks
   await deleteReceivedLikes(userId); // drop likes received on the user's content
   await removeAvatarFiles(adminClient, userId); // best-effort Storage cleanup
 
   return { ok: true };
+}
+
+/**
+ * Soft-delete the user's *draft* chunks. Published chunks are public catalog
+ * content and are kept (anonymised on purge by the SET NULL FK), but a draft is
+ * unpublished, author-only WIP: once the author is gone it can never leave draft
+ * (publish / edit / delete are all gated on `chunk.userId === caller`), so a
+ * retained draft is an invisible, unpublishable dead row. We retire it with the
+ * same soft-delete the author's own `deleteChunkEntry` uses — an UPDATE, so it
+ * never trips the `position_chunks` / `game_chunks` chunk_id RESTRICT FKs
+ * (drafts cannot be attached anyway; attachment is published-only).
+ */
+async function softDeleteDraftChunks(userId: string): Promise<void> {
+  await db
+    .update(chunks)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(chunks.userId, userId), eq(chunks.status, 'draft'), isNull(chunks.deletedAt)));
 }
 
 /**
