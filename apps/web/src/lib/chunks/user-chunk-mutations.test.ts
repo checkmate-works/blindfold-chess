@@ -926,6 +926,30 @@ describe('createChunkEntry — status', () => {
 
     expect(mockInsertValues).toHaveBeenCalledWith(expect.objectContaining({ status: 'published' }));
   });
+
+  it('rejects publish-on-create with an empty description (descriptionRequired)', async () => {
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    const result = await createChunkEntry({
+      ...baseCreateInput,
+      status: 'published',
+      description: '   ',
+    });
+
+    expect(result).toEqual({ error: 'descriptionRequired' });
+    expect(mockInsertReturning).not.toHaveBeenCalled();
+  });
+
+  it('allows creating a draft with an empty description', async () => {
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    const result = await createChunkEntry({
+      ...baseCreateInput,
+      status: 'draft',
+      description: '',
+    });
+
+    expect(result).toMatchObject({ success: true });
+    expect(mockInsertValues).toHaveBeenCalledWith(expect.objectContaining({ status: 'draft' }));
+  });
 });
 
 describe('updateChunkEntry — published lock', () => {

@@ -26,6 +26,7 @@ const PREVIEW_ERROR_CODES = new Set([
   'unauthorized',
   'alreadyDeleted',
   'invalidFeedbackTopic',
+  'descriptionRequired',
 ]);
 
 /**

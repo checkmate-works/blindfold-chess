@@ -103,11 +103,12 @@ export function ChunkForm(props: Props) {
   const [annotations, setAnnotations] = useState<BoardAnnotations>(
     mode === 'edit' ? props.initial.annotations : EMPTY_BOARD_ANNOTATIONS
   );
-  // The lifecycle toggle is only meaningful in create mode. Edit mode
-  // can only run against an already-draft row (the page guard blocks
-  // published chunks from reaching this form), so we pin it to 'draft'
-  // and never surface the toggle.
-  const [status, setStatus] = useState<ChunkStatus>('draft');
+  // The lifecycle toggle is only meaningful in create mode, where it
+  // defaults to 'published' (the draft checkbox is unchecked by default).
+  // Edit mode can only run against an already-draft row (the page guard
+  // blocks published chunks from reaching this form) and never surfaces
+  // the toggle, so this value is unused there.
+  const [status, setStatus] = useState<ChunkStatus>('published');
   const [feedbackTopics, setFeedbackTopics] = useState<ChunkFeedbackTopic[]>(
     mode === 'edit' ? [...props.initial.feedbackTopics] : []
   );
@@ -173,7 +174,7 @@ export function ChunkForm(props: Props) {
     setSlug('');
     setDescription('');
     setAnnotations(EMPTY_BOARD_ANNOTATIONS);
-    setStatus('draft');
+    setStatus('published');
     setFeedbackTopics([]);
     setError(null);
     setHydratedFromDraft(false);
@@ -227,6 +228,14 @@ export function ChunkForm(props: Props) {
       }
       if (slug.trim() === '') {
         setError(t('errors.slugRequired'));
+        return;
+      }
+      // Mirror the server-side guard in `createChunkEntry` (and the
+      // draft→published rule in `publishChunkEntry`): a chunk published on
+      // creation must carry a description. Surfacing it here keeps the user
+      // on the field to fix instead of bouncing them off the preview step.
+      if (status === 'published' && description.trim() === '') {
+        setError(t('errors.descriptionRequired'));
         return;
       }
 
