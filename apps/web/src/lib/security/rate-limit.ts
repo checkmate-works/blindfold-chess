@@ -136,6 +136,17 @@ export const RATE_LIMITS = {
   deleteChunk: { action: 'delete_chunk', maxAttempts: 10, windowMs: 3_600_000 },
   createRepertoire: { action: 'create_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   deleteRepertoire: { action: 'delete_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
+  updateRepertoireLine: { action: 'update_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
+  saveRepertoireAnnotation: {
+    action: 'save_repertoire_annotation',
+    maxAttempts: 30,
+    windowMs: 3_600_000,
+  },
+  deleteRepertoireAnnotation: {
+    action: 'delete_repertoire_annotation',
+    maxAttempts: 20,
+    windowMs: 3_600_000,
+  },
   /**
    * Per-user limit for submitting Qiita-style edit requests on a draft
    * chunk. Aligned with `createPost` (10/hour) — a sustained submitter

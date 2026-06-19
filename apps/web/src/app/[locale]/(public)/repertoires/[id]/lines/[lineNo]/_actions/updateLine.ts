@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { getAuthenticatedUser } from '@/lib/auth';
+import { authenticateAndGuard } from '@/lib/auth';
 import { updateRepertoireLine } from '@/lib/repertoires/mutations';
 import type { UpdateLineResult } from '@/lib/repertoires/mutations';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /** Owner-only: save a line's edited title + moves. */
 export async function updateLine(input: {
@@ -13,12 +14,13 @@ export async function updateLine(input: {
   locale: string;
   name: string | null;
   pgn: string;
-}): Promise<UpdateLineResult> {
-  const user = await getAuthenticatedUser();
+}): Promise<UpdateLineResult | { ok: false; error: string }> {
+  const guard = await authenticateAndGuard(RATE_LIMITS.updateRepertoireLine);
+  if ('error' in guard) return { ok: false, error: guard.error };
   const result = await updateRepertoireLine({
     repertoireId: input.repertoireId,
     lineNo: input.lineNo,
-    viewerId: user.id,
+    viewerId: guard.user.id,
     name: input.name,
     pgn: input.pgn,
   });
