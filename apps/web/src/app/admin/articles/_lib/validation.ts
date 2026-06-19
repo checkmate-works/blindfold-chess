@@ -1,6 +1,13 @@
+import {
+  validateLocale,
+  validatePublishedDate,
+  validateSlug,
+  validateStatus,
+  validateTitle,
+} from '@/app/admin/_lib/validators';
+
 import type { ContentFormat } from './types';
 
-const VALID_STATUSES = ['draft', 'published'] as const;
 const VALID_CONTENT_FORMATS: ContentFormat[] = ['markdown', 'tiptap_json'];
 
 type ArticleData = {
@@ -26,13 +33,11 @@ type ArticleData = {
  * - `publishedAt` is required when `status` is `'published'`.
  */
 export function validateArticleData(data: ArticleData): string | null {
-  if (!data.slug || data.slug.length > 255) {
-    return 'invalid slug';
-  }
+  const slugError = validateSlug(data.slug);
+  if (slugError) return slugError;
 
-  if (!data.title || data.title.length > 255) {
-    return 'invalid title';
-  }
+  const titleError = validateTitle(data.title);
+  if (titleError) return titleError;
 
   if (!data.content && data.contentFormat !== 'tiptap_json') {
     return 'invalid content';
@@ -42,17 +47,14 @@ export function validateArticleData(data: ArticleData): string | null {
     return 'invalid content format';
   }
 
-  if (!data.locale || data.locale.length > 10) {
-    return 'invalid locale';
-  }
+  const localeError = validateLocale(data.locale);
+  if (localeError) return localeError;
 
-  if (!VALID_STATUSES.includes(data.status as (typeof VALID_STATUSES)[number])) {
-    return 'invalid status';
-  }
+  const statusError = validateStatus(data.status);
+  if (statusError) return statusError;
 
-  if (data.status === 'published' && !data.publishedAt) {
-    return 'Published date is required when status is published';
-  }
+  const publishedError = validatePublishedDate(data.status, data.publishedAt);
+  if (publishedError) return publishedError;
 
   if (data.icon && data.icon.length > 10) {
     return 'invalid icon';
