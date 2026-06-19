@@ -311,8 +311,11 @@ GRANT SELECT ON TABLE public.subscriptions TO authenticated;
 -- user_interview_answers
 -- =============================================================================
 
--- FK constraint: user_interview_answers.user_id → auth.users(id) ON DELETE CASCADE
-SELECT public.ensure_auth_users_fk('user_interview_answers', 'user_interview_answers_user_id_fkey', 'user_id', 'CASCADE');
+-- FK constraint: user_interview_answers.user_id → auth.users(id) ON DELETE SET NULL
+-- Answers are kept as anonymous aggregate statistics: an author's physical purge
+-- anonymises the row (user_id → NULL) rather than cascading it away. Per-user
+-- reads filter by the live caller's id, so anonymised rows never surface.
+SELECT public.ensure_auth_users_fk('user_interview_answers', 'user_interview_answers_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions (public read, authenticated insert/delete)
 GRANT SELECT, INSERT, UPDATE ON TABLE public.user_interview_answers TO authenticated;

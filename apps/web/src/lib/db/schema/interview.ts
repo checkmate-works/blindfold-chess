@@ -38,7 +38,12 @@ export const userInterviewAnswers = pgTable(
   'user_interview_answers',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    // Nullable: interview answers are retained as anonymous aggregate statistics,
+    // so an author's physical purge anonymises the row (FK ON DELETE SET NULL —
+    // user_id → NULL) rather than deleting it. Per-user reads filter by the live
+    // caller's id, so anonymised rows never surface on anyone's page. FK defined
+    // in custom SQL.
+    userId: uuid('user_id'), // references auth.users — FK defined in custom SQL
     questionKey: varchar('question_key', { length: 50 }).notNull(),
     answerValue: varchar('answer_value', { length: 500 }).notNull(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
