@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 
 import { Button, Field, FormMessage, Input, Select, Textarea } from '@/app/admin/_components/forms';
-import type { FormMessageState } from '@/app/admin/_components/forms';
+import { useAdminFormSubmit } from '@/app/admin/_hooks/useAdminFormSubmit';
 
 import { BENEFIT_TYPES, type BenefitType } from '@/lib/db/data/grant-types';
 
@@ -24,29 +22,11 @@ const BENEFIT_TYPE_LABELS: Record<BenefitType, string> = {
 
 export function GrantForm() {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<FormMessageState>(null);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    setPending(true);
-    setMessage(null);
-
-    const formData = new FormData(form);
-    const result = await createGrant(formData);
-
-    setPending(false);
-
-    if ('error' in result) {
-      setMessage({ type: 'error', text: result.error });
-      return;
-    }
-
+  const { pending, message, setMessage, handleSubmit } = useAdminFormSubmit(createGrant, (form) => {
     setMessage({ type: 'success', text: 'Grant created successfully' });
     form.reset();
     router.refresh();
-  }
+  });
 
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-6 space-y-4">

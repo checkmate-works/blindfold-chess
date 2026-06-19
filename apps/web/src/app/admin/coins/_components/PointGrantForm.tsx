@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 
 import { Button, Field, FormMessage, Input, Textarea } from '@/app/admin/_components/forms';
-import type { FormMessageState } from '@/app/admin/_components/forms';
+import { useAdminFormSubmit } from '@/app/admin/_hooks/useAdminFormSubmit';
 
 import { createPointGrant } from '../_actions/createPointGrant';
 
@@ -18,30 +16,12 @@ import { createPointGrant } from '../_actions/createPointGrant';
  */
 export function PointGrantForm() {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<FormMessageState>(null);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    setPending(true);
-    setMessage(null);
-
-    const formData = new FormData(form);
-    const result = await createPointGrant(formData);
-
-    setPending(false);
-
-    if ('error' in result) {
-      setMessage({ type: 'error', text: result.error });
-      return;
-    }
-
+  const { pending, message, handleSubmit } = useAdminFormSubmit(createPointGrant, (form) => {
     // Return to the ledger view, where the just-issued grant now appears at
     // the top (createPointGrant revalidates /admin/coins).
     form.reset();
     router.push('/admin/coins');
-  }
+  });
 
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-6 space-y-4">
