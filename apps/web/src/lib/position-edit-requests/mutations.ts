@@ -6,6 +6,7 @@ import 'server-only';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positionChunks, positionEditRequests, positions } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
+import { EDIT_REQUEST_TERMINAL_STATUS, type EditRequestAction } from '@/lib/edit-requests/shared';
 import { createNotification } from '@/lib/notifications/notification';
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
@@ -147,13 +148,7 @@ export async function submitPositionEditRequestEntry(params: {
 
 type ResolveParams = {
   requestId: string;
-  action: 'accept' | 'reject' | 'withdraw';
-};
-
-const TERMINAL_STATUS: Record<ResolveParams['action'], 'accepted' | 'rejected' | 'withdrawn'> = {
-  accept: 'accepted',
-  reject: 'rejected',
-  withdraw: 'withdrawn',
+  action: EditRequestAction;
 };
 
 async function resolvePositionEditRequest(
@@ -195,7 +190,7 @@ async function resolvePositionEditRequest(
   }
 
   const now = new Date();
-  const terminal = TERMINAL_STATUS[params.action];
+  const terminal = EDIT_REQUEST_TERMINAL_STATUS[params.action];
 
   await db.transaction(async (tx) => {
     // Serialize concurrent accepts on the same position by locking the

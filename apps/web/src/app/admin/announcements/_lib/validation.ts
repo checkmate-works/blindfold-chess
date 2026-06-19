@@ -1,4 +1,11 @@
-const VALID_STATUSES = ['draft', 'published'] as const;
+import {
+  validateLocale,
+  validatePublishedDate,
+  validateSlug,
+  validateStatus,
+  validateTitle,
+} from '@/app/admin/_lib/validators';
+
 const VALID_VISIBILITIES = ['public', 'members_only'] as const;
 
 type AnnouncementData = {
@@ -12,33 +19,28 @@ type AnnouncementData = {
 };
 
 export function validateAnnouncementData(data: AnnouncementData): string | null {
-  if (!data.slug || data.slug.length > 255) {
-    return 'invalid slug';
-  }
+  const slugError = validateSlug(data.slug);
+  if (slugError) return slugError;
 
-  if (!data.title || data.title.length > 255) {
-    return 'invalid title';
-  }
+  const titleError = validateTitle(data.title);
+  if (titleError) return titleError;
 
   if (!data.content) {
     return 'invalid content';
   }
 
-  if (!data.locale || data.locale.length > 10) {
-    return 'invalid locale';
-  }
+  const localeError = validateLocale(data.locale);
+  if (localeError) return localeError;
 
-  if (!VALID_STATUSES.includes(data.status as (typeof VALID_STATUSES)[number])) {
-    return 'invalid status';
-  }
+  const statusError = validateStatus(data.status);
+  if (statusError) return statusError;
 
   if (!VALID_VISIBILITIES.includes(data.visibility as (typeof VALID_VISIBILITIES)[number])) {
     return 'invalid visibility';
   }
 
-  if (data.status === 'published' && !data.publishedAt) {
-    return 'Published date is required when status is published';
-  }
+  const publishedError = validatePublishedDate(data.status, data.publishedAt);
+  if (publishedError) return publishedError;
 
   return null;
 }

@@ -6,7 +6,7 @@ import { validateContent } from '@/lib/validations/content';
 import { createPostForImageAttachBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import type { ImageAttachResult } from '@/app/[locale]/(public)/topics/_lib/image-attach-types';
 
-import { isValidSquare } from '../../../_lib/squares';
+import { SQUARE_TOPIC } from '../../../_lib/wrapper-config';
 
 /**
  * Create-post entry point for the squares topic's 2-step image flow.
@@ -20,10 +20,8 @@ export async function createSquarePostForImageAttach(
   return createPostForImageAttachBase({
     locale,
     topicIdentifier: square,
-    topicType: 'square',
+    ...SQUARE_TOPIC,
     topicKey: square,
-    urlSegment: 'squares',
-    validateTopic: isValidSquare,
     invalidTopicError: 'Invalid square',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,

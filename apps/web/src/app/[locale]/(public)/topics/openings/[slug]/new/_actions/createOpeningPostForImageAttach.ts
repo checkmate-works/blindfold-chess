@@ -8,7 +8,7 @@ import {
   insertOpeningPostRatings,
   validateOpeningPostContent,
 } from '@/app/[locale]/(public)/topics/openings/_lib/opening-post-input';
-import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
+import { OPENING_TOPIC } from '@/app/[locale]/(public)/topics/openings/_lib/wrapper-config';
 
 /**
  * Create-post entry point for the opening topic's 2-step image flow.
@@ -24,10 +24,8 @@ export async function createOpeningPostForImageAttach(
   return createPostForImageAttachBase({
     locale,
     topicIdentifier: slug,
-    topicType: 'opening',
+    ...OPENING_TOPIC,
     topicKey: slug,
-    urlSegment: 'openings',
-    validateTopic: isValidOpening,
     invalidTopicError: 'invalidOpening',
     rateLimit: createOpeningPostRateLimit(slug),
     validateContent: (fd) => validateOpeningPostContent(fd, 'attachment'),

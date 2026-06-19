@@ -19,7 +19,7 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
 
 import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
@@ -29,16 +29,12 @@ import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { countAchievements, listAchievementsWithHolderCount } from './_lib/queries';
 
-const searchParamsCache = createSearchParamsCache({
-  page: parseAsInteger.withDefault(1),
-});
-
 export default async function AdminAchievementsPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { page } = await searchParamsCache.parse(searchParams);
+  const { page } = await adminPageSearchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   // Root-scoped translator so `getAchievementDisplayName` can resolve
   // full-path keys like `Achievements.monthlyLeaderboard.name`.

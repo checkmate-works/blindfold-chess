@@ -3,7 +3,7 @@
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
 
-import { isValidSquare } from '../../../../_lib/squares';
+import { SQUARE_TOPIC } from '../../../../_lib/wrapper-config';
 
 export async function createReply(
   locale: string,
@@ -16,10 +16,8 @@ export async function createReply(
     locale,
     topicIdentifier: square,
     postId,
-    topicType: 'square',
+    ...SQUARE_TOPIC,
     topicKey: square,
-    urlSegment: 'squares',
-    validateTopic: isValidSquare,
     formData,
   });
 }

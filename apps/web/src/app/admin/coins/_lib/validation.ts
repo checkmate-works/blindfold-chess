@@ -1,4 +1,4 @@
-import { UUID_RE } from '@/lib/validations/uuid';
+import { validateUserId } from '@/app/admin/_lib/validators';
 
 /**
  * Upper bound on a single admin grant. 100,000 pt = ~274 years of ad_free
@@ -9,7 +9,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
 const MAX_AMOUNT = 100_000;
 
 export function validateUuid(id: string): string | null {
-  return UUID_RE.test(id) ? null : `Invalid User ID format: ${id}`;
+  return validateUserId(id);
 }
 
 export function validateAmount(amount: number): string | null {

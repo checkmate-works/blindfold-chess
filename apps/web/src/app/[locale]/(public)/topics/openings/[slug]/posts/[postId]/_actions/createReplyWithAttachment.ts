@@ -2,7 +2,7 @@
 
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyWithAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithAttachmentBase';
-import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
+import { OPENING_TOPIC } from '@/app/[locale]/(public)/topics/openings/_lib/wrapper-config';
 
 /**
  * Thin wrapper around `createReplyWithAttachmentBase` for the openings
@@ -19,10 +19,8 @@ export async function createReplyWithAttachment(
     locale,
     topicIdentifier: slug,
     postId,
-    topicType: 'opening',
+    ...OPENING_TOPIC,
     topicKey: slug,
-    urlSegment: 'openings',
-    validateTopic: isValidOpening,
     formData,
   });
 }

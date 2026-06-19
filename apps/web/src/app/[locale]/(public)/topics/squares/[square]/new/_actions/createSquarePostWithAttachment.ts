@@ -6,7 +6,7 @@ import { validateContent } from '@/lib/validations/content';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithAttachmentBase';
 
-import { isValidSquare } from '../../../_lib/squares';
+import { SQUARE_TOPIC } from '../../../_lib/wrapper-config';
 
 /**
  * Thin wrapper around `createPostWithAttachmentBase` for the
@@ -22,10 +22,8 @@ export async function createSquarePostWithAttachment(
   return createPostWithAttachmentBase({
     locale,
     topicIdentifier: square,
-    topicType: 'square',
+    ...SQUARE_TOPIC,
     topicKey: square,
-    urlSegment: 'squares',
-    validateTopic: isValidSquare,
     invalidTopicError: 'Invalid square',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,

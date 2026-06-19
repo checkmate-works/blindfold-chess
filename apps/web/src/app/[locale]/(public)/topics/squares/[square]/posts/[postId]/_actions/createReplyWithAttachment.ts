@@ -3,7 +3,7 @@
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyWithAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithAttachmentBase';
 
-import { isValidSquare } from '../../../../_lib/squares';
+import { SQUARE_TOPIC } from '../../../../_lib/wrapper-config';
 
 /**
  * Thin wrapper around `createReplyWithAttachmentBase` for the squares
@@ -20,10 +20,8 @@ export async function createReplyWithAttachment(
     locale,
     topicIdentifier: square,
     postId,
-    topicType: 'square',
+    ...SQUARE_TOPIC,
     topicKey: square,
-    urlSegment: 'squares',
-    validateTopic: isValidSquare,
     formData,
   });
 }

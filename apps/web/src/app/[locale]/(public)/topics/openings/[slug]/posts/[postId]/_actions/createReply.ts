@@ -2,7 +2,7 @@
 
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
-import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
+import { OPENING_TOPIC } from '@/app/[locale]/(public)/topics/openings/_lib/wrapper-config';
 
 export async function createReply(
   locale: string,
@@ -15,10 +15,8 @@ export async function createReply(
     locale,
     topicIdentifier: slug,
     postId,
-    topicType: 'opening',
+    ...OPENING_TOPIC,
     topicKey: slug,
-    urlSegment: 'openings',
-    validateTopic: isValidOpening,
     formData,
   });
 }
