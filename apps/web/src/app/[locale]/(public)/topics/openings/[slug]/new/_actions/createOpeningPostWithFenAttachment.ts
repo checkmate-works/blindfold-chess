@@ -8,7 +8,7 @@ import {
   insertOpeningPostRatings,
   validateOpeningPostContent,
 } from '@/app/[locale]/(public)/topics/openings/_lib/opening-post-input';
-import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
+import { OPENING_TOPIC } from '@/app/[locale]/(public)/topics/openings/_lib/wrapper-config';
 
 export async function createOpeningPostWithFenAttachment(
   locale: string,
@@ -19,10 +19,8 @@ export async function createOpeningPostWithFenAttachment(
   return createPostWithFenAttachmentBase({
     locale,
     topicIdentifier: slug,
-    topicType: 'opening',
+    ...OPENING_TOPIC,
     topicKey: slug,
-    urlSegment: 'openings',
-    validateTopic: isValidOpening,
     invalidTopicError: 'invalidOpening',
     rateLimit: createOpeningPostRateLimit(slug),
     validateContent: (fd) => validateOpeningPostContent(fd, 'attachmentFen'),

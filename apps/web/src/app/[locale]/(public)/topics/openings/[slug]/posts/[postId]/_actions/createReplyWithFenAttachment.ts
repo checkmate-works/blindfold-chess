@@ -2,7 +2,7 @@
 
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithFenAttachmentBase';
-import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
+import { OPENING_TOPIC } from '@/app/[locale]/(public)/topics/openings/_lib/wrapper-config';
 
 /**
  * Thin wrapper around `createReplyWithFenAttachmentBase` for the
@@ -19,10 +19,8 @@ export async function createReplyWithFenAttachment(
     locale,
     topicIdentifier: slug,
     postId,
-    topicType: 'opening',
+    ...OPENING_TOPIC,
     topicKey: slug,
-    urlSegment: 'openings',
-    validateTopic: isValidOpening,
     formData,
   });
 }

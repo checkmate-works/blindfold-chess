@@ -2,7 +2,7 @@
 
 import { createReplyForImageAttachBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import type { ImageAttachResult } from '@/app/[locale]/(public)/topics/_lib/image-attach-types';
-import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
+import { OPENING_TOPIC } from '@/app/[locale]/(public)/topics/openings/_lib/wrapper-config';
 
 /** Reply image-attach entry point for the openings inline reply surface. */
 export async function createReplyForImageAttach(
@@ -15,10 +15,8 @@ export async function createReplyForImageAttach(
     locale,
     topicIdentifier: slug,
     postId,
-    topicType: 'opening',
+    ...OPENING_TOPIC,
     topicKey: slug,
-    urlSegment: 'openings',
-    validateTopic: isValidOpening,
     formData,
   });
 }

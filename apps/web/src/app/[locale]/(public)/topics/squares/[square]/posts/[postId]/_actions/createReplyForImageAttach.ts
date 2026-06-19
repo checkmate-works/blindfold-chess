@@ -3,7 +3,7 @@
 import { createReplyForImageAttachBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import type { ImageAttachResult } from '@/app/[locale]/(public)/topics/_lib/image-attach-types';
 
-import { isValidSquare } from '../../../../_lib/squares';
+import { SQUARE_TOPIC } from '../../../../_lib/wrapper-config';
 
 /** Reply image-attach entry point for the squares inline reply surface. */
 export async function createReplyForImageAttach(
@@ -16,10 +16,8 @@ export async function createReplyForImageAttach(
     locale,
     topicIdentifier: square,
     postId,
-    topicType: 'square',
+    ...SQUARE_TOPIC,
     topicKey: square,
-    urlSegment: 'squares',
-    validateTopic: isValidSquare,
     formData,
   });
 }
