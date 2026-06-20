@@ -26,7 +26,12 @@ export const tabsRowClass: Record<TabsVariant, string> = {
  */
 export function tabItemClass(variant: TabsVariant, isActive: boolean): string {
   if (variant === 'underline') {
-    return `px-4 py-2 text-sm font-bold transition-colors ${
+    // `-mb-px` pulls each tab down by 1px so the active tab's 2px bottom border
+    // sits directly over the row's own `border-b` (see `tabsRowClass.underline`)
+    // instead of stacking above it — otherwise the row's grey rule peeks out
+    // beneath the highlighted blue line as a faint double border. Applied to
+    // every tab (not just the active one) so tabs stay vertically aligned.
+    return `-mb-px px-4 py-2 text-sm font-bold transition-colors ${
       isActive
         ? 'border-b-2 border-primary text-primary'
         : 'text-muted-foreground hover:text-foreground'
