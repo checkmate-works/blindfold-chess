@@ -4557,6 +4557,12 @@
       "detail": {
         "pageTitle": "Comentario del Chunk"
       },
+      "relatedGames": {
+        "tabsLabel": "Comentarios y partidas relacionadas",
+        "tab": "Partidas relacionadas",
+        "empty": "Todavía no hay partidas que usen este chunk.",
+        "moveLabel": "Jugada {n}"
+      },
       "postDetail": {
         "authorView": "Opinión de {author} sobre {name}",
         "backToChunk": "Volver a {name}"

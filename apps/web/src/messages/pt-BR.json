@@ -4557,6 +4557,12 @@
       "detail": {
         "pageTitle": "Comentário do Chunk"
       },
+      "relatedGames": {
+        "tabsLabel": "Comentários e partidas relacionadas",
+        "tab": "Partidas relacionadas",
+        "empty": "Ainda não há partidas que usem este chunk.",
+        "moveLabel": "Lance {n}"
+      },
       "postDetail": {
         "authorView": "Opinião de {author} sobre {name}",
         "backToChunk": "Voltar para {name}"

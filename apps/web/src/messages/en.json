@@ -4568,6 +4568,12 @@
       "detail": {
         "pageTitle": "Chunk Comment"
       },
+      "relatedGames": {
+        "tabsLabel": "Comments and related games",
+        "tab": "Related games",
+        "empty": "No games use this chunk yet.",
+        "moveLabel": "Move {n}"
+      },
       "postDetail": {
         "authorView": "{author}'s thoughts on {name}",
         "backToChunk": "Back to {name}"

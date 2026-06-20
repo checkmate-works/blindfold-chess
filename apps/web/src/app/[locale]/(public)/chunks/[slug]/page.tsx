@@ -24,7 +24,7 @@ import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelec
 import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -39,6 +39,7 @@ import { toggleChunkLike } from './_actions/toggleChunkLike';
 import { togglePositionLike } from './_actions/togglePositionLike';
 import { EditRequestCallout } from './_components/EditRequestCallout';
 import { NewPostForm } from './_components/NewPostForm';
+import { RelatedGamesList } from './_components/RelatedGamesList';
 import { EMPTY_REPLY_META, loadChunkDetail } from './_lib/load-chunk-detail';
 import { resolveChunkDisplayState } from './_lib/resolve-chunk-display-state';
 
@@ -46,6 +47,7 @@ export const dynamic = 'force-dynamic';
 
 const searchParamsCache = createSearchParamsCache({
   sort: parseAsString.withDefault('new'),
+  tab: parseAsString.withDefault('comments'),
 });
 
 type Props = {
@@ -100,13 +102,15 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     linkedLikeMetaMap,
     linkedReplyMetaMap,
     attachments,
+    relatedGames,
   } = data;
 
   const tCommon = await getTranslations({ locale, namespace: 'Common' });
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
-  const { sort } = await searchParamsCache.parse(searchParams);
+  const { sort, tab } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
+  const activeTab = tab === 'games' ? 'games' : 'comments';
 
   const [t, tTopics, tVideo, tPuzzle, tMemory, tChunks, tEditRequests] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
@@ -381,50 +385,81 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         </div>
       </div>
 
-      <SectionTitle>{t('commentsTitle')}</SectionTitle>
+      {/*
+       * The chunk's comment thread and the "games that use this chunk" list
+       * both want the bottom of the page; tab between them (underline style,
+       * shared with the profile / games-list tabs) instead of stacking. The
+       * active tab is a `?tab=` query param so each panel is server-rendered
+       * on demand and a shared link reopens on the right tab — the same
+       * navigation style as the comment `?sort=` control below.
+       */}
+      <LinkTabs
+        variant="underline"
+        locale={locale}
+        activeValue={activeTab}
+        aria-label={t('relatedGames.tabsLabel')}
+        items={[
+          {
+            value: 'comments',
+            label: `${t('commentsTitle')} (${commentCount})`,
+            href: `/chunks/${slug}`,
+          },
+          {
+            value: 'games',
+            label: `${t('relatedGames.tab')} (${relatedGames.length})`,
+            href: `/chunks/${slug}?tab=games`,
+          },
+        ]}
+      />
 
-      {user && commentCount === 0 ? (
-        <NewPostForm locale={locale} slug={slug} />
-      ) : user ? (
-        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
-          <NewPostForm locale={locale} slug={slug} />
-        </JoinConversationToggle>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
-            {t('signInToComment')}
-          </Link>
-        </p>
-      )}
-
-      {commentTree.length > 0 && (
+      {activeTab === 'comments' ? (
         <>
-          <SortSelect
-            basePath={`/chunks/${slug}`}
-            translationKey="topics.chunks.sort"
-            currentSort={sortBy}
-          />
-          <CommentTree
-            comments={commentTree}
-            locale={locale}
-            topicKey={slug}
-            currentUserId={user?.id}
-            enableSpoiler={false}
-            redirectPath={`/${locale}/chunks/${slug}`}
-            toggleLikeAction={toggleChunkLike}
-            replyAttachmentActions={{
-              pgn: createChunkReplyWithAttachment,
-              fen: createChunkReplyWithFenAttachment,
-            }}
-            deletePostAction={deletePost}
-            extraContentByPostId={extraContentByPostId}
-            i18n={{
-              likeNamespace: 'topics.chunks',
-              replyNamespace: 'topics.chunks.replies',
-              deleteNamespace: 'topics.chunks.deletePost',
-            }}
-          />
+          {user && commentCount === 0 ? (
+            <NewPostForm locale={locale} slug={slug} />
+          ) : user ? (
+            <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
+              <NewPostForm locale={locale} slug={slug} />
+            </JoinConversationToggle>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+                {t('signInToComment')}
+              </Link>
+            </p>
+          )}
+
+          {commentTree.length > 0 && (
+            <>
+              <SortSelect
+                basePath={`/chunks/${slug}`}
+                translationKey="topics.chunks.sort"
+                currentSort={sortBy}
+              />
+              <CommentTree
+                comments={commentTree}
+                locale={locale}
+                topicKey={slug}
+                currentUserId={user?.id}
+                enableSpoiler={false}
+                redirectPath={`/${locale}/chunks/${slug}`}
+                toggleLikeAction={toggleChunkLike}
+                replyAttachmentActions={{
+                  pgn: createChunkReplyWithAttachment,
+                  fen: createChunkReplyWithFenAttachment,
+                }}
+                deletePostAction={deletePost}
+                extraContentByPostId={extraContentByPostId}
+                i18n={{
+                  likeNamespace: 'topics.chunks',
+                  replyNamespace: 'topics.chunks.replies',
+                  deleteNamespace: 'topics.chunks.deletePost',
+                }}
+              />
+            </>
+          )}
         </>
+      ) : (
+        <RelatedGamesList games={relatedGames} locale={locale} />
       )}
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
