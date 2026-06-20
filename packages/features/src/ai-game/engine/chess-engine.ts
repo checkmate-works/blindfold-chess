@@ -1,4 +1,4 @@
-import { movesToUci, uciToAlgebraic } from "../../chess-core";
+import { getStartingFen, movesToUci, uciToAlgebraic } from "../../chess-core";
 import type { AlgebraicNotation, Fen, UciMove } from "@blindfold-chess/types";
 
 import {
@@ -193,12 +193,29 @@ export class ChessEngine {
     try {
       this.isProcessing = true;
 
-      // Set position
-      const uciMoves =
-        moves.length > 0
-          ? this.convertMovesToUci(moves, startingFen)
-          : undefined;
-      this.transport.send(buildPositionCommand(fen, uciMoves));
+      // Set position. When move history is available we drive Stockfish from
+      // the STARTING position plus the full move list, so it retains the
+      // context it needs for threefold-repetition / 50-move detection.
+      //
+      // Crucially we must NOT pass the post-move `fen` together with the move
+      // list: `position fen <post-move-fen> moves <full game>` double-applies
+      // the game on top of the already-final position. In most positions the
+      // first replayed move is illegal in the final position and Stockfish
+      // silently ignores the move list — but in rare positions where that
+      // first move's coordinates happen to form a legal (unrelated) move in
+      // the final position, Stockfish applies it, flips the side to move, and
+      // then generates a move for the WRONG colour. That move is illegal when
+      // converted against the real `fen`, crashing `uciToAlgebraic`.
+      //
+      // With no history (e.g. a custom starting position with no moves yet),
+      // `fen` alone fully describes the position.
+      if (moves.length > 0) {
+        const uciMoves = this.convertMovesToUci(moves, startingFen);
+        const basePosition = startingFen ?? getStartingFen();
+        this.transport.send(buildPositionCommand(basePosition, uciMoves));
+      } else {
+        this.transport.send(buildPositionCommand(fen));
+      }
 
       // Get best move
       const move = await this.transport.waitForBestMove(
