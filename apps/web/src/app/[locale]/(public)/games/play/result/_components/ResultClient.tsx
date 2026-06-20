@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
@@ -13,7 +12,7 @@ import {
   getLastMoveDetails,
 } from '@blindfold-chess/features/chess-core';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
+import { FaChartLine, FaChessBoard, FaMinus, FaShareAlt, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_AI_REPLY_DURATION } from '@/lib/games/ai-reply-duration';
@@ -28,7 +27,6 @@ import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardViewModal } from '../../_components/BoardViewModal';
@@ -311,6 +309,16 @@ function ResultContent({
     router.push(`/${locale}/games/play?${params.toString()}`);
   }, [game, gameId, locale, router]);
 
+  // Share this game: open the already-published game if it exists (tracked in
+  // localStorage), otherwise go to the publish form.
+  const handleShare = useCallback(() => {
+    router.push(
+      sharedPublishedId
+        ? `/${locale}/games/shared/${sharedPublishedId}`
+        : `/${locale}/games/shared/new?gameId=${gameId}`
+    );
+  }, [router, locale, gameId, sharedPublishedId]);
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4">
@@ -339,31 +347,6 @@ function ResultContent({
                 <h3 className="text-xl font-bold">{t('draw')}</h3>
               </>
             )}
-          </div>
-        )}
-
-        {/* Share entry point — a subtle emoji link under the result banner
-            rather than another full-width button, to avoid button clutter.
-            Spacing comes from the parent gap-4 (equal above/below); the win
-            certificate's wrapper trims its transparent bottom margin so the
-            gap to it visually matches the gap to the divider below.
-            `relative z-10`: the certificate's absolute-positioned frame content
-            overlaps this region after the negative-margin trim and, being
-            positioned, would paint on top and swallow the click — lifting the
-            link into its own stacking layer keeps it clickable. */}
-        {moves.length > 0 && (
-          <div className="relative z-10 text-center">
-            <Link
-              href={
-                sharedPublishedId
-                  ? `/${locale}/games/shared/${sharedPublishedId}`
-                  : `/${locale}/games/shared/new?gameId=${gameId}`
-              }
-              className={`inline-flex items-center gap-1.5 text-sm ${TEXT_LINK_MUTED_CLASSES}`}
-            >
-              <span aria-hidden>{sharedPublishedId ? '✅' : '🔗'}</span>
-              {sharedPublishedId ? t('result.viewShared') : t('result.publish')}
-            </Link>
           </div>
         )}
 
@@ -422,6 +405,17 @@ function ResultContent({
               className="w-full rounded-xl font-medium"
             >
               {t('postmortem')}
+            </Button>
+          )}
+          {moves.length > 0 && (
+            <Button
+              variant="secondary"
+              size="lg"
+              icon={<FaShareAlt className="w-5 h-5" />}
+              onClick={() => handleShare()}
+              className="w-full rounded-xl font-medium"
+            >
+              {sharedPublishedId ? t('result.viewShared') : t('result.publish')}
             </Button>
           )}
           {moves.length > 0 && (
