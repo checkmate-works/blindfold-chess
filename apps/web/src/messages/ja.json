@@ -2289,6 +2289,14 @@
     "statsGate": {
       "title": "会員限定機能です",
       "description": "無料ユーザー登録で、この対局の統計や手ごとの内訳を見られます。"
+    },
+    "overview": {
+      "summaryTab": "サマリー",
+      "discussionTab": "ディスカッション"
+    },
+    "discussion": {
+      "wholeGame": "全体",
+      "replies": "{count}件の返信"
     }
   },
   "postmortem": {

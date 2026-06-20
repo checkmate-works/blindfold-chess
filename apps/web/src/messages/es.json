@@ -2285,6 +2285,14 @@
     "statsGate": {
       "title": "Función exclusiva para miembros",
       "description": "Crea una cuenta gratuita para ver las estadísticas de esta partida y el desglose por jugada."
+    },
+    "overview": {
+      "summaryTab": "Resumen",
+      "discussionTab": "Discusión"
+    },
+    "discussion": {
+      "wholeGame": "Toda la partida",
+      "replies": "{count, plural, =1 {1 respuesta} other {# respuestas}}"
     }
   },
   "postmortem": {

@@ -2285,6 +2285,14 @@
     "statsGate": {
       "title": "Recurso exclusivo para membros",
       "description": "Crie uma conta gratuita para ver as estatísticas desta partida e a análise lance a lance."
+    },
+    "overview": {
+      "summaryTab": "Resumo",
+      "discussionTab": "Discussão"
+    },
+    "discussion": {
+      "wholeGame": "Jogo inteiro",
+      "replies": "{count, plural, =1 {1 resposta} other {# respostas}}"
     }
   },
   "postmortem": {

@@ -2289,6 +2289,14 @@
     "statsGate": {
       "title": "Members-only feature",
       "description": "Create a free account to view this game's stats and per-move breakdown."
+    },
+    "overview": {
+      "summaryTab": "Summary",
+      "discussionTab": "Discussion"
+    },
+    "discussion": {
+      "wholeGame": "Whole game",
+      "replies": "{count, plural, =1 {1 reply} other {# replies}}"
     }
   },
   "postmortem": {

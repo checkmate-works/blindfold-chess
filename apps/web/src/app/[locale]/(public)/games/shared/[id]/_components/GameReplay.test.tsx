@@ -97,6 +97,10 @@ vi.mock('./GameMoveContributions', () => ({
   GameMoveContributions: () => <div data-testid="move-contributions" />,
 }));
 
+vi.mock('./GameDiscussionFeed', () => ({
+  GameDiscussionFeed: () => <div data-testid="discussion-feed" />,
+}));
+
 vi.mock('./PlaySettingsIndicator', () => ({
   PlaySettingsIndicator: () => <div data-testid="play-settings" />,
 }));

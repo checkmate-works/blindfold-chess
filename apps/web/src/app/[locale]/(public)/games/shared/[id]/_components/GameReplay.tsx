@@ -41,8 +41,10 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
+import { buildDiscussionGroups } from '../_lib/build-discussion-groups';
 import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 import type { CommentUser } from './GameCommentContext';
+import { GameDiscussionFeed } from './GameDiscussionFeed';
 import { GameMoveContributions } from './GameMoveContributions';
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
@@ -305,6 +307,31 @@ export function GameReplay({
       />
     ) : null;
 
+  // Overview discussion feed: all comments + chunk links rolled up by move.
+  // The overview offers a [Summary | Discussion] segmented switch when both the
+  // stats and some activity exist; otherwise it shows whichever is non-empty.
+  const discussionGroups = useMemo(
+    () => buildDiscussionGroups(comments, gameChunks),
+    [comments, gameChunks]
+  );
+  const discussionCount = useMemo(
+    () => discussionGroups.reduce((n, g) => n + g.comments.length + g.chunks.length, 0),
+    [discussionGroups]
+  );
+  const hasSummary = statsOverview !== null;
+  const hasDiscussion = discussionGroups.length > 0;
+  const showOverviewTabs = hasSummary && hasDiscussion;
+  // Lead with the discussion when there is any (this is an advice page);
+  // fall back to the stats summary otherwise.
+  const [overviewView, setOverviewView] = useState<'summary' | 'discussion'>(
+    hasDiscussion ? 'discussion' : 'summary'
+  );
+  const activeOverviewView = showOverviewTabs
+    ? overviewView
+    : hasDiscussion
+      ? 'discussion'
+      : 'summary';
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -407,14 +434,59 @@ export function GameReplay({
         <>
           {children}
 
-          {statsOverview &&
-            (currentUser ? (
-              statsOverview
-            ) : (
-              <StatsAuthGate title={t('statsGate.title')} description={t('statsGate.description')}>
-                {statsOverview}
-              </StatsAuthGate>
-            ))}
+          {showOverviewTabs && (
+            <div role="tablist" className="flex rounded-lg bg-secondary p-1">
+              {(['summary', 'discussion'] as const).map((view) => {
+                const isActive = activeOverviewView === view;
+                const label =
+                  view === 'summary'
+                    ? t('overview.summaryTab')
+                    : `${t('overview.discussionTab')} (${discussionCount})`;
+                return (
+                  <button
+                    key={view}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setOverviewView(view)}
+                    className={`flex-1 truncate rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
+                      isActive
+                        ? 'bg-card text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {activeOverviewView === 'summary' && statsOverview && (
+            <>
+              {currentUser ? (
+                statsOverview
+              ) : (
+                <StatsAuthGate
+                  title={t('statsGate.title')}
+                  description={t('statsGate.description')}
+                >
+                  {statsOverview}
+                </StatsAuthGate>
+              )}
+            </>
+          )}
+
+          {activeOverviewView === 'discussion' && hasDiscussion && (
+            <GameDiscussionFeed
+              comments={comments}
+              gameChunks={gameChunks}
+              notationMoves={notationMoves}
+              startingFen={startingFen}
+              onJumpToPly={navigateToPosition}
+              locale={locale}
+            />
+          )}
         </>
       ) : (
         currentPly != null && (
