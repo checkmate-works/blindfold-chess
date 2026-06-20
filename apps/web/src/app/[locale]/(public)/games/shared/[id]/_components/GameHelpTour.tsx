@@ -8,9 +8,9 @@ import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTo
  * The page-title help tour for a shared game — the established home for a
  * tour, next to the title. Walks through the two affordances that are easy to
  * misread: the "As played" board toggle and the "Create from this position"
- * menu. Each step highlights its control when on screen; when it isn't (the
- * create menu only appears on a move, not the opening board), the step shows a
- * centered popover so the feature is still explained.
+ * menu. HelpTourButton skips any step whose control isn't on screen, so on the
+ * opening board (where the create menu doesn't exist) the tour covers just the
+ * "As played" toggle; stepping to a move adds the create-menu step.
  */
 export function GameHelpTour() {
   const t = useTranslations('sharedGames');

@@ -39,24 +39,29 @@ export function HelpTourButton({ steps, label }: Props) {
 
   const startTour = () => {
     driverRef.current?.destroy();
-    const d = driver({
-      showProgress: steps.length > 1,
-      steps: steps.map((step) => {
-        // Resolve the target now: when it's on screen we highlight it; when it
-        // isn't (e.g. a control that only appears in a particular view), omit
-        // the element so driver.js shows a centered popover that still explains
-        // the feature instead of pointing at nothing.
+    // Only walk through controls that are actually on screen. A step whose
+    // target is absent (e.g. a control that only appears in a particular view)
+    // is skipped rather than shown as a centered popover pointing at nothing.
+    const resolved = steps
+      .map((step) => {
         const el = document.querySelector(`[data-tour-id="${step.targetId}"]`);
-        return {
-          ...(el ? { element: el } : {}),
-          popover: {
-            title: step.title,
-            description: step.description,
-            side: step.side ?? 'bottom',
-            align: step.align ?? 'start',
-          },
-        };
-      }),
+        return el ? { step, el } : null;
+      })
+      .filter((entry): entry is { step: HelpStep; el: Element } => entry !== null);
+
+    if (resolved.length === 0) return;
+
+    const d = driver({
+      showProgress: resolved.length > 1,
+      steps: resolved.map(({ step, el }) => ({
+        element: el,
+        popover: {
+          title: step.title,
+          description: step.description,
+          side: step.side ?? 'bottom',
+          align: step.align ?? 'start',
+        },
+      })),
     });
     driverRef.current = d;
     d.drive();
