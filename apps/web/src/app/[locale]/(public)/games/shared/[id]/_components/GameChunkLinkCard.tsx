@@ -57,7 +57,11 @@ export function GameChunkLinkCard({ item, badge, locale, canRemove, onRemove }: 
             </div>
           </UserAvatar>
 
-          <p className="text-sm text-foreground leading-relaxed">{t('chunks.linkedAction')}</p>
+          {/* System-generated line (not a user-authored body) — muted to
+              distinguish it from an actual comment. */}
+          <p className="text-sm text-muted-foreground italic leading-relaxed">
+            {t('chunks.linkedAction')}
+          </p>
 
           <ChunkRefLink
             slug={item.slug}
