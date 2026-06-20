@@ -2252,7 +2252,7 @@
       "empty": "No chunks linked to this move yet.",
       "placeholder": "Search chunks to add…",
       "suggest": "Suggest a chunk",
-      "linkedAction": "linked a chunk",
+      "linkedAction": "{count, plural, =1 {linked a chunk} other {linked # chunks}}",
       "delete": "Delete",
       "noResults": "No matching chunks",
       "moreItemsHint": "+{count} more",

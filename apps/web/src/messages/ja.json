@@ -2252,7 +2252,7 @@
       "empty": "この手にはまだチャンクが紐付けられていません。",
       "placeholder": "チャンクを検索して追加…",
       "suggest": "チャンクを提案する",
-      "linkedAction": "チャンクをリンクしました",
+      "linkedAction": "{count, plural, =1 {チャンクをリンクしました} other {チャンクを#個リンクしました}}",
       "delete": "削除",
       "noResults": "該当するチャンクがありません",
       "moreItemsHint": "他 {count} 件",

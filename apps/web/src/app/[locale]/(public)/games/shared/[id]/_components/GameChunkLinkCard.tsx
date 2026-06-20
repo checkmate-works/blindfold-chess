@@ -11,33 +11,40 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { ChunkRefLink } from './ChunkRefLink';
 
 type Props = {
-  item: GameChunkItem;
+  /** A run of consecutive links by the same suggester (non-empty). */
+  items: GameChunkItem[];
   badge: string;
   locale: Locale;
-  /** Whether the viewer may unlink this chunk (owner / the suggester). */
-  canRemove: boolean;
-  onRemove: () => void;
+  /** Whether the viewer may unlink a given link (owner / the suggester). */
+  canRemove: (item: GameChunkItem) => boolean;
+  onRemove: (item: GameChunkItem) => void;
 };
 
 /**
- * A posted chunk link, rendered in the exact comment-card layout (see
- * `GameCommentNode`) so it lines up with the advice thread: a leading spacer
- * matching a comment's collapse button keeps the content column aligned; the
- * suggester's avatar + name and the timestamp-only meta line mirror a comment
- * header; "linked a chunk" sits where the comment body would; the chunk
- * reference card sits where an attachment would; and Delete sits in the
- * comment-action row. Like / reply do not apply to a link, so they are absent.
+ * A run of chunk links by one suggester, rendered in the exact comment-card
+ * layout (see `GameCommentNode`) so it lines up with the advice thread: a
+ * leading spacer matching a comment's collapse button keeps the content column
+ * aligned; the suggester's avatar + name and the timestamp-only meta line
+ * mirror a comment header; a muted "linked N chunks" system line sits where the
+ * comment body would; then each chunk reference card (with a Delete affordance
+ * below it, when permitted) sits where an attachment would. Like / reply do not
+ * apply, so they are absent. Grouping keeps one person's batch of links to a
+ * single header instead of repeating the avatar per link.
  */
-export function GameChunkLinkCard({ item, badge, locale, canRemove, onRemove }: Props) {
+export function GameChunkLinkCard({ items, badge, locale, canRemove, onRemove }: Props) {
   const t = useTranslations('sharedGames');
   const tCommon = useTranslations('Common');
 
+  // The run shares a suggester; the header reads from the first, the timestamp
+  // from the most recent link in the run.
+  const head = items[0];
+  const latest = items[items.length - 1];
   const displayName =
-    item.suggester?.displayName || item.suggester?.username || tCommon('deletedUser');
-  const profileHref = item.suggester?.username ? `/u/${item.suggester.username}` : null;
+    head.suggester?.displayName || head.suggester?.username || tCommon('deletedUser');
+  const profileHref = head.suggester?.username ? `/u/${head.suggester.username}` : null;
 
   return (
-    <li id={`game-chunk-${item.id}`} className="scroll-mt-20">
+    <li id={`game-chunk-${head.id}`} className="scroll-mt-20">
       <div className="flex items-start gap-2">
         {/* Spacer matching a comment root's collapse (+/−) button, so the
             content column aligns with the comment thread. */}
@@ -46,13 +53,13 @@ export function GameChunkLinkCard({ item, badge, locale, canRemove, onRemove }: 
         <div className="min-w-0 flex-1 space-y-2">
           <UserAvatar
             profileHref={profileHref}
-            avatarUrl={item.suggester?.avatarUrl}
+            avatarUrl={head.suggester?.avatarUrl}
             displayName={displayName}
             locale={locale}
           >
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <time dateTime={item.createdAt.toISOString()}>
-                {formatAbsoluteDateTime(item.createdAt, locale, 'short')}
+              <time dateTime={latest.createdAt.toISOString()}>
+                {formatAbsoluteDateTime(latest.createdAt, locale, 'short')}
               </time>
             </div>
           </UserAvatar>
@@ -60,30 +67,33 @@ export function GameChunkLinkCard({ item, badge, locale, canRemove, onRemove }: 
           {/* System-generated line (not a user-authored body) — muted to
               distinguish it from an actual comment. */}
           <p className="text-sm text-muted-foreground italic leading-relaxed">
-            {t('chunks.linkedAction')}
+            {t('chunks.linkedAction', { count: items.length })}
           </p>
 
-          <ChunkRefLink
-            slug={item.slug}
-            title={item.title}
-            description={item.description}
-            representativeFen={item.representativeFen}
-            badge={badge}
-            locale={locale}
-          />
-
-          {canRemove && (
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={onRemove}
-                aria-label={t('chunks.remove', { title: item.title })}
-                className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
-              >
-                {t('chunks.delete')}
-              </button>
-            </div>
-          )}
+          <ul className="space-y-3">
+            {items.map((item) => (
+              <li key={item.id} className="space-y-1">
+                <ChunkRefLink
+                  slug={item.slug}
+                  title={item.title}
+                  description={item.description}
+                  representativeFen={item.representativeFen}
+                  badge={badge}
+                  locale={locale}
+                />
+                {canRemove(item) && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(item)}
+                    aria-label={t('chunks.remove', { title: item.title })}
+                    className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                  >
+                    {t('chunks.delete')}
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </li>

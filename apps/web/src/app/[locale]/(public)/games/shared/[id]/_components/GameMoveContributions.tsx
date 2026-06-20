@@ -14,6 +14,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { useGameChunkLinks } from '../_hooks/use-game-chunk-links';
 import { useGameCommentThread } from '../_hooks/use-game-comment-thread';
 import { groupReplies } from '../_lib/game-comment-tree';
+import { groupChunkLinksBySuggester } from '../_lib/group-chunk-links';
 import { GameChunkCard } from './GameChunkCard';
 import { GameChunkLinkCard } from './GameChunkLinkCard';
 import { GameChunkPicker } from './GameChunkPicker';
@@ -89,17 +90,18 @@ export function GameMoveContributions({
       )}
 
       {/* Chunk links applicable to this move — rendered in the comment-card
-          idiom so they read on the same axis as the advice thread. */}
+          idiom so they read on the same axis as the advice thread. Consecutive
+          links by the same suggester collapse into one card. */}
       {links.forPly.length > 0 && (
         <ul className="space-y-6">
-          {links.forPly.map((c) => (
+          {groupChunkLinksBySuggester(links.forPly).map((group) => (
             <GameChunkLinkCard
-              key={c.id}
-              item={c}
+              key={group[0].id}
+              items={group}
               badge={t('chunks.badge')}
               locale={locale}
-              canRemove={links.canRemove(c)}
-              onRemove={() => links.handleRemoveSaved(c.id)}
+              canRemove={links.canRemove}
+              onRemove={(item) => links.handleRemoveSaved(item.id)}
             />
           ))}
         </ul>

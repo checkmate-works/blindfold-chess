@@ -41,8 +41,8 @@ vi.mock('../_lib/game-comment-tree', () => ({ groupReplies: () => [] }));
 
 vi.mock('./GameCommentNode', () => ({ GameCommentNode: () => <div data-testid="comment-node" /> }));
 vi.mock('./GameChunkLinkCard', () => ({
-  GameChunkLinkCard: ({ item }: { item: { title: string } }) => (
-    <li data-testid="chunk-link-card">{item.title}</li>
+  GameChunkLinkCard: ({ items }: { items: { id: string; title: string }[] }) => (
+    <li data-testid="chunk-link-card">{items.map((i) => i.title).join(',')}</li>
   ),
 }));
 vi.mock('./GameChunkCard', () => ({

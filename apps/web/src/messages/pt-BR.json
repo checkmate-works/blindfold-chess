@@ -2248,7 +2248,7 @@
       "empty": "Ainda não há chunks vinculados a este lance.",
       "placeholder": "Busque chunks para adicionar…",
       "suggest": "Sugerir um chunk",
-      "linkedAction": "vinculou um chunk",
+      "linkedAction": "{count, plural, =1 {vinculou um chunk} other {vinculou # chunks}}",
       "delete": "Excluir",
       "noResults": "Nenhum chunk correspondente",
       "moreItemsHint": "+{count} mais",

@@ -2248,7 +2248,7 @@
       "empty": "Aún no hay chunks vinculados a esta jugada.",
       "placeholder": "Busca chunks para añadir…",
       "suggest": "Sugerir un chunk",
-      "linkedAction": "vinculó un chunk",
+      "linkedAction": "{count, plural, =1 {vinculó un chunk} other {vinculó # chunks}}",
       "delete": "Eliminar",
       "noResults": "No hay chunks coincidentes",
       "moreItemsHint": "+{count} más",
