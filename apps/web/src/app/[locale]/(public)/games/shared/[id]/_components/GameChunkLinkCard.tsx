@@ -1,10 +1,13 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 
 import { formatAbsoluteDateTime } from '@/app/[locale]/(public)/topics/_lib/absolute-time';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -17,7 +20,8 @@ type Props = {
   locale: Locale;
   /** Whether the viewer may unlink a given link (owner / the suggester). */
   canRemove: (item: GameChunkItem) => boolean;
-  onRemove: (item: GameChunkItem) => void;
+  /** Unlink a chunk; resolves with a localized `error` on failure. */
+  onRemove: (item: GameChunkItem) => Promise<{ error?: string }>;
 };
 
 /**
@@ -34,6 +38,24 @@ type Props = {
 export function GameChunkLinkCard({ items, badge, locale, canRemove, onRemove }: Props) {
   const t = useTranslations('sharedGames');
   const tCommon = useTranslations('Common');
+
+  // The chunk pending unlink-confirmation, plus the modal's loading / error.
+  const [deleteTarget, setDeleteTarget] = useState<GameChunkItem | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeletePending(true);
+    setDeleteError(null);
+    const result = await onRemove(deleteTarget);
+    setDeletePending(false);
+    if (result.error) {
+      setDeleteError(result.error);
+      return;
+    }
+    setDeleteTarget(null);
+  }
 
   // The run shares a suggester; the header reads from the first, the timestamp
   // from the most recent link in the run.
@@ -84,7 +106,10 @@ export function GameChunkLinkCard({ items, badge, locale, canRemove, onRemove }:
                 {canRemove(item) && (
                   <button
                     type="button"
-                    onClick={() => onRemove(item)}
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeleteTarget(item);
+                    }}
                     aria-label={t('chunks.remove', { title: item.title })}
                     className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                   >
@@ -96,6 +121,22 @@ export function GameChunkLinkCard({ items, badge, locale, canRemove, onRemove }:
           </ul>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={deleteTarget !== null}
+        title={t('chunks.confirmUnlinkTitle')}
+        message={t('chunks.confirmUnlinkBody')}
+        confirmText={t('chunks.delete')}
+        cancelText={t('chunks.confirmCancel')}
+        confirmVariant="danger"
+        isLoading={deletePending}
+        error={deleteError}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setDeleteTarget(null);
+          setDeleteError(null);
+        }}
+      />
     </li>
   );
 }

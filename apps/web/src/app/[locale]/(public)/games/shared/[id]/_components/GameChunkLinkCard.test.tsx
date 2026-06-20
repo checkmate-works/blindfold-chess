@@ -25,6 +25,27 @@ vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
 vi.mock('./ChunkRefLink', () => ({
   ChunkRefLink: ({ title }: { title: string }) => <div data-testid="chunk-ref">{title}</div>,
 }));
+// Inline the confirmation modal: render the confirm button when open so the
+// test can drive it without the portal / focus-trap. (Modal behaviour is the
+// shared component's own concern.)
+vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
+  ConfirmationModal: ({
+    isOpen,
+    confirmText,
+    onConfirm,
+  }: {
+    isOpen: boolean;
+    confirmText: string;
+    onConfirm: () => void;
+  }) =>
+    isOpen ? (
+      <div role="dialog">
+        <button type="button" data-testid="confirm-unlink" onClick={onConfirm}>
+          {confirmText}
+        </button>
+      </div>
+    ) : null,
+}));
 
 function link(id: string, title: string): GameChunkItem {
   return {
@@ -41,7 +62,11 @@ function link(id: string, title: string): GameChunkItem {
   };
 }
 
-function renderCard(items: GameChunkItem[], canRemove = false, onRemove = vi.fn()) {
+function renderCard(
+  items: GameChunkItem[],
+  canRemove = false,
+  onRemove = vi.fn().mockResolvedValue({})
+) {
   render(
     <GameChunkLinkCard
       items={items}
@@ -70,12 +95,23 @@ describe('GameChunkLinkCard', () => {
     expect(refs.map((r) => r.textContent)).toEqual(['Rook battery', 'Fianchetto']);
   });
 
-  it('renders a Delete affordance per link when removal is permitted, firing onRemove for each', () => {
+  it('renders a Delete affordance per link when removal is permitted', () => {
+    renderCard([link('l1', 'Rook battery'), link('l2', 'Fianchetto')], true);
+    expect(screen.getAllByRole('button', { name: /chunks\.remove/ })).toHaveLength(2);
+  });
+
+  it('confirms via a modal before unlinking — onRemove fires only on confirm', () => {
     const onRemove = renderCard([link('l1', 'Rook battery'), link('l2', 'Fianchetto')], true);
-    const dels = screen.getAllByRole('button', { name: /chunks\.remove/ });
-    expect(dels).toHaveLength(2);
-    fireEvent.click(dels[1]);
+
+    // Clicking Delete opens the modal but does not unlink yet.
+    fireEvent.click(screen.getAllByRole('button', { name: /chunks\.remove/ })[1]);
+    expect(onRemove).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    // Confirming in the modal performs the unlink.
+    fireEvent.click(screen.getByTestId('confirm-unlink'));
     expect(onRemove).toHaveBeenCalledOnce();
+    expect(onRemove.mock.calls[0][0].id).toBe('l2');
   });
 
   it('hides the Delete affordance when removal is not permitted', () => {

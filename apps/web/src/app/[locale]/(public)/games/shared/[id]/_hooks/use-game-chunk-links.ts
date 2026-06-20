@@ -115,14 +115,16 @@ export function useGameChunkLinks({
     if (firstError) setError(firstError);
   }
 
-  async function handleRemoveSaved(id: string) {
-    setError(null);
+  // Returns a localized error (rather than setting the shared `error`, which is
+  // for the staging area) so the caller's confirmation modal can show loading /
+  // error inline — mirroring the comment thread's `remove`.
+  async function handleRemoveSaved(id: string): Promise<{ error?: string }> {
     const res = await deleteGameChunkAction(id);
     if (!res.success) {
-      setError(localizeError(res.error));
-      return;
+      return { error: localizeError(res.error) };
     }
     setChunks((prev) => prev.filter((c) => c.id !== id));
+    return {};
   }
 
   const stage = (chunk: ChunkOption) => setStaged((prev) => [...prev, chunk]);
