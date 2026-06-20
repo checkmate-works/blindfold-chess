@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FiPlus } from 'react-icons/fi';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
@@ -21,6 +22,8 @@ type Props = {
   gameId: string;
   /** Move the links are anchored to (0-based ply). */
   currentPly: number;
+  /** FEN of the position currently on the board — seeds "create a chunk from this position". */
+  currentFen: string;
   /** All chunk links for the game (every move); filtered to `currentPly` here. */
   chunks: GameChunkItem[];
   /** Published chunks selectable in the picker. */
@@ -42,6 +45,7 @@ type Props = {
 export function GameChunkSection({
   gameId,
   currentPly,
+  currentFen,
   chunks: initialChunks,
   availableChunks,
   currentUserId,
@@ -160,6 +164,17 @@ export function GameChunkSection({
               moreItemsHint: (count: number) => t('moreItemsHint', { count }),
             }}
           />
+
+          {/* No matching chunk? Seed a new one from the current board position
+              (the author pares it down to a pattern on the create form). */}
+          <Link
+            href={`/${locale}/chunks/new?fen=${encodeURIComponent(currentFen)}`}
+            className="block"
+          >
+            <Button asChild variant="outline" fullWidth icon={<FiPlus />}>
+              {t('createFromPosition')}
+            </Button>
+          </Link>
 
           {staged.length > 0 && (
             <>

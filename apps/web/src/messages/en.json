@@ -2245,6 +2245,7 @@
       "title": "Applicable chunks",
       "empty": "No chunks linked to this move yet.",
       "placeholder": "Search chunks to add…",
+      "createFromPosition": "Create a chunk from this position",
       "noResults": "No matching chunks",
       "moreItemsHint": "+{count} more",
       "signInToLink": "Sign in to link a chunk.",

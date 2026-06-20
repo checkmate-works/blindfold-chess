@@ -10,7 +10,8 @@
         "metadata.chunks.description",
         "metadata.chunks.title",
         "topics.categories.chunks.description",
-        "topics.categories.chunks.title"
+        "topics.categories.chunks.title",
+        "sharedGames.chunks.createFromPosition"
       ],
       "extra": []
     },
@@ -26,7 +27,8 @@
         "metadata.chunks.description",
         "metadata.chunks.title",
         "topics.categories.chunks.description",
-        "topics.categories.chunks.title"
+        "topics.categories.chunks.title",
+        "sharedGames.chunks.createFromPosition"
       ],
       "extra": []
     }

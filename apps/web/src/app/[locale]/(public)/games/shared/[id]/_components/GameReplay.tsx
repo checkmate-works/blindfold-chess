@@ -464,6 +464,7 @@ export function GameReplay({
               <GameChunkSection
                 gameId={gameId}
                 currentPly={currentPly}
+                currentFen={displayFen ?? latestFen}
                 chunks={gameChunks}
                 availableChunks={availableChunks}
                 currentUserId={currentUser?.id}
