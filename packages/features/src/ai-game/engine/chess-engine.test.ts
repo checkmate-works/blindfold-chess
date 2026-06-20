@@ -16,8 +16,10 @@
  *      bubbles up as-is on the first attempt.
  *   5. `readyok` failure is retried too (not just `uciok`).
  */
-import type { Fen } from "@blindfold-chess/types";
+import type { AlgebraicNotation, Fen } from "@blindfold-chess/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { getFenAfterMoves, movesToUci } from "../../chess-core";
 
 import {
   ChessEngine,
@@ -243,6 +245,95 @@ describe("ChessEngine getBestMove — not retried", () => {
     // Exactly one channel was constructed — the retry loop must NOT cover
     // getBestMove failures.
     expect(created).toHaveLength(1);
+  });
+});
+
+describe("ChessEngine getBestMove — position command", () => {
+  function lastPositionCommand(channel: FakeChannel): string {
+    const calls = channel.send.mock.calls
+      .map((args) => args[0] as string)
+      .filter((cmd) => cmd.startsWith("position"));
+    return calls[calls.length - 1];
+  }
+
+  it("drives Stockfish from the starting position + full move history, never from the post-move FEN", async () => {
+    // Regression: a 45-move Stockfish game where the first replayed UCI move
+    // (`d2d4`) coincidentally forms a legal black-rook move (d2→d4) in the
+    // FINAL position. The old `position fen <post-move-fen> moves <full game>`
+    // form let Stockfish apply that move, flip the side to move, and return a
+    // WHITE move (`c3b5`) that is illegal against the real black-to-move FEN —
+    // crashing `uciToAlgebraic`. The fix sends `position fen <start> moves …`.
+    const game = [
+      "d4",
+      "d6",
+      "Nd2",
+      "e6",
+      "e4",
+      "Bd7",
+      "c4",
+      "Nf6",
+      "Bd3",
+      "e5",
+      "Ngf3",
+      "a5",
+      "a3",
+      "exd4",
+      "Nxd4",
+      "g6",
+      "O-O",
+      "Ng4",
+      "h3",
+      "Bg7",
+      "Nb5",
+      "Ne5",
+      "Be2",
+      "Na6",
+      "b3",
+      "O-O",
+      "Rb1",
+      "f5",
+      "Bb2",
+      "fxe4",
+      "Nxe4",
+      "Bf5",
+      "Nbc3",
+      "Nc5",
+      "Nxc5",
+      "c6",
+      "Nxb7",
+      "Qh4",
+      "Qxd6",
+      "Rae8",
+      "c5",
+      "Rd8",
+      "Qc7",
+      "Rd2",
+      "Rbd1",
+    ] as AlgebraicNotation[];
+    const postMoveFen = getFenAfterMoves(STARTING_FEN, game) as Fen;
+    const expectedUci = movesToUci(game);
+
+    const { factory, created } = makeChannelFactory({ kind: "success" });
+    const engine = new ChessEngine(factory);
+    await engine.getBestMove(postMoveFen, game);
+
+    const command = lastPositionCommand(created[0]);
+    // Sent from the standard starting position…
+    expect(command).toBe(
+      `position fen ${STARTING_FEN} moves ${expectedUci.join(" ")}`,
+    );
+    // …NOT the post-move FEN (the double-apply bug).
+    expect(command).not.toContain(postMoveFen.split(" ")[0]);
+  });
+
+  it("sends the FEN alone when there is no move history", async () => {
+    const customFen =
+      "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3" as Fen;
+    const { factory, created } = makeChannelFactory({ kind: "success" });
+    const engine = new ChessEngine(factory);
+    await engine.getBestMove(customFen);
+
+    expect(lastPositionCommand(created[0])).toBe(`position fen ${customFen}`);
   });
 });
 
