@@ -75,6 +75,12 @@ type Props = {
    * `createPosition` as `forkedFromId` and is re-validated server-side.
    */
   forkSeed?: PositionForkSeed;
+  /**
+   * Seed only the board position (e.g. "add this game position to memory",
+   * passed via `?fen=`). Validated server-side. Unlike a fork it carries no
+   * title/tags and shows no banner; `forkSeed` wins if both are present.
+   */
+  injectedFen?: string;
 };
 
 export function CreatePositionForm({
@@ -83,6 +89,7 @@ export function CreatePositionForm({
   availableThemes = [],
   availableChunks = [],
   forkSeed,
+  injectedFen,
 }: Props = {}) {
   const router = useRouter();
   const locale = useLocale();
@@ -106,7 +113,9 @@ export function CreatePositionForm({
       : []
   ).current;
 
-  const board = useFenBoardEditor({ initialFen: forkSeed?.fen });
+  // A fork seeds the whole row; an injected `?fen=` seeds only the position.
+  const seededFen = forkSeed?.fen ?? injectedFen;
+  const board = useFenBoardEditor({ initialFen: seededFen });
   const tags = useTagSelection({
     initialThemes: seededThemes,
     initialChunks: seededChunks,
@@ -135,7 +144,7 @@ export function CreatePositionForm({
     !submitted &&
     (title.trim() !== defaultTitleRef.current.trim() ||
       description.trim() !== defaultDescriptionRef.current.trim() ||
-      normalizeFen(board.fenInput) !== normalizeFen(forkSeed?.fen ?? '') ||
+      normalizeFen(board.fenInput) !== normalizeFen(seededFen ?? '') ||
       toSortedIdKey(tags.selectedThemes) !== initialThemeIdsRef.current ||
       toSortedIdKey(tags.selectedChunks) !== initialChunkIdsRef.current);
 
