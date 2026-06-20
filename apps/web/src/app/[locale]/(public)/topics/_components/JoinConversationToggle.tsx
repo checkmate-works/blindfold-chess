@@ -16,6 +16,12 @@ type Props = {
   count: number;
   /** Label shown on the trigger button (e.g. "Join the conversation"). */
   joinLabel: string;
+  /**
+   * Leading icon that disambiguates the bare count. Defaults to the comment
+   * glyph; pass another (e.g. a chunk icon) to reuse this CTA for a different
+   * contribution kind.
+   */
+  icon?: ReactNode;
   /** New-post form mounted once the trigger is clicked. */
   children: ReactNode;
 };
@@ -33,7 +39,12 @@ type Props = {
  * silently expanded into a form they cannot submit. This unifies the
  * "promote sign-up" behavior with the LikeButton.
  */
-export function JoinConversationToggle({ count, joinLabel, children }: Props) {
+export function JoinConversationToggle({
+  count,
+  joinLabel,
+  icon = <FaRegComment aria-hidden="true" className="text-muted-foreground" />,
+  children,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const { guardAction, isModalOpen, closeModal } = useAuthGuard();
 
@@ -48,7 +59,7 @@ export function JoinConversationToggle({ count, joinLabel, children }: Props) {
         onClick={() => guardAction(() => setIsOpen(true))}
         className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
       >
-        <FaRegComment aria-hidden="true" className="text-muted-foreground" />
+        {icon}
         <span className="text-muted-foreground">{count.toLocaleString()}</span>
         <span aria-hidden="true" className="text-muted-foreground/40">
           ·

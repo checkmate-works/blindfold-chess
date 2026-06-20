@@ -2237,10 +2237,22 @@
         "generic": "Não foi possível publicar seu comentário. Tente novamente."
       }
     },
+    "create": {
+      "menuLabel": "Criar a partir desta posição",
+      "chunk": "Criar um chunk",
+      "positionMemory": "Adicionar à memória de posições",
+      "puzzle": "Criar um puzzle"
+    },
     "chunks": {
       "title": "Chunks aplicáveis",
       "empty": "Ainda não há chunks vinculados a este lance.",
       "placeholder": "Busque chunks para adicionar…",
+      "suggest": "Sugerir um chunk",
+      "linkedAction": "{count, plural, =1 {vinculou um chunk} other {vinculou # chunks}}",
+      "delete": "Excluir",
+      "confirmUnlinkTitle": "Desvincular este chunk?",
+      "confirmUnlinkBody": "Ele será removido deste lance.",
+      "confirmCancel": "Cancelar",
       "noResults": "Nenhum chunk correspondente",
       "moreItemsHint": "+{count} mais",
       "signInToLink": "Entre para vincular um chunk.",

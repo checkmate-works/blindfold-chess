@@ -93,12 +93,8 @@ vi.mock('@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate', (
   ),
 }));
 
-vi.mock('./GameCommentThread', () => ({
-  GameCommentThread: () => <div data-testid="comment-thread" />,
-}));
-
-vi.mock('./GameChunkSection', () => ({
-  GameChunkSection: () => <div data-testid="chunk-section" />,
+vi.mock('./GameMoveContributions', () => ({
+  GameMoveContributions: () => <div data-testid="move-contributions" />,
 }));
 
 vi.mock('./PlaySettingsIndicator', () => ({
@@ -219,31 +215,17 @@ describe('GameReplay — board preferences (reproduce view)', () => {
   });
 });
 
-describe('GameReplay — comment / chunk tab default', () => {
-  it('defaults to the comments tab on a move with comments', () => {
+describe('GameReplay — per-move contributions', () => {
+  it('renders the contributions panel on a move position', () => {
     mockNav.currentPosition = 0;
-    render(
-      <GameReplay
-        {...baseProps({
-          comments: [{ id: 'c1', ply: 0, deletedAt: null } as ReplayProps['comments'][number]],
-        })}
-      />
-    );
-    expect(screen.getByTestId('comment-thread').parentElement).not.toHaveClass('hidden');
-    expect(screen.getByTestId('chunk-section').parentElement).toHaveClass('hidden');
+    render(<GameReplay {...baseProps()} />);
+    expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
   });
 
-  it('opens straight to chunks on a move with chunks and no comments', () => {
-    mockNav.currentPosition = 0;
-    render(
-      <GameReplay
-        {...baseProps({
-          gameChunks: [{ ply: 0 } as ReplayProps['gameChunks'][number]],
-        })}
-      />
-    );
-    expect(screen.getByTestId('chunk-section').parentElement).not.toHaveClass('hidden');
-    expect(screen.getByTestId('comment-thread').parentElement).toHaveClass('hidden');
+  it('hides the contributions panel at the initial (overview) position', () => {
+    mockNav.currentPosition = -2;
+    render(<GameReplay {...baseProps()} />);
+    expect(screen.queryByTestId('move-contributions')).toBeNull();
   });
 });
 

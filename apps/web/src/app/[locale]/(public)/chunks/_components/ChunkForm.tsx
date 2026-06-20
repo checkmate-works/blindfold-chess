@@ -50,6 +50,13 @@ type CreateProps = {
    * not blocked by a confirm dialog the guest didn't summon.
    */
   disableUnsavedGuard?: boolean;
+  /**
+   * Seed the board with this position when entering the create form
+   * (e.g. "create a chunk from this game position", passed via `?fen=`).
+   * Already validated server-side. Takes precedence over any stored
+   * draft — see the draft-recovery effect below.
+   */
+  injectedFen?: string;
 };
 
 type EditProps = {
@@ -88,7 +95,10 @@ export function ChunkForm(props: Props) {
   // so the proof-of-publish UX stays consistent across surfaces.
   const tChunks = useTranslations('chunks');
 
-  const initialFen = mode === 'edit' ? props.initial.representativeFen : undefined;
+  // A position injected via `?fen=` (create mode only) seeds the board and
+  // takes precedence over any stored draft (handled in the recovery effect).
+  const injectedFen = props.mode === 'create' ? props.injectedFen : undefined;
+  const initialFen = mode === 'edit' ? props.initial.representativeFen : injectedFen;
 
   const board = useFenBoardEditor({
     initialFen,
@@ -130,6 +140,12 @@ export function ChunkForm(props: Props) {
   // entirely since its seed data comes from the server.
   useEffect(() => {
     if (mode !== 'create') return;
+    // An injected position is an explicit seed and wins over any stored
+    // draft, so skip recovery when one is present. `?fen=` only appears on
+    // the initial entry from a game page — the preview "Back to edit"
+    // round-trip navigates to a bare `/chunks/new` — so this never clobbers
+    // in-progress edits.
+    if (injectedFen) return;
     const draft = readChunkDraft();
     if (!draft) return;
     board.setFenInput(draft.representativeFen);

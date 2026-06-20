@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { validateFenStructure } from '@blindfold-chess/features/chess-core';
+
 import { getOptionalUser } from '@/lib/auth';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { GuestCreateGate } from '@/app/[locale]/_components/GuestCreateGate';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
-import type { LocalePageProps } from '@/app/[locale]/_lib/types';
+import type { LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 import { ChunkForm } from '../_components/ChunkForm';
 
@@ -22,6 +24,11 @@ import { ChunkForm } from '../_components/ChunkForm';
  * 2. Signed-in → render `<ChunkForm mode="create">`.
  * 3. Guest → render the same form behind `<GuestCreateGate>`.
  * 4. On submit → `createChunk` Server Action → redirect to `/chunks/<slug>`.
+ *
+ * A `?fen=` query param (e.g. from a shared game's "create a chunk from this
+ * position" link) seeds the board. It is validated structurally here and
+ * ignored when malformed, so a stray URL never lands the form in a broken
+ * state.
  */
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
   return createPageMetadata({
@@ -32,12 +39,16 @@ export async function generateMetadata({ params }: LocalePageProps): Promise<Met
   });
 }
 
-export default async function NewChunkPage({ params }: LocalePageProps) {
+export default async function NewChunkPage({ params, searchParams }: LocaleSearchPageProps) {
   const { locale } = await params;
+  const { fen: fenParam } = await searchParams;
   const user = await getOptionalUser();
   const t = await getTranslations({ locale, namespace: 'chunks' });
 
-  const form = <ChunkForm mode="create" disableUnsavedGuard={!user} />;
+  const injectedFen =
+    typeof fenParam === 'string' && validateFenStructure(fenParam).ok ? fenParam : undefined;
+
+  const form = <ChunkForm mode="create" disableUnsavedGuard={!user} injectedFen={injectedFen} />;
 
   return (
     <PageLayout

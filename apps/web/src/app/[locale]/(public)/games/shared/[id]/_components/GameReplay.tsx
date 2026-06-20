@@ -38,12 +38,12 @@ import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useReplayCommentTabs } from '../_hooks/use-replay-comment-tabs';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
-import { GameChunkSection } from './GameChunkSection';
-import { type CommentUser, GameCommentThread } from './GameCommentThread';
+import { CreateFromPositionMenu } from './CreateFromPositionMenu';
+import type { CommentUser } from './GameCommentContext';
+import { GameMoveContributions } from './GameMoveContributions';
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
 type Props = {
@@ -246,6 +246,15 @@ export function GameReplay({
           : null
         : null;
 
+  // The game's move played from the position currently on the board — seeded
+  // as a puzzle's draft solution by CreateFromPositionMenu. `appliedPlies` is
+  // the half-move count to reach the displayed position; undefined at the
+  // latest position (no continuation) or an empty game.
+  const appliedPlies =
+    currentPosition >= 0 ? currentPosition + 1 : currentPosition === -2 ? 0 : notationMoves.length;
+  const continuationSan =
+    appliedPlies < notationMoves.length ? notationMoves[appliedPlies] : undefined;
+
   // Label the move with its PGN-style number prefix: white → "1. d4",
   // black → "1...d5" (derived from the starting FEN's side + fullmove).
   const moveLabel = useMemo(() => {
@@ -265,12 +274,6 @@ export function GameReplay({
   // and statistics there. Once a move is on the board, that move's comment
   // thread takes their place, directly under the move list.
   const isInitialPosition = currentPosition === -2;
-
-  const { commentCount, chunkCount, activeMoveTab, setActiveMoveTab } = useReplayCommentTabs({
-    comments,
-    gameChunks,
-    currentPly,
-  });
 
   useReplayDeepLink({
     notationMovesLength: notationMoves.length,
@@ -418,59 +421,29 @@ export function GameReplay({
           <div className="space-y-4">
             <SectionTitle>{moveLabel ?? t('comments.title')}</SectionTitle>
 
-            {/* Discussion vs applicable chunks, tabbed to save vertical space.
-                Both panels stay mounted (toggled via `hidden`) so their
-                optimistic state survives a tab switch. */}
-            <div
-              role="tablist"
-              aria-label={moveLabel ?? undefined}
-              className="flex rounded-lg bg-secondary p-1"
-            >
-              {(['comments', 'chunks'] as const).map((tab) => {
-                const count = tab === 'comments' ? commentCount : chunkCount;
-                const emoji = tab === 'comments' ? '💬' : '🧠';
-                const name = tab === 'comments' ? t('comments.title') : t('chunks.badge');
-                const label = `${emoji} ${name}${count > 0 ? ` (${count})` : ''}`;
-                const isActive = activeMoveTab === tab;
-                return (
-                  <button
-                    key={tab}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setActiveMoveTab(tab)}
-                    className={`flex-1 truncate rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
-                      isActive
-                        ? 'bg-card text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Author something from the position currently on the board —
+                chunk / position-memory / puzzle. Signed-in only, mirroring the
+                chunk picker's gate. */}
+            {currentUser && (
+              <CreateFromPositionMenu
+                locale={locale}
+                currentFen={displayFen ?? latestFen}
+                continuationSan={continuationSan}
+              />
+            )}
 
-            <div className={activeMoveTab === 'comments' ? '' : 'hidden'}>
-              <GameCommentThread
-                gameId={gameId}
-                currentPly={currentPly}
-                comments={comments}
-                currentUser={currentUser}
-                locale={locale}
-              />
-            </div>
-            <div className={activeMoveTab === 'chunks' ? '' : 'hidden'}>
-              <GameChunkSection
-                gameId={gameId}
-                currentPly={currentPly}
-                chunks={gameChunks}
-                availableChunks={availableChunks}
-                currentUserId={currentUser?.id}
-                isGameOwner={isGameOwner}
-                locale={locale}
-              />
-            </div>
+            {/* Posted comments and chunk links shown serially; only the
+                composer (post a comment vs link a chunk) is toggled. */}
+            <GameMoveContributions
+              gameId={gameId}
+              currentPly={currentPly}
+              comments={comments}
+              gameChunks={gameChunks}
+              availableChunks={availableChunks}
+              currentUser={currentUser}
+              isGameOwner={isGameOwner}
+              locale={locale}
+            />
           </div>
         )
       )}

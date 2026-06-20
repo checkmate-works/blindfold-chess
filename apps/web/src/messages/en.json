@@ -2241,10 +2241,22 @@
         "generic": "Could not post your comment. Please try again."
       }
     },
+    "create": {
+      "menuLabel": "Create from this position",
+      "chunk": "Create a chunk",
+      "positionMemory": "Add to position memory",
+      "puzzle": "Create a puzzle"
+    },
     "chunks": {
       "title": "Applicable chunks",
       "empty": "No chunks linked to this move yet.",
       "placeholder": "Search chunks to add…",
+      "suggest": "Suggest a chunk",
+      "linkedAction": "{count, plural, =1 {linked a chunk} other {linked # chunks}}",
+      "delete": "Delete",
+      "confirmUnlinkTitle": "Unlink this chunk?",
+      "confirmUnlinkBody": "It will be removed from this move.",
+      "confirmCancel": "Cancel",
       "noResults": "No matching chunks",
       "moreItemsHint": "+{count} more",
       "signInToLink": "Sign in to link a chunk.",

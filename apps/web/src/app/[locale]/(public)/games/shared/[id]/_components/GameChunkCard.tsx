@@ -1,10 +1,8 @@
 'use client';
 
-import { Link } from '@/i18n/routing';
-
-import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { ChunkRefLink } from './ChunkRefLink';
 
 type Props = {
   slug: string;
@@ -13,17 +11,16 @@ type Props = {
   representativeFen: string;
   badge: string;
   locale: Locale;
-  /** Render the corner × only when removal is permitted (owner / suggester / staged). */
+  /** Render the corner × only when removal is permitted (the staged list). */
   onRemove?: () => void;
   removeLabel?: string;
 };
 
 /**
- * A linked chunk on a game move, rendered with the same card as the puzzle /
- * position "Useful patterns" section (`RelatedTagCard`): a themed mini-board +
- * badge + title + description in a horizontal card linking to the chunk page.
- * The × (shown only when `onRemove` is provided) is a sibling of the link so it
- * is not a button nested in an anchor.
+ * A chunk in the staging list (before submit): the shared chunk-reference card
+ * with a corner × to drop it from the staging set. The × is a sibling of the
+ * link so it is not a button nested in an anchor. Posted (linked) chunks use
+ * the comment-styled `GameChunkLinkCard` instead.
  */
 export function GameChunkCard({
   slug,
@@ -37,24 +34,15 @@ export function GameChunkCard({
 }: Props) {
   return (
     <li className="relative">
-      <Link
-        href={`/chunks/${slug}` as '/chunks/[slug]'}
+      <ChunkRefLink
+        slug={slug}
+        title={title}
+        description={description}
+        representativeFen={representativeFen}
+        badge={badge}
         locale={locale}
-        className="flex items-start gap-3 rounded border border-border p-3 transition-colors hover:bg-muted"
-      >
-        <ThemedBoardThumbnail fen={representativeFen} className="h-16 w-16 shrink-0" />
-        <div className={`min-w-0 flex-1 ${onRemove ? 'pr-7' : ''}`}>
-          <div className="mb-0.5 flex items-center gap-2">
-            <span className="rounded bg-secondary px-1 text-[10px] uppercase tracking-wider text-secondary-foreground">
-              {badge}
-            </span>
-            <p className="truncate text-sm font-medium">{title}</p>
-          </div>
-          {description && (
-            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{description}</p>
-          )}
-        </div>
-      </Link>
+        reserveRemoveSpace={!!onRemove}
+      />
       {onRemove && (
         <button
           type="button"

@@ -2241,10 +2241,22 @@
         "generic": "コメントを投稿できませんでした。もう一度お試しください。"
       }
     },
+    "create": {
+      "menuLabel": "この局面から作成",
+      "chunk": "チャンクを作成",
+      "positionMemory": "ポジション記憶に追加",
+      "puzzle": "パズルを作成"
+    },
     "chunks": {
       "title": "適用できるチャンク",
       "empty": "この手にはまだチャンクが紐付けられていません。",
       "placeholder": "チャンクを検索して追加…",
+      "suggest": "チャンクを提案する",
+      "linkedAction": "{count, plural, =1 {チャンクをリンクしました} other {チャンクを#個リンクしました}}",
+      "delete": "削除",
+      "confirmUnlinkTitle": "このチャンクの紐付けを解除しますか？",
+      "confirmUnlinkBody": "この手から削除されます。",
+      "confirmCancel": "キャンセル",
       "noResults": "該当するチャンクがありません",
       "moreItemsHint": "他 {count} 件",
       "signInToLink": "チャンクを紐付けるにはログインしてください。",
