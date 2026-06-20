@@ -2300,6 +2300,13 @@
     "discussion": {
       "wholeGame": "Jogo inteiro",
       "replies": "{count, plural, =1 {1 resposta} other {# respostas}}"
+    },
+    "tour": {
+      "label": "Ajuda",
+      "createFromPosition": {
+        "title": "Criar a partir desta posição",
+        "description": "Em qualquer lance, usuários conectados podem transformar a posição em um chunk, uma entrada de memória de posições ou um puzzle, já preenchidos pelo tabuleiro. Vá até um lance para usar."
+      }
     }
   },
   "postmortem": {

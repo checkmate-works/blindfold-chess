@@ -41,15 +41,22 @@ export function HelpTourButton({ steps, label }: Props) {
     driverRef.current?.destroy();
     const d = driver({
       showProgress: steps.length > 1,
-      steps: steps.map((step) => ({
-        element: `[data-tour-id="${step.targetId}"]`,
-        popover: {
-          title: step.title,
-          description: step.description,
-          side: step.side ?? 'bottom',
-          align: step.align ?? 'start',
-        },
-      })),
+      steps: steps.map((step) => {
+        // Resolve the target now: when it's on screen we highlight it; when it
+        // isn't (e.g. a control that only appears in a particular view), omit
+        // the element so driver.js shows a centered popover that still explains
+        // the feature instead of pointing at nothing.
+        const el = document.querySelector(`[data-tour-id="${step.targetId}"]`);
+        return {
+          ...(el ? { element: el } : {}),
+          popover: {
+            title: step.title,
+            description: step.description,
+            side: step.side ?? 'bottom',
+            align: step.align ?? 'start',
+          },
+        };
+      }),
     });
     driverRef.current = d;
     d.drive();

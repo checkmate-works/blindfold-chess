@@ -2304,6 +2304,13 @@
     "discussion": {
       "wholeGame": "全体",
       "replies": "{count}件の返信"
+    },
+    "tour": {
+      "label": "ヘルプ",
+      "createFromPosition": {
+        "title": "この局面から作成",
+        "description": "各手で、ログイン中はこの局面をチャンク・ポジション記憶・パズルとして作成できます（盤面が自動で入ります）。手に移動すると使えます。"
+      }
     }
   },
   "postmortem": {

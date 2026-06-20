@@ -2304,6 +2304,13 @@
     "discussion": {
       "wholeGame": "Whole game",
       "replies": "{count, plural, =1 {1 reply} other {# replies}}"
+    },
+    "tour": {
+      "label": "Help",
+      "createFromPosition": {
+        "title": "Create from this position",
+        "description": "On any move, signed-in viewers can turn the position into a chunk, a position-memory entry, or a puzzle — pre-filled from the board. Step to a move to use it."
+      }
     }
   },
   "postmortem": {

@@ -17,6 +17,7 @@ import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleGameLikeAction } from '../_actions/game-like';
+import { GameHelpTour } from './GameHelpTour';
 import { GameReplay } from './GameReplay';
 import { OwnerActions } from './OwnerActions';
 
@@ -70,6 +71,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     <PageLayout
       title={game.title}
       locale={locale}
+      titleAction={<GameHelpTour />}
       breadcrumb={[{ label: t('list.title'), href: '/games/shared' }, { label: game.title }]}
     >
       <div className="space-y-6">
