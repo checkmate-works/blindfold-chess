@@ -50,10 +50,10 @@ type Props = {
    * (lifts the truncate + line-clamp) instead of navigating to a post
    * detail page. Used by surfaces that have no per-post detail page —
    * currently position-memory and puzzle, where the postHref is a same-
-   * page hash anchor that does nothing visible to the reader. Chunks,
-   * which DO have a `/chunks/[slug]/posts/[postId]` page, leaves this
-   * `false` so its "Show more" continues to navigate. Defaults to
-   * `false`.
+   * page hash anchor that does nothing visible to the reader. Topic
+   * families that DO have a `/topics/[family]/[key]/posts/[postId]` page
+   * (openings, squares) leave this `false` so their "Show more" continues
+   * to navigate. Defaults to `false`.
    */
   expandInline?: boolean;
 };
