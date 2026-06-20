@@ -1,8 +1,8 @@
-import { Link } from '@/i18n/routing';
-
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { PaginationNav } from '@/app/[locale]/_components';
+import { LinkTabs } from '@/app/[locale]/_components/LinkTabs';
+import type { LinkTabItem } from '@/app/[locale]/_components/LinkTabs';
 
 type Props = {
   posts: ProfilePostWithReplyMeta[];
@@ -29,13 +29,6 @@ type Props = {
   gamesSlot?: React.ReactNode;
 };
 
-const TAB_CLASSES = (isActive: boolean) =>
-  `px-4 py-2 text-sm font-bold ${
-    isActive
-      ? 'text-foreground border-b-2 border-foreground'
-      : 'text-muted-foreground hover:text-foreground'
-  }`;
-
 export function ProfilePosts({
   posts,
   totalCount,
@@ -51,33 +44,39 @@ export function ProfilePosts({
   problemsSlot,
   gamesSlot,
 }: Props) {
+  const tabItems: LinkTabItem[] = [
+    {
+      value: 'topics',
+      href: buildTabHref('topics'),
+      label: (
+        <>
+          {labels.topicsTab} <span className="font-normal">{totalCount}</span>
+        </>
+      ),
+    },
+    {
+      value: 'problems',
+      href: buildTabHref('problems'),
+      label: (
+        <>
+          {labels.problemsTab} <span className="font-normal">{problemsCount}</span>
+        </>
+      ),
+    },
+    {
+      value: 'games',
+      href: buildTabHref('games'),
+      label: (
+        <>
+          {labels.gamesTab} <span className="font-normal">{gamesCount}</span>
+        </>
+      ),
+    },
+  ];
+
   return (
     <div>
-      <div className="border-b border-border">
-        <nav className="flex">
-          <Link
-            href={buildTabHref('topics')}
-            locale={locale}
-            className={TAB_CLASSES(activeTab === 'topics')}
-          >
-            {labels.topicsTab} <span className="font-normal">{totalCount}</span>
-          </Link>
-          <Link
-            href={buildTabHref('problems')}
-            locale={locale}
-            className={TAB_CLASSES(activeTab === 'problems')}
-          >
-            {labels.problemsTab} <span className="font-normal">{problemsCount}</span>
-          </Link>
-          <Link
-            href={buildTabHref('games')}
-            locale={locale}
-            className={TAB_CLASSES(activeTab === 'games')}
-          >
-            {labels.gamesTab} <span className="font-normal">{gamesCount}</span>
-          </Link>
-        </nav>
-      </div>
+      <LinkTabs items={tabItems} activeValue={activeTab} locale={locale} variant="underline" />
 
       {activeTab === 'topics' ? (
         <>

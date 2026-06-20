@@ -36,6 +36,7 @@ import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_co
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
+import { tabItemClass, tabsRowClass } from '@/app/[locale]/_components/tab-styles';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -454,7 +455,7 @@ export function GameReplay({
           {children}
 
           {showOverviewTabs && (
-            <div role="tablist" className="flex rounded-lg bg-secondary p-1">
+            <div role="tablist" className={tabsRowClass.underline}>
               {(['summary', 'discussion'] as const).map((view) => {
                 const isActive = activeOverviewView === view;
                 const label =
@@ -468,11 +469,7 @@ export function GameReplay({
                     role="tab"
                     aria-selected={isActive}
                     onClick={() => setOverviewView(view)}
-                    className={`flex-1 truncate rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
-                      isActive
-                        ? 'bg-card text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                    className={tabItemClass('underline', isActive)}
                   >
                     {label}
                   </button>

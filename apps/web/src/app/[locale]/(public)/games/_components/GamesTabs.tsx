@@ -29,5 +29,13 @@ export async function GamesTabs({ active, locale }: Props) {
     { value: 'shared', label: `🌐 ${t('shared')}`, href: '/games/shared' },
   ];
 
-  return <LinkTabs items={items} activeValue={active} locale={locale} aria-label={t('label')} />;
+  return (
+    <LinkTabs
+      items={items}
+      activeValue={active}
+      locale={locale}
+      aria-label={t('label')}
+      variant="underline"
+    />
+  );
 }
