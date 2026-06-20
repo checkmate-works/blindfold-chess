@@ -77,8 +77,8 @@ type Props = {
    * puzzle, where every top-level comment owns its own URL hash anchor
    * and createReply redirect target).
    *
-   * On topic post detail pages (`/topics/<family>/<key>/posts/<postId>`,
-   * `/chunks/<slug>/posts/<postId>`) the actual thread root is the OP,
+   * On topic post detail pages (`/topics/<family>/<key>/posts/<postId>`)
+   * the actual thread root is the OP,
    * which is rendered separately above the tree; the entries in
    * `comments` are direct replies to the OP, promoted to roots for
    * layout purposes only. Their database `rootPostId` is still the

@@ -75,28 +75,28 @@ describe('getPostByIdAndTopicKey — cross-topic isolation', () => {
   it('issues an eq() predicate that pins topicType to the requested value', async () => {
     // Empty result is fine — we are auditing the WHERE clause that was built,
     // not the row mapping. This is the exact predicate that protects the
-    // chunks detail page from accidentally rendering a square post when
-    // someone hits /chunks/{slug}/posts/{squarePostId}.
+    // opening post detail page from accidentally rendering a square post when
+    // someone hits /topics/openings/{slug}/posts/{squarePostId}.
     const chain = makeChain([]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
-    await getPostByIdAndTopicKey(SQUARE_POST_ID, 'chunk', 'rook-battery');
+    await getPostByIdAndTopicKey(SQUARE_POST_ID, 'opening', 'sicilian-defense');
 
-    expect(eqMock).toHaveBeenCalledWith('topic_posts.topic_type', 'chunk');
-    expect(eqMock).toHaveBeenCalledWith('topic_posts.topic_key', 'rook-battery');
+    expect(eqMock).toHaveBeenCalledWith('topic_posts.topic_type', 'opening');
+    expect(eqMock).toHaveBeenCalledWith('topic_posts.topic_key', 'sicilian-defense');
     expect(eqMock).toHaveBeenCalledWith('topic_posts.id', SQUARE_POST_ID);
     expect(isNullMock).toHaveBeenCalledWith('topic_posts.deleted_at');
   });
 
   it('returns null when the underlying query returns no rows (cross-topic mismatch case)', async () => {
     // Simulates the security-critical case the Reviewer flagged:
-    //   topicType='chunk' + a postId that exists only as a 'square' post.
+    //   topicType='opening' + a postId that exists only as a 'square' post.
     // The DB filter on topicType ensures the join returns 0 rows even though
     // the postId is otherwise valid in the table.
     const chain = makeChain([]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
-    const result = await getPostByIdAndTopicKey(SQUARE_POST_ID, 'chunk', 'rook-battery');
+    const result = await getPostByIdAndTopicKey(SQUARE_POST_ID, 'opening', 'sicilian-defense');
 
     expect(result).toBeNull();
   });
@@ -107,8 +107,8 @@ describe('getPostByIdAndTopicKey — cross-topic isolation', () => {
     const fakePost = {
       id: SQUARE_POST_ID,
       userId: 'u1',
-      topicType: 'chunk',
-      topicKey: 'rook-battery',
+      topicType: 'opening',
+      topicKey: 'sicilian-defense',
       content: 'hi',
       replyPermission: 'everyone',
       parentId: null,
@@ -120,11 +120,11 @@ describe('getPostByIdAndTopicKey — cross-topic isolation', () => {
     const chain = makeChain([{ post: fakePost, author: null }]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
-    const result = await getPostByIdAndTopicKey(SQUARE_POST_ID, 'chunk', 'rook-battery');
+    const result = await getPostByIdAndTopicKey(SQUARE_POST_ID, 'opening', 'sicilian-defense');
 
     expect(result).not.toBeNull();
     expect(result?.id).toBe(SQUARE_POST_ID);
-    expect(result?.topicType).toBe('chunk');
+    expect(result?.topicType).toBe('opening');
   });
 
   it('returns null without hitting the DB when postId is not a UUID', async () => {
@@ -149,7 +149,7 @@ describe('getPostByIdAndTopicKey — cross-topic isolation', () => {
     const chain = makeChain([]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
-    await getPostByIdAndTopicKey(SQUARE_POST_ID, 'chunk', 'rook-battery');
+    await getPostByIdAndTopicKey(SQUARE_POST_ID, 'opening', 'sicilian-defense');
 
     expect(isNullMock).toHaveBeenCalledWith('topic_posts.deleted_at');
   });

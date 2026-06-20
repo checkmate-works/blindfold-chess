@@ -81,8 +81,7 @@ type Props = {
 };
 
 /**
- * Top-level OP card on `/topics/.../posts/<postId>` and
- * `/chunks/.../posts/<postId>` pages.
+ * Top-level OP card on `/topics/.../posts/<postId>` pages.
  *
  * Was previously inlined inside `TopicPostDetailLayout`; lifted into its
  * own client boundary so the body can swap to `EditPostForm` in place

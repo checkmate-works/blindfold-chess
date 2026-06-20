@@ -352,7 +352,7 @@ describe('NotificationItem', () => {
       expect(link!.getAttribute('href')).toBe('/games/shared/game-77');
     });
 
-    it('should link a chunk-comment like to /chunks/{slug}/posts/{postId} (not /topics/chunks/...)', () => {
+    it('should link a chunk-comment like to the chunk detail page anchor (not /topics/chunks/...)', () => {
       const notification = createNotification({
         type: 'like',
         targetType: 'topic_post',
@@ -364,7 +364,9 @@ describe('NotificationItem', () => {
 
       const link = screen.getByText('Alice liked your comment').closest('a');
       expect(link).not.toBeNull();
-      expect(link!.getAttribute('href')).toBe('/chunks/knight-fork/posts/post-9');
+      // Chunks have no per-post page; deep-link to the inline comment anchor
+      // on the chunk detail page.
+      expect(link!.getAttribute('href')).toBe('/chunks/knight-fork#post-post-9');
     });
 
     it('should link a direct chunk like to /chunks/{slug} via the snapshotted slug', () => {

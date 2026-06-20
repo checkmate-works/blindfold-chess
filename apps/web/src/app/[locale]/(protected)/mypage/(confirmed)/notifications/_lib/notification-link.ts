@@ -55,15 +55,16 @@ function getTopicSegment(topicType: string): string {
  *
  * `topic_posts` is polymorphic, but the routes that render those posts
  * are not:
- *   - `square` / `opening` / `chunk` → `/topics/{segment}/{key}/posts/{postId}`
- *     (chunks use `/chunks/{slug}/...`) detail page. The page renders the
- *     OP and every reply as a single-root `CommentNode` tree, where every
- *     node has `id="post-{id}"` — same anchor scheme as the position
- *     pages, so reply deep-links use `#post-{replyId}`.
- *   - `position_memory` / `position_puzzle` → no detail page; the parent
- *     puzzle / position page renders the same inline tree. Both top-level
- *     and reply notifications point at `parent#post-{targetId}` (replyId
- *     for replies, postId for top-level).
+ *   - `square` / `opening` → `/topics/{segment}/{key}/posts/{postId}`
+ *     detail page. The page renders the OP and every reply as a single-root
+ *     `CommentNode` tree, where every node has `id="post-{id}"` — same
+ *     anchor scheme as the position pages, so reply deep-links use
+ *     `#post-{replyId}`.
+ *   - `chunk` / `position_memory` / `position_puzzle` → no detail page; the
+ *     parent page (the chunk detail page, or the puzzle / position page)
+ *     renders the same inline tree. Both top-level and reply notifications
+ *     point at `parent#post-{targetId}` (replyId for replies, postId for
+ *     top-level).
  */
 function buildPostDetailUrl(
   topicType: string,
@@ -99,10 +100,12 @@ function buildPostDetailUrl(
     return `/repertoires#post-${targetId}`;
   }
   if (topicType === 'chunk') {
-    // Chunk comments live at /chunks/{slug}/... — NOT under /topics/. Without
-    // this branch the URL resolves to a non-existent /topics/chunks/... path.
-    const baseUrl = `/chunks/${topicKey}/posts/${postId}`;
-    return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
+    // Chunks have no per-post detail page: the chunk detail page
+    // (/chunks/{slug}) renders the full inline comment tree, where every
+    // node has `id="post-{id}"`. Deep-link to that anchor — same scheme as
+    // the position pages — for both top-level posts and replies.
+    const targetId = replyId ?? postId;
+    return `/chunks/${topicKey}#post-${targetId}`;
   }
   const segment = getTopicSegment(topicType);
   const baseUrl = `/topics/${segment}/${topicKey}/posts/${postId}`;

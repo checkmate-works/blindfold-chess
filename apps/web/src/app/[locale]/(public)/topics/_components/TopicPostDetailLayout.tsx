@@ -151,8 +151,7 @@ type Props = {
 };
 
 /**
- * Page-level layout for `/topics/<family>/<key>/posts/<postId>` and
- * `/chunks/<slug>/posts/<postId>`. Layout shape:
+ * Page-level layout for `/topics/<family>/<key>/posts/<postId>`. Layout shape:
  *
  *   1. Topic visual (board) + per-OP metadata (rating, attachment) up top.
  *   2. The OP rendered as a self-contained card (avatar, time, body,
