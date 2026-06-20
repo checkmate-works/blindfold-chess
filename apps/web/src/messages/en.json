@@ -2247,6 +2247,9 @@
       "positionMemory": "Add to position memory",
       "puzzle": "Create a puzzle"
     },
+    "contribute": {
+      "add": "Add"
+    },
     "chunks": {
       "title": "Applicable chunks",
       "empty": "No chunks linked to this move yet.",

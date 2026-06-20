@@ -2247,6 +2247,9 @@
       "positionMemory": "ポジション記憶に追加",
       "puzzle": "パズルを作成"
     },
+    "contribute": {
+      "add": "追加する"
+    },
     "chunks": {
       "title": "適用できるチャンク",
       "empty": "この手にはまだチャンクが紐付けられていません。",

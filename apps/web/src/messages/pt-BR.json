@@ -2243,6 +2243,9 @@
       "positionMemory": "Adicionar à memória de posições",
       "puzzle": "Criar um puzzle"
     },
+    "contribute": {
+      "add": "Adicionar"
+    },
     "chunks": {
       "title": "Chunks aplicáveis",
       "empty": "Ainda não há chunks vinculados a este lance.",

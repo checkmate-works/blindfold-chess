@@ -6,50 +6,37 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
-import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
 import {
   addGameCommentAction,
   deleteGameCommentAction,
   editGameCommentAction,
 } from '../_actions/game-comments';
-import { buildGameCommentTree, groupReplies } from '../_lib/game-comment-tree';
-import { GameCommentProvider, type MutationResult } from './GameCommentContext';
-import { GameCommentForm } from './GameCommentForm';
-import { GameCommentNode } from './GameCommentNode';
+import type { CommentUser, MutationResult } from '../_components/GameCommentContext';
+import { buildGameCommentTree } from '../_lib/game-comment-tree';
 
-export type CommentUser = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
-
-type Props = {
+type Params = {
   gameId: string;
   /** Move the thread is anchored to (0-based ply). */
   currentPly: number;
   /** All comments for the game (every ply); filtered to `currentPly` here. */
   comments: GameCommentItem[];
   currentUser: CommentUser | null;
-  locale: Locale;
 };
 
 /**
- * The advice thread for the move currently on the board. Holds every comment
- * for the game in optimistic state (so adds / edits / deletes / replies reflect
- * instantly and survive move-to-move navigation while mounted), filters to the
- * current ply, and builds a Reddit-style tree rendered by `GameCommentNode` —
- * the same threaded UI as the topics / chunk comments.
+ * Optimistic state + mutation handlers for the per-move advice thread. Holds
+ * every comment for the game so adds / edits / deletes / replies reflect
+ * instantly and survive move-to-move navigation while mounted, filters to the
+ * current ply, and builds the Reddit-style tree (`GameCommentNode`). Extracted
+ * from the former `GameCommentThread` so the list and the composer can be
+ * placed in separate regions by `GameMoveContributions`.
  */
-export function GameCommentThread({
+export function useGameCommentThread({
   gameId,
   currentPly,
   comments: initialComments,
   currentUser,
-  locale,
-}: Props) {
+}: Params) {
   const t = useTranslations('sharedGames.comments');
   const [comments, setComments] = useState(initialComments);
 
@@ -128,32 +115,5 @@ export function GameCommentThread({
     return {};
   }
 
-  return (
-    <div className="space-y-4">
-      {roots.length > 0 && (
-        <GameCommentProvider
-          value={{ locale, currentUserId: currentUser?.id, reply, edit, remove }}
-        >
-          <div className="space-y-6">
-            {roots.map((root) => (
-              <GameCommentNode key={root.id} node={root} replyGroups={groupReplies(root)} />
-            ))}
-          </div>
-        </GameCommentProvider>
-      )}
-
-      {/* Reddit-style collapsed CTA (shared with topics): the form mounts only
-          after the reader opts in; guests get the shared sign-up prompt. */}
-      <JoinConversationToggle count={commentCount} joinLabel={t('joinConversation')}>
-        <GameCommentForm
-          placeholder={t('placeholder')}
-          submitLabel={t('submit')}
-          submittingLabel={t('submitting')}
-          autoFocus
-          resetOnSuccess
-          onSubmit={(body) => postComment(null, body)}
-        />
-      </JoinConversationToggle>
-    </div>
-  );
+  return { roots, commentCount, postComment, reply, edit, remove };
 }

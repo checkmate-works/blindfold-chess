@@ -2243,6 +2243,9 @@
       "positionMemory": "Añadir a memoria de posiciones",
       "puzzle": "Crear un puzzle"
     },
+    "contribute": {
+      "add": "Añadir"
+    },
     "chunks": {
       "title": "Chunks aplicables",
       "empty": "Aún no hay chunks vinculados a esta jugada.",

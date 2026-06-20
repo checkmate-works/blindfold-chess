@@ -38,13 +38,12 @@ import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useReplayCommentTabs } from '../_hooks/use-replay-comment-tabs';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
 import { CreateFromPositionMenu } from './CreateFromPositionMenu';
-import { GameChunkSection } from './GameChunkSection';
-import { type CommentUser, GameCommentThread } from './GameCommentThread';
+import type { CommentUser } from './GameCommentContext';
+import { GameMoveContributions } from './GameMoveContributions';
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
 type Props = {
@@ -276,12 +275,6 @@ export function GameReplay({
   // thread takes their place, directly under the move list.
   const isInitialPosition = currentPosition === -2;
 
-  const { commentCount, chunkCount, activeMoveTab, setActiveMoveTab } = useReplayCommentTabs({
-    comments,
-    gameChunks,
-    currentPly,
-  });
-
   useReplayDeepLink({
     notationMovesLength: notationMoves.length,
     navigateToPosition,
@@ -439,60 +432,19 @@ export function GameReplay({
               />
             )}
 
-            {/* Discussion vs applicable chunks, tabbed to save vertical space.
-                Both panels stay mounted (toggled via `hidden`) so their
-                optimistic state survives a tab switch. */}
-            <div
-              role="tablist"
-              aria-label={moveLabel ?? undefined}
-              className="flex rounded-lg bg-secondary p-1"
-            >
-              {(['comments', 'chunks'] as const).map((tab) => {
-                const count = tab === 'comments' ? commentCount : chunkCount;
-                const emoji = tab === 'comments' ? '💬' : '🧠';
-                const name = tab === 'comments' ? t('comments.title') : t('chunks.badge');
-                const label = `${emoji} ${name}${count > 0 ? ` (${count})` : ''}`;
-                const isActive = activeMoveTab === tab;
-                return (
-                  <button
-                    key={tab}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setActiveMoveTab(tab)}
-                    className={`flex-1 truncate rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
-                      isActive
-                        ? 'bg-card text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className={activeMoveTab === 'comments' ? '' : 'hidden'}>
-              <GameCommentThread
-                gameId={gameId}
-                currentPly={currentPly}
-                comments={comments}
-                currentUser={currentUser}
-                locale={locale}
-              />
-            </div>
-            <div className={activeMoveTab === 'chunks' ? '' : 'hidden'}>
-              <GameChunkSection
-                gameId={gameId}
-                currentPly={currentPly}
-                currentFen={displayFen ?? latestFen}
-                chunks={gameChunks}
-                availableChunks={availableChunks}
-                currentUserId={currentUser?.id}
-                isGameOwner={isGameOwner}
-                locale={locale}
-              />
-            </div>
+            {/* Posted comments and chunk links shown serially; only the
+                composer (post a comment vs link a chunk) is toggled. */}
+            <GameMoveContributions
+              gameId={gameId}
+              currentPly={currentPly}
+              currentFen={displayFen ?? latestFen}
+              comments={comments}
+              gameChunks={gameChunks}
+              availableChunks={availableChunks}
+              currentUser={currentUser}
+              isGameOwner={isGameOwner}
+              locale={locale}
+            />
           </div>
         )
       )}

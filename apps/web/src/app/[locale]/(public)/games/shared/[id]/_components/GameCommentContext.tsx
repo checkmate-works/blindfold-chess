@@ -7,6 +7,14 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 /** Result of a mutating handler — `error` is already localized for display. */
 export type MutationResult = { error?: string };
 
+/** The signed-in viewer's comment-author identity (mirrors `getCommentUserProfile`). */
+export type CommentUser = {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
+
 /**
  * Thread-wide values every `GameCommentNode` needs, carried via context so the
  * recursive node tree does not have to forward them through every call site
