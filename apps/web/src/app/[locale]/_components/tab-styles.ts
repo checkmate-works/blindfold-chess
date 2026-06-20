@@ -20,13 +20,15 @@ export const tabsRowClass: Record<TabsVariant, string> = {
  * - `segmented`: pill that stretches to fill the row (`flex-1`); the active tab
  *   gets a raised `bg-card` surface.
  * - `underline`: minimal text tab at its natural width, left-aligned; the
- *   active tab gets a thick bottom border. Matches the public profile tabs.
+ *   active tab is tinted with the brand `primary` accent (text + a thick bottom
+ *   border) so "selected" reads as the same blue used by links and the focus
+ *   ring, rather than a flat black rule. Matches the public profile tabs.
  */
 export function tabItemClass(variant: TabsVariant, isActive: boolean): string {
   if (variant === 'underline') {
     return `px-4 py-2 text-sm font-bold transition-colors ${
       isActive
-        ? 'border-b-2 border-foreground text-foreground'
+        ? 'border-b-2 border-primary text-primary'
         : 'text-muted-foreground hover:text-foreground'
     }`;
   }
