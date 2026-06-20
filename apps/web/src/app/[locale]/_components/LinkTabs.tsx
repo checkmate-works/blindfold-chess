@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
 
+import { tabItemClass, tabsRowClass } from './tab-styles';
+import type { TabsVariant } from './tab-styles';
+
 export type LinkTabItem = {
   /** Stable identifier compared against `activeValue` to mark the active tab. */
   value: string;
@@ -11,6 +14,9 @@ export type LinkTabItem = {
   href: string;
 };
 
+/** Visual style of the tab row. Alias of the shared {@link TabsVariant}. */
+export type LinkTabsVariant = TabsVariant;
+
 type Props = {
   items: LinkTabItem[];
   /** `value` of the currently active tab. The active tab is highlighted. */
@@ -19,14 +25,25 @@ type Props = {
   /** Accessible label for the tablist (e.g. the section/page title). */
   'aria-label'?: string;
   className?: string;
+  /**
+   * Visual style of the tab row:
+   * - `segmented` (default): pill tabs on a `bg-secondary` track with a raised
+   *   `bg-card` active pill; tabs stretch to fill the row. Used by leaderboard
+   *   and topic tabs.
+   * - `underline`: minimal text tabs with a bottom border under the row and a
+   *   thicker underline beneath the active tab; tabs sit left-aligned at their
+   *   natural width. Used by the public profile and games tabs — a quieter
+   *   style that blends into the surrounding page.
+   */
+  variant?: LinkTabsVariant;
 };
 
 /**
- * Link-based segmented tabs — a row of pill tabs where each tab navigates to a
- * different route (vs. an in-place state switch). The active tab is rendered
- * highlighted; the others link away. Reuses the segmented-control styling used
- * across the app (leaderboard tabs, practice SegmentedControl): a
- * `bg-secondary` track with a raised `bg-card` active pill.
+ * Link-based tabs — a row of tabs where each tab navigates to a different route
+ * (vs. an in-place state switch). The active tab is rendered highlighted; the
+ * others link away. Two visual styles are available via `variant`: a prominent
+ * `segmented` pill control (default) and a quieter `underline` style used by
+ * the public profile and games pages.
  *
  * Stateless and free of platform-specific APIs, so it is safe to render from
  * both Server and Client Components.
@@ -37,10 +54,11 @@ export function LinkTabs({
   locale,
   'aria-label': ariaLabel,
   className,
+  variant = 'segmented',
 }: Props) {
   return (
     <nav
-      className={`flex rounded-lg bg-secondary p-1 ${className ?? ''}`.trim()}
+      className={`${tabsRowClass[variant]} ${className ?? ''}`.trim()}
       role="tablist"
       aria-label={ariaLabel}
     >
@@ -53,9 +71,7 @@ export function LinkTabs({
             locale={locale}
             role="tab"
             aria-selected={isActive}
-            className={`flex-1 truncate rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
-              isActive ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={tabItemClass(variant, isActive)}
           >
             {item.label}
           </Link>
