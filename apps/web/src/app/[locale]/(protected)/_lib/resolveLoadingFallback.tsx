@@ -1,6 +1,7 @@
 import { MypageLoadingFallback } from '../_components/MypageLoadingFallback';
 import { MypageDashboardLoadingFallback } from '../mypage/(confirmed)/_components/MypageDashboardLoadingFallback';
 import { ChallengesLoadingFallback } from '../mypage/(confirmed)/challenges/_components/ChallengesLoadingFallback';
+import { NotificationsLoadingFallback } from '../mypage/(confirmed)/notifications/_components/NotificationsLoadingFallback';
 import { ProfileLoadingFallback } from '../mypage/(confirmed)/profile/_components/ProfileLoadingFallback';
 
 /**
@@ -27,6 +28,9 @@ export function resolveLoadingFallback(pathname: string) {
   // Covers `/mypage/challenges` and its `results` child (both use DashboardSkeleton).
   if (pathname.includes('/mypage/challenges')) {
     return <ChallengesLoadingFallback />;
+  }
+  if (pathname.includes('/mypage/notifications')) {
+    return <NotificationsLoadingFallback />;
   }
   // Dashboard top exactly (`/<locale>/mypage`), not its sub-routes.
   if (/\/mypage\/?$/.test(pathname)) {
