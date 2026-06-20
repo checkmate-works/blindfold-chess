@@ -2279,7 +2279,14 @@
       "opponent": "Piezas del rival",
       "hidden": "oculto",
       "pawnsHidden": "Peones ocultos",
-      "reproduceView": "Como se jugó"
+      "reproduceView": "Como se jugó",
+      "tour": {
+        "label": "Sobre «Como se jugó»",
+        "reproduceView": {
+          "title": "El tablero como lo jugaste",
+          "description": "Cuando está activado, el tablero reproduce tus ajustes a ciegas en cada jugada (piezas ocultas, colores difuminados, etc.), para que veas exactamente lo que veías durante la partida. Desactívalo para revelar todas las piezas."
+        }
+      }
     },
     "openPosition": "Abrir esta posición",
     "statsGate": {

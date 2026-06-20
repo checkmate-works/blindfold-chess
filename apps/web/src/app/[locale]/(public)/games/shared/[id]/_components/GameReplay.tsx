@@ -34,6 +34,7 @@ import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/
 import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
+import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -120,6 +121,17 @@ export function GameReplay({
   const t = useTranslations('sharedGames');
   const router = useRouter();
   const { preferences } = useGamePreferences();
+
+  // One-step help tour explaining the "As played" toggle (board obfuscation).
+  const reproduceViewTourSteps: HelpStep[] = [
+    {
+      targetId: 'replay-reproduce-view',
+      title: t('playSettings.tour.reproduceView.title'),
+      description: t('playSettings.tour.reproduceView.description'),
+      side: 'top',
+      align: 'end',
+    },
+  ];
 
   const { moves: notationMoves, formattedPgn } = useNotation({
     // The DB stores moves as string[]; they are SAN (AlgebraicNotation) at runtime.
@@ -361,27 +373,34 @@ export function GameReplay({
           {showPlaySettings && effectivePlaySettings && (
             <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
               <PlaySettingsIndicator settings={effectivePlaySettings} playerColor={playerColor} />
-              <button
-                type="button"
-                role="switch"
-                aria-checked={reproduceView}
-                onClick={() => setReproduceView((v) => !v)}
-                className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <span>{t('playSettings.reproduceView')}</span>
-                <span
-                  aria-hidden
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    reproduceView ? 'bg-foreground' : 'bg-secondary'
-                  }`}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  role="switch"
+                  data-tour-id="replay-reproduce-view"
+                  aria-checked={reproduceView}
+                  onClick={() => setReproduceView((v) => !v)}
+                  className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
+                  <span>{t('playSettings.reproduceView')}</span>
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                      reproduceView ? 'translate-x-6' : 'translate-x-1'
+                    aria-hidden
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      reproduceView ? 'bg-foreground' : 'bg-secondary'
                     }`}
-                  />
-                </span>
-              </button>
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                        reproduceView ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </span>
+                </button>
+                <HelpTourButton
+                  steps={reproduceViewTourSteps}
+                  label={t('playSettings.tour.label')}
+                />
+              </div>
             </div>
           )}
         </div>

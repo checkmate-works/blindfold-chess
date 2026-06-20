@@ -2283,7 +2283,14 @@
       "opponent": "Opponent pieces",
       "hidden": "hidden",
       "pawnsHidden": "Pawns hidden",
-      "reproduceView": "As played"
+      "reproduceView": "As played",
+      "tour": {
+        "label": "About “As played”",
+        "reproduceView": {
+          "title": "The board as you played it",
+          "description": "When on, the board reproduces your blindfold settings at each move — hidden pieces, obscured colours, and so on — so you see exactly what you saw during the game. Turn it off to reveal every piece."
+        }
+      }
     },
     "openPosition": "Open this position",
     "statsGate": {

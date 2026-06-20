@@ -47,7 +47,9 @@ export function useReplayPreferences({
   currentPosition,
   notationMovesLength,
 }: Params): Result {
-  const [reproduceView, setReproduceView] = useState(false);
+  // Default ON: show the board as the player actually saw it (their blindfold
+  // obfuscation at each position). Viewers can toggle off to fully reveal it.
+  const [reproduceView, setReproduceView] = useState(true);
 
   const revealedPreferences = useMemo<GamePreferences>(
     () => ({
