@@ -244,18 +244,24 @@ export function PlayClient({
 
   // Finished-game navigation hub: auto-redirect to the result page on game end
   // (unless reviewing), plus the result / members-only postmortem cross-links.
-  const { handleViewResult, openPostmortem, isAuthModalOpen, closeAuthModal } =
-    useFinishedGameNavigation({
-      locale,
-      isFinished,
-      isFinishedView,
-      gameId,
-      formattedPgn,
-      playerSide,
-      moves,
-      engineConfig,
-      startingFen,
-    });
+  const {
+    handleViewResult,
+    openPostmortem,
+    handleShare,
+    isShared,
+    isAuthModalOpen,
+    closeAuthModal,
+  } = useFinishedGameNavigation({
+    locale,
+    isFinished,
+    isFinishedView,
+    gameId,
+    formattedPgn,
+    playerSide,
+    moves,
+    engineConfig,
+    startingFen,
+  });
 
   // AI-reply chip visibility (thinking + transient post-move window). Lifted
   // here so `badgeActive` can also tell the board to drop the mask's own label.
@@ -449,6 +455,8 @@ export function PlayClient({
                 onViewResult={handleViewResult}
                 onPostmortem={openPostmortem}
                 showPostmortem={moves.length > 0}
+                onShare={moves.length > 0 ? handleShare : undefined}
+                isShared={isShared}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
               />
             )}

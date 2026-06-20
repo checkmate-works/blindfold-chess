@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaChartLine, FaClipboardList, FaFlagCheckered } from 'react-icons/fa';
+import { FaChartLine, FaClipboardList, FaFlagCheckered, FaShareAlt } from 'react-icons/fa';
 
 type Props = {
   /**
@@ -18,6 +18,13 @@ type Props = {
   onPostmortem: () => void;
   /** Whether to offer the postmortem action (only when the game has moves). */
   showPostmortem: boolean;
+  /**
+   * Share this game: publish it (or open it if already published). Omitted when
+   * the game has no moves to share.
+   */
+  onShare?: () => void;
+  /** Whether this game was already published from this browser. */
+  isShared?: boolean;
   /** Open the Game Details modal (engine / settings / change log). */
   onShowOperationLog?: () => void;
 };
@@ -35,6 +42,8 @@ export function FinishedGamePanel({
   onViewResult,
   onPostmortem,
   showPostmortem,
+  onShare,
+  isShared,
   onShowOperationLog,
 }: Props) {
   const t = useTranslations('play');
@@ -43,32 +52,43 @@ export function FinishedGamePanel({
     <div className="flex flex-col gap-6">
       {inlineBoardView}
 
-      {/* Finished banner — makes the read-only state explicit and links out
+      {/* Finished state — makes the read-only state explicit and links out
           to the result and postmortem screens. */}
-      <div className="rounded-lg border border-border bg-muted/30 px-4 py-4 flex flex-col gap-3">
-        <p className="text-sm font-medium text-foreground text-center">
-          {t('finishedGame.heading')}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2 sm:justify-center">
+      <p className="text-sm font-medium text-muted-foreground text-center">
+        {t('finishedGame.heading')}
+      </p>
+      <div className="flex flex-col items-center gap-3">
+        <Button
+          variant="primary"
+          fullWidth
+          icon={<FaFlagCheckered className="w-4 h-4" />}
+          onClick={onViewResult}
+          className="rounded-lg"
+        >
+          {t('finishedGame.viewResult')}
+        </Button>
+        {onShare && (
           <Button
-            variant="primary"
-            icon={<FaFlagCheckered className="w-4 h-4" />}
-            onClick={onViewResult}
+            variant="secondary"
+            fullWidth
+            icon={<FaShareAlt className="w-4 h-4" />}
+            onClick={onShare}
             className="rounded-lg"
           >
-            {t('finishedGame.viewResult')}
+            {isShared ? t('result.viewShared') : t('result.publish')}
           </Button>
-          {showPostmortem && (
-            <Button
-              variant="secondary"
-              icon={<FaChartLine className="w-4 h-4" />}
-              onClick={onPostmortem}
-              className="rounded-lg"
-            >
-              {t('postmortem')}
-            </Button>
-          )}
-        </div>
+        )}
+        {showPostmortem && (
+          <Button
+            variant="secondary"
+            fullWidth
+            icon={<FaChartLine className="w-4 h-4" />}
+            onClick={onPostmortem}
+            className="rounded-lg"
+          >
+            {t('postmortem')}
+          </Button>
+        )}
       </div>
 
       {/* Game Details (engine / initial settings / change log). */}
