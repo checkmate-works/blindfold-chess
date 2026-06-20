@@ -711,4 +711,32 @@ describe('CreatePuzzleForm', () => {
       expect(screen.queryByText('draftRestoredBanner')).not.toBeInTheDocument();
     });
   });
+
+  describe('injectedFen (create from a game position)', () => {
+    it('seeds the board position and the draft continuation as the first solution move', () => {
+      render(<CreatePuzzleForm injectedFen={VALID_FEN} injectedSolution={['e4']} />);
+
+      // Position + solution are seeded; only the title needs filling (no
+      // displayName → empty default). The hand-off then carries both seeds.
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'From game' } });
+      fireEvent.click(screen.getByRole('button', { name: 'continueToPreview' }));
+
+      const parsed = JSON.parse(sessionStorage.getItem(DRAFT_STORAGE_KEY)!);
+      expect(parsed.fen).toBe(VALID_FEN);
+      expect(parsed.moves).toEqual(['e4']);
+      expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/preview');
+    });
+
+    it('skips draft hydration so a leftover draft does not overwrite the injected position', () => {
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify(makeDraft({ title: 'Unrelated Draft' }))
+      );
+
+      render(<CreatePuzzleForm injectedFen={VALID_FEN} injectedSolution={['e4']} />);
+
+      expect(screen.queryByText('draftRestoredBanner')).not.toBeInTheDocument();
+      expect(screen.getByLabelText(/titleLabel/)).not.toHaveValue('Unrelated Draft');
+    });
+  });
 });

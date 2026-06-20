@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { executeMove, validateFenStructure } from '@blindfold-chess/features/chess-core';
+
 import { getOptionalUser } from '@/lib/auth';
 import { loadPositionCreateContext } from '@/lib/positions/create-page-context';
 import { loadPuzzleForkSeed } from '@/lib/positions/fork';
@@ -23,7 +25,7 @@ export function generateMetadata({ params }: Props) {
 
 export default async function NewPuzzlePage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { from } = await searchParams;
+  const { from, fen: fenParam, solution: solutionParam } = await searchParams;
   const user = await getOptionalUser();
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
@@ -36,6 +38,18 @@ export default async function NewPuzzlePage({ params, searchParams }: Props) {
     loadForkSeed: loadPuzzleForkSeed,
   });
 
+  // Seed the board from `?fen=` (e.g. "create a puzzle from this game
+  // position"), ignored when malformed. An optional `?solution=` SAN move
+  // (the game's continuation) seeds the first solution move, but only when it
+  // is legal from the seeded position — otherwise the position is seeded alone.
+  const injectedFen =
+    typeof fenParam === 'string' && validateFenStructure(fenParam).ok ? fenParam : undefined;
+  const continuation =
+    injectedFen && typeof solutionParam === 'string'
+      ? executeMove(injectedFen, solutionParam)
+      : null;
+  const injectedSolution = continuation ? [continuation.moveResult.san] : undefined;
+
   const form = (
     <CreatePuzzleForm
       displayName={displayName}
@@ -43,6 +57,8 @@ export default async function NewPuzzlePage({ params, searchParams }: Props) {
       availableThemes={availableTags.themes}
       availableChunks={availableTags.chunks}
       forkSeed={forkSeed}
+      injectedFen={injectedFen}
+      injectedSolution={injectedSolution}
     />
   );
 

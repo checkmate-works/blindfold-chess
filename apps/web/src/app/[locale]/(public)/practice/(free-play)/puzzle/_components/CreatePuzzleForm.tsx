@@ -79,6 +79,18 @@ type Props = {
    * and is re-validated server-side at create time.
    */
   forkSeed?: PuzzleForkSeed;
+  /**
+   * Seed the board position when opened via `?fen=` (e.g. "create a puzzle
+   * from this game position"). Validated server-side. `forkSeed` wins if
+   * both are present; like a fork, an injected seed skips draft hydration.
+   */
+  injectedFen?: string;
+  /**
+   * Optional draft solution (SAN moves) to accompany `injectedFen` — e.g.
+   * the game's actual continuation seeded as the first solution move. Each
+   * move is already validated legal from `injectedFen` server-side.
+   */
+  injectedSolution?: string[];
 };
 
 export function CreatePuzzleForm({
@@ -87,6 +99,8 @@ export function CreatePuzzleForm({
   availableThemes = [],
   availableChunks = [],
   forkSeed,
+  injectedFen,
+  injectedSolution,
 }: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
@@ -130,10 +144,14 @@ export function CreatePuzzleForm({
       : []
   ).current;
 
+  // A fork seeds every field; an injected `?fen=` (optionally with a draft
+  // continuation solution) seeds only the position + moves. Notes default to
+  // blanks parallel to the seeded moves.
+  const injectedNotes = injectedSolution?.map(() => '');
   const { board, solution, tags } = usePuzzleFormComposition({
-    initialFen: forkSeed?.fen,
-    initialMoves: forkSeed?.moves,
-    initialNotes: forkSeed?.notes,
+    initialFen: forkSeed?.fen ?? injectedFen,
+    initialMoves: forkSeed?.moves ?? injectedSolution,
+    initialNotes: forkSeed?.notes ?? injectedNotes,
     initialThemes: seededThemes,
     initialChunks: seededChunks,
   });
@@ -146,7 +164,7 @@ export function CreatePuzzleForm({
   // Skipped entirely when forking — the fork seed owns initial state and
   // an unrelated leftover draft would silently overwrite it.
   const { hydratedFromDraft, resetHydrated } = usePuzzleDraftHydration({
-    enabled: !forkSeed,
+    enabled: !forkSeed && !injectedFen,
     apply: (draft) => {
       board.setFenInput(draft.fen);
       board.setBoardFen(draft.fen);
