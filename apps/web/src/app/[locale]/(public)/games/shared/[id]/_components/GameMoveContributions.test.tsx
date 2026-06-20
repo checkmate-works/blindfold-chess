@@ -61,14 +61,11 @@ vi.mock('@/app/[locale]/(public)/topics/_components/JoinConversationToggle', () 
   }) => <div data-testid={`cta-${joinLabel}`}>{children}</div>,
 }));
 
-const FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 2 2';
-
 function renderPanel() {
   render(
     <GameMoveContributions
       gameId="g1"
       currentPly={3}
-      currentFen={FEN}
       comments={[]}
       gameChunks={[]}
       availableChunks={[]}
@@ -92,13 +89,5 @@ describe('GameMoveContributions', () => {
     const chunkCta = screen.getByTestId('cta-chunks.suggest');
     expect(within(commentCta).getByTestId('comment-form')).toBeInTheDocument();
     expect(within(chunkCta).getByTestId('chunk-picker')).toBeInTheDocument();
-  });
-
-  it('offers the create-from-position link (encoded FEN) inside the chunk CTA', () => {
-    renderPanel();
-    const chunkCta = screen.getByTestId('cta-chunks.suggest');
-    expect(
-      within(chunkCta).getByRole('link', { name: 'chunks.createFromPosition' })
-    ).toHaveAttribute('href', `/en/chunks/new?fen=${encodeURIComponent(FEN)}`);
   });
 });

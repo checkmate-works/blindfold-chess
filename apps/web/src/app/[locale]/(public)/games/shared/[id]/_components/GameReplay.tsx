@@ -437,7 +437,6 @@ export function GameReplay({
             <GameMoveContributions
               gameId={gameId}
               currentPly={currentPly}
-              currentFen={displayFen ?? latestFen}
               comments={comments}
               gameChunks={gameChunks}
               availableChunks={availableChunks}

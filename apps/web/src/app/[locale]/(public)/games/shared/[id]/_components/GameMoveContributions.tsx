@@ -1,11 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaBrain } from 'react-icons/fa';
-import { FiPlus } from 'react-icons/fi';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
@@ -27,8 +24,6 @@ type Props = {
   gameId: string;
   /** Move both threads anchor to (0-based ply). */
   currentPly: number;
-  /** FEN currently on the board — seeds "create a chunk from this position". */
-  currentFen: string;
   /** All comments for the game (every ply); filtered to `currentPly` inside. */
   comments: GameCommentItem[];
   /** All chunk links for the game (every ply); filtered to `currentPly` inside. */
@@ -52,7 +47,6 @@ type Props = {
 export function GameMoveContributions({
   gameId,
   currentPly,
-  currentFen,
   comments,
   gameChunks,
   availableChunks,
@@ -148,17 +142,6 @@ export function GameMoveContributions({
                 moreItemsHint: (count: number) => t('chunks.moreItemsHint', { count }),
               }}
             />
-
-            {/* No matching chunk? Seed a new one from the current board position
-                (the author pares it down to a pattern on the create form). */}
-            <Link
-              href={`/${locale}/chunks/new?fen=${encodeURIComponent(currentFen)}`}
-              className="block"
-            >
-              <Button asChild variant="outline" fullWidth icon={<FiPlus />}>
-                {t('chunks.createFromPosition')}
-              </Button>
-            </Link>
 
             {links.staged.length > 0 && (
               <>
