@@ -2283,12 +2283,34 @@
       "opponent": "相手の駒",
       "hidden": "非表示",
       "pawnsHidden": "ポーン非表示",
-      "reproduceView": "プレイ時の見え方"
+      "reproduceView": "プレイ時の見え方",
+      "tour": {
+        "label": "「プレイ時の見え方」とは",
+        "reproduceView": {
+          "title": "対局時の見え方で盤面を表示",
+          "description": "オンにすると、各手であなたが対局中に使っていた目隠し設定（隠した駒・難読化した色など）で盤面を再現し、実際に見えていた状態を確認できます。オフにすると全ての駒が表示されます。"
+        }
+      }
     },
     "openPosition": "この局面を開く",
     "statsGate": {
       "title": "会員限定機能です",
       "description": "無料ユーザー登録で、この対局の統計や手ごとの内訳を見られます。"
+    },
+    "overview": {
+      "summaryTab": "サマリー",
+      "discussionTab": "ディスカッション"
+    },
+    "discussion": {
+      "wholeGame": "全体",
+      "replies": "{count}件の返信"
+    },
+    "tour": {
+      "label": "ヘルプ",
+      "createFromPosition": {
+        "title": "この局面から作成",
+        "description": "各手で、ログイン中はこの局面をチャンク・ポジション記憶・パズルとして作成できます（盤面が自動で入ります）。手に移動すると使えます。"
+      }
     }
   },
   "postmortem": {

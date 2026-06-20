@@ -39,10 +39,22 @@ export function HelpTourButton({ steps, label }: Props) {
 
   const startTour = () => {
     driverRef.current?.destroy();
+    // Only walk through controls that are actually on screen. A step whose
+    // target is absent (e.g. a control that only appears in a particular view)
+    // is skipped rather than shown as a centered popover pointing at nothing.
+    const resolved = steps
+      .map((step) => {
+        const el = document.querySelector(`[data-tour-id="${step.targetId}"]`);
+        return el ? { step, el } : null;
+      })
+      .filter((entry): entry is { step: HelpStep; el: Element } => entry !== null);
+
+    if (resolved.length === 0) return;
+
     const d = driver({
-      showProgress: steps.length > 1,
-      steps: steps.map((step) => ({
-        element: `[data-tour-id="${step.targetId}"]`,
+      showProgress: resolved.length > 1,
+      steps: resolved.map(({ step, el }) => ({
+        element: el,
         popover: {
           title: step.title,
           description: step.description,

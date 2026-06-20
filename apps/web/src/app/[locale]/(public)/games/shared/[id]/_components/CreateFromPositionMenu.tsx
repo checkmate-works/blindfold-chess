@@ -69,6 +69,7 @@ export function CreateFromPositionMenu({ locale, currentFen, continuationSan }: 
     <div ref={containerRef} className="relative inline-block">
       <button
         type="button"
+        data-tour-id="game-create-from-position"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}

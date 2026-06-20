@@ -2279,12 +2279,34 @@
       "opponent": "Peças do oponente",
       "hidden": "oculto",
       "pawnsHidden": "Peões ocultos",
-      "reproduceView": "Como foi jogado"
+      "reproduceView": "Como foi jogado",
+      "tour": {
+        "label": "Sobre “Como foi jogado”",
+        "reproduceView": {
+          "title": "O tabuleiro como você jogou",
+          "description": "Quando ativado, o tabuleiro reproduz suas configurações de cego em cada lance (peças ocultas, cores ofuscadas, etc.), para você ver exatamente o que via durante a partida. Desative para revelar todas as peças."
+        }
+      }
     },
     "openPosition": "Abrir esta posição",
     "statsGate": {
       "title": "Recurso exclusivo para membros",
       "description": "Crie uma conta gratuita para ver as estatísticas desta partida e a análise lance a lance."
+    },
+    "overview": {
+      "summaryTab": "Resumo",
+      "discussionTab": "Discussão"
+    },
+    "discussion": {
+      "wholeGame": "Jogo inteiro",
+      "replies": "{count, plural, =1 {1 resposta} other {# respostas}}"
+    },
+    "tour": {
+      "label": "Ajuda",
+      "createFromPosition": {
+        "title": "Criar a partir desta posição",
+        "description": "Em qualquer lance, usuários conectados podem transformar a posição em um chunk, uma entrada de memória de posições ou um puzzle, já preenchidos pelo tabuleiro. Vá até um lance para usar."
+      }
     }
   },
   "postmortem": {

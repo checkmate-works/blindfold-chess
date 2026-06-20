@@ -34,6 +34,7 @@ import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/
 import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
+import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -41,8 +42,10 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
+import { buildDiscussionGroups } from '../_lib/build-discussion-groups';
 import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 import type { CommentUser } from './GameCommentContext';
+import { GameDiscussionFeed } from './GameDiscussionFeed';
 import { GameMoveContributions } from './GameMoveContributions';
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
@@ -118,6 +121,17 @@ export function GameReplay({
   const t = useTranslations('sharedGames');
   const router = useRouter();
   const { preferences } = useGamePreferences();
+
+  // One-step help tour explaining the "As played" toggle (board obfuscation).
+  const reproduceViewTourSteps: HelpStep[] = [
+    {
+      targetId: 'replay-reproduce-view',
+      title: t('playSettings.tour.reproduceView.title'),
+      description: t('playSettings.tour.reproduceView.description'),
+      side: 'top',
+      align: 'end',
+    },
+  ];
 
   const { moves: notationMoves, formattedPgn } = useNotation({
     // The DB stores moves as string[]; they are SAN (AlgebraicNotation) at runtime.
@@ -305,6 +319,31 @@ export function GameReplay({
       />
     ) : null;
 
+  // Overview discussion feed: all comments + chunk links rolled up by move.
+  // The overview offers a [Summary | Discussion] segmented switch when both the
+  // stats and some activity exist; otherwise it shows whichever is non-empty.
+  const discussionGroups = useMemo(
+    () => buildDiscussionGroups(comments, gameChunks),
+    [comments, gameChunks]
+  );
+  const discussionCount = useMemo(
+    () => discussionGroups.reduce((n, g) => n + g.comments.length + g.chunks.length, 0),
+    [discussionGroups]
+  );
+  const hasSummary = statsOverview !== null;
+  const hasDiscussion = discussionGroups.length > 0;
+  const showOverviewTabs = hasSummary && hasDiscussion;
+  // Lead with the discussion when there is any (this is an advice page);
+  // fall back to the stats summary otherwise.
+  const [overviewView, setOverviewView] = useState<'summary' | 'discussion'>(
+    hasDiscussion ? 'discussion' : 'summary'
+  );
+  const activeOverviewView = showOverviewTabs
+    ? overviewView
+    : hasDiscussion
+      ? 'discussion'
+      : 'summary';
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -334,27 +373,34 @@ export function GameReplay({
           {showPlaySettings && effectivePlaySettings && (
             <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
               <PlaySettingsIndicator settings={effectivePlaySettings} playerColor={playerColor} />
-              <button
-                type="button"
-                role="switch"
-                aria-checked={reproduceView}
-                onClick={() => setReproduceView((v) => !v)}
-                className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <span>{t('playSettings.reproduceView')}</span>
-                <span
-                  aria-hidden
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    reproduceView ? 'bg-foreground' : 'bg-secondary'
-                  }`}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  role="switch"
+                  data-tour-id="replay-reproduce-view"
+                  aria-checked={reproduceView}
+                  onClick={() => setReproduceView((v) => !v)}
+                  className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
+                  <span>{t('playSettings.reproduceView')}</span>
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                      reproduceView ? 'translate-x-6' : 'translate-x-1'
+                    aria-hidden
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      reproduceView ? 'bg-foreground' : 'bg-secondary'
                     }`}
-                  />
-                </span>
-              </button>
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                        reproduceView ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </span>
+                </button>
+                <HelpTourButton
+                  steps={reproduceViewTourSteps}
+                  label={t('playSettings.tour.label')}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -407,14 +453,59 @@ export function GameReplay({
         <>
           {children}
 
-          {statsOverview &&
-            (currentUser ? (
-              statsOverview
-            ) : (
-              <StatsAuthGate title={t('statsGate.title')} description={t('statsGate.description')}>
-                {statsOverview}
-              </StatsAuthGate>
-            ))}
+          {showOverviewTabs && (
+            <div role="tablist" className="flex rounded-lg bg-secondary p-1">
+              {(['summary', 'discussion'] as const).map((view) => {
+                const isActive = activeOverviewView === view;
+                const label =
+                  view === 'summary'
+                    ? t('overview.summaryTab')
+                    : `${t('overview.discussionTab')} (${discussionCount})`;
+                return (
+                  <button
+                    key={view}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setOverviewView(view)}
+                    className={`flex-1 truncate rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
+                      isActive
+                        ? 'bg-card text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {activeOverviewView === 'summary' && statsOverview && (
+            <>
+              {currentUser ? (
+                statsOverview
+              ) : (
+                <StatsAuthGate
+                  title={t('statsGate.title')}
+                  description={t('statsGate.description')}
+                >
+                  {statsOverview}
+                </StatsAuthGate>
+              )}
+            </>
+          )}
+
+          {activeOverviewView === 'discussion' && hasDiscussion && (
+            <GameDiscussionFeed
+              comments={comments}
+              gameChunks={gameChunks}
+              notationMoves={notationMoves}
+              startingFen={startingFen}
+              onJumpToPly={navigateToPosition}
+              locale={locale}
+            />
+          )}
         </>
       ) : (
         currentPly != null && (

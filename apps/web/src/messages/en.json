@@ -2283,12 +2283,34 @@
       "opponent": "Opponent pieces",
       "hidden": "hidden",
       "pawnsHidden": "Pawns hidden",
-      "reproduceView": "As played"
+      "reproduceView": "As played",
+      "tour": {
+        "label": "About “As played”",
+        "reproduceView": {
+          "title": "The board as you played it",
+          "description": "When on, the board reproduces your blindfold settings at each move — hidden pieces, obscured colours, and so on — so you see exactly what you saw during the game. Turn it off to reveal every piece."
+        }
+      }
     },
     "openPosition": "Open this position",
     "statsGate": {
       "title": "Members-only feature",
       "description": "Create a free account to view this game's stats and per-move breakdown."
+    },
+    "overview": {
+      "summaryTab": "Summary",
+      "discussionTab": "Discussion"
+    },
+    "discussion": {
+      "wholeGame": "Whole game",
+      "replies": "{count, plural, =1 {1 reply} other {# replies}}"
+    },
+    "tour": {
+      "label": "Help",
+      "createFromPosition": {
+        "title": "Create from this position",
+        "description": "On any move, signed-in viewers can turn the position into a chunk, a position-memory entry, or a puzzle — pre-filled from the board. Step to a move to use it."
+      }
     }
   },
   "postmortem": {

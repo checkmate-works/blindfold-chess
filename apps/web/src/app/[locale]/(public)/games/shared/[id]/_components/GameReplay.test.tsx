@@ -97,6 +97,14 @@ vi.mock('./GameMoveContributions', () => ({
   GameMoveContributions: () => <div data-testid="move-contributions" />,
 }));
 
+vi.mock('./GameDiscussionFeed', () => ({
+  GameDiscussionFeed: () => <div data-testid="discussion-feed" />,
+}));
+
+vi.mock('@/app/[locale]/_components/HelpTourButton', () => ({
+  HelpTourButton: () => <button type="button" data-testid="help-tour" />,
+}));
+
 vi.mock('./PlaySettingsIndicator', () => ({
   PlaySettingsIndicator: () => <div data-testid="play-settings" />,
 }));
@@ -185,7 +193,7 @@ describe('GameReplay — board preferences (reproduce view)', () => {
     expect(prefs.boardVisibility).toBe('always');
   });
 
-  it('reflects the game play-settings on the board when reproduce view is toggled on', () => {
+  it('defaults to "as played" (reflects the game settings) and reveals when toggled off', () => {
     mockNav.currentPosition = 0;
     mockNotable = true;
     mockEffectiveSettings = {
@@ -203,15 +211,14 @@ describe('GameReplay — board preferences (reproduce view)', () => {
       />
     );
 
-    // Default (reproduce off) → fully revealed.
-    expect((inlineBoardProps.preferences as GamePreferences).showOpponentPieces).toBe(true);
+    // Default (reproduce ON) → board reflects the player's settings.
+    const reflected = inlineBoardProps.preferences as GamePreferences;
+    expect(reflected.showOpponentPieces).toBe(false);
+    expect(reflected.pieceShapeMode).toBe('circles-all');
 
-    // Toggle reproduce view on.
+    // Toggle reproduce view off → fully revealed.
     fireEvent.click(screen.getByRole('switch'));
-
-    const prefs = inlineBoardProps.preferences as GamePreferences;
-    expect(prefs.showOpponentPieces).toBe(false);
-    expect(prefs.pieceShapeMode).toBe('circles-all');
+    expect((inlineBoardProps.preferences as GamePreferences).showOpponentPieces).toBe(true);
   });
 });
 
