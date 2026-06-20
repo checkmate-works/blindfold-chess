@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
+
+import { getSharedGame } from '@/lib/games/shared-game-store';
 
 import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -31,6 +33,10 @@ type Result = {
   handleViewResult: () => void;
   /** Open the postmortem, gated behind the members-only auth prompt. */
   openPostmortem: () => void;
+  /** Publish this game (or open it if already published from this browser). */
+  handleShare: () => void;
+  /** Whether this game was already published from this browser. */
+  isShared: boolean;
   isAuthModalOpen: boolean;
   closeAuthModal: () => void;
 };
@@ -101,9 +107,29 @@ export function useFinishedGameNavigation({
     [guardAction, handleOpenPostmortem]
   );
 
+  // Has this game already been published from this browser? Read client-side
+  // after mount (localStorage) so Share can point at the published game instead
+  // of offering to publish it again. Mirrors the result page (ResultClient).
+  const [sharedPublishedId, setSharedPublishedId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!gameId) return;
+    setSharedPublishedId(getSharedGame(gameId)?.publishedId ?? null);
+  }, [gameId]);
+
+  const handleShare = useCallback(() => {
+    if (!gameId) return;
+    router.push(
+      sharedPublishedId
+        ? `/${locale}/games/shared/${sharedPublishedId}`
+        : `/${locale}/games/shared/new?gameId=${gameId}`
+    );
+  }, [router, locale, gameId, sharedPublishedId]);
+
   return {
     handleViewResult,
     openPostmortem,
+    handleShare,
+    isShared: sharedPublishedId !== null,
     isAuthModalOpen: isModalOpen,
     closeAuthModal: closeModal,
   };
