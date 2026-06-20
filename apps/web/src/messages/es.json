@@ -2241,6 +2241,7 @@
       "title": "Chunks aplicables",
       "empty": "Aún no hay chunks vinculados a esta jugada.",
       "placeholder": "Busca chunks para añadir…",
+      "createFromPosition": "Crear un chunk a partir de esta posición",
       "noResults": "No hay chunks coincidentes",
       "moreItemsHint": "+{count} más",
       "signInToLink": "Inicia sesión para vincular un chunk.",

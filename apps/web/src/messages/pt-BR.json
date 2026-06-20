@@ -2241,6 +2241,7 @@
       "title": "Chunks aplicáveis",
       "empty": "Ainda não há chunks vinculados a este lance.",
       "placeholder": "Busque chunks para adicionar…",
+      "createFromPosition": "Criar um chunk a partir desta posição",
       "noResults": "Nenhum chunk correspondente",
       "moreItemsHint": "+{count} mais",
       "signInToLink": "Entre para vincular um chunk.",
