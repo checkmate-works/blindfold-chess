@@ -2241,6 +2241,12 @@
         "generic": "Could not post your comment. Please try again."
       }
     },
+    "create": {
+      "menuLabel": "Create from this position",
+      "chunk": "Create a chunk",
+      "positionMemory": "Add to position memory",
+      "puzzle": "Create a puzzle"
+    },
     "chunks": {
       "title": "Applicable chunks",
       "empty": "No chunks linked to this move yet.",

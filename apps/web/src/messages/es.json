@@ -2237,6 +2237,12 @@
         "generic": "No se pudo publicar tu comentario. Inténtalo de nuevo."
       }
     },
+    "create": {
+      "menuLabel": "Crear desde esta posición",
+      "chunk": "Crear un chunk",
+      "positionMemory": "Añadir a memoria de posiciones",
+      "puzzle": "Crear un puzzle"
+    },
     "chunks": {
       "title": "Chunks aplicables",
       "empty": "Aún no hay chunks vinculados a esta jugada.",
