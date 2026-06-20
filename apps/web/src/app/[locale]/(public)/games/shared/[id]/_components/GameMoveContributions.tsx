@@ -70,48 +70,13 @@ export function GameMoveContributions({
 
   return (
     <div className="space-y-5">
-      {/* Posted advice comments for this move. */}
-      {thread.roots.length > 0 && (
-        <GameCommentProvider
-          value={{
-            locale,
-            currentUserId,
-            reply: thread.reply,
-            edit: thread.edit,
-            remove: thread.remove,
-          }}
-        >
-          <div className="space-y-6">
-            {thread.roots.map((root) => (
-              <GameCommentNode key={root.id} node={root} replyGroups={groupReplies(root)} />
-            ))}
-          </div>
-        </GameCommentProvider>
-      )}
-
-      {/* Chunk links applicable to this move — rendered in the comment-card
-          idiom so they read on the same axis as the advice thread. Consecutive
-          links by the same suggester collapse into one card. */}
-      {links.forPly.length > 0 && (
-        <ul className="space-y-6">
-          {groupChunkLinksBySuggester(links.forPly).map((group) => (
-            <GameChunkLinkCard
-              key={group[0].id}
-              items={group}
-              badge={t('chunks.badge')}
-              locale={locale}
-              canRemove={links.canRemove}
-              onRemove={(item) => links.handleRemoveSaved(item.id)}
-            />
-          ))}
-        </ul>
-      )}
-
-      {/* Two collapsed CTAs (same chrome as the topics "join the conversation"
-          button): one opens the comment composer, the other the chunk picker.
-          The posted lists above stay visible either way; anonymous clicks are
-          routed to the sign-up modal by each toggle's own auth guard. */}
-      <div className="space-y-3 border-t border-border pt-4">
+      {/* Compose CTAs sit directly under the move heading (matching the topics /
+          chunk detail pages) so they're reachable without scrolling past the
+          posted content. Two collapsed buttons (same chrome as the topics
+          "join the conversation" CTA): one opens the comment composer, the
+          other the chunk picker. Anonymous clicks are routed to the sign-up
+          modal by each toggle's own auth guard. */}
+      <div className="space-y-3">
         <JoinConversationToggle
           count={thread.commentCount}
           joinLabel={t('comments.joinConversation')}
@@ -181,6 +146,43 @@ export function GameMoveContributions({
           </div>
         </JoinConversationToggle>
       </div>
+
+      {/* Posted advice comments for this move. */}
+      {thread.roots.length > 0 && (
+        <GameCommentProvider
+          value={{
+            locale,
+            currentUserId,
+            reply: thread.reply,
+            edit: thread.edit,
+            remove: thread.remove,
+          }}
+        >
+          <div className="space-y-6">
+            {thread.roots.map((root) => (
+              <GameCommentNode key={root.id} node={root} replyGroups={groupReplies(root)} />
+            ))}
+          </div>
+        </GameCommentProvider>
+      )}
+
+      {/* Chunk links applicable to this move — rendered in the comment-card
+          idiom so they read on the same axis as the advice thread. Consecutive
+          links by the same suggester collapse into one card. */}
+      {links.forPly.length > 0 && (
+        <ul className="space-y-6">
+          {groupChunkLinksBySuggester(links.forPly).map((group) => (
+            <GameChunkLinkCard
+              key={group[0].id}
+              items={group}
+              badge={t('chunks.badge')}
+              locale={locale}
+              canRemove={links.canRemove}
+              onRemove={(item) => links.handleRemoveSaved(item.id)}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
