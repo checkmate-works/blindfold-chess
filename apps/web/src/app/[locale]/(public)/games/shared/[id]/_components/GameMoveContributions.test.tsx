@@ -40,6 +40,11 @@ vi.mock('../_hooks/use-game-chunk-links', () => ({
 vi.mock('../_lib/game-comment-tree', () => ({ groupReplies: () => [] }));
 
 vi.mock('./GameCommentNode', () => ({ GameCommentNode: () => <div data-testid="comment-node" /> }));
+vi.mock('./GameChunkLinkCard', () => ({
+  GameChunkLinkCard: ({ item }: { item: { title: string } }) => (
+    <li data-testid="chunk-link-card">{item.title}</li>
+  ),
+}));
 vi.mock('./GameChunkCard', () => ({
   GameChunkCard: ({ title }: { title: string }) => <li data-testid="chunk-card">{title}</li>,
 }));
@@ -80,7 +85,7 @@ describe('GameMoveContributions', () => {
   it('shows posted comments and chunk links serially (both visible at once)', () => {
     renderPanel();
     expect(screen.getByTestId('comment-node')).toBeInTheDocument();
-    expect(screen.getByTestId('chunk-card')).toHaveTextContent('Linked Chunk');
+    expect(screen.getByTestId('chunk-link-card')).toHaveTextContent('Linked Chunk');
   });
 
   it('offers two separate CTAs — one wrapping the comment form, one the chunk picker', () => {

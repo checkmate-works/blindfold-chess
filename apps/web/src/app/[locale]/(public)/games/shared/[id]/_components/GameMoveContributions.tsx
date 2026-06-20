@@ -15,6 +15,7 @@ import { useGameChunkLinks } from '../_hooks/use-game-chunk-links';
 import { useGameCommentThread } from '../_hooks/use-game-comment-thread';
 import { groupReplies } from '../_lib/game-comment-tree';
 import { GameChunkCard } from './GameChunkCard';
+import { GameChunkLinkCard } from './GameChunkLinkCard';
 import { GameChunkPicker } from './GameChunkPicker';
 import { type CommentUser, GameCommentProvider } from './GameCommentContext';
 import { GameCommentForm } from './GameCommentForm';
@@ -62,7 +63,7 @@ export function GameMoveContributions({
     gameId,
     currentPly,
     chunks: gameChunks,
-    currentUserId,
+    currentUser,
     isGameOwner,
   });
 
@@ -87,20 +88,18 @@ export function GameMoveContributions({
         </GameCommentProvider>
       )}
 
-      {/* Chunk links applicable to this move. */}
+      {/* Chunk links applicable to this move — rendered in the comment-card
+          idiom so they read on the same axis as the advice thread. */}
       {links.forPly.length > 0 && (
-        <ul className="space-y-2">
+        <ul className="space-y-4">
           {links.forPly.map((c) => (
-            <GameChunkCard
+            <GameChunkLinkCard
               key={c.id}
-              slug={c.slug}
-              title={c.title}
-              description={c.description}
-              representativeFen={c.representativeFen}
+              item={c}
               badge={t('chunks.badge')}
               locale={locale}
-              onRemove={links.canRemove(c) ? () => links.handleRemoveSaved(c.id) : undefined}
-              removeLabel={t('chunks.remove', { title: c.title })}
+              canRemove={links.canRemove(c)}
+              onRemove={() => links.handleRemoveSaved(c.id)}
             />
           ))}
         </ul>

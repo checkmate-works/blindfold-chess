@@ -8,6 +8,7 @@ import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 
 import { addGameChunkAction, deleteGameChunkAction } from '../_actions/game-chunks';
+import type { CommentUser } from '../_components/GameCommentContext';
 
 type Params = {
   gameId: string;
@@ -15,8 +16,9 @@ type Params = {
   currentPly: number;
   /** All chunk links for the game (every move); filtered to `currentPly` here. */
   chunks: GameChunkItem[];
-  /** Signed-in viewer id — enables linking + removing one's own links. */
-  currentUserId?: string;
+  /** Signed-in viewer — enables linking, removing one's own links, and seeds
+   * the optimistic suggester profile so a fresh link renders like a comment. */
+  currentUser: CommentUser | null;
   /** Whether the viewer is the game's registered owner (may remove any link). */
   isGameOwner: boolean;
 };
@@ -32,9 +34,10 @@ export function useGameChunkLinks({
   gameId,
   currentPly,
   chunks: initialChunks,
-  currentUserId,
+  currentUser,
   isGameOwner,
 }: Params) {
+  const currentUserId = currentUser?.id;
   const t = useTranslations('sharedGames.chunks');
   const [chunks, setChunks] = useState(initialChunks);
   const [staged, setStaged] = useState<ChunkOption[]>([]);
@@ -91,8 +94,16 @@ export function useGameChunkLinks({
           description: chunk.description,
           representativeFen: chunk.representativeFen,
           createdAt: new Date(res.createdAt),
-          suggestedById: currentUserId ?? null,
-          suggester: null,
+          suggestedById: currentUser?.id ?? null,
+          // Seed the suggester from the viewer so the freshly-linked card shows
+          // the same avatar / name as it will after a reload.
+          suggester: currentUser
+            ? {
+                username: currentUser.username,
+                displayName: currentUser.displayName,
+                avatarUrl: currentUser.avatarUrl,
+              }
+            : null,
         });
       } else {
         stillStaged.push(chunk);
