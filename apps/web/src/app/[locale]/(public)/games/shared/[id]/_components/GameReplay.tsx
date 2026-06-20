@@ -42,6 +42,7 @@ import { useReplayCommentTabs } from '../_hooks/use-replay-comment-tabs';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
+import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 import { GameChunkSection } from './GameChunkSection';
 import { type CommentUser, GameCommentThread } from './GameCommentThread';
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
@@ -246,6 +247,15 @@ export function GameReplay({
           : null
         : null;
 
+  // The game's move played from the position currently on the board — seeded
+  // as a puzzle's draft solution by CreateFromPositionMenu. `appliedPlies` is
+  // the half-move count to reach the displayed position; undefined at the
+  // latest position (no continuation) or an empty game.
+  const appliedPlies =
+    currentPosition >= 0 ? currentPosition + 1 : currentPosition === -2 ? 0 : notationMoves.length;
+  const continuationSan =
+    appliedPlies < notationMoves.length ? notationMoves[appliedPlies] : undefined;
+
   // Label the move with its PGN-style number prefix: white → "1. d4",
   // black → "1...d5" (derived from the starting FEN's side + fullmove).
   const moveLabel = useMemo(() => {
@@ -352,6 +362,19 @@ export function GameReplay({
                   />
                 </span>
               </button>
+            </div>
+          )}
+
+          {/* Author something from the position currently on the board —
+              chunk / position-memory / puzzle. Signed-in only, mirroring the
+              chunk picker's gate. */}
+          {currentUser && (
+            <div className="mt-3">
+              <CreateFromPositionMenu
+                locale={locale}
+                currentFen={displayFen ?? latestFen}
+                continuationSan={continuationSan}
+              />
             </div>
           )}
         </div>
