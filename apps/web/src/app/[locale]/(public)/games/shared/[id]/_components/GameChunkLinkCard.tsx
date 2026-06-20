@@ -20,12 +20,13 @@ type Props = {
 };
 
 /**
- * A posted chunk link, rendered in the comment-card idiom so it reads on the
- * same axis as the advice thread: the suggester's avatar + name (same
- * `UserAvatar` as a comment), a "linked a chunk" line with the timestamp, the
- * chunk reference card, and — when permitted — a Delete affordance in the same
- * position as a comment's. Like / reply do not apply to a link, so they are
- * intentionally absent.
+ * A posted chunk link, rendered in the exact comment-card layout (see
+ * `GameCommentNode`) so it lines up with the advice thread: a leading spacer
+ * matching a comment's collapse button keeps the content column aligned; the
+ * suggester's avatar + name and the timestamp-only meta line mirror a comment
+ * header; "linked a chunk" sits where the comment body would; the chunk
+ * reference card sits where an attachment would; and Delete sits in the
+ * comment-action row. Like / reply do not apply to a link, so they are absent.
  */
 export function GameChunkLinkCard({ item, badge, locale, canRemove, onRemove }: Props) {
   const t = useTranslations('sharedGames');
@@ -36,45 +37,51 @@ export function GameChunkLinkCard({ item, badge, locale, canRemove, onRemove }: 
   const profileHref = item.suggester?.username ? `/u/${item.suggester.username}` : null;
 
   return (
-    <li className="scroll-mt-20 space-y-2">
-      <UserAvatar
-        profileHref={profileHref}
-        avatarUrl={item.suggester?.avatarUrl}
-        displayName={displayName}
-        locale={locale}
-      >
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>{t('chunks.linkedAction')}</span>
-          <span aria-hidden="true" className="text-muted-foreground/40">
-            ·
-          </span>
-          <time dateTime={item.createdAt.toISOString()}>
-            {formatAbsoluteDateTime(item.createdAt, locale, 'short')}
-          </time>
-        </div>
-      </UserAvatar>
+    <li id={`game-chunk-${item.id}`} className="scroll-mt-20">
+      <div className="flex items-start gap-2">
+        {/* Spacer matching a comment root's collapse (+/−) button, so the
+            content column aligns with the comment thread. */}
+        <div className="mt-1 h-5 w-5 flex-shrink-0" aria-hidden />
 
-      <ChunkRefLink
-        slug={item.slug}
-        title={item.title}
-        description={item.description}
-        representativeFen={item.representativeFen}
-        badge={badge}
-        locale={locale}
-      />
-
-      {canRemove && (
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={onRemove}
-            aria-label={t('chunks.remove', { title: item.title })}
-            className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+        <div className="min-w-0 flex-1 space-y-2">
+          <UserAvatar
+            profileHref={profileHref}
+            avatarUrl={item.suggester?.avatarUrl}
+            displayName={displayName}
+            locale={locale}
           >
-            {t('chunks.delete')}
-          </button>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <time dateTime={item.createdAt.toISOString()}>
+                {formatAbsoluteDateTime(item.createdAt, locale, 'short')}
+              </time>
+            </div>
+          </UserAvatar>
+
+          <p className="text-sm text-foreground leading-relaxed">{t('chunks.linkedAction')}</p>
+
+          <ChunkRefLink
+            slug={item.slug}
+            title={item.title}
+            description={item.description}
+            representativeFen={item.representativeFen}
+            badge={badge}
+            locale={locale}
+          />
+
+          {canRemove && (
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={onRemove}
+                aria-label={t('chunks.remove', { title: item.title })}
+                className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+              >
+                {t('chunks.delete')}
+              </button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </li>
   );
 }

@@ -91,7 +91,7 @@ export function GameMoveContributions({
       {/* Chunk links applicable to this move — rendered in the comment-card
           idiom so they read on the same axis as the advice thread. */}
       {links.forPly.length > 0 && (
-        <ul className="space-y-4">
+        <ul className="space-y-6">
           {links.forPly.map((c) => (
             <GameChunkLinkCard
               key={c.id}
