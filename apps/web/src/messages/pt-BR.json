@@ -2243,14 +2243,12 @@
       "positionMemory": "Adicionar à memória de posições",
       "puzzle": "Criar um puzzle"
     },
-    "contribute": {
-      "add": "Adicionar"
-    },
     "chunks": {
       "title": "Chunks aplicáveis",
       "empty": "Ainda não há chunks vinculados a este lance.",
       "placeholder": "Busque chunks para adicionar…",
       "createFromPosition": "Criar um chunk a partir desta posição",
+      "suggest": "Sugerir um chunk",
       "noResults": "Nenhum chunk correspondente",
       "moreItemsHint": "+{count} mais",
       "signInToLink": "Entre para vincular um chunk.",

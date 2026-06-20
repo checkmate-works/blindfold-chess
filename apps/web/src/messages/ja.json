@@ -2247,14 +2247,12 @@
       "positionMemory": "ポジション記憶に追加",
       "puzzle": "パズルを作成"
     },
-    "contribute": {
-      "add": "追加する"
-    },
     "chunks": {
       "title": "適用できるチャンク",
       "empty": "この手にはまだチャンクが紐付けられていません。",
       "placeholder": "チャンクを検索して追加…",
       "createFromPosition": "この局面をもとにチャンクを作成",
+      "suggest": "チャンクを提案する",
       "noResults": "該当するチャンクがありません",
       "moreItemsHint": "他 {count} 件",
       "signInToLink": "チャンクを紐付けるにはログインしてください。",

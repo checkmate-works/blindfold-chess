@@ -2247,14 +2247,12 @@
       "positionMemory": "Add to position memory",
       "puzzle": "Create a puzzle"
     },
-    "contribute": {
-      "add": "Add"
-    },
     "chunks": {
       "title": "Applicable chunks",
       "empty": "No chunks linked to this move yet.",
       "placeholder": "Search chunks to add…",
       "createFromPosition": "Create a chunk from this position",
+      "suggest": "Suggest a chunk",
       "noResults": "No matching chunks",
       "moreItemsHint": "+{count} more",
       "signInToLink": "Sign in to link a chunk.",

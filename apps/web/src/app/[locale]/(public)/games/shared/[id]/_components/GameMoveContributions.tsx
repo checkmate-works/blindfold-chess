@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FaBrain } from 'react-icons/fa';
 import { FiPlus } from 'react-icons/fi';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -13,7 +12,6 @@ import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameChunkLinks } from '../_hooks/use-game-chunk-links';
@@ -44,14 +42,12 @@ type Props = {
   locale: Locale;
 };
 
-type Composer = 'comments' | 'chunks';
-
 /**
  * Per-move contributions for the position on the board: the advice comments
  * and the applicable-chunk links, shown one after another (both always
- * visible). Only the *input* is multiplexed — a single toggle picks whether
- * the composer at the bottom posts a comment or links a chunk. (Previously the
- * posted content itself was tabbed, which hid one axis behind the other.)
+ * visible). Below them sit two collapsed CTAs — "join the conversation" and
+ * "suggest a chunk" — each expanding its own composer on demand. (Previously
+ * the posted content itself was tabbed, which hid one axis behind the other.)
  */
 export function GameMoveContributions({
   gameId,
@@ -75,8 +71,6 @@ export function GameMoveContributions({
     currentUserId,
     isGameOwner,
   });
-
-  const [composer, setComposer] = useState<Composer>('comments');
 
   return (
     <div className="space-y-5">
@@ -118,51 +112,30 @@ export function GameMoveContributions({
         </ul>
       )}
 
-      {/* The single composer: a toggle selects what to post, then the matching
-          form renders below it. The posted lists above are unaffected. */}
+      {/* Two collapsed CTAs (same chrome as the topics "join the conversation"
+          button): one opens the comment composer, the other the chunk picker.
+          The posted lists above stay visible either way; anonymous clicks are
+          routed to the sign-up modal by each toggle's own auth guard. */}
       <div className="space-y-3 border-t border-border pt-4">
-        <div
-          role="group"
-          aria-label={t('contribute.add')}
-          className="flex rounded-lg bg-secondary p-1"
+        <JoinConversationToggle
+          count={thread.commentCount}
+          joinLabel={t('comments.joinConversation')}
         >
-          {(['comments', 'chunks'] as const).map((kind) => {
-            const isActive = composer === kind;
-            const label =
-              kind === 'comments' ? `💬 ${t('comments.title')}` : `🧠 ${t('chunks.badge')}`;
-            return (
-              <button
-                key={kind}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => setComposer(kind)}
-                className={`flex-1 truncate rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
-                  isActive
-                    ? 'bg-card text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+          <GameCommentForm
+            placeholder={t('comments.placeholder')}
+            submitLabel={t('comments.submit')}
+            submittingLabel={t('comments.submitting')}
+            autoFocus
+            resetOnSuccess
+            onSubmit={(body) => thread.postComment(null, body)}
+          />
+        </JoinConversationToggle>
 
-        {composer === 'comments' ? (
-          <JoinConversationToggle
-            count={thread.commentCount}
-            joinLabel={t('comments.joinConversation')}
-          >
-            <GameCommentForm
-              placeholder={t('comments.placeholder')}
-              submitLabel={t('comments.submit')}
-              submittingLabel={t('comments.submitting')}
-              autoFocus
-              resetOnSuccess
-              onSubmit={(body) => thread.postComment(null, body)}
-            />
-          </JoinConversationToggle>
-        ) : currentUserId !== undefined ? (
+        <JoinConversationToggle
+          count={links.forPly.length}
+          joinLabel={t('chunks.suggest')}
+          icon={<FaBrain aria-hidden="true" className="text-muted-foreground" />}
+        >
           <div className="space-y-3">
             <GameChunkPicker
               availableChunks={availableChunks}
@@ -222,14 +195,7 @@ export function GameMoveContributions({
               <p className="text-sm text-destructive">{links.error}</p>
             )}
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            {t('chunks.signInToLink')}{' '}
-            <Link href={`/${locale}/sign-in`} className={TEXT_LINK_MUTED_CLASSES}>
-              {t('chunks.signIn')}
-            </Link>
-          </p>
-        )}
+        </JoinConversationToggle>
       </div>
     </div>
   );

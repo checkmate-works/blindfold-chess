@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -10,7 +10,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
 }));
 
 // Hooks own the optimistic state — stub them with fixed data so this test
-// isolates the layout: both lists serial, single toggled composer.
+// isolates the layout: both lists serial, two collapsed composer CTAs.
 vi.mock('../_hooks/use-game-comment-thread', () => ({
   useGameCommentThread: () => ({
     roots: [{ id: 'r1' }],
@@ -47,15 +47,23 @@ vi.mock('./GameChunkPicker', () => ({
   GameChunkPicker: () => <div data-testid="chunk-picker" />,
 }));
 vi.mock('./GameCommentForm', () => ({ GameCommentForm: () => <div data-testid="comment-form" /> }));
+
+// Render each CTA as its label + its (would-be collapsed) children, so the test
+// can assert which composer each toggle wraps. The expand/collapse + auth-guard
+// behaviour is JoinConversationToggle's own concern, covered there.
 vi.mock('@/app/[locale]/(public)/topics/_components/JoinConversationToggle', () => ({
-  JoinConversationToggle: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="comment-composer">{children}</div>
-  ),
+  JoinConversationToggle: ({
+    joinLabel,
+    children,
+  }: {
+    joinLabel: string;
+    children: React.ReactNode;
+  }) => <div data-testid={`cta-${joinLabel}`}>{children}</div>,
 }));
 
 const FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 2 2';
 
-function renderPanel(currentUser: { id: string } | null = { id: 'u1' }) {
+function renderPanel() {
   render(
     <GameMoveContributions
       gameId="g1"
@@ -64,8 +72,7 @@ function renderPanel(currentUser: { id: string } | null = { id: 'u1' }) {
       comments={[]}
       gameChunks={[]}
       availableChunks={[]}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      currentUser={currentUser as any}
+      currentUser={{ id: 'u1', username: 'u', displayName: null, avatarUrl: null }}
       isGameOwner={false}
       locale={'en' as Locale}
     />
@@ -79,33 +86,19 @@ describe('GameMoveContributions', () => {
     expect(screen.getByTestId('chunk-card')).toHaveTextContent('Linked Chunk');
   });
 
-  it('defaults the composer to comments; only the form toggles, not the lists', () => {
+  it('offers two separate CTAs — one wrapping the comment form, one the chunk picker', () => {
     renderPanel();
-    // Comment composer is shown by default; the chunk picker is not.
-    expect(screen.getByTestId('comment-composer')).toBeInTheDocument();
-    expect(screen.queryByTestId('chunk-picker')).toBeNull();
-
-    // Switching to chunks swaps the composer — the posted lists stay put.
-    fireEvent.click(screen.getByRole('button', { name: /chunks\.badge/ }));
-    expect(screen.getByTestId('chunk-picker')).toBeInTheDocument();
-    expect(screen.queryByTestId('comment-composer')).toBeNull();
-    expect(screen.getByTestId('comment-node')).toBeInTheDocument();
-    expect(screen.getByTestId('chunk-card')).toBeInTheDocument();
+    const commentCta = screen.getByTestId('cta-comments.joinConversation');
+    const chunkCta = screen.getByTestId('cta-chunks.suggest');
+    expect(within(commentCta).getByTestId('comment-form')).toBeInTheDocument();
+    expect(within(chunkCta).getByTestId('chunk-picker')).toBeInTheDocument();
   });
 
-  it('offers the create-from-position link (encoded FEN) in the chunk composer', () => {
+  it('offers the create-from-position link (encoded FEN) inside the chunk CTA', () => {
     renderPanel();
-    fireEvent.click(screen.getByRole('button', { name: /chunks\.badge/ }));
-    expect(screen.getByRole('link', { name: 'chunks.createFromPosition' })).toHaveAttribute(
-      'href',
-      `/en/chunks/new?fen=${encodeURIComponent(FEN)}`
-    );
-  });
-
-  it('shows a sign-in prompt instead of the chunk picker for guests', () => {
-    renderPanel(null);
-    fireEvent.click(screen.getByRole('button', { name: /chunks\.badge/ }));
-    expect(screen.queryByTestId('chunk-picker')).toBeNull();
-    expect(screen.getByText('chunks.signInToLink')).toBeInTheDocument();
+    const chunkCta = screen.getByTestId('cta-chunks.suggest');
+    expect(
+      within(chunkCta).getByRole('link', { name: 'chunks.createFromPosition' })
+    ).toHaveAttribute('href', `/en/chunks/new?fen=${encodeURIComponent(FEN)}`);
   });
 });
