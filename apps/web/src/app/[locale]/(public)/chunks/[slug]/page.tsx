@@ -47,8 +47,11 @@ export const dynamic = 'force-dynamic';
 
 const searchParamsCache = createSearchParamsCache({
   sort: parseAsString.withDefault('new'),
-  tab: parseAsString.withDefault('comments'),
+  tab: parseAsString.withDefault('positions'),
 });
+
+const TAB_VALUES = ['positions', 'games', 'comments'] as const;
+type ChunkTab = (typeof TAB_VALUES)[number];
 
 type Props = {
   params: Promise<{
@@ -110,7 +113,9 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
 
   const { sort, tab } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
-  const activeTab = tab === 'games' ? 'games' : 'comments';
+  const activeTab: ChunkTab = TAB_VALUES.includes(tab as ChunkTab)
+    ? (tab as ChunkTab)
+    : 'positions';
 
   const [t, tTopics, tVideo, tPuzzle, tMemory, tChunks, tEditRequests] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
@@ -266,53 +271,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         />
       </div>
 
-      {linkedPositions.length > 0 && (
-        <>
-          <SectionTitle>{tChunks('detail.positionsSection')}</SectionTitle>
-          <p className="text-sm text-muted-foreground">{tChunks('detail.positionsDescription')}</p>
-          <div className="space-y-3">
-            {linkedPositions.map(({ position, profile }) => {
-              const positionType = parsePositionType(position.type);
-              const detailPath = positionType
-                ? getPositionDetailPath(positionType, position.id)
-                : null;
-              if (!detailPath) return null;
-
-              const isPuzzle = position.type === 'puzzle';
-              return (
-                <PositionListCard
-                  key={position.id}
-                  position={position}
-                  profile={profile}
-                  likeMeta={
-                    linkedLikeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }
-                  }
-                  replyMeta={linkedReplyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
-                  detailHref={detailPath}
-                  i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
-                  toggleLikeAction={togglePositionLike}
-                  justNowLabel={isPuzzle ? tPuzzle('justNow') : tMemory('justNow')}
-                  locale={locale}
-                  badge={
-                    <span
-                      className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
-                        isPuzzle
-                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                      }`}
-                    >
-                      {isPuzzle
-                        ? tChunks('detail.positionBadge.puzzle')
-                        : tChunks('detail.positionBadge.memory')}
-                    </span>
-                  }
-                />
-              );
-            })}
-          </div>
-        </>
-      )}
-
       <PositionAuthorAttribution
         profile={profile}
         displayName={displayName}
@@ -386,12 +344,15 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       </div>
 
       {/*
-       * The chunk's comment thread and the "games that use this chunk" list
-       * both want the bottom of the page; tab between them (underline style,
-       * shared with the profile / games-list tabs) instead of stacking. The
-       * active tab is a `?tab=` query param so each panel is server-rendered
-       * on demand and a shared link reopens on the right tab — the same
-       * navigation style as the comment `?sort=` control below.
+       * The chunk's three secondary surfaces — the positions that use this
+       * pattern, the games it shows up in, and the comment thread — each want
+       * the bottom of the page; tab between them (underline style, shared with
+       * the profile / games-list tabs) instead of stacking. The active tab is a
+       * `?tab=` query param so each panel is server-rendered on demand and a
+       * shared link reopens on the right tab — the same navigation style as the
+       * comment `?sort=` control below. Positions is the default (the chunk's
+       * primary training content); all three tabs always render so the tab set
+       * is stable and the count tells you what's inside.
        */}
       <LinkTabs
         variant="underline"
@@ -400,8 +361,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         aria-label={t('relatedGames.tabsLabel')}
         items={[
           {
-            value: 'comments',
-            label: `${t('commentsTitle')} (${commentCount})`,
+            value: 'positions',
+            label: `${tChunks('detail.positionsSection')} (${linkedPositions.length})`,
             href: `/chunks/${slug}`,
           },
           {
@@ -409,10 +370,68 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
             label: `${t('relatedGames.tab')} (${relatedGames.length})`,
             href: `/chunks/${slug}?tab=games`,
           },
+          {
+            value: 'comments',
+            label: `${t('commentsTitle')} (${commentCount})`,
+            href: `/chunks/${slug}?tab=comments`,
+          },
         ]}
       />
 
-      {activeTab === 'comments' ? (
+      {activeTab === 'positions' &&
+        (linkedPositions.length > 0 ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              {tChunks('detail.positionsDescription')}
+            </p>
+            <div className="space-y-3">
+              {linkedPositions.map(({ position, profile }) => {
+                const positionType = parsePositionType(position.type);
+                const detailPath = positionType
+                  ? getPositionDetailPath(positionType, position.id)
+                  : null;
+                if (!detailPath) return null;
+
+                const isPuzzle = position.type === 'puzzle';
+                return (
+                  <PositionListCard
+                    key={position.id}
+                    position={position}
+                    profile={profile}
+                    likeMeta={
+                      linkedLikeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }
+                    }
+                    replyMeta={linkedReplyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
+                    detailHref={detailPath}
+                    i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
+                    toggleLikeAction={togglePositionLike}
+                    justNowLabel={isPuzzle ? tPuzzle('justNow') : tMemory('justNow')}
+                    locale={locale}
+                    badge={
+                      <span
+                        className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
+                          isPuzzle
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        }`}
+                      >
+                        {isPuzzle
+                          ? tChunks('detail.positionBadge.puzzle')
+                          : tChunks('detail.positionBadge.memory')}
+                      </span>
+                    }
+                  />
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">{tChunks('detail.positionsEmpty')}</p>
+        ))}
+
+      {activeTab === 'games' && <RelatedGamesList games={relatedGames} locale={locale} />}
+
+      {activeTab === 'comments' && (
         <>
           {user && commentCount === 0 ? (
             <NewPostForm locale={locale} slug={slug} />
@@ -458,8 +477,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
             </>
           )}
         </>
-      ) : (
-        <RelatedGamesList games={relatedGames} locale={locale} />
       )}
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
