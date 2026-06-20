@@ -364,19 +364,6 @@ export function GameReplay({
               </button>
             </div>
           )}
-
-          {/* Author something from the position currently on the board —
-              chunk / position-memory / puzzle. Signed-in only, mirroring the
-              chunk picker's gate. */}
-          {currentUser && (
-            <div className="mt-3">
-              <CreateFromPositionMenu
-                locale={locale}
-                currentFen={displayFen ?? latestFen}
-                continuationSan={continuationSan}
-              />
-            </div>
-          )}
         </div>
 
         <div className="lg:col-span-1">
@@ -440,6 +427,17 @@ export function GameReplay({
         currentPly != null && (
           <div className="space-y-4">
             <SectionTitle>{moveLabel ?? t('comments.title')}</SectionTitle>
+
+            {/* Author something from the position currently on the board —
+                chunk / position-memory / puzzle. Signed-in only, mirroring the
+                chunk picker's gate. */}
+            {currentUser && (
+              <CreateFromPositionMenu
+                locale={locale}
+                currentFen={displayFen ?? latestFen}
+                continuationSan={continuationSan}
+              />
+            )}
 
             {/* Discussion vs applicable chunks, tabbed to save vertical space.
                 Both panels stay mounted (toggled via `hidden`) so their
