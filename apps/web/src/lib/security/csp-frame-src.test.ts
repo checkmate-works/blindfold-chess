@@ -77,6 +77,14 @@ describe('CSP frame-src — Phase B Tester #43 / #44', () => {
     expect(directive).toContain('www.youtube-nocookie.com');
   });
 
+  // AdSense renders some ad iframes from pagead2.googlesyndication.com; without
+  // it production logs frame-src violations for that host.
+  it('frame-src directive contains pagead2.googlesyndication.com (AdSense ad iframe host)', async () => {
+    const source = await readNextConfigSource();
+    const directive = extractFrameSrcDirective(source);
+    expect(directive).toContain('pagead2.googlesyndication.com');
+  });
+
   it('#75 next.config.ts CSP frame-src directive does NOT include the standard www.youtube.com host', async () => {
     const source = await readNextConfigSource();
     const directive = extractFrameSrcDirective(source);

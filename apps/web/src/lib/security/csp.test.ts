@@ -81,6 +81,45 @@ describe('buildCspHeader', () => {
     expect(connectSrc).toContain('*.cookieyes.com');
   });
 
+  it('allow-lists AdSense Ad Traffic Quality beacon host in connect-src (ep1)', () => {
+    // AdSense's Ad Traffic Quality system fetches https://ep1.adtrafficquality.google
+    // — the connect-src counterpart of the ep2 frame host. Missing it floods
+    // production with connect-src violations.
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toContain('ep1.adtrafficquality.google');
+  });
+
+  it('allow-lists the AdSense iframe host in frame-src (pagead2)', () => {
+    // Some AdSense ad iframes are served from pagead2.googlesyndication.com.
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const frameSrc = header.split('; ').find((d) => d.startsWith('frame-src '));
+    expect(frameSrc).toContain('pagead2.googlesyndication.com');
+    // Sanity: the existing ep2 iframe host is still present.
+    expect(frameSrc).toContain('ep2.adtrafficquality.google');
+  });
+
+  it('emits a manifest-src allowing self and the canonical site origin', () => {
+    // metadataBase resolves /manifest.webmanifest to an absolute canonical URL.
+    // When the document is served on a non-canonical host that URL is
+    // cross-origin and the default-src 'self' fallback blocks it.
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://www.blindfold-chess.online');
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const manifestSrc = header.split('; ').find((d) => d.startsWith('manifest-src '));
+    expect(manifestSrc).toBeDefined();
+    expect(manifestSrc).toContain("'self'");
+    expect(manifestSrc).toContain('https://www.blindfold-chess.online');
+    vi.unstubAllEnvs();
+  });
+
+  it('falls back to the production canonical origin in manifest-src when NEXT_PUBLIC_SITE_URL is unset', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '');
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const manifestSrc = header.split('; ').find((d) => d.startsWith('manifest-src '));
+    expect(manifestSrc).toContain('https://www.blindfold-chess.online');
+    vi.unstubAllEnvs();
+  });
+
   it('points both report-to and report-uri at the collector', () => {
     const header = buildCspHeader('n', { isDevelopment: false });
     expect(header).toContain('report-uri /api/csp-report');
