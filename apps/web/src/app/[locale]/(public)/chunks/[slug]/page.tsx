@@ -48,11 +48,36 @@ export const dynamic = 'force-dynamic';
 
 const searchParamsCache = createSearchParamsCache({
   sort: parseAsString.withDefault('new'),
-  tab: parseAsString.withDefault('positions'),
+  // No default here: an absent `tab` param must be distinguishable from an
+  // explicit `?tab=positions` so we can fall back to the first non-empty tab
+  // (see `resolveDefaultChunkTab`). Validated against `TAB_VALUES` below.
+  tab: parseAsString,
 });
 
 const TAB_VALUES = ['positions', 'games', 'comments'] as const;
 type ChunkTab = (typeof TAB_VALUES)[number];
+
+/**
+ * Pick the tab to open when the URL carries no (or an invalid) `?tab=`.
+ *
+ * Positions is the chunk's primary training content, so it wins whenever it
+ * has any items. But a freshly-created chunk often has zero positions while
+ * already carrying comments (e.g. a notification deep-links a commenter back
+ * here): defaulting to the empty Positions panel would hide the content the
+ * visitor came for. Fall through to the first tab that actually has something,
+ * in priority order, and only land on the empty Positions tab when every tab
+ * is empty.
+ */
+function resolveDefaultChunkTab(counts: {
+  positions: number;
+  games: number;
+  comments: number;
+}): ChunkTab {
+  if (counts.positions > 0) return 'positions';
+  if (counts.games > 0) return 'games';
+  if (counts.comments > 0) return 'comments';
+  return 'positions';
+}
 
 type Props = {
   params: Promise<{
@@ -116,9 +141,14 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
 
   const { sort, tab } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
-  const activeTab: ChunkTab = TAB_VALUES.includes(tab as ChunkTab)
-    ? (tab as ChunkTab)
-    : 'positions';
+  const activeTab: ChunkTab =
+    tab && TAB_VALUES.includes(tab as ChunkTab)
+      ? (tab as ChunkTab)
+      : resolveDefaultChunkTab({
+          positions: linkedPositions.length,
+          games: relatedGames.length,
+          comments: commentCount,
+        });
 
   const [
     t,
@@ -367,9 +397,11 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
        * the profile / games-list tabs) instead of stacking. The active tab is a
        * `?tab=` query param so each panel is server-rendered on demand and a
        * shared link reopens on the right tab — the same navigation style as the
-       * comment `?sort=` control below. Positions is the default (the chunk's
-       * primary training content); all three tabs always render so the tab set
-       * is stable and the count tells you what's inside.
+       * comment `?sort=` control below. With no `?tab=`, Positions opens by
+       * default (the chunk's primary training content), falling through to the
+       * first non-empty tab when Positions is empty (`resolveDefaultChunkTab`).
+       * All three tabs always render so the tab set is stable and the count
+       * tells you what's inside.
        */}
       <LinkTabs
         variant="underline"
@@ -380,8 +412,12 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         items={[
           {
             value: 'positions',
+            // Explicit `?tab=positions` (not the bare slug) so this tab always
+            // lands on the Positions panel. The bare URL resolves to the first
+            // non-empty tab (`resolveDefaultChunkTab`), so on a chunk with zero
+            // positions a bare-URL link here would loop back to Comments.
             label: `${tChunks('detail.positionsSection')} (${linkedPositions.length})`,
-            href: `/chunks/${slug}`,
+            href: `/chunks/${slug}?tab=positions`,
           },
           {
             value: 'games',
