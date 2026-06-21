@@ -29,13 +29,17 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
   // feature detection.
   const availability = useStorageAvailabilityContext();
   const pushed = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) return;
     if (!availability?.all) return;
 
-    const tryPush = () => {
-      if (pushed.current) return;
+    // Returns `true` when no further action is needed (pushed, already
+    // pushed, or intentionally skipped); `false` when the push was deferred
+    // and should be retried once the container has a real width.
+    const tryPush = (): boolean => {
+      if (pushed.current) return true;
       // Respect the `bfc_ads_hidden` cookie surfaced as
       // `<html data-ads-hidden="true">` by the inline no-flash bootstrap in
       // `[locale]/layout.tsx`. Skipping `push()` here prevents a network
@@ -47,7 +51,19 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
       // was backgrounded, the queued push is skipped on return. If the push
       // has already fired, we cannot un-fire it — this is a one-shot
       // correction for not-yet-pushed slots only.
-      if (document.documentElement.dataset.adsHidden === 'true') return;
+      if (document.documentElement.dataset.adsHidden === 'true') return true;
+
+      // Responsive units (`data-ad-format="auto"` + full-width-responsive)
+      // size themselves from the container's width. If that width is 0 at
+      // push time — off-screen, a collapsed flex/grid parent, or mid RSC
+      // soft-navigation — AdSense throws "No slot size for availableWidth=0"
+      // asynchronously inside its own setTimeout, so the try/catch below
+      // cannot catch it and it surfaces as an unhandled error. Defer the push
+      // until the container is laid out with a real width (ResizeObserver
+      // below retries). Reading offsetWidth forces a synchronous layout, so
+      // the value reflects the committed layout, not a stale frame.
+      const el = containerRef.current;
+      if (!el || el.offsetWidth === 0) return false;
       pushed.current = true;
 
       try {
@@ -55,9 +71,18 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
       } catch {
         // Silently fail - ads are non-critical
       }
+      return true;
     };
 
-    tryPush();
+    // If the container has no width yet, watch for it to gain one and push
+    // then. This is the actual fix for the availableWidth=0 crash.
+    let observer: ResizeObserver | null = null;
+    if (!tryPush() && containerRef.current && typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => {
+        if (tryPush()) observer?.disconnect();
+      });
+      observer.observe(containerRef.current);
+    }
 
     const onVisibility = () => {
       if (document.visibilityState === 'visible') tryPush();
@@ -65,6 +90,7 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
+      observer?.disconnect();
     };
   }, [availability]);
 
@@ -78,7 +104,7 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
   if (!availability?.all) return null;
 
   return (
-    <div className={`mx-auto max-w-full overflow-hidden ${className ?? ''}`}>
+    <div ref={containerRef} className={`mx-auto max-w-full overflow-hidden ${className ?? ''}`}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}

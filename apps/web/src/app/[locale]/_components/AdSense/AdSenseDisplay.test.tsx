@@ -48,6 +48,26 @@ const blocked: StorageAvailability = {
 
 describe('AdSenseDisplay', () => {
   const originalAdsbygoogle = (window as unknown as { adsbygoogle?: unknown }).adsbygoogle;
+  const originalResizeObserver = (globalThis as unknown as { ResizeObserver?: unknown })
+    .ResizeObserver;
+
+  // jsdom reports offsetWidth as 0 for every element; the component now gates
+  // `push()` on a non-zero container width. Mock it so the default is a real
+  // width (matching a laid-out browser) and individual tests can force 0 to
+  // exercise the availableWidth=0 deferral path.
+  let mockOffsetWidth = 300;
+
+  // Captures every ResizeObserver callback so a test can fire it on demand.
+  let resizeCallbacks: ResizeObserverCallback[];
+
+  class MockResizeObserver {
+    constructor(cb: ResizeObserverCallback) {
+      resizeCallbacks.push(cb);
+    }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
 
   beforeEach(() => {
     mockedUseContext.mockReset();
@@ -56,13 +76,28 @@ describe('AdSenseDisplay', () => {
     (window as unknown as { adsbygoogle?: unknown[] }).adsbygoogle = [];
     // Reset the ads-hidden marker between tests so state doesn't leak.
     delete document.documentElement.dataset.adsHidden;
+
+    mockOffsetWidth = 300;
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+      configurable: true,
+      get: () => mockOffsetWidth,
+    });
+
+    resizeCallbacks = [];
+    (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = MockResizeObserver;
   });
 
   afterEach(() => {
     cleanup();
     (window as unknown as { adsbygoogle?: unknown }).adsbygoogle = originalAdsbygoogle;
     delete document.documentElement.dataset.adsHidden;
+    delete (HTMLElement.prototype as unknown as { offsetWidth?: number }).offsetWidth;
+    (globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver = originalResizeObserver;
   });
+
+  function fireResize() {
+    resizeCallbacks.forEach((cb) => cb([], {} as ResizeObserver));
+  }
 
   function setVisibility(state: 'visible' | 'hidden') {
     Object.defineProperty(document, 'visibilityState', {
@@ -137,6 +172,35 @@ describe('AdSenseDisplay', () => {
 
     // Re-rendering must NOT duplicate pushes — `pushed` ref guards against it.
     rerender(<AdSenseDisplay slotId="1234567890" slot="content-middle" />);
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('defers push when the container has 0 width, then pushes once it is laid out', () => {
+    // Reproduces "TagError: adsbygoogle.push() error: No slot size for
+    // availableWidth=0": pushing a responsive unit while its container is
+    // 0-width throws asynchronously inside AdSense. The component must wait
+    // for a non-zero width instead.
+    mockedUseContext.mockReturnValue(allAvailable);
+    mockOffsetWidth = 0;
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    render(<AdSenseDisplay slotId="1234567890" slot="content-middle" />);
+
+    // 0-width at mount: nothing pushed yet (this is the crash guard).
+    expect(pushSpy).not.toHaveBeenCalled();
+
+    // Container gains a real width; the ResizeObserver fires.
+    mockOffsetWidth = 320;
+    fireResize();
+
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+
+    // Subsequent resizes must not re-push.
+    fireResize();
     expect(pushSpy).toHaveBeenCalledTimes(1);
   });
 
