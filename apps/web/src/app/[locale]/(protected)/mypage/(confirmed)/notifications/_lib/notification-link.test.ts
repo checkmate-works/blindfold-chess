@@ -48,6 +48,23 @@ describe('buildNotificationLink — chunk comment deep links', () => {
     expect(link).toBe('/chunks/notification-test?tab=comments#post-reply-9');
   });
 
+  it('points a like on a chunk comment at the comments tab anchor', () => {
+    // A like on a comment in the chunk thread is type 'like' +
+    // targetType 'topic_post' with PostMetadata (topicType 'chunk'), so it
+    // flows through `buildPostDetailUrl` — the same path as a new comment —
+    // and must carry ?tab=comments, NOT the bare-chunk like branch below.
+    const link = buildNotificationLink(
+      makeNotification({
+        type: 'like',
+        targetType: 'topic_post',
+        targetId: 'post-1',
+        metadata: { topicType: 'chunk', topicKey: 'notification-test', postId: 'post-1' },
+      }),
+      {}
+    );
+    expect(link).toBe('/chunks/notification-test?tab=comments#post-post-1');
+  });
+
   it('keeps a like on the chunk entity itself on the bare chunk URL (no tab param)', () => {
     const link = buildNotificationLink(
       makeNotification({
