@@ -104,8 +104,11 @@ function buildPostDetailUrl(
     // (/chunks/{slug}) renders the full inline comment tree, where every
     // node has `id="post-{id}"`. Deep-link to that anchor — same scheme as
     // the position pages — for both top-level posts and replies.
+    // The comment tree only renders under `?tab=comments`; without it the
+    // page opens on Positions (or the first non-empty tab) and the
+    // `#post-{id}` anchor has no target, so the param is required.
     const targetId = replyId ?? postId;
-    return `/chunks/${topicKey}#post-${targetId}`;
+    return `/chunks/${topicKey}?tab=comments#post-${targetId}`;
   }
   const segment = getTopicSegment(topicType);
   const baseUrl = `/topics/${segment}/${topicKey}/posts/${postId}`;
