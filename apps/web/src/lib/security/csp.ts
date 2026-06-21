@@ -115,6 +115,19 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
   const supabaseOrigin = originFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const supabaseWsOrigin = wsOriginFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
+  // Canonical site origin. `metadataBase` resolves the `/manifest.webmanifest`
+  // link to an ABSOLUTE URL on the canonical host (e.g.
+  // `https://www.blindfold-chess.online/...`). When a request is served on a
+  // different host than the canonical one (e.g. the bare apex
+  // `blindfold-chess.online` before the apex->www redirect, or a crawler hitting
+  // it directly), that absolute manifest URL is cross-origin to the document's
+  // `'self'`, so `manifest-src` (which otherwise falls back to `default-src
+  // 'self'`) blocks it. Allow-listing the canonical origin fixes the violation
+  // regardless of which host actually served the page. Falls back to the known
+  // production canonical so the entry is present even if the env var is unset.
+  const siteOrigin =
+    originFromUrl(process.env.NEXT_PUBLIC_SITE_URL) ?? 'https://www.blindfold-chess.online';
+
   // Keep host allow-lists: they act as a fallback for browsers that do not
   // implement `'strict-dynamic'`. Modern browsers ignore host-based entries
   // in `script-src` once `'strict-dynamic'` is present, but older ones still
@@ -160,11 +173,21 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     // `*.cookieyes.com`: the CookieYes consent banner POSTs consent logs to
     // `log.cookieyes.com` (its CDN script host `cdn-cookieyes.com` is already
     // in `script-src`).
+    // `ep1.adtrafficquality.google`: AdSense's Ad Traffic Quality system POSTs
+    // beacons here via fetch/XHR (the iframe counterpart `ep2.adtrafficquality.google`
+    // lives in `frame-src` below). Without it production logs a flood of
+    // connect-src violations.
     "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
-      ' pagead2.googlesyndication.com adservice.google.com *.cookieyes.com',
-    'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
+      ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google *.cookieyes.com',
+    // `pagead2.googlesyndication.com`: AdSense also renders some ad iframes from
+    // this host (in addition to googleads.g.doubleclick.net / tpc.googlesyndication.com).
+    'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
+    // `'self'` covers the host that served the document; `siteOrigin` covers the
+    // absolute canonical manifest URL emitted by `metadataBase` when the request
+    // was served on a non-canonical host. See `siteOrigin` derivation above.
+    `manifest-src 'self' ${siteOrigin}`,
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
