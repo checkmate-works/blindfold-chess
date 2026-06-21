@@ -21,7 +21,7 @@ import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-g
 
 import { db } from './index';
 import type { GameRecord } from './schema';
-import { feedItems, gameTokens, games, profiles } from './schema';
+import { feedItems, gameChunks, gameTokens, games, profiles } from './schema';
 
 /**
  * Statuses a published game is publicly viewable in. Currently just `public`;
@@ -225,6 +225,66 @@ export async function listGamesByAuthorId(
     .offset(offset);
 
   return mapGameRowsToListItems(rows);
+}
+
+/**
+ * A {@link SharedGameListItem} plus the moves at which it links a given chunk.
+ * `plies` are 0-based and sorted ascending; a game that links the chunk at
+ * several moves still appears once, with one entry per move in `plies`.
+ */
+export type ChunkLinkedGame = SharedGameListItem & { plies: number[] };
+
+/**
+ * Publicly-visible games that link a given chunk (the reverse of the per-game
+ * chunk list), newest link first, deduped to one entry per game with its linked
+ * moves aggregated into `plies`. Returns the same {@link SharedGameListItem}
+ * shape the gallery / profile games tab render, so the chunk page can reuse the
+ * exact same `CatalogListCard`. Matches the gallery's visibility rule
+ * (`public`, non-deleted).
+ */
+export async function listGamesLinkingChunk(
+  chunkId: string,
+  limit = 50
+): Promise<ChunkLinkedGame[]> {
+  // 1. Which public games link this chunk, and at which moves. Newest link
+  //    first so the most recently-tagged games lead the list.
+  const linkRows = await db
+    .select({ gameId: gameChunks.gameId, ply: gameChunks.ply })
+    .from(gameChunks)
+    .innerJoin(games, eq(games.id, gameChunks.gameId))
+    .where(
+      and(eq(gameChunks.chunkId, chunkId), isNull(games.deletedAt), eq(games.status, 'public'))
+    )
+    .orderBy(desc(gameChunks.createdAt), desc(gameChunks.id));
+
+  // 2. Group by game, preserving first-seen (newest-link) order; collect a
+  //    sorted, de-duplicated move list per game.
+  const pliesByGame = new Map<string, Set<number>>();
+  const order: string[] = [];
+  for (const r of linkRows) {
+    let set = pliesByGame.get(r.gameId);
+    if (!set) {
+      set = new Set<number>();
+      pliesByGame.set(r.gameId, set);
+      order.push(r.gameId);
+    }
+    set.add(r.ply);
+  }
+  const gameIds = order.slice(0, limit);
+  if (gameIds.length === 0) return [];
+
+  // 3. Hydrate the full card projection (incl. opening detection) for those
+  //    games, then restore the newest-link order and attach the moves.
+  const rows = await gameListQuery().where(inArray(games.id, gameIds));
+  const items = await mapGameRowsToListItems(rows);
+  const byId = new Map(items.map((it) => [it.id, it]));
+
+  return gameIds.flatMap((id) => {
+    const item = byId.get(id);
+    if (!item) return [];
+    const plies = [...(pliesByGame.get(id) ?? [])].sort((a, b) => a - b);
+    return [{ ...item, plies }];
+  });
 }
 
 /** Count an author's publicly-visible games (matches {@link listGamesByAuthorId}). */

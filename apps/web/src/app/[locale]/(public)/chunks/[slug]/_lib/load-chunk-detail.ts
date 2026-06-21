@@ -10,9 +10,14 @@ import {
   getFeedbackTopicsForChunk,
   getLinkedPositionsForChunk,
 } from '@/lib/chunks/queries';
-import { listGamesForChunk } from '@/lib/db/game-chunks';
+import { listGamesLinkingChunk } from '@/lib/db/games';
+import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import type { LikeMeta } from '@/lib/db/like-queries';
-import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import {
+  EMPTY_REPLY_META,
+  getGameCommentMetaMap,
+  getReplyMetaMap,
+} from '@/lib/db/reply-meta-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
@@ -77,7 +82,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
     getFeedbackTopicsForChunk(chunk.id),
     getViewerPendingEditRequestForChunk(chunk.id, userId ?? null),
     getChunkLikeMeta(chunk.id, userId),
-    listGamesForChunk(chunk.id),
+    listGamesLinkingChunk(chunk.id),
   ]);
 
   // Linked positions can mix puzzle and memory types. Reply meta is keyed by
@@ -92,7 +97,17 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
     .filter((r) => r.position.type === 'memory')
     .map((r) => r.position.id);
 
-  const [linkedLikeMetaMap, puzzleReplyMetaMap, memoryReplyMetaMap] = await Promise.all([
+  // Related games render the same CatalogListCard the gallery / profile use, so
+  // they need the same per-game like + comment meta (keyed by game id).
+  const relatedGameIds = relatedGames.map((g) => g.id);
+
+  const [
+    linkedLikeMetaMap,
+    puzzleReplyMetaMap,
+    memoryReplyMetaMap,
+    relatedGamesLikeMetaMap,
+    relatedGamesReplyMetaMap,
+  ] = await Promise.all([
     linkedPositionIds.length > 0
       ? getPositionLikeMetaMap(linkedPositionIds, userId)
       : Promise.resolve(new Map<string, LikeMeta>()),
@@ -101,6 +116,12 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
       : Promise.resolve(new Map<string, ReplyMeta>()),
     memoryPositionIds.length > 0
       ? getReplyMetaMap('position_memory', memoryPositionIds)
+      : Promise.resolve(new Map<string, ReplyMeta>()),
+    relatedGameIds.length > 0
+      ? getLikeMetaMap(GAME_LIKE_TARGET, relatedGameIds, userId)
+      : Promise.resolve(new Map<string, LikeMeta>()),
+    relatedGameIds.length > 0
+      ? getGameCommentMetaMap(relatedGameIds)
       : Promise.resolve(new Map<string, ReplyMeta>()),
   ]);
   const linkedReplyMetaMap = new Map<string, ReplyMeta>([
@@ -130,6 +151,8 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
     linkedReplyMetaMap,
     attachments,
     relatedGames,
+    relatedGamesLikeMetaMap,
+    relatedGamesReplyMetaMap,
   };
 }
 

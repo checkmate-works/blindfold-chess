@@ -4,7 +4,7 @@
  * the link asserts "this known pattern applies to this position". Reads expose
  * the chunk (title / slug / board) plus the suggester's public profile.
  */
-import { and, asc, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { db } from './index';
@@ -69,68 +69,6 @@ export async function listGameChunks(gameId: string): Promise<GameChunkItem[]> {
           username: r.suggesterUsername,
           displayName: r.suggesterDisplayName,
           avatarUrl: r.suggesterAvatarUrl,
-        }
-      : null,
-  }));
-}
-
-export type ChunkGameItem = {
-  gameId: string;
-  /** 0-based move index the chunk is linked at; the deep link uses `ply + 1`. */
-  ply: number;
-  title: string;
-  result: 'win' | 'loss' | 'draw';
-  playerColor: 'white' | 'black';
-  /** When the link was created (newest first in the list). */
-  createdAt: Date;
-  author: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
-};
-
-/**
- * Reverse of {@link listGameChunks}: every public game that links this chunk,
- * one row per `(game, ply)` so a game appears once per position it uses the
- * chunk at. Newest link first. Mirrors the public-catalog visibility rule from
- * `listSharedGames` (`status = 'public'` and not soft-deleted); the game's
- * author profile is left-joined for the by-line.
- */
-export async function listGamesForChunk(chunkId: string, limit = 50): Promise<ChunkGameItem[]> {
-  const rows = await db
-    .select({
-      gameId: games.id,
-      ply: gameChunks.ply,
-      title: games.title,
-      result: games.result,
-      playerColor: games.playerColor,
-      createdAt: gameChunks.createdAt,
-      authorUsername: profiles.username,
-      authorDisplayName: profiles.displayName,
-      authorAvatarUrl: profiles.avatarUrl,
-    })
-    .from(gameChunks)
-    .innerJoin(games, eq(games.id, gameChunks.gameId))
-    .leftJoin(profiles, and(eq(profiles.id, games.authorId), isNull(profiles.deletedAt)))
-    .where(
-      and(eq(gameChunks.chunkId, chunkId), isNull(games.deletedAt), eq(games.status, 'public'))
-    )
-    .orderBy(desc(gameChunks.createdAt), desc(gameChunks.id))
-    .limit(limit);
-
-  return rows.map((r) => ({
-    gameId: r.gameId,
-    ply: r.ply,
-    title: r.title,
-    result: r.result,
-    playerColor: r.playerColor,
-    createdAt: r.createdAt,
-    author: r.authorUsername
-      ? {
-          username: r.authorUsername,
-          displayName: r.authorDisplayName,
-          avatarUrl: r.authorAvatarUrl,
         }
       : null,
   }));

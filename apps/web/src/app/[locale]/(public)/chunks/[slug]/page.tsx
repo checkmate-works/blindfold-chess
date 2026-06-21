@@ -24,6 +24,7 @@ import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelec
 import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { HelpTourButton, LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -106,6 +107,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     linkedReplyMetaMap,
     attachments,
     relatedGames,
+    relatedGamesLikeMetaMap,
+    relatedGamesReplyMetaMap,
   } = data;
 
   const tCommon = await getTranslations({ locale, namespace: 'Common' });
@@ -117,7 +120,18 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     ? (tab as ChunkTab)
     : 'positions';
 
-  const [t, tTopics, tVideo, tPuzzle, tMemory, tChunks, tEditRequests] = await Promise.all([
+  const [
+    t,
+    tTopics,
+    tVideo,
+    tPuzzle,
+    tMemory,
+    tChunks,
+    tEditRequests,
+    tSharedGames,
+    tPlay,
+    tOpeningNames,
+  ] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
@@ -125,6 +139,9 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     getTranslations({ locale, namespace: 'practice.positionMemory' }),
     getTranslations({ locale, namespace: 'chunks' }),
     getTranslations({ locale, namespace: 'chunks.editRequests' }),
+    getTranslations({ locale, namespace: 'sharedGames' }),
+    getTranslations({ locale, namespace: 'play' }),
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
   ]);
 
   const commentTree = buildCommentTree(allComments, sortBy);
@@ -429,7 +446,25 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           <p className="text-sm text-muted-foreground">{tChunks('detail.positionsEmpty')}</p>
         ))}
 
-      {activeTab === 'games' && <RelatedGamesList games={relatedGames} locale={locale} />}
+      {activeTab === 'games' && (
+        <RelatedGamesList
+          games={relatedGames}
+          likeMetaMap={relatedGamesLikeMetaMap}
+          replyMetaMap={relatedGamesReplyMetaMap}
+          emptyReplyMeta={EMPTY_REPLY_META}
+          locale={locale}
+          justNowLabel={tSharedGames('detail.justNow')}
+          colorLabels={{
+            white: tPlay('playerColor.white'),
+            black: tPlay('playerColor.black'),
+          }}
+          resolveOpeningName={(slug, fallbackName) =>
+            getOpeningDisplayName(tOpeningNames, slug, fallbackName)
+          }
+          emptyLabel={t('relatedGames.empty')}
+          moveLabel={(n) => t('relatedGames.moveLabel', { n })}
+        />
+      )}
 
       {activeTab === 'comments' && (
         <>
