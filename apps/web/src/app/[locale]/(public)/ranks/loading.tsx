@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
@@ -13,7 +13,8 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
  * placeholders.
  */
 export default async function RanksLoading() {
-  const t = await getTranslations('ranks');
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'ranks' });
 
   return (
     <div className="space-y-8">

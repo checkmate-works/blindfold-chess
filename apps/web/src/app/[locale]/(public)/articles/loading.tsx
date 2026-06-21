@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
@@ -12,7 +12,8 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
  * bar placeholders.
  */
 export default async function ArticlesLoading() {
-  const t = await getTranslations('articles');
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'articles' });
 
   return (
     <div className="space-y-8">

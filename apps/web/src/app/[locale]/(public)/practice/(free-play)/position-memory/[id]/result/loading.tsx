@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { BoardSkeleton } from '@/app/_components';
 
@@ -24,9 +24,16 @@ import { Divider, PagePanel, SectionTitle } from '@/app/[locale]/_components';
  *   - Divider + Breadcrumb (Home / Practice / Position Memory / <position bar> / Result)
  */
 export default async function PositionMemoryResultLoading() {
+  // `loading.tsx` can't receive `params`, and the bare `getTranslations()`
+  // resolves against the locale set by `setRequestLocale` — which hasn't run
+  // yet while the page is still suspended, so it falls back to the default
+  // locale and renders the static text in English on a `ja` page. Resolve the
+  // request locale explicitly so the skeleton's text is localized from the
+  // first paint.
+  const locale = await getLocale();
   const [t, tNav] = await Promise.all([
-    getTranslations('practice.positionMemory'),
-    getTranslations('navigation'),
+    getTranslations({ locale, namespace: 'practice.positionMemory' }),
+    getTranslations({ locale, namespace: 'navigation' }),
   ]);
 
   return (

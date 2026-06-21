@@ -11,7 +11,7 @@
  * openings-link heading are runtime values, so they render as placeholder
  * bars.
  */
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { BoardSkeleton } from '@/app/_components';
 
@@ -20,7 +20,8 @@ import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { TopicCardSkeleton } from '../../_components/TopicCardSkeleton';
 
 export default async function SquareDetailLoading() {
-  const t = await getTranslations('topics');
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (
     <div className="space-y-8">
