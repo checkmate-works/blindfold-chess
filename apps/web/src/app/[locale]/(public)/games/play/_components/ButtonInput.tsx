@@ -89,7 +89,11 @@ export function ButtonInput({
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 bg-card rounded-lg">
+    // translate="no": piece letters, coordinates and SAN move text are notation,
+    // not prose. Browser auto-translation wraps these text nodes in <font>
+    // elements, desyncing React's DOM refs and crashing commit-phase deletion
+    // with "Failed to execute 'removeChild'". See facebook/react#11538.
+    <div translate="no" className="flex flex-col gap-3 p-4 bg-card rounded-lg">
       {/* Row 1: Pieces + capture */}
       <div className="flex gap-2 justify-center">
         {PIECE_BUTTONS.map(({ char, type, labelKey }) => (
