@@ -375,6 +375,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         variant="underline"
         locale={locale}
         activeValue={activeTab}
+        scroll={false}
         aria-label={t('relatedGames.tabsLabel')}
         items={[
           {

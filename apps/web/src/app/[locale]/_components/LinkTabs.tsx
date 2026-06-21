@@ -26,6 +26,13 @@ type Props = {
   'aria-label'?: string;
   className?: string;
   /**
+   * Forwarded to each tab's `Link`. Pass `false` when the tab row sits partway
+   * down the page (e.g. the chunk detail tabs) so switching tabs re-renders the
+   * panel server-side without yanking the viewport back to the top — the reader
+   * stays on the tab row. Defaults to Next's behavior (scroll to top).
+   */
+  scroll?: boolean;
+  /**
    * Visual style of the tab row:
    * - `segmented` (default): pill tabs on a `bg-secondary` track with a raised
    *   `bg-card` active pill; tabs stretch to fill the row. Used by leaderboard
@@ -54,6 +61,7 @@ export function LinkTabs({
   locale,
   'aria-label': ariaLabel,
   className,
+  scroll,
   variant = 'segmented',
 }: Props) {
   return (
@@ -69,6 +77,7 @@ export function LinkTabs({
             key={item.value}
             href={item.href}
             locale={locale}
+            scroll={scroll}
             role="tab"
             aria-selected={isActive}
             className={tabItemClass(variant, isActive)}
