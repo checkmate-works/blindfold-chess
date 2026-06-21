@@ -2905,6 +2905,8 @@
       "createdBy": "投稿者",
       "positionsSection": "ポジション",
       "positionsDescription": "このチャンクパターンが効果的な問題。",
+      "positionsEmpty": "このチャンクを使ったポジションはまだありません。",
+      "relatedGamesDescription": "このチャンクが出現した対局。",
       "positionBadge": {
         "puzzle": "パズル",
         "memory": "記憶"
@@ -4567,6 +4569,12 @@
       "readMore": "続きを読む",
       "detail": {
         "pageTitle": "チャンクコメント"
+      },
+      "relatedGames": {
+        "tabsLabel": "ポジション・関連ゲーム・コメント",
+        "tab": "関連ゲーム",
+        "empty": "このチャンクを使っているゲームはまだありません。",
+        "moveLabel": "{n}手目"
       },
       "postDetail": {
         "authorView": "{author}さんの「{name}」についてのコメント",

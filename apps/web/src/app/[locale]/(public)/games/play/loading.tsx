@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { readBoardVisibilityFromCookies } from '@/lib/games/board-visibility-cookie.server';
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
@@ -43,10 +43,17 @@ export const dynamic = 'force-dynamic';
  * CLS-free for 'never'-mode users (whose real layout is ~64px, not ~576px).
  */
 export default async function GamesPlayLoading() {
+  // `loading.tsx` can't receive `params`, and the bare `getTranslations()`
+  // resolves against the locale set by `setRequestLocale` — which hasn't run
+  // yet while the page is still suspended, so it falls back to the default
+  // locale and renders the title in English on a `ja` page. Resolve the
+  // request locale explicitly so the skeleton's static text is localized from
+  // the first paint.
+  const locale = await getLocale();
   const [moveInputHint, boardVisibility, tPlay] = await Promise.all([
     readMoveInputPreferenceFromCookies(),
     readBoardVisibilityFromCookies(),
-    getTranslations('play'),
+    getTranslations({ locale, namespace: 'play' }),
   ]);
   const moveInputSkeletonProps = deriveMoveInputSkeletonProps(moveInputHint);
 

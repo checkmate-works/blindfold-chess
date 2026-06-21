@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
@@ -15,7 +15,11 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
  * and a Markdown article body respectively).
  */
 export default async function LearnLoading() {
-  const [t, tNav] = await Promise.all([getTranslations('learn'), getTranslations('navigation')]);
+  const locale = await getLocale();
+  const [t, tNav] = await Promise.all([
+    getTranslations({ locale, namespace: 'learn' }),
+    getTranslations({ locale, namespace: 'navigation' }),
+  ]);
 
   return (
     <div className="space-y-8">

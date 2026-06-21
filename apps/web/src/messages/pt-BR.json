@@ -2934,6 +2934,8 @@
       "createdBy": "Criado por",
       "positionsSection": "Posições",
       "positionsDescription": "Problemas em que este padrão de chunk é eficaz.",
+      "positionsEmpty": "Ainda não há posições que usem este chunk.",
+      "relatedGamesDescription": "Partidas em que este chunk apareceu.",
       "positionBadge": {
         "puzzle": "Problema",
         "memory": "Memória"
@@ -4556,6 +4558,12 @@
       "readMore": "Leia mais",
       "detail": {
         "pageTitle": "Comentário do Chunk"
+      },
+      "relatedGames": {
+        "tabsLabel": "Posições, partidas relacionadas e comentários",
+        "tab": "Partidas relacionadas",
+        "empty": "Ainda não há partidas que usem este chunk.",
+        "moveLabel": "Lance {n}"
       },
       "postDetail": {
         "authorView": "Opinião de {author} sobre {name}",

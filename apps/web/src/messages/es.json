@@ -2934,6 +2934,8 @@
       "createdBy": "Creado por",
       "positionsSection": "Posiciones",
       "positionsDescription": "Problemas donde este patrón de chunk es eficaz.",
+      "positionsEmpty": "Todavía no hay posiciones que usen este chunk.",
+      "relatedGamesDescription": "Partidas donde apareció este chunk.",
       "positionBadge": {
         "puzzle": "Problema",
         "memory": "Memoria"
@@ -4556,6 +4558,12 @@
       "readMore": "Leer más",
       "detail": {
         "pageTitle": "Comentario del Chunk"
+      },
+      "relatedGames": {
+        "tabsLabel": "Posiciones, partidas relacionadas y comentarios",
+        "tab": "Partidas relacionadas",
+        "empty": "Todavía no hay partidas que usen este chunk.",
+        "moveLabel": "Jugada {n}"
       },
       "postDetail": {
         "authorView": "Opinión de {author} sobre {name}",

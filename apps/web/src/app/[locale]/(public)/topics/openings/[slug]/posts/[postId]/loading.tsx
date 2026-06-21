@@ -1,12 +1,13 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { BoardSkeleton } from '@/app/_components';
 
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 export default async function OpeningPostDetailLoading() {
-  const t = await getTranslations('topics');
-  const dt = await getTranslations('topics.openings');
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'topics' });
+  const dt = await getTranslations({ locale, namespace: 'topics.openings' });
 
   return (
     <div className="space-y-8">

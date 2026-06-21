@@ -24,7 +24,8 @@ import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelec
 import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
+import { HelpTourButton, LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -39,6 +40,7 @@ import { toggleChunkLike } from './_actions/toggleChunkLike';
 import { togglePositionLike } from './_actions/togglePositionLike';
 import { EditRequestCallout } from './_components/EditRequestCallout';
 import { NewPostForm } from './_components/NewPostForm';
+import { RelatedGamesList } from './_components/RelatedGamesList';
 import { EMPTY_REPLY_META, loadChunkDetail } from './_lib/load-chunk-detail';
 import { resolveChunkDisplayState } from './_lib/resolve-chunk-display-state';
 
@@ -46,7 +48,11 @@ export const dynamic = 'force-dynamic';
 
 const searchParamsCache = createSearchParamsCache({
   sort: parseAsString.withDefault('new'),
+  tab: parseAsString.withDefault('positions'),
 });
+
+const TAB_VALUES = ['positions', 'games', 'comments'] as const;
+type ChunkTab = (typeof TAB_VALUES)[number];
 
 type Props = {
   params: Promise<{
@@ -100,15 +106,32 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     linkedLikeMetaMap,
     linkedReplyMetaMap,
     attachments,
+    relatedGames,
+    relatedGamesLikeMetaMap,
+    relatedGamesReplyMetaMap,
   } = data;
 
   const tCommon = await getTranslations({ locale, namespace: 'Common' });
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
-  const { sort } = await searchParamsCache.parse(searchParams);
+  const { sort, tab } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
+  const activeTab: ChunkTab = TAB_VALUES.includes(tab as ChunkTab)
+    ? (tab as ChunkTab)
+    : 'positions';
 
-  const [t, tTopics, tVideo, tPuzzle, tMemory, tChunks, tEditRequests] = await Promise.all([
+  const [
+    t,
+    tTopics,
+    tVideo,
+    tPuzzle,
+    tMemory,
+    tChunks,
+    tEditRequests,
+    tSharedGames,
+    tPlay,
+    tOpeningNames,
+  ] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
@@ -116,6 +139,9 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     getTranslations({ locale, namespace: 'practice.positionMemory' }),
     getTranslations({ locale, namespace: 'chunks' }),
     getTranslations({ locale, namespace: 'chunks.editRequests' }),
+    getTranslations({ locale, namespace: 'sharedGames' }),
+    getTranslations({ locale, namespace: 'play' }),
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
   ]);
 
   const commentTree = buildCommentTree(allComments, sortBy);
@@ -262,53 +288,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         />
       </div>
 
-      {linkedPositions.length > 0 && (
-        <>
-          <SectionTitle>{tChunks('detail.positionsSection')}</SectionTitle>
-          <p className="text-sm text-muted-foreground">{tChunks('detail.positionsDescription')}</p>
-          <div className="space-y-3">
-            {linkedPositions.map(({ position, profile }) => {
-              const positionType = parsePositionType(position.type);
-              const detailPath = positionType
-                ? getPositionDetailPath(positionType, position.id)
-                : null;
-              if (!detailPath) return null;
-
-              const isPuzzle = position.type === 'puzzle';
-              return (
-                <PositionListCard
-                  key={position.id}
-                  position={position}
-                  profile={profile}
-                  likeMeta={
-                    linkedLikeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }
-                  }
-                  replyMeta={linkedReplyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
-                  detailHref={detailPath}
-                  i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
-                  toggleLikeAction={togglePositionLike}
-                  justNowLabel={isPuzzle ? tPuzzle('justNow') : tMemory('justNow')}
-                  locale={locale}
-                  badge={
-                    <span
-                      className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
-                        isPuzzle
-                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                      }`}
-                    >
-                      {isPuzzle
-                        ? tChunks('detail.positionBadge.puzzle')
-                        : tChunks('detail.positionBadge.memory')}
-                    </span>
-                  }
-                />
-              );
-            })}
-          </div>
-        </>
-      )}
-
       <PositionAuthorAttribution
         profile={profile}
         displayName={displayName}
@@ -381,49 +360,168 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         </div>
       </div>
 
-      <SectionTitle>{t('commentsTitle')}</SectionTitle>
+      {/*
+       * The chunk's three secondary surfaces — the positions that use this
+       * pattern, the games it shows up in, and the comment thread — each want
+       * the bottom of the page; tab between them (underline style, shared with
+       * the profile / games-list tabs) instead of stacking. The active tab is a
+       * `?tab=` query param so each panel is server-rendered on demand and a
+       * shared link reopens on the right tab — the same navigation style as the
+       * comment `?sort=` control below. Positions is the default (the chunk's
+       * primary training content); all three tabs always render so the tab set
+       * is stable and the count tells you what's inside.
+       */}
+      <LinkTabs
+        variant="underline"
+        locale={locale}
+        activeValue={activeTab}
+        scroll={false}
+        aria-label={t('relatedGames.tabsLabel')}
+        items={[
+          {
+            value: 'positions',
+            label: `${tChunks('detail.positionsSection')} (${linkedPositions.length})`,
+            href: `/chunks/${slug}`,
+          },
+          {
+            value: 'games',
+            label: `${t('relatedGames.tab')} (${relatedGames.length})`,
+            href: `/chunks/${slug}?tab=games`,
+          },
+          {
+            value: 'comments',
+            label: `${t('commentsTitle')} (${commentCount})`,
+            href: `/chunks/${slug}?tab=comments`,
+          },
+        ]}
+      />
 
-      {user && commentCount === 0 ? (
-        <NewPostForm locale={locale} slug={slug} />
-      ) : user ? (
-        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
-          <NewPostForm locale={locale} slug={slug} />
-        </JoinConversationToggle>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
-            {t('signInToComment')}
-          </Link>
-        </p>
+      {activeTab === 'positions' &&
+        (linkedPositions.length > 0 ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              {tChunks('detail.positionsDescription')}
+            </p>
+            <div className="space-y-3">
+              {linkedPositions.map(({ position, profile }) => {
+                const positionType = parsePositionType(position.type);
+                const detailPath = positionType
+                  ? getPositionDetailPath(positionType, position.id)
+                  : null;
+                if (!detailPath) return null;
+
+                const isPuzzle = position.type === 'puzzle';
+                return (
+                  <PositionListCard
+                    key={position.id}
+                    position={position}
+                    profile={profile}
+                    likeMeta={
+                      linkedLikeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }
+                    }
+                    replyMeta={linkedReplyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
+                    detailHref={detailPath}
+                    i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
+                    toggleLikeAction={togglePositionLike}
+                    justNowLabel={isPuzzle ? tPuzzle('justNow') : tMemory('justNow')}
+                    locale={locale}
+                    badge={
+                      <span
+                        className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
+                          isPuzzle
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        }`}
+                      >
+                        {isPuzzle
+                          ? tChunks('detail.positionBadge.puzzle')
+                          : tChunks('detail.positionBadge.memory')}
+                      </span>
+                    }
+                  />
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">{tChunks('detail.positionsEmpty')}</p>
+        ))}
+
+      {activeTab === 'games' && (
+        <>
+          {relatedGames.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {tChunks('detail.relatedGamesDescription')}
+            </p>
+          )}
+          <RelatedGamesList
+            games={relatedGames}
+            likeMetaMap={relatedGamesLikeMetaMap}
+            replyMetaMap={relatedGamesReplyMetaMap}
+            emptyReplyMeta={EMPTY_REPLY_META}
+            locale={locale}
+            justNowLabel={tSharedGames('detail.justNow')}
+            colorLabels={{
+              white: tPlay('playerColor.white'),
+              black: tPlay('playerColor.black'),
+            }}
+            resolveOpeningName={(slug, fallbackName) =>
+              getOpeningDisplayName(tOpeningNames, slug, fallbackName)
+            }
+            emptyLabel={t('relatedGames.empty')}
+            moveLabel={(n) => t('relatedGames.moveLabel', { n })}
+          />
+        </>
       )}
 
-      {commentTree.length > 0 && (
+      {activeTab === 'comments' && (
         <>
-          <SortSelect
-            basePath={`/chunks/${slug}`}
-            translationKey="topics.chunks.sort"
-            currentSort={sortBy}
-          />
-          <CommentTree
-            comments={commentTree}
-            locale={locale}
-            topicKey={slug}
-            currentUserId={user?.id}
-            enableSpoiler={false}
-            redirectPath={`/${locale}/chunks/${slug}`}
-            toggleLikeAction={toggleChunkLike}
-            replyAttachmentActions={{
-              pgn: createChunkReplyWithAttachment,
-              fen: createChunkReplyWithFenAttachment,
-            }}
-            deletePostAction={deletePost}
-            extraContentByPostId={extraContentByPostId}
-            i18n={{
-              likeNamespace: 'topics.chunks',
-              replyNamespace: 'topics.chunks.replies',
-              deleteNamespace: 'topics.chunks.deletePost',
-            }}
-          />
+          {/*
+           * Logged-out users get the same "Join the conversation" button as
+           * every other comment surface (puzzle / position-memory / repertoire
+           * / topic posts) — JoinConversationToggle's auth guard opens the
+           * "sign in to continue" modal on click — instead of a bespoke
+           * inline sign-in link. The dedicated `commentCount === 0` form is
+           * kept only for the signed-in author so they can post the first
+           * comment without a click.
+           */}
+          {user && commentCount === 0 ? (
+            <NewPostForm locale={locale} slug={slug} />
+          ) : (
+            <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
+              <NewPostForm locale={locale} slug={slug} />
+            </JoinConversationToggle>
+          )}
+
+          {commentTree.length > 0 && (
+            <>
+              <SortSelect
+                basePath={`/chunks/${slug}`}
+                translationKey="topics.chunks.sort"
+                currentSort={sortBy}
+              />
+              <CommentTree
+                comments={commentTree}
+                locale={locale}
+                topicKey={slug}
+                currentUserId={user?.id}
+                enableSpoiler={false}
+                redirectPath={`/${locale}/chunks/${slug}`}
+                toggleLikeAction={toggleChunkLike}
+                replyAttachmentActions={{
+                  pgn: createChunkReplyWithAttachment,
+                  fen: createChunkReplyWithFenAttachment,
+                }}
+                deletePostAction={deletePost}
+                extraContentByPostId={extraContentByPostId}
+                i18n={{
+                  likeNamespace: 'topics.chunks',
+                  replyNamespace: 'topics.chunks.replies',
+                  deleteNamespace: 'topics.chunks.deletePost',
+                }}
+              />
+            </>
+          )}
         </>
       )}
 

@@ -1,9 +1,10 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 export default async function OpeningDetailLoading() {
-  const t = await getTranslations('topics.openings.detail');
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'topics.openings.detail' });
 
   return (
     <div className="space-y-8">

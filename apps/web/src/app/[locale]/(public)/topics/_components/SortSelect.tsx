@@ -2,6 +2,8 @@
 
 import { useId } from 'react';
 
+import { useSearchParams } from 'next/navigation';
+
 import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
@@ -28,17 +30,30 @@ type Props = {
  * (matches `validateSort` + `getPostsWithReplyMetaPaginatedByTopicKey`).
  * Page is intentionally reset (no `?page=N` preservation) because a
  * different sort produces a different slice and prior pagination is no
- * longer meaningful.
+ * longer meaningful. Every other current query param is preserved, so a
+ * page that also tabs via `?tab=` (e.g. the chunk detail page) stays on the
+ * comments tab when the sort changes.
  */
 export function SortSelect({ basePath, translationKey, currentSort }: Props) {
   const t = useTranslations(translationKey);
   const tTopics = useTranslations('topics');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const selectId = useId();
 
   function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const next = event.target.value as SortMode;
-    router.push(next === 'new' ? basePath : `${basePath}?sort=${next}`);
+    const params = new URLSearchParams(searchParams);
+    // `new` is the default — drop the param rather than spell it out.
+    if (next === 'new') {
+      params.delete('sort');
+    } else {
+      params.set('sort', next);
+    }
+    // A new sort is a new slice; prior pagination no longer applies.
+    params.delete('page');
+    const query = params.toString();
+    router.push(query ? `${basePath}?${query}` : basePath);
   }
 
   return (

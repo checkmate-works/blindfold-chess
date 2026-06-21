@@ -2938,6 +2938,8 @@
       "createdBy": "Created by",
       "positionsSection": "Positions",
       "positionsDescription": "Problems where this chunk pattern is effective.",
+      "positionsEmpty": "No positions use this chunk yet.",
+      "relatedGamesDescription": "Games where this chunk appeared.",
       "positionBadge": {
         "puzzle": "Puzzle",
         "memory": "Memory"
@@ -4567,6 +4569,12 @@
       "readMore": "Read more",
       "detail": {
         "pageTitle": "Chunk Comment"
+      },
+      "relatedGames": {
+        "tabsLabel": "Positions, related games, and comments",
+        "tab": "Related games",
+        "empty": "No games use this chunk yet.",
+        "moveLabel": "Move {n}"
       },
       "postDetail": {
         "authorView": "{author}'s thoughts on {name}",

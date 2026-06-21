@@ -15,7 +15,14 @@ import { ResultSkeleton } from './_components/ResultSkeleton';
  * title/panel don't shift on handoff.
  */
 export default async function ResultLoading() {
-  const [locale, tPlay] = await Promise.all([getLocale(), getTranslations('play')]);
+  // `loading.tsx` can't receive `params`, and the bare `getTranslations()`
+  // resolves against the locale set by `setRequestLocale` — which hasn't run
+  // yet while the page is still suspended, so it falls back to the default
+  // locale and renders the title in English on a `ja` page. Resolve the
+  // request locale explicitly so the skeleton's static text is localized from
+  // the first paint.
+  const locale = await getLocale();
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
 
   return (
     <PageLayout title={tPlay('resultTitle')} locale={locale}>
