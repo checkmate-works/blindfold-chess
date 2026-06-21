@@ -2935,6 +2935,7 @@
       "positionsSection": "Posiciones",
       "positionsDescription": "Problemas donde este patrón de chunk es eficaz.",
       "positionsEmpty": "Todavía no hay posiciones que usen este chunk.",
+      "relatedGamesDescription": "Partidas donde apareció este chunk.",
       "positionBadge": {
         "puzzle": "Problema",
         "memory": "Memoria"

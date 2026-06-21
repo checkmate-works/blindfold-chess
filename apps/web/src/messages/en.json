@@ -2939,6 +2939,7 @@
       "positionsSection": "Positions",
       "positionsDescription": "Problems where this chunk pattern is effective.",
       "positionsEmpty": "No positions use this chunk yet.",
+      "relatedGamesDescription": "Games where this chunk appeared.",
       "positionBadge": {
         "puzzle": "Puzzle",
         "memory": "Memory"

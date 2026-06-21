@@ -2906,6 +2906,7 @@
       "positionsSection": "ポジション",
       "positionsDescription": "このチャンクパターンが効果的な問題。",
       "positionsEmpty": "このチャンクを使ったポジションはまだありません。",
+      "relatedGamesDescription": "このチャンクが出現した対局。",
       "positionBadge": {
         "puzzle": "パズル",
         "memory": "記憶"

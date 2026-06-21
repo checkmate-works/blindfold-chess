@@ -448,23 +448,30 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         ))}
 
       {activeTab === 'games' && (
-        <RelatedGamesList
-          games={relatedGames}
-          likeMetaMap={relatedGamesLikeMetaMap}
-          replyMetaMap={relatedGamesReplyMetaMap}
-          emptyReplyMeta={EMPTY_REPLY_META}
-          locale={locale}
-          justNowLabel={tSharedGames('detail.justNow')}
-          colorLabels={{
-            white: tPlay('playerColor.white'),
-            black: tPlay('playerColor.black'),
-          }}
-          resolveOpeningName={(slug, fallbackName) =>
-            getOpeningDisplayName(tOpeningNames, slug, fallbackName)
-          }
-          emptyLabel={t('relatedGames.empty')}
-          moveLabel={(n) => t('relatedGames.moveLabel', { n })}
-        />
+        <>
+          {relatedGames.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {tChunks('detail.relatedGamesDescription')}
+            </p>
+          )}
+          <RelatedGamesList
+            games={relatedGames}
+            likeMetaMap={relatedGamesLikeMetaMap}
+            replyMetaMap={relatedGamesReplyMetaMap}
+            emptyReplyMeta={EMPTY_REPLY_META}
+            locale={locale}
+            justNowLabel={tSharedGames('detail.justNow')}
+            colorLabels={{
+              white: tPlay('playerColor.white'),
+              black: tPlay('playerColor.black'),
+            }}
+            resolveOpeningName={(slug, fallbackName) =>
+              getOpeningDisplayName(tOpeningNames, slug, fallbackName)
+            }
+            emptyLabel={t('relatedGames.empty')}
+            moveLabel={(n) => t('relatedGames.moveLabel', { n })}
+          />
+        </>
       )}
 
       {activeTab === 'comments' && (
