@@ -468,18 +468,21 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
 
       {activeTab === 'comments' && (
         <>
+          {/*
+           * Logged-out users get the same "Join the conversation" button as
+           * every other comment surface (puzzle / position-memory / repertoire
+           * / topic posts) — JoinConversationToggle's auth guard opens the
+           * "sign in to continue" modal on click — instead of a bespoke
+           * inline sign-in link. The dedicated `commentCount === 0` form is
+           * kept only for the signed-in author so they can post the first
+           * comment without a click.
+           */}
           {user && commentCount === 0 ? (
             <NewPostForm locale={locale} slug={slug} />
-          ) : user ? (
+          ) : (
             <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
               <NewPostForm locale={locale} slug={slug} />
             </JoinConversationToggle>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
-                {t('signInToComment')}
-              </Link>
-            </p>
           )}
 
           {commentTree.length > 0 && (
