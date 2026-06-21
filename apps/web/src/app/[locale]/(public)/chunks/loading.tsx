@@ -4,14 +4,19 @@
  * Mirrors page.tsx (PageTitle → listSubtitle SectionTitle → TopicTabs →
  * filter chips → CatalogListCard list) to minimise CLS.
  */
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { TopicTabsSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicTabsSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 export default async function ChunksLoading() {
-  const t = await getTranslations('chunks');
+  // Resolve the request locale explicitly: in a `loading.tsx` the bare
+  // `getTranslations()` falls back to the default locale (the page's
+  // `setRequestLocale` hasn't run yet while suspended), which would render the
+  // title / subtitle in English on a `ja` page.
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'chunks' });
 
   return (
     <div className="space-y-8">

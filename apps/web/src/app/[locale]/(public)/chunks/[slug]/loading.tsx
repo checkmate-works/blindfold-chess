@@ -15,7 +15,7 @@
  * (positions), matching the page exactly so they don't shift when the real
  * tabs (with counts) mount.
  */
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { BoardSkeleton } from '@/app/_components';
 
@@ -24,9 +24,16 @@ import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { tabItemClass, tabsRowClass } from '@/app/[locale]/_components/tab-styles';
 
 export default async function ChunkDetailLoading() {
+  // `loading.tsx` can't receive `params`, and the bare `getTranslations()`
+  // resolves against the locale set by `setRequestLocale` — which hasn't run
+  // yet while the page is still suspended, so it falls back to the default
+  // locale and renders the tab labels in English on a `ja` page. Resolve the
+  // request locale explicitly (as `page.tsx` does from its params) so the
+  // skeleton's static text is localized from the first paint.
+  const locale = await getLocale();
   const [t, tChunks] = await Promise.all([
-    getTranslations('topics.chunks'),
-    getTranslations('chunks'),
+    getTranslations({ locale, namespace: 'topics.chunks' }),
+    getTranslations({ locale, namespace: 'chunks' }),
   ]);
 
   return (
