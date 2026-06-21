@@ -28,7 +28,11 @@ export function CoordinateInput({
   buttonClassName = DEFAULT_BUTTON_CLASS,
 }: Props) {
   return (
-    <div className={`flex flex-col gap-2 ${className}`}>
+    // translate="no": chess files/ranks are notation, not prose. Browser
+    // auto-translation (e.g. Google Translate) wraps these text nodes in
+    // <font> elements, which desyncs React's DOM refs and crashes commit-phase
+    // deletion with "Failed to execute 'removeChild'". See facebook/react#11538.
+    <div translate="no" className={`flex flex-col gap-2 ${className}`}>
       {/* File Selection Row */}
       {showFiles && (
         <div className="flex gap-1 justify-center w-full">
