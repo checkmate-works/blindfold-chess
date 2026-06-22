@@ -644,8 +644,7 @@
     "gettingStarted": "Getting Started"
   },
   "gettingStarted": {
-    "title": "Let's Get Started!",
-    "headline": "Let's try blindfold chess",
+    "title": "Start Blindfold Chess",
     "cards": {
       "train": {
         "title": "Build Your Skills",
@@ -663,7 +662,12 @@
         "title": "Community",
         "description": "Exchange ideas with other players and improve together",
         "cta": "Browse Topics",
-        "signUp": "Free sign up"
+        "signUp": "Free sign up",
+        "preview": {
+          "msg1": "1.e4 best?",
+          "msg2": "Nf3 works too!",
+          "msg3": "Got it!"
+        }
       }
     },
     "ranks": {

@@ -640,8 +640,7 @@
     "gettingStarted": "Primeiros Passos"
   },
   "gettingStarted": {
-    "title": "Vamos Começar!",
-    "headline": "Vamos experimentar o xadrez às cegas",
+    "title": "Comece o Xadrez às Cegas",
     "cards": {
       "train": {
         "title": "Desenvolva suas Habilidades",
@@ -659,7 +658,12 @@
         "title": "Comunidade",
         "description": "Troque ideias com outros jogadores e melhore juntos",
         "cta": "Explorar Tópicos",
-        "signUp": "Cadastro gratuito"
+        "signUp": "Cadastro gratuito",
+        "preview": {
+          "msg1": "1.e4 é o melhor?",
+          "msg2": "Nf3 também serve!",
+          "msg3": "Entendi!"
+        }
       }
     },
     "ranks": {

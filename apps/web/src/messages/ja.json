@@ -644,8 +644,7 @@
     "gettingStarted": "はじめに"
   },
   "gettingStarted": {
-    "title": "始めよう！",
-    "headline": "目隠しチェスをやってみましょう",
+    "title": "目隠しチェスを始めよう",
     "cards": {
       "train": {
         "title": "スキルを鍛える",
@@ -656,14 +655,19 @@
       },
       "try": {
         "title": "まずは体験",
-        "cta": "このポジションで試す",
+        "cta": "この局面から試す",
         "startFromInitial": "初期ポジションから開始"
       },
       "community": {
         "title": "コミュニティ",
         "description": "他のユーザーとアイデアを交換して上達しましょう",
         "cta": "トピックを見る",
-        "signUp": "無料ユーザー登録"
+        "signUp": "無料ユーザー登録",
+        "preview": {
+          "msg1": "1.e4 が最善?",
+          "msg2": "Nf3 もアリ!",
+          "msg3": "なるほど！"
+        }
       }
     },
     "ranks": {

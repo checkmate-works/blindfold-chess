@@ -640,8 +640,7 @@
     "gettingStarted": "Primeros Pasos"
   },
   "gettingStarted": {
-    "title": "¡Comencemos!",
-    "headline": "Probemos el ajedrez a ciegas",
+    "title": "Empieza el Ajedrez a Ciegas",
     "cards": {
       "train": {
         "title": "Desarrolla tus Habilidades",
@@ -659,7 +658,12 @@
         "title": "Comunidad",
         "description": "Intercambia ideas con otros jugadores y mejora juntos",
         "cta": "Explorar Temas",
-        "signUp": "Registro gratuito"
+        "signUp": "Registro gratuito",
+        "preview": {
+          "msg1": "¿1.e4 es lo mejor?",
+          "msg2": "¡Nf3 también vale!",
+          "msg3": "¡Entendido!"
+        }
       }
     },
     "ranks": {
