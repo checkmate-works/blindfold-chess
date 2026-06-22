@@ -48,11 +48,9 @@ export default async function GettingStartedPage({ params }: Props) {
       breadcrumb={[{ label: t('title') }]}
       panelClassName="space-y-8"
     >
-      <p className="text-center text-lg text-muted-foreground">{t('headline')}</p>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Try */}
-        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center gap-4">
           <div className="text-primary text-3xl">
             <FaChess />
           </div>
@@ -66,19 +64,20 @@ export default async function GettingStartedPage({ params }: Props) {
                 {t('cards.try.cta')}
               </Button>
             </Link>
-            <Link href="/games/new/standard" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-              {t('cards.try.startFromInitial')}
-            </Link>
+            <div className="flex min-h-[2.5rem] items-start justify-center">
+              <Link href="/games/new/standard" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+                {t('cards.try.startFromInitial')}
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Card 2: Train */}
-        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center gap-4">
           <div className="text-primary text-3xl">
             <FaDumbbell />
           </div>
           <h2 className="text-lg font-semibold text-foreground">{t('cards.train.title')}</h2>
-          <p className="text-sm text-muted-foreground">{t('cards.train.description')}</p>
           <div className="w-48 bg-muted/30 rounded-lg p-4 flex flex-col items-center justify-center gap-3 aspect-square">
             <p className="text-sm font-bold text-foreground">{t('cards.train.previewQuestion')}</p>
             <div className="text-6xl">{'\u2658'}</div>
@@ -91,24 +90,47 @@ export default async function GettingStartedPage({ params }: Props) {
               </div>
             </div>
           </div>
+          <p className="text-sm text-muted-foreground">{t('cards.train.description')}</p>
           <div className="mt-auto pt-2 flex flex-col items-center gap-4">
             <Link href="/practice/legal-moves?mode=timed">
               <Button asChild variant="primary" size="lg">
                 {t('cards.train.cta')}
               </Button>
             </Link>
-            <Link href="/practice" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-              {t('cards.train.viewOtherMenus')}
-            </Link>
+            <div className="flex min-h-[2.5rem] items-start justify-center">
+              <Link href="/practice" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+                {t('cards.train.viewOtherMenus')}
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Card 3: Community */}
-        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center gap-4">
           <div className="text-primary text-3xl">
             <FaComments />
           </div>
           <h2 className="text-lg font-semibold text-foreground">{t('cards.community.title')}</h2>
+          <div className="w-48 aspect-square bg-muted/30 rounded-lg p-3 flex flex-col justify-center gap-2">
+            <div className="flex items-end gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-muted-foreground/30 shrink-0" />
+              <div className="rounded-lg rounded-bl-sm bg-card border border-border px-2 py-1 text-xs text-foreground text-left">
+                {t('cards.community.preview.msg1')}
+              </div>
+            </div>
+            <div className="flex flex-row-reverse items-end gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-primary/30 shrink-0" />
+              <div className="rounded-lg rounded-br-sm bg-primary/10 border border-primary/30 px-2 py-1 text-xs text-foreground text-left">
+                {t('cards.community.preview.msg2')}
+              </div>
+            </div>
+            <div className="flex items-end gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-muted-foreground/30 shrink-0" />
+              <div className="rounded-lg rounded-bl-sm bg-card border border-border px-2 py-1 text-xs text-foreground text-left">
+                {t('cards.community.preview.msg3')}
+              </div>
+            </div>
+          </div>
           <p className="text-sm text-muted-foreground">{t('cards.community.description')}</p>
           <div className="mt-auto pt-2 flex flex-col items-center gap-4">
             <Link href="/topics">
@@ -116,9 +138,11 @@ export default async function GettingStartedPage({ params }: Props) {
                 {t('cards.community.cta')}
               </Button>
             </Link>
-            <Link href="/sign-up" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-              {t('cards.community.signUp')}
-            </Link>
+            <div className="flex min-h-[2.5rem] items-start justify-center">
+              <Link href="/sign-up" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+                {t('cards.community.signUp')}
+              </Link>
+            </div>
           </div>
         </div>
       </div>
