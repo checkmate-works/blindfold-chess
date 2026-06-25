@@ -13,11 +13,12 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 /**
  * Auth callback handler.
  *
- * Handles four types of callbacks:
+ * Handles five types of callbacks:
  * 1. OAuth `code` — exchanges authorization code for session (existing flow)
  * 2. `code` + `type=recovery` — PKCE recovery flow, exchanges code and redirects to password reset
- * 3. `token_hash` + `type=signup` — verifies signup email confirmation OTP (PKCE flow)
- * 4. `token_hash` + `type=recovery` — redirects to password reset page (non-PKCE flow)
+ * 3. `token_hash` + `type=signup` — verifies signup email confirmation OTP
+ * 4. `token_hash` + `type=recovery` — verifies recovery OTP, redirects to password reset page
+ * 5. `token_hash` + `type=email_change` — verifies email change OTP (both old/new address links)
  *
  * Note: The login session is established here (via exchangeCodeForSession or verifyOtp)
  * BEFORE the user sets their username. This is because the OAuth
@@ -122,6 +123,22 @@ export async function GET(request: Request) {
 
     if (!error) {
       return NextResponse.redirect(`${origin}/${locale}/reset-password`);
+    }
+
+    return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);
+  }
+
+  // Handle email change confirmation. With `double_confirm_changes` enabled,
+  // both the old and new address receive an `email_change` link; each click
+  // verifies one side and the change completes once both are confirmed.
+  if (tokenHash && type === 'email_change') {
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'email_change',
+    });
+
+    if (!error) {
+      return NextResponse.redirect(`${origin}/${locale}/mypage`);
     }
 
     return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);

@@ -588,4 +588,68 @@ describe('Auth callback route', () => {
       expect(mockExchangeCodeForSession).not.toHaveBeenCalled();
     });
   });
+
+  describe('email change (token_hash + type=email_change)', () => {
+    it('should verify OTP and redirect to mypage on success', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: null });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=change123&type=email_change'
+      );
+      await GET(request);
+
+      expect(mockVerifyOtp).toHaveBeenCalledWith({
+        token_hash: 'change123',
+        type: 'email_change',
+      });
+      expect(mockRedirect).toHaveBeenCalledWith('http://localhost:3000/en/mypage');
+    });
+
+    it('should use locale for email change redirect', async () => {
+      mockGetLocaleFromRequest.mockResolvedValue('ja');
+      mockVerifyOtp.mockResolvedValue({ error: null });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=change123&type=email_change'
+      );
+      await GET(request);
+
+      expect(mockRedirect).toHaveBeenCalledWith('http://localhost:3000/ja/mypage');
+    });
+
+    it('should redirect to sign-in with error when email change verification fails', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: new Error('Invalid token') });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=invalid&type=email_change'
+      );
+      await GET(request);
+
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/en/sign-in?error=auth_callback_error'
+      );
+    });
+
+    it('should not call exchangeCodeForSession for email change flow', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: null });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=change123&type=email_change'
+      );
+      await GET(request);
+
+      expect(mockExchangeCodeForSession).not.toHaveBeenCalled();
+    });
+
+    it('should not log activity event for email change flow', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: null });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=change123&type=email_change'
+      );
+      await GET(request);
+
+      expect(logActivityEvent).not.toHaveBeenCalled();
+    });
+  });
 });
