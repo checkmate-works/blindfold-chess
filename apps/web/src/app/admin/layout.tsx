@@ -18,9 +18,9 @@ import { ThemeProvider, ThemeScript } from '@/lib/theme';
 import { ToastProvider } from '@/app/[locale]/_contexts/ToastContext';
 
 import '../globals.css';
+import { AdminShell } from './_components/AdminShell';
 import { type AdminNavGroup, AdminSidebarNav } from './_components/AdminSidebarNav';
 import { AdminToastContainer } from './_components/AdminToastContainer';
-import { ThemeToggle } from './_components/ThemeToggle';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -115,28 +115,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
         <ThemeProvider disableTransitionOnChange>
-          <div className="flex min-h-screen">
-            <aside className="w-56 border-r border-border bg-secondary p-4">
-              <div className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <Image src="/logo.png" alt="Blindfold Chess Logo" width={32} height={32} />
-                {t('title')}
-              </div>
-              <AdminSidebarNav groups={navGroups} />
-            </aside>
-            <div className="flex-1 flex flex-col min-w-0">
-              <header className="flex justify-end p-4 border-b border-border">
-                <ThemeToggle />
-              </header>
-              <main className="flex-1 p-8">
-                <ToastProvider>
-                  <NavigationGuardProvider>
-                    <NuqsAdapter>{children}</NuqsAdapter>
-                  </NavigationGuardProvider>
-                  <AdminToastContainer />
-                </ToastProvider>
-              </main>
-            </div>
-          </div>
+          <AdminShell
+            sidebar={
+              <>
+                <div className="text-lg font-semibold mb-6 flex items-center gap-2">
+                  <Image src="/logo.png" alt="Blindfold Chess Logo" width={32} height={32} />
+                  {t('title')}
+                </div>
+                <AdminSidebarNav groups={navGroups} />
+              </>
+            }
+          >
+            <ToastProvider>
+              <NavigationGuardProvider>
+                <NuqsAdapter>{children}</NuqsAdapter>
+              </NavigationGuardProvider>
+              <AdminToastContainer />
+            </ToastProvider>
+          </AdminShell>
         </ThemeProvider>
       </body>
     </html>
