@@ -36,14 +36,16 @@ export const lightColors = {
   accentPurpleSoft: "#f3e8ff",
   accentOrange: "#ea580c",
   accentOrangeSoft: "#ffedd5",
-  // Metallic gold for the #1 podium accent (the leaderboard row's left
-  // border). The former #fef9c3 (yellow-100) read as a washed-out yellow
-  // rather than a gold medal.
-  podiumGold: "#d4af37",
+  // Vivid metallic medal colors for the podium accents (the leaderboard
+  // rows' left borders). The former values were pale tints (#fef9c3 /
+  // #f3f4f6 / #ffedd5) that read as washed-out yellow/gray/cream, which
+  // left silver & bronze too faint next to gold. These saturated medal
+  // tones give the top 3 comparable visual weight.
+  podiumGold: "#e6b422",
   podiumGoldForeground: "#854d0e",
-  podiumSilver: "#f3f4f6",
+  podiumSilver: "#b0b3b8",
   podiumSilverForeground: "#4b5563",
-  podiumBronze: "#ffedd5",
+  podiumBronze: "#c17f3f",
   podiumBronzeForeground: "#c2410c",
   border: "#cccccc",
   input: "#ffffff",
@@ -90,13 +92,13 @@ export const darkColors = {
   accentPurpleSoft: "rgba(88, 28, 135, 0.3)",
   accentOrange: "#fb923c",
   accentOrangeSoft: "rgba(124, 45, 18, 0.3)",
-  // Brighter metallic gold so the #1 accent reads as gold (not a muted
-  // amber) against the warm dark background. See lightColors note above.
-  podiumGold: "#e3b341",
+  // Brighter metal tones so all three podium accents read clearly against
+  // the warm dark background. See lightColors note above.
+  podiumGold: "#f0c44d",
   podiumGoldForeground: "#fbbf24",
-  podiumSilver: "rgba(75, 85, 99, 0.3)",
+  podiumSilver: "#c4c7cc",
   podiumSilverForeground: "#d1d5db",
-  podiumBronze: "rgba(124, 45, 18, 0.3)",
+  podiumBronze: "#d18f52",
   podiumBronzeForeground: "#fb923c",
   border: "#7f7f7f",
   input: "#2b2926",
