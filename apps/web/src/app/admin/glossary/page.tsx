@@ -21,7 +21,7 @@ export default async function AdminGlossaryListPage() {
           <li key={term.id}>
             <Link
               href={`/admin/glossary/${term.slug}`}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 hover:bg-muted transition-colors"
             >
               <span className="font-medium text-foreground">{term.termEn}</span>
               <span className="text-xs text-muted-foreground font-mono">{term.slug}</span>

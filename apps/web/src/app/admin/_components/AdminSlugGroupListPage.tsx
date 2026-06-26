@@ -9,6 +9,7 @@ import { db } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from './AdminDataTable';
+import { AdminNewButton } from './AdminNewButton';
 import { AdminPageHeader } from './AdminPageHeader';
 import { AdminPaginationNav } from './AdminPaginationNav';
 
@@ -74,12 +75,10 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
         <AdminPageHeader
           breadcrumbs={[{ label: t('title') }]}
           actions={
-            <Link
+            <AdminNewButton
               href={`${config.basePath}/new`}
-              className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              {t(config.newButtonTranslationKey)}
-            </Link>
+              label={t(config.newButtonTranslationKey)}
+            />
           }
         />
 
