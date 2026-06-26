@@ -57,18 +57,18 @@ export async function ModuleFilter({ currentSlug, period, locale }: Props) {
             role="radio"
             aria-checked={active}
             title={t(`moduleFilter.${m}`)}
-            className={`flex-1 rounded-md px-2 py-2 text-center text-sm font-medium leading-tight transition-colors md:flex md:items-center md:justify-center md:px-4 ${
+            className={`flex-1 rounded-md px-2 py-2 text-center text-sm font-medium leading-tight transition-colors md:flex md:flex-col md:items-center md:justify-center md:gap-0.5 md:px-4 ${
               active ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {emoji ? (
-              // Keep emoji + label as one inline run so the label wraps as a
-              // unit (emoji prefixing the first line) instead of the emoji
-              // splitting off as its own flex item in the narrow cell.
-              <span>
+              // Stack emoji over label on md+: the emoji sits on its own line
+              // and the label wraps beneath it, giving every tab a uniform
+              // two-row shape. Mobile shows the emoji only (label hidden).
+              <>
                 <span>{emoji}</span>
-                <span className="hidden md:inline"> {t(`moduleFilter.${m}`)}</span>
-              </span>
+                <span className="hidden md:block">{t(`moduleFilter.${m}`)}</span>
+              </>
             ) : (
               t(`moduleFilter.${m}`)
             )}
