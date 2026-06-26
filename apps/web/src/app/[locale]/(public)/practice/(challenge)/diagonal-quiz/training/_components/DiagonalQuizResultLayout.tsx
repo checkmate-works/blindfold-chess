@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaRedo } from 'react-icons/fa';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { DiagonalBoard } from '../../_components/DiagonalQuizProblemList';
@@ -15,6 +16,7 @@ type Props = {
   question: string;
   correctCount: number;
   incorrectCount: number;
+  challengeHref: string;
   onNext: () => void;
   onEndTraining: () => void;
   children: ReactNode;
@@ -24,6 +26,7 @@ export function DiagonalQuizResultLayout({
   question,
   correctCount,
   incorrectCount,
+  challengeHref,
   onNext,
   onEndTraining,
   children,
@@ -33,12 +36,10 @@ export function DiagonalQuizResultLayout({
 
   return (
     <>
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
+      <div className="text-center">
         <SectionTitle className="mb-4">{t('question', { square: question })}</SectionTitle>
 
-        <div className="-mx-8 sm:mx-0">
-          <DiagonalBoard targetSquare={question} />
-        </div>
+        <DiagonalBoard targetSquare={question} />
 
         <div className="mt-6">{children}</div>
 
@@ -60,6 +61,8 @@ export function DiagonalQuizResultLayout({
           {tp('endTraining')}
         </button>
       </div>
+
+      <TrainingChallengeCTA challengeHref={challengeHref} />
     </>
   );
 }

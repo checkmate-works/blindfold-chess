@@ -13,6 +13,7 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { DiagonalQuizPlaySkeleton } from '../../_components/DiagonalQuizPlaySkeleton';
 import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
 
 type Props = {
@@ -107,8 +108,15 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     skipSave: isAborted,
   });
 
-  if (!currentSquare || isFinished) {
+  // On finish the session is navigating to the separate result page, so the
+  // result-shaped skeleton is correct there. The brief pre-first-square state,
+  // by contrast, is about to render the playing screen — use the matching
+  // play-shaped skeleton so the fallback doesn't diverge from what renders.
+  if (isFinished) {
     return <PracticeResultSkeleton />;
+  }
+  if (!currentSquare) {
+    return <DiagonalQuizPlaySkeleton showHeader />;
   }
 
   return (

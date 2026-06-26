@@ -10,6 +10,7 @@ type Props = {
   correctAntiDiagonal: string;
   correctCount: number;
   incorrectCount: number;
+  challengeHref: string;
   onNextAfterSkip: () => void;
   onEndTraining: () => void;
 };
@@ -20,6 +21,7 @@ export function DiagonalQuizSkipResultView({
   correctAntiDiagonal,
   correctCount,
   incorrectCount,
+  challengeHref,
   onNextAfterSkip,
   onEndTraining,
 }: Props) {
@@ -30,6 +32,7 @@ export function DiagonalQuizSkipResultView({
       question={question}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
+      challengeHref={challengeHref}
       onNext={onNextAfterSkip}
       onEndTraining={onEndTraining}
     >
