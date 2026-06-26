@@ -102,7 +102,7 @@ export function DiagonalQuizPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="p-8 text-center relative overflow-hidden">
+      <div className="text-center relative overflow-hidden">
         {/* Countdown Overlay */}
         <BoardOverlay
           isVisible={countdown !== null}
@@ -164,58 +164,56 @@ export function DiagonalQuizPlaying({
             />
           </div>
 
-          <div className="-mx-8 sm:mx-0">
-            {/* Diagonal Input Display Fields */}
-            <div className="space-y-3 mb-6">
-              <DiagonalInputField
-                label={t('diagonalLabel')}
-                isSingleSquare={singleDiagonal}
-                activeField={activeField}
-                fieldType="diagonal"
-                startText={diagonalStartText}
-                endText={diagonalEndText}
-                isComplete={isDiagonalComplete}
-                isDisabled={isDisabled}
-                isInputtingStart={isInputtingStart}
-                isInputtingEnd={isInputtingEnd}
-                onFieldClick={handleFieldClick}
-              />
-
-              <DiagonalInputField
-                label={t('antiDiagonalLabel')}
-                isSingleSquare={singleAntiDiagonal}
-                activeField={activeField}
-                fieldType="antiDiagonal"
-                startText={antiDiagonalStartText}
-                endText={antiDiagonalEndText}
-                isComplete={isAntiDiagonalComplete}
-                isDisabled={isDisabled}
-                isInputtingStart={isInputtingStart}
-                isInputtingEnd={isInputtingEnd}
-                onFieldClick={handleFieldClick}
-              />
-            </div>
-
-            {/* Step indicator */}
-            {!isDisabled && (
-              <div className="text-sm text-muted-foreground mb-4">
-                {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
-              </div>
-            )}
-
-            {/* Button Input Area */}
-            <ChessCoordinateKeypad
-              expectingFile={expectingFile}
-              expectingRank={expectingRank}
+          {/* Diagonal Input Display Fields */}
+          <div className="space-y-3 mb-6">
+            <DiagonalInputField
+              label={t('diagonalLabel')}
+              isSingleSquare={singleDiagonal}
+              activeField={activeField}
+              fieldType="diagonal"
+              startText={diagonalStartText}
+              endText={diagonalEndText}
+              isComplete={isDiagonalComplete}
               isDisabled={isDisabled}
-              onFilePress={handleFilePress}
-              onRankPress={handleRankPress}
-              onBackspace={handleBackspace}
-              onClear={handleClear}
+              isInputtingStart={isInputtingStart}
+              isInputtingEnd={isInputtingEnd}
+              onFieldClick={handleFieldClick}
             />
 
-            <AlgebraicKeyboardHint disabled={isDisabled} />
+            <DiagonalInputField
+              label={t('antiDiagonalLabel')}
+              isSingleSquare={singleAntiDiagonal}
+              activeField={activeField}
+              fieldType="antiDiagonal"
+              startText={antiDiagonalStartText}
+              endText={antiDiagonalEndText}
+              isComplete={isAntiDiagonalComplete}
+              isDisabled={isDisabled}
+              isInputtingStart={isInputtingStart}
+              isInputtingEnd={isInputtingEnd}
+              onFieldClick={handleFieldClick}
+            />
           </div>
+
+          {/* Step indicator */}
+          {!isDisabled && (
+            <div className="text-sm text-muted-foreground mb-4">
+              {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
+            </div>
+          )}
+
+          {/* Button Input Area */}
+          <ChessCoordinateKeypad
+            expectingFile={expectingFile}
+            expectingRank={expectingRank}
+            isDisabled={isDisabled}
+            onFilePress={handleFilePress}
+            onRankPress={handleRankPress}
+            onBackspace={handleBackspace}
+            onClear={handleClear}
+          />
+
+          <AlgebraicKeyboardHint disabled={isDisabled} />
         </div>
       </div>
 

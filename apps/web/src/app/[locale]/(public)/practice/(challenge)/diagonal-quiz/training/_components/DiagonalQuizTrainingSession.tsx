@@ -18,8 +18,8 @@ import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { DiagonalQuizPlaySkeleton } from '../../_components/DiagonalQuizPlaySkeleton';
 import { DiagonalQuizTrainingPlaying } from './DiagonalQuizTrainingPlaying';
-import { DiagonalQuizTrainingSkeleton } from './DiagonalQuizTrainingSkeleton';
 
 type Props = {
   locale: Locale;
@@ -100,7 +100,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
 
   // Show loading state while squares are being generated
   if (!hasQuestions || !currentSquare) {
-    return <DiagonalQuizTrainingSkeleton />;
+    return <DiagonalQuizPlaySkeleton />;
   }
 
   return (
