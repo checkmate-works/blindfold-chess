@@ -36,7 +36,10 @@ export const lightColors = {
   accentPurpleSoft: "#f3e8ff",
   accentOrange: "#ea580c",
   accentOrangeSoft: "#ffedd5",
-  podiumGold: "#fef9c3",
+  // Metallic gold for the #1 podium accent (the leaderboard row's left
+  // border). The former #fef9c3 (yellow-100) read as a washed-out yellow
+  // rather than a gold medal.
+  podiumGold: "#d4af37",
   podiumGoldForeground: "#854d0e",
   podiumSilver: "#f3f4f6",
   podiumSilverForeground: "#4b5563",
@@ -87,7 +90,9 @@ export const darkColors = {
   accentPurpleSoft: "rgba(88, 28, 135, 0.3)",
   accentOrange: "#fb923c",
   accentOrangeSoft: "rgba(124, 45, 18, 0.3)",
-  podiumGold: "rgba(161, 98, 7, 0.3)",
+  // Brighter metallic gold so the #1 accent reads as gold (not a muted
+  // amber) against the warm dark background. See lightColors note above.
+  podiumGold: "#e3b341",
   podiumGoldForeground: "#fbbf24",
   podiumSilver: "rgba(75, 85, 99, 0.3)",
   podiumSilverForeground: "#d1d5db",
