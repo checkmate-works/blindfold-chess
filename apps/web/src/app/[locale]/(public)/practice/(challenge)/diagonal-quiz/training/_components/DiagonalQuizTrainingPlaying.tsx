@@ -58,6 +58,7 @@ export function DiagonalQuizTrainingPlaying({
   const t = useTranslations('practice.diagonalQuiz');
   const tp = useTranslations('practice');
   const isDisabled = showResult;
+  const challengeHref = `/${locale}/practice/diagonal-quiz/challenge`;
 
   const { singleDiagonal, singleAntiDiagonal } = getCornerInfo(currentSquare);
 
@@ -136,6 +137,7 @@ export function DiagonalQuizTrainingPlaying({
           correctAntiDiagonal={lastAnswer.correctAntiDiagonal}
           correctCount={correctCount}
           incorrectCount={incorrectCount}
+          challengeHref={challengeHref}
           onNextAfterSkip={onNextAfterSkip}
           onEndTraining={onEndTraining}
         />
@@ -154,6 +156,7 @@ export function DiagonalQuizTrainingPlaying({
           userAntiDiagonal={lastAnswer.userAntiDiagonal}
           correctCount={correctCount}
           incorrectCount={incorrectCount}
+          challengeHref={challengeHref}
           onNextAfterIncorrect={onNextAfterIncorrect}
           onEndTraining={onEndTraining}
         />
@@ -265,7 +268,7 @@ export function DiagonalQuizTrainingPlaying({
         </div>
       </div>
 
-      <TrainingChallengeCTA challengeHref={`/${locale}/practice/diagonal-quiz/challenge`} />
+      <TrainingChallengeCTA challengeHref={challengeHref} />
     </div>
   );
 }
