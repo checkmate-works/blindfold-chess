@@ -33,12 +33,10 @@ export function DiagonalQuizResultLayout({
 
   return (
     <>
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
+      <div className="text-center">
         <SectionTitle className="mb-4">{t('question', { square: question })}</SectionTitle>
 
-        <div className="-mx-8 sm:mx-0">
-          <DiagonalBoard targetSquare={question} />
-        </div>
+        <DiagonalBoard targetSquare={question} />
 
         <div className="mt-6">{children}</div>
 
