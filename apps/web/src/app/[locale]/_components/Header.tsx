@@ -43,8 +43,13 @@ export async function Header({ locale }: Props) {
     { id: 'learn', href: `/${locale}/learn`, label: t('learn'), iconName: 'learn' },
     { id: 'practice', href: `/${locale}/practice`, label: t('practice'), iconName: 'practice' },
     {
+      // Link straight to the canonical destination instead of `/leaderboard`
+      // (a redirect-only route with no `loading.tsx`). The extra redirect hop
+      // left the main content blank until the second navigation resolved its
+      // skeleton; landing directly on a route that owns `loading.tsx` shows
+      // the skeleton instantly and avoids the white-flash CLS.
       id: 'leaderboard',
-      href: `/${locale}/leaderboard`,
+      href: `/${locale}/leaderboard/score/all-time`,
       label: t('leaderboard'),
       iconName: 'leaderboard',
     },
