@@ -1,23 +1,48 @@
 import { Skeleton } from '@/app/[locale]/_components';
 
+type Props = {
+  /**
+   * Render the challenge-only lives/timer header row, widen the container to
+   * `max-w-2xl`, and left-align the problem header — matching the challenge
+   * playing screen (`RoutePlannerChallengeSession` + `SessionHeader`). The
+   * training playing screen (`RoutePlannerSession`) has none of these, so it
+   * defaults to off.
+   */
+  showHeader?: boolean;
+};
+
 /**
- * Loading fallback shaped like the route-planner playing screen
- * (`RoutePlannerSession`'s `gameState === 'playing'` branch): the problem header
- * (piece badge + start/target squares), the moves-history row, the coordinate
- * keypad (piece / file / rank rows + submit button), and the score counter.
+ * Loading fallback shaped like the route-planner playing screen: the problem
+ * header (piece badge + start/target squares), the moves-history row, the
+ * coordinate keypad (piece / file / rank rows + submit button), and the score
+ * counter. With `showHeader`, it also renders the challenge lives/timer row.
  *
- * This replaces the result-panel-shaped `PracticeResultSkeleton` for the
- * `!problem` case, where the next render is the *playing* screen (training's
- * initial batch generation), not a result panel. The surrounding PageTitle /
- * PagePanel / Breadcrumb chrome is already in the DOM, so this only fills the
- * inner play area.
+ * This replaces the result-panel-shaped `PracticeResultSkeleton` for the cases
+ * where the next render is the *playing* screen (training's initial batch
+ * generation; challenge's pre-first-problem state). The challenge session still
+ * uses `PracticeResultSkeleton` for its `isFinished` state, where it navigates
+ * to the separate result page. The surrounding PageTitle / PagePanel /
+ * Breadcrumb chrome is already in the DOM, so this only fills the inner play
+ * area.
  */
-export function RoutePlannerPlaySkeleton() {
+export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
   return (
-    <div className="min-h-screen max-w-md mx-auto">
-      <div className="text-center">
+    <div className={`min-h-screen mx-auto ${showHeader ? 'max-w-2xl' : 'max-w-md'}`}>
+      <div className={showHeader ? '' : 'text-center'}>
+        {/* Lives (left) + pause/timer (right) header — challenge only */}
+        {showHeader && (
+          <div className="flex justify-between items-center mb-4">
+            <Skeleton className="h-5 w-28" disableAnimation />
+            <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
+          </div>
+        )}
+
         {/* Problem header: piece badge + start/target squares */}
-        <div className="flex justify-center items-center gap-6 pb-4 mb-4">
+        <div
+          className={`flex items-center gap-6 pb-4 mb-4 ${
+            showHeader ? 'justify-start' : 'justify-center'
+          }`}
+        >
           <Skeleton className="h-14 w-14 rounded-lg" />
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-center gap-1">
