@@ -166,83 +166,77 @@ export function DiagonalQuizTrainingPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="p-8 text-center relative overflow-hidden">
-        <div>
-          <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
+      <div className="text-center">
+        <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 
-          <div className="mb-6">
-            <div className="text-6xl font-bold text-foreground mb-4 select-none">
-              {currentSquare}
-            </div>
+        <div className="mb-6">
+          <div className="text-6xl font-bold text-foreground mb-4 select-none">{currentSquare}</div>
 
-            <AnswerFeedback
-              isCorrect={lastAnswer?.correct ?? null}
-              isVisible={showResult && !!lastAnswer}
-              incorrectMessage={
-                lastAnswer && !lastAnswer.correct
-                  ? t('correctAnswer', {
-                      diagonal: lastAnswer.correctDiagonal,
-                      antiDiagonal: lastAnswer.correctAntiDiagonal,
-                    })
-                  : undefined
-              }
-              className="mb-2"
-            />
-          </div>
-
-          <div className="-mx-8 sm:mx-0">
-            {/* Diagonal Input Display Fields */}
-            <div className="space-y-3 mb-6">
-              <DiagonalInputField
-                label={t('diagonalLabel')}
-                isSingleSquare={singleDiagonal}
-                activeField={activeField}
-                fieldType="diagonal"
-                startText={diagonalStartText}
-                endText={diagonalEndText}
-                isComplete={isDiagonalComplete}
-                isDisabled={isDisabled}
-                isInputtingStart={isInputtingStart}
-                isInputtingEnd={isInputtingEnd}
-                onFieldClick={handleFieldClick}
-              />
-
-              <DiagonalInputField
-                label={t('antiDiagonalLabel')}
-                isSingleSquare={singleAntiDiagonal}
-                activeField={activeField}
-                fieldType="antiDiagonal"
-                startText={antiDiagonalStartText}
-                endText={antiDiagonalEndText}
-                isComplete={isAntiDiagonalComplete}
-                isDisabled={isDisabled}
-                isInputtingStart={isInputtingStart}
-                isInputtingEnd={isInputtingEnd}
-                onFieldClick={handleFieldClick}
-              />
-            </div>
-
-            {/* Step indicator */}
-            {!isDisabled && (
-              <div className="text-sm text-muted-foreground mb-4">
-                {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
-              </div>
-            )}
-
-            {/* Button Input Area */}
-            <ChessCoordinateKeypad
-              expectingFile={expectingFile}
-              expectingRank={expectingRank}
-              isDisabled={isDisabled}
-              onFilePress={handleFilePress}
-              onRankPress={handleRankPress}
-              onBackspace={handleBackspace}
-              onClear={handleClear}
-            />
-
-            <AlgebraicKeyboardHint disabled={isDisabled} />
-          </div>
+          <AnswerFeedback
+            isCorrect={lastAnswer?.correct ?? null}
+            isVisible={showResult && !!lastAnswer}
+            incorrectMessage={
+              lastAnswer && !lastAnswer.correct
+                ? t('correctAnswer', {
+                    diagonal: lastAnswer.correctDiagonal,
+                    antiDiagonal: lastAnswer.correctAntiDiagonal,
+                  })
+                : undefined
+            }
+            className="mb-2"
+          />
         </div>
+
+        {/* Diagonal Input Display Fields */}
+        <div className="space-y-3 mb-6">
+          <DiagonalInputField
+            label={t('diagonalLabel')}
+            isSingleSquare={singleDiagonal}
+            activeField={activeField}
+            fieldType="diagonal"
+            startText={diagonalStartText}
+            endText={diagonalEndText}
+            isComplete={isDiagonalComplete}
+            isDisabled={isDisabled}
+            isInputtingStart={isInputtingStart}
+            isInputtingEnd={isInputtingEnd}
+            onFieldClick={handleFieldClick}
+          />
+
+          <DiagonalInputField
+            label={t('antiDiagonalLabel')}
+            isSingleSquare={singleAntiDiagonal}
+            activeField={activeField}
+            fieldType="antiDiagonal"
+            startText={antiDiagonalStartText}
+            endText={antiDiagonalEndText}
+            isComplete={isAntiDiagonalComplete}
+            isDisabled={isDisabled}
+            isInputtingStart={isInputtingStart}
+            isInputtingEnd={isInputtingEnd}
+            onFieldClick={handleFieldClick}
+          />
+        </div>
+
+        {/* Step indicator */}
+        {!isDisabled && (
+          <div className="text-sm text-muted-foreground mb-4">
+            {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
+          </div>
+        )}
+
+        {/* Button Input Area */}
+        <ChessCoordinateKeypad
+          expectingFile={expectingFile}
+          expectingRank={expectingRank}
+          isDisabled={isDisabled}
+          onFilePress={handleFilePress}
+          onRankPress={handleRankPress}
+          onBackspace={handleBackspace}
+          onClear={handleClear}
+        />
+
+        <AlgebraicKeyboardHint disabled={isDisabled} />
       </div>
 
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
