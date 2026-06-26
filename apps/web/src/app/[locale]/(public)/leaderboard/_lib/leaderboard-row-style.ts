@@ -15,7 +15,7 @@ export function leaderboardRowClassName(opts: { rank: number; isCurrentUser?: bo
   return [
     'border-b border-border last:border-b-0 transition-colors',
     opts.isCurrentUser
-      ? 'bg-primary/5 dark:bg-primary/10'
+      ? 'bg-primary/10 dark:bg-primary/15'
       : isTop3
         ? 'bg-muted/30 dark:bg-muted/20 hover:bg-muted/50'
         : 'hover:bg-muted/50',
