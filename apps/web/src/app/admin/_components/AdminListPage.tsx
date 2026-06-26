@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 import { desc, sql } from 'drizzle-orm';
 import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
@@ -11,6 +10,7 @@ import { db } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from './AdminDataTable';
+import { AdminNewButton } from './AdminNewButton';
 import { AdminPaginationNav } from './AdminPaginationNav';
 
 const searchParamsCache = createSearchParamsCache({
@@ -56,12 +56,10 @@ export function createAdminListPage<T>(config: AdminListPageConfig<T>) {
       <div>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <Link
+          <AdminNewButton
             href={`${config.basePath}/new`}
-            className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            {t(config.newButtonTranslationKey)}
-          </Link>
+            label={t(config.newButtonTranslationKey)}
+          />
         </div>
 
         <AdminDataTable

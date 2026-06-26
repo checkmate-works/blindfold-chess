@@ -3851,7 +3851,7 @@
     "announcements": "Anúncios",
     "announcementsTable": {
       "title": "Anúncios",
-      "newAnnouncement": "Novo Anúncio",
+      "newAnnouncement": "New",
       "titleColumn": "Título",
       "slug": "Slug",
       "locale": "Idioma",
@@ -3928,7 +3928,7 @@
     "articles": "Artigos",
     "articlesTable": {
       "title": "Artigos",
-      "newArticle": "Novo Artigo",
+      "newArticle": "New",
       "titleColumn": "Título",
       "slug": "Slug",
       "locale": "Idioma",
