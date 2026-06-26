@@ -14,12 +14,12 @@ import {
 } from '@blindfold-chess/features/diagonal-quiz';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DiagonalQuizTrainingPlaying } from './DiagonalQuizTrainingPlaying';
+import { DiagonalQuizTrainingSkeleton } from './DiagonalQuizTrainingSkeleton';
 
 type Props = {
   locale: Locale;
@@ -100,7 +100,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
 
   // Show loading state while squares are being generated
   if (!hasQuestions || !currentSquare) {
-    return <PracticeResultSkeleton />;
+    return <DiagonalQuizTrainingSkeleton />;
   }
 
   return (
