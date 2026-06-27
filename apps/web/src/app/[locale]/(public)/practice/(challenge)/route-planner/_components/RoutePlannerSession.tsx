@@ -8,7 +8,6 @@ import { FaArrowRight, FaFlagCheckered, FaUndo } from 'react-icons/fa';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
 import { TrainingChallengeCTA } from '../../_components/TrainingChallengeCTA';
@@ -16,6 +15,7 @@ import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
 import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
 import { PIECES } from '../_lib/pieces';
 import type { PieceType } from '../_lib/pieces';
+import { RoutePlannerPlaySkeleton } from './RoutePlannerPlaySkeleton';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
 
 type Props = {
@@ -64,7 +64,7 @@ export function RoutePlannerSession({
     enabled: isInputActive,
   });
 
-  if (!problem) return <PracticeResultSkeleton />;
+  if (!problem) return <RoutePlannerPlaySkeleton />;
 
   return (
     <div className="min-h-screen max-w-md mx-auto">

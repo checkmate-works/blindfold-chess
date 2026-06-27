@@ -20,6 +20,7 @@ import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { RoutePlannerPlaySkeleton } from '../../_components/RoutePlannerPlaySkeleton';
 import type { PieceType } from '../../_lib/pieces';
 import type { ProblemResult } from './_parts/ProblemBody';
 import { ProblemBody } from './_parts/ProblemBody';
@@ -137,8 +138,11 @@ export default function RoutePlannerChallengeSession({
     skipSave: isAborted,
   });
 
-  if (!currentProblem || isFinished) {
+  if (isFinished) {
     return <PracticeResultSkeleton />;
+  }
+  if (!currentProblem) {
+    return <RoutePlannerPlaySkeleton showHeader />;
   }
 
   const problemKey = `${currentProblem.piece}:${currentProblem.start}:${currentProblem.end}`;
