@@ -11,7 +11,7 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
  *   <div className="space-y-8">
  *     <PageTitle>{title}</PageTitle>
  *     <PagePanel>
- *       <PracticeComplete .../>           // score summary + action buttons + related cards
+ *       <PracticeComplete .../>           // heading + accuracy bar + action buttons + related cards
  *       [<LeaderboardPreview />]          // most modules
  *       [ad slots / sign-up banner]
  *       <Divider />
@@ -43,11 +43,34 @@ export async function PracticeResultLoadingSkeleton() {
       </PageTitle>
 
       <PagePanel>
-        {/* PracticeCompleteSummary: score + subtitle + average time */}
-        <div className="text-center flex flex-col items-center animate-pulse">
-          <div className="h-10 w-32 bg-muted rounded mb-2" />
-          <div className="h-5 w-24 bg-muted rounded mb-2" />
-          <div className="h-4 w-40 bg-muted rounded" />
+        {/* PracticeCompleteSummary. `createPracticeResultClient` always sets
+            `scoreStats` + `recreationProgress`, so the real summary renders its
+            heading + accuracy-bar branch — an h2, a left-aligned progress label,
+            the `h-8` SegmentedProgressBar, its two-item legend, and a centered
+            average-time line — NOT the big score/total number. Emitted as two
+            direct PagePanel children (h2 + div) to mirror the component's
+            fragment so the `space-y-8` rhythm matches. The label text varies per
+            module (e.g. accuracy vs recreation progress), so bars are used. */}
+        <SectionTitle className="text-2xl font-bold mb-6">
+          <span className="inline-block h-7 w-24 bg-muted rounded align-middle animate-pulse" />
+        </SectionTitle>
+
+        <div className="mb-6">
+          {/* Accuracy / recreation-progress label */}
+          <div className="h-4 w-24 bg-muted rounded mb-2 animate-pulse" />
+          {/* SegmentedProgressBar */}
+          <div className="h-8 w-full bg-muted rounded-lg animate-pulse" />
+          {/* Legend: correct / incorrect */}
+          <div className="flex justify-between mt-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-1 animate-pulse">
+                <div className="w-3 h-3 rounded bg-muted" />
+                <div className="h-3 w-16 bg-muted rounded" />
+              </div>
+            ))}
+          </div>
+          {/* Average time line (centered) */}
+          <div className="h-4 w-40 bg-muted rounded mt-4 mx-auto animate-pulse" />
         </div>
 
         {/* Action buttons (Try Again / Change Settings, etc.) */}
