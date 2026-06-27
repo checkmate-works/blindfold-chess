@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
@@ -12,6 +13,7 @@ export default async function AdminGlossaryTermPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const t = await getTranslations({ locale: 'en', namespace: 'Admin.glossary' });
 
   const term = await getGlossaryTermForAdmin(slug);
   if (!term) {
@@ -19,32 +21,47 @@ export default async function AdminGlossaryTermPage({
   }
 
   return (
-    <div className="space-y-8">
+    <div>
       <AdminPageHeader
-        breadcrumbs={[{ label: 'Glossary', href: '/admin/glossary' }, { label: term.termEn }]}
+        breadcrumbs={[{ label: t('navLabel'), href: '/admin/glossary' }, { label: term.termEn }]}
       />
+      <p className="text-sm font-mono text-muted-foreground mb-6">{term.slug}</p>
 
-      <header className="space-y-1">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-mono">{term.slug}</span> &middot; {term.category}
-          {term.isTheme && <span className="ml-2 text-primary">theme</span>}
-        </p>
-      </header>
+      <div className="mb-8 rounded-lg border border-border bg-card p-4">
+        <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+          {t('detail.headerTitle')}
+        </h2>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm">
+          <div>
+            <dt className="text-muted-foreground">{t('detail.slug')}</dt>
+            <dd className="font-mono">{term.slug}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t('detail.category')}</dt>
+            <dd>{term.category}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t('detail.theme')}</dt>
+            <dd>{term.isTheme ? t('detail.yes') : t('detail.no')}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t('detail.examplePositions')}</dt>
+            <dd>{term.positions.length}</dd>
+          </div>
+        </dl>
+      </div>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Example Positions</h2>
-        <p className="text-sm text-muted-foreground">
-          The FEN, caption, and sort order are managed in code (
-          <code className="text-xs">src/lib/db/data/terms/*.ts</code>). Use the editor below to draw
-          arrows and circles — each row saves independently. Positions tagged with this theme are
-          managed from the position editor side via <code className="text-xs">position_themes</code>
-          , not here.
-        </p>
+      <h2 className="text-lg font-semibold mb-3">{t('detail.positionsTitle')}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {t.rich('detail.positionsDescription', {
+          code: (chunks) => <code className="text-xs">{chunks}</code>,
+        })}
+      </p>
 
+      <section>
         {term.positions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No example positions seeded for this term. Add one in the code data file and re-run{' '}
-            <code>pnpm db:seed</code>.
+            {t.rich('detail.noPositions', { code: (chunks) => <code>{chunks}</code> })}
           </p>
         ) : (
           <div className="space-y-4">

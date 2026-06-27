@@ -3825,7 +3825,33 @@
     },
     "positionMemory": "Position Memory",
     "chunks": "チャンク",
-    "glossary": "用語集",
+    "glossary": {
+      "navLabel": "用語集",
+      "title": "用語集",
+      "description": "用語の定義と翻訳はコード（<code>src/lib/db/data/terms/*.ts</code>）で管理されています。管理画面では表示レイヤー（注釈）とチャンクの関連付けのみを編集します。",
+      "noTermsFound": "用語がまだありません。<code>pnpm db:seed</code> を実行してください。",
+      "themeBadge": "テーマ",
+      "edit": "編集",
+      "columns": {
+        "term": "用語",
+        "slug": "スラグ",
+        "category": "カテゴリ",
+        "theme": "テーマ",
+        "actions": "操作"
+      },
+      "detail": {
+        "headerTitle": "用語",
+        "slug": "スラグ",
+        "category": "カテゴリ",
+        "theme": "テーマ",
+        "examplePositions": "例題ポジション",
+        "yes": "はい",
+        "no": "いいえ",
+        "positionsTitle": "例題ポジション",
+        "positionsDescription": "FEN・キャプション・並び順はコード（<code>src/lib/db/data/terms/*.ts</code>）で管理されています。下のエディタで矢印や丸を描けます（各行は個別に保存されます）。このテーマでタグ付けされたポジションは、ここではなくポジションエディタ側の <code>position_themes</code> で管理します。",
+        "noPositions": "この用語の例題ポジションはまだ登録されていません。コードのデータファイルに追加して <code>pnpm db:seed</code> を再実行してください。"
+      }
+    },
     "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "トピック投稿",
