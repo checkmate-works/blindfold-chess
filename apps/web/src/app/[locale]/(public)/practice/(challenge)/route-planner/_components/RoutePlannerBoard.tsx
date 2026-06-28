@@ -81,7 +81,7 @@ export function RoutePlannerBoard({
         const isWrong = wrongSet.has(square);
         return (
           <div className="w-full h-full flex items-center justify-center relative">
-            {isWrong && <div className="absolute inset-0 bg-red-500/40" />}
+            {isWrong && <div className="absolute inset-0 bg-destructive/40" />}
             <div className="relative z-10 flex flex-col items-center justify-center">
               {isLastMove && (
                 <div className="opacity-80 absolute inset-0 flex items-center justify-center">

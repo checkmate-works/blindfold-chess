@@ -34,7 +34,7 @@ export function CoordinateQuizBoard({
       case 'correct':
         return 'bg-success';
       case 'incorrect':
-        return 'bg-red-400 dark:bg-red-600';
+        return 'bg-destructive';
       case 'target':
         return 'bg-green-500 dark:bg-green-700 ring-2 ring-inset ring-green-600/50 dark:ring-green-800/50';
       default:
