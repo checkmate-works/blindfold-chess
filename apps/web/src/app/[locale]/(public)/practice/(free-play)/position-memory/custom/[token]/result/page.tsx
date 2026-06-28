@@ -12,6 +12,7 @@ import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SinglePositionResult } from '../../../_components/single-position/SinglePositionResult';
+import { SinglePositionResultLoadingSkeleton } from '../../../_components/single-position/SinglePositionResultLoadingSkeleton';
 import { resolveCustomProblem } from '../../../_lib/custom-problem';
 
 export const dynamic = 'force-dynamic';
@@ -69,7 +70,11 @@ export default async function CustomPositionResultPage({ params }: Props) {
   );
 
   return (
-    <Suspense>
+    // Fallback covers the soft-navigation gap between loading.tsx resolving and
+    // the SinglePositionResult client chunk arriving. That component owns the
+    // PagePanel chrome, so without a fallback the page would flash to bare
+    // background. Reuse the same skeleton as loading.tsx for a continuous shape.
+    <Suspense fallback={<SinglePositionResultLoadingSkeleton />}>
       <SinglePositionResult
         locale={locale}
         sessionPath={`/practice/position-memory/custom/${token}/session`}
