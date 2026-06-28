@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { BoardSkeleton } from '@/app/_components';
 import { useSquareColorsSession } from '@blindfold-chess/features/square-colors/client';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
@@ -15,6 +14,7 @@ import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { SquareColorsPlaySkeleton } from '../../_components/SquareColorsPlaySkeleton';
 import { SquareColorsPlaying } from './SquareColorsPlaying';
 
 type Props = {
@@ -84,18 +84,8 @@ export default function SquareColorsChallenge({ locale }: Props) {
     return <PracticeResultSkeleton />;
   }
 
-  if (!currentSquare) {
-    return <PracticeResultSkeleton />;
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          <BoardSkeleton />
-        </div>
-      </div>
-    );
+  if (!currentSquare || !isLoaded) {
+    return <SquareColorsPlaySkeleton showHeader />;
   }
 
   return (

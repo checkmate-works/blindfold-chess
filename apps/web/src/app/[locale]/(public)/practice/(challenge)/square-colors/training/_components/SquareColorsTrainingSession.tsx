@@ -4,18 +4,17 @@ import { useCallback } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { BoardSkeleton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { generateSquareSequence } from '@blindfold-chess/features/common';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 import { getSquareColor } from '@blindfold-chess/features/square-colors';
 
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { SquareColorsPlaySkeleton } from '../../_components/SquareColorsPlaySkeleton';
 import { SquareColorsTrainingPlaying } from './SquareColorsTrainingPlaying';
 
 type Props = {
@@ -60,18 +59,8 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
   }, [showToast, tp, router, locale]);
 
   // Show loading state while squares are being generated
-  if (!hasQuestions || !currentSquare) {
-    return <PracticeResultSkeleton />;
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          <BoardSkeleton />
-        </div>
-      </div>
-    );
+  if (!hasQuestions || !currentSquare || !isLoaded) {
+    return <SquareColorsPlaySkeleton />;
   }
 
   return (
