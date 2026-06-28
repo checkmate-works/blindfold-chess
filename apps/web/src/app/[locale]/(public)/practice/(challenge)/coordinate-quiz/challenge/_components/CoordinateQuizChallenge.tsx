@@ -14,6 +14,7 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { CoordinateQuizPlaySkeleton } from '../../_components/CoordinateQuizPlaySkeleton';
 import type { BoardOrientation, FeedbackSpeed } from '../../_lib/types';
 import { CoordinateQuizChallengePlaying } from './CoordinateQuizChallengePlaying';
 
@@ -112,7 +113,7 @@ export default function CoordinateQuizChallenge({
   }
 
   if (!currentQuestion) {
-    return <PracticeResultSkeleton />;
+    return <CoordinateQuizPlaySkeleton showHeader />;
   }
 
   return (

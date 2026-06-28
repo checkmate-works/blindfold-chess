@@ -14,6 +14,7 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { LegalMovesPlaySkeleton } from '../../_components/LegalMovesPlaySkeleton';
 import { isLegalMove } from '../../_lib/legal-moves-api';
 import type { PieceType } from '../../_lib/types';
 import { LegalMovesPlaying } from './LegalMovesPlaying';
@@ -117,7 +118,7 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
   }
 
   if (!currentQuestion) {
-    return <PracticeResultSkeleton />;
+    return <LegalMovesPlaySkeleton showHeader />;
   }
 
   return (

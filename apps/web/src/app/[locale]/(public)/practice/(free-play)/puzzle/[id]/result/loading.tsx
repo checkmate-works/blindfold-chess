@@ -1,8 +1,8 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 
-import { BoardSkeleton } from '@/app/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PuzzleResultContentSkeleton } from '../../_components/PuzzleResultContentSkeleton';
 
 /**
  * Puzzle result loading skeleton.
@@ -46,38 +46,7 @@ export default async function PuzzleResultLoading() {
       <PageTitle>{t('result.title')}</PageTitle>
 
       <PagePanel>
-        <div className="space-y-6">
-          {/* PuzzleSolutionReplay: section title + board + solution line */}
-          <div className="space-y-6">
-            <SectionTitle>{t('result.replaySection')}</SectionTitle>
-
-            <div className="flex justify-center">
-              <div className="w-full max-w-md">
-                <BoardSkeleton />
-              </div>
-            </div>
-
-            {/* Solution text — single-move case is the common one
-                (`Solution: <san>`). Multi-move puzzles render a numbered list,
-                but a single centered bar tracks the visual weight of either
-                shape closely enough that swapping in the real content does
-                not jolt the page. */}
-            <div className="flex justify-center">
-              <div className="h-4 w-48 bg-muted rounded animate-pulse" />
-            </div>
-          </div>
-
-          {/* ExpGainDisplay — conditional (logged-in + grant param). Reserve
-              a small bar to avoid CLS for the authenticated path. */}
-          <div className="h-6 w-32 mx-auto bg-muted rounded animate-pulse" />
-
-          {/* Action buttons (Try Again / Back to Puzzles) — full-width primary
-              + secondary, matching the real `flex flex-col gap-3 pt-4` block. */}
-          <div className="flex flex-col gap-3 pt-4">
-            <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-            <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-          </div>
-        </div>
+        <PuzzleResultContentSkeleton />
 
         <Divider />
 

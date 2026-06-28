@@ -22,6 +22,7 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { QuadrantsPlaySkeleton } from '../../_components/QuadrantsPlaySkeleton';
 import { QuadrantsPlaying } from './QuadrantsPlaying';
 
 type Props = {
@@ -116,7 +117,7 @@ export default function QuadrantsChallenge({ locale, orientation }: Props) {
   }
 
   if (!currentQuestion) {
-    return <PracticeResultSkeleton />;
+    return <QuadrantsPlaySkeleton showHeader />;
   }
 
   return (

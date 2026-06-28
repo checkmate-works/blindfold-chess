@@ -18,6 +18,7 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultLoadingSkeleton } from '../_components/PracticeResultLoadingSkeleton';
 import { resolveLeaderboardWithFallback } from './resolveLeaderboardWithFallback';
 
 // ---------------------------------------------------------------------------
@@ -96,6 +97,14 @@ type SimpleResultPageOptions = {
    * `'practice_result'`.
    */
   expSource?: ExpSource;
+  /**
+   * Fallback shown while the client `ResultClient` chunk is in flight on a soft
+   * navigation (see the inner `<Suspense>` below). Defaults to the shared
+   * `PracticeResultLoadingSkeleton`. Pass the module's own loading skeleton when
+   * its `loading.tsx` is bespoke, so the fallback matches the route loading
+   * state instead of jumping shape.
+   */
+  loadingFallback?: ReactNode;
 };
 
 export function createSimplePracticeResultPage(
@@ -110,7 +119,14 @@ export function createSimplePracticeResultPage(
     const searchParams = await props.searchParams;
     const expInfo = await resolveExpInfoFromGrantParam(searchParams, expSource);
     return (
-      <Suspense>
+      // Fallback mirrors the route `loading.tsx`. The outer `loading.tsx`
+      // boundary resolves the instant this server `Page` returns (after the
+      // awaits above), but `ResultClient` is a client component whose JS chunk
+      // may still be in flight on a soft navigation — without a fallback here
+      // the page would flash to bare background (PageTitle + PagePanel all live
+      // inside ResultClient) in that gap. Reusing the same skeleton keeps one
+      // continuous shape until ResultClient paints.
+      <Suspense fallback={options.loadingFallback ?? <PracticeResultLoadingSkeleton />}>
         <ResultClient
           locale={locale}
           expInfo={expInfo}
@@ -158,6 +174,14 @@ type LeaderboardConfig = {
     wide?: boolean;
     standard?: boolean;
   };
+  /**
+   * Fallback shown while the client `ResultClient` chunk is in flight on a soft
+   * navigation (see the inner `<Suspense>` below). Defaults to the shared
+   * `PracticeResultLoadingSkeleton`. Pass the module's own loading skeleton when
+   * its `loading.tsx` is bespoke (e.g. route-planner), so the fallback matches
+   * the route loading state instead of jumping shape.
+   */
+  loadingFallback?: ReactNode;
 };
 
 export function createLeaderboardPracticeResultPage(
@@ -185,7 +209,11 @@ export function createLeaderboardPracticeResultPage(
     const hasLeaderboardRows = leaderboardData !== null;
 
     return (
-      <Suspense>
+      // See createSimplePracticeResultPage for why this fallback exists: it
+      // covers the soft-navigation gap between the route `loading.tsx`
+      // resolving and the ResultClient client chunk arriving, so the panel
+      // never flashes to bare background.
+      <Suspense fallback={leaderboard.loadingFallback ?? <PracticeResultLoadingSkeleton />}>
         <ResultClient
           locale={locale}
           adBannerWide={

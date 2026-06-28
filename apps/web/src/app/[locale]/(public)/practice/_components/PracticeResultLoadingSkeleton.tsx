@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+
+import { PracticeResultPanelSkeleton } from './PracticeResultPanelSkeleton';
 
 /**
  * Server `loading.tsx` skeleton shared by every practice result route.
@@ -22,13 +24,12 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
  * The page title and intermediate breadcrumb items vary per module and can
  * only be resolved at render time — they use bar placeholders. The first and
  * last breadcrumb items (`navigation.practice`, `practice.result`) are
- * static and render real translated strings. Conditional sections
- * (LeaderboardPreview, related-module CardLink) are always reserved here
- * because most modules render them and omitting causes more CLS than slight
- * over-allocation.
- *
- * Distinct from `PracticeResultSkeleton`, which is a smaller inline fallback
- * used by client-side session components — see that file for the rationale.
+ * static and render real translated strings. The PagePanel-inner content is
+ * the shared `PracticeResultPanelSkeleton`, which the inline
+ * `PracticeResultSkeleton` also renders, so the session
+ * -> result-route-loading -> result sequence keeps one stable panel shape.
+ * (See that component for why LeaderboardPreview / related-module card are
+ * always reserved.)
  */
 export async function PracticeResultLoadingSkeleton() {
   const [tPractice, tNav] = await Promise.all([
@@ -43,75 +44,7 @@ export async function PracticeResultLoadingSkeleton() {
       </PageTitle>
 
       <PagePanel>
-        {/* PracticeCompleteSummary. `createPracticeResultClient` always sets
-            `scoreStats` + `recreationProgress`, so the real summary renders its
-            heading + accuracy-bar branch — an h2, a left-aligned progress label,
-            the `h-8` SegmentedProgressBar, its two-item legend, and a centered
-            average-time line — NOT the big score/total number. Emitted as two
-            direct PagePanel children (h2 + div) to mirror the component's
-            fragment so the `space-y-8` rhythm matches. The label text varies per
-            module (e.g. accuracy vs recreation progress), so bars are used. */}
-        <SectionTitle className="text-2xl font-bold mb-6">
-          <span className="inline-block h-7 w-24 bg-muted rounded align-middle animate-pulse" />
-        </SectionTitle>
-
-        <div className="mb-6">
-          {/* Accuracy / recreation-progress label */}
-          <div className="h-4 w-24 bg-muted rounded mb-2 animate-pulse" />
-          {/* SegmentedProgressBar */}
-          <div className="h-8 w-full bg-muted rounded-lg animate-pulse" />
-          {/* Legend: correct / incorrect */}
-          <div className="flex justify-between mt-2">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-1 animate-pulse">
-                <div className="w-3 h-3 rounded bg-muted" />
-                <div className="h-3 w-16 bg-muted rounded" />
-              </div>
-            ))}
-          </div>
-          {/* Average time line (centered) */}
-          <div className="h-4 w-40 bg-muted rounded mt-4 mx-auto animate-pulse" />
-        </div>
-
-        {/* Action buttons (Try Again / Change Settings, etc.) */}
-        <div className="space-y-4">
-          <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-          <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-        </div>
-
-        {/* Related module CardLink (most modules render one). Rendered BEFORE
-            LeaderboardPreview to match the real flow: PracticeComplete (which
-            ends with the related-module card) precedes LeaderboardPreview in
-            createPracticeResultClient. */}
-        <div className="p-6 bg-card rounded-md border border-border animate-pulse">
-          <div className="flex items-start gap-4">
-            <div className="w-9 h-9 bg-muted rounded flex-shrink-0" />
-            <div className="flex-1">
-              <div className="h-5 bg-muted rounded w-1/3 mb-2" />
-              <div className="h-4 bg-muted rounded w-2/3" />
-            </div>
-          </div>
-        </div>
-
-        {/* LeaderboardPreview — header + 5-row table (rank | name | score) */}
-        <div className="space-y-3">
-          <SectionTitle>
-            <span className="inline-block h-5 md:h-6 w-40 bg-muted rounded align-middle animate-pulse" />
-          </SectionTitle>
-          <div className="overflow-hidden rounded-lg border border-border">
-            <div className="h-10 bg-muted" />
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 border-t border-border px-4 py-3 animate-pulse"
-              >
-                <div className="h-4 w-6 bg-muted rounded" />
-                <div className="h-4 flex-1 bg-muted rounded" />
-                <div className="h-4 w-12 bg-muted rounded" />
-              </div>
-            ))}
-          </div>
-        </div>
+        <PracticeResultPanelSkeleton />
 
         {/* Mirror `PageLayout`'s trailing `!mt-4 space-y-4` block (see
             PageLayout.tsx) so the divider→breadcrumb spacing matches the

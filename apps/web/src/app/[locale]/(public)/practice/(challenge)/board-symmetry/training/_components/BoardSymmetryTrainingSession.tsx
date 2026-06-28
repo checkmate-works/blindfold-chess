@@ -9,11 +9,11 @@ import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 import { FEEDBACK_FLASH_MS, applyCoordinateBackspace } from '@blindfold-chess/features/common';
 
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { BoardSymmetryPlaySkeleton } from '../../_components/BoardSymmetryPlaySkeleton';
 import { BoardSymmetryTrainingPlaying } from './BoardSymmetryTrainingPlaying';
 
 type Props = {
@@ -103,7 +103,7 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
   }, [showToast, tp, router, locale]);
 
   if (!problem) {
-    return <PracticeResultSkeleton />;
+    return <BoardSymmetryPlaySkeleton />;
   }
 
   return (

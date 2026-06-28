@@ -13,6 +13,7 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { BoardSymmetryPlaySkeleton } from '../../_components/BoardSymmetryPlaySkeleton';
 import { BoardSymmetryPlaying } from '../../_components/BoardSymmetryPlaying';
 
 type Props = {
@@ -96,8 +97,12 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
     moduleName: 'board_symmetry',
   });
 
-  if (isFinished || !problem) {
+  if (isFinished) {
     return <PracticeResultSkeleton />;
+  }
+
+  if (!problem) {
+    return <BoardSymmetryPlaySkeleton showHeader />;
   }
 
   return (
