@@ -7,11 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { LegalMovesPlaySkeleton } from '../../_components/LegalMovesPlaySkeleton';
 import { generateBalancedMoveQuestions, isLegalMove } from '../../_lib/legal-moves-api';
 import type { MoveQuestion, PieceType } from '../../_lib/types';
 import { LegalMovesTrainingPlaying } from './LegalMovesTrainingPlaying';
@@ -64,7 +64,7 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
 
   // Show loading state while questions are being generated
   if (!hasQuestions || !currentQuestion) {
-    return <PracticeResultSkeleton />;
+    return <LegalMovesPlaySkeleton />;
   }
 
   return (
