@@ -69,8 +69,8 @@ export function RoutePlannerBoard({
       if (isTarget) {
         return (
           <div className="w-full h-full flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-emerald-400/60" />
-            <span className="relative z-10 font-bold text-xs sm:text-sm text-emerald-950 dark:text-emerald-50">
+            <div className="absolute inset-0 bg-success" />
+            <span className="relative z-10 font-bold text-xs sm:text-sm text-success-foreground">
               Goal
             </span>
           </div>
@@ -81,7 +81,7 @@ export function RoutePlannerBoard({
         const isWrong = wrongSet.has(square);
         return (
           <div className="w-full h-full flex items-center justify-center relative">
-            {isWrong && <div className="absolute inset-0 bg-red-500/40" />}
+            {isWrong && <div className="absolute inset-0 bg-destructive/40" />}
             <div className="relative z-10 flex flex-col items-center justify-center">
               {isLastMove && (
                 <div className="opacity-80 absolute inset-0 flex items-center justify-center">

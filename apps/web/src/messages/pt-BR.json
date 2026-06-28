@@ -3591,7 +3591,33 @@
   "Admin": {
     "title": "Admin",
     "chunks": "Chunks",
-    "glossary": "Glossário",
+    "glossary": {
+      "navLabel": "Glossário",
+      "title": "Glossário",
+      "description": "As definições e traduções dos termos são gerenciadas no código (<code>src/lib/db/data/terms/*.ts</code>). A interface de administração edita apenas a camada visual (anotações) e as associações de chunks.",
+      "noTermsFound": "Ainda não há termos no glossário. Execute <code>pnpm db:seed</code>.",
+      "themeBadge": "tema",
+      "edit": "Editar",
+      "columns": {
+        "term": "Termo",
+        "slug": "Slug",
+        "category": "Categoria",
+        "theme": "Tema",
+        "actions": "Ações"
+      },
+      "detail": {
+        "headerTitle": "Termo",
+        "slug": "Slug",
+        "category": "Categoria",
+        "theme": "Tema",
+        "examplePositions": "Posições de exemplo",
+        "yes": "Sim",
+        "no": "Não",
+        "positionsTitle": "Posições de exemplo",
+        "positionsDescription": "O FEN, a legenda e a ordem de classificação são gerenciados no código (<code>src/lib/db/data/terms/*.ts</code>). Use o editor abaixo para desenhar setas e círculos — cada linha é salva de forma independente. As posições marcadas com este tema são gerenciadas pelo editor de posições via <code>position_themes</code>, não aqui.",
+        "noPositions": "Nenhuma posição de exemplo foi carregada para este termo. Adicione uma no arquivo de dados do código e execute <code>pnpm db:seed</code> novamente."
+      }
+    },
     "dashboard": "Painel",
     "users": "Usuários",
     "auditLog": "Registro de Auditoria",

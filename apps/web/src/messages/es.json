@@ -3818,7 +3818,33 @@
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
-    "glossary": "Glosario",
+    "glossary": {
+      "navLabel": "Glosario",
+      "title": "Glosario",
+      "description": "Las definiciones y traducciones de los términos se gestionan en el código (<code>src/lib/db/data/terms/*.ts</code>). La interfaz de administración solo edita la capa visual (anotaciones) y las asociaciones de chunks.",
+      "noTermsFound": "Aún no hay términos del glosario. Ejecuta <code>pnpm db:seed</code>.",
+      "themeBadge": "tema",
+      "edit": "Editar",
+      "columns": {
+        "term": "Término",
+        "slug": "Slug",
+        "category": "Categoría",
+        "theme": "Tema",
+        "actions": "Acciones"
+      },
+      "detail": {
+        "headerTitle": "Término",
+        "slug": "Slug",
+        "category": "Categoría",
+        "theme": "Tema",
+        "examplePositions": "Posiciones de ejemplo",
+        "yes": "Sí",
+        "no": "No",
+        "positionsTitle": "Posiciones de ejemplo",
+        "positionsDescription": "El FEN, el pie de foto y el orden se gestionan en el código (<code>src/lib/db/data/terms/*.ts</code>). Usa el editor de abajo para dibujar flechas y círculos: cada fila se guarda de forma independiente. Las posiciones etiquetadas con este tema se gestionan desde el editor de posiciones mediante <code>position_themes</code>, no aquí.",
+        "noPositions": "No hay posiciones de ejemplo cargadas para este término. Añade una en el archivo de datos del código y vuelve a ejecutar <code>pnpm db:seed</code>."
+      }
+    },
     "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "Publicaciones de Temas",

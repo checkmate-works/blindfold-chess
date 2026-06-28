@@ -3825,7 +3825,33 @@
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
-    "glossary": "Glossary",
+    "glossary": {
+      "navLabel": "Glossary",
+      "title": "Glossary",
+      "description": "Term definitions and translations are managed in code (<code>src/lib/db/data/terms/*.ts</code>). The admin UI only edits the visual layer (annotations) and the chunk associations.",
+      "noTermsFound": "No glossary terms yet. Run <code>pnpm db:seed</code>.",
+      "themeBadge": "theme",
+      "edit": "Edit",
+      "columns": {
+        "term": "Term",
+        "slug": "Slug",
+        "category": "Category",
+        "theme": "Theme",
+        "actions": "Actions"
+      },
+      "detail": {
+        "headerTitle": "Term",
+        "slug": "Slug",
+        "category": "Category",
+        "theme": "Theme",
+        "examplePositions": "Example positions",
+        "yes": "Yes",
+        "no": "No",
+        "positionsTitle": "Example Positions",
+        "positionsDescription": "The FEN, caption, and sort order are managed in code (<code>src/lib/db/data/terms/*.ts</code>). Use the editor below to draw arrows and circles — each row saves independently. Positions tagged with this theme are managed from the position editor side via <code>position_themes</code>, not here.",
+        "noPositions": "No example positions seeded for this term. Add one in the code data file and re-run <code>pnpm db:seed</code>."
+      }
+    },
     "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "Topic Posts",

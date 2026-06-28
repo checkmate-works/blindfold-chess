@@ -1,46 +1,55 @@
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 
 import { listGlossaryTermsForAdmin } from '@/lib/glossary-admin/queries';
 
 export default async function AdminGlossaryListPage() {
+  const t = await getTranslations({ locale: 'en', namespace: 'Admin.glossary' });
   const terms = await listGlossaryTermsForAdmin();
 
   return (
     <div>
-      <AdminPageHeader breadcrumbs={[{ label: 'Glossary' }]} />
+      <AdminPageHeader breadcrumbs={[{ label: t('title') }]} />
       <p className="text-sm text-muted-foreground mb-6">
-        Term definitions and translations are managed in code (
-        <code className="text-xs">src/lib/db/data/terms/*.ts</code>). The admin UI only edits the
-        visual layer (annotations) and the chunk associations.
+        {t.rich('description', { code: (chunks) => <code className="text-xs">{chunks}</code> })}
       </p>
 
-      <ul className="divide-y divide-border border border-border rounded">
-        {terms.map((term) => (
-          <li key={term.id}>
-            <Link
-              href={`/admin/glossary/${term.slug}`}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 hover:bg-muted transition-colors"
-            >
-              <span className="font-medium text-foreground">{term.termEn}</span>
-              <span className="text-xs text-muted-foreground font-mono">{term.slug}</span>
-              <span className="ml-auto text-xs text-muted-foreground">{term.category}</span>
+      <AdminDataTable
+        headers={[
+          t('columns.term'),
+          t('columns.slug'),
+          t('columns.category'),
+          t('columns.theme'),
+          t('columns.actions'),
+        ]}
+        items={terms}
+        emptyMessage={t.rich('noTermsFound', { code: (chunks) => <code>{chunks}</code> })}
+        renderRow={(term) => (
+          <tr key={term.id} className="border-t border-border">
+            <td className="px-4 py-3 font-medium">{term.termEn}</td>
+            <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{term.slug}</td>
+            <td className="px-4 py-3">{term.category}</td>
+            <td className="px-4 py-3">
               {term.isTheme && (
                 <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
-                  theme
+                  {t('themeBadge')}
                 </span>
               )}
-            </Link>
-          </li>
-        ))}
-      </ul>
-
-      {terms.length === 0 && (
-        <p className="text-muted-foreground">
-          No glossary terms yet. Run <code>pnpm db:seed</code>.
-        </p>
-      )}
+            </td>
+            <td className="px-4 py-3">
+              <Link
+                href={`/admin/glossary/${term.slug}`}
+                className="text-primary hover:underline text-sm"
+              >
+                {t('edit')}
+              </Link>
+            </td>
+          </tr>
+        )}
+      />
     </div>
   );
 }
