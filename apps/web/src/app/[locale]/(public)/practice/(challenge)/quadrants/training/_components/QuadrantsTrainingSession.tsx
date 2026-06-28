@@ -16,11 +16,11 @@ import {
   generateQuadrantQuestionBatch,
 } from '@blindfold-chess/features/quadrants';
 
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { QuadrantsPlaySkeleton } from '../../_components/QuadrantsPlaySkeleton';
 import { QuadrantsTrainingPlaying } from './QuadrantsTrainingPlaying';
 
 type Props = {
@@ -66,7 +66,7 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
   }, [showToast, tp, router, locale]);
 
   if (!hasQuestions || !currentQuestion) {
-    return <PracticeResultSkeleton />;
+    return <QuadrantsPlaySkeleton />;
   }
 
   return (
