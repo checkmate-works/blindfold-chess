@@ -97,6 +97,14 @@ type SimpleResultPageOptions = {
    * `'practice_result'`.
    */
   expSource?: ExpSource;
+  /**
+   * Fallback shown while the client `ResultClient` chunk is in flight on a soft
+   * navigation (see the inner `<Suspense>` below). Defaults to the shared
+   * `PracticeResultLoadingSkeleton`. Pass the module's own loading skeleton when
+   * its `loading.tsx` is bespoke, so the fallback matches the route loading
+   * state instead of jumping shape.
+   */
+  loadingFallback?: ReactNode;
 };
 
 export function createSimplePracticeResultPage(
@@ -118,7 +126,7 @@ export function createSimplePracticeResultPage(
       // the page would flash to bare background (PageTitle + PagePanel all live
       // inside ResultClient) in that gap. Reusing the same skeleton keeps one
       // continuous shape until ResultClient paints.
-      <Suspense fallback={<PracticeResultLoadingSkeleton />}>
+      <Suspense fallback={options.loadingFallback ?? <PracticeResultLoadingSkeleton />}>
         <ResultClient
           locale={locale}
           expInfo={expInfo}
@@ -166,6 +174,14 @@ type LeaderboardConfig = {
     wide?: boolean;
     standard?: boolean;
   };
+  /**
+   * Fallback shown while the client `ResultClient` chunk is in flight on a soft
+   * navigation (see the inner `<Suspense>` below). Defaults to the shared
+   * `PracticeResultLoadingSkeleton`. Pass the module's own loading skeleton when
+   * its `loading.tsx` is bespoke (e.g. route-planner), so the fallback matches
+   * the route loading state instead of jumping shape.
+   */
+  loadingFallback?: ReactNode;
 };
 
 export function createLeaderboardPracticeResultPage(
@@ -197,7 +213,7 @@ export function createLeaderboardPracticeResultPage(
       // covers the soft-navigation gap between the route `loading.tsx`
       // resolving and the ResultClient client chunk arriving, so the panel
       // never flashes to bare background.
-      <Suspense fallback={<PracticeResultLoadingSkeleton />}>
+      <Suspense fallback={leaderboard.loadingFallback ?? <PracticeResultLoadingSkeleton />}>
         <ResultClient
           locale={locale}
           adBannerWide={
