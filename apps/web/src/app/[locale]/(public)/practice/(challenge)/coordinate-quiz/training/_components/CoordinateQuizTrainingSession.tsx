@@ -7,11 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
 
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { CoordinateQuizPlaySkeleton } from '../../_components/CoordinateQuizPlaySkeleton';
 import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../../_lib/types';
 import { FEEDBACK_SPEED_MS } from '../../_lib/types';
 import { checkAnswer, generateSingleQuestion } from '../../_lib/utils';
@@ -94,7 +94,7 @@ export default function CoordinateQuizTrainingSession({
 
   // Show loading state while question is being generated
   if (!currentQuestion) {
-    return <PracticeResultSkeleton />;
+    return <CoordinateQuizPlaySkeleton />;
   }
 
   return (
