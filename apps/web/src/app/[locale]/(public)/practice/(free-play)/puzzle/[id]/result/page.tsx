@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -15,6 +17,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PuzzleResultClient } from '../../_components/PuzzleResultClient';
+import { PuzzleResultContentSkeleton } from '../../_components/PuzzleResultContentSkeleton';
 
 // `expInfo` is keyed off the `?grant=<id>` query param, which is
 // per-grant-event and per-user. Static caching would either serve a stale
@@ -94,14 +97,20 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
         { label: t('result.title') },
       ]}
     >
-      <PuzzleResultClient
-        locale={locale}
-        positionId={position.id}
-        fen={position.fen}
-        solutionLines={solutionLines}
-        solutionMoveLists={solutionMoveLists}
-        expInfo={expInfo}
-      />
+      {/* Fallback fills the panel body while the PuzzleResultClient chunk loads
+          on a soft navigation. The chrome (PageTitle / PagePanel / Breadcrumb)
+          is server-rendered by PageLayout outside this boundary, so only the
+          inner content needs covering — matching the route loading.tsx. */}
+      <Suspense fallback={<PuzzleResultContentSkeleton />}>
+        <PuzzleResultClient
+          locale={locale}
+          positionId={position.id}
+          fen={position.fen}
+          solutionLines={solutionLines}
+          solutionMoveLists={solutionMoveLists}
+          expInfo={expInfo}
+        />
+      </Suspense>
 
       {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PageLayout>
