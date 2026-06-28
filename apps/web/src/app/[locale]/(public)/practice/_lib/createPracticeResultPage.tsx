@@ -18,6 +18,7 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultLoadingSkeleton } from '../_components/PracticeResultLoadingSkeleton';
 import { resolveLeaderboardWithFallback } from './resolveLeaderboardWithFallback';
 
 // ---------------------------------------------------------------------------
@@ -110,7 +111,14 @@ export function createSimplePracticeResultPage(
     const searchParams = await props.searchParams;
     const expInfo = await resolveExpInfoFromGrantParam(searchParams, expSource);
     return (
-      <Suspense>
+      // Fallback mirrors the route `loading.tsx`. The outer `loading.tsx`
+      // boundary resolves the instant this server `Page` returns (after the
+      // awaits above), but `ResultClient` is a client component whose JS chunk
+      // may still be in flight on a soft navigation — without a fallback here
+      // the page would flash to bare background (PageTitle + PagePanel all live
+      // inside ResultClient) in that gap. Reusing the same skeleton keeps one
+      // continuous shape until ResultClient paints.
+      <Suspense fallback={<PracticeResultLoadingSkeleton />}>
         <ResultClient
           locale={locale}
           expInfo={expInfo}
@@ -185,7 +193,11 @@ export function createLeaderboardPracticeResultPage(
     const hasLeaderboardRows = leaderboardData !== null;
 
     return (
-      <Suspense>
+      // See createSimplePracticeResultPage for why this fallback exists: it
+      // covers the soft-navigation gap between the route `loading.tsx`
+      // resolving and the ResultClient client chunk arriving, so the panel
+      // never flashes to bare background.
+      <Suspense fallback={<PracticeResultLoadingSkeleton />}>
         <ResultClient
           locale={locale}
           adBannerWide={
