@@ -32,7 +32,7 @@ export function CoordinateQuizBoard({
   const getHighlightColor = (highlight: 'correct' | 'incorrect' | 'target') => {
     switch (highlight) {
       case 'correct':
-        return 'bg-green-400 dark:bg-green-600';
+        return 'bg-success';
       case 'incorrect':
         return 'bg-red-400 dark:bg-red-600';
       case 'target':

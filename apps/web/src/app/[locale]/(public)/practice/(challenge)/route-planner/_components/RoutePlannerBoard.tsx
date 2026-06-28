@@ -69,8 +69,8 @@ export function RoutePlannerBoard({
       if (isTarget) {
         return (
           <div className="w-full h-full flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-green-400 dark:bg-green-600" />
-            <span className="relative z-10 font-bold text-xs sm:text-sm text-green-950 dark:text-green-50">
+            <div className="absolute inset-0 bg-success" />
+            <span className="relative z-10 font-bold text-xs sm:text-sm text-success-foreground">
               Goal
             </span>
           </div>
