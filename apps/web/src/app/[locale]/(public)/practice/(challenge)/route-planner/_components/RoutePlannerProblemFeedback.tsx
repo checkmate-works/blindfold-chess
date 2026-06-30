@@ -11,6 +11,9 @@ import type { BoardTheme } from '@/lib/games/board-themes';
 import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerBoard } from './RoutePlannerBoard';
 
+/** A scrub selection: which strip is driving the board, and the index within it. */
+type Scrub = { source: 'yours' | 'shortest'; index: number };
+
 type Props = {
   piece: PieceType;
   start: string;
@@ -48,9 +51,12 @@ export function RoutePlannerProblemFeedback({
   const tookOptimalLength = success && userPath.length === shortestPath.length;
   const showShortest = !tookOptimalLength;
 
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [lockedIndex, setLockedIndex] = useState<number | null>(null);
-  const highlightedIndex = hoveredIndex ?? lockedIndex;
+  // Both strips can scrub the board, so a selection is tracked as which strip
+  // (`yours` or `shortest`) plus the index within it. Hover takes precedence
+  // over a locked (tapped) selection.
+  const [hovered, setHovered] = useState<Scrub | null>(null);
+  const [locked, setLocked] = useState<Scrub | null>(null);
+  const active = hovered ?? locked;
 
   // On the user's path, mark every illegal move (each square not reachable from its predecessor).
   const wrongSquares = useMemo(() => {
@@ -65,21 +71,26 @@ export function RoutePlannerProblemFeedback({
     return bad;
   }, [skipped, start, piece, moves]);
 
-  // The board shows the user's attempt by default; hovering/locking a square in
-  // the shortest-path strip scrubs the board to reveal the optimal route up to
-  // that point. Skipped problems have no attempt, so the board defaults to the
-  // full shortest path.
-  const isScrubbing = highlightedIndex !== null;
-  const showUserOnBoard = !skipped && !isScrubbing;
+  // The board shows the user's attempt by default; hovering/tapping a square in
+  // either strip scrubs the board to replay that path up to the chosen square.
+  // Skipped problems have no attempt, so the board defaults to the full
+  // shortest path. Wrong-square markers only apply while showing the user path.
+  const activePath = active?.source === 'shortest' ? shortestPath : userPath;
 
-  const boardPath = showUserOnBoard
-    ? userPath
-    : isScrubbing
-      ? shortestPath.slice(0, highlightedIndex + 1)
-      : shortestPath;
+  const boardPath = active
+    ? activePath.slice(0, active.index + 1)
+    : skipped
+      ? shortestPath
+      : userPath;
 
-  const highlightedSquare = isScrubbing ? shortestPath[highlightedIndex] : null;
-  const boardWrongSquares = showUserOnBoard ? wrongSquares : [];
+  const highlightedSquare = active ? activePath[active.index] : null;
+  const boardWrongSquares = active
+    ? active.source === 'yours'
+      ? wrongSquares
+      : []
+    : skipped
+      ? []
+      : wrongSquares;
 
   const shortestMoveCount = Math.max(shortestPath.length - 1, 0);
 
@@ -94,7 +105,17 @@ export function RoutePlannerProblemFeedback({
             success ? 'border-success bg-success/10' : 'border-destructive bg-destructive/10'
           }`}
         >
-          <PathChips path={userPath} />
+          <PathChips
+            path={userPath}
+            interactive
+            highlightedIndex={active?.source === 'yours' ? active.index : null}
+            onHover={(index) => setHovered(index === null ? null : { source: 'yours', index })}
+            onLock={(index) =>
+              setLocked((prev) =>
+                prev?.source === 'yours' && prev.index === index ? null : { source: 'yours', index }
+              )
+            }
+          />
         </div>
       )}
 
@@ -123,11 +144,17 @@ export function RoutePlannerProblemFeedback({
           <PathChips
             path={shortestPath}
             interactive
-            highlightedIndex={highlightedIndex}
-            onHover={setHoveredIndex}
+            highlightedIndex={active?.source === 'shortest' ? active.index : null}
+            onHover={(index) => setHovered(index === null ? null : { source: 'shortest', index })}
             // Toggle: tapping the locked square again returns the board to the
             // user's own attempt (there is no tab to switch back with anymore).
-            onLock={(index) => setLockedIndex((prev) => (prev === index ? null : index))}
+            onLock={(index) =>
+              setLocked((prev) =>
+                prev?.source === 'shortest' && prev.index === index
+                  ? null
+                  : { source: 'shortest', index }
+              )
+            }
           />
         </div>
       )}
@@ -148,7 +175,7 @@ type PathChipsProps =
       interactive: true;
       highlightedIndex: number | null;
       onHover: (index: number | null) => void;
-      onLock: (index: number | null) => void;
+      onLock: (index: number) => void;
     };
 
 function PathChips(props: PathChipsProps) {
