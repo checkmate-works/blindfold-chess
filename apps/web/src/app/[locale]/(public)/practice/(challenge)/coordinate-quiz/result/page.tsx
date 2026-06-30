@@ -1,3 +1,4 @@
+import { PracticeResultLoadingSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultLoadingSkeleton';
 import {
   createLeaderboardPracticeResultPage,
   createPracticeResultMetadata,
@@ -15,4 +16,6 @@ export const generateMetadata = createPracticeResultMetadata({
 export default createLeaderboardPracticeResultPage(ResultClient, {
   module: 'coordinate_quiz',
   resolveKey: (sp) => (typeof sp.orientation === 'string' ? sp.orientation : 'random'),
+  // Keep the inner chunk-load fallback consistent with loading.tsx.
+  loadingFallback: <PracticeResultLoadingSkeleton grantsExp showsSignUpBanner />,
 });

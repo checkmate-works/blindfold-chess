@@ -1,8 +1,17 @@
 import { getTranslations } from 'next-intl/server';
 
+import { createClient } from '@/lib/supabase/server';
+
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 
 import { PracticeResultPanelSkeleton } from './PracticeResultPanelSkeleton';
+
+type Props = {
+  /** Whether this module awards EXP (reserve the card for authenticated users). */
+  grantsExp?: boolean;
+  /** Whether this module shows the sign-up banner (reserve it for anonymous users). */
+  showsSignUpBanner?: boolean;
+};
 
 /**
  * Server `loading.tsx` skeleton shared by every practice result route.
@@ -31,11 +40,25 @@ import { PracticeResultPanelSkeleton } from './PracticeResultPanelSkeleton';
  * (See that component for why LeaderboardPreview / related-module card are
  * always reserved.)
  */
-export async function PracticeResultLoadingSkeleton() {
+export async function PracticeResultLoadingSkeleton({
+  grantsExp = false,
+  showsSignUpBanner = false,
+}: Props = {}) {
   const [tPractice, tNav] = await Promise.all([
     getTranslations('practice'),
     getTranslations('navigation'),
   ]);
+
+  // Only resolve the user when a conditional block could be reserved; modules
+  // that show neither (the default) skip the auth round-trip entirely.
+  let isAuthed = false;
+  if (grantsExp || showsSignUpBanner) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    isAuthed = !!user;
+  }
 
   return (
     <div className="space-y-8">
@@ -44,7 +67,10 @@ export async function PracticeResultLoadingSkeleton() {
       </PageTitle>
 
       <PagePanel>
-        <PracticeResultPanelSkeleton />
+        <PracticeResultPanelSkeleton
+          reserveExp={grantsExp && isAuthed}
+          reserveSignUpBanner={showsSignUpBanner && !isAuthed}
+        />
 
         {/* Mirror `PageLayout`'s trailing `!mt-4 space-y-4` block (see
             PageLayout.tsx) so the divider→breadcrumb spacing matches the

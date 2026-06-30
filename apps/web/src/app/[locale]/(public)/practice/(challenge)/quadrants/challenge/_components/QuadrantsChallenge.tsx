@@ -113,7 +113,7 @@ export default function QuadrantsChallenge({ locale, orientation }: Props) {
   }
 
   if (isFinished) {
-    return <PracticeResultSkeleton />;
+    return <PracticeResultSkeleton grantsExp />;
   }
 
   if (!currentQuestion) {

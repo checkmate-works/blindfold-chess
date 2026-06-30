@@ -1,3 +1,4 @@
+import { PracticeResultLoadingSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultLoadingSkeleton';
 import {
   createLeaderboardPracticeResultPage,
   createPracticeResultMetadata,
@@ -15,4 +16,6 @@ export const generateMetadata = createPracticeResultMetadata({
 export default createLeaderboardPracticeResultPage(ResultClient, {
   module: 'board_symmetry',
   resolveKey: () => 'default',
+  // Keep the inner chunk-load fallback consistent with loading.tsx.
+  loadingFallback: <PracticeResultLoadingSkeleton grantsExp showsSignUpBanner />,
 });

@@ -81,7 +81,7 @@ export default function SquareColorsChallenge({ locale }: Props) {
   });
 
   if (isFinished) {
-    return <PracticeResultSkeleton />;
+    return <PracticeResultSkeleton grantsExp showsSignUpBanner />;
   }
 
   if (!currentSquare || !isLoaded) {

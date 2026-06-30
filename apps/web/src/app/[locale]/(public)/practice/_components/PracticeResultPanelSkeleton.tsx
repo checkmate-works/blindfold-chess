@@ -23,8 +23,23 @@ import { SectionTitle } from '@/app/[locale]/_components';
  * reserved because most modules render them and omitting them causes more CLS
  * than slight over-allocation — the same tradeoff documented on the loading
  * skeleton.
+ *
+ * `ExpGainDisplay` (authenticated) and `SignUpBanner` (anonymous) are mutually
+ * exclusive by auth state and module-dependent (not every module grants EXP or
+ * shows the banner), so they are opt-in via `reserveExp` / `reserveSignUpBanner`
+ * — the callers set them from the resolved auth state plus per-module config.
  */
-export function PracticeResultPanelSkeleton() {
+type Props = {
+  /** Reserve the EXP gain card (between the summary and the action buttons). */
+  reserveExp?: boolean;
+  /** Reserve the sign-up banner (just above the action buttons). */
+  reserveSignUpBanner?: boolean;
+};
+
+export function PracticeResultPanelSkeleton({
+  reserveExp = false,
+  reserveSignUpBanner = false,
+}: Props = {}) {
   return (
     <>
       {/* PracticeCompleteSummary. `createPracticeResultClient` always sets
@@ -56,6 +71,41 @@ export function PracticeResultPanelSkeleton() {
         {/* Average time line (centered) */}
         <div className="h-4 w-40 bg-muted rounded mt-4 mx-auto animate-pulse" />
       </div>
+
+      {/* ExpGainDisplay placeholder — only reserved for authenticated runs that
+          earn EXP (see `reserveExp`). Mirrors the real card (EXP row +
+          level/progress); the "Level Up!" badge is rare and not reserved. */}
+      {reserveExp && (
+        <div className="mt-4 rounded-lg border border-border bg-card p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">EXP</span>
+            <span className="inline-block h-5 w-20 bg-muted rounded animate-pulse" />
+          </div>
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="inline-block h-4 w-12 bg-muted rounded animate-pulse" />
+              <span className="inline-block h-3 w-8 bg-muted rounded animate-pulse" />
+            </div>
+            <div className="w-full bg-secondary rounded-full h-2">
+              <div className="bg-muted h-2 w-1/3 rounded-full animate-pulse" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SignUpBanner placeholder — only reserved for anonymous users on modules
+          that show it (see `reserveSignUpBanner`). Matches SignUpBannerUI. */}
+      {reserveSignUpBanner && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+            <div className="w-full">
+              <div className="h-5 w-40 bg-muted rounded animate-pulse" />
+              <div className="mt-2 h-4 w-56 max-w-full bg-muted rounded animate-pulse" />
+            </div>
+            <div className="h-9 w-28 flex-shrink-0 bg-muted rounded-md animate-pulse" />
+          </div>
+        </div>
+      )}
 
       {/* Action buttons (Try Again / Change Settings, etc.) */}
       <div className="space-y-4">
