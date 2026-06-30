@@ -13,7 +13,6 @@ import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_comp
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/(challenge)/route-planner/_actions/save-result';
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -21,6 +20,7 @@ import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RoutePlannerPlaySkeleton } from '../../_components/RoutePlannerPlaySkeleton';
+import { RoutePlannerResultSkeleton } from '../../_components/RoutePlannerResultSkeleton';
 import type { PieceType } from '../../_lib/pieces';
 import type { ProblemResult } from './_parts/ProblemBody';
 import { ProblemBody } from './_parts/ProblemBody';
@@ -139,7 +139,7 @@ export default function RoutePlannerChallengeSession({
   });
 
   if (isFinished) {
-    return <PracticeResultSkeleton />;
+    return <RoutePlannerResultSkeleton />;
   }
   if (!currentProblem) {
     return <RoutePlannerPlaySkeleton showHeader />;
