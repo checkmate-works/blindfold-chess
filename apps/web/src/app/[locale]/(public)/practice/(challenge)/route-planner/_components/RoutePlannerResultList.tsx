@@ -29,16 +29,27 @@ type Props = {
 };
 
 export function RoutePlannerResultList({ results, boardTheme, labels }: Props) {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  // Each row expands independently — opening one must not collapse the others
+  // the user already opened, so track the open rows as a set rather than a
+  // single index.
+  const [expandedIndices, setExpandedIndices] = useState<Set<number>>(new Set());
 
   const toggleExpand = (index: number) => {
-    setExpandedIndex((prev) => (prev === index ? null : index));
+    setExpandedIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
   };
 
   return (
     <div className="space-y-3">
       {results.map((result, index) => {
-        const isExpanded = expandedIndex === index;
+        const isExpanded = expandedIndices.has(index);
         return (
           <div key={index} className="border border-border rounded-lg overflow-hidden">
             <button
