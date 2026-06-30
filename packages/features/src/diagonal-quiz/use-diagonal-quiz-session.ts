@@ -27,6 +27,8 @@ export type UseDiagonalQuizSessionReturn = TimedSessionFacade & {
   currentSquare: string | null;
   lastAnswer: {
     correct: boolean;
+    isDiagonalCorrect: boolean;
+    isAntiDiagonalCorrect: boolean;
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null;
@@ -50,6 +52,8 @@ export function useDiagonalQuizSession({
   >([]);
   const [lastAnswer, setLastAnswer] = useState<{
     correct: boolean;
+    isDiagonalCorrect: boolean;
+    isAntiDiagonalCorrect: boolean;
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null>(null);
@@ -137,6 +141,8 @@ export function useDiagonalQuizSession({
       ]);
       setLastAnswer({
         correct: isCorrect,
+        isDiagonalCorrect: diagonalCorrect,
+        isAntiDiagonalCorrect: antiDiagonalCorrect,
         correctDiagonal: diagonal,
         correctAntiDiagonal: antiDiagonal,
       });

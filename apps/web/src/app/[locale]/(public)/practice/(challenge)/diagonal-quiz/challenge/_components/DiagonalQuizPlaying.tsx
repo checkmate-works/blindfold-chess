@@ -23,6 +23,8 @@ type Props = {
   showResult: boolean;
   lastAnswer: {
     correct: boolean;
+    isDiagonalCorrect: boolean;
+    isAntiDiagonalCorrect: boolean;
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null;
@@ -67,9 +69,13 @@ export function DiagonalQuizPlaying({
   const isDisabled = showResult || countdown !== null || isPaused;
 
   // Correct/incorrect is signaled by tinting the answer fields rather than a
-  // text flash, so the layout never shifts when a result appears.
-  const fieldResult =
-    showResult && lastAnswer ? (lastAnswer.correct ? 'correct' : 'incorrect') : null;
+  // text flash, so the layout never shifts when a result appears. Each
+  // diagonal is graded independently, so a half-right answer shows one green
+  // field and one red field instead of tinting both the same.
+  const diagonalResult =
+    showResult && lastAnswer ? (lastAnswer.isDiagonalCorrect ? 'correct' : 'incorrect') : null;
+  const antiDiagonalResult =
+    showResult && lastAnswer ? (lastAnswer.isAntiDiagonalCorrect ? 'correct' : 'incorrect') : null;
 
   const {
     singleDiagonal,
@@ -179,7 +185,7 @@ export function DiagonalQuizPlaying({
               isInputtingStart={isInputtingStart}
               isInputtingEnd={isInputtingEnd}
               onFieldClick={handleFieldClick}
-              result={fieldResult}
+              result={diagonalResult}
             />
 
             <DiagonalInputField
@@ -194,7 +200,7 @@ export function DiagonalQuizPlaying({
               isInputtingStart={isInputtingStart}
               isInputtingEnd={isInputtingEnd}
               onFieldClick={handleFieldClick}
-              result={fieldResult}
+              result={antiDiagonalResult}
             />
           </div>
 
