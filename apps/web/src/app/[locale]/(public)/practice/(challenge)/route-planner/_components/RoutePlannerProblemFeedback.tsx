@@ -11,8 +11,6 @@ import type { BoardTheme } from '@/lib/games/board-themes';
 import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerBoard } from './RoutePlannerBoard';
 
-type TabValue = 'yours' | 'shortest';
-
 type Props = {
   piece: PieceType;
   start: string;
@@ -48,18 +46,11 @@ export function RoutePlannerProblemFeedback({
   // "your answer was wrong" and is confusing. Skipped problems have no user
   // path, so only the shortest is meaningful.
   const tookOptimalLength = success && userPath.length === shortestPath.length;
-  const showTabs = !skipped && !tookOptimalLength;
-  const [activeTab, setActiveTab] = useState<TabValue>(skipped ? 'shortest' : 'yours');
+  const showShortest = !tookOptimalLength;
+
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [lockedIndex, setLockedIndex] = useState<number | null>(null);
   const highlightedIndex = hoveredIndex ?? lockedIndex;
-
-  const handleTabChange = (tab: TabValue) => {
-    if (tab === activeTab) return;
-    setHoveredIndex(null);
-    setLockedIndex(null);
-    setActiveTab(tab);
-  };
 
   // On the user's path, mark every illegal move (each square not reachable from its predecessor).
   const wrongSquares = useMemo(() => {
@@ -74,66 +65,36 @@ export function RoutePlannerProblemFeedback({
     return bad;
   }, [skipped, start, piece, moves]);
 
-  const isShortest = activeTab === 'shortest';
+  // The board shows the user's attempt by default; hovering/locking a square in
+  // the shortest-path strip scrubs the board to reveal the optimal route up to
+  // that point. Skipped problems have no attempt, so the board defaults to the
+  // full shortest path.
+  const isScrubbing = highlightedIndex !== null;
+  const showUserOnBoard = !skipped && !isScrubbing;
 
-  const boardPath = isShortest
-    ? highlightedIndex !== null
+  const boardPath = showUserOnBoard
+    ? userPath
+    : isScrubbing
       ? shortestPath.slice(0, highlightedIndex + 1)
-      : shortestPath
-    : userPath;
+      : shortestPath;
 
-  const highlightedSquare =
-    isShortest && highlightedIndex !== null ? shortestPath[highlightedIndex] : null;
+  const highlightedSquare = isScrubbing ? shortestPath[highlightedIndex] : null;
+  const boardWrongSquares = showUserOnBoard ? wrongSquares : [];
 
-  const boardWrongSquares = isShortest ? [] : wrongSquares;
+  const shortestMoveCount = Math.max(shortestPath.length - 1, 0);
 
   return (
     <div className="space-y-4">
-      {showTabs && (
-        <nav
-          className="flex rounded-lg bg-secondary p-1"
-          role="tablist"
-          aria-label={t('shortestPath')}
-        >
-          <TabButton
-            label={t('yourPath')}
-            active={activeTab === 'yours'}
-            onClick={() => handleTabChange('yours')}
-          />
-          <TabButton
-            label={t('shortestPath')}
-            active={activeTab === 'shortest'}
-            onClick={() => handleTabChange('shortest')}
-          />
-        </nav>
-      )}
-
+      {/* The user's own attempt — colored like the challenge move strip, sitting
+          directly under the problem header just as the strip does during play.
+          Only the user's strip carries the success/destructive color. */}
       {!skipped && (
-        // Mirror the challenge mode (MovesHistory): the move strip sits at the
-        // top, and only the user's own strip carries the success/destructive
-        // color. The shortest-path reference stays neutral — it is the answer,
-        // not the user's attempt. A border is always present (transparent when
-        // neutral) so switching tabs does not shift layout.
         <div
           className={`text-left p-4 rounded-lg border transition-colors ${
-            isShortest
-              ? 'border-transparent bg-muted/30'
-              : success
-                ? 'border-success bg-success/10'
-                : 'border-destructive bg-destructive/10'
+            success ? 'border-success bg-success/10' : 'border-destructive bg-destructive/10'
           }`}
         >
-          {isShortest ? (
-            <PathChips
-              path={shortestPath}
-              interactive
-              highlightedIndex={highlightedIndex}
-              onHover={setHoveredIndex}
-              onLock={setLockedIndex}
-            />
-          ) : (
-            <PathChips path={userPath} />
-          )}
+          <PathChips path={userPath} />
         </div>
       )}
 
@@ -150,31 +111,27 @@ export function RoutePlannerProblemFeedback({
           />
         </div>
       </div>
-    </div>
-  );
-}
 
-function TabButton({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-        active ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
-      }`}
-    >
-      {label}
-    </button>
+      {/* Shortest-path reference — neutral (it is the answer, not the user's
+          attempt). Hovering or tapping a square scrubs the board above, which
+          replaces the previous tab toggle. */}
+      {showShortest && (
+        <div className="text-left p-4 rounded-lg border border-transparent bg-muted/30">
+          <div className="mb-2 text-xs font-medium text-muted-foreground">
+            {t('shortestPath')} · {t('distance', { count: shortestMoveCount })}
+          </div>
+          <PathChips
+            path={shortestPath}
+            interactive
+            highlightedIndex={highlightedIndex}
+            onHover={setHoveredIndex}
+            // Toggle: tapping the locked square again returns the board to the
+            // user's own attempt (there is no tab to switch back with anymore).
+            onLock={(index) => setLockedIndex((prev) => (prev === index ? null : index))}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 
