@@ -33,11 +33,12 @@ export function RoutePlannerResultView({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h3 className={`font-bold ${result.success ? 'text-success' : 'text-destructive'}`}>
-          {result.message}
-        </h3>
-      </div>
+      {/* Result is signaled by coloring the user's move strip inside the
+          feedback (mirroring the challenge mode), not a text label. The text is
+          kept here for screen readers only. */}
+      <p className="sr-only" role="status">
+        {result.message}
+      </p>
 
       {!isLoaded ? (
         <div className="flex justify-center">

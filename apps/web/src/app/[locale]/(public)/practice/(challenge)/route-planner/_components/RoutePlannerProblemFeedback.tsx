@@ -11,7 +11,8 @@ import type { BoardTheme } from '@/lib/games/board-themes';
 import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerBoard } from './RoutePlannerBoard';
 
-type TabValue = 'yours' | 'shortest';
+/** A scrub selection: which strip is driving the board, and the index within it. */
+type Scrub = { source: 'yours' | 'shortest'; index: number };
 
 type Props = {
   piece: PieceType;
@@ -48,18 +49,14 @@ export function RoutePlannerProblemFeedback({
   // "your answer was wrong" and is confusing. Skipped problems have no user
   // path, so only the shortest is meaningful.
   const tookOptimalLength = success && userPath.length === shortestPath.length;
-  const showTabs = !skipped && !tookOptimalLength;
-  const [activeTab, setActiveTab] = useState<TabValue>(skipped ? 'shortest' : 'yours');
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [lockedIndex, setLockedIndex] = useState<number | null>(null);
-  const highlightedIndex = hoveredIndex ?? lockedIndex;
+  const showShortest = !tookOptimalLength;
 
-  const handleTabChange = (tab: TabValue) => {
-    if (tab === activeTab) return;
-    setHoveredIndex(null);
-    setLockedIndex(null);
-    setActiveTab(tab);
-  };
+  // Both strips can scrub the board, so a selection is tracked as which strip
+  // (`yours` or `shortest`) plus the index within it. Hover takes precedence
+  // over a locked (tapped) selection.
+  const [hovered, setHovered] = useState<Scrub | null>(null);
+  const [locked, setLocked] = useState<Scrub | null>(null);
+  const active = hovered ?? locked;
 
   // On the user's path, mark every illegal move (each square not reachable from its predecessor).
   const wrongSquares = useMemo(() => {
@@ -74,38 +71,52 @@ export function RoutePlannerProblemFeedback({
     return bad;
   }, [skipped, start, piece, moves]);
 
-  const isShortest = activeTab === 'shortest';
+  // The board shows the user's attempt by default; hovering/tapping a square in
+  // either strip scrubs the board to replay that path up to the chosen square.
+  // Skipped problems have no attempt, so the board defaults to the full
+  // shortest path. Wrong-square markers only apply while showing the user path.
+  const activePath = active?.source === 'shortest' ? shortestPath : userPath;
 
-  const boardPath = isShortest
-    ? highlightedIndex !== null
-      ? shortestPath.slice(0, highlightedIndex + 1)
-      : shortestPath
-    : userPath;
+  const boardPath = active
+    ? activePath.slice(0, active.index + 1)
+    : skipped
+      ? shortestPath
+      : userPath;
 
-  const highlightedSquare =
-    isShortest && highlightedIndex !== null ? shortestPath[highlightedIndex] : null;
+  const highlightedSquare = active ? activePath[active.index] : null;
+  const boardWrongSquares = active
+    ? active.source === 'yours'
+      ? wrongSquares
+      : []
+    : skipped
+      ? []
+      : wrongSquares;
 
-  const boardWrongSquares = isShortest ? [] : wrongSquares;
+  const shortestMoveCount = Math.max(shortestPath.length - 1, 0);
 
   return (
     <div className="space-y-4">
-      {showTabs && (
-        <nav
-          className="flex rounded-lg bg-secondary p-1"
-          role="tablist"
-          aria-label={t('shortestPath')}
+      {/* The user's own attempt — colored like the challenge move strip, sitting
+          directly under the problem header just as the strip does during play.
+          Only the user's strip carries the success/destructive color. */}
+      {!skipped && (
+        <div
+          className={`text-left p-4 rounded-lg border transition-colors ${
+            success ? 'border-success bg-success/10' : 'border-destructive bg-destructive/10'
+          }`}
         >
-          <TabButton
-            label={t('yourPath')}
-            active={activeTab === 'yours'}
-            onClick={() => handleTabChange('yours')}
+          <PathChips
+            path={userPath}
+            interactive
+            highlightedIndex={active?.source === 'yours' ? active.index : null}
+            onHover={(index) => setHovered(index === null ? null : { source: 'yours', index })}
+            onLock={(index) =>
+              setLocked((prev) =>
+                prev?.source === 'yours' && prev.index === index ? null : { source: 'yours', index }
+              )
+            }
           />
-          <TabButton
-            label={t('shortestPath')}
-            active={activeTab === 'shortest'}
-            onClick={() => handleTabChange('shortest')}
-          />
-        </nav>
+        </div>
       )}
 
       <div className="flex justify-center">
@@ -122,46 +133,32 @@ export function RoutePlannerProblemFeedback({
         </div>
       </div>
 
-      {!skipped && (
-        <div className="text-left p-4 bg-muted/30 rounded-lg">
-          {isShortest ? (
-            <PathChips
-              path={shortestPath}
-              interactive
-              highlightedIndex={highlightedIndex}
-              onHover={setHoveredIndex}
-              onLock={setLockedIndex}
-            />
-          ) : (
-            <PathChips path={userPath} />
-          )}
+      {/* Shortest-path reference — neutral (it is the answer, not the user's
+          attempt). Hovering or tapping a square scrubs the board above, which
+          replaces the previous tab toggle. */}
+      {showShortest && (
+        <div className="text-left p-4 rounded-lg border border-transparent bg-muted/30">
+          <div className="mb-2 text-xs font-medium text-muted-foreground">
+            {t('shortestPath')} · {t('distance', { count: shortestMoveCount })}
+          </div>
+          <PathChips
+            path={shortestPath}
+            interactive
+            highlightedIndex={active?.source === 'shortest' ? active.index : null}
+            onHover={(index) => setHovered(index === null ? null : { source: 'shortest', index })}
+            // Toggle: tapping the locked square again returns the board to the
+            // user's own attempt (there is no tab to switch back with anymore).
+            onLock={(index) =>
+              setLocked((prev) =>
+                prev?.source === 'shortest' && prev.index === index
+                  ? null
+                  : { source: 'shortest', index }
+              )
+            }
+          />
         </div>
       )}
     </div>
-  );
-}
-
-function TabButton({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-        active ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
-      }`}
-    >
-      {label}
-    </button>
   );
 }
 
@@ -178,7 +175,7 @@ type PathChipsProps =
       interactive: true;
       highlightedIndex: number | null;
       onHover: (index: number | null) => void;
-      onLock: (index: number | null) => void;
+      onLock: (index: number) => void;
     };
 
 function PathChips(props: PathChipsProps) {
@@ -190,7 +187,7 @@ function PathChips(props: PathChipsProps) {
         return (
           <Fragment key={i}>
             {i > 0 && <FaArrowRight size={10} className="text-muted-foreground/50 mx-0.5" />}
-            {!props.interactive || isEndpoint ? (
+            {!props.interactive ? (
               <span
                 className={`font-mono px-2 py-1 ${
                   isEndpoint ? 'text-sm font-bold' : 'text-xs text-muted-foreground'
@@ -199,9 +196,14 @@ function PathChips(props: PathChipsProps) {
                 {sq}
               </span>
             ) : (
+              // Every square is tappable, endpoints included: tapping the goal
+              // jumps the board to the full route at once instead of stepping
+              // through it square by square.
               <button
                 type="button"
-                className={`font-mono text-xs px-2 py-1 rounded border transition-colors cursor-pointer ${
+                className={`font-mono px-2 py-1 rounded border transition-colors cursor-pointer ${
+                  isEndpoint ? 'text-sm font-bold' : 'text-xs'
+                } ${
                   props.highlightedIndex === i
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted border-border'
