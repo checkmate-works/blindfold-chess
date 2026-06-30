@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
@@ -54,6 +54,8 @@ type Props = {
   onSessionComplete: (payload: SessionCompletePayload) => void;
   /** Called when the user confirms finishing the tutorial on the problem-result screen. */
   onFinishTutorial?: () => void;
+  /** Placeholder for the post-finish navigation window; forwarded to the phase. */
+  finishFallback?: ReactNode;
 };
 
 /**
@@ -77,6 +79,7 @@ export function PositionMemorySessionView({
   behavior,
   onSessionComplete,
   onFinishTutorial,
+  finishFallback,
 }: Props) {
   const {
     enablePause = false,
@@ -182,6 +185,7 @@ export function PositionMemorySessionView({
         onNextProblem={() => send({ type: 'NEXT_PROBLEM' })}
         onViewResults={() => send({ type: 'VIEW_RESULTS' })}
         onFinishTutorial={onFinishTutorial}
+        finishFallback={finishFallback}
       />
       <QuitConfirmModal
         isOpen={showQuitModal}

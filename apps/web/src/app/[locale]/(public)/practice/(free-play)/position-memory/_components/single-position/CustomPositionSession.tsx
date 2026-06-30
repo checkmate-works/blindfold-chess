@@ -13,6 +13,7 @@ import {
   PositionMemorySessionView,
   type SessionCompletePayload,
 } from '../session/PositionMemorySessionView';
+import { SinglePositionResultSkeleton } from './SinglePositionResultSkeleton';
 
 type Props = {
   locale: Locale;
@@ -67,6 +68,10 @@ export function CustomPositionSession({
         skipProblemResult: true,
       }}
       onSessionComplete={handleSessionComplete}
+      // Custom positions are not EXP-eligible, so reserve no EXP card — but
+      // still match the bespoke board-comparison result skeleton (with the
+      // sign-up banner for guests) instead of the generic leaderboard one.
+      finishFallback={<SinglePositionResultSkeleton />}
     />
   );
 }
