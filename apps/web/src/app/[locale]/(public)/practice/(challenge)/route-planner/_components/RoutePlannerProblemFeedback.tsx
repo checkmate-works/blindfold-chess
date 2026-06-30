@@ -187,7 +187,7 @@ function PathChips(props: PathChipsProps) {
         return (
           <Fragment key={i}>
             {i > 0 && <FaArrowRight size={10} className="text-muted-foreground/50 mx-0.5" />}
-            {!props.interactive || isEndpoint ? (
+            {!props.interactive ? (
               <span
                 className={`font-mono px-2 py-1 ${
                   isEndpoint ? 'text-sm font-bold' : 'text-xs text-muted-foreground'
@@ -196,9 +196,14 @@ function PathChips(props: PathChipsProps) {
                 {sq}
               </span>
             ) : (
+              // Every square is tappable, endpoints included: tapping the goal
+              // jumps the board to the full route at once instead of stepping
+              // through it square by square.
               <button
                 type="button"
-                className={`font-mono text-xs px-2 py-1 rounded border transition-colors cursor-pointer ${
+                className={`font-mono px-2 py-1 rounded border transition-colors cursor-pointer ${
+                  isEndpoint ? 'text-sm font-bold' : 'text-xs'
+                } ${
                   props.highlightedIndex === i
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted border-border'
