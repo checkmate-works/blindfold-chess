@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
@@ -39,6 +41,13 @@ type Props = {
   onNextProblem: () => void;
   onViewResults: () => void;
   onFinishTutorial?: () => void;
+  /**
+   * Placeholder rendered once the run finishes and navigation to the result
+   * route is in flight. Defaults to the generic leaderboard-shaped skeleton;
+   * the single/custom flows pass a board-comparison skeleton matching their
+   * bespoke result route so the transition does not flash two different shapes.
+   */
+  finishFallback?: ReactNode;
 };
 
 /**
@@ -73,6 +82,7 @@ export function PositionMemorySessionPhase({
   onNextProblem,
   onViewResults,
   onFinishTutorial,
+  finishFallback = <PracticeResultSkeleton />,
 }: Props) {
   if (phase === 'memorize' && originalPosition) {
     return (
@@ -133,5 +143,5 @@ export function PositionMemorySessionPhase({
     );
   }
 
-  return <PracticeResultSkeleton />;
+  return <>{finishFallback}</>;
 }

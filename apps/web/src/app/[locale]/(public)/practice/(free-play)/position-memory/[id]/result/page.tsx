@@ -94,7 +94,7 @@ export default async function PositionResultPage({ params, searchParams }: Props
     // the SinglePositionResult client chunk arriving. That component owns the
     // PagePanel chrome, so without a fallback the page would flash to bare
     // background. Reuse the same skeleton as loading.tsx for a continuous shape.
-    <Suspense fallback={<SinglePositionResultLoadingSkeleton />}>
+    <Suspense fallback={<SinglePositionResultLoadingSkeleton grantsExp />}>
       <SinglePositionResult
         locale={locale}
         sessionPath={`/practice/position-memory/${id}/session`}

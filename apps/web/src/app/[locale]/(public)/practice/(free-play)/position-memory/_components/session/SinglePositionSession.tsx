@@ -12,6 +12,7 @@ import { savePositionMemoryResult } from '../../_actions/save-result';
 import { buildSingleResultUrl } from '../../_lib/result-url';
 import type { DisplayMode } from '../../_lib/session-config';
 import type { PositionData } from '../../_lib/types';
+import { SinglePositionResultSkeleton } from '../single-position/SinglePositionResultSkeleton';
 import {
   PositionMemorySessionView,
   type SessionCompletePayload,
@@ -109,6 +110,9 @@ export function SinglePositionSession({
         skipProblemResult: true,
       }}
       onSessionComplete={handleSessionComplete}
+      // DB-backed single positions earn EXP; match the bespoke result skeleton
+      // shape (board comparison) during the save + redirect window.
+      finishFallback={<SinglePositionResultSkeleton grantsExp />}
     />
   );
 }
