@@ -1,5 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 
+import { createClient } from '@/lib/supabase/server';
+
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 
 import { RoutePlannerResultPanelSkeleton } from './RoutePlannerResultPanelSkeleton';
@@ -33,8 +35,9 @@ import { RoutePlannerResultPanelSkeleton } from './RoutePlannerResultPanelSkelet
  *
  * The Problem Details list is variable-length (one row per completed problem);
  * 5 rows are reserved as a representative count, matching how LeaderboardPreview
- * always reserves 5. Conditional sections (`ExpGainDisplay`, `SignUpBanner`)
- * render null on the common paths and are intentionally not reserved.
+ * always reserves 5. `ExpGainDisplay` (authenticated) and `SignUpBanner`
+ * (anonymous) are mutually exclusive by auth state, so exactly one is reserved
+ * based on the resolved user — see `reserveExp` / `reserveSignUpBanner`.
  */
 export async function RoutePlannerResultLoadingSkeleton() {
   // `loading.tsx` can't receive `params`, and the bare `getTranslations()`
@@ -42,11 +45,19 @@ export async function RoutePlannerResultLoadingSkeleton() {
   // yet while the page is still suspended, so it falls back to the default
   // locale. Resolve the request locale explicitly so the skeleton's static
   // text (page title, breadcrumb) is localized from the first paint.
+  const supabase = await createClient();
   const locale = await getLocale();
-  const [t, tPractice] = await Promise.all([
+  const [t, tPractice, userResult] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.routePlanner' }),
     getTranslations({ locale, namespace: 'practice' }),
+    supabase.auth.getUser(),
   ]);
+
+  // The EXP card (authenticated) and sign-up banner (anonymous) are mutually
+  // exclusive by auth state. `loading.tsx` can't read the `?grant=` param, but a
+  // user arriving here from a finished challenge always carries it, so auth
+  // state alone is a good predictor of which block the real page will render.
+  const isAuthed = !!userResult.data.user;
 
   return (
     <div className="space-y-8">
@@ -61,6 +72,8 @@ export async function RoutePlannerResultLoadingSkeleton() {
             problemDetails: tPractice('problemDetails'),
             relatedLearning: tPractice('relatedLearning'),
           }}
+          reserveExp={isAuthed}
+          reserveSignUpBanner={!isAuthed}
         />
 
         {/* Mirror `PageLayout`'s trailing `!mt-4 space-y-4` block so the

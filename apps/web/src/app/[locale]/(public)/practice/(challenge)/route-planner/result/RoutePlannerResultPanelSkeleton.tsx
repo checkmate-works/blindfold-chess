@@ -14,6 +14,18 @@ type Props = {
     problemDetails: string;
     relatedLearning: string;
   };
+  /**
+   * Reserve space for the EXP gain card (rendered between the summary and the
+   * Problem Details on the real page). Only authenticated runs earn EXP, so the
+   * caller sets this from auth state to avoid an empty card for anonymous users.
+   */
+  reserveExp?: boolean;
+  /**
+   * Reserve space for the sign-up banner (rendered just above the action
+   * buttons). Only anonymous users see it, so it is the auth-state mirror of
+   * `reserveExp`.
+   */
+  reserveSignUpBanner?: boolean;
 };
 
 /**
@@ -35,7 +47,11 @@ type Props = {
  * of direct blocks so the surrounding `space-y-8` container drives the vertical
  * rhythm exactly like the real page.
  */
-export function RoutePlannerResultPanelSkeleton({ labels }: Props) {
+export function RoutePlannerResultPanelSkeleton({
+  labels,
+  reserveExp = false,
+  reserveSignUpBanner = false,
+}: Props) {
   return (
     <>
       {/* PracticeCompleteSummary — heading + accuracy bar + legend + average time.
@@ -64,6 +80,27 @@ export function RoutePlannerResultPanelSkeleton({ labels }: Props) {
         </p>
       </div>
 
+      {/* ExpGainDisplay placeholder — only authenticated runs earn EXP. Mirrors
+          the real card (EXP row + level/progress); the "Level Up!" badge is rare
+          and intentionally not reserved. The "EXP" label is a literal, not i18n. */}
+      {reserveExp && (
+        <div className="mt-4 rounded-lg border border-border bg-card p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">EXP</span>
+            <span className="inline-block h-5 w-20 bg-muted rounded animate-pulse" />
+          </div>
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="inline-block h-4 w-12 bg-muted rounded animate-pulse" />
+              <span className="inline-block h-3 w-8 bg-muted rounded animate-pulse" />
+            </div>
+            <div className="w-full bg-secondary rounded-full h-2">
+              <div className="bg-muted h-2 w-1/3 rounded-full animate-pulse" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Problem Details: heading (static i18n) + collapsed result rows */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-muted-foreground mb-4">
@@ -86,6 +123,21 @@ export function RoutePlannerResultPanelSkeleton({ labels }: Props) {
           ))}
         </div>
       </div>
+
+      {/* SignUpBanner placeholder — rendered just above the action buttons for
+          anonymous users only (mirrors `beforeActions`). Matches SignUpBannerUI:
+          primary-tinted bordered box with two text lines and a CTA button. */}
+      {reserveSignUpBanner && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+            <div className="w-full">
+              <div className="h-5 w-40 bg-muted rounded animate-pulse" />
+              <div className="mt-2 h-4 w-56 max-w-full bg-muted rounded animate-pulse" />
+            </div>
+            <div className="h-9 w-28 flex-shrink-0 bg-muted rounded-md animate-pulse" />
+          </div>
+        </div>
+      )}
 
       {/* Action buttons (Try Again / More Practice) */}
       <div className="space-y-4">
