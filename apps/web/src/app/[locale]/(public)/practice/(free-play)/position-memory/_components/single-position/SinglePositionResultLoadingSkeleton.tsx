@@ -2,7 +2,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 
 import { SinglePositionResultPanelSkeleton } from './SinglePositionResultPanelSkeleton';
 
@@ -18,10 +18,10 @@ type Props = {
 /**
  * Position-memory single-position result loading skeleton.
  *
- * Tailored to `SinglePositionResult`, which renders directly into `<PagePanel>`
- * WITHOUT a `<PageTitle>`. The shared `PracticeResultLoadingSkeleton` cannot be
- * reused here because it reserves a 50px PageTitle band that disappears on swap
- * and a leaderboard the page never renders.
+ * Tailored to `SinglePositionResult` (a `<PageTitle>` above a `<PagePanel>`,
+ * with a board-comparison body). The shared `PracticeResultLoadingSkeleton`
+ * cannot be reused here because it reserves a leaderboard the page never
+ * renders and omits the board comparison.
  *
  * Used as the route `loading.tsx` (re-exported by the `[id]` and custom
  * `[token]` result routes) and as those pages' inner `<Suspense>` fallback. The
@@ -47,6 +47,8 @@ export async function SinglePositionResultLoadingSkeleton({ grantsExp = false }:
 
   return (
     <div className="space-y-8">
+      <PageTitle>{t('title')}</PageTitle>
+
       <PagePanel>
         <SinglePositionResultPanelSkeleton
           labels={{
