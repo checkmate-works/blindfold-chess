@@ -2,6 +2,8 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
+
 import { RoutePlannerResultPanelSkeleton } from '../result/RoutePlannerResultPanelSkeleton';
 
 /**
@@ -17,6 +19,13 @@ import { RoutePlannerResultPanelSkeleton } from '../result/RoutePlannerResultPan
  */
 export function RoutePlannerResultSkeleton() {
   const tPractice = useTranslations('practice');
+  const { user, isLoading } = useAuth();
+
+  // Authenticated runs land on the EXP card; anonymous runs land on the sign-up
+  // banner. While auth is still resolving, reserve neither (this window is
+  // brief and guessing wrong would itself shift).
+  const reserveExp = !isLoading && !!user;
+  const reserveSignUpBanner = !isLoading && !user;
 
   return (
     <div className="space-y-8">
@@ -28,6 +37,8 @@ export function RoutePlannerResultSkeleton() {
           problemDetails: tPractice('problemDetails'),
           relatedLearning: tPractice('relatedLearning'),
         }}
+        reserveExp={reserveExp}
+        reserveSignUpBanner={reserveSignUpBanner}
       />
     </div>
   );
