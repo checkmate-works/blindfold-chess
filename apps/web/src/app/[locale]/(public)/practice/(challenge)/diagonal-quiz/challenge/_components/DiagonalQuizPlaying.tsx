@@ -4,7 +4,6 @@ import { BoardOverlay } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { LuPlay } from 'react-icons/lu';
 
-import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
@@ -24,6 +23,8 @@ type Props = {
   showResult: boolean;
   lastAnswer: {
     correct: boolean;
+    isDiagonalCorrect: boolean;
+    isAntiDiagonalCorrect: boolean;
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null;
@@ -66,6 +67,15 @@ export function DiagonalQuizPlaying({
   const tPractice = useTranslations('practice');
   const quitConfirmLabels = useQuitConfirmLabels();
   const isDisabled = showResult || countdown !== null || isPaused;
+
+  // Correct/incorrect is signaled by tinting the answer fields rather than a
+  // text flash, so the layout never shifts when a result appears. Each
+  // diagonal is graded independently, so a half-right answer shows one green
+  // field and one red field instead of tinting both the same.
+  const diagonalResult =
+    showResult && lastAnswer ? (lastAnswer.isDiagonalCorrect ? 'correct' : 'incorrect') : null;
+  const antiDiagonalResult =
+    showResult && lastAnswer ? (lastAnswer.isAntiDiagonalCorrect ? 'correct' : 'incorrect') : null;
 
   const {
     singleDiagonal,
@@ -149,19 +159,16 @@ export function DiagonalQuizPlaying({
               {currentSquare}
             </div>
 
-            <AnswerFeedback
-              isCorrect={lastAnswer?.correct ?? null}
-              isVisible={showResult && !!lastAnswer}
-              incorrectMessage={
-                lastAnswer && !lastAnswer.correct
-                  ? t('correctAnswer', {
+            {showResult && lastAnswer && (
+              <p className="sr-only" role="status">
+                {lastAnswer.correct
+                  ? tPractice('correct')
+                  : t('correctAnswer', {
                       diagonal: lastAnswer.correctDiagonal,
                       antiDiagonal: lastAnswer.correctAntiDiagonal,
-                    })
-                  : undefined
-              }
-              className="mb-2"
-            />
+                    })}
+              </p>
+            )}
           </div>
 
           {/* Diagonal Input Display Fields */}
@@ -178,6 +185,7 @@ export function DiagonalQuizPlaying({
               isInputtingStart={isInputtingStart}
               isInputtingEnd={isInputtingEnd}
               onFieldClick={handleFieldClick}
+              result={diagonalResult}
             />
 
             <DiagonalInputField
@@ -192,15 +200,16 @@ export function DiagonalQuizPlaying({
               isInputtingStart={isInputtingStart}
               isInputtingEnd={isInputtingEnd}
               onFieldClick={handleFieldClick}
+              result={antiDiagonalResult}
             />
           </div>
 
-          {/* Step indicator */}
-          {!isDisabled && (
-            <div className="text-sm text-muted-foreground mb-4">
-              {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
-            </div>
-          )}
+          {/* Step indicator — height reserved so the keypad stays put when the
+              hint clears on result (no layout shift). */}
+          <div className="text-sm text-muted-foreground mb-4 min-h-5">
+            {!isDisabled &&
+              (expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : '')}
+          </div>
 
           {/* Button Input Area */}
           <ChessCoordinateKeypad

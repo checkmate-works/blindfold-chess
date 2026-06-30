@@ -7,7 +7,6 @@ import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
 import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz/client';
 
-import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
@@ -59,6 +58,12 @@ export function DiagonalQuizTrainingPlaying({
   const tp = useTranslations('practice');
   const isDisabled = showResult;
   const challengeHref = `/${locale}/practice/diagonal-quiz/challenge`;
+
+  // Incorrect/skip route to their own result views below, so the inline view
+  // only ever grades a correct answer. Tint the always-present answer fields
+  // green instead of flashing a "Correct" label, which would shift the layout.
+  const fieldResult =
+    showResult && lastAnswer ? (lastAnswer.correct ? 'correct' : 'incorrect') : null;
 
   const { singleDiagonal, singleAntiDiagonal } = getCornerInfo(currentSquare);
 
@@ -172,19 +177,16 @@ export function DiagonalQuizTrainingPlaying({
         <div className="mb-6">
           <div className="text-6xl font-bold text-foreground mb-4 select-none">{currentSquare}</div>
 
-          <AnswerFeedback
-            isCorrect={lastAnswer?.correct ?? null}
-            isVisible={showResult && !!lastAnswer}
-            incorrectMessage={
-              lastAnswer && !lastAnswer.correct
-                ? t('correctAnswer', {
+          {showResult && lastAnswer && (
+            <p className="sr-only" role="status">
+              {lastAnswer.correct
+                ? tp('correct')
+                : t('correctAnswer', {
                     diagonal: lastAnswer.correctDiagonal,
                     antiDiagonal: lastAnswer.correctAntiDiagonal,
-                  })
-                : undefined
-            }
-            className="mb-2"
-          />
+                  })}
+            </p>
+          )}
         </div>
 
         {/* Diagonal Input Display Fields */}
@@ -201,6 +203,7 @@ export function DiagonalQuizTrainingPlaying({
             isInputtingStart={isInputtingStart}
             isInputtingEnd={isInputtingEnd}
             onFieldClick={handleFieldClick}
+            result={fieldResult}
           />
 
           <DiagonalInputField
@@ -215,15 +218,15 @@ export function DiagonalQuizTrainingPlaying({
             isInputtingStart={isInputtingStart}
             isInputtingEnd={isInputtingEnd}
             onFieldClick={handleFieldClick}
+            result={fieldResult}
           />
         </div>
 
-        {/* Step indicator */}
-        {!isDisabled && (
-          <div className="text-sm text-muted-foreground mb-4">
-            {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
-          </div>
-        )}
+        {/* Step indicator — height reserved so the keypad stays put when the
+            hint clears on result (no layout shift). */}
+        <div className="text-sm text-muted-foreground mb-4 min-h-5">
+          {!isDisabled && (expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : '')}
+        </div>
 
         {/* Button Input Area */}
         <ChessCoordinateKeypad
