@@ -123,7 +123,20 @@ export function RoutePlannerProblemFeedback({
       </div>
 
       {!skipped && (
-        <div className="text-left p-4 bg-muted/30 rounded-lg">
+        // Mirror the challenge mode (MovesHistory): only the user's own move
+        // strip carries the success/destructive color. The shortest-path
+        // reference stays neutral — it is the answer, not the user's attempt.
+        // A border is always present (transparent when neutral) so switching
+        // tabs does not shift layout.
+        <div
+          className={`text-left p-4 rounded-lg border transition-colors ${
+            isShortest
+              ? 'border-transparent bg-muted/30'
+              : success
+                ? 'border-success bg-success/10'
+                : 'border-destructive bg-destructive/10'
+          }`}
+        >
           {isShortest ? (
             <PathChips
               path={shortestPath}
