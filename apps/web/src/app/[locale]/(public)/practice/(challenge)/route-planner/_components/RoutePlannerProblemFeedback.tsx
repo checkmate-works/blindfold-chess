@@ -108,26 +108,12 @@ export function RoutePlannerProblemFeedback({
         </nav>
       )}
 
-      <div className="flex justify-center">
-        <div className="w-full max-w-sm">
-          <RoutePlannerBoard
-            startSquare={start}
-            targetSquare={end}
-            piece={piece}
-            path={boardPath}
-            boardTheme={boardTheme}
-            highlightedSquare={highlightedSquare}
-            wrongSquares={boardWrongSquares}
-          />
-        </div>
-      </div>
-
       {!skipped && (
-        // Mirror the challenge mode (MovesHistory): only the user's own move
-        // strip carries the success/destructive color. The shortest-path
-        // reference stays neutral — it is the answer, not the user's attempt.
-        // A border is always present (transparent when neutral) so switching
-        // tabs does not shift layout.
+        // Mirror the challenge mode (MovesHistory): the move strip sits at the
+        // top, and only the user's own strip carries the success/destructive
+        // color. The shortest-path reference stays neutral — it is the answer,
+        // not the user's attempt. A border is always present (transparent when
+        // neutral) so switching tabs does not shift layout.
         <div
           className={`text-left p-4 rounded-lg border transition-colors ${
             isShortest
@@ -150,6 +136,20 @@ export function RoutePlannerProblemFeedback({
           )}
         </div>
       )}
+
+      <div className="flex justify-center">
+        <div className="w-full max-w-sm">
+          <RoutePlannerBoard
+            startSquare={start}
+            targetSquare={end}
+            piece={piece}
+            path={boardPath}
+            boardTheme={boardTheme}
+            highlightedSquare={highlightedSquare}
+            wrongSquares={boardWrongSquares}
+          />
+        </div>
+      </div>
     </div>
   );
 }
