@@ -1,3 +1,4 @@
+import { PracticeResultLoadingSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultLoadingSkeleton';
 import {
   createPracticeResultMetadata,
   createSimplePracticeResultPage,
@@ -12,4 +13,8 @@ export const generateMetadata = createPracticeResultMetadata({
   canonicalPath: 'practice/quadrants/result',
 });
 
-export default createSimplePracticeResultPage(ResultClient);
+export default createSimplePracticeResultPage(ResultClient, {
+  // Quadrants awards EXP but disables the sign-up banner (showSignUpBanner:
+  // false). Reserve only EXP, consistent with loading.tsx.
+  loadingFallback: <PracticeResultLoadingSkeleton grantsExp />,
+});

@@ -109,7 +109,7 @@ export default function CoordinateQuizChallenge({
   });
 
   if (isFinished) {
-    return <PracticeResultSkeleton />;
+    return <PracticeResultSkeleton grantsExp showsSignUpBanner />;
   }
 
   if (!currentQuestion) {
