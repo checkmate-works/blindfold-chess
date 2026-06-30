@@ -31,32 +31,42 @@ export function RoutePlannerResultView({
   const t = useTranslations('practice.routePlanner');
   const { preferences, isLoaded } = useGamePreferences();
 
+  // Mirror the challenge mode's color-flash language: the result is signaled by
+  // the container's border/background color instead of a "Correct"/"Incorrect"
+  // text label. A skipped problem is neither right nor wrong, so it stays
+  // neutral. The text remains for screen readers via the sr-only status below.
+  const accentClass = result.skipped
+    ? 'border-border bg-muted/30'
+    : result.success
+      ? 'border-success bg-success/10'
+      : 'border-destructive bg-destructive/10';
+
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h3 className={`font-bold ${result.success ? 'text-success' : 'text-destructive'}`}>
-          {result.message}
-        </h3>
-      </div>
+      <p className="sr-only" role="status">
+        {result.message}
+      </p>
 
-      {!isLoaded ? (
-        <div className="flex justify-center">
-          <div className="w-full max-w-sm">
-            <BoardSkeleton />
+      <div className={`rounded-lg border p-4 transition-colors ${accentClass}`}>
+        {!isLoaded ? (
+          <div className="flex justify-center">
+            <div className="w-full max-w-sm">
+              <BoardSkeleton />
+            </div>
           </div>
-        </div>
-      ) : (
-        <RoutePlannerProblemFeedback
-          piece={problem.piece}
-          start={problem.start}
-          end={problem.end}
-          moves={moves}
-          shortestPath={result.shortestPath}
-          success={result.success}
-          skipped={result.skipped}
-          boardTheme={preferences.boardTheme}
-        />
-      )}
+        ) : (
+          <RoutePlannerProblemFeedback
+            piece={problem.piece}
+            start={problem.start}
+            end={problem.end}
+            moves={moves}
+            shortestPath={result.shortestPath}
+            success={result.success}
+            skipped={result.skipped}
+            boardTheme={preferences.boardTheme}
+          />
+        )}
+      </div>
 
       {!hideNextButton && (
         <div className="flex gap-4">
