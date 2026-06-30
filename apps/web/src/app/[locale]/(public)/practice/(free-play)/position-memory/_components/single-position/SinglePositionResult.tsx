@@ -16,7 +16,7 @@ import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
-import { CardLink, Divider, PagePanel, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -81,6 +81,8 @@ export function SinglePositionResult({
 
   return (
     <div className="space-y-8">
+      <PageTitle>{t('title')}</PageTitle>
+
       <PagePanel>
         <div className="space-y-6">
           <SectionTitle>{t('result')}</SectionTitle>
