@@ -11,7 +11,6 @@ import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
-import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -22,7 +21,6 @@ import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences'
 import { ResultSkeleton } from '../result/_components/ResultSkeleton';
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 import { BoardSettingsButton } from './BoardSettingsButton';
-import { FinishedGamePanel } from './FinishedGamePanel';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
@@ -75,7 +73,7 @@ export function PlayClient({
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
   // finished game in the familiar game UI (read-only). Suppresses the
-  // redirect-to-result below and switches the render to FinishedGamePanel.
+  // redirect-to-result below and renders the play panel in `finished` mode.
   const isFinishedView = searchParams.get('finished') === '1';
 
   const {
@@ -241,17 +239,16 @@ export function PlayClient({
 
   // Whether the loaded game has reached a terminal result.
   const isFinished = gameStatus !== 'in_progress' && !!playerResult;
+  // Reviewing a finished game in place (`?finished=1`): render the same panel as
+  // an in-progress game but in `finished` mode — mutating controls disabled and
+  // overlaid, board + move list still navigable for replay.
+  const isFinishedReview = isFinishedView && isFinished;
 
-  // Finished-game navigation hub: auto-redirect to the result page on game end
-  // (unless reviewing), plus the result / members-only postmortem cross-links.
-  const {
-    handleViewResult,
-    openPostmortem,
-    handleShare,
-    isShared,
-    isAuthModalOpen,
-    closeAuthModal,
-  } = useFinishedGameNavigation({
+  // Finished-game navigation hub. We consume none of its return values here
+  // anymore (the finished-review cross-links were removed), but the hook still
+  // owns the on-finish auto-redirect to the result page and the result-route
+  // prefetch as internal effects — so it is called for those side effects.
+  useFinishedGameNavigation({
     locale,
     isFinished,
     isFinishedView,
@@ -416,8 +413,10 @@ export function PlayClient({
                 <IconButtonSkeleton />
               </div>
             )}
-            {gameStatus === 'in_progress' && !isInitializing && (
+            {!isInitializing && (gameStatus === 'in_progress' || isFinishedReview) && (
               <GameInProgressPanel
+                finished={isFinishedReview}
+                finishedResult={playerResult}
                 isPlayerTurn={isPlayerTurn}
                 isLoading={isLoading}
                 isAiThinking={isAiThinking}
@@ -446,18 +445,10 @@ export function PlayClient({
                     ? { message: aiMoveError.message, retry: aiMoveError.retry }
                     : null
                 }
-                inlineBoardView={inProgressBoardView}
-              />
-            )}
-            {!isInitializing && isFinishedView && isFinished && (
-              <FinishedGamePanel
-                inlineBoardView={finishedBoardView}
-                onViewResult={handleViewResult}
-                onPostmortem={openPostmortem}
-                showPostmortem={moves.length > 0}
-                onShare={moves.length > 0 ? handleShare : undefined}
-                isShared={isShared}
-                onShowOperationLog={() => setShowOperationLogModal(true)}
+                // A finished game is being reviewed, not played: show the plain
+                // read-only board (no blindfold mask / peek) instead of the
+                // in-progress board with its move-input wiring.
+                inlineBoardView={isFinishedReview ? finishedBoardView : inProgressBoardView}
               />
             )}
           </div>
@@ -516,10 +507,6 @@ export function PlayClient({
         onCloseSettingsModal={() => setShowSettingsModal(false)}
         onPerGamePrefChange={setPerGamePref}
       />
-
-      {/* Sign-up prompt shown when an anonymous viewer taps the postmortem
-          button in the finished-game panel (members-only feature). */}
-      {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
     </div>
   );
 }

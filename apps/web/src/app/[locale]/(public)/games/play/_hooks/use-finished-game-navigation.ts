@@ -75,7 +75,7 @@ export function useFinishedGameNavigation({
 
   // Redirect to result page when the game ends — UNLESS we are intentionally
   // reviewing a finished game (`finished=1`), in which case we stay here and
-  // render the read-only FinishedGamePanel.
+  // render the play panel in read-only `finished` mode.
   useEffect(() => {
     if (isFinishedView) return;
     if (isFinished && gameId) {

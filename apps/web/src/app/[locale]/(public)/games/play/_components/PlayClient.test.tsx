@@ -86,14 +86,12 @@ vi.mock('./MovesPanelSkeleton', () => ({
   MovesPanelSkeleton: () => <div data-testid="moves-panel-skeleton" />,
 }));
 vi.mock('./PlayClientModals', () => ({ PlayClientModals: () => <div data-testid="modals" /> }));
+// A finished game now reuses GameInProgressPanel in `finished` mode rather than
+// a separate FinishedGamePanel, so the mock reports which mode it was rendered
+// in via a distinct testid.
 vi.mock('./GameInProgressPanel', () => ({
-  GameInProgressPanel: () => <div data-testid="in-progress-panel" />,
-}));
-vi.mock('./FinishedGamePanel', () => ({
-  FinishedGamePanel: (props: { onPostmortem: () => void }) => (
-    <button type="button" data-testid="finished-panel" onClick={props.onPostmortem}>
-      finished
-    </button>
+  GameInProgressPanel: (props: { finished?: boolean }) => (
+    <div data-testid={props.finished ? 'finished-panel' : 'in-progress-panel'} />
   ),
 }));
 vi.mock('./skeletons', () => ({
@@ -101,9 +99,6 @@ vi.mock('./skeletons', () => ({
   AlwaysVisibleBoardSkeleton: () => <div data-testid="board-skeleton" />,
   IconButtonSkeleton: () => <div />,
   TextLinkSkeleton: () => <div />,
-}));
-vi.mock('@/app/[locale]/_components/AuthPromptModal', () => ({
-  AuthPromptModal: () => <div data-testid="auth-modal" />,
 }));
 
 type GameSessionArg = Parameters<typeof PlayClient>[0]['gameSession'];
@@ -220,12 +215,5 @@ describe('PlayClient — navigation behaviour', () => {
   it('short-circuits to notFound when the game is missing', () => {
     renderPlay(buildGameSession({ gameNotFound: true }));
     expect(notFoundSpy).toHaveBeenCalled();
-  });
-
-  it('routes the postmortem button through the auth guard', () => {
-    finishedParam = '1';
-    renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win' }));
-    screen.getByTestId('finished-panel').click();
-    expect(guardAction).toHaveBeenCalledTimes(1);
   });
 });

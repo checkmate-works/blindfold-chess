@@ -33,9 +33,10 @@ export function GameListItem({ game, locale, onDelete }: Props) {
 
     // A finished game opens the read-only finished-game view (the familiar
     // game UI for reviewing moves / logs) rather than bouncing to the result
-    // screen; `finished=1` tells PlayClient to render FinishedGamePanel and
-    // skip the redirect. In-progress games resume to play as before. The
-    // result screen is still one tap away via the finished-game banner.
+    // screen; `finished=1` tells PlayClient to render the play panel in
+    // `finished` mode (mutating controls disabled + overlaid, board / move list
+    // still navigable) and skip the redirect. In-progress games resume to play
+    // as before.
     if (game.status !== 'in_progress') {
       params.set('finished', '1');
     }
