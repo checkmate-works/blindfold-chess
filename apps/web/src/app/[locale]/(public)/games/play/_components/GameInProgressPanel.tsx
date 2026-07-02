@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react';
 
-import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
@@ -17,7 +16,7 @@ import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
 import { ACTION_ROW_CONTAINER_CLASSES } from '../_lib';
-import { RESULT_LABEL_KEY, ResultIcon } from '../_lib/result-visuals';
+import { FinishedResultOverlay } from './FinishedResultOverlay';
 
 type Props = {
   isPlayerTurn: boolean;
@@ -180,23 +179,8 @@ export function GameInProgressPanel({
 
         {/* Overlay over the mutating controls once the game is over. Combined
             with `disabled` on each control it makes the region inert (the board
-            and move list stay interactive for replay). Deliberately NO frosted
-            tint/blur here — that read as the "Tap to reveal" blindfold mask;
-            this is just the result + a hint that the game is over. */}
-        {finished && (
-          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-1 rounded-lg bg-background/80 text-center">
-            {finishedResult && <ResultIcon result={finishedResult} className="w-8 h-8" />}
-            <span className="text-lg font-bold">
-              {t(RESULT_LABEL_KEY[finishedResult ?? 'draw'])}
-            </span>
-            <span className="text-sm text-muted-foreground">{t('finishedGame.heading')}</span>
-            {onNextAction && (
-              <Button variant="primary" onClick={onNextAction} className="pointer-events-auto mt-2">
-                {t('finishModal.trigger')}
-              </Button>
-            )}
-          </div>
-        )}
+            and move list stay interactive for replay). */}
+        {finished && <FinishedResultOverlay result={finishedResult} onNextAction={onNextAction} />}
       </div>
 
       {/* Earned Exp (and any other finished-only footer content), shown just

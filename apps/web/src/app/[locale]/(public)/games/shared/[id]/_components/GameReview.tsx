@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -40,6 +40,7 @@ import { tabItemClass, tabsRowClass } from '@/app/[locale]/_components/tab-style
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useQuickPeekModal } from '../_hooks/use-quick-peek-modal';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
@@ -203,16 +204,6 @@ export function GameReview({
     navigateToEnd,
   } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
 
-  // Independent navigation state for the By Move quick-peek modal, so previewing
-  // a position there never disturbs the live replay (board, comments, URL). The
-  // modal commits to the live replay only via its footer CTA.
-  const modalNav = useMoveNavigation({
-    moves: notationMoves,
-    startingFen: startingFen ?? undefined,
-  });
-  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
-  const boardColumnRef = useRef<HTMLDivElement>(null);
-
   // Seed the board orientation from the `?color=white|black` param:
   // `effectiveFlipped` means "black is at the bottom", and the default (no
   // param) is the player's own side. Convert the requested orientation into
@@ -261,32 +252,15 @@ export function GameReview({
     [notationMoves, startingFen]
   );
   const lastMove = useMemo(() => lastMoveAt(currentPosition), [lastMoveAt, currentPosition]);
-  const modalLastMove = useMemo(
-    () => lastMoveAt(modalNav.currentPosition),
-    [lastMoveAt, modalNav.currentPosition]
-  );
 
-  // By Move tap → quick-peek the position in a modal (matches the result page),
-  // leaving the live replay untouched. The modal drives `modalNav`.
-  const handleViewMove = useCallback(
-    (movesIndex: number) => {
-      modalNav.navigateToPosition(movesIndex);
-      setIsBoardModalOpen(true);
-    },
-    [modalNav]
-  );
-
-  // Modal footer CTA → commit the modal's position to the live replay (board +
-  // comment thread), close the modal, and scroll the board into view so the
-  // comments below it are reachable. rAF defers the scroll until the modal's
-  // scroll-lock has been released on this render.
-  const handleOpenModalPosition = useCallback(() => {
-    navigateToPosition(modalNav.currentPosition);
-    setIsBoardModalOpen(false);
-    requestAnimationFrame(() => {
-      boardColumnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, [navigateToPosition, modalNav]);
+  // "By Move" quick-peek modal: its own navigation (so previewing never moves the
+  // live replay) plus open/close + commit-to-live. See useQuickPeekModal.
+  const quickPeek = useQuickPeekModal({
+    notationMoves,
+    startingFen: startingFen ?? undefined,
+    lastMoveAt,
+    navigateToPosition,
+  });
 
   const lichessAnalysisUrl = fenToLichessUrl(
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
@@ -363,7 +337,7 @@ export function GameReview({
         playerMoveIndices={playerMoveIndices}
         operationLogs={operationLogs ?? undefined}
         moves={notationMoves}
-        onSelectMove={handleViewMove}
+        onSelectMove={quickPeek.openAtMove}
         engineConfig={engineConfig}
         playSettings={playSettings ?? undefined}
         playerColor={playerColor}
@@ -417,7 +391,7 @@ export function GameReview({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2" ref={boardColumnRef}>
+        <div className="lg:col-span-2" ref={quickPeek.boardColumnRef}>
           <InlineBoardView
             fen={displayFen ?? latestFen}
             playerSide={playerColor}
@@ -634,27 +608,27 @@ export function GameReview({
           navigation so previewing never moves the live replay; the footer CTA
           commits the position to the page, where per-move comments live. */}
       <BoardViewModal
-        isOpen={isBoardModalOpen}
-        onClose={() => setIsBoardModalOpen(false)}
-        fen={modalNav.displayFen ?? latestFen}
+        isOpen={quickPeek.isOpen}
+        onClose={quickPeek.close}
+        fen={quickPeek.nav.displayFen ?? latestFen}
         playerSide={playerColor}
         flipped={effectiveFlipped}
-        lastMove={modalLastMove}
+        lastMove={quickPeek.lastMove}
         preferences={boardPreferences}
         hiddenPieceStyle={hiddenPieceStyle}
         movesLength={notationMoves.length}
-        currentPosition={modalNav.currentPosition}
+        currentPosition={quickPeek.nav.currentPosition}
         formattedPgn={formattedPgn}
-        onNavigateToStart={modalNav.navigateToStart}
-        onNavigatePrevious={modalNav.navigatePrevious}
-        onNavigateNext={modalNav.navigateNext}
-        onNavigateToEnd={modalNav.navigateToEnd}
-        onNavigateToPosition={modalNav.navigateToPosition}
+        onNavigateToStart={quickPeek.nav.navigateToStart}
+        onNavigatePrevious={quickPeek.nav.navigatePrevious}
+        onNavigateNext={quickPeek.nav.navigateNext}
+        onNavigateToEnd={quickPeek.nav.navigateToEnd}
+        onNavigateToPosition={quickPeek.nav.navigateToPosition}
         onFlipBoard={toggleFlip}
         footer={
           <button
             type="button"
-            onClick={handleOpenModalPosition}
+            onClick={quickPeek.commit}
             className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >
             {t('openPosition')}

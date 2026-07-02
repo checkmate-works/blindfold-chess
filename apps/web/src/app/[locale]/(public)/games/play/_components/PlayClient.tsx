@@ -10,18 +10,17 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
-import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
+import { useAiGameExpGrant } from '../_hooks/use-ai-game-exp-grant';
 import { useFinishedGameNavigation } from '../_hooks/use-finished-game-navigation';
 import type { GameSession } from '../_hooks/use-game-session';
 import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
-import { saveGameResult } from '../result/_actions/save-game-result';
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { GameFinishModal } from './GameFinishModal';
@@ -284,28 +283,10 @@ export function PlayClient({
     }
   }, [isFinished, isFinishedView, isInitializing]);
 
-  // Grant AI-game Exp on finish, independent of navigation. The game-finished
-  // modal makes visiting the result screen optional, so the grant can no longer
-  // live only there. Gated on a terminal result (never fires mid-game) and runs
-  // once; `saveGameResult` is idempotent on (source, gameId), so the result
-  // screen's own grant stays safe. Guests / move-less games are skipped.
-  const expGrantedRef = useRef(false);
-  useEffect(() => {
-    if (expGrantedRef.current) return;
-    if (isFinishedView || !isFinished || !gameId || !isAuthenticated || !playerResult) return;
-    const stats = computeGameStats(operationLogs ?? []);
-    if (stats.totalMoves <= 0) return;
-    expGrantedRef.current = true;
-    saveGameResult({
-      gameId,
-      result: playerResult,
-      engine: engineConfig,
-      playerMoveCount: stats.totalMoves,
-      aidedMoveCount: stats.aidedMoves,
-    }).catch(() => {
-      // Best-effort: a failed grant must never break the finished screen.
-    });
-  }, [
+  // Grant AI-game Exp on finish, independent of navigation (the game-finished
+  // modal makes visiting the result screen optional). Once, terminal-only,
+  // signed-in, outside review mode — see the hook.
+  useAiGameExpGrant({
     isFinishedView,
     isFinished,
     gameId,
@@ -313,7 +294,7 @@ export function PlayClient({
     playerResult,
     operationLogs,
     engineConfig,
-  ]);
+  });
 
   // AI-reply chip visibility (thinking + transient post-move window). Lifted
   // here so `badgeActive` can also tell the board to drop the mask's own label.
