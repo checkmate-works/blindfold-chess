@@ -84,12 +84,6 @@ export type ReplaySocial =
        * that route to a sign-in / share prompt (see `LocalDiscussionPanel`).
        */
       discussionContent: ReactNode;
-      /**
-       * Actions shown under the Summary tab only (e.g. the result screen's
-       * postmortem / reopen-finished-game buttons) — so they don't clutter the
-       * Discussion tab.
-       */
-      summaryActions?: ReactNode;
     };
 
 type Props = {
@@ -532,12 +526,7 @@ export function GameReview({
             })}
           </div>
 
-          {overviewView === 'summary' && (
-            <>
-              {gatedStats}
-              {social.summaryActions}
-            </>
-          )}
+          {overviewView === 'summary' && gatedStats}
           {overviewView === 'discussion' && social.discussionContent}
         </div>
       ) : /* On a move position: that move's comment thread, directly under the

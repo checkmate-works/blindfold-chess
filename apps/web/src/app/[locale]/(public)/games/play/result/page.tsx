@@ -13,12 +13,12 @@ import { createClient } from '@/lib/supabase/server';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ResultBreadcrumb } from './_components/ResultBreadcrumb';
 import { ResultClient } from './_components/ResultClient';
 import { ResultSkeleton } from './_components/ResultSkeleton';
 
@@ -73,12 +73,17 @@ export default async function ResultPage({ params, searchParams }: Props) {
   // detected client-side; ship the (cached, ~100-row) opening master for it.
   const openingEntries = await getOpeningEntries();
 
+  // The middle "Game" step links back to the finished-game view; that URL needs
+  // the game's colour + engine (localStorage-only), so the breadcrumb is a
+  // client component that loads the game by `?gameId` and builds the link.
   const breadcrumb = (
-    <BreadcrumbContent
-      items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('gameOver') }]}
+    <ResultBreadcrumb
       locale={locale}
+      gameId={gameId}
+      gamesLabel={tGames('pageTitle')}
+      gameLabel={tPlay('title')}
+      resultLabel={tPlay('resultTitle')}
       brandName={tMetadata('siteName')}
-      density="compact"
     />
   );
 
