@@ -115,6 +115,7 @@ type LiveSocial = Extract<ReplayProps['social'], { mode: 'live' }>;
 function liveSocial(overrides: Partial<LiveSocial> = {}): LiveSocial {
   return {
     mode: 'live',
+    isAuthenticated: false,
     gameId: 'game-1',
     comments: [],
     gameChunks: [],
@@ -250,7 +251,7 @@ describe('GameReview — per-move contributions', () => {
 describe('GameReview — stats overview gating', () => {
   it('gates the stats overview behind StatsAuthGate for anonymous viewers', () => {
     mockStats = { totalMoves: 3 };
-    render(<GameReview {...baseProps({ social: liveSocial({ currentUser: null }) })} />);
+    render(<GameReview {...baseProps({ social: liveSocial({ isAuthenticated: false }) })} />);
     expect(screen.getByTestId('auth-gate')).toBeInTheDocument();
     expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
   });
@@ -260,8 +261,25 @@ describe('GameReview — stats overview gating', () => {
     render(
       <GameReview
         {...baseProps({
-          social: liveSocial({ currentUser: { id: 'u1' } as LiveSocial['currentUser'] }),
+          social: liveSocial({
+            isAuthenticated: true,
+            currentUser: { id: 'u1' } as LiveSocial['currentUser'],
+          }),
         })}
+      />
+    );
+    expect(screen.queryByTestId('auth-gate')).not.toBeInTheDocument();
+    expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
+  });
+
+  it('shows the stats to a signed-in viewer even without a comment profile', () => {
+    // Auth is driven by `isAuthenticated`, not the presence of `currentUser`
+    // (the comment profile), so a member whose profile isn't loaded still sees
+    // the stats rather than the sign-up gate.
+    mockStats = { totalMoves: 3 };
+    render(
+      <GameReview
+        {...baseProps({ social: liveSocial({ isAuthenticated: true, currentUser: null }) })}
       />
     );
     expect(screen.queryByTestId('auth-gate')).not.toBeInTheDocument();

@@ -60,6 +60,13 @@ import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 export type ReplaySocial =
   | {
       mode: 'live';
+      /**
+       * Whether the viewer is signed in — drives the members-only stats gate.
+       * Kept distinct from {@link currentUser}: a signed-in viewer without a
+       * comment profile (e.g. one not yet provisioned) is still a member and
+       * must not be shown the sign-up gate.
+       */
+      isAuthenticated: boolean;
       /** Published game id, used to anchor the per-move comment threads. */
       gameId: string;
       /** Advice comments on this game, anchored per move (ply). */
@@ -169,7 +176,10 @@ export function GameReview({
   const currentUser = isLive ? social.currentUser : null;
   const isGameOwner = isLive ? social.isGameOwner : false;
   const highlightCommentId = isLive ? social.highlightCommentId : undefined;
-  const viewerIsAuthenticated = isLive ? social.currentUser != null : social.isAuthenticated;
+  // Auth drives the members-only stats gate; both modes carry it explicitly, so
+  // a signed-in viewer without a comment profile still sees the stats (not the
+  // sign-up gate).
+  const viewerIsAuthenticated = social.isAuthenticated;
 
   // One-step help tour explaining the "As played" toggle (board obfuscation).
   const reproduceViewTourSteps: HelpStep[] = [

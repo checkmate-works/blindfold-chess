@@ -95,6 +95,10 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           statsHeader={<GameOutcomeLabel result={game.result} playerColor={game.playerColor} />}
           social={{
             mode: 'live',
+            // Real auth state — distinct from `currentUser` (the comment
+            // profile), so a signed-in viewer without one still sees the stats
+            // instead of the members-only gate.
+            isAuthenticated: user != null,
             gameId: game.id,
             comments,
             gameChunks,
