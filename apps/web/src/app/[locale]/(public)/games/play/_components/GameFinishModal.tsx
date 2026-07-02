@@ -3,8 +3,9 @@
 import { useId } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaBook, FaChartLine, FaChessBoard } from 'react-icons/fa';
+import { FaBook, FaBrain, FaClipboardList } from 'react-icons/fa';
 
+import { CompactResultHeader } from '@/app/[locale]/(public)/games/play/result/_components/CompactResultHeader';
 import { CloseButton } from '@/app/[locale]/_components/CloseButton';
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { Modal } from '@/app/[locale]/_components/Modal';
@@ -14,32 +15,42 @@ import { FinishChoiceCard } from './FinishChoiceCard';
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  /** Go to the result screen (stats / share / review). */
-  onResult: () => void;
-  /** Open the postmortem ("Game Review") — auth-guarded by the caller. */
-  onGameReview: () => void;
+  /** The player's terminal result, shown at the top of the modal. */
+  result?: 'win' | 'loss' | 'draw' | null;
+  /**
+   * Go to the result screen — review the game, comment reflections, see stats.
+   * Labelled "Game Review".
+   */
+  onReview: () => void;
+  /**
+   * Open the postmortem — reconstruct the whole game from memory. Labelled
+   * "Recall". Auth-guarded by the caller.
+   */
+  onRecall: () => void;
 };
 
 /**
  * Shown when a game ends in live play, in place of the old auto-redirect to the
- * result screen. Offers three next steps as cards — Result, Game Review
- * (postmortem), and Kata (repertoire opening check, coming soon) — each with a
- * help-tour explanation. Dismissing it leaves the player on the finished board.
+ * result screen. Leads with the win/loss/draw result, then offers three next
+ * steps as cards — Game Review (result screen: stats + reflections), Recall
+ * (postmortem memory reconstruction), and Kata (repertoire opening check,
+ * coming soon) — each with a help-tour explanation. Dismissing it leaves the
+ * player on the finished board (reopen via the board's "Next action" button).
  */
-export function GameFinishModal({ isOpen, onClose, onResult, onGameReview }: Props) {
+export function GameFinishModal({ isOpen, onClose, result, onReview, onRecall }: Props) {
   const t = useTranslations('play');
   const titleId = useId();
 
   const tourSteps: HelpStep[] = [
     {
-      targetId: 'finish-card-result',
-      title: t('finishModal.result.title'),
-      description: t('finishModal.result.description'),
-    },
-    {
       targetId: 'finish-card-review',
       title: t('finishModal.review.title'),
       description: t('finishModal.review.description'),
+    },
+    {
+      targetId: 'finish-card-recall',
+      title: t('finishModal.recall.title'),
+      description: t('finishModal.recall.description'),
     },
     {
       targetId: 'finish-card-kata',
@@ -57,27 +68,28 @@ export function GameFinishModal({ isOpen, onClose, onResult, onGameReview }: Pro
           className="absolute top-0 right-0 text-muted-foreground hover:text-foreground transition-colors"
         />
 
-        <div className="flex items-center justify-center gap-2 pr-8">
-          <h2 id={titleId} className="text-xl font-bold text-foreground">
-            {t('finishModal.title')}
-          </h2>
-          <HelpTourButton steps={tourSteps} label={t('finishModal.help')} />
+        <div id={titleId} className="flex flex-col items-center gap-2 pr-8">
+          {result && <CompactResultHeader result={result} />}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">{t('finishModal.title')}</span>
+            <HelpTourButton steps={tourSteps} label={t('finishModal.help')} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <FinishChoiceCard
-            tourId="finish-card-result"
-            icon={<FaChartLine aria-hidden />}
-            title={t('finishModal.result.title')}
-            description={t('finishModal.result.description')}
-            onClick={onResult}
-          />
-          <FinishChoiceCard
             tourId="finish-card-review"
-            icon={<FaChessBoard aria-hidden />}
+            icon={<FaClipboardList aria-hidden />}
             title={t('finishModal.review.title')}
             description={t('finishModal.review.description')}
-            onClick={onGameReview}
+            onClick={onReview}
+          />
+          <FinishChoiceCard
+            tourId="finish-card-recall"
+            icon={<FaBrain aria-hidden />}
+            title={t('finishModal.recall.title')}
+            description={t('finishModal.recall.description')}
+            onClick={onRecall}
           />
           <FinishChoiceCard
             tourId="finish-card-kata"

@@ -2021,8 +2021,8 @@
     "newGameFromHere": "ここから新規対局",
     "saving": "保存中...",
     "saved": "保存済み",
-    "postmortem": "感想戦",
-    "resultTitle": "ゲーム結果",
+    "postmortem": "棋譜再現",
+    "resultTitle": "振り返り",
     "playerColor": {
       "white": "白",
       "black": "黒"
@@ -2142,13 +2142,13 @@
       "help": "各オプションの説明",
       "comingSoon": "近日公開",
       "trigger": "次のアクション",
-      "result": {
-        "title": "結果",
-        "description": "統計を確認し、対局を共有・見返します。"
-      },
       "review": {
-        "title": "感想戦",
-        "description": "記憶を頼りに一手ずつ振り返ります。"
+        "title": "振り返り",
+        "description": "対局を振り返り、反省点をコメントし、統計を確認します。"
+      },
+      "recall": {
+        "title": "棋譜再現",
+        "description": "記憶だけを頼りに、棋譜を最初から再現します。"
       },
       "kata": {
         "title": "Kata",
@@ -2339,7 +2339,11 @@
     }
   },
   "postmortem": {
-    "title": "感想戦",
+    "title": "棋譜再現",
+    "authGate": {
+      "title": "「棋譜再現」を使うにはサインアップ",
+      "description": "記憶だけを頼りに、対局を一手ずつ再現できます（無料アカウントで利用可）。"
+    },
     "settings": "設定",
     "help": {
       "label": "感想戦の使い方",

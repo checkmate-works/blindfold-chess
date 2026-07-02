@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 
 import { getSharedGame } from '@/lib/games/shared-game-store';
 
-import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildPostmortemPath } from '../_lib';
@@ -29,21 +28,22 @@ type Params = {
 type Result = {
   /** Navigate to the result page for the current game. */
   handleViewResult: () => void;
-  /** Open the postmortem, gated behind the members-only auth prompt. */
+  /**
+   * Navigate to the postmortem ("Recall"). Anonymous viewers are NOT gated
+   * here — the members-only sign-up CTA is shown on the postmortem page itself,
+   * so the prompt appears after navigating rather than over the finish modal.
+   */
   openPostmortem: () => void;
   /** Publish this game (or open it if already published from this browser). */
   handleShare: () => void;
   /** Whether this game was already published from this browser. */
   isShared: boolean;
-  isAuthModalOpen: boolean;
-  closeAuthModal: () => void;
 };
 
 /**
  * The finished-game navigation hub for the play screen: it prefetches the
  * result route and exposes the actions the game-finished modal wires to —
- * "view result", the members-only postmortem ("Game Review", routed through the
- * auth-guard sign-up prompt for anonymous viewers), and Share.
+ * "view result", the postmortem ("Recall"), and Share.
  */
 export function useFinishedGameNavigation({
   locale,
@@ -56,7 +56,6 @@ export function useFinishedGameNavigation({
   startingFen,
 }: Params): Result {
   const router = useRouter();
-  const { guardAction, isModalOpen, closeModal } = useAuthGuard();
 
   // Warm the result route ahead of the on-finish redirect. That redirect is a
   // programmatic (non-prefetched) navigation to a dynamic route, so without
@@ -79,7 +78,7 @@ export function useFinishedGameNavigation({
     if (gameId) router.push(`/${locale}/games/play/result?gameId=${gameId}`);
   }, [router, locale, gameId]);
 
-  const handleOpenPostmortem = useCallback(() => {
+  const openPostmortem = useCallback(() => {
     if (!gameId) return;
     router.push(
       buildPostmortemPath({
@@ -93,11 +92,6 @@ export function useFinishedGameNavigation({
       })
     );
   }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
-
-  const openPostmortem = useCallback(
-    () => guardAction(handleOpenPostmortem),
-    [guardAction, handleOpenPostmortem]
-  );
 
   // Has this game already been published from this browser? Read client-side
   // after mount (localStorage) so Share can point at the published game instead
@@ -122,7 +116,5 @@ export function useFinishedGameNavigation({
     openPostmortem,
     handleShare,
     isShared: sharedPublishedId !== null,
-    isAuthModalOpen: isModalOpen,
-    closeAuthModal: closeModal,
   };
 }

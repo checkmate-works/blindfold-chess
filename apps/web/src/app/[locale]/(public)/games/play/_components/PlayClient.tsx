@@ -14,7 +14,6 @@ import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
-import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -260,17 +259,16 @@ export function PlayClient({
 
   // Finished-game navigation hub: prefetches the result route and exposes the
   // game-finished modal's actions.
-  const { handleViewResult, openPostmortem, isAuthModalOpen, closeAuthModal } =
-    useFinishedGameNavigation({
-      locale,
-      isFinishedView,
-      gameId,
-      formattedPgn,
-      playerSide,
-      moves,
-      engineConfig,
-      startingFen,
-    });
+  const { handleViewResult, openPostmortem } = useFinishedGameNavigation({
+    locale,
+    isFinishedView,
+    gameId,
+    formattedPgn,
+    playerSide,
+    moves,
+    engineConfig,
+    startingFen,
+  });
 
   // Game-finished modal (Result / Game Review / Kata). It auto-opens once when a
   // game ends in live play; afterwards — and when reviewing a game opened from
@@ -566,13 +564,10 @@ export function PlayClient({
       <GameFinishModal
         isOpen={finishModalOpen}
         onClose={() => setFinishModalOpen(false)}
-        onResult={handleViewResult}
-        onGameReview={openPostmortem}
+        result={playerResult}
+        onReview={handleViewResult}
+        onRecall={openPostmortem}
       />
-
-      {/* Sign-up prompt shown when an anonymous viewer picks Game Review
-          (postmortem is members-only). */}
-      {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
     </div>
   );
 }

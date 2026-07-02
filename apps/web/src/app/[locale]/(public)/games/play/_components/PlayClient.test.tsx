@@ -102,14 +102,14 @@ vi.mock('./skeletons', () => ({
 }));
 // The game-finished modal is exercised via its two navigating cards.
 vi.mock('./GameFinishModal', () => ({
-  GameFinishModal: (props: { isOpen: boolean; onResult: () => void; onGameReview: () => void }) =>
+  GameFinishModal: (props: { isOpen: boolean; onReview: () => void; onRecall: () => void }) =>
     props.isOpen ? (
       <div data-testid="finish-modal">
-        <button type="button" data-testid="finish-result" onClick={props.onResult}>
-          result
-        </button>
-        <button type="button" data-testid="finish-review" onClick={props.onGameReview}>
+        <button type="button" data-testid="finish-review" onClick={props.onReview}>
           review
+        </button>
+        <button type="button" data-testid="finish-recall" onClick={props.onRecall}>
+          recall
         </button>
       </div>
     ) : null,
@@ -225,9 +225,9 @@ describe('PlayClient — game-finished modal', () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it('Result card navigates to the result page', () => {
+  it('Game Review card navigates to the result page', () => {
     renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win', gameId: 'g9' }));
-    screen.getByTestId('finish-result').click();
+    screen.getByTestId('finish-review').click();
     expect(push).toHaveBeenCalledWith('/en/games/play/result?gameId=g9');
   });
 

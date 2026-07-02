@@ -2017,8 +2017,8 @@
     "newGameFromHere": "Nova partida a partir daqui",
     "saving": "Salvando...",
     "saved": "Salvo",
-    "postmortem": "Revisão da Partida",
-    "resultTitle": "Resultado da Partida",
+    "postmortem": "De memória",
+    "resultTitle": "Revisão",
     "playerColor": {
       "white": "Brancas",
       "black": "Pretas"
@@ -2138,13 +2138,13 @@
       "help": "Sobre estas opções",
       "comingSoon": "Em breve",
       "trigger": "Próxima ação",
-      "result": {
-        "title": "Resultado",
-        "description": "Veja suas estatísticas, compartilhe e revise a partida."
-      },
       "review": {
-        "title": "Revisão da Partida",
-        "description": "Reproduza a partida de memória, lance a lance."
+        "title": "Revisão",
+        "description": "Revise a partida, adicione suas reflexões e veja as estatísticas."
+      },
+      "recall": {
+        "title": "De memória",
+        "description": "Reconstrua toda a partida de memória, lance a lance."
       },
       "kata": {
         "title": "Kata",
@@ -2335,7 +2335,11 @@
     }
   },
   "postmortem": {
-    "title": "Revisão da Partida",
+    "title": "De memória",
+    "authGate": {
+      "title": "Cadastre-se para usar De memória",
+      "description": "Reconstrua suas partidas lance a lance de memória — grátis com uma conta."
+    },
     "settings": "Configurações",
     "help": {
       "label": "Como usar a Revisão da Partida",

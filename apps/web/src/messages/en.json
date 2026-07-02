@@ -2021,8 +2021,8 @@
     "newGameFromHere": "New game from here",
     "saving": "Saving...",
     "saved": "Saved",
-    "postmortem": "Game Review",
-    "resultTitle": "Game Result",
+    "postmortem": "Recall",
+    "resultTitle": "Game Review",
     "playerColor": {
       "white": "White",
       "black": "Black"
@@ -2142,13 +2142,13 @@
       "help": "About these options",
       "comingSoon": "Coming soon",
       "trigger": "Next action",
-      "result": {
-        "title": "Result",
-        "description": "See your stats, share the game, and review it."
-      },
       "review": {
         "title": "Game Review",
-        "description": "Replay the game from memory, move by move."
+        "description": "Review the game, add your reflections, and see the stats."
+      },
+      "recall": {
+        "title": "Recall",
+        "description": "Reconstruct the whole game from memory, move by move."
       },
       "kata": {
         "title": "Kata",
@@ -2339,7 +2339,11 @@
     }
   },
   "postmortem": {
-    "title": "Game Review",
+    "title": "Recall",
+    "authGate": {
+      "title": "Sign up to use Recall",
+      "description": "Reconstruct your games move by move from memory — free with an account."
+    },
     "settings": "Settings",
     "help": {
       "label": "How to use Game Review",
