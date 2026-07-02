@@ -364,9 +364,11 @@ describe('NotificationItem', () => {
 
       const link = screen.getByText('Alice liked your comment').closest('a');
       expect(link).not.toBeNull();
-      // Chunks have no per-post page; deep-link to the inline comment anchor
-      // on the chunk detail page.
-      expect(link!.getAttribute('href')).toBe('/chunks/knight-fork#post-post-9');
+      // Chunks have no per-post page; deep-link to the inline comment anchor on
+      // the chunk detail page. The comment tree only renders under
+      // `?tab=comments`, so the param is required for the `#post-…` anchor to
+      // have a target (see buildNotificationLink / notification-link.ts).
+      expect(link!.getAttribute('href')).toBe('/chunks/knight-fork?tab=comments#post-post-9');
     });
 
     it('should link a direct chunk like to /chunks/{slug} via the snapshotted slug', () => {
