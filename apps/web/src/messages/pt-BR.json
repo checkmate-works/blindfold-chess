@@ -2132,6 +2132,24 @@
     "finishedGame": {
       "heading": "Esta partida terminou",
       "viewResult": "Ver resultado"
+    },
+    "finishModal": {
+      "title": "E agora?",
+      "help": "Sobre estas opções",
+      "comingSoon": "Em breve",
+      "trigger": "Próxima ação",
+      "result": {
+        "title": "Resultado",
+        "description": "Veja suas estatísticas, compartilhe e revise a partida."
+      },
+      "review": {
+        "title": "Revisão da Partida",
+        "description": "Reproduza a partida de memória, lance a lance."
+      },
+      "kata": {
+        "title": "Kata",
+        "description": "Verifique se sua abertura seguiu seu repertório registrado."
+      }
     }
   },
   "sharedGames": {

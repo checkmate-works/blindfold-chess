@@ -15,9 +15,7 @@ type PostmortemArgs = Parameters<typeof buildPostmortemPath>[0];
 
 type Params = {
   locale: Locale;
-  /** Whether the game has reached a terminal result. */
-  isFinished: boolean;
-  /** Review mode (`?finished=1`): suppress the auto-redirect to the result page. */
+  /** Review mode (`?finished=1`): skip prefetching the result route. */
   isFinishedView: boolean;
   gameId: string | undefined;
   // Postmortem path inputs (types derived from buildPostmortemPath).
@@ -42,15 +40,13 @@ type Result = {
 };
 
 /**
- * The finished-game navigation hub for the play screen, extracted from
- * `PlayClient`: it auto-redirects to the result page when a game ends (unless
- * the page is in `?finished=1` review mode), and exposes the cross-links out of
- * the finished-game review — "view result" and the members-only postmortem,
- * which routes anonymous viewers through the auth-guard sign-up prompt.
+ * The finished-game navigation hub for the play screen: it prefetches the
+ * result route and exposes the actions the game-finished modal wires to —
+ * "view result", the members-only postmortem ("Game Review", routed through the
+ * auth-guard sign-up prompt for anonymous viewers), and Share.
  */
 export function useFinishedGameNavigation({
   locale,
-  isFinished,
   isFinishedView,
   gameId,
   formattedPgn,
@@ -73,15 +69,11 @@ export function useFinishedGameNavigation({
     router.prefetch(`/${locale}/games/play/result`);
   }, [isFinishedView, locale, router]);
 
-  // Redirect to result page when the game ends — UNLESS we are intentionally
-  // reviewing a finished game (`finished=1`), in which case we stay here and
-  // render the play panel in read-only `finished` mode.
-  useEffect(() => {
-    if (isFinishedView) return;
-    if (isFinished && gameId) {
-      router.replace(`/${locale}/games/play/result?gameId=${gameId}`);
-    }
-  }, [isFinishedView, isFinished, gameId, locale, router]);
+  // NOTE: game end no longer auto-redirects. `PlayClient` shows the
+  // game-finished modal (Result / Game Review / Kata) over the finished board;
+  // `handleViewResult` / `openPostmortem` below are the modal's actions. The
+  // result route is still prefetched above so the Result card navigates
+  // instantly.
 
   const handleViewResult = useCallback(() => {
     if (gameId) router.push(`/${locale}/games/play/result?gameId=${gameId}`);

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
@@ -67,6 +68,13 @@ type Props = {
    * is in progress.
    */
   finishedFooter?: ReactNode;
+  /**
+   * Opens the game-finished "next action" modal (Result / Game Review / Kata).
+   * When provided in `finished` mode, a small trigger button sits in the result
+   * overlay so the modal can be reopened after it was dismissed (and reached at
+   * all when reviewing a game opened from the list).
+   */
+  onNextAction?: () => void;
 };
 
 export function GameInProgressPanel({
@@ -93,6 +101,7 @@ export function GameInProgressPanel({
   finished = false,
   finishedResult,
   finishedFooter,
+  onNextAction,
 }: Props) {
   const t = useTranslations('play');
 
@@ -186,6 +195,11 @@ export function GameInProgressPanel({
                   : t('draw')}
             </span>
             <span className="text-sm text-muted-foreground">{t('finishedGame.heading')}</span>
+            {onNextAction && (
+              <Button variant="primary" onClick={onNextAction} className="pointer-events-auto mt-2">
+                {t('finishModal.trigger')}
+              </Button>
+            )}
           </div>
         )}
       </div>

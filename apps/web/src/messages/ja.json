@@ -2136,6 +2136,24 @@
     "finishedGame": {
       "heading": "このゲームは終了しています",
       "viewResult": "結果を見る"
+    },
+    "finishModal": {
+      "title": "次にどうしますか？",
+      "help": "各オプションの説明",
+      "comingSoon": "近日公開",
+      "trigger": "次のアクション",
+      "result": {
+        "title": "結果",
+        "description": "統計を確認し、対局を共有・見返します。"
+      },
+      "review": {
+        "title": "感想戦",
+        "description": "記憶を頼りに一手ずつ振り返ります。"
+      },
+      "kata": {
+        "title": "Kata",
+        "description": "登録したレパートリー通りにオープニングを指せたかを確認します。"
+      }
     }
   },
   "sharedGames": {

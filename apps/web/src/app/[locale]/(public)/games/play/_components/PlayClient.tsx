@@ -10,9 +10,11 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
+import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
+import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -20,9 +22,10 @@ import { useFinishedGameNavigation } from '../_hooks/use-finished-game-navigatio
 import type { GameSession } from '../_hooks/use-game-session';
 import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
-import { ResultSkeleton } from '../result/_components/ResultSkeleton';
+import { saveGameResult } from '../result/_actions/save-game-result';
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 import { BoardSettingsButton } from './BoardSettingsButton';
+import { GameFinishModal } from './GameFinishModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
@@ -249,28 +252,70 @@ export function PlayClient({
     },
   });
 
-  // Whether the loaded game has reached a terminal result.
+  // Whether the loaded game has reached a terminal result. When true the play
+  // panel renders in `finished` mode (mutating controls disabled + overlaid,
+  // board / move list still navigable) — both when a game just ended in live
+  // play and when reviewing one opened from the list (`?finished=1`).
   const isFinished = gameStatus !== 'in_progress' && !!playerResult;
-  // Reviewing a finished game in place (`?finished=1`): render the same panel as
-  // an in-progress game but in `finished` mode — mutating controls disabled and
-  // overlaid, board + move list still navigable for replay.
-  const isFinishedReview = isFinishedView && isFinished;
 
-  // Finished-game navigation hub. We consume none of its return values here
-  // anymore (the finished-review cross-links were removed), but the hook still
-  // owns the on-finish auto-redirect to the result page and the result-route
-  // prefetch as internal effects — so it is called for those side effects.
-  useFinishedGameNavigation({
-    locale,
-    isFinished,
+  // Finished-game navigation hub: prefetches the result route and exposes the
+  // game-finished modal's actions.
+  const { handleViewResult, openPostmortem, isAuthModalOpen, closeAuthModal } =
+    useFinishedGameNavigation({
+      locale,
+      isFinishedView,
+      gameId,
+      formattedPgn,
+      playerSide,
+      moves,
+      engineConfig,
+      startingFen,
+    });
+
+  // Game-finished modal (Result / Game Review / Kata). It auto-opens once when a
+  // game ends in live play; afterwards — and when reviewing a game opened from
+  // the list (`?finished=1`) — it is reopened via the "Next action" button on
+  // the finished board. Dismissing leaves the player on the finished board.
+  const [finishModalOpen, setFinishModalOpen] = useState(false);
+  const finishAutoOpenedRef = useRef(false);
+  useEffect(() => {
+    if (finishAutoOpenedRef.current || isInitializing) return;
+    if (isFinished && !isFinishedView) {
+      finishAutoOpenedRef.current = true;
+      setFinishModalOpen(true);
+    }
+  }, [isFinished, isFinishedView, isInitializing]);
+
+  // Grant AI-game Exp on finish, independent of navigation. The game-finished
+  // modal makes visiting the result screen optional, so the grant can no longer
+  // live only there. Gated on a terminal result (never fires mid-game) and runs
+  // once; `saveGameResult` is idempotent on (source, gameId), so the result
+  // screen's own grant stays safe. Guests / move-less games are skipped.
+  const expGrantedRef = useRef(false);
+  useEffect(() => {
+    if (expGrantedRef.current) return;
+    if (isFinishedView || !isFinished || !gameId || !isAuthenticated || !playerResult) return;
+    const stats = computeGameStats(operationLogs ?? []);
+    if (stats.totalMoves <= 0) return;
+    expGrantedRef.current = true;
+    saveGameResult({
+      gameId,
+      result: playerResult,
+      engine: engineConfig,
+      playerMoveCount: stats.totalMoves,
+      aidedMoveCount: stats.aidedMoves,
+    }).catch(() => {
+      // Best-effort: a failed grant must never break the finished screen.
+    });
+  }, [
     isFinishedView,
+    isFinished,
     gameId,
-    formattedPgn,
-    playerSide,
-    moves,
+    isAuthenticated,
+    playerResult,
+    operationLogs,
     engineConfig,
-    startingFen,
-  });
+  ]);
 
   // AI-reply chip visibility (thinking + transient post-move window). Lifted
   // here so `badgeActive` can also tell the board to drop the mask's own label.
@@ -382,16 +427,6 @@ export function PlayClient({
     notFound();
   }
 
-  // Game just ended in normal play: we are about to auto-redirect to the result
-  // page (see useFinishedGameNavigation). The in-game panels only cover the
-  // in-progress and review states, so without this the main column would flash
-  // blank until the (dynamic, non-prefetched) result route paints its
-  // loading.tsx. Bridge with the exact skeleton the result page shows, for a
-  // seamless, CLS-free handoff. Review mode (`finished=1`) stays on this page.
-  if (isFinished && !isFinishedView && gameId) {
-    return <ResultSkeleton />;
-  }
-
   return (
     <div>
       {/* `-mt-4 sm:mt-0` cancels PagePanel's mobile top padding (`p-4`) so the
@@ -425,9 +460,9 @@ export function PlayClient({
                 <IconButtonSkeleton />
               </div>
             )}
-            {!isInitializing && (gameStatus === 'in_progress' || isFinishedReview) && (
+            {!isInitializing && (gameStatus === 'in_progress' || isFinished) && (
               <GameInProgressPanel
-                finished={isFinishedReview}
+                finished={isFinished}
                 finishedResult={playerResult}
                 isPlayerTurn={isPlayerTurn}
                 isLoading={isLoading}
@@ -460,11 +495,13 @@ export function PlayClient({
                 // A finished game is being reviewed, not played: show the plain
                 // read-only board (no blindfold mask / peek) instead of the
                 // in-progress board with its move-input wiring.
-                inlineBoardView={isFinishedReview ? finishedBoardView : inProgressBoardView}
+                inlineBoardView={isFinished ? finishedBoardView : inProgressBoardView}
                 // Earned Exp, shown under the result overlay in finished review.
                 // Signed-in only; ExpGainDisplay itself renders nothing when the
                 // Exp is null (guest / in-progress / not-yet-granted game).
                 finishedFooter={isAuthenticated ? <ExpGainDisplay expInfo={expInfo} /> : undefined}
+                // "Next action" button in the finished overlay reopens the modal.
+                onNextAction={isFinished ? () => setFinishModalOpen(true) : undefined}
               />
             )}
           </div>
@@ -523,6 +560,19 @@ export function PlayClient({
         onCloseSettingsModal={() => setShowSettingsModal(false)}
         onPerGamePrefChange={setPerGamePref}
       />
+
+      {/* Pick where to go next (Result / Game Review / Kata). Auto-opens on live
+          finish; reopened via the finished board's "Next action" button. */}
+      <GameFinishModal
+        isOpen={finishModalOpen}
+        onClose={() => setFinishModalOpen(false)}
+        onResult={handleViewResult}
+        onGameReview={openPostmortem}
+      />
+
+      {/* Sign-up prompt shown when an anonymous viewer picks Game Review
+          (postmortem is members-only). */}
+      {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
     </div>
   );
 }

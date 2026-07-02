@@ -2136,6 +2136,24 @@
     "finishedGame": {
       "heading": "This game has ended",
       "viewResult": "View result"
+    },
+    "finishModal": {
+      "title": "What's next?",
+      "help": "About these options",
+      "comingSoon": "Coming soon",
+      "trigger": "Next action",
+      "result": {
+        "title": "Result",
+        "description": "See your stats, share the game, and review it."
+      },
+      "review": {
+        "title": "Game Review",
+        "description": "Replay the game from memory, move by move."
+      },
+      "kata": {
+        "title": "Kata",
+        "description": "Check whether your opening followed your registered repertoire."
+      }
     }
   },
   "sharedGames": {
