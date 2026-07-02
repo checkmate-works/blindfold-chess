@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { buildOpeningIndex, detectOpening } from '@blindfold-chess/features/chess-core';
@@ -10,6 +10,7 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { Game } from '@/lib/games/saved-game-types';
+import { getSharedGame } from '@/lib/games/shared-game-store';
 import { toReviewData } from '@/lib/games/to-review-data';
 import type { OpeningCatalogEntry } from '@/lib/openings/detect-game-opening';
 
@@ -35,11 +36,28 @@ type Props = {
 
 export function ResultClient({ locale, isAuthenticated, initialExp, openingEntries }: Props) {
   const t = useTranslations('play');
+  const router = useRouter();
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
   const loadState = useLoadGame(gameId);
 
-  if (loadState.status === 'idle' || loadState.status === 'loading') {
+  // Once a game is published, its canonical review is the shared page — with the
+  // real comments / chunks / likes — so send the player there instead of the
+  // local result screen. Otherwise a game they already published would keep
+  // showing the "share to unlock discussion" CTA forever. The local→published
+  // mapping lives in localStorage, so this resolves client-side after mount;
+  // `replace` keeps the result URL out of history (no redirect loop on Back).
+  const [redirecting, setRedirecting] = useState(false);
+  useEffect(() => {
+    if (!gameId) return;
+    const publishedId = getSharedGame(gameId)?.publishedId;
+    if (publishedId) {
+      setRedirecting(true);
+      router.replace(`/${locale}/games/shared/${publishedId}`);
+    }
+  }, [gameId, locale, router]);
+
+  if (redirecting || loadState.status === 'idle' || loadState.status === 'loading') {
     return <ResultSkeleton />;
   }
 
