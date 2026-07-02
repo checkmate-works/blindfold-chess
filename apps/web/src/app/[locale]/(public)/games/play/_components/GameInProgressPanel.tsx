@@ -16,6 +16,7 @@ import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
 import { ACTION_ROW_CONTAINER_CLASSES } from '../_lib';
+import { FinishedResultOverlay } from './FinishedResultOverlay';
 
 type Props = {
   isPlayerTurn: boolean;
@@ -48,6 +49,32 @@ type Props = {
    * Null when there is nothing to retry.
    */
   aiMoveError: { message: string; retry: () => void } | null;
+  /**
+   * Render the panel in finished-game review mode: the board and the move-list
+   * navigation stay interactive so the game can be replayed, but every control
+   * that would MUTATE the game (move submission, undo, resign) is disabled and
+   * covered by a "This game has ended" overlay. The in-progress-only affordances
+   * (AI-retry, Save and Exit) are dropped entirely.
+   */
+  finished?: boolean;
+  /**
+   * The player's terminal result, used to label the finished-review overlay
+   * (win / loss / draw). Only read when `finished` is true.
+   */
+  finishedResult?: 'win' | 'loss' | 'draw' | null;
+  /**
+   * Content rendered directly below the (frozen) mutating controls in
+   * `finished` mode — used for the earned-Exp display. Ignored while the game
+   * is in progress.
+   */
+  finishedFooter?: ReactNode;
+  /**
+   * Opens the game-finished "next action" modal (Result / Game Review / Kata).
+   * When provided in `finished` mode, a small trigger button sits in the result
+   * overlay so the modal can be reopened after it was dismissed (and reached at
+   * all when reviewing a game opened from the list).
+   */
+  onNextAction?: () => void;
 };
 
 export function GameInProgressPanel({
@@ -71,6 +98,10 @@ export function GameInProgressPanel({
   setMoveInputMode,
   onShowOperationLog,
   aiMoveError,
+  finished = false,
+  finishedResult,
+  finishedFooter,
+  onNextAction,
 }: Props) {
   const t = useTranslations('play');
 
@@ -78,73 +109,93 @@ export function GameInProgressPanel({
     <div className="flex flex-col gap-6">
       {inlineBoardView}
 
-      {/* Move Input */}
-      {/* AI thinking or retry → disabled real UI, not skeleton */}
-      <MoveInputPanel
-        preferences={preferences}
-        updatePreferences={updatePreferences}
-        currentFen={currentFen}
-        moveInput={moveInput}
-        onMoveInputChange={setMoveInput}
-        error={error}
-        onErrorClear={onErrorClear}
-        onSubmit={handleSubmitMove}
-        disabled={isLoading || !isPlayerTurn}
-        inputPlaceholder={t('inputMove')}
-        selectPlaceholder={t('selectMove')}
-        toggleTitle={t('switchInputMode')}
-        playerColor={playerColor}
-        onMoveCommitted={onMoveCommitted}
-        setMoveInputMode={setMoveInputMode}
-        onMovePeek={onMovePeek}
-        showInlineError={false}
-      />
+      {/* Mutating controls (move input + undo/resign). In finished-review mode
+          these stay mounted for visual continuity with the in-progress game but
+          are all disabled and covered by the "This game has ended" overlay, so
+          the frozen game reads as the same screen you just played rather than a
+          separate results card. */}
+      <div className="relative flex flex-col gap-6">
+        {/* Move Input */}
+        {/* AI thinking or retry → disabled real UI, not skeleton */}
+        <MoveInputPanel
+          preferences={preferences}
+          updatePreferences={updatePreferences}
+          currentFen={currentFen}
+          moveInput={moveInput}
+          onMoveInputChange={setMoveInput}
+          error={error}
+          onErrorClear={onErrorClear}
+          onSubmit={handleSubmitMove}
+          disabled={isLoading || !isPlayerTurn || finished}
+          inputPlaceholder={t('inputMove')}
+          selectPlaceholder={t('selectMove')}
+          toggleTitle={t('switchInputMode')}
+          playerColor={playerColor}
+          onMoveCommitted={onMoveCommitted}
+          setMoveInputMode={setMoveInputMode}
+          onMovePeek={onMovePeek}
+          showInlineError={false}
+        />
 
-      {/* AI move failed → offer an inline Retry that tears down the dead
-          engine and re-requests a move, so the user does not need to reload
-          the page. The message already shows in the page-level status slot
-          (PageTitle) via `moveInput.error`; this row adds the affordance. */}
-      {aiMoveError && (
-        <div className="flex justify-center">
+        {/* AI move failed → offer an inline Retry that tears down the dead
+            engine and re-requests a move, so the user does not need to reload
+            the page. The message already shows in the page-level status slot
+            (PageTitle) via `moveInput.error`; this row adds the affordance.
+            Retry re-requests a move, so it is irrelevant once the game is over. */}
+        {aiMoveError && !finished && (
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={aiMoveError.retry}
+              disabled={isLoading}
+              className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('retry')}
+            </button>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className={ACTION_ROW_CONTAINER_CLASSES}>
           <button
-            type="button"
-            onClick={aiMoveError.retry}
-            disabled={isLoading}
-            className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={confirmationDialogs.undo.open}
+            disabled={moves.length < 2 || isAiThinking || finished}
+            className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            title={t('undo')}
           >
-            {t('retry')}
+            <UndoIcon className="w-4 h-4" />
+            <span className="hidden md:inline">{t('undo')}</span>
+          </button>
+          <button
+            onClick={confirmationDialogs.resign.open}
+            disabled={isAiThinking || finished}
+            className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            title={t('resign')}
+          >
+            <FlagIcon className="w-4 h-4" />
+            <span className="hidden md:inline">{t('resign')}</span>
           </button>
         </div>
+
+        {/* Overlay over the mutating controls once the game is over. Combined
+            with `disabled` on each control it makes the region inert (the board
+            and move list stay interactive for replay). */}
+        {finished && <FinishedResultOverlay result={finishedResult} onNextAction={onNextAction} />}
+      </div>
+
+      {/* Earned Exp (and any other finished-only footer content), shown just
+          below the frozen controls / result overlay. */}
+      {finished && finishedFooter}
+
+      {/* Save and Exit — an in-progress affordance; a finished game is already
+          persisted, so it is dropped in review mode. */}
+      {!finished && (
+        <div className="text-center">
+          <Link href="/games" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+            💾 {t('saveAndExit')}
+          </Link>
+        </div>
       )}
-
-      {/* Action Buttons */}
-      <div className={ACTION_ROW_CONTAINER_CLASSES}>
-        <button
-          onClick={confirmationDialogs.undo.open}
-          disabled={moves.length < 2 || isAiThinking}
-          className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          title={t('undo')}
-        >
-          <UndoIcon className="w-4 h-4" />
-          <span className="hidden md:inline">{t('undo')}</span>
-        </button>
-        <button
-          onClick={confirmationDialogs.resign.open}
-          disabled={isAiThinking}
-          className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          title={t('resign')}
-        >
-          <FlagIcon className="w-4 h-4" />
-          <span className="hidden md:inline">{t('resign')}</span>
-        </button>
-      </div>
-
-      {/* Save and Exit */}
-      <div className="text-center">
-        <Link href="/games" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-          💾 {t('saveAndExit')}
-        </Link>
-      </div>
 
       {/* Game Details (opponent / engine info, initial per-game settings, and
           the mid-game change log — see OperationLogModal). Per-game settings

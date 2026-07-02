@@ -1,23 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { getSharedGame } from '@/lib/games/shared-game-store';
-
-import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildPostmortemPath } from '../_lib';
+import { useSharedGameLink } from './use-shared-game-link';
 
 type PostmortemArgs = Parameters<typeof buildPostmortemPath>[0];
 
 type Params = {
   locale: Locale;
-  /** Whether the game has reached a terminal result. */
-  isFinished: boolean;
-  /** Review mode (`?finished=1`): suppress the auto-redirect to the result page. */
+  /** Review mode (`?finished=1`): skip prefetching the result route. */
   isFinishedView: boolean;
   gameId: string | undefined;
   // Postmortem path inputs (types derived from buildPostmortemPath).
@@ -31,26 +27,25 @@ type Params = {
 type Result = {
   /** Navigate to the result page for the current game. */
   handleViewResult: () => void;
-  /** Open the postmortem, gated behind the members-only auth prompt. */
+  /**
+   * Navigate to the postmortem ("Recall"). Anonymous viewers are NOT gated
+   * here — the members-only sign-up CTA is shown on the postmortem page itself,
+   * so the prompt appears after navigating rather than over the finish modal.
+   */
   openPostmortem: () => void;
   /** Publish this game (or open it if already published from this browser). */
   handleShare: () => void;
   /** Whether this game was already published from this browser. */
   isShared: boolean;
-  isAuthModalOpen: boolean;
-  closeAuthModal: () => void;
 };
 
 /**
- * The finished-game navigation hub for the play screen, extracted from
- * `PlayClient`: it auto-redirects to the result page when a game ends (unless
- * the page is in `?finished=1` review mode), and exposes the cross-links out of
- * the finished-game review — "view result" and the members-only postmortem,
- * which routes anonymous viewers through the auth-guard sign-up prompt.
+ * The finished-game navigation hub for the play screen: it prefetches the
+ * result route and exposes the actions the game-finished modal wires to —
+ * "view result", the postmortem ("Recall"), and Share.
  */
 export function useFinishedGameNavigation({
   locale,
-  isFinished,
   isFinishedView,
   gameId,
   formattedPgn,
@@ -60,7 +55,6 @@ export function useFinishedGameNavigation({
   startingFen,
 }: Params): Result {
   const router = useRouter();
-  const { guardAction, isModalOpen, closeModal } = useAuthGuard();
 
   // Warm the result route ahead of the on-finish redirect. That redirect is a
   // programmatic (non-prefetched) navigation to a dynamic route, so without
@@ -73,21 +67,31 @@ export function useFinishedGameNavigation({
     router.prefetch(`/${locale}/games/play/result`);
   }, [isFinishedView, locale, router]);
 
-  // Redirect to result page when the game ends — UNLESS we are intentionally
-  // reviewing a finished game (`finished=1`), in which case we stay here and
-  // render the read-only FinishedGamePanel.
-  useEffect(() => {
-    if (isFinishedView) return;
-    if (isFinished && gameId) {
-      router.replace(`/${locale}/games/play/result?gameId=${gameId}`);
-    }
-  }, [isFinishedView, isFinished, gameId, locale, router]);
+  // NOTE: game end no longer auto-redirects. `PlayClient` shows the
+  // game-finished modal (Result / Game Review / Kata) over the finished board;
+  // `handleViewResult` / `openPostmortem` below are the modal's actions. The
+  // result route is still prefetched above so the Result card navigates
+  // instantly.
+
+  // Share routing (open the published game vs. the publish form) plus the
+  // published-game id when this game was already shared from this browser —
+  // shared with the result page (ResultClient) via useSharedGameLink.
+  const { handleShare, isShared, sharedPublishedId } = useSharedGameLink({ locale, gameId });
 
   const handleViewResult = useCallback(() => {
-    if (gameId) router.push(`/${locale}/games/play/result?gameId=${gameId}`);
-  }, [router, locale, gameId]);
+    if (!gameId) return;
+    // A published game's canonical review is the shared page (real comments /
+    // chunks / likes), so go straight there instead of the local result screen
+    // — which would only redirect there anyway (see ResultClient), flashing its
+    // skeleton on the way. Unpublished games open the result screen as before.
+    router.push(
+      sharedPublishedId
+        ? `/${locale}/games/shared/${sharedPublishedId}`
+        : `/${locale}/games/play/result?gameId=${gameId}`
+    );
+  }, [router, locale, gameId, sharedPublishedId]);
 
-  const handleOpenPostmortem = useCallback(() => {
+  const openPostmortem = useCallback(() => {
     if (!gameId) return;
     router.push(
       buildPostmortemPath({
@@ -102,35 +106,10 @@ export function useFinishedGameNavigation({
     );
   }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
 
-  const openPostmortem = useCallback(
-    () => guardAction(handleOpenPostmortem),
-    [guardAction, handleOpenPostmortem]
-  );
-
-  // Has this game already been published from this browser? Read client-side
-  // after mount (localStorage) so Share can point at the published game instead
-  // of offering to publish it again. Mirrors the result page (ResultClient).
-  const [sharedPublishedId, setSharedPublishedId] = useState<string | null>(null);
-  useEffect(() => {
-    if (!gameId) return;
-    setSharedPublishedId(getSharedGame(gameId)?.publishedId ?? null);
-  }, [gameId]);
-
-  const handleShare = useCallback(() => {
-    if (!gameId) return;
-    router.push(
-      sharedPublishedId
-        ? `/${locale}/games/shared/${sharedPublishedId}`
-        : `/${locale}/games/shared/new?gameId=${gameId}`
-    );
-  }, [router, locale, gameId, sharedPublishedId]);
-
   return {
     handleViewResult,
     openPostmortem,
     handleShare,
-    isShared: sharedPublishedId !== null,
-    isAuthModalOpen: isModalOpen,
-    closeAuthModal: closeModal,
+    isShared,
   };
 }

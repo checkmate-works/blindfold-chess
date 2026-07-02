@@ -7,6 +7,7 @@ import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from '@/lib/ads/ads-hi
 import { computeAdsHiddenValueForUser } from '@/lib/ads/ads-hidden-cookie-compute';
 import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
+import { sanitizeNext } from '@/lib/safe-next';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -95,8 +96,7 @@ export async function GET(request: Request) {
   const type = searchParams.get('type');
   const locale = await getLocaleFromRequest();
   const defaultNext = `/${locale}/mypage`;
-  const next = searchParams.get('next') ?? defaultNext;
-  const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : defaultNext;
+  const safeNext = sanitizeNext(searchParams.get('next')) ?? defaultNext;
 
   const supabase = await createClient();
 

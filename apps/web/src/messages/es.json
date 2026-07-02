@@ -2017,8 +2017,8 @@
     "newGameFromHere": "Nueva partida desde aquí",
     "saving": "Guardando...",
     "saved": "Guardado",
-    "postmortem": "Revisión de Partida",
-    "resultTitle": "Resultado de la Partida",
+    "postmortem": "De memoria",
+    "resultTitle": "Repaso",
     "playerColor": {
       "white": "Blancas",
       "black": "Negras"
@@ -2100,6 +2100,8 @@
         "columnDetail": "Detalle"
       },
       "openFinishedGame": "Abrir partida terminada",
+      "shareTitle": "Comparte para habilitar la discusión",
+      "sharePrompt": "Comparte esta partida para recibir comentarios: compartir habilita los comentarios y los me gusta.",
       "publish": "Compartir esta partida",
       "viewShared": "Ver partida compartida",
       "stats": {
@@ -2131,6 +2133,25 @@
     "finishedGame": {
       "heading": "Esta partida ha terminado",
       "viewResult": "Ver resultado"
+    },
+    "finishModal": {
+      "title": "¿Qué sigue?",
+      "help": "Acerca de estas opciones",
+      "comingSoon": "Próximamente",
+      "publishedBadge": "Publicada",
+      "trigger": "Siguiente acción",
+      "review": {
+        "title": "Repaso",
+        "description": "Repasa la partida, añade tus reflexiones y consulta las estadísticas."
+      },
+      "recall": {
+        "title": "De memoria",
+        "description": "Reconstruye toda la partida de memoria, jugada a jugada."
+      },
+      "kata": {
+        "title": "Kata",
+        "description": "Comprueba si tu apertura siguió tu repertorio registrado."
+      }
     }
   },
   "sharedGames": {
@@ -2166,7 +2187,9 @@
     "result": {
       "win": "Victoria",
       "loss": "Derrota",
-      "draw": "Tablas"
+      "draw": "Tablas",
+      "whiteWon": "Ganan las blancas",
+      "blackWon": "Ganan las negras"
     },
     "list": {
       "title": "Partidas publicadas",
@@ -2314,7 +2337,11 @@
     }
   },
   "postmortem": {
-    "title": "Revisión de Partida",
+    "title": "De memoria",
+    "authGate": {
+      "title": "Regístrate para usar De memoria",
+      "description": "Reconstruye tus partidas jugada a jugada de memoria — gratis con una cuenta."
+    },
     "settings": "Ajustes",
     "help": {
       "label": "Cómo usar la Revisión de Partida",
@@ -4981,7 +5008,12 @@
     "description": "Inicia sesión para dar me gusta a publicaciones, unirte a discusiones y sacar el máximo provecho de Ajedrez a Ciegas.",
     "createDescription": "Regístrate gratis para guardar y publicar lo que creas.",
     "signUpButton": "Crear Cuenta Gratuita",
-    "signInButton": "¿Ya tienes una cuenta? Iniciar sesión"
+    "signInButton": "¿Ya tienes una cuenta? Iniciar sesión",
+    "provisional": {
+      "title": "Completa tu registro",
+      "description": "Elige un nombre de usuario para comentar, publicar y unirte a las discusiones.",
+      "button": "Elegir nombre de usuario"
+    }
   },
   "leaderboard": {
     "title": "Clasificación",

@@ -1,6 +1,6 @@
 'use server';
 
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import {
   deleteGameChunk,
   getGameChunkForDelete,
@@ -44,7 +44,7 @@ export async function addGameChunkAction(input: AddGameChunkInput): Promise<AddG
       return { success: false, error: 'invalid_input' };
     }
 
-    const guardResult = await authenticateAndGuard(RATE_LIMITS.linkGameChunk);
+    const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.linkGameChunk);
     if ('error' in guardResult) return { success: false, error: guardResult.error };
     const { user } = guardResult;
 
@@ -76,7 +76,7 @@ export async function deleteGameChunkAction(id: string): Promise<DeleteGameChunk
       return { success: false, error: 'invalid_input' };
     }
 
-    const guardResult = await authenticateAndGuard(RATE_LIMITS.linkGameChunk);
+    const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.linkGameChunk);
     if ('error' in guardResult) return { success: false, error: guardResult.error };
     const { user } = guardResult;
 

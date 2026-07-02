@@ -7,11 +7,13 @@ import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 import { PostmortemClient } from './PostmortemClient';
 import type { PostmortemFeedback } from './PostmortemClient';
@@ -23,6 +25,12 @@ type Props = {
 export function PostmortemPageClient({ breadcrumb }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('postmortem');
+  // Recall is members-only. The sign-up CTA lives here (not at the entry point)
+  // so an anonymous player reaches this screen first, then sees the prompt.
+  // `isLoading` is treated as "not yet a guest" so a signed-in player never
+  // flashes the gate before auth resolves.
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const isGuest = !isAuthLoading && !user;
   const [feedback, setFeedback] = useState<PostmortemFeedback | null>(null);
   // Bumping this remounts PostmortemClient, resetting the whole review (moves,
   // log, completion) to a clean run — the "play again" action.
@@ -103,24 +111,30 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
             {feedback ? feedback.text : t('title')}
           </span>
         </PageTitle>
-        {!isCompleted && <HelpTourButton steps={helpSteps} label={t('help.label')} />}
+        {!isCompleted && !isGuest && <HelpTourButton steps={helpSteps} label={t('help.label')} />}
       </div>
       <PagePanel>
-        <PostmortemClient
-          key={runId}
-          pgn={pgn}
-          playerColor={playerColor}
-          autoOpponent={false}
-          initialOffset={offset}
-          startingFen={startingFen}
-          gameId={gameId}
-          onFeedbackChange={setFeedback}
-          onCompletedChange={setIsCompleted}
-          onRestart={() => {
-            setForceStartOver(true);
-            setRunId((n) => n + 1);
-          }}
-        />
+        {isGuest ? (
+          <StatsAuthGate title={t('authGate.title')} description={t('authGate.description')}>
+            <div className="min-h-[22rem]" />
+          </StatsAuthGate>
+        ) : (
+          <PostmortemClient
+            key={runId}
+            pgn={pgn}
+            playerColor={playerColor}
+            autoOpponent={false}
+            initialOffset={offset}
+            startingFen={startingFen}
+            gameId={gameId}
+            onFeedbackChange={setFeedback}
+            onCompletedChange={setIsCompleted}
+            onRestart={() => {
+              setForceStartOver(true);
+              setRunId((n) => n + 1);
+            }}
+          />
+        )}
         {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
         <div className="!mt-4 space-y-4">
           <Divider />

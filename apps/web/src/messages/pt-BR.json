@@ -2017,8 +2017,8 @@
     "newGameFromHere": "Nova partida a partir daqui",
     "saving": "Salvando...",
     "saved": "Salvo",
-    "postmortem": "Revisão da Partida",
-    "resultTitle": "Resultado da Partida",
+    "postmortem": "De memória",
+    "resultTitle": "Revisão",
     "playerColor": {
       "white": "Brancas",
       "black": "Pretas"
@@ -2100,6 +2100,8 @@
         "columnDetail": "Detalhe"
       },
       "openFinishedGame": "Abrir partida finalizada",
+      "shareTitle": "Compartilhe para habilitar a discussão",
+      "sharePrompt": "Compartilhe esta partida para receber feedback — compartilhar habilita comentários e curtidas.",
       "publish": "Compartilhar esta partida",
       "viewShared": "Ver partida compartilhada",
       "stats": {
@@ -2131,6 +2133,25 @@
     "finishedGame": {
       "heading": "Esta partida terminou",
       "viewResult": "Ver resultado"
+    },
+    "finishModal": {
+      "title": "E agora?",
+      "help": "Sobre estas opções",
+      "comingSoon": "Em breve",
+      "publishedBadge": "Publicada",
+      "trigger": "Próxima ação",
+      "review": {
+        "title": "Revisão",
+        "description": "Revise a partida, adicione suas reflexões e veja as estatísticas."
+      },
+      "recall": {
+        "title": "De memória",
+        "description": "Reconstrua toda a partida de memória, lance a lance."
+      },
+      "kata": {
+        "title": "Kata",
+        "description": "Verifique se sua abertura seguiu seu repertório registrado."
+      }
     }
   },
   "sharedGames": {
@@ -2166,7 +2187,9 @@
     "result": {
       "win": "Vitória",
       "loss": "Derrota",
-      "draw": "Empate"
+      "draw": "Empate",
+      "whiteWon": "Brancas venceram",
+      "blackWon": "Pretas venceram"
     },
     "list": {
       "title": "Partidas publicadas",
@@ -2314,7 +2337,11 @@
     }
   },
   "postmortem": {
-    "title": "Revisão da Partida",
+    "title": "De memória",
+    "authGate": {
+      "title": "Cadastre-se para usar De memória",
+      "description": "Reconstrua suas partidas lance a lance de memória — grátis com uma conta."
+    },
     "settings": "Configurações",
     "help": {
       "label": "Como usar a Revisão da Partida",
@@ -4981,7 +5008,12 @@
     "description": "Faça login para curtir publicações, participar de discussões e aproveitar ao máximo o Xadrez às Cegas.",
     "createDescription": "Cadastre-se grátis para salvar e publicar o que você criar.",
     "signUpButton": "Criar Conta Gratuita",
-    "signInButton": "Já tem uma conta? Entrar"
+    "signInButton": "Já tem uma conta? Entrar",
+    "provisional": {
+      "title": "Conclua seu cadastro",
+      "description": "Escolha um nome de usuário para comentar, publicar e participar das discussões.",
+      "button": "Escolher nome de usuário"
+    }
   },
   "leaderboard": {
     "title": "Ranking",

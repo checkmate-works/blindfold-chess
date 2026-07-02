@@ -86,14 +86,12 @@ vi.mock('./MovesPanelSkeleton', () => ({
   MovesPanelSkeleton: () => <div data-testid="moves-panel-skeleton" />,
 }));
 vi.mock('./PlayClientModals', () => ({ PlayClientModals: () => <div data-testid="modals" /> }));
+// A finished game now reuses GameInProgressPanel in `finished` mode rather than
+// a separate FinishedGamePanel, so the mock reports which mode it was rendered
+// in via a distinct testid.
 vi.mock('./GameInProgressPanel', () => ({
-  GameInProgressPanel: () => <div data-testid="in-progress-panel" />,
-}));
-vi.mock('./FinishedGamePanel', () => ({
-  FinishedGamePanel: (props: { onPostmortem: () => void }) => (
-    <button type="button" data-testid="finished-panel" onClick={props.onPostmortem}>
-      finished
-    </button>
+  GameInProgressPanel: (props: { finished?: boolean }) => (
+    <div data-testid={props.finished ? 'finished-panel' : 'in-progress-panel'} />
   ),
 }));
 vi.mock('./skeletons', () => ({
@@ -102,8 +100,26 @@ vi.mock('./skeletons', () => ({
   IconButtonSkeleton: () => <div />,
   TextLinkSkeleton: () => <div />,
 }));
+// The game-finished modal is exercised via its two navigating cards.
+vi.mock('./GameFinishModal', () => ({
+  GameFinishModal: (props: { isOpen: boolean; onReview: () => void; onRecall: () => void }) =>
+    props.isOpen ? (
+      <div data-testid="finish-modal">
+        <button type="button" data-testid="finish-review" onClick={props.onReview}>
+          review
+        </button>
+        <button type="button" data-testid="finish-recall" onClick={props.onRecall}>
+          recall
+        </button>
+      </div>
+    ) : null,
+}));
 vi.mock('@/app/[locale]/_components/AuthPromptModal', () => ({
   AuthPromptModal: () => <div data-testid="auth-modal" />,
+}));
+// The on-finish Exp grant is a server action; stub it so the effect is inert.
+vi.mock('../result/_actions/save-game-result', () => ({
+  saveGameResult: vi.fn(() => Promise.resolve({ success: true })),
 }));
 
 type GameSessionArg = Parameters<typeof PlayClient>[0]['gameSession'];
@@ -164,6 +180,8 @@ function renderPlay(gameSession: GameSessionArg, opts: { isInitializing?: boolea
       }
       initialBoardVisibility="peek"
       isInitializing={opts.isInitializing ?? false}
+      isAuthenticated={false}
+      expInfo={null}
     />
   );
 }
@@ -200,32 +218,34 @@ describe('PlayClient — view selection', () => {
   });
 });
 
-describe('PlayClient — navigation behaviour', () => {
-  it('redirects to the result page when a game ends outside review mode', () => {
+describe('PlayClient — game-finished modal', () => {
+  it('shows the finish modal (no redirect) when a game ends in live play', () => {
     renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win', gameId: 'g9' }));
-    expect(replace).toHaveBeenCalledWith('/en/games/play/result?gameId=g9');
-  });
-
-  it('does NOT redirect while reviewing a finished game (finished=1)', () => {
-    finishedParam = '1';
-    renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win' }));
+    expect(screen.getByTestId('finish-modal')).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it('does NOT redirect an in-progress game', () => {
+  it('Game Review card navigates to the result page', () => {
+    renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win', gameId: 'g9' }));
+    screen.getByTestId('finish-review').click();
+    expect(push).toHaveBeenCalledWith('/en/games/play/result?gameId=g9');
+  });
+
+  it('does NOT show the modal while reviewing a finished game (finished=1)', () => {
+    finishedParam = '1';
+    renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win' }));
+    expect(screen.queryByTestId('finish-modal')).not.toBeInTheDocument();
+    expect(screen.getByTestId('finished-panel')).toBeInTheDocument();
+  });
+
+  it('does NOT show the modal for an in-progress game', () => {
     renderPlay(buildGameSession({ gameStatus: 'in_progress' }));
+    expect(screen.queryByTestId('finish-modal')).not.toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
   });
 
   it('short-circuits to notFound when the game is missing', () => {
     renderPlay(buildGameSession({ gameNotFound: true }));
     expect(notFoundSpy).toHaveBeenCalled();
-  });
-
-  it('routes the postmortem button through the auth guard', () => {
-    finishedParam = '1';
-    renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win' }));
-    screen.getByTestId('finished-panel').click();
-    expect(guardAction).toHaveBeenCalledTimes(1);
   });
 });

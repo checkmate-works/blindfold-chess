@@ -1,77 +1,32 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import {
-  buildOpeningIndex,
-  detectOpening,
-  getLastMoveDetails,
-} from '@blindfold-chess/features/chess-core';
+import { buildOpeningIndex, detectOpening } from '@blindfold-chess/features/chess-core';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { FaChartLine, FaChessBoard, FaMinus, FaShareAlt, FaTimes } from 'react-icons/fa';
 
-import { engineConfigToUrlParams } from '@/lib/engines';
-import { DEFAULT_AI_REPLY_DURATION } from '@/lib/games/ai-reply-duration';
-import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
-import type { Game, GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
+import type { Game } from '@/lib/games/saved-game-types';
 import { getSharedGame } from '@/lib/games/shared-game-store';
+import { toReviewData } from '@/lib/games/to-review-data';
 import type { OpeningCatalogEntry } from '@/lib/openings/detect-game-opening';
 
-import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
-import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
+import { GameReview } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameReview';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { BoardViewModal } from '../../_components/BoardViewModal';
-import { useBoardFlip, useMoveNavigation, useNotation } from '../../_hooks';
-import { buildPostmortemPath } from '../../_lib';
-import { getMovingSide } from '../../_lib/fen-utils';
+import { useSharedGameLink } from '../../_hooks/use-shared-game-link';
 import { useGameExpGrant } from '../_hooks/use-game-exp-grant';
 import { useLoadGame } from '../_hooks/useLoadGame';
-import { GameStatsOverview } from './GameStatsOverview';
+import { CompactResultHeader } from './CompactResultHeader';
+import { LocalDiscussionPanel } from './LocalDiscussionPanel';
 import { ResultSkeleton } from './ResultSkeleton';
-import { StatsAuthGate } from './StatsAuthGate';
-import { VictoryCertificate } from './VictoryCertificate';
-
-/**
- * Board display for the result-page position preview: fully revealed (the
- * game is over, so blindfold obfuscation no longer serves a purpose). Only
- * the board-appearance fields are read by {@link BoardViewModal}; the rest
- * satisfy the GamePreferences shape.
- *
- * `boardTheme` here is only a fallback: the preview board overrides it with
- * the user's live global theme (a global setting absent from the per-game
- * snapshot) at the call site, so the modal matches the rest of the app — see
- * `boardPreferences` in {@link ResultContent}.
- */
-const REVEALED_BOARD_PREFS: GamePreferences = {
-  showCoordinates: true,
-  highlightLastMove: true,
-  showPieceDestinations: true,
-  boardTheme: DEFAULT_BOARD_THEME,
-  showOwnPieces: true,
-  showOpponentPieces: true,
-  pieceShapeMode: 'normal',
-  pieceColors: 'normal',
-  pawnHideMode: 'none',
-  moveInputMode: 'text',
-  enabledMoveInputModes: ['text'],
-  buttonInputPieceLabel: 'icon',
-  enableAutoComplete: true,
-  boardVisibility: 'always',
-  aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
-};
+import { ShareGameCta } from './ShareGameCta';
 
 type Props = {
   locale: Locale;
-  displayName: string;
   /** Whether the viewer is signed in. Anonymous viewers get the stats gated behind a sign-up CTA. */
   isAuthenticated: boolean;
   /** Exp already granted for this game (resolved server-side on revisit), or null. */
@@ -80,19 +35,30 @@ type Props = {
   openingEntries: OpeningCatalogEntry[];
 };
 
-export function ResultClient({
-  locale,
-  displayName,
-  isAuthenticated,
-  initialExp,
-  openingEntries,
-}: Props) {
+export function ResultClient({ locale, isAuthenticated, initialExp, openingEntries }: Props) {
   const t = useTranslations('play');
+  const router = useRouter();
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
   const loadState = useLoadGame(gameId);
 
-  if (loadState.status === 'idle' || loadState.status === 'loading') {
+  // Once a game is published, its canonical review is the shared page — with the
+  // real comments / chunks / likes — so send the player there instead of the
+  // local result screen. Otherwise a game they already published would keep
+  // showing the "share to unlock discussion" CTA forever. The local→published
+  // mapping lives in localStorage, so this resolves client-side after mount;
+  // `replace` keeps the result URL out of history (no redirect loop on Back).
+  const [redirecting, setRedirecting] = useState(false);
+  useEffect(() => {
+    if (!gameId) return;
+    const publishedId = getSharedGame(gameId)?.publishedId;
+    if (publishedId) {
+      setRedirecting(true);
+      router.replace(`/${locale}/games/shared/${publishedId}`);
+    }
+  }, [gameId, locale, router]);
+
+  if (redirecting || loadState.status === 'idle' || loadState.status === 'loading') {
     return <ResultSkeleton />;
   }
 
@@ -112,7 +78,6 @@ export function ResultClient({
       game={loadState.game}
       gameId={gameId as string}
       locale={locale}
-      displayName={displayName}
       isAuthenticated={isAuthenticated}
       initialExp={initialExp}
       openingEntries={openingEntries}
@@ -124,7 +89,6 @@ type ResultContentProps = {
   game: Game;
   gameId: string;
   locale: Locale;
-  displayName: string;
   isAuthenticated: boolean;
   initialExp: ExpInfo | null;
   openingEntries: OpeningCatalogEntry[];
@@ -134,29 +98,11 @@ function ResultContent({
   game,
   gameId,
   locale,
-  displayName,
   isAuthenticated,
   initialExp,
   openingEntries,
 }: ResultContentProps) {
-  const t = useTranslations('play');
-  const router = useRouter();
-  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
-  // Postmortem is a members-only feature; anonymous viewers get a sign-up
-  // prompt instead of the review screen.
-  const { guardAction, isModalOpen: isAuthModalOpen, closeModal: closeAuthModal } = useAuthGuard();
-
-  // The position-preview board should match the user's configured board theme
-  // for visual consistency with the rest of the app. The theme is a global
-  // setting (not captured in the per-game snapshot), so read it live from
-  // GamePreferencesContext and override the revealed-board defaults.
-  const { preferences: globalPreferences } = useGamePreferences();
-  const boardPreferences = useMemo<GamePreferences>(
-    () => ({ ...REVEALED_BOARD_PREFS, boardTheme: globalPreferences.boardTheme }),
-    [globalPreferences.boardTheme]
-  );
-
-  // Derive player result from game status
+  // Derive player result from game status.
   const playerResult = game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw';
 
   // Opening played — detected client-side from the local game (the result game
@@ -168,296 +114,49 @@ function ResultContent({
     return match ? (openingEntries.find((e) => e.slug === match.id) ?? null) : null;
   }, [openingEntries, game.moves, game.startingFen]);
 
-  // Notation hook - game is guaranteed to be loaded here
-  const { moves, formattedPgn } = useNotation({
-    initialMoves: game.moves,
-    startingFen: game.startingFen,
-  });
-
-  // Board navigation for the position-preview modal (tapping an effort-strip
-  // cell opens this modal at that move; the user can then step through the
-  // whole game without leaving the result page).
-  const {
-    currentPosition,
-    displayFen,
-    latestFen,
-    navigateToPosition,
-    navigateToStart,
-    navigatePrevious,
-    navigateNext,
-    navigateToEnd,
-  } = useMoveNavigation({ moves, startingFen: game.startingFen });
-  const { effectiveFlipped, toggleFlip } = useBoardFlip({ playerSide: game.playerColor });
-
-  // Highlight the move that produced the displayed position.
-  const previewLastMove = useMemo(() => {
-    if (currentPosition === -2) return null;
-    const upto = currentPosition === -1 ? moves : moves.slice(0, currentPosition + 1);
-    if (upto.length === 0) return null;
-    return getLastMoveDetails(upto as string[], game.startingFen);
-  }, [currentPosition, moves, game.startingFen]);
-
-  // Effort-strip tap → preview that position in a modal (no page transition).
-  const handleViewMove = useCallback(
-    (movesIndex: number) => {
-      navigateToPosition(movesIndex);
-      setIsBoardModalOpen(true);
-    },
-    [navigateToPosition]
-  );
-
-  // Overview stats, derived purely from the persisted per-move operation logs.
+  // Overview stats power the Exp grant (purity multiplier). The stats *display*
+  // is rendered inside GameReview from the same operation logs.
   const stats = useMemo(() => computeGameStats(game.operationLogs ?? []), [game.operationLogs]);
 
-  // Start-of-game blindfold settings, projected onto the display subset the
-  // icon-based PlaySettingsIndicator renders. Undefined for legacy games saved
-  // before per-game preferences were persisted (the icons are then omitted).
-  const playSettings = useMemo<GamePlaySettings | undefined>(() => {
-    const gp = game.gamePreferences;
-    if (!gp) return undefined;
-    return {
-      boardVisibility: gp.boardVisibility,
-      showOwnPieces: gp.showOwnPieces,
-      showOpponentPieces: gp.showOpponentPieces,
-      pieceShapeMode: gp.pieceShapeMode,
-      pieceColors: gp.pieceColors,
-      // Legacy snapshots predate pawnHideMode; treat as 'none' (shown).
-      pawnHideMode: gp.pawnHideMode ?? 'none',
-    };
-  }, [game.gamePreferences]);
+  // Grant (once) the Exp earned for this game. The result screen owns the
+  // grant, but — for parity with the shared game review, which shows no Exp —
+  // it is no longer *displayed* here; the earned Exp surfaces in the in-game
+  // finished-review (`?finished=1`) instead. Guests trigger no grant.
+  useGameExpGrant({ gameId, game, stats, isAuthenticated, initialExp });
 
-  // Mid-game edits, narrowed to the display subset the icon indicator renders.
-  // Non-display keys (highlightLastMove / moveInputMode) are dropped — same rule
-  // the published-game play-settings log applies (see normalizePlaySettingsLog).
-  const playSettingsLog = useMemo<PlaySettingsChangeEntry[]>(() => {
-    const log = game.preferenceChangeLog;
-    if (!log) return [];
-    const out: PlaySettingsChangeEntry[] = [];
-    for (const e of log) {
-      switch (e.key) {
-        case 'showOwnPieces':
-        case 'showOpponentPieces':
-          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
-          break;
-        case 'boardVisibility':
-          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
-          break;
-        case 'pieceShapeMode':
-          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
-          break;
-        case 'pieceColors':
-          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
-          break;
-        case 'pawnHideMode':
-          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
-          break;
-        // highlightLastMove / showPieceDestinations / moveInputMode: non-display
-        // (input assists / UI), intentionally skipped from the replay projection.
-      }
-    }
-    return out;
-  }, [game.preferenceChangeLog]);
+  // Share routing (open the published game vs. the publish form) and whether it
+  // was already published from this browser — shared with the in-play finish
+  // flow (useFinishedGameNavigation) via useSharedGameLink.
+  const { handleShare, isShared } = useSharedGameLink({ locale, gameId });
 
-  // Grant (once) and display the Exp earned for this game. Guests get null
-  // (no grant) and a sign-in nudge instead; see the JSX below.
-  const exp = useGameExpGrant({ gameId, game, stats, isAuthenticated, initialExp });
+  const hasMoves = game.moves.length > 0;
 
-  // Has this game already been shared from this browser? Read client-side after
-  // mount (localStorage) so the share link can point at the published game
-  // instead of offering to publish it again. Null on the server / first render.
-  const [sharedPublishedId, setSharedPublishedId] = useState<string | null>(null);
-  useEffect(() => {
-    setSharedPublishedId(getSharedGame(gameId)?.publishedId ?? null);
-  }, [gameId]);
-
-  // moves[] index of each player move, so an effort-strip cell (one per player
-  // move) can deep-link to that exact position in the finished-game view.
-  const playerMoveIndices = useMemo(() => {
-    const indices: number[] = [];
-    for (let i = 0; i < game.moves.length; i++) {
-      if (getMovingSide(i, game.startingFen) === game.playerColor) indices.push(i);
-    }
-    return indices;
-  }, [game.moves.length, game.startingFen, game.playerColor]);
-
-  // Handlers
-  const handlePostmortem = useCallback(() => {
-    router.push(
-      buildPostmortemPath({
-        locale,
-        formattedPgn,
-        playerColor: game.playerColor,
-        moves: game.moves,
-        engineConfig: game.engineConfig,
-        gameId,
-        startingFen: game.startingFen,
-      })
-    );
-  }, [game, formattedPgn, gameId, locale, router]);
-
-  // Reopen the finished game in the familiar game UI (read-only). Mirrors the
-  // games-list params and adds `finished=1` so PlayClient renders the
-  // finished-game view instead of bouncing back here. See PlayClient.
-  const openFinishedGame = useCallback(() => {
-    const params = new URLSearchParams({
-      color: game.playerColor,
-      ...engineConfigToUrlParams(game.engineConfig),
-      moves: JSON.stringify(game.moves),
-      gameId,
-      finished: '1',
-    });
-    router.push(`/${locale}/games/play?${params.toString()}`);
-  }, [game, gameId, locale, router]);
-
-  // Share this game: open the already-published game if it exists (tracked in
-  // localStorage), otherwise go to the publish form.
-  const handleShare = useCallback(() => {
-    router.push(
-      sharedPublishedId
-        ? `/${locale}/games/shared/${sharedPublishedId}`
-        : `/${locale}/games/shared/new?gameId=${gameId}`
-    );
-  }, [router, locale, gameId, sharedPublishedId]);
-
+  // The same review screen as the shared game (games/shared/[id]) — board, move
+  // list, blindfold indicator, and stats — sourced from the local game. The
+  // win/loss/draw label rides at the top of the stats block (statsHeader), not
+  // above the board. A first-class, ungated "Share this game" CTA sits above the
+  // tabs (as children): publishing is open to everyone — anonymous and
+  // provisional players included — so it is deliberately not behind an auth
+  // guard. The Discussion tab just explains that discussion opens once shared.
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4">
-        {/* Game Result */}
-        {playerResult === 'win' && (
-          // The certificate-frame webp has a large transparent bottom margin
-          // (~10.5% of its 3:2 height ≈ 7% of the box width) that pushed the
-          // share link far below the visible frame. A width-relative negative
-          // margin (-mb-[7%]) trims exactly that band at every screen size, so
-          // the gap above the link matches the gap to the divider below.
-          <div className="-mb-[7%]">
-            <VictoryCertificate displayName={displayName} engineConfig={game.engineConfig} />
-          </div>
-        )}
-        {playerResult !== 'win' && (
-          <div className="pt-6 text-center flex flex-col items-center gap-3">
-            {playerResult === 'loss' && (
-              <>
-                <FaTimes className="w-12 h-12 text-destructive" />
-                <h3 className="text-xl font-bold">{t('youLose')}</h3>
-              </>
-            )}
-            {playerResult === 'draw' && (
-              <>
-                <FaMinus className="w-12 h-12 text-warning" />
-                <h3 className="text-xl font-bold">{t('draw')}</h3>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Game statistics overview — metric cards + per-move effort strip.
-            Anonymous viewers see it blurred behind a sign-up CTA; the
-            statistics are a registration nudge for game-only users. */}
-        {stats.totalMoves > 0 &&
-          (isAuthenticated ? (
-            <GameStatsOverview
-              stats={stats}
-              playerMoveIndices={playerMoveIndices}
-              operationLogs={game.operationLogs ?? undefined}
-              moves={moves}
-              onSelectMove={handleViewMove}
-              engineConfig={game.engineConfig}
-              playSettings={playSettings}
-              playerColor={game.playerColor}
-              opening={opening}
-              locale={locale}
-              playSettingsLog={playSettingsLog}
-              headingAsSection
-            />
-          ) : (
-            <StatsAuthGate>
-              <GameStatsOverview
-                stats={stats}
-                playerMoveIndices={playerMoveIndices}
-                operationLogs={game.operationLogs ?? undefined}
-                moves={moves}
-                onSelectMove={handleViewMove}
-                engineConfig={game.engineConfig}
-                playSettings={playSettings}
-                playerColor={game.playerColor}
-                opening={opening}
-                locale={locale}
-                playSettingsLog={playSettingsLog}
-                headingAsSection
-              />
-            </StatsAuthGate>
-          ))}
-
-        {/* Exp earned for this game, shown below the statistics. Authenticated
-            players only — ExpGainDisplay renders nothing until the grant
-            resolves. Guests are already nudged to sign up by the StatsAuthGate
-            above, so no separate Exp CTA is shown here. */}
-        {isAuthenticated && <ExpGainDisplay expInfo={exp} />}
-
-        {/* Action Buttons */}
-        <div className="flex flex-col items-center gap-3 pt-2">
-          {moves.length > 0 && (
-            <Button
-              variant="primary"
-              size="lg"
-              icon={<FaChartLine className="w-5 h-5" />}
-              onClick={() => guardAction(handlePostmortem)}
-              className="w-full rounded-xl font-medium"
-            >
-              {t('postmortem')}
-            </Button>
-          )}
-          {moves.length > 0 && (
-            <Button
-              variant="secondary"
-              size="lg"
-              icon={<FaShareAlt className="w-5 h-5" />}
-              onClick={() => handleShare()}
-              className="w-full rounded-xl font-medium"
-            >
-              {sharedPublishedId ? t('result.viewShared') : t('result.publish')}
-            </Button>
-          )}
-          {moves.length > 0 && (
-            <Button
-              variant="secondary"
-              size="lg"
-              icon={<FaChessBoard className="w-5 h-5" />}
-              onClick={() => openFinishedGame()}
-              className="w-full rounded-xl font-medium"
-            >
-              {t('result.openFinishedGame')}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Position-preview modal — opened by tapping an effort-strip cell.
-          Reuses the in-game BoardViewModal (board + move navigation) so the
-          user can inspect any position, and step through the game, without
-          leaving the result page. The board is fully revealed here. */}
-      <BoardViewModal
-        isOpen={isBoardModalOpen}
-        onClose={() => setIsBoardModalOpen(false)}
-        fen={displayFen ?? latestFen}
-        playerSide={game.playerColor}
-        flipped={effectiveFlipped}
-        lastMove={previewLastMove}
-        preferences={boardPreferences}
-        movesLength={moves.length}
-        currentPosition={currentPosition}
-        formattedPgn={formattedPgn}
-        onNavigateToStart={navigateToStart}
-        onNavigatePrevious={navigatePrevious}
-        onNavigateNext={navigateNext}
-        onNavigateToEnd={navigateToEnd}
-        onNavigateToPosition={navigateToPosition}
-        onFlipBoard={toggleFlip}
-      />
-
-      {/* Sign-up prompt shown when an anonymous viewer taps the postmortem
-          button (members-only feature). */}
-      {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
-    </div>
+    <GameReview
+      {...toReviewData(game)}
+      detectedOpening={opening}
+      locale={locale}
+      statsHeader={<CompactResultHeader result={playerResult} />}
+      social={{
+        mode: 'local',
+        isAuthenticated,
+        // Discussion tab: members-only compose CTAs (join conversation / suggest
+        // chunk) that route to sign-in / finish-registration (anonymous /
+        // provisional) or a share prompt (registered) — discussion needs both an
+        // account and a published game.
+        discussionContent: hasMoves ? (
+          <LocalDiscussionPanel onShare={handleShare} isShared={isShared} />
+        ) : null,
+      }}
+    >
+      {hasMoves ? <ShareGameCta onShare={handleShare} isShared={isShared} /> : null}
+    </GameReview>
   );
 }

@@ -1,6 +1,6 @@
 'use server';
 
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import {
   GAME_COMMENT_LIKE_TARGET,
   editGameComment,
@@ -75,7 +75,7 @@ export async function addGameCommentAction(
     const body = normalizeBody(input.body);
     if (body === null) return { success: false, error: 'invalid_body' };
 
-    const guardResult = await authenticateAndGuard(RATE_LIMITS.createGameComment);
+    const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.createGameComment);
     if ('error' in guardResult) return { success: false, error: guardResult.error };
     const { user } = guardResult;
 
@@ -120,7 +120,7 @@ export async function editGameCommentAction(
     const normalized = normalizeBody(body);
     if (normalized === null) return { success: false, error: 'invalid_body' };
 
-    const guardResult = await authenticateAndGuard(RATE_LIMITS.editGameComment);
+    const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.editGameComment);
     if ('error' in guardResult) return { success: false, error: guardResult.error };
     const { user } = guardResult;
 
@@ -146,7 +146,7 @@ export async function deleteGameCommentAction(
       return { success: false, error: 'invalid_input' };
     }
 
-    const guardResult = await authenticateAndGuard(RATE_LIMITS.createGameComment);
+    const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.createGameComment);
     if ('error' in guardResult) return { success: false, error: guardResult.error };
     const { user } = guardResult;
 

@@ -16,7 +16,16 @@ import { useAuthSubmit } from '@/app/[locale]/(public)/_hooks/use-auth-submit';
 
 import { signUp } from '../_actions/signUp';
 
-export function EmailSignUpForm() {
+type Props = {
+  /**
+   * Internal path to return to after the email is confirmed (validated upstream
+   * by `sanitizeNext`). Threaded into the confirmation link's `emailRedirectTo`
+   * so `/auth/callback` lands the new user back on the CTA-gated page.
+   */
+  next?: string;
+};
+
+export function EmailSignUpForm({ next }: Props) {
   const t = useTranslations('signUp');
   const tPassword = useTranslations('validation.password');
   const locale = useLocale();
@@ -26,7 +35,7 @@ export function EmailSignUpForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const { error, isLoading, handleSubmit } = useAuthSubmit({
-    action: () => signUp(email, password),
+    action: () => signUp(email, password, next),
     validate: () => {
       if (password !== confirmPassword) return t('passwordMismatch');
       const passwordError = getPasswordValidationError(password);

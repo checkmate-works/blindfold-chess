@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -40,6 +40,7 @@ import { tabItemClass, tabsRowClass } from '@/app/[locale]/_components/tab-style
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useQuickPeekModal } from '../_hooks/use-quick-peek-modal';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
@@ -50,9 +51,49 @@ import { GameDiscussionFeed } from './GameDiscussionFeed';
 import { GameMoveContributions } from './GameMoveContributions';
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
+/**
+ * The social layer of the review, injected as a discriminated union so the same
+ * component serves a published game (`live` — real comments/chunks/likes wired
+ * to server actions) and a not-yet-shared local game on the result screen
+ * (`local` — no social data; a share CTA sits where the discussion would be).
+ */
+export type ReplaySocial =
+  | {
+      mode: 'live';
+      /**
+       * Whether the viewer is signed in — drives the members-only stats gate.
+       * Kept distinct from {@link currentUser}: a signed-in viewer without a
+       * comment profile (e.g. one not yet provisioned) is still a member and
+       * must not be shown the sign-up gate.
+       */
+      isAuthenticated: boolean;
+      /** Published game id, used to anchor the per-move comment threads. */
+      gameId: string;
+      /** Advice comments on this game, anchored per move (ply). */
+      comments: GameCommentItem[];
+      /** Community chunk links on this game, anchored per move (ply). */
+      gameChunks: GameChunkItem[];
+      /** Published chunks selectable in the per-move chunk picker. */
+      availableChunks: ChunkOption[];
+      /** The viewer, if signed in — enables posting and delete-own. */
+      currentUser: CommentUser | null;
+      /** Whether the viewer is the game's registered owner (may remove any chunk link). */
+      isGameOwner: boolean;
+      /** When set (from a like notification), open at this comment's move and scroll to it. */
+      highlightCommentId?: string;
+    }
+  | {
+      mode: 'local';
+      /** Whether the local viewer is signed in — drives the stats auth-gate. */
+      isAuthenticated: boolean;
+      /**
+       * Body of the Discussion tab for a not-yet-shared game — the compose CTAs
+       * that route to a sign-in / share prompt (see `LocalDiscussionPanel`).
+       */
+      discussionContent: ReactNode;
+    };
+
 type Props = {
-  /** Published game id, used to anchor the per-move comment threads. */
-  gameId: string;
   moves: string[];
   startingFen: string | null;
   playerColor: 'white' | 'black';
@@ -65,42 +106,46 @@ type Props = {
   /** Mid-game settings edits, folded over `playSettings` per displayed position. */
   playSettingsLog: PlaySettingsChangeEntry[] | null;
   locale: Locale;
-  /** Advice comments on this game, anchored per move (ply). */
-  comments: GameCommentItem[];
-  /** Community chunk links on this game, anchored per move (ply). */
-  gameChunks: GameChunkItem[];
-  /** Published chunks selectable in the per-move chunk picker. */
-  availableChunks: ChunkOption[];
-  /** The viewer, if signed in — enables posting and delete-own. */
-  currentUser: CommentUser | null;
-  /** Whether the viewer is the game's registered owner (may remove any chunk link). */
-  isGameOwner: boolean;
-  /** When set (from a like notification), open at this comment's move and scroll to it. */
-  highlightCommentId?: string;
   /** Side at the bottom of the board, from the `?color=white|black` URL param. */
   orientation?: 'white' | 'black';
   /** Rendered between the board/move-list and the stats overview (e.g. the description). */
   children?: ReactNode;
+  /**
+   * Content rendered at the very top of the stats / summary block — used by the
+   * result screen for its win/loss/draw label. Omitted on the shared game, whose
+   * result is not surfaced with first-person wording.
+   */
+  statsHeader?: ReactNode;
+  /** Social layer — live (published) or local (unshared result screen). */
+  social: ReplaySocial;
 };
 
+/** Stable empty collections for `local` mode, so hook deps never churn. */
+const NO_COMMENTS: GameCommentItem[] = [];
+const NO_CHUNKS: GameChunkItem[] = [];
+const NO_AVAILABLE_CHUNKS: ChunkOption[] = [];
+
 /**
- * Replay of a published game, laid out exactly like games/play: the in-play
- * always-visible board (`InlineBoardView`) in a 2/3 column and the move list
- * (`MovesPanel`) in a 1/3 column, driven by the same notation / navigation
- * hooks. The two-column layout keeps the board at the same comfortable size as
- * the play screen on desktop, and clicking a move in the list reflects on the
- * board.
+ * Review of a finished game, laid out exactly like games/play: the always-visible
+ * board (`InlineBoardView`) in a 2/3 column and the move list (`MovesPanel`) in a
+ * 1/3 column, driven by the same notation / navigation hooks. Serves BOTH the
+ * published shared game (`games/shared/[id]`) and the just-finished local game on
+ * the result screen (`games/play/result`) — the difference is entirely in the
+ * injected `social` prop (see {@link ReplaySocial}).
  *
  * Read-only adaptation: `gameInProgress` is false (no "restart from here"), and
  * "new game from here" starts a fresh game from that position so a viewer can
  * try it themselves. Preferences are the viewer's own but forced fully revealed
- * — this is a finished public game, not a live blindfold one (see
- * `useReplayPreferences`). The replay's cross-cutting concerns (preferences,
+ * — this is a finished game, not a live blindfold one (see
+ * `useReplayPreferences`). The review's cross-cutting concerns (preferences,
  * URL sync, comment/chunk tabs, deep-link) live in `../_hooks`; this component
  * wires them to the shared notation/navigation hooks and lays out the result.
+ *
+ * In `local` mode (result screen) there is no persisted game to anchor
+ * comments/chunks/likes to, so the social collections are empty and the
+ * discussion / per-move contribution regions are replaced by `social.shareCta`.
  */
-export function GameReplay({
-  gameId,
+export function GameReview({
   moves,
   startingFen,
   playerColor,
@@ -110,18 +155,31 @@ export function GameReplay({
   playSettings,
   playSettingsLog,
   locale,
-  comments,
-  gameChunks,
-  availableChunks,
-  currentUser,
-  isGameOwner,
-  highlightCommentId,
   orientation,
   children,
+  statsHeader,
+  social,
 }: Props) {
   const t = useTranslations('sharedGames');
   const router = useRouter();
   const { preferences } = useGamePreferences();
+
+  // Social inputs, empty in `local` mode so the existing body — the discussion
+  // rollup, deep-link, per-move contributions — naturally collapses to nothing
+  // (a `local` game has no server-anchored comments/chunks). `viewerIsAuthenticated`
+  // drives the stats auth-gate in both modes.
+  const isLive = social.mode === 'live';
+  const gameId = isLive ? social.gameId : '';
+  const comments = isLive ? social.comments : NO_COMMENTS;
+  const gameChunks = isLive ? social.gameChunks : NO_CHUNKS;
+  const availableChunks = isLive ? social.availableChunks : NO_AVAILABLE_CHUNKS;
+  const currentUser = isLive ? social.currentUser : null;
+  const isGameOwner = isLive ? social.isGameOwner : false;
+  const highlightCommentId = isLive ? social.highlightCommentId : undefined;
+  // Auth drives the members-only stats gate; both modes carry it explicitly, so
+  // a signed-in viewer without a comment profile still sees the stats (not the
+  // sign-up gate).
+  const viewerIsAuthenticated = social.isAuthenticated;
 
   // One-step help tour explaining the "As played" toggle (board obfuscation).
   const reproduceViewTourSteps: HelpStep[] = [
@@ -150,16 +208,6 @@ export function GameReplay({
     navigateToEnd,
   } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
 
-  // Independent navigation state for the By Move quick-peek modal, so previewing
-  // a position there never disturbs the live replay (board, comments, URL). The
-  // modal commits to the live replay only via its footer CTA.
-  const modalNav = useMoveNavigation({
-    moves: notationMoves,
-    startingFen: startingFen ?? undefined,
-  });
-  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
-  const boardColumnRef = useRef<HTMLDivElement>(null);
-
   // Seed the board orientation from the `?color=white|black` param:
   // `effectiveFlipped` means "black is at the bottom", and the default (no
   // param) is the player's own side. Convert the requested orientation into
@@ -181,6 +229,7 @@ export function GameReplay({
     showPlaySettings,
     effectivePlaySettings,
     boardPreferences,
+    hiddenPieceStyle,
   } = useReplayPreferences({
     preferences,
     playSettings,
@@ -207,32 +256,15 @@ export function GameReplay({
     [notationMoves, startingFen]
   );
   const lastMove = useMemo(() => lastMoveAt(currentPosition), [lastMoveAt, currentPosition]);
-  const modalLastMove = useMemo(
-    () => lastMoveAt(modalNav.currentPosition),
-    [lastMoveAt, modalNav.currentPosition]
-  );
 
-  // By Move tap → quick-peek the position in a modal (matches the result page),
-  // leaving the live replay untouched. The modal drives `modalNav`.
-  const handleViewMove = useCallback(
-    (movesIndex: number) => {
-      modalNav.navigateToPosition(movesIndex);
-      setIsBoardModalOpen(true);
-    },
-    [modalNav]
-  );
-
-  // Modal footer CTA → commit the modal's position to the live replay (board +
-  // comment thread), close the modal, and scroll the board into view so the
-  // comments below it are reachable. rAF defers the scroll until the modal's
-  // scroll-lock has been released on this render.
-  const handleOpenModalPosition = useCallback(() => {
-    navigateToPosition(modalNav.currentPosition);
-    setIsBoardModalOpen(false);
-    requestAnimationFrame(() => {
-      boardColumnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, [navigateToPosition, modalNav]);
+  // "By Move" quick-peek modal: its own navigation (so previewing never moves the
+  // live replay) plus open/close + commit-to-live. See useQuickPeekModal.
+  const quickPeek = useQuickPeekModal({
+    notationMoves,
+    startingFen: startingFen ?? undefined,
+    lastMoveAt,
+    navigateToPosition,
+  });
 
   const lichessAnalysisUrl = fenToLichessUrl(
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
@@ -309,7 +341,7 @@ export function GameReplay({
         playerMoveIndices={playerMoveIndices}
         operationLogs={operationLogs ?? undefined}
         moves={notationMoves}
-        onSelectMove={handleViewMove}
+        onSelectMove={quickPeek.openAtMove}
         engineConfig={engineConfig}
         playSettings={playSettings ?? undefined}
         playerColor={playerColor}
@@ -317,8 +349,23 @@ export function GameReplay({
         locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
         headingAsSection
+        // Result screen's win/loss/draw label, shown directly under the
+        // "Game Stats" heading. Omitted (undefined) on the shared game.
+        afterTitle={statsHeader}
       />
     ) : null;
+
+  // Stats with the members-only gate applied for anonymous viewers (blurred +
+  // sign-up CTA), matching the result page. Shared by the live summary tab and
+  // the local (result) layout.
+  const gatedStats =
+    statsOverview == null ? null : viewerIsAuthenticated ? (
+      statsOverview
+    ) : (
+      <StatsAuthGate title={t('statsGate.title')} description={t('statsGate.description')}>
+        {statsOverview}
+      </StatsAuthGate>
+    );
 
   // Overview discussion feed: all comments + chunk links rolled up by move.
   // The overview offers a [Summary | Discussion] segmented switch when both the
@@ -345,10 +392,21 @@ export function GameReplay({
       ? 'discussion'
       : 'summary';
 
+  // Commit a previewed position from the quick-peek modal onto the live board.
+  // In `live` mode moving to a move position already surfaces that move's
+  // comment thread below the board; `local` mode has no per-move thread and a
+  // position-independent overview, so it additionally switches to the Discussion
+  // tab — matching the shared game, where opening a position reveals discussion.
+  const { commit: commitQuickPeek } = quickPeek;
+  const handleCommitPosition = useCallback(() => {
+    commitQuickPeek();
+    if (social.mode === 'local') setOverviewView('discussion');
+  }, [commitQuickPeek, social.mode]);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2" ref={boardColumnRef}>
+        <div className="lg:col-span-2" ref={quickPeek.boardColumnRef}>
           <InlineBoardView
             fen={displayFen ?? latestFen}
             playerSide={playerColor}
@@ -364,6 +422,7 @@ export function GameReplay({
             onNavigateToEnd={navigateToEnd}
             onNavigateToPosition={navigateToPosition}
             onFlipBoard={toggleFlip}
+            hiddenPieceStyle={hiddenPieceStyle}
             alwaysOpen
           />
 
@@ -448,9 +507,41 @@ export function GameReplay({
         </div>
       </div>
 
-      {/* On a move position: that move's comment thread, directly under the
-          move list. On the opening board: the description + statistics. */}
-      {isInitialPosition ? (
+      {/* Local (result) mode: same [Summary | Discussion] overview as the shared
+          game, for a consistent layout. There is no persisted game to anchor
+          social data to, so the Discussion tab holds the share CTA (share to
+          unlock discussion) instead of a comment feed, and the tabs stay put as
+          the viewer steps through the moves. */}
+      {social.mode === 'local' ? (
+        <div className="space-y-4">
+          {children}
+
+          <div role="tablist" className={tabsRowClass.underline}>
+            {(['summary', 'discussion'] as const).map((view) => {
+              const isActive = overviewView === view;
+              const label =
+                view === 'summary' ? t('overview.summaryTab') : t('overview.discussionTab');
+              return (
+                <button
+                  key={view}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setOverviewView(view)}
+                  className={tabItemClass('underline', isActive)}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          {overviewView === 'summary' && gatedStats}
+          {overviewView === 'discussion' && social.discussionContent}
+        </div>
+      ) : /* On a move position: that move's comment thread, directly under the
+          move list. On the opening board: the description + statistics. */
+      isInitialPosition ? (
         <>
           {children}
 
@@ -478,20 +569,7 @@ export function GameReplay({
             </div>
           )}
 
-          {activeOverviewView === 'summary' && statsOverview && (
-            <>
-              {currentUser ? (
-                statsOverview
-              ) : (
-                <StatsAuthGate
-                  title={t('statsGate.title')}
-                  description={t('statsGate.description')}
-                >
-                  {statsOverview}
-                </StatsAuthGate>
-              )}
-            </>
-          )}
+          {activeOverviewView === 'summary' && gatedStats}
 
           {activeOverviewView === 'discussion' && hasDiscussion && (
             <GameDiscussionFeed
@@ -540,26 +618,27 @@ export function GameReplay({
           navigation so previewing never moves the live replay; the footer CTA
           commits the position to the page, where per-move comments live. */}
       <BoardViewModal
-        isOpen={isBoardModalOpen}
-        onClose={() => setIsBoardModalOpen(false)}
-        fen={modalNav.displayFen ?? latestFen}
+        isOpen={quickPeek.isOpen}
+        onClose={quickPeek.close}
+        fen={quickPeek.nav.displayFen ?? latestFen}
         playerSide={playerColor}
         flipped={effectiveFlipped}
-        lastMove={modalLastMove}
+        lastMove={quickPeek.lastMove}
         preferences={boardPreferences}
+        hiddenPieceStyle={hiddenPieceStyle}
         movesLength={notationMoves.length}
-        currentPosition={modalNav.currentPosition}
+        currentPosition={quickPeek.nav.currentPosition}
         formattedPgn={formattedPgn}
-        onNavigateToStart={modalNav.navigateToStart}
-        onNavigatePrevious={modalNav.navigatePrevious}
-        onNavigateNext={modalNav.navigateNext}
-        onNavigateToEnd={modalNav.navigateToEnd}
-        onNavigateToPosition={modalNav.navigateToPosition}
+        onNavigateToStart={quickPeek.nav.navigateToStart}
+        onNavigatePrevious={quickPeek.nav.navigatePrevious}
+        onNavigateNext={quickPeek.nav.navigateNext}
+        onNavigateToEnd={quickPeek.nav.navigateToEnd}
+        onNavigateToPosition={quickPeek.nav.navigateToPosition}
         onFlipBoard={toggleFlip}
         footer={
           <button
             type="button"
-            onClick={handleOpenModalPosition}
+            onClick={handleCommitPosition}
             className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >
             {t('openPosition')}

@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
@@ -34,6 +35,17 @@ type Props = {
    * collapse on hydration.
    */
   initialBoardVisibility: BoardVisibility;
+  /**
+   * Whether the viewer is signed in (resolved server-side). Gates the
+   * finished-game Exp display — guests never see it.
+   */
+  isAuthenticated: boolean;
+  /**
+   * Already-granted AI-game Exp for this game, resolved server-side from
+   * `?gameId`. Shown in the finished-game review under the result overlay.
+   * Null for guests, in-progress games, or games not yet granted.
+   */
+  expInfo: ExpInfo | null;
 };
 
 export function PlayPageClient({
@@ -41,6 +53,8 @@ export function PlayPageClient({
   breadcrumb,
   initialMoveInputHint,
   initialBoardVisibility,
+  isAuthenticated,
+  expInfo,
 }: Props) {
   const t = useTranslations('play');
 
@@ -110,6 +124,8 @@ export function PlayPageClient({
           initialMoveInputHint={initialMoveInputHint}
           initialBoardVisibility={initialBoardVisibility}
           isInitializing={isInitializing}
+          isAuthenticated={isAuthenticated}
+          expInfo={expInfo}
         />
         {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
         <div className="!mt-4 space-y-4">

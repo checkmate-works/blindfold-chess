@@ -13,7 +13,15 @@ import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { signIn } from '../_actions/signIn';
 
-export function EmailPasswordForm() {
+type Props = {
+  /**
+   * Internal path to return to after signing in (validated upstream by
+   * `sanitizeNext`). Omitted → the default mypage landing.
+   */
+  next?: string;
+};
+
+export function EmailPasswordForm({ next }: Props) {
   const t = useTranslations('signIn');
   const locale = useLocale();
   const [email, setEmail] = useState('');
@@ -28,7 +36,9 @@ export function EmailPasswordForm() {
       // destination's Server Components before the browser has committed the
       // session cookies set by the signIn Server Action, resulting in an
       // unauthenticated request and blank page content.
-      window.location.href = `/${result.locale}/mypage?toast=login_success`;
+      const base = next ?? `/${result.locale}/mypage`;
+      const separator = base.includes('?') ? '&' : '?';
+      window.location.href = `${base}${separator}toast=login_success`;
     },
   });
 

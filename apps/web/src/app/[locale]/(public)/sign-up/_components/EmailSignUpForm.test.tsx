@@ -145,7 +145,7 @@ describe('EmailSignUpForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
 
     await waitFor(() => {
-      expect(mockSignUp).toHaveBeenCalledWith('test@example.com', 'validpassword123');
+      expect(mockSignUp).toHaveBeenCalledWith('test@example.com', 'validpassword123', undefined);
     });
 
     expect(mockPush).toHaveBeenCalledWith('/en/sign-up/verify-email?email=test%40example.com');

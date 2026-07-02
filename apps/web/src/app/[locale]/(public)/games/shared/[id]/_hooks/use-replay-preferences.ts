@@ -28,6 +28,12 @@ type Result = {
   effectivePlaySettings: GamePlaySettings | null;
   /** Preferences to hand the board: revealed, or the player's view when on. */
   boardPreferences: GamePreferences;
+  /**
+   * How the board should draw pieces the player could not see: `'ghost'` while
+   * reproducing their view (faint true piece), else `'absent'`. See
+   * `ChessBoard.hiddenPieceStyle`.
+   */
+  hiddenPieceStyle: 'absent' | 'ghost';
 };
 
 /**
@@ -76,18 +82,28 @@ export function useReplayPreferences({
 
   const reflectedPreferences = useMemo<GamePreferences | null>(() => {
     if (!effectivePlaySettings) return null;
+    // A hidden whole board (`never` / `peek`) means the player saw no pieces at
+    // this position, so fold it into "hide both sides" — the per-piece hide path
+    // then renders them all as ghosts, matching side / pawn hides. `always`
+    // keeps the per-piece settings as-is.
+    const boardHidden =
+      effectivePlaySettings.boardVisibility === 'never' ||
+      effectivePlaySettings.boardVisibility === 'peek';
     return {
       ...preferences,
-      showOwnPieces: effectivePlaySettings.showOwnPieces,
-      showOpponentPieces: effectivePlaySettings.showOpponentPieces,
+      showOwnPieces: boardHidden ? false : effectivePlaySettings.showOwnPieces,
+      showOpponentPieces: boardHidden ? false : effectivePlaySettings.showOpponentPieces,
       pieceShapeMode: effectivePlaySettings.pieceShapeMode,
       pieceColors: effectivePlaySettings.pieceColors,
       pawnHideMode: effectivePlaySettings.pawnHideMode,
     };
   }, [preferences, effectivePlaySettings]);
 
-  const boardPreferences =
-    reproduceView && reflectedPreferences ? reflectedPreferences : revealedPreferences;
+  const reproducing = reproduceView && reflectedPreferences != null;
+  const boardPreferences = reproducing ? reflectedPreferences : revealedPreferences;
+  // While reproducing, hidden pieces are drawn as faint ghosts (what the player
+  // could not see); a fully-revealed board has nothing hidden to style.
+  const hiddenPieceStyle: 'absent' | 'ghost' = reproducing ? 'ghost' : 'absent';
 
   return {
     reproduceView,
@@ -95,5 +111,6 @@ export function useReplayPreferences({
     showPlaySettings,
     effectivePlaySettings,
     boardPreferences,
+    hiddenPieceStyle,
   };
 }

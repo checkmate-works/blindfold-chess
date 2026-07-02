@@ -2021,8 +2021,8 @@
     "newGameFromHere": "ここから新規対局",
     "saving": "保存中...",
     "saved": "保存済み",
-    "postmortem": "感想戦",
-    "resultTitle": "ゲーム結果",
+    "postmortem": "棋譜再現",
+    "resultTitle": "振り返り",
     "playerColor": {
       "white": "白",
       "black": "黒"
@@ -2104,6 +2104,8 @@
         "columnDetail": "詳細"
       },
       "openFinishedGame": "終了したゲームを開く",
+      "shareTitle": "共有してディスカッションを始める",
+      "sharePrompt": "この対局を共有するとコメントやいいねが有効になり、フィードバックを受け取れます。",
       "publish": "この対局を共有する",
       "viewShared": "共有した対局を見る",
       "stats": {
@@ -2135,6 +2137,25 @@
     "finishedGame": {
       "heading": "このゲームは終了しています",
       "viewResult": "結果を見る"
+    },
+    "finishModal": {
+      "title": "次にどうしますか？",
+      "help": "各オプションの説明",
+      "comingSoon": "近日公開",
+      "publishedBadge": "公開済み",
+      "trigger": "次のアクション",
+      "review": {
+        "title": "振り返り",
+        "description": "対局を振り返り、反省点をコメントし、統計を確認します。"
+      },
+      "recall": {
+        "title": "棋譜再現",
+        "description": "記憶だけを頼りに、棋譜を最初から再現します。"
+      },
+      "kata": {
+        "title": "Kata",
+        "description": "登録したレパートリー通りにオープニングを指せたかを確認します。"
+      }
     }
   },
   "sharedGames": {
@@ -2170,7 +2191,9 @@
     "result": {
       "win": "勝ち",
       "loss": "負け",
-      "draw": "引き分け"
+      "draw": "引き分け",
+      "whiteWon": "白の勝ち",
+      "blackWon": "黒の勝ち"
     },
     "list": {
       "title": "公開されたゲーム",
@@ -2318,7 +2341,11 @@
     }
   },
   "postmortem": {
-    "title": "感想戦",
+    "title": "棋譜再現",
+    "authGate": {
+      "title": "「棋譜再現」を使うにはサインアップ",
+      "description": "記憶だけを頼りに、対局を一手ずつ再現できます（無料アカウントで利用可）。"
+    },
     "settings": "設定",
     "help": {
       "label": "感想戦の使い方",
@@ -4992,7 +5019,12 @@
     "description": "サインインすると、いいねやディスカッションへの参加など、Blindfold Chessをより楽しめます。",
     "createDescription": "無料ユーザー登録で、作成した内容を保存・公開できます。",
     "signUpButton": "無料ユーザー登録",
-    "signInButton": "アカウントをお持ちの方はログイン"
+    "signInButton": "アカウントをお持ちの方はログイン",
+    "provisional": {
+      "title": "アカウント登録を完了してください",
+      "description": "ユーザー名を設定すると、コメントや投稿、ディスカッションへの参加ができます。",
+      "button": "ユーザー名を設定する"
+    }
   },
   "leaderboard": {
     "title": "ランキング",

@@ -2,9 +2,24 @@
 
 import * as Sentry from '@sentry/nextjs';
 import type { User } from '@supabase/supabase-js';
+import { eq } from 'drizzle-orm';
 
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
+import { db, profiles } from '@/lib/db';
 import { createClient as createServerSupabaseClient } from '@/lib/supabase/server';
+
+/**
+ * The viewer's session and registration state, resolved server-side.
+ *
+ * `hasProfile` distinguishes a fully-registered member (a `profiles` row exists
+ * — username set) from a *provisional* one (signed in but no profile yet; the
+ * auth callback routes them to `setup-username`). The client uses it to prompt
+ * registration completion instead of opening a composer for a provisional user.
+ */
+export type SessionUser = {
+  user: User | null;
+  hasProfile: boolean;
+};
 
 /**
  * Returns the currently-authenticated Supabase user, or `null` for anonymous
@@ -36,7 +51,7 @@ import { createClient as createServerSupabaseClient } from '@/lib/supabase/serve
  * NOT sent to Sentry — entitlement queries already log at a lower layer via
  * `console.warn`, and a DB blip here is cosmetic rather than an auth signal.
  */
-export async function getSessionUser(): Promise<User | null> {
+export async function getSessionUser(): Promise<SessionUser> {
   let user: User | null = null;
   try {
     const supabase = await createServerSupabaseClient();
@@ -46,7 +61,25 @@ export async function getSessionUser(): Promise<User | null> {
     user = resolvedUser;
   } catch (error) {
     Sentry.captureException(error);
-    return null;
+    return { user: null, hasProfile: false };
+  }
+
+  // Whether this signed-in user has completed registration (has a profile row).
+  // Cheap primary-key lookup. A failure is coerced to `false`: showing the
+  // "finish registration" prompt is the safe default, and the server-side
+  // profile guard is the real gate for content mutations.
+  let hasProfile = false;
+  if (user) {
+    try {
+      const [row] = await db
+        .select({ id: profiles.id })
+        .from(profiles)
+        .where(eq(profiles.id, user.id))
+        .limit(1);
+      hasProfile = row != null;
+    } catch {
+      hasProfile = false;
+    }
   }
 
   try {
@@ -57,5 +90,5 @@ export async function getSessionUser(): Promise<User | null> {
     // on the next page load. The cookie's 7-day TTL also bounds the lag.
   }
 
-  return user;
+  return { user, hasProfile };
 }

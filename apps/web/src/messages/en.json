@@ -2021,8 +2021,8 @@
     "newGameFromHere": "New game from here",
     "saving": "Saving...",
     "saved": "Saved",
-    "postmortem": "Game Review",
-    "resultTitle": "Game Result",
+    "postmortem": "Recall",
+    "resultTitle": "Game Review",
     "playerColor": {
       "white": "White",
       "black": "Black"
@@ -2104,6 +2104,8 @@
         "columnDetail": "Detail"
       },
       "openFinishedGame": "Open finished game",
+      "shareTitle": "Share to unlock discussion",
+      "sharePrompt": "Share this game to get feedback — sharing unlocks discussion and likes.",
       "publish": "Share this game",
       "viewShared": "View shared game",
       "stats": {
@@ -2135,6 +2137,25 @@
     "finishedGame": {
       "heading": "This game has ended",
       "viewResult": "View result"
+    },
+    "finishModal": {
+      "title": "What's next?",
+      "help": "About these options",
+      "comingSoon": "Coming soon",
+      "publishedBadge": "Published",
+      "trigger": "Next action",
+      "review": {
+        "title": "Game Review",
+        "description": "Review the game, add your reflections, and see the stats."
+      },
+      "recall": {
+        "title": "Recall",
+        "description": "Reconstruct the whole game from memory, move by move."
+      },
+      "kata": {
+        "title": "Kata",
+        "description": "Check whether your opening followed your registered repertoire."
+      }
     }
   },
   "sharedGames": {
@@ -2170,7 +2191,9 @@
     "result": {
       "win": "Win",
       "loss": "Loss",
-      "draw": "Draw"
+      "draw": "Draw",
+      "whiteWon": "White won",
+      "blackWon": "Black won"
     },
     "list": {
       "title": "Published games",
@@ -2318,7 +2341,11 @@
     }
   },
   "postmortem": {
-    "title": "Game Review",
+    "title": "Recall",
+    "authGate": {
+      "title": "Sign up to use Recall",
+      "description": "Reconstruct your games move by move from memory — free with an account."
+    },
     "settings": "Settings",
     "help": {
       "label": "How to use Game Review",
@@ -4992,7 +5019,12 @@
     "description": "Sign in to like posts, join discussions, and get the most out of Blindfold Chess.",
     "createDescription": "Sign up free to save and publish what you create.",
     "signUpButton": "Create Free Account",
-    "signInButton": "Already have an account? Sign in"
+    "signInButton": "Already have an account? Sign in",
+    "provisional": {
+      "title": "Finish setting up your account",
+      "description": "Choose a username to comment, post, and join discussions.",
+      "button": "Choose a username"
+    }
   },
   "leaderboard": {
     "title": "Leaderboard",

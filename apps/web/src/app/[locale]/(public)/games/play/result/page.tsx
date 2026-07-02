@@ -5,9 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { eq } from 'drizzle-orm';
 
-import { db, profiles } from '@/lib/db';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { AI_GAME_RESULT_SOURCE } from '@/lib/db/save-exp';
 import { getOpeningEntries } from '@/lib/openings/detect-game-opening';
@@ -15,12 +13,12 @@ import { createClient } from '@/lib/supabase/server';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ResultBreadcrumb } from './_components/ResultBreadcrumb';
 import { ResultClient } from './_components/ResultClient';
 import { ResultSkeleton } from './_components/ResultSkeleton';
 
@@ -58,18 +56,6 @@ export default async function ResultPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let displayName = tPlay('certificate.guestName');
-  if (user) {
-    const [profile] = await db
-      .select({ displayName: profiles.displayName })
-      .from(profiles)
-      .where(eq(profiles.id, user.id))
-      .limit(1);
-    if (profile?.displayName) {
-      displayName = profile.displayName;
-    }
-  }
-
   // Resolve any already-granted AI-game Exp server-side from ?gameId=<id> (the
   // grant's source_id), so the "Exp gained" display survives reloads and direct
   // URL access. On the first visit after finishing, the grant has not happened
@@ -87,12 +73,17 @@ export default async function ResultPage({ params, searchParams }: Props) {
   // detected client-side; ship the (cached, ~100-row) opening master for it.
   const openingEntries = await getOpeningEntries();
 
+  // The middle "Game" step links back to the finished-game view; that URL needs
+  // the game's colour + engine (localStorage-only), so the breadcrumb is a
+  // client component that loads the game by `?gameId` and builds the link.
   const breadcrumb = (
-    <BreadcrumbContent
-      items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('gameOver') }]}
+    <ResultBreadcrumb
       locale={locale}
+      gameId={gameId}
+      gamesLabel={tGames('pageTitle')}
+      gameLabel={tPlay('title')}
+      resultLabel={tPlay('resultTitle')}
       brandName={tMetadata('siteName')}
-      density="compact"
     />
   );
 
@@ -101,7 +92,6 @@ export default async function ResultPage({ params, searchParams }: Props) {
       <Suspense fallback={<ResultSkeleton />}>
         <ResultClient
           locale={locale}
-          displayName={displayName}
           isAuthenticated={Boolean(user)}
           initialExp={initialExp}
           openingEntries={openingEntries}
