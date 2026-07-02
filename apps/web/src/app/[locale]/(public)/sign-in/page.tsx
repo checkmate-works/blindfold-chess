@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
+import { sanitizeNext } from '@/lib/safe-next';
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PageLayout } from '@/app/[locale]/_components';
@@ -17,7 +18,7 @@ import { EmailPasswordForm } from './_components';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -38,16 +39,20 @@ export default async function SignInPage({ params, searchParams }: Props) {
 
   const { locale } = await params;
 
+  const { error, next: nextRaw } = await searchParams;
+  // Where to land after signing in (a CTA-gated page passes its own URL).
+  // Validated to an internal path to prevent open redirects.
+  const next = sanitizeNext(nextRaw);
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect(`/${locale}/mypage?toast=already_logged_in`);
+    redirect(next ?? `/${locale}/mypage?toast=already_logged_in`);
   }
 
-  const { error } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'signIn' });
 
   return (
@@ -55,7 +60,7 @@ export default async function SignInPage({ params, searchParams }: Props) {
       {error && <AuthErrorMessage namespace="signIn" />}
 
       <div>
-        <GoogleOAuthButton namespace="signIn" />
+        <GoogleOAuthButton namespace="signIn" next={next ?? undefined} />
       </div>
 
       <div className="flex items-center gap-4 max-w-sm mx-auto">
@@ -64,11 +69,15 @@ export default async function SignInPage({ params, searchParams }: Props) {
         <Divider className="flex-1" />
       </div>
 
-      <EmailPasswordForm />
+      <EmailPasswordForm next={next ?? undefined} />
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {t('noAccount')}{' '}
-        <Link href="/sign-up" locale={locale} className={TEXT_LINK_CLASSES}>
+        <Link
+          href={next ? `/sign-up?next=${encodeURIComponent(next)}` : '/sign-up'}
+          locale={locale}
+          className={TEXT_LINK_CLASSES}
+        >
           {t('signUp')}
         </Link>
       </p>

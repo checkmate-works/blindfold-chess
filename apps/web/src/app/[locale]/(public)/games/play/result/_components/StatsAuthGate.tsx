@@ -7,6 +7,8 @@ import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaLock } from 'react-icons/fa';
 
+import { useCurrentPathAsNext } from '@/app/[locale]/_hooks/use-current-path-as-next';
+
 type Props = {
   children: ReactNode;
   /**
@@ -28,6 +30,8 @@ type Props = {
 export function StatsAuthGate({ children, title, description }: Props) {
   const t = useTranslations('play');
   const locale = useLocale();
+  // Return the viewer here after they sign in, instead of the default mypage.
+  const next = encodeURIComponent(useCurrentPathAsNext());
 
   return (
     <div className="relative min-h-[22rem] py-6">
@@ -48,14 +52,14 @@ export function StatsAuthGate({ children, title, description }: Props) {
         </p>
         <div className="flex w-full max-w-xs flex-col gap-3 pt-1">
           <Link
-            href="/sign-up"
+            href={`/sign-up?next=${next}`}
             locale={locale}
             className="block w-full rounded-md bg-primary px-4 py-2 text-center font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             {t('result.statsGate.signUpButton')}
           </Link>
           <Link
-            href="/sign-in"
+            href={`/sign-in?next=${next}`}
             locale={locale}
             className="block w-full rounded-md border border-border bg-card px-4 py-2 text-center font-medium text-foreground transition-colors hover:bg-muted"
           >

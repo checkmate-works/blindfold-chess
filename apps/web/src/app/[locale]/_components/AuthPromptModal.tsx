@@ -6,6 +6,8 @@ import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { useCurrentPathAsNext } from '@/app/[locale]/_hooks/use-current-path-as-next';
+
 import { CloseButton } from './CloseButton';
 import { Modal } from './Modal';
 
@@ -19,6 +21,8 @@ export function AuthPromptModal({ isOpen, onClose }: Props) {
   const locale = useLocale();
   const titleId = useId();
   const descriptionId = useId();
+  // Return the viewer here after they sign in, instead of the default mypage.
+  const next = encodeURIComponent(useCurrentPathAsNext());
 
   return (
     <Modal
@@ -43,7 +47,7 @@ export function AuthPromptModal({ isOpen, onClose }: Props) {
 
         <div className="flex flex-col gap-3 pt-2">
           <Link
-            href="/sign-up"
+            href={`/sign-up?next=${next}`}
             locale={locale}
             className="block w-full rounded-md px-4 py-2 text-center font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             onClick={onClose}
@@ -51,7 +55,7 @@ export function AuthPromptModal({ isOpen, onClose }: Props) {
             {t('signUpButton')}
           </Link>
           <Link
-            href="/sign-in"
+            href={`/sign-in?next=${next}`}
             locale={locale}
             className="block w-full rounded-md px-4 py-2 text-center font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
             onClick={onClose}

@@ -3,13 +3,18 @@
 import { SITE_URL } from '@/config';
 
 import type { ActionResult } from '@/lib/action-types';
+import { sanitizeNext } from '@/lib/safe-next';
 import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { getPasswordValidationError } from '@/lib/validations/password';
 
 export type SignUpResult = ActionResult;
 
-export async function signUp(email: string, password: string): Promise<SignUpResult> {
+export async function signUp(
+  email: string,
+  password: string,
+  next?: string
+): Promise<SignUpResult> {
   const ipRateLimited = await guardByIpRateLimit('signUp');
   if (ipRateLimited) {
     return ipRateLimited;
@@ -20,12 +25,18 @@ export async function signUp(email: string, password: string): Promise<SignUpRes
     return { error: `password:${passwordError}` };
   }
 
+  // Carry a validated `next` into the confirmation link so the callback lands
+  // the new user back on the CTA-gated page after they confirm their email.
+  const safeNext = sanitizeNext(next);
+  const callback = new URL('/auth/callback', SITE_URL);
+  if (safeNext) callback.searchParams.set('next', safeNext);
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${SITE_URL}/auth/callback`,
+      emailRedirectTo: callback.toString(),
     },
   });
 

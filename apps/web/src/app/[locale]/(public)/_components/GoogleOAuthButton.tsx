@@ -9,9 +9,15 @@ import { createClient } from '@/lib/supabase/client';
 
 type Props = {
   namespace: 'signIn' | 'signUp';
+  /**
+   * Internal path to return to after auth (validated upstream by `sanitizeNext`).
+   * Forwarded to `/auth/callback` so a CTA-gated page can round-trip the user
+   * back. Omitted → the callback falls back to its default (mypage).
+   */
+  next?: string;
 };
 
-export function GoogleOAuthButton({ namespace }: Props) {
+export function GoogleOAuthButton({ namespace, next }: Props) {
   const t = useTranslations(namespace);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,6 +25,9 @@ export function GoogleOAuthButton({ namespace }: Props) {
     setIsLoading(true);
     const supabase = createClient();
     if (!supabase) return;
+
+    const callback = new URL('/auth/callback', window.location.origin);
+    if (next) callback.searchParams.set('next', next);
 
     // Note: Google's consent screen shows "name and profile picture" permission,
     // but this app does not use that data. Supabase Auth (GoTrue) hardcodes
@@ -28,7 +37,7 @@ export function GoogleOAuthButton({ namespace }: Props) {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callback.toString(),
       },
     });
   };
