@@ -388,6 +388,17 @@ export function GameReview({
       ? 'discussion'
       : 'summary';
 
+  // Commit a previewed position from the quick-peek modal onto the live board.
+  // In `live` mode moving to a move position already surfaces that move's
+  // comment thread below the board; `local` mode has no per-move thread and a
+  // position-independent overview, so it additionally switches to the Discussion
+  // tab — matching the shared game, where opening a position reveals discussion.
+  const { commit: commitQuickPeek } = quickPeek;
+  const handleCommitPosition = useCallback(() => {
+    commitQuickPeek();
+    if (social.mode === 'local') setOverviewView('discussion');
+  }, [commitQuickPeek, social.mode]);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -628,7 +639,7 @@ export function GameReview({
         footer={
           <button
             type="button"
-            onClick={quickPeek.commit}
+            onClick={handleCommitPosition}
             className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >
             {t('openPosition')}
