@@ -73,9 +73,23 @@ export function useFinishedGameNavigation({
   // result route is still prefetched above so the Result card navigates
   // instantly.
 
+  // Share routing (open the published game vs. the publish form) plus the
+  // published-game id when this game was already shared from this browser —
+  // shared with the result page (ResultClient) via useSharedGameLink.
+  const { handleShare, isShared, sharedPublishedId } = useSharedGameLink({ locale, gameId });
+
   const handleViewResult = useCallback(() => {
-    if (gameId) router.push(`/${locale}/games/play/result?gameId=${gameId}`);
-  }, [router, locale, gameId]);
+    if (!gameId) return;
+    // A published game's canonical review is the shared page (real comments /
+    // chunks / likes), so go straight there instead of the local result screen
+    // — which would only redirect there anyway (see ResultClient), flashing its
+    // skeleton on the way. Unpublished games open the result screen as before.
+    router.push(
+      sharedPublishedId
+        ? `/${locale}/games/shared/${sharedPublishedId}`
+        : `/${locale}/games/play/result?gameId=${gameId}`
+    );
+  }, [router, locale, gameId, sharedPublishedId]);
 
   const openPostmortem = useCallback(() => {
     if (!gameId) return;
@@ -91,10 +105,6 @@ export function useFinishedGameNavigation({
       })
     );
   }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
-
-  // Share routing (open the published game vs. the publish form), shared with
-  // the result page (ResultClient) via useSharedGameLink.
-  const { handleShare, isShared } = useSharedGameLink({ locale, gameId });
 
   return {
     handleViewResult,

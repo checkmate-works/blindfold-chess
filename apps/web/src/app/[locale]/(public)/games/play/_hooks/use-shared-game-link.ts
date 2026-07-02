@@ -19,6 +19,8 @@ type Result = {
   handleShare: () => void;
   /** Whether this game was already published from this browser. */
   isShared: boolean;
+  /** The published game's id if shared from this browser, else null. */
+  sharedPublishedId: string | null;
 };
 
 /**
@@ -49,5 +51,5 @@ export function useSharedGameLink({ locale, gameId }: Params): Result {
     );
   }, [router, locale, gameId, sharedPublishedId]);
 
-  return { handleShare, isShared: sharedPublishedId !== null };
+  return { handleShare, isShared: sharedPublishedId !== null, sharedPublishedId };
 }
