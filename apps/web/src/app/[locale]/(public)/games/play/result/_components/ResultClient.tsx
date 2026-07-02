@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -13,7 +13,6 @@ import { FaChartLine, FaChessBoard } from 'react-icons/fa';
 import { engineConfigToUrlParams } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { Game } from '@/lib/games/saved-game-types';
-import { getSharedGame } from '@/lib/games/shared-game-store';
 import { toReviewData } from '@/lib/games/to-review-data';
 import type { OpeningCatalogEntry } from '@/lib/openings/detect-game-opening';
 
@@ -23,6 +22,7 @@ import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useNotation } from '../../_hooks';
+import { useSharedGameLink } from '../../_hooks/use-shared-game-link';
 import { buildPostmortemPath } from '../../_lib';
 import { useGameExpGrant } from '../_hooks/use-game-exp-grant';
 import { useLoadGame } from '../_hooks/useLoadGame';
@@ -125,13 +125,10 @@ function ResultContent({
   // finished-review (`?finished=1`) instead. Guests trigger no grant.
   useGameExpGrant({ gameId, game, stats, isAuthenticated, initialExp });
 
-  // Has this game already been shared from this browser? Read client-side after
-  // mount (localStorage) so the share CTA can point at the published game
-  // instead of offering to publish it again. Null on the server / first render.
-  const [sharedPublishedId, setSharedPublishedId] = useState<string | null>(null);
-  useEffect(() => {
-    setSharedPublishedId(getSharedGame(gameId)?.publishedId ?? null);
-  }, [gameId]);
+  // Share routing (open the published game vs. the publish form) and whether it
+  // was already published from this browser — shared with the in-play finish
+  // flow (useFinishedGameNavigation) via useSharedGameLink.
+  const { handleShare, isShared } = useSharedGameLink({ locale, gameId });
 
   const handlePostmortem = useCallback(() => {
     router.push(
@@ -161,16 +158,6 @@ function ResultContent({
     router.push(`/${locale}/games/play?${params.toString()}`);
   }, [game, gameId, locale, router]);
 
-  // Share this game: open the already-published game if it exists (tracked in
-  // localStorage), otherwise go to the publish form.
-  const handleShare = useCallback(() => {
-    router.push(
-      sharedPublishedId
-        ? `/${locale}/games/shared/${sharedPublishedId}`
-        : `/${locale}/games/shared/new?gameId=${gameId}`
-    );
-  }, [router, locale, gameId, sharedPublishedId]);
-
   const hasMoves = game.moves.length > 0;
 
   return (
@@ -193,7 +180,7 @@ function ResultContent({
           // routes to sign-in (signed out) or a share prompt (signed in), since a
           // local game must be published before it can be discussed.
           discussionContent: hasMoves ? (
-            <LocalDiscussionPanel onShare={handleShare} isShared={sharedPublishedId !== null} />
+            <LocalDiscussionPanel onShare={handleShare} isShared={isShared} />
           ) : null,
           // Postmortem / reopen-finished-game actions live under the Summary tab
           // only — they are review actions, not relevant on the Discussion tab.

@@ -1,14 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
-
-import { getSharedGame } from '@/lib/games/shared-game-store';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildPostmortemPath } from '../_lib';
+import { useSharedGameLink } from './use-shared-game-link';
 
 type PostmortemArgs = Parameters<typeof buildPostmortemPath>[0];
 
@@ -93,28 +92,14 @@ export function useFinishedGameNavigation({
     );
   }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
 
-  // Has this game already been published from this browser? Read client-side
-  // after mount (localStorage) so Share can point at the published game instead
-  // of offering to publish it again. Mirrors the result page (ResultClient).
-  const [sharedPublishedId, setSharedPublishedId] = useState<string | null>(null);
-  useEffect(() => {
-    if (!gameId) return;
-    setSharedPublishedId(getSharedGame(gameId)?.publishedId ?? null);
-  }, [gameId]);
-
-  const handleShare = useCallback(() => {
-    if (!gameId) return;
-    router.push(
-      sharedPublishedId
-        ? `/${locale}/games/shared/${sharedPublishedId}`
-        : `/${locale}/games/shared/new?gameId=${gameId}`
-    );
-  }, [router, locale, gameId, sharedPublishedId]);
+  // Share routing (open the published game vs. the publish form), shared with
+  // the result page (ResultClient) via useSharedGameLink.
+  const { handleShare, isShared } = useSharedGameLink({ locale, gameId });
 
   return {
     handleViewResult,
     openPostmortem,
     handleShare,
-    isShared: sharedPublishedId !== null,
+    isShared,
   };
 }

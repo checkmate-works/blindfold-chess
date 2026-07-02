@@ -7,7 +7,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaClipboardList, FaMinus, FaTimes, FaTrophy } from 'react-icons/fa';
+import { FaClipboardList } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
@@ -17,6 +17,7 @@ import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
 import { ACTION_ROW_CONTAINER_CLASSES } from '../_lib';
+import { RESULT_LABEL_KEY, ResultIcon } from '../_lib/result-visuals';
 
 type Props = {
   isPlayerTurn: boolean;
@@ -184,15 +185,9 @@ export function GameInProgressPanel({
             this is just the result + a hint that the game is over. */}
         {finished && (
           <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-1 rounded-lg bg-background/80 text-center">
-            {finishedResult === 'win' && <FaTrophy className="w-8 h-8 text-primary" />}
-            {finishedResult === 'loss' && <FaTimes className="w-8 h-8 text-destructive" />}
-            {finishedResult === 'draw' && <FaMinus className="w-8 h-8 text-warning" />}
+            {finishedResult && <ResultIcon result={finishedResult} className="w-8 h-8" />}
             <span className="text-lg font-bold">
-              {finishedResult === 'win'
-                ? t('youWin')
-                : finishedResult === 'loss'
-                  ? t('youLose')
-                  : t('draw')}
+              {t(RESULT_LABEL_KEY[finishedResult ?? 'draw'])}
             </span>
             <span className="text-sm text-muted-foreground">{t('finishedGame.heading')}</span>
             {onNextAction && (
