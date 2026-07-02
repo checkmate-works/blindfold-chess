@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -87,6 +89,12 @@ type Props = {
    * inline label + view-details button (its default).
    */
   headingAsSection?: boolean;
+  /**
+   * Content rendered directly under the section heading — used by the result
+   * screen for its win/loss/draw label, so the outcome reads as the first line
+   * of the Game Stats section. Omitted on the shared game detail page.
+   */
+  afterTitle?: ReactNode;
 };
 
 /** Fill color for each effort marker (translucent so the board theme shows through). */
@@ -128,6 +136,7 @@ export function GameStatsOverview({
   locale,
   playSettingsLog,
   headingAsSection = false,
+  afterTitle,
 }: Props) {
   const t = useTranslations('play');
   const openingNameT = useTranslations('topics.openings.names');
@@ -183,6 +192,10 @@ export function GameStatsOverview({
           )}
         </div>
       )}
+
+      {/* Caller-supplied line directly under the heading (the result screen's
+          win/loss/draw label). */}
+      {afterTitle}
 
       {/* Initial settings — the opponent (engine + difficulty), the side the
           player had with the opening reached, and the blindfold display

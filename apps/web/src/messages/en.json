@@ -2104,6 +2104,7 @@
         "columnDetail": "Detail"
       },
       "openFinishedGame": "Open finished game",
+      "sharePrompt": "Share this game to get feedback — sharing unlocks discussion and likes.",
       "publish": "Share this game",
       "viewShared": "View shared game",
       "stats": {
@@ -2170,7 +2171,9 @@
     "result": {
       "win": "Win",
       "loss": "Loss",
-      "draw": "Draw"
+      "draw": "Draw",
+      "whiteWon": "White won",
+      "blackWon": "Black won"
     },
     "list": {
       "title": "Published games",

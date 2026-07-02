@@ -50,9 +50,48 @@ import { GameDiscussionFeed } from './GameDiscussionFeed';
 import { GameMoveContributions } from './GameMoveContributions';
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
+/**
+ * The social layer of the review, injected as a discriminated union so the same
+ * component serves a published game (`live` — real comments/chunks/likes wired
+ * to server actions) and a not-yet-shared local game on the result screen
+ * (`local` — no social data; a share CTA sits where the discussion would be).
+ */
+export type ReplaySocial =
+  | {
+      mode: 'live';
+      /** Published game id, used to anchor the per-move comment threads. */
+      gameId: string;
+      /** Advice comments on this game, anchored per move (ply). */
+      comments: GameCommentItem[];
+      /** Community chunk links on this game, anchored per move (ply). */
+      gameChunks: GameChunkItem[];
+      /** Published chunks selectable in the per-move chunk picker. */
+      availableChunks: ChunkOption[];
+      /** The viewer, if signed in — enables posting and delete-own. */
+      currentUser: CommentUser | null;
+      /** Whether the viewer is the game's registered owner (may remove any chunk link). */
+      isGameOwner: boolean;
+      /** When set (from a like notification), open at this comment's move and scroll to it. */
+      highlightCommentId?: string;
+    }
+  | {
+      mode: 'local';
+      /** Whether the local viewer is signed in — drives the stats auth-gate. */
+      isAuthenticated: boolean;
+      /**
+       * Body of the Discussion tab for a not-yet-shared game — the compose CTAs
+       * that route to a sign-in / share prompt (see `LocalDiscussionPanel`).
+       */
+      discussionContent: ReactNode;
+      /**
+       * Actions shown under the Summary tab only (e.g. the result screen's
+       * postmortem / reopen-finished-game buttons) — so they don't clutter the
+       * Discussion tab.
+       */
+      summaryActions?: ReactNode;
+    };
+
 type Props = {
-  /** Published game id, used to anchor the per-move comment threads. */
-  gameId: string;
   moves: string[];
   startingFen: string | null;
   playerColor: 'white' | 'black';
@@ -65,42 +104,46 @@ type Props = {
   /** Mid-game settings edits, folded over `playSettings` per displayed position. */
   playSettingsLog: PlaySettingsChangeEntry[] | null;
   locale: Locale;
-  /** Advice comments on this game, anchored per move (ply). */
-  comments: GameCommentItem[];
-  /** Community chunk links on this game, anchored per move (ply). */
-  gameChunks: GameChunkItem[];
-  /** Published chunks selectable in the per-move chunk picker. */
-  availableChunks: ChunkOption[];
-  /** The viewer, if signed in — enables posting and delete-own. */
-  currentUser: CommentUser | null;
-  /** Whether the viewer is the game's registered owner (may remove any chunk link). */
-  isGameOwner: boolean;
-  /** When set (from a like notification), open at this comment's move and scroll to it. */
-  highlightCommentId?: string;
   /** Side at the bottom of the board, from the `?color=white|black` URL param. */
   orientation?: 'white' | 'black';
   /** Rendered between the board/move-list and the stats overview (e.g. the description). */
   children?: ReactNode;
+  /**
+   * Content rendered at the very top of the stats / summary block — used by the
+   * result screen for its win/loss/draw label. Omitted on the shared game, whose
+   * result is not surfaced with first-person wording.
+   */
+  statsHeader?: ReactNode;
+  /** Social layer — live (published) or local (unshared result screen). */
+  social: ReplaySocial;
 };
 
+/** Stable empty collections for `local` mode, so hook deps never churn. */
+const NO_COMMENTS: GameCommentItem[] = [];
+const NO_CHUNKS: GameChunkItem[] = [];
+const NO_AVAILABLE_CHUNKS: ChunkOption[] = [];
+
 /**
- * Replay of a published game, laid out exactly like games/play: the in-play
- * always-visible board (`InlineBoardView`) in a 2/3 column and the move list
- * (`MovesPanel`) in a 1/3 column, driven by the same notation / navigation
- * hooks. The two-column layout keeps the board at the same comfortable size as
- * the play screen on desktop, and clicking a move in the list reflects on the
- * board.
+ * Review of a finished game, laid out exactly like games/play: the always-visible
+ * board (`InlineBoardView`) in a 2/3 column and the move list (`MovesPanel`) in a
+ * 1/3 column, driven by the same notation / navigation hooks. Serves BOTH the
+ * published shared game (`games/shared/[id]`) and the just-finished local game on
+ * the result screen (`games/play/result`) — the difference is entirely in the
+ * injected `social` prop (see {@link ReplaySocial}).
  *
  * Read-only adaptation: `gameInProgress` is false (no "restart from here"), and
  * "new game from here" starts a fresh game from that position so a viewer can
  * try it themselves. Preferences are the viewer's own but forced fully revealed
- * — this is a finished public game, not a live blindfold one (see
- * `useReplayPreferences`). The replay's cross-cutting concerns (preferences,
+ * — this is a finished game, not a live blindfold one (see
+ * `useReplayPreferences`). The review's cross-cutting concerns (preferences,
  * URL sync, comment/chunk tabs, deep-link) live in `../_hooks`; this component
  * wires them to the shared notation/navigation hooks and lays out the result.
+ *
+ * In `local` mode (result screen) there is no persisted game to anchor
+ * comments/chunks/likes to, so the social collections are empty and the
+ * discussion / per-move contribution regions are replaced by `social.shareCta`.
  */
-export function GameReplay({
-  gameId,
+export function GameReview({
   moves,
   startingFen,
   playerColor,
@@ -110,18 +153,28 @@ export function GameReplay({
   playSettings,
   playSettingsLog,
   locale,
-  comments,
-  gameChunks,
-  availableChunks,
-  currentUser,
-  isGameOwner,
-  highlightCommentId,
   orientation,
   children,
+  statsHeader,
+  social,
 }: Props) {
   const t = useTranslations('sharedGames');
   const router = useRouter();
   const { preferences } = useGamePreferences();
+
+  // Social inputs, empty in `local` mode so the existing body — the discussion
+  // rollup, deep-link, per-move contributions — naturally collapses to nothing
+  // (a `local` game has no server-anchored comments/chunks). `viewerIsAuthenticated`
+  // drives the stats auth-gate in both modes.
+  const isLive = social.mode === 'live';
+  const gameId = isLive ? social.gameId : '';
+  const comments = isLive ? social.comments : NO_COMMENTS;
+  const gameChunks = isLive ? social.gameChunks : NO_CHUNKS;
+  const availableChunks = isLive ? social.availableChunks : NO_AVAILABLE_CHUNKS;
+  const currentUser = isLive ? social.currentUser : null;
+  const isGameOwner = isLive ? social.isGameOwner : false;
+  const highlightCommentId = isLive ? social.highlightCommentId : undefined;
+  const viewerIsAuthenticated = isLive ? social.currentUser != null : social.isAuthenticated;
 
   // One-step help tour explaining the "As played" toggle (board obfuscation).
   const reproduceViewTourSteps: HelpStep[] = [
@@ -317,8 +370,23 @@ export function GameReplay({
         locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
         headingAsSection
+        // Result screen's win/loss/draw label, shown directly under the
+        // "Game Stats" heading. Omitted (undefined) on the shared game.
+        afterTitle={statsHeader}
       />
     ) : null;
+
+  // Stats with the members-only gate applied for anonymous viewers (blurred +
+  // sign-up CTA), matching the result page. Shared by the live summary tab and
+  // the local (result) layout.
+  const gatedStats =
+    statsOverview == null ? null : viewerIsAuthenticated ? (
+      statsOverview
+    ) : (
+      <StatsAuthGate title={t('statsGate.title')} description={t('statsGate.description')}>
+        {statsOverview}
+      </StatsAuthGate>
+    );
 
   // Overview discussion feed: all comments + chunk links rolled up by move.
   // The overview offers a [Summary | Discussion] segmented switch when both the
@@ -448,9 +516,46 @@ export function GameReplay({
         </div>
       </div>
 
-      {/* On a move position: that move's comment thread, directly under the
-          move list. On the opening board: the description + statistics. */}
-      {isInitialPosition ? (
+      {/* Local (result) mode: same [Summary | Discussion] overview as the shared
+          game, for a consistent layout. There is no persisted game to anchor
+          social data to, so the Discussion tab holds the share CTA (share to
+          unlock discussion) instead of a comment feed, and the tabs stay put as
+          the viewer steps through the moves. */}
+      {social.mode === 'local' ? (
+        <div className="space-y-4">
+          {children}
+
+          <div role="tablist" className={tabsRowClass.underline}>
+            {(['summary', 'discussion'] as const).map((view) => {
+              const isActive = overviewView === view;
+              const label =
+                view === 'summary' ? t('overview.summaryTab') : t('overview.discussionTab');
+              return (
+                <button
+                  key={view}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setOverviewView(view)}
+                  className={tabItemClass('underline', isActive)}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          {overviewView === 'summary' && (
+            <>
+              {gatedStats}
+              {social.summaryActions}
+            </>
+          )}
+          {overviewView === 'discussion' && social.discussionContent}
+        </div>
+      ) : /* On a move position: that move's comment thread, directly under the
+          move list. On the opening board: the description + statistics. */
+      isInitialPosition ? (
         <>
           {children}
 
@@ -478,20 +583,7 @@ export function GameReplay({
             </div>
           )}
 
-          {activeOverviewView === 'summary' && statsOverview && (
-            <>
-              {currentUser ? (
-                statsOverview
-              ) : (
-                <StatsAuthGate
-                  title={t('statsGate.title')}
-                  description={t('statsGate.description')}
-                >
-                  {statsOverview}
-                </StatsAuthGate>
-              )}
-            </>
-          )}
+          {activeOverviewView === 'summary' && gatedStats}
 
           {activeOverviewView === 'discussion' && hasDiscussion && (
             <GameDiscussionFeed

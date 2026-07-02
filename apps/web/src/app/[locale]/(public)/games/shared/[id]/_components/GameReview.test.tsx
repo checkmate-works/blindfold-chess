@@ -4,14 +4,14 @@ import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from 'vite
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { GameReplay } from './GameReplay';
+import { GameReview } from './GameReview';
 
 // ---------------------------------------------------------------------------
-// Characterization test. Pins the observable behaviour of GameReplay — the
-// board preferences handed to InlineBoardView, the initial-position selection,
-// the comment/chunk tab default, the stats auth-gating, and the URL hash sync —
-// so the subsequent hook extraction (useReplayPreferences / useReplayUrlSync /
-// useReplayCommentTabs / useReplayStatsOverview) can be verified to preserve it.
+// Characterization test. Pins the observable behaviour of GameReview (live
+// mode) — the board preferences handed to InlineBoardView, the initial-position
+// selection, the comment/chunk tab default, the stats auth-gating, and the URL
+// hash sync — so refactors preserve it. Local (result) mode is covered by the
+// result screen's own tests.
 // ---------------------------------------------------------------------------
 
 const basePreferences = {
@@ -109,11 +109,24 @@ vi.mock('./PlaySettingsIndicator', () => ({
   PlaySettingsIndicator: () => <div data-testid="play-settings" />,
 }));
 
-type ReplayProps = Parameters<typeof GameReplay>[0];
+type ReplayProps = Parameters<typeof GameReview>[0];
+type LiveSocial = Extract<ReplayProps['social'], { mode: 'live' }>;
+
+function liveSocial(overrides: Partial<LiveSocial> = {}): LiveSocial {
+  return {
+    mode: 'live',
+    gameId: 'game-1',
+    comments: [],
+    gameChunks: [],
+    availableChunks: [],
+    currentUser: null,
+    isGameOwner: false,
+    ...overrides,
+  };
+}
 
 function baseProps(overrides: Partial<ReplayProps> = {}): ReplayProps {
   return {
-    gameId: 'game-1',
     moves: mockMoves,
     startingFen: null,
     playerColor: 'white',
@@ -123,11 +136,7 @@ function baseProps(overrides: Partial<ReplayProps> = {}): ReplayProps {
     playSettings: null,
     playSettingsLog: null,
     locale: 'en' as Locale,
-    comments: [],
-    gameChunks: [],
-    availableChunks: [],
-    currentUser: null,
-    isGameOwner: false,
+    social: liveSocial(),
     ...overrides,
   };
 }
@@ -157,13 +166,15 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('GameReplay — initial position selection', () => {
+describe('GameReview — initial position selection', () => {
   it('opens at the deep-linked comment move when highlightCommentId matches', () => {
     render(
-      <GameReplay
+      <GameReview
         {...baseProps({
-          comments: [{ id: 'c1', ply: 1, deletedAt: null } as ReplayProps['comments'][number]],
-          highlightCommentId: 'c1',
+          social: liveSocial({
+            comments: [{ id: 'c1', ply: 1, deletedAt: null } as LiveSocial['comments'][number]],
+            highlightCommentId: 'c1',
+          }),
         })}
       />
     );
@@ -172,19 +183,19 @@ describe('GameReplay — initial position selection', () => {
 
   it('opens at the URL hash half-move when present and no highlight', () => {
     window.location.hash = '#3';
-    render(<GameReplay {...baseProps()} />);
+    render(<GameReview {...baseProps()} />);
     expect(mockNav.navigateToPosition).toHaveBeenCalledWith(2);
   });
 
   it('opens at the overview board (-2) when neither highlight nor hash is present', () => {
-    render(<GameReplay {...baseProps()} />);
+    render(<GameReview {...baseProps()} />);
     expect(mockNav.navigateToPosition).toHaveBeenCalledWith(-2);
   });
 });
 
-describe('GameReplay — board preferences (reproduce view)', () => {
+describe('GameReview — board preferences (reproduce view)', () => {
   it('hands InlineBoardView fully-revealed preferences by default', () => {
-    render(<GameReplay {...baseProps()} />);
+    render(<GameReview {...baseProps()} />);
     const prefs = inlineBoardProps.preferences as GamePreferences;
     expect(prefs.showOwnPieces).toBe(true);
     expect(prefs.showOpponentPieces).toBe(true);
@@ -204,7 +215,7 @@ describe('GameReplay — board preferences (reproduce view)', () => {
     };
 
     render(
-      <GameReplay
+      <GameReview
         {...baseProps({
           playSettings: { showOwnPieces: true } as ReplayProps['playSettings'],
         })}
@@ -222,24 +233,24 @@ describe('GameReplay — board preferences (reproduce view)', () => {
   });
 });
 
-describe('GameReplay — per-move contributions', () => {
+describe('GameReview — per-move contributions', () => {
   it('renders the contributions panel on a move position', () => {
     mockNav.currentPosition = 0;
-    render(<GameReplay {...baseProps()} />);
+    render(<GameReview {...baseProps()} />);
     expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
   });
 
   it('hides the contributions panel at the initial (overview) position', () => {
     mockNav.currentPosition = -2;
-    render(<GameReplay {...baseProps()} />);
+    render(<GameReview {...baseProps()} />);
     expect(screen.queryByTestId('move-contributions')).toBeNull();
   });
 });
 
-describe('GameReplay — stats overview gating', () => {
+describe('GameReview — stats overview gating', () => {
   it('gates the stats overview behind StatsAuthGate for anonymous viewers', () => {
     mockStats = { totalMoves: 3 };
-    render(<GameReplay {...baseProps({ currentUser: null })} />);
+    render(<GameReview {...baseProps({ social: liveSocial({ currentUser: null }) })} />);
     expect(screen.getByTestId('auth-gate')).toBeInTheDocument();
     expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
   });
@@ -247,19 +258,23 @@ describe('GameReplay — stats overview gating', () => {
   it('shows the stats overview directly for signed-in viewers', () => {
     mockStats = { totalMoves: 3 };
     render(
-      <GameReplay {...baseProps({ currentUser: { id: 'u1' } as ReplayProps['currentUser'] })} />
+      <GameReview
+        {...baseProps({
+          social: liveSocial({ currentUser: { id: 'u1' } as LiveSocial['currentUser'] }),
+        })}
+      />
     );
     expect(screen.queryByTestId('auth-gate')).not.toBeInTheDocument();
     expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
   });
 });
 
-describe('GameReplay — URL hash sync', () => {
+describe('GameReview — URL hash sync', () => {
   it('writes the half-move to the URL hash once navigation settles', () => {
     vi.useFakeTimers();
     const replaceState = vi.spyOn(window.history, 'replaceState');
 
-    const { rerender } = render(<GameReplay {...baseProps()} />);
+    const { rerender } = render(<GameReview {...baseProps()} />);
 
     // syncReadyRef flips true on the next macrotask; before that, no write.
     replaceState.mockClear();
@@ -268,7 +283,7 @@ describe('GameReplay — URL hash sync', () => {
 
     // A genuine navigation after settling writes the hash.
     mockNav = { ...mockNav, currentPosition: 1 };
-    rerender(<GameReplay {...baseProps()} />);
+    rerender(<GameReview {...baseProps()} />);
 
     expect(replaceState).toHaveBeenCalled();
     const url = replaceState.mock.calls.at(-1)?.[2] as URL;

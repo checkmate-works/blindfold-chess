@@ -22,8 +22,16 @@ type Props = {
    * contribution kind.
    */
   icon?: ReactNode;
-  /** New-post form mounted once the trigger is clicked. */
-  children: ReactNode;
+  /** New-post form mounted once the trigger is clicked. Optional when {@link onActivate} is set. */
+  children?: ReactNode;
+  /**
+   * When provided, an authenticated click runs this instead of expanding the
+   * inline composer — used where there is nothing to expand yet (e.g. a
+   * not-yet-shared game, which must be published before it can be discussed).
+   * The anonymous → sign-up-modal guard is unchanged, so this still yields the
+   * "sign in when signed out, do X when signed in" state branch.
+   */
+  onActivate?: () => void;
 };
 
 /**
@@ -44,6 +52,7 @@ export function JoinConversationToggle({
   joinLabel,
   icon = <FaRegComment aria-hidden="true" className="text-muted-foreground" />,
   children,
+  onActivate,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const { guardAction, isModalOpen, closeModal } = useAuthGuard();
@@ -56,7 +65,7 @@ export function JoinConversationToggle({
     <>
       <button
         type="button"
-        onClick={() => guardAction(() => setIsOpen(true))}
+        onClick={() => guardAction(onActivate ?? (() => setIsOpen(true)))}
         className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
       >
         {icon}

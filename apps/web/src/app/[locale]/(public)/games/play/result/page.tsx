@@ -5,9 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { eq } from 'drizzle-orm';
 
-import { db, profiles } from '@/lib/db';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { AI_GAME_RESULT_SOURCE } from '@/lib/db/save-exp';
 import { getOpeningEntries } from '@/lib/openings/detect-game-opening';
@@ -58,18 +56,6 @@ export default async function ResultPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let displayName = tPlay('certificate.guestName');
-  if (user) {
-    const [profile] = await db
-      .select({ displayName: profiles.displayName })
-      .from(profiles)
-      .where(eq(profiles.id, user.id))
-      .limit(1);
-    if (profile?.displayName) {
-      displayName = profile.displayName;
-    }
-  }
-
   // Resolve any already-granted AI-game Exp server-side from ?gameId=<id> (the
   // grant's source_id), so the "Exp gained" display survives reloads and direct
   // URL access. On the first visit after finishing, the grant has not happened
@@ -101,7 +87,6 @@ export default async function ResultPage({ params, searchParams }: Props) {
       <Suspense fallback={<ResultSkeleton />}>
         <ResultClient
           locale={locale}
-          displayName={displayName}
           isAuthenticated={Boolean(user)}
           initialExp={initialExp}
           openingEntries={openingEntries}

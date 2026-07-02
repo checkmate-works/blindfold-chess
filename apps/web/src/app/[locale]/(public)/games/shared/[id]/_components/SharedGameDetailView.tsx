@@ -18,7 +18,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleGameLikeAction } from '../_actions/game-like';
 import { GameHelpTour } from './GameHelpTour';
-import { GameReplay } from './GameReplay';
+import { GameOutcomeLabel } from './GameOutcomeLabel';
+import { GameReview } from './GameReview';
 import { OwnerActions } from './OwnerActions';
 
 type Props = {
@@ -46,7 +47,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
 
   // Opening is derived from the moves (see detectGameOpening); null for
   // custom-start games or lines outside the master. Rendered (with the player
-  // colour) inside GameReplay, above the stats block.
+  // colour) inside GameReview, above the stats block.
   const opening = await detectGameOpening({ moves: game.moves, startingFen: game.startingFen });
 
   // Registered ownership is known server-side; account-less ownership (manage
@@ -76,12 +77,11 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     >
       <div className="space-y-6">
         {/* Board + move list (games/play layout); the description sits below
-            the board, above the stats, via GameReplay's slot. The blindfold
+            the board, above the stats, via GameReview's slot. The blindfold
             difficulty (board visibility + piece obfuscation) is surfaced inside
             the replay, above the board, as a position-aware indicator that
             tracks the displayed move — see PlaySettingsIndicator. */}
-        <GameReplay
-          gameId={game.id}
+        <GameReview
           moves={game.moves}
           startingFen={game.startingFen}
           playerColor={game.playerColor}
@@ -91,13 +91,18 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           playSettings={game.playSettings ?? null}
           playSettingsLog={game.playSettingsLog ?? null}
           locale={locale}
-          comments={comments}
-          gameChunks={gameChunks}
-          availableChunks={availableChunks}
-          currentUser={currentUser}
-          isGameOwner={isRegisteredOwner}
-          highlightCommentId={highlightCommentId}
           orientation={orientation}
+          statsHeader={<GameOutcomeLabel result={game.result} playerColor={game.playerColor} />}
+          social={{
+            mode: 'live',
+            gameId: game.id,
+            comments,
+            gameChunks,
+            availableChunks,
+            currentUser,
+            isGameOwner: isRegisteredOwner,
+            highlightCommentId,
+          }}
         >
           {game.description && (
             <div className="space-y-2">
@@ -105,7 +110,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
               <p className="whitespace-pre-wrap text-foreground">{game.description}</p>
             </div>
           )}
-        </GameReplay>
+        </GameReview>
 
         {/* Author attribution — avatar + name + profile link, matching the
             chunk / position UGC pages. Anonymous authors get a fallback name
