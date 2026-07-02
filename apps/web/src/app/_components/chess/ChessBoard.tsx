@@ -63,6 +63,19 @@ type Props = {
    * only bites on a side that is otherwise shown.
    */
   pawnHideMode?: 'none' | 'all' | 'own' | 'opponent';
+  /**
+   * How pieces hidden by the blindfold settings (`showOwnPieces` /
+   * `showOpponentPieces` / `pawnHideMode`) are drawn:
+   * - `'absent'` (default) — rendered as an empty square, i.e. truly invisible.
+   *   This is what a player must see during live blindfold play.
+   * - `'ghost'` — rendered as a faint, translucent copy of the real piece.
+   *   Used ONLY by the finished-game review's "As Played" toggle, where a
+   *   ghost both conveys what the player could not see and distinguishes a
+   *   hidden-occupied square from a genuinely empty one. Shape / colour
+   *   obfuscation is intentionally skipped for a ghost — it shows the true
+   *   piece so the reviewer learns what was hidden.
+   */
+  hiddenPieceStyle?: 'absent' | 'ghost';
   boardTheme?: BoardTheme;
   rounded?: boolean;
   evaluationMark?: EvaluationMark | null;
@@ -164,6 +177,7 @@ export const ChessBoard = memo(function ChessBoard({
   pieceShapeMode = 'normal',
   pieceColors = 'normal',
   pawnHideMode = 'none',
+  hiddenPieceStyle = 'absent',
   boardTheme = DEFAULT_BOARD_THEME,
   rounded = true,
   evaluationMark = null,
@@ -328,10 +342,23 @@ export const ChessBoard = memo(function ChessBoard({
     (piece: BoardPiece, square: string, floating = false) => {
       if (!piece) return null;
 
+      // A piece hidden by the blindfold settings renders as an empty square by
+      // default (`'absent'`), or — on the review's "As Played" toggle — as a
+      // faint ghost of the true piece so the reviewer sees what was concealed.
+      // The ghost deliberately shows the real type/colour (no shape/colour
+      // obfuscation) and carries no drag/fade chrome (the review board is
+      // read-only).
+      const hidden =
+        hiddenPieceStyle === 'ghost' ? (
+          <div className="flex h-[80%] w-[80%] items-center justify-center opacity-40">
+            <ChessPiece type={piece.type} color={piece.color} size={45} />
+          </div>
+        ) : null;
+
       // Check if piece should be shown based on settings
       const isOwnPiece = piece.color === ownColorChar;
-      if (isOwnPiece && !showOwnPieces) return null;
-      if (!isOwnPiece && !showOpponentPieces) return null;
+      if (isOwnPiece && !showOwnPieces) return hidden;
+      if (!isOwnPiece && !showOpponentPieces) return hidden;
 
       // Partial blindfold: hide pawns of the configured side(s) entirely. Runs
       // after the whole-side visibility gate (a hidden side is already gone) and
@@ -341,7 +368,7 @@ export const ChessBoard = memo(function ChessBoard({
           pawnHideMode === 'all' ||
           (pawnHideMode === 'own' && isOwnPiece) ||
           (pawnHideMode === 'opponent' && !isOwnPiece);
-        if (hidePawn) return null;
+        if (hidePawn) return hidden;
       }
 
       // Determine if piece should be shown as circle
@@ -417,6 +444,7 @@ export const ChessBoard = memo(function ChessBoard({
       pieceShapeMode,
       pieceColors,
       pawnHideMode,
+      hiddenPieceStyle,
       dragFrom,
     ]
   );

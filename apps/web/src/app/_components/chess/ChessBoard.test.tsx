@@ -630,6 +630,64 @@ describe('ChessBoard interactive mode — obfuscation suppresses the legal-desti
   });
 });
 
+/**
+ * `hiddenPieceStyle` controls how a piece hidden by the blindfold settings is
+ * drawn. `'absent'` (default, live play) renders an empty square; `'ghost'`
+ * (the review's "As Played" toggle) renders a faint copy of the true piece so
+ * the reviewer sees what was concealed and can tell a hidden square from an
+ * empty one.
+ */
+describe('ChessBoard — hiddenPieceStyle', () => {
+  // A rendered piece (normal or ghost) is wrapped in a `w-[80%]` box; the ghost
+  // wrapper additionally carries `opacity-40`.
+  const pieceBox = (sq: HTMLElement) => sq.querySelector('[class*="w-[80%]"]');
+  const ghostBox = (sq: HTMLElement) => sq.querySelector('[class*="opacity-40"]');
+
+  it("defaults to 'absent' — a hidden own piece leaves an empty square", () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        showOwnPieces={false}
+        onSquareClick={() => {}}
+      />
+    );
+    expect(pieceBox(squareEl(container, 'e2'))).toBeNull();
+  });
+
+  it("'ghost' renders the hidden own piece as a faint copy instead of hiding it", () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        showOwnPieces={false}
+        hiddenPieceStyle="ghost"
+        onSquareClick={() => {}}
+      />
+    );
+    const e2 = squareEl(container, 'e2');
+    expect(pieceBox(e2)).not.toBeNull();
+    expect(ghostBox(e2)).not.toBeNull();
+  });
+
+  it("'ghost' does not fade pieces that were visible", () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        showOwnPieces={false}
+        hiddenPieceStyle="ghost"
+        onSquareClick={() => {}}
+      />
+    );
+    // The opponent's pieces stay shown (showOpponentPieces defaults true) — solid,
+    // not ghosted.
+    const e7 = squareEl(container, 'e7');
+    expect(pieceBox(e7)).not.toBeNull();
+    expect(ghostBox(e7)).toBeNull();
+  });
+});
+
 describe('ChessBoard interactive mode — onSquareClick backward compat', () => {
   it('forwards raw clicks to onSquareClick when onMove is not provided', () => {
     const onSquareClick = vi.fn();

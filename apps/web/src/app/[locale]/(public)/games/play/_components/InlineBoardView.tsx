@@ -24,6 +24,12 @@ type Props = {
   flipped?: boolean;
   lastMove: { from: string; to: string } | null;
   preferences: GamePreferences;
+  /**
+   * How pieces hidden by the blindfold settings are drawn — relayed to the
+   * inner `ChessBoard`. Defaults to `'absent'` (live play); the finished-game
+   * review passes `'ghost'` when reproducing the player's view.
+   */
+  hiddenPieceStyle?: 'absent' | 'ghost';
   movesLength: number;
   currentPosition: number;
   formattedPgn: FormattedPgnMove[];
@@ -136,6 +142,7 @@ export function InlineBoardView({
   flipped,
   lastMove,
   preferences,
+  hiddenPieceStyle = 'absent',
   movesLength,
   currentPosition,
   formattedPgn,
@@ -264,6 +271,7 @@ export function InlineBoardView({
               pieceShapeMode={preferences.pieceShapeMode}
               pieceColors={preferences.pieceColors}
               pawnHideMode={preferences.pawnHideMode}
+              hiddenPieceStyle={hiddenPieceStyle}
               boardTheme={preferences.boardTheme}
               rounded={false}
               // A masked board is non-interactive: the overlay sits on top and

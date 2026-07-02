@@ -234,6 +234,7 @@ export function GameReview({
     showPlaySettings,
     effectivePlaySettings,
     boardPreferences,
+    hiddenPieceStyle,
   } = useReplayPreferences({
     preferences,
     playSettings,
@@ -432,6 +433,7 @@ export function GameReview({
             onNavigateToEnd={navigateToEnd}
             onNavigateToPosition={navigateToPosition}
             onFlipBoard={toggleFlip}
+            hiddenPieceStyle={hiddenPieceStyle}
             alwaysOpen
           />
 
@@ -639,6 +641,7 @@ export function GameReview({
         flipped={effectiveFlipped}
         lastMove={modalLastMove}
         preferences={boardPreferences}
+        hiddenPieceStyle={hiddenPieceStyle}
         movesLength={notationMoves.length}
         currentPosition={modalNav.currentPosition}
         formattedPgn={formattedPgn}

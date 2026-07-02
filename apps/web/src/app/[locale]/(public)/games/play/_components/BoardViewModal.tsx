@@ -23,6 +23,8 @@ type Props = {
   flipped?: boolean;
   lastMove: { from: string; to: string } | null;
   preferences: GamePreferences;
+  /** Relayed to the inner `ChessBoard`; `'ghost'` in the review's reproduce view. */
+  hiddenPieceStyle?: 'absent' | 'ghost';
   movesLength: number;
   currentPosition: number;
   formattedPgn: FormattedPgnMove[];
@@ -50,6 +52,7 @@ export function BoardViewModal({
   flipped,
   lastMove,
   preferences,
+  hiddenPieceStyle = 'absent',
   movesLength,
   currentPosition,
   formattedPgn,
@@ -117,6 +120,7 @@ export function BoardViewModal({
             pieceShapeMode={preferences.pieceShapeMode}
             pieceColors={preferences.pieceColors}
             pawnHideMode={preferences.pawnHideMode}
+            hiddenPieceStyle={hiddenPieceStyle}
             boardTheme={preferences.boardTheme}
             rounded={false}
             evaluationMark={evaluationMark}
