@@ -23,6 +23,7 @@ import { useLoadGame } from '../_hooks/useLoadGame';
 import { CompactResultHeader } from './CompactResultHeader';
 import { LocalDiscussionPanel } from './LocalDiscussionPanel';
 import { ResultSkeleton } from './ResultSkeleton';
+import { ShareGameCta } from './ShareGameCta';
 
 type Props = {
   locale: Locale;
@@ -133,11 +134,10 @@ function ResultContent({
   // The same review screen as the shared game (games/shared/[id]) — board, move
   // list, blindfold indicator, and stats — sourced from the local game. The
   // win/loss/draw label rides at the top of the stats block (statsHeader), not
-  // above the board. Postmortem / open-finished-game are intentionally NOT
-  // surfaced here: this review is the main destination, and the game is one tap
-  // away via the breadcrumb (see ResultBreadcrumb), from which Recall is
-  // reachable. In `local` mode there is no persisted game to anchor comments /
-  // chunks / likes to, so the share CTA sits where the discussion would be.
+  // above the board. A first-class, ungated "Share this game" CTA sits above the
+  // tabs (as children): publishing is open to everyone — anonymous and
+  // provisional players included — so it is deliberately not behind an auth
+  // guard. The Discussion tab just explains that discussion opens once shared.
   return (
     <GameReview
       {...toReviewData(game)}
@@ -147,13 +147,16 @@ function ResultContent({
       social={{
         mode: 'local',
         isAuthenticated,
-        // Discussion tab mirrors the shared game's compose CTAs; activating one
-        // routes to sign-in (signed out) or a share prompt (signed in), since a
-        // local game must be published before it can be discussed.
+        // Discussion tab: members-only compose CTAs (join conversation / suggest
+        // chunk) that route to sign-in / finish-registration (anonymous /
+        // provisional) or a share prompt (registered) — discussion needs both an
+        // account and a published game.
         discussionContent: hasMoves ? (
           <LocalDiscussionPanel onShare={handleShare} isShared={isShared} />
         ) : null,
       }}
-    />
+    >
+      {hasMoves ? <ShareGameCta onShare={handleShare} isShared={isShared} /> : null}
+    </GameReview>
   );
 }

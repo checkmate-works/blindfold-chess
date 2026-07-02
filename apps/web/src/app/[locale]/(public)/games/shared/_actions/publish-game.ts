@@ -1,5 +1,6 @@
 'use server';
 
+import { userHasProfile } from '@/lib/auth';
 import { publishGame } from '@/lib/db/games';
 import type { EngineConfig } from '@/lib/engines';
 import { deriveGameColumns, validatePublishSnapshot } from '@/lib/games/publish-game';
@@ -66,6 +67,12 @@ export async function publishGameAction(
       return { success: false, error: 'forbidden' };
     }
 
+    // A provisional author (signed in but no profile / username yet) is treated
+    // as anonymous: publishing is open to account-less players anyway, and an
+    // unprofiled author id would only render as "(deleted user)" on the shared
+    // page. They get a manage token like any account-less author instead.
+    const authorId = user && (await userHasProfile(user.id)) ? user.id : null;
+
     const validated = validatePublishSnapshot(input);
     if (!validated.ok) {
       return { success: false, error: validated.error };
@@ -73,15 +80,15 @@ export async function publishGameAction(
 
     const columns = deriveGameColumns(validated.game);
     const { id, manageToken } = await publishGame({
-      authorId: user?.id ?? null,
+      authorId,
       game: validated.game,
       columns,
     });
 
     // Notify followers (registered authors only — the feed item + followers
     // are actor-keyed). Fire-and-forget inside the helper.
-    if (user?.id) {
-      notifyFollowersOfNewGame({ actorId: user.id, gameId: id });
+    if (authorId) {
+      notifyFollowersOfNewGame({ actorId: authorId, gameId: id });
     }
 
     return { success: true, id, manageToken };

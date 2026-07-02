@@ -23,13 +23,15 @@ type Props = {
  * has no server-side record to attach comments/chunks to, so activating a button
  * cannot open a real composer. Instead:
  *
- * - Signed-out click → the sign-up / sign-in modal (via {@link JoinConversationToggle}'s
- *   own auth guard).
- * - Signed-in click → the share prompt modal (this game must be published before
- *   it can be discussed), surfaced via {@link JoinConversationToggle.onActivate}.
+ * - Anonymous / provisional click → the shared AuthPromptModal (sign in, or
+ *   finish registration) via {@link JoinConversationToggle}'s own auth guard —
+ *   discussion is members-only.
+ * - Registered click → the share prompt modal (this game must be published
+ *   before it can be discussed), surfaced via {@link JoinConversationToggle.onActivate}.
  *
- * Both branches are modals with the same shell, so the "do X first" gate reads
- * consistently: sign in when signed out, share when signed in.
+ * Publishing itself is open to everyone via the ungated ShareGameCta above the
+ * tabs; this Discussion tab is specifically the members-only *conversation*
+ * surface, so its gate is deliberate.
  */
 export function LocalDiscussionPanel({ onShare, isShared }: Props) {
   const t = useTranslations('sharedGames');
