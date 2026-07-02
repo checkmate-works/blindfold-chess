@@ -9,8 +9,7 @@ import { FaClipboardList } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
-import type { GameStats, MoveMarker } from '@/lib/games/compute-game-stats';
-import { resolvePlaySettingsChanges } from '@/lib/games/play-settings-log';
+import type { GameStats } from '@/lib/games/compute-game-stats';
 import type {
   GamePlaySettings,
   MoveOperationLog,
@@ -18,13 +17,15 @@ import type {
 } from '@/lib/games/saved-game-types';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
-import { useChangeLogFormat } from '@/app/[locale]/(public)/games/play/_hooks/use-change-log-format';
 import { PlaySettingsIndicator } from '@/app/[locale]/(public)/games/shared/[id]/_components/PlaySettingsIndicator';
 import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { EffortStrip } from './EffortStrip';
+import { PlaySettingsChangeLog } from './PlaySettingsChangeLog';
 
 type Props = {
   stats: GameStats;
@@ -97,15 +98,6 @@ type Props = {
   afterTitle?: ReactNode;
 };
 
-/** Fill color for each effort marker (translucent so the board theme shows through). */
-const MARKER_CLASS: Record<MoveMarker, string> = {
-  clean: 'bg-success/40',
-  peek: 'bg-sky-400/60',
-  illegal: 'bg-destructive/70',
-  takeback: 'bg-warning/70',
-  hint: 'bg-violet-400/60',
-};
-
 /**
  * Result-page overview of how the (finished) game was played — derived
  * entirely from the persisted per-move operation logs. A per-move "effort
@@ -140,18 +132,6 @@ export function GameStatsOverview({
 }: Props) {
   const t = useTranslations('play');
   const openingNameT = useTranslations('topics.openings.names');
-  // Localised "Label: from → to" formatting for the per-change-point delta text,
-  // shared with the Game Details modal so the wording stays in lockstep.
-  const { settingLabel, settingValue } = useChangeLogFormat();
-
-  // Reconstruct the full from→to transitions from the start-of-game snapshot
-  // plus the to-only log (works on the result page and the shared replay alike),
-  // then group them by move into change-point rows. Set preserves insertion
-  // order, and the log is already in move order.
-  const resolvedChanges = playSettings
-    ? resolvePlaySettingsChanges(playSettings, playSettingsLog)
-    : [];
-  const changePoints = [...new Set(resolvedChanges.map((e) => e.atMoveIndex))];
 
   // Compact engine label: "Maia 1600 ELO" / "Stockfish Level 5". The logo
   // carries the engine identity; the name + difficulty sit beside it on one line.
@@ -162,18 +142,6 @@ export function GameStatsOverview({
       : engineConfig
         ? t('engineInfo.stockfishDifficulty', { level: engineConfig.skillLevel })
         : '';
-
-  // Legend entries for only the markers that appear in this game.
-  const presentMarkers = (['illegal', 'takeback', 'peek', 'hint', 'clean'] as MoveMarker[]).filter(
-    (m) => stats.perMove.includes(m)
-  );
-  const markerLabel: Record<MoveMarker, string> = {
-    clean: t('result.stats.legendClean'),
-    peek: t('result.stats.legendPeek'),
-    illegal: t('result.stats.legendIllegal'),
-    takeback: t('result.stats.legendTakeback'),
-    hint: t('result.stats.legendHint'),
-  };
 
   return (
     <div className="space-y-4">
@@ -256,95 +224,20 @@ export function GameStatsOverview({
 
       {/* Per-move effort strip */}
       {stats.totalMoves > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-baseline justify-between gap-2">
-            <h3 className="text-sm font-semibold text-foreground">
-              {t('result.stats.timelineTitle')}
-            </h3>
-            <span className="text-[0.65rem] text-muted-foreground">
-              {t('result.stats.timelineHint')}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {stats.perMove.map((marker, i) => {
-              const movesIndex = playerMoveIndices[i];
-              const san = movesIndex !== undefined ? moves[movesIndex] : undefined;
-              const label = t('result.stats.moveCell', { number: i + 1 });
-              const base = san ? `${label} ${san}` : label;
-              // Append the rejected move texts for this move, when captured, so a
-              // hover over a red (illegal) cell shows what was tried.
-              const attempts = (operationLogs?.[i]?.invalidAttempts ?? []).filter(
-                (s) => typeof s === 'string'
-              );
-              const cellTitle =
-                attempts.length > 0
-                  ? `${base} · ${t('result.stats.illegalTried', { moves: attempts.join(', ') })}`
-                  : base;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => movesIndex !== undefined && onSelectMove(movesIndex)}
-                  title={cellTitle}
-                  aria-label={cellTitle}
-                  className={`w-5 h-5 rounded-sm transition-transform hover:scale-125 hover:ring-2 hover:ring-foreground/40 ${MARKER_CLASS[marker]}`}
-                />
-              );
-            })}
-          </div>
-          {/* Legend */}
-          <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1">
-            {presentMarkers.map((marker) => (
-              <span
-                key={marker}
-                className="flex items-center gap-1 text-[0.65rem] text-muted-foreground"
-              >
-                <span className={`w-3 h-3 rounded-sm ${MARKER_CLASS[marker]}`} />
-                {markerLabel[marker]}
-              </span>
-            ))}
-          </div>
-        </div>
+        <EffortStrip
+          stats={stats}
+          playerMoveIndices={playerMoveIndices}
+          moves={moves}
+          operationLogs={operationLogs}
+          onSelectMove={onSelectMove}
+        />
       )}
 
       {/* Change log — only when the player edited a blindfold setting mid-game
-          (rare). One row per change point: a move-number badge plus the exact
-          "Label: from → to" transition(s) for the settings edited at that move
-          (only what actually changed, so an unrelated setting never reads as
-          "changed"). Identical on the result page and the shared replay — both
-          fold the to-only log over the snapshot to recover each `from`. Placed
-          under the By Move strip so the timeline reads top-to-bottom: where
-          effort clustered, then where the setup changed. */}
-      {resolvedChanges.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-foreground">
-            {t('operationLog.changeLog.title')}
-          </h3>
-          <ul className="space-y-1.5">
-            {changePoints.map((atMoveIndex) => {
-              const entries = resolvedChanges.filter((e) => e.atMoveIndex === atMoveIndex);
-              return (
-                <li key={atMoveIndex} className="flex items-start gap-2">
-                  <span
-                    className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-muted px-1 text-[0.65rem] tabular-nums text-muted-foreground"
-                    title={t('operationLog.changeLog.columnAtMove')}
-                  >
-                    {atMoveIndex}
-                  </span>
-                  <ul className="flex flex-col gap-0.5 pt-0.5">
-                    {entries.map((e, i) => (
-                      <li key={i} className="text-xs text-muted-foreground">
-                        <span className="text-foreground">{settingLabel(e.key)}</span>
-                        {': '}
-                        {settingValue(e, 'from')} → {settingValue(e, 'to')}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+          (rare). Placed under the By Move strip so the timeline reads
+          top-to-bottom: where effort clustered, then where the setup changed. */}
+      {playSettings && (
+        <PlaySettingsChangeLog playSettings={playSettings} playSettingsLog={playSettingsLog} />
       )}
     </div>
   );
