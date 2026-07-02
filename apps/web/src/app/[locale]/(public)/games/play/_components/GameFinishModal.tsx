@@ -3,7 +3,7 @@
 import { useId } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaBook, FaBrain, FaClipboardList } from 'react-icons/fa';
+import { FaBook, FaBrain, FaClipboardList, FaCloudUploadAlt } from 'react-icons/fa';
 
 import { CompactResultHeader } from '@/app/[locale]/(public)/games/play/result/_components/CompactResultHeader';
 import { CloseButton } from '@/app/[locale]/_components/CloseButton';
@@ -27,6 +27,12 @@ type Props = {
    * "Recall". Auth-guarded by the caller.
    */
   onRecall: () => void;
+  /**
+   * Whether this game has already been published/shared (from this browser).
+   * When true, a small "published" mark rides in the Game Review card's
+   * top-right corner so the player can see at a glance it is already shared.
+   */
+  published?: boolean;
 };
 
 /**
@@ -37,7 +43,14 @@ type Props = {
  * coming soon) — each with a help-tour explanation. Dismissing it leaves the
  * player on the finished board (reopen via the board's "Next action" button).
  */
-export function GameFinishModal({ isOpen, onClose, result, onReview, onRecall }: Props) {
+export function GameFinishModal({
+  isOpen,
+  onClose,
+  result,
+  onReview,
+  onRecall,
+  published = false,
+}: Props) {
   const t = useTranslations('play');
   const titleId = useId();
 
@@ -83,6 +96,17 @@ export function GameFinishModal({ isOpen, onClose, result, onReview, onRecall }:
             title={t('finishModal.review.title')}
             description={t('finishModal.review.description')}
             onClick={onReview}
+            badge={
+              published ? (
+                <span
+                  title={t('finishModal.publishedBadge')}
+                  className="inline-flex items-center rounded-full bg-success/15 p-1 text-success"
+                >
+                  <FaCloudUploadAlt className="h-3 w-3" aria-hidden />
+                  <span className="sr-only">{t('finishModal.publishedBadge')}</span>
+                </span>
+              ) : undefined
+            }
           />
           <FinishChoiceCard
             tourId="finish-card-recall"

@@ -2142,6 +2142,7 @@
       "title": "次にどうしますか？",
       "help": "各オプションの説明",
       "comingSoon": "近日公開",
+      "publishedBadge": "公開済み",
       "trigger": "次のアクション",
       "review": {
         "title": "振り返り",

@@ -13,6 +13,11 @@ type Props = {
   /** Render a "coming soon" overlay and disable the card. */
   comingSoon?: boolean;
   comingSoonLabel?: string;
+  /**
+   * Small overlay pinned to the card's top-right corner (e.g. a "published"
+   * mark). Absolutely positioned, so it never shifts the card's content/shape.
+   */
+  badge?: ReactNode;
 };
 
 /**
@@ -29,6 +34,7 @@ export function FinishChoiceCard({
   onClick,
   comingSoon = false,
   comingSoonLabel,
+  badge,
 }: Props) {
   const disabled = comingSoon || !onClick;
 
@@ -41,6 +47,8 @@ export function FinishChoiceCard({
       aria-disabled={disabled}
       className="relative flex h-full w-full flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
     >
+      {badge && <span className="absolute right-2 top-2">{badge}</span>}
+
       <span className="text-2xl text-primary">{icon}</span>
       <span className="text-base font-semibold text-foreground">{title}</span>
       <span className="text-sm text-muted-foreground">{description}</span>
