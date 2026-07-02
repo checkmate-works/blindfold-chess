@@ -34,6 +34,13 @@ vi.mock('@/app/[locale]/_contexts/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
+// Unauthenticated clicks open AuthPromptModal, which threads the current path
+// into `?next=`; stub it so the hook's next/navigation reads don't need a
+// router in the test environment.
+vi.mock('@/app/[locale]/_hooks/use-current-path-as-next', () => ({
+  useCurrentPathAsNext: () => '/p',
+}));
+
 const mockToggleLike = vi.fn();
 
 describe('LikeButton', () => {

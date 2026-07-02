@@ -5008,7 +5008,12 @@
     "description": "Inicia sesión para dar me gusta a publicaciones, unirte a discusiones y sacar el máximo provecho de Ajedrez a Ciegas.",
     "createDescription": "Regístrate gratis para guardar y publicar lo que creas.",
     "signUpButton": "Crear Cuenta Gratuita",
-    "signInButton": "¿Ya tienes una cuenta? Iniciar sesión"
+    "signInButton": "¿Ya tienes una cuenta? Iniciar sesión",
+    "provisional": {
+      "title": "Completa tu registro",
+      "description": "Elige un nombre de usuario para comentar, publicar y unirte a las discusiones.",
+      "button": "Elegir nombre de usuario"
+    }
   },
   "leaderboard": {
     "title": "Clasificación",

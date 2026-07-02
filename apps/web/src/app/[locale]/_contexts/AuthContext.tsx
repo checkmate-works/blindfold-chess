@@ -18,7 +18,7 @@ import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
 import { ADS_HIDDEN_COOKIE_NAME } from '@/lib/ads/ads-hidden-cookie';
 
-import { getSessionUser } from '@/app/[locale]/_actions/getSessionUser';
+import { type SessionUser, getSessionUser } from '@/app/[locale]/_actions/getSessionUser';
 
 const ADS_HIDDEN_COOKIE_MATCH = new RegExp(`(?:^|; )${ADS_HIDDEN_COOKIE_NAME}=1(?:;|$)`);
 
@@ -48,6 +48,14 @@ type AuthContextValue = {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  /** Whether the signed-in user has completed registration (has a profile row). */
+  hasProfile: boolean;
+  /**
+   * Signed in but not yet registered — no profile / username. Such a viewer is
+   * routed to `setup-username` and must finish registration before posting
+   * (see `useAuthGuard`). Always false for anonymous and confirmed viewers.
+   */
+  isProvisional: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };
@@ -91,6 +99,8 @@ type AuthProviderProps = {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  // Whether the signed-in user has a profile row (completed registration).
+  const [hasProfile, setHasProfile] = useState(false);
   // We do not know the auth state until `getSessionUser()` resolves, so the
   // initial state is "loading". The layout no longer seeds `initialUser`
   // (that read forced the entire `[locale]/**` subtree dynamic and blocked
@@ -125,6 +135,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     ] = await Promise.all([supabase.auth.getUser(), supabase.auth.getSession()]);
     setUser(user);
     setSession(session);
+    // `hasProfile` needs a server lookup (profiles table), so refresh it too —
+    // this is how a just-completed username setup flips a provisional viewer to
+    // confirmed without a full reload.
+    try {
+      const status = await getSessionUser();
+      setHasProfile(status.hasProfile);
+    } catch {
+      // Keep the prior value on a transient failure.
+    }
   }, []);
 
   useEffect(() => {
@@ -136,16 +155,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     (async () => {
       // Ask the server whether a session cookie is present. This is a thin
       // Server Action call — no Supabase browser SDK is downloaded yet.
-      let serverUser: User | null = null;
+      let serverStatus: SessionUser = { user: null, hasProfile: false };
       try {
-        serverUser = await getSessionUser();
+        serverStatus = await getSessionUser();
       } catch {
-        serverUser = null;
+        serverStatus = { user: null, hasProfile: false };
       }
 
       if (cancelled) return;
 
       syncAdsHiddenAttribute();
+      setHasProfile(serverStatus.hasProfile);
+
+      const serverUser = serverStatus.user;
 
       // Anonymous visit: resolve to loaded-not-authenticated without touching
       // the Supabase SDK. This preserves F-001's bundle-size win for crawlers
@@ -192,6 +214,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } = supabase.auth.onAuthStateChange((event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        // Sign-out clears provisional/confirmed state; a fresh in-place sign-in
+        // (rare — the app re-mounts the provider via a server redirect) keeps
+        // the last-known value until `refreshUser`, and the server guard is the
+        // real gate regardless.
+        if (!session?.user) setHasProfile(false);
 
         if (event === 'SIGNED_OUT') {
           routerRef.current.refresh();
@@ -239,8 +266,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, session, isLoading, signOut, refreshUser }),
-    [user, session, isLoading, signOut, refreshUser]
+    () => ({
+      user,
+      session,
+      isLoading,
+      hasProfile,
+      isProvisional: user != null && !hasProfile,
+      signOut,
+      refreshUser,
+    }),
+    [user, session, isLoading, hasProfile, signOut, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

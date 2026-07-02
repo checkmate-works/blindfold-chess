@@ -5019,7 +5019,12 @@
     "description": "Sign in to like posts, join discussions, and get the most out of Blindfold Chess.",
     "createDescription": "Sign up free to save and publish what you create.",
     "signUpButton": "Create Free Account",
-    "signInButton": "Already have an account? Sign in"
+    "signInButton": "Already have an account? Sign in",
+    "provisional": {
+      "title": "Finish setting up your account",
+      "description": "Choose a username to comment, post, and join discussions.",
+      "button": "Choose a username"
+    }
   },
   "leaderboard": {
     "title": "Leaderboard",

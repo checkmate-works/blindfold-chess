@@ -54,12 +54,27 @@ vi.mock('../_hooks/use-scroll-lock', () => ({
   useScrollLock: vi.fn(),
 }));
 
+// The modal branches on the viewer's registration state; default to anonymous
+// (not provisional) so the sign-in variant renders for the existing cases.
+const authState = vi.hoisted(() => ({ isProvisional: false }));
+vi.mock('@/app/[locale]/_contexts/AuthContext', () => ({
+  useAuth: () => ({ isProvisional: authState.isProvisional }),
+}));
+
+// The sign-in variant threads the current path into `?next=`; stub it to a
+// fixed value so the redirect target is deterministic (and so the hook's
+// next/navigation reads don't need a router in the test environment).
+vi.mock('@/app/[locale]/_hooks/use-current-path-as-next', () => ({
+  useCurrentPathAsNext: () => '/p',
+}));
+
 describe('AuthPromptModal', () => {
   let onClose: () => void;
 
   beforeEach(() => {
     vi.clearAllMocks();
     onClose = vi.fn<() => void>();
+    authState.isProvisional = false;
   });
 
   describe('when isOpen is false', () => {
@@ -99,14 +114,14 @@ describe('AuthPromptModal', () => {
       render(<AuthPromptModal isOpen={true} onClose={onClose} />);
 
       const signUpLink = screen.getByText('signUpButton');
-      expect(signUpLink.closest('a')).toHaveAttribute('href', '/en/sign-up');
+      expect(signUpLink.closest('a')).toHaveAttribute('href', '/en/sign-up?next=%2Fp');
     });
 
     it('should render the sign-in button linking to sign-in page', () => {
       render(<AuthPromptModal isOpen={true} onClose={onClose} />);
 
       const signInLink = screen.getByText('signInButton');
-      expect(signInLink.closest('a')).toHaveAttribute('href', '/en/sign-in');
+      expect(signInLink.closest('a')).toHaveAttribute('href', '/en/sign-in?next=%2Fp');
     });
 
     it('should have proper aria attributes on the dialog', () => {
@@ -155,6 +170,27 @@ describe('AuthPromptModal', () => {
       fireEvent.keyDown(document, { key: 'Escape' });
 
       expect(onClose).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('when the viewer is provisional (signed in, no profile)', () => {
+    beforeEach(() => {
+      authState.isProvisional = true;
+    });
+
+    it('renders the finish-registration prompt linking to setup-username', () => {
+      render(<AuthPromptModal isOpen={true} onClose={onClose} />);
+
+      expect(screen.getByText('provisional.title')).toBeInTheDocument();
+      const link = screen.getByText('provisional.button');
+      expect(link.closest('a')).toHaveAttribute('href', '/en/mypage/setup-username');
+    });
+
+    it('does not render the anonymous sign-in / sign-up links', () => {
+      render(<AuthPromptModal isOpen={true} onClose={onClose} />);
+
+      expect(screen.queryByText('signUpButton')).not.toBeInTheDocument();
+      expect(screen.queryByText('signInButton')).not.toBeInTheDocument();
     });
   });
 });

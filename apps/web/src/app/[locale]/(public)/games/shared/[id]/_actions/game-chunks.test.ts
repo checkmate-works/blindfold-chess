@@ -7,7 +7,7 @@ const mockDelete = vi.fn();
 vi.mock('server-only', () => ({}));
 
 vi.mock('@/lib/auth', () => ({
-  authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
+  authenticateGuardAndRequireProfile: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
 }));
 
 vi.mock('@/lib/db/game-chunks', () => ({

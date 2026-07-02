@@ -5008,7 +5008,12 @@
     "description": "Faça login para curtir publicações, participar de discussões e aproveitar ao máximo o Xadrez às Cegas.",
     "createDescription": "Cadastre-se grátis para salvar e publicar o que você criar.",
     "signUpButton": "Criar Conta Gratuita",
-    "signInButton": "Já tem uma conta? Entrar"
+    "signInButton": "Já tem uma conta? Entrar",
+    "provisional": {
+      "title": "Conclua seu cadastro",
+      "description": "Escolha um nome de usuário para comentar, publicar e participar das discussões.",
+      "button": "Escolher nome de usuário"
+    }
   },
   "leaderboard": {
     "title": "Ranking",

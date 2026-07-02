@@ -23,6 +23,22 @@ vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
   writeAdsHiddenCookieForUser: (...args: unknown[]) => mockWriteAdsHiddenCookieForUser(...args),
 }));
 
+// The profiles lookup that decides `hasProfile`. Returns whatever
+// `mockProfileRows()` yields (a row → has profile, [] → provisional).
+const mockProfileRows = vi.fn<() => unknown[]>();
+vi.mock('@/lib/db', () => ({
+  db: {
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => Promise.resolve(mockProfileRows()),
+        }),
+      }),
+    }),
+  },
+  profiles: { id: 'profiles.id' },
+}));
+
 const { getSessionUser } = await import('./getSessionUser');
 
 const mockUser = { id: 'user-123', email: 'u@example.com' } as unknown as User;
@@ -31,27 +47,38 @@ describe('getSessionUser', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockWriteAdsHiddenCookieForUser.mockResolvedValue(undefined);
+    // Default: the user has a profile (confirmed member).
+    mockProfileRows.mockReturnValue([{ id: 'user-123' }]);
   });
 
   describe('authenticated user', () => {
-    it('returns the user and refreshes the ads-hidden cookie with the user object', async () => {
+    it('returns the user (hasProfile) and refreshes the ads-hidden cookie with the user object', async () => {
       mockGetUser.mockResolvedValue({ data: { user: mockUser } });
 
       const result = await getSessionUser();
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({ user: mockUser, hasProfile: true });
       expect(mockWriteAdsHiddenCookieForUser).toHaveBeenCalledTimes(1);
       expect(mockWriteAdsHiddenCookieForUser).toHaveBeenCalledWith(mockUser);
+    });
+
+    it('reports hasProfile=false for a provisional user (no profile row)', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+      mockProfileRows.mockReturnValue([]);
+
+      const result = await getSessionUser();
+
+      expect(result).toEqual({ user: mockUser, hasProfile: false });
     });
   });
 
   describe('anonymous visitor', () => {
-    it('returns null and still invokes the cookie writer with null so stale values get cleared', async () => {
+    it('returns null user and still invokes the cookie writer with null so stale values get cleared', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
 
       const result = await getSessionUser();
 
-      expect(result).toBeNull();
+      expect(result).toEqual({ user: null, hasProfile: false });
       // Passing null deletes the cookie inside the writer. Critical for
       // sign-out flows: a user who was previously an ad-free subscriber
       // must not keep seeing no-ads after logging out.
@@ -67,7 +94,7 @@ describe('getSessionUser', () => {
 
       const result = await getSessionUser();
 
-      expect(result).toBeNull();
+      expect(result).toEqual({ user: null, hasProfile: false });
       // When we cannot determine the auth state at all, leaving the
       // cookie in its previous state is the safe choice — flipping it
       // in either direction on an unknown user would be wrong.
@@ -91,7 +118,7 @@ describe('getSessionUser', () => {
       // `getSessionUser()` call self-corrects.
       const result = await getSessionUser();
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({ user: mockUser, hasProfile: true });
       expect(mockWriteAdsHiddenCookieForUser).toHaveBeenCalledTimes(1);
       // Cookie-writer failures are cosmetic (entitlement queries already
       // log via `console.warn` at a lower layer); only auth-getUser

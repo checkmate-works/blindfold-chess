@@ -5019,7 +5019,12 @@
     "description": "サインインすると、いいねやディスカッションへの参加など、Blindfold Chessをより楽しめます。",
     "createDescription": "無料ユーザー登録で、作成した内容を保存・公開できます。",
     "signUpButton": "無料ユーザー登録",
-    "signInButton": "アカウントをお持ちの方はログイン"
+    "signInButton": "アカウントをお持ちの方はログイン",
+    "provisional": {
+      "title": "アカウント登録を完了してください",
+      "description": "ユーザー名を設定すると、コメントや投稿、ディスカッションへの参加ができます。",
+      "button": "ユーザー名を設定する"
+    }
   },
   "leaderboard": {
     "title": "ランキング",

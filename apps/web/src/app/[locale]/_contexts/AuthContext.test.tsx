@@ -42,7 +42,13 @@ vi.mock('@/lib/supabase/client', () => {
 });
 
 vi.mock('@/app/[locale]/_actions/getSessionUser', () => ({
-  getSessionUser: (...args: unknown[]) => mockGetSessionUser(...args),
+  // The action now returns `{ user, hasProfile }`; the existing tests seed a
+  // bare `User | null` via `mockGetSessionUser`, so adapt it to the new shape
+  // here (a resolved user is treated as a confirmed member).
+  getSessionUser: async (...args: unknown[]) => {
+    const user = await mockGetSessionUser(...args);
+    return { user: user ?? null, hasProfile: user != null };
+  },
 }));
 
 // Most tests exercise the "authenticated" path where the server-side session
@@ -218,7 +224,7 @@ describe('AuthContext', () => {
       }));
 
       vi.doMock('@/app/[locale]/_actions/getSessionUser', () => ({
-        getSessionUser: () => Promise.resolve(seededUser),
+        getSessionUser: () => Promise.resolve({ user: seededUser, hasProfile: true }),
       }));
 
       vi.doMock('next-intl', () => ({
@@ -328,7 +334,7 @@ describe('AuthContext', () => {
       }));
 
       vi.doMock('@/app/[locale]/_actions/getSessionUser', () => ({
-        getSessionUser: () => Promise.resolve(seededUser),
+        getSessionUser: () => Promise.resolve({ user: seededUser, hasProfile: true }),
       }));
 
       vi.doMock('next-intl', () => ({

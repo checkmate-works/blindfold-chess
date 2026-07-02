@@ -5,7 +5,9 @@ import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
 
 import type { User } from '@supabase/supabase-js';
+import { eq } from 'drizzle-orm';
 
+import { db, profiles } from '@/lib/db';
 import { isUserBanned } from '@/lib/moderation/ban';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -98,6 +100,43 @@ export async function authenticateAndGuard(
   }
 
   return { user };
+}
+
+/**
+ * Whether a signed-in user has completed registration — i.e. a `profiles` row
+ * exists (username set). A *provisional* user (confirmed session but no
+ * profile) may browse and finish setup, but must not post content that is
+ * publicly attributed to them, which would otherwise render as
+ * "(deleted user)" for lack of a profile to name them.
+ */
+export async function userHasProfile(userId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: profiles.id })
+    .from(profiles)
+    .where(eq(profiles.id, userId))
+    .limit(1);
+  return row != null;
+}
+
+/**
+ * Auth + ban + rate limit guard that additionally requires a completed profile.
+ * Use for Server Actions that create public-attributed content (e.g. game
+ * comments / chunk links): a provisional user is rejected with
+ * `profileRequired`, so an unattributed post never lands. The client already
+ * prompts them to finish registration up front (see `useAuthGuard`), so this
+ * is defense in depth.
+ */
+export async function authenticateGuardAndRequireProfile(
+  rateLimitConfig: RateLimitConfig
+): Promise<{ user: User } | { error: string }> {
+  const guardResult = await authenticateAndGuard(rateLimitConfig);
+  if ('error' in guardResult) {
+    return guardResult;
+  }
+  if (!(await userHasProfile(guardResult.user.id))) {
+    return { error: 'profileRequired' };
+  }
+  return guardResult;
 }
 
 /**
