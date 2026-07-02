@@ -2100,6 +2100,7 @@
         "columnDetail": "Detalle"
       },
       "openFinishedGame": "Abrir partida terminada",
+      "shareTitle": "Comparte para habilitar la discusión",
       "sharePrompt": "Comparte esta partida para recibir comentarios: compartir habilita los comentarios y los me gusta.",
       "publish": "Compartir esta partida",
       "viewShared": "Ver partida compartida",

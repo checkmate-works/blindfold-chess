@@ -2104,6 +2104,7 @@
         "columnDetail": "詳細"
       },
       "openFinishedGame": "終了したゲームを開く",
+      "shareTitle": "共有してディスカッションを始める",
       "sharePrompt": "この対局を共有するとコメントやいいねが有効になり、フィードバックを受け取れます。",
       "publish": "この対局を共有する",
       "viewShared": "共有した対局を見る",
