@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+
 import { getAllAvailableChunkOptions } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
@@ -14,6 +16,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleGameLikeAction } from '../_actions/game-like';
@@ -151,6 +154,12 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           </div>
         </div>
       </div>
+
+      {/* Content-bottom ad, between the review and the breadcrumb — same slot and
+          position as the result screen (games/play/result). */}
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
     </PageLayout>
   );
 }
