@@ -5,12 +5,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { notFound, useSearchParams } from 'next/navigation';
 
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
+import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -61,6 +63,14 @@ type Props = {
    * input panel transition out of their loading states in lockstep.
    */
   isInitializing: boolean;
+  /** Whether the viewer is signed in — gates the finished-game Exp display. */
+  isAuthenticated: boolean;
+  /**
+   * Already-granted AI-game Exp for this game (resolved server-side). Shown
+   * under the result overlay when reviewing a finished game. Null when there
+   * is nothing to show.
+   */
+  expInfo: ExpInfo | null;
 };
 
 export function PlayClient({
@@ -69,6 +79,8 @@ export function PlayClient({
   initialMoveInputHint,
   initialBoardVisibility,
   isInitializing,
+  isAuthenticated,
+  expInfo,
 }: Props) {
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
@@ -449,6 +461,10 @@ export function PlayClient({
                 // read-only board (no blindfold mask / peek) instead of the
                 // in-progress board with its move-input wiring.
                 inlineBoardView={isFinishedReview ? finishedBoardView : inProgressBoardView}
+                // Earned Exp, shown under the result overlay in finished review.
+                // Signed-in only; ExpGainDisplay itself renders nothing when the
+                // Exp is null (guest / in-progress / not-yet-granted game).
+                finishedFooter={isAuthenticated ? <ExpGainDisplay expInfo={expInfo} /> : undefined}
               />
             )}
           </div>

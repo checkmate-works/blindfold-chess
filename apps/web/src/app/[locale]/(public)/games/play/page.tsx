@@ -20,8 +20,13 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import type { ExpInfo } from '@blindfold-chess/features/exp';
+
+import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
+import { AI_GAME_RESULT_SOURCE } from '@/lib/db/save-exp';
 import { readBoardVisibilityFromCookies } from '@/lib/games/board-visibility-cookie.server';
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
+import { createClient } from '@/lib/supabase/server';
 
 import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -60,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PlayPage({ params }: Props) {
+export default async function PlayPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -78,6 +83,27 @@ export default async function PlayPage({ params }: Props) {
     readBoardVisibilityFromCookies(),
   ]);
 
+  // Resolve any already-granted AI-game Exp server-side from ?gameId=<id> (the
+  // grant's source_id), mirroring the result page, so the earned Exp also shows
+  // in the finished-game review. Scoped to `?finished=1` (the only mode that
+  // displays it) so active gameplay pays no auth / DB cost. The grant itself
+  // stays a result-screen responsibility — here we only display what was
+  // already awarded, so a game not yet granted simply shows nothing.
+  const sp = await searchParams;
+  const isFinishedView = sp.finished === '1';
+  let isAuthenticated = false;
+  let expInfo: ExpInfo | null = null;
+  if (isFinishedView) {
+    const {
+      data: { user },
+    } = await (await createClient()).auth.getUser();
+    isAuthenticated = Boolean(user);
+    const gameId = typeof sp.gameId === 'string' ? sp.gameId : undefined;
+    if (user && gameId) {
+      expInfo = await getExpInfoBySource(user.id, AI_GAME_RESULT_SOURCE, gameId);
+    }
+  }
+
   const breadcrumb = (
     <BreadcrumbContent
       items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('title') }]}
@@ -94,6 +120,8 @@ export default async function PlayPage({ params }: Props) {
         breadcrumb={breadcrumb}
         initialMoveInputHint={moveInputHint}
         initialBoardVisibility={boardVisibilityHint}
+        isAuthenticated={isAuthenticated}
+        expInfo={expInfo}
       />
     </Suspense>
   );

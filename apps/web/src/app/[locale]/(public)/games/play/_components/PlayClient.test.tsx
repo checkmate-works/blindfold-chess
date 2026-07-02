@@ -159,6 +159,8 @@ function renderPlay(gameSession: GameSessionArg, opts: { isInitializing?: boolea
       }
       initialBoardVisibility="peek"
       isInitializing={opts.isInitializing ?? false}
+      isAuthenticated={false}
+      expInfo={null}
     />
   );
 }

@@ -61,6 +61,12 @@ type Props = {
    * (win / loss / draw). Only read when `finished` is true.
    */
   finishedResult?: 'win' | 'loss' | 'draw' | null;
+  /**
+   * Content rendered directly below the (frozen) mutating controls in
+   * `finished` mode — used for the earned-Exp display. Ignored while the game
+   * is in progress.
+   */
+  finishedFooter?: ReactNode;
 };
 
 export function GameInProgressPanel({
@@ -86,6 +92,7 @@ export function GameInProgressPanel({
   aiMoveError,
   finished = false,
   finishedResult,
+  finishedFooter,
 }: Props) {
   const t = useTranslations('play');
 
@@ -182,6 +189,10 @@ export function GameInProgressPanel({
           </div>
         )}
       </div>
+
+      {/* Earned Exp (and any other finished-only footer content), shown just
+          below the frozen controls / result overlay. */}
+      {finished && finishedFooter}
 
       {/* Save and Exit — an in-progress affordance; a finished game is already
           persisted, so it is dropped in review mode. */}
