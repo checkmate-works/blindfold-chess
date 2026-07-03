@@ -1,57 +1,18 @@
 'use server';
 
 import { adBanners, db } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 
-import { requireAdmin } from '../../_lib/auth';
-
-type CreateData = {
-  slot: string;
-  href: string;
-  imagePath: string;
-  alt: string;
-  width: number;
-  height: number;
-  isActive: boolean;
-  sortOrder: number;
-  startAt: string | null;
-  endAt: string | null;
-};
+import { adminMutationGuard } from '../../_lib/action-factories';
+import type { CreateAdBannerData } from '../_lib/validation';
+import { validateCreateAdBanner } from '../_lib/validation';
 
 type CreateResult = { success: true; id: string } | { error: string };
 
-export async function createAdBanner(data: CreateData): Promise<CreateResult> {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return auth;
-  }
-
-  if (!data.slot || data.slot.length > 50) {
-    return { error: 'invalid slot' };
-  }
-
-  if (!data.href || data.href.length > 2048) {
-    return { error: 'invalid href' };
-  }
-
-  try {
-    const url = new URL(data.href);
-    if (!['https:', 'http:'].includes(url.protocol)) {
-      return { error: 'invalid href' };
-    }
-  } catch {
-    return { error: 'invalid href' };
-  }
-
-  if (!data.imagePath || data.imagePath.length > 1024) {
-    return { error: 'invalid imagePath' };
-  }
-
-  if (!data.width || data.width <= 0) {
-    return { error: 'invalid width' };
-  }
-
-  if (!data.height || data.height <= 0) {
-    return { error: 'invalid height' };
+export async function createAdBanner(data: CreateAdBannerData): Promise<CreateResult> {
+  const guardError = await adminMutationGuard(data, validateCreateAdBanner);
+  if (guardError) {
+    return guardError;
   }
 
   try {
@@ -73,7 +34,7 @@ export async function createAdBanner(data: CreateData): Promise<CreateResult> {
 
     return { success: true, id: inserted.id };
   } catch (error) {
-    if (error instanceof Error && error.message.includes('unique')) {
+    if (extractPgErrorCode(error) === '23505') {
       return { error: 'A banner with this slot already exists' };
     }
     return { error: 'Failed to create ad banner' };
