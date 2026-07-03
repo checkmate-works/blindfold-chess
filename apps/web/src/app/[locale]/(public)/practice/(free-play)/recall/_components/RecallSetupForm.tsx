@@ -69,13 +69,15 @@ export function RecallSetupForm() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">{t('setup.description')}</p>
-      <div>
+      <div data-tour-id="recall-setup-pgn">
         <SectionTitle>{t('setup.pgnLabel')}</SectionTitle>
         <div className="mt-3">
           <PgnInput value={pgn} onChange={setPgn} />
         </div>
       </div>
-      <ColorSelector value={color} onChange={handleColorChange} />
+      <div data-tour-id="recall-setup-color">
+        <ColorSelector value={color} onChange={handleColorChange} />
+      </div>
       <Button
         onClick={handleStart}
         disabled={isStartDisabled}

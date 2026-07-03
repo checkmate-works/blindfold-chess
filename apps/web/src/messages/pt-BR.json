@@ -2362,6 +2362,16 @@
       "moves": {
         "title": "Movimentos",
         "description": "Os movimentos reproduzidos aparecem aqui como uma lista. Toque em um para ver o tabuleiro naquela posição."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Cole qualquer PGN",
+          "description": "Cole o PGN de qualquer partida finalizada — sua, de outra pessoa, ou uma linha de abertura — e reproduza os movimentos de memória."
+        },
+        "color": {
+          "title": "Escolha seu lado",
+          "description": "Escolha de qual lado você vai recordar os movimentos. Os movimentos do outro lado também podem ser inseridos, ou preenchidos automaticamente."
+        }
       }
     },
     "autoOpponentMoves": "Preencher automaticamente movimentos do adversário",

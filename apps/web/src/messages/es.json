@@ -2362,6 +2362,16 @@
       "moves": {
         "title": "Movimientos",
         "description": "Los movimientos reproducidos aparecen aquí como una lista. Toca uno para ver el tablero en esa posición."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Pega cualquier PGN",
+          "description": "Pega el PGN de cualquier partida terminada — la tuya, la de otra persona, o una línea de apertura — y luego reproduce sus movimientos de memoria."
+        },
+        "color": {
+          "title": "Elige tu bando",
+          "description": "Elige de qué bando recordarás los movimientos. Los movimientos del otro bando también se pueden introducir, o rellenar automáticamente."
+        }
       }
     },
     "autoOpponentMoves": "Auto-rellenar movimientos del rival",

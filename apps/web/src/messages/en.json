@@ -2366,6 +2366,16 @@
       "moves": {
         "title": "Moves",
         "description": "Replayed moves appear here as a move list. Tap one to view the board at that position."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Paste any PGN",
+          "description": "Paste the PGN of any completed game — yours, someone else's, or an opening line — then replay its moves from memory."
+        },
+        "color": {
+          "title": "Choose your side",
+          "description": "Pick which side you'll recall the moves for. The other side's moves can be entered too, or auto-filled for you."
+        }
       }
     },
     "autoOpponentMoves": "Auto-fill opponent's moves",
