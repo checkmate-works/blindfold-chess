@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
@@ -11,11 +11,19 @@ import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
+import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
+import { TopicTabsSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicTabsSkeleton';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import {
+  PageLayout,
+  PagePanel,
+  PageTitle,
+  PaginationNav,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -51,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function OpeningsPage({ params, searchParams }: Props) {
+async function OpeningsContent({ params, searchParams }: Props) {
   const { locale } = await params;
   const { page, first_move } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale, namespace: 'topics' });
@@ -182,5 +190,72 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
     </PageLayout>
+  );
+}
+
+/**
+ * Mirrors `OpeningsContent`'s resolved DOM to minimise CLS when the real
+ * content swaps in.
+ */
+async function OpeningsSkeleton() {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'topics' });
+
+  return (
+    <div className="space-y-8">
+      <PageTitle>{t('openings.title')}</PageTitle>
+
+      <PagePanel>
+        <SectionTitle>{t('openings.subtitle')}</SectionTitle>
+
+        <div className="mb-6">
+          <TopicTabsSkeleton />
+        </div>
+
+        <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
+        <TopicCardSkeleton count={3} />
+
+        <div className="mt-8 mb-6">
+          <SectionTitle>
+            <div className="h-6 w-32 bg-muted rounded animate-pulse inline-block align-middle" />
+          </SectionTitle>
+        </div>
+
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-5 w-16 bg-muted rounded animate-pulse" />
+          <div className="h-9 w-40 bg-muted rounded-md animate-pulse" />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex gap-3 p-3 rounded-lg border border-border bg-card animate-pulse"
+            >
+              <div className="w-[96px] h-[96px] bg-muted rounded-sm shrink-0" />
+              <div className="flex flex-col justify-center min-w-0 flex-1">
+                <div className="h-3 bg-muted rounded w-12 mb-2" />
+                <div className="h-4 bg-muted rounded w-3/4 mb-1" />
+                <div className="h-3 bg-muted rounded w-full mt-2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </PagePanel>
+    </div>
+  );
+}
+
+/**
+ * Deliberately NOT a segment-level `loading.tsx` — see the matching comment
+ * on `topics/page.tsx` for the full rationale. A file-based `loading.tsx`
+ * here would also wrap the deeper `[slug]` and `[slug]/posts/[postId]`
+ * detail routes, causing a double-skeleton flash on direct navigation.
+ */
+export default function OpeningsPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<OpeningsSkeleton />}>
+      <OpeningsContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

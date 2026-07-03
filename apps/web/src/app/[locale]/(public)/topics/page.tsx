@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { IS_LOCAL_DEV } from '@/config';
 
@@ -8,11 +10,13 @@ import { createClient } from '@/lib/supabase/server';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
 import { TOPICS_FEED_ENTITY_TYPES, getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
+import { TopicCardSkeleton } from './_components/TopicCardSkeleton';
 import { TopicTabs } from './_components/TopicTabs';
+import { TopicTabsSkeleton } from './_components/TopicTabsSkeleton';
 
 /**
  * Topics List (トピック一覧)
@@ -38,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'metadata.topics', path: 'topics' });
 }
 
-export default async function TopicsPage({ params }: Props) {
+async function TopicsContent({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'topics' });
   const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
@@ -76,5 +80,49 @@ export default async function TopicsPage({ params }: Props) {
         />
       )}
     </PageLayout>
+  );
+}
+
+/**
+ * Mirrors `TopicsContent`'s resolved DOM (PageTitle → SectionTitle →
+ * TopicTabs → card-variant feed) to minimise CLS when the real content
+ * swaps in.
+ */
+async function TopicsSkeleton() {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'topics' });
+
+  return (
+    <div className="space-y-8">
+      <PageTitle>{t('title')}</PageTitle>
+
+      <PagePanel>
+        <SectionTitle>{t('recentPosts')}</SectionTitle>
+
+        <div className="mb-6">
+          <TopicTabsSkeleton />
+        </div>
+
+        <TopicCardSkeleton />
+      </PagePanel>
+    </div>
+  );
+}
+
+/**
+ * Deliberately NOT a segment-level `loading.tsx`. A `loading.tsx` file here
+ * would wrap this whole subtree (including `/topics/openings/[slug]` and
+ * `/topics/squares/[square]` several levels down) in a `<Suspense>`
+ * boundary, so navigating straight into a deep topic post (e.g. from the
+ * home feed's `TopicPostCard`) would flash this list-page skeleton before
+ * the detail page's own skeleton mounted. Scoping the boundary inside this
+ * page's own JSX means it only exists in the render tree when this exact
+ * route is the matched leaf.
+ */
+export default function TopicsPage({ params }: Props) {
+  return (
+    <Suspense fallback={<TopicsSkeleton />}>
+      <TopicsContent params={params} />
+    </Suspense>
   );
 }

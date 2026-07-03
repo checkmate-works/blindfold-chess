@@ -1,7 +1,10 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { BoardSkeleton } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
@@ -12,6 +15,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import {
@@ -22,7 +26,7 @@ import {
 import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
-import { SectionTitle } from '@/app/[locale]/_components';
+import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -64,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function SquarePostsPage({ params, searchParams }: Props) {
+async function SquarePostsContent({ params, searchParams }: Props) {
   const { locale, square } = await params;
 
   if (!isValidSquare(square)) {
@@ -203,5 +207,72 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
         { label: square },
       ]}
     />
+  );
+}
+
+/**
+ * Mirrors `SquarePostsContent`'s resolved DOM — PageTitle → square
+ * SectionTitle → SquareHighlightBoard → linked-openings grid → community
+ * thoughts → posts feed — to minimise CLS. The square name and the
+ * openings-link heading are runtime values, so they render as placeholder
+ * bars.
+ */
+async function SquarePostsSkeleton() {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'topics' });
+
+  return (
+    <div className="space-y-8">
+      <PageTitle>{t('squares.pageTitle')}</PageTitle>
+
+      <PagePanel>
+        {/* Square name */}
+        <SectionTitle>
+          <div className="inline-block h-6 w-16 animate-pulse rounded bg-muted align-middle" />
+        </SectionTitle>
+
+        {/* SquareHighlightBoard (renders BoardSkeleton until preferences load) */}
+        <div className="max-w-xs mx-auto">
+          <BoardSkeleton />
+        </div>
+
+        {/* Openings whose first move lands on this square (up to 3 cards) */}
+        <div className="space-y-3">
+          <SectionTitle>
+            <div className="inline-block h-5 w-40 animate-pulse rounded bg-muted align-middle" />
+          </SectionTitle>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-28 animate-pulse rounded-lg border border-border bg-card" />
+            ))}
+          </div>
+        </div>
+
+        {/* Community thoughts */}
+        <section className="mt-8 space-y-4">
+          <SectionTitle>{t('communityThoughts')}</SectionTitle>
+          <div className="h-10 w-full animate-pulse rounded-md bg-muted" aria-hidden="true" />
+        </section>
+
+        {/* Posts (BaseTopicPostCard — no thumbnail) */}
+        <div className="mt-6">
+          <TopicCardSkeleton thumbnail={false} />
+        </div>
+      </PagePanel>
+    </div>
+  );
+}
+
+/**
+ * Deliberately NOT a segment-level `loading.tsx` — see the matching comment
+ * on `topics/page.tsx` for the full rationale. A file-based `loading.tsx`
+ * here would also wrap the deeper `posts/[postId]` detail route, causing a
+ * double-skeleton flash when a `PostCard` links straight into a post.
+ */
+export default function SquarePostsPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<SquarePostsSkeleton />}>
+      <SquarePostsContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
@@ -8,10 +10,18 @@ import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
+import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
+import { TopicTabsSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicTabsSkeleton';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import {
+  PageLayout,
+  PagePanel,
+  PageTitle,
+  PaginationNav,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -33,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function SquaresPage({ params, searchParams }: Props) {
+async function SquaresContent({ params, searchParams }: Props) {
   const { locale } = await params;
   const { page } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale, namespace: 'topics' });
@@ -116,5 +126,47 @@ export default async function SquaresPage({ params, searchParams }: Props) {
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
     </PageLayout>
+  );
+}
+
+/**
+ * Mirrors `SquaresContent`'s resolved DOM (PageTitle → squares.subtitle
+ * SectionTitle → TopicTabs → recent-posts list) to minimise CLS. The board
+ * section sits below the fold, so the skeleton focuses on the lead
+ * recent-posts feed.
+ */
+async function SquaresSkeleton() {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'topics' });
+
+  return (
+    <div className="space-y-8">
+      <PageTitle>{t('squares.title')}</PageTitle>
+
+      <PagePanel>
+        <SectionTitle>{t('squares.subtitle')}</SectionTitle>
+
+        <div className="mb-6">
+          <TopicTabsSkeleton />
+        </div>
+
+        <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
+        <TopicCardSkeleton thumbnail={false} />
+      </PagePanel>
+    </div>
+  );
+}
+
+/**
+ * Deliberately NOT a segment-level `loading.tsx` — see the matching comment
+ * on `topics/page.tsx` for the full rationale. A file-based `loading.tsx`
+ * here would also wrap the deeper `[square]` and `[square]/posts/[postId]`
+ * detail routes, causing a double-skeleton flash on direct navigation.
+ */
+export default function SquaresPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<SquaresSkeleton />}>
+      <SquaresContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }
