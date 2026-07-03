@@ -1,8 +1,9 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
 
+import { resolveUserFilter } from '../../_lib/resolve-user-filter';
 import { loadUsersEmailMap } from '../../_lib/users-email-map';
 
 const PAGE_SIZE = 20;
@@ -40,35 +41,11 @@ export async function fetchActivityLogPageData(
   // identical `listUsers` round-trip in the same request.
   let preloadedAuthUsers: User[] | undefined;
   if (userFilter) {
-    const matchingProfiles = await db
-      .select({ id: profiles.id })
-      .from(profiles)
-      .where(
-        or(
-          ilike(profiles.username, `%${userFilter}%`),
-          ilike(profiles.displayName, `%${userFilter}%`)
-        )
-      );
-
-    // Also search by email via Supabase admin client
-    const listUsersResult = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
-    preloadedAuthUsers = listUsersResult.data?.users;
-    const matchingEmailUserIds = (preloadedAuthUsers ?? [])
-      .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
-      .map((u) => u.id);
-
-    const allMatchingIds = [
-      ...new Set([...matchingProfiles.map((p) => p.id), ...matchingEmailUserIds]),
-    ];
-
-    if (allMatchingIds.length === 0) {
-      filteredUserIds = [];
-    } else {
-      filteredUserIds = allMatchingIds;
-      conditions.push(inArray(userActivityLog.userId, allMatchingIds));
+    const resolved = await resolveUserFilter(adminClient, userFilter);
+    preloadedAuthUsers = resolved.preloadedAuthUsers;
+    filteredUserIds = resolved.matchingIds;
+    if (resolved.matchingIds.length > 0) {
+      conditions.push(inArray(userActivityLog.userId, resolved.matchingIds));
     }
   }
 

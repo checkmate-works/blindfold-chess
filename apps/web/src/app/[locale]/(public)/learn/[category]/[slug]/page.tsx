@@ -17,6 +17,7 @@ import { JsonLd, generateArticleSchema } from '@/lib/seo/jsonld';
 
 import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import {
   getPracticeModuleIcon,
@@ -147,9 +148,9 @@ export default async function LearnArticlePage({ params }: Props) {
         ]}
       >
         {/* Article content with narrower width for readability */}
-        <article className="prose prose-slate dark:prose-invert max-w-none">
+        <ProseArticle>
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
-        </article>
+        </ProseArticle>
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
           <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />

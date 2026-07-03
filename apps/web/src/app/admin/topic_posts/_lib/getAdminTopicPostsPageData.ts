@@ -1,9 +1,10 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import { and, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 
 import { db, profiles, topicPosts } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
+import { resolveUserFilter } from '../../_lib/resolve-user-filter';
 import { loadUsersEmailMap } from '../../_lib/users-email-map';
 
 type Profile = typeof profiles.$inferSelect;
@@ -55,31 +56,11 @@ export async function getAdminTopicPostsPageData({
   let preloadedAuthUsers: User[] | undefined;
 
   if (userFilter) {
-    const matchingProfiles = await db
-      .select({ id: profiles.id })
-      .from(profiles)
-      .where(
-        or(
-          ilike(profiles.username, `%${userFilter}%`),
-          ilike(profiles.displayName, `%${userFilter}%`)
-        )
-      );
-
-    const listUsersResult = await adminClient.auth.admin.listUsers({ page: 1, perPage: 100 });
-    preloadedAuthUsers = listUsersResult.data?.users;
-    const matchingEmailUserIds = (preloadedAuthUsers ?? [])
-      .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
-      .map((u) => u.id);
-
-    const allMatchingIds = [
-      ...new Set([...matchingProfiles.map((p) => p.id), ...matchingEmailUserIds]),
-    ];
-
-    if (allMatchingIds.length === 0) {
-      filteredUserIds = [];
-    } else {
-      filteredUserIds = allMatchingIds;
-      conditions.push(inArray(topicPosts.userId, allMatchingIds));
+    const resolved = await resolveUserFilter(adminClient, userFilter);
+    preloadedAuthUsers = resolved.preloadedAuthUsers;
+    filteredUserIds = resolved.matchingIds;
+    if (resolved.matchingIds.length > 0) {
+      conditions.push(inArray(topicPosts.userId, resolved.matchingIds));
     }
   }
 

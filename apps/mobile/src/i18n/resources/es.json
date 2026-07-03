@@ -48,6 +48,12 @@
       "description": "Planea la ruta más corta para una pieza entre dos casillas"
     }
   },
+  "practiceResult": {
+    "correctAnswers": "Respuestas correctas",
+    "accuracy": "Precisión",
+    "timeTaken": "Tiempo empleado",
+    "averageTime": "Tiempo medio"
+  },
   "onboarding": {
     "skip": "Saltar",
     "tapToContinue": "Toca para continuar",
@@ -87,10 +93,6 @@
     },
     "result": {
       "title": "¡Práctica completada!",
-      "correctAnswers": "Respuestas correctas",
-      "accuracy": "Precisión",
-      "timeTaken": "Tiempo empleado",
-      "averageTime": "Tiempo medio",
       "playAgain": "Jugar de nuevo",
       "backToMenu": "Volver al menú"
     },
@@ -121,10 +123,7 @@
       "title": "Resultados",
       "playAgain": "Jugar de nuevo",
       "backToMenu": "Volver a la práctica",
-      "correctAnswers": "Respuestas correctas",
-      "accuracy": "Precisión",
-      "timeTaken": "Tiempo",
-      "averageTime": "Tiempo medio"
+      "timeTaken": "Tiempo"
     },
     "settings": {
       "timeLimit": "Tiempo límite",
@@ -146,11 +145,7 @@
     "result": {
       "title": "¡Práctica completada!",
       "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú",
-      "correctAnswers": "Respuestas correctas",
-      "accuracy": "Precisión",
-      "timeTaken": "Tiempo empleado",
-      "averageTime": "Tiempo medio"
+      "backToMenu": "Volver al menú"
     },
     "settings": {
       "timeLimit": "Tiempo límite",
@@ -293,10 +288,6 @@
     },
     "result": {
       "title": "¡Práctica completada!",
-      "correctAnswers": "Respuestas correctas",
-      "accuracy": "Precisión",
-      "timeTaken": "Tiempo empleado",
-      "averageTime": "Tiempo medio",
       "playAgain": "Jugar de nuevo",
       "backToMenu": "Volver al menú"
     },

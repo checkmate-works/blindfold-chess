@@ -5,36 +5,14 @@ import { eq } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { adBanners, db } from '@/lib/db';
 
-import { requireAdmin } from '../../_lib/auth';
+import { adminMutationGuard } from '../../_lib/action-factories';
+import type { UpdateAdBannerData } from '../_lib/validation';
+import { validateUpdateAdBanner } from '../_lib/validation';
 
-type UpdateData = {
-  href: string;
-  imagePath: string;
-  alt: string;
-  isActive: boolean;
-};
-
-export async function updateAdBanner(id: string, data: UpdateData): Promise<ActionResult> {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return auth;
-  }
-
-  if (!data.href || data.href.length > 2048) {
-    return { error: 'invalid href' };
-  }
-
-  try {
-    const url = new URL(data.href);
-    if (!['https:', 'http:'].includes(url.protocol)) {
-      return { error: 'invalid href' };
-    }
-  } catch {
-    return { error: 'invalid href' };
-  }
-
-  if (!data.imagePath || data.imagePath.length > 1024) {
-    return { error: 'invalid imagePath' };
+export async function updateAdBanner(id: string, data: UpdateAdBannerData): Promise<ActionResult> {
+  const guardError = await adminMutationGuard(data, validateUpdateAdBanner);
+  if (guardError) {
+    return guardError;
   }
 
   await db

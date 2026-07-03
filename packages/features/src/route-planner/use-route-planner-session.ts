@@ -90,61 +90,49 @@ export function useRoutePlannerSession({
     session.isPaused ||
     session.showFeedback;
 
-  const handleAnswer = useCallback(
-    (success: boolean) => {
-      if (isBlocked || !currentQuestion) return;
-
+  // Shared result-push step for answers and skips: resolves the model path and
+  // appends a problem-result entry. `skipped` is only written when true so
+  // answered entries keep their shape (no `skipped: false` key).
+  const recordProblem = useCallback(
+    (problem: RoutePlannerProblem, success: boolean, skipped = false) => {
       const shortestPath =
-        (findShortestPath(
-          currentQuestion.piece,
-          currentQuestion.start,
-          currentQuestion.end,
-        ) as Square[] | null) ?? [];
+        (findShortestPath(problem.piece, problem.start, problem.end) as
+          | Square[]
+          | null) ?? [];
 
       problemResultsRef.current = [
         ...problemResultsRef.current,
         {
-          piece: currentQuestion.piece,
-          start: currentQuestion.start,
-          end: currentQuestion.end,
+          piece: problem.piece,
+          start: problem.start,
+          end: problem.end,
           success,
           userPath: [],
           shortestPath,
+          ...(skipped ? { skipped: true } : {}),
         },
       ];
+    },
+    [],
+  );
 
+  const handleAnswer = useCallback(
+    (success: boolean) => {
+      if (isBlocked || !currentQuestion) return;
+
+      recordProblem(currentQuestion, success);
       sessionHandleAnswer(success);
     },
-    [isBlocked, currentQuestion, sessionHandleAnswer],
+    [isBlocked, currentQuestion, recordProblem, sessionHandleAnswer],
   );
 
   const handleSkip = useCallback(() => {
     if (isBlocked || !currentQuestion) return;
 
     onSkipEffectRef.current?.();
-
-    const shortestPath =
-      (findShortestPath(
-        currentQuestion.piece,
-        currentQuestion.start,
-        currentQuestion.end,
-      ) as Square[] | null) ?? [];
-
-    problemResultsRef.current = [
-      ...problemResultsRef.current,
-      {
-        piece: currentQuestion.piece,
-        start: currentQuestion.start,
-        end: currentQuestion.end,
-        success: false,
-        userPath: [],
-        shortestPath,
-        skipped: true,
-      },
-    ];
-
+    recordProblem(currentQuestion, false, true);
     sessionHandleAnswer(false);
-  }, [isBlocked, currentQuestion, sessionHandleAnswer]);
+  }, [isBlocked, currentQuestion, recordProblem, sessionHandleAnswer]);
 
   return {
     ...toTimedSessionFacade(session),

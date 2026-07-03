@@ -1,8 +1,18 @@
 import { cache } from 'react';
 
-import { type SQL, and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { type SQL, and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 
-import { chunkFeedbackTopics, chunks, db, positionChunks, positions, profiles } from '@/lib/db';
+import {
+  AUTHOR_PROFILE_COLUMNS,
+  chunkFeedbackTopics,
+  chunks,
+  db,
+  liveProfileJoinOn,
+  positionChunks,
+  positions,
+  profiles,
+} from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { ChunkOption } from './types';
@@ -122,14 +132,10 @@ export async function listChunksWithProfile({
   const query = db
     .select({
       chunk: chunks,
-      profile: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      },
+      profile: AUTHOR_PROFILE_COLUMNS,
     })
     .from(chunks)
-    .leftJoin(profiles, and(eq(chunks.userId, profiles.id), isNull(profiles.deletedAt)));
+    .leftJoin(profiles, liveProfileJoinOn(chunks.userId));
   const rows = await (where ? query.where(where) : query)
     .orderBy(desc(chunks.createdAt))
     .limit(limit)
@@ -144,10 +150,7 @@ export async function countChunks({
   includeDeleted,
   status,
 }: Pick<ListChunksOptions, 'includeDeleted' | 'status'>) {
-  const where = buildListConditions({ includeDeleted, status });
-  const query = db.select({ value: count() }).from(chunks);
-  const [row] = await (where ? query.where(where) : query);
-  return row?.value ?? 0;
+  return countRows(chunks, buildListConditions({ includeDeleted, status }));
 }
 
 /**
@@ -181,14 +184,10 @@ export const getChunkBySlugWithProfile = cache(async (slug: string) => {
   const [row] = await db
     .select({
       chunk: chunks,
-      profile: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      },
+      profile: AUTHOR_PROFILE_COLUMNS,
     })
     .from(chunks)
-    .leftJoin(profiles, and(eq(chunks.userId, profiles.id), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(chunks.userId))
     .where(and(eq(chunks.slug, slug), isNull(chunks.deletedAt)))
     .limit(1);
 
@@ -389,15 +388,11 @@ export async function getLinkedPositionsForChunk(chunkId: string) {
   const rows = await db
     .select({
       position: positions,
-      profile: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      },
+      profile: AUTHOR_PROFILE_COLUMNS,
     })
     .from(positionChunks)
     .innerJoin(positions, eq(positionChunks.positionId, positions.id))
-    .leftJoin(profiles, and(eq(positions.userId, profiles.id), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(positions.userId))
     .where(and(eq(positionChunks.chunkId, chunkId), isNull(positions.deletedAt)))
     .orderBy(desc(positions.createdAt));
 

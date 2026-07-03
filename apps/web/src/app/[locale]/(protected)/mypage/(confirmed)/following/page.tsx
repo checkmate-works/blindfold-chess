@@ -4,7 +4,7 @@ import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, profiles, userFollows } from '@/lib/db';
+import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
 
 import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -49,10 +49,8 @@ export default async function FollowingPage({ params, searchParams }: Props) {
 
   const followingList = await db
     .select({
+      ...AUTHOR_PROFILE_COLUMNS,
       id: profiles.id,
-      username: profiles.username,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
     })
     .from(userFollows)
     .innerJoin(profiles, eq(userFollows.followingId, profiles.id))

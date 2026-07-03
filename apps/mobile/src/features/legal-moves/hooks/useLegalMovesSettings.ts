@@ -6,16 +6,11 @@ import { DEFAULT_LEGAL_MOVES_SETTINGS } from "../lib/types";
 const STORAGE_KEY = "LEGAL_MOVES_SETTINGS";
 
 export function useLegalMovesSettings() {
-  const { settings, isLoaded, updateSettings, resetSettings } =
-    useAsyncStorageSettings<LegalMovesSettings>(
-      STORAGE_KEY,
-      DEFAULT_LEGAL_MOVES_SETTINGS,
-    );
-
-  const updateTimeLimit = useCallback(
-    (timeLimit: number) => updateSettings({ timeLimit }),
-    [updateSettings],
+  const persisted = useAsyncStorageSettings<LegalMovesSettings>(
+    STORAGE_KEY,
+    DEFAULT_LEGAL_MOVES_SETTINGS,
   );
+  const { settings, updateSettings } = persisted;
 
   const togglePiece = useCallback(
     (piece: PieceType) => {
@@ -34,11 +29,5 @@ export function useLegalMovesSettings() {
     [settings.selectedPieces, updateSettings],
   );
 
-  return {
-    settings,
-    isLoading: !isLoaded,
-    updateTimeLimit,
-    togglePiece,
-    resetSettings,
-  };
+  return { ...persisted, togglePiece };
 }

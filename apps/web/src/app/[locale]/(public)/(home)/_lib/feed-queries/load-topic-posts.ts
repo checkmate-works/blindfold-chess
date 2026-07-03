@@ -1,6 +1,13 @@
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 
-import { chessOpenings, db, profiles, topicPostRatings, topicPosts } from '@/lib/db';
+import {
+  chessOpenings,
+  db,
+  liveProfileJoinOn,
+  profiles,
+  topicPostRatings,
+  topicPosts,
+} from '@/lib/db';
 
 import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
@@ -34,7 +41,7 @@ export async function loadTopicPostsForFeed(
       openingFen: chessOpenings.fen,
     })
     .from(topicPosts)
-    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
     .where(and(inArray(topicPosts.id, topicPostIds), isNull(topicPosts.deletedAt)));

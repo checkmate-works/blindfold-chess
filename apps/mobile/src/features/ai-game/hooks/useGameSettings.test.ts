@@ -22,7 +22,7 @@ describe("useGameSettings", () => {
     });
   });
 
-  it("updates player color via updatePlayerColor", async () => {
+  it("updates player color via updateSettings", async () => {
     const { result } = renderHook(() => useGameSettings());
 
     await waitFor(() => {
@@ -30,14 +30,14 @@ describe("useGameSettings", () => {
     });
 
     await act(async () => {
-      result.current.updatePlayerColor("black");
+      result.current.updateSettings({ playerColor: "black" });
     });
 
     expect(result.current.settings.playerColor).toBe("black");
     expect(AsyncStorage.setItem).toHaveBeenCalled();
   });
 
-  it("updates skill level via updateSkillLevel", async () => {
+  it("updates skill level via updateSettings", async () => {
     const { result } = renderHook(() => useGameSettings());
 
     await waitFor(() => {
@@ -45,7 +45,7 @@ describe("useGameSettings", () => {
     });
 
     await act(async () => {
-      result.current.updateSkillLevel(10);
+      result.current.updateSettings({ skillLevel: 10 });
     });
 
     expect(result.current.settings.skillLevel).toBe(10);

@@ -6,12 +6,13 @@ import { useRouter } from "expo-router";
 import { Button } from "../../../../components";
 import { SettingsForm } from "../../../../features/coordinate-quiz/components";
 import { useQuizSettings } from "../../../../features/coordinate-quiz/hooks";
+import type { QuizSettings } from "../../../../features/coordinate-quiz/lib/types";
 import { useTheme, spacing } from "../../../../theme";
 
 export default function CoordinateQuizSetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoading, updateSetting } = useQuizSettings();
+  const { settings, isLoaded, updateSettings } = useQuizSettings();
   const { colors } = useTheme();
 
   const handleStartQuiz = () => {
@@ -26,7 +27,7 @@ export default function CoordinateQuizSetup() {
     });
   };
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <View
         style={[
@@ -49,7 +50,12 @@ export default function CoordinateQuizSetup() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <SettingsForm settings={settings} onUpdateSetting={updateSetting} />
+        <SettingsForm
+          settings={settings}
+          onUpdateSetting={(key, value) =>
+            updateSettings({ [key]: value } as Partial<QuizSettings>)
+          }
+        />
       </ScrollView>
 
       <View

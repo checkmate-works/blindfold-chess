@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
-import type { PositionEditRequestStatus } from '@/lib/position-edit-requests/validation';
+import type { EditRequestStatus } from '@/lib/edit-requests/shared';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -26,7 +26,7 @@ type ProposerProfile = {
 
 type Props = {
   requestId: string;
-  status: PositionEditRequestStatus;
+  status: EditRequestStatus;
   createdAt: Date;
   /** Proposer profile, or null when the proposer's account was hard-deleted. */
   proposer: ProposerProfile;
@@ -57,7 +57,7 @@ const WELL_KNOWN_ERRORS = new Set([
   'alreadyResolved',
 ]);
 
-const STATUS_BADGE_CLASS: Record<PositionEditRequestStatus, string> = {
+const STATUS_BADGE_CLASS: Record<EditRequestStatus, string> = {
   pending: 'bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100',
   accepted: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100',
   rejected: 'bg-rose-100 text-rose-900 dark:bg-rose-900 dark:text-rose-100',

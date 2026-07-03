@@ -12,6 +12,7 @@ import {
 } from 'drizzle-orm';
 
 import { db, gameComments, profiles, topicPosts } from './index';
+import { AUTHOR_PROFILE_COLUMNS, liveProfileJoinOn } from './profile-select';
 
 type Replier = {
   avatarUrl: string | null;
@@ -102,12 +103,10 @@ export async function getReplyMetaMap(
         topicKey: topicPosts.topicKey,
         userId: topicPosts.userId,
         createdAt: topicPosts.createdAt,
-        avatarUrl: profiles.avatarUrl,
-        displayName: profiles.displayName,
-        username: profiles.username,
+        ...AUTHOR_PROFILE_COLUMNS,
       })
       .from(topicPosts)
-      .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
+      .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
       .where(filter)
       .orderBy(asc(topicPosts.topicKey), asc(topicPosts.userId), desc(topicPosts.createdAt)),
   ]);
@@ -182,12 +181,10 @@ export async function getGameCommentMetaMap(gameIds: string[]): Promise<Map<stri
         gameId: gameComments.gameId,
         authorId: gameComments.authorId,
         createdAt: gameComments.createdAt,
-        avatarUrl: profiles.avatarUrl,
-        displayName: profiles.displayName,
-        username: profiles.username,
+        ...AUTHOR_PROFILE_COLUMNS,
       })
       .from(gameComments)
-      .leftJoin(profiles, and(eq(gameComments.authorId, profiles.id), isNull(profiles.deletedAt)))
+      .leftJoin(profiles, liveProfileJoinOn(gameComments.authorId))
       .where(and(filter, isNotNull(gameComments.authorId)))
       .orderBy(asc(gameComments.gameId), asc(gameComments.authorId), desc(gameComments.createdAt)),
   ]);

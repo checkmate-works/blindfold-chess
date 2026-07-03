@@ -1,10 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
+import { formatDateTime } from '@/app/admin/_lib/format';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { AdminBadge } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
@@ -53,14 +56,11 @@ export default async function AdminTopicPostsPage({
     deleteModalReasonRequired: t('topicPosts.deleteModalReasonRequired'),
   };
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    if (userFilter) params.set('user', userFilter);
-    if (topicTypeFilter) params.set('topicType', topicTypeFilter);
-    if (statusFilter) params.set('status', statusFilter);
-    return `/admin/topic_posts?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/topic_posts', {
+    user: userFilter,
+    topicType: topicTypeFilter,
+    status: statusFilter,
+  });
 
   return (
     <div>
@@ -146,18 +146,12 @@ export default async function AdminTopicPostsPage({
               <td className="px-4 py-3">{authorDisplay}</td>
               <td className="px-4 py-3">
                 {isDeleted ? (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-destructive-soft text-destructive-soft-foreground">
-                    {t('topicPosts.deleted')}
-                  </span>
+                  <AdminBadge variant="danger">{t('topicPosts.deleted')}</AdminBadge>
                 ) : (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-success-soft text-success-soft-foreground">
-                    {t('topicPosts.active')}
-                  </span>
+                  <AdminBadge variant="success">{t('topicPosts.active')}</AdminBadge>
                 )}
               </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(post.createdAt).toLocaleString()}
-              </td>
+              <td className="px-4 py-3 text-muted-foreground">{formatDateTime(post.createdAt)}</td>
               <td className="px-4 py-3">
                 {!isDeleted && <DeletePostAdminButton postId={post.id} labels={deleteLabels} />}
               </td>

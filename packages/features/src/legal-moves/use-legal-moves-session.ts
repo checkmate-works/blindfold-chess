@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 
 import { computePracticeResult } from "../common/practice-result";
+import { useBufferedQuestions } from "../practice-session/use-buffered-questions";
 import { usePracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
@@ -30,22 +31,10 @@ export function useLegalMovesSession({
   onAnswerEffect,
   mistakeAllowance,
 }: UseLegalMovesSessionConfig): UseLegalMovesSessionReturn {
-  const questionsRef = useRef<MoveQuestion[]>(
-    generateBalancedMoveQuestions(100, selectedPieces),
+  const generateQuestion = useBufferedQuestions(
+    (count) => generateBalancedMoveQuestions(count, selectedPieces),
+    { initialCount: 100 },
   );
-  const indexRef = useRef(0);
-
-  const generateQuestion = useCallback((): MoveQuestion => {
-    if (indexRef.current >= questionsRef.current.length - 10) {
-      questionsRef.current = [
-        ...questionsRef.current,
-        ...generateBalancedMoveQuestions(100, selectedPieces),
-      ];
-    }
-    const question = questionsRef.current[indexRef.current];
-    indexRef.current += 1;
-    return question;
-  }, [selectedPieces]);
 
   const session = useTimedSession<MoveQuestion>({
     timeLimit,

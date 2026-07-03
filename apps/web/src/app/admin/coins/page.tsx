@@ -30,6 +30,8 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
+import { formatDateTime } from '@/app/admin/_lib/format';
 import { inArray } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -131,15 +133,12 @@ export default async function AdminCoinsPage({
     }
   };
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    if (appliedSource) params.set('source', appliedSource);
-    if (appliedCategory) params.set('category', appliedCategory);
-    if (appliedDirection) params.set('direction', appliedDirection);
-    if (appliedUser) params.set('user', appliedUser);
-    return `/admin/coins?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/coins', {
+    source: appliedSource,
+    category: appliedCategory,
+    direction: appliedDirection,
+    user: appliedUser,
+  });
 
   return (
     <div>
@@ -215,7 +214,7 @@ export default async function AdminCoinsPage({
                 {row.reason ?? '-'}
               </td>
               <td className="px-4 py-3 text-muted-foreground text-xs">
-                {new Date(row.createdAt).toLocaleString()}
+                {formatDateTime(row.createdAt)}
               </td>
             </tr>
           );

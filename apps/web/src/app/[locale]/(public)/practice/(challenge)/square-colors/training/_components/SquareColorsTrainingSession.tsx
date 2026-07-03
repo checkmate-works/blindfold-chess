@@ -2,16 +2,12 @@
 
 import { useCallback } from 'react';
 
-import { useRouter } from 'next/navigation';
-
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { generateSquareSequence } from '@blindfold-chess/features/common';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 import { getSquareColor } from '@blindfold-chess/features/square-colors';
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SquareColorsPlaySkeleton } from '../../_components/SquareColorsPlaySkeleton';
@@ -24,10 +20,7 @@ type Props = {
 const BATCH_SIZE = 100;
 
 export default function SquareColorsTrainingSession({ locale }: Props) {
-  const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
-  const { showToast } = useToast();
-  const tp = useTranslations('practice');
 
   const {
     currentQuestion: currentSquare,
@@ -44,7 +37,11 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
     feedbackDelayMs: 500,
   });
 
-  useScrollToElement('square-colors-training-session', hasQuestions);
+  const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
+    locale,
+    slug: 'square-colors',
+    scrollEnabled: hasQuestions,
+  });
 
   const onAnswer = useCallback(
     (selectedColor: 'light' | 'dark') => {
@@ -53,18 +50,13 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
     [handleAnswer]
   );
 
-  const handleEndTraining = useCallback(() => {
-    showToast(tp('trainingEnded'), 'info');
-    router.push(`/${locale}/practice/square-colors`);
-  }, [showToast, tp, router, locale]);
-
   // Show loading state while squares are being generated
   if (!hasQuestions || !currentSquare || !isLoaded) {
     return <SquareColorsPlaySkeleton />;
   }
 
   return (
-    <div id="square-colors-training-session" className="min-h-screen">
+    <div id={sessionElementId} className="min-h-screen">
       <SquareColorsTrainingPlaying
         currentSquare={currentSquare}
         showResult={showResult}

@@ -17,22 +17,22 @@ describe("useLegalMovesSettings", () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     expect(result.current.settings.selectedPieces).toBeDefined();
     expect(result.current.settings.timeLimit).toBeDefined();
   });
 
-  it("updates timeLimit via updateTimeLimit", async () => {
+  it("updates timeLimit via updateSettings", async () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     await act(async () => {
-      result.current.updateTimeLimit(90);
+      result.current.updateSettings({ timeLimit: 90 });
     });
 
     expect(result.current.settings.timeLimit).toBe(90);
@@ -42,7 +42,7 @@ describe("useLegalMovesSettings", () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     const initialPieces = [...result.current.settings.selectedPieces];
@@ -62,7 +62,7 @@ describe("useLegalMovesSettings", () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     // Deselect all but one
@@ -89,7 +89,7 @@ describe("useLegalMovesSettings", () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     // Default has all 5 pieces selected
@@ -107,7 +107,7 @@ describe("useLegalMovesSettings", () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     act(() => {
@@ -127,11 +127,11 @@ describe("useLegalMovesSettings", () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     act(() => {
-      result.current.updateTimeLimit(120);
+      result.current.updateSettings({ timeLimit: 120 });
     });
 
     act(() => {
@@ -146,14 +146,14 @@ describe("useLegalMovesSettings", () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     const defaultPieces = [...result.current.settings.selectedPieces];
     const defaultTimeLimit = result.current.settings.timeLimit;
 
     act(() => {
-      result.current.updateTimeLimit(999);
+      result.current.updateSettings({ timeLimit: 999 });
     });
 
     act(() => {

@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { db, profiles, userFollows } from '@/lib/db';
+import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
 
 import { PageLayout, PaginationNav, UserCard } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -81,10 +81,8 @@ export default async function FollowersPage({ params, searchParams }: Props) {
 
   const followerList = await db
     .select({
+      ...AUTHOR_PROFILE_COLUMNS,
       id: profiles.id,
-      username: profiles.username,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
     })
     .from(userFollows)
     .innerJoin(profiles, eq(userFollows.followerId, profiles.id))

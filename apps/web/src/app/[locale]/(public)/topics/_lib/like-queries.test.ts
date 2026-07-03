@@ -65,6 +65,14 @@ vi.mock('@/lib/db', () => {
       name: 'chess_openings.name',
       fen: 'chess_openings.fen',
     },
+    // Same fake column ids as the `profiles` mock above so select shapes built
+    // from the shared columns stay consistent.
+    AUTHOR_PROFILE_COLUMNS: {
+      username: 'profiles.username',
+      displayName: 'profiles.display_name',
+      avatarUrl: 'profiles.avatar_url',
+    },
+    liveProfileJoinOn: vi.fn((ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn]),
   };
 });
 

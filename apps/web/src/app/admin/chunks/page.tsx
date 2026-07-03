@@ -1,9 +1,11 @@
 import Link from 'next/link';
 
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
+import { AdminListSummary } from '@/app/admin/_components/AdminListSummary';
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
+import { formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { countChunks, listChunks } from '@/lib/chunks/queries';
@@ -36,12 +38,13 @@ export default async function AdminChunksPage({
     <div>
       <AdminPageHeader breadcrumbs={[{ label: 'Chunks' }]} />
 
-      {rows.length > 0 && (
-        <p className="text-sm text-muted-foreground mb-2">
-          Showing {(currentPage - 1) * DEFAULT_PAGE_SIZE + 1}&ndash;
-          {(currentPage - 1) * DEFAULT_PAGE_SIZE + rows.length} of {totalCount} chunks
-        </p>
-      )}
+      <AdminListSummary
+        currentPage={currentPage}
+        pageSize={DEFAULT_PAGE_SIZE}
+        shownCount={rows.length}
+        totalCount={totalCount}
+        itemLabel="chunks"
+      />
 
       <AdminDataTable
         headers={['Title', 'Board', 'Description', 'Created At', 'Actions']}
@@ -67,7 +70,7 @@ export default async function AdminChunksPage({
               {chunk.description ? truncate(chunk.description) : '-'}
             </td>
             <td className="px-4 py-3 text-muted-foreground text-sm">
-              {new Date(chunk.createdAt).toLocaleString()}
+              {formatDateTime(chunk.createdAt)}
             </td>
             <td className="px-4 py-3">
               <DeleteChunkButton id={chunk.id} title={chunk.title} />

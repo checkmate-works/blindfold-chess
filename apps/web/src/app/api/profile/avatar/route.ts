@@ -3,8 +3,7 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
-import { authenticateAndGuardApi } from '@/lib/auth';
-import { isValidOrigin } from '@/lib/csrf';
+import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { db, profiles } from '@/lib/db';
 import { validatePostImageBinarySignature } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -24,11 +23,7 @@ const AVATAR_PIXEL_SIZE = 256;
 const AVATAR_WEBP_QUALITY = 85;
 
 export async function POST(request: Request) {
-  if (!isValidOrigin(request)) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
-
-  const guardResult = await authenticateAndGuardApi(RATE_LIMITS.uploadAvatar);
+  const guardResult = await guardApiMutation(request, RATE_LIMITS.uploadAvatar);
   if ('response' in guardResult) {
     return guardResult.response;
   }

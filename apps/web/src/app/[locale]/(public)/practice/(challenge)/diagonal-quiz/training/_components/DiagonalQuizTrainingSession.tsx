@@ -2,9 +2,6 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { useRouter } from 'next/navigation';
-
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FEEDBACK_FLASH_MS, generateSquareSequence } from '@blindfold-chess/features/common';
 import {
   EXCLUDED_QUIZ_SQUARES,
@@ -14,8 +11,7 @@ import {
 } from '@blindfold-chess/features/diagonal-quiz';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DiagonalQuizPlaySkeleton } from '../../_components/DiagonalQuizPlaySkeleton';
@@ -28,10 +24,6 @@ type Props = {
 const BATCH_SIZE = 100;
 
 export default function DiagonalQuizTrainingSession({ locale }: Props) {
-  const router = useRouter();
-  const { showToast } = useToast();
-  const tp = useTranslations('practice');
-
   const {
     currentQuestion: currentSquare,
     hasQuestions,
@@ -66,7 +58,11 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     incorrectAutoAdvance: false,
   });
 
-  useScrollToElement('diagonal-quiz-training-session', hasQuestions);
+  const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
+    locale,
+    slug: 'diagonal-quiz',
+    scrollEnabled: hasQuestions,
+  });
 
   const onAnswer = useCallback(
     (diagonalAnswer: string, antiDiagonalAnswer: string) => {
@@ -78,11 +74,6 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
   const onSkip = useCallback(() => {
     handleSkip();
   }, [handleSkip]);
-
-  const handleEndTraining = useCallback(() => {
-    showToast(tp('trainingEnded'), 'info');
-    router.push(`/${locale}/practice/diagonal-quiz`);
-  }, [showToast, tp, router, locale]);
 
   const lastAnswerForDisplay = useMemo(() => {
     if (!lastAnswer) return null;
@@ -104,7 +95,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
   }
 
   return (
-    <div id="diagonal-quiz-training-session" className="min-h-screen">
+    <div id={sessionElementId} className="min-h-screen">
       <DiagonalQuizTrainingPlaying
         locale={locale}
         currentSquare={currentSquare}

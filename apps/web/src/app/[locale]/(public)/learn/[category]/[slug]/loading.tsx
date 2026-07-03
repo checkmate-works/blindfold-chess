@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 
 /**
  * Learn article detail loading skeleton.
@@ -30,7 +31,7 @@ export default async function LearnArticleLoading() {
 
       <PagePanel>
         {/* Article body — multi-paragraph Markdown placeholder */}
-        <article className="prose prose-slate dark:prose-invert max-w-none animate-pulse">
+        <ProseArticle className="animate-pulse">
           <div className="space-y-3">
             <div className="h-4 bg-muted rounded w-full" />
             <div className="h-4 bg-muted rounded w-11/12" />
@@ -51,7 +52,7 @@ export default async function LearnArticleLoading() {
             <div className="h-4 bg-muted rounded w-10/12" />
             <div className="h-4 bg-muted rounded w-4/5" />
           </div>
-        </article>
+        </ProseArticle>
 
         {/* Related practice (conditional in real page; reserve to avoid CLS
             for the common "has related practice" case) */}

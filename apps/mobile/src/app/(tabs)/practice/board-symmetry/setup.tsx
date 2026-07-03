@@ -11,7 +11,7 @@ import { useTheme, spacing } from "../../../../theme";
 export default function BoardSymmetrySetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoading, updateTimeLimit } = useBoardSymmetrySettings();
+  const { settings, isLoaded, updateSettings } = useBoardSymmetrySettings();
   const { colors } = useTheme();
 
   const handleStart = () => {
@@ -23,7 +23,7 @@ export default function BoardSymmetrySetup() {
     });
   };
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <View
         style={[
@@ -48,7 +48,7 @@ export default function BoardSymmetrySetup() {
       >
         <SettingsForm
           timeLimit={settings.timeLimit}
-          onUpdateTimeLimit={updateTimeLimit}
+          onUpdateTimeLimit={(timeLimit) => updateSettings({ timeLimit })}
         />
       </ScrollView>
 

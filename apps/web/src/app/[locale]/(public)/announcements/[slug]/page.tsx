@@ -12,6 +12,7 @@ import { getOptionalUser } from '@/lib/auth';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -135,9 +136,9 @@ export default async function AnnouncementPage({ params }: Props) {
         { label: announcement.title },
       ]}
     >
-      <article className="prose prose-slate dark:prose-invert max-w-none break-words">
+      <ProseArticle className="break-words">
         <MarkdownRenderer content={announcement.content} skipFirstH1={true} />
-      </article>
+      </ProseArticle>
 
       {publishedDate && <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>}
 

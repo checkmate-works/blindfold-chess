@@ -11,6 +11,7 @@ import type { GrantedRank } from '@/lib/db/data/ranks';
 import { checkAndGrantRanks } from '@/lib/db/rank-evaluation';
 import type { DbTx } from '@/lib/db/types';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
+import { guardOwnership } from '@/lib/ownership-guard';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { validateForkSource } from '@/lib/positions/fork';
 import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
@@ -87,7 +88,7 @@ export type CreatePositionEntryResult =
     }
   | { error: string };
 
-export type UpdatePositionEntryResult = { success: true } | { error: string };
+export type UpdatePositionEntryResult = ActionResult;
 
 /**
  * Create a `positions` row of the given kind: validate, resolve an
@@ -273,11 +274,9 @@ export async function updatePositionEntry(params: {
   if (!position || position.type !== config.type) {
     return { error: 'notFound' };
   }
-  if (position.userId !== user.id) {
-    return { error: 'unauthorized' };
-  }
-  if (position.deletedAt) {
-    return { error: 'alreadyDeleted' };
+  const ownershipError = guardOwnership(position, user.id);
+  if (ownershipError) {
+    return { error: ownershipError };
   }
 
   const tagValidation = await validateAndDedupeTagIds({
@@ -371,11 +370,9 @@ export async function deletePositionEntry(params: {
   if (!position || position.type !== config.type) {
     return { error: 'notFound' };
   }
-  if (position.userId !== user.id) {
-    return { error: 'unauthorized' };
-  }
-  if (position.deletedAt) {
-    return { error: 'alreadyDeleted' };
+  const ownershipError = guardOwnership(position, user.id);
+  if (ownershipError) {
+    return { error: ownershipError };
   }
 
   await db.transaction(async (tx) => {

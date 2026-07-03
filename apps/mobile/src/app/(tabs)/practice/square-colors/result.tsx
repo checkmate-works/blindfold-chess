@@ -3,8 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-import { Button } from "../../../../components";
-import { ResultCard } from "../../../../features/square-colors/components";
+import { Button, PracticeStatsResultCard } from "../../../../components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { SquareColorsResult } from "../../../../features/square-colors/hooks";
 
@@ -48,7 +47,7 @@ export default function SquareColorsResult() {
           {t("squareColors.result.title")}
         </Text>
 
-        <ResultCard result={result} />
+        <PracticeStatsResultCard result={result} />
       </View>
 
       <View style={styles.footer}>

@@ -11,7 +11,7 @@ import { useTheme, spacing } from "../../../../theme";
 export default function RoutePlannerSetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoading, updateProblemCount, togglePiece } =
+  const { settings, isLoaded, updateSettings, togglePiece } =
     useRoutePlannerSettings();
   const { colors } = useTheme();
 
@@ -25,7 +25,7 @@ export default function RoutePlannerSetup() {
     });
   };
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <View
         style={[
@@ -51,7 +51,9 @@ export default function RoutePlannerSetup() {
         <SettingsForm
           problemCount={settings.problemCount}
           selectedPieces={settings.selectedPieces}
-          onUpdateProblemCount={updateProblemCount}
+          onUpdateProblemCount={(problemCount) =>
+            updateSettings({ problemCount })
+          }
           onTogglePiece={togglePiece}
         />
       </ScrollView>

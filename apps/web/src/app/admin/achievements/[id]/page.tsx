@@ -22,6 +22,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
+import { formatDateTime } from '@/app/admin/_lib/format';
 
 import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
@@ -63,11 +65,7 @@ export default async function AdminAchievementDetailPage({
 
   const holders = await listAchievementHolders(id, { limit, offset });
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    return `/admin/achievements/${id}?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref(`/admin/achievements/${id}`);
 
   const displayName = getAchievementDisplayName(achievement, tRoot);
   const iconEmoji = getAchievementIconEmoji(achievement.iconKey);
@@ -121,7 +119,7 @@ export default async function AdminAchievementDetailPage({
           </div>
           <div>
             <dt className="text-muted-foreground">{t('achievements.detail.createdAt')}</dt>
-            <dd>{new Date(achievement.createdAt).toLocaleString()}</dd>
+            <dd>{formatDateTime(achievement.createdAt)}</dd>
           </div>
         </dl>
       </div>
@@ -165,7 +163,7 @@ export default async function AdminAchievementDetailPage({
             </td>
             <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{holder.userId}</td>
             <td className="px-4 py-3 text-muted-foreground text-xs">
-              {new Date(holder.achievedAt).toLocaleString()}
+              {formatDateTime(holder.achievedAt)}
             </td>
             <td className="px-4 py-3">
               <code className="block max-w-md overflow-x-auto text-xs bg-secondary px-2 py-1 rounded">

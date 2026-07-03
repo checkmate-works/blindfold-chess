@@ -1,8 +1,17 @@
 import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import type { Repertoire, RepertoireLine } from '@/lib/db';
-import { chessOpenings, db, profiles, repertoireOpenings, repertoires } from '@/lib/db';
+import {
+  AUTHOR_PROFILE_COLUMNS,
+  chessOpenings,
+  db,
+  liveProfileJoinOn,
+  profiles,
+  repertoireOpenings,
+  repertoires,
+} from '@/lib/db';
 import { repertoireLines } from '@/lib/db';
+import { guardOwnership } from '@/lib/ownership-guard';
 
 /** Author subset joined onto a repertoire for catalog cards. */
 export type RepertoireAuthorProfile = {
@@ -66,14 +75,10 @@ export async function listRepertoiresForUser(userId: string): Promise<Repertoire
   const rows = await db
     .select({
       repertoire: repertoires,
-      profile: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      },
+      profile: AUTHOR_PROFILE_COLUMNS,
     })
     .from(repertoires)
-    .leftJoin(profiles, and(eq(repertoires.userId, profiles.id), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
     .where(and(eq(repertoires.userId, userId), isNull(repertoires.deletedAt)))
     .orderBy(desc(repertoires.createdAt));
 
@@ -132,11 +137,7 @@ export async function getRepertoireForViewer(
   let profile: RepertoireAuthorProfile | null = null;
   if (repertoire.userId) {
     const [row] = await db
-      .select({
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      })
+      .select(AUTHOR_PROFILE_COLUMNS)
       .from(profiles)
       .where(eq(profiles.id, repertoire.userId))
       .limit(1);
@@ -178,9 +179,8 @@ export async function assertRepertoireOwner(
     .from(repertoires)
     .where(and(eq(repertoires.id, repertoireId), isNull(repertoires.deletedAt)))
     .limit(1);
-  if (!row) return 'notFound';
-  if (row.userId !== viewerId) return 'unauthorized';
-  return null;
+  // The fetch filters deleted rows, so this yields 'notFound' | 'unauthorized' | null.
+  return guardOwnership(row, viewerId) as 'unauthorized' | 'notFound' | null;
 }
 
 /**

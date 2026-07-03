@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
+import { formatDate } from '@/app/admin/_lib/format';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -7,6 +9,7 @@ import { db, profiles, subscriptions } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
@@ -19,19 +22,19 @@ const searchParamsCache = createSearchParamsCache({
   user: parseAsString.withDefault(''),
 });
 
-function getStatusBadgeClass(status: string): string {
+function statusBadgeVariant(status: string): AdminBadgeVariant {
   switch (status) {
     case 'active':
-      return 'bg-success-soft text-success-soft-foreground';
+      return 'success';
     case 'trialing':
-      return 'bg-info-soft text-info-soft-foreground';
+      return 'info';
     case 'past_due':
-      return 'bg-warning-soft text-warning-soft-foreground';
+      return 'warning';
     case 'canceled':
     case 'unpaid':
-      return 'bg-destructive-soft text-destructive-soft-foreground';
+      return 'danger';
     default:
-      return 'bg-secondary text-foreground';
+      return 'neutral';
   }
 }
 
@@ -118,13 +121,10 @@ export default async function AdminSubscriptionsPage({
       }
     : null;
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    if (statusFilter) params.set('status', statusFilter);
-    if (userFilter) params.set('user', userFilter);
-    return `/admin/subscriptions?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/subscriptions', {
+    status: statusFilter,
+    user: userFilter,
+  });
 
   return (
     <div>
@@ -182,24 +182,16 @@ export default async function AdminSubscriptionsPage({
                 {truncateId(sub.stripePriceId)}
               </td>
               <td className="px-4 py-3">
-                <span
-                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getStatusBadgeClass(sub.status)}`}
-                >
-                  {sub.status}
-                </span>
+                <AdminBadge variant={statusBadgeVariant(sub.status)}>{sub.status}</AdminBadge>
               </td>
-              <td className="px-4 py-3">
-                {sub.cancelAt ? new Date(sub.cancelAt).toLocaleDateString() : '-'}
+              <td className="px-4 py-3">{formatDate(sub.cancelAt)}</td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {formatDate(sub.currentPeriodStart)}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
-                {new Date(sub.currentPeriodStart).toLocaleDateString()}
+                {formatDate(sub.currentPeriodEnd)}
               </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(sub.currentPeriodEnd).toLocaleDateString()}
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(sub.createdAt).toLocaleDateString()}
-              </td>
+              <td className="px-4 py-3 text-muted-foreground">{formatDate(sub.createdAt)}</td>
             </tr>
           );
         }}

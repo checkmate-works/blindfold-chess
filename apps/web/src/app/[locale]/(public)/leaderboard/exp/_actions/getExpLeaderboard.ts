@@ -6,7 +6,7 @@ import { getLevel } from '@blindfold-chess/features/exp';
 import { desc, eq, gte, sql, sum } from 'drizzle-orm';
 
 import { EXP_LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
-import { db, expEvents, profiles, userExp } from '@/lib/db';
+import { AUTHOR_PROFILE_COLUMNS, db, expEvents, profiles, userExp } from '@/lib/db';
 import { startOfCurrentMonth, startOfCurrentWeek } from '@/lib/db/period-range';
 import { handleServerActionError } from '@/lib/server-action-error';
 
@@ -41,9 +41,7 @@ const getCachedAllTimeRanking = unstable_cache(
       .select({
         userId: userExp.userId,
         totalExp: userExp.totalExp,
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
+        ...AUTHOR_PROFILE_COLUMNS,
       })
       .from(userExp)
       .innerJoin(profiles, eq(profiles.id, userExp.userId))
@@ -80,9 +78,7 @@ function getCachedPeriodRanking(period: 'weekly' | 'monthly') {
           userId: expEvents.userId,
           totalExp: totalExpAlias,
           cumulativeTotalExp: userExp.totalExp,
-          username: profiles.username,
-          displayName: profiles.displayName,
-          avatarUrl: profiles.avatarUrl,
+          ...AUTHOR_PROFILE_COLUMNS,
         })
         .from(expEvents)
         .innerJoin(profiles, eq(profiles.id, expEvents.userId))

@@ -5,6 +5,8 @@ import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
+import { AdminBadge } from '@/app/admin/_components/AdminBadge';
+
 import type { AdBannerRecord } from '@/lib/db';
 
 import { updateAdBanner } from '../_actions/updateAdBanner';
@@ -129,15 +131,9 @@ export function BannerEditRow({ banner, labels }: BannerEditRowProps) {
       </td>
       <td className="px-4 py-3 text-sm">{banner.alt}</td>
       <td className="px-4 py-3">
-        <span
-          className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-            banner.isActive
-              ? 'bg-success-soft text-success-soft-foreground'
-              : 'bg-destructive-soft text-destructive-soft-foreground'
-          }`}
-        >
+        <AdminBadge variant={banner.isActive ? 'success' : 'danger'}>
           {banner.isActive ? labels.active : labels.inactive}
-        </span>
+        </AdminBadge>
       </td>
       <td className="px-4 py-3">
         <button

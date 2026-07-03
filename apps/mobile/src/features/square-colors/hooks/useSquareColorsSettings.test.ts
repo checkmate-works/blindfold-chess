@@ -18,21 +18,21 @@ describe("useSquareColorsSettings", () => {
     const { result } = renderHook(() => useSquareColorsSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     expect(result.current.settings.timeLimit).toBeDefined();
   });
 
-  it("updates timeLimit via updateTimeLimit", async () => {
+  it("updates timeLimit via updateSettings", async () => {
     const { result } = renderHook(() => useSquareColorsSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     await act(async () => {
-      result.current.updateTimeLimit(120);
+      result.current.updateSettings({ timeLimit: 120 });
     });
 
     expect(result.current.settings.timeLimit).toBe(120);
@@ -43,11 +43,11 @@ describe("useSquareColorsSettings", () => {
     const { result } = renderHook(() => useSquareColorsSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     await act(async () => {
-      result.current.updateTimeLimit(999);
+      result.current.updateSettings({ timeLimit: 999 });
     });
 
     await act(async () => {

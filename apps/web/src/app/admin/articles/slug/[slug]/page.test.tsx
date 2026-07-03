@@ -236,14 +236,15 @@ describe('AdminArticleSlugPage (locale variant detail page)', () => {
       expect(publishedAtCell).toBeDefined();
     });
 
-    it('displays hyphen when publishedAt is null', async () => {
+    it('displays an em dash when publishedAt is null', async () => {
       const article = createArticle({ publishedAt: null });
       mockDbSelectFromWhereOrderBy.mockResolvedValue([article]);
 
       const jsx = await AdminArticleSlugPage({ params: createParams('test-article') });
       render(jsx);
 
-      expect(screen.getByText('-')).toBeInTheDocument();
+      // formatDateTime (admin/_lib/format.ts) renders null dates as an em dash.
+      expect(screen.getByText('—')).toBeInTheDocument();
     });
 
     it('displays Published badge when status is published', async () => {

@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { chunkEditRequests } from '@/lib/db';
 import type { db } from '@/lib/db';
+import { guardOwnership } from '@/lib/ownership-guard';
 
 /**
  * Ownership / soft-delete guard shared by the update, publish, and delete
@@ -16,13 +17,8 @@ export function guardChunkOwnership(
   chunk: { userId: string | null; deletedAt: Date | null },
   userId: string
 ): { error: string } | null {
-  if (chunk.userId !== userId) {
-    return { error: 'unauthorized' };
-  }
-  if (chunk.deletedAt) {
-    return { error: 'alreadyDeleted' };
-  }
-  return null;
+  const error = guardOwnership(chunk, userId);
+  return error ? { error } : null;
 }
 
 /** Minimal transaction surface needed to reject pending edit requests. */

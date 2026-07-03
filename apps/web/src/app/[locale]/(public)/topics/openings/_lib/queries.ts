@@ -3,7 +3,14 @@ import { cache } from 'react';
 import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
-import { chessOpenings, db, profiles, topicPostRatings, topicPosts } from '@/lib/db';
+import {
+  chessOpenings,
+  db,
+  liveProfileJoinOn,
+  profiles,
+  topicPostRatings,
+  topicPosts,
+} from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 
 import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
@@ -53,7 +60,7 @@ async function getPostsForOpening(slug: string): Promise<OpeningPostWithAuthor[]
       rating: ratingSelect,
     })
     .from(topicPosts)
-    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .where(
       and(
@@ -101,7 +108,7 @@ export const getOpeningPostById = cache(
         rating: ratingSelect,
       })
       .from(topicPosts)
-      .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
+      .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
       .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
       .where(
         and(

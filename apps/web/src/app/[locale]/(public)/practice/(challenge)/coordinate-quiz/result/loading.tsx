@@ -1,7 +1,1 @@
-import { PracticeResultLoadingSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultLoadingSkeleton';
-
-// Challenge runs award EXP (authenticated) and show the sign-up banner
-// (anonymous); reserve the matching block so the result paint does not shift.
-export default function Loading() {
-  return <PracticeResultLoadingSkeleton grantsExp showsSignUpBanner />;
-}
+export { default } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeResultLoading';

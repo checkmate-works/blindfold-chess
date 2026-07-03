@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positionChunks, positionEditRequests, positions } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
@@ -40,9 +41,9 @@ import { validateSubmitPositionEditRequest } from './validation';
  * submit time even though the RLS policy already forbids it.
  */
 
-export type SubmitPositionEditRequestResult = { success: true; id: string } | { error: string };
+export type SubmitPositionEditRequestResult = ActionResult<{ id: string }>;
 
-export type ResolvePositionEditRequestResult = { success: true } | { error: string };
+export type ResolvePositionEditRequestResult = ActionResult;
 
 async function loadPositionForRequest(id: string) {
   const [position] = await db

@@ -1,14 +1,18 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
+import { formatDateTime } from '@/app/admin/_lib/format';
+import { resolveUserFilter } from '@/app/admin/_lib/resolve-user-filter';
 import type { User } from '@supabase/supabase-js';
-import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, moderationActions, profiles } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
@@ -19,6 +23,23 @@ const searchParamsCache = createSearchParamsCache({
   action: parseAsString.withDefault(''),
   user: parseAsString.withDefault(''),
 });
+
+function actionBadgeVariant(action: string): AdminBadgeVariant {
+  switch (action) {
+    case 'ban':
+      return 'danger';
+    case 'unban':
+    case 'create_grant':
+    case 'create_point_grant':
+      return 'success';
+    case 'delete_post':
+    case 'delete_position':
+    case 'revoke_grant':
+      return 'caution';
+    default:
+      return 'neutral';
+  }
+}
 
 export default async function AdminAuditLogPage({
   searchParams,
@@ -44,36 +65,11 @@ export default async function AdminAuditLogPage({
   // identical `listUsers` round-trip in the same request.
   let preloadedAuthUsers: User[] | undefined;
   if (userFilter) {
-    const matchingProfiles = await db
-      .select({ id: profiles.id })
-      .from(profiles)
-      .where(
-        or(
-          ilike(profiles.username, `%${userFilter}%`),
-          ilike(profiles.displayName, `%${userFilter}%`)
-        )
-      );
-
-    // Also search by email via Supabase admin client
-    const listUsersResult = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
-    preloadedAuthUsers = listUsersResult.data?.users;
-    const matchingEmailUserIds = (preloadedAuthUsers ?? [])
-      .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
-      .map((u) => u.id);
-
-    const allMatchingIds = [
-      ...new Set([...matchingProfiles.map((p) => p.id), ...matchingEmailUserIds]),
-    ];
-
-    if (allMatchingIds.length === 0) {
-      // No matching users — return empty result
-      filteredTargetIds = [];
-    } else {
-      filteredTargetIds = allMatchingIds;
-      conditions.push(inArray(moderationActions.targetId, allMatchingIds));
+    const resolved = await resolveUserFilter(adminClient, userFilter);
+    preloadedAuthUsers = resolved.preloadedAuthUsers;
+    filteredTargetIds = resolved.matchingIds;
+    if (resolved.matchingIds.length > 0) {
+      conditions.push(inArray(moderationActions.targetId, resolved.matchingIds));
     }
   }
 
@@ -122,13 +118,10 @@ export default async function AdminAuditLogPage({
   });
 
   // Build search params for pagination links
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    if (actionFilter) params.set('action', actionFilter);
-    if (userFilter) params.set('user', userFilter);
-    return `/admin/audit-log?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/audit-log', {
+    action: actionFilter,
+    user: userFilter,
+  });
 
   return (
     <div>
@@ -190,23 +183,7 @@ export default async function AdminAuditLogPage({
           return (
             <tr key={log.id} className="border-t border-border">
               <td className="px-4 py-3">
-                <span
-                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                    log.action === 'ban'
-                      ? 'bg-destructive-soft text-destructive-soft-foreground'
-                      : log.action === 'unban' ||
-                          log.action === 'create_grant' ||
-                          log.action === 'create_point_grant'
-                        ? 'bg-success-soft text-success-soft-foreground'
-                        : log.action === 'delete_post' ||
-                            log.action === 'delete_position' ||
-                            log.action === 'revoke_grant'
-                          ? 'bg-caution-soft text-caution-soft-foreground'
-                          : 'bg-secondary text-secondary-foreground'
-                  }`}
-                >
-                  {log.action}
-                </span>
+                <AdminBadge variant={actionBadgeVariant(log.action)}>{log.action}</AdminBadge>
               </td>
               <td className="px-4 py-3">{targetDisplay}</td>
               <td className="px-4 py-3 text-muted-foreground">{actorDisplay}</td>
@@ -220,9 +197,7 @@ export default async function AdminAuditLogPage({
                 )}
               </td>
               <td className="px-4 py-3 text-muted-foreground">{log.ipAddress ?? '-'}</td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(log.createdAt).toLocaleString()}
-              </td>
+              <td className="px-4 py-3 text-muted-foreground">{formatDateTime(log.createdAt)}</td>
             </tr>
           );
         }}

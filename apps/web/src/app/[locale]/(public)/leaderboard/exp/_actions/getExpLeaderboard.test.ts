@@ -121,6 +121,14 @@ vi.mock('@/lib/db', () => {
     userExp: userExpTable,
     expEvents: expEventsTable,
     profiles: profilesTable,
+    // Shared profile-select columns re-exported by the real barrel; the mocked
+    // db.select ignores its arguments, so simple stand-ins are sufficient.
+    AUTHOR_PROFILE_COLUMNS: {
+      username: 'profiles.username',
+      displayName: 'profiles.display_name',
+      avatarUrl: 'profiles.avatar_url',
+    },
+    liveProfileJoinOn: vi.fn((ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn]),
   };
 });
 

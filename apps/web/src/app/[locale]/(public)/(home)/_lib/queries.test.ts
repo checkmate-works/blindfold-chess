@@ -43,6 +43,12 @@ vi.mock('@/lib/db', () => ({
   profiles: { id: 'id' },
   topicPostRatings: { postId: 'post_id' },
   chessOpenings: { slug: 'slug', name: 'name', fen: 'fen' },
+  AUTHOR_PROFILE_COLUMNS: {
+    username: 'username',
+    displayName: 'display_name',
+    avatarUrl: 'avatar_url',
+  },
+  liveProfileJoinOn: (ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn],
 }));
 
 vi.mock('@/app/[locale]/(public)/topics/_lib/post-meta', () => ({

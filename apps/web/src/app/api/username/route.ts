@@ -3,30 +3,24 @@ import { NextResponse } from 'next/server';
 import { validateUsername } from '@blindfold-chess/features/username';
 import { eq } from 'drizzle-orm';
 
-import { authenticateAndGuardApi } from '@/lib/auth';
+import { guardApiMutation, parseJsonBody } from '@/lib/api-mutation-guard';
 import { isLameName } from '@/lib/content/lame-name';
-import { isValidOrigin } from '@/lib/csrf';
 import { db, profiles } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 export async function POST(request: Request) {
-  if (!isValidOrigin(request)) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
-
-  const guardResult = await authenticateAndGuardApi(RATE_LIMITS.setupUsername);
+  const guardResult = await guardApiMutation(request, RATE_LIMITS.setupUsername);
   if ('response' in guardResult) {
     return guardResult.response;
   }
   const { user } = guardResult;
 
-  let body: { username?: string; displayName?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
+  const parseResult = await parseJsonBody<{ username?: string; displayName?: string }>(request);
+  if ('response' in parseResult) {
+    return parseResult.response;
   }
+  const { body } = parseResult;
 
   const username = body.username?.trim();
   if (!username) {
