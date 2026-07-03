@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -55,14 +56,11 @@ export default async function AdminTopicPostsPage({
     deleteModalReasonRequired: t('topicPosts.deleteModalReasonRequired'),
   };
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    if (userFilter) params.set('user', userFilter);
-    if (topicTypeFilter) params.set('topicType', topicTypeFilter);
-    if (statusFilter) params.set('status', statusFilter);
-    return `/admin/topic_posts?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/topic_posts', {
+    user: userFilter,
+    topicType: topicTypeFilter,
+    status: statusFilter,
+  });
 
   return (
     <div>

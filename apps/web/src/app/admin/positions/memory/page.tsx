@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
+import { AdminListSummary } from '@/app/admin/_components/AdminListSummary';
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
@@ -37,12 +38,13 @@ export default async function AdminPositionMemoryPage({
     <div>
       <AdminPageHeader breadcrumbs={[{ label: 'Position Memory' }]} />
 
-      {rows.length > 0 && (
-        <p className="text-sm text-muted-foreground mb-2">
-          Showing {(currentPage - 1) * DEFAULT_PAGE_SIZE + 1}&ndash;
-          {(currentPage - 1) * DEFAULT_PAGE_SIZE + rows.length} of {totalCount} positions
-        </p>
-      )}
+      <AdminListSummary
+        currentPage={currentPage}
+        pageSize={DEFAULT_PAGE_SIZE}
+        shownCount={rows.length}
+        totalCount={totalCount}
+        itemLabel="positions"
+      />
 
       <AdminDataTable
         headers={['Title', 'Board', 'Description', 'Created At', 'Actions']}

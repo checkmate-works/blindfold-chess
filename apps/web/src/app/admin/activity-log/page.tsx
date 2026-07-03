@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -29,13 +30,10 @@ export default async function AdminActivityLogPage({
   const { logs, currentPage, totalPages, profileMap, emailMap, actionTypes } =
     await fetchActivityLogPageData(adminClient, page, actionFilter, userFilter);
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    if (actionFilter) params.set('action', actionFilter);
-    if (userFilter) params.set('user', userFilter);
-    return `/admin/activity-log?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/activity-log', {
+    action: actionFilter,
+    user: userFilter,
+  });
 
   return (
     <div>

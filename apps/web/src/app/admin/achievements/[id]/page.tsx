@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
 
 import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
@@ -64,11 +65,7 @@ export default async function AdminAchievementDetailPage({
 
   const holders = await listAchievementHolders(id, { limit, offset });
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    return `/admin/achievements/${id}?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref(`/admin/achievements/${id}`);
 
   const displayName = getAchievementDisplayName(achievement, tRoot);
   const iconEmoji = getAchievementIconEmoji(achievement.iconKey);

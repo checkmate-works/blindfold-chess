@@ -20,6 +20,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 
 import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
@@ -49,11 +50,7 @@ export default async function AdminAchievementsPage({
 
   const rows = await listAchievementsWithHolderCount({ limit, offset });
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    return `/admin/achievements?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/achievements');
 
   return (
     <div>

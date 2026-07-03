@@ -42,6 +42,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDate } from '@/app/admin/_lib/format';
 import { desc, inArray, sql } from 'drizzle-orm';
 
@@ -123,11 +124,7 @@ export default async function AdminGrantsPage({
     })
   );
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    return `/admin/grants?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/grants');
 
   return (
     <div>

@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDate } from '@/app/admin/_lib/format';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
@@ -120,13 +121,10 @@ export default async function AdminSubscriptionsPage({
       }
     : null;
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    if (statusFilter) params.set('status', statusFilter);
-    if (userFilter) params.set('user', userFilter);
-    return `/admin/subscriptions?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/subscriptions', {
+    status: statusFilter,
+    user: userFilter,
+  });
 
   return (
     <div>

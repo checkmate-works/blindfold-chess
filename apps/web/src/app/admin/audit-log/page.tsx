@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
+import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import type { User } from '@supabase/supabase-js';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
@@ -141,13 +142,10 @@ export default async function AdminAuditLogPage({
   });
 
   // Build search params for pagination links
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    if (actionFilter) params.set('action', actionFilter);
-    if (userFilter) params.set('user', userFilter);
-    return `/admin/audit-log?${params.toString()}`;
-  };
+  const buildHref = buildAdminListHref('/admin/audit-log', {
+    action: actionFilter,
+    user: userFilter,
+  });
 
   return (
     <div>
