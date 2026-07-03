@@ -1,28 +1,16 @@
 'use client';
 
-import {
-  type MouseEvent as ReactMouseEvent,
-  type PointerEvent as ReactPointerEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { boardFlatToFen, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
-import type { Square as AlgebraicSquare, PieceType } from '@blindfold-chess/types';
+import type { PieceType } from '@blindfold-chess/types';
 
 import { BoardAnnotationOverlay } from '@/lib/board-annotations/BoardAnnotationOverlay';
-import {
-  colorFromModifiers,
-  pointerToSquare,
-  toggleArrow,
-  toggleCircle,
-} from '@/lib/board-annotations/editor-actions';
-import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import { useBoardAnnotationDrawing } from '@/lib/board-annotations/use-board-annotation-drawing';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
@@ -94,67 +82,16 @@ export function EditableChessBoard({
   const [selectedPiece, setSelectedPiece] = useState<FenPieceChar>('');
   const themeColors = getBoardThemeColors(boardTheme);
 
-  // Annotation drawing — only active when both the current annotations
-  // and the change handler are supplied. The handlers fall through to
-  // no-ops otherwise so the right-click context menu remains usable.
-  const annotationsInteractive = annotations !== null && onAnnotationsChange !== undefined;
-  const boardContainerRef = useRef<HTMLDivElement>(null);
-  const dragStartRef = useRef<AlgebraicSquare | null>(null);
-
-  const squareAt = useCallback(
-    (clientX: number, clientY: number) => {
-      const rect = boardContainerRef.current?.getBoundingClientRect();
-      if (!rect) return null;
-      return pointerToSquare(clientX, clientY, rect, flipped);
-    },
-    [flipped]
-  );
-
-  const handleContextMenu = useCallback(
-    (e: ReactMouseEvent<HTMLDivElement>) => {
-      if (!annotationsInteractive) return;
-      // Suppress the browser context menu so right-click drag is usable.
-      e.preventDefault();
-    },
-    [annotationsInteractive]
-  );
-
-  const handlePointerDown = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!annotationsInteractive) return;
-      if (e.button !== 2) return; // only right-button
-      e.preventDefault();
-      dragStartRef.current = squareAt(e.clientX, e.clientY);
-    },
-    [annotationsInteractive, squareAt]
-  );
-
-  const handlePointerUp = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!annotationsInteractive || !onAnnotationsChange || !annotations) return;
-      if (e.button !== 2) return;
-      e.preventDefault();
-      const from = dragStartRef.current;
-      const to = squareAt(e.clientX, e.clientY);
-      dragStartRef.current = null;
-      if (!from || !to) return;
-      const color = colorFromModifiers(e);
-      onAnnotationsChange(
-        from === to
-          ? toggleCircle(annotations, from, color)
-          : toggleArrow(annotations, from, to, color)
-      );
-    },
-    [annotationsInteractive, annotations, onAnnotationsChange, squareAt]
-  );
-
-  const handleClearAnnotations = useCallback(() => {
-    if (!annotationsInteractive || !onAnnotationsChange) return;
-    onAnnotationsChange(EMPTY_BOARD_ANNOTATIONS);
-  }, [annotationsInteractive, onAnnotationsChange]);
-
-  const hasAnnotations =
-    annotations !== null && (annotations.arrows.length > 0 || annotations.circles.length > 0);
+  // Annotation drawing (right-click circles/arrows) is an independent
+  // interaction mode from the piece editor — its gesture wiring lives in
+  // useBoardAnnotationDrawing.
+  const {
+    interactive: annotationsInteractive,
+    containerRef: boardContainerRef,
+    containerProps: annotationContainerProps,
+    hasAnnotations,
+    clearAnnotations,
+  } = useBoardAnnotationDrawing({ annotations, onAnnotationsChange, flipped });
 
   useEffect(() => {
     setBoard(fenToBoardFlat(fen) as FenPieceChar[]);
@@ -270,9 +207,7 @@ export function EditableChessBoard({
           className={`relative w-full aspect-square rounded-md overflow-hidden${
             annotationsInteractive ? ' select-none touch-none' : ''
           }`}
-          onContextMenu={annotationsInteractive ? handleContextMenu : undefined}
-          onPointerDown={annotationsInteractive ? handlePointerDown : undefined}
-          onPointerUp={annotationsInteractive ? handlePointerUp : undefined}
+          {...annotationContainerProps}
         >
           <div className="grid grid-cols-8 gap-0 w-full h-full">
             {board.map((piece, squareIndex) => {
@@ -325,7 +260,7 @@ export function EditableChessBoard({
             <span>Repeat the same mark to remove it; use a different color to recolor.</span>
             <button
               type="button"
-              onClick={handleClearAnnotations}
+              onClick={clearAnnotations}
               disabled={!hasAnnotations}
               className="ml-auto px-2 py-1 rounded border border-border text-foreground hover:bg-muted disabled:opacity-50 transition-opacity"
             >
