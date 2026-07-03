@@ -71,6 +71,63 @@ export function computeIsSubmittable(state: NotationInputState): boolean {
   return state.input.length > 0;
 }
 
+/**
+ * Whether ANY structured selection is active — drives the Clear affordance
+ * next to the move preview.
+ */
+export function computeHasSelections(state: NotationInputState): boolean {
+  return (
+    state.selectedPiece !== null ||
+    state.selectedFiles.size > 0 ||
+    state.selectedRanks.size > 0 ||
+    state.isCapture ||
+    state.isCheck ||
+    state.castling !== null ||
+    state.sourceFile !== null ||
+    state.sourceRank !== null
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Row-visibility rules for the structured (button) input UI. Pure selectors
+// so each panel's "when do I appear" policy is testable apart from rendering.
+// ---------------------------------------------------------------------------
+
+/** Piece row: hidden while castling; hidden mid-pawn-entry (file picked, no piece). */
+export function computeShowPieceRow(state: NotationInputState): boolean {
+  return (
+    !state.castling &&
+    (state.selectedFiles.size === 0 || state.selectedPiece !== null)
+  );
+}
+
+/** Castling row: only before any piece / file has been chosen. */
+export function computeShowCastlingRow(state: NotationInputState): boolean {
+  return !state.selectedPiece && state.selectedFiles.size === 0;
+}
+
+/**
+ * Rank row: a file is chosen and — in pawn-capture mode — the capture's
+ * target file is too (the rank belongs to the target square).
+ */
+export function computeShowRankRow(state: NotationInputState): boolean {
+  return (
+    state.selectedFiles.size > 0 &&
+    (!computeIsPawnCaptureMode(state) || state.targetFile !== null)
+  );
+}
+
+/**
+ * Check toggle: the destination is complete — a rank is chosen and, when a
+ * promotion is on offer, the promotion piece is too.
+ */
+export function computeShowCheckToggle(state: NotationInputState): boolean {
+  return (
+    state.selectedRanks.size > 0 &&
+    (!computeShowPromotion(state) || state.promotionPiece !== null)
+  );
+}
+
 function toggleSingleSelection(
   currentSet: Set<string>,
   value: string,

@@ -1,4 +1,5 @@
-import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+import { getPlayerMoveIndices } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
@@ -70,15 +71,14 @@ export function formatMoveLabel(
   return isWhiteMove ? `${moveNumber}. ${san}` : `${moveNumber}...${san}`;
 }
 
-/** Indices into `moves` that were played by `playerColor`. */
+/**
+ * Indices into `moves` that were played by `playerColor`. Delegates to the
+ * canonical operation-log alignment rule in play/_lib/move-ops-alignment.
+ */
 export function computePlayerMoveIndices(
   movesLength: number,
   startingFen: string | undefined,
   playerColor: 'white' | 'black'
 ): number[] {
-  const indices: number[] = [];
-  for (let i = 0; i < movesLength; i++) {
-    if (getMovingSide(i, startingFen) === playerColor) indices.push(i);
-  }
-  return indices;
+  return getPlayerMoveIndices(movesLength, startingFen, playerColor);
 }

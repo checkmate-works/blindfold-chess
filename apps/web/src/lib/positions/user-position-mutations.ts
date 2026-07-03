@@ -1,6 +1,5 @@
 import { revalidatePath } from 'next/cache';
 
-import * as Sentry from '@sentry/nextjs';
 import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
@@ -8,7 +7,8 @@ import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions } from '@/lib/db';
 import type { GrantedRank } from '@/lib/db/data/ranks';
-import { checkAndGrantRanks } from '@/lib/db/rank-evaluation';
+import { diffFields } from '@/lib/db/diff-fields';
+import { evaluateRanksAfterCreate } from '@/lib/db/rank-evaluation';
 import type { DbTx } from '@/lib/db/types';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { guardOwnership } from '@/lib/ownership-guard';
@@ -192,15 +192,9 @@ export async function createPositionEntry(params: {
 
   // Evaluate belt ranks AFTER the transaction commits, so that the freshly
   // inserted `positions` row counts toward `position_submission_count`
-  // requirements (e.g. 2kyu). Wrapped in try-catch — rank evaluation is
-  // supplementary and must not fail the create.
-  let grantedRanks: GrantedRank[] = [];
-  try {
-    grantedRanks = await checkAndGrantRanks(user.id);
-  } catch (error) {
-    console.error('Failed to check/grant ranks after position create:', error);
-    Sentry.captureException(error);
-  }
+  // requirements (e.g. 2kyu). Best-effort by design — see
+  // evaluateRanksAfterCreate.
+  const grantedRanks: GrantedRank[] = await evaluateRanksAfterCreate(user.id, 'position create');
 
   revalidatePath(`/practice/${config.urlSegment}`);
 
@@ -307,17 +301,9 @@ export async function updatePositionEntry(params: {
     await replacePositionTags(tx, data.id, user.id, dedupedThemeIds, dedupedChunkIds);
   });
 
-  // Diff the overwritten fields (old → new) so the activity log keeps the
-  // prior values this in-place edit discarded. A position row has no
-  // revision history. Nothing changed → nothing worth logging.
-  const changes: Record<string, { from: string | null; to: string | null }> = {};
-  for (const key of ['fen', 'title', 'description'] as const) {
-    const from = position[key] ?? null;
-    const to = nextValues[key] ?? null;
-    if (from !== to) {
-      changes[key] = { from, to };
-    }
-  }
+  // Preserve the overwritten values for the activity log (a position row
+  // has no revision history). Nothing changed → nothing worth logging.
+  const changes = diffFields(position, nextValues, ['fen', 'title', 'description']);
 
   if (Object.keys(changes).length > 0) {
     logActivityEvent({
