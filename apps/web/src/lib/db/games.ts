@@ -20,6 +20,7 @@ import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
 import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
 
 import { db } from './index';
+import { liveProfileJoinOn } from './profile-select';
 import type { GameRecord } from './schema';
 import { feedItems, gameChunks, gameTokens, games, profiles } from './schema';
 
@@ -60,7 +61,7 @@ export const getGameById = cache(async (id: string): Promise<SharedGameDetail | 
       authorAvatarUrl: profiles.avatarUrl,
     })
     .from(games)
-    .leftJoin(profiles, and(eq(profiles.id, games.authorId), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(games.authorId))
     .where(
       and(eq(games.id, id), isNull(games.deletedAt), inArray(games.status, [...VISIBLE_STATUSES]))
     )
@@ -141,7 +142,7 @@ function gameListQuery() {
       authorAvatarUrl: profiles.avatarUrl,
     })
     .from(games)
-    .leftJoin(profiles, and(eq(profiles.id, games.authorId), isNull(profiles.deletedAt)));
+    .leftJoin(profiles, liveProfileJoinOn(games.authorId));
 }
 
 type GameListRow = Awaited<ReturnType<typeof gameListQuery>>[number];

@@ -1,6 +1,6 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, inArray, isNull } from 'drizzle-orm';
 
-import { db, positions, profiles } from '@/lib/db';
+import { AUTHOR_PROFILE_COLUMNS, db, liveProfileJoinOn, positions, profiles } from '@/lib/db';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { parsePositionType } from '@/lib/positions/types';
@@ -35,15 +35,13 @@ export async function loadPositionsForFeed(
       fen: positions.fen,
       createdAt: positions.createdAt,
       author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
+        ...AUTHOR_PROFILE_COLUMNS,
         country: profiles.country,
         flair: profiles.flair,
       },
     })
     .from(positions)
-    .leftJoin(profiles, and(eq(positions.userId, profiles.id), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(positions.userId))
     .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)));
 
   const foundIds = rows.map((r) => r.id);

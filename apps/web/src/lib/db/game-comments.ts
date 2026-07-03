@@ -8,11 +8,12 @@
  * `likes` table under `target_type = 'game_comment'`. Members-only writes
  * (enforced in the action); reads expose the author's public profile.
  */
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db } from './index';
 import { getLikeMetaMap } from './like-queries';
+import { AUTHOR_PROFILE_COLUMNS, liveProfileJoinOn } from './profile-select';
 import { gameComments, profiles } from './schema';
 
 export const GAME_COMMENT_LIKE_TARGET = 'game_comment';
@@ -62,7 +63,7 @@ export async function listGameComments(
       authorAvatarUrl: profiles.avatarUrl,
     })
     .from(gameComments)
-    .leftJoin(profiles, and(eq(profiles.id, gameComments.authorId), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(gameComments.authorId))
     .where(eq(gameComments.gameId, gameId))
     .orderBy(asc(gameComments.id));
 
@@ -110,11 +111,7 @@ export async function getCommentUserProfile(userId: string): Promise<{
   avatarUrl: string | null;
 } | null> {
   const [row] = await db
-    .select({
-      username: profiles.username,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
-    })
+    .select(AUTHOR_PROFILE_COLUMNS)
     .from(profiles)
     .where(eq(profiles.id, userId))
     .limit(1);

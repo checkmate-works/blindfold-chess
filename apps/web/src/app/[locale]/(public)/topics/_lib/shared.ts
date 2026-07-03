@@ -1,4 +1,4 @@
-import { profiles, topicPostRatings } from '@/lib/db';
+import { AUTHOR_PROFILE_COLUMNS, profiles, topicPostRatings } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 
 /**
@@ -16,9 +16,7 @@ export function normalizeRating(
  * Shared Drizzle select fragments reused across topic query files.
  */
 export const authorSelect = {
-  username: profiles.username,
-  displayName: profiles.displayName,
-  avatarUrl: profiles.avatarUrl,
+  ...AUTHOR_PROFILE_COLUMNS,
   flair: profiles.flair,
   country: profiles.country,
 } as const;

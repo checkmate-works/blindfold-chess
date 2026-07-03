@@ -1,6 +1,14 @@
 import { and, count, eq, inArray, isNull } from 'drizzle-orm';
 
-import { db, likes, profiles, topicPosts, userExp, userInterviewAnswers } from '@/lib/db';
+import {
+  AUTHOR_PROFILE_COLUMNS,
+  db,
+  likes,
+  profiles,
+  topicPosts,
+  userExp,
+  userInterviewAnswers,
+} from '@/lib/db';
 import { type PointBalanceSummary, getPointBalanceSummary } from '@/lib/points';
 
 import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
@@ -17,15 +25,7 @@ export type MypageDashboardData = {
 
 export async function getMypageDashboardData(userId: string): Promise<MypageDashboardData> {
   const [profileResult, likesResult, answeredResult, expResult, pointBalance] = await Promise.all([
-    db
-      .select({
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      })
-      .from(profiles)
-      .where(eq(profiles.id, userId))
-      .limit(1),
+    db.select(AUTHOR_PROFILE_COLUMNS).from(profiles).where(eq(profiles.id, userId)).limit(1),
     db
       .select({ value: count() })
       .from(likes)

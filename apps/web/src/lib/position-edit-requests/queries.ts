@@ -2,19 +2,14 @@ import { cache } from 'react';
 
 import { and, count, desc, eq } from 'drizzle-orm';
 
-import { db, positionChunks, positionEditRequests, profiles } from '@/lib/db';
+import {
+  AUTHOR_PROFILE_COLUMNS,
+  db,
+  positionChunks,
+  positionEditRequests,
+  profiles,
+} from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
-
-/**
- * Author profile fields surfaced alongside an edit request — minimal
- * subset matching what `UserAvatar` needs. Mirrors the shape returned by
- * `listEditRequestsForChunk`.
- */
-const PROFILE_SELECT = {
-  username: profiles.username,
-  displayName: profiles.displayName,
-  avatarUrl: profiles.avatarUrl,
-} as const;
 
 /**
  * Fetch all edit requests for a position, newest first, joined with each
@@ -28,7 +23,7 @@ export const listEditRequestsForPosition = cache(async (positionId: string) => {
   return db
     .select({
       request: positionEditRequests,
-      proposer: PROFILE_SELECT,
+      proposer: AUTHOR_PROFILE_COLUMNS,
     })
     .from(positionEditRequests)
     .leftJoin(profiles, eq(positionEditRequests.proposerId, profiles.id))

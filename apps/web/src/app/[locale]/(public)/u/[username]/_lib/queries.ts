@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { db, profiles } from '@/lib/db';
+import { AUTHOR_PROFILE_COLUMNS, db, profiles } from '@/lib/db';
 
 /**
  * Wrapped with `React.cache` so the metadata generator and the page
@@ -12,10 +12,8 @@ import { db, profiles } from '@/lib/db';
 export const getProfileByUsername = cache(async (username: string) => {
   const [profile] = await db
     .select({
+      ...AUTHOR_PROFILE_COLUMNS,
       id: profiles.id,
-      username: profiles.username,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
       bio: profiles.bio,
       country: profiles.country,
       flair: profiles.flair,

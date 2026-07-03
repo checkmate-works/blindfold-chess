@@ -1,6 +1,14 @@
 import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
-import { chessOpenings, db, likes, profiles, topicPostRatings, topicPosts } from '@/lib/db';
+import {
+  chessOpenings,
+  db,
+  likes,
+  liveProfileJoinOn,
+  profiles,
+  topicPostRatings,
+  topicPosts,
+} from '@/lib/db';
 
 import { attachProfilePostMeta } from './post-meta';
 import { authorSelect, ratingSelect } from './shared';
@@ -46,7 +54,7 @@ export async function getLikedPostsByUser(
     })
     .from(likes)
     .innerJoin(topicPosts, eq(likes.targetId, topicPosts.id))
-    .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
     .where(

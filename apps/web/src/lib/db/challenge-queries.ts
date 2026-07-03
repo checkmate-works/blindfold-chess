@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { db } from './index';
 import { startOfCurrentMonth, startOfCurrentWeek } from './period-range';
+import { AUTHOR_PROFILE_COLUMNS } from './profile-select';
 import { challengeBestScores, challengeResults, profiles } from './schema';
 
 type LeaderboardRow = {
@@ -39,12 +40,10 @@ export async function getAllTimeRanking(
     db
       .select({
         userId: challengeBestScores.userId,
-        username: profiles.username,
         score: challengeBestScores.score,
         incorrectAnswers: challengeBestScores.incorrectAnswers,
         timeTaken: challengeBestScores.timeTaken,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
+        ...AUTHOR_PROFILE_COLUMNS,
         country: profiles.country,
         flair: profiles.flair,
       })
@@ -117,12 +116,10 @@ async function getPeriodRanking(
     db
       .select({
         userId: bestPerUser.userId,
-        username: profiles.username,
         score: bestPerUser.score,
         incorrectAnswers: bestPerUser.incorrectAnswers,
         timeTaken: bestPerUser.timeTaken,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
+        ...AUTHOR_PROFILE_COLUMNS,
         country: profiles.country,
         flair: profiles.flair,
       })

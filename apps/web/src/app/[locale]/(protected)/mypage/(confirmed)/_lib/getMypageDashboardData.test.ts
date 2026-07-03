@@ -99,6 +99,14 @@ vi.mock('@/lib/db', () => {
   return {
     db,
     profiles: hoisted.profilesTable,
+    // Shared profile-select helpers re-exported by the real barrel. The mocked
+    // db.select ignores its arguments, so simple stand-ins are sufficient.
+    AUTHOR_PROFILE_COLUMNS: {
+      username: 'profiles.username',
+      displayName: 'profiles.display_name',
+      avatarUrl: 'profiles.avatar_url',
+    },
+    liveProfileJoinOn: vi.fn((ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn]),
     likes: hoisted.likesTable,
     topicPosts: hoisted.topicPostsTable,
     userInterviewAnswers: hoisted.userInterviewAnswersTable,

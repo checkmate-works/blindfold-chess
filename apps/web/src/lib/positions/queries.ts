@@ -2,7 +2,15 @@ import { cache } from 'react';
 
 import { type SQL, and, count, desc, eq, isNull, sql } from 'drizzle-orm';
 
-import { db, likes, positions, profiles, topicPosts } from '@/lib/db';
+import {
+  AUTHOR_PROFILE_COLUMNS,
+  db,
+  likes,
+  liveProfileJoinOn,
+  positions,
+  profiles,
+  topicPosts,
+} from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { PositionSortMode, PositionType } from './types';
@@ -151,14 +159,10 @@ export async function listPositionsWithProfile({
   const query = db
     .select({
       position: positions,
-      profile: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      },
+      profile: AUTHOR_PROFILE_COLUMNS,
     })
     .from(positions)
-    .leftJoin(profiles, and(eq(positions.userId, profiles.id), isNull(profiles.deletedAt)));
+    .leftJoin(profiles, liveProfileJoinOn(positions.userId));
   const rows = await (where ? query.where(where) : query)
     .orderBy(...buildPositionOrderBy(sort, topicType))
     .limit(limit)
@@ -198,14 +202,10 @@ export const getPositionWithProfileById = cache(
     const [row] = await db
       .select({
         position: positions,
-        profile: {
-          username: profiles.username,
-          displayName: profiles.displayName,
-          avatarUrl: profiles.avatarUrl,
-        },
+        profile: AUTHOR_PROFILE_COLUMNS,
       })
       .from(positions)
-      .leftJoin(profiles, and(eq(positions.userId, profiles.id), isNull(profiles.deletedAt)))
+      .leftJoin(profiles, liveProfileJoinOn(positions.userId))
       .where(and(...conditions))
       .limit(1);
 

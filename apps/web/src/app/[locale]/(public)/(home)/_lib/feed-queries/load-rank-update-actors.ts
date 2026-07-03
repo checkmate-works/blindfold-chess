@@ -1,6 +1,6 @@
 import { inArray } from 'drizzle-orm';
 
-import { db, profiles } from '@/lib/db';
+import { AUTHOR_PROFILE_COLUMNS, db, profiles } from '@/lib/db';
 
 /**
  * The actor profile fields a `challenge_rank_update` feed item
@@ -35,10 +35,8 @@ export async function loadRankUpdateActors(
 
   const actorRows = await db
     .select({
+      ...AUTHOR_PROFILE_COLUMNS,
       id: profiles.id,
-      username: profiles.username,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
       country: profiles.country,
       flair: profiles.flair,
     })

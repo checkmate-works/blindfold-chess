@@ -1,7 +1,7 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, inArray, isNull } from 'drizzle-orm';
 
 import { getChunkLikeMetaMap } from '@/lib/chunks/like-queries';
-import { chunks, db, profiles } from '@/lib/db';
+import { AUTHOR_PROFILE_COLUMNS, chunks, db, liveProfileJoinOn, profiles } from '@/lib/db';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 
 import type { ChunkFeedData } from '../types';
@@ -35,15 +35,13 @@ export async function loadChunksForFeed(
       representativeFen: chunks.representativeFen,
       createdAt: chunks.createdAt,
       author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
+        ...AUTHOR_PROFILE_COLUMNS,
         country: profiles.country,
         flair: profiles.flair,
       },
     })
     .from(chunks)
-    .leftJoin(profiles, and(eq(chunks.userId, profiles.id), isNull(profiles.deletedAt)))
+    .leftJoin(profiles, liveProfileJoinOn(chunks.userId))
     .where(and(inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)));
 
   const foundIds = chunkRows.map((r) => r.id);

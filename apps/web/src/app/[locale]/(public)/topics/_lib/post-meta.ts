@@ -1,6 +1,13 @@
 import { and, count, desc, eq, inArray, isNull, max } from 'drizzle-orm';
 
-import { db, likes, profiles, topicPosts } from '@/lib/db';
+import {
+  AUTHOR_PROFILE_COLUMNS,
+  db,
+  likes,
+  liveProfileJoinOn,
+  profiles,
+  topicPosts,
+} from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 
 import type {
@@ -44,13 +51,11 @@ export async function attachPostMeta(
       .select({
         rootPostId: topicPosts.rootPostId,
         userId: topicPosts.userId,
-        avatarUrl: profiles.avatarUrl,
-        displayName: profiles.displayName,
-        username: profiles.username,
+        ...AUTHOR_PROFILE_COLUMNS,
         createdAt: topicPosts.createdAt,
       })
       .from(topicPosts)
-      .leftJoin(profiles, and(eq(topicPosts.userId, profiles.id), isNull(profiles.deletedAt)))
+      .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
       .where(and(inArray(topicPosts.rootPostId, postIds), isNull(topicPosts.deletedAt)))
       .orderBy(desc(topicPosts.createdAt)),
     // Batch query 3: like counts per post
