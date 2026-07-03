@@ -1,11 +1,10 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
-import { getCornerInfo } from "@blindfold-chess/features/diagonal-quiz";
-import { useDiagonalQuizSession } from "@blindfold-chess/features/diagonal-quiz/client";
+import { useDiagonalQuiz } from "@blindfold-chess/features/diagonal-quiz/client";
 
 import {
   QuestionCard,
@@ -13,10 +12,7 @@ import {
   FileRankButtons,
 } from "../../../../features/diagonal-quiz/components";
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
-import {
-  useDiagonalInput,
-  type ActiveField,
-} from "../../../../features/diagonal-quiz/hooks";
+import type { ActiveField } from "../../../../features/diagonal-quiz/hooks";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
 
@@ -46,6 +42,20 @@ export default function DiagonalQuizSession() {
     [router],
   );
 
+  // Session + input + corner-info + reset-on-advance are composed by the
+  // shared useDiagonalQuiz hook; this screen is pure rendering.
+  const { session, input, isDisabled, singleDiagonal, singleAntiDiagonal } =
+    useDiagonalQuiz({
+      timeLimit: duration,
+      onComplete: handleComplete,
+      onAnswerEffect: (correct) =>
+        Haptics.notificationAsync(
+          correct
+            ? Haptics.NotificationFeedbackType.Success
+            : Haptics.NotificationFeedbackType.Error,
+        ),
+    });
+
   const {
     currentSquare,
     countdown,
@@ -53,32 +63,7 @@ export default function DiagonalQuizSession() {
     correctCount,
     incorrectCount,
     lastAnswer,
-    handleAnswer,
-  } = useDiagonalQuizSession({
-    timeLimit: duration,
-    onComplete: handleComplete,
-    onAnswerEffect: (correct) =>
-      Haptics.notificationAsync(
-        correct
-          ? Haptics.NotificationFeedbackType.Success
-          : Haptics.NotificationFeedbackType.Error,
-      ),
-  });
-
-  const isDisabled = countdown !== null;
-
-  const { singleDiagonal, singleAntiDiagonal } = currentSquare
-    ? getCornerInfo(currentSquare)
-    : { singleDiagonal: false, singleAntiDiagonal: false };
-
-  const onBothComplete = useCallback(
-    (diagonal: string, antiDiagonal: string) => {
-      if (isDisabled) return;
-      handleAnswer(diagonal, antiDiagonal);
-    },
-    [isDisabled, handleAnswer],
-  );
-
+  } = session;
   const {
     diagonalStartText,
     diagonalEndText,
@@ -96,22 +81,7 @@ export default function DiagonalQuizSession() {
     handleRankPress,
     handleBackspace,
     handleClear,
-    reset: resetInput,
-  } = useDiagonalInput({
-    onBothComplete,
-    disabled: isDisabled,
-    allowSingleSquareDiagonal: singleDiagonal,
-    allowSingleSquareAntiDiagonal: singleAntiDiagonal,
-  });
-
-  // Reset input when question changes
-  const prevSquareRef = useRef(currentSquare);
-  useEffect(() => {
-    if (prevSquareRef.current !== currentSquare) {
-      prevSquareRef.current = currentSquare;
-      resetInput();
-    }
-  }, [currentSquare, resetInput]);
+  } = input;
 
   const handleFieldPress = (field: ActiveField) => {
     if (isDisabled) return;

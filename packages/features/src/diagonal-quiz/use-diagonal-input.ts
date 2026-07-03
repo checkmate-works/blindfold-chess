@@ -257,3 +257,5 @@ export function useDiagonalInput({
     reset,
   };
 }
+
+export type UseDiagonalInputReturn = ReturnType<typeof useDiagonalInput>;

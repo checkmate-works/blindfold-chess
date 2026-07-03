@@ -7,3 +7,5 @@ export type {
   UseDiagonalQuizSessionConfig,
   UseDiagonalQuizSessionReturn,
 } from "./use-diagonal-quiz-session";
+export { useDiagonalQuiz } from "./use-diagonal-quiz";
+export type { UseDiagonalQuizReturn } from "./use-diagonal-quiz";
