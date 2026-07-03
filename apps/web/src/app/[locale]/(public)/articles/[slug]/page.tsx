@@ -14,6 +14,7 @@ import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TiptapRenderer } from '@/app/[locale]/_components/TiptapRenderer';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -137,13 +138,13 @@ export default async function ArticlePage({ params }: Props) {
             {t('notTranslatedNotice')}
           </div>
         )}
-        <article className="prose prose-slate dark:prose-invert max-w-none">
+        <ProseArticle>
           {article.contentFormat === 'tiptap_json' && article.contentJson ? (
             <TiptapRenderer content={article.contentJson as TiptapJsonContent} />
           ) : (
             <MarkdownRenderer content={article.content} skipFirstH1={true} />
           )}
-        </article>
+        </ProseArticle>
 
         {publishedDate && (
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>

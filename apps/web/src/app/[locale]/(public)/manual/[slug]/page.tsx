@@ -8,6 +8,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -81,9 +82,9 @@ export default async function ManualArticlePage({ params }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/manual' }, { label: title }]}
     >
-      <article className="prose prose-slate dark:prose-invert max-w-none">
+      <ProseArticle>
         <MarkdownRenderer content={article.content} skipFirstH1={true} />
-      </article>
+      </ProseArticle>
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />

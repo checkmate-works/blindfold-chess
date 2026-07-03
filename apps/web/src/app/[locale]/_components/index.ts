@@ -12,6 +12,7 @@ export { LinkedText } from './LinkedText';
 export { LinkTabs, type LinkTabItem } from './LinkTabs';
 export { ListLink, ListLinkContainer } from './ListLink';
 export { PageTitle } from './PageTitle';
+export { ProseArticle } from './ProseArticle';
 export { PaginationNav } from './PaginationNav';
 export { SectionTitle } from './SectionTitle';
 export { Skeleton } from './Skeleton';

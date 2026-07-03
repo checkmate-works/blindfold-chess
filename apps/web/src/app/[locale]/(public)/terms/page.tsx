@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -19,9 +20,7 @@ export default async function TermsPage({ params }: Props) {
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
-        <p className="text-muted-foreground">{t('lastUpdated')}</p>
-
+      <ProseArticle className="space-y-4" lastUpdated={t('lastUpdated')}>
         <SectionTitle>{t('acceptanceTitle')}</SectionTitle>
         <p>{t('acceptanceDescription')}</p>
 
@@ -99,7 +98,7 @@ export default async function TermsPage({ params }: Props) {
 
         <SectionTitle>{t('changesTitle')}</SectionTitle>
         <p>{t('changesDescription')}</p>
-      </article>
+      </ProseArticle>
     </PageLayout>
   );
 }
