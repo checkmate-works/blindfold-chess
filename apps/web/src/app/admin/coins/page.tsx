@@ -30,6 +30,7 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { formatDateTime } from '@/app/admin/_lib/format';
 import { inArray } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -215,7 +216,7 @@ export default async function AdminCoinsPage({
                 {row.reason ?? '-'}
               </td>
               <td className="px-4 py-3 text-muted-foreground text-xs">
-                {new Date(row.createdAt).toLocaleString()}
+                {formatDateTime(row.createdAt)}
               </td>
             </tr>
           );

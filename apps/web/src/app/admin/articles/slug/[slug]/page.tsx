@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { formatDateTime } from '@/app/admin/_lib/format';
 import { SUPPORTED_LOCALES } from '@/config';
 import { eq } from 'drizzle-orm';
 import { FaExternalLinkAlt } from 'react-icons/fa';
@@ -73,7 +74,7 @@ export default async function AdminArticleSlugPage({
               </span>
             </td>
             <td className="px-4 py-3 text-muted-foreground">
-              {article.publishedAt ? new Date(article.publishedAt).toLocaleString() : '-'}
+              {formatDateTime(article.publishedAt)}
             </td>
             <td className="px-4 py-3">
               <div className="flex items-center gap-2">

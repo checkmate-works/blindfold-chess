@@ -12,6 +12,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { formatDate, formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
@@ -87,11 +88,6 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     (BENEFIT_ACTIVE_STATUSES as readonly string[]).includes(s.status)
   );
   const signupMethod = getSignupMethod(authUser);
-
-  const formatDate = (d: Date | string | null | undefined) =>
-    d ? new Date(d).toLocaleDateString() : '—';
-  const formatDateTime = (d: Date | string | null | undefined) =>
-    d ? new Date(d).toLocaleString() : '—';
 
   const rankName = (slug: string) => t(`stats.rankNames.${slug}`);
 

@@ -4,6 +4,7 @@ import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
+import { formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { countChunks, listChunks } from '@/lib/chunks/queries';
@@ -67,7 +68,7 @@ export default async function AdminChunksPage({
               {chunk.description ? truncate(chunk.description) : '-'}
             </td>
             <td className="px-4 py-3 text-muted-foreground text-sm">
-              {new Date(chunk.createdAt).toLocaleString()}
+              {formatDateTime(chunk.createdAt)}
             </td>
             <td className="px-4 py-3">
               <DeleteChunkButton id={chunk.id} title={chunk.title} />

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 function getActionBadgeClasses(action: string): string {
@@ -144,9 +145,7 @@ export function ActivityLogRow({ log, profileMap, emailMap }: ActivityLogRowProp
           <span className="text-muted-foreground">-</span>
         )}
       </td>
-      <td className="px-4 py-3 text-muted-foreground">
-        {new Date(log.createdAt).toLocaleString()}
-      </td>
+      <td className="px-4 py-3 text-muted-foreground">{formatDateTime(log.createdAt)}</td>
     </tr>
   );
 }

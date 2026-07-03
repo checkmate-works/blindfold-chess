@@ -1,3 +1,5 @@
+import { formatDate } from '@/app/admin/_lib/format';
+
 type Profile = {
   bannedAt: Date | null;
   deletedAt: Date | null;
@@ -29,9 +31,7 @@ export function StatusBadge({ profile, banReason, labels }: StatusBadgeProps) {
         <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
           {labels.deleted}
         </span>
-        <p className="text-xs text-muted-foreground">
-          {new Date(profile.deletedAt).toLocaleDateString()}
-        </p>
+        <p className="text-xs text-muted-foreground">{formatDate(profile.deletedAt)}</p>
       </div>
     );
   }
@@ -47,9 +47,7 @@ export function StatusBadge({ profile, banReason, labels }: StatusBadgeProps) {
             {banReason.length > 50 ? `${banReason.slice(0, 50)}...` : banReason}
           </p>
         )}
-        <p className="text-xs text-muted-foreground">
-          {new Date(profile.bannedAt).toLocaleDateString()}
-        </p>
+        <p className="text-xs text-muted-foreground">{formatDate(profile.bannedAt)}</p>
       </div>
     );
   }

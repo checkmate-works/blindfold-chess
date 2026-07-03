@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
+import { formatDateTime } from '@/app/admin/_lib/format';
 import type { User } from '@supabase/supabase-js';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
@@ -220,9 +221,7 @@ export default async function AdminAuditLogPage({
                 )}
               </td>
               <td className="px-4 py-3 text-muted-foreground">{log.ipAddress ?? '-'}</td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(log.createdAt).toLocaleString()}
-              </td>
+              <td className="px-4 py-3 text-muted-foreground">{formatDateTime(log.createdAt)}</td>
             </tr>
           );
         }}

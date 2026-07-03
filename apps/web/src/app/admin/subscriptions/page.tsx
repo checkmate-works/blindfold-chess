@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { formatDate } from '@/app/admin/_lib/format';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -188,18 +189,14 @@ export default async function AdminSubscriptionsPage({
                   {sub.status}
                 </span>
               </td>
-              <td className="px-4 py-3">
-                {sub.cancelAt ? new Date(sub.cancelAt).toLocaleDateString() : '-'}
+              <td className="px-4 py-3">{formatDate(sub.cancelAt)}</td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {formatDate(sub.currentPeriodStart)}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
-                {new Date(sub.currentPeriodStart).toLocaleDateString()}
+                {formatDate(sub.currentPeriodEnd)}
               </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(sub.currentPeriodEnd).toLocaleDateString()}
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(sub.createdAt).toLocaleDateString()}
-              </td>
+              <td className="px-4 py-3 text-muted-foreground">{formatDate(sub.createdAt)}</td>
             </tr>
           );
         }}

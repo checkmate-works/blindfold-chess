@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
+import { formatDateTime } from '@/app/admin/_lib/format';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -155,9 +156,7 @@ export default async function AdminTopicPostsPage({
                   </span>
                 )}
               </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(post.createdAt).toLocaleString()}
-              </td>
+              <td className="px-4 py-3 text-muted-foreground">{formatDateTime(post.createdAt)}</td>
               <td className="px-4 py-3">
                 {!isDeleted && <DeletePostAdminButton postId={post.id} labels={deleteLabels} />}
               </td>

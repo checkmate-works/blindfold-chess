@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { formatDate } from '@/app/admin/_lib/format';
 import type { User } from '@supabase/supabase-js';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
@@ -98,9 +99,7 @@ export function UserRow({
           {labels[signupMethod]}
         </span>
       </td>
-      <td className="px-4 py-3 text-muted-foreground">
-        {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
-      </td>
+      <td className="px-4 py-3 text-muted-foreground">{formatDate(user.created_at)}</td>
       <td className="px-4 py-3">
         <Link href={`/admin/users/${user.id}`} className="text-primary hover:underline">
           {labels.viewDetail}
