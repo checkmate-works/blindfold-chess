@@ -1,9 +1,10 @@
 import { cache } from 'react';
 
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core';
 
 import { AUTHOR_PROFILE_COLUMNS, db, profiles } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 /** Shape of the proposer profile joined onto each request row. */
@@ -73,12 +74,7 @@ export function makeEditRequestQueries<TTable extends EditRequestTable>({
    */
   const countPendingForParent = cache(async (parentId: string): Promise<number> => {
     if (!UUID_RE.test(parentId)) return 0;
-
-    const [row] = await db
-      .select({ value: count() })
-      .from(table as PgTable)
-      .where(and(eq(parentIdColumn, parentId), eq(table.status, 'pending')));
-    return row?.value ?? 0;
+    return countRows(table, and(eq(parentIdColumn, parentId), eq(table.status, 'pending')));
   });
 
   /**
@@ -88,12 +84,7 @@ export function makeEditRequestQueries<TTable extends EditRequestTable>({
    */
   const countForParent = cache(async (parentId: string): Promise<number> => {
     if (!UUID_RE.test(parentId)) return 0;
-
-    const [row] = await db
-      .select({ value: count() })
-      .from(table as PgTable)
-      .where(eq(parentIdColumn, parentId));
-    return row?.value ?? 0;
+    return countRows(table, eq(parentIdColumn, parentId));
   });
 
   /**

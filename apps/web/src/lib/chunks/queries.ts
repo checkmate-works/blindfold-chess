@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { type SQL, and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { type SQL, and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import {
   AUTHOR_PROFILE_COLUMNS,
@@ -12,6 +12,7 @@ import {
   positions,
   profiles,
 } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { ChunkOption } from './types';
@@ -149,10 +150,7 @@ export async function countChunks({
   includeDeleted,
   status,
 }: Pick<ListChunksOptions, 'includeDeleted' | 'status'>) {
-  const where = buildListConditions({ includeDeleted, status });
-  const query = db.select({ value: count() }).from(chunks);
-  const [row] = await (where ? query.where(where) : query);
-  return row?.value ?? 0;
+  return countRows(chunks, buildListConditions({ includeDeleted, status }));
 }
 
 /**

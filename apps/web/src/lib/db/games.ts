@@ -12,7 +12,7 @@
  */
 import { cache } from 'react';
 
-import { type SQL, and, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { type SQL, and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { generateManageToken, manageTokenMatches } from '@/lib/games/manage-token';
@@ -20,6 +20,7 @@ import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
 import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
 
 import { db } from './index';
+import { countRows } from './list-query';
 import { liveProfileJoinOn } from './profile-select';
 import type { GameRecord } from './schema';
 import { feedItems, gameChunks, gameTokens, games, profiles } from './schema';
@@ -290,11 +291,10 @@ export async function listGamesLinkingChunk(
 
 /** Count an author's publicly-visible games (matches {@link listGamesByAuthorId}). */
 export async function countGamesByAuthorId(authorId: string): Promise<number> {
-  const [row] = await db
-    .select({ value: count() })
-    .from(games)
-    .where(and(eq(games.authorId, authorId), isNull(games.deletedAt), eq(games.status, 'public')));
-  return row?.value ?? 0;
+  return countRows(
+    games,
+    and(eq(games.authorId, authorId), isNull(games.deletedAt), eq(games.status, 'public'))
+  );
 }
 
 export type PublishGameResult = {
