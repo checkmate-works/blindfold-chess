@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useMemo } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -9,9 +9,6 @@ import { fenToLichessUrl, getLastMoveDetails } from '@blindfold-chess/features/c
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
-import type { ChunkOption } from '@/lib/chunks/types';
-import type { GameChunkItem } from '@/lib/db/game-chunks';
-import type { GameCommentItem } from '@/lib/db/game-comments';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type {
@@ -30,13 +27,8 @@ import {
   useNotation,
 } from '@/app/[locale]/(public)/games/play/_hooks';
 import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/_lib/build-new-game-from-position-url';
-import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
-import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
-import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
-import { tabItemClass, tabsRowClass } from '@/app/[locale]/_components/tab-styles';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -44,54 +36,21 @@ import { useQuickPeekModal } from '../_hooks/use-quick-peek-modal';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
-import { buildDiscussionGroups } from '../_lib/build-discussion-groups';
-import { CreateFromPositionMenu } from './CreateFromPositionMenu';
-import type { CommentUser } from './GameCommentContext';
+import { useReviewOverview } from '../_hooks/use-review-overview';
+import { type ReplaySocial, normalizeReplaySocial } from '../_lib/normalize-replay-social';
+import {
+  computeContinuation,
+  computeCurrentPly,
+  computeInitialFlipped,
+  computePlayerMoveIndices,
+  formatMoveLabel,
+} from '../_lib/replay-derivations';
 import { GameDiscussionFeed } from './GameDiscussionFeed';
-import { GameMoveContributions } from './GameMoveContributions';
-import { PlaySettingsIndicator } from './PlaySettingsIndicator';
+import { ReproduceViewBar } from './ReproduceViewBar';
+import { ReviewMovePositionPanel } from './ReviewMovePositionPanel';
+import { ReviewOverviewTabs } from './ReviewOverviewTabs';
 
-/**
- * The social layer of the review, injected as a discriminated union so the same
- * component serves a published game (`live` — real comments/chunks/likes wired
- * to server actions) and a not-yet-shared local game on the result screen
- * (`local` — no social data; a share CTA sits where the discussion would be).
- */
-export type ReplaySocial =
-  | {
-      mode: 'live';
-      /**
-       * Whether the viewer is signed in — drives the members-only stats gate.
-       * Kept distinct from {@link currentUser}: a signed-in viewer without a
-       * comment profile (e.g. one not yet provisioned) is still a member and
-       * must not be shown the sign-up gate.
-       */
-      isAuthenticated: boolean;
-      /** Published game id, used to anchor the per-move comment threads. */
-      gameId: string;
-      /** Advice comments on this game, anchored per move (ply). */
-      comments: GameCommentItem[];
-      /** Community chunk links on this game, anchored per move (ply). */
-      gameChunks: GameChunkItem[];
-      /** Published chunks selectable in the per-move chunk picker. */
-      availableChunks: ChunkOption[];
-      /** The viewer, if signed in — enables posting and delete-own. */
-      currentUser: CommentUser | null;
-      /** Whether the viewer is the game's registered owner (may remove any chunk link). */
-      isGameOwner: boolean;
-      /** When set (from a like notification), open at this comment's move and scroll to it. */
-      highlightCommentId?: string;
-    }
-  | {
-      mode: 'local';
-      /** Whether the local viewer is signed in — drives the stats auth-gate. */
-      isAuthenticated: boolean;
-      /**
-       * Body of the Discussion tab for a not-yet-shared game — the compose CTAs
-       * that route to a sign-in / share prompt (see `LocalDiscussionPanel`).
-       */
-      discussionContent: ReactNode;
-    };
+export type { ReplaySocial } from '../_lib/normalize-replay-social';
 
 type Props = {
   moves: string[];
@@ -120,11 +79,6 @@ type Props = {
   social: ReplaySocial;
 };
 
-/** Stable empty collections for `local` mode, so hook deps never churn. */
-const NO_COMMENTS: GameCommentItem[] = [];
-const NO_CHUNKS: GameChunkItem[] = [];
-const NO_AVAILABLE_CHUNKS: ChunkOption[] = [];
-
 /**
  * Review of a finished game, laid out exactly like games/play: the always-visible
  * board (`InlineBoardView`) in a 2/3 column and the move list (`MovesPanel`) in a
@@ -138,12 +92,15 @@ const NO_AVAILABLE_CHUNKS: ChunkOption[] = [];
  * try it themselves. Preferences are the viewer's own but forced fully revealed
  * — this is a finished game, not a live blindfold one (see
  * `useReplayPreferences`). The review's cross-cutting concerns (preferences,
- * URL sync, comment/chunk tabs, deep-link) live in `../_hooks`; this component
- * wires them to the shared notation/navigation hooks and lays out the result.
+ * URL sync, comment/chunk tabs, deep-link, overview tabs) live in `../_hooks`;
+ * the position/ply/label math lives in `../_lib/replay-derivations`; this
+ * component wires them to the shared notation/navigation hooks and lays out
+ * the result.
  *
  * In `local` mode (result screen) there is no persisted game to anchor
  * comments/chunks/likes to, so the social collections are empty and the
- * discussion / per-move contribution regions are replaced by `social.shareCta`.
+ * discussion / per-move contribution regions are replaced by the injected
+ * `discussionContent`.
  */
 export function GameReview({
   moves,
@@ -164,33 +121,16 @@ export function GameReview({
   const router = useRouter();
   const { preferences } = useGamePreferences();
 
-  // Social inputs, empty in `local` mode so the existing body — the discussion
-  // rollup, deep-link, per-move contributions — naturally collapses to nothing
-  // (a `local` game has no server-anchored comments/chunks). `viewerIsAuthenticated`
-  // drives the stats auth-gate in both modes.
-  const isLive = social.mode === 'live';
-  const gameId = isLive ? social.gameId : '';
-  const comments = isLive ? social.comments : NO_COMMENTS;
-  const gameChunks = isLive ? social.gameChunks : NO_CHUNKS;
-  const availableChunks = isLive ? social.availableChunks : NO_AVAILABLE_CHUNKS;
-  const currentUser = isLive ? social.currentUser : null;
-  const isGameOwner = isLive ? social.isGameOwner : false;
-  const highlightCommentId = isLive ? social.highlightCommentId : undefined;
-  // Auth drives the members-only stats gate; both modes carry it explicitly, so
-  // a signed-in viewer without a comment profile still sees the stats (not the
-  // sign-up gate).
-  const viewerIsAuthenticated = social.isAuthenticated;
-
-  // One-step help tour explaining the "As played" toggle (board obfuscation).
-  const reproduceViewTourSteps: HelpStep[] = [
-    {
-      targetId: 'replay-reproduce-view',
-      title: t('playSettings.tour.reproduceView.title'),
-      description: t('playSettings.tour.reproduceView.description'),
-      side: 'top',
-      align: 'end',
-    },
-  ];
+  const {
+    gameId,
+    comments,
+    gameChunks,
+    availableChunks,
+    currentUser,
+    isGameOwner,
+    highlightCommentId,
+    viewerIsAuthenticated,
+  } = normalizeReplaySocial(social);
 
   const { moves: notationMoves, formattedPgn } = useNotation({
     // The DB stores moves as string[]; they are SAN (AlgebraicNotation) at runtime.
@@ -208,16 +148,11 @@ export function GameReview({
     navigateToEnd,
   } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
 
-  // Seed the board orientation from the `?color=white|black` param:
-  // `effectiveFlipped` means "black is at the bottom", and the default (no
-  // param) is the player's own side. Convert the requested orientation into
-  // the manual-toggle seed `useBoardFlip` expects (which it inverts again for a
-  // black player).
-  const initialFlipped = useMemo(() => {
-    if (!orientation) return false;
-    const wantBlackAtBottom = orientation === 'black';
-    return playerColor === 'black' ? !wantBlackAtBottom : wantBlackAtBottom;
-  }, [orientation, playerColor]);
+  // Seed the board orientation from the `?color=white|black` param.
+  const initialFlipped = useMemo(
+    () => computeInitialFlipped(orientation, playerColor),
+    [orientation, playerColor]
+  );
   const { effectiveFlipped, toggleFlip } = useBoardFlip({
     playerSide: playerColor,
     initialFlipped,
@@ -273,49 +208,18 @@ export function GameReview({
   // Same game-statistics overview as the result screen, derived from the
   // per-move operation logs. The effort strip jumps the inline board.
   const stats = useMemo(() => computeGameStats(operationLogs ?? []), [operationLogs]);
-  const playerMoveIndices = useMemo(() => {
-    const indices: number[] = [];
-    for (let i = 0; i < notationMoves.length; i++) {
-      if (getMovingSide(i, startingFen ?? undefined) === playerColor) indices.push(i);
-    }
-    return indices;
-  }, [notationMoves, startingFen, playerColor]);
+  const playerMoveIndices = useMemo(
+    () => computePlayerMoveIndices(notationMoves.length, startingFen ?? undefined, playerColor),
+    [notationMoves.length, startingFen, playerColor]
+  );
 
-  // Map the board's navigation position to the ply the comment thread anchors
-  // to: a concrete move (0-based), the last move when viewing the latest
-  // position, or the whole game (null) at the start.
-  const currentPly =
-    currentPosition >= 0
-      ? currentPosition
-      : currentPosition === -1
-        ? notationMoves.length > 0
-          ? notationMoves.length - 1
-          : null
-        : null;
-
-  // The game's move played from the position currently on the board — seeded
-  // as a puzzle's draft solution by CreateFromPositionMenu. `appliedPlies` is
-  // the half-move count to reach the displayed position; undefined at the
-  // latest position (no continuation) or an empty game.
-  const appliedPlies =
-    currentPosition >= 0 ? currentPosition + 1 : currentPosition === -2 ? 0 : notationMoves.length;
-  const continuationSan =
-    appliedPlies < notationMoves.length ? notationMoves[appliedPlies] : undefined;
-
-  // Label the move with its PGN-style number prefix: white → "1. d4",
-  // black → "1...d5" (derived from the starting FEN's side + fullmove).
-  const moveLabel = useMemo(() => {
-    if (currentPly == null) return null;
-    const san = notationMoves[currentPly];
-    if (!san) return null;
-    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-    const { moveNumber, isWhiteMove } = computeMoveNumber(
-      currentPly,
-      startsAsBlack,
-      startMoveNumber
-    );
-    return isWhiteMove ? `${moveNumber}. ${san}` : `${moveNumber}...${san}`;
-  }, [currentPly, notationMoves, startingFen]);
+  // Position→ply/label/continuation math (see replay-derivations).
+  const currentPly = computeCurrentPly(currentPosition, notationMoves.length);
+  const { continuationSan } = computeContinuation(currentPosition, notationMoves);
+  const moveLabel = useMemo(
+    () => formatMoveLabel(currentPly, notationMoves, startingFen),
+    [currentPly, notationMoves, startingFen]
+  );
 
   // The opening (pre-move) board is the game's overview: show the description
   // and statistics there. Once a move is on the board, that move's comment
@@ -367,30 +271,11 @@ export function GameReview({
       </StatsAuthGate>
     );
 
-  // Overview discussion feed: all comments + chunk links rolled up by move.
-  // The overview offers a [Summary | Discussion] segmented switch when both the
-  // stats and some activity exist; otherwise it shows whichever is non-empty.
-  const discussionGroups = useMemo(
-    () => buildDiscussionGroups(comments, gameChunks),
-    [comments, gameChunks]
-  );
-  const discussionCount = useMemo(
-    () => discussionGroups.reduce((n, g) => n + g.comments.length + g.chunks.length, 0),
-    [discussionGroups]
-  );
-  const hasSummary = statsOverview !== null;
-  const hasDiscussion = discussionGroups.length > 0;
-  const showOverviewTabs = hasSummary && hasDiscussion;
-  // Lead with the discussion when there is any (this is an advice page);
-  // fall back to the stats summary otherwise.
-  const [overviewView, setOverviewView] = useState<'summary' | 'discussion'>(
-    hasDiscussion ? 'discussion' : 'summary'
-  );
-  const activeOverviewView = showOverviewTabs
-    ? overviewView
-    : hasDiscussion
-      ? 'discussion'
-      : 'summary';
+  const overview = useReviewOverview({
+    comments,
+    gameChunks,
+    hasSummary: statsOverview !== null,
+  });
 
   // Commit a previewed position from the quick-peek modal onto the live board.
   // In `live` mode moving to a move position already surfaces that move's
@@ -398,10 +283,11 @@ export function GameReview({
   // position-independent overview, so it additionally switches to the Discussion
   // tab — matching the shared game, where opening a position reveals discussion.
   const { commit: commitQuickPeek } = quickPeek;
+  const { setOverviewView } = overview;
   const handleCommitPosition = useCallback(() => {
     commitQuickPeek();
     if (social.mode === 'local') setOverviewView('discussion');
-  }, [commitQuickPeek, social.mode]);
+  }, [commitQuickPeek, social.mode, setOverviewView]);
 
   return (
     <div className="space-y-6">
@@ -426,42 +312,13 @@ export function GameReview({
             alwaysOpen
           />
 
-          {/* How this game was played, at the position currently on the board.
-              Sits directly under the board and updates as the viewer steps
-              through the moves. The switch on the right reproduces the player's
-              view (piece obfuscation) on the board itself. */}
           {showPlaySettings && effectivePlaySettings && (
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <PlaySettingsIndicator settings={effectivePlaySettings} playerColor={playerColor} />
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  role="switch"
-                  data-tour-id="replay-reproduce-view"
-                  aria-checked={reproduceView}
-                  onClick={() => setReproduceView((v) => !v)}
-                  className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <span>{t('playSettings.reproduceView')}</span>
-                  <span
-                    aria-hidden
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      reproduceView ? 'bg-foreground' : 'bg-secondary'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                        reproduceView ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </span>
-                </button>
-                <HelpTourButton
-                  steps={reproduceViewTourSteps}
-                  label={t('playSettings.tour.label')}
-                />
-              </div>
-            </div>
+            <ReproduceViewBar
+              settings={effectivePlaySettings}
+              playerColor={playerColor}
+              reproduceView={reproduceView}
+              onToggle={() => setReproduceView((v) => !v)}
+            />
           )}
         </div>
 
@@ -516,28 +373,15 @@ export function GameReview({
         <div className="space-y-4">
           {children}
 
-          <div role="tablist" className={tabsRowClass.underline}>
-            {(['summary', 'discussion'] as const).map((view) => {
-              const isActive = overviewView === view;
-              const label =
-                view === 'summary' ? t('overview.summaryTab') : t('overview.discussionTab');
-              return (
-                <button
-                  key={view}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setOverviewView(view)}
-                  className={tabItemClass('underline', isActive)}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+          <ReviewOverviewTabs
+            active={overview.overviewView}
+            onChange={overview.setOverviewView}
+            summaryLabel={t('overview.summaryTab')}
+            discussionLabel={t('overview.discussionTab')}
+          />
 
-          {overviewView === 'summary' && gatedStats}
-          {overviewView === 'discussion' && social.discussionContent}
+          {overview.overviewView === 'summary' && gatedStats}
+          {overview.overviewView === 'discussion' && social.discussionContent}
         </div>
       ) : /* On a move position: that move's comment thread, directly under the
           move list. On the opening board: the description + statistics. */
@@ -545,33 +389,18 @@ export function GameReview({
         <>
           {children}
 
-          {showOverviewTabs && (
-            <div role="tablist" className={tabsRowClass.underline}>
-              {(['summary', 'discussion'] as const).map((view) => {
-                const isActive = activeOverviewView === view;
-                const label =
-                  view === 'summary'
-                    ? t('overview.summaryTab')
-                    : `${t('overview.discussionTab')} (${discussionCount})`;
-                return (
-                  <button
-                    key={view}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setOverviewView(view)}
-                    className={tabItemClass('underline', isActive)}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+          {overview.showOverviewTabs && (
+            <ReviewOverviewTabs
+              active={overview.activeOverviewView}
+              onChange={overview.setOverviewView}
+              summaryLabel={t('overview.summaryTab')}
+              discussionLabel={`${t('overview.discussionTab')} (${overview.discussionCount})`}
+            />
           )}
 
-          {activeOverviewView === 'summary' && gatedStats}
+          {overview.activeOverviewView === 'summary' && gatedStats}
 
-          {activeOverviewView === 'discussion' && hasDiscussion && (
+          {overview.activeOverviewView === 'discussion' && overview.hasDiscussion && (
             <GameDiscussionFeed
               comments={comments}
               gameChunks={gameChunks}
@@ -584,33 +413,19 @@ export function GameReview({
         </>
       ) : (
         currentPly != null && (
-          <div className="space-y-4">
-            <SectionTitle>{moveLabel ?? t('comments.title')}</SectionTitle>
-
-            {/* Author something from the position currently on the board —
-                chunk / position-memory / puzzle. Signed-in only, mirroring the
-                chunk picker's gate. */}
-            {currentUser && (
-              <CreateFromPositionMenu
-                locale={locale}
-                currentFen={displayFen ?? latestFen}
-                continuationSan={continuationSan}
-              />
-            )}
-
-            {/* Posted comments and chunk links shown serially; only the
-                composer (post a comment vs link a chunk) is toggled. */}
-            <GameMoveContributions
-              gameId={gameId}
-              currentPly={currentPly}
-              comments={comments}
-              gameChunks={gameChunks}
-              availableChunks={availableChunks}
-              currentUser={currentUser}
-              isGameOwner={isGameOwner}
-              locale={locale}
-            />
-          </div>
+          <ReviewMovePositionPanel
+            title={moveLabel ?? t('comments.title')}
+            locale={locale}
+            currentFen={displayFen ?? latestFen}
+            continuationSan={continuationSan}
+            gameId={gameId}
+            currentPly={currentPly}
+            comments={comments}
+            gameChunks={gameChunks}
+            availableChunks={availableChunks}
+            currentUser={currentUser}
+            isGameOwner={isGameOwner}
+          />
         )
       )}
 
