@@ -48,6 +48,12 @@
       "description": "Plan the shortest route for a piece between two squares"
     }
   },
+  "practiceResult": {
+    "correctAnswers": "Correct Answers",
+    "accuracy": "Accuracy",
+    "timeTaken": "Time Taken",
+    "averageTime": "Avg. Time"
+  },
   "onboarding": {
     "skip": "Skip",
     "tapToContinue": "Tap to continue",
@@ -87,10 +93,6 @@
     },
     "result": {
       "title": "Practice Complete!",
-      "correctAnswers": "Correct Answers",
-      "accuracy": "Accuracy",
-      "timeTaken": "Time Taken",
-      "averageTime": "Avg. Time",
       "playAgain": "Play Again",
       "backToMenu": "Back to Menu"
     },
@@ -121,10 +123,7 @@
       "title": "Results",
       "playAgain": "Play Again",
       "backToMenu": "Back to Practice",
-      "correctAnswers": "Correct Answers",
-      "accuracy": "Accuracy",
-      "timeTaken": "Time",
-      "averageTime": "Avg. Time"
+      "timeTaken": "Time"
     },
     "settings": {
       "timeLimit": "Time Limit",
@@ -146,11 +145,7 @@
     "result": {
       "title": "Practice Complete!",
       "playAgain": "Play Again",
-      "backToMenu": "Back to Menu",
-      "correctAnswers": "Correct Answers",
-      "accuracy": "Accuracy",
-      "timeTaken": "Time Taken",
-      "averageTime": "Avg. Time"
+      "backToMenu": "Back to Menu"
     },
     "settings": {
       "timeLimit": "Time Limit",
@@ -293,10 +288,6 @@
     },
     "result": {
       "title": "Practice Complete!",
-      "correctAnswers": "Correct Answers",
-      "accuracy": "Accuracy",
-      "timeTaken": "Time Taken",
-      "averageTime": "Avg. Time",
       "playAgain": "Play Again",
       "backToMenu": "Back to Menu"
     },

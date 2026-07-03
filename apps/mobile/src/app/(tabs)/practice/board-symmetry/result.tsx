@@ -3,8 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-import { Button } from "../../../../components";
-import { ResultCard } from "../../../../features/board-symmetry/components";
+import { Button, PracticeStatsResultCard } from "../../../../components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { BoardSymmetryResult } from "../../../../features/board-symmetry/hooks";
 
@@ -48,7 +47,10 @@ export default function BoardSymmetryResult() {
           {t("boardSymmetry.result.title")}
         </Text>
 
-        <ResultCard result={result} />
+        <PracticeStatsResultCard
+          result={result}
+          timeTakenLabel={t("boardSymmetry.result.timeTaken")}
+        />
       </View>
 
       <View style={styles.footer}>

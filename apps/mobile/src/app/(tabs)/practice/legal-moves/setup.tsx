@@ -11,7 +11,7 @@ import { useTheme, spacing } from "../../../../theme";
 export default function LegalMovesSetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoading, updateTimeLimit, togglePiece } =
+  const { settings, isLoaded, updateSettings, togglePiece } =
     useLegalMovesSettings();
   const { colors } = useTheme();
 
@@ -25,7 +25,7 @@ export default function LegalMovesSetup() {
     });
   };
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <View
         style={[
@@ -51,7 +51,7 @@ export default function LegalMovesSetup() {
         <SettingsForm
           timeLimit={settings.timeLimit}
           selectedPieces={settings.selectedPieces}
-          onUpdateTimeLimit={updateTimeLimit}
+          onUpdateTimeLimit={(timeLimit) => updateSettings({ timeLimit })}
           onTogglePiece={togglePiece}
         />
       </ScrollView>

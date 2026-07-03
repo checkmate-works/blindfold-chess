@@ -3,8 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-import { Button } from "../../../../components";
-import { ResultCard } from "../../../../features/legal-moves/components";
+import { Button, PracticeStatsResultCard } from "../../../../components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { LegalMovesResult } from "../../../../features/legal-moves/hooks";
 
@@ -49,7 +48,7 @@ export default function LegalMovesResult() {
           {t("legalMoves.result.title")}
         </Text>
 
-        <ResultCard result={result} />
+        <PracticeStatsResultCard result={result} />
       </View>
 
       <View style={styles.footer}>

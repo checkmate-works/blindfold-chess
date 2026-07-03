@@ -48,6 +48,12 @@
       "description": "Planeje a rota mais curta para uma peça entre duas casas"
     }
   },
+  "practiceResult": {
+    "correctAnswers": "Respostas corretas",
+    "accuracy": "Precisão",
+    "timeTaken": "Tempo gasto",
+    "averageTime": "Tempo médio"
+  },
   "onboarding": {
     "skip": "Pular",
     "tapToContinue": "Toque para continuar",
@@ -87,10 +93,6 @@
     },
     "result": {
       "title": "Prática concluída!",
-      "correctAnswers": "Respostas corretas",
-      "accuracy": "Precisão",
-      "timeTaken": "Tempo gasto",
-      "averageTime": "Tempo médio",
       "playAgain": "Jogar novamente",
       "backToMenu": "Voltar ao menu"
     },
@@ -121,10 +123,7 @@
       "title": "Resultados",
       "playAgain": "Jogar novamente",
       "backToMenu": "Voltar à prática",
-      "correctAnswers": "Respostas corretas",
-      "accuracy": "Precisão",
-      "timeTaken": "Tempo",
-      "averageTime": "Tempo médio"
+      "timeTaken": "Tempo"
     },
     "settings": {
       "timeLimit": "Tempo limite",
@@ -146,11 +145,7 @@
     "result": {
       "title": "Prática concluída!",
       "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu",
-      "correctAnswers": "Respostas corretas",
-      "accuracy": "Precisão",
-      "timeTaken": "Tempo gasto",
-      "averageTime": "Tempo médio"
+      "backToMenu": "Voltar ao menu"
     },
     "settings": {
       "timeLimit": "Tempo limite",
@@ -293,10 +288,6 @@
     },
     "result": {
       "title": "Prática concluída!",
-      "correctAnswers": "Respostas corretas",
-      "accuracy": "Precisão",
-      "timeTaken": "Tempo gasto",
-      "averageTime": "Tempo médio",
       "playAgain": "Jogar novamente",
       "backToMenu": "Voltar ao menu"
     },

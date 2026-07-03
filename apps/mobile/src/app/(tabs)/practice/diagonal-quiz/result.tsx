@@ -3,8 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-import { Button } from "../../../../components";
-import { ResultCard } from "../../../../features/diagonal-quiz/components";
+import { Button, PracticeStatsResultCard } from "../../../../components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { DiagonalQuizResult } from "../../../../features/diagonal-quiz/hooks";
 
@@ -48,7 +47,7 @@ export default function DiagonalQuizResult() {
           {t("diagonalQuiz.result.title")}
         </Text>
 
-        <ResultCard result={result} />
+        <PracticeStatsResultCard result={result} />
       </View>
 
       <View style={styles.footer}>

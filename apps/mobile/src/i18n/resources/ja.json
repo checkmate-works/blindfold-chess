@@ -48,6 +48,12 @@
       "description": "駒の最短経路を考えるトレーニング"
     }
   },
+  "practiceResult": {
+    "correctAnswers": "正解数",
+    "accuracy": "正答率",
+    "timeTaken": "経過時間",
+    "averageTime": "平均時間"
+  },
   "onboarding": {
     "skip": "スキップ",
     "tapToContinue": "タップして続ける",
@@ -87,10 +93,6 @@
     },
     "result": {
       "title": "練習終了！",
-      "correctAnswers": "正解数",
-      "accuracy": "正答率",
-      "timeTaken": "経過時間",
-      "averageTime": "平均時間",
       "playAgain": "もう一度",
       "backToMenu": "メニューに戻る"
     },
@@ -121,10 +123,7 @@
       "title": "結果",
       "playAgain": "もう一度",
       "backToMenu": "練習に戻る",
-      "correctAnswers": "正解数",
-      "accuracy": "正答率",
-      "timeTaken": "経過時間",
-      "averageTime": "平均時間"
+      "timeTaken": "経過時間"
     },
     "settings": {
       "timeLimit": "制限時間",
@@ -146,11 +145,7 @@
     "result": {
       "title": "練習終了！",
       "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る",
-      "correctAnswers": "正解数",
-      "accuracy": "正答率",
-      "timeTaken": "経過時間",
-      "averageTime": "平均時間"
+      "backToMenu": "メニューに戻る"
     },
     "settings": {
       "timeLimit": "制限時間",
@@ -293,10 +288,6 @@
     },
     "result": {
       "title": "練習終了！",
-      "correctAnswers": "正解数",
-      "accuracy": "正答率",
-      "timeTaken": "経過時間",
-      "averageTime": "平均時間",
       "playAgain": "もう一度",
       "backToMenu": "メニューに戻る"
     },

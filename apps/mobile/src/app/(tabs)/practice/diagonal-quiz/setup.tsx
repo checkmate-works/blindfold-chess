@@ -11,7 +11,7 @@ import { useTheme, spacing } from "../../../../theme";
 export default function DiagonalQuizSetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoading, updateTimeLimit } = useDiagonalQuizSettings();
+  const { settings, isLoaded, updateSettings } = useDiagonalQuizSettings();
   const { colors } = useTheme();
 
   const handleStart = () => {
@@ -23,7 +23,7 @@ export default function DiagonalQuizSetup() {
     });
   };
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <View
         style={[
@@ -48,7 +48,7 @@ export default function DiagonalQuizSetup() {
       >
         <SettingsForm
           timeLimit={settings.timeLimit}
-          onUpdateTimeLimit={updateTimeLimit}
+          onUpdateTimeLimit={(timeLimit) => updateSettings({ timeLimit })}
         />
       </ScrollView>
 
