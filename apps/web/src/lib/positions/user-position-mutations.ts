@@ -87,7 +87,7 @@ export type CreatePositionEntryResult =
     }
   | { error: string };
 
-export type UpdatePositionEntryResult = { success: true } | { error: string };
+export type UpdatePositionEntryResult = ActionResult;
 
 /**
  * Create a `positions` row of the given kind: validate, resolve an

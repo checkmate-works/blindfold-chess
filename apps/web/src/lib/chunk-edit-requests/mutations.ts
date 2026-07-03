@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { chunkEditRequests, chunks, db } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
@@ -35,9 +36,9 @@ import { validateSubmitEditRequest } from './validation';
  * the underlying RLS policy already forbids it.
  */
 
-export type SubmitEditRequestResult = { success: true; id: string } | { error: string };
+export type SubmitEditRequestResult = ActionResult<{ id: string }>;
 
-export type ResolveEditRequestResult = { success: true } | { error: string };
+export type ResolveEditRequestResult = ActionResult;
 
 async function loadChunkForRequest(id: string) {
   const [chunk] = await db

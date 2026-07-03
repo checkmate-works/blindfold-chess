@@ -78,7 +78,7 @@ export type CreateChunkResult =
     }
   | { error: string };
 
-export type UpdateChunkResult = { success: true } | { error: string };
+export type UpdateChunkResult = ActionResult;
 
 export type DeleteChunkResult = ActionResult;
 
