@@ -32,7 +32,7 @@ import type {
 } from '@/lib/games/saved-game-types';
 import { uuidv7 } from '@/lib/uuidv7';
 
-import { chunks } from './positions';
+import { chunks } from './chunks';
 
 /**
  * Games — server-persisted snapshot of a blindfold game shared by a user.
