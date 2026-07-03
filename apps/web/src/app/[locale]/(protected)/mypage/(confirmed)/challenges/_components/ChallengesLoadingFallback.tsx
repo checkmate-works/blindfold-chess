@@ -4,11 +4,13 @@ import { DashboardSkeleton } from './DashboardSkeleton';
 
 /**
  * Full loading shell for `/mypage/challenges` (centered title + panel +
- * {@link DashboardSkeleton}). Shared by `challenges/loading.tsx` (client-side
- * navigations) and the `(protected)` layout's route-aware gate fallback (hard
- * loads / refreshes), so both render the same skeleton — without the gate
- * registration a hard load would flash the neutral fallback first and then
- * swap to this one.
+ * {@link DashboardSkeleton}). Selected by `resolveLoadingFallback`
+ * (`(protected)/_lib/resolveLoadingFallback.tsx`) for both the `(protected)`
+ * layout's auth-gate `<Suspense>` (hard loads / refreshes) and
+ * `(protected)/loading.tsx` (client-side navigations) — this route
+ * deliberately has no folder-scoped `loading.tsx` of its own, so there is a
+ * single place that picks the skeleton per route instead of two that could
+ * drift apart.
  */
 export function ChallengesLoadingFallback() {
   return (

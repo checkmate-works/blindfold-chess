@@ -19,11 +19,13 @@ function NotificationRowSkeleton() {
 
 /**
  * Full loading shell for `/mypage/notifications` (centered title + panel + a
- * list of {@link NotificationRowSkeleton}). Shared by `notifications/loading.tsx`
- * (client-side navigations) and the `(protected)` layout's route-aware gate
- * fallback (hard loads / refreshes), so both render the same skeleton — without
- * the gate registration a hard load would flash the neutral fallback first and
- * then swap to this one.
+ * list of {@link NotificationRowSkeleton}). Selected by `resolveLoadingFallback`
+ * (`(protected)/_lib/resolveLoadingFallback.tsx`) for both the `(protected)`
+ * layout's auth-gate `<Suspense>` (hard loads / refreshes) and
+ * `(protected)/loading.tsx` (client-side navigations) — this route
+ * deliberately has no folder-scoped `loading.tsx` of its own, so there is a
+ * single place that picks the skeleton per route instead of two that could
+ * drift apart.
  */
 export function NotificationsLoadingFallback() {
   return (
