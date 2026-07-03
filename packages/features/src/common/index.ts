@@ -42,6 +42,8 @@ export {
   generateSquareSequence,
   shuffleArray,
 } from "./utils";
+export type { DisplayPieceType } from "./piece-glyphs";
+export { PIECE_DISPLAY_MAP } from "./piece-glyphs";
 export {
   KNIGHT_OFFSETS,
   BISHOP_DIRS,

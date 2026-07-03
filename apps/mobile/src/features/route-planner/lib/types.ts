@@ -11,9 +11,7 @@ export type {
   RoutePlannerResult,
 } from "@blindfold-chess/features/route-planner";
 
-export const PIECE_DISPLAY_MAP: Record<string, string> = {
-  n: "\u2658",
-  b: "\u2657",
-  r: "\u2656",
-  q: "\u2655",
-};
+import { PIECE_DISPLAY_MAP as SHARED_PIECE_DISPLAY_MAP } from "@blindfold-chess/features/common";
+
+export const PIECE_DISPLAY_MAP: Record<string, string> =
+  SHARED_PIECE_DISPLAY_MAP;

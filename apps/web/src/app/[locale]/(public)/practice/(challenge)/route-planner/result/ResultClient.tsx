@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { ARTICLE_ICONS } from '@/app/[locale]/(public)/learn/_lib/types';
 import {
   createPracticeResultClient,
   formatAverageTimePerAnswer,
@@ -57,13 +58,13 @@ function RelatedLinks({ locale }: { locale: Locale }) {
   const relatedLinks = [
     {
       href: '/learn/moves/bishop-movement',
-      icon: '♝',
+      icon: ARTICLE_ICONS['bishop-movement'],
       title: tPractice('legalMoves.articles.bishop.title'),
       description: tPractice('legalMoves.articles.bishop.description'),
     },
     {
       href: '/learn/moves/knight-movement',
-      icon: '♞',
+      icon: ARTICLE_ICONS['knight-movement'],
       title: tPractice('legalMoves.articles.knight.title'),
       description: tPractice('legalMoves.articles.knight.description'),
     },
