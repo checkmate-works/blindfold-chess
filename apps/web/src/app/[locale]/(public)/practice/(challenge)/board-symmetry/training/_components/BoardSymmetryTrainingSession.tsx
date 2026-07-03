@@ -2,15 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 import { FEEDBACK_FLASH_MS, applyCoordinateBackspace } from '@blindfold-chess/features/common';
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardSymmetryPlaySkeleton } from '../../_components/BoardSymmetryPlaySkeleton';
@@ -21,10 +17,6 @@ type Props = {
 };
 
 export default function BoardSymmetryTrainingSession({ locale }: Props) {
-  const router = useRouter();
-  const { showToast } = useToast();
-  const tp = useTranslations('practice');
-
   const [problem, setProblem] = useState<BoardSymmetryProblem | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
@@ -42,7 +34,10 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
     setProblem(generateProblem());
   }, []);
 
-  useScrollToElement('board-symmetry-training-session');
+  const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
+    locale,
+    slug: 'board-symmetry',
+  });
 
   const advanceToNextProblem = useCallback(() => {
     setSelectedFile(null);
@@ -97,17 +92,12 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
     }
   }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect]);
 
-  const handleEndTraining = useCallback(() => {
-    showToast(tp('trainingEnded'), 'info');
-    router.push(`/${locale}/practice/board-symmetry`);
-  }, [showToast, tp, router, locale]);
-
   if (!problem) {
     return <BoardSymmetryPlaySkeleton />;
   }
 
   return (
-    <div id="board-symmetry-training-session" className="min-h-screen">
+    <div id={sessionElementId} className="min-h-screen">
       <BoardSymmetryTrainingPlaying
         problem={problem}
         selectedFile={selectedFile}

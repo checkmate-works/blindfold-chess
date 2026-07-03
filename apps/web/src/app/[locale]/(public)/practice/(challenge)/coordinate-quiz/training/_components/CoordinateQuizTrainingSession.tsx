@@ -2,13 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizPlaySkeleton } from '../../_components/CoordinateQuizPlaySkeleton';
@@ -28,10 +24,6 @@ export default function CoordinateQuizTrainingSession({
   boardOrientation: initialBoardOrientation,
   feedbackSpeed: initialFeedbackSpeed,
 }: Props) {
-  const router = useRouter();
-  const { showToast } = useToast();
-  const tp = useTranslations('practice');
-
   const boardOrientation = initialBoardOrientation as BoardOrientation;
   const feedbackSpeed = initialFeedbackSpeed as FeedbackSpeed;
   const feedbackDuration = FEEDBACK_SPEED_MS[feedbackSpeed];
@@ -56,7 +48,11 @@ export default function CoordinateQuizTrainingSession({
     setRecentSquares([firstQuestion.targetSquare]);
   }, [boardOrientation]);
 
-  useScrollToElement('coordinate-quiz-training-session', !!currentQuestion);
+  const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
+    locale,
+    slug: 'coordinate-quiz',
+    scrollEnabled: !!currentQuestion,
+  });
 
   const handleSquareClick = useCallback(
     (square: Square) => {
@@ -87,18 +83,13 @@ export default function CoordinateQuizTrainingSession({
     [currentQuestion, showFeedback, boardOrientation, recentSquares, feedbackDuration]
   );
 
-  const handleEndTraining = useCallback(() => {
-    showToast(tp('trainingEnded'), 'info');
-    router.push(`/${locale}/practice/coordinate-quiz`);
-  }, [showToast, tp, router, locale]);
-
   // Show loading state while question is being generated
   if (!currentQuestion) {
     return <CoordinateQuizPlaySkeleton />;
   }
 
   return (
-    <div id="coordinate-quiz-training-session" className="min-h-screen">
+    <div id={sessionElementId} className="min-h-screen">
       <CoordinateQuizTrainingPlaying
         locale={locale}
         currentQuestion={currentQuestion}

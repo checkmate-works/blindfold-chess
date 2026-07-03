@@ -2,9 +2,6 @@
 
 import { useCallback } from 'react';
 
-import { useRouter } from 'next/navigation';
-
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 import type {
   BoardOrientation,
@@ -16,8 +13,7 @@ import {
   generateQuadrantQuestionBatch,
 } from '@blindfold-chess/features/quadrants';
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { QuadrantsPlaySkeleton } from '../../_components/QuadrantsPlaySkeleton';
@@ -31,10 +27,6 @@ type Props = {
 const BATCH_SIZE = 100;
 
 export default function QuadrantsTrainingSession({ locale, orientation }: Props) {
-  const router = useRouter();
-  const { showToast } = useToast();
-  const tp = useTranslations('practice');
-
   const {
     currentQuestion,
     hasQuestions,
@@ -51,7 +43,11 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
     feedbackDelayMs: (isCorrect: boolean) => (isCorrect ? 500 : 1500),
   });
 
-  useScrollToElement('quadrants-training-session', hasQuestions);
+  const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
+    locale,
+    slug: 'quadrants',
+    scrollEnabled: hasQuestions,
+  });
 
   const onAnswer = useCallback(
     (selectedQuadrant: QuadrantId) => {
@@ -60,17 +56,12 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
     [handleAnswer]
   );
 
-  const handleEndTraining = useCallback(() => {
-    showToast(tp('trainingEnded'), 'info');
-    router.push(`/${locale}/practice/quadrants`);
-  }, [showToast, tp, router, locale]);
-
   if (!hasQuestions || !currentQuestion) {
     return <QuadrantsPlaySkeleton />;
   }
 
   return (
-    <div id="quadrants-training-session" className="min-h-screen">
+    <div id={sessionElementId} className="min-h-screen">
       <QuadrantsTrainingPlaying
         currentQuestion={currentQuestion}
         showResult={showResult}

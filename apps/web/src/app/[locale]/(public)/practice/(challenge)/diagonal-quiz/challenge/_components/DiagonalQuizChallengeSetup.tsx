@@ -1,40 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { ChallengeSetupShell } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeSetupShell';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createChallengeSetup } from '@/app/[locale]/(public)/practice/(challenge)/_components/create-challenge-setup';
 
 const DEFAULT_TIME_LIMIT = 60;
 
-type Props = {
-  locale: Locale;
-};
-
-export function DiagonalQuizChallengeSetup({ locale }: Props) {
-  const timeLimit = DEFAULT_TIME_LIMIT;
-  const t = useTranslations('practice');
-  const router = useRouter();
-
-  const handleStart = () => {
-    const params = new URLSearchParams({
-      timeLimit: timeLimit.toString(),
-    });
-    router.push(`/${locale}/practice/diagonal-quiz/challenge/session?${params.toString()}`);
-  };
-
-  return (
-    <ChallengeSetupShell
-      onStart={handleStart}
-      rules={
-        <>
-          <li>{t('challengeSetup.timeLimit', { seconds: timeLimit })}</li>
-          <li>{t('challengeSetup.noMistakeLimit')}</li>
-          <li>{t('challengeSetup.leaderboard')}</li>
-        </>
-      }
-    />
-  );
-}
+export const DiagonalQuizChallengeSetup = createChallengeSetup({
+  moduleSlug: 'diagonal-quiz',
+  buildQuery: () => new URLSearchParams({ timeLimit: DEFAULT_TIME_LIMIT.toString() }),
+  rules: (t) => (
+    <>
+      <li>{t('challengeSetup.timeLimit', { seconds: DEFAULT_TIME_LIMIT })}</li>
+      <li>{t('challengeSetup.noMistakeLimit')}</li>
+      <li>{t('challengeSetup.leaderboard')}</li>
+    </>
+  ),
+});
