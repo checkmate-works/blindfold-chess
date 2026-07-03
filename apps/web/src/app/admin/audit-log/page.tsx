@@ -3,8 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
+import { resolveUserFilter } from '@/app/admin/_lib/resolve-user-filter';
 import type { User } from '@supabase/supabase-js';
-import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, moderationActions, profiles } from '@/lib/db';
@@ -64,36 +65,11 @@ export default async function AdminAuditLogPage({
   // identical `listUsers` round-trip in the same request.
   let preloadedAuthUsers: User[] | undefined;
   if (userFilter) {
-    const matchingProfiles = await db
-      .select({ id: profiles.id })
-      .from(profiles)
-      .where(
-        or(
-          ilike(profiles.username, `%${userFilter}%`),
-          ilike(profiles.displayName, `%${userFilter}%`)
-        )
-      );
-
-    // Also search by email via Supabase admin client
-    const listUsersResult = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
-    preloadedAuthUsers = listUsersResult.data?.users;
-    const matchingEmailUserIds = (preloadedAuthUsers ?? [])
-      .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
-      .map((u) => u.id);
-
-    const allMatchingIds = [
-      ...new Set([...matchingProfiles.map((p) => p.id), ...matchingEmailUserIds]),
-    ];
-
-    if (allMatchingIds.length === 0) {
-      // No matching users — return empty result
-      filteredTargetIds = [];
-    } else {
-      filteredTargetIds = allMatchingIds;
-      conditions.push(inArray(moderationActions.targetId, allMatchingIds));
+    const resolved = await resolveUserFilter(adminClient, userFilter);
+    preloadedAuthUsers = resolved.preloadedAuthUsers;
+    filteredTargetIds = resolved.matchingIds;
+    if (resolved.matchingIds.length > 0) {
+      conditions.push(inArray(moderationActions.targetId, resolved.matchingIds));
     }
   }
 
