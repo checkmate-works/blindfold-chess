@@ -92,7 +92,7 @@ export const NAMESPACE_CLASSIFICATION = {
   playError: 'client',
   postFenAttachment: 'client',
   postVideoAttachment: 'client',
-  postmortem: 'client',
+  recall: 'client',
   practice: 'client',
   pricing: 'client',
   profile: 'client',

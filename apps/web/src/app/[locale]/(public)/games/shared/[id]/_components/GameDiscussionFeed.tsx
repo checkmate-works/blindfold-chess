@@ -9,7 +9,7 @@ import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
+import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildDiscussionGroups } from '../_lib/build-discussion-groups';

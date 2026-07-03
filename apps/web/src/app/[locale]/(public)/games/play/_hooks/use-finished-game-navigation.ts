@@ -6,33 +6,29 @@ import { useRouter } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { buildPostmortemPath } from '../_lib';
+import { buildRecallPath } from '../_lib';
 import { useSharedGameLink } from './use-shared-game-link';
 
-type PostmortemArgs = Parameters<typeof buildPostmortemPath>[0];
+type RecallArgs = Parameters<typeof buildRecallPath>[0];
 
 type Params = {
   locale: Locale;
   /** Review mode (`?finished=1`): skip prefetching the result route. */
   isFinishedView: boolean;
   gameId: string | undefined;
-  // Postmortem path inputs (types derived from buildPostmortemPath).
-  formattedPgn: PostmortemArgs['formattedPgn'];
-  playerSide: PostmortemArgs['playerColor'];
-  moves: PostmortemArgs['moves'];
-  engineConfig: PostmortemArgs['engineConfig'];
-  startingFen: PostmortemArgs['startingFen'];
+  // Recall path inputs (types derived from buildRecallPath).
+  formattedPgn: RecallArgs['formattedPgn'];
+  playerSide: RecallArgs['playerColor'];
+  moves: RecallArgs['moves'];
+  engineConfig: RecallArgs['engineConfig'];
+  startingFen: RecallArgs['startingFen'];
 };
 
 type Result = {
   /** Navigate to the result page for the current game. */
   handleViewResult: () => void;
-  /**
-   * Navigate to the postmortem ("Recall"). Anonymous viewers are NOT gated
-   * here — the members-only sign-up CTA is shown on the postmortem page itself,
-   * so the prompt appears after navigating rather than over the finish modal.
-   */
-  openPostmortem: () => void;
+  /** Navigate to Recall — open to everyone, no sign-up required. */
+  openRecall: () => void;
   /** Publish this game (or open it if already published from this browser). */
   handleShare: () => void;
   /** Whether this game was already published from this browser. */
@@ -42,7 +38,7 @@ type Result = {
 /**
  * The finished-game navigation hub for the play screen: it prefetches the
  * result route and exposes the actions the game-finished modal wires to —
- * "view result", the postmortem ("Recall"), and Share.
+ * "view result", Recall, and Share.
  */
 export function useFinishedGameNavigation({
   locale,
@@ -69,7 +65,7 @@ export function useFinishedGameNavigation({
 
   // NOTE: game end no longer auto-redirects. `PlayClient` shows the
   // game-finished modal (Result / Game Review / Kata) over the finished board;
-  // `handleViewResult` / `openPostmortem` below are the modal's actions. The
+  // `handleViewResult` / `openRecall` below are the modal's actions. The
   // result route is still prefetched above so the Result card navigates
   // instantly.
 
@@ -91,10 +87,10 @@ export function useFinishedGameNavigation({
     );
   }, [router, locale, gameId, sharedPublishedId]);
 
-  const openPostmortem = useCallback(() => {
+  const openRecall = useCallback(() => {
     if (!gameId) return;
     router.push(
-      buildPostmortemPath({
+      buildRecallPath({
         locale,
         formattedPgn,
         playerColor: playerSide,
@@ -108,7 +104,7 @@ export function useFinishedGameNavigation({
 
   return {
     handleViewResult,
-    openPostmortem,
+    openRecall,
     handleShare,
     isShared,
   };

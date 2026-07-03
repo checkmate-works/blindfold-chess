@@ -23,8 +23,8 @@ type Props = {
 /**
  * Result-screen breadcrumb: `Games > Game > Review`. The middle "Game" step
  * links back to the finished-game view (`/games/play?…&finished=1`) — the screen
- * from which Recall (postmortem) is reachable — so the result screen itself no
- * longer needs prominent postmortem / open-game buttons; this review is the main
+ * from which Recall is reachable — so the result screen itself no
+ * longer needs prominent recall / open-game buttons; this review is the main
  * destination and the game is one tap away here.
  *
  * The finished-game URL needs the game's colour + engine, which the play screen

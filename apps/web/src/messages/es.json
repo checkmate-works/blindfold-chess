@@ -2017,7 +2017,7 @@
     "newGameFromHere": "Nueva partida desde aquí",
     "saving": "Guardando...",
     "saved": "Guardado",
-    "postmortem": "De memoria",
+    "recall": "De memoria",
     "resultTitle": "Repaso",
     "playerColor": {
       "white": "Blancas",
@@ -2336,11 +2336,13 @@
       }
     }
   },
-  "postmortem": {
+  "recall": {
     "title": "De memoria",
-    "authGate": {
-      "title": "Regístrate para usar De memoria",
-      "description": "Reconstruye tus partidas jugada a jugada de memoria — gratis con una cuenta."
+    "description": "Pega cualquier PGN y reprodúcelo jugada a jugada de memoria — sin necesidad de cuenta ni partida guardada.",
+    "setup": {
+      "description": "Pega un PGN a continuación — tu propia partida, la de otra persona, o una línea de apertura — y luego reprodúcela de memoria.",
+      "pgnLabel": "PGN",
+      "startButton": "Empezar de memoria"
     },
     "settings": "Ajustes",
     "help": {
@@ -2411,7 +2413,8 @@
       "reviewTitle": "Dónde dudaste",
       "reviewHint": "Toca para ver la posición",
       "restart": "Jugar de nuevo",
-      "backToResult": "Volver al resultado"
+      "backToResult": "Volver al resultado",
+      "startNew": "Empezar con otro PGN"
     }
   },
   "playError": {

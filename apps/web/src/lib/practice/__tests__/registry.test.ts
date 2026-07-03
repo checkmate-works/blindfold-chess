@@ -9,8 +9,8 @@ import {
 } from '../registry';
 
 describe('PRACTICE_MODULE_REGISTRY', () => {
-  it('contains exactly twelve entries', () => {
-    expect(PRACTICE_MODULE_REGISTRY).toHaveLength(12);
+  it('contains exactly thirteen entries', () => {
+    expect(PRACTICE_MODULE_REGISTRY).toHaveLength(13);
   });
 
   it('has unique snake_case slugs', () => {
@@ -31,8 +31,8 @@ describe('PRACTICE_MODULE_REGISTRY', () => {
 });
 
 describe('PRACTICE_MENU_TYPES', () => {
-  it('contains all twelve menu types', () => {
-    expect(PRACTICE_MENU_TYPES).toHaveLength(12);
+  it('contains all thirteen menu types', () => {
+    expect(PRACTICE_MENU_TYPES).toHaveLength(13);
   });
 
   it('includes coordinate_quiz, legal_moves, position_memory, puzzle, etc.', () => {

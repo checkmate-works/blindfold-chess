@@ -15,8 +15,8 @@ import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
-import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
+import { formatMovesToPgn } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/format-moves-to-pgn';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';

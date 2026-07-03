@@ -21,7 +21,7 @@ import { buildPositionTopicKey } from '@/lib/repertoires/position-topic-key';
 import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 
-import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
+import { formatMovesToPgn } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/format-moves-to-pgn';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';

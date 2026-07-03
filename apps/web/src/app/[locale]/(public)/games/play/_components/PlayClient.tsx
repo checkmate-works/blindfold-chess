@@ -258,7 +258,7 @@ export function PlayClient({
 
   // Finished-game navigation hub: prefetches the result route and exposes the
   // game-finished modal's actions.
-  const { handleViewResult, openPostmortem, isShared } = useFinishedGameNavigation({
+  const { handleViewResult, openRecall, isShared } = useFinishedGameNavigation({
     locale,
     isFinishedView,
     gameId,
@@ -547,7 +547,7 @@ export function PlayClient({
         onClose={() => setFinishModalOpen(false)}
         result={playerResult}
         onReview={handleViewResult}
-        onRecall={openPostmortem}
+        onRecall={openRecall}
         published={isShared}
       />
     </div>

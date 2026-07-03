@@ -2021,7 +2021,7 @@
     "newGameFromHere": "New game from here",
     "saving": "Saving...",
     "saved": "Saved",
-    "postmortem": "Recall",
+    "recall": "Recall",
     "resultTitle": "Game Review",
     "playerColor": {
       "white": "White",
@@ -2340,11 +2340,13 @@
       }
     }
   },
-  "postmortem": {
+  "recall": {
     "title": "Recall",
-    "authGate": {
-      "title": "Sign up to use Recall",
-      "description": "Reconstruct your games move by move from memory — free with an account."
+    "description": "Paste any PGN and replay it move by move from memory — no account or saved game required.",
+    "setup": {
+      "description": "Paste a PGN below — your own game, someone else's, or an opening line — then replay it from memory.",
+      "pgnLabel": "PGN",
+      "startButton": "Start Recall"
     },
     "settings": "Settings",
     "help": {
@@ -2415,7 +2417,8 @@
       "reviewTitle": "Where you stumbled",
       "reviewHint": "Tap to view the position",
       "restart": "Play again",
-      "backToResult": "Back to result"
+      "backToResult": "Back to result",
+      "startNew": "Start with another PGN"
     }
   },
   "playError": {

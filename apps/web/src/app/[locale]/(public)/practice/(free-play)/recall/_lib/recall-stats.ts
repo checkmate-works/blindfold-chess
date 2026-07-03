@@ -18,7 +18,7 @@ export type RecallStats = {
 };
 
 /**
- * Derive the postmortem recall report from the move log.
+ * Derive the recall recall report from the move log.
  *
  * The log is an ordered stream: `incorrect` entries precede the resolution of
  * the move they belong to (`correct` when the user finally entered it, or

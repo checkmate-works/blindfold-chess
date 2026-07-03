@@ -1,5 +1,5 @@
 /**
- * Postmortem Page
+ * Recall Page
  *
  * @description
  * A game review feature where users replay all moves from a completed game
@@ -25,16 +25,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { PostmortemPageClient } from './_components/PostmortemPageClient';
-
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-  searchParams: Promise<{ gameId?: string; [key: string]: string | string[] | undefined }>;
-};
+import { RecallPageClient } from './_components/RecallPageClient';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
@@ -43,33 +36,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
-  const title = t('postmortem.title');
+  const title = t('recall.title');
+  const description = t('recall.description');
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'games/play/postmortem', title }),
+    ...generateCanonicalMetadata({ locale, path: 'practice/recall', title, description }),
     title: resolveTitle(title, locale),
+    description,
   };
 }
 
-export default async function PostmortemPage({ params, searchParams }: Props) {
+export default async function RecallPage({ params }: Props) {
   const { locale } = await params;
-  const { gameId } = await searchParams;
   setRequestLocale(locale);
 
   const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
-  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
-  const tPlay = await getTranslations({ locale, namespace: 'play' });
-  const tPostmortem = await getTranslations({ locale, namespace: 'postmortem' });
-
-  const resultHref = gameId ? `/games/play/result?gameId=${gameId}` : '/games/play/result';
+  const t = await getTranslations({ locale });
+  const tRecall = await getTranslations({ locale, namespace: 'recall' });
 
   const breadcrumb = (
     <BreadcrumbContent
-      items={[
-        { label: tGames('pageTitle'), href: '/games' },
-        { label: tPlay('resultTitle'), href: resultHref },
-        { label: tPostmortem('title') },
-      ]}
+      items={[{ label: t('navigation.practice'), href: '/practice' }, { label: tRecall('title') }]}
       locale={locale}
       brandName={tMetadata('siteName')}
       density="compact"
@@ -78,7 +65,7 @@ export default async function PostmortemPage({ params, searchParams }: Props) {
 
   return (
     <Suspense>
-      <PostmortemPageClient breadcrumb={breadcrumb} />
+      <RecallPageClient breadcrumb={breadcrumb} />
     </Suspense>
   );
 }

@@ -98,7 +98,7 @@ export function useBoardDragDrop({
       if (!square) return;
       const piece = pieceAt(square);
       // Only movable pieces drag (own color by default; the side to move in
-      // postmortem). Other presses (empty square, non-movable piece) fall
+      // recall). Other presses (empty square, non-movable piece) fall
       // through to the click handler, preserving click-to-move and the
       // obfuscated "tried to grab the wrong piece" counting.
       if (!piece || piece.color !== movableColorChar) return;

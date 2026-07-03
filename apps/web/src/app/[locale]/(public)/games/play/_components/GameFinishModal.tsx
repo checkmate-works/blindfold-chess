@@ -23,8 +23,7 @@ type Props = {
    */
   onReview: () => void;
   /**
-   * Open the postmortem — reconstruct the whole game from memory. Labelled
-   * "Recall". Auth-guarded by the caller.
+   * Open Recall — reconstruct the whole game from memory. Labelled "Recall".
    */
   onRecall: () => void;
   /**
@@ -39,7 +38,7 @@ type Props = {
  * Shown when a game ends in live play, in place of the old auto-redirect to the
  * result screen. Leads with the win/loss/draw result, then offers three next
  * steps as cards — Game Review (result screen: stats + reflections), Recall
- * (postmortem memory reconstruction), and Kata (repertoire opening check,
+ * (memory reconstruction), and Kata (repertoire opening check,
  * coming soon) — each with a help-tour explanation. Dismissing it leaves the
  * player on the finished board (reopen via the board's "Next action" button).
  */

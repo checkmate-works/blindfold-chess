@@ -4,23 +4,26 @@ import type { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { getMovingSide } from '../../_lib/fen-utils';
+import { getMovingSide } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+
 import type { MoveLogEntry } from '../_lib';
 import { isPlayerTurn as computeIsPlayerTurn, formatMovesToPgn } from '../_lib';
-import { usePostmortemActions } from './use-postmortem-actions';
-import { usePostmortemInit } from './use-postmortem-init';
-import { usePostmortemNavigation } from './use-postmortem-navigation';
-import { usePostmortemSettings } from './use-postmortem-settings';
+import { useRecallActions } from './use-recall-actions';
+import { useRecallInit } from './use-recall-init';
+import { useRecallNavigation } from './use-recall-navigation';
+import { useRecallSettings } from './use-recall-settings';
 
 type Props = {
   pgn: string;
+  /** Pre-parsed SAN move list, taking precedence over `pgn` when present. See `useRecallInit`. */
+  moves?: AlgebraicNotation[];
   playerColor: 'white' | 'black';
   autoOpponent: boolean;
   initialOffset?: number;
   startingFen?: string;
 };
 
-type PostmortemGameReturn = {
+type RecallGameReturn = {
   gameProgress: {
     originalMoves: AlgebraicNotation[];
     currentMoveIndex: number;
@@ -75,13 +78,14 @@ type PostmortemGameReturn = {
   formattedPgn: FormattedPgnMove[];
 };
 
-export function usePostmortemGame({
+export function useRecallGame({
   pgn,
+  moves,
   playerColor,
   autoOpponent: initialAutoOpponent,
   initialOffset = 0,
   startingFen,
-}: Props): PostmortemGameReturn {
+}: Props): RecallGameReturn {
   // Initialization: PGN parsing, move validation, game positions
   const {
     originalMoves,
@@ -94,17 +98,17 @@ export function usePostmortemGame({
     startsAsBlack,
     startMoveNumber,
     gamePositions,
-  } = usePostmortemInit({ pgn, initialOffset, startingFen });
+  } = useRecallInit({ pgn, moves, initialOffset, startingFen });
 
   // Local state
   const [moveInputValue, setMoveInputValue] = useState('');
-  const { autoOpponent, setAutoOpponent } = usePostmortemSettings({
+  const { autoOpponent, setAutoOpponent } = useRecallSettings({
     initialAutoOpponent,
   });
   const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
 
   // Hooks: Navigation
-  const navigation = usePostmortemNavigation({
+  const navigation = useRecallNavigation({
     originalMovesLength: originalMoves.length,
     gamePositions,
   });
@@ -135,7 +139,7 @@ export function usePostmortemGame({
     handleSubmitMove: rawHandleSubmit,
     handleDontKnow: rawHandleDontKnow,
     handleAnalyzeAll,
-  } = usePostmortemActions({
+  } = useRecallActions({
     originalMoves,
     userMoves,
     currentMoveIndex,

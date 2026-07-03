@@ -7,15 +7,23 @@ import {
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { parseFenMeta } from '../../_lib/fen-utils';
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
-type UsePostmortemInitProps = {
+type UseRecallInitProps = {
   pgn: string;
+  /**
+   * Pre-parsed SAN move list, taking precedence over `pgn` when present. Lets
+   * callers that already have a clean move array (e.g. `parsePgnWithFen`)
+   * skip the regex-based `pgn` cleanup below entirely, which only handles
+   * plain movetext and mis-parses a leading black-to-move segment (an
+   * `"N.."`-style prefix collapses to a stray `"."` token).
+   */
+  moves?: AlgebraicNotation[];
   initialOffset: number;
   startingFen?: string;
 };
 
-type UsePostmortemInitReturn = {
+type UseRecallInitReturn = {
   originalMoves: AlgebraicNotation[];
   currentMoveIndex: number;
   setCurrentMoveIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -31,11 +39,12 @@ type UsePostmortemInitReturn = {
 /**
  * Hook responsible for PGN parsing, move validation, and initial game state setup.
  */
-export function usePostmortemInit({
+export function useRecallInit({
   pgn,
+  moves: preParsedMoves,
   initialOffset,
   startingFen,
-}: UsePostmortemInitProps): UsePostmortemInitReturn {
+}: UseRecallInitProps): UseRecallInitReturn {
   const [originalMoves, setOriginalMoves] = useState<AlgebraicNotation[]>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState(initialOffset);
   const [userMoves, setUserMoves] = useState<AlgebraicNotation[]>([]);
@@ -50,8 +59,14 @@ export function usePostmortemInit({
   // Parse PGN on mount
   useEffect(() => {
     try {
-      const cleanPgn = pgn.replace(/\d+\.\s*/g, '').replace(/\.\./g, '');
-      const moves = cleanPgn.trim().split(/\s+/).filter(Boolean);
+      const moves =
+        preParsedMoves ??
+        pgn
+          .replace(/\d+\.\s*/g, '')
+          .replace(/\.\./g, '')
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
 
       const fen = startingFen ?? getStartingFen();
       const result = validateMoveSequence(fen, moves);
@@ -70,7 +85,7 @@ export function usePostmortemInit({
     } catch (error) {
       console.error('Error parsing PGN:', error);
     }
-  }, [pgn, initialOffset, startingFen]);
+  }, [pgn, preParsedMoves, initialOffset, startingFen]);
 
   // Pre-compute all game positions
   const gamePositions = useMemo(() => {

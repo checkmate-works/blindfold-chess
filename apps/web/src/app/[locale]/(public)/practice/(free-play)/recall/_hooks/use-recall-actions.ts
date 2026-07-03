@@ -21,7 +21,7 @@ type Props = {
   setIsCompleted: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export function usePostmortemActions({
+export function useRecallActions({
   originalMoves,
   userMoves,
   currentMoveIndex,

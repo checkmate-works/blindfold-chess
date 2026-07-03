@@ -31,9 +31,9 @@ import {
 } from '@/app/[locale]/(public)/games/play/_hooks';
 import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/_lib/build-new-game-from-position-url';
 import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
+import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { tabItemClass, tabsRowClass } from '@/app/[locale]/_components/tab-styles';

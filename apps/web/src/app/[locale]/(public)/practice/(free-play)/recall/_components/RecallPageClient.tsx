@@ -1,42 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
-import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
-import { PostmortemClient } from './PostmortemClient';
-import type { PostmortemFeedback } from './PostmortemClient';
+import { RecallClient } from './RecallClient';
+import type { RecallFeedback } from './RecallClient';
+import { RecallSetupForm } from './RecallSetupForm';
 
 type Props = {
   breadcrumb: ReactNode;
 };
 
-export function PostmortemPageClient({ breadcrumb }: Props) {
+export function RecallPageClient({ breadcrumb }: Props) {
   const searchParams = useSearchParams();
-  const t = useTranslations('postmortem');
-  // Recall is members-only. The sign-up CTA lives here (not at the entry point)
-  // so an anonymous player reaches this screen first, then sees the prompt.
-  // `isLoading` is treated as "not yet a guest" so a signed-in player never
-  // flashes the gate before auth resolves.
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const isGuest = !isAuthLoading && !user;
-  const [feedback, setFeedback] = useState<PostmortemFeedback | null>(null);
-  // Bumping this remounts PostmortemClient, resetting the whole review (moves,
+  const t = useTranslations('recall');
+  const [feedback, setFeedback] = useState<RecallFeedback | null>(null);
+  // Bumping this remounts RecallClient, resetting the whole review (moves,
   // log, completion) to a clean run — the "play again" action.
   const [runId, setRunId] = useState(0);
   // "Play again" must start from move 1. The review writes its progress into
-  // the URL's `offset` as you play (see use-postmortem-init), so by completion
+  // the URL's `offset` as you play (see use-recall-init), so by completion
   // the URL points at the end — reusing it on remount would re-complete
   // instantly. Once the user restarts, force offset 0 and ignore the URL.
   const [forceStartOver, setForceStartOver] = useState(false);
@@ -47,6 +41,19 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
 
   // Get PGN from URL parameters
   const pgn = searchParams.get('pgn');
+  // Pre-parsed SAN move array, set by the paste-PGN setup form (and, redundantly
+  // but harmlessly, by the "Recall" deep-link from a finished game). Takes
+  // precedence over `pgn` in useRecallInit — see that hook for why.
+  const movesParam = searchParams.get('moves');
+  const moves = useMemo(() => {
+    if (!movesParam) return undefined;
+    try {
+      const parsed = JSON.parse(movesParam);
+      return Array.isArray(parsed) ? (parsed as AlgebraicNotation[]) : undefined;
+    } catch {
+      return undefined;
+    }
+  }, [movesParam]);
   const playerColor = (searchParams.get('color') as 'white' | 'black') || 'white';
   const offset = forceStartOver ? 0 : parseInt(searchParams.get('offset') || '0', 10);
   const startingFen = searchParams.get('fen') || undefined;
@@ -54,28 +61,28 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
 
   const helpSteps: HelpStep[] = [
     {
-      targetId: 'postmortem-input',
+      targetId: 'recall-input',
       title: t('help.input.title'),
       description: t('help.input.description'),
       side: 'bottom',
       align: 'start',
     },
     {
-      targetId: 'postmortem-dont-know',
+      targetId: 'recall-dont-know',
       title: t('help.dontKnow.title'),
       description: t('help.dontKnow.description'),
       side: 'top',
       align: 'center',
     },
     {
-      targetId: 'postmortem-settings',
+      targetId: 'recall-settings',
       title: t('help.settings.title'),
       description: t('help.settings.description'),
       side: 'top',
       align: 'center',
     },
     {
-      targetId: 'postmortem-moves',
+      targetId: 'recall-moves',
       title: t('help.moves.title'),
       description: t('help.moves.description'),
       side: 'left',
@@ -83,11 +90,18 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
     },
   ];
 
-  if (!pgn) {
+  if (!pgn && !moves) {
     return (
-      <div className="text-center">
+      <div className="space-y-8">
         <PageTitle>{t('title')}</PageTitle>
-        <p className="text-muted-foreground mt-4">No game data provided.</p>
+        <PagePanel>
+          <RecallSetupForm />
+          {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
+          <div className="!mt-4 space-y-4">
+            <Divider />
+            {breadcrumb}
+          </div>
+        </PagePanel>
       </div>
     );
   }
@@ -111,30 +125,25 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
             {feedback ? feedback.text : t('title')}
           </span>
         </PageTitle>
-        {!isCompleted && !isGuest && <HelpTourButton steps={helpSteps} label={t('help.label')} />}
+        {!isCompleted && <HelpTourButton steps={helpSteps} label={t('help.label')} />}
       </div>
       <PagePanel>
-        {isGuest ? (
-          <StatsAuthGate title={t('authGate.title')} description={t('authGate.description')}>
-            <div className="min-h-[22rem]" />
-          </StatsAuthGate>
-        ) : (
-          <PostmortemClient
-            key={runId}
-            pgn={pgn}
-            playerColor={playerColor}
-            autoOpponent={false}
-            initialOffset={offset}
-            startingFen={startingFen}
-            gameId={gameId}
-            onFeedbackChange={setFeedback}
-            onCompletedChange={setIsCompleted}
-            onRestart={() => {
-              setForceStartOver(true);
-              setRunId((n) => n + 1);
-            }}
-          />
-        )}
+        <RecallClient
+          key={runId}
+          pgn={pgn ?? ''}
+          moves={moves}
+          playerColor={playerColor}
+          autoOpponent={false}
+          initialOffset={offset}
+          startingFen={startingFen}
+          gameId={gameId}
+          onFeedbackChange={setFeedback}
+          onCompletedChange={setIsCompleted}
+          onRestart={() => {
+            setForceStartOver(true);
+            setRunId((n) => n + 1);
+          }}
+        />
         {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
         <div className="!mt-4 space-y-4">
           <Divider />

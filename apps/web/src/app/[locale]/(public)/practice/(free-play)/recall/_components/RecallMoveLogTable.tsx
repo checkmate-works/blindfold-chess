@@ -3,7 +3,7 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { MoveLogEntry } from '../_lib';
-import { formatMoveNumberPrefix } from '../_lib/postmortem-format';
+import { formatMoveNumberPrefix } from '../_lib/recall-format';
 
 type Props = {
   /** Full move-log history; only incorrect / skipped (gave-up) rows are shown. */
@@ -21,8 +21,8 @@ type Props = {
  * mistakes, so they are excluded. Rows are clickable when `onEntryClick` is
  * wired (the completion summary uses this to revisit each stumble).
  */
-export function PostmortemMoveLogTable({ entries, onEntryClick }: Props) {
-  const t = useTranslations('postmortem');
+export function RecallMoveLogTable({ entries, onEntryClick }: Props) {
+  const t = useTranslations('recall');
 
   const relevantEntries = entries.filter((e) => e.status === 'incorrect' || e.status === 'skipped');
   if (relevantEntries.length === 0) {

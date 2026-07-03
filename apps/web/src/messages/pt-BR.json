@@ -2017,7 +2017,7 @@
     "newGameFromHere": "Nova partida a partir daqui",
     "saving": "Salvando...",
     "saved": "Salvo",
-    "postmortem": "De memória",
+    "recall": "De memória",
     "resultTitle": "Revisão",
     "playerColor": {
       "white": "Brancas",
@@ -2336,11 +2336,13 @@
       }
     }
   },
-  "postmortem": {
+  "recall": {
     "title": "De memória",
-    "authGate": {
-      "title": "Cadastre-se para usar De memória",
-      "description": "Reconstrua suas partidas lance a lance de memória — grátis com uma conta."
+    "description": "Cole qualquer PGN e reproduza-o lance a lance de memória — sem precisar de conta ou partida salva.",
+    "setup": {
+      "description": "Cole um PGN abaixo — sua própria partida, a de outra pessoa, ou uma linha de abertura — e reproduza-o de memória.",
+      "pgnLabel": "PGN",
+      "startButton": "Começar de memória"
     },
     "settings": "Configurações",
     "help": {
@@ -2411,7 +2413,8 @@
       "reviewTitle": "Onde você hesitou",
       "reviewHint": "Toque para ver a posição",
       "restart": "Jogar de novo",
-      "backToResult": "Voltar ao resultado"
+      "backToResult": "Voltar ao resultado",
+      "startNew": "Começar com outro PGN"
     }
   },
   "playError": {

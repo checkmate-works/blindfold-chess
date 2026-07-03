@@ -44,7 +44,7 @@ type Props = {
   /**
    * When `true`, draws a success-colored ring around the input area (mirroring
    * the destructive ring shown while `error` is set). Used to give positive
-   * "move accepted" feedback at the point of action — e.g. the postmortem
+   * "move accepted" feedback at the point of action — e.g. the recall
    * screen rings the input green on a correct recall. Ignored while `error`
    * is set (the destructive ring takes precedence).
    */

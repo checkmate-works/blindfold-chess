@@ -5,11 +5,11 @@ import { engineConfigToUrlParams } from '@/lib/engines';
 
 import type { FormattedPgnMove } from './pgn-parser';
 
-type BuildPostmortemPathArgs = {
+type BuildRecallPathArgs = {
   locale: string;
-  /** Structured move pairs, used to render the PGN string the postmortem parses. */
+  /** Structured move pairs, used to render the PGN string the recall parses. */
   formattedPgn: FormattedPgnMove[];
-  /** Player's color, forwarded as the postmortem `color` param ('white' | 'black'). */
+  /** Player's color, forwarded as the recall `color` param ('white' | 'black'). */
   playerColor: string;
   moves: AlgebraicNotation[];
   engineConfig: EngineConfig;
@@ -19,14 +19,21 @@ type BuildPostmortemPathArgs = {
 };
 
 /**
- * Build the postmortem deep-link for a finished game. Shared by the result
+ * Build the recall deep-link for a finished game. Shared by the result
  * screen and the finished-game view so both construct identical params (the
- * postmortem screen has no game-loading logic — it replays from the URL).
+ * recall screen has no game-loading logic — it replays from the URL).
  *
  * The PGN is rendered move-pair by move-pair, including the `N..` prefix for a
- * leading black move (custom FEN starting with black to move).
+ * leading black move (custom FEN starting with black to move). Recall
+ * itself prefers the `moves` param (a plain SAN array) over this rendered
+ * `pgn` string when both are present, since the `N..` form isn't safe input
+ * for `pgn`'s regex-based cleaner — `pgn` is kept only as a legacy fallback.
+ *
+ * Recall now lives at `/practice/recall` as a standalone module (see
+ * `apps/web/CLAUDE.md` glossary), reachable both via this deep-link and
+ * directly by pasting a PGN.
  */
-export function buildPostmortemPath({
+export function buildRecallPath({
   locale,
   formattedPgn,
   playerColor,
@@ -34,7 +41,7 @@ export function buildPostmortemPath({
   engineConfig,
   gameId,
   startingFen,
-}: BuildPostmortemPathArgs): string {
+}: BuildRecallPathArgs): string {
   const pgn = formattedPgn
     .map((move) => {
       const moveNumber = `${move.moveNumber}.`;
@@ -58,5 +65,5 @@ export function buildPostmortemPath({
   }
   params.set('moves', JSON.stringify(moves));
 
-  return `/${locale}/games/play/postmortem?${params.toString()}`;
+  return `/${locale}/practice/recall?${params.toString()}`;
 }
