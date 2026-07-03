@@ -1,20 +1,21 @@
 import Link from 'next/link';
 
+import { AdminBadge, type AdminBadgeVariant } from '@/app/admin/_components/AdminBadge';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
-function getActionBadgeClasses(action: string): string {
+function actionBadgeVariant(action: string): AdminBadgeVariant {
   switch (action) {
     // Destructive / dangerous
     case 'delete_account':
     case 'delete_post':
-      return 'bg-destructive-soft text-destructive-soft-foreground';
+      return 'danger';
 
     // Security attention
     case 'change_password':
     case 'request_password_reset':
     case 'logout':
-      return 'bg-warning-soft text-warning-soft-foreground';
+      return 'warning';
 
     // Normal operations
     case 'login':
@@ -22,17 +23,17 @@ function getActionBadgeClasses(action: string): string {
     case 'create_reply':
     case 'like':
     case 'unlike':
-      return 'bg-info-soft text-info-soft-foreground';
+      return 'info';
 
     // Profile / social
     case 'follow':
     case 'unfollow':
     case 'update_profile':
-      return 'bg-success-soft text-success-soft-foreground';
+      return 'success';
 
     // Default / unknown
     default:
-      return 'bg-secondary text-secondary-foreground';
+      return 'neutral';
   }
 }
 
@@ -76,11 +77,7 @@ export function ActivityLogRow({ log, profileMap, emailMap }: ActivityLogRowProp
   return (
     <tr key={log.id} className="border-t border-border">
       <td className="px-4 py-3">
-        <span
-          className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getActionBadgeClasses(log.action)}`}
-        >
-          {log.action}
-        </span>
+        <AdminBadge variant={actionBadgeVariant(log.action)}>{log.action}</AdminBadge>
       </td>
       <td className="px-4 py-3">
         {profileMap.get(log.userId)?.username ? (

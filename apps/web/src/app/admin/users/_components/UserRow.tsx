@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { AdminBadge } from '@/app/admin/_components/AdminBadge';
 import { formatDate } from '@/app/admin/_lib/format';
 import type { User } from '@supabase/supabase-js';
 import { FaExternalLinkAlt } from 'react-icons/fa';
@@ -72,15 +73,9 @@ export function UserRow({
         ) : null}
       </td>
       <td className="px-4 py-3">
-        <span
-          className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-            hasSubscription
-              ? 'bg-success-soft text-success-soft-foreground'
-              : 'bg-secondary text-foreground'
-          }`}
-        >
+        <AdminBadge variant={hasSubscription ? 'success' : 'neutral'}>
           {hasSubscription ? labels.premium : labels.free}
-        </span>
+        </AdminBadge>
       </td>
       <td className="px-4 py-3">
         <StatusBadge
@@ -95,9 +90,7 @@ export function UserRow({
         />
       </td>
       <td className="px-4 py-3">
-        <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-secondary text-foreground">
-          {labels[signupMethod]}
-        </span>
+        <AdminBadge variant="neutral">{labels[signupMethod]}</AdminBadge>
       </td>
       <td className="px-4 py-3 text-muted-foreground">{formatDate(user.created_at)}</td>
       <td className="px-4 py-3">

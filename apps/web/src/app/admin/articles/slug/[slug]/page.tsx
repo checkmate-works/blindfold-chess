@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { AdminBadge } from '@/app/admin/_components/AdminBadge';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { SUPPORTED_LOCALES } from '@/config';
 import { eq } from 'drizzle-orm';
@@ -57,21 +58,13 @@ export default async function AdminArticleSlugPage({
         renderRow={(article) => (
           <tr key={article.id} className="border-t border-border">
             <td className="px-4 py-3">
-              <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-accent">
-                {article.locale}
-              </span>
+              <AdminBadge variant="accent">{article.locale}</AdminBadge>
             </td>
             <td className="px-4 py-3 font-medium">{article.title}</td>
             <td className="px-4 py-3">
-              <span
-                className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                  article.status === 'published'
-                    ? 'bg-success-soft text-success-soft-foreground'
-                    : 'bg-warning-soft text-warning-soft-foreground'
-                }`}
-              >
+              <AdminBadge variant={article.status === 'published' ? 'success' : 'warning'}>
                 {article.status === 'published' ? t('published') : t('draft')}
-              </span>
+              </AdminBadge>
             </td>
             <td className="px-4 py-3 text-muted-foreground">
               {formatDateTime(article.publishedAt)}

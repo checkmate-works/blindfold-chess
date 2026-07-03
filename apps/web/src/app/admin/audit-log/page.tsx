@@ -10,6 +10,7 @@ import { db, moderationActions, profiles } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
@@ -20,6 +21,23 @@ const searchParamsCache = createSearchParamsCache({
   action: parseAsString.withDefault(''),
   user: parseAsString.withDefault(''),
 });
+
+function actionBadgeVariant(action: string): AdminBadgeVariant {
+  switch (action) {
+    case 'ban':
+      return 'danger';
+    case 'unban':
+    case 'create_grant':
+    case 'create_point_grant':
+      return 'success';
+    case 'delete_post':
+    case 'delete_position':
+    case 'revoke_grant':
+      return 'caution';
+    default:
+      return 'neutral';
+  }
+}
 
 export default async function AdminAuditLogPage({
   searchParams,
@@ -191,23 +209,7 @@ export default async function AdminAuditLogPage({
           return (
             <tr key={log.id} className="border-t border-border">
               <td className="px-4 py-3">
-                <span
-                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                    log.action === 'ban'
-                      ? 'bg-destructive-soft text-destructive-soft-foreground'
-                      : log.action === 'unban' ||
-                          log.action === 'create_grant' ||
-                          log.action === 'create_point_grant'
-                        ? 'bg-success-soft text-success-soft-foreground'
-                        : log.action === 'delete_post' ||
-                            log.action === 'delete_position' ||
-                            log.action === 'revoke_grant'
-                          ? 'bg-caution-soft text-caution-soft-foreground'
-                          : 'bg-secondary text-secondary-foreground'
-                  }`}
-                >
-                  {log.action}
-                </span>
+                <AdminBadge variant={actionBadgeVariant(log.action)}>{log.action}</AdminBadge>
               </td>
               <td className="px-4 py-3">{targetDisplay}</td>
               <td className="px-4 py-3 text-muted-foreground">{actorDisplay}</td>

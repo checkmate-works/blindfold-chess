@@ -6,6 +6,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { AdminBadge } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
@@ -147,13 +148,9 @@ export default async function AdminTopicPostsPage({
               <td className="px-4 py-3">{authorDisplay}</td>
               <td className="px-4 py-3">
                 {isDeleted ? (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-destructive-soft text-destructive-soft-foreground">
-                    {t('topicPosts.deleted')}
-                  </span>
+                  <AdminBadge variant="danger">{t('topicPosts.deleted')}</AdminBadge>
                 ) : (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-success-soft text-success-soft-foreground">
-                    {t('topicPosts.active')}
-                  </span>
+                  <AdminBadge variant="success">{t('topicPosts.active')}</AdminBadge>
                 )}
               </td>
               <td className="px-4 py-3 text-muted-foreground">{formatDateTime(post.createdAt)}</td>

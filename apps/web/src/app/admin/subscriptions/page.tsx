@@ -8,6 +8,7 @@ import { db, profiles, subscriptions } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
@@ -20,19 +21,19 @@ const searchParamsCache = createSearchParamsCache({
   user: parseAsString.withDefault(''),
 });
 
-function getStatusBadgeClass(status: string): string {
+function statusBadgeVariant(status: string): AdminBadgeVariant {
   switch (status) {
     case 'active':
-      return 'bg-success-soft text-success-soft-foreground';
+      return 'success';
     case 'trialing':
-      return 'bg-info-soft text-info-soft-foreground';
+      return 'info';
     case 'past_due':
-      return 'bg-warning-soft text-warning-soft-foreground';
+      return 'warning';
     case 'canceled':
     case 'unpaid':
-      return 'bg-destructive-soft text-destructive-soft-foreground';
+      return 'danger';
     default:
-      return 'bg-secondary text-foreground';
+      return 'neutral';
   }
 }
 
@@ -183,11 +184,7 @@ export default async function AdminSubscriptionsPage({
                 {truncateId(sub.stripePriceId)}
               </td>
               <td className="px-4 py-3">
-                <span
-                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getStatusBadgeClass(sub.status)}`}
-                >
-                  {sub.status}
-                </span>
+                <AdminBadge variant={statusBadgeVariant(sub.status)}>{sub.status}</AdminBadge>
               </td>
               <td className="px-4 py-3">{formatDate(sub.cancelAt)}</td>
               <td className="px-4 py-3 text-muted-foreground">
