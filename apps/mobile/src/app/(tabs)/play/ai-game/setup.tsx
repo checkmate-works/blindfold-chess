@@ -11,8 +11,7 @@ import { useTheme, spacing } from "../../../../theme";
 export default function AiGameSetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoaded, updatePlayerColor, updateSkillLevel } =
-    useGameSettings();
+  const { settings, isLoaded, updateSettings } = useGameSettings();
   const { colors } = useTheme();
 
   const handleStart = () => {
@@ -51,8 +50,8 @@ export default function AiGameSetup() {
         <SettingsForm
           playerColor={settings.playerColor}
           skillLevel={settings.skillLevel}
-          onUpdatePlayerColor={updatePlayerColor}
-          onUpdateSkillLevel={updateSkillLevel}
+          onUpdatePlayerColor={(playerColor) => updateSettings({ playerColor })}
+          onUpdateSkillLevel={(skillLevel) => updateSettings({ skillLevel })}
         />
       </ScrollView>
 
