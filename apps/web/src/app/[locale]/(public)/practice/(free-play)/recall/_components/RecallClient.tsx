@@ -116,16 +116,14 @@ export function RecallClient({
 
   const boardFen = displayFen || currentFen;
   const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
-  // Board-driven input is available in always-visible mode at the live
-  // position whenever it's a move the reviewer is expected to enter
-  // (`isPlayerTurn` already encodes the auto-opponent rule). Unlike a real
-  // game, the reviewer enters BOTH sides' moves, so the board is set to
-  // `movablePieces="side-to-move"` below — letting them grab the opponent's
-  // pieces on the opponent's turn.
-  // Recall is a review surface: the board is always visible (no blindfold
-  // mask / peek). Board-driven input is available at the live position whenever
-  // it's a move the reviewer is expected to enter (`isPlayerTurn` encodes the
-  // auto-opponent rule). The reviewer enters BOTH sides' moves, so the board is
+  // Recall is a review surface: the board has no blindfold mask / peek —
+  // matching play's mid-game UI here would be unnatural since the point of
+  // recall is reviewing a finished game, not re-hiding it. It's still
+  // foldable (open by default) via InlineBoardView's plain collapse mode, the
+  // same one puzzle uses (no `alwaysOpen`, no `masked`). Board-driven input is
+  // available at the live position whenever it's a move the reviewer is
+  // expected to enter (`isPlayerTurn` encodes the auto-opponent rule). The
+  // reviewer enters BOTH sides' moves, so the board is
   // `movablePieces="side-to-move"`.
   const canBoardInput =
     !isCompleted &&
@@ -148,7 +146,7 @@ export function RecallClient({
       onNavigatePrevious={navigation.navigatePrevious}
       onNavigateNext={navigation.navigateNext}
       onNavigateToEnd={navigation.navigateToEnd}
-      alwaysOpen
+      defaultOpen
       movablePieces="side-to-move"
       onMove={
         canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
@@ -218,7 +216,7 @@ export function RecallClient({
               {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
 
-              {/* Board (always visible — recall is a review surface) */}
+              {/* Board (open by default, foldable — recall is a review surface) */}
               {inlineBoardView}
 
               {!isCompleted ? (
