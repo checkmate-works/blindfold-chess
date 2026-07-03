@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 
 import { computePracticeResult } from "../common/practice-result";
 import { generateSquareSequence } from "../common/utils";
+import { useBufferedQuestions } from "../practice-session/use-buffered-questions";
 import { usePracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
@@ -28,19 +29,9 @@ export function useSquareColorsSession({
   onAnswerEffect,
   mistakeAllowance,
 }: UseSquareColorsSessionConfig): UseSquareColorsSessionReturn {
-  const squaresRef = useRef<string[]>(generateSquareSequence(200));
-  const indexRef = useRef(0);
-
-  const generateQuestion = useCallback((): string => {
-    indexRef.current += 1;
-    if (indexRef.current >= squaresRef.current.length - 10) {
-      squaresRef.current = [
-        ...squaresRef.current,
-        ...generateSquareSequence(100),
-      ];
-    }
-    return squaresRef.current[indexRef.current];
-  }, []);
+  const generateQuestion = useBufferedQuestions((count) =>
+    generateSquareSequence(count),
+  );
 
   const session = useTimedSession<string>({
     timeLimit,

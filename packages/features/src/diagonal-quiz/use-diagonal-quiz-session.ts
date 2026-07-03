@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
 import { computePracticeResult } from "../common/practice-result";
 import { generateSquareSequence } from "../common/utils";
+import { useBufferedQuestions } from "../practice-session/use-buffered-questions";
 import { usePracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
@@ -42,10 +43,9 @@ export function useDiagonalQuizSession({
   onAnswerEffect,
   mistakeAllowance,
 }: UseDiagonalQuizSessionConfig): UseDiagonalQuizSessionReturn {
-  const squaresRef = useRef<string[]>(
-    generateSquareSequence(200, Math.random, EXCLUDED_QUIZ_SQUARES),
+  const generateQuestion = useBufferedQuestions((count) =>
+    generateSquareSequence(count, Math.random, EXCLUDED_QUIZ_SQUARES),
   );
-  const indexRef = useRef(0);
 
   const [questionResults, setQuestionResults] = useState<
     DiagonalQuestionResult[]
@@ -57,17 +57,6 @@ export function useDiagonalQuizSession({
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null>(null);
-
-  const generateQuestion = useCallback((): string => {
-    indexRef.current += 1;
-    if (indexRef.current >= squaresRef.current.length - 10) {
-      squaresRef.current = [
-        ...squaresRef.current,
-        ...generateSquareSequence(100, Math.random, EXCLUDED_QUIZ_SQUARES),
-      ];
-    }
-    return squaresRef.current[indexRef.current];
-  }, []);
 
   const session = useTimedSession<string>({
     timeLimit,
