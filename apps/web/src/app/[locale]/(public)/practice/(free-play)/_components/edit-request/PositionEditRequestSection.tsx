@@ -8,12 +8,12 @@ import {
   getLinkedChunkOptionsForPosition,
 } from '@/lib/chunks/queries';
 import type { ChunkOption } from '@/lib/chunks/types';
+import type { EditRequestStatus } from '@/lib/edit-requests/shared';
+import { isEditRequestStatus } from '@/lib/edit-requests/shared';
 import {
   getViewerPendingEditRequestForPosition,
   listEditRequestsForPosition,
 } from '@/lib/position-edit-requests/queries';
-import { isPositionEditRequestStatus } from '@/lib/position-edit-requests/validation';
-import type { PositionEditRequestStatus } from '@/lib/position-edit-requests/validation';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -196,7 +196,7 @@ export async function PositionEditRequestSection({
       ) : (
         <ul className="space-y-3">
           {rows.map(({ request, proposer }) => {
-            const status: PositionEditRequestStatus = isPositionEditRequestStatus(request.status)
+            const status: EditRequestStatus = isEditRequestStatus(request.status)
               ? request.status
               : 'pending';
             // Pending rows diff against the live link set (true "accept now"

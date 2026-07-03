@@ -1,31 +1,5 @@
 import { CHUNK_TITLE_MAX_LENGTH } from '@/lib/chunks/validation';
-
-/**
- * Lifecycle states for a `chunk_edit_requests` row. See the schema TSDoc
- * for the full transition diagram. Kept as a const tuple so the validation
- * + UI layers share a single source of truth.
- */
-export const CHUNK_EDIT_REQUEST_STATUSES = [
-  'pending',
-  'accepted',
-  'rejected',
-  'withdrawn',
-] as const;
-export type ChunkEditRequestStatus = (typeof CHUNK_EDIT_REQUEST_STATUSES)[number];
-
-export function isChunkEditRequestStatus(value: unknown): value is ChunkEditRequestStatus {
-  return (
-    typeof value === 'string' && (CHUNK_EDIT_REQUEST_STATUSES as readonly string[]).includes(value)
-  );
-}
-
-/**
- * Practical upper bound for the proposer-side `comment` field on a
- * request. The DB column is `text` (unbounded); the cap below keeps
- * the UI honest. 2,000 chars covers a full paragraph or two of
- * rationale without enabling spam-length blobs.
- */
-export const CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH = 2000;
+import { EDIT_REQUEST_COMMENT_MAX_LENGTH } from '@/lib/edit-requests/shared';
 
 /**
  * Description length cap reused from the chunk validation rules so a
@@ -135,8 +109,8 @@ export function validateSubmitEditRequest(
   }
 
   const trimmedComment = typeof payload.comment === 'string' ? payload.comment.trim() : '';
-  if (trimmedComment.length > CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH) {
-    return `Comment must be ${CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH} characters or fewer`;
+  if (trimmedComment.length > EDIT_REQUEST_COMMENT_MAX_LENGTH) {
+    return `Comment must be ${EDIT_REQUEST_COMMENT_MAX_LENGTH} characters or fewer`;
   }
 
   return {

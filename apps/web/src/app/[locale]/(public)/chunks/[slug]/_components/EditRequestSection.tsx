@@ -1,10 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 
 import { listEditRequestsForChunk } from '@/lib/chunk-edit-requests/queries';
-import { isChunkEditRequestStatus } from '@/lib/chunk-edit-requests/validation';
-import type { ChunkEditRequestStatus } from '@/lib/chunk-edit-requests/validation';
 import { getFeedbackTopicsForChunk } from '@/lib/chunks/queries';
 import type { ChunkStatus } from '@/lib/chunks/validation';
+import type { EditRequestStatus } from '@/lib/edit-requests/shared';
+import { isEditRequestStatus } from '@/lib/edit-requests/shared';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
@@ -126,7 +126,7 @@ export async function EditRequestSection({
             // Defensive: the DB column is varchar so an unknown value (e.g.
             // a future status shipped before this page redeployed) degrades
             // safely to 'pending' for badge / control purposes.
-            const status: ChunkEditRequestStatus = isChunkEditRequestStatus(request.status)
+            const status: EditRequestStatus = isEditRequestStatus(request.status)
               ? request.status
               : 'pending';
             return (

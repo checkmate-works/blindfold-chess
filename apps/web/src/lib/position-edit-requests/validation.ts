@@ -1,32 +1,5 @@
+import { EDIT_REQUEST_COMMENT_MAX_LENGTH } from '@/lib/edit-requests/shared';
 import { UUID_RE } from '@/lib/validations/uuid';
-
-/**
- * Lifecycle states for a `position_edit_requests` row. See the schema TSDoc
- * for the full transition diagram. Kept as a const tuple so the validation
- * + UI layers share a single source of truth. Mirrors
- * `CHUNK_EDIT_REQUEST_STATUSES`.
- */
-export const POSITION_EDIT_REQUEST_STATUSES = [
-  'pending',
-  'accepted',
-  'rejected',
-  'withdrawn',
-] as const;
-export type PositionEditRequestStatus = (typeof POSITION_EDIT_REQUEST_STATUSES)[number];
-
-export function isPositionEditRequestStatus(value: unknown): value is PositionEditRequestStatus {
-  return (
-    typeof value === 'string' &&
-    (POSITION_EDIT_REQUEST_STATUSES as readonly string[]).includes(value)
-  );
-}
-
-/**
- * Practical upper bound for the proposer-side `comment` field. The DB
- * column is `text` (unbounded); the cap keeps the UI honest. Matches the
- * chunk edit-request comment cap.
- */
-export const POSITION_EDIT_REQUEST_COMMENT_MAX_LENGTH = 2000;
 
 export type SubmitPositionEditRequestPayload = {
   /**
@@ -96,7 +69,7 @@ export function validateSubmitPositionEditRequest(
   }
 
   const trimmedComment = typeof payload.comment === 'string' ? payload.comment.trim() : '';
-  if (trimmedComment.length > POSITION_EDIT_REQUEST_COMMENT_MAX_LENGTH) {
+  if (trimmedComment.length > EDIT_REQUEST_COMMENT_MAX_LENGTH) {
     return 'commentTooLong';
   }
 

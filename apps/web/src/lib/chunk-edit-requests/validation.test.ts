@@ -1,23 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH,
-  CHUNK_EDIT_REQUEST_DESCRIPTION_MAX_LENGTH,
-  isChunkEditRequestStatus,
-  validateSubmitEditRequest,
-} from './validation';
+import { EDIT_REQUEST_COMMENT_MAX_LENGTH } from '@/lib/edit-requests/shared';
+
+import { CHUNK_EDIT_REQUEST_DESCRIPTION_MAX_LENGTH, validateSubmitEditRequest } from './validation';
 
 const CURRENT = { title: 'Fianchetto', description: 'Bishop on long diagonal' };
-
-describe('isChunkEditRequestStatus', () => {
-  it.each(['pending', 'accepted', 'rejected', 'withdrawn'])('accepts %s', (s) => {
-    expect(isChunkEditRequestStatus(s)).toBe(true);
-  });
-
-  it.each(['', 'open', 'closed', 'PENDING', null, undefined, 0, {}])('rejects %s', (s) => {
-    expect(isChunkEditRequestStatus(s)).toBe(false);
-  });
-});
 
 describe('validateSubmitEditRequest', () => {
   it('rejects when neither field is supplied', () => {
@@ -80,7 +67,7 @@ describe('validateSubmitEditRequest', () => {
     const result = validateSubmitEditRequest(
       {
         proposedTitle: 'Kingside fianchetto',
-        comment: 'x'.repeat(CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH + 1),
+        comment: 'x'.repeat(EDIT_REQUEST_COMMENT_MAX_LENGTH + 1),
       },
       CURRENT
     );
