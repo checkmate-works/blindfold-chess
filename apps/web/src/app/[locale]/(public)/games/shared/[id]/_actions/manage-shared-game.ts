@@ -1,10 +1,7 @@
 'use server';
 
-import {
-  authorizeGameMutation,
-  softDeleteSharedGame,
-  updateSharedGameFields,
-} from '@/lib/db/games';
+import { authorizeGameMutation } from '@/lib/db/games-auth';
+import { softDeleteSharedGame, updateSharedGameFields } from '@/lib/db/games-write';
 import { MAX_DESCRIPTION_LENGTH, MAX_TITLE_LENGTH } from '@/lib/games/publish-constants';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';

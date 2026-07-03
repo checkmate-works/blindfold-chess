@@ -1,7 +1,7 @@
 'use server';
 
 import { userHasProfile } from '@/lib/auth';
-import { publishGame } from '@/lib/db/games';
+import { publishGame } from '@/lib/db/games-write';
 import type { EngineConfig } from '@/lib/engines';
 import { deriveGameColumns, validatePublishSnapshot } from '@/lib/games/publish-game';
 import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';

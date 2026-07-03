@@ -2,7 +2,11 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles, userFollows } from '@/lib/db';
 import { type UserAchievementRow, getUserAchievements } from '@/lib/db/achievement-queries';
-import { type SharedGameListItem, countGamesByAuthorId, listGamesByAuthorId } from '@/lib/db/games';
+import {
+  type SharedGameListItem,
+  countGamesByAuthorId,
+  listGamesByAuthorId,
+} from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, type LikeMeta, getLikeMetaMap } from '@/lib/db/like-queries';
 import {
   type ReplyMeta,

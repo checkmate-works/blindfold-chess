@@ -6,7 +6,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { getAllAvailableChunkOptions } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
-import { getGameById } from '@/lib/db/games';
+import { getGameById } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';

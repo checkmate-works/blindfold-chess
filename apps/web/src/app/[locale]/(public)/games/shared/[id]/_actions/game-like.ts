@@ -1,6 +1,6 @@
 'use server';
 
-import { getGameLikeOwner } from '@/lib/db/games';
+import { getGameLikeOwner } from '@/lib/db/games-read';
 import { performEntityToggleLike } from '@/lib/db/like-actions';
 import type { ToggleLikeResult } from '@/lib/db/like-actions';
 import { GAME_LIKE_TARGET } from '@/lib/db/like-queries';

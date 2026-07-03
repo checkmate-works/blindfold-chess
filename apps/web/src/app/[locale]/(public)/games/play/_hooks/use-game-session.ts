@@ -11,14 +11,13 @@ import type { EngineConfig } from '@/lib/engines';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { buildNewGameFromPositionUrl } from '../_lib/build-new-game-from-position-url';
-import { countPlayerMoves } from '../_lib/fen-utils';
 import { mapGameStatusToOutcome } from '../_lib/map-game-status-to-outcome';
 import { useAiMoveAnnouncer } from './use-ai-move-announcer';
 import { useAiMoveOrchestration } from './use-ai-move-orchestration';
 import { useAiMoveRetry } from './use-ai-move-retry';
 import { useAiVersus } from './use-ai-versus';
 import { useAutoSave } from './use-auto-save';
+import { useGameActions } from './use-game-actions';
 import { parseUrlSearchParams, useGameInitialization } from './use-game-initialization';
 import { useGamePersistence } from './use-game-persistence';
 import { useGameState } from './use-game-state';
@@ -233,71 +232,33 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setLastAttemptedInput,
   });
 
-  // Resign handler
-  const handleResign = useCallback(() => {
-    markPlayerInteraction();
-    setGameStatus('checkmate');
-    setPlayerResult('loss');
-  }, [markPlayerInteraction, setGameStatus, setPlayerResult]);
-
-  // Undo handler
-  const handleUndo = useCallback(() => {
-    markPlayerInteraction();
-    removeMoves(2);
+  // Reset the invalid-move display in one call (used by the game actions
+  // below; the user-facing clearMoveError additionally clears AI errors).
+  const clearInputError = useCallback(() => {
     setError(null);
     setLastAttemptedInput('');
-    const newMoves = moves.slice(0, -2) as AlgebraicNotation[];
-    updateLastMove(newMoves);
-    // handleUndoLog removes the last player's log entry and resets peek/undo counters.
-    // Any peeks accumulated before this undo are intentionally discarded (the move "never happened").
-    // recordUndo then tracks this undo event on the *next* move's log entry.
-    handleUndoLog();
-    recordUndo();
-  }, [markPlayerInteraction, removeMoves, moves, updateLastMove, handleUndoLog, recordUndo]);
+  }, []);
 
-  // Restart from position handler
-  const handleRestartFromPosition = useCallback(
-    (position: number) => {
-      markPlayerInteraction();
-      setError(null);
-      setLastAttemptedInput('');
-      const movesToRemove = moves.length - position - 1;
-      if (movesToRemove > 0) {
-        removeMoves(movesToRemove);
-      }
-      const newMoves = moves.slice(0, position + 1) as AlgebraicNotation[];
-      updateLastMove(newMoves);
-
-      // Truncate operation logs to match the number of player moves remaining.
-      truncateLogs(countPlayerMoves(position, playerSide, startingFen));
-    },
-    [
-      markPlayerInteraction,
+  // Game-level actions (resign / undo / restart / new-game-from-position) —
+  // the move-array + operation-log coordination lives in useGameActions.
+  const { handleResign, handleUndo, handleRestartFromPosition, handleNewGameFromPosition } =
+    useGameActions({
+      locale,
       moves,
-      removeMoves,
-      updateLastMove,
       playerSide,
       startingFen,
+      engineConfig,
+      markPlayerInteraction,
+      setGameStatus,
+      setPlayerResult,
+      removeMoves,
+      updateLastMove,
+      clearInputError,
+      handleUndoLog,
+      recordUndo,
       truncateLogs,
-    ]
-  );
-
-  // Handle new game from position
-  const handleNewGameFromPosition = useCallback(
-    (position: number) => {
-      router.push(
-        buildNewGameFromPositionUrl({
-          locale,
-          moves,
-          position,
-          playerSide,
-          engineConfig,
-          startingFen,
-        })
-      );
-    },
-    [moves, playerSide, engineConfig, locale, router, startingFen]
-  );
+      navigate: (url) => router.push(url),
+    });
 
   // Current FEN and formatted PGN are memoized values from useNotation
 

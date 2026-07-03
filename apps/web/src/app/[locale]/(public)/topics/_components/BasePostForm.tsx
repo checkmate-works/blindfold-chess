@@ -10,8 +10,6 @@ import {
   useState,
 } from 'react';
 
-import { usePathname, useRouter } from 'next/navigation';
-
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -19,10 +17,10 @@ import { FaPaperclip } from 'react-icons/fa';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
-import { revalidatePathAction } from '../_actions/revalidatePathAction';
+import { usePostImageAttachFlow } from '../_hooks/use-post-image-attach-flow';
 import { applyAttachmentMode } from '../_lib/attachment-form-data';
 import type { ImageAttachResult } from '../_lib/image-attach-types';
-import { uploadPostImages } from '../_lib/upload-post-images';
+import { resolvePostFormError } from '../_lib/resolve-post-form-error';
 import { AttachmentModal } from './AttachmentModal';
 import type { AggregatedAttachmentMode } from './AttachmentModal';
 
@@ -157,8 +155,6 @@ export function BasePostForm({
   const tTopics = useTranslations('topics');
   const tGlobal = useTranslations();
   const tUnsaved = useTranslations('unsavedChanges');
-  const router = useRouter();
-  const pathname = usePathname();
 
   // Per-instance id so multiple BasePostForms can coexist on the same
   // page (every CommentNode renders its own inline ReplyForm — without
@@ -171,15 +167,14 @@ export function BasePostForm({
   const [contentLength, setContentLength] = useState(0);
   const [isDirty, setIsDirty] = useState(false);
 
-  // Deferred post-submit navigation for the image flow. The image branch
-  // cannot navigate inline: it must first clear `isDirty` so the
-  // unsaved-changes guard (next-navigation-guard) is disabled, and that
-  // only takes effect on the next render. So it stashes the intended
-  // navigation here and a post-render effect performs it once the guard is
-  // off — otherwise a successful submit pops the "Unsaved Changes" dialog.
-  const [pendingNav, setPendingNav] = useState<
-    { kind: 'push'; path: string } | { kind: 'refresh' } | null
-  >(null);
+  // The asynchronous image create→upload→deferred-navigate lifecycle lives
+  // in its own hook; the wrapped action below only dispatches into it.
+  const clearDirty = useCallback(() => setIsDirty(false), []);
+  const { runImageAttach } = usePostImageAttachFlow({
+    isDirty,
+    clearDirty,
+    imageRedirectPath,
+  });
 
   // Pin attachment in a ref so the wrapped action's identity is
   // stable across re-renders. `useActionState` memoises the action
@@ -201,28 +196,7 @@ export function BasePostForm({
         // files are not serialised onto FormData.
         if (att.kind === 'image') {
           if (!attachmentActions.image) return { error: 'error' };
-          const created = await attachmentActions.image(formData);
-          if (!created.ok) return { error: created.error };
-          const upload = await uploadPostImages(created.postId, att.files);
-          if (!upload.ok) return { error: upload.error };
-          // Clear dirty FIRST so the navigation guard is disabled, then hand
-          // the navigation to the deferred-nav effect (see `pendingNav`).
-          // Navigating here would race the guard, which still reads
-          // `enabled: true` until the next render, and pop the dialog on a
-          // successful submit. PGN/FEN avoid this by redirecting server-side.
-          setIsDirty(false);
-          if (imageRedirectPath) {
-            // New-post pages navigate to the created post's detail page;
-            // the navigation re-fetches fresh data on its own.
-            setPendingNav({ kind: 'push', path: imageRedirectPath(created.postId) });
-          } else {
-            // Inline forms stay put: the upload API does not revalidate, so
-            // bust the Full Route Cache for the current page before refresh
-            // (mirrors what the PGN / FEN Server Actions do).
-            await revalidatePathAction(pathname);
-            setPendingNav({ kind: 'refresh' });
-          }
-          return {};
+          return runImageAttach(attachmentActions.image, formData, att.files);
         }
 
         const applied = applyAttachmentMode(att, formData);
@@ -238,40 +212,19 @@ export function BasePostForm({
       if (action) return action(prev, formData);
       return { error: 'error' };
     },
-    [attachmentActions, action, imageRedirectPath, pathname]
+    [attachmentActions, action, runImageAttach]
   );
 
   const [state, formAction, isPending] = useActionState(wrappedAction, {});
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
   const markDirty = useCallback(() => setIsDirty(true), []);
 
-  // Run the deferred image-flow navigation once the dirty flag has cleared
-  // (which disables the unsaved-changes guard). Guard on `!isDirty` so the
-  // navigation never fires while the guard is still armed.
-  useEffect(() => {
-    if (!pendingNav || isDirty) return;
-    if (pendingNav.kind === 'push') router.push(pendingNav.path);
-    else router.refresh();
-    setPendingNav(null);
-  }, [pendingNav, isDirty, router]);
-
   const onApplyAttachment = useCallback((mode: AggregatedAttachmentMode) => {
     setAttachment(mode);
     setIsDirty(true);
   }, []);
 
-  // Errors come back from server actions either as plain keys (resolved
-  // against the form's namespace) or as fully-qualified dotted paths
-  // (e.g. `attachment.error.tooLarge`). The latter are resolved against
-  // the global translator. If neither resolves, fall back to the form's
-  // generic `error` key.
-  const errorMessage = state.error
-    ? t.has(state.error)
-      ? t(state.error as string)
-      : state.error.includes('.') && tGlobal.has(state.error)
-        ? tGlobal(state.error)
-        : t('error')
-    : null;
+  const errorMessage = resolvePostFormError(state.error, t, tGlobal);
 
   // Counter color logic synced from
   // `apps/web/src/app/_components/Textarea.tsx:39-45`. Inlined so the
