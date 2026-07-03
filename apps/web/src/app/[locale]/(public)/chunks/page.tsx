@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Button } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
@@ -17,8 +19,16 @@ import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
+import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
-import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { TopicTabsSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicTabsSkeleton';
+import {
+  HelpTourButton,
+  PageLayout,
+  PagePanel,
+  PageTitle,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
@@ -55,7 +65,7 @@ function filterToStatus(filter: FilterKey): ChunkStatus | undefined {
   return undefined;
 }
 
-export default async function ChunksListPage({ params, searchParams }: Props) {
+async function ChunksListContent({ params, searchParams }: Props) {
   const { locale } = await params;
   const sp = await searchParams;
   const page = Number(sp.page) || 1;
@@ -262,5 +272,58 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
     </PageLayout>
+  );
+}
+
+/**
+ * Mirrors `ChunksListContent` (PageTitle → listSubtitle SectionTitle →
+ * TopicTabs → filter chips → CatalogListCard list) to minimise CLS.
+ */
+async function ChunksListSkeleton() {
+  // Resolve the request locale explicitly: at this point the page's
+  // `setRequestLocale` hasn't necessarily run yet, so a bare
+  // `getTranslations()` could fall back to the default locale.
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'chunks' });
+
+  return (
+    <div className="space-y-8">
+      <PageTitle>{t('listTitle')}</PageTitle>
+
+      <PagePanel>
+        <SectionTitle>{t('listSubtitle')}</SectionTitle>
+
+        <div className="mb-6">
+          <TopicTabsSkeleton />
+        </div>
+
+        {/* Filter chips (all / drafts / published) */}
+        <div className="flex flex-wrap gap-2" aria-hidden="true">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-7 w-24 animate-pulse rounded-full bg-muted" />
+          ))}
+        </div>
+
+        <TopicCardSkeleton />
+      </PagePanel>
+    </div>
+  );
+}
+
+/**
+ * Deliberately NOT a segment-level `loading.tsx`. A `loading.tsx` file here
+ * would wrap this whole subtree (including `/chunks/[slug]`) in a
+ * `<Suspense>` boundary, so navigating straight into a specific chunk (e.g.
+ * via `RelatedTags` on the position-memory/puzzle pages, or `ChunkRefLink`
+ * on a shared game review) would flash this catalog-list skeleton before
+ * the detail page's own skeleton mounted. Scoping the boundary inside this
+ * page's own JSX means it only exists in the render tree when this exact
+ * route is the matched leaf.
+ */
+export default function ChunksListPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<ChunksListSkeleton />}>
+      <ChunksListContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }
