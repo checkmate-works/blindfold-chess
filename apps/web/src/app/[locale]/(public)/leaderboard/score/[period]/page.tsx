@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ScoreLeaderboardPeriodPage({ params }: Props) {
+async function ScoreLeaderboardPeriodContent({ params }: Props) {
   const { locale, period: periodParam } = await params;
   if (!isValidPeriod(periodParam)) {
     notFound();
@@ -126,5 +126,77 @@ export default async function ScoreLeaderboardPeriodPage({ params }: Props) {
         <Breadcrumb items={[{ label: t('title') }]} locale={locale} density="compact" />
       </div>
     </PagePanel>
+  );
+}
+
+/**
+ * Mirrors `ScoreLeaderboardPeriodContent`'s resolved DOM topology exactly
+ * (SectionTitle → SignUpBanner placeholder → Score/Exp tabs → Period tabs →
+ * Module filter → card grid) so there is no layout shift when the real
+ * content resolves. See the `<Suspense>` below for why this lives inline
+ * instead of in a segment-level `loading.tsx`.
+ */
+function ScoreLeaderboardPeriodSkeleton() {
+  return (
+    <PagePanel>
+      <div className="h-8 w-56 animate-pulse rounded bg-muted" />
+
+      {/*
+        SignUpBanner fallback — fixed height matching SignUpBannerUI's
+        resolved box. Auto-hidden for authenticated users via the layout's
+        scoped inline style rule (`leaderboard/layout.tsx`).
+      */}
+      <div
+        data-banner-placeholder
+        className="h-24 rounded-lg border border-primary/30 bg-primary/5 sm:h-20"
+      />
+
+      {/* LeaderboardTabs (2 buttons) */}
+      <div className="flex rounded-lg bg-secondary p-1">
+        <div className="h-10 flex-1 rounded-md" />
+        <div className="h-10 flex-1 rounded-md" />
+      </div>
+
+      {/* PeriodTabs (3 buttons) */}
+      <div className="flex rounded-lg bg-secondary p-1">
+        <div className="h-10 flex-1 rounded-md" />
+        <div className="h-10 flex-1 rounded-md" />
+        <div className="h-10 flex-1 rounded-md" />
+      </div>
+
+      {/* ModuleFilter (7 buttons: all + 6 modules) */}
+      <div className="flex rounded-lg bg-secondary p-1">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} className="h-10 flex-1 rounded-md" />
+        ))}
+      </div>
+
+      {/* Card grid (6 cards) */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-24 w-full rounded-lg" />
+        ))}
+      </div>
+    </PagePanel>
+  );
+}
+
+/**
+ * Deliberately NOT a segment-level `loading.tsx`. A `loading.tsx` file wraps
+ * this segment's entire subtree in a `<Suspense>` boundary — including the
+ * deeper `[module-slug]/[key]` detail route — so navigating straight to a
+ * deep leaderboard entry (e.g. from the home feed's rank-update card, which
+ * links directly to `/leaderboard/score/all-time/legal-moves/rook`) would
+ * flash this page's card-grid skeleton before the detail page's own table
+ * skeleton mounted. Scoping the boundary inside this page's own JSX means it
+ * only exists in the render tree when this exact route is the matched leaf,
+ * eliminating the double-skeleton flash while still showing a fallback for
+ * direct navigation to this route.
+ */
+export default function ScoreLeaderboardPeriodPage({ params }: Props) {
+  return (
+    <Suspense fallback={<ScoreLeaderboardPeriodSkeleton />}>
+      <ScoreLeaderboardPeriodContent params={params} />
+    </Suspense>
   );
 }
