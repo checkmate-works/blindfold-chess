@@ -11,6 +11,7 @@ import {
   repertoires,
 } from '@/lib/db';
 import { repertoireLines } from '@/lib/db';
+import { guardOwnership } from '@/lib/ownership-guard';
 
 /** Author subset joined onto a repertoire for catalog cards. */
 export type RepertoireAuthorProfile = {
@@ -178,9 +179,8 @@ export async function assertRepertoireOwner(
     .from(repertoires)
     .where(and(eq(repertoires.id, repertoireId), isNull(repertoires.deletedAt)))
     .limit(1);
-  if (!row) return 'notFound';
-  if (row.userId !== viewerId) return 'unauthorized';
-  return null;
+  // The fetch filters deleted rows, so this yields 'notFound' | 'unauthorized' | null.
+  return guardOwnership(row, viewerId) as 'unauthorized' | 'notFound' | null;
 }
 
 /**
