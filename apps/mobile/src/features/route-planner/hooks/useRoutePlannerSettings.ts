@@ -6,16 +6,11 @@ import { DEFAULT_ROUTE_PLANNER_SETTINGS } from "../lib/types";
 const STORAGE_KEY = "ROUTE_PLANNER_SETTINGS";
 
 export function useRoutePlannerSettings() {
-  const { settings, isLoaded, updateSettings, resetSettings } =
-    useAsyncStorageSettings<RoutePlannerSettings>(
-      STORAGE_KEY,
-      DEFAULT_ROUTE_PLANNER_SETTINGS,
-    );
-
-  const updateProblemCount = useCallback(
-    (problemCount: number) => updateSettings({ problemCount }),
-    [updateSettings],
+  const persisted = useAsyncStorageSettings<RoutePlannerSettings>(
+    STORAGE_KEY,
+    DEFAULT_ROUTE_PLANNER_SETTINGS,
   );
+  const { settings, updateSettings } = persisted;
 
   const togglePiece = useCallback(
     (piece: RoutePlannerPieceType) => {
@@ -34,11 +29,5 @@ export function useRoutePlannerSettings() {
     [settings.selectedPieces, updateSettings],
   );
 
-  return {
-    settings,
-    isLoading: !isLoaded,
-    updateProblemCount,
-    togglePiece,
-    resetSettings,
-  };
+  return { ...persisted, togglePiece };
 }

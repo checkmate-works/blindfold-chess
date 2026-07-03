@@ -18,23 +18,23 @@ describe("useQuizSettings", () => {
     const { result } = renderHook(() => useQuizSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     expect(result.current.settings).toBeDefined();
   });
 
-  it("updates a single setting via updateSetting", async () => {
+  it("updates a single setting via updateSettings", async () => {
     const { result } = renderHook(() => useQuizSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     const originalTimeLimit = result.current.settings.timeLimit;
 
     await act(async () => {
-      result.current.updateSetting("timeLimit", originalTimeLimit + 30);
+      result.current.updateSettings({ timeLimit: originalTimeLimit + 30 });
     });
 
     expect(result.current.settings.timeLimit).toBe(originalTimeLimit + 30);
@@ -45,13 +45,13 @@ describe("useQuizSettings", () => {
     const { result } = renderHook(() => useQuizSettings());
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isLoaded).toBe(true);
     });
 
     const defaultTimeLimit = result.current.settings.timeLimit;
 
     await act(async () => {
-      result.current.updateSetting("timeLimit", 999);
+      result.current.updateSettings({ timeLimit: 999 });
     });
 
     await act(async () => {
