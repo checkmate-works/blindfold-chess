@@ -4,7 +4,7 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
-import { isValidOrigin } from '@/lib/csrf';
+import { checkMutationOrigin, parseJsonBody } from '@/lib/api-mutation-guard';
 import { articleImages, articles, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -82,9 +82,8 @@ async function parseAndValidateFile(request: Request) {
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!isValidOrigin(request)) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
+  const originError = checkMutationOrigin(request);
+  if (originError) return originError;
 
   const auth = await authenticateAdmin();
   if (auth instanceof NextResponse) return auth;
@@ -171,21 +170,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!isValidOrigin(request)) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
+  const originError = checkMutationOrigin(request);
+  if (originError) return originError;
 
   const auth = await authenticateAdmin();
   if (auth instanceof NextResponse) return auth;
 
   const { id: articleId } = await params;
 
-  let body: { imageId?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  const parseResult = await parseJsonBody<{ imageId?: string }>(request, 'invalid_body');
+  if ('response' in parseResult) {
+    return parseResult.response;
   }
+  const { body } = parseResult;
 
   if (!body.imageId) {
     return NextResponse.json({ error: 'image_id_required' }, { status: 400 });

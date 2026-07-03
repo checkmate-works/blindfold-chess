@@ -2,25 +2,20 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
-import { authenticateAndGuardApi } from '@/lib/auth';
+import { guardApiMutation, parseJsonBody } from '@/lib/api-mutation-guard';
 import { isLameName } from '@/lib/content/lame-name';
-import { isValidOrigin } from '@/lib/csrf';
 import { db, profiles } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 export async function PUT(request: Request) {
-  if (!isValidOrigin(request)) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
-
-  const guardResult = await authenticateAndGuardApi(RATE_LIMITS.updateProfile);
+  const guardResult = await guardApiMutation(request, RATE_LIMITS.updateProfile);
   if ('response' in guardResult) {
     return guardResult.response;
   }
   const { user } = guardResult;
 
-  let body: {
+  const parseResult = await parseJsonBody<{
     displayName?: string;
     bio?: string;
     country?: string;
@@ -31,12 +26,11 @@ export async function PUT(request: Request) {
     xUsername?: string;
     instagramUsername?: string;
     youtubeHandle?: string;
-  };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
+  }>(request);
+  if ('response' in parseResult) {
+    return parseResult.response;
   }
+  const { body } = parseResult;
 
   // Display name does not require uniqueness (same approach as X/Instagram).
   // Username serves as the unique identifier.

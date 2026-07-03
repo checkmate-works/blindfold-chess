@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
 
-import { authenticateAndGuardApi } from '@/lib/auth';
-import { isValidOrigin } from '@/lib/csrf';
+import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { deleteAccount } from '@/lib/users/delete-account';
 
 export async function DELETE(request: Request) {
-  if (!isValidOrigin(request)) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
-
-  const guardResult = await authenticateAndGuardApi(RATE_LIMITS.deleteAccount);
+  const guardResult = await guardApiMutation(request, RATE_LIMITS.deleteAccount);
   if ('response' in guardResult) {
     return guardResult.response;
   }
