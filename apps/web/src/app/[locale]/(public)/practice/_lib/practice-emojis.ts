@@ -19,4 +19,5 @@ export const PRACTICE_EMOJIS: Record<PracticeMenuType, string> = {
   fen: '📝',
   quadrant_anchors: '⚃',
   puzzle: '🧩',
+  recall: '🔁',
 };

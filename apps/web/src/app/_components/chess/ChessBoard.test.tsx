@@ -727,7 +727,7 @@ describe('ChessBoard interactive mode — onSquareClick backward compat', () => 
 /**
  * `movablePieces` gates which color the user can pick up. The default ('own')
  * is the real-game rule — only `playerSide` responds, even on the opponent's
- * turn. 'side-to-move' (postmortem) lets whichever color is to move respond,
+ * turn. 'side-to-move' (recall) lets whichever color is to move respond,
  * so the reviewer can enter the opponent's moves too. These tests lock BOTH
  * so a future change can't silently make the opponent's pieces grabbable in a
  * normal game.

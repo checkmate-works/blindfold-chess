@@ -6,7 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaListOl, FaRedo } from 'react-icons/fa';
 
 import type { MoveLogEntry, RecallStats } from '../_lib';
-import { PostmortemMoveLogTable } from './PostmortemMoveLogTable';
+import { RecallMoveLogTable } from './RecallMoveLogTable';
 
 type Props = {
   stats: RecallStats;
@@ -21,12 +21,12 @@ type Props = {
 };
 
 /**
- * The postmortem completion screen: a recall report (score + breakdown), a
+ * The recall completion screen: a recall report (score + breakdown), a
  * clickable review of the moves the user stumbled on, and next-step actions.
  * Replaces the old "Game Review Completed!" message + hidden log link.
  */
-export function PostmortemSummary({ stats, entries, onEntryClick, onRestart, gameId }: Props) {
-  const t = useTranslations('postmortem');
+export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId }: Props) {
+  const t = useTranslations('recall');
 
   const hasStats = stats.total > 0;
   const ratePercent = Math.round(stats.recallRate * 100);
@@ -94,7 +94,7 @@ export function PostmortemSummary({ stats, entries, onEntryClick, onRestart, gam
             </h4>
             <span className="text-xs text-muted-foreground">{t('summary.reviewHint')}</span>
           </div>
-          <PostmortemMoveLogTable entries={entries} onEntryClick={onEntryClick} />
+          <RecallMoveLogTable entries={entries} onEntryClick={onEntryClick} />
         </div>
       )}
 
@@ -109,9 +109,12 @@ export function PostmortemSummary({ stats, entries, onEntryClick, onRestart, gam
         >
           {t('summary.restart')}
         </Button>
-        <Link href={gameId ? `/games/play/result?gameId=${gameId}` : '/games'} className="w-full">
+        <Link
+          href={gameId ? `/games/play/result?gameId=${gameId}` : '/practice/recall'}
+          className="w-full"
+        >
           <Button asChild variant="secondary" size="lg" className="w-full rounded-xl font-medium">
-            {t('summary.backToResult')}
+            {gameId ? t('summary.backToResult') : t('summary.startNew')}
           </Button>
         </Link>
       </div>

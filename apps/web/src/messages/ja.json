@@ -2021,7 +2021,7 @@
     "newGameFromHere": "ここから新規対局",
     "saving": "保存中...",
     "saved": "保存済み",
-    "postmortem": "棋譜再現",
+    "recall": "棋譜再現",
     "resultTitle": "振り返り",
     "playerColor": {
       "white": "白",
@@ -2340,11 +2340,13 @@
       }
     }
   },
-  "postmortem": {
+  "recall": {
     "title": "棋譜再現",
-    "authGate": {
-      "title": "「棋譜再現」を使うにはサインアップ",
-      "description": "記憶だけを頼りに、対局を一手ずつ再現できます（無料アカウントで利用可）。"
+    "description": "棋譜を貼り付けて、記憶を頼りに一手ずつ再現しましょう。アカウントや保存された対局は不要です。",
+    "setup": {
+      "description": "下に棋譜を貼り付けてください。自分の対局でも、他の人の対局でも、定跡でもかまいません。貼り付けたら記憶を頼りに再現できます。",
+      "pgnLabel": "棋譜（PGN）",
+      "startButton": "棋譜再現を始める"
     },
     "settings": "設定",
     "help": {
@@ -2415,7 +2417,8 @@
       "reviewTitle": "つまずいた局面",
       "reviewHint": "タップでその局面を確認",
       "restart": "もう一度",
-      "backToResult": "結果へ戻る"
+      "backToResult": "結果へ戻る",
+      "startNew": "別の棋譜で始める"
     }
   },
   "playError": {

@@ -29,7 +29,7 @@ type BreadcrumbContentProps = {
   nonce?: string;
   /**
    * `'default'` reserves a 40px tall band (CLS-safe for 2-line wraps on narrow
-   * viewports — e.g. es `/games/play/postmortem`) and adds a 16px bottom margin.
+   * viewports — e.g. es `/games/play/recall`) and adds a 16px bottom margin.
    * `'compact'` halves that visible spacing for use inside `PageLayout`, where the
    * panel's `space-y-*` flow plus its bottom padding already supply most of the
    * surrounding gap. Use `'default'` for standalone breadcrumbs that are not

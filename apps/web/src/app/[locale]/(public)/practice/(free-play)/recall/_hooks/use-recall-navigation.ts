@@ -5,7 +5,7 @@ type Props = {
   gamePositions: { fen: string }[];
 };
 
-export function usePostmortemNavigation({ originalMovesLength, gamePositions }: Props) {
+export function useRecallNavigation({ originalMovesLength, gamePositions }: Props) {
   const [currentPosition, setCurrentPosition] = useState(-1);
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
   const [displayFen, setDisplayFen] = useState<string | null>(null);

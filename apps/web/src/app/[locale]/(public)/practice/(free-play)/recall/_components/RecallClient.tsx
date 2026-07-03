@@ -19,29 +19,31 @@ import type {
   PerGamePreferences,
 } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { usePostmortemGame } from '../_hooks';
+import { useRecallGame } from '../_hooks';
 import { computeRecallStats } from '../_lib';
-import { formatMoveNumberPrefix } from '../_lib/postmortem-format';
-import { PostmortemMovesPanel } from './PostmortemMovesPanel';
-import { PostmortemSummary } from './PostmortemSummary';
+import { formatMoveNumberPrefix } from '../_lib/recall-format';
+import { RecallMovesPanel } from './RecallMovesPanel';
+import { RecallSummary } from './RecallSummary';
 
 /**
  * Move-feedback surfaced in the page title (mirrors the in-game play screen,
  * which shows live status as the H1). `tone` drives the title color.
  */
-export type PostmortemFeedback = {
+export type RecallFeedback = {
   tone: 'correct' | 'incorrect' | 'skipped';
   text: string;
 };
 
 type Props = {
   pgn: string;
+  /** Pre-parsed SAN move list, taking precedence over `pgn` when present. See `useRecallInit`. */
+  moves?: AlgebraicNotation[];
   playerColor: 'white' | 'black';
   autoOpponent: boolean;
   initialOffset?: number;
   startingFen?: string;
   /**
-   * Saved-game id (from the postmortem deep-link). Used to seed the initial
+   * Saved-game id (from the recall deep-link). Used to seed the initial
    * board/input settings from the game's `gamePreferences` snapshot.
    */
   gameId?: string;
@@ -50,7 +52,7 @@ type Props = {
    * rendered in the `PageTitle` slot (like the play screen surfaces its move
    * status there). Null clears the title back to the page name.
    */
-  onFeedbackChange?: (feedback: PostmortemFeedback | null) => void;
+  onFeedbackChange?: (feedback: RecallFeedback | null) => void;
   /**
    * Reports whether the review has been completed, so the page owner can hide
    * chrome that only makes sense mid-review (e.g. the help tour, whose targets
@@ -85,8 +87,9 @@ function mergePerGamePreferences(
   };
 }
 
-export function PostmortemClient({
+export function RecallClient({
   pgn,
+  moves,
   playerColor,
   autoOpponent: initialAutoOpponent,
   initialOffset = 0,
@@ -96,9 +99,9 @@ export function PostmortemClient({
   onCompletedChange,
   onRestart,
 }: Props) {
-  const t = useTranslations('postmortem');
+  const t = useTranslations('recall');
 
-  // Postmortem keeps its own *local* copy of the game preferences. It is
+  // Recall keeps its own *local* copy of the game preferences. It is
   // seeded from the saved game's snapshot (below) and mutated only in-memory:
   // edits are never written back to global preferences nor recorded in a
   // preferenceChangeLog — the review session is intentionally ephemeral.
@@ -138,8 +141,9 @@ export function PostmortemClient({
     navigation,
     actions,
     formattedPgn,
-  } = usePostmortemGame({
+  } = useRecallGame({
     pgn,
+    moves,
     playerColor,
     autoOpponent: initialAutoOpponent,
     initialOffset,
@@ -172,7 +176,7 @@ export function PostmortemClient({
   // game, the reviewer enters BOTH sides' moves, so the board is set to
   // `movablePieces="side-to-move"` below — letting them grab the opponent's
   // pieces on the opponent's turn.
-  // Postmortem is a review surface: the board is always visible (no blindfold
+  // Recall is a review surface: the board is always visible (no blindfold
   // mask / peek). Board-driven input is available at the live position whenever
   // it's a move the reviewer is expected to enter (`isPlayerTurn` encodes the
   // auto-opponent rule). The reviewer enters BOTH sides' moves, so the board is
@@ -247,7 +251,7 @@ export function PostmortemClient({
     <div className="flex justify-end items-center gap-2 text-muted-foreground">
       <button
         type="button"
-        data-tour-id="postmortem-settings"
+        data-tour-id="recall-settings"
         onClick={() => setShowSettings(true)}
         className="p-1 leading-none hover:text-foreground"
         title={t('settings')}
@@ -268,7 +272,7 @@ export function PostmortemClient({
               {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
 
-              {/* Board (always visible — postmortem is a review surface) */}
+              {/* Board (always visible — recall is a review surface) */}
               {inlineBoardView}
 
               {!isCompleted ? (
@@ -284,7 +288,7 @@ export function PostmortemClient({
                   ) : (
                     <>
                       {/* Move Input */}
-                      <div data-tour-id="postmortem-input">
+                      <div data-tour-id="recall-input">
                         <MoveInputPanel
                           preferences={preferences}
                           updatePreferences={updatePreferences}
@@ -303,7 +307,7 @@ export function PostmortemClient({
                         />
                       </div>
 
-                      {/* Auto-opponent toggle (postmortem-specific) */}
+                      {/* Auto-opponent toggle (recall-specific) */}
                       <div className="flex flex-col gap-2">
                         <label className="inline-flex items-center gap-2 cursor-pointer">
                           <input
@@ -320,7 +324,7 @@ export function PostmortemClient({
 
                       {/* Action Buttons */}
                       <div className={ACTION_ROW_CONTAINER_CLASSES}>
-                        <span data-tour-id="postmortem-dont-know" className="inline-flex">
+                        <span data-tour-id="recall-dont-know" className="inline-flex">
                           <Button
                             variant="secondary"
                             onClick={actions.handleDontKnow}
@@ -350,7 +354,7 @@ export function PostmortemClient({
               ) : (
                 /* Completion: recall report + stumble review + next actions */
                 <>
-                  <PostmortemSummary
+                  <RecallSummary
                     stats={recallStats}
                     entries={moveLog.entries}
                     onEntryClick={handleMistakeClick}
@@ -366,7 +370,7 @@ export function PostmortemClient({
         </div>
 
         {/* Move List */}
-        <PostmortemMovesPanel
+        <RecallMovesPanel
           formattedPgn={formattedPgn}
           currentPosition={navigation.currentPosition}
           originalMovesLength={originalMoves.length}

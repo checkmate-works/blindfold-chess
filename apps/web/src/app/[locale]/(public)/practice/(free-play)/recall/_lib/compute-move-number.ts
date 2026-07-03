@@ -2,7 +2,7 @@
  * Compute the display move number and side-to-move for a given move index.
  *
  * Centralises the pattern that was duplicated across all three handlers
- * in usePostmortemActions.
+ * in useRecallActions.
  */
 export function computeMoveNumber(
   index: number,

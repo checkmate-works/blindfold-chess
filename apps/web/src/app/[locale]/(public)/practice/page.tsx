@@ -116,6 +116,12 @@ export default async function PracticePage({ params }: Props) {
           title: t('practice.knightTour.title'),
           icon: PRACTICE_EMOJIS.knight_tour,
         },
+        {
+          id: 'recall',
+          menuType: 'recall',
+          title: t('recall.title'),
+          icon: PRACTICE_EMOJIS.recall,
+        },
       ],
     },
     {

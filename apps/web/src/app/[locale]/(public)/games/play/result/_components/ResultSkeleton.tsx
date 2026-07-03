@@ -10,7 +10,7 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  * reserves the same space. That layout is: a 2/3 board + 1/3 move-list grid,
  * then the [Summary | Discussion] tab row, then (Summary is the default tab) the
  * Game Stats overview — section title → win/loss/draw label → initial settings →
- * per-move effort strip. There are no trailing action buttons: the postmortem /
+ * per-move effort strip. There are no trailing action buttons: the recall /
  * open-game actions moved to the breadcrumb (see ResultBreadcrumb).
  */
 export function ResultSkeleton() {

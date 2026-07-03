@@ -13,7 +13,7 @@
  *    - Move history with navigation to review positions
  *    - Undo and resign options available
  * 3. Game End: Win/loss/draw result displayed, option to start new game
- *    or proceed to postmortem (game review)
+ *    or proceed to recall (game review)
  */
 import { Suspense } from 'react';
 

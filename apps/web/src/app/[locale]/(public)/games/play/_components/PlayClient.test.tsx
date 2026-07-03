@@ -9,7 +9,7 @@ import { PlayClient } from './PlayClient';
 // Characterization test. Pins the observable behaviour of PlayClient that the
 // finished-game navigation extraction touches: which panel renders for each
 // game state (skeleton / in-progress / finished), the redirect-to-result
-// effect, the not-found short-circuit, and the auth-gated postmortem.
+// effect, the not-found short-circuit, and the auth-gated recall.
 // ---------------------------------------------------------------------------
 
 const replace = vi.fn();

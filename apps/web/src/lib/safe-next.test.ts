@@ -4,7 +4,7 @@ import { sanitizeNext } from './safe-next';
 
 describe('sanitizeNext', () => {
   it('accepts same-origin absolute paths', () => {
-    expect(sanitizeNext('/en/games/play/postmortem')).toBe('/en/games/play/postmortem');
+    expect(sanitizeNext('/en/practice/recall')).toBe('/en/practice/recall');
     expect(sanitizeNext('/en/games/play/result?gameId=abc&x=1')).toBe(
       '/en/games/play/result?gameId=abc&x=1'
     );

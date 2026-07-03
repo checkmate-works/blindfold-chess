@@ -522,7 +522,7 @@ files when a user refers to a concept in Japanese.
 | Japanese                      | English                                  | Where                                                                                                                                |
 | ----------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | 実績 / 実績バッジ             | achievement / achievement badge          | `src/lib/achievements/`, `src/lib/db/data/achievements.ts`, `src/app/admin/achievements/`, `src/messages/*.json` (`achievements`)    |
-| 感想戦                        | postmortem                               | `src/app/[locale]/(public)/games/play/postmortem/`                                                                                   |
+| 感想戦                        | recall                                   | `src/app/[locale]/(public)/practice/(free-play)/recall/`                                                                             |
 | 目隠しチェス / 心眼チェス     | blindfold chess / Shingan Chess (brand)  | See "Title Suffix Rule" in this file; strings in `src/messages/*.json`                                                               |
 | 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/ranks/`                 |
 | 無級                          | Mukyu — "no rank" (default)              | `MUKYU_SLUG` in `src/lib/db/data/ranks.ts`                                                                                           |

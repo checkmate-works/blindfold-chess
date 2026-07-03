@@ -74,7 +74,7 @@ type Props = {
   onIllegalMove?: () => void;
   /**
    * Relayed to the inner ChessBoard. Defaults to `'own'` (real-game rule:
-   * only the player's pieces respond). Postmortem passes `'side-to-move'` so
+   * only the player's pieces respond). Recall passes `'side-to-move'` so
    * the reviewer can also move the opponent's pieces on the opponent's turn.
    */
   movablePieces?: 'own' | 'side-to-move';

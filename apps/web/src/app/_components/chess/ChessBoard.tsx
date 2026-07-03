@@ -142,7 +142,7 @@ type Props = {
    *   correct rule for a real game — tapping or lifting the opponent's pieces
    *   does nothing.
    * - `'side-to-move'`: whichever color is to move in the current FEN responds.
-   *   Used by the postmortem screen, where the reviewer enters BOTH sides'
+   *   Used by the recall screen, where the reviewer enters BOTH sides'
    *   moves and therefore must be able to grab the opponent's pieces on the
    *   opponent's turn.
    *
@@ -193,7 +193,7 @@ export const ChessBoard = memo(function ChessBoard({
   // `ownColorChar` drives piece *visibility / appearance* (the blindfold
   // perspective) and never changes. `movableColorChar` drives the
   // *interactivity* gate: own color by default, or the side to move when the
-  // caller opts into 'side-to-move' (postmortem). They are identical in the
+  // caller opts into 'side-to-move' (recall). They are identical in the
   // default 'own' mode, so real games are entirely unaffected.
   const ownColorChar = playerSide.charAt(0);
   const movableColorChar =
@@ -392,7 +392,7 @@ export const ChessBoard = memo(function ChessBoard({
       // square's piece fades while its copy is being dragged (chessground
       // does the same); the floating copy itself (`floating`) never fades.
       // Draggability follows `movableColorChar` (own color by default), NOT
-      // `isOwnPiece` — so postmortem can lift the opponent's pieces on the
+      // `isOwnPiece` — so recall can lift the opponent's pieces on the
       // opponent's turn while visibility stays tied to the player's side.
       const isInteractivePiece = interactive && piece.color === movableColorChar;
       const grabClass = isInteractivePiece ? 'cursor-grab active:cursor-grabbing touch-none' : '';
@@ -457,7 +457,7 @@ export const ChessBoard = memo(function ChessBoard({
       if (!onMove) return;
       const piece = pieceAt(square);
       // "Movable" = a piece the user is allowed to pick up here: own color in
-      // a real game, or the side to move in postmortem. Selection/reselection
+      // a real game, or the side to move in recall. Selection/reselection
       // and the obfuscated mis-grab counting all key off this, not visibility.
       const clickedMovable = piece !== null && piece.color === movableColorChar;
       const clickedNonMovable = piece !== null && piece.color !== movableColorChar;

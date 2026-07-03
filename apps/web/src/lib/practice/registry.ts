@@ -102,6 +102,7 @@ export const PRACTICE_MODULE_REGISTRY = [
     hasChallenge: false,
   },
   { slugSnake: 'puzzle', slugKebab: 'puzzle', hasChallenge: false },
+  { slugSnake: 'recall', slugKebab: 'recall', hasChallenge: false },
 ] as const satisfies readonly PracticeModuleRegistryEntry[];
 
 // ---------------------------------------------------------------------------
