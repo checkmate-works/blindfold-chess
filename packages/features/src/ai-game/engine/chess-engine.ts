@@ -1,14 +1,11 @@
 import { getStartingFen, movesToUci, uciToAlgebraic } from "../../chess-core";
 import type { AlgebraicNotation, Fen, UciMove } from "@blindfold-chess/types";
 
-import {
-  buildGoCommand,
-  buildPositionCommand,
-  parseUciScore,
-} from "../uci-protocol";
+import { buildGoCommand, buildPositionCommand } from "../uci-protocol";
 import { buildSkillLevelCommands } from "../skill-level";
 import type { SkillLevel } from "../types";
 
+import { createEvaluationAccumulator } from "./evaluation-accumulator";
 import type { UciMessageChannel } from "./message-channel";
 import { UciTransport } from "./uci-transport";
 
@@ -255,23 +252,11 @@ export class ChessEngine {
 
     const transport = this.transport;
 
-    // Get evaluation with depth
+    // Get evaluation with depth. Score interpretation lives in the
+    // accumulator; this promise only owns the subscription/timeout plumbing.
     return new Promise((resolve, reject) => {
-      let latestScore: number | null = null;
-      let latestMate: number | undefined;
-
-      const unsubscribe = transport.subscribeInfo((message) => {
-        const score = parseUciScore(message);
-        if (!score) return;
-
-        if (score.kind === "cp") {
-          latestScore = score.value;
-          latestMate = undefined;
-        } else {
-          latestMate = score.value;
-          latestScore = score.value > 0 ? 10000 : -10000;
-        }
-      });
+      const evaluation = createEvaluationAccumulator();
+      const unsubscribe = transport.subscribeInfo(evaluation.onInfo);
 
       const timeoutId = setTimeout(() => {
         unsubscribe();
@@ -287,12 +272,12 @@ export class ChessEngine {
           unsubscribe();
           this.isProcessing = false;
 
-          if (latestScore !== null) {
+          if (evaluation.score !== null) {
             resolve(
               toWhitePerspectiveEvaluation(
                 fen,
-                latestScore,
-                latestMate,
+                evaluation.score,
+                evaluation.mate,
                 bestMoveUci,
               ),
             );

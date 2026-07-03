@@ -10,7 +10,7 @@ import {
   getFeedbackTopicsForChunk,
   getLinkedPositionsForChunk,
 } from '@/lib/chunks/queries';
-import { listGamesLinkingChunk } from '@/lib/db/games';
+import { listGamesLinkingChunk } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import {

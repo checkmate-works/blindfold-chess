@@ -10,10 +10,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { useRoutePlannerSession } from "@blindfold-chess/features/route-planner/client";
 import {
-  findShortestPath,
-  validateUserPath,
+  useRoutePlannerInput,
+  useRoutePlannerSession,
+} from "@blindfold-chess/features/route-planner/client";
+import {
+  evaluateAttempt,
+  getShortestPathOrEmpty,
 } from "@blindfold-chess/features/route-planner";
 import type { Square } from "@blindfold-chess/types";
 
@@ -49,9 +52,8 @@ export default function RoutePlannerSessionScreen() {
   const allowedPieces =
     selectedPieces.length > 0 ? selectedPieces : [...ROUTE_PLANNER_PIECES];
 
-  // Per-problem input state — platform-specific, lives in component
-  const [moves, setMoves] = useState<Square[]>([]);
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  // Result-presentation state; the input state machine and the attempt
+  // scoring live in @blindfold-chess/features/route-planner.
   const [isShowingResult, setIsShowingResult] = useState(false);
   const [problemResult, setProblemResult] = useState<{
     success: boolean;
@@ -96,77 +98,45 @@ export default function RoutePlannerSessionScreen() {
 
   const isDisabled = isShowingResult || countdown !== null;
 
-  const handleFilePress = useCallback(
-    (file: string) => {
-      if (isDisabled) return;
-      setSelectedFile((prev) => (prev === file ? null : file));
-    },
-    [isDisabled],
-  );
-
-  const handleRankPress = useCallback(
-    (rank: string) => {
-      if (isDisabled || !selectedFile) return;
-      const square = `${selectedFile}${rank}` as Square;
-      setMoves((prev) => [...prev, square]);
-      setSelectedFile(null);
-    },
-    [isDisabled, selectedFile],
-  );
-
-  const handleUndo = useCallback(() => {
-    if (moves.length === 0 || isDisabled) return;
-    setMoves((prev) => prev.slice(0, -1));
-    setSelectedFile(null);
-  }, [moves.length, isDisabled]);
+  const {
+    moves,
+    selectedFile,
+    handleFilePress,
+    handleRankPress,
+    handleUndo,
+    replaceMoves,
+    reset: resetInput,
+  } = useRoutePlannerInput({ disabled: isDisabled });
 
   const handleSubmit = useCallback(() => {
     if (!currentProblem || isDisabled) return;
 
-    const finalMoves = [...moves];
-    if (
-      finalMoves.length > 0 &&
-      finalMoves[finalMoves.length - 1] !== currentProblem.end
-    ) {
-      finalMoves.push(currentProblem.end);
-    } else if (finalMoves.length === 0) {
-      finalMoves.push(currentProblem.end);
-    }
-
-    const validation = validateUserPath(
+    const attempt = evaluateAttempt(
       currentProblem.piece,
       currentProblem.start,
-      finalMoves,
+      moves,
       currentProblem.end,
     );
-    const shortestPath =
-      (findShortestPath(
-        currentProblem.piece,
-        currentProblem.start,
-        currentProblem.end,
-      ) as Square[] | null) ?? [];
 
-    setMoves(finalMoves);
+    replaceMoves(attempt.finalMoves);
     setProblemResult({
-      success: validation.valid,
-      shortestPath,
-      message: validation.valid ? "correct" : "incorrect",
+      success: attempt.success,
+      shortestPath: attempt.shortestPath,
+      message: attempt.message,
     });
     setIsShowingResult(true);
-    handleAnswer(validation.valid);
-  }, [currentProblem, moves, isDisabled, handleAnswer]);
+    handleAnswer(attempt.success);
+  }, [currentProblem, moves, isDisabled, handleAnswer, replaceMoves]);
 
   const handleSkip = useCallback(() => {
     if (!currentProblem || isDisabled) return;
-    const shortestPath =
-      (findShortestPath(
+    setProblemResult({
+      success: false,
+      shortestPath: getShortestPathOrEmpty(
         currentProblem.piece,
         currentProblem.start,
         currentProblem.end,
-      ) as Square[] | null) ?? [];
-    setProblemResult({
-      success: false,
-      shortestPath,
+      ),
       message: "skipped",
     });
     setIsShowingResult(true);
@@ -175,11 +145,10 @@ export default function RoutePlannerSessionScreen() {
 
   const handleNextProblem = useCallback(() => {
     setCurrentProblemIndex((prev) => prev + 1);
-    setMoves([]);
-    setSelectedFile(null);
+    resetInput();
     setProblemResult(null);
     setIsShowingResult(false);
-  }, []);
+  }, [resetInput]);
 
   if (!currentProblem) {
     return null;

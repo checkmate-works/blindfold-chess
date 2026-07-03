@@ -3,6 +3,16 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ChessPiece } from '@/app/_components';
+import type { BoardClickAction, PieceColor } from '@blindfold-chess/features/board-display';
+import {
+  areDestinationsObscured,
+  classifyBoardClick,
+  classifyMoveAttempt,
+  isBoardObfuscated,
+  resolvePieceDisplay,
+  resolveSquareHighlight,
+  squareToBoardIndices,
+} from '@blindfold-chess/features/board-display';
 import type { BoardPiece, MoveResult } from '@blindfold-chess/features/chess-core';
 import {
   fenToBoard,
@@ -195,29 +205,35 @@ export const ChessBoard = memo(function ChessBoard({
   // *interactivity* gate: own color by default, or the side to move when the
   // caller opts into 'side-to-move' (recall). They are identical in the
   // default 'own' mode, so real games are entirely unaffected.
-  const ownColorChar = playerSide.charAt(0);
-  const movableColorChar =
+  const ownColorChar: PieceColor = playerSide === 'black' ? 'b' : 'w';
+  const movableColorChar: PieceColor =
     movablePieces === 'side-to-move' ? (fen.split(' ')[1] === 'b' ? 'b' : 'w') : ownColorChar;
 
-  // True when any blindfold obfuscation is active: pieces shown as discs,
-  // forced to a single color, or hidden. Used to decide when illegal-move
-  // attempts become possible and worth recording via `onIllegalMove`. With
-  // normal display, illegal attempts are essentially impossible anyway.
-  const obfuscated =
-    pieceShapeMode !== 'normal' ||
-    pieceColors !== 'normal' ||
-    pawnHideMode !== 'none' ||
-    !showOwnPieces ||
-    !showOpponentPieces;
-
-  // Whether showing legal destinations would leak information the player is
-  // meant not to have. This is a strict subset of `obfuscated`: the
-  // destination dots reveal a piece's identity only when its *shape* is hidden
-  // (stones) or pieces are hidden (a capture ring would expose a hidden
-  // opponent). Single-color recolouring keeps every shape intact, so
-  // destinations are safe to show there — hence `pieceColors` is excluded.
-  const destinationsObscured =
-    pieceShapeMode !== 'normal' || pawnHideMode !== 'none' || !showOwnPieces || !showOpponentPieces;
+  // The blindfold visibility settings, bundled for the pure display rules in
+  // @blindfold-chess/features/board-display (see that module for the policy
+  // rationale). Memoized so hooks can depend on it by reference.
+  const displaySettings = useMemo(
+    () => ({
+      ownColor: ownColorChar,
+      showOwnPieces,
+      showOpponentPieces,
+      pieceShapeMode,
+      pieceColors,
+      pawnHideMode,
+      hiddenPieceStyle,
+    }),
+    [
+      ownColorChar,
+      showOwnPieces,
+      showOpponentPieces,
+      pieceShapeMode,
+      pieceColors,
+      pawnHideMode,
+      hiddenPieceStyle,
+    ]
+  );
+  const obfuscated = isBoardObfuscated(displaySettings);
+  const destinationsObscured = areDestinationsObscured(displaySettings);
 
   const board = useMemo(() => {
     try {
@@ -258,42 +274,60 @@ export const ChessBoard = memo(function ChessBoard({
 
   const pieceAt = useCallback(
     (square: string): BoardPiece | null => {
-      if (square.length !== 2) return null;
-      const fileIndex = square.charCodeAt(0) - 'a'.charCodeAt(0);
-      const rankNum = Number.parseInt(square[1], 10);
-      if (Number.isNaN(rankNum) || rankNum < 1 || rankNum > 8) return null;
-      if (fileIndex < 0 || fileIndex > 7) return null;
-      const rankIndex = 8 - rankNum;
-      return board[rankIndex]?.[fileIndex] ?? null;
+      const indices = squareToBoardIndices(square);
+      if (!indices) return null;
+      return board[indices.rankIndex]?.[indices.fileIndex] ?? null;
     },
     [board]
   );
 
-  // Attempt to complete a move from `from` to `to`. Branches by candidate
-  // count: 0 = illegal (no-op + clear selection), 1 = fire onMove
-  // immediately, >1 = promotion ambiguity, defer onMove and surface the
-  // picker.
+  // Apply a classified input action to the board's React state. The
+  // decision of WHAT to do (select / move / count a mistake / ...) lives in
+  // the pure click-policy module; this is only the state/callback plumbing.
+  const applyClickAction = useCallback(
+    (action: BoardClickAction<MoveResult>) => {
+      switch (action.type) {
+        case 'noop':
+          return;
+        case 'select':
+          setSelectedSquare(action.square);
+          return;
+        case 'deselect':
+          setSelectedSquare(null);
+          return;
+        case 'illegal':
+          onIllegalMove?.();
+          return;
+        case 'illegal-clear':
+          onIllegalMove?.();
+          setSelectedSquare(null);
+          return;
+        case 'move':
+          onMove?.(action.move.san);
+          setSelectedSquare(null);
+          return;
+        case 'promotion':
+          setPromotionPending({
+            from: action.from,
+            to: action.to,
+            candidates: action.candidates,
+          });
+          setSelectedSquare(null);
+          return;
+      }
+    },
+    [onMove, onIllegalMove]
+  );
+
+  // Attempt to complete a move from `from` to `to` (the drag-drop path).
+  // Candidate-count branching and the illegal-attempt policy live in
+  // classifyMoveAttempt.
   const attemptMove = useCallback(
     (from: string, to: string) => {
       if (!onMove) return;
-      const candidates = findLegalMovesByCoords(fen, from, to);
-      if (candidates.length === 0) {
-        // A drag-and-drop onto a non-legal square (including a drop onto an
-        // own piece — you cannot capture your own) is an explicit, deliberate
-        // attempt, so it always counts as one illegal move.
-        onIllegalMove?.();
-        setSelectedSquare(null);
-        return;
-      }
-      if (candidates.length === 1) {
-        onMove(candidates[0].san);
-        setSelectedSquare(null);
-        return;
-      }
-      setPromotionPending({ from, to, candidates });
-      setSelectedSquare(null);
+      applyClickAction(classifyMoveAttempt(from, to, findLegalMovesByCoords(fen, from, to)));
     },
-    [onMove, fen, onIllegalMove]
+    [onMove, fen, applyClickAction]
   );
 
   // Pointer-based dragging (replaces HTML5 native DnD). See useBoardDragDrop.
@@ -338,51 +372,23 @@ export const ChessBoard = memo(function ChessBoard({
     }
   }, [fen, moveSource, interactive, previewSelection, destinationsObscured, showPieceDestinations]);
 
+  // Thin display-descriptor → JSX map. The blindfold visibility decision
+  // (absent / ghost / circle / recolored / normal) is made by the pure
+  // resolvePieceDisplay; only the markup and the drag chrome live here.
   const renderPiece = useCallback(
     (piece: BoardPiece, square: string, floating = false) => {
       if (!piece) return null;
 
-      // A piece hidden by the blindfold settings renders as an empty square by
-      // default (`'absent'`), or — on the review's "As Played" toggle — as a
-      // faint ghost of the true piece so the reviewer sees what was concealed.
-      // The ghost deliberately shows the real type/colour (no shape/colour
-      // obfuscation) and carries no drag/fade chrome (the review board is
-      // read-only).
-      const hidden =
-        hiddenPieceStyle === 'ghost' ? (
+      const display = resolvePieceDisplay(piece, displaySettings);
+
+      if (display.kind === 'absent') return null;
+      if (display.kind === 'ghost') {
+        // A ghost carries no drag/fade chrome (the review board is read-only).
+        return (
           <div className="flex h-[80%] w-[80%] items-center justify-center opacity-40">
-            <ChessPiece type={piece.type} color={piece.color} size={45} />
+            <ChessPiece type={display.type} color={display.color} size={45} />
           </div>
-        ) : null;
-
-      // Check if piece should be shown based on settings
-      const isOwnPiece = piece.color === ownColorChar;
-      if (isOwnPiece && !showOwnPieces) return hidden;
-      if (!isOwnPiece && !showOpponentPieces) return hidden;
-
-      // Partial blindfold: hide pawns of the configured side(s) entirely. Runs
-      // after the whole-side visibility gate (a hidden side is already gone) and
-      // before the shape/color transforms (a hidden pawn renders nothing at all).
-      if (piece.type === 'p') {
-        const hidePawn =
-          pawnHideMode === 'all' ||
-          (pawnHideMode === 'own' && isOwnPiece) ||
-          (pawnHideMode === 'opponent' && !isOwnPiece);
-        if (hidePawn) return hidden;
-      }
-
-      // Determine if piece should be shown as circle
-      const shouldShowAsCircle =
-        pieceShapeMode === 'circles-all' ||
-        (pieceShapeMode === 'circles-own' && isOwnPiece) ||
-        (pieceShapeMode === 'circles-opponent' && !isOwnPiece);
-
-      // Determine piece color based on settings
-      let displayColor = piece.color;
-      if (pieceColors === 'white-only') {
-        displayColor = 'w';
-      } else if (pieceColors === 'black-only') {
-        displayColor = 'b';
+        );
       }
 
       // Own pieces are draggable in interactive mode via pointer events (see
@@ -392,129 +398,65 @@ export const ChessBoard = memo(function ChessBoard({
       // square's piece fades while its copy is being dragged (chessground
       // does the same); the floating copy itself (`floating`) never fades.
       // Draggability follows `movableColorChar` (own color by default), NOT
-      // `isOwnPiece` — so recall can lift the opponent's pieces on the
+      // the piece's own-ness — so recall can lift the opponent's pieces on the
       // opponent's turn while visibility stays tied to the player's side.
       const isInteractivePiece = interactive && piece.color === movableColorChar;
       const grabClass = isInteractivePiece ? 'cursor-grab active:cursor-grabbing touch-none' : '';
       const fadeClass = !floating && square === dragFrom ? 'opacity-30' : '';
 
-      if (shouldShowAsCircle) {
+      if (display.kind === 'circle') {
         // Show as Go stone-like circle with subtle gradient and shadow
-        if (displayColor === 'w') {
-          return (
-            <div
-              className={`w-[60%] h-[60%] rounded-full ${grabClass} ${fadeClass}`}
-              style={{
+        const stoneStyle =
+          display.color === 'w'
+            ? {
                 background:
                   'radial-gradient(ellipse at 30% 30%, #ffffff 0%, #e8e8e8 50%, #d0d0d0 100%)',
                 boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(0, 0, 0, 0.1)',
-              }}
-            />
-          );
-        } else {
-          return (
-            <div
-              className={`w-[60%] h-[60%] rounded-full ${grabClass} ${fadeClass}`}
-              style={{
+              }
+            : {
                 background:
                   'radial-gradient(ellipse at 30% 30%, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
                 boxShadow:
                   '2px 2px 4px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.1)',
-              }}
-            />
-          );
-        }
+              };
+        return (
+          <div
+            className={`w-[60%] h-[60%] rounded-full ${grabClass} ${fadeClass}`}
+            style={stoneStyle}
+          />
+        );
       }
 
-      // Show normal piece
       return (
         <div
           className={`w-[80%] h-[80%] flex items-center justify-center ${grabClass} ${fadeClass}`}
         >
-          <ChessPiece type={piece.type} color={displayColor} size={45} />
+          <ChessPiece type={display.type} color={display.color} size={45} />
         </div>
       );
     },
-    [
-      interactive,
-      ownColorChar,
-      movableColorChar,
-      showOwnPieces,
-      showOpponentPieces,
-      pieceShapeMode,
-      pieceColors,
-      pawnHideMode,
-      hiddenPieceStyle,
-      dragFrom,
-    ]
+    [interactive, movableColorChar, displaySettings, dragFrom]
   );
 
-  // Click-to-move state machine. Runs only in interactive mode; when the
-  // caller wires `onSquareClick` instead, raw clicks are forwarded
-  // unchanged below.
+  // Click-to-move handler. Runs only in interactive mode; when the caller
+  // wires `onSquareClick` instead, raw clicks are forwarded unchanged below.
+  // The state machine itself — including the blindfold illegal-attempt
+  // counting policy — lives in the pure classifyBoardClick.
   const handleInteractiveClick = useCallback(
     (square: string) => {
       if (!onMove) return;
-      const piece = pieceAt(square);
-      // "Movable" = a piece the user is allowed to pick up here: own color in
-      // a real game, or the side to move in recall. Selection/reselection
-      // and the obfuscated mis-grab counting all key off this, not visibility.
-      const clickedMovable = piece !== null && piece.color === movableColorChar;
-      const clickedNonMovable = piece !== null && piece.color !== movableColorChar;
-
-      if (selectedSquare === null) {
-        if (clickedMovable) {
-          setSelectedSquare(square);
-        } else if (obfuscated && clickedNonMovable) {
-          // Blindfold modes: the player cannot tell the pieces apart, so
-          // trying to pick up the opponent's piece (believing it to be their
-          // own) is a genuine illegal-move attempt — count it. An empty-square
-          // first click is deliberately NOT counted: it is indistinguishable
-          // from a misclick or a deselect tap.
-          onIllegalMove?.();
-        }
-        return;
-      }
-
-      if (selectedSquare === square) {
-        // Toggle off — click on the currently-selected square deselects.
-        setSelectedSquare(null);
-        return;
-      }
-
-      // Try to complete a move from the selected square to here.
-      const candidates = findLegalMovesByCoords(fen, selectedSquare, square);
-      if (candidates.length > 0) {
-        if (candidates.length === 1) {
-          onMove(candidates[0].san);
-        } else {
-          setPromotionPending({ from: selectedSquare, to: square, candidates });
-        }
-        setSelectedSquare(null);
-        return;
-      }
-
-      // Not a legal destination.
-      if (obfuscated) {
-        // Blindfold modes: a piece is already selected, so ANY click that is
-        // not its legal destination is a deliberate illegal-move attempt —
-        // an illegal square, capturing one's own piece, an uncapturable
-        // opponent piece, or moving an (absolutely-pinned) piece the engine
-        // rejects. There is no reselect idiom here — the player can't pick
-        // pieces apart visually — so the mistake is counted and the
-        // selection cleared; the next click starts a fresh selection.
-        onIllegalMove?.();
-        setSelectedSquare(null);
-        return;
-      }
-
-      // Normal display: keep the lichess / chess.com idiom. Clicking another
-      // movable piece reselects (not a mistake); a click onto an empty / other
-      // square is a genuine illegal attempt, so count it and deselect.
-      if (!clickedMovable) onIllegalMove?.();
-      setSelectedSquare(clickedMovable ? square : null);
+      applyClickAction(
+        classifyBoardClick({
+          square,
+          selectedSquare,
+          pieceColor: pieceAt(square)?.color ?? null,
+          movableColor: movableColorChar,
+          obfuscated,
+          findCandidates: (from, to) => findLegalMovesByCoords(fen, from, to),
+        })
+      );
     },
-    [onMove, fen, movableColorChar, pieceAt, selectedSquare, onIllegalMove, obfuscated]
+    [onMove, fen, movableColorChar, pieceAt, selectedSquare, obfuscated, applyClickAction]
   );
 
   const handleBoardClick = useCallback(
@@ -555,27 +497,16 @@ export const ChessBoard = memo(function ChessBoard({
       // so it correctly renders as a plain move-dest dot — matching lichess.
       const isCaptureDest = isLegalDestination && pieceAt(square) !== null;
 
-      // Move affordances mirror lichess/chessground: the selected square and
-      // legal-destination dots / capture rings take precedence over the
-      // last-move and external-highlight chrome. `last-move` and `selectable`
-      // keep their existing ring styling (shared with non-interactive boards).
-      const highlightType:
-        | 'none'
-        | 'last-move'
-        | 'selectable'
-        | 'selected'
-        | 'move-dest'
-        | 'capture-dest' = isSelected
-        ? 'selected'
-        : isCaptureDest
-          ? 'capture-dest'
-          : isLegalDestination
-            ? 'move-dest'
-            : isLastMove
-              ? 'last-move'
-              : isExternalHighlight
-                ? 'selectable'
-                : 'none';
+      // Move affordances mirror lichess/chessground — precedence lives in the
+      // pure resolveSquareHighlight. `last-move` and `selectable` keep their
+      // existing ring styling (shared with non-interactive boards).
+      const highlightType = resolveSquareHighlight({
+        isSelected,
+        isCaptureDest,
+        isLegalDestination,
+        isLastMove: Boolean(isLastMove),
+        isExternalHighlight,
+      });
 
       const showEvalMark = evaluationMark && evaluationMark.square === square;
       const evalBadge = showEvalMark
@@ -605,13 +536,12 @@ export const ChessBoard = memo(function ChessBoard({
   // overlay slot, so it shares the same coordinate space as the squares.
   const promotionOverlay = (() => {
     if (!promotionPending || !onMove) return null;
-    const { to } = promotionPending;
-    const fileIndex = to.charCodeAt(0) - 'a'.charCodeAt(0);
-    const rankIndex = 8 - Number.parseInt(to[1], 10);
+    const indices = squareToBoardIndices(promotionPending.to);
+    if (!indices) return null;
     return (
       <PromotionPicker
-        fileIndex={fileIndex}
-        rankIndex={rankIndex}
+        fileIndex={indices.fileIndex}
+        rankIndex={indices.rankIndex}
         flipped={flipped}
         promotingColor={movableColorChar === 'b' ? 'b' : 'w'}
         onSelect={(type) => {
@@ -632,9 +562,7 @@ export const ChessBoard = memo(function ChessBoard({
   // per pointermove inside the drag hook.
   const dragPiece = (() => {
     if (dragFrom === null || dragSize === null || typeof document === 'undefined') return null;
-    const fileIndex = dragFrom.charCodeAt(0) - 'a'.charCodeAt(0);
-    const rankIndex = 8 - Number.parseInt(dragFrom[1], 10);
-    const piece = board[rankIndex]?.[fileIndex] ?? null;
+    const piece = pieceAt(dragFrom);
     if (!piece) return null;
     return createPortal(
       <div

@@ -21,6 +21,16 @@ import type {
   PracticeCompleteLabels,
   ScoreStats,
 } from '@/app/[locale]/(public)/practice/_lib/practice-complete-types';
+import {
+  computeDefaultAverageTimeText,
+  defaultScoreStats,
+  parseScoreTotal,
+  parseTimeElapsed,
+} from '@/app/[locale]/(public)/practice/_lib/result-derivations';
+import {
+  buildDefaultSettingsUrl,
+  buildDefaultTryAgainUrl,
+} from '@/app/[locale]/(public)/practice/_lib/result-urls';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 // ---------------------------------------------------------------------------
@@ -170,16 +180,6 @@ type ResultClientConfig = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function buildParamString(values: Record<string, string | null>): string {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(values)) {
-    if (value !== null) {
-      params.set(key, value);
-    }
-  }
-  return params.toString();
-}
-
 /**
  * Average seconds-per-answer text used by most challenge result clients as
  * their `buildAverageTimeText`. Unlike the factory's internal
@@ -256,12 +256,9 @@ export function createPracticeResultClient(config: ResultClientConfig) {
 
     const resolved = resolveScoreTotal
       ? resolveScoreTotal(searchParams)
-      : {
-          score: parseInt(searchParams.get('score') || '0', 10),
-          total: parseInt(searchParams.get('total') || '0', 10),
-        };
+      : parseScoreTotal(searchParams);
     const { score, total } = resolved;
-    const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
+    const timeElapsed = parseTimeElapsed(searchParams);
 
     // Build context for callbacks
     const ctx: ResultContext = {
@@ -285,27 +282,21 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     // Build URLs
     const tryAgainUrl = buildTryAgainUrl
       ? buildTryAgainUrl(ctx, extraParamValues)
-      : `/${locale}/practice/${moduleSlug}/challenge/session?${buildParamString(extraParamValues)}`;
+      : buildDefaultTryAgainUrl(locale, moduleSlug, extraParamValues);
 
     const changeSettingsUrl = buildSettingsUrl
       ? buildSettingsUrl(ctx, extraParamValues)
-      : `/${locale}/practice/${moduleSlug}/challenge?${buildParamString(extraParamValues)}`;
+      : buildDefaultSettingsUrl(locale, moduleSlug, extraParamValues);
 
     // Average time
-    const defaultAverageTimeText = (() => {
-      const time = parseFloat(searchParams.get('time') || '0');
-      const avg = total > 0 ? (time / total).toFixed(1) : '0.0';
-      return total > 0 ? ctx.tPractice('secondsFormat', { seconds: avg }) : undefined;
-    })();
-
     const averageTimeText = buildAverageTimeText
       ? buildAverageTimeText(ctx)
-      : defaultAverageTimeText;
+      : computeDefaultAverageTimeText(searchParams, total, (seconds) =>
+          ctx.tPractice('secondsFormat', { seconds })
+        );
 
     // Score stats
-    const scoreStats = buildScoreStats
-      ? buildScoreStats(ctx)
-      : { correct: score, incorrect: total - score, total };
+    const scoreStats = buildScoreStats ? buildScoreStats(ctx) : defaultScoreStats(score, total);
 
     // Labels
     const labels = {

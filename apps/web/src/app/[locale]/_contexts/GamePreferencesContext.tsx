@@ -16,14 +16,18 @@ import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { DEFAULT_BOARD_VISIBILITY } from '@/lib/games/board-visibility';
-import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import {
   DEFAULT_ENABLED_MOVE_INPUT_MODES,
   DEFAULT_MOVE_INPUT_MODE,
-  writeMoveInputCookieClient,
 } from '@/lib/games/move-input-cookie';
 
-import { validatePreferences } from './game-preferences-validation';
+import {
+  loadStoredPreferences,
+  parsePreferencesStorageEvent,
+  persistPreferences,
+  syncChangedPreferenceCookies,
+  syncPreferenceCookies,
+} from './game-preferences-persistence';
 
 // Per-game preferences (subset of GamePreferences saved with each game).
 // `boardVisibility` is a "Controls"-tier setting in the global Preferences
@@ -126,9 +130,6 @@ const defaultPreferences: GamePreferences = {
   aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
 };
 
-// Local storage key
-const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
-
 type GamePreferencesContextType = {
   preferences: GamePreferences;
   /**
@@ -165,43 +166,21 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
 
   // Load preferences from localStorage on mount.
   //
-  // Cookie-write responsibility: this effect writes the `bfc_move_input_pref`
-  // cookie directly with the loaded (or default) keys. Updates made later go
+  // Cookie-write responsibility: this effect writes the SSR cookie hints
+  // directly with the loaded (or default) keys. Updates made later go
   // through `updatePreferences` / `resetPreferences`, which write the cookie
   // synchronously before returning — see the comment on `updatePreferences`
   // below for the rationale (race with immediate navigation / prefetch). We
-  // deliberately do NOT keep a secondary
-  // `useEffect` keyed on mode changes: that effect fires asynchronously
-  // after `setState`, which is exactly the race we're closing.
+  // deliberately do NOT keep a secondary `useEffect` keyed on mode changes:
+  // that effect fires asynchronously after `setState`, which is exactly the
+  // race we're closing.
   useEffect(() => {
-    let loaded: GamePreferences = defaultPreferences;
-    try {
-      const stored = localStorage.getItem(PREFERENCES_STORAGE_KEY);
-      if (stored) {
-        const validated = validatePreferences(JSON.parse(stored));
-        const merged = {
-          ...defaultPreferences,
-          ...validated,
-        };
-        // If current moveInputMode is not in enabledMoveInputModes, switch to first enabled mode
-        if (!merged.enabledMoveInputModes.includes(merged.moveInputMode)) {
-          merged.moveInputMode = merged.enabledMoveInputModes[0];
-        }
-        loaded = merged;
-        setPreferences(merged);
-      }
-    } catch (error) {
-      console.warn('Failed to load game preferences from localStorage:', error);
-    } finally {
-      // Align the SSR cookie hints with the just-loaded preferences so the
-      // next navigation's SSR paint uses the correct skeleton shape.
-      writeMoveInputCookieClient({
-        mode: loaded.moveInputMode,
-        enabledModes: loaded.enabledMoveInputModes,
-      });
-      writeBoardVisibilityCookieClient(loaded.boardVisibility);
-      setIsLoaded(true);
-    }
+    const loaded = loadStoredPreferences(defaultPreferences);
+    if (loaded) setPreferences(loaded);
+    // Align the SSR cookie hints with the just-loaded preferences so the
+    // next navigation's SSR paint uses the correct skeleton shape.
+    syncPreferenceCookies(loaded ?? defaultPreferences);
+    setIsLoaded(true);
   }, []);
 
   // Sync preferences across browser tabs.
@@ -212,14 +191,8 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   // to re-write it here.
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === PREFERENCES_STORAGE_KEY && e.newValue) {
-        try {
-          const validated = validatePreferences(JSON.parse(e.newValue));
-          setPreferences((prev) => ({ ...prev, ...validated }));
-        } catch {
-          // Ignore malformed data
-        }
-      }
+      const validated = parsePreferencesStorageEvent(e);
+      if (validated) setPreferences((prev) => ({ ...prev, ...validated }));
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
@@ -228,17 +201,12 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   // Save preferences to localStorage whenever they change
   useEffect(() => {
     if (!isLoaded) return; // Don't save until initial load is complete
-
-    try {
-      localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
-    } catch (error) {
-      console.warn('Failed to save game preferences to localStorage:', error);
-    }
+    persistPreferences(preferences);
   }, [preferences, isLoaded]);
 
-  // Mirror the move-input mode keys to the `bfc_move_input_pref` cookie so the
-  // SSR pipeline can emit the right move-input skeleton shape on the next
-  // navigation. The cookie write is performed **synchronously** here, before
+  // Mirror the changed preference keys to their SSR cookie hints so the
+  // pipeline can emit the right skeleton shape on the next navigation. The
+  // cookie write is performed **synchronously** here, before
   // `setPreferences` schedules a re-render and before the user can navigate /
   // trigger a Next.js prefetch of `/games/play`. If we relied on a
   // post-state-update `useEffect` (as a previous version did), a user toggling
@@ -246,41 +214,20 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   // server with a stale cookie, yielding the wrong skeleton.
   //
   // The cookie is a server-facing hint only — localStorage remains the source
-  // of truth for the full preferences object.
-  //
-  // Single-writer rule: this provider is the ONLY place that writes the
-  // cookie. Any other writer will cause drift with localStorage. If the
-  // cookie is cleared externally (privacy extensions, incognito, etc.),
-  // SSR falls back to the default hint until the user next changes a
-  // related preference — an acceptable degradation to today's baseline.
+  // of truth for the full preferences object. See the single-writer rule on
+  // `game-preferences-persistence`.
   const updatePreferences = useCallback((updates: Partial<GamePreferences>) => {
     const prev = preferencesRef.current;
     const next = { ...prev, ...updates };
-    const modeKeysChanged =
-      ('moveInputMode' in updates && updates.moveInputMode !== prev.moveInputMode) ||
-      ('enabledMoveInputModes' in updates &&
-        updates.enabledMoveInputModes !== prev.enabledMoveInputModes);
-    if (modeKeysChanged) {
-      writeMoveInputCookieClient({
-        mode: next.moveInputMode,
-        enabledModes: next.enabledMoveInputModes,
-      });
-    }
-    if ('boardVisibility' in updates && updates.boardVisibility !== prev.boardVisibility) {
-      writeBoardVisibilityCookieClient(next.boardVisibility);
-    }
+    syncChangedPreferenceCookies(prev, updates, next);
     setPreferences(next);
   }, []);
 
   const resetPreferences = useCallback(() => {
-    // Write the cookie synchronously so a reset user's next navigation sees the
-    // default SSR hint (matching the reset state), not whatever was last
+    // Write the cookies synchronously so a reset user's next navigation sees
+    // the default SSR hint (matching the reset state), not whatever was last
     // persisted.
-    writeMoveInputCookieClient({
-      mode: defaultPreferences.moveInputMode,
-      enabledModes: defaultPreferences.enabledMoveInputModes,
-    });
-    writeBoardVisibilityCookieClient(defaultPreferences.boardVisibility);
+    syncPreferenceCookies(defaultPreferences);
     setPreferences(defaultPreferences);
   }, []);
 

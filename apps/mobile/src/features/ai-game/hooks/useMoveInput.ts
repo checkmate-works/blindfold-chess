@@ -1,6 +1,13 @@
 import { useCallback, useMemo } from "react";
 
 import type { AlgebraicNotation } from "@blindfold-chess/types";
+import {
+  computeHasSelections,
+  computeShowCastlingRow,
+  computeShowCheckToggle,
+  computeShowPieceRow,
+  computeShowRankRow,
+} from "@blindfold-chess/features/ai-game/notation-input";
 import { useNotationInput } from "@blindfold-chess/features/ai-game/notation-input/client";
 
 type UseMoveInputProps = {
@@ -75,6 +82,13 @@ export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
     // Derived
     previewText: n.previewText,
     isSubmittable: n.isSubmittable,
+    hasSelections: computeHasSelections(state),
+
+    // Row-visibility rules (pure selectors from the shared state machine)
+    showPieceRow: computeShowPieceRow(state),
+    showCastlingRow: computeShowCastlingRow(state),
+    showRankRow: computeShowRankRow(state),
+    showCheckToggle: computeShowCheckToggle(state),
 
     // Actions
     handlePieceSelect: n.selectPiece,

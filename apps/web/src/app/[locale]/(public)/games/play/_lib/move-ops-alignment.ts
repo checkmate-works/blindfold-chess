@@ -1,0 +1,56 @@
+import type { Side } from '@blindfold-chess/types';
+
+import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+
+import { getMovingSide } from './fen-utils';
+
+/**
+ * Operation-log ↔ move-index alignment.
+ *
+ * Operation logs are recorded one entry per PLAYER move, while the move list
+ * indexes every half-move. The single alignment rule — `logs[i]` belongs to
+ * the i-th player move — lives here so the MovesPanel ops icons and the
+ * OperationLogModal table stay in agreement.
+ */
+
+/** True iff at least one counter on the log entry is non-zero. */
+export function hasOps(log: MoveOperationLog): boolean {
+  return (
+    log.peekCount > 0 ||
+    log.undoCount > 0 ||
+    (log.movePeekCount ?? 0) > 0 ||
+    (log.invalidCount ?? 0) > 0
+  );
+}
+
+/**
+ * Indices into `moves[]` that the player played: `logs[i]` aligns with
+ * `getPlayerMoveIndices(...)[i]`.
+ */
+export function getPlayerMoveIndices(
+  movesLength: number,
+  startingFen: string | undefined,
+  playerSide: Side
+): number[] {
+  const result: number[] = [];
+  for (let i = 0; i < movesLength; i++) {
+    if (getMovingSide(i, startingFen) === playerSide) result.push(i);
+  }
+  return result;
+}
+
+/**
+ * The log entry aligned with a given `moves[]` index, or null when the index
+ * is not a player move or the log has no entry for it (e.g. an in-progress
+ * move not yet committed).
+ */
+export function logForMovesIndex(
+  movesIndex: number | undefined,
+  playerMoveIndices: readonly number[],
+  logs: readonly MoveOperationLog[]
+): MoveOperationLog | null {
+  if (movesIndex === undefined) return null;
+  const logIndex = playerMoveIndices.indexOf(movesIndex);
+  if (logIndex === -1 || logIndex >= logs.length) return null;
+  return logs[logIndex];
+}

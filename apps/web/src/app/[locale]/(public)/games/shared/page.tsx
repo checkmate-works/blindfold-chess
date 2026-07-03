@@ -14,7 +14,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
-import { listSharedGames } from '@/lib/db/games';
+import { listSharedGames } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
 

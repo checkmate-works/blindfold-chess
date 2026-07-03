@@ -11,7 +11,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { getGameById } from '@/lib/db/games';
+import { getGameById } from '@/lib/db/games-read';
 import { createClient } from '@/lib/supabase/server';
 import { UUID_RE } from '@/lib/validations/uuid';
 

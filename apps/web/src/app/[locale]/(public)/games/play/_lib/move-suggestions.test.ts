@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCompletePattern, generateMoveSuggestions } from './move-suggestions';
+import { generateMoveSuggestions } from './move-suggestions';
+import { buildCompletePattern } from './san-completeness';
 
 describe('generateMoveSuggestions', () => {
   describe('empty and invalid input', () => {

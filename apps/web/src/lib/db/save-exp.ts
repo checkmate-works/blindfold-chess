@@ -10,11 +10,10 @@
  */
 import {
   applyDailyCap,
+  buildExpInfo,
   calculateExp,
   calculateGameExp,
   calculatePracticeExp,
-  getLevel,
-  getLevelProgress,
   getModuleWeight,
 } from '@blindfold-chess/features/exp';
 import type { ExpInfo, GameExpEngine, GameExpOutcome } from '@blindfold-chess/features/exp';
@@ -49,41 +48,6 @@ type GrantExpResult =
       existingAmount: number;
       existingMetadata: Record<string, unknown>;
     };
-
-/**
- * Build the `ExpInfo` view returned to callers from a {@link grantExp} result
- * and the amount granted on THIS call.
- *
- * Shared by the three grant flows (challenge / practice / game), which differ
- * only in how `grantedAmount` is computed. On the idempotent replay path the
- * originally-granted amount is surfaced and `levelUp` is forced to `false` (the
- * transition, if any, happened on the first call); on a fresh grant the
- * before/after level comparison decides `levelUp`.
- */
-function buildExpInfo(grantResult: GrantExpResult, grantedAmount: number): ExpInfo {
-  const { totalExp } = grantResult;
-  const levelAfter = getLevel(totalExp);
-  const progressPercent = Math.round(getLevelProgress(totalExp).progress * 100);
-
-  if (grantResult.alreadyGranted) {
-    return {
-      earnedExp: grantResult.existingAmount,
-      totalExp,
-      level: levelAfter,
-      levelUp: false,
-      progressPercent,
-    };
-  }
-
-  const levelBefore = getLevel(totalExp - grantedAmount);
-  return {
-    earnedExp: grantedAmount,
-    totalExp,
-    level: levelAfter,
-    levelUp: levelAfter > levelBefore,
-    progressPercent,
-  };
-}
 
 /**
  * Inserts an exp_event and upserts user_exp within the given transaction.

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getGameById } from '@/lib/db/games';
+import { getGameById } from '@/lib/db/games-read';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';

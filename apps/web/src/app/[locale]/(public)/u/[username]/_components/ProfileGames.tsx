@@ -1,6 +1,6 @@
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
-import type { SharedGameListItem } from '@/lib/db/games';
+import type { SharedGameListItem } from '@/lib/db/games-read';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 

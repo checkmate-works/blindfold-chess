@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -11,36 +11,18 @@ import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
 import { FiInfo } from 'react-icons/fi';
 
-import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
-import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
-
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
-import { saveChunkEdit, submitChunkDelete, submitChunkPublish } from '../_lib/chunk-form-actions';
-import {
-  type ChunkDraftV1,
-  clearChunkDraft,
-  readChunkDraft,
-  writeChunkDraft,
-} from '../_lib/draft-storage';
+import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
+import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
+import { useChunkLifecycleActions } from '../_hooks/use-chunk-lifecycle-actions';
+import { saveChunkEdit } from '../_lib/chunk-form-actions';
+import { validateChunkCreateForm } from '../_lib/chunk-form-validation';
+import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
 import { ChunkFormFields } from './ChunkFormFields';
 
-export type ChunkFormInitial = {
-  id: string;
-  representativeFen: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  annotations: BoardAnnotations;
-  /**
-   * Topics the chunk currently has flagged on the server. Used to
-   * pre-populate the checkbox group on the edit form so the author can
-   * see (and tweak) the same set the detail-page callout is
-   * displaying.
-   */
-  feedbackTopics: readonly ChunkFeedbackTopic[];
-};
+export type { ChunkFormInitial } from '../_hooks/use-chunk-form-state';
 
 type CreateProps = {
   mode: 'create';
@@ -54,7 +36,7 @@ type CreateProps = {
    * Seed the board with this position when entering the create form
    * (e.g. "create a chunk from this game position", passed via `?fen=`).
    * Already validated server-side. Takes precedence over any stored
-   * draft — see the draft-recovery effect below.
+   * draft — see `useChunkDraftRecovery`.
    */
   injectedFen?: string;
 };
@@ -70,7 +52,11 @@ type Props = CreateProps | EditProps;
 const validateFenForChunks = (fen: string) => validateFenStructure(fen).ok;
 
 /**
- * Form shell for chunk authoring.
+ * Form shell for chunk authoring. The pieces live in focused modules:
+ * field state + dirty check in `useChunkFormState`, sessionStorage draft
+ * recovery in `useChunkDraftRecovery`, the create-mode validation gate in
+ * `validateChunkCreateForm`, and the publish / delete flows in
+ * `useChunkLifecycleActions`. This component wires them to the markup.
  *
  * - **Create**: validates the in-form state, writes a `ChunkDraftV1` to
  *   sessionStorage, and navigates to `/chunks/new/preview` — the
@@ -89,14 +75,9 @@ export function ChunkForm(props: Props) {
   const { mode, disableUnsavedGuard = false } = props;
   const router = useRouter();
   const t = useTranslations('chunks.form');
-  // The publish-from-edit affordance reaches into the chunk-level
-  // `actions.*` keys (publish CTA, confirmation copy, the same
-  // "needs description" guard wording the detail-page button uses)
-  // so the proof-of-publish UX stays consistent across surfaces.
-  const tChunks = useTranslations('chunks');
 
   // A position injected via `?fen=` (create mode only) seeds the board and
-  // takes precedence over any stored draft (handled in the recovery effect).
+  // takes precedence over any stored draft (handled in the recovery hook).
   const injectedFen = props.mode === 'create' ? props.injectedFen : undefined;
   const initialFen = mode === 'edit' ? props.initial.representativeFen : injectedFen;
 
@@ -105,79 +86,35 @@ export function ChunkForm(props: Props) {
     validate: validateFenForChunks,
   });
 
-  const [title, setTitle] = useState(mode === 'edit' ? props.initial.title : '');
-  const [slug, setSlug] = useState(mode === 'edit' ? props.initial.slug : '');
-  const [description, setDescription] = useState(
-    mode === 'edit' ? (props.initial.description ?? '') : ''
-  );
-  const [annotations, setAnnotations] = useState<BoardAnnotations>(
-    mode === 'edit' ? props.initial.annotations : EMPTY_BOARD_ANNOTATIONS
-  );
-  // The lifecycle toggle is only meaningful in create mode, where it
-  // defaults to 'published' (the draft checkbox is unchecked by default).
-  // Edit mode can only run against an already-draft row (the page guard
-  // blocks published chunks from reaching this form) and never surfaces
-  // the toggle, so this value is unused there.
-  const [status, setStatus] = useState<ChunkStatus>('published');
-  const [feedbackTopics, setFeedbackTopics] = useState<ChunkFeedbackTopic[]>(
-    mode === 'edit' ? [...props.initial.feedbackTopics] : []
-  );
+  const form = useChunkFormState({
+    mode,
+    initial: mode === 'edit' ? props.initial : undefined,
+  });
+  const {
+    title,
+    slug,
+    description,
+    annotations,
+    status,
+    feedbackTopics,
+    setAnnotations,
+    setStatus,
+    setFeedbackTopics,
+  } = form;
+
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [deletePending, setDeletePending] = useState(false);
-  const [publishPending, setPublishPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
-  // Captured at handlePublish time so the post-publish redirect lands
-  // on the freshly-renamed URL (matches handleSubmit's `targetSlug`).
-  const [publishTargetSlug, setPublishTargetSlug] = useState<string | null>(null);
   const [startOverOpen, setStartOverOpen] = useState(false);
-  const [hydratedFromDraft, setHydratedFromDraft] = useState(false);
 
-  // Rehydrate from sessionStorage when re-entering the create form (e.g.
-  // via the preview's "Back to edit" button). Edit mode skips this path
-  // entirely since its seed data comes from the server.
-  useEffect(() => {
-    if (mode !== 'create') return;
-    // An injected position is an explicit seed and wins over any stored
-    // draft, so skip recovery when one is present. `?fen=` only appears on
-    // the initial entry from a game page — the preview "Back to edit"
-    // round-trip navigates to a bare `/chunks/new` — so this never clobbers
-    // in-progress edits.
-    if (injectedFen) return;
-    const draft = readChunkDraft();
-    if (!draft) return;
-    board.setFenInput(draft.representativeFen);
-    board.setBoardFen(draft.representativeFen);
-    board.setSideToMove(draft.sideToMove);
-    board.setActiveTab(draft.activeTab);
-    board.setFlipped(draft.flipped);
-    board.setUserFlipped(draft.userFlipped);
-    setTitle(draft.title);
-    setSlug(draft.slug);
-    setDescription(draft.description);
-    setAnnotations(draft.annotations);
-    setStatus(draft.status);
-    setFeedbackTopics(draft.feedbackTopics);
-    setHydratedFromDraft(true);
-    // The board hook is stable for the lifetime of this component —
-    // omit it from deps so a setter identity change doesn't re-hydrate
-    // and clobber subsequent user edits.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+  const { hydratedFromDraft, setHydratedFromDraft } = useChunkDraftRecovery({
+    mode,
+    injectedFen,
+    board,
+    form,
+  });
 
-  const isDirty =
-    !submitted &&
-    (mode === 'create'
-      ? board.trimmedFen !== '' ||
-        title.trim() !== '' ||
-        slug.trim() !== '' ||
-        description.trim() !== ''
-      : board.trimmedFen !== (props as EditProps).initial.representativeFen ||
-        title !== (props as EditProps).initial.title ||
-        slug !== (props as EditProps).initial.slug ||
-        description !== ((props as EditProps).initial.description ?? ''));
+  const isDirty = !submitted && form.computeIsDirty(board.trimmedFen);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({
     isDirty: disableUnsavedGuard ? false : isDirty,
@@ -186,15 +123,17 @@ export function ChunkForm(props: Props) {
   function handleStartOver() {
     clearChunkDraft();
     board.resetBoard();
-    setTitle('');
-    setSlug('');
-    setDescription('');
-    setAnnotations(EMPTY_BOARD_ANNOTATIONS);
-    setStatus('published');
-    setFeedbackTopics([]);
+    form.resetFields();
     setError(null);
     setHydratedFromDraft(false);
     setStartOverOpen(false);
+  }
+
+  // flushSync so the isDirty -> false re-render completes before
+  // router.push triggers the navigation guard.
+  function navigateAfterSubmit(path: string) {
+    flushSync(() => setSubmitted(true));
+    router.push(path as '/chunks/[slug]');
   }
 
   // Wraps `saveChunkEdit` with the form's pending lifecycle and error
@@ -229,29 +168,31 @@ export function ChunkForm(props: Props) {
     return { ok: true, targetSlug: result.targetSlug };
   }
 
+  const lifecycle = useChunkLifecycleActions({
+    chunk: mode === 'edit' ? { id: props.initial.id, slug: props.initial.slug } : null,
+    isDirty,
+    description,
+    saveEdit: () => (mode === 'edit' ? runSaveEdit(props.initial) : Promise.resolve({ ok: false })),
+    onError: setError,
+    navigateAfterSubmit,
+    t,
+  });
+  const { tChunks, publishPending, deletePending } = lifecycle;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     if (mode === 'create') {
-      if (!board.isFenValid) {
-        setError(t('errors.invalidFen'));
-        return;
-      }
-      if (title.trim() === '') {
-        setError(t('errors.titleRequired'));
-        return;
-      }
-      if (slug.trim() === '') {
-        setError(t('errors.slugRequired'));
-        return;
-      }
-      // Mirror the server-side guard in `createChunkEntry` (and the
-      // draft→published rule in `publishChunkEntry`): a chunk published on
-      // creation must carry a description. Surfacing it here keeps the user
-      // on the field to fix instead of bouncing them off the preview step.
-      if (status === 'published' && description.trim() === '') {
-        setError(t('errors.descriptionRequired'));
+      const errorKey = validateChunkCreateForm({
+        isFenValid: board.isFenValid,
+        title,
+        slug,
+        status,
+        description,
+      });
+      if (errorKey) {
+        setError(t(errorKey));
         return;
       }
 
@@ -276,87 +217,16 @@ export function ChunkForm(props: Props) {
         return;
       }
 
-      // flushSync so the isDirty -> false re-render completes before
-      // router.push triggers the navigation guard.
-      flushSync(() => setSubmitted(true));
-      router.push('/chunks/new/preview');
+      navigateAfterSubmit('/chunks/new/preview');
       return;
     }
 
     const result = await runSaveEdit(props.initial);
     if (!result.ok) return;
 
-    flushSync(() => setSubmitted(true));
     // Land on the freshly-renamed URL when the slug changed —
     // otherwise the old detail URL 404s after revalidation.
-    router.push(`/chunks/${result.targetSlug}` as '/chunks/[slug]');
-  }
-
-  /**
-   * Save (when dirty) then open the publish-confirmation modal. Saves
-   * are routed through the same `updateChunk` Server Action as Save,
-   * so slug rename + topic_posts cascade + validation errors come out
-   * uniformly. The synchronous description-required gate mirrors the
-   * server-side `publishChunkEntry` guard, surfacing the rule before
-   * the user has to bounce off the publish action.
-   */
-  async function handlePublish() {
-    if (mode !== 'edit') return;
-    setError(null);
-
-    let finalSlug = props.initial.slug;
-    if (isDirty) {
-      const saveResult = await runSaveEdit(props.initial);
-      if (!saveResult.ok) return;
-      finalSlug = saveResult.targetSlug;
-    }
-
-    if (description.trim().length === 0) {
-      // The server enforces the same rule via `descriptionRequired`,
-      // but raising it inline keeps the user on the field they need
-      // to fix instead of bouncing them out to a modal.
-      setError(t('errors.descriptionRequired'));
-      return;
-    }
-
-    setPublishTargetSlug(finalSlug);
-    setPublishConfirmOpen(true);
-  }
-
-  async function handlePublishConfirm() {
-    if (mode !== 'edit') return;
-    setPublishConfirmOpen(false);
-    setPublishPending(true);
-    setError(null);
-
-    const result = await submitChunkPublish({ chunkId: props.initial.id, t });
-    setPublishPending(false);
-
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
-
-    flushSync(() => setSubmitted(true));
-    router.push(`/chunks/${publishTargetSlug ?? props.initial.slug}` as '/chunks/[slug]');
-  }
-
-  async function handleDelete() {
-    if (mode !== 'edit') return;
-    setDeleteConfirmOpen(false);
-    setDeletePending(true);
-    setError(null);
-
-    const result = await submitChunkDelete({ chunkId: props.initial.id, t });
-    setDeletePending(false);
-
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
-
-    flushSync(() => setSubmitted(true));
-    router.push('/chunks');
+    navigateAfterSubmit(`/chunks/${result.targetSlug}`);
   }
 
   const submitDisabled =
@@ -399,11 +269,11 @@ export function ChunkForm(props: Props) {
         <ChunkFormFields
           board={board}
           title={title}
-          onTitleChange={setTitle}
+          onTitleChange={form.setTitle}
           description={description}
-          onDescriptionChange={setDescription}
+          onDescriptionChange={form.setDescription}
           slug={slug}
-          onSlugChange={setSlug}
+          onSlugChange={form.setSlug}
           annotations={annotations}
           onAnnotationsChange={setAnnotations}
           status={status}
@@ -440,13 +310,13 @@ export function ChunkForm(props: Props) {
               fullWidth
               disabled={submitDisabled}
               loading={publishPending}
-              onClick={handlePublish}
+              onClick={lifecycle.handlePublish}
             >
               {publishPending ? tChunks('actions.publishPending') : tChunks('actions.publish')}
             </Button>
             <button
               type="button"
-              onClick={() => setDeleteConfirmOpen(true)}
+              onClick={() => lifecycle.setDeleteConfirmOpen(true)}
               disabled={pending || deletePending || publishPending}
               className="w-full px-4 py-2 text-sm rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
             >
@@ -457,14 +327,14 @@ export function ChunkForm(props: Props) {
       </form>
 
       <ConfirmationModal
-        isOpen={deleteConfirmOpen}
+        isOpen={lifecycle.deleteConfirmOpen}
         title={t('delete.confirmTitle')}
         message={t('delete.confirmBody')}
         confirmText={t('delete.confirm')}
         cancelText={t('delete.cancel')}
         confirmVariant="danger"
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteConfirmOpen(false)}
+        onConfirm={lifecycle.handleDelete}
+        onCancel={() => lifecycle.setDeleteConfirmOpen(false)}
       />
 
       <ConfirmationModal
@@ -479,14 +349,14 @@ export function ChunkForm(props: Props) {
       />
 
       <ConfirmationModal
-        isOpen={publishConfirmOpen}
+        isOpen={lifecycle.publishConfirmOpen}
         title={tChunks('actions.publishConfirmTitle')}
         message={tChunks('actions.publishConfirmMessage')}
         confirmText={tChunks('actions.publishConfirmCta')}
         cancelText={tChunks('actions.publishConfirmCancel')}
         confirmVariant="primary"
-        onConfirm={handlePublishConfirm}
-        onCancel={() => setPublishConfirmOpen(false)}
+        onConfirm={lifecycle.handlePublishConfirm}
+        onCancel={() => lifecycle.setPublishConfirmOpen(false)}
       />
 
       <UnsavedChangesDialog open={isBlocking} onCancel={cancel} onConfirm={confirm} />

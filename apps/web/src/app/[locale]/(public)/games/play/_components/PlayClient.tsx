@@ -17,15 +17,15 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import { useAiGameExpGrant } from '../_hooks/use-ai-game-exp-grant';
+import { useFinishModal } from '../_hooks/use-finish-modal';
 import { useFinishedGameNavigation } from '../_hooks/use-finished-game-navigation';
 import type { GameSession } from '../_hooks/use-game-session';
 import { usePeekState } from '../_hooks/use-peek-state';
+import { usePlayBoardViews } from '../_hooks/use-play-board-views';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
-import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
-import { BoardSettingsButton } from './BoardSettingsButton';
+import { useAiReplyChip } from './AiReplyChip';
 import { GameFinishModal } from './GameFinishModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
-import { InlineBoardView } from './InlineBoardView';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
 import { MovesPanel } from './MovesPanel';
 import { MovesPanelSkeleton } from './MovesPanelSkeleton';
@@ -269,19 +269,13 @@ export function PlayClient({
     startingFen,
   });
 
-  // Game-finished modal (Result / Game Review / Kata). It auto-opens once when a
-  // game ends in live play; afterwards — and when reviewing a game opened from
-  // the list (`?finished=1`) — it is reopened via the "Next action" button on
-  // the finished board. Dismissing leaves the player on the finished board.
-  const [finishModalOpen, setFinishModalOpen] = useState(false);
-  const finishAutoOpenedRef = useRef(false);
-  useEffect(() => {
-    if (finishAutoOpenedRef.current || isInitializing) return;
-    if (isFinished && !isFinishedView) {
-      finishAutoOpenedRef.current = true;
-      setFinishModalOpen(true);
-    }
-  }, [isFinished, isFinishedView, isInitializing]);
+  // Game-finished modal (Result / Game Review / Kata) — auto-open-once state
+  // machine, see useFinishModal.
+  const { finishModalOpen, setFinishModalOpen } = useFinishModal({
+    isFinished,
+    isFinishedView,
+    isInitializing,
+  });
 
   // Grant AI-game Exp on finish, independent of navigation (the game-finished
   // modal makes visiting the result screen optional). Once, terminal-only,
@@ -311,96 +305,38 @@ export function PlayClient({
     handleRevealBoard();
     dismissAiReply();
   }, [handleRevealBoard, dismissAiReply]);
-  // Only surface the on-board AI chip while the board is actually hidden (a
-  // blindfold mode AND currently masked). When the board is visible — 'always'
-  // mode, or a peeked-open board — the AI's move is right there on the squares,
-  // so the "AI played …" / thinking chip would just be redundant clutter over a
-  // readable position. Gating on `boardMasked` (not just the mode) also keeps a
-  // setting change from popping the chip back over an open peek.
-  const showAiReplyChip = preferences.boardVisibility !== 'always' && boardMasked;
-
-  // In-progress board: always rendered at a fixed position/size, with the
-  // blindfold expressed as a mask overlay rather than as a different layout.
-  // 'always' → unmasked; 'peek' → masked until tapped (re-masks on the next
-  // move); 'never' → permanently masked. Click/drag move input is enabled
-  // whenever the board is actually visible — 'always' mode OR a revealed peek
-  // (`!boardMasked`) — on the player's turn, so a peeked board is as
-  // operable as an always-visible one.
-  const canBoardMove = !boardMasked && isPlayerTurn && !isLoading && currentPosition === -1;
-  const inProgressBoardView = (
-    <InlineBoardView
-      fen={displayFen || currentFen}
-      playerSide={playerSide}
-      flipped={effectiveFlipped}
-      lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
-      preferences={preferences}
-      movesLength={moves.length}
-      currentPosition={currentPosition}
-      formattedPgn={formattedPgn}
-      onNavigateToStart={navigateToStart}
-      onNavigatePrevious={navigatePrevious}
-      onNavigateNext={navigateNext}
-      onNavigateToEnd={navigateToEnd}
-      onNavigateToPosition={navigateToPosition}
-      onFlipBoard={handleFlipBoard}
-      alwaysOpen
-      masked={boardMasked}
-      maskDismissable={preferences.boardVisibility === 'peek'}
-      onReveal={handleReveal}
-      onMove={canBoardMove ? handleBoardMove : undefined}
-      onIllegalMove={canBoardMove ? recordInvalid : undefined}
-      // AI reply surfaced on the board itself (visible without scrolling to the
-      // page title): "thinking…" while computing, then the move, which fades.
-      // While the chip is active it owns the board center; `badgeActive` tells
-      // the mask to drop its own label so the two don't stack.
-      boardBadge={
-        showAiReplyChip ? (
-          <AiReplyChip
-            active={aiReply.active}
-            thinking={aiReply.thinking}
-            aiMoveNotation={aiMoveNotation}
-          />
-        ) : undefined
-      }
-      badgeActive={showAiReplyChip && aiReply.active}
-      // In 'always' mode the board is visible (no mask, no AI-reply chip), so a
-      // slow engine looks indistinguishable from a freeze. Surface a "thinking"
-      // overlay while the AI computes. In blindfold modes the masked board +
-      // AiReplyChip already cover this, so this stays off there.
-      aiThinking={preferences.boardVisibility === 'always' && isAiThinking}
-      // Per-game settings gear, pinned to the board's top-right (move-list strip
-      // end when shown, mask top-right when masked). Hidden for legacy games
-      // with no per-game snapshot to edit. Game details stays in the panel.
-      topRightControl={
-        canEditPerGameSettings ? (
-          <BoardSettingsButton onClick={() => setShowSettingsModal(true)} />
-        ) : undefined
-      }
-    />
-  );
-
-  // Finished-game review board (read-only): always show the board. A finished
-  // game is being reviewed, not played, so there is no blindfold mask or peek
-  // here — the board is simply visible.
-  const finishedBoardView = (
-    <InlineBoardView
-      fen={displayFen || currentFen}
-      playerSide={playerSide}
-      flipped={effectiveFlipped}
-      lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
-      preferences={preferences}
-      movesLength={moves.length}
-      currentPosition={currentPosition}
-      formattedPgn={formattedPgn}
-      onNavigateToStart={navigateToStart}
-      onNavigatePrevious={navigatePrevious}
-      onNavigateNext={navigateNext}
-      onNavigateToEnd={navigateToEnd}
-      onNavigateToPosition={navigateToPosition}
-      onFlipBoard={handleFlipBoard}
-      alwaysOpen
-    />
-  );
+  // The two board views (in-progress with mask/AI chip, finished read-only)
+  // — assembled in usePlayBoardViews so this component keeps only wiring.
+  const { inProgressBoardView, finishedBoardView } = usePlayBoardViews({
+    displayFen,
+    currentFen,
+    playerSide,
+    effectiveFlipped,
+    preferences,
+    lastMove,
+    movesLength: moves.length,
+    currentPosition,
+    formattedPgn,
+    navigation: {
+      navigateToStart,
+      navigatePrevious,
+      navigateNext,
+      navigateToEnd,
+      navigateToPosition,
+    },
+    onFlipBoard: handleFlipBoard,
+    boardMasked,
+    onReveal: handleReveal,
+    isPlayerTurn,
+    isLoading,
+    onBoardMove: handleBoardMove,
+    onIllegalMove: recordInvalid,
+    aiReply,
+    aiMoveNotation,
+    isAiThinking,
+    canEditPerGameSettings,
+    onOpenSettings: () => setShowSettingsModal(true),
+  });
 
   if (gameNotFound) {
     notFound();

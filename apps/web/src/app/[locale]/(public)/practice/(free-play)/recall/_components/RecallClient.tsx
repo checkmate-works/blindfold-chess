@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -10,16 +10,11 @@ import { FaCheck, FaCog, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
 import { ACTION_ROW_CONTAINER_CLASSES } from '@/app/[locale]/(public)/games/play/_lib';
-import { useLoadGame } from '@/app/[locale]/(public)/games/play/result/_hooks/useLoadGame';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type {
-  GamePreferences,
-  PerGamePreferences,
-} from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { useRecallGame } from '../_hooks';
+import { useRecallPreferences } from '../_hooks/use-recall-preferences';
 import { computeRecallStats } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/recall-format';
 import { RecallMovesPanel } from './RecallMovesPanel';
@@ -63,30 +58,6 @@ type Props = {
   onRestart?: () => void;
 };
 
-/**
- * Merge the saved game's per-game preference snapshot over the user's global
- * preferences, mirroring the play screen's merge (`usePlayClientPreferences`).
- * Legacy records may omit later-added fields, so those fall back to global.
- */
-function mergePerGamePreferences(
-  global: GamePreferences,
-  perGame: PerGamePreferences | undefined
-): GamePreferences {
-  if (!perGame) return global;
-  return {
-    ...global,
-    boardVisibility: perGame.boardVisibility ?? global.boardVisibility,
-    highlightLastMove: perGame.highlightLastMove,
-    showPieceDestinations: perGame.showPieceDestinations ?? global.showPieceDestinations,
-    showOwnPieces: perGame.showOwnPieces,
-    showOpponentPieces: perGame.showOpponentPieces,
-    pieceShapeMode: perGame.pieceShapeMode,
-    pieceColors: perGame.pieceColors,
-    pawnHideMode: perGame.pawnHideMode ?? global.pawnHideMode,
-    moveInputMode: perGame.moveInputMode ?? global.moveInputMode,
-  };
-}
-
 export function RecallClient({
   pgn,
   moves,
@@ -101,36 +72,11 @@ export function RecallClient({
 }: Props) {
   const t = useTranslations('recall');
 
-  // Recall keeps its own *local* copy of the game preferences. It is
-  // seeded from the saved game's snapshot (below) and mutated only in-memory:
-  // edits are never written back to global preferences nor recorded in a
-  // preferenceChangeLog — the review session is intentionally ephemeral.
-  const { preferences: globalPreferences, isHydrated } = useGamePreferences();
-  const loadState = useLoadGame(gameId ?? null);
-
-  const [preferences, setPreferences] = useState<GamePreferences>(globalPreferences);
-  const updatePreferences = useCallback((updates: Partial<GamePreferences>) => {
-    setPreferences((prev) => ({ ...prev, ...updates }));
-  }, []);
-
-  // Seed once, after both the global preferences (localStorage) and the
-  // saved-game lookup have settled. After seeding, the user owns this state.
-  const seededRef = useRef(false);
-  useEffect(() => {
-    if (seededRef.current) return;
-    if (!isHydrated) return;
-    if (gameId && loadState.status === 'loading') return;
-    seededRef.current = true;
-    const perGame = loadState.status === 'loaded' ? loadState.game.gamePreferences : undefined;
-    setPreferences(mergePerGamePreferences(globalPreferences, perGame));
-  }, [isHydrated, gameId, loadState, globalPreferences]);
-
-  const handlePerGamePrefChange = useCallback(
-    <K extends keyof PerGamePreferences>(key: K, value: PerGamePreferences[K]) => {
-      updatePreferences({ [key]: value } as Partial<GamePreferences>);
-    },
-    [updatePreferences]
-  );
+  // Recall's ephemeral local preferences (seeded from the saved game's
+  // snapshot, never written back) — see useRecallPreferences.
+  const { preferences, updatePreferences, handlePerGamePrefChange } = useRecallPreferences({
+    gameId,
+  });
 
   const {
     gameProgress,

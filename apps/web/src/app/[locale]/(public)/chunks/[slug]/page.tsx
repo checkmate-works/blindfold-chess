@@ -8,25 +8,14 @@ import { FiEdit2 } from 'react-icons/fi';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkBySlug } from '@/lib/chunks/queries';
-import { getPositionDetailPath } from '@/lib/positions/routes';
-import { parsePositionType } from '@/lib/positions/types';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
-import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
-import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
-import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
-import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { HelpTourButton, LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -34,14 +23,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { toggleLike as toggleChunkEntityLike } from '../_actions/toggleLike';
 import { ChunkDeleteButton } from '../_components/ChunkDeleteButton';
 import { ChunkLifecycleControls } from '../_components/ChunkLifecycleControls';
-import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithAttachment';
-import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
-import { toggleChunkLike } from './_actions/toggleChunkLike';
-import { togglePositionLike } from './_actions/togglePositionLike';
+import { ChunkCommentsTab } from './_components/ChunkCommentsTab';
+import { ChunkGamesTab } from './_components/ChunkGamesTab';
+import { ChunkPositionsTab } from './_components/ChunkPositionsTab';
 import { EditRequestCallout } from './_components/EditRequestCallout';
-import { NewPostForm } from './_components/NewPostForm';
-import { RelatedGamesList } from './_components/RelatedGamesList';
-import { EMPTY_REPLY_META, loadChunkDetail } from './_lib/load-chunk-detail';
+import { buildDraftHelpSteps } from './_lib/build-draft-help-steps';
+import { loadChunkDetail } from './_lib/load-chunk-detail';
 import { resolveChunkDisplayState } from './_lib/resolve-chunk-display-state';
 
 export const dynamic = 'force-dynamic';
@@ -150,43 +137,11 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           comments: commentCount,
         });
 
-  const [
-    t,
-    tTopics,
-    tVideo,
-    tPuzzle,
-    tMemory,
-    tChunks,
-    tEditRequests,
-    tSharedGames,
-    tPlay,
-    tOpeningNames,
-  ] = await Promise.all([
+  const [t, tChunks, tEditRequests] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
-    getTranslations({ locale, namespace: 'topics' }),
-    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
-    getTranslations({ locale, namespace: 'practice.puzzle' }),
-    getTranslations({ locale, namespace: 'practice.positionMemory' }),
     getTranslations({ locale, namespace: 'chunks' }),
     getTranslations({ locale, namespace: 'chunks.editRequests' }),
-    getTranslations({ locale, namespace: 'sharedGames' }),
-    getTranslations({ locale, namespace: 'play' }),
-    getTranslations({ locale, namespace: 'topics.openings.names' }),
   ]);
-
-  const commentTree = buildCommentTree(allComments, sortBy);
-
-  // CommentTree threads `extraContentByPostId` through to every
-  // CommentNode it spawns so attached PGN/FEN/embed/image cards render
-  // under their author at any depth. Building it requires the video
-  // fallback label, which is why it's done here in the page (where
-  // translations live) rather than inside `loadChunkDetail`.
-  const allPostIds = allComments.map((c) => c.id);
-  const extraContentByPostId = buildAttachmentNodeMap(
-    allPostIds,
-    attachments,
-    tVideo('fallbackTitle')
-  );
 
   const { status, isDraft, isOwner, calloutViewerState, showEditRequestCallout } =
     resolveChunkDisplayState({
@@ -197,37 +152,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       pendingEditRequestCount,
     });
 
-  // Help-tour steps for the draft state — mirrors the home / practice
-  // convention (HelpTourButton + data-tour-id on the target elements).
-  // Drafts get a brief walkthrough explaining the "edit suggestions"
-  // workflow that's unique to this lifecycle; published chunks render
-  // no help button since the page is then just a standard catalog entry.
-  const draftHelpSteps: HelpStep[] = isDraft
-    ? [
-        {
-          targetId: 'chunk-draft-badge',
-          title: tEditRequests('help.badge.title'),
-          description: tEditRequests('help.badge.description'),
-          side: 'bottom',
-          align: 'center',
-        },
-        // The second step highlights the callout's CTA, so it only
-        // makes sense when the callout actually renders. Skip it
-        // when the callout is suppressed (owner viewing an empty
-        // queue) so the tour does not point at a missing element.
-        ...(showEditRequestCallout
-          ? [
-              {
-                targetId: 'chunk-edit-requests-link',
-                title: tEditRequests('help.editRequests.title'),
-                description: tEditRequests('help.editRequests.description'),
-                side: 'bottom' as const,
-                align: 'end' as const,
-              },
-            ]
-          : []),
-      ]
-    : [];
+  const draftHelpSteps = isDraft ? buildDraftHelpSteps(tEditRequests, showEditRequestCallout) : [];
 
   return (
     <PageLayout
@@ -432,133 +357,34 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         ]}
       />
 
-      {activeTab === 'positions' &&
-        (linkedPositions.length > 0 ? (
-          <>
-            <p className="text-sm text-muted-foreground">
-              {tChunks('detail.positionsDescription')}
-            </p>
-            <div className="space-y-3">
-              {linkedPositions.map(({ position, profile }) => {
-                const positionType = parsePositionType(position.type);
-                const detailPath = positionType
-                  ? getPositionDetailPath(positionType, position.id)
-                  : null;
-                if (!detailPath) return null;
-
-                const isPuzzle = position.type === 'puzzle';
-                return (
-                  <PositionListCard
-                    key={position.id}
-                    position={position}
-                    profile={profile}
-                    likeMeta={
-                      linkedLikeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }
-                    }
-                    replyMeta={linkedReplyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
-                    detailHref={detailPath}
-                    i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
-                    toggleLikeAction={togglePositionLike}
-                    justNowLabel={isPuzzle ? tPuzzle('justNow') : tMemory('justNow')}
-                    locale={locale}
-                    badge={
-                      <span
-                        className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
-                          isPuzzle
-                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                        }`}
-                      >
-                        {isPuzzle
-                          ? tChunks('detail.positionBadge.puzzle')
-                          : tChunks('detail.positionBadge.memory')}
-                      </span>
-                    }
-                  />
-                );
-              })}
-            </div>
-          </>
-        ) : (
-          <p className="text-sm text-muted-foreground">{tChunks('detail.positionsEmpty')}</p>
-        ))}
+      {activeTab === 'positions' && (
+        <ChunkPositionsTab
+          locale={locale}
+          linkedPositions={linkedPositions}
+          likeMetaMap={linkedLikeMetaMap}
+          replyMetaMap={linkedReplyMetaMap}
+        />
+      )}
 
       {activeTab === 'games' && (
-        <>
-          {relatedGames.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              {tChunks('detail.relatedGamesDescription')}
-            </p>
-          )}
-          <RelatedGamesList
-            games={relatedGames}
-            likeMetaMap={relatedGamesLikeMetaMap}
-            replyMetaMap={relatedGamesReplyMetaMap}
-            emptyReplyMeta={EMPTY_REPLY_META}
-            locale={locale}
-            justNowLabel={tSharedGames('detail.justNow')}
-            colorLabels={{
-              white: tPlay('playerColor.white'),
-              black: tPlay('playerColor.black'),
-            }}
-            resolveOpeningName={(slug, fallbackName) =>
-              getOpeningDisplayName(tOpeningNames, slug, fallbackName)
-            }
-            emptyLabel={t('relatedGames.empty')}
-            moveLabel={(n) => t('relatedGames.moveLabel', { n })}
-          />
-        </>
+        <ChunkGamesTab
+          locale={locale}
+          games={relatedGames}
+          likeMetaMap={relatedGamesLikeMetaMap}
+          replyMetaMap={relatedGamesReplyMetaMap}
+        />
       )}
 
       {activeTab === 'comments' && (
-        <>
-          {/*
-           * Logged-out users get the same "Join the conversation" button as
-           * every other comment surface (puzzle / position-memory / repertoire
-           * / topic posts) — JoinConversationToggle's auth guard opens the
-           * "sign in to continue" modal on click — instead of a bespoke
-           * inline sign-in link. The dedicated `commentCount === 0` form is
-           * kept only for the signed-in author so they can post the first
-           * comment without a click.
-           */}
-          {user && commentCount === 0 ? (
-            <NewPostForm locale={locale} slug={slug} />
-          ) : (
-            <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
-              <NewPostForm locale={locale} slug={slug} />
-            </JoinConversationToggle>
-          )}
-
-          {commentTree.length > 0 && (
-            <>
-              <SortSelect
-                basePath={`/chunks/${slug}`}
-                translationKey="topics.chunks.sort"
-                currentSort={sortBy}
-              />
-              <CommentTree
-                comments={commentTree}
-                locale={locale}
-                topicKey={slug}
-                currentUserId={user?.id}
-                enableSpoiler={false}
-                redirectPath={`/${locale}/chunks/${slug}`}
-                toggleLikeAction={toggleChunkLike}
-                replyAttachmentActions={{
-                  pgn: createChunkReplyWithAttachment,
-                  fen: createChunkReplyWithFenAttachment,
-                }}
-                deletePostAction={deletePost}
-                extraContentByPostId={extraContentByPostId}
-                i18n={{
-                  likeNamespace: 'topics.chunks',
-                  replyNamespace: 'topics.chunks.replies',
-                  deleteNamespace: 'topics.chunks.deletePost',
-                }}
-              />
-            </>
-          )}
-        </>
+        <ChunkCommentsTab
+          locale={locale}
+          slug={slug}
+          userId={user?.id}
+          commentCount={commentCount}
+          allComments={allComments}
+          attachments={attachments}
+          sortBy={sortBy}
+        />
       )}
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (

@@ -1,8 +1,3 @@
-import {
-  getFenAfterMoves,
-  getStartingFen,
-  parsePgnWithFen,
-} from '@blindfold-chess/features/chess-core';
 import * as Sentry from '@sentry/nextjs';
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
@@ -16,13 +11,20 @@ import {
   postVideoAttachments,
   topicPosts,
 } from '@/lib/db';
-import { buildPostImagePublicUrl } from '@/lib/post-images/public-url';
 
 import type { AttachedEmbedCardData } from '@/app/[locale]/(public)/topics/_components/AttachedEmbedCard';
 import type { AttachedFenCardData } from '@/app/[locale]/(public)/topics/_components/AttachedFenCard';
 import type { AttachedGameCardData } from '@/app/[locale]/(public)/topics/_components/AttachedGameCard';
 import type { AttachedImageCardData } from '@/app/[locale]/(public)/topics/_components/AttachedImageCard';
 import type { AttachedVideoCardData } from '@/app/[locale]/(public)/topics/_components/AttachedVideoCard';
+
+import {
+  embedRowToCard,
+  fenRowToCard,
+  groupImageRows,
+  pgnRowToCard,
+  videoRowToCard,
+} from './attachment-card-mappers';
 
 /**
  * Per-post attachment payload. SPEC2 UI integration widens the union
@@ -65,11 +67,11 @@ export type PostAttachment =
  * @description
  * Returns a `Map<postId, PostAttachment>` so callers can attach the
  * payload to their per-post objects in O(1) without re-querying. The
- * five attachment families (`post_game_pgn_attachments`,
- * `post_game_embed_attachments`, `post_image_attachments`,
- * `post_fen_attachments`, `post_video_attachments`) are queried in
- * parallel and reduced to a single map entry per post per the
- * single-kind preference order documented on `PostAttachment`.
+ * work is staged: the five attachment families are queried in parallel,
+ * each family's rows go through its pure card mapper
+ * (`./attachment-card-mappers`), and the results are reduced to a single
+ * map entry per post per the single-kind preference order documented on
+ * `PostAttachment`.
  *
  * @design Soft-delete safety
  *
@@ -162,128 +164,32 @@ export async function getAttachmentsForPosts(
 
   const map = new Map<string, PostAttachment>();
 
-  // Order matters: pgn > embed > image > fen > video. The preference
-  // is documented on PostAttachment and enforced here by the order of
-  // the loops + the `if (map.has(...))` guard.
+  // Apply the documented single-kind preference by setting the highest-
+  // priority kind unconditionally, then merging lower-priority kinds only
+  // where the post has no entry yet (conflicts are reported, not thrown).
+  const setIfAbsent = (postId: string, attachment: PostAttachment) => {
+    const existing = map.get(postId);
+    if (existing) {
+      conflictWarn(postId, existing.kind, attachment.kind);
+      return;
+    }
+    map.set(postId, attachment);
+  };
 
   for (const row of pgnRows) {
-    // Compute the final-position FEN server-side. The summary card
-    // only needs a static FEN string for its thumbnail, so doing the
-    // PGN parse + chess.js replay here keeps chess-core off the
-    // client bundle of every page that lists attached games. See
-    // SPEC1 §5-1 ("初期はサムネイルのみ + 詳細展開時のみリプレイ UI を lazy ロード").
-    let finalFen: string;
-    try {
-      const parsed = parsePgnWithFen(row.pgn);
-      const startingFen = parsed.startingFen ?? getStartingFen();
-      finalFen = getFenAfterMoves(startingFen, parsed.moves);
-    } catch {
-      // Defensive: validateAttachedPgn already accepted this PGN at
-      // write time. If it now fails to parse the row is corrupt or
-      // chess.js changed behavior; fall back to the standard starting
-      // position rather than dropping the whole attachment.
-      finalFen = getStartingFen();
-    }
-
-    map.set(row.postId, {
-      kind: 'pgn',
-      data: {
-        id: row.id,
-        source: row.source,
-        sourceUrl: row.sourceUrl,
-        sourceGameId: row.sourceGameId,
-        pgn: row.pgn,
-        moveCount: row.moveCount,
-        headerWhite: row.headerWhite,
-        headerBlack: row.headerBlack,
-        headerResult: row.headerResult,
-        headerEvent: row.headerEvent,
-        headerSite: row.headerSite,
-        headerDate: row.headerDate,
-        anonymized: row.anonymized,
-        attributionPlatform: row.attributionPlatform,
-        attributionPath: row.attributionPath,
-        finalFen,
-      },
-    });
+    map.set(row.postId, { kind: 'pgn', data: pgnRowToCard(row) });
   }
-
   for (const row of embedRows) {
-    if (map.has(row.postId)) {
-      conflictWarn(row.postId, 'pgn', 'embed');
-      continue;
-    }
-    map.set(row.postId, {
-      kind: 'embed',
-      data: {
-        id: row.id,
-        embedProvider: row.embedProvider,
-        embedId: row.embedId,
-        attributionPlatform: row.attributionPlatform,
-        attributionPath: row.attributionPath,
-      },
-    });
+    setIfAbsent(row.postId, { kind: 'embed', data: embedRowToCard(row) });
   }
-
-  // Image cardinality is 1:N — group rows by post into an array entry.
-  // Rows are already ordered by (postId, displayOrder) ascending.
-  const imagesByPost = new Map<string, AttachedImageCardData[]>();
-  for (const row of imageRows) {
-    const item: AttachedImageCardData = {
-      id: row.id,
-      publicUrl: buildPostImagePublicUrl(row.storagePath),
-      width: row.width,
-      height: row.height,
-      altText: row.altText,
-      displayOrder: row.displayOrder,
-    };
-    const bucket = imagesByPost.get(row.postId);
-    if (bucket) {
-      bucket.push(item);
-    } else {
-      imagesByPost.set(row.postId, [item]);
-    }
+  for (const [postId, images] of groupImageRows(imageRows)) {
+    setIfAbsent(postId, { kind: 'image', data: images });
   }
-  for (const [postId, images] of imagesByPost) {
-    if (map.has(postId)) {
-      const existingKind = map.get(postId)!.kind;
-      conflictWarn(postId, existingKind, 'image');
-      continue;
-    }
-    map.set(postId, { kind: 'image', data: images });
-  }
-
   for (const row of fenRows) {
-    if (map.has(row.postId)) {
-      const existingKind = map.get(row.postId)!.kind;
-      conflictWarn(row.postId, existingKind, 'fen');
-      continue;
-    }
-    map.set(row.postId, {
-      kind: 'fen',
-      data: {
-        id: row.id,
-        fen: row.fen,
-        caption: row.caption,
-      },
-    });
+    setIfAbsent(row.postId, { kind: 'fen', data: fenRowToCard(row) });
   }
-
   for (const row of videoRows) {
-    if (map.has(row.postId)) {
-      const existingKind = map.get(row.postId)!.kind;
-      conflictWarn(row.postId, existingKind, 'video');
-      continue;
-    }
-    map.set(row.postId, {
-      kind: 'video',
-      data: {
-        id: row.id,
-        provider: row.provider,
-        providerVideoId: row.providerVideoId,
-        title: row.title,
-      },
-    });
+    setIfAbsent(row.postId, { kind: 'video', data: videoRowToCard(row) });
   }
 
   return map;

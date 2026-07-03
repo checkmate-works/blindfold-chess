@@ -9,16 +9,11 @@ import type { User } from '@supabase/supabase-js';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser, getOptionalUser } from '@/lib/auth';
-import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
-import { getPaginationParams } from '@/lib/pagination';
+import type { getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 import { loadPositionCreateContext } from '@/lib/positions/create-page-context';
-import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
-import {
-  countPositions,
-  getPositionById,
-  getPositionWithProfileById,
-  listPositionsWithProfile,
-} from '@/lib/positions/queries';
+import type { countPositions } from '@/lib/positions/queries';
+import { getPositionById, getPositionWithProfileById } from '@/lib/positions/queries';
 import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
 import type { PositionTagBundle } from '@/lib/positions/tag-loader';
 
@@ -34,6 +29,7 @@ import type { Locale, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 import { toggleLike } from '../_actions/toggleLike';
 import { PositionListCard } from '../_components/PositionListCard';
 import { PositionEditRequestsView } from '../_components/edit-request/PositionEditRequestsView';
+import { loadForksPageData } from './load-forks-page-data';
 
 /**
  * Page factories shared by the puzzle and position-memory route trees.
@@ -161,28 +157,16 @@ export function createPositionForksPage(route: PositionRouteKind) {
     const t = await getTranslations({ locale, namespace });
     const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
-    const totalCount = await countPositions({ type: positionType, forkedFromId: id });
-    const { currentPage, totalPages, limit, offset } = getPaginationParams(
-      page,
-      totalCount,
-      FORKS_PAGE_SIZE
-    );
-    const rows = await listPositionsWithProfile({
-      type: positionType,
-      forkedFromId: id,
-      limit,
-      offset,
-    });
-
-    const currentUser = await getOptionalUser();
-    const positionIds = rows.map((r) => r.position.id);
-    const [likeMetaMap, replyMetaMap] =
-      positionIds.length > 0
-        ? await Promise.all([
-            getPositionLikeMetaMap(positionIds, currentUser?.id),
-            getReplyMetaMap(replyMetaType, positionIds),
-          ])
-        : [new Map(), new Map()];
+    // Data assembly lives in the injected-style loader so this Page stays
+    // thin wiring like the edit / create factories.
+    const { rows, totalCount, currentPage, totalPages, likeMetaMap, replyMetaMap } =
+      await loadForksPageData({
+        parentId: id,
+        positionType,
+        replyMetaType,
+        page,
+        pageSize: FORKS_PAGE_SIZE,
+      });
 
     const justNowLabel = t('justNow');
     const buildHref = (p: number) => {

@@ -4,6 +4,7 @@ import 'server-only';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { chunkFeedbackTopics, chunks, db, feedItems, topicPosts } from '@/lib/db';
+import { diffFields } from '@/lib/db/diff-fields';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -298,19 +299,14 @@ export async function updateChunkEntry(
 
   const finalSlug = slugChanging ? requestedSlug! : chunk.slug;
 
-  // Diff the overwritten fields (old → new) so the activity log keeps the
-  // prior values this in-place edit discarded. Compared against the same
-  // normalized values written to the row (`buildChunkUpdateValues`).
-  const newValues = buildChunkUpdateValues(dataWithAuthor);
-  const changes: Record<string, { from: string | null; to: string | null }> = {};
-  const compareKeys = ['title', 'description', 'representativeFen'] as const;
-  for (const key of compareKeys) {
-    const from = chunk[key] ?? null;
-    const to = newValues[key] ?? null;
-    if (from !== to) {
-      changes[key] = { from, to };
-    }
-  }
+  // Preserve the overwritten values for the activity log (chunks keep no
+  // revision history), compared against the same normalized values written
+  // to the row (`buildChunkUpdateValues`).
+  const changes = diffFields(chunk, buildChunkUpdateValues(dataWithAuthor), [
+    'title',
+    'description',
+    'representativeFen',
+  ]);
   if (slugChanging) {
     changes.slug = { from: chunk.slug, to: requestedSlug! };
   }

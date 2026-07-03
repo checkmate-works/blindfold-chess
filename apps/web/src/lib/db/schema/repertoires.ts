@@ -34,7 +34,7 @@ import {
 
 import { uuidv7 } from '@/lib/uuidv7';
 
-import { chessOpenings } from './rankings';
+import { chessOpenings } from './openings';
 
 /**
  * Repertoires — a user-owned course (型 / Kata). The unit shown on the /repertoires

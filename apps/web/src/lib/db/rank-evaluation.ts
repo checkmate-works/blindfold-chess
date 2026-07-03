@@ -24,6 +24,7 @@
  * @see {@link checkAndGrantRanks} — entry point, called from `saveChallengeResult`
  * @see {@link evaluators} — registry of requirement type evaluators
  */
+import * as Sentry from '@sentry/nextjs';
 import { and, asc, count, eq } from 'drizzle-orm';
 import 'server-only';
 
@@ -190,4 +191,24 @@ export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]>
   }
 
   return granted;
+}
+
+/**
+ * Best-effort rank evaluation for the tail of a UGC-create flow. Rank
+ * evaluation is supplementary and must not fail the create, so failures are
+ * swallowed after being reported (console + Sentry). Call AFTER the create
+ * transaction commits so the freshly inserted row counts toward
+ * count-based requirements (e.g. position_submission_count for 2kyu).
+ */
+export async function evaluateRanksAfterCreate(
+  userId: string,
+  context: string
+): Promise<GrantedRank[]> {
+  try {
+    return await checkAndGrantRanks(userId);
+  } catch (error) {
+    console.error(`Failed to check/grant ranks after ${context}:`, error);
+    Sentry.captureException(error);
+    return [];
+  }
 }

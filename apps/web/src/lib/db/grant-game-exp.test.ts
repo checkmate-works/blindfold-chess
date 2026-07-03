@@ -31,6 +31,35 @@ vi.mock('@blindfold-chess/features/exp', async (importOriginal) => {
     ...actual,
     getLevel: (...args: unknown[]) => mockGetLevel(...args),
     getLevelProgress: (...args: unknown[]) => mockGetLevelProgress(...args),
+    buildExpInfo: (
+      grantResult: { totalExp: number; alreadyGranted: boolean; existingAmount?: number },
+      grantedAmount: number
+    ) => {
+      // Mirrors the real buildExpInfo but routed through the mocked level
+      // functions so the tests keep controlling level-up behaviour.
+      const totalExp = grantResult.totalExp;
+      const level = mockGetLevel(totalExp) as number;
+      const progressPercent = Math.round(
+        (mockGetLevelProgress(totalExp) as { progress: number }).progress * 100
+      );
+      if (grantResult.alreadyGranted) {
+        return {
+          earnedExp: grantResult.existingAmount,
+          totalExp,
+          level,
+          levelUp: false,
+          progressPercent,
+        };
+      }
+      const levelBefore = mockGetLevel(totalExp - grantedAmount) as number;
+      return {
+        earnedExp: grantedAmount,
+        totalExp,
+        level,
+        levelUp: level > levelBefore,
+        progressPercent,
+      };
+    },
   };
 });
 
