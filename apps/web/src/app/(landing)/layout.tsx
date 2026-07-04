@@ -5,7 +5,7 @@ import { cookies, headers } from 'next/headers';
 
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
-import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 
 import { getLocaleFromRequest } from '@/lib/locale';
@@ -100,8 +100,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         )}
         <StorageAvailabilityProvider>
           <GoogleScripts
-            locale={locale}
-            cookieYesId={COOKIEYES_ID}
+            adsensePublisherId={ADSENSE_PUBLISHER_ID}
             gaMeasurementId={GA_MEASUREMENT_ID}
           />
           <Providers locale={locale} messages={messages}>

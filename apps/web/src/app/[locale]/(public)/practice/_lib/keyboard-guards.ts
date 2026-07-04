@@ -26,17 +26,17 @@ export function isEditableElement(target: EventTarget | null): boolean {
  * attribute set by the shared `<Modal>` component in `_components/Modal.tsx`.
  *
  * Why not `[aria-modal="true"]`?
- *   Third-party scripts injected into the page (e.g. the CookieYes consent
+ *   Third-party scripts injected into the page (e.g. the consent-management
  *   banner, which only ships in production and is env-var gated) render
  *   elements with `aria-modal="true"` of their own. Querying that attribute
  *   would over-match and cause `shouldIgnoreKeyEvent` to return `true` for
  *   every keydown while the 3P element is in the DOM — silently breaking
  *   arrow-key / algebraic-notation input on practice pages in production
- *   only (dev is unaffected because CookieYes is not loaded there).
+ *   only (dev is unaffected because the consent banner is not loaded there).
  *
  * `data-app-modal` is an app-owned contract: only the shared `<Modal>`
  * component sets it, so the selector is immune to third-party collisions
- * (CookieYes today, future chat widgets / ad providers / etc.). The existing
+ * (the consent banner today, future chat widgets / ad providers / etc.). The existing
  * `aria-modal` attribute is still set alongside it because it is required
  * for accessibility — this guard is additive, not a replacement.
  *

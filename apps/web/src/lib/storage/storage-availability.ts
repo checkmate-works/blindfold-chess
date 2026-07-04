@@ -2,7 +2,7 @@
  * Browser-storage feature detection.
  *
  * Used to gate the injection of Google AdSense / Google Analytics / CMP
- * (CookieYes) scripts. When the browser blocks storage (Firefox Enhanced
+ * (Privacy & messaging) scripts. When the browser blocks storage (Firefox Enhanced
  * Tracking Protection, adblockers, private mode, sandboxed iframes, etc.)
  * those scripts can neither store consent nor function correctly, and they
  * tend to throw `NS_ERROR_NOT_INITIALIZED` from inside Google's bundled

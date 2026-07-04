@@ -68,7 +68,7 @@ describe('buildCspHeader', () => {
     expect(header).toContain("form-action 'self'");
   });
 
-  it('allow-lists the confirmed third-party hosts (Google Fonts, CookieYes)', () => {
+  it('allow-lists the confirmed third-party hosts (Google Fonts)', () => {
     const header = buildCspHeader('n', { isDevelopment: false });
 
     const fontSrc = header.split('; ').find((d) => d.startsWith('font-src '));
@@ -76,9 +76,6 @@ describe('buildCspHeader', () => {
 
     const styleSrc = header.split('; ').find((d) => d.startsWith('style-src '));
     expect(styleSrc).toContain('fonts.googleapis.com');
-
-    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
-    expect(connectSrc).toContain('*.cookieyes.com');
   });
 
   it('allow-lists AdSense Ad Traffic Quality beacon host in connect-src (ep1)', () => {

@@ -17,9 +17,11 @@ import { GoogleScripts } from './GoogleScripts';
  *     reason this module exists: in a browser where storage is blocked,
  *     injecting Google scripts only floods Sentry with
  *     `NS_ERROR_NOT_INITIALIZED` and other noise.
- *   - When `availability.all === true` -> emit exactly the three Google
- *     scripts (AdSense loader, CookieYes CMP, GA), each only if its
- *     respective ID prop is provided.
+ *   - When `availability.all === true` -> emit exactly the two Google
+ *     scripts (AdSense loader, GA), each only if its respective ID prop is
+ *     provided. There is no separate CMP script: AdSense's own Privacy &
+ *     messaging consent message is delivered through the AdSense loader
+ *     itself once enabled in the AdSense dashboard.
  *
  * We mock:
  *   - `next/script` to a plain tag we can assert against.
@@ -93,12 +95,7 @@ describe('GoogleScripts', () => {
       mockedUseContext.mockReturnValue(null);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          cookieYesId="cookieyes-test"
-          locale="en"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       expect(container).toBeEmptyDOMElement();
@@ -112,12 +109,7 @@ describe('GoogleScripts', () => {
       mockedUseContext.mockReturnValue(fullyBlocked);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          cookieYesId="cookieyes-test"
-          locale="en"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       expect(container).toBeEmptyDOMElement();
@@ -127,17 +119,12 @@ describe('GoogleScripts', () => {
       mockedUseContext.mockReturnValue(partiallyBlocked);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          cookieYesId="cookieyes-test"
-          locale="en"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       // Even one blocked probe must close the gate. The product decision is
       // all-or-nothing: if anything Google might touch is blocked, do not
-      // inject any of the three scripts.
+      // inject any of the scripts.
       expect(container).toBeEmptyDOMElement();
     });
 
@@ -149,17 +136,11 @@ describe('GoogleScripts', () => {
       mockedUseContext.mockReturnValue(fullyBlocked);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          cookieYesId="cookieyes-test"
-          locale="en"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       expect(container.querySelector('ins.adsbygoogle')).toBeNull();
       expect(container.querySelector('[data-src*="adsbygoogle.js"]')).toBeNull();
-      expect(container.querySelector('[data-src*="cookieyes"]')).toBeNull();
       expect(container.querySelector('[data-testid="google-analytics"]')).toBeNull();
     });
   });
@@ -168,9 +149,7 @@ describe('GoogleScripts', () => {
     it('renders the AdSense loader with lazyOnload strategy and the right id', () => {
       mockedUseContext.mockReturnValue(allAvailable);
 
-      const { container } = render(
-        <GoogleScripts adsensePublisherId="ca-pub-1234567890" locale="en" />
-      );
+      const { container } = render(<GoogleScripts adsensePublisherId="ca-pub-1234567890" />);
 
       const adsLoader = container.querySelector('[data-id="adsbygoogle-loader"]');
       expect(adsLoader).not.toBeNull();
@@ -178,18 +157,6 @@ describe('GoogleScripts', () => {
       expect(adsLoader?.getAttribute('data-src')).toContain('adsbygoogle.js');
       expect(adsLoader?.getAttribute('data-src')).toContain('client=ca-pub-1234567890');
       expect(adsLoader?.getAttribute('data-cross-origin')).toBe('anonymous');
-    });
-
-    it('renders the CookieYes CMP (via CookieConsent) with lazyOnload', () => {
-      mockedUseContext.mockReturnValue(allAvailable);
-
-      const { container } = render(<GoogleScripts cookieYesId="cky-test-site" locale="ja" />);
-
-      const cmp = container.querySelector('[data-id="cookieyes"]');
-      expect(cmp).not.toBeNull();
-      expect(cmp?.getAttribute('data-strategy')).toBe('lazyOnload');
-      expect(cmp?.getAttribute('data-src')).toContain('cookieyes.com');
-      expect(cmp?.getAttribute('data-src')).toContain('cky-test-site');
     });
 
     it('renders GoogleAnalytics with the provided measurement id', () => {
@@ -209,45 +176,18 @@ describe('GoogleScripts', () => {
 
       // No props => nothing rendered even when gate is open.
       expect(container.querySelector('[data-id="adsbygoogle-loader"]')).toBeNull();
-      expect(container.querySelector('[data-id="cookieyes"]')).toBeNull();
       expect(container.querySelector('[data-testid="google-analytics"]')).toBeNull();
     });
 
-    it('renders all three scripts together when every ID is provided', () => {
+    it('renders both scripts together when every ID is provided', () => {
       mockedUseContext.mockReturnValue(allAvailable);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          cookieYesId="cky-xyz"
-          locale="en"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       expect(container.querySelector('[data-id="adsbygoogle-loader"]')).not.toBeNull();
-      expect(container.querySelector('[data-id="cookieyes"]')).not.toBeNull();
       expect(container.querySelector('[data-testid="google-analytics"]')).not.toBeNull();
-    });
-  });
-
-  describe('locale forwarding', () => {
-    it('forwards locale to the CookieYes CMP as a data-locale attribute', () => {
-      mockedUseContext.mockReturnValue(allAvailable);
-
-      const { container, rerender } = render(<GoogleScripts cookieYesId="cky-xyz" locale="ja" />);
-      const cmpJa = container.querySelector('[data-id="cookieyes"]') as HTMLElement | null;
-      expect(cmpJa).not.toBeNull();
-      // The mock of `next/script` above only forwards a fixed set of
-      // attributes; `data-locale` is passed as an arbitrary prop on the
-      // component. Assert on the underlying component's wiring by re-rendering
-      // with a different locale and confirming the script is still emitted —
-      // the real behaviour (locale forwarding) is covered by `CookieConsent`
-      // which we can verify via the rendered Script's parent prop surface.
-      expect(cmpJa?.getAttribute('data-id')).toBe('cookieyes');
-
-      rerender(<GoogleScripts cookieYesId="cky-xyz" locale="en" />);
-      expect(container.querySelector('[data-id="cookieyes"]')).not.toBeNull();
     });
   });
 });
