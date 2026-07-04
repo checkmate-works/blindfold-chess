@@ -25,13 +25,20 @@ import { INLINE_BOARD_CARD_CHROME } from '../../_lib/skeleton-layout-classes';
  * The nav-controls row uses `aspectRatio: '8/1'` in the real UI, matching
  * the eighth of the board's height (one rank). We replicate that here so
  * the column height pinned by the skeleton matches the hydrated state.
+ *
+ * Unlike most skeleton shapes in this route (which disable the pulse to
+ * avoid many small bars animating out of phase), the board and nav-row
+ * blocks keep it: they're the single largest element on the page, and
+ * `muted` sits only ~8% off `card` in light mode (barely 1% off in dark
+ * mode), so a static fill read as an empty gap rather than a placeholder.
+ * The pulse's motion — not just its color — is what signals "loading" here.
  */
 export function AlwaysVisibleBoardSkeleton() {
   return (
     <div aria-hidden className={INLINE_BOARD_CARD_CHROME}>
-      <Skeleton disableAnimation className="w-full aspect-square rounded-none" />
+      <Skeleton className="w-full aspect-square rounded-none" />
       <div className="w-full" style={{ aspectRatio: '8/1' }}>
-        <Skeleton disableAnimation className="w-full h-full rounded-none" />
+        <Skeleton className="w-full h-full rounded-none" />
       </div>
     </div>
   );
