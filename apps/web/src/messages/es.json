@@ -2341,7 +2341,24 @@
     "description": "Pega cualquier PGN y reprodúcelo jugada a jugada de memoria — sin necesidad de cuenta ni partida guardada.",
     "setup": {
       "pgnLabel": "PGN",
-      "startButton": "Empezar de memoria"
+      "startButton": "Empezar de memoria",
+      "inputMode": {
+        "manual": "Pegar PGN",
+        "lichess": "URL de Lichess"
+      },
+      "lichessImport": {
+        "placeholder": "https://lichess.org/...",
+        "button": "Importar",
+        "errors": {
+          "not_lichess_url": "Eso no parece una URL de partida de Lichess.",
+          "lichess_unsupported": "Los estudios de Lichess aún no son compatibles — pega la URL de una partida individual.",
+          "invalid_id": "Eso no parece una URL de partida de Lichess válida.",
+          "not_found": "Partida no encontrada. Comprueba la URL e inténtalo de nuevo.",
+          "rate_limited": "Demasiadas solicitudes en este momento — inténtalo de nuevo en un minuto.",
+          "too_large": "El PGN de esta partida es demasiado grande para importarlo.",
+          "fetch_failed": "No se pudo conectar con Lichess. Inténtalo de nuevo."
+        }
+      }
     },
     "settings": "Ajustes",
     "help": {
@@ -2365,7 +2382,7 @@
       "setup": {
         "pgn": {
           "title": "Pega cualquier PGN",
-          "description": "Pega el PGN de cualquier partida terminada — la tuya, la de otra persona, o una línea de apertura — y luego reproduce sus movimientos de memoria."
+          "description": "Pega el PGN de cualquier partida terminada — la tuya, la de otra persona, o una línea de apertura — y luego reproduce sus movimientos de memoria. Cambia a \"URL de Lichess\" para importar uno automáticamente."
         },
         "color": {
           "title": "Elige tu bando",

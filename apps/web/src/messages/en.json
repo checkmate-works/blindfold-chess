@@ -2345,7 +2345,24 @@
     "description": "Paste any PGN and replay it move by move from memory — no account or saved game required.",
     "setup": {
       "pgnLabel": "PGN",
-      "startButton": "Start Recall"
+      "startButton": "Start Recall",
+      "inputMode": {
+        "manual": "Paste PGN",
+        "lichess": "Lichess URL"
+      },
+      "lichessImport": {
+        "placeholder": "https://lichess.org/...",
+        "button": "Import",
+        "errors": {
+          "not_lichess_url": "That doesn't look like a Lichess game URL.",
+          "lichess_unsupported": "Lichess studies aren't supported yet — paste an individual game URL instead.",
+          "invalid_id": "That doesn't look like a valid Lichess game URL.",
+          "not_found": "Game not found. Check the URL and try again.",
+          "rate_limited": "Too many requests right now — please try again in a minute.",
+          "too_large": "This game's PGN is too large to import.",
+          "fetch_failed": "Couldn't reach Lichess. Please try again."
+        }
+      }
     },
     "settings": "Settings",
     "help": {
@@ -2369,7 +2386,7 @@
       "setup": {
         "pgn": {
           "title": "Paste any PGN",
-          "description": "Paste the PGN of any completed game — yours, someone else's, or an opening line — then replay its moves from memory."
+          "description": "Paste the PGN of any completed game — yours, someone else's, or an opening line — then replay its moves from memory. Switch to \"Lichess URL\" to import one automatically instead."
         },
         "color": {
           "title": "Choose your side",

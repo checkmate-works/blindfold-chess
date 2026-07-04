@@ -2345,7 +2345,24 @@
     "description": "棋譜を貼り付けて、記憶を頼りに一手ずつ再現しましょう。アカウントや保存された対局は不要です。",
     "setup": {
       "pgnLabel": "棋譜（PGN）",
-      "startButton": "棋譜再現を始める"
+      "startButton": "棋譜再現を始める",
+      "inputMode": {
+        "manual": "棋譜を貼り付け",
+        "lichess": "Lichess URL"
+      },
+      "lichessImport": {
+        "placeholder": "https://lichess.org/...",
+        "button": "インポート",
+        "errors": {
+          "not_lichess_url": "Lichessの対局URLとして認識できませんでした。",
+          "lichess_unsupported": "Lichessのスタディにはまだ対応していません。個別の対局URLを貼り付けてください。",
+          "invalid_id": "有効なLichess対局URLではないようです。",
+          "not_found": "対局が見つかりませんでした。URLを確認してもう一度お試しください。",
+          "rate_limited": "リクエストが集中しています。しばらくしてからもう一度お試しください。",
+          "too_large": "この対局の棋譜はサイズが大きすぎてインポートできません。",
+          "fetch_failed": "Lichessに接続できませんでした。もう一度お試しください。"
+        }
+      }
     },
     "settings": "設定",
     "help": {
@@ -2369,7 +2386,7 @@
       "setup": {
         "pgn": {
           "title": "棋譜を貼り付ける",
-          "description": "終了した対局の棋譜を貼り付けてください。自分の対局でも、他の人の対局でも、定跡でもかまいません。貼り付けた棋譜を記憶を頼りに再現します。"
+          "description": "終了した対局の棋譜を貼り付けてください。自分の対局でも、他の人の対局でも、定跡でもかまいません。貼り付けた棋譜を記憶を頼りに再現します。「Lichess URL」に切り替えると、棋譜を自動でインポートすることもできます。"
         },
         "color": {
           "title": "手番を選ぶ",
