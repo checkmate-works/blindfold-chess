@@ -125,6 +125,19 @@ export function RecallClient({
   // expected to enter (`isPlayerTurn` encodes the auto-opponent rule). The
   // reviewer enters BOTH sides' moves, so the board is
   // `movablePieces="side-to-move"`.
+  //
+  // `preferences` is seeded from the game's blindfold settings (see
+  // useRecallPreferences), which may hide own/opponent pieces or pawns
+  // specifically. Those piece-visibility fields are overridden to always-on
+  // below — same override puzzle applies — so a blindfold game reviewed here
+  // doesn't inherit its own blindfold, contradicting the "board is always
+  // visible" guarantee above.
+  const recallBoardPreferences = {
+    ...preferences,
+    showOwnPieces: true,
+    showOpponentPieces: true,
+    pawnHideMode: 'none' as const,
+  };
   const canBoardInput =
     !isCompleted &&
     !moveInput.isAnalyzingAll &&
@@ -138,7 +151,7 @@ export function RecallClient({
       lastMove={
         preferences.highlightLastMove && navigation.currentPosition === -1 ? currentLastMove : null
       }
-      preferences={preferences}
+      preferences={recallBoardPreferences}
       movesLength={originalMoves.length}
       currentPosition={navigation.currentPosition}
       formattedPgn={formattedPgn}
