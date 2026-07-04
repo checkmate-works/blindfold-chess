@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 
 import type { Side } from '@blindfold-chess/types';
 
-import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 
 import type { CommentTextSegment } from '../_lib/comment-move-references';
@@ -44,8 +43,6 @@ export function GameCommentBody({ text, locale, moves, startingFen, playerColor 
     return <LinkedText text={text} locale={locale} />;
   }
 
-  const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-
   return (
     <>
       {segments.map((segment, i) =>
@@ -65,14 +62,12 @@ export function GameCommentBody({ text, locale, moves, startingFen, playerColor 
 
       {openRef && (
         <MoveReferencePreviewModal
-          isOpen
           onClose={() => setOpenRef(null)}
           raw={openRef.raw}
           sans={openRef.sans}
           baseFen={openRef.baseFen}
           basePly={openRef.basePly}
-          startsAsBlack={startsAsBlack}
-          startMoveNumber={startMoveNumber}
+          startingFen={startingFen}
           playerColor={playerColor}
         />
       )}

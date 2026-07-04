@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { ChessBoard } from '@/app/_components';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
@@ -8,12 +8,12 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { Modal } from '@/app/[locale]/_components/Modal';
 
 import { formatPlyLabel } from '../_lib/replay-derivations';
 
 type Props = {
-  isOpen: boolean;
   onClose: () => void;
   /** The raw matched text (e.g. "8. Bd3 Bb7 9. O-O") — shown as the modal title verbatim. */
   raw: string;
@@ -23,8 +23,8 @@ type Props = {
   baseFen: string;
   /** 0-based ply `sans[0]` would occupy in the game's own move list. */
   basePly: number;
-  startsAsBlack: boolean;
-  startMoveNumber: number;
+  /** The game's starting FEN, for the step labels' move-number base. */
+  startingFen: string | null;
   playerColor: Side;
 };
 
@@ -32,31 +32,26 @@ type Props = {
  * Previews a comment's PGN-style move reference: the position right before
  * the referenced move(s), steppable forward through each suggested move.
  * Navigation is scoped to just this branch (`sans`), not the whole game —
- * `useMoveNavigation`'s position range is [-2 .. sans.length - 1] here.
+ * `useMoveNavigation`'s position range is [-2 .. sans.length - 1] here, and
+ * its initial position (-1, "latest") is already the branch's final position,
+ * the agreed opening view. Mounted only while open (the caller conditionally
+ * renders it), so navigation state resets between references for free.
  */
 export function MoveReferencePreviewModal({
-  isOpen,
   onClose,
   raw,
   sans,
   baseFen,
   basePly,
-  startsAsBlack,
-  startMoveNumber,
+  startingFen,
   playerColor,
 }: Props) {
   const nav = useMoveNavigation({ moves: sans as AlgebraicNotation[], startingFen: baseFen });
 
-  useEffect(() => {
-    if (isOpen) nav.navigateToPosition(sans.length - 1);
-    // Only re-run when the modal is (re)opened for a (possibly new) reference.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, raw]);
-
-  const stepLabels = useMemo(
-    () => sans.map((san, i) => formatPlyLabel(basePly + i, san, startsAsBlack, startMoveNumber)),
-    [sans, basePly, startsAsBlack, startMoveNumber]
-  );
+  const stepLabels = useMemo(() => {
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
+    return sans.map((san, i) => formatPlyLabel(basePly + i, san, startsAsBlack, startMoveNumber));
+  }, [sans, basePly, startingFen]);
 
   const effectivePosition =
     nav.currentPosition === -1
@@ -74,10 +69,8 @@ export function MoveReferencePreviewModal({
           baseFen
         );
 
-  if (!isOpen) return null;
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={raw} maxWidth="max-w-lg">
+    <Modal isOpen onClose={onClose} title={raw} maxWidth="max-w-lg">
       <div className="space-y-3">
         <ChessBoard fen={fen} flipped={playerColor === 'black'} lastMove={lastMove} rounded />
 
