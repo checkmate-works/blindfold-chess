@@ -1,8 +1,4 @@
-import {
-  getFenAfterMoves,
-  getStartingFen,
-  validateMoveSequence,
-} from '@blindfold-chess/features/chess-core';
+import { replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
@@ -152,6 +148,11 @@ export function parseCommentMoveReferences(
 ): CommentTextSegment[] {
   const segments: CommentTextSegment[] = [];
   const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
+  // One replay of the whole game serves every anchor in the comment
+  // (positions[p] = FEN before the move at ply p). Computed lazily on the
+  // first in-range anchor so comments without references never touch
+  // chess.js.
+  let positions: ReturnType<typeof replayMoves> | undefined;
   let cursor = 0;
   let match: RegExpExecArray | null;
 
@@ -172,12 +173,11 @@ export function parseCommentMoveReferences(
     });
     if (tokens.length === 0) continue;
 
-    let baseFen: string;
-    try {
-      baseFen = getFenAfterMoves(startingFen ?? getStartingFen(), moves.slice(0, basePly));
-    } catch {
-      continue;
-    }
+    positions ??= replayMoves([...moves], startingFen ?? undefined);
+    // Shorter than moves.length + 1 only if the stored game itself failed to
+    // replay — no trustworthy position to branch from, so leave it as text.
+    const baseFen = positions[basePly]?.fen;
+    if (!baseFen) continue;
 
     const { validMoves } = validateMoveSequence(
       baseFen,

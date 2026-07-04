@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { Side } from '@blindfold-chess/types';
 
@@ -32,7 +32,13 @@ export function GameCommentBody({ text, locale, moves, startingFen, playerColor 
     null
   );
 
-  const segments = parseCommentMoveReferences(text, moves, startingFen);
+  // Parsing replays the game with chess.js, so gate it behind a memo — the
+  // thread re-renders on every optimistic update / navigation step, and the
+  // inputs only change when the comment itself is edited.
+  const segments = useMemo(
+    () => parseCommentMoveReferences(text, moves, startingFen),
+    [text, moves, startingFen]
+  );
 
   if (segments.length === 1 && segments[0].type === 'text') {
     return <LinkedText text={text} locale={locale} />;
