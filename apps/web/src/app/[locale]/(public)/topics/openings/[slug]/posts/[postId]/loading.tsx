@@ -1,11 +1,12 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 
 import { BoardSkeleton } from '@/app/_components';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 export default async function OpeningPostDetailLoading() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings' });
 

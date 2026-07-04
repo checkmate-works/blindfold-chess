@@ -1,4 +1,6 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 
@@ -29,13 +31,7 @@ import { PuzzleResultContentSkeleton } from '../../_components/PuzzleResultConte
  * usual CLS — a collapse on hydrate.
  */
 export default async function PuzzleResultLoading() {
-  // `loading.tsx` can't receive `params`, and the bare `getTranslations()`
-  // resolves against the locale set by `setRequestLocale` — which hasn't run
-  // yet while the page is still suspended, so it falls back to the default
-  // locale and renders the static text in English on a `ja` page. Resolve the
-  // request locale explicitly so the skeleton's text is localized from the
-  // first paint.
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const [t, tNav] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.puzzle' }),
     getTranslations({ locale, namespace: 'navigation' }),
