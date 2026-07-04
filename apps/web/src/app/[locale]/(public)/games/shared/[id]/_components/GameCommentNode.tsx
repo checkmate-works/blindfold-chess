@@ -6,10 +6,10 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { formatAbsoluteDateTime } from '@/app/[locale]/(public)/topics/_lib/absolute-time';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import type { FlatReply, GameCommentTreeNode, ReplyGroup } from '../_lib/game-comment-tree';
+import { GameCommentBody } from './GameCommentBody';
 import { useGameCommentContext } from './GameCommentContext';
 import { GameCommentForm } from './GameCommentForm';
 import { GameCommentLikeButton } from './GameCommentLikeButton';
@@ -33,7 +33,8 @@ type Props = {
  * context; the optimistic state lives in the thread, so this reads from props.
  */
 export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplayName }: Props) {
-  const { locale, currentUserId, reply, edit, remove } = useGameCommentContext();
+  const { locale, currentUserId, reply, edit, remove, moves, startingFen, playerColor } =
+    useGameCommentContext();
   const t = useTranslations('sharedGames.comments');
   const tCommon = useTranslations('Common');
 
@@ -143,7 +144,13 @@ export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplay
                       <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
                     )}
                     <p className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed">
-                      <LinkedText text={node.body} locale={locale} />
+                      <GameCommentBody
+                        text={node.body}
+                        locale={locale}
+                        moves={moves}
+                        startingFen={startingFen}
+                        playerColor={playerColor}
+                      />
                     </p>
                   </div>
                 )

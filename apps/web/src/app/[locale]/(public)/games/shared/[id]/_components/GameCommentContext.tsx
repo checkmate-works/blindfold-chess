@@ -2,6 +2,8 @@
 
 import { type ReactNode, createContext, useContext } from 'react';
 
+import type { Side } from '@blindfold-chess/types';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /** Result of a mutating handler — `error` is already localized for display. */
@@ -28,6 +30,13 @@ export type GameCommentContextValue = {
   reply: (parentId: string, body: string) => Promise<MutationResult>;
   edit: (commentId: string, body: string) => Promise<MutationResult>;
   remove: (commentId: string) => Promise<MutationResult>;
+  /**
+   * The game's own data, so a comment body can detect and preview PGN-style
+   * move references (e.g. "8. Bd3") — see `GameCommentBody`.
+   */
+  moves: string[];
+  startingFen: string | null;
+  playerColor: Side;
 };
 
 const GameCommentContext = createContext<GameCommentContextValue | null>(null);

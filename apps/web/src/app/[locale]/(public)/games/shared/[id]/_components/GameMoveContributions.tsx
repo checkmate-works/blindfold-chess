@@ -2,6 +2,7 @@
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Side } from '@blindfold-chess/types';
 import { FaBrain } from 'react-icons/fa';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -37,6 +38,10 @@ type Props = {
   /** Whether the viewer is the game's registered owner (may remove any link). */
   isGameOwner: boolean;
   locale: Locale;
+  /** The game's own data, passed through to `GameCommentBody` via context. */
+  moves: string[];
+  startingFen: string | null;
+  playerColor: Side;
 };
 
 /**
@@ -55,6 +60,9 @@ export function GameMoveContributions({
   currentUser,
   isGameOwner,
   locale,
+  moves,
+  startingFen,
+  playerColor,
 }: Props) {
   const t = useTranslations('sharedGames');
   const currentUserId = currentUser?.id;
@@ -156,6 +164,9 @@ export function GameMoveContributions({
             reply: thread.reply,
             edit: thread.edit,
             remove: thread.remove,
+            moves,
+            startingFen,
+            playerColor,
           }}
         >
           <div className="space-y-6">

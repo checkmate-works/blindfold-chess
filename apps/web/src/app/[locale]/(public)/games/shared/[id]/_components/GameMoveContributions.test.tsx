@@ -77,6 +77,9 @@ function renderPanel() {
       currentUser={{ id: 'u1', username: 'u', displayName: null, avatarUrl: null }}
       isGameOwner={false}
       locale={'en' as Locale}
+      moves={[]}
+      startingFen={null}
+      playerColor="white"
     />
   );
 }

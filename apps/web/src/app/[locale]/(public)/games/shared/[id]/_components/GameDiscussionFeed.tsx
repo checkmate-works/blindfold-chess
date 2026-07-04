@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Side } from '@blindfold-chess/types';
 import { FiChevronRight } from 'react-icons/fi';
 
 import type { GameChunkItem } from '@/lib/db/game-chunks';
@@ -27,6 +28,8 @@ type Props = {
   notationMoves: string[];
   /** Game's starting FEN, for the move-number base. */
   startingFen: string | null;
+  /** Passed through to `GameCommentBody` for the board-orientation of move previews. */
+  playerColor: Side;
   /** Jump the live replay to a move (0-based ply). */
   onJumpToPly: (ply: number) => void;
   locale: Locale;
@@ -45,6 +48,7 @@ export function GameDiscussionFeed({
   gameChunks,
   notationMoves,
   startingFen,
+  playerColor,
   onJumpToPly,
   locale,
 }: Props) {
@@ -81,7 +85,14 @@ export function GameDiscussionFeed({
           {group.comments.length > 0 && (
             <div className="space-y-6">
               {buildGameCommentTree(group.comments).map((root) => (
-                <DiscussionCommentRow key={root.id} node={root} locale={locale} />
+                <DiscussionCommentRow
+                  key={root.id}
+                  node={root}
+                  locale={locale}
+                  moves={notationMoves}
+                  startingFen={startingFen}
+                  playerColor={playerColor}
+                />
               ))}
             </div>
           )}

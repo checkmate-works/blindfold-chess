@@ -406,6 +406,7 @@ export function GameReview({
               gameChunks={gameChunks}
               notationMoves={notationMoves}
               startingFen={startingFen}
+              playerColor={playerColor}
               onJumpToPly={navigateToPosition}
               locale={locale}
             />
@@ -425,6 +426,9 @@ export function GameReview({
             availableChunks={availableChunks}
             currentUser={currentUser}
             isGameOwner={isGameOwner}
+            moves={notationMoves}
+            startingFen={startingFen}
+            playerColor={playerColor}
           />
         )
       )}
