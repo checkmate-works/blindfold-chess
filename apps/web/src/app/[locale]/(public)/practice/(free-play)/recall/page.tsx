@@ -25,9 +25,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RecallPageClient } from './_components/RecallPageClient';
+import { RecallSkeleton } from './_components/RecallSkeleton';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
@@ -35,14 +36,21 @@ export const generateStaticParams = generateLocaleStaticParams;
  * `RecallPageClient` reads `pgn` / `moves` / `color` / ... via
  * `useSearchParams()` and renders the entire visible page (title, board,
  * move input, moves panel, breadcrumb) — there is no chrome outside its
- * `<Suspense>` below. On a statically-generated route, Next.js can't know
- * those search params at build time, so the cached HTML would contain only
- * the (fallback-less) Suspense boundary's fallback — an actually blank page
- * — until client JS hydrates and re-renders from the real URL. Declaring
- * `force-dynamic` makes every request render server-side with the real
- * search params already known, so the bare `<Suspense>` resolves to real
- * content immediately instead of a placeholder. Same pattern as
+ * `<Suspense>` in `RecallContent` below. On a statically-generated route,
+ * Next.js can't know those search params at build time, so the cached HTML
+ * would contain only that inner Suspense boundary's fallback — an actually
+ * blank page — until client JS hydrates and re-renders from the real URL.
+ * Declaring `force-dynamic` makes every request render server-side with the
+ * real search params already known, so the bare inner `<Suspense>` resolves
+ * to real content immediately instead of a placeholder. Same pattern as
  * `games/play/page.tsx` and `games/new/_lib/create-new-game-page.tsx`.
+ *
+ * That still leaves the OUTER `<Suspense>` around `RecallContent` (below) —
+ * covering the RSC round-trip on a client-side navigation into this route,
+ * e.g. from the `/practice` menu — needing a real fallback, which is what
+ * `RecallPageSkeleton` provides. It can't be a segment `loading.tsx` instead:
+ * that special file receives no props, but the fallback needs `searchParams`
+ * to pick the right shape (setup form vs. active review).
  */
 export const dynamic = 'force-dynamic';
 
@@ -61,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function RecallPage({ params }: Props) {
+async function RecallContent({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -81,6 +89,33 @@ export default async function RecallPage({ params }: Props) {
   return (
     <Suspense>
       <RecallPageClient breadcrumb={breadcrumb} />
+    </Suspense>
+  );
+}
+
+/**
+ * Shown while `RecallContent` resolves — e.g. a client-side navigation from
+ * the `/practice` menu (a bare `href`, no query string) or a "Recall"
+ * deep-link (`pgn`/`moves` in the URL). Branches on those same params so the
+ * fallback matches whichever of `RecallPageClient`'s two shapes the real
+ * content will render — a setup form or an active review — instead of
+ * showing one skeleton and popping in the other shape's content.
+ */
+async function RecallPageSkeleton({ params, searchParams }: Props) {
+  const { locale } = await params;
+  const [sp, tRecall] = await Promise.all([
+    searchParams,
+    getTranslations({ locale, namespace: 'recall' }),
+  ]);
+  const hasReview = typeof sp.pgn === 'string' || typeof sp.moves === 'string';
+
+  return <RecallSkeleton title={tRecall('title')} hasReview={hasReview} />;
+}
+
+export default function RecallPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<RecallPageSkeleton params={params} searchParams={searchParams} />}>
+      <RecallContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
