@@ -137,6 +137,7 @@ export function RoutePlannerSession({
                     onClick={handleSubmitAnswer}
                     disabled={moves.length === 0 && problem.start === problem.end}
                     variant="primary"
+                    size="lg"
                     className="w-full"
                   >
                     <FaFlagCheckered className="mr-2" />
