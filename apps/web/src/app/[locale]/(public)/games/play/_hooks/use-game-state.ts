@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMemo } from 'react';
 
 import { computeGameState } from '@blindfold-chess/features/ai-game';
@@ -50,6 +50,20 @@ export function useGameState({
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // `useGamePersistence` batches `loadedGameData` + `isLoadingFromStorage:
+  // false` into one commit, but this hook applies `loadedGameData` in its
+  // own effect below, which necessarily runs one render later. Without
+  // tracking that gap, a caller gating on `isLoadingFromStorage` alone would
+  // render one frame with the new "not loading" flag but the still-stale
+  // `gameStatus`/`moves` defaults — e.g. a finished game briefly flashing as
+  // an empty in-progress board. Comparing against the last-applied
+  // `loadedGameData` reference (not a stateful flag, so it's accurate for
+  // the very render where `loadedGameData` changes) lets callers fold this
+  // into their own "still initializing" check — see `useGameSession`.
+  const appliedLoadedGameDataRef = useRef<LoadedGameData | null>(null);
+  const isApplyingLoadedGameData =
+    loadedGameData !== null && appliedLoadedGameDataRef.current !== loadedGameData;
+
   const [shouldMakeAiMove, setShouldMakeAiMove] = useState(() => {
     if (initialGameId) {
       return false;
@@ -90,6 +104,7 @@ export function useGameState({
       if (loadedGameData.operationLogs && setOperationLogsTo) {
         setOperationLogsTo(loadedGameData.operationLogs);
       }
+      appliedLoadedGameDataRef.current = loadedGameData;
     }
   }, [loadedGameData, setMovesTo, setStartingFen, setOperationLogsTo]);
 
@@ -143,5 +158,6 @@ export function useGameState({
     setLastMove,
     shouldMakeAiMove,
     setShouldMakeAiMove,
+    isApplyingLoadedGameData,
   };
 }
