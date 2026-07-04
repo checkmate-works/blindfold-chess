@@ -1,4 +1,6 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { createClient } from '@/lib/supabase/server';
 
@@ -40,13 +42,8 @@ import { RoutePlannerResultPanelSkeleton } from './RoutePlannerResultPanelSkelet
  * based on the resolved user — see `reserveExp` / `reserveSignUpBanner`.
  */
 export async function RoutePlannerResultLoadingSkeleton() {
-  // `loading.tsx` can't receive `params`, and the bare `getTranslations()`
-  // resolves against the locale set by `setRequestLocale` — which hasn't run
-  // yet while the page is still suspended, so it falls back to the default
-  // locale. Resolve the request locale explicitly so the skeleton's static
-  // text (page title, breadcrumb) is localized from the first paint.
   const supabase = await createClient();
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const [t, tPractice, userResult] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.routePlanner' }),
     getTranslations({ locale, namespace: 'practice' }),

@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
+
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
@@ -44,9 +46,10 @@ export async function PracticeResultLoadingSkeleton({
   grantsExp = false,
   showsSignUpBanner = false,
 }: Props = {}) {
+  const locale = await getLocaleFromPathnameHeader();
   const [tPractice, tNav] = await Promise.all([
-    getTranslations('practice'),
-    getTranslations('navigation'),
+    getTranslations({ locale, namespace: 'practice' }),
+    getTranslations({ locale, namespace: 'navigation' }),
   ]);
 
   // Only resolve the user when a conditional block could be reserved; modules

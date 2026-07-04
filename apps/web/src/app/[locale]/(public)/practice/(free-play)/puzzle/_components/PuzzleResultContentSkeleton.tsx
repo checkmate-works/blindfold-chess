@@ -1,6 +1,7 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 
 import { BoardSkeleton } from '@/app/_components';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { createClient } from '@/lib/supabase/server';
 
@@ -29,7 +30,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
  * matching the real card/banner rather than a thin bar.
  */
 export async function PuzzleResultContentSkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const supabase = await createClient();
   const [t, userResult] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.puzzle' }),
