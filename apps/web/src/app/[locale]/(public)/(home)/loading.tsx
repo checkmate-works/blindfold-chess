@@ -1,3 +1,11 @@
+import { hasLocale } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
+
+import { routing } from '@/i18n/routing';
+
+import { PageTitle } from '@/app/[locale]/_components';
+
 import { FeedSkeleton } from './_components/FeedSkeleton';
 
 /**
@@ -12,14 +20,29 @@ import { FeedSkeleton } from './_components/FeedSkeleton';
  * Suspense fallback.
  *
  * The skeleton should mirror the layout of the real page (PageTitle + VsAiCard
- * + Feed) to minimise CLS when the actual content replaces it.
+ * + Feed) to minimise CLS when the actual content replaces it. PageTitle
+ * renders the real translated string (static per locale) rather than a bar
+ * placeholder, matching the convention in articles/loading.tsx etc.
+ *
+ * Locale is read from the `x-pathname` header (set by `proxy.ts`), NOT from
+ * `getLocale()`. This app has no `next-intl` middleware and never calls
+ * `setRequestLocale()`, so `getLocale()`'s request-scoped cache is empty
+ * inside a `loading.tsx` (which receives no route `params`) and it can
+ * intermittently resolve to `routing.defaultLocale` instead of the URL's
+ * actual `[locale]` segment — reproduced as the skeleton briefly flashing
+ * English on a `ja` page under throttled network. `x-pathname` is a plain
+ * per-request header read, so it isn't subject to that race.
  */
-export default function HomeLoading() {
+export default async function HomeLoading() {
+  const pathname = (await headers()).get('x-pathname') ?? '';
+  const candidate = pathname.split('/')[1];
+  const locale = hasLocale(routing.locales, candidate) ? candidate : routing.defaultLocale;
+  const tHome = await getTranslations({ locale, namespace: 'home' });
+
   return (
     <>
-      {/* PageTitle */}
       <div className="mb-8 flex items-center justify-center gap-2">
-        <div className="h-8 bg-muted rounded w-48 animate-pulse" />
+        <PageTitle>{tHome('pageTitle')}</PageTitle>
       </div>
 
       <div className="space-y-6">
