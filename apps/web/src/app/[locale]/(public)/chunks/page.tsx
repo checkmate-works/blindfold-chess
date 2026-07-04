@@ -1,10 +1,11 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 
 import { Button } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { Link } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
@@ -280,15 +281,16 @@ async function ChunksListContent({ params, searchParams }: Props) {
  * TopicTabs → filter chips → CatalogListCard list) to minimise CLS.
  */
 async function ChunksListSkeleton() {
-  // Resolve the request locale explicitly: at this point the page's
-  // `setRequestLocale` hasn't necessarily run yet, so a bare
-  // `getTranslations()` could fall back to the default locale.
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'chunks' });
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('listTitle')}</PageTitle>
+      <div className="flex items-center justify-center gap-2">
+        <PageTitle>{t('listTitle')}</PageTitle>
+        {/* HelpTourButton placeholder — the real page always renders it here */}
+        <div className="h-5 w-5 rounded-full bg-muted animate-pulse" aria-hidden="true" />
+      </div>
 
       <PagePanel>
         <SectionTitle>{t('listSubtitle')}</SectionTitle>

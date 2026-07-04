@@ -1,4 +1,6 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { createClient } from '@/lib/supabase/server';
 
@@ -34,9 +36,7 @@ type Props = {
  * reserved.
  */
 export async function SinglePositionResultLoadingSkeleton({ grantsExp = false }: Props = {}) {
-  // `loading.tsx` can't receive `params`; resolve the request locale explicitly
-  // so the skeleton's static text is localized from the first paint.
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const supabase = await createClient();
   const [t, tNav, userResult] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.positionMemory' }),

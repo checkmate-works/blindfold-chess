@@ -1,4 +1,6 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PageLayout } from '@/app/[locale]/_components';
 
@@ -19,13 +21,7 @@ import { ResultSkeleton } from './_components/ResultSkeleton';
  * handoff.
  */
 export default async function ResultLoading() {
-  // `loading.tsx` can't receive `params`, and the bare `getTranslations()`
-  // resolves against the locale set by `setRequestLocale` — which hasn't run
-  // yet while the page is still suspended, so it falls back to the default
-  // locale and renders the title in English on a `ja` page. Resolve the
-  // request locale explicitly so the skeleton's static text is localized from
-  // the first paint.
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const tPlay = await getTranslations({ locale, namespace: 'play' });
 
   return (

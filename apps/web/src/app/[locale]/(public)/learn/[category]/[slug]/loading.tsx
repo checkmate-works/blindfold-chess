@@ -1,4 +1,6 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
@@ -17,7 +19,7 @@ import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
  * grid sized for the index page).
  */
 export default async function LearnArticleLoading() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const [t, tNav] = await Promise.all([
     getTranslations({ locale, namespace: 'learn' }),
     getTranslations({ locale, namespace: 'navigation' }),

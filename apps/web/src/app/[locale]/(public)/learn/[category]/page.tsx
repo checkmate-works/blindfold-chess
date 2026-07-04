@@ -1,11 +1,12 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/config';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import {
   Divider,
@@ -115,7 +116,7 @@ async function LearnCategoryContent({ params }: Props) {
  * to the skeleton; section title is static and renders the real string.
  */
 async function LearnCategorySkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const [t, tNav] = await Promise.all([
     getTranslations({ locale, namespace: 'learn' }),
     getTranslations({ locale, namespace: 'navigation' }),

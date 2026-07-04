@@ -1,6 +1,7 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 
 import { BoardSkeleton } from '@/app/_components';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { createClient } from '@/lib/supabase/server';
 
@@ -31,7 +32,7 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
  * message (success runs only) is variable and intentionally not reserved.
  */
 export async function KnightTourResultLoadingSkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const supabase = await createClient();
   const [t, tPractice, userResult] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.knightTour' }),

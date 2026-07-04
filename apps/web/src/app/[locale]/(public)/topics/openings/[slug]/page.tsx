@@ -1,10 +1,11 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
@@ -202,7 +203,7 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
  * render as placeholder bars.
  */
 async function OpeningDetailSkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'topics.openings.detail' });
 
   return (

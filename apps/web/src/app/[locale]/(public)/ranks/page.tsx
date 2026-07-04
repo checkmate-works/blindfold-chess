@@ -25,9 +25,10 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import {
   Divider,
@@ -87,7 +88,7 @@ async function RanksContent({ params }: LocalePageProps) {
  * the `ranks` namespace; rank cards (DB-driven) stay as bar placeholders.
  */
 async function RanksSkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'ranks' });
 
   return (

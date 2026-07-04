@@ -77,7 +77,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('title') }]}
     >
-      {error && <AuthErrorMessage namespace="signUp" />}
+      {error && <AuthErrorMessage namespace="signUp" locale={locale} />}
 
       <div>
         <GoogleOAuthButton namespace="signUp" next={next ?? undefined} />

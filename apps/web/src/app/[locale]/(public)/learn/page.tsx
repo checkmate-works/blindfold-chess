@@ -1,10 +1,11 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import {
   CardLink,
@@ -94,7 +95,7 @@ async function LearnContent({ params }: Props) {
  * Markdown article body respectively).
  */
 async function LearnSkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const [t, tNav] = await Promise.all([
     getTranslations({ locale, namespace: 'learn' }),
     getTranslations({ locale, namespace: 'navigation' }),

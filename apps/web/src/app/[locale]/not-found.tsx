@@ -1,9 +1,8 @@
-import { getLocale } from 'next-intl/server';
-
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { Link } from '@/i18n/routing';
 
 export default async function NotFound() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   return (
     <div className="flex items-center justify-center min-h-[60vh] -my-8">
       <div className="text-center px-4">

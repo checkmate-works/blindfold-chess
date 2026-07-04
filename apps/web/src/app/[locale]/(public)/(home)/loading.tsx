@@ -1,3 +1,9 @@
+import { getTranslations } from 'next-intl/server';
+
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
+
+import { PageTitle } from '@/app/[locale]/_components';
+
 import { FeedSkeleton } from './_components/FeedSkeleton';
 
 /**
@@ -12,14 +18,26 @@ import { FeedSkeleton } from './_components/FeedSkeleton';
  * Suspense fallback.
  *
  * The skeleton should mirror the layout of the real page (PageTitle + VsAiCard
- * + Feed) to minimise CLS when the actual content replaces it.
+ * + Feed) to minimise CLS when the actual content replaces it. PageTitle
+ * renders the real translated string (static per locale) rather than a bar
+ * placeholder, matching the convention in articles/loading.tsx etc. The
+ * HelpTourButton "?" icon next to it (always rendered on Home — its `steps`
+ * list is non-empty) gets a same-size circular placeholder so that row
+ * doesn't shift width once the real button mounts.
+ *
+ * Locale is read via {@link getLocaleFromPathnameHeader}, NOT `getLocale()` —
+ * see that function's TSDoc for why `getLocale()` is unreliable here.
  */
-export default function HomeLoading() {
+export default async function HomeLoading() {
+  const locale = await getLocaleFromPathnameHeader();
+  const tHome = await getTranslations({ locale, namespace: 'home' });
+
   return (
     <>
-      {/* PageTitle */}
       <div className="mb-8 flex items-center justify-center gap-2">
-        <div className="h-8 bg-muted rounded w-48 animate-pulse" />
+        <PageTitle>{tHome('pageTitle')}</PageTitle>
+        {/* HelpTourButton placeholder — see file TSDoc */}
+        <div className="h-5 w-5 rounded-full bg-muted animate-pulse" aria-hidden="true" />
       </div>
 
       <div className="space-y-6">

@@ -1,9 +1,10 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 
 import { IS_LOCAL_DEV } from '@/config';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { shouldShowAdsForUser } from '@/lib/ads/ad';
 import { createClient } from '@/lib/supabase/server';
@@ -89,7 +90,7 @@ async function TopicsContent({ params }: Props) {
  * swaps in.
  */
 async function TopicsSkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (
