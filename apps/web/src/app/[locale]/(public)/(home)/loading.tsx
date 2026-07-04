@@ -22,7 +22,10 @@ import { FeedSkeleton } from './_components/FeedSkeleton';
  * The skeleton should mirror the layout of the real page (PageTitle + VsAiCard
  * + Feed) to minimise CLS when the actual content replaces it. PageTitle
  * renders the real translated string (static per locale) rather than a bar
- * placeholder, matching the convention in articles/loading.tsx etc.
+ * placeholder, matching the convention in articles/loading.tsx etc. The
+ * HelpTourButton "?" icon next to it (always rendered on Home — its `steps`
+ * list is non-empty) gets a same-size circular placeholder so that row
+ * doesn't shift width once the real button mounts.
  *
  * Locale is read from the `x-pathname` header (set by `proxy.ts`), NOT from
  * `getLocale()`. This app has no `next-intl` middleware and never calls
@@ -43,6 +46,8 @@ export default async function HomeLoading() {
     <>
       <div className="mb-8 flex items-center justify-center gap-2">
         <PageTitle>{tHome('pageTitle')}</PageTitle>
+        {/* HelpTourButton placeholder — see file TSDoc */}
+        <div className="h-5 w-5 rounded-full bg-muted animate-pulse" aria-hidden="true" />
       </div>
 
       <div className="space-y-6">
