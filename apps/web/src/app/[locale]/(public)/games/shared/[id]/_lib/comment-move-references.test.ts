@@ -42,6 +42,25 @@ describe('parseCommentMoveReferences', () => {
   // 1. e4 e5 2. Nf3 Nc6 3. Bb5 (Ruy Lopez)
   const RUY_LOPEZ = ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5'];
 
+  // 1. d4 e6 2. Nd2 Be7 3. e4 c5 4. c3 a5 5. Ngf3 cxd4 6. cxd4 Na6 7. a3 b6 8. Bb5
+  const FEATURE_REQUEST_GAME = [
+    'd4',
+    'e6',
+    'Nd2',
+    'Be7',
+    'e4',
+    'c5',
+    'c3',
+    'a5',
+    'Ngf3',
+    'cxd4',
+    'cxd4',
+    'Na6',
+    'a3',
+    'b6',
+    'Bb5',
+  ];
+
   test('links a single white-move reference matching the actual game move', () => {
     const segments = parseCommentMoveReferences('3. Bb5 is the main line', RUY_LOPEZ, null);
     expect(segments).toEqual([
@@ -137,6 +156,53 @@ describe('parseCommentMoveReferences', () => {
     ]);
   });
 
+  test('never carves a reference out of the middle of a URL', () => {
+    // "3.Bc4" is a valid in-range reference on its own — only the word-start
+    // guard keeps it inside the URL here.
+    const text = 'see https://lichess.org/study/abc/3.Bc4 for the idea';
+    expect(parseCommentMoveReferences(text, RUY_LOPEZ, null)).toEqual([
+      { type: 'text', value: text },
+    ]);
+  });
+
+  test('never carves a reference out of the middle of a word', () => {
+    // "3. Bb5" matches the actual game — only the word-start guard keeps the
+    // glued "x3." from anchoring a run.
+    const text = 'chapter x3. Bb5 covers this';
+    expect(parseCommentMoveReferences(text, RUY_LOPEZ, null)).toEqual([
+      { type: 'text', value: text },
+    ]);
+  });
+
+  test('links a reference that opens right after a bracket', () => {
+    const segments = parseCommentMoveReferences('(3. Bc4 is also playable', RUY_LOPEZ, null);
+    expect(segments).toEqual([
+      { type: 'text', value: '(' },
+      {
+        type: 'moveRef',
+        raw: '3. Bc4',
+        basePly: 4,
+        sans: ['Bc4'],
+        baseFen: fenBefore(RUY_LOPEZ, 4),
+      },
+      { type: 'text', value: ' is also playable' },
+    ]);
+  });
+
+  test('reads a zero-padded move number as the same white-move reference', () => {
+    const segments = parseCommentMoveReferences('08. Bd3 is better', FEATURE_REQUEST_GAME, null);
+    expect(segments).toEqual([
+      {
+        type: 'moveRef',
+        raw: '08. Bd3',
+        basePly: 14,
+        sans: ['Bd3'],
+        baseFen: fenBefore(FEATURE_REQUEST_GAME, 14),
+      },
+      { type: 'text', value: ' is better' },
+    ]);
+  });
+
   test('handles a game with a custom starting FEN (black to move first)', () => {
     // Custom start right after 1. e4 (black to move, fullmove 1); the
     // recorded moves begin with black's reply.
@@ -166,32 +232,14 @@ describe('parseCommentMoveReferences', () => {
   });
 
   test('the example from the feature request: a suggested alternative to the actual 8th move', () => {
-    // 1. d4 e6 2. Nd2 Be7 3. e4 c5 4. c3 a5 5. Ngf3 cxd4 6. cxd4 Na6 7. a3 b6 8. Bb5
-    const moves = [
-      'd4',
-      'e6',
-      'Nd2',
-      'Be7',
-      'e4',
-      'c5',
-      'c3',
-      'a5',
-      'Ngf3',
-      'cxd4',
-      'cxd4',
-      'Na6',
-      'a3',
-      'b6',
-      'Bb5',
-    ];
-    const segments = parseCommentMoveReferences('8. Bd3 is better', moves, null);
+    const segments = parseCommentMoveReferences('8. Bd3 is better', FEATURE_REQUEST_GAME, null);
     expect(segments).toEqual([
       {
         type: 'moveRef',
         raw: '8. Bd3',
         basePly: 14,
         sans: ['Bd3'],
-        baseFen: fenBefore(moves, 14),
+        baseFen: fenBefore(FEATURE_REQUEST_GAME, 14),
       },
       { type: 'text', value: ' is better' },
     ]);

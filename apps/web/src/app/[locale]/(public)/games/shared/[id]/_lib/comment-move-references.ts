@@ -18,7 +18,17 @@ export type CommentTextSegment =
 const SAN_RE = /^(?:O-O-O|O-O|(?:[KQRBN])?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[+#]?$/;
 const BARE_ANCHOR_RE = /^\d+\.{1,3}$/;
 const LEADING_ANCHOR_RE = /^\d+\.{1,3}/;
-const ANCHOR_RE = /\d+\.{1,3}/g;
+/**
+ * A run-opening "N." / "N..." label. The lookbehind confines matches to word
+ * starts (start of text, after whitespace, or after an opening bracket/quote
+ * or CJK delimiter) so a digits-dot sequence inside a longer token — most
+ * importantly inside a pasted URL like ".../study/abc/8.Bd3" — is never
+ * carved out of it, which would corrupt the URL linkification of the
+ * surrounding text. Digits and dots are captured separately: deriving the dot
+ * count from the matched length minus `String(parseInt(...)).length` breaks
+ * on zero-padded numbers ("08." would count 2 dots and read as a black move).
+ */
+const ANCHOR_RE = /(?<=^|[\s([{'"「『（、。])(\d+)(\.{1,3})/g;
 const WORD_RE = /\S+/y;
 
 /**
@@ -113,9 +123,8 @@ export function parseCommentMoveReferences(
   while ((match = ANCHOR_RE.exec(text))) {
     if (match.index < cursor) continue;
 
-    const moveNumber = parseInt(match[0], 10);
-    const dots = match[0].length - String(moveNumber).length;
-    const isWhiteMove = dots === 1;
+    const moveNumber = parseInt(match[1], 10);
+    const isWhiteMove = match[2].length === 1;
 
     const tokens = collectCandidates(text, match.index + match[0].length);
     if (tokens.length === 0) continue;
