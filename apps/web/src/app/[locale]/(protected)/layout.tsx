@@ -27,6 +27,24 @@ type Props = {
  * middleware-set `x-pathname` and choose a route-appropriate fallback. The same
  * fallback also covers the nested `(confirmed)` layout auth + page data fetch,
  * so it stays as one continuous skeleton until the real content is ready.
+ *
+ * @knownIssue A `redirect()` thrown from an async Server Component *beneath*
+ * this `<Suspense>` (e.g. the nested `(confirmed)`/`(provisional)` layouts'
+ * profile-based redirect) intermittently throws a client hydration error —
+ * "Rendered more hooks than during the previous render" (React error #310),
+ * sometimes crashing the page — on a hard navigation that needs that redirect
+ * (reliably reproduced right after first-time sign-up, when `(confirmed)`
+ * redirects a profile-less user to `/mypage/setup-username`). Confirmed via
+ * `next build && next start` that this is a real streaming-SSR/hydration race
+ * between the redirect and this Suspense boundary, NOT a dev-mode/HMR
+ * artifact. See `apps/web/CLAUDE.md` ("Known Issues") for the full
+ * investigation. Moving the redirect decision up into `ProtectedGate` (this
+ * function, still inside the same Suspense) was tried and does NOT fix it —
+ * the race is about streaming under Suspense, not about which async component
+ * throws the redirect or how deeply it's nested. The only reproduction that
+ * eliminated it was removing this `<Suspense>` entirely, which reintroduces
+ * the blank-page-on-slow-auth problem this boundary exists to prevent (see
+ * above) — so a real fix needs a different approach, not a quick swap.
  */
 export default async function ProtectedLayout({ children, params }: Props) {
   const pathname = (await headers()).get('x-pathname') ?? '';

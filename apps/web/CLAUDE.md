@@ -620,6 +620,59 @@ attacker loops the model" hole; per-user / per-IP throttling against
 _authenticated_ abusers is intentionally NOT layered yet — add it
 only after observing such abuse.
 
+## Known Issues
+
+### `redirect()` under the `(protected)` Suspense boundary can crash hydration
+
+**Symptom**: intermittently, right after a user finishes sign-up (or on any
+hard navigation into `/mypage` where a server-side `redirect()` fires —
+`(confirmed)` → `/mypage/setup-username` for a profile-less user, or
+`(provisional)` → `/mypage` once a profile exists), the client throws
+`Rendered more hooks than during the previous render` (React error #310).
+Sometimes this only logs to the console; sometimes it fully crashes the page
+to Next's "This page couldn't load" error boundary, requiring a manual
+reload.
+
+**Root cause**: `apps/web/src/app/[locale]/(protected)/layout.tsx` wraps its
+auth gate (`ProtectedGate`) in a `<Suspense>` so a hard navigation shows a
+skeleton instead of a blank page while `supabase.auth.getUser()` is in
+flight. A `redirect()` thrown from an async Server Component reached through
+that Suspense-wrapped subtree — here, the profile check in the nested
+`(confirmed)`/`(provisional)` layouts — races the client's hydration of the
+streamed Suspense fallback. This is a genuine Next.js App Router streaming
+SSR bug, not a bug in this app's routing logic:
+
+- Reproduced 2026-07-04 with `next build && next start` (not just `next
+dev` — rules out a dev-mode/Turbopack HMR artifact).
+- Does NOT reproduce for a user who already has a profile (no redirect
+  needed) or for a direct hit on the already-correct destination (no
+  redirect needed) — only when the gate actually redirects mid-stream.
+- Does NOT reproduce for the `(protected)/layout.tsx` gate's OWN redirects
+  (`!user` → `/sign-in`, banned → `/banned`) even though those are the same
+  shape of conditional `redirect()` in the same Suspense-wrapped function —
+  ruling out "any redirect in this Suspense" as the trigger on its own.
+- Moving the profile-based redirect decision up into `ProtectedGate` itself
+  (still inside the same `<Suspense>`, just one level shallower than the
+  nested layouts) was tried and did **not** fix it — the race is tied to
+  streaming under this Suspense boundary, not to which component throws the
+  redirect or how deeply nested it is.
+- Removing the `<Suspense>` boundary entirely does eliminate it, confirming
+  the cause — but that boundary exists specifically to prevent a blank page
+  during the ~1–2s auth round-trip on a hard navigation (see the TSDoc on
+  `ProtectedLayout`), so removing it trades one bug for the other.
+
+**Do not** re-attempt a fix by relocating the `redirect()` call within the
+existing Suspense tree — that's the first thing to try and it has already
+been ruled out. A real fix needs a different approach, e.g.: resolving the
+post-sign-in/sign-up destination server-side (in the `signIn`/registration
+Server Action) so the client's `window.location.href` hard-navigates
+directly to the correct URL and no redirect-during-streaming ever happens at
+`/mypage`; or restructuring the gate to avoid a `redirect()` for this
+specific transition (e.g. rendering the setup-username content in place
+instead of changing the URL). Both are real design changes, not a quick
+patch — worth a deliberate decision (and testing with `next build && next
+start`, not just `next dev`) rather than a speculative attempt.
+
 ## Important Notes
 
 - Prioritize performance and SEO in all decisions
