@@ -68,7 +68,6 @@ export function RecallSetupForm() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">{t('setup.description')}</p>
       <div data-tour-id="recall-setup-pgn">
         <SectionTitle>{t('setup.pgnLabel')}</SectionTitle>
         <div className="mt-3">

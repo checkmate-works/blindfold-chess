@@ -2340,7 +2340,6 @@
     "title": "De memoria",
     "description": "Pega cualquier PGN y reprodúcelo jugada a jugada de memoria — sin necesidad de cuenta ni partida guardada.",
     "setup": {
-      "description": "Pega un PGN a continuación — tu propia partida, la de otra persona, o una línea de apertura — y luego reprodúcela de memoria.",
       "pgnLabel": "PGN",
       "startButton": "Empezar de memoria"
     },

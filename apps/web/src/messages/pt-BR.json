@@ -2340,7 +2340,6 @@
     "title": "De memória",
     "description": "Cole qualquer PGN e reproduza-o lance a lance de memória — sem precisar de conta ou partida salva.",
     "setup": {
-      "description": "Cole um PGN abaixo — sua própria partida, a de outra pessoa, ou uma linha de abertura — e reproduza-o de memória.",
       "pgnLabel": "PGN",
       "startButton": "Começar de memória"
     },
