@@ -215,7 +215,7 @@ export function BoardSymmetryTutorial({ locale }: Props) {
 
         {step === 'start' ? (
           <div>
-            <Button onClick={handleStartChallenge} variant="primary" className="w-full">
+            <Button onClick={handleStartChallenge} variant="primary" size="lg" className="w-full">
               <FaPlay className="mr-2 h-4 w-4" />
               {t('startChallenge')}
             </Button>
@@ -226,7 +226,7 @@ export function BoardSymmetryTutorial({ locale }: Props) {
               <Divider className="flex-1" />
             </div>
 
-            <Button onClick={handleSwitchToTraining} variant="outline" className="w-full">
+            <Button onClick={handleSwitchToTraining} variant="outline" size="lg" className="w-full">
               <FaInfinity className="mr-2 h-4 w-4" />
               {tp('startTraining')}
             </Button>
@@ -234,12 +234,12 @@ export function BoardSymmetryTutorial({ locale }: Props) {
         ) : (
           <div className="flex gap-4">
             {step !== 'intro' && (
-              <Button variant="outline" onClick={handlePrevious} className="flex-1">
+              <Button variant="outline" size="lg" onClick={handlePrevious} className="flex-1">
                 <FaArrowLeft className="mr-2 h-4 w-4" />
                 {t('previous')}
               </Button>
             )}
-            <Button onClick={handleNext} variant="primary" className="flex-1">
+            <Button onClick={handleNext} variant="primary" size="lg" className="flex-1">
               {t('next')}
               <FaArrowRight className="ml-2 h-4 w-4" />
             </Button>
