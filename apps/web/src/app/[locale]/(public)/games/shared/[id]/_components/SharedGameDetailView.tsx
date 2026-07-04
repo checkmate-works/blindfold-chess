@@ -95,7 +95,9 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           playSettingsLog={game.playSettingsLog ?? null}
           locale={locale}
           orientation={orientation}
-          statsHeader={<GameOutcomeLabel result={game.result} playerColor={game.playerColor} />}
+          statsHeader={
+            <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
+          }
           social={{
             mode: 'live',
             // Real auth state — distinct from `currentUser` (the comment
