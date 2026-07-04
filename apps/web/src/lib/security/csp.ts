@@ -173,7 +173,14 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     // beacons here via fetch/XHR (the iframe counterpart `ep2.adtrafficquality.google`
     // lives in `frame-src` below). Without it production logs a flood of
     // connect-src violations.
-    "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
+    //
+    // `*.google-analytics.com` (not the literal `www.google-analytics.com`):
+    // gtag.js sends measurement hits to region-prefixed hosts such as
+    // `region1.google-analytics.com` / `region2.google-analytics.com` for
+    // Google-side load balancing / data residency. This is an internal
+    // Google implementation detail outside our control, so the wildcard is
+    // required to avoid a flood of connect-src violation reports.
+    "connect-src 'self' *.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
       ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google',
