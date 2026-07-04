@@ -1,11 +1,12 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -218,7 +219,7 @@ async function SquarePostsContent({ params, searchParams }: Props) {
  * bars.
  */
 async function SquarePostsSkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (

@@ -1,9 +1,10 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
@@ -198,7 +199,7 @@ async function OpeningsContent({ params, searchParams }: Props) {
  * content swaps in.
  */
 async function OpeningsSkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (

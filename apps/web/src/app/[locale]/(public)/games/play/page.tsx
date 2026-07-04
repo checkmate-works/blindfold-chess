@@ -18,8 +18,9 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
@@ -159,7 +160,7 @@ async function PlayContent({ params, searchParams }: Props) {
  * layout is ~64px, not ~576px).
  */
 async function PlaySkeleton() {
-  const locale = await getLocale();
+  const locale = await getLocaleFromPathnameHeader();
   const [moveInputHint, boardVisibility, tPlay] = await Promise.all([
     readMoveInputPreferenceFromCookies(),
     readBoardVisibilityFromCookies(),
