@@ -189,6 +189,64 @@ describe('parseCommentMoveReferences', () => {
     ]);
   });
 
+  test('links a reference annotated with an evaluation glyph', () => {
+    const segments = parseCommentMoveReferences('8. Bd3! is better', FEATURE_REQUEST_GAME, null);
+    expect(segments).toEqual([
+      {
+        type: 'moveRef',
+        raw: '8. Bd3',
+        basePly: 14,
+        sans: ['Bd3'],
+        baseFen: fenBefore(FEATURE_REQUEST_GAME, 14),
+      },
+      { type: 'text', value: '! is better' },
+    ]);
+  });
+
+  test('links a reference that ends a sentence', () => {
+    const segments = parseCommentMoveReferences('I prefer 3. Bc4.', RUY_LOPEZ, null);
+    expect(segments).toEqual([
+      { type: 'text', value: 'I prefer ' },
+      {
+        type: 'moveRef',
+        raw: '3. Bc4',
+        basePly: 4,
+        sans: ['Bc4'],
+        baseFen: fenBefore(RUY_LOPEZ, 4),
+      },
+      { type: 'text', value: '.' },
+    ]);
+  });
+
+  test('links a parenthesized reference', () => {
+    const segments = parseCommentMoveReferences('(3. Bc4) is playable too', RUY_LOPEZ, null);
+    expect(segments).toEqual([
+      { type: 'text', value: '(' },
+      {
+        type: 'moveRef',
+        raw: '3. Bc4',
+        basePly: 4,
+        sans: ['Bc4'],
+        baseFen: fenBefore(RUY_LOPEZ, 4),
+      },
+      { type: 'text', value: ') is playable too' },
+    ]);
+  });
+
+  test('keeps trailing punctuation out of a fused run and its linked range', () => {
+    const segments = parseCommentMoveReferences('3. Bb5 a6. A solid setup', RUY_LOPEZ, null);
+    expect(segments).toEqual([
+      {
+        type: 'moveRef',
+        raw: '3. Bb5 a6',
+        basePly: 4,
+        sans: ['Bb5', 'a6'],
+        baseFen: fenBefore(RUY_LOPEZ, 4),
+      },
+      { type: 'text', value: '. A solid setup' },
+    ]);
+  });
+
   test('reads a zero-padded move number as the same white-move reference', () => {
     const segments = parseCommentMoveReferences('08. Bd3 is better', FEATURE_REQUEST_GAME, null);
     expect(segments).toEqual([

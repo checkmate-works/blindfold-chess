@@ -30,6 +30,14 @@ const LEADING_ANCHOR_RE = /^\d+\.{1,3}/;
  */
 const ANCHOR_RE = /(?<=^|[\s([{'"「『（、。])(\d+)(\.{1,3})/g;
 const WORD_RE = /\S+/y;
+/**
+ * Sentence punctuation and annotation glyphs tolerated after a SAN token
+ * ("8. Bd3!", "…was 3. Bc4.", "(3. Bc4)"). Stripped before the SAN shape
+ * test and excluded from the linked range, so the glyphs stay in the
+ * following plain-text segment. `+`/`#` are deliberately absent — they are
+ * part of SAN itself (check / mate suffixes).
+ */
+const TRAILING_GLYPHS_RE = /[),.;:!?\]}'"、。）」』]+$/;
 
 /**
  * Inverse of `computeMoveNumber` (practice/recall's ply -> {moveNumber,
@@ -84,7 +92,7 @@ function collectCandidates(text: string, startOffset: number): CandidateToken[] 
     const glued = LEADING_ANCHOR_RE.exec(word);
     const sanOffsetWithinWord = glued ? glued[0].length : 0;
     const sanCandidate = glued ? word.slice(glued[0].length) : word;
-    const stripped = sanCandidate.replace(/,+$/, '');
+    const stripped = sanCandidate.replace(TRAILING_GLYPHS_RE, '');
 
     if (!stripped || !SAN_RE.test(stripped)) break;
 
