@@ -61,7 +61,7 @@ export function RoutePlannerResultView({
 
       {!hideNextButton && (
         <div className="flex gap-4">
-          <Button onClick={onNextProblem} variant="primary" className="flex-1">
+          <Button onClick={onNextProblem} variant="primary" size="lg" className="flex-1">
             <FaRedo className="mr-2" />
             {isTraining ? t('nextProblem') : isLastProblem ? t('finish') : t('nextProblem')}
           </Button>

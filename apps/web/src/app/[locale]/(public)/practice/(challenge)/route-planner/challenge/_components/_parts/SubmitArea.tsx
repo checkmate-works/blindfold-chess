@@ -53,6 +53,7 @@ export function SubmitArea({
             onClick={onSubmit}
             disabled={isDisabled || (movesCount === 0 && start === end)}
             variant="primary"
+            size="lg"
             className="w-full"
           >
             <FaFlagCheckered className="mr-2" />

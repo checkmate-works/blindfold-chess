@@ -44,7 +44,7 @@ export function DiagonalQuizResultLayout({
         <div className="mt-6">{children}</div>
 
         <div className="mt-6">
-          <Button onClick={onNext} variant="primary" className="w-full">
+          <Button onClick={onNext} variant="primary" size="lg" className="w-full">
             <FaRedo className="mr-2" />
             {t('nextProblem')}
           </Button>
