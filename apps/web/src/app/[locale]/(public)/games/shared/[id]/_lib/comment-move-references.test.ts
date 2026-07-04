@@ -1,42 +1,12 @@
 import { getFenAfterMoves, getStartingFen } from '@blindfold-chess/features/chess-core';
 import { describe, expect, test } from 'vitest';
 
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
-
-import { parseCommentMoveReferences, plyFromMoveNumber } from './comment-move-references';
+import { parseCommentMoveReferences } from './comment-move-references';
 
 /** Expected `baseFen` for a segment: the real game replayed up to `basePly`. */
 function fenBefore(moves: string[], basePly: number, startingFen: string | null = null): string {
   return getFenAfterMoves(startingFen ?? getStartingFen(), moves.slice(0, basePly));
 }
-
-describe('plyFromMoveNumber', () => {
-  test('round-trips with computeMoveNumber for every ply, starting as white', () => {
-    for (let ply = 0; ply < 20; ply++) {
-      const { moveNumber, isWhiteMove } = computeMoveNumber(ply, false, 1);
-      expect(plyFromMoveNumber(moveNumber, isWhiteMove, false, 1)).toBe(ply);
-    }
-  });
-
-  test('round-trips with computeMoveNumber for every ply, starting as black', () => {
-    for (let ply = 0; ply < 20; ply++) {
-      const { moveNumber, isWhiteMove } = computeMoveNumber(ply, true, 1);
-      expect(plyFromMoveNumber(moveNumber, isWhiteMove, true, 1)).toBe(ply);
-    }
-  });
-
-  test('round-trips with a non-default startMoveNumber', () => {
-    for (let ply = 0; ply < 20; ply++) {
-      const { moveNumber, isWhiteMove } = computeMoveNumber(ply, false, 7);
-      expect(plyFromMoveNumber(moveNumber, isWhiteMove, false, 7)).toBe(ply);
-    }
-  });
-
-  test('returns -1 for a combination that cannot occur', () => {
-    // Starting as black, there is no white move numbered `startMoveNumber`.
-    expect(plyFromMoveNumber(1, true, true, 1)).toBe(-1);
-  });
-});
 
 describe('parseCommentMoveReferences', () => {
   // 1. e4 e5 2. Nf3 Nc6 3. Bb5 (Ruy Lopez)

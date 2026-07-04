@@ -1,7 +1,10 @@
 import { replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
+import {
+  computeMoveNumber,
+  plyFromMoveNumber,
+} from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * A slice of comment text: either plain text or a run of PGN-style move
@@ -35,26 +38,6 @@ const WORD_RE = /\S+/y;
  * part of SAN itself (check / mate suffixes).
  */
 const TRAILING_GLYPHS_RE = /[),.;:!?\]}'"、。）」』]+$/;
-
-/**
- * Inverse of `computeMoveNumber` (practice/recall's ply -> {moveNumber,
- * isWhiteMove} formula): given a parsed "N." / "N..." reference, find the
- * 0-based ply it names. Returns -1 when the combination cannot occur (e.g. a
- * white-move reference numbered before the game's first move).
- */
-export function plyFromMoveNumber(
-  moveNumber: number,
-  isWhiteMove: boolean,
-  startsAsBlack: boolean,
-  startMoveNumber: number
-): number {
-  const k = moveNumber - startMoveNumber;
-  if (k < 0) return -1;
-
-  const ply = startsAsBlack ? (isWhiteMove ? 2 * k - 1 : 2 * k) : isWhiteMove ? 2 * k : 2 * k + 1;
-
-  return ply < 0 ? -1 : ply;
-}
 
 type CandidateToken = { san: string; endOffset: number };
 
