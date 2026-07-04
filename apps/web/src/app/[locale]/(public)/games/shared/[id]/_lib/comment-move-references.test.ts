@@ -189,6 +189,66 @@ describe('parseCommentMoveReferences', () => {
     ]);
   });
 
+  test('stops a fused run at an interleaved label that names a different move', () => {
+    // "15." cannot be move 9 (the ply the run has reached), so the run must
+    // not absorb O-O; move 15 is beyond the recorded game, so it stays text.
+    const segments = parseCommentMoveReferences(
+      '8. Bd3 Bb7 15. O-O was the plan',
+      FEATURE_REQUEST_GAME,
+      null
+    );
+    expect(segments).toEqual([
+      {
+        type: 'moveRef',
+        raw: '8. Bd3 Bb7',
+        basePly: 14,
+        sans: ['Bd3', 'Bb7'],
+        baseFen: fenBefore(FEATURE_REQUEST_GAME, 14),
+      },
+      { type: 'text', value: ' 15. O-O was the plan' },
+    ]);
+  });
+
+  test('splits two adjacent references instead of fusing across a disagreeing label', () => {
+    const segments = parseCommentMoveReferences('3. Bb5 a6 2. Nf3 earlier', RUY_LOPEZ, null);
+    expect(segments).toEqual([
+      {
+        type: 'moveRef',
+        raw: '3. Bb5 a6',
+        basePly: 4,
+        sans: ['Bb5', 'a6'],
+        baseFen: fenBefore(RUY_LOPEZ, 4),
+      },
+      { type: 'text', value: ' ' },
+      {
+        type: 'moveRef',
+        raw: '2. Nf3',
+        basePly: 2,
+        sans: ['Nf3'],
+        baseFen: fenBefore(RUY_LOPEZ, 2),
+      },
+      { type: 'text', value: ' earlier' },
+    ]);
+  });
+
+  test('keeps fusing across an interleaved label that agrees with the run', () => {
+    const segments = parseCommentMoveReferences(
+      '8. Bd3 8...Bb7 stays solid',
+      FEATURE_REQUEST_GAME,
+      null
+    );
+    expect(segments).toEqual([
+      {
+        type: 'moveRef',
+        raw: '8. Bd3 8...Bb7',
+        basePly: 14,
+        sans: ['Bd3', 'Bb7'],
+        baseFen: fenBefore(FEATURE_REQUEST_GAME, 14),
+      },
+      { type: 'text', value: ' stays solid' },
+    ]);
+  });
+
   test('links a reference annotated with an evaluation glyph', () => {
     const segments = parseCommentMoveReferences('8. Bd3! is better', FEATURE_REQUEST_GAME, null);
     expect(segments).toEqual([

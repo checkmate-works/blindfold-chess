@@ -5,6 +5,7 @@ import {
 } from '@blindfold-chess/features/chess-core';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * A slice of comment text: either plain text or a run of PGN-style move
@@ -16,8 +17,8 @@ export type CommentTextSegment =
   | { type: 'moveRef'; raw: string; basePly: number; sans: string[]; baseFen: string };
 
 const SAN_RE = /^(?:O-O-O|O-O|(?:[KQRBN])?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[+#]?$/;
-const BARE_ANCHOR_RE = /^\d+\.{1,3}$/;
-const LEADING_ANCHOR_RE = /^\d+\.{1,3}/;
+const BARE_ANCHOR_RE = /^(\d+)(\.{1,3})$/;
+const LEADING_ANCHOR_RE = /^(\d+)(\.{1,3})/;
 /**
  * A run-opening "N." / "N..." label. The lookbehind confines matches to word
  * starts (start of text, after whitespace, or after an opening bracket/quote
@@ -61,15 +62,39 @@ export function plyFromMoveNumber(
 
 type CandidateToken = { san: string; endOffset: number };
 
+type LabelContext = {
+  basePly: number;
+  startsAsBlack: boolean;
+  startMoveNumber: number;
+};
+
+/**
+ * Whether an interleaved "N." / "N..." label agrees with the move the run's
+ * next token would occupy (`basePly + collected`). A label claiming a
+ * different move number or color means the writer started a NEW reference
+ * ("8. Bd3 Bb7 15. O-O"), so the current run must stop rather than absorb
+ * it — a fused link would otherwise replay that move at a ply the text never
+ * claimed. The stopped-at label is then re-scanned as its own anchor.
+ */
+function labelAgrees(digits: string, dots: string, ctx: LabelContext, collected: number): boolean {
+  const { moveNumber, isWhiteMove } = computeMoveNumber(
+    ctx.basePly + collected,
+    ctx.startsAsBlack,
+    ctx.startMoveNumber
+  );
+  return parseInt(digits, 10) === moveNumber && (dots.length === 1) === isWhiteMove;
+}
+
 /**
  * Walk whitespace-separated words starting at `startOffset`, collecting SAN
  * tokens for as long as they keep looking like moves. Tolerates an
  * interleaved move-number label before a later move ("9." or the glued
  * "9.O-O") since consecutive-move references repeat that label per PGN
- * convention. Stops at the first word that isn't a move-number label nor a
- * SAN-shaped token.
+ * convention — but only when the label agrees with the ply the run has
+ * reached (see {@link labelAgrees}). Stops at the first word that isn't an
+ * agreeing move-number label nor a SAN-shaped token.
  */
-function collectCandidates(text: string, startOffset: number): CandidateToken[] {
+function collectCandidates(text: string, startOffset: number, ctx: LabelContext): CandidateToken[] {
   const tokens: CandidateToken[] = [];
   let cursor = startOffset;
 
@@ -84,12 +109,15 @@ function collectCandidates(text: string, startOffset: number): CandidateToken[] 
     const word = wordMatch[0];
     const wordStart = cursor;
 
-    if (BARE_ANCHOR_RE.test(word)) {
+    const bare = BARE_ANCHOR_RE.exec(word);
+    if (bare) {
+      if (!labelAgrees(bare[1], bare[2], ctx, tokens.length)) break;
       cursor = wordStart + word.length;
       continue;
     }
 
     const glued = LEADING_ANCHOR_RE.exec(word);
+    if (glued && !labelAgrees(glued[1], glued[2], ctx, tokens.length)) break;
     const sanOffsetWithinWord = glued ? glued[0].length : 0;
     const sanCandidate = glued ? word.slice(glued[0].length) : word;
     const stripped = sanCandidate.replace(TRAILING_GLYPHS_RE, '');
@@ -134,11 +162,15 @@ export function parseCommentMoveReferences(
     const moveNumber = parseInt(match[1], 10);
     const isWhiteMove = match[2].length === 1;
 
-    const tokens = collectCandidates(text, match.index + match[0].length);
-    if (tokens.length === 0) continue;
-
     const basePly = plyFromMoveNumber(moveNumber, isWhiteMove, startsAsBlack, startMoveNumber);
     if (basePly < 0 || basePly > moves.length) continue;
+
+    const tokens = collectCandidates(text, match.index + match[0].length, {
+      basePly,
+      startsAsBlack,
+      startMoveNumber,
+    });
+    if (tokens.length === 0) continue;
 
     let baseFen: string;
     try {
