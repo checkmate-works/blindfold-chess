@@ -9,7 +9,8 @@
  * @flow
  * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
  * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
- * - Advanced: Position Memory, Knight's Tour
+ * - Advanced: Position Memory, Puzzle
+ * - Expert: Knight's Tour, Recall
  * - Introduction: Algebraic Notation, FEN Reconstruction, Quadrant Anchors
  */
 import type { Metadata } from 'next';
@@ -110,6 +111,11 @@ export default async function PracticePage({ params }: Props) {
           title: t('practice.puzzle.title'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
+      ],
+    },
+    {
+      title: t('practice.levelExpert'),
+      practices: [
         {
           id: 'knight-tour',
           menuType: 'knight_tour',
