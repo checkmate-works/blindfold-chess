@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
 
 import { FaTrash } from 'react-icons/fa';
@@ -18,6 +20,18 @@ type Props = {
 
 export function GameListItem({ game, locale, onDelete }: Props) {
   const router = useRouter();
+
+  // Warm the play route's static shell (title + `PlaySkeleton` fallback, see
+  // the `Suspense` boundary in `games/play/page.tsx`) ahead of the click
+  // below. That click is a programmatic, non-`<Link>` `router.push` into a
+  // `force-dynamic` route with no segment `loading.tsx`, so without this the
+  // shell only paints after a full server round-trip — the same "blank gap"
+  // pattern documented in `useFinishedGameNavigation`'s result-route prefetch.
+  // Keyed on the pathname only: the query string is irrelevant to the shell,
+  // and every list row shares one cached prefetch for it.
+  useEffect(() => {
+    router.prefetch(`/${locale}/games/play`);
+  }, [locale, router]);
 
   const handleGameClick = () => {
     // Build URL parameters for resuming the game. The engine + difficulty

@@ -8,7 +8,8 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  * layout — the shared `GameReview` in `local` mode — so the page doesn't flash
  * empty while the game loads from localStorage and the Suspense fallback
  * reserves the same space. That layout is: a 2/3 board + 1/3 move-list grid,
- * then the [Summary | Discussion] tab row, then (Summary is the default tab) the
+ * then (for games with moves) the {@link ShareGameCta} card, then the
+ * [Summary | Discussion] tab row, then (Summary is the default tab) the
  * Game Stats overview — section title → win/loss/draw label → initial settings →
  * per-move effort strip. There are no trailing action buttons: the recall /
  * open-game actions moved to the breadcrumb (see ResultBreadcrumb).
@@ -24,6 +25,13 @@ export function ResultSkeleton() {
         <div className="lg:col-span-1">
           <Skeleton className="h-64 w-full rounded-md" />
         </div>
+      </div>
+
+      {/* ShareGameCta: bordered card with a prompt line + a publish button,
+          rendered above the tabs for games with at least one move. */}
+      <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card p-5">
+        <Skeleton className="h-4 w-64 max-w-full" />
+        <Skeleton className="h-10 w-32 rounded-md" />
       </div>
 
       {/* Overview: the [Summary | Discussion] tab row, then the Summary tab's

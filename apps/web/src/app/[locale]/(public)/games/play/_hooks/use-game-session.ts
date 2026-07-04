@@ -118,6 +118,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setLastMove,
     shouldMakeAiMove,
     setShouldMakeAiMove,
+    isApplyingLoadedGameData,
   } = useGameState({
     playerSide,
     startingFen,
@@ -131,6 +132,16 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setStartingFen,
     setOperationLogsTo: setLogsTo,
   });
+
+  // `isLoadingFromStorage` flips to `false` the instant `useGamePersistence`
+  // resolves, but `useGameState` applies the loaded moves/status/result one
+  // render later (its own effect, keyed on the new `loadedGameData`
+  // reference). Folding `isApplyingLoadedGameData` in here means every
+  // consumer of `gameState.isLoadingFromStorage` (the page-level
+  // `isInitializing`, `useAutoSave`'s `enabled` below, ...) keeps treating
+  // the session as "still loading" for that one extra render, instead of
+  // momentarily rendering/saving a finished game as an empty in-progress one.
+  const isRestoringGameData = isLoadingFromStorage || isApplyingLoadedGameData;
 
   // Map board status to game outcome for repository
 
@@ -148,7 +159,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     gamePreferences: initialPerGamePrefs,
     preferenceChangeLog,
     operationLogs,
-    enabled: !isLoadingFromStorage && !shouldRedirectToError && !gameNotFound,
+    enabled: !isRestoringGameData && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });
 
@@ -328,7 +339,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       playerResult,
       isPlayerTurn,
       isLoading,
-      isLoadingFromStorage,
+      isLoadingFromStorage: isRestoringGameData,
       lastMove,
       gameNotFound,
     },
