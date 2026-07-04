@@ -10,12 +10,12 @@ import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildDiscussionGroups } from '../_lib/build-discussion-groups';
 import { buildGameCommentTree } from '../_lib/game-comment-tree';
 import { groupChunkLinksBySuggester } from '../_lib/group-chunk-links';
+import { formatPlyLabel } from '../_lib/replay-derivations';
 import { DiscussionCommentRow } from './DiscussionCommentRow';
 import { GameChunkLinkCard } from './GameChunkLinkCard';
 
@@ -58,11 +58,8 @@ export function GameDiscussionFeed({
 
   const moveLabel = useMemo(() => {
     const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-    return (ply: number): string => {
-      const san = notationMoves[ply] ?? '';
-      const { moveNumber, isWhiteMove } = computeMoveNumber(ply, startsAsBlack, startMoveNumber);
-      return isWhiteMove ? `${moveNumber}. ${san}` : `${moveNumber}...${san}`;
-    };
+    return (ply: number): string =>
+      formatPlyLabel(ply, notationMoves[ply] ?? '', startsAsBlack, startMoveNumber);
   }, [notationMoves, startingFen]);
 
   return (

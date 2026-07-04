@@ -8,8 +8,9 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 import { Modal } from '@/app/[locale]/_components/Modal';
+
+import { formatPlyLabel } from '../_lib/replay-derivations';
 
 type Props = {
   isOpen: boolean;
@@ -53,15 +54,7 @@ export function MoveReferencePreviewModal({
   }, [isOpen, raw]);
 
   const stepLabels = useMemo(
-    () =>
-      sans.map((san, i) => {
-        const { moveNumber, isWhiteMove } = computeMoveNumber(
-          basePly + i,
-          startsAsBlack,
-          startMoveNumber
-        );
-        return isWhiteMove ? `${moveNumber}. ${san}` : `${moveNumber}... ${san}`;
-      }),
+    () => sans.map((san, i) => formatPlyLabel(basePly + i, san, startsAsBlack, startMoveNumber)),
     [sans, basePly, startsAsBlack, startMoveNumber]
   );
 
