@@ -57,7 +57,7 @@ export default async function SignInPage({ params, searchParams }: Props) {
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      {error && <AuthErrorMessage namespace="signIn" />}
+      {error && <AuthErrorMessage namespace="signIn" locale={locale} />}
 
       <div>
         <GoogleOAuthButton namespace="signIn" next={next ?? undefined} />
