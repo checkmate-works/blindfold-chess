@@ -6,25 +6,29 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { useStorageAvailabilityContext } from '@/lib/storage/StorageAvailabilityProvider';
 
-import { PrivacyMessage } from './PrivacyMessage';
-
 type GoogleScriptsProps = {
   /** AdSense client publisher ID (`ca-pub-xxxx`). Pass `undefined` to skip injection. */
   adsensePublisherId?: string;
   /** GA4 measurement ID (`G-XXXX`). Pass `undefined` to skip injection. */
   gaMeasurementId?: string;
-  /**
-   * AdSense publisher ID, reused as the Google Privacy & messaging (Funding
-   * Choices) CMP publisher id. Pass `undefined` to skip injection.
-   */
-  privacyMessagingId?: string;
 };
 
 /**
- * Conditionally injects the AdSense loader, Google Analytics scripts, and the
- * Google Privacy & messaging CMP banner — but only after a client-side probe
- * confirms that `localStorage`, `indexedDB`, and `document.cookie` are all
- * writable.
+ * Conditionally injects the AdSense loader and Google Analytics scripts —
+ * but only after a client-side probe confirms that `localStorage`,
+ * `indexedDB`, and `document.cookie` are all writable.
+ *
+ * No separate CMP/consent-message tag is injected here. AdSense's own
+ * "Privacy & messaging" (formerly Funding Choices) is configured entirely in
+ * the AdSense dashboard and is delivered automatically through this same
+ * `adsbygoogle.js` loader once enabled there — Google's own docs state the
+ * message requires "the AdSense code" to be present on the page, with no
+ * distinct message-only script for plain AdSense (as opposed to Ad Manager)
+ * publishers. This is also why `adsensePublisherId` is now passed at every
+ * layout that mounts `GoogleScripts` (not just the pages that actually show
+ * an ad unit) — the loader must be present sitewide for the consent message
+ * (and therefore Consent-Mode-gated GA4) to appear on every page, matching
+ * the sitewide coverage the previous CookieYes banner had.
  *
  * Why all-or-nothing: the CMP only matters if it can persist consent;
  * AdSense / GA only matter if the CMP can grant them consent. When any
@@ -39,22 +43,23 @@ type GoogleScriptsProps = {
  * want the storage probe to run at most once per page load. The root
  * layouts mount `StorageAvailabilityProvider` exactly once each; every
  * `GoogleScripts` instance below reads from that single provider, so
- * adding more nested mounts never duplicates the probe.
+ * adding more nested mounts never duplicates the probe. Each instance
+ * renders `<Script id="adsbygoogle-loader">` with the same `id`, and
+ * `next/script` dedupes by `id`, so the loader is only actually injected
+ * once even though it may appear in more than one layout's render tree.
  *
- * ─── Design tradeoff: CMP banner latency ───────────────────────────────
- * All three Google scripts below use `strategy="lazyOnload"` + this
- * availability gate. Because the gate returns `null` until the post-mount
- * probe finishes AND `lazyOnload` defers injection until after
- * `window.onload`, the consent message first paints noticeably later
- * than a classic `afterInteractive` mount would. This is intentional:
+ * ─── Design tradeoff: consent-message latency ──────────────────────────
+ * Both scripts below use `strategy="lazyOnload"` + this availability gate.
+ * Because the gate returns `null` until the post-mount probe finishes AND
+ * `lazyOnload` defers injection until after `window.onload`, the consent
+ * message first paints noticeably later than a classic `afterInteractive`
+ * mount would. This is intentional:
  *
- *   - Core Web Vitals (LCP/INP) win from deferring all three scripts.
- *   - Uniform strategy avoids the CMP loading before the AdSense loader
- *     it is supposed to govern.
- *   - Users with blocked storage never see the banner anyway — for them
+ *   - Core Web Vitals (LCP/INP) win from deferring the AdSense loader.
+ *   - Users with blocked storage never see the message anyway — for them
  *     the latency is infinite, and that is the desired behavior.
  *
- * Accepted cost: users with storage available see the consent banner a
+ * Accepted cost: users with storage available see the consent message a
  * few hundred ms later than they would with `afterInteractive`.
  *
  * Note on `GoogleAnalytics` (`@next/third-parties/google`): the helper
@@ -72,11 +77,7 @@ type GoogleScriptsProps = {
  * the `<GoogleAnalytics>` below for a manual `<Script strategy="lazyOnload">`
  * that emits the equivalent gtag bootstrap.
  */
-export function GoogleScripts({
-  adsensePublisherId,
-  gaMeasurementId,
-  privacyMessagingId,
-}: GoogleScriptsProps) {
+export function GoogleScripts({ adsensePublisherId, gaMeasurementId }: GoogleScriptsProps) {
   const availability = useStorageAvailabilityContext();
 
   // Render nothing during SSR / first render (`null`) and when any storage
@@ -95,7 +96,6 @@ export function GoogleScripts({
           crossOrigin="anonymous"
         />
       )}
-      {privacyMessagingId && <PrivacyMessage publisherId={privacyMessagingId} />}
       {gaMeasurementId && <GoogleAnalytics gaId={gaMeasurementId} />}
     </>
   );

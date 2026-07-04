@@ -232,7 +232,7 @@ export default async function Layout({
         <EnvironmentRibbon />
         <StorageAvailabilityProvider>
           <GoogleScripts
-            privacyMessagingId={ADSENSE_PUBLISHER_ID}
+            adsensePublisherId={ADSENSE_PUBLISHER_ID}
             gaMeasurementId={GA_MEASUREMENT_ID}
           />
           <Providers locale={locale} messages={messages}>

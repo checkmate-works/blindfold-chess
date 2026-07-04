@@ -148,7 +148,6 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     // Explicit host fallbacks (also honored by older browsers).
     'www.googletagmanager.com',
     'www.google-analytics.com',
-    'fundingchoicesmessages.google.com',
     '*.sentry.io',
     'pagead2.googlesyndication.com',
     'adservice.google.com',

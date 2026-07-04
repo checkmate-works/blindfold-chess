@@ -17,9 +17,11 @@ import { GoogleScripts } from './GoogleScripts';
  *     reason this module exists: in a browser where storage is blocked,
  *     injecting Google scripts only floods Sentry with
  *     `NS_ERROR_NOT_INITIALIZED` and other noise.
- *   - When `availability.all === true` -> emit exactly the three Google
- *     scripts (AdSense loader, Privacy & messaging CMP, GA), each only if
- *     its respective ID prop is provided.
+ *   - When `availability.all === true` -> emit exactly the two Google
+ *     scripts (AdSense loader, GA), each only if its respective ID prop is
+ *     provided. There is no separate CMP script: AdSense's own Privacy &
+ *     messaging consent message is delivered through the AdSense loader
+ *     itself once enabled in the AdSense dashboard.
  *
  * We mock:
  *   - `next/script` to a plain tag we can assert against.
@@ -93,11 +95,7 @@ describe('GoogleScripts', () => {
       mockedUseContext.mockReturnValue(null);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          privacyMessagingId="ca-pub-1234567890"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       expect(container).toBeEmptyDOMElement();
@@ -111,11 +109,7 @@ describe('GoogleScripts', () => {
       mockedUseContext.mockReturnValue(fullyBlocked);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          privacyMessagingId="ca-pub-1234567890"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       expect(container).toBeEmptyDOMElement();
@@ -125,16 +119,12 @@ describe('GoogleScripts', () => {
       mockedUseContext.mockReturnValue(partiallyBlocked);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          privacyMessagingId="ca-pub-1234567890"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       // Even one blocked probe must close the gate. The product decision is
       // all-or-nothing: if anything Google might touch is blocked, do not
-      // inject any of the three scripts.
+      // inject any of the scripts.
       expect(container).toBeEmptyDOMElement();
     });
 
@@ -146,16 +136,11 @@ describe('GoogleScripts', () => {
       mockedUseContext.mockReturnValue(fullyBlocked);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          privacyMessagingId="ca-pub-1234567890"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       expect(container.querySelector('ins.adsbygoogle')).toBeNull();
       expect(container.querySelector('[data-src*="adsbygoogle.js"]')).toBeNull();
-      expect(container.querySelector('[data-src*="fundingchoicesmessages"]')).toBeNull();
       expect(container.querySelector('[data-testid="google-analytics"]')).toBeNull();
     });
   });
@@ -172,21 +157,6 @@ describe('GoogleScripts', () => {
       expect(adsLoader?.getAttribute('data-src')).toContain('adsbygoogle.js');
       expect(adsLoader?.getAttribute('data-src')).toContain('client=ca-pub-1234567890');
       expect(adsLoader?.getAttribute('data-cross-origin')).toBe('anonymous');
-    });
-
-    it('renders the Privacy & messaging CMP (via PrivacyMessage) with lazyOnload', () => {
-      mockedUseContext.mockReturnValue(allAvailable);
-
-      const { container } = render(<GoogleScripts privacyMessagingId="ca-pub-1234567890" />);
-
-      const cmp = container.querySelector('[data-id="google-funding-choices-loader"]');
-      expect(cmp).not.toBeNull();
-      expect(cmp?.getAttribute('data-strategy')).toBe('lazyOnload');
-      expect(cmp?.getAttribute('data-src')).toContain('fundingchoicesmessages.google.com');
-      expect(cmp?.getAttribute('data-src')).toContain('ca-pub-1234567890');
-
-      const signal = container.querySelector('[data-id="google-funding-choices-signal"]');
-      expect(signal).not.toBeNull();
     });
 
     it('renders GoogleAnalytics with the provided measurement id', () => {
@@ -206,23 +176,17 @@ describe('GoogleScripts', () => {
 
       // No props => nothing rendered even when gate is open.
       expect(container.querySelector('[data-id="adsbygoogle-loader"]')).toBeNull();
-      expect(container.querySelector('[data-id="google-funding-choices-loader"]')).toBeNull();
       expect(container.querySelector('[data-testid="google-analytics"]')).toBeNull();
     });
 
-    it('renders all three scripts together when every ID is provided', () => {
+    it('renders both scripts together when every ID is provided', () => {
       mockedUseContext.mockReturnValue(allAvailable);
 
       const { container } = render(
-        <GoogleScripts
-          adsensePublisherId="ca-pub-1234567890"
-          gaMeasurementId="G-TEST123"
-          privacyMessagingId="ca-pub-1234567890"
-        />
+        <GoogleScripts adsensePublisherId="ca-pub-1234567890" gaMeasurementId="G-TEST123" />
       );
 
       expect(container.querySelector('[data-id="adsbygoogle-loader"]')).not.toBeNull();
-      expect(container.querySelector('[data-id="google-funding-choices-loader"]')).not.toBeNull();
       expect(container.querySelector('[data-testid="google-analytics"]')).not.toBeNull();
     });
   });

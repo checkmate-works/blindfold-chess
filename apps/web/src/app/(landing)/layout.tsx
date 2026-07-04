@@ -100,7 +100,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         )}
         <StorageAvailabilityProvider>
           <GoogleScripts
-            privacyMessagingId={ADSENSE_PUBLISHER_ID}
+            adsensePublisherId={ADSENSE_PUBLISHER_ID}
             gaMeasurementId={GA_MEASUREMENT_ID}
           />
           <Providers locale={locale} messages={messages}>
