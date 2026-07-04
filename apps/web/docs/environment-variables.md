@@ -64,12 +64,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 
 ### Cookie Consent Banner (Required for EU/US users)
 
-The application uses CookieYes, a Consent Management Platform (CMP) for GDPR/CCPA compliance.
-
-```bash
-# CookieYes ID from dashboard
-NEXT_PUBLIC_COOKIEYES_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-```
+The application uses Google AdSense's "Privacy & messaging" (formerly Funding Choices) for GDPR/CCPA compliance. It is configured entirely in the AdSense dashboard and reuses `NEXT_PUBLIC_ADSENSE_PUBLISHER_ID` — no separate environment variable is needed.
 
 For detailed setup instructions, see [cookie-consent-setup.md](cookie-consent-setup.md).
 

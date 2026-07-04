@@ -76,7 +76,7 @@ describe('proxy', () => {
     // CSP is currently Report-Only on purpose — see the comment on
     // `applyCspHeaders` in proxy.ts. Flipping to enforcing requires a
     // preview/staging surface to verify worker-src + 3rd-party loaders
-    // (Stockfish, Maia, CookieYes, GA, AdSense) in a real browser.
+    // (Stockfish, Maia, Privacy & messaging CMP, GA, AdSense) in a real browser.
     const csp = response.headers.get('Content-Security-Policy-Report-Only');
     expect(csp).toBeTruthy();
 

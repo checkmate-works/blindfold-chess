@@ -10,7 +10,6 @@ export const SITE_DOMAIN = (() => {
 })();
 export const AUTHOR_NAME = 'CheckmateWorks';
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-export const COOKIEYES_ID = process.env.NEXT_PUBLIC_COOKIEYES_ID;
 
 export const ADSENSE_PUBLISHER_ID = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID;
 export const ADSENSE_SLOT_CONTENT_MIDDLE = process.env.NEXT_PUBLIC_ADSENSE_SLOT_CONTENT_MIDDLE;

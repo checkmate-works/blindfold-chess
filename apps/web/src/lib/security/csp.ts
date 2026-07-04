@@ -148,7 +148,7 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     // Explicit host fallbacks (also honored by older browsers).
     'www.googletagmanager.com',
     'www.google-analytics.com',
-    'cdn-cookieyes.com',
+    'fundingchoicesmessages.google.com',
     '*.sentry.io',
     'pagead2.googlesyndication.com',
     'adservice.google.com',
@@ -170,9 +170,6 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     // `fonts.gstatic.com`: woff2 files for the Google Sans font that AdSense's
     // in-page UI pulls in (the app's own Inter is self-hosted via next/font).
     "font-src 'self' data: fonts.gstatic.com",
-    // `*.cookieyes.com`: the CookieYes consent banner POSTs consent logs to
-    // `log.cookieyes.com` (its CDN script host `cdn-cookieyes.com` is already
-    // in `script-src`).
     // `ep1.adtrafficquality.google`: AdSense's Ad Traffic Quality system POSTs
     // beacons here via fetch/XHR (the iframe counterpart `ep2.adtrafficquality.google`
     // lives in `frame-src` below). Without it production logs a flood of
@@ -180,7 +177,7 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
-      ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google *.cookieyes.com',
+      ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google',
     // `pagead2.googlesyndication.com`: AdSense also renders some ad iframes from
     // this host (in addition to googleads.g.doubleclick.net / tpc.googlesyndication.com).
     'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',

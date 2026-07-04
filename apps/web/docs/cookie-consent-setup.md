@@ -1,288 +1,83 @@
 # Cookie Consent Banner Setup Guide
 
-This guide explains how to set up the CookieYes cookie consent banner for GDPR/CCPA compliance.
+This guide explains how to set up Google AdSense's "Privacy & messaging" (formerly Funding Choices) consent banner for GDPR/CCPA compliance.
 
 ## Why is this required?
 
 - **GDPR Compliance**: Required by law for EU/UK users
 - **CCPA Compliance**: Required for California users
-- **Google Consent Mode v2**: Automatically integrated with CookieYes
+- **Google's EU User Consent Policy**: AdSense requires publishers serving ads to EEA/UK users to gather consent through a policy-compliant CMP
 
-## What is CookieYes?
+## Why Privacy & messaging instead of a third-party CMP?
 
-CookieYes is a Google-certified Consent Management Platform (CMP) that:
+The app previously used CookieYes (a third-party SaaS CMP). It was replaced with Google's own free tool because:
 
-- Displays cookie consent banners
-- Integrates with Google Consent Mode v2
-- Supports IAB TCF 2.2 framework
-- Provides multi-language support (English, Japanese, and 40+ languages)
-- Offers a free plan for up to 25,000 page views/month
+- It is purpose-built to satisfy AdSense's own consent policy, so there is no separate compliance surface to maintain.
+- It integrates natively with Google Consent Mode v2 — no manual `gtag('consent', ...)` wiring is needed in this codebase, same as CookieYes's "Advanced Implementation" did.
+- It unifies consent for both GA4 and AdSense in a single banner.
+- It removes the CookieYes subscription cost, and Google controls banner rendering alongside its own ad tag, which avoids the CLS issues the CookieYes banner caused.
 
 ## Setup Instructions
 
-### 1. Create a CookieYes Account
+### 1. Enable Privacy & messaging in AdSense
 
-1. Go to [https://www.cookieyes.com/](https://www.cookieyes.com/)
-2. Click "Sign Up Free" (no credit card required)
-3. Enter your email and create a password
-4. Verify your email address
+1. Sign in to your [AdSense account](https://www.google.com/adsense/).
+2. Go to **Privacy & messaging** in the left navigation.
+3. Create a new message (choose the GDPR message type for EEA/UK visitors; add other regions/laws as needed, e.g. CCPA for California, LGPD for Brazil).
+4. Configure consent categories (Analytics, Ad personalization, etc.) and confirm the message's region targeting matches what you want to show it to.
+5. Confirm **Consent Mode** integration is enabled for the message (this is what makes GA4 and AdSense automatically respect the user's choice without any code-level `gtag('consent', ...)` calls).
+6. Publish the message.
 
-### 2. Add Your Website
+### 2. Get the install snippet
 
-1. After logging in, click "Add Website"
-2. Enter your website URL: `https://www.blindfold-chess.online`
-3. Select your **default website language**: **English**
-4. Choose your plan: **Free** (up to 25,000 PV/month)
-5. Click "Continue"
+1. In AdSense, go to **Privacy & messaging** → the message you just created → **Install on site**.
+2. Google will show a snippet like:
 
-> **Note on Multi-language**: CookieYes will automatically detect the page language from the `<html lang="xx">` attribute. Since your site already uses Next.js i18n with English and Japanese, the banner will automatically adapt to each page's language.
-
-### 3. Configure Cookie Banner
-
-1. **Select Cookie Categories**:
-   - ✅ Necessary (Always enabled)
-   - ✅ Analytics (Google Analytics)
-   - ⬜ Advertisement (if you run third party ads)
-   - ⬜ Functional (if you add features like video embeds)
-
-2. **Cookie Scanner** (Automatic):
-   - CookieYes will automatically scan your website
-   - It will detect Google Analytics and other cookies
-   - Review and approve the detected cookies
-
-3. **Customize Banner Design** (Optional):
-   - Choose banner position (Bottom, Top, Center)
-   - Select a theme color to match your brand
-   - Preview the banner on desktop and mobile
-
-4. **Configure Google Consent Mode v2**:
-   - Go to "Settings" → "Integrations" → "Google Consent Mode"
-   - Enable "Google Consent Mode v2"
-   - Select "Advanced Implementation"
-   - This allows Google to use cookieless pings for conversion modeling
-
-5. **Set Up Geolocation Targeting** (Optional):
-   - Go to "Settings" → "Geolocation"
-   - Enable "Show banner only in specific regions"
-   - Select: EEA, UK, California, Brazil (LGPD), etc.
-   - Or keep default: "Show to all visitors"
-
-### 4. Get Your CookieYes ID
-
-1. Go to "Settings" → "Install on Website"
-2. Select "Manual Installation"
-3. You'll see code like this:
    ```html
    <script
-     id="cookieyes"
-     type="text/javascript"
-     src="https://cdn-cookieyes.com/client_data/YOUR-ID-HERE/script.js"
+     async
+     src="https://fundingchoicesmessages.google.com/i/pub-XXXXXXXXXXXXXXX?ers=1"
    ></script>
-   ```
-4. Copy the ID from the URL (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
-
-### 5. Add to Environment Variables
-
-1. Create or edit `.env.local` in your project root:
-
-   ```bash
-   NEXT_PUBLIC_COOKIEYES_ID=your-cookieyes-id-here
-   ```
-
-2. For production (Vercel):
-   - Go to your Vercel project settings
-   - Navigate to "Environment Variables"
-   - Add: `NEXT_PUBLIC_COOKIEYES_ID` with your CookieYes ID
-   - Redeploy your application
-
-### 6. Test the Implementation
-
-1. **Local Testing**:
-
-   ```bash
-   pnpm dev
+   <script>
+     (function () {
+       function signalGooglefcPresent() {
+         if (!window.frames['googlefcPresent']) {
+           if (document.body) {
+             const iframe = document.createElement('iframe');
+             iframe.style =
+               'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';
+             iframe.style.display = 'none';
+             iframe.name = 'googlefcPresent';
+             document.body.appendChild(iframe);
+           } else {
+             setTimeout(signalGooglefcPresent, 0);
+           }
+         }
+       }
+       signalGooglefcPresent();
+     })();
+   </script>
    ```
 
-   - Open your browser
-   - The cookie banner should appear at the bottom
-   - Try accepting/rejecting cookies
-   - Check that Google Analytics only loads after consent
+3. `pub-XXXXXXXXXXXXXXX` is the same value as `NEXT_PUBLIC_ADSENSE_PUBLISHER_ID` — **no separate environment variable is needed**. `apps/web/src/app/_components/PrivacyMessage.tsx` builds the loader URL from that existing value.
+4. Compare the snippet against `PrivacyMessage.tsx` and update it if Google's generated snippet differs from what's currently implemented.
 
-2. **Clear Browser Data**:
-   - Open DevTools (F12)
-   - Go to Application → Storage → Clear site data
-   - Reload the page to see the banner again
+### 3. No environment variable changes required
 
-3. **Test Consent Mode**:
-   - Open DevTools → Console
-   - Type: `window.dataLayer`
-   - You should see consent state updates
+Unlike CookieYes, this integration reuses `NEXT_PUBLIC_ADSENSE_PUBLISHER_ID` (already required for AdSense ad units). There is nothing to add to `.env.local` or Vercel's environment variables specifically for consent.
 
-4. **Test on Production**:
-   - Deploy to Vercel/production
-   - Visit your website
-   - Verify the banner appears and functions correctly
-   - Test from different regions (use VPN if needed)
+## Testing
 
-### 7. Privacy Policy
+Google's Privacy & messaging typically does not render its message on `localhost` — verification requires a deployed environment (a Vercel preview deployment or production) on a domain AdSense recognizes.
 
-- Update your Privacy Policy to mention cookie usage
-- CookieYes provides a cookie policy generator
-- Go to "Settings" → "Cookie Policy" → "Generate Policy"
-- Add the policy to your website's footer
+On a preview/production deployment:
 
-## Troubleshooting
-
-### Banner Not Appearing
-
-1. **Check Environment Variable**:
-
-   ```bash
-   # Verify the variable is set
-   echo $NEXT_PUBLIC_COOKIEYES_ID
-   ```
-
-2. **Clear Browser Cache**:
-   - Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
-   - Or open in incognito mode
-
-3. **Check Browser Console**:
-   - Open DevTools → Console
-   - Look for CookieYes script errors
-   - Verify the script is loading from CDN
-
-### Banner Shows But Doesn't Work
-
-1. **Verify CookieYes ID**:
-   - Check that the ID matches your dashboard
-   - Ensure no extra spaces or quotes in `.env.local`
-
-2. **Check Script Blocking**:
-   - Disable ad blockers temporarily
-   - Some ad blockers block CMP scripts
-
-### Google Analytics Not Blocked
-
-1. **Check Consent Mode Integration**:
-   - Go to CookieYes Dashboard → Integrations
-   - Verify Google Consent Mode v2 is enabled
-   - Use "Advanced Implementation"
-
-2. **Verify gtag Configuration**:
-   - CookieYes should auto-configure `gtag.js`
-   - Check Network tab in DevTools
-   - GA requests should wait for consent
-
-## Additional Features
-
-### Multi-Language Support (English + Japanese)
-
-**How it works automatically:**
-
-- Your Next.js site already sets `<html lang="en">` or `<html lang="ja">` based on the URL
-- CookieYes automatically detects this and displays the banner in the matching language
-- No additional configuration needed for basic functionality
-
-**To customize banner text for Japanese:**
-
-1. **In CookieYes Dashboard**:
-   - Go to "Settings" → "Languages"
-   - Click "Add Language"
-   - Select "Japanese (日本語)"
-
-2. **Customize Japanese Text**:
-
-   ```
-   Banner Title: クッキーの使用について
-   Banner Description: 当サイトでは、ユーザー体験の向上と広告配信のためにクッキーを使用しています。
-   Accept Button: すべて同意
-   Reject Button: すべて拒否
-   Settings Button: 設定
-   ```
-
-3. **Cookie Categories in Japanese**:
-   - Necessary: 必須Cookie
-   - Analytics: 分析Cookie
-   - Advertisement: 広告Cookie
-
-4. **Test the Implementation**:
-   - Visit `https://www.blindfold-chess.online/en` → Banner shows in English
-   - Visit `https://www.blindfold-chess.online/ja` → Banner shows in Japanese
-   - The language switches automatically based on the page URL
-
-**Important Notes:**
-
-- ✅ **Free Plan**: Language detection from HTML `lang` attribute works on free plan
-- ✅ **Automatic Switching**: Works seamlessly with Next.js i18n routing
-- ❌ **Auto-Translation**: Automatic AI translation requires paid plan ($10/month)
-- ✅ **Manual Translation**: You can manually set text for each language on free plan
-
-**Fallback Behavior:**
-
-- If Japanese translation is not configured, it will show English (default language)
-- Configure both languages in CookieYes dashboard for full multi-language support
-
-### Cookie Preferences Button
-
-Add a "Cookie Settings" link to your footer:
-
-```tsx
-// In your Footer component
-<button
-  onClick={() => {
-    // @ts-ignore
-    if (window.CookieYes) {
-      // @ts-ignore
-      window.CookieYes.show();
-    }
-  }}
->
-  Cookie Settings
-</button>
-```
-
-### A/B Testing Banner Designs
-
-CookieYes allows A/B testing different:
-
-- Banner positions
-- Button texts
-- Color schemes
-
-To optimize consent rates, test different designs in the dashboard.
-
-## Compliance Best Practices
-
-1. **Don't Block the Banner**: Never hide or manipulate the CMP banner
-2. **Allow Easy Withdrawal**: Users must be able to change preferences anytime
-3. **No Pre-Checked Boxes**: Non-essential cookies must be opt-in
-4. **Clear Language**: Use simple, understandable text
-5. **Keep Records**: CookieYes automatically logs all consent actions
-
-## Pricing
-
-- **Free Plan**: Up to 25,000 page views/month
-- **Pro Plan**: Up to 100,000 page views/month ($10/month)
-- **Business Plan**: Up to 500,000 page views/month ($25/month)
-
-For most small-to-medium websites, the free plan is sufficient.
+1. Open DevTools → Network tab and confirm requests to `fundingchoicesmessages.google.com` (and no more requests to `cdn-cookieyes.com`).
+2. Open DevTools → Console and confirm no CSP violation reports for the new host (CSP is currently `Report-Only`, see `apps/web/src/proxy.ts`).
+3. Confirm the consent message renders and that accepting/rejecting still allows GA4 (`google-analytics.com`) and AdSense (`googlesyndication.com`) requests to fire as expected.
+4. If testing region-gated messaging (e.g. GDPR message only shown to EEA/UK visitors), use a VPN or the AdSense preview tool to simulate a matching region.
 
 ## Resources
 
-- [CookieYes Documentation](https://www.cookieyes.com/documentation/)
-- [Google Consent Mode v2 Guide](https://www.cookieyes.com/documentation/cookie-banner/google-consent-mode-v2/)
-- [GDPR Compliance Checklist](https://www.cookieyes.com/gdpr-cookie-consent/)
-- [CookieYes Support](https://www.cookieyes.com/support/)
-
-## Support
-
-If you encounter issues:
-
-1. Check [CookieYes Help Center](https://www.cookieyes.com/support/)
-2. Contact CookieYes Support (email in dashboard)
-3. Review this project's GitHub issues
-
----
-
-**Last Updated**: 2025-01-27
-**CookieYes Version**: Latest (auto-updated from CDN)
+- [AdSense Privacy & messaging help center](https://support.google.com/adsense/answer/13554116)
+- [Google Consent Mode overview](https://support.google.com/analytics/answer/9976101)

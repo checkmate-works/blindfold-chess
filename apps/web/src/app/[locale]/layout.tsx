@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation';
 
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
-import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
@@ -232,8 +232,7 @@ export default async function Layout({
         <EnvironmentRibbon />
         <StorageAvailabilityProvider>
           <GoogleScripts
-            locale={locale}
-            cookieYesId={COOKIEYES_ID}
+            privacyMessagingId={ADSENSE_PUBLISHER_ID}
             gaMeasurementId={GA_MEASUREMENT_ID}
           />
           <Providers locale={locale} messages={messages}>

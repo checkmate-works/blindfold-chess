@@ -94,16 +94,17 @@ describe('keyboard-guards', () => {
       expect(isModalOpen()).toBe(false);
     });
 
-    it('returns false when a third-party script (e.g. CookieYes) injects an aria-modal element without data-app-modal', () => {
-      // Regression: CookieYes (prod-only) injects a consent container with
-      // `aria-modal="true"` into document.body. The previous implementation
-      // used `[aria-modal="true"]` and over-matched, silently breaking all
-      // practice keyboard input in production. `data-app-modal` is an
-      // app-owned contract that third-party scripts cannot accidentally set.
-      const cookieYes = document.createElement('div');
-      cookieYes.setAttribute('aria-modal', 'true');
-      cookieYes.setAttribute('class', 'cky-consent-container');
-      document.body.appendChild(cookieYes);
+    it('returns false when a third-party script (e.g. the consent-management banner) injects an aria-modal element without data-app-modal', () => {
+      // Regression: the consent-management CMP banner (prod-only) injects a
+      // consent container with `aria-modal="true"` into document.body. The
+      // previous implementation used `[aria-modal="true"]` and over-matched,
+      // silently breaking all practice keyboard input in production.
+      // `data-app-modal` is an app-owned contract that third-party scripts
+      // cannot accidentally set.
+      const thirdPartyConsentBanner = document.createElement('div');
+      thirdPartyConsentBanner.setAttribute('aria-modal', 'true');
+      thirdPartyConsentBanner.setAttribute('class', 'consent-banner-container');
+      document.body.appendChild(thirdPartyConsentBanner);
       expect(isModalOpen()).toBe(false);
     });
 

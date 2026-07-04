@@ -76,7 +76,7 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
  * the `report-to` / `report-uri` directives for observability. The plan is to
  * flip to enforcing (`Content-Security-Policy`) once we have a preview/staging
  * environment where the real-browser surface (Stockfish / Maia web workers,
- * CookieYes CMP, Google Analytics, AdSense dynamic loads) can be verified.
+ * the Privacy & messaging CMP, Google Analytics, AdSense dynamic loads) can be verified.
  * Tracking: GitHub issue #89.
  *
  * Both `Reporting-Endpoints` (the modern Structured-Fields header) and

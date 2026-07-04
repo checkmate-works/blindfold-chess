@@ -6,23 +6,25 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { useStorageAvailabilityContext } from '@/lib/storage/StorageAvailabilityProvider';
 
-import { CookieConsent } from './CookieConsent';
+import { PrivacyMessage } from './PrivacyMessage';
 
 type GoogleScriptsProps = {
-  /** Locale of the surrounding layout — forwarded to the CMP for banner language. */
-  locale?: string;
   /** AdSense client publisher ID (`ca-pub-xxxx`). Pass `undefined` to skip injection. */
   adsensePublisherId?: string;
   /** GA4 measurement ID (`G-XXXX`). Pass `undefined` to skip injection. */
   gaMeasurementId?: string;
-  /** CookieYes site ID. Pass `undefined` to skip injection. */
-  cookieYesId?: string;
+  /**
+   * AdSense publisher ID, reused as the Google Privacy & messaging (Funding
+   * Choices) CMP publisher id. Pass `undefined` to skip injection.
+   */
+  privacyMessagingId?: string;
 };
 
 /**
  * Conditionally injects the AdSense loader, Google Analytics scripts, and the
- * CookieYes CMP banner — but only after a client-side probe confirms that
- * `localStorage`, `indexedDB`, and `document.cookie` are all writable.
+ * Google Privacy & messaging CMP banner — but only after a client-side probe
+ * confirms that `localStorage`, `indexedDB`, and `document.cookie` are all
+ * writable.
  *
  * Why all-or-nothing: the CMP only matters if it can persist consent;
  * AdSense / GA only matter if the CMP can grant them consent. When any
@@ -43,7 +45,7 @@ type GoogleScriptsProps = {
  * All three Google scripts below use `strategy="lazyOnload"` + this
  * availability gate. Because the gate returns `null` until the post-mount
  * probe finishes AND `lazyOnload` defers injection until after
- * `window.onload`, the CookieYes banner first paints noticeably later
+ * `window.onload`, the consent message first paints noticeably later
  * than a classic `afterInteractive` mount would. This is intentional:
  *
  *   - Core Web Vitals (LCP/INP) win from deferring all three scripts.
@@ -71,10 +73,9 @@ type GoogleScriptsProps = {
  * that emits the equivalent gtag bootstrap.
  */
 export function GoogleScripts({
-  locale,
   adsensePublisherId,
   gaMeasurementId,
-  cookieYesId,
+  privacyMessagingId,
 }: GoogleScriptsProps) {
   const availability = useStorageAvailabilityContext();
 
@@ -94,7 +95,7 @@ export function GoogleScripts({
           crossOrigin="anonymous"
         />
       )}
-      {cookieYesId && <CookieConsent cookieYesId={cookieYesId} locale={locale} />}
+      {privacyMessagingId && <PrivacyMessage publisherId={privacyMessagingId} />}
       {gaMeasurementId && <GoogleAnalytics gaId={gaMeasurementId} />}
     </>
   );

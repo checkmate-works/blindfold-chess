@@ -29,8 +29,8 @@ import { shouldIgnoreKeyEvent } from '@/app/[locale]/(public)/practice/_lib/keyb
  *     contenteditable element.
  *   - Any app-owned modal (`[data-app-modal="true"]`) is in the DOM (so modal
  *     Escape, form typing, etc. take precedence). The selector intentionally
- *     ignores third-party `aria-modal` elements (e.g. CookieYes) — see
- *     `keyboard-guards.ts` → `isModalOpen()` for the rationale.
+ *     ignores third-party `aria-modal` elements (e.g. the consent-management
+ *     banner) — see `keyboard-guards.ts` → `isModalOpen()` for the rationale.
  */
 type UseAlgebraicKeyboardInputOptions = {
   /** Called with the pressed letter when the user types `a`..`h` (lowercase only). */
