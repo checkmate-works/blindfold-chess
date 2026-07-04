@@ -58,6 +58,15 @@ type Props = {
    */
   alwaysOpen?: boolean;
   /**
+   * Seeds the initial `isOpen` state for the plain-collapse mode (no
+   * `alwaysOpen`, no `masked`). Lets a caller start the board expanded while
+   * still offering the fold affordance — e.g. Recall, which used to force
+   * `alwaysOpen` but wants the board foldable without adopting play's
+   * peek/blindfold semantics. Ignored when `alwaysOpen` is true. Defaults to
+   * `false` (puzzle's existing closed-by-default behavior).
+   */
+  defaultOpen?: boolean;
+  /**
    * Optional move handler. When provided, the inner ChessBoard switches
    * into interactive mode (click-to-move + HTML5 drag-and-drop on
    * own-color pieces). Fires once per completed legal move with the SAN
@@ -155,6 +164,7 @@ export function InlineBoardView({
   onPeek,
   collapseSignal,
   alwaysOpen,
+  defaultOpen = false,
   onMove,
   onIllegalMove,
   movablePieces,
@@ -167,7 +177,7 @@ export function InlineBoardView({
   aiThinking,
 }: Props) {
   const t = useTranslations('play');
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   // Auto-collapse when the parent's collapse signal changes (player committed
   // a move). The initial-mount run is skipped so a freshly opened page does

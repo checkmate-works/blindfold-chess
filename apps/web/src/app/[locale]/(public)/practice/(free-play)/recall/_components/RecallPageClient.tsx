@@ -90,10 +90,30 @@ export function RecallPageClient({ breadcrumb }: Props) {
     },
   ];
 
+  const setupHelpSteps: HelpStep[] = [
+    {
+      targetId: 'recall-setup-pgn',
+      title: t('help.setup.pgn.title'),
+      description: t('help.setup.pgn.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: 'recall-setup-color',
+      title: t('help.setup.color.title'),
+      description: t('help.setup.color.description'),
+      side: 'top',
+      align: 'center',
+    },
+  ];
+
   if (!pgn && !moves) {
     return (
       <div className="space-y-8">
-        <PageTitle>{t('title')}</PageTitle>
+        <div className="flex items-center justify-center gap-2">
+          <PageTitle>{t('title')}</PageTitle>
+          <HelpTourButton steps={setupHelpSteps} label={t('help.label')} />
+        </div>
         <PagePanel>
           <RecallSetupForm />
           {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}

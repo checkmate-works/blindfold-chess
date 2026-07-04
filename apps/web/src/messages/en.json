@@ -705,6 +705,7 @@
     "levelBeginner": "Beginner",
     "levelIntermediate": "Intermediate",
     "levelAdvanced": "Advanced",
+    "levelExpert": "Expert",
     "levelIntroduction": "Introduction",
     "viewLeaderboard": "View Leaderboard",
     "viewDojo": "View Dojo",
@@ -2344,9 +2345,25 @@
     "title": "Recall",
     "description": "Paste any PGN and replay it move by move from memory — no account or saved game required.",
     "setup": {
-      "description": "Paste a PGN below — your own game, someone else's, or an opening line — then replay it from memory.",
       "pgnLabel": "PGN",
-      "startButton": "Start Recall"
+      "startButton": "Start Recall",
+      "inputMode": {
+        "manual": "Paste PGN",
+        "lichess": "Lichess URL"
+      },
+      "lichessImport": {
+        "placeholder": "https://lichess.org/...",
+        "button": "Import",
+        "errors": {
+          "not_lichess_url": "That doesn't look like a Lichess game URL.",
+          "lichess_unsupported": "Lichess studies aren't supported yet — paste an individual game URL instead.",
+          "invalid_id": "That doesn't look like a valid Lichess game URL.",
+          "not_found": "Game not found. Check the URL and try again.",
+          "rate_limited": "Too many requests right now — please try again in a minute.",
+          "too_large": "This game's PGN is too large to import.",
+          "fetch_failed": "Couldn't reach Lichess. Please try again."
+        }
+      }
     },
     "settings": "Settings",
     "help": {
@@ -2366,6 +2383,16 @@
       "moves": {
         "title": "Moves",
         "description": "Replayed moves appear here as a move list. Tap one to view the board at that position."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Paste any PGN",
+          "description": "Paste the PGN of any completed game — yours, someone else's, or an opening line — then replay its moves from memory. Switch to \"Lichess URL\" to import one automatically instead."
+        },
+        "color": {
+          "title": "Choose your side",
+          "description": "Pick which side you'll recall the moves for. The other side's moves can be entered too, or auto-filled for you."
+        }
       }
     },
     "autoOpponentMoves": "Auto-fill opponent's moves",

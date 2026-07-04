@@ -701,6 +701,7 @@
     "levelBeginner": "Iniciante",
     "levelIntermediate": "Intermediário",
     "levelAdvanced": "Avançado",
+    "levelExpert": "Especialista",
     "levelIntroduction": "Introdução",
     "viewLeaderboard": "Ver Ranking",
     "viewDojo": "Ver Dojo",
@@ -2340,9 +2341,25 @@
     "title": "De memória",
     "description": "Cole qualquer PGN e reproduza-o lance a lance de memória — sem precisar de conta ou partida salva.",
     "setup": {
-      "description": "Cole um PGN abaixo — sua própria partida, a de outra pessoa, ou uma linha de abertura — e reproduza-o de memória.",
       "pgnLabel": "PGN",
-      "startButton": "Começar de memória"
+      "startButton": "Começar de memória",
+      "inputMode": {
+        "manual": "Colar PGN",
+        "lichess": "URL do Lichess"
+      },
+      "lichessImport": {
+        "placeholder": "https://lichess.org/...",
+        "button": "Importar",
+        "errors": {
+          "not_lichess_url": "Isso não parece uma URL de partida do Lichess.",
+          "lichess_unsupported": "Estudos do Lichess ainda não são suportados — cole a URL de uma partida individual.",
+          "invalid_id": "Isso não parece uma URL de partida do Lichess válida.",
+          "not_found": "Partida não encontrada. Verifique a URL e tente novamente.",
+          "rate_limited": "Muitas solicitações no momento — tente novamente em um minuto.",
+          "too_large": "O PGN dessa partida é grande demais para ser importado.",
+          "fetch_failed": "Não foi possível conectar ao Lichess. Tente novamente."
+        }
+      }
     },
     "settings": "Configurações",
     "help": {
@@ -2362,6 +2379,16 @@
       "moves": {
         "title": "Movimentos",
         "description": "Os movimentos reproduzidos aparecem aqui como uma lista. Toque em um para ver o tabuleiro naquela posição."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Cole qualquer PGN",
+          "description": "Cole o PGN de qualquer partida finalizada — sua, de outra pessoa, ou uma linha de abertura — e reproduza os movimentos de memória. Mude para \"URL do Lichess\" para importar um automaticamente."
+        },
+        "color": {
+          "title": "Escolha seu lado",
+          "description": "Escolha de qual lado você vai recordar os movimentos. Os movimentos do outro lado também podem ser inseridos, ou preenchidos automaticamente."
+        }
       }
     },
     "autoOpponentMoves": "Preencher automaticamente movimentos do adversário",

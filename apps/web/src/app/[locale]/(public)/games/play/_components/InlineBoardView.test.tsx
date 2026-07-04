@@ -10,6 +10,10 @@
  *      board is permanently visible, and `collapseSignal` is ignored.
  *      Used for `boardVisibility === 'always'`.
  *
+ *   3. `defaultOpen` — seeds the initial `isOpen` state for plain-collapse
+ *      mode (no `alwaysOpen`, no `masked`), so a caller can start expanded
+ *      while still offering the fold affordance. Used by Recall.
+ *
  * The `ChessBoard` and navigation/flip controls are stubbed so the tests
  * focus purely on `InlineBoardView`'s own state machine without coupling
  * to the rendering of the chess content.
@@ -133,6 +137,27 @@ describe('InlineBoardView — peek (collapsible) mode', () => {
 
     // Same value → no effect run.
     rerender(<InlineBoardView {...BASE_PROPS} collapseSignal={3} />);
+    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
+  });
+});
+
+describe('InlineBoardView — defaultOpen', () => {
+  it('starts expanded when defaultOpen is true, but remains foldable', () => {
+    render(<InlineBoardView {...BASE_PROPS} defaultOpen />);
+
+    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('showBoard')); // collapse
+    expect(screen.queryByTestId('chess-board')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('showBoard')); // expand again
+    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
+  });
+
+  it('is ignored when alwaysOpen is set (no collapse chrome either way)', () => {
+    render(<InlineBoardView {...BASE_PROPS} alwaysOpen defaultOpen={false} />);
+
+    expect(screen.queryByText('showBoard')).not.toBeInTheDocument();
     expect(screen.getByTestId('chess-board')).toBeInTheDocument();
   });
 });
