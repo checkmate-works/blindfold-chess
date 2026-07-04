@@ -1,13 +1,12 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
-import { headers } from 'next/headers';
 
 import { Button } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-import { Link, routing } from '@/i18n/routing';
+import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
+import { Link } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -282,14 +281,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
  * TopicTabs → filter chips → CatalogListCard list) to minimise CLS.
  */
 async function ChunksListSkeleton() {
-  // Resolve the request locale from the `x-pathname` header (set by
-  // `proxy.ts`), not `getLocale()`: this app has no next-intl middleware and
-  // never calls `setRequestLocale()`, so `getLocale()`'s request-scoped cache
-  // is empty here and can intermittently fall back to the default locale
-  // instead of the URL's actual `[locale]` segment.
-  const pathname = (await headers()).get('x-pathname') ?? '';
-  const candidate = pathname.split('/')[1];
-  const locale = hasLocale(routing.locales, candidate) ? candidate : routing.defaultLocale;
+  const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'chunks' });
 
   return (
