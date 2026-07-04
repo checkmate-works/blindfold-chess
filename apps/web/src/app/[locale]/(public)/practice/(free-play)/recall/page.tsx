@@ -31,6 +31,21 @@ import { RecallPageClient } from './_components/RecallPageClient';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
+/**
+ * `RecallPageClient` reads `pgn` / `moves` / `color` / ... via
+ * `useSearchParams()` and renders the entire visible page (title, board,
+ * move input, moves panel, breadcrumb) — there is no chrome outside its
+ * `<Suspense>` below. On a statically-generated route, Next.js can't know
+ * those search params at build time, so the cached HTML would contain only
+ * the (fallback-less) Suspense boundary's fallback — an actually blank page
+ * — until client JS hydrates and re-renders from the real URL. Declaring
+ * `force-dynamic` makes every request render server-side with the real
+ * search params already known, so the bare `<Suspense>` resolves to real
+ * content immediately instead of a placeholder. Same pattern as
+ * `games/play/page.tsx` and `games/new/_lib/create-new-game-page.tsx`.
+ */
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
