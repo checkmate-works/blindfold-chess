@@ -10,7 +10,13 @@ import {
 } from '@blindfold-chess/features/diagonal-quiz';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
-import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
+import {
+  type BoardTheme,
+  DEFAULT_BOARD_THEME,
+  getBoardThemeColors,
+} from '@/lib/games/board-themes';
+
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { DiagonalAnswerComparison } from './DiagonalAnswerComparison';
 
@@ -19,8 +25,14 @@ export type { QuestionResult };
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
-export function DiagonalBoard({ targetSquare }: { targetSquare: string }) {
-  const themeColors = getBoardThemeColors(DEFAULT_BOARD_THEME);
+export function DiagonalBoard({
+  targetSquare,
+  boardTheme = DEFAULT_BOARD_THEME,
+}: {
+  targetSquare: string;
+  boardTheme?: BoardTheme;
+}) {
+  const themeColors = getBoardThemeColors(boardTheme);
 
   const { diagonal, antiDiagonal } = useMemo(
     () => getDiagonalSquares(targetSquare),
@@ -112,6 +124,7 @@ function DiagonalLabel({ type }: { type: 'diagonal' | 'antiDiagonal' }) {
 
 export function DiagonalQuizProblemList({ results }: { results: QuestionResult[] }) {
   const t = useTranslations('practice.diagonalQuiz');
+  const { preferences } = useGamePreferences();
   const [expandedProblems, setExpandedProblems] = useState<Set<number>>(new Set());
 
   const toggleProblem = (index: number) => {
@@ -168,7 +181,7 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
               </button>
               {isExpanded && (
                 <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
-                  <DiagonalBoard targetSquare={result.square} />
+                  <DiagonalBoard targetSquare={result.square} boardTheme={preferences.boardTheme} />
                   <div className="mt-4">
                     <DiagonalAnswerComparison
                       correctDiagonal={result.correctDiagonal}
