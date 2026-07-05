@@ -625,7 +625,11 @@
     "validWithMoves": "{count, plural, other {✓ 有効なPGN（#手）}}",
     "invalidPgn": "無効なPGN形式",
     "invalidMove": "「{move}」は無効な手です",
-    "clear": "PGNをクリア"
+    "clear": "PGNをクリア",
+    "clearConfirmTitle": "PGNをクリアしますか?",
+    "clearConfirmMessage": "貼り付けたテキストが消去されます。この操作は取り消せません。",
+    "clearConfirmButton": "クリア",
+    "clearConfirmCancel": "キャンセル"
   },
   "error": {
     "title": "エラーが発生しました",

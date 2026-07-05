@@ -621,7 +621,11 @@
     "validWithMoves": "{count, plural, one {✓ PGN válido con # movimiento} other {✓ PGN válido con # movimientos}}",
     "invalidPgn": "Formato PGN inválido",
     "invalidMove": "\"{move}\" es un movimiento inválido",
-    "clear": "Borrar PGN"
+    "clear": "Borrar PGN",
+    "clearConfirmTitle": "¿Borrar el PGN?",
+    "clearConfirmMessage": "Esto borrará el texto pegado. Esta acción no se puede deshacer.",
+    "clearConfirmButton": "Borrar",
+    "clearConfirmCancel": "Cancelar"
   },
   "error": {
     "title": "¡Algo salió mal!",

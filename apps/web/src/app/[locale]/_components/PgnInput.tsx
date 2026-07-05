@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -11,6 +11,7 @@ import { TEXT_LINK_DESTRUCTIVE_CLASSES } from '@/app/[locale]/_lib/link-classes'
 import { useDebouncedInput } from '../_hooks/use-debounced-input';
 import { useIsMobile } from '../_hooks/use-is-mobile';
 import { usePgnValidation } from '../_hooks/use-pgn-validation';
+import { ConfirmationModal } from './ConfirmationModal';
 
 type Props = {
   value: string;
@@ -38,6 +39,7 @@ export function PgnInput({
 }: Props) {
   const t = useTranslations('pgnInput');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const isMobile = useIsMobile();
   const { debouncedValue, handlePaste } = useDebouncedInput({ value, delay: DEBOUNCE_DELAY });
@@ -75,6 +77,12 @@ export function PgnInput({
       e.preventDefault();
       applySuggestion();
     }
+  };
+
+  const handleClearConfirm = () => {
+    setShowClearConfirm(false);
+    onChange('');
+    textareaRef.current?.focus();
   };
 
   const defaultPlaceholder = t('placeholder');
@@ -133,10 +141,7 @@ export function PgnInput({
               {value.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => {
-                    onChange('');
-                    textareaRef.current?.focus();
-                  }}
+                  onClick={() => setShowClearConfirm(true)}
                   aria-label={t('clear')}
                   title={t('clear')}
                   className="w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -181,6 +186,17 @@ export function PgnInput({
         ) : (
           <p className="text-sm text-destructive">{errorMessage}</p>
         ))}
+
+      <ConfirmationModal
+        isOpen={showClearConfirm}
+        onConfirm={handleClearConfirm}
+        onCancel={() => setShowClearConfirm(false)}
+        title={t('clearConfirmTitle')}
+        message={t('clearConfirmMessage')}
+        confirmText={t('clearConfirmButton')}
+        cancelText={t('clearConfirmCancel')}
+        confirmVariant="danger"
+      />
     </div>
   );
 }

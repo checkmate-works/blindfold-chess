@@ -625,7 +625,11 @@
     "validWithMoves": "{count, plural, one {✓ Valid PGN with # move} other {✓ Valid PGN with # moves}}",
     "invalidPgn": "Invalid PGN format",
     "invalidMove": "\"{move}\" is an invalid move",
-    "clear": "Clear PGN"
+    "clear": "Clear PGN",
+    "clearConfirmTitle": "Clear PGN?",
+    "clearConfirmMessage": "This will erase the pasted text. This can't be undone.",
+    "clearConfirmButton": "Clear",
+    "clearConfirmCancel": "Cancel"
   },
   "error": {
     "title": "Something went wrong!",
