@@ -9,6 +9,7 @@ import { FaRedo } from 'react-icons/fa';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { DiagonalBoard } from '../../_components/DiagonalQuizProblemList';
 
@@ -33,13 +34,14 @@ export function DiagonalQuizResultLayout({
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const tp = useTranslations('practice');
+  const { preferences } = useGamePreferences();
 
   return (
     <>
       <div className="text-center">
         <SectionTitle className="mb-4">{t('question', { square: question })}</SectionTitle>
 
-        <DiagonalBoard targetSquare={question} />
+        <DiagonalBoard targetSquare={question} boardTheme={preferences.boardTheme} />
 
         <div className="mt-6">{children}</div>
 
