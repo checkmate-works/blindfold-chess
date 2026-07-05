@@ -2344,6 +2344,7 @@
   "recall": {
     "title": "Recall",
     "description": "Paste any PGN and replay it move by move from memory — no account or saved game required.",
+    "session": "In Progress",
     "setup": {
       "pgnLabel": "PGN",
       "startButton": "Start Recall",

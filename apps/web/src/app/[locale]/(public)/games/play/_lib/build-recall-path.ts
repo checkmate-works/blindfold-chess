@@ -29,9 +29,10 @@ type BuildRecallPathArgs = {
  * `pgn` string when both are present, since the `N..` form isn't safe input
  * for `pgn`'s regex-based cleaner — `pgn` is kept only as a legacy fallback.
  *
- * Recall now lives at `/practice/recall` as a standalone module (see
- * `apps/web/CLAUDE.md` glossary), reachable both via this deep-link and
- * directly by pasting a PGN.
+ * Recall now lives at `/practice/recall` (setup) / `/practice/recall/session`
+ * (review) as a standalone module (see `apps/web/CLAUDE.md` glossary),
+ * reachable both via this deep-link — which goes straight to the session,
+ * bypassing setup — and directly by pasting a PGN.
  */
 export function buildRecallPath({
   locale,
@@ -65,5 +66,5 @@ export function buildRecallPath({
   }
   params.set('moves', JSON.stringify(moves));
 
-  return `/${locale}/practice/recall?${params.toString()}`;
+  return `/${locale}/practice/recall/session?${params.toString()}`;
 }

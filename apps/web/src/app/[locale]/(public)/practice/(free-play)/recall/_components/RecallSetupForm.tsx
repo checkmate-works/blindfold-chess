@@ -130,7 +130,7 @@ export function RecallSetupForm() {
     const params = new URLSearchParams({ color });
     params.set('moves', JSON.stringify(moves));
     if (startingFen) params.set('fen', startingFen);
-    router.push(`/${locale}/practice/recall?${params.toString()}`);
+    router.push(`/${locale}/practice/recall/session?${params.toString()}`);
   };
 
   return (

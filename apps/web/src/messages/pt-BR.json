@@ -2340,6 +2340,7 @@
   "recall": {
     "title": "De memória",
     "description": "Cole qualquer PGN e reproduza-o lance a lance de memória — sem precisar de conta ou partida salva.",
+    "session": "Em Andamento",
     "setup": {
       "pgnLabel": "PGN",
       "startButton": "Começar de memória",

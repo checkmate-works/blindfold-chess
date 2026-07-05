@@ -2340,6 +2340,7 @@
   "recall": {
     "title": "De memoria",
     "description": "Pega cualquier PGN y reprodúcelo jugada a jugada de memoria — sin necesidad de cuenta ni partida guardada.",
+    "session": "En Progreso",
     "setup": {
       "pgnLabel": "PGN",
       "startButton": "Empezar de memoria",

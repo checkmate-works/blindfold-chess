@@ -2344,6 +2344,7 @@
   "recall": {
     "title": "棋譜再現",
     "description": "棋譜を貼り付けて、記憶を頼りに一手ずつ再現しましょう。アカウントや保存された対局は不要です。",
+    "session": "練習中",
     "setup": {
       "pgnLabel": "棋譜（PGN）",
       "startButton": "棋譜再現を始める",
