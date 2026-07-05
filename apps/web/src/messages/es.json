@@ -1885,6 +1885,13 @@
           "created": "Publicó un borrador de chunk",
           "published": "Publicó un chunk"
         }
+      },
+      "nativeAd": {
+        "avatarLabel": "Ad",
+        "sponsorName": "Lectura recomendada",
+        "disclosure": "Anuncio",
+        "title": "Domina la Ruy López",
+        "description": "Un vistazo más de cerca a una de las aperturas más antiguas y respetadas del ajedrez."
       }
     },
     "vsAi": {

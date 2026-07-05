@@ -1889,6 +1889,13 @@
           "created": "チャンクの下書きを投稿しました",
           "published": "チャンクを公開しました"
         }
+      },
+      "nativeAd": {
+        "avatarLabel": "広告",
+        "sponsorName": "おすすめの書籍",
+        "disclosure": "広告",
+        "title": "ルイ・ロペスを極める",
+        "description": "チェス最古かつ最も評価の高いオープニングの一つを深掘りする一冊。"
       }
     },
     "vsAi": {

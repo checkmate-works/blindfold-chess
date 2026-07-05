@@ -8,7 +8,7 @@ import { buildDisplayItems } from '../_lib/feed-display';
 import type { DisplayItem, FeedItem } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
-import { ResponsiveAdSlot } from './ResponsiveAdSlot';
+import { NativeAdCard } from './NativeAdCard';
 
 type Props = {
   /**
@@ -69,7 +69,7 @@ export function FeedClient({
       if (displayItem.type === 'ad') {
         return (
           <div key={`ad-${index}`} className={itemWrapperClass}>
-            <ResponsiveAdSlot />
+            <NativeAdCard locale={locale} variant={variant} />
           </div>
         );
       }

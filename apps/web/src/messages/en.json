@@ -1889,6 +1889,13 @@
           "created": "Posted a chunk draft",
           "published": "Published a chunk"
         }
+      },
+      "nativeAd": {
+        "avatarLabel": "Ad",
+        "sponsorName": "Recommended Reading",
+        "disclosure": "Ad",
+        "title": "Master the Ruy Lopez",
+        "description": "A closer look at one of chess's oldest and most respected openings."
       }
     },
     "vsAi": {

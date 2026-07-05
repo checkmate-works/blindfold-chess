@@ -52,16 +52,10 @@ vi.mock('./FeedSkeleton', () => ({
   FeedSkeleton: () => <div data-testid="feed-skeleton">Loading...</div>,
 }));
 
-vi.mock('@/app/[locale]/_components/AdSense', () => ({
-  AdSenseInFeed: ({ slotId }: { slotId: string }) => (
-    <div data-testid="adsense-infeed">{slotId}</div>
-  ),
-}));
-
-// ResponsiveAdSlot uses a matchMedia-backed hook that jsdom does not implement.
+// NativeAdCard pulls in i18n/board-preference context we don't need here.
 // We care about wrapper structure, not ad content, so a trivial stub suffices.
-vi.mock('./ResponsiveAdSlot', () => ({
-  ResponsiveAdSlot: () => <div data-testid="ad-slot">ad</div>,
+vi.mock('./NativeAdCard', () => ({
+  NativeAdCard: () => <div data-testid="ad-slot">ad</div>,
 }));
 
 // --- Helpers ---
