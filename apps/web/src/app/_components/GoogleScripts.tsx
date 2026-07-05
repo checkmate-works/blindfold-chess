@@ -27,8 +27,7 @@ type GoogleScriptsProps = {
  * publishers. This is also why `adsensePublisherId` is now passed at every
  * layout that mounts `GoogleScripts` (not just the pages that actually show
  * an ad unit) — the loader must be present sitewide for the consent message
- * (and therefore Consent-Mode-gated GA4) to appear on every page, matching
- * the sitewide coverage the previous CookieYes banner had.
+ * (and therefore Consent-Mode-gated GA4) to appear on every page.
  *
  * Why all-or-nothing: the CMP only matters if it can persist consent;
  * AdSense / GA only matter if the CMP can grant them consent. When any
