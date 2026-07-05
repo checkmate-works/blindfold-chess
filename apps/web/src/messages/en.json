@@ -624,7 +624,8 @@
     "tabToComplete": "💡 Press Tab to complete \"{suggestion}\"",
     "validWithMoves": "{count, plural, one {✓ Valid PGN with # move} other {✓ Valid PGN with # moves}}",
     "invalidPgn": "Invalid PGN format",
-    "invalidMove": "\"{move}\" is an invalid move"
+    "invalidMove": "\"{move}\" is an invalid move",
+    "clear": "Clear PGN"
   },
   "error": {
     "title": "Something went wrong!",

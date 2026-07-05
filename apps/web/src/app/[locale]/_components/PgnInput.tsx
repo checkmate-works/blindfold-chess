@@ -111,23 +111,46 @@ export function PgnInput({
               ${showError ? 'border-destructive focus:ring-destructive/20' : 'border-border focus:border-foreground focus:ring-ring'}
             `}
           />
-          {showSuccess && (
-            <div className="absolute top-3 right-3">
-              <div className="w-6 h-6 bg-success rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          {(showSuccess || value.length > 0) && (
+            <div className="absolute top-3 right-3 flex items-center gap-1">
+              {showSuccess && (
+                <div className="w-6 h-6 bg-success rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+              )}
+              {value.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange('');
+                    textareaRef.current?.focus();
+                  }}
+                  aria-label={t('clear')}
+                  title={t('clear')}
+                  className="w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
           )}
         </div>

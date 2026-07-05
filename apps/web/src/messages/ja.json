@@ -624,7 +624,8 @@
     "tabToComplete": "💡 Tab キーで \"{suggestion}\" を補完",
     "validWithMoves": "{count, plural, other {✓ 有効なPGN（#手）}}",
     "invalidPgn": "無効なPGN形式",
-    "invalidMove": "「{move}」は無効な手です"
+    "invalidMove": "「{move}」は無効な手です",
+    "clear": "PGNをクリア"
   },
   "error": {
     "title": "エラーが発生しました",

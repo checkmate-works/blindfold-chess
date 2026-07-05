@@ -620,7 +620,8 @@
     "tabToComplete": "💡 Pressione Tab para completar \"{suggestion}\"",
     "validWithMoves": "{count, plural, one {✓ PGN válido com # movimento} other {✓ PGN válido com # movimentos}}",
     "invalidPgn": "Formato PGN inválido",
-    "invalidMove": "\"{move}\" é um movimento inválido"
+    "invalidMove": "\"{move}\" é um movimento inválido",
+    "clear": "Limpar PGN"
   },
   "error": {
     "title": "Algo deu errado!",
