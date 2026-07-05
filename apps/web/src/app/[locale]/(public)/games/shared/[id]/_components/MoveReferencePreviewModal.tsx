@@ -10,6 +10,7 @@ import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_comp
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { Modal } from '@/app/[locale]/_components/Modal';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { formatPlyLabel } from '../_lib/replay-derivations';
 
@@ -46,6 +47,7 @@ export function MoveReferencePreviewModal({
   startingFen,
   playerColor,
 }: Props) {
+  const { preferences } = useGamePreferences();
   const nav = useMoveNavigation({ moves: sans as AlgebraicNotation[], startingFen: baseFen });
 
   const stepLabels = useMemo(() => {
@@ -72,7 +74,13 @@ export function MoveReferencePreviewModal({
   return (
     <Modal isOpen onClose={onClose} title={raw} maxWidth="max-w-lg">
       <div className="space-y-3">
-        <ChessBoard fen={fen} flipped={playerColor === 'black'} lastMove={lastMove} rounded />
+        <ChessBoard
+          fen={fen}
+          flipped={playerColor === 'black'}
+          lastMove={lastMove}
+          boardTheme={preferences.boardTheme}
+          rounded
+        />
 
         <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm">
           {stepLabels.map((label, i) => (
