@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -11,6 +11,7 @@ import { TEXT_LINK_DESTRUCTIVE_CLASSES } from '@/app/[locale]/_lib/link-classes'
 import { useDebouncedInput } from '../_hooks/use-debounced-input';
 import { useIsMobile } from '../_hooks/use-is-mobile';
 import { usePgnValidation } from '../_hooks/use-pgn-validation';
+import { ConfirmationModal } from './ConfirmationModal';
 
 type Props = {
   value: string;
@@ -38,6 +39,7 @@ export function PgnInput({
 }: Props) {
   const t = useTranslations('pgnInput');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const isMobile = useIsMobile();
   const { debouncedValue, handlePaste } = useDebouncedInput({ value, delay: DEBOUNCE_DELAY });
@@ -77,6 +79,12 @@ export function PgnInput({
     }
   };
 
+  const handleClearConfirm = () => {
+    setShowClearConfirm(false);
+    onChange('');
+    textareaRef.current?.focus();
+  };
+
   const defaultPlaceholder = t('placeholder');
 
   return (
@@ -111,23 +119,43 @@ export function PgnInput({
               ${showError ? 'border-destructive focus:ring-destructive/20' : 'border-border focus:border-foreground focus:ring-ring'}
             `}
           />
-          {showSuccess && (
-            <div className="absolute top-3 right-3">
-              <div className="w-6 h-6 bg-success rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          {(showSuccess || value.length > 0) && (
+            <div className="absolute top-3 right-3 flex items-center gap-1">
+              {showSuccess && (
+                <div className="w-6 h-6 bg-success rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+              )}
+              {value.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirm(true)}
+                  aria-label={t('clear')}
+                  title={t('clear')}
+                  className="w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -158,6 +186,17 @@ export function PgnInput({
         ) : (
           <p className="text-sm text-destructive">{errorMessage}</p>
         ))}
+
+      <ConfirmationModal
+        isOpen={showClearConfirm}
+        onConfirm={handleClearConfirm}
+        onCancel={() => setShowClearConfirm(false)}
+        title={t('clearConfirmTitle')}
+        message={t('clearConfirmMessage')}
+        confirmText={t('clearConfirmButton')}
+        cancelText={t('clearConfirmCancel')}
+        confirmVariant="danger"
+      />
     </div>
   );
 }

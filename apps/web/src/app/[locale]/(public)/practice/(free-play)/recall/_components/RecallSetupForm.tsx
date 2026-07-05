@@ -7,24 +7,33 @@ import { useRouter } from 'next/navigation';
 import { Button, TextInput } from '@/app/_components';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { getPgnHeaders, getPgnHistory } from '@blindfold-chess/features/chess-core';
+import {
+  formatPgnToText,
+  getPgnHeaders,
+  getPgnHistory,
+} from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
+import type { Game } from '@/lib/games/saved-game-types';
+
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { PgnInput } from '@/app/[locale]/_components/PgnInput';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
 import { importLichessGame } from '../_actions/importLichessGame';
+import { formatMovesToPgn } from '../_lib';
+import { MyGamesImportPanel } from './MyGamesImportPanel';
 
-type InputMode = 'manual' | 'lichess';
+type InputMode = 'manual' | 'lichess' | 'myGames';
 
 /**
  * Mirrors `topics/_components/AttachmentModal.tsx`'s tab list — same
  * `role="tab"` / `border-b-2` treatment — so the two attachment-style
  * switchers in the app look and behave the same way.
  */
-const INPUT_MODE_TABS: readonly InputMode[] = ['manual', 'lichess'];
+const INPUT_MODE_TABS: readonly InputMode[] = ['manual', 'lichess', 'myGames'];
 
 /**
  * Standalone entry point for the recall review: paste any PGN (your own
@@ -42,6 +51,12 @@ export function RecallSetupForm() {
   const [pgn, setPgn] = useState('');
   const [color, setColor] = useState<Side>('white');
   const [colorManuallySet, setColorManuallySet] = useState(false);
+  // Set when the current `pgn` text came from picking a "My Games" row, so
+  // `handleStart` can carry `gameId` through (restores that game's saved
+  // preferences and the "back to result" link — see RecallSessionClient).
+  // Cleared as soon as the user edits the textarea themselves, since the
+  // text may no longer match that game's actual moves.
+  const [selectedGameId, setSelectedGameId] = useState<string | undefined>(undefined);
 
   const [inputMode, setInputMode] = useState<InputMode>('manual');
   const [lichessUrl, setLichessUrl] = useState('');
@@ -86,6 +101,7 @@ export function RecallSetupForm() {
       // Re-derive color from the freshly imported PGN even if the user had
       // manually overridden it for a previous (unrelated) paste.
       setColorManuallySet(false);
+      setSelectedGameId(undefined);
       setPgn(result.pgn);
       setLichessUrl('');
       // Switch back to the manual tab so the user sees (and can tweak) the
@@ -95,6 +111,21 @@ export function RecallSetupForm() {
     } finally {
       setIsImporting(false);
     }
+  };
+
+  // Format a picked "My Games" entry into PGN text and land on the manual
+  // tab for review — same shape as the Lichess import flow. Unlike that
+  // flow, the color here is authoritative (the side the user actually
+  // played), so it's set directly and locked rather than re-derived from
+  // the reconstructed PGN.
+  const handleSelectMyGame = (game: Game) => {
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(game.startingFen);
+    const formatted = formatMovesToPgn(game.moves, startsAsBlack, startMoveNumber);
+    setColor(game.playerColor);
+    setColorManuallySet(true);
+    setSelectedGameId(game.id);
+    setPgn(formatPgnToText(formatted, game.startingFen));
+    setInputMode('manual');
   };
 
   // Roving tab navigation per W3C ARIA APG (mirrors AttachmentModal's
@@ -130,7 +161,8 @@ export function RecallSetupForm() {
     const params = new URLSearchParams({ color });
     params.set('moves', JSON.stringify(moves));
     if (startingFen) params.set('fen', startingFen);
-    router.push(`/${locale}/practice/recall?${params.toString()}`);
+    if (selectedGameId) params.set('gameId', selectedGameId);
+    router.push(`/${locale}/practice/recall/session?${params.toString()}`);
   };
 
   return (
@@ -179,7 +211,13 @@ export function RecallSetupForm() {
             aria-labelledby={`${tabIdPrefix}-tab-manual`}
             hidden={inputMode !== 'manual'}
           >
-            <PgnInput value={pgn} onChange={setPgn} />
+            <PgnInput
+              value={pgn}
+              onChange={(next) => {
+                setPgn(next);
+                setSelectedGameId(undefined);
+              }}
+            />
           </div>
           <div
             role="tabpanel"
@@ -211,6 +249,14 @@ export function RecallSetupForm() {
                 </p>
               )}
             </div>
+          </div>
+          <div
+            role="tabpanel"
+            id={`${tabIdPrefix}-panel-myGames`}
+            aria-labelledby={`${tabIdPrefix}-tab-myGames`}
+            hidden={inputMode !== 'myGames'}
+          >
+            <MyGamesImportPanel onSelect={handleSelectMyGame} />
           </div>
         </div>
       </div>

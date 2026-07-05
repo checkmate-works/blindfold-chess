@@ -1,5 +1,5 @@
 /**
- * Recall Page
+ * Recall Page (感想戦)
  *
  * @description
  * A game review feature where users replay all moves from a completed game
@@ -9,42 +9,27 @@
  * review session and are not persisted.
  *
  * @flow
- * 1. Entry: Navigate from completed game with PGN passed via URL params
- * 2. Replay Phase: Enter each move from memory in order
+ * 1. Setup Phase (this page): paste a PGN (or import from Lichess) and pick a color
+ * 2. Session Phase (`/practice/recall/session`): enter each move from memory in order
  *    - Correct move: Advance to next move
  *    - Incorrect move: Shown as error, retry until correct
  *    - "I don't know" button: Reveals the correct move and advances
  *    - Auto-opponent mode: Only enter your own moves
  * 3. Completion: Summary of accuracy, option to review specific positions
  */
-import { Suspense } from 'react';
-
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
+import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
+import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
+import { PageLayout } from '@/app/[locale]/_components/PageLayout';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { RecallPageClient } from './_components/RecallPageClient';
+import { RecallSetupForm } from './_components/RecallSetupForm';
 
 export const generateStaticParams = generateLocaleStaticParams;
-
-/**
- * `RecallPageClient` reads `pgn` / `moves` / `color` / ... via
- * `useSearchParams()` and renders the entire visible page (title, board,
- * move input, moves panel, breadcrumb) — there is no chrome outside its
- * `<Suspense>` below. On a statically-generated route, Next.js can't know
- * those search params at build time, so the cached HTML would contain only
- * that Suspense boundary's fallback — an actually blank page — until client
- * JS hydrates and re-renders from the real URL. Declaring `force-dynamic`
- * makes every request render server-side with the real search params
- * already known, so the bare `<Suspense>` resolves to real content
- * immediately instead of a placeholder. Same pattern as
- * `games/play/page.tsx` and `games/new/_lib/create-new-game-page.tsx`.
- */
-export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -65,22 +50,37 @@ export default async function RecallPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
   const t = await getTranslations({ locale });
   const tRecall = await getTranslations({ locale, namespace: 'recall' });
 
-  const breadcrumb = (
-    <BreadcrumbContent
-      items={[{ label: t('navigation.practice'), href: '/practice' }, { label: tRecall('title') }]}
-      locale={locale}
-      brandName={tMetadata('siteName')}
-      density="compact"
-    />
-  );
+  const setupHelpSteps: HelpStep[] = [
+    {
+      targetId: 'recall-setup-pgn',
+      title: tRecall('help.setup.pgn.title'),
+      description: tRecall('help.setup.pgn.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: 'recall-setup-color',
+      title: tRecall('help.setup.color.title'),
+      description: tRecall('help.setup.color.description'),
+      side: 'top',
+      align: 'center',
+    },
+  ];
 
   return (
-    <Suspense>
-      <RecallPageClient breadcrumb={breadcrumb} />
-    </Suspense>
+    <PageLayout
+      title={tRecall('title')}
+      titleAction={<HelpTourButton steps={setupHelpSteps} label={tRecall('help.label')} />}
+      locale={locale}
+      breadcrumb={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: tRecall('title') },
+      ]}
+    >
+      <RecallSetupForm />
+    </PageLayout>
   );
 }

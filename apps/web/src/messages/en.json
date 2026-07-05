@@ -624,7 +624,12 @@
     "tabToComplete": "💡 Press Tab to complete \"{suggestion}\"",
     "validWithMoves": "{count, plural, one {✓ Valid PGN with # move} other {✓ Valid PGN with # moves}}",
     "invalidPgn": "Invalid PGN format",
-    "invalidMove": "\"{move}\" is an invalid move"
+    "invalidMove": "\"{move}\" is an invalid move",
+    "clear": "Clear PGN",
+    "clearConfirmTitle": "Clear PGN?",
+    "clearConfirmMessage": "This will erase the pasted text. This can't be undone.",
+    "clearConfirmButton": "Clear",
+    "clearConfirmCancel": "Cancel"
   },
   "error": {
     "title": "Something went wrong!",
@@ -2344,12 +2349,14 @@
   "recall": {
     "title": "Recall",
     "description": "Paste any PGN and replay it move by move from memory — no account or saved game required.",
+    "session": "In Progress",
     "setup": {
       "pgnLabel": "PGN",
       "startButton": "Start Recall",
       "inputMode": {
         "manual": "Paste PGN",
-        "lichess": "Lichess URL"
+        "lichess": "Lichess URL",
+        "myGames": "My Games"
       },
       "lichessImport": {
         "placeholder": "https://lichess.org/...",
@@ -2363,6 +2370,9 @@
           "too_large": "This game's PGN is too large to import.",
           "fetch_failed": "Couldn't reach Lichess. Please try again."
         }
+      },
+      "myGamesImport": {
+        "empty": "No finished games yet. Finish a game to recall it here."
       }
     },
     "settings": "Settings",

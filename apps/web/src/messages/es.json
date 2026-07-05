@@ -620,7 +620,12 @@
     "tabToComplete": "💡 Presiona Tab para completar \"{suggestion}\"",
     "validWithMoves": "{count, plural, one {✓ PGN válido con # movimiento} other {✓ PGN válido con # movimientos}}",
     "invalidPgn": "Formato PGN inválido",
-    "invalidMove": "\"{move}\" es un movimiento inválido"
+    "invalidMove": "\"{move}\" es un movimiento inválido",
+    "clear": "Borrar PGN",
+    "clearConfirmTitle": "¿Borrar el PGN?",
+    "clearConfirmMessage": "Esto borrará el texto pegado. Esta acción no se puede deshacer.",
+    "clearConfirmButton": "Borrar",
+    "clearConfirmCancel": "Cancelar"
   },
   "error": {
     "title": "¡Algo salió mal!",
@@ -2340,12 +2345,14 @@
   "recall": {
     "title": "De memoria",
     "description": "Pega cualquier PGN y reprodúcelo jugada a jugada de memoria — sin necesidad de cuenta ni partida guardada.",
+    "session": "En Progreso",
     "setup": {
       "pgnLabel": "PGN",
       "startButton": "Empezar de memoria",
       "inputMode": {
         "manual": "Pegar PGN",
-        "lichess": "URL de Lichess"
+        "lichess": "URL de Lichess",
+        "myGames": "Mis partidas"
       },
       "lichessImport": {
         "placeholder": "https://lichess.org/...",
@@ -2359,6 +2366,9 @@
           "too_large": "El PGN de esta partida es demasiado grande para importarlo.",
           "fetch_failed": "No se pudo conectar con Lichess. Inténtalo de nuevo."
         }
+      },
+      "myGamesImport": {
+        "empty": "Aún no hay partidas terminadas. Termina una partida para poder recordarla aquí."
       }
     },
     "settings": "Ajustes",

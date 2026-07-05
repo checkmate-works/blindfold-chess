@@ -624,7 +624,12 @@
     "tabToComplete": "💡 Tab キーで \"{suggestion}\" を補完",
     "validWithMoves": "{count, plural, other {✓ 有効なPGN（#手）}}",
     "invalidPgn": "無効なPGN形式",
-    "invalidMove": "「{move}」は無効な手です"
+    "invalidMove": "「{move}」は無効な手です",
+    "clear": "PGNをクリア",
+    "clearConfirmTitle": "PGNをクリアしますか?",
+    "clearConfirmMessage": "貼り付けたテキストが消去されます。この操作は取り消せません。",
+    "clearConfirmButton": "クリア",
+    "clearConfirmCancel": "キャンセル"
   },
   "error": {
     "title": "エラーが発生しました",
@@ -2344,12 +2349,14 @@
   "recall": {
     "title": "棋譜再現",
     "description": "棋譜を貼り付けて、記憶を頼りに一手ずつ再現しましょう。アカウントや保存された対局は不要です。",
+    "session": "練習中",
     "setup": {
       "pgnLabel": "棋譜（PGN）",
       "startButton": "棋譜再現を始める",
       "inputMode": {
         "manual": "棋譜を貼り付け",
-        "lichess": "Lichess URL"
+        "lichess": "Lichess URL",
+        "myGames": "マイ対局"
       },
       "lichessImport": {
         "placeholder": "https://lichess.org/...",
@@ -2363,6 +2370,9 @@
           "too_large": "この対局の棋譜はサイズが大きすぎてインポートできません。",
           "fetch_failed": "Lichessに接続できませんでした。もう一度お試しください。"
         }
+      },
+      "myGamesImport": {
+        "empty": "完了した対局がまだありません。対局を終えると、ここから振り返れます。"
       }
     },
     "settings": "設定",
