@@ -55,6 +55,22 @@ export function computeContinuation(
 }
 
 /**
+ * The single source of the PGN-style move-label format: white → "1. d4",
+ * black → "1...d5". Every label in this route (the review heading, the
+ * discussion-feed group headers, the comment move-reference preview) goes
+ * through here so the notation cannot drift between surfaces.
+ */
+export function formatPlyLabel(
+  ply: number,
+  san: string,
+  startsAsBlack: boolean,
+  startMoveNumber: number
+): string {
+  const { moveNumber, isWhiteMove } = computeMoveNumber(ply, startsAsBlack, startMoveNumber);
+  return isWhiteMove ? `${moveNumber}. ${san}` : `${moveNumber}...${san}`;
+}
+
+/**
  * Label a move with its PGN-style number prefix: white → "1. d4",
  * black → "1...d5" (derived from the starting FEN's side + fullmove).
  */
@@ -67,8 +83,7 @@ export function formatMoveLabel(
   const san = moves[currentPly];
   if (!san) return null;
   const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-  const { moveNumber, isWhiteMove } = computeMoveNumber(currentPly, startsAsBlack, startMoveNumber);
-  return isWhiteMove ? `${moveNumber}. ${san}` : `${moveNumber}...${san}`;
+  return formatPlyLabel(currentPly, san, startsAsBlack, startMoveNumber);
 }
 
 /**

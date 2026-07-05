@@ -63,6 +63,7 @@ function renderFeed(onJumpToPly = vi.fn()) {
       gameChunks={[chunk('k2', 2)]}
       notationMoves={['e4', 'e5', 'Nf3', 'Nc6']}
       startingFen={null}
+      playerColor="white"
       onJumpToPly={onJumpToPly}
       locale={'en' as Locale}
     />

@@ -1,17 +1,21 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Side } from '@blindfold-chess/types';
 
 import { formatAbsoluteDateTime } from '@/app/[locale]/(public)/topics/_lib/absolute-time';
-import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { type GameCommentTreeNode, countDescendants } from '../_lib/game-comment-tree';
+import { GameCommentBody } from './GameCommentBody';
 
 type Props = {
   node: GameCommentTreeNode;
   locale: Locale;
+  moves: string[];
+  startingFen: string | null;
+  playerColor: Side;
 };
 
 /**
@@ -20,7 +24,7 @@ type Props = {
  * interactive affordance (like / reply / edit / delete / collapse). Replies are
  * summarized as a count; acting on the thread happens after jumping to the move.
  */
-export function DiscussionCommentRow({ node, locale }: Props) {
+export function DiscussionCommentRow({ node, locale, moves, startingFen, playerColor }: Props) {
   const t = useTranslations('sharedGames');
   const tCommon = useTranslations('Common');
 
@@ -44,7 +48,13 @@ export function DiscussionCommentRow({ node, locale }: Props) {
       </UserAvatar>
 
       <p className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed">
-        <LinkedText text={node.body} locale={locale} />
+        <GameCommentBody
+          text={node.body}
+          locale={locale}
+          moves={moves}
+          startingFen={startingFen}
+          playerColor={playerColor}
+        />
       </p>
 
       {replyCount > 0 && (

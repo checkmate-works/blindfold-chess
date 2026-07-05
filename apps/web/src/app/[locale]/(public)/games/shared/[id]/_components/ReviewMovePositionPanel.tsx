@@ -1,5 +1,7 @@
 'use client';
 
+import type { Side } from '@blindfold-chess/types';
+
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
@@ -29,6 +31,9 @@ export function ReviewMovePositionPanel({
   availableChunks,
   currentUser,
   isGameOwner,
+  moves,
+  startingFen,
+  playerColor,
 }: {
   title: string;
   locale: Locale;
@@ -41,6 +46,9 @@ export function ReviewMovePositionPanel({
   availableChunks: ChunkOption[];
   currentUser: CommentUser | null;
   isGameOwner: boolean;
+  moves: string[];
+  startingFen: string | null;
+  playerColor: Side;
 }) {
   return (
     <div className="space-y-4">
@@ -68,6 +76,9 @@ export function ReviewMovePositionPanel({
         currentUser={currentUser}
         isGameOwner={isGameOwner}
         locale={locale}
+        moves={moves}
+        startingFen={startingFen}
+        playerColor={playerColor}
       />
     </div>
   );

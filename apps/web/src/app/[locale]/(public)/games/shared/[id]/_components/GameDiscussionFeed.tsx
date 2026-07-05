@@ -3,18 +3,19 @@
 import { useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Side } from '@blindfold-chess/types';
 import { FiChevronRight } from 'react-icons/fi';
 
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildDiscussionGroups } from '../_lib/build-discussion-groups';
 import { buildGameCommentTree } from '../_lib/game-comment-tree';
 import { groupChunkLinksBySuggester } from '../_lib/group-chunk-links';
+import { formatPlyLabel } from '../_lib/replay-derivations';
 import { DiscussionCommentRow } from './DiscussionCommentRow';
 import { GameChunkLinkCard } from './GameChunkLinkCard';
 
@@ -27,6 +28,8 @@ type Props = {
   notationMoves: string[];
   /** Game's starting FEN, for the move-number base. */
   startingFen: string | null;
+  /** Passed through to `GameCommentBody` for the board-orientation of move previews. */
+  playerColor: Side;
   /** Jump the live replay to a move (0-based ply). */
   onJumpToPly: (ply: number) => void;
   locale: Locale;
@@ -45,6 +48,7 @@ export function GameDiscussionFeed({
   gameChunks,
   notationMoves,
   startingFen,
+  playerColor,
   onJumpToPly,
   locale,
 }: Props) {
@@ -54,11 +58,8 @@ export function GameDiscussionFeed({
 
   const moveLabel = useMemo(() => {
     const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-    return (ply: number): string => {
-      const san = notationMoves[ply] ?? '';
-      const { moveNumber, isWhiteMove } = computeMoveNumber(ply, startsAsBlack, startMoveNumber);
-      return isWhiteMove ? `${moveNumber}. ${san}` : `${moveNumber}...${san}`;
-    };
+    return (ply: number): string =>
+      formatPlyLabel(ply, notationMoves[ply] ?? '', startsAsBlack, startMoveNumber);
   }, [notationMoves, startingFen]);
 
   return (
@@ -81,7 +82,14 @@ export function GameDiscussionFeed({
           {group.comments.length > 0 && (
             <div className="space-y-6">
               {buildGameCommentTree(group.comments).map((root) => (
-                <DiscussionCommentRow key={root.id} node={root} locale={locale} />
+                <DiscussionCommentRow
+                  key={root.id}
+                  node={root}
+                  locale={locale}
+                  moves={notationMoves}
+                  startingFen={startingFen}
+                  playerColor={playerColor}
+                />
               ))}
             </div>
           )}

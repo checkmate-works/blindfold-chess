@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { computeMoveNumber } from './compute-move-number';
+import { computeMoveNumber, plyFromMoveNumber } from './compute-move-number';
 
 describe('computeMoveNumber', () => {
   describe('when starting as white', () => {
@@ -99,5 +99,33 @@ describe('computeMoveNumber', () => {
       const result = computeMoveNumber(0, false, 100);
       expect(result).toEqual({ moveNumber: 100, isWhiteMove: true });
     });
+  });
+});
+
+describe('plyFromMoveNumber', () => {
+  test('round-trips with computeMoveNumber for every ply, starting as white', () => {
+    for (let ply = 0; ply < 20; ply++) {
+      const { moveNumber, isWhiteMove } = computeMoveNumber(ply, false, 1);
+      expect(plyFromMoveNumber(moveNumber, isWhiteMove, false, 1)).toBe(ply);
+    }
+  });
+
+  test('round-trips with computeMoveNumber for every ply, starting as black', () => {
+    for (let ply = 0; ply < 20; ply++) {
+      const { moveNumber, isWhiteMove } = computeMoveNumber(ply, true, 1);
+      expect(plyFromMoveNumber(moveNumber, isWhiteMove, true, 1)).toBe(ply);
+    }
+  });
+
+  test('round-trips with a non-default startMoveNumber', () => {
+    for (let ply = 0; ply < 20; ply++) {
+      const { moveNumber, isWhiteMove } = computeMoveNumber(ply, false, 7);
+      expect(plyFromMoveNumber(moveNumber, isWhiteMove, false, 7)).toBe(ply);
+    }
+  });
+
+  test('returns -1 for a combination that cannot occur', () => {
+    // Starting as black, there is no white move numbered `startMoveNumber`.
+    expect(plyFromMoveNumber(1, true, true, 1)).toBe(-1);
   });
 });
