@@ -2350,7 +2350,8 @@
       "startButton": "棋譜再現を始める",
       "inputMode": {
         "manual": "棋譜を貼り付け",
-        "lichess": "Lichess URL"
+        "lichess": "Lichess URL",
+        "myGames": "マイ対局"
       },
       "lichessImport": {
         "placeholder": "https://lichess.org/...",
@@ -2364,6 +2365,9 @@
           "too_large": "この対局の棋譜はサイズが大きすぎてインポートできません。",
           "fetch_failed": "Lichessに接続できませんでした。もう一度お試しください。"
         }
+      },
+      "myGamesImport": {
+        "empty": "完了した対局がまだありません。対局を終えると、ここから振り返れます。"
       }
     },
     "settings": "設定",

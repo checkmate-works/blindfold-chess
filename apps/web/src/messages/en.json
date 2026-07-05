@@ -2350,7 +2350,8 @@
       "startButton": "Start Recall",
       "inputMode": {
         "manual": "Paste PGN",
-        "lichess": "Lichess URL"
+        "lichess": "Lichess URL",
+        "myGames": "My Games"
       },
       "lichessImport": {
         "placeholder": "https://lichess.org/...",
@@ -2364,6 +2365,9 @@
           "too_large": "This game's PGN is too large to import.",
           "fetch_failed": "Couldn't reach Lichess. Please try again."
         }
+      },
+      "myGamesImport": {
+        "empty": "No finished games yet. Finish a game to recall it here."
       }
     },
     "settings": "Settings",

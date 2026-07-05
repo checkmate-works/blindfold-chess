@@ -16,15 +16,16 @@ import { PgnInput } from '@/app/[locale]/_components/PgnInput';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
 import { importLichessGame } from '../_actions/importLichessGame';
+import { MyGamesImportPanel } from './MyGamesImportPanel';
 
-type InputMode = 'manual' | 'lichess';
+type InputMode = 'manual' | 'lichess' | 'myGames';
 
 /**
  * Mirrors `topics/_components/AttachmentModal.tsx`'s tab list — same
  * `role="tab"` / `border-b-2` treatment — so the two attachment-style
  * switchers in the app look and behave the same way.
  */
-const INPUT_MODE_TABS: readonly InputMode[] = ['manual', 'lichess'];
+const INPUT_MODE_TABS: readonly InputMode[] = ['manual', 'lichess', 'myGames'];
 
 /**
  * Standalone entry point for the recall review: paste any PGN (your own
@@ -212,20 +213,34 @@ export function RecallSetupForm() {
               )}
             </div>
           </div>
+          <div
+            role="tabpanel"
+            id={`${tabIdPrefix}-panel-myGames`}
+            aria-labelledby={`${tabIdPrefix}-tab-myGames`}
+            hidden={inputMode !== 'myGames'}
+          >
+            <MyGamesImportPanel />
+          </div>
         </div>
       </div>
-      <div data-tour-id="recall-setup-color">
-        <ColorSelector value={color} onChange={handleColorChange} />
-      </div>
-      <Button
-        onClick={handleStart}
-        disabled={isStartDisabled}
-        variant="primary"
-        size="lg"
-        className="w-full"
-      >
-        {t('setup.startButton')}
-      </Button>
+      {/* Picking a saved game (above) jumps straight into the session — there's
+          no pasted text to review, so color/start don't apply to that tab. */}
+      {inputMode !== 'myGames' && (
+        <>
+          <div data-tour-id="recall-setup-color">
+            <ColorSelector value={color} onChange={handleColorChange} />
+          </div>
+          <Button
+            onClick={handleStart}
+            disabled={isStartDisabled}
+            variant="primary"
+            size="lg"
+            className="w-full"
+          >
+            {t('setup.startButton')}
+          </Button>
+        </>
+      )}
     </div>
   );
 }

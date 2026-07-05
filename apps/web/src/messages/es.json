@@ -2346,7 +2346,8 @@
       "startButton": "Empezar de memoria",
       "inputMode": {
         "manual": "Pegar PGN",
-        "lichess": "URL de Lichess"
+        "lichess": "URL de Lichess",
+        "myGames": "Mis partidas"
       },
       "lichessImport": {
         "placeholder": "https://lichess.org/...",
@@ -2360,6 +2361,9 @@
           "too_large": "El PGN de esta partida es demasiado grande para importarlo.",
           "fetch_failed": "No se pudo conectar con Lichess. Inténtalo de nuevo."
         }
+      },
+      "myGamesImport": {
+        "empty": "Aún no hay partidas terminadas. Termina una partida para poder recordarla aquí."
       }
     },
     "settings": "Ajustes",
