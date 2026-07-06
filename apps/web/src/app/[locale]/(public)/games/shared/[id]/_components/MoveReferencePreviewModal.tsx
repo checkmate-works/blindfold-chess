@@ -30,13 +30,14 @@ type Props = {
 };
 
 /**
- * Previews a comment's PGN-style move reference: the position right before
- * the referenced move(s), steppable forward through each suggested move.
- * Navigation is scoped to just this branch (`sans`), not the whole game —
- * `useMoveNavigation`'s position range is [-2 .. sans.length - 1] here, and
- * its initial position (-1, "latest") is already the branch's final position,
- * the agreed opening view. Mounted only while open (the caller conditionally
- * renders it), so navigation state resets between references for free.
+ * Previews a comment's PGN-style move reference, steppable forward through
+ * each suggested move. Navigation is scoped to just this branch (`sans`), not
+ * the whole game — `useMoveNavigation`'s position range is [-2 .. sans.length
+ * - 1] here. It opens on the FIRST move (`initialPosition: 0`, e.g. the "Bxa7"
+ * of "Bxa7 b6") so the reader starts at the head of the line and steps
+ * forward, with "previous" available back to the position before it (-2).
+ * Mounted only while open (the caller conditionally renders it), so navigation
+ * state resets between references for free.
  */
 export function MoveReferencePreviewModal({
   onClose,
@@ -48,7 +49,11 @@ export function MoveReferencePreviewModal({
   playerColor,
 }: Props) {
   const { preferences } = useGamePreferences();
-  const nav = useMoveNavigation({ moves: sans as AlgebraicNotation[], startingFen: baseFen });
+  const nav = useMoveNavigation({
+    moves: sans as AlgebraicNotation[],
+    startingFen: baseFen,
+    initialPosition: 0,
+  });
 
   const stepLabels = useMemo(() => {
     const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
