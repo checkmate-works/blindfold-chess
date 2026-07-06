@@ -287,6 +287,7 @@ export function ChunkForm(props: Props) {
         <Button
           type="submit"
           variant="primary"
+          size="lg"
           fullWidth
           disabled={submitDisabled}
           loading={pending}
@@ -307,6 +308,7 @@ export function ChunkForm(props: Props) {
             <Button
               type="button"
               variant="primary"
+              size="lg"
               fullWidth
               disabled={submitDisabled}
               loading={publishPending}
@@ -318,7 +320,7 @@ export function ChunkForm(props: Props) {
               type="button"
               onClick={() => lifecycle.setDeleteConfirmOpen(true)}
               disabled={pending || deletePending || publishPending}
-              className="w-full px-4 py-2 text-sm rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+              className="w-full px-6 py-3 rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
             >
               {deletePending ? t('actions.deleting') : t('actions.delete')}
             </button>
