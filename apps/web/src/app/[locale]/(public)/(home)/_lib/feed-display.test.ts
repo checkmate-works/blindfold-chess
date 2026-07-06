@@ -25,21 +25,21 @@ function createFeedItems(count: number): FeedItem[] {
 
 describe('buildDisplayItems', () => {
   it('should return an empty array when items is empty', () => {
-    const result = buildDisplayItems([], 1);
+    const result = buildDisplayItems([], true);
     expect(result).toEqual([]);
   });
 
-  it('should return only feed items when no ad creatives are available (adCount 0)', () => {
+  it('should return only feed items when showAds is false', () => {
     const items = createFeedItems(AD_INTERVAL * 2);
-    const result = buildDisplayItems(items, 0);
+    const result = buildDisplayItems(items, false);
 
     expect(result).toHaveLength(AD_INTERVAL * 2);
     expect(result.every((d) => d.type === 'feed')).toBe(true);
   });
 
-  it('should insert an ad after every AD_INTERVAL items', () => {
+  it('should insert an ad after every AD_INTERVAL items when showAds is true', () => {
     const items = createFeedItems(AD_INTERVAL * 3);
-    const result = buildDisplayItems(items, 1);
+    const result = buildDisplayItems(items, true);
 
     // Total: items + 3 ads
     expect(result).toHaveLength(AD_INTERVAL * 3 + 3);
@@ -58,7 +58,7 @@ describe('buildDisplayItems', () => {
 
   it('should assign a running 0-based adIndex to each inserted ad', () => {
     const items = createFeedItems(AD_INTERVAL * 3);
-    const result = buildDisplayItems(items, 2);
+    const result = buildDisplayItems(items, true);
 
     const adIndexes = result
       .filter((d) => d.type === 'ad')
@@ -68,7 +68,7 @@ describe('buildDisplayItems', () => {
 
   it('should not insert ads when item count is less than AD_INTERVAL', () => {
     const items = createFeedItems(AD_INTERVAL - 1);
-    const result = buildDisplayItems(items, 1);
+    const result = buildDisplayItems(items, true);
 
     expect(result).toHaveLength(AD_INTERVAL - 1);
     expect(result.every((d) => d.type === 'feed')).toBe(true);
@@ -76,7 +76,7 @@ describe('buildDisplayItems', () => {
 
   it('should insert an ad after exactly AD_INTERVAL items', () => {
     const items = createFeedItems(AD_INTERVAL);
-    const result = buildDisplayItems(items, 1);
+    const result = buildDisplayItems(items, true);
 
     // AD_INTERVAL items + 1 ad
     expect(result).toHaveLength(AD_INTERVAL + 1);

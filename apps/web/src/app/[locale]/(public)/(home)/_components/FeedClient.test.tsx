@@ -58,6 +58,12 @@ vi.mock('./NativeAdCard', () => ({
   NativeAdCard: () => <div data-testid="ad-slot">ad</div>,
 }));
 
+// ResponsiveAdSlot (the AdSense fallback) uses a matchMedia-backed hook jsdom
+// doesn't implement; stub it since these tests exercise wrapper structure.
+vi.mock('./ResponsiveAdSlot', () => ({
+  ResponsiveAdSlot: () => <div data-testid="ad-slot-fallback">adsense</div>,
+}));
+
 // --- Helpers ---
 
 const defaultProps = {

@@ -11,6 +11,7 @@ import type { DisplayItem, FeedItem } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
 import { NativeAdCard } from './NativeAdCard';
+import { ResponsiveAdSlot } from './ResponsiveAdSlot';
 
 type Props = {
   /**
@@ -27,9 +28,11 @@ type Props = {
   justNowLabel: string;
   showAds?: boolean;
   /**
-   * Native-ad creatives available for the in-feed slot. Resolved server-side
-   * (active + in-schedule) and rotated through by the interleaved ad slots.
-   * Empty array → no ad slots are inserted even when `showAds` is true.
+   * Admin-configured native-ad creatives for the in-feed slot, resolved
+   * server-side (active + in-schedule, priority-ordered). Each ad slot is
+   * filled by the next creative (rotating `adIndex % n`); when the list is
+   * empty the slot falls back to the AdSense in-feed unit. An empty list does
+   * NOT suppress the slot — `showAds` alone decides whether ads appear.
    */
   nativeAdCreatives?: NativeAdView[];
   /**
@@ -70,10 +73,7 @@ export function FeedClient({
     () => (showAds ? (nativeAdCreatives ?? []) : []),
     [showAds, nativeAdCreatives]
   );
-  const displayItems = useMemo(
-    () => buildDisplayItems(items, adCreatives.length),
-    [items, adCreatives]
-  );
+  const displayItems = useMemo(() => buildDisplayItems(items, showAds), [items, showAds]);
 
   // In `card` layout each item is a self-contained bordered card spaced by the
   // container's `space-y-3`; in `feed` layout items share a continuous list and
@@ -83,10 +83,20 @@ export function FeedClient({
   const renderDisplayItem = useCallback(
     (index: number, displayItem: DisplayItem) => {
       if (displayItem.type === 'ad') {
-        const creative = adCreatives[displayItem.adIndex % adCreatives.length];
+        // Waterfall: highest-priority admin creative, else AdSense fallback.
+        // `ad-slot-wrapper` opts the whole row into the `bfc_ads_hidden`
+        // no-flash CSS hide so ad-free viewers (subscription or coin grant)
+        // never see it — the same hook every AdSense slot already uses, now
+        // covering the native card too.
+        const creative =
+          adCreatives.length > 0 ? adCreatives[displayItem.adIndex % adCreatives.length] : null;
         return (
-          <div key={`ad-${index}`} className={itemWrapperClass}>
-            <NativeAdCard creative={creative} locale={locale} variant={variant} />
+          <div key={`ad-${index}`} className={`${itemWrapperClass} ad-slot-wrapper`.trim()}>
+            {creative ? (
+              <NativeAdCard creative={creative} locale={locale} variant={variant} />
+            ) : (
+              <ResponsiveAdSlot />
+            )}
           </div>
         );
       }

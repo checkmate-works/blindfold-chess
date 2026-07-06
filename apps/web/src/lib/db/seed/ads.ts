@@ -14,6 +14,11 @@ type SeedCreative = {
   payload: BannerPayload | NativeCardPayload;
 };
 
+// Deliberately NO `feed-native-ad` seed: at launch nothing is configured, so
+// the in-feed slot falls back to AdSense — the intended "no visible change on
+// release" state. Native-card creatives (Amazon/Awin affiliates) are added by
+// admins later. The banner rows are example placeholders for the (not yet
+// publicly rendered) banner slots and are harmless if seeded in production.
 const seedCreatives: SeedCreative[] = [
   {
     kind: 'banner',
@@ -37,29 +42,6 @@ const seedCreatives: SeedCreative[] = [
       alt: 'Advertisement',
       width: 400,
       height: 400,
-    },
-  },
-  {
-    kind: 'native_card',
-    slot: 'feed-native-ad',
-    href: 'https://example.com',
-    sortOrder: 0,
-    payload: {
-      avatarImagePath: null,
-      avatarAlt: 'Advertisement',
-      title: {
-        en: 'Master the Ruy Lopez',
-        ja: 'ルイ・ロペスを極める',
-        es: 'Domina la Ruy López',
-        'pt-BR': 'Domine o Ruy Lopez',
-      },
-      description: {
-        en: "A closer look at one of chess's oldest and most respected openings.",
-        ja: 'チェス最古かつ最も評価の高いオープニングの一つを深掘りする一冊。',
-        es: 'Un vistazo más de cerca a una de las aperturas más antiguas y respetadas del ajedrez.',
-        'pt-BR':
-          'Uma análise mais profunda de uma das aberturas mais antigas e respeitadas do xadrez.',
-      },
     },
   },
 ];
