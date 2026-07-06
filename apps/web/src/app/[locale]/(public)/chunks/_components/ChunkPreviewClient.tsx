@@ -174,6 +174,7 @@ export function ChunkPreviewClient() {
           <Button
             type="button"
             variant="primary"
+            size="lg"
             fullWidth
             disabled={pending}
             loading={pending}
@@ -184,6 +185,7 @@ export function ChunkPreviewClient() {
           <Button
             type="button"
             variant="secondary"
+            size="lg"
             fullWidth
             disabled={pending}
             onClick={handleBackToEdit}

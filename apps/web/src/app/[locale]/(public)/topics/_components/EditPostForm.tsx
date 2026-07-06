@@ -126,7 +126,14 @@ export function EditPostForm({
           reply forms (BasePostForm); cancel is a quiet text link below so it
           reads as clearly secondary without crowding the primary action. */}
       <div className="space-y-2">
-        <Button type="submit" variant="primary" fullWidth disabled={isPending} loading={isPending}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          disabled={isPending}
+          loading={isPending}
+        >
           {isPending ? t('saving') : t('save')}
         </Button>
         <button
