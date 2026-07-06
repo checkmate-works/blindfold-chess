@@ -2205,12 +2205,17 @@
       "title": "Published games",
       "empty": "No games have been shared yet.",
       "sectionTitle": "Games",
+      "publishExisting": "Publish a finished game",
       "sortBy": "Sort by",
       "sort": {
         "new": "Newest",
         "clean": "Cleanest",
         "strong": "Opponent strength"
       }
+    },
+    "publishPicker": {
+      "title": "Choose a game to publish",
+      "empty": "You have no finished, unpublished games to publish yet."
     },
     "new": {
       "title": "Publish game",
