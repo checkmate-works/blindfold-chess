@@ -6,6 +6,14 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 type UseMoveNavigationProps = {
   moves: AlgebraicNotation[];
   startingFen?: string;
+  /**
+   * Position to open at, using the same encoding as `navigateToPosition`
+   * (-2 = start / initial FEN, -1 = latest / all moves applied, 0..len-1 =
+   * the board right after that move). Defaults to -1 so every existing caller
+   * is unaffected. The move-reference preview passes 0 to open on the FIRST
+   * move of a branch (e.g. "Bxa7" of "Bxa7 b6") rather than its final position.
+   */
+  initialPosition?: number;
 };
 
 type UseMoveNavigationReturn = {
@@ -23,9 +31,23 @@ type UseMoveNavigationReturn = {
 export function useMoveNavigation({
   moves,
   startingFen,
+  initialPosition = -1,
 }: UseMoveNavigationProps): UseMoveNavigationReturn {
-  const [currentPosition, setCurrentPosition] = useState<number>(-1); // -1 means latest position
-  const [displayFen, setDisplayFen] = useState<string | null>(null);
+  const [currentPosition, setCurrentPosition] = useState<number>(initialPosition);
+  // Seed the display FEN to match `initialPosition`. -1 (the default) keeps
+  // `displayFen` null so the board falls back to `latestFen`, exactly as
+  // before; a concrete/-2 seed computes the FEN once at mount so opening on a
+  // mid-branch position shows the right board with no first-frame flash.
+  const [displayFen, setDisplayFen] = useState<string | null>(() => {
+    if (initialPosition === -1) return null;
+    const initialFen = startingFen ?? getStartingFen();
+    if (initialPosition === -2) return initialFen;
+    try {
+      return getFenAfterMoves(initialFen, moves.slice(0, initialPosition + 1) as string[]);
+    } catch {
+      return initialFen;
+    }
+  });
 
   // Helper to calculate FEN at a specific position
   const getFenAtPosition = useCallback(

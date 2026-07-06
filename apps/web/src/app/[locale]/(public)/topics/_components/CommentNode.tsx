@@ -10,6 +10,7 @@ import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
 import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
 import { CommentActions } from './CommentActions';
+import { CommentMoveBody } from './CommentMoveBody';
 import { CommentSpoilerOverlay } from './CommentSpoilerOverlay';
 import { useCommentTreeContext } from './CommentTreeContext';
 import { EditPostForm } from './EditPostForm';
@@ -67,6 +68,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
     attachmentFallbackVideoTitle,
     i18n,
     extraContentByPostId,
+    moveNotationFen,
   } = useCommentTreeContext();
 
   const tTopics = useTranslations('topics');
@@ -204,7 +206,15 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
                       className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
                       aria-hidden={showSpoiler || undefined}
                     >
-                      <LinkedText text={localContent} locale={locale} />
+                      {moveNotationFen ? (
+                        <CommentMoveBody
+                          text={localContent}
+                          locale={locale}
+                          fen={moveNotationFen}
+                        />
+                      ) : (
+                        <LinkedText text={localContent} locale={locale} />
+                      )}
                     </p>
                     {showSpoiler && (
                       <CommentSpoilerOverlay onReveal={() => setIsSpoilerRevealed(true)} />

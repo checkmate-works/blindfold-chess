@@ -18,6 +18,30 @@ describe('useMoveNavigation', () => {
     expect(result.current.displayFen).toBeNull();
   });
 
+  it('opens on the first move when initialPosition is 0 (move-reference preview)', () => {
+    const { result } = renderHook(() => useMoveNavigation({ ...defaultProps, initialPosition: 0 }));
+
+    // Board sits after the first move, with that FEN seeded (no first-frame
+    // flash), and "previous" is available back to the pre-branch position.
+    expect(result.current.currentPosition).toBe(0);
+    expect(result.current.displayFen).not.toBeNull();
+
+    act(() => {
+      result.current.navigateNext();
+    });
+    expect(result.current.currentPosition).toBe(1);
+
+    act(() => {
+      result.current.navigatePrevious();
+    });
+    expect(result.current.currentPosition).toBe(0);
+
+    act(() => {
+      result.current.navigatePrevious();
+    });
+    expect(result.current.currentPosition).toBe(-2);
+  });
+
   it('should navigate to start', () => {
     const { result } = renderHook(() => useMoveNavigation(defaultProps));
 

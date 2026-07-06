@@ -99,6 +99,14 @@ type Props = {
    * are unaffected.
    */
   extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
+  /**
+   * When set, every comment body in this tree is rendered
+   * move-notation-aware: a legal SAN run written against this base position
+   * (e.g. a chunk's representative FEN) becomes a clickable board-preview
+   * link. Omit on surfaces that are not anchored to a single position —
+   * their bodies keep rendering as plain linkified text.
+   */
+  moveNotationFen?: string;
 };
 
 /**
@@ -134,6 +142,7 @@ export async function CommentTree({
   i18n,
   threadRootPostId,
   extraContentByPostId,
+  moveNotationFen,
 }: Props) {
   const canReplyByRootId = new Map<string, boolean>();
   await Promise.all(
@@ -174,6 +183,7 @@ export async function CommentTree({
             attachmentFallbackVideoTitle,
             i18n,
             extraContentByPostId,
+            moveNotationFen,
           }}
         >
           <CommentNode node={root} replyGroups={groupReplies(root)} />
