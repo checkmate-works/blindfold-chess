@@ -327,6 +327,7 @@ export function CreatePuzzleForm({
         <Button
           type="submit"
           variant="primary"
+          size="lg"
           fullWidth
           disabled={
             pending || !board.isFenValid || solution.moves.length === 0 || title.trim() === ''

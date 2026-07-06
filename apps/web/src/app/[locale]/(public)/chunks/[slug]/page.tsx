@@ -384,6 +384,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           allComments={allComments}
           attachments={attachments}
           sortBy={sortBy}
+          representativeFen={chunk.representativeFen}
         />
       )}
 

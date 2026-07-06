@@ -151,6 +151,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
         <Button
           type="submit"
           variant="primary"
+          size="lg"
           fullWidth
           disabled={
             pending ||

@@ -2208,12 +2208,17 @@
       "title": "Partidas publicadas",
       "empty": "Nenhuma partida foi compartilhada ainda.",
       "sectionTitle": "Partidas",
+      "publishExisting": "Publicar uma partida encerrada",
       "sortBy": "Ordenar por",
       "sort": {
         "new": "Mais recentes",
         "clean": "Mais limpas",
         "strong": "Força do adversário"
       }
+    },
+    "publishPicker": {
+      "title": "Escolha uma partida para publicar",
+      "empty": "Você ainda não tem partidas encerradas e não publicadas."
     },
     "new": {
       "title": "Publicar partida",

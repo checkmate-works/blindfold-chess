@@ -318,6 +318,7 @@ export function BasePostForm({
       <Button
         type="submit"
         variant="primary"
+        size="lg"
         fullWidth
         disabled={submitDisabledFinal}
         loading={isPending}

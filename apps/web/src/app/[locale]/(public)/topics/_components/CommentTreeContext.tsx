@@ -53,6 +53,14 @@ export type CommentTreeContextValue = {
   attachmentFallbackVideoTitle?: string;
   i18n: CommentTreeI18n;
   extraContentByPostId?: ReadonlyMap<string, ReactNode>;
+  /**
+   * When set, comment bodies in this thread are rendered move-notation-aware:
+   * a legal SAN run (e.g. "Bxa7 b6") written against this base position
+   * becomes a button that opens a board preview. Set only by surfaces that
+   * anchor a whole thread to one position (chunks); absent everywhere else,
+   * where bodies render as plain linkified text (unchanged behavior).
+   */
+  moveNotationFen?: string;
 };
 
 const CommentTreeContext = createContext<CommentTreeContextValue | null>(null);

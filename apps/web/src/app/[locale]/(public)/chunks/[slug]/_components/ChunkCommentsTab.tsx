@@ -31,6 +31,7 @@ export async function ChunkCommentsTab({
   allComments,
   attachments,
   sortBy,
+  representativeFen,
 }: {
   locale: Locale;
   slug: string;
@@ -39,6 +40,12 @@ export async function ChunkCommentsTab({
   allComments: ChunkDetailData['allComments'];
   attachments: ChunkDetailData['attachments'];
   sortBy: ReturnType<typeof validateSort>;
+  /**
+   * The chunk's position. Threaded into CommentTree so a legal SAN run in a
+   * comment (e.g. "Bxa7 b6") is rendered as a clickable board-preview link —
+   * the chunk has one position, so every comment branches from this FEN.
+   */
+  representativeFen: string;
 }) {
   const [tTopics, tVideo] = await Promise.all([
     getTranslations({ locale, namespace: 'topics' }),
@@ -96,6 +103,7 @@ export async function ChunkCommentsTab({
             }}
             deletePostAction={deletePost}
             extraContentByPostId={extraContentByPostId}
+            moveNotationFen={representativeFen}
             i18n={{
               likeNamespace: 'topics.chunks',
               replyNamespace: 'topics.chunks.replies',
