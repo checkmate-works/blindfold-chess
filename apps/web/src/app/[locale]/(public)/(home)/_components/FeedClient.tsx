@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import type { NativeAdView } from '@/lib/ads/ad';
+
 import { getFeed } from '../_actions/getFeed';
 import type { FeedScope } from '../_actions/getFeed';
 import { buildDisplayItems } from '../_lib/feed-display';
@@ -25,6 +27,12 @@ type Props = {
   justNowLabel: string;
   showAds?: boolean;
   /**
+   * Native-ad creatives available for the in-feed slot. Resolved server-side
+   * (active + in-schedule) and rotated through by the interleaved ad slots.
+   * Empty array → no ad slots are inserted even when `showAds` is true.
+   */
+  nativeAdCreatives?: NativeAdView[];
+  /**
    * Which feed to paginate when loading more. Must match the scope used to
    * build `initialItems` server-side. Defaults to `'home'` (all entity types).
    */
@@ -47,6 +55,7 @@ export function FeedClient({
   showMoreLabel,
   justNowLabel,
   showAds = false,
+  nativeAdCreatives,
   scope = 'home',
   variant = 'feed',
   ...rest
@@ -57,7 +66,14 @@ export function FeedClient({
   const isLoadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const displayItems = useMemo(() => buildDisplayItems(items, showAds), [items, showAds]);
+  const adCreatives = useMemo(
+    () => (showAds ? (nativeAdCreatives ?? []) : []),
+    [showAds, nativeAdCreatives]
+  );
+  const displayItems = useMemo(
+    () => buildDisplayItems(items, adCreatives.length),
+    [items, adCreatives]
+  );
 
   // In `card` layout each item is a self-contained bordered card spaced by the
   // container's `space-y-3`; in `feed` layout items share a continuous list and
@@ -67,9 +83,10 @@ export function FeedClient({
   const renderDisplayItem = useCallback(
     (index: number, displayItem: DisplayItem) => {
       if (displayItem.type === 'ad') {
+        const creative = adCreatives[displayItem.adIndex % adCreatives.length];
         return (
           <div key={`ad-${index}`} className={itemWrapperClass}>
-            <NativeAdCard locale={locale} variant={variant} />
+            <NativeAdCard creative={creative} locale={locale} variant={variant} />
           </div>
         );
       }
@@ -85,7 +102,7 @@ export function FeedClient({
         </div>
       );
     },
-    [locale, showMoreLabel, justNowLabel, variant, itemWrapperClass]
+    [locale, showMoreLabel, justNowLabel, variant, itemWrapperClass, adCreatives]
   );
 
   const loadMore = useCallback(async () => {

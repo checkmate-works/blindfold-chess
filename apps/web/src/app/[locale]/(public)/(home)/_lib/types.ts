@@ -190,5 +190,9 @@ export type FeedResponse = {
   nextCursor: string | null;
 };
 
-/** A single entry in the interleaved feed + ad display list. */
-export type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad' };
+/**
+ * A single entry in the interleaved feed + ad display list. Ad entries carry
+ * an `adIndex` (0-based ordinal among ad slots) so the client can rotate
+ * through the available native-ad creatives (`creatives[adIndex % n]`).
+ */
+export type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad'; adIndex: number };

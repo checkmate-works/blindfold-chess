@@ -1,11 +1,16 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { NativeAdView } from '@/lib/ads/ad';
+import { resolveLocalizedText } from '@/lib/ads/payload';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**
  * Ruy Lopez after 3. Bb5 — a fixed, recognizable opening position chosen so
@@ -18,24 +23,31 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 const RUY_LOPEZ_FEN = 'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3';
 
 type Props = {
+  /** The creative to render (title/description/avatar/href), from the DB. */
+  creative: NativeAdView;
   locale: string;
   variant?: 'feed' | 'card';
 };
 
 /**
- * First pass at a "native" ad card — same `ActivityCard` shell as real feed
- * entries (board thumbnail, avatar row, body text) instead of an AdSense
- * `<ins>` slot. No `href` is set: the affiliate link isn't wired up yet, so
- * the card is intentionally non-clickable for now.
+ * In-feed native ad card — same `ActivityCard` shell as real feed entries
+ * (board thumbnail, avatar row, body text) rather than an AdSense `<ins>`
+ * slot. Content is admin-managed (`ad_creatives`, slot `feed-native-ad`);
+ * only the disclosure label, avatar fallback, and board are chrome. The
+ * whole card links to the creative's `href` (an affiliate URL).
  */
-export function NativeAdCard({ locale, variant = 'feed' }: Props) {
+export function NativeAdCard({ creative, locale, variant = 'feed' }: Props) {
   const t = useTranslations('home.feed.nativeAd');
   const { preferences } = useGamePreferences();
 
+  const title = resolveLocalizedText(creative.title, locale as Locale);
+  const description = resolveLocalizedText(creative.description, locale as Locale);
+
   return (
     <ActivityCard
-      variant={variant}
+      href={creative.href}
       locale={locale}
+      variant={variant}
       thumbnail={
         <BoardThumbnail
           fen={RUY_LOPEZ_FEN}
@@ -45,9 +57,22 @@ export function NativeAdCard({ locale, variant = 'feed' }: Props) {
       }
       author={
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-muted-foreground">{t('avatarLabel')}</span>
-          </div>
+          {creative.avatarImagePath ? (
+            <Image
+              src={creative.avatarImagePath}
+              alt={creative.avatarAlt}
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+              unoptimized
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-semibold text-muted-foreground">
+                {t('avatarLabel')}
+              </span>
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <span className="font-medium text-foreground">{t('sponsorName')}</span>
           </div>
@@ -59,8 +84,8 @@ export function NativeAdCard({ locale, variant = 'feed' }: Props) {
         </span>
       }
     >
-      <p className="text-sm font-medium text-foreground mt-1">{t('title')}</p>
-      <p className="text-sm text-muted-foreground line-clamp-2">{t('description')}</p>
+      <p className="text-sm font-medium text-foreground mt-1">{title}</p>
+      <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
     </ActivityCard>
   );
 }

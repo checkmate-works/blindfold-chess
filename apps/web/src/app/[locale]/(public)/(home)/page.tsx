@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { IS_LOCAL_DEV } from '@/config';
 
-import { shouldShowAdsForUser } from '@/lib/ads/ad';
+import { getFeedNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
 import { createClient } from '@/lib/supabase/server';
@@ -71,9 +71,10 @@ export default async function HomePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [initialFeed, showAdsResult] = await Promise.all([
+  const [initialFeed, showAdsResult, nativeAdCreatives] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
     shouldShowAdsForUser(user?.id ?? null),
+    getFeedNativeAdCreatives(),
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 
@@ -120,6 +121,7 @@ export default async function HomePage({ params }: Props) {
             showMoreLabel={tTopics('showMore')}
             justNowLabel={tSquares('justNow')}
             showAds={showAds}
+            nativeAdCreatives={nativeAdCreatives}
             data-tour-id="home-feed"
           />
         </DashboardCard>

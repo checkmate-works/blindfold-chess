@@ -66,6 +66,17 @@ const defaultProps = {
   showMoreLabel: 'Show more',
   justNowLabel: 'Just now',
   showAds: true,
+  // At least one creative must be present for ad slots to be inserted.
+  nativeAdCreatives: [
+    {
+      id: 'creative-1',
+      href: 'https://example.com',
+      avatarImagePath: null,
+      avatarAlt: 'Ad',
+      title: { en: 'Ad title' },
+      description: { en: 'Ad description' },
+    },
+  ],
 };
 
 function makeTopicPostItem(id: string): FeedItem {
