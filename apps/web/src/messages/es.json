@@ -4139,7 +4139,20 @@
       "startAt": "Inicio",
       "endAt": "Fin",
       "create": "Crear",
-      "creating": "Creando..."
+      "creating": "Creando...",
+      "kind": "Tipo",
+      "summary": "Resumen",
+      "delete": "Eliminar",
+      "deleting": "Eliminando...",
+      "deleteConfirm": "¿Eliminar este creativo? Esta acción no se puede deshacer.",
+      "editTitle": "Editar creativo de anuncio",
+      "avatar": "Avatar",
+      "avatarAlt": "Texto alternativo del avatar",
+      "avatarUpload": "Subir imagen",
+      "avatarUploading": "Subiendo...",
+      "avatarHintCreate": "Guarda primero y luego sube un avatar en la pantalla de edición.",
+      "cardTitle": "Título (por idioma)",
+      "cardDescription": "Descripción (por idioma)"
     },
     "coins": {
       "title": "Monedas",

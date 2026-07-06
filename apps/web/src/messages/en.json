@@ -4146,7 +4146,20 @@
       "startAt": "Start At",
       "endAt": "End At",
       "create": "Create",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "kind": "Kind",
+      "summary": "Summary",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "deleteConfirm": "Delete this creative? This cannot be undone.",
+      "editTitle": "Edit Ad Creative",
+      "avatar": "Avatar",
+      "avatarAlt": "Avatar Alt Text",
+      "avatarUpload": "Upload image",
+      "avatarUploading": "Uploading...",
+      "avatarHintCreate": "Save first, then upload an avatar on the edit screen.",
+      "cardTitle": "Title (per language)",
+      "cardDescription": "Description (per language)"
     },
     "coins": {
       "title": "Coins",

@@ -1,14 +1,23 @@
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { getAllAdBanners } from '@/lib/ads/ad';
+import { getAllAdCreatives } from '@/lib/ads/ad';
+import { isBannerPayload, isNativeCardPayload } from '@/lib/ads/payload';
 
+import { AdminBadge } from '../_components/AdminBadge';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
-import { BannerEditRow } from './_components/BannerEditRow';
+import { CreativeDeleteButton } from './_components/CreativeDeleteButton';
 
 export default async function AdminAdsPage() {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' });
-  const banners = await getAllAdBanners();
+  const creatives = await getAllAdCreatives();
+
+  const deleteLabels = {
+    delete: t('delete'),
+    deleting: t('deleting'),
+    confirm: t('deleteConfirm'),
+  };
 
   return (
     <div>
@@ -24,40 +33,62 @@ export default async function AdminAdsPage() {
         }
       />
 
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold">{t('banners')}</h2>
-      </div>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-accent">
             <tr>
+              <th className="text-left px-4 py-3 font-medium">{t('kind')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('slot')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('href')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('imagePath')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('imagePreview')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('alt')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('summary')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('isActive')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('actions')}</th>
             </tr>
           </thead>
           <tbody className="bg-card">
-            {banners.map((banner) => (
-              <BannerEditRow
-                key={banner.id}
-                banner={banner}
-                labels={{
-                  edit: t('edit'),
-                  save: t('save'),
-                  cancel: t('cancel'),
-                  saving: t('saving'),
-                  active: t('active'),
-                  inactive: t('inactive'),
-                }}
-              />
+            {creatives.map((creative) => (
+              <tr key={creative.id} className="border-t border-border">
+                <td className="px-4 py-3">
+                  <AdminBadge variant="neutral">{creative.kind}</AdminBadge>
+                </td>
+                <td className="px-4 py-3">{creative.slot}</td>
+                <td className="px-4 py-3">
+                  {isBannerPayload(creative.payload) ? (
+                    <Image
+                      src={creative.payload.imagePath}
+                      alt={creative.payload.alt}
+                      width={64}
+                      height={64}
+                      className="rounded object-cover"
+                    />
+                  ) : isNativeCardPayload(creative.payload) ? (
+                    <span className="max-w-[240px] truncate inline-block">
+                      {creative.payload.title.en ?? '—'}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <AdminBadge variant={creative.isActive ? 'success' : 'danger'}>
+                    {creative.isActive ? t('active') : t('inactive')}
+                  </AdminBadge>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/admin/ads/${creative.id}/edit`}
+                      className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
+                    >
+                      {t('edit')}
+                    </Link>
+                    <CreativeDeleteButton id={creative.id} labels={deleteLabels} />
+                  </div>
+                </td>
+              </tr>
             ))}
-            {banners.length === 0 && (
+            {creatives.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                   {t('noBanners')}
                 </td>
               </tr>

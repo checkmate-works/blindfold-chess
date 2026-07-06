@@ -4146,7 +4146,20 @@
       "startAt": "開始日時",
       "endAt": "終了日時",
       "create": "作成",
-      "creating": "作成中..."
+      "creating": "作成中...",
+      "kind": "種別",
+      "summary": "概要",
+      "delete": "削除",
+      "deleting": "削除中...",
+      "deleteConfirm": "この広告クリエイティブを削除しますか？この操作は取り消せません。",
+      "editTitle": "広告クリエイティブの編集",
+      "avatar": "アバター",
+      "avatarAlt": "アバターの代替テキスト",
+      "avatarUpload": "画像をアップロード",
+      "avatarUploading": "アップロード中...",
+      "avatarHintCreate": "先に保存すると、編集画面でアバターをアップロードできます。",
+      "cardTitle": "タイトル（言語ごと）",
+      "cardDescription": "説明（言語ごと）"
     },
     "coins": {
       "title": "コイン",
