@@ -27,6 +27,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { GamesTabs } from '../_components/GamesTabs';
 import { toggleGameLikeAction } from './[id]/_actions/game-like';
 import { GameColorOpeningRow } from './_components/GameColorOpeningRow';
+import { PublishExistingGameButton } from './_components/PublishExistingGameButton';
 import { SharedGamesSort } from './_components/SharedGamesSort';
 import { parseSharedGamesSort } from './_lib/sort';
 
@@ -75,6 +76,7 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
       <div className="mb-6">
         <GamesTabs active="shared" locale={locale} />
       </div>
+      <PublishExistingGameButton locale={locale} />
       <div className="mt-3 mb-4 flex justify-end">
         <SharedGamesSort currentSort={sort} />
       </div>

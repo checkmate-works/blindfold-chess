@@ -2201,12 +2201,17 @@
       "title": "Partidas publicadas",
       "empty": "Aún no se ha compartido ninguna partida.",
       "sectionTitle": "Partidas",
+      "publishExisting": "Publicar una partida terminada",
       "sortBy": "Ordenar por",
       "sort": {
         "new": "Más recientes",
         "clean": "Más limpias",
         "strong": "Fuerza del rival"
       }
+    },
+    "publishPicker": {
+      "title": "Elige una partida para publicar",
+      "empty": "Todavía no tienes partidas terminadas sin publicar."
     },
     "new": {
       "title": "Publicar partida",
