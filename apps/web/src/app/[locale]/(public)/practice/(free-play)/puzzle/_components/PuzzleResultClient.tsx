@@ -144,18 +144,19 @@ export function PuzzleResultClient({
       {/* (D) Action buttons */}
       <div className="flex flex-col gap-3 pt-4">
         <Link href={`/practice/puzzle/${positionId}`}>
-          <Button asChild variant="primary" fullWidth>
+          <Button asChild variant="primary" size="lg" fullWidth>
             {t('tryAgain')}
           </Button>
         </Link>
         <Link href="/practice/puzzle">
-          <Button asChild variant="secondary" fullWidth>
+          <Button asChild variant="secondary" size="lg" fullWidth>
             {t('backToList')}
           </Button>
         </Link>
         <Button
           onClick={() => window.open(fenToLichessUrl(fen), '_blank')}
           variant="secondary"
+          size="lg"
           fullWidth
           icon={<FaExternalLinkAlt className="w-4 h-4" />}
         >
