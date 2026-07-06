@@ -1,0 +1,1 @@
+DROP TABLE "ad_banners" CASCADE;

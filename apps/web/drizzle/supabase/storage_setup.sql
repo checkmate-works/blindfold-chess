@@ -197,3 +197,58 @@ CREATE POLICY "post_images_delete_own" ON storage.objects
 
 -- No UPDATE policy: post images are immutable once uploaded (mirrors
 -- the post_game_*_attachments policy posture).
+
+-- =============================================================================
+-- Ad Creatives Storage Bucket Setup
+-- =============================================================================
+-- Public bucket for admin-uploaded ad creative images (e.g. the in-feed
+-- native card avatar). Mirrors the article-images posture: public read so
+-- image URLs resolve without auth, admin-only write. file_size_limit: 5MB,
+-- allowed_mime_types: JPEG, PNG, WebP. SVG is intentionally excluded (SVG can
+-- embed <script> / event handlers and would execute when navigated to on the
+-- *.supabase.co origin — see article-images note above).
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('ad-creatives', 'ad-creatives', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp'])
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+-- Allow anyone to read ad creative images (public bucket)
+DROP POLICY IF EXISTS "ad_creatives_select_public" ON storage.objects;
+CREATE POLICY "ad_creatives_select_public" ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'ad-creatives');
+
+-- Allow admin users to upload ad creative images
+DROP POLICY IF EXISTS "ad_creatives_insert_admin" ON storage.objects;
+CREATE POLICY "ad_creatives_insert_admin" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'ad-creatives'
+    AND (auth.jwt() ->> 'user_role') = 'admin'
+  );
+
+-- Allow admin users to update ad creative images
+-- WITH CHECK mirrors USING so the post-update row must still satisfy the admin gate.
+DROP POLICY IF EXISTS "ad_creatives_update_admin" ON storage.objects;
+CREATE POLICY "ad_creatives_update_admin" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (
+    bucket_id = 'ad-creatives'
+    AND (auth.jwt() ->> 'user_role') = 'admin'
+  )
+  WITH CHECK (
+    bucket_id = 'ad-creatives'
+    AND (auth.jwt() ->> 'user_role') = 'admin'
+  );
+
+-- Allow admin users to delete ad creative images
+DROP POLICY IF EXISTS "ad_creatives_delete_admin" ON storage.objects;
+CREATE POLICY "ad_creatives_delete_admin" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'ad-creatives'
+    AND (auth.jwt() ->> 'user_role') = 'admin'
+  );

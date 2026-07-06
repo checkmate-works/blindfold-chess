@@ -34,31 +34,64 @@ import {
  * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
  * is introduced in the future.
  */
-export const adBanners = pgTable(
-  'ad_banners',
+/**
+ * Self-served ad inventory ("creatives").
+ *
+ * @design One table, many creative kinds (discriminator + JSONB payload)
+ *
+ * A single table backs every self-hosted ad format on the site — the
+ * in-feed native card, generic rectangle banners, and whatever comes next.
+ * `kind` is the discriminator; format-specific fields live in `payload`
+ * (JSONB) instead of a wide grid of mostly-NULL columns. This mirrors the
+ * `feed_items.entity_type + data` and `moderation_actions.action + metadata`
+ * patterns already used elsewhere: adding a new ad format is a new `kind`
+ * value + payload type + type guard + renderer, with no migration. The
+ * fields that are genuinely common to every format (`href`, scheduling,
+ * `is_active`, `slot`, `sort_order`) stay first-class columns so an
+ * "active creatives for this slot right now" query is kind-agnostic.
+ *
+ * @design `slot` is NOT unique — creatives rotate within a placement
+ *
+ * `slot` identifies a placement (e.g. `feed-native-ad`, `banner-wide`), and
+ * multiple active creatives may share one slot so they can rotate. The
+ * (slot → allowed kind) binding is enforced in application code by
+ * `AD_SLOTS` in `@/lib/ads/registry` (a DB row cannot express "this slot
+ * only accepts native_card"), so writes must validate against that
+ * registry. This is deliberately unlike the old `ad_banners.slot` UNIQUE
+ * (one-row-per-slot) model it replaced.
+ *
+ * NOT related to the Google-AdSense display system (`AdSenseGuard`,
+ * `ads_hidden` cookie, `AdSlotKind`) — that renders third-party `<ins>`
+ * tags and never reads this table. These are first-party creatives we host
+ * and link ourselves (affiliate links etc.).
+ */
+export const adCreatives = pgTable(
+  'ad_creatives',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    slot: varchar('slot', { length: 50 }).unique().notNull(),
+    /** Discriminator — see `AdKind` in `@/lib/ads/registry`. */
+    kind: varchar('kind', { length: 50 }).notNull(),
+    /** Placement identifier — see `AdSlot` in `@/lib/ads/registry`. Not unique. */
+    slot: varchar('slot', { length: 50 }).notNull(),
+    /** Click destination (affiliate URL etc.), common to every kind. */
     href: varchar('href', { length: 2048 }).notNull(),
-    imagePath: varchar('image_path', { length: 1024 }).notNull(),
-    alt: varchar('alt', { length: 255 }).notNull().default('Advertisement'),
-    width: integer('width').notNull(),
-    height: integer('height').notNull(),
     isActive: boolean('is_active').notNull().default(true),
-    sortOrder: integer('sort_order').default(0),
+    sortOrder: integer('sort_order').notNull().default(0),
     startAt: timestamp('start_at', { withTimezone: true }),
     endAt: timestamp('end_at', { withTimezone: true }),
+    /** Kind-specific fields — see the `*Payload` types in `@/lib/ads/payload`. */
+    payload: jsonb('payload').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .defaultNow()
       .notNull()
       .$onUpdateFn(() => new Date()),
   },
-  (table) => [index('idx_ad_banners_active').on(table.isActive)]
+  (table) => [index('idx_ad_creatives_slot_active').on(table.slot, table.isActive)]
 );
 
-export type AdBannerRecord = typeof adBanners.$inferSelect;
-export type NewAdBannerRecord = typeof adBanners.$inferInsert;
+export type AdCreativeRecord = typeof adCreatives.$inferSelect;
+export type NewAdCreativeRecord = typeof adCreatives.$inferInsert;
 
 // Notifications
 export const notifications = pgTable(

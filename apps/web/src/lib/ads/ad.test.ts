@@ -10,7 +10,17 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
   },
-  adBanners: { slot: 'slot', isActive: 'is_active', sortOrder: 'sort_order' },
+  adCreatives: {
+    slot: 'slot',
+    sortOrder: 'sort_order',
+    isActive: 'is_active',
+    createdAt: 'created_at',
+  },
+}));
+
+// unstable_cache wraps a function; for unit tests we just run the inner fn.
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
 }));
 
 vi.mock('server-only', () => ({}));
@@ -25,55 +35,41 @@ vi.mock('@/lib/users/user-grants', () => ({
   hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
 }));
 
-const { getAllAdBanners, shouldShowAdsForUser } = await import('./ad');
+const { getAllAdCreatives, shouldShowAdsForUser } = await import('./ad');
 
-describe('getAllAdBanners', () => {
+describe('getAllAdCreatives', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should return banners array when banners exist', async () => {
-    const banners = [
-      {
-        id: '1',
-        slot: 'header',
-        href: 'https://example.com',
-        imagePath: '/images/ad1.png',
-        alt: 'Ad 1',
-        width: 728,
-        height: 90,
-        isActive: true,
-        sortOrder: 0,
-      },
+  it('should return creatives array when they exist', async () => {
+    const creatives = [
+      { id: '1', kind: 'banner', slot: 'banner-wide', href: 'https://example.com', payload: {} },
       {
         id: '2',
-        slot: 'sidebar',
+        kind: 'native_card',
+        slot: 'feed-native-ad',
         href: 'https://example.com',
-        imagePath: '/images/ad2.png',
-        alt: 'Ad 2',
-        width: 300,
-        height: 250,
-        isActive: true,
-        sortOrder: 1,
+        payload: {},
       },
     ];
-    mockOrderBy.mockResolvedValue(banners);
+    mockOrderBy.mockResolvedValue(creatives);
 
-    const result = await getAllAdBanners();
-    expect(result).toEqual(banners);
+    const result = await getAllAdCreatives();
+    expect(result).toEqual(creatives);
   });
 
-  it('should return empty array when no banners exist', async () => {
+  it('should return empty array when none exist', async () => {
     mockOrderBy.mockResolvedValue([]);
 
-    const result = await getAllAdBanners();
+    const result = await getAllAdCreatives();
     expect(result).toEqual([]);
   });
 
-  it('should return empty array when DB query throws an exception (fallback)', async () => {
+  it('should return empty array when DB query throws (fallback)', async () => {
     mockOrderBy.mockRejectedValue(new Error('DB connection failed'));
 
-    const result = await getAllAdBanners();
+    const result = await getAllAdCreatives();
     expect(result).toEqual([]);
   });
 });
