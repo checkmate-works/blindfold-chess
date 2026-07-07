@@ -79,8 +79,8 @@ const defaultProps = {
       href: 'https://example.com',
       avatarImagePath: null,
       avatarAlt: 'Ad',
-      title: { en: 'Ad title' },
-      description: { en: 'Ad description' },
+      title: 'Ad title',
+      description: 'Ad description',
     },
   ],
 };

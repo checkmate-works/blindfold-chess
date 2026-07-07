@@ -5,12 +5,10 @@ import Image from 'next/image';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { NativeAdView } from '@/lib/ads/ad';
-import { resolveLocalizedText } from '@/lib/ads/payload';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**
  * Ruy Lopez after 3. Bb5 — a fixed, recognizable opening position chosen so
@@ -39,9 +37,6 @@ type Props = {
 export function NativeAdCard({ creative, locale, variant = 'feed' }: Props) {
   const t = useTranslations('home.feed.nativeAd');
   const { preferences } = useGamePreferences();
-
-  const title = resolveLocalizedText(creative.title, locale as Locale);
-  const description = resolveLocalizedText(creative.description, locale as Locale);
 
   return (
     <ActivityCard
@@ -84,8 +79,8 @@ export function NativeAdCard({ creative, locale, variant = 'feed' }: Props) {
         </span>
       }
     >
-      <p className="text-sm font-medium text-foreground mt-1">{title}</p>
-      <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+      <p className="text-sm font-medium text-foreground mt-1">{creative.title}</p>
+      <p className="text-sm text-muted-foreground line-clamp-2">{creative.description}</p>
     </ActivityCard>
   );
 }

@@ -4166,8 +4166,9 @@
       "avatarUpload": "Upload image",
       "avatarUploading": "Uploading...",
       "avatarHintCreate": "Save first, then upload an avatar on the edit screen.",
-      "cardTitle": "Title (per language)",
-      "cardDescription": "Description (per language)",
+      "cardTitle": "Title",
+      "cardDescription": "Description",
+      "cardCopyHint": "Write in the target country's language (English if global).",
       "targetCountry": "Target country",
       "targetCountryHint": "ISO country code (e.g. JP). Leave empty to show everywhere."
     },

@@ -69,7 +69,7 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
                     />
                   ) : isNativeCardPayload(creative.payload) ? (
                     <span className="max-w-[240px] truncate inline-block">
-                      {creative.payload.title.en ?? '—'}
+                      {creative.payload.title || '—'}
                     </span>
                   ) : (
                     <span className="text-muted-foreground">—</span>

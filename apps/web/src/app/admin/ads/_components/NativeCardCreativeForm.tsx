@@ -7,10 +7,8 @@ import Image from 'next/image';
 
 import { Field, Input, Textarea } from '@/app/admin/_components/forms';
 
-import type { LocalizedText, NativeCardPayload } from '@/lib/ads/payload';
+import type { NativeCardPayload } from '@/lib/ads/payload';
 import type { AdSlot } from '@/lib/ads/registry';
-
-import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
@@ -26,20 +24,12 @@ type Props = {
   mode: 'create' | 'edit';
   slot: AdSlot;
   creativeId?: string;
-  locales: readonly Locale[];
   initial: NativeCardFormInitial;
   labels: AdCreativeFormLabels;
 };
 
-/** Create/edit form for in-feed native-card creatives (avatar + localized copy). */
-export function NativeCardCreativeForm({
-  mode,
-  slot,
-  creativeId,
-  locales,
-  initial,
-  labels,
-}: Props) {
+/** Create/edit form for in-feed native-card creatives (avatar + copy). */
+export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels }: Props) {
   const common = useCommonCreativeState(initial);
   const { submit, isPending, error, setError } = useCreativeSubmit(slot);
 
@@ -47,8 +37,8 @@ export function NativeCardCreativeForm({
     initial.payload.avatarImagePath ?? null
   );
   const [avatarAlt, setAvatarAlt] = useState(initial.payload.avatarAlt ?? 'Advertisement');
-  const [title, setTitle] = useState<LocalizedText>(initial.payload.title ?? {});
-  const [description, setDescription] = useState<LocalizedText>(initial.payload.description ?? {});
+  const [title, setTitle] = useState(initial.payload.title ?? '');
+  const [description, setDescription] = useState(initial.payload.description ?? '');
   const [isUploading, setIsUploading] = useState(false);
 
   const handleAvatarUpload = async (file: File) => {
@@ -137,35 +127,24 @@ export function NativeCardCreativeForm({
         />
       </Field>
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium mb-1">{labels.title}</legend>
-        {locales.map((loc) => (
-          <Field key={loc} label={loc} htmlFor={`title-${loc}`}>
-            <Input
-              id={`title-${loc}`}
-              type="text"
-              value={title[loc] ?? ''}
-              onChange={(e) => setTitle((prev) => ({ ...prev, [loc]: e.target.value }))}
-              maxLength={2000}
-            />
-          </Field>
-        ))}
-      </fieldset>
-
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium mb-1">{labels.description}</legend>
-        {locales.map((loc) => (
-          <Field key={loc} label={loc} htmlFor={`description-${loc}`}>
-            <Textarea
-              id={`description-${loc}`}
-              rows={2}
-              value={description[loc] ?? ''}
-              onChange={(e) => setDescription((prev) => ({ ...prev, [loc]: e.target.value }))}
-              maxLength={2000}
-            />
-          </Field>
-        ))}
-      </fieldset>
+      <Field label={labels.title} htmlFor="title" description={labels.cardCopyHint}>
+        <Input
+          id="title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          maxLength={2000}
+        />
+      </Field>
+      <Field label={labels.description} htmlFor="description">
+        <Textarea
+          id="description"
+          rows={2}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          maxLength={2000}
+        />
+      </Field>
     </CreativeFormShell>
   );
 }

@@ -6,7 +6,6 @@ import { BannerCreativeForm } from '@/app/admin/ads/_components/BannerCreativeFo
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
 import type { CommonCreativeInitial } from '@/app/admin/ads/_lib/use-common-creative-state';
-import { SUPPORTED_LOCALES } from '@/config';
 
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
@@ -48,7 +47,6 @@ export default async function NewCreativePage({ params }: Props) {
         <NativeCardCreativeForm
           mode="create"
           slot={slot}
-          locales={SUPPORTED_LOCALES}
           labels={labels}
           initial={{ ...EMPTY_COMMON, payload: {} }}
         />

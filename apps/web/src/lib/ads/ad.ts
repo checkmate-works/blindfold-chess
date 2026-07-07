@@ -7,8 +7,7 @@ import { adCreatives, db } from '@/lib/db';
 import { hasActiveGrant } from '@/lib/users/user-grants';
 
 import { filterByCountry } from './country';
-import { isNativeCardPayload, resolveLocalizedText } from './payload';
-import type { LocalizedText } from './payload';
+import { isNativeCardPayload } from './payload';
 import { FEED_NATIVE_AD_SLOT } from './registry';
 import type { AdKind, AdSlot } from './registry';
 
@@ -45,16 +44,15 @@ export async function getAllAdCreatives() {
 
 /**
  * Serializable view of a native-card creative, safe to pass from a Server
- * Component into the client `FeedClient`. Localized fields stay as maps;
- * the card resolves them per-viewer via `resolveLocalizedText`.
+ * Component into the client `FeedClient`.
  */
 export type NativeAdView = {
   id: string;
   href: string;
   avatarImagePath: string | null;
   avatarAlt: string;
-  title: LocalizedText;
-  description: LocalizedText;
+  title: string;
+  description: string;
 };
 
 async function queryActiveCreatives(slot: string) {
@@ -139,5 +137,3 @@ export async function getFeedNativeAdCreatives(country: string | null): Promise<
     ];
   });
 }
-
-export { resolveLocalizedText };

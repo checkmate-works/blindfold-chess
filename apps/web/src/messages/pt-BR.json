@@ -4159,8 +4159,9 @@
       "avatarUpload": "Enviar imagem",
       "avatarUploading": "Enviando...",
       "avatarHintCreate": "Salve primeiro e depois envie um avatar na tela de edição.",
-      "cardTitle": "Título (por idioma)",
-      "cardDescription": "Descrição (por idioma)",
+      "cardTitle": "Título",
+      "cardDescription": "Descrição",
+      "cardCopyHint": "Escreva no idioma do país de destino (inglês se for global).",
       "targetCountry": "País de destino",
       "targetCountryHint": "Código de país ISO (ex.: JP). Deixe vazio para exibir em todos os lugares."
     },

@@ -6,7 +6,6 @@ import { BannerCreativeForm } from '@/app/admin/ads/_components/BannerCreativeFo
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
 import type { CommonCreativeInitial } from '@/app/admin/ads/_lib/use-common-creative-state';
-import { SUPPORTED_LOCALES } from '@/config';
 import { eq } from 'drizzle-orm';
 
 import type { BannerPayload, NativeCardPayload } from '@/lib/ads/payload';
@@ -63,7 +62,6 @@ export default async function EditCreativePage({ params }: Props) {
           mode="edit"
           slot={slot}
           creativeId={id}
-          locales={SUPPORTED_LOCALES}
           labels={labels}
           initial={{ ...common, payload: row.payload as Partial<NativeCardPayload> }}
         />

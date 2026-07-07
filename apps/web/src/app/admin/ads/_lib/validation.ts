@@ -1,6 +1,4 @@
-import { SUPPORTED_LOCALES } from '@/config';
-
-import type { BannerPayload, LocalizedText, NativeCardPayload } from '@/lib/ads/payload';
+import type { BannerPayload, NativeCardPayload } from '@/lib/ads/payload';
 import type { AdKind } from '@/lib/ads/registry';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
@@ -52,23 +50,10 @@ function validateImagePath(imagePath: string): string | null {
   return null;
 }
 
-/**
- * A localized text map must only carry supported-locale keys, must have a
- * non-empty English fallback (the resolver's last-resort default), and every
- * present value must be a bounded non-empty string.
- */
-function validateLocalizedText(text: LocalizedText, field: string): string | null {
-  const keys = Object.keys(text);
-  for (const key of keys) {
-    if (!(SUPPORTED_LOCALES as readonly string[]).includes(key)) {
-      return `invalid ${field} locale`;
-    }
-    const value = text[key as keyof LocalizedText];
-    if (typeof value !== 'string' || value.length === 0 || value.length > MAX_TEXT_LEN) {
-      return `invalid ${field}`;
-    }
+function validateText(value: string, field: string): string | null {
+  if (typeof value !== 'string' || value.length === 0 || value.length > MAX_TEXT_LEN) {
+    return `invalid ${field}`;
   }
-  if (!text.en) return `${field} requires an English value`;
   return null;
 }
 
@@ -89,9 +74,9 @@ function validateNativeCardPayload(payload: NativeCardPayload): string | null {
   if (typeof payload.avatarAlt !== 'string' || payload.avatarAlt.length > 255) {
     return 'invalid avatarAlt';
   }
-  const titleError = validateLocalizedText(payload.title, 'title');
+  const titleError = validateText(payload.title, 'title');
   if (titleError) return titleError;
-  return validateLocalizedText(payload.description, 'description');
+  return validateText(payload.description, 'description');
 }
 
 /** Validate a payload against the kind bound to its slot. */

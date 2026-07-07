@@ -4166,8 +4166,9 @@
       "avatarUpload": "画像をアップロード",
       "avatarUploading": "アップロード中...",
       "avatarHintCreate": "先に保存すると、編集画面でアバターをアップロードできます。",
-      "cardTitle": "タイトル（言語ごと）",
-      "cardDescription": "説明（言語ごと）",
+      "cardTitle": "タイトル",
+      "cardDescription": "説明",
+      "cardCopyHint": "対象国の言語で記載（全世界対象なら英語）。",
       "targetCountry": "配信対象の国",
       "targetCountryHint": "ISO 国コードを入力（例: JP）。空欄で全世界に配信。"
     },
