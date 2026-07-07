@@ -3,7 +3,6 @@ import { type ComponentType, type ReactNode, Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
@@ -14,7 +13,7 @@ import type {
   LeaderboardPeriod,
   LeaderboardRow,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -130,16 +129,8 @@ export function createSimplePracticeResultPage(
         <ResultClient
           locale={locale}
           expInfo={expInfo}
-          adBanner={
-            IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE ? (
-              <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-            ) : undefined
-          }
-          adBannerStandard={
-            IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM ? (
-              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-            ) : undefined
-          }
+          adBanner={<AdSlot slot="content-middle" />}
+          adBannerStandard={<AdSlot slot="content-bottom" />}
         />
       </Suspense>
     );
@@ -216,16 +207,8 @@ export function createLeaderboardPracticeResultPage(
       <Suspense fallback={leaderboard.loadingFallback ?? <PracticeResultLoadingSkeleton />}>
         <ResultClient
           locale={locale}
-          adBannerWide={
-            wide && hasLeaderboardRows && (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) ? (
-              <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-            ) : undefined
-          }
-          adBannerStandard={
-            standard && (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) ? (
-              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-            ) : undefined
-          }
+          adBannerWide={wide && hasLeaderboardRows ? <AdSlot slot="content-middle" /> : undefined}
+          adBannerStandard={standard ? <AdSlot slot="content-bottom" /> : undefined}
           leaderboardRows={leaderboardData?.rows}
           leaderboardDetailPath={leaderboardData?.detailPath}
           leaderboardPeriod={leaderboardData?.period}

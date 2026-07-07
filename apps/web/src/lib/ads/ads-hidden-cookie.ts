@@ -4,7 +4,7 @@ import { IS_LOCAL_DEV } from '@/config';
  * Client-read cookie used by the no-flash ad-hide pattern.
  *
  * @design
- * Why a cookie instead of `shouldShowAds()` in `AdSenseGuard`:
+ * Why a cookie instead of `shouldShowAds()` in `AdSlot`:
  * a server-side `cookies()` read during page rendering would opt the entire
  * page out of static generation (ISR/SSG). By moving the decision to a cookie
  * that the server SETS (on auth flow / subscription update) but NEVER READS

@@ -5,7 +5,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
@@ -28,7 +27,7 @@ import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -177,16 +176,8 @@ async function SquarePostsContent({ params, searchParams }: Props) {
       pageTitle={t('squares.pageTitle')}
       sectionTitle={square}
       topicHeader={topicHeader}
-      adMiddle={
-        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-        )
-      }
-      adBottom={
-        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )
-      }
+      adMiddle={<AdSlot slot="content-middle" />}
+      adBottom={<AdSlot slot="content-bottom" />}
       communitySection={communitySection}
       hasPosts={posts.length > 0}
       postCards={posts.map((post) => {

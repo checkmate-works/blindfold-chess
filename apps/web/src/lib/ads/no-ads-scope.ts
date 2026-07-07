@@ -26,7 +26,7 @@ import 'server-only';
  * - Using `cache()` from React gives us a per-request memoized function.
  *   The returned object reference is stable within a single request, so
  *   mutating `.value` from a layout is observable by a deeper server
- *   component (like `AdSenseGuard`) in the same request.
+ *   component (like `AdSlot`) in the same request.
  * - Layouts are guaranteed to execute their function body before their
  *   children render, so marking the scope in a layout is reliably visible
  *   to descendant pages.

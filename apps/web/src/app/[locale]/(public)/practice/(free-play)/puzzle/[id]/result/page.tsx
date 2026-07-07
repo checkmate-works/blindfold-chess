@@ -4,7 +4,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { eq } from 'drizzle-orm';
 
 import { db, puzzleSolutions } from '@/lib/db';
@@ -12,7 +11,7 @@ import { getPositionWithProfileById } from '@/lib/positions/queries';
 
 import { resolveExpInfoFromGrantParam } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -81,10 +80,7 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
   const solutionMoveLists = solutions.map((s) => s.solutionMoves);
   const solutionLines = solutionMoveLists.map((moves) => moves.map((m) => m.san).join(' '));
 
-  const adBannerStandard =
-    IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM ? (
-      <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-    ) : undefined;
+  const adBannerStandard = <AdSlot slot="content-bottom" />;
 
   return (
     <PageLayout

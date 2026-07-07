@@ -2,15 +2,10 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
-import {
-  ADSENSE_SLOT_CONTENT_BOTTOM,
-  ADSENSE_SLOT_CONTENT_MIDDLE,
-  IS_LOCAL_DEV,
-  SUPPORTED_LOCALES,
-} from '@/config';
+import { SUPPORTED_LOCALES } from '@/config';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -82,17 +77,13 @@ export default async function GlossaryLetterPage({ params }: Props) {
 
       <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-      )}
+      <AdSlot slot="content-middle" />
 
       <SectionTitle>{t('alphabeticalIndexTitle')}</SectionTitle>
 
       <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

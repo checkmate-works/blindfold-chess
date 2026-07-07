@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlusCircle } from 'react-icons/fa';
@@ -27,7 +26,7 @@ import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_componen
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -146,11 +145,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
       title={position.title}
       locale={locale}
       headerNote={forkedFromNote}
-      bottomAdSense={
-        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )
-      }
+      bottomAdSense={<AdSlot slot="content-bottom" />}
       breadcrumbItems={[
         { label: tNav('practice'), href: '/practice' },
         { label: t('list.title'), href: '/practice/position-memory' },

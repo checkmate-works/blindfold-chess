@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 import { FiEdit2 } from 'react-icons/fi';
 
@@ -16,7 +15,7 @@ import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(fre
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { HelpTourButton, LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -388,9 +387,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         />
       )}
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

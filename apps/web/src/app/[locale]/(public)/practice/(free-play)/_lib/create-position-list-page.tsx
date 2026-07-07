@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Button } from '@/app/_components';
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 import { FaPlus } from 'react-icons/fa';
@@ -21,7 +20,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -209,9 +208,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
           </div>
         )}
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
+        <AdSlot slot="content-bottom" />
       </PageLayout>
     );
   }

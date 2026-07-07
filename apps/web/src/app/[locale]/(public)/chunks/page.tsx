@@ -4,7 +4,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Button } from '@/app/_components';
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { Link } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
@@ -31,7 +30,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -269,9 +268,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
         </div>
       )}
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

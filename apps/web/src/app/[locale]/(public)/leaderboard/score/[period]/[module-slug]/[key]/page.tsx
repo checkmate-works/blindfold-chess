@@ -17,7 +17,6 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 
 import { createClient } from '@/lib/supabase/server';
@@ -37,7 +36,7 @@ import {
   isValidPeriod,
 } from '@/app/[locale]/(public)/leaderboard/_lib/validators';
 import { Divider, PagePanel } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -189,9 +188,7 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
         </Link>
       </div>
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
 
       {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
       <div className="!mt-4 space-y-4">
