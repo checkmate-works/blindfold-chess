@@ -1,4 +1,5 @@
-const COUNTRY_CODE_PATTERN = /^[A-Za-z]{2}$/;
+import { isValidCountryCode } from '@/lib/countries';
+
 const FIDE_ID_PATTERN = /^\d+$/;
 const CHESS_USERNAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const X_USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
@@ -77,7 +78,9 @@ export function validateProfileFields(fields: ProfileFields): ValidationError | 
   if (fields.bio.length > 500) {
     return { messageKey: 'bioMaxLength', field: 'bio' };
   }
-  if (fields.country && !COUNTRY_CODE_PATTERN.test(fields.country)) {
+  // Real ISO 3166-1 alpha-2 membership (not just two letters). Uppercased so a
+  // legacy lowercase value already in the DB doesn't block re-saving.
+  if (fields.country && !isValidCountryCode(fields.country.toUpperCase())) {
     return { messageKey: 'countryInvalid', field: 'country' };
   }
 
