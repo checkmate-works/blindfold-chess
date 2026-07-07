@@ -14,6 +14,13 @@ type Props = {
   searchPlaceholder?: string;
   clearLabel?: string;
   noResults?: string;
+  /**
+   * Open the option list above the trigger instead of below it. Defaults to
+   * false (opens downward). Useful when the select is anchored near the bottom
+   * of the viewport (e.g. a fixed corner widget), where a downward list would
+   * clip off-screen.
+   */
+  openUp?: boolean;
 };
 
 export function CountrySelect({
@@ -24,6 +31,7 @@ export function CountrySelect({
   searchPlaceholder,
   clearLabel,
   noResults,
+  openUp = false,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -93,7 +101,11 @@ export function CountrySelect({
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg z-50">
+        <div
+          className={`absolute left-0 right-0 bg-card border border-border rounded-lg z-50 ${
+            openUp ? 'bottom-full mb-1' : 'top-full mt-1'
+          }`}
+        >
           <div className="p-2 border-b border-border">
             <input
               ref={searchInputRef}
