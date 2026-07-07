@@ -1,4 +1,31 @@
-import type { AdCreativeFormLabels } from '../_components/AdCreativeForm';
+export type AdCreativeFormLabels = {
+  slot: string;
+  kind: string;
+  href: string;
+  hrefPlaceholder: string;
+  isActive: string;
+  sortOrder: string;
+  startAt: string;
+  endAt: string;
+  imagePath: string;
+  imagePathPlaceholder: string;
+  alt: string;
+  altPlaceholder: string;
+  width: string;
+  height: string;
+  avatar: string;
+  avatarAlt: string;
+  avatarUpload: string;
+  avatarUploading: string;
+  avatarHintCreate: string;
+  title: string;
+  description: string;
+  targetCountries: string;
+  targetCountriesHint: string;
+  save: string;
+  saving: string;
+  cancel: string;
+};
 
 /** Build the creative-form label bundle from the admin translator. */
 export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativeFormLabels {
