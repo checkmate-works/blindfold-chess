@@ -108,7 +108,7 @@ export function CreativeFormShell({
             id="targetCountry"
             type="text"
             value={common.countryText}
-            onChange={(e) => common.setCountryText(e.target.value)}
+            onChange={(e) => common.setCountryText(e.target.value.toUpperCase())}
             placeholder="JP"
             maxLength={2}
           />
