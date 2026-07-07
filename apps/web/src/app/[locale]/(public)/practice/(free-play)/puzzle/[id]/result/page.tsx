@@ -108,7 +108,8 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
         />
       </Suspense>
 
-      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
+      {/* `ad-slot-wrapper` so the spacer collapses with the ad for ad-free viewers. */}
+      {adBannerStandard && <div className="mt-8 ad-slot-wrapper">{adBannerStandard}</div>}
     </PageLayout>
   );
 }
