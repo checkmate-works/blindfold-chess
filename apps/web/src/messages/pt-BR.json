@@ -4161,8 +4161,8 @@
       "avatarHintCreate": "Salve primeiro e depois envie um avatar na tela de edição.",
       "cardTitle": "Título (por idioma)",
       "cardDescription": "Descrição (por idioma)",
-      "targetCountries": "Países de destino",
-      "targetCountriesHint": "Códigos de país ISO separados por vírgulas (ex.: JP, US). Deixe vazio para exibir em todos os lugares."
+      "targetCountry": "País de destino",
+      "targetCountryHint": "Código de país ISO (ex.: JP). Deixe vazio para exibir em todos os lugares."
     },
     "coins": {
       "title": "Moedas",

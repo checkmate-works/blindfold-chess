@@ -4168,8 +4168,8 @@
       "avatarHintCreate": "先に保存すると、編集画面でアバターをアップロードできます。",
       "cardTitle": "タイトル（言語ごと）",
       "cardDescription": "説明（言語ごと）",
-      "targetCountries": "配信対象の国",
-      "targetCountriesHint": "ISO 国コードをカンマ区切りで入力（例: JP, US）。空欄で全世界に配信。"
+      "targetCountry": "配信対象の国",
+      "targetCountryHint": "ISO 国コードを入力（例: JP）。空欄で全世界に配信。"
     },
     "coins": {
       "title": "コイン",

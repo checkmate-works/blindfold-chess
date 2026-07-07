@@ -22,34 +22,33 @@ describe('getRequestCountry', () => {
 });
 
 describe('creativeAllowedInCountry', () => {
-  it('global creative (null / empty list) shows everywhere, even unknown geo', () => {
+  it('global creative (null target) shows everywhere, even unknown geo', () => {
     expect(creativeAllowedInCountry(null, 'JP')).toBe(true);
-    expect(creativeAllowedInCountry([], 'US')).toBe(true);
+    expect(creativeAllowedInCountry(null, 'US')).toBe(true);
     expect(creativeAllowedInCountry(null, null)).toBe(true);
   });
 
-  it('restricted creative shows only in listed countries', () => {
-    expect(creativeAllowedInCountry(['JP'], 'JP')).toBe(true);
-    expect(creativeAllowedInCountry(['JP', 'US'], 'US')).toBe(true);
-    expect(creativeAllowedInCountry(['JP'], 'US')).toBe(false);
+  it('targeted creative shows only in its country', () => {
+    expect(creativeAllowedInCountry('JP', 'JP')).toBe(true);
+    expect(creativeAllowedInCountry('JP', 'US')).toBe(false);
   });
 
-  it('restricted creative is withheld when the country is unknown (fail closed)', () => {
-    expect(creativeAllowedInCountry(['JP'], null)).toBe(false);
+  it('targeted creative is withheld when the country is unknown (fail closed)', () => {
+    expect(creativeAllowedInCountry('JP', null)).toBe(false);
   });
 });
 
 describe('filterByCountry', () => {
-  const make = (id: string, targetCountries: string[] | null) => ({ id, targetCountries });
+  const make = (id: string, targetCountry: string | null) => ({ id, targetCountry });
 
   it('keeps global creatives and country-matched ones, drops the rest', () => {
-    const pool = [make('global', null), make('jp', ['JP']), make('us', ['US'])];
+    const pool = [make('global', null), make('jp', 'JP'), make('us', 'US')];
     expect(filterByCountry(pool, 'JP').map((c) => c.id)).toEqual(['global', 'jp']);
     expect(filterByCountry(pool, 'US').map((c) => c.id)).toEqual(['global', 'us']);
   });
 
   it('unknown geo keeps only global creatives', () => {
-    const pool = [make('global', null), make('jp', ['JP'])];
+    const pool = [make('global', null), make('jp', 'JP')];
     expect(filterByCountry(pool, null).map((c) => c.id)).toEqual(['global']);
   });
 });

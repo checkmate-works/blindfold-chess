@@ -1,0 +1,1 @@
+ALTER TABLE "ad_creatives" DROP COLUMN "target_countries";

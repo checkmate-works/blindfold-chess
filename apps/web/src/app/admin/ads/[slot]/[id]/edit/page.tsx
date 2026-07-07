@@ -37,7 +37,7 @@ export default async function EditCreativePage({ params }: Props) {
     sortOrder: row.sortOrder,
     startAt: toDatetimeLocal(row.startAt),
     endAt: toDatetimeLocal(row.endAt),
-    targetCountries: row.targetCountries,
+    targetCountry: row.targetCountry,
   };
 
   return (

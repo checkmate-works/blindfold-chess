@@ -13,8 +13,8 @@ import { pickCreative } from '@/lib/ads/select';
  * `AdSlotClient` so the ad-bearing pages themselves stay static/ISR: the
  * per-request geo (`x-vercel-ip-country`) lives here, not in page render.
  *
- * Returns the highest-priority active creative whose `target_countries`
- * allow-list admits the visitor's country, or `{ creative: null }` when none
+ * Returns the highest-priority active creative whose `target_country` admits
+ * the visitor's country (or is global), or `{ creative: null }` when none
  * qualifies (the client then falls back to AdSense). Never cached — the
  * response varies by country and rotation.
  */
@@ -35,7 +35,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slo
 
   const pool = (await getActiveCreatives(slot as never)).flatMap((c) =>
     isBannerPayload(c.payload)
-      ? [{ href: c.href, payload: c.payload, targetCountries: c.targetCountries }]
+      ? [{ href: c.href, payload: c.payload, targetCountry: c.targetCountry }]
       : []
   );
   const eligible = filterByCountry(pool, country);

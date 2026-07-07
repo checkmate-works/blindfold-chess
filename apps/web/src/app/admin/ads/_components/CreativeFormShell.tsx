@@ -100,16 +100,17 @@ export function CreativeFormShell({
         </div>
 
         <Field
-          label={labels.targetCountries}
-          htmlFor="targetCountries"
-          description={labels.targetCountriesHint}
+          label={labels.targetCountry}
+          htmlFor="targetCountry"
+          description={labels.targetCountryHint}
         >
           <Input
-            id="targetCountries"
+            id="targetCountry"
             type="text"
-            value={common.countriesText}
-            onChange={(e) => common.setCountriesText(e.target.value)}
-            placeholder="JP, US"
+            value={common.countryText}
+            onChange={(e) => common.setCountryText(e.target.value)}
+            placeholder="JP"
+            maxLength={2}
           />
         </Field>
 

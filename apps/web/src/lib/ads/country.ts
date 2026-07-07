@@ -16,26 +16,26 @@ export function getRequestCountry(headers: Headers): string | null {
 
 /**
  * Whether a creative may show to a visitor in `country`, given its
- * `target_countries` allow-list.
+ * `target_country`.
  *
- * - empty / null allow-list → global, shows everywhere.
- * - non-empty allow-list → shows only if the visitor's country is known AND
- *   listed. When the country is unknown (null), a *restricted* creative is
- *   withheld (fail closed — never show a JP-only ad to an unknown geo),
- *   while global creatives still show.
+ * - null target → global, shows everywhere.
+ * - a code → shows only if the visitor's country is known AND equal. When the
+ *   country is unknown (null), a *targeted* creative is withheld (fail closed —
+ *   never show a JP-only ad to an unknown geo), while global creatives still
+ *   show.
  */
 export function creativeAllowedInCountry(
-  targetCountries: readonly string[] | null | undefined,
+  targetCountry: string | null | undefined,
   country: string | null
 ): boolean {
-  if (!targetCountries || targetCountries.length === 0) return true;
+  if (!targetCountry) return true;
   if (!country) return false;
-  return targetCountries.includes(country);
+  return targetCountry === country;
 }
 
-export function filterByCountry<T extends { targetCountries: string[] | null }>(
+export function filterByCountry<T extends { targetCountry: string | null }>(
   creatives: readonly T[],
   country: string | null
 ): T[] {
-  return creatives.filter((c) => creativeAllowedInCountry(c.targetCountries, country));
+  return creatives.filter((c) => creativeAllowedInCountry(c.targetCountry, country));
 }

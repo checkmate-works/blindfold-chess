@@ -11,8 +11,8 @@ export type CreateAdCreativeData = {
   sortOrder: number;
   startAt: string | null;
   endAt: string | null;
-  /** ISO-3166 alpha-2 allow-list; null / empty = global. */
-  targetCountries: string[] | null;
+  /** ISO-3166 alpha-2 target country; null = global. */
+  targetCountry: string | null;
   payload: BannerPayload | NativeCardPayload;
 };
 
@@ -22,19 +22,16 @@ export type UpdateAdCreativeData = {
   sortOrder: number;
   startAt: string | null;
   endAt: string | null;
-  targetCountries: string[] | null;
+  targetCountry: string | null;
   payload: BannerPayload | NativeCardPayload;
 };
 
 const MAX_TEXT_LEN = 2000;
 
-function validateTargetCountries(countries: string[] | null): string | null {
-  if (countries === null) return null;
-  if (!Array.isArray(countries) || countries.length > 250) return 'invalid targetCountries';
-  for (const code of countries) {
-    if (typeof code !== 'string' || !/^[A-Z]{2}$/.test(code)) {
-      return 'invalid country code';
-    }
+function validateTargetCountry(country: string | null): string | null {
+  if (country === null) return null;
+  if (typeof country !== 'string' || !/^[A-Z]{2}$/.test(country)) {
+    return 'invalid country code';
   }
   return null;
 }
@@ -126,7 +123,7 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
   if (hrefError) return hrefError;
   const scheduleError = validateScheduleAndOrder(data);
   if (scheduleError) return scheduleError;
-  const countryError = validateTargetCountries(data.targetCountries);
+  const countryError = validateTargetCountry(data.targetCountry);
   if (countryError) return countryError;
   return validatePayloadForKind(kindForSlot(data.slot), data.payload);
 }
@@ -137,7 +134,7 @@ export function validateUpdateAdCreative(kind: AdKind, data: UpdateAdCreativeDat
   if (hrefError) return hrefError;
   const scheduleError = validateScheduleAndOrder(data);
   if (scheduleError) return scheduleError;
-  const countryError = validateTargetCountries(data.targetCountries);
+  const countryError = validateTargetCountry(data.targetCountry);
   if (countryError) return countryError;
   return validatePayloadForKind(kind, data.payload);
 }

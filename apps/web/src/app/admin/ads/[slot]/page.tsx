@@ -50,7 +50,7 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
             <tr>
               <th className="text-left px-4 py-3 font-medium">{t('summary')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('sortOrder')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('targetCountries')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('targetCountry')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('isActive')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('actions')}</th>
             </tr>
@@ -77,7 +77,7 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{creative.sortOrder}</td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {creative.targetCountries?.length ? creative.targetCountries.join(', ') : '🌐'}
+                  {creative.targetCountry ?? '🌐'}
                 </td>
                 <td className="px-4 py-3">
                   <AdminBadge variant={creative.isActive ? 'success' : 'danger'}>

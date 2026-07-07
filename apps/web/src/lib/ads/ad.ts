@@ -85,7 +85,7 @@ export type ActiveCreative = {
   kind: AdKind;
   href: string;
   sortOrder: number;
-  targetCountries: string[] | null;
+  targetCountry: string | null;
   payload: unknown;
 };
 
@@ -98,7 +98,7 @@ const getActiveCreativesCached = unstable_cache(
         kind: row.kind as AdKind,
         href: row.href,
         sortOrder: row.sortOrder,
-        targetCountries: row.targetCountries,
+        targetCountry: row.targetCountry,
         payload: row.payload,
       }));
     } catch (error) {

@@ -18,7 +18,7 @@ const EMPTY_COMMON: CommonCreativeInitial = {
   sortOrder: 0,
   startAt: '',
   endAt: '',
-  targetCountries: null,
+  targetCountry: null,
 };
 
 export default async function NewCreativePage({ params }: Props) {

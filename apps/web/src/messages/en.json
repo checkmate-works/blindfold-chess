@@ -4168,8 +4168,8 @@
       "avatarHintCreate": "Save first, then upload an avatar on the edit screen.",
       "cardTitle": "Title (per language)",
       "cardDescription": "Description (per language)",
-      "targetCountries": "Target countries",
-      "targetCountriesHint": "Comma-separated ISO country codes (e.g. JP, US). Leave empty to show everywhere."
+      "targetCountry": "Target country",
+      "targetCountryHint": "ISO country code (e.g. JP). Leave empty to show everywhere."
     },
     "coins": {
       "title": "Coins",

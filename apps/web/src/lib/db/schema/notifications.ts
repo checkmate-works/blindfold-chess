@@ -9,7 +9,6 @@ import {
   integer,
   jsonb,
   pgTable,
-  text,
   timestamp,
   uuid,
   varchar,
@@ -79,13 +78,15 @@ export const adCreatives = pgTable(
     isActive: boolean('is_active').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
     /**
-     * ISO-3166 alpha-2 country allow-list. NULL / empty = shown everywhere
-     * (global). Non-empty = shown only to visitors in those countries. A
-     * cross-kind targeting filter (like schedule / is_active), applied
-     * in-memory after the cached pool read, keyed by the request's
-     * `x-vercel-ip-country`. See `@/lib/ads/country`.
+     * ISO-3166 alpha-2 target country. NULL = shown everywhere (global);
+     * a code = shown only to visitors in that country. Scalar because a
+     * creative's affiliate link is country-specific (amazon.com vs amazon.fr),
+     * so a creative targets exactly one country or is global — never a
+     * multi-country set. A cross-kind targeting filter (like schedule /
+     * is_active), applied in-memory after the cached pool read, keyed by the
+     * request's `x-vercel-ip-country`. See `@/lib/ads/country`.
      */
-    targetCountries: text('target_countries').array(),
+    targetCountry: varchar('target_country', { length: 2 }),
     startAt: timestamp('start_at', { withTimezone: true }),
     endAt: timestamp('end_at', { withTimezone: true }),
     /** Kind-specific fields — see the `*Payload` types in `@/lib/ads/payload`. */

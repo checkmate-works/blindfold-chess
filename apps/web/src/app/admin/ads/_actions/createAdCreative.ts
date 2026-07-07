@@ -30,7 +30,7 @@ export async function createAdCreative(data: CreateAdCreativeData): Promise<Crea
         sortOrder: data.sortOrder,
         startAt: data.startAt ? new Date(data.startAt) : null,
         endAt: data.endAt ? new Date(data.endAt) : null,
-        targetCountries: data.targetCountries,
+        targetCountry: data.targetCountry,
         payload: data.payload,
       })
       .returning({ id: adCreatives.id });

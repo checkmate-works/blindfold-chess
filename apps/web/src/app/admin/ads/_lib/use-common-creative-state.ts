@@ -9,7 +9,7 @@ export type CommonCreativeInitial = {
   sortOrder: number;
   startAt: string;
   endAt: string;
-  targetCountries: string[] | null;
+  targetCountry: string | null;
 };
 
 /** The common fields shaped for the create/update Server Actions. */
@@ -19,16 +19,13 @@ export type CommonCreativeFields = {
   sortOrder: number;
   startAt: string | null;
   endAt: string | null;
-  targetCountries: string[] | null;
+  targetCountry: string | null;
 };
 
-/** "JP, us , Fr" → ['JP','US','FR']; empty → null (global). */
-function parseCountries(text: string): string[] | null {
-  const codes = text
-    .split(',')
-    .map((s) => s.trim().toUpperCase())
-    .filter(Boolean);
-  return codes.length > 0 ? codes : null;
+/** " jp " → 'JP'; empty → null (global). */
+function parseCountry(text: string): string | null {
+  const code = text.trim().toUpperCase();
+  return code.length > 0 ? code : null;
 }
 
 /**
@@ -42,7 +39,7 @@ export function useCommonCreativeState(initial: CommonCreativeInitial) {
   const [sortOrder, setSortOrder] = useState(initial.sortOrder);
   const [startAt, setStartAt] = useState(initial.startAt);
   const [endAt, setEndAt] = useState(initial.endAt);
-  const [countriesText, setCountriesText] = useState((initial.targetCountries ?? []).join(', '));
+  const [countryText, setCountryText] = useState(initial.targetCountry ?? '');
 
   const toFields = (): CommonCreativeFields => ({
     href,
@@ -50,7 +47,7 @@ export function useCommonCreativeState(initial: CommonCreativeInitial) {
     sortOrder,
     startAt: startAt || null,
     endAt: endAt || null,
-    targetCountries: parseCountries(countriesText),
+    targetCountry: parseCountry(countryText),
   });
 
   return {
@@ -64,8 +61,8 @@ export function useCommonCreativeState(initial: CommonCreativeInitial) {
     setStartAt,
     endAt,
     setEndAt,
-    countriesText,
-    setCountriesText,
+    countryText,
+    setCountryText,
     toFields,
   };
 }

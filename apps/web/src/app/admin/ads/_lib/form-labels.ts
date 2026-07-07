@@ -20,8 +20,8 @@ export type AdCreativeFormLabels = {
   avatarHintCreate: string;
   title: string;
   description: string;
-  targetCountries: string;
-  targetCountriesHint: string;
+  targetCountry: string;
+  targetCountryHint: string;
   save: string;
   saving: string;
   cancel: string;
@@ -51,8 +51,8 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     avatarHintCreate: t('avatarHintCreate'),
     title: t('cardTitle'),
     description: t('cardDescription'),
-    targetCountries: t('targetCountries'),
-    targetCountriesHint: t('targetCountriesHint'),
+    targetCountry: t('targetCountry'),
+    targetCountryHint: t('targetCountryHint'),
     save: t('save'),
     saving: t('saving'),
     cancel: t('cancel'),
