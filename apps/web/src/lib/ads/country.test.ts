@@ -21,6 +21,38 @@ describe('getRequestCountry', () => {
   });
 });
 
+describe('getRequestCountry dev override (bfc_dev_country cookie)', () => {
+  const withCookie = (cookie: string) => new Headers({ cookie });
+
+  it('resolves to the cookie country when the Vercel header is absent (non-prod)', () => {
+    expect(getRequestCountry(withCookie('bfc_dev_country=jp'))).toBe('JP');
+    expect(getRequestCountry(withCookie('foo=1; bfc_dev_country=US; bar=2'))).toBe('US');
+  });
+
+  it('ignores a malformed cookie value', () => {
+    expect(getRequestCountry(withCookie('bfc_dev_country=XYZ'))).toBeNull();
+    expect(getRequestCountry(withCookie('bfc_dev_country='))).toBeNull();
+    expect(getRequestCountry(new Headers({ cookie: 'unrelated=1' }))).toBeNull();
+  });
+
+  it('the real Vercel header wins over the dev cookie', () => {
+    const headers = new Headers({ 'x-vercel-ip-country': 'FR', cookie: 'bfc_dev_country=JP' });
+    expect(getRequestCountry(headers)).toBe('FR');
+  });
+
+  it('does not consult the cookie in production', () => {
+    const prev = process.env.NODE_ENV;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (process.env as any).NODE_ENV = 'production';
+    try {
+      expect(getRequestCountry(withCookie('bfc_dev_country=JP'))).toBeNull();
+    } finally {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (process.env as any).NODE_ENV = prev;
+    }
+  });
+});
+
 describe('creativeAllowedInCountry', () => {
   it('global creative (null target) shows everywhere, even unknown geo', () => {
     expect(creativeAllowedInCountry(null, 'JP')).toBe(true);
