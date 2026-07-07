@@ -9,7 +9,7 @@ import { hasActiveGrant } from '@/lib/users/user-grants';
 import { isNativeCardPayload, resolveLocalizedText } from './payload';
 import type { LocalizedText } from './payload';
 import { FEED_NATIVE_AD_SLOT } from './registry';
-import type { AdSlot } from './registry';
+import type { AdKind, AdSlot } from './registry';
 
 /** Cache tag invalidated by every admin creative mutation. */
 export const AD_CREATIVES_CACHE_TAG = 'ad-creatives';
@@ -56,7 +56,7 @@ export type NativeAdView = {
   description: LocalizedText;
 };
 
-async function queryActiveCreatives(slot: AdSlot) {
+async function queryActiveCreatives(slot: string) {
   return db
     .select()
     .from(adCreatives)
@@ -72,38 +72,66 @@ async function queryActiveCreatives(slot: AdSlot) {
 }
 
 /**
- * Public read — active, in-window native-card creatives for the feed slot.
- * The very first consumer of the `is_active` / `start_at` / `end_at`
- * columns; the old banner reader ignored all three. Cached (tag +
- * time-bounded) because both home and topics feeds are `force-dynamic` and
- * hit this on every request; admin mutations call
- * `revalidateTag(AD_CREATIVES_CACHE_TAG)`. Schedule windows are therefore
- * honored within the revalidate interval, which is ample for ad rotation.
+ * A slot's active, in-schedule, priority-ordered creatives — the raw pool the
+ * `<AdSlot>` waterfall picks from. `payload` is `unknown`; render sites narrow
+ * it with the kind guards in `@/lib/ads/payload`. Cached per slot (tag +
+ * time-bounded) so ad-bearing pages stay static/ISR: the pool is baked at
+ * build/revalidate and refreshed by `revalidateTag(AD_CREATIVES_CACHE_TAG)`
+ * on admin writes; the per-user hide stays on the cookie/CSS layer.
  */
-export const getFeedNativeAdCreatives = unstable_cache(
-  async (): Promise<NativeAdView[]> => {
+export type ActiveCreative = {
+  id: string;
+  kind: AdKind;
+  href: string;
+  sortOrder: number;
+  payload: unknown;
+};
+
+const getActiveCreativesCached = unstable_cache(
+  async (slot: string): Promise<ActiveCreative[]> => {
     try {
-      const rows = await queryActiveCreatives(FEED_NATIVE_AD_SLOT);
-      return rows.flatMap((row) => {
-        if (!isNativeCardPayload(row.payload)) return [];
-        return [
-          {
-            id: row.id,
-            href: row.href,
-            avatarImagePath: row.payload.avatarImagePath,
-            avatarAlt: row.payload.avatarAlt,
-            title: row.payload.title,
-            description: row.payload.description,
-          },
-        ];
-      });
+      const rows = await queryActiveCreatives(slot);
+      return rows.map((row) => ({
+        id: row.id,
+        kind: row.kind as AdKind,
+        href: row.href,
+        sortOrder: row.sortOrder,
+        payload: row.payload,
+      }));
     } catch (error) {
-      console.warn('Failed to fetch feed native-ad creatives:', error);
+      console.warn('Failed to fetch active ad creatives:', error);
       return [];
     }
   },
-  ['feed-native-ad-creatives'],
+  ['active-ad-creatives'],
   { tags: [AD_CREATIVES_CACHE_TAG], revalidate: 300 }
 );
+
+export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
+  return getActiveCreativesCached(slot);
+}
+
+/**
+ * Feed-slot view: the active native-card creatives, mapped to the
+ * serializable `NativeAdView` the client `FeedClient` rotates through.
+ * Delegates to the cached `getActiveCreatives`, so home/topics (both
+ * `force-dynamic`) share the same tag-invalidated pool as every other slot.
+ */
+export async function getFeedNativeAdCreatives(): Promise<NativeAdView[]> {
+  const creatives = await getActiveCreatives(FEED_NATIVE_AD_SLOT);
+  return creatives.flatMap((c) => {
+    if (!isNativeCardPayload(c.payload)) return [];
+    return [
+      {
+        id: c.id,
+        href: c.href,
+        avatarImagePath: c.payload.avatarImagePath,
+        avatarAlt: c.payload.avatarAlt,
+        title: c.payload.title,
+        description: c.payload.description,
+      },
+    ];
+  });
+}
 
 export { resolveLocalizedText };

@@ -22,7 +22,7 @@ type SeedCreative = {
 const seedCreatives: SeedCreative[] = [
   {
     kind: 'banner',
-    slot: 'banner-wide',
+    slot: 'content-middle',
     href: 'https://example.com',
     sortOrder: 0,
     payload: {
@@ -34,7 +34,7 @@ const seedCreatives: SeedCreative[] = [
   },
   {
     kind: 'banner',
-    slot: 'banner-standard',
+    slot: 'content-bottom',
     href: 'https://example.com',
     sortOrder: 0,
     payload: {

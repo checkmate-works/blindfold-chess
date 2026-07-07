@@ -52,7 +52,7 @@ import {
  *
  * @design `slot` is NOT unique — creatives rotate within a placement
  *
- * `slot` identifies a placement (e.g. `feed-native-ad`, `banner-wide`), and
+ * `slot` identifies a placement (e.g. `feed-native-ad`, `content-bottom`), and
  * multiple active creatives may share one slot so they can rotate. The
  * (slot → allowed kind) binding is enforced in application code by
  * `AD_SLOTS` in `@/lib/ads/registry` (a DB row cannot express "this slot
@@ -60,7 +60,7 @@ import {
  * registry. This is deliberately unlike the old `ad_banners.slot` UNIQUE
  * (one-row-per-slot) model it replaced.
  *
- * NOT related to the Google-AdSense display system (`AdSenseGuard`,
+ * NOT related to the Google-AdSense display system (`AdSlot`,
  * `ads_hidden` cookie, `AdSlotKind`) — that renders third-party `<ins>`
  * tags and never reads this table. These are first-party creatives we host
  * and link ourselves (affiliate links etc.).
