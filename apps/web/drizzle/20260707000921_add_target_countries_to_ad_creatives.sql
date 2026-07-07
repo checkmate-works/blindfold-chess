@@ -1,0 +1,1 @@
+ALTER TABLE "ad_creatives" ADD COLUMN "target_countries" text[];

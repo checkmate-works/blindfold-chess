@@ -393,6 +393,13 @@
       "when": 1783323776360,
       "tag": "20260706074256_create_ad_creatives",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1783382961497,
+      "tag": "20260707000921_add_target_countries_to_ad_creatives",
+      "breakpoints": true
     }
   ]
 }

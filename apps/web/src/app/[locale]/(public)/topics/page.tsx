@@ -2,11 +2,13 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
 
 import { IS_LOCAL_DEV } from '@/config';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { getFeedNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
+import { getRequestCountry } from '@/lib/ads/country';
 import { createClient } from '@/lib/supabase/server';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
@@ -52,10 +54,11 @@ async function TopicsContent({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const country = getRequestCountry(await headers());
   const [initialFeed, showAdsResult, nativeAdCreatives] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id, TOPICS_FEED_ENTITY_TYPES),
     shouldShowAdsForUser(user?.id ?? null),
-    getFeedNativeAdCreatives(),
+    getFeedNativeAdCreatives(country),
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 

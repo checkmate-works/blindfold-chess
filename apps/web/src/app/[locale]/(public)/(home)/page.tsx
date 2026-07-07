@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
 
 import { IS_LOCAL_DEV } from '@/config';
 
 import { getFeedNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
+import { getRequestCountry } from '@/lib/ads/country';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
 import { createClient } from '@/lib/supabase/server';
@@ -71,10 +73,11 @@ export default async function HomePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const country = getRequestCountry(await headers());
   const [initialFeed, showAdsResult, nativeAdCreatives] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
     shouldShowAdsForUser(user?.id ?? null),
-    getFeedNativeAdCreatives(),
+    getFeedNativeAdCreatives(country),
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 

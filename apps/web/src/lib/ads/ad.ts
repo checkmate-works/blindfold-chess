@@ -6,6 +6,7 @@ import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { adCreatives, db } from '@/lib/db';
 import { hasActiveGrant } from '@/lib/users/user-grants';
 
+import { filterByCountry } from './country';
 import { isNativeCardPayload, resolveLocalizedText } from './payload';
 import type { LocalizedText } from './payload';
 import { FEED_NATIVE_AD_SLOT } from './registry';
@@ -84,6 +85,7 @@ export type ActiveCreative = {
   kind: AdKind;
   href: string;
   sortOrder: number;
+  targetCountries: string[] | null;
   payload: unknown;
 };
 
@@ -96,6 +98,7 @@ const getActiveCreativesCached = unstable_cache(
         kind: row.kind as AdKind,
         href: row.href,
         sortOrder: row.sortOrder,
+        targetCountries: row.targetCountries,
         payload: row.payload,
       }));
     } catch (error) {
@@ -112,13 +115,16 @@ export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
 }
 
 /**
- * Feed-slot view: the active native-card creatives, mapped to the
- * serializable `NativeAdView` the client `FeedClient` rotates through.
- * Delegates to the cached `getActiveCreatives`, so home/topics (both
- * `force-dynamic`) share the same tag-invalidated pool as every other slot.
+ * Feed-slot view: the active native-card creatives (filtered to the visitor's
+ * country), mapped to the serializable `NativeAdView` the client `FeedClient`
+ * rotates through. Delegates to the cached `getActiveCreatives`, so
+ * home/topics (both `force-dynamic`, so reading the geo header server-side is
+ * free) share the same tag-invalidated pool as every other slot. `country`
+ * comes from `getRequestCountry(headers())`; null = geo unknown (only global
+ * creatives qualify).
  */
-export async function getFeedNativeAdCreatives(): Promise<NativeAdView[]> {
-  const creatives = await getActiveCreatives(FEED_NATIVE_AD_SLOT);
+export async function getFeedNativeAdCreatives(country: string | null): Promise<NativeAdView[]> {
+  const creatives = filterByCountry(await getActiveCreatives(FEED_NATIVE_AD_SLOT), country);
   return creatives.flatMap((c) => {
     if (!isNativeCardPayload(c.payload)) return [];
     return [

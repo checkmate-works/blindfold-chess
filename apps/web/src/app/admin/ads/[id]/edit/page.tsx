@@ -36,6 +36,7 @@ export default async function EditAdCreativePage({ params }: Props) {
     sortOrder: row.sortOrder,
     startAt: toDatetimeLocal(row.startAt),
     endAt: toDatetimeLocal(row.endAt),
+    targetCountries: row.targetCountries,
     // Payload shape is validated on write; the form reads fields defensively.
     payload: row.payload as AdCreativeFormInitial['payload'],
   };

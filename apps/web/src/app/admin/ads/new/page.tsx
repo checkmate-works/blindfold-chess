@@ -27,6 +27,7 @@ export default async function NewAdCreativePage() {
           sortOrder: 0,
           startAt: '',
           endAt: '',
+          targetCountries: null,
           payload: {
             avatarImagePath: null,
             avatarAlt: 'Advertisement',

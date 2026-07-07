@@ -4157,7 +4157,9 @@
       "avatarUploading": "Subiendo...",
       "avatarHintCreate": "Guarda primero y luego sube un avatar en la pantalla de edición.",
       "cardTitle": "Título (por idioma)",
-      "cardDescription": "Descripción (por idioma)"
+      "cardDescription": "Descripción (por idioma)",
+      "targetCountries": "Países de destino",
+      "targetCountriesHint": "Códigos de país ISO separados por comas (p. ej. JP, US). Dejar vacío para mostrar en todas partes."
     },
     "coins": {
       "title": "Monedas",

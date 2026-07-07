@@ -39,6 +39,8 @@ export type AdCreativeFormLabels = {
   avatarHintCreate: string;
   title: string;
   description: string;
+  targetCountries: string;
+  targetCountriesHint: string;
   save: string;
   saving: string;
   cancel: string;
@@ -51,8 +53,18 @@ export type AdCreativeFormInitial = {
   sortOrder: number;
   startAt: string;
   endAt: string;
+  targetCountries: string[] | null;
   payload: BannerPayload | NativeCardPayload;
 };
+
+/** "JP, us , Fr" → ['JP','US','FR']; empty → null (global). */
+function parseCountries(text: string): string[] | null {
+  const codes = text
+    .split(',')
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
+  return codes.length > 0 ? codes : null;
+}
 
 type Props = {
   mode: 'create' | 'edit';
@@ -80,6 +92,7 @@ export function AdCreativeForm({ mode, creativeId, locales, initial, labels }: P
   const [sortOrder, setSortOrder] = useState(initial.sortOrder);
   const [startAt, setStartAt] = useState(initial.startAt);
   const [endAt, setEndAt] = useState(initial.endAt);
+  const [countriesText, setCountriesText] = useState((initial.targetCountries ?? []).join(', '));
 
   const bannerInit = initial.payload as Partial<BannerPayload>;
   const [imagePath, setImagePath] = useState(bannerInit.imagePath ?? '');
@@ -130,6 +143,7 @@ export function AdCreativeForm({ mode, creativeId, locales, initial, labels }: P
 
     startTransition(async () => {
       const payload = buildPayload();
+      const targetCountries = parseCountries(countriesText);
       if (mode === 'create') {
         const result = await createAdCreative({
           slot,
@@ -138,6 +152,7 @@ export function AdCreativeForm({ mode, creativeId, locales, initial, labels }: P
           sortOrder,
           startAt: startAt || null,
           endAt: endAt || null,
+          targetCountries,
           payload,
         });
         if ('error' in result) {
@@ -153,6 +168,7 @@ export function AdCreativeForm({ mode, creativeId, locales, initial, labels }: P
           sortOrder,
           startAt: startAt || null,
           endAt: endAt || null,
+          targetCountries,
           payload,
         });
         if ('error' in result) {
@@ -371,6 +387,20 @@ export function AdCreativeForm({ mode, creativeId, locales, initial, labels }: P
             />
           </Field>
         </div>
+
+        <Field
+          label={labels.targetCountries}
+          htmlFor="targetCountries"
+          description={labels.targetCountriesHint}
+        >
+          <Input
+            id="targetCountries"
+            type="text"
+            value={countriesText}
+            onChange={(e) => setCountriesText(e.target.value)}
+            placeholder="JP, US"
+          />
+        </Field>
 
         <div className="flex items-center gap-3 pt-2">
           <Button type="submit" variant="primary" disabled={isPending}>
