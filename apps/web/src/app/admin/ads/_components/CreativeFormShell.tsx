@@ -4,6 +4,7 @@ import type { FormEvent, ReactNode } from 'react';
 
 import Link from 'next/link';
 
+import { CountrySelect } from '@/app/_components/CountrySelect';
 import { Button, Field, Input } from '@/app/admin/_components/forms';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
@@ -104,13 +105,14 @@ export function CreativeFormShell({
           htmlFor="targetCountry"
           description={labels.targetCountryHint}
         >
-          <Input
-            id="targetCountry"
-            type="text"
+          <CountrySelect
             value={common.countryText}
-            onChange={(e) => common.setCountryText(e.target.value.toUpperCase())}
-            placeholder="JP"
-            maxLength={2}
+            onChange={common.setCountryText}
+            locale="en"
+            placeholder="All countries (global)"
+            searchPlaceholder="Search countries…"
+            clearLabel="Clear"
+            noResults="No countries found"
           />
         </Field>
 

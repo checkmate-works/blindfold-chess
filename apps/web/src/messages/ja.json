@@ -4169,7 +4169,7 @@
       "cardDescription": "説明",
       "cardCopyHint": "対象国の言語で記載（全世界対象なら英語）。",
       "targetCountry": "配信対象の国",
-      "targetCountryHint": "ISO 国コードを入力（例: JP）。空欄で全世界に配信。"
+      "targetCountryHint": "未選択で全世界に配信。"
     },
     "coins": {
       "title": "コイン",

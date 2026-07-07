@@ -1,11 +1,11 @@
 'use client';
 
 import { Button, TextInput, Textarea } from '@/app/_components';
+import { CountrySelect } from '@/app/_components/CountrySelect';
 
 import { useProfileForm } from '../_hooks/useProfileForm';
 import type { ProfileFormProps } from '../_lib/profile-form-types';
 import { AvatarUpload } from './AvatarUpload';
-import { CountrySelect } from './CountrySelect';
 import { FlairPicker } from './FlairPicker';
 import { FormField } from './profile-form/FormField';
 

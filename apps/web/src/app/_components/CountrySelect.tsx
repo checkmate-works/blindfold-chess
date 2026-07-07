@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { COUNTRY_CODES, countryCodeToFlag } from '@/lib/countries';
+import { useDropdownClose } from '@/_hooks/use-dropdown-close';
 
-import { useDropdownClose } from '../_hooks/use-dropdown-close';
+import { COUNTRY_CODES, countryCodeToFlag } from '@/lib/countries';
 
 type Props = {
   value: string;

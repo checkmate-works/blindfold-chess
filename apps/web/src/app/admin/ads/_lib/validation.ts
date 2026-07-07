@@ -1,7 +1,7 @@
 import type { BannerPayload, NativeCardPayload } from '@/lib/ads/payload';
 import type { AdKind } from '@/lib/ads/registry';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
-import { COUNTRY_CODES } from '@/lib/countries';
+import { isValidCountryCode } from '@/lib/countries';
 
 export type CreateAdCreativeData = {
   slot: string;
@@ -31,7 +31,7 @@ function validateTargetCountry(country: string | null): string | null {
   if (country === null) return null;
   // Must be a real ISO 3166-1 alpha-2 code, not just two letters — this
   // rejects typos like "UK" (the ISO code is "GB"), "XX", etc.
-  if (typeof country !== 'string' || !COUNTRY_CODES.includes(country)) {
+  if (typeof country !== 'string' || !isValidCountryCode(country)) {
     return 'invalid country code';
   }
   return null;

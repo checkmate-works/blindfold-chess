@@ -4169,7 +4169,7 @@
       "cardDescription": "Description",
       "cardCopyHint": "Write in the target country's language (English if global).",
       "targetCountry": "Target country",
-      "targetCountryHint": "ISO country code (e.g. JP). Leave empty to show everywhere."
+      "targetCountryHint": "Leave empty to target all countries."
     },
     "coins": {
       "title": "Coins",

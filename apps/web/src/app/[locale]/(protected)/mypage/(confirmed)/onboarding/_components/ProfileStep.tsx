@@ -1,10 +1,10 @@
 'use client';
 
 import { Textarea } from '@/app/_components';
+import { CountrySelect } from '@/app/_components/CountrySelect';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { AvatarUpload } from '@/app/[locale]/(protected)/mypage/(confirmed)/profile/_components/AvatarUpload';
-import { CountrySelect } from '@/app/[locale]/(protected)/mypage/(confirmed)/profile/_components/CountrySelect';
 
 type Props = {
   locale: string;

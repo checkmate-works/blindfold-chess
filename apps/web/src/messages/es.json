@@ -4162,7 +4162,7 @@
       "cardDescription": "Descripción",
       "cardCopyHint": "Escribe en el idioma del país de destino (inglés si es global).",
       "targetCountry": "País de destino",
-      "targetCountryHint": "Código de país ISO (p. ej. JP). Dejar vacío para mostrar en todas partes."
+      "targetCountryHint": "Dejar vacío para segmentar todos los países."
     },
     "coins": {
       "title": "Monedas",
