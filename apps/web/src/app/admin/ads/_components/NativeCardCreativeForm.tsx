@@ -15,8 +15,10 @@ import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
 import type { CommonCreativeInitial } from '../_lib/use-common-creative-state';
+import { useCreativeImageUpload } from '../_lib/use-creative-image-upload';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
 import { CreativeFormShell } from './CreativeFormShell';
+import { ImageFileButton } from './ImageFileButton';
 import { NativeCardPreview } from './NativeCardPreview';
 
 export type NativeCardFormInitial = CommonCreativeInitial & {
@@ -42,7 +44,6 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   const [avatarAlt, setAvatarAlt] = useState(initial.payload.avatarAlt ?? 'Advertisement');
   const [title, setTitle] = useState(initial.payload.title ?? '');
   const [description, setDescription] = useState(initial.payload.description ?? '');
-  const [isUploading, setIsUploading] = useState(false);
 
   // Normalize (also recovers legacy `{type:'image'}` thumbnails still in the DB).
   const initThumb = resolveNativeThumbnail(initial.payload as NativeCardPayload);
@@ -51,65 +52,25 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
     initThumb.imagePath ?? null
   );
   const [thumbnailAlt, setThumbnailAlt] = useState(initThumb.imageAlt || 'Advertisement');
-  const [isThumbUploading, setIsThumbUploading] = useState(false);
 
-  const uploadImage = async (file: File, target: 'avatar' | 'thumbnail') => {
-    if (!creativeId) return null;
-    setError(null);
-    const body = new FormData();
-    body.append('file', file);
-    body.append('target', target);
-    const res = await fetch(`/api/admin/ads/${creativeId}/image`, { method: 'POST', body });
-    if (!res.ok) {
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
-      setError(data.error ?? 'upload_failed');
-      return null;
-    }
-    const data = (await res.json()) as { imagePath: string };
-    return data.imagePath;
-  };
+  const { upload, remove, isBusy } = useCreativeImageUpload(creativeId, setError);
+  const isUploading = isBusy('avatar');
+  const isThumbUploading = isBusy('thumbnail');
 
   const handleAvatarUpload = async (file: File) => {
-    setIsUploading(true);
-    try {
-      const path = await uploadImage(file, 'avatar');
-      if (path) setAvatarImagePath(path);
-    } finally {
-      setIsUploading(false);
-    }
+    const path = await upload('avatar', file);
+    if (path) setAvatarImagePath(path);
   };
 
   const handleThumbnailUpload = async (file: File) => {
-    setIsThumbUploading(true);
-    try {
-      const path = await uploadImage(file, 'thumbnail');
-      if (path) setThumbnailImagePath(path);
-    } finally {
-      setIsThumbUploading(false);
-    }
+    const path = await upload('thumbnail', file);
+    if (path) setThumbnailImagePath(path);
   };
 
   const removeThumbnailImage = async () => {
-    // No saved creative yet → the image only lives in local state.
-    if (!creativeId) {
-      setThumbnailImagePath(null);
-      return;
-    }
-    setError(null);
-    setIsThumbUploading(true);
-    try {
-      const res = await fetch(`/api/admin/ads/${creativeId}/image?target=thumbnail`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? 'delete_failed');
-        return;
-      }
-      setThumbnailImagePath(null);
-    } finally {
-      setIsThumbUploading(false);
-    }
+    // With no saved creative yet, the image only lives in local state and
+    // `remove` reports success without an API call.
+    if (await remove('thumbnail')) setThumbnailImagePath(null);
   };
 
   // The effective thumbnail from the current inputs: the board `fen` always,
@@ -187,22 +148,13 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
                 )}
                 {mode === 'edit' ? (
                   <div className="flex flex-col gap-2">
-                    <label className="cursor-pointer px-3 py-1.5 text-sm rounded border border-border hover:bg-secondary transition-colors text-center">
-                      {isThumbUploading
-                        ? labels.thumbnailImageUploading
-                        : labels.thumbnailImageUpload}
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        className="hidden"
-                        disabled={isThumbUploading}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleThumbnailUpload(file);
-                          e.target.value = '';
-                        }}
-                      />
-                    </label>
+                    <ImageFileButton
+                      idleLabel={labels.thumbnailImageUpload}
+                      busyLabel={labels.thumbnailImageUploading}
+                      busy={isThumbUploading}
+                      onFile={handleThumbnailUpload}
+                      className="text-center"
+                    />
                     {thumbnailImagePath && (
                       <button
                         type="button"
@@ -252,21 +204,13 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
               </div>
             )}
             {mode === 'edit' ? (
-              <label className="cursor-pointer px-3 py-1.5 text-sm rounded border border-border hover:bg-secondary transition-colors">
-                {isUploading ? labels.avatarUploading : labels.avatarUpload}
-                <input
-                  id="avatar"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  disabled={isUploading}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleAvatarUpload(file);
-                    e.target.value = '';
-                  }}
-                />
-              </label>
+              <ImageFileButton
+                idleLabel={labels.avatarUpload}
+                busyLabel={labels.avatarUploading}
+                busy={isUploading}
+                onFile={handleAvatarUpload}
+                inputId="avatar"
+              />
             ) : (
               <p className="text-xs text-muted-foreground">{labels.avatarHintCreate}</p>
             )}
