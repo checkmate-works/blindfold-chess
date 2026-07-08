@@ -46,17 +46,6 @@ export type NativeCardPayload = {
   thumbnail?: NativeCardThumbnail;
 };
 
-export function isNativeCardThumbnail(value: unknown): value is NativeCardThumbnail {
-  if (typeof value !== 'object' || value === null) return false;
-  const t = value as Record<string, unknown>;
-  if (typeof t.fen !== 'string') return false;
-  if (t.imagePath !== undefined && t.imagePath !== null && typeof t.imagePath !== 'string') {
-    return false;
-  }
-  if (t.imageAlt !== undefined && typeof t.imageAlt !== 'string') return false;
-  return true;
-}
-
 /**
  * The effective thumbnail, normalized to the current shape. Handles unset
  * thumbnails and legacy discriminated-union payloads (`{type:'board'|'image'}`)
@@ -90,11 +79,6 @@ export function resolveNativeThumbnail(payload: NativeCardPayload): NativeCardTh
 
   // Legacy `{ type: 'board' }` or anything unrecognized → the default board.
   return { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
-}
-
-/** Whether the thumbnail's override image is set (image wins over the board). */
-export function thumbnailHasImage(thumbnail: NativeCardThumbnail): boolean {
-  return typeof thumbnail.imagePath === 'string' && thumbnail.imagePath.length > 0;
 }
 
 export type AdPayloadByKind = {

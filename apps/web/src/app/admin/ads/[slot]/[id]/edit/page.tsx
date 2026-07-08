@@ -8,7 +8,7 @@ import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
 import type { CommonCreativeInitial } from '@/app/admin/ads/_lib/use-common-creative-state';
 import { eq } from 'drizzle-orm';
 
-import type { BannerPayload, NativeCardPayload } from '@/lib/ads/payload';
+import { isPayloadForKind } from '@/lib/ads/payload';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 import { adCreatives, db } from '@/lib/db';
 
@@ -39,14 +39,19 @@ export default async function EditCreativePage({ params }: Props) {
           { label: t('editTitle') },
         ]}
       />
-      {/* Payload shape is validated on write; the forms read fields defensively. */}
+      {/* A stored payload that fails its kind's guard (e.g. written before the
+          validation tightened) starts the form empty instead of feeding it
+          garbage fields. */}
       {kindForSlot(slot) === 'banner' ? (
         <BannerCreativeForm
           mode="edit"
           slot={slot}
           creativeId={id}
           labels={labels}
-          initial={{ ...common, payload: row.payload as Partial<BannerPayload> }}
+          initial={{
+            ...common,
+            payload: isPayloadForKind('banner', row.payload) ? row.payload : {},
+          }}
         />
       ) : (
         <NativeCardCreativeForm
@@ -54,7 +59,10 @@ export default async function EditCreativePage({ params }: Props) {
           slot={slot}
           creativeId={id}
           labels={labels}
-          initial={{ ...common, payload: row.payload as Partial<NativeCardPayload> }}
+          initial={{
+            ...common,
+            payload: isPayloadForKind('native_card', row.payload) ? row.payload : {},
+          }}
         />
       )}
     </div>

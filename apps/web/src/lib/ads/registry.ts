@@ -71,11 +71,6 @@ export const FEED_NATIVE_AD_SLOT = 'feed-native-ad' satisfies AdSlot;
 /** Fixed slots whose first-party creative is an image banner. */
 export type BannerSlot = 'content-middle' | 'content-bottom';
 
-export const BANNER_SLOTS = [
-  'content-middle',
-  'content-bottom',
-] as const satisfies readonly BannerSlot[];
-
 export function isBannerSlot(slot: AdSlot): slot is BannerSlot {
   return AD_SLOTS[slot].kind === 'banner';
 }

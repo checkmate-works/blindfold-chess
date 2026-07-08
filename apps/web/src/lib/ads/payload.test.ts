@@ -3,28 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_NATIVE_THUMBNAIL_FEN,
   isNativeCardPayload,
-  isNativeCardThumbnail,
+  isPayloadForKind,
   resolveNativeThumbnail,
-  thumbnailHasImage,
 } from './payload';
-
-describe('isNativeCardThumbnail', () => {
-  it('accepts a board-only thumbnail', () => {
-    expect(isNativeCardThumbnail({ fen: 'startpos' })).toBe(true);
-  });
-  it('accepts a board + override image thumbnail', () => {
-    expect(isNativeCardThumbnail({ fen: 'x', imagePath: '/x.png', imageAlt: 'a' })).toBe(true);
-  });
-  it('accepts a null override image', () => {
-    expect(isNativeCardThumbnail({ fen: 'x', imagePath: null })).toBe(true);
-  });
-  it('rejects malformed thumbnails', () => {
-    expect(isNativeCardThumbnail({})).toBe(false);
-    expect(isNativeCardThumbnail({ fen: 5 })).toBe(false);
-    expect(isNativeCardThumbnail({ fen: 'x', imagePath: 5 })).toBe(false);
-    expect(isNativeCardThumbnail(null)).toBe(false);
-  });
-});
 
 describe('isNativeCardPayload with thumbnail', () => {
   const base = { avatarImagePath: null, avatarAlt: 'Ad', title: 't', description: 'd' };
@@ -73,11 +54,16 @@ describe('resolveNativeThumbnail', () => {
   });
 });
 
-describe('thumbnailHasImage', () => {
-  it('is true only when a non-empty override image is set', () => {
-    expect(thumbnailHasImage({ fen: 'x', imagePath: '/x.png' })).toBe(true);
-    expect(thumbnailHasImage({ fen: 'x', imagePath: '' })).toBe(false);
-    expect(thumbnailHasImage({ fen: 'x', imagePath: null })).toBe(false);
-    expect(thumbnailHasImage({ fen: 'x' })).toBe(false);
+describe('isPayloadForKind', () => {
+  const banner = { imagePath: '/x.png', alt: 'a', width: 10, height: 10 };
+  const native = { avatarImagePath: null, avatarAlt: 'Ad', title: 't', description: 'd' };
+
+  it('dispatches to the guard matching the kind', () => {
+    expect(isPayloadForKind('banner', banner)).toBe(true);
+    expect(isPayloadForKind('native_card', native)).toBe(true);
+  });
+  it('rejects a payload written for the other kind', () => {
+    expect(isPayloadForKind('banner', native)).toBe(false);
+    expect(isPayloadForKind('native_card', banner)).toBe(false);
   });
 });
