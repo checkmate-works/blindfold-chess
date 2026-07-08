@@ -59,18 +59,6 @@ export function CreativeFormShell({
 
         {children}
 
-        <div className="flex items-center pb-2">
-          <label className="flex items-center gap-2 text-sm font-medium">
-            <input
-              type="checkbox"
-              checked={common.isActive}
-              onChange={(e) => common.setIsActive(e.target.checked)}
-              className="h-4 w-4"
-            />
-            {labels.isActive}
-          </label>
-        </div>
-
         <Field
           label={labels.targetCountry}
           htmlFor="targetCountry"
@@ -86,6 +74,18 @@ export function CreativeFormShell({
             noResults="No countries found"
           />
         </Field>
+
+        <div className="flex items-center pb-2">
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={common.isActive}
+              onChange={(e) => common.setIsActive(e.target.checked)}
+              className="h-4 w-4"
+            />
+            {labels.isActive}
+          </label>
+        </div>
 
         <div className="flex items-center gap-3 pt-2">
           <Button type="submit" variant="primary" disabled={isPending}>

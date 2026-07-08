@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { countryCodeToFlag } from '@/lib/countries';
 
 import { reorderAdCreatives } from '../_actions/reorderAdCreatives';
+import { setAdCreativeActive } from '../_actions/setAdCreativeActive';
 import { CreativeDeleteButton } from './CreativeDeleteButton';
 
 export type SlotCreativeRow = {
@@ -102,6 +103,15 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
     persist(rows);
   };
 
+  const toggleActive = (id: string, next: boolean) => {
+    // Optimistic; snap back on failure.
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, isActive: next } : r)));
+    startTransition(async () => {
+      const result = await setAdCreativeActive(id, next);
+      if ('error' in result) router.refresh();
+    });
+  };
+
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-3">
@@ -167,15 +177,27 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
 
             <span className="shrink-0 text-muted-foreground">{row.targetCountry ?? '🌐'}</span>
 
-            <span
-              className={`shrink-0 rounded px-2 py-0.5 text-xs ${
-                row.isActive
-                  ? 'bg-success-soft text-success-soft-foreground'
-                  : 'bg-destructive-soft text-destructive-soft-foreground'
-              }`}
-            >
-              {row.isActive ? labels.active : labels.inactive}
-            </span>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={row.isActive}
+                aria-label={row.isActive ? labels.active : labels.inactive}
+                onClick={() => toggleActive(row.id, !row.isActive)}
+                className={`relative h-5 w-9 rounded-full transition-colors ${
+                  row.isActive ? 'bg-success' : 'bg-muted'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                    row.isActive ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+              <span className="w-14 text-xs text-muted-foreground">
+                {row.isActive ? labels.active : labels.inactive}
+              </span>
+            </div>
 
             <div className="flex shrink-0 items-center gap-2">
               <Link
