@@ -29,6 +29,10 @@ export function isAdKind(value: string): value is AdKind {
 export const AD_SELECTIONS = ['priority', 'rotation'] as const;
 export type AdSelection = (typeof AD_SELECTIONS)[number];
 
+export function isAdSelection(value: string): value is AdSelection {
+  return (AD_SELECTIONS as readonly string[]).includes(value);
+}
+
 type AdSlotConfig = { kind: AdKind; defaultSelection: AdSelection };
 
 /**

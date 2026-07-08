@@ -7,8 +7,8 @@ import { adCreatives, db } from '@/lib/db';
 import { hasActiveGrant } from '@/lib/users/user-grants';
 
 import { filterByCountry } from './country';
-import type { NativeCardThumbnail } from './payload';
-import { isNativeCardPayload, resolveNativeThumbnail } from './payload';
+import type { BannerPayload, NativeCardThumbnail } from './payload';
+import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from './payload';
 import type { AdKind, AdSlot } from './registry';
 
 /** Cache tag invalidated by every admin creative mutation. */
@@ -135,4 +135,22 @@ export async function getNativeAdCreatives(
       },
     ];
   });
+}
+
+/** A banner creative as `/api/ad-slot/[slot]` serves it to `AdSlotClient`. */
+export type BannerAdView = { href: string; payload: BannerPayload };
+
+/**
+ * Banner sibling of {@link getNativeAdCreatives}: a slot's active banner
+ * creatives eligible in the visitor's country, kind-narrowed and projected to
+ * the serializable view. Keeps both payload projections in this module.
+ */
+export async function getBannerCreatives(
+  slot: AdSlot,
+  country: string | null
+): Promise<BannerAdView[]> {
+  const creatives = filterByCountry(await getActiveCreatives(slot), country);
+  return creatives.flatMap((c) =>
+    isBannerPayload(c.payload) ? [{ href: c.href, payload: c.payload }] : []
+  );
 }

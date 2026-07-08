@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
 
-import { getActiveCreatives } from '@/lib/ads/ad';
+import { getBannerCreatives } from '@/lib/ads/ad';
 import type { AdSlotResolution } from '@/lib/ads/ad-slot-resolution';
-import { filterByCountry, getRequestCountry } from '@/lib/ads/country';
-import { isBannerPayload } from '@/lib/ads/payload';
-import { AD_SELECTIONS, AD_SLOTS, isBannerSlot } from '@/lib/ads/registry';
-import type { AdSelection } from '@/lib/ads/registry';
+import { getRequestCountry } from '@/lib/ads/country';
+import { isAdSelection, isAdSlot, isBannerSlot, selectionForSlot } from '@/lib/ads/registry';
 import { pickCreative } from '@/lib/ads/select';
 
 /**
@@ -18,36 +16,21 @@ import { pickCreative } from '@/lib/ads/select';
  * qualifies (the client then falls back to AdSense). Never cached — the
  * response varies by country and rotation.
  */
-export async function GET(_request: Request, { params }: { params: Promise<{ slot: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ slot: string }> }) {
   const { slot } = await params;
 
-  if (!isBannerSlot(slot as never) || !(slot in AD_SLOTS)) {
+  if (!isAdSlot(slot) || !isBannerSlot(slot)) {
     return NextResponse.json({ error: 'unknown_slot' }, { status: 404 });
   }
 
-  const url = new URL(_request.url);
-  const selParam = url.searchParams.get('selection');
-  const selection: AdSelection = (AD_SELECTIONS as readonly string[]).includes(selParam ?? '')
-    ? (selParam as AdSelection)
-    : AD_SLOTS[slot as keyof typeof AD_SLOTS].defaultSelection;
+  const selParam = new URL(request.url).searchParams.get('selection');
+  const selection = selParam && isAdSelection(selParam) ? selParam : selectionForSlot(slot);
 
-  const country = getRequestCountry(_request.headers);
-
-  const pool = (await getActiveCreatives(slot as never)).flatMap((c) =>
-    isBannerPayload(c.payload)
-      ? [{ href: c.href, payload: c.payload, targetCountry: c.targetCountry }]
-      : []
-  );
-  const eligible = filterByCountry(pool, country);
+  const country = getRequestCountry(request.headers);
+  const eligible = await getBannerCreatives(slot, country);
 
   const resolution: AdSlotResolution = {
-    creative:
-      eligible.length > 0
-        ? (() => {
-            const chosen = pickCreative(eligible, selection);
-            return { href: chosen.href, payload: chosen.payload };
-          })()
-        : null,
+    creative: eligible.length > 0 ? pickCreative(eligible, selection) : null,
   };
 
   return NextResponse.json(resolution, {
