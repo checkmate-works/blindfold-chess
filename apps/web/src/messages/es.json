@@ -4169,7 +4169,11 @@
       "thumbnailImageUpload": "Subir imagen",
       "thumbnailImageUploading": "Subiendo...",
       "thumbnailImageHintCreate": "Guarda primero y luego sube una imagen de miniatura en la pantalla de edición.",
-      "thumbnailAlt": "Texto alternativo de la miniatura"
+      "thumbnailAlt": "Texto alternativo de la miniatura",
+      "filterAll": "Todos los países",
+      "filterReorderHint": "Quita el filtro para reordenar.",
+      "preview": "Vista previa",
+      "previewCaption": "La etiqueta “Ad” y el nombre del patrocinador se localizan por espectador al renderizar."
     },
     "coins": {
       "title": "Monedas",

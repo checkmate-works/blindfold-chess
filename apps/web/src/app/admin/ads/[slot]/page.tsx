@@ -80,6 +80,8 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
           confirm: t('deleteConfirm'),
           reorderHint: t('reorderHint'),
           empty: t('noBanners'),
+          filterAll: t('filterAll'),
+          filterReorderHint: t('filterReorderHint'),
         }}
       />
     </div>

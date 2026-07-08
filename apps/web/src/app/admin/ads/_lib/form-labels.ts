@@ -24,6 +24,8 @@ export type AdCreativeFormLabels = {
   thumbnailImageUploading: string;
   thumbnailImageHintCreate: string;
   thumbnailAlt: string;
+  preview: string;
+  previewCaption: string;
   title: string;
   description: string;
   cardCopyHint: string;
@@ -62,6 +64,8 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     thumbnailImageUploading: t('thumbnailImageUploading'),
     thumbnailImageHintCreate: t('thumbnailImageHintCreate'),
     thumbnailAlt: t('thumbnailAlt'),
+    preview: t('preview'),
+    previewCaption: t('previewCaption'),
     title: t('cardTitle'),
     description: t('cardDescription'),
     cardCopyHint: t('cardCopyHint'),

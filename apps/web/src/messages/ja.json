@@ -4176,7 +4176,11 @@
       "thumbnailImageUpload": "画像をアップロード",
       "thumbnailImageUploading": "アップロード中...",
       "thumbnailImageHintCreate": "先に保存してから、編集画面でサムネイル画像をアップロードしてください。",
-      "thumbnailAlt": "サムネイルの代替テキスト"
+      "thumbnailAlt": "サムネイルの代替テキスト",
+      "filterAll": "すべての国",
+      "filterReorderHint": "並べ替えるにはフィルタを解除してください。",
+      "preview": "プレビュー",
+      "previewCaption": "「Ad」ラベルとスポンサー名は、表示時に閲覧者の言語でローカライズされます。"
     },
     "coins": {
       "title": "コイン",

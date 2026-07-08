@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+import { countryCodeToFlag } from '@/lib/countries';
 
 import { reorderAdCreatives } from '../_actions/reorderAdCreatives';
 import { CreativeDeleteButton } from './CreativeDeleteButton';
@@ -32,8 +34,12 @@ type Props = {
     confirm: string;
     reorderHint: string;
     empty: string;
+    filterAll: string;
+    filterReorderHint: string;
   };
 };
+
+const ALL = '__all__';
 
 function move<T>(list: T[], from: number, to: number): T[] {
   const next = list.slice();
@@ -53,7 +59,16 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
   const router = useRouter();
   const [rows, setRows] = useState(initialRows);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [country, setCountry] = useState<string>(ALL);
   const [isPending, startTransition] = useTransition();
+
+  // The distinct countries actually targeted in this slot — the only filter
+  // options worth offering (plus "all").
+  const countries = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of initialRows) if (r.targetCountry) set.add(r.targetCountry);
+    return [...set].sort();
+  }, [initialRows]);
 
   if (rows.length === 0) {
     return (
@@ -62,6 +77,14 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
       </div>
     );
   }
+
+  // A country's viewers see global (null) creatives plus that country's. When
+  // filtered, the list is read-only: reordering a country-scoped projection of
+  // a single global order is ambiguous, so we only allow DnD on the full list.
+  const filtering = country !== ALL;
+  const displayed = filtering
+    ? rows.filter((r) => r.targetCountry === null || r.targetCountry === country)
+    : rows;
 
   const persist = (ordered: SlotCreativeRow[]) => {
     startTransition(async () => {
@@ -81,27 +104,48 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
 
   return (
     <div>
-      <p className="mb-2 text-xs text-muted-foreground">{labels.reorderHint}</p>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          {filtering ? labels.filterReorderHint : labels.reorderHint}
+        </p>
+        {countries.length > 0 && (
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="rounded-md border border-border bg-card px-2 py-1 text-sm text-foreground"
+          >
+            <option value={ALL}>{labels.filterAll}</option>
+            {countries.map((c) => (
+              <option key={c} value={c}>
+                {countryCodeToFlag(c)} {c}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
       <ul className={`space-y-2 ${isPending ? 'opacity-70' : ''}`}>
-        {rows.map((row, index) => (
+        {displayed.map((row, index) => (
           <li
             key={row.id}
-            draggable
-            onDragStart={() => setDragIndex(index)}
+            draggable={!filtering}
+            onDragStart={() => !filtering && setDragIndex(index)}
             onDragOver={(e) => {
+              if (filtering) return;
               e.preventDefault();
               if (dragIndex === null || dragIndex === index) return;
               setRows((prev) => move(prev, dragIndex, index));
               setDragIndex(index);
             }}
-            onDrop={handleDrop}
-            onDragEnd={handleDrop}
+            onDrop={filtering ? undefined : handleDrop}
+            onDragEnd={filtering ? undefined : handleDrop}
             className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2"
           >
             <span
               aria-hidden
-              className="cursor-grab select-none px-1 text-muted-foreground"
-              title={labels.reorderHint}
+              className={`select-none px-1 text-muted-foreground ${
+                filtering ? 'opacity-30' : 'cursor-grab'
+              }`}
+              title={filtering ? labels.filterReorderHint : labels.reorderHint}
             >
               ⠿
             </span>

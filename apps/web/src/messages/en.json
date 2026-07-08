@@ -4176,7 +4176,11 @@
       "thumbnailImageUpload": "Upload image",
       "thumbnailImageUploading": "Uploading...",
       "thumbnailImageHintCreate": "Save first, then upload a thumbnail image on the edit screen.",
-      "thumbnailAlt": "Thumbnail alt text"
+      "thumbnailAlt": "Thumbnail alt text",
+      "filterAll": "All countries",
+      "filterReorderHint": "Clear the filter to reorder.",
+      "preview": "Preview",
+      "previewCaption": "The “Ad” label and sponsor name are localized per viewer at render time."
     },
     "coins": {
       "title": "Coins",
