@@ -22,35 +22,20 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
   const creatives = (await getAllAdCreatives()).filter((c) => c.slot === slot);
 
   const rows: SlotCreativeRow[] = creatives.map((c) => {
+    const base = { id: c.id, isActive: c.isActive, targetCountry: c.targetCountry };
     if (isBannerPayload(c.payload)) {
-      return {
-        id: c.id,
-        isActive: c.isActive,
-        targetCountry: c.targetCountry,
-        summary: c.payload.alt,
-        imageUrl: c.payload.imagePath,
-        boardFen: null,
-      };
+      return { ...base, summary: c.payload.alt, imageUrl: c.payload.imagePath, boardFen: null };
     }
     if (isNativeCardPayload(c.payload)) {
       const thumb = resolveNativeThumbnail(c.payload);
       return {
-        id: c.id,
-        isActive: c.isActive,
-        targetCountry: c.targetCountry,
+        ...base,
         summary: c.payload.title,
         imageUrl: thumb.imagePath ?? null,
         boardFen: thumb.fen,
       };
     }
-    return {
-      id: c.id,
-      isActive: c.isActive,
-      targetCountry: c.targetCountry,
-      summary: '',
-      imageUrl: null,
-      boardFen: null,
-    };
+    return { ...base, summary: '', imageUrl: null, boardFen: null };
   });
 
   return (

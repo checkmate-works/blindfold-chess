@@ -5,7 +5,7 @@ import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 import { BannerCreativeForm } from '@/app/admin/ads/_components/BannerCreativeForm';
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
-import type { CommonCreativeInitial } from '@/app/admin/ads/_lib/use-common-creative-state';
+import type { CommonCreativeValues } from '@/app/admin/ads/_lib/use-common-creative-state';
 import { eq } from 'drizzle-orm';
 
 import { isPayloadForKind } from '@/lib/ads/payload';
@@ -24,7 +24,7 @@ export default async function EditCreativePage({ params }: Props) {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' });
   const labels = buildAdCreativeFormLabels(t);
 
-  const common: CommonCreativeInitial = {
+  const common: CommonCreativeValues = {
     href: row.href,
     isActive: row.isActive,
     targetCountry: row.targetCountry,

@@ -9,7 +9,7 @@ import type { AdSlot } from '@/lib/ads/registry';
 
 import { createAdCreative } from '../_actions/createAdCreative';
 import { updateAdCreative } from '../_actions/updateAdCreative';
-import type { CommonCreativeFields } from './use-common-creative-state';
+import type { CommonCreativeValues } from './use-common-creative-state';
 
 /**
  * Shared create/update + redirect for the per-kind creative forms. On create,
@@ -24,7 +24,7 @@ export function useCreativeSubmit(slot: AdSlot) {
   const submit = (
     mode: 'create' | 'edit',
     creativeId: string | undefined,
-    common: CommonCreativeFields,
+    common: CommonCreativeValues,
     payload: BannerPayload | NativeCardPayload
   ) => {
     setError(null);

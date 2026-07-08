@@ -5,13 +5,13 @@ import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 import { BannerCreativeForm } from '@/app/admin/ads/_components/BannerCreativeForm';
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
-import type { CommonCreativeInitial } from '@/app/admin/ads/_lib/use-common-creative-state';
+import type { CommonCreativeValues } from '@/app/admin/ads/_lib/use-common-creative-state';
 
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 type Props = { params: Promise<{ slot: string }> };
 
-const EMPTY_COMMON: CommonCreativeInitial = {
+const EMPTY_COMMON: CommonCreativeValues = {
   href: '',
   isActive: true,
   targetCountry: null,

@@ -6,16 +6,17 @@ import { useState } from 'react';
 import { Field, Input } from '@/app/admin/_components/forms';
 
 import type { BannerPayload } from '@/lib/ads/payload';
+import { DEFAULT_AD_ALT } from '@/lib/ads/payload';
 import type { AdSlot } from '@/lib/ads/registry';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
-import type { CommonCreativeInitial } from '../_lib/use-common-creative-state';
+import type { CommonCreativeValues } from '../_lib/use-common-creative-state';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
 import { AD_CREATIVE_LIMITS } from '../_lib/validation';
 import { CreativeFormShell } from './CreativeFormShell';
 
-export type BannerFormInitial = CommonCreativeInitial & {
+export type BannerFormInitial = CommonCreativeValues & {
   payload: Partial<BannerPayload>;
 };
 
@@ -33,7 +34,7 @@ export function BannerCreativeForm({ mode, slot, creativeId, initial, labels }: 
   const { submit, isPending, error } = useCreativeSubmit(slot);
 
   const [imagePath, setImagePath] = useState(initial.payload.imagePath ?? '');
-  const [alt, setAlt] = useState(initial.payload.alt ?? 'Advertisement');
+  const [alt, setAlt] = useState(initial.payload.alt ?? DEFAULT_AD_ALT);
   const [width, setWidth] = useState(initial.payload.width ?? 320);
   const [height, setHeight] = useState(initial.payload.height ?? 100);
 

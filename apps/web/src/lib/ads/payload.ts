@@ -1,5 +1,12 @@
 import type { AdKind } from './registry';
 
+/**
+ * Product default for ad-image alt text. Server validation permits an empty
+ * alt, so this form-prefill value is the de-facto default on every creative
+ * whose alt the admin never touches.
+ */
+export const DEFAULT_AD_ALT = 'Advertisement';
+
 /** Rectangle image banner (the generic, non-feed placements). */
 export type BannerPayload = {
   imagePath: string;

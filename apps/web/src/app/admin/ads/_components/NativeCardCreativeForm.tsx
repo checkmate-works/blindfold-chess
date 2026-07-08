@@ -8,13 +8,17 @@ import Image from 'next/image';
 import { Field, Input, Textarea } from '@/app/admin/_components/forms';
 
 import type { NativeCardPayload, NativeCardThumbnail } from '@/lib/ads/payload';
-import { DEFAULT_NATIVE_THUMBNAIL_FEN, resolveNativeThumbnail } from '@/lib/ads/payload';
+import {
+  DEFAULT_AD_ALT,
+  DEFAULT_NATIVE_THUMBNAIL_FEN,
+  resolveNativeThumbnail,
+} from '@/lib/ads/payload';
 import type { AdSlot } from '@/lib/ads/registry';
 import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
-import type { CommonCreativeInitial } from '../_lib/use-common-creative-state';
+import type { CommonCreativeValues } from '../_lib/use-common-creative-state';
 import { useCreativeImageUpload } from '../_lib/use-creative-image-upload';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
 import { AD_CREATIVE_LIMITS } from '../_lib/validation';
@@ -22,7 +26,7 @@ import { CreativeFormShell } from './CreativeFormShell';
 import { ImageFileButton } from './ImageFileButton';
 import { NativeCardPreview } from './NativeCardPreview';
 
-export type NativeCardFormInitial = CommonCreativeInitial & {
+export type NativeCardFormInitial = CommonCreativeValues & {
   payload: Partial<NativeCardPayload>;
 };
 
@@ -42,7 +46,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   const [avatarImagePath, setAvatarImagePath] = useState<string | null>(
     initial.payload.avatarImagePath ?? null
   );
-  const [avatarAlt, setAvatarAlt] = useState(initial.payload.avatarAlt ?? 'Advertisement');
+  const [avatarAlt, setAvatarAlt] = useState(initial.payload.avatarAlt ?? DEFAULT_AD_ALT);
   const [title, setTitle] = useState(initial.payload.title ?? '');
   const [description, setDescription] = useState(initial.payload.description ?? '');
 
@@ -52,7 +56,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   const [thumbnailImagePath, setThumbnailImagePath] = useState<string | null>(
     initThumb.imagePath ?? null
   );
-  const [thumbnailAlt, setThumbnailAlt] = useState(initThumb.imageAlt || 'Advertisement');
+  const [thumbnailAlt, setThumbnailAlt] = useState(initThumb.imageAlt || DEFAULT_AD_ALT);
 
   const { upload, remove, isBusy } = useCreativeImageUpload(creativeId, setError);
   const isUploading = isBusy('avatar');

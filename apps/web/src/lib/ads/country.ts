@@ -17,7 +17,7 @@ function devCountryOverride(headers: Headers): string | null {
   if (process.env.NODE_ENV === 'production') return null;
   const cookie = headers.get('cookie');
   if (!cookie) return null;
-  const match = cookie.match(/(?:^|;\s*)bfc_dev_country=([^;]+)/);
+  const match = cookie.match(new RegExp(`(?:^|;\\s*)${DEV_COUNTRY_COOKIE}=([^;]+)`));
   if (!match) return null;
   const code = decodeURIComponent(match[1]).trim().toUpperCase();
   return /^[A-Z]{2}$/.test(code) ? code : null;

@@ -2,15 +2,12 @@
 
 import { useState } from 'react';
 
-/** The slot/kind-agnostic fields every creative shares. */
-export type CommonCreativeInitial = {
-  href: string;
-  isActive: boolean;
-  targetCountry: string | null;
-};
-
-/** The common fields shaped for the create/update Server Actions. */
-export type CommonCreativeFields = {
+/**
+ * The slot/kind-agnostic fields every creative shares — both the form's
+ * initial values and the shape `toFields()` sends to the create/update
+ * Server Actions (the two were structurally identical, so one type).
+ */
+export type CommonCreativeValues = {
   href: string;
   isActive: boolean;
   targetCountry: string | null;
@@ -28,12 +25,12 @@ function parseCountry(text: string): string | null {
  * `toFields()` serializes them for the Server Actions. Sort order is set by
  * drag-and-drop on the slot list, not the form; there is no schedule.
  */
-export function useCommonCreativeState(initial: CommonCreativeInitial) {
+export function useCommonCreativeState(initial: CommonCreativeValues) {
   const [href, setHref] = useState(initial.href);
   const [isActive, setIsActive] = useState(initial.isActive);
   const [countryText, setCountryText] = useState(initial.targetCountry ?? '');
 
-  const toFields = (): CommonCreativeFields => ({
+  const toFields = (): CommonCreativeValues => ({
     href,
     isActive,
     targetCountry: parseCountry(countryText),
