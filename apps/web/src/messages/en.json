@@ -4169,8 +4169,6 @@
       "targetCountryHint": "Leave empty to target all countries.",
       "reorderHint": "Drag to reorder.",
       "thumbnail": "Thumbnail",
-      "thumbnailBoard": "Board",
-      "thumbnailImage": "Image",
       "thumbnailFen": "Board position (FEN)",
       "thumbnailFenPlaceholder": "FEN string",
       "thumbnailImageUpload": "Upload image",
@@ -4180,7 +4178,9 @@
       "filterAll": "All countries",
       "filterReorderHint": "Clear the filter to reorder.",
       "preview": "Preview",
-      "previewCaption": "The “Ad” label and sponsor name are localized per viewer at render time."
+      "previewCaption": "The “Ad” label and sponsor name are localized per viewer at render time.",
+      "thumbnailImageOverride": "Override image (optional)",
+      "thumbnailImageRemove": "Remove image"
     },
     "coins": {
       "title": "Coins",

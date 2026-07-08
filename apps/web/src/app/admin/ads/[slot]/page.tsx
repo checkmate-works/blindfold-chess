@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getAllAdCreatives } from '@/lib/ads/ad';
-import { isBannerPayload, isNativeCardPayload } from '@/lib/ads/payload';
+import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from '@/lib/ads/payload';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
@@ -29,15 +29,18 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
         targetCountry: c.targetCountry,
         summary: c.payload.alt,
         imageUrl: c.payload.imagePath,
+        boardFen: null,
       };
     }
     if (isNativeCardPayload(c.payload)) {
+      const thumb = resolveNativeThumbnail(c.payload);
       return {
         id: c.id,
         isActive: c.isActive,
         targetCountry: c.targetCountry,
         summary: c.payload.title,
-        imageUrl: c.payload.thumbnail?.type === 'image' ? c.payload.thumbnail.imagePath : null,
+        imageUrl: thumb.imagePath ?? null,
+        boardFen: thumb.fen,
       };
     }
     return {
@@ -46,6 +49,7 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
       targetCountry: c.targetCountry,
       summary: '',
       imageUrl: null,
+      boardFen: null,
     };
   });
 

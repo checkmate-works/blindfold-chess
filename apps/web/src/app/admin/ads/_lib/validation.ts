@@ -65,21 +65,17 @@ function validateBannerPayload(payload: BannerPayload): string | null {
 
 function validateThumbnail(thumbnail: NativeCardPayload['thumbnail']): string | null {
   if (thumbnail === undefined) return null;
-  if (thumbnail.type === 'board') {
-    if (typeof thumbnail.fen !== 'string' || thumbnail.fen.trim().length === 0) {
-      return 'invalid thumbnail fen';
-    }
-    return null;
+  if (typeof thumbnail.fen !== 'string' || thumbnail.fen.trim().length === 0) {
+    return 'invalid thumbnail fen';
   }
-  if (thumbnail.type === 'image') {
+  if (thumbnail.imagePath !== undefined && thumbnail.imagePath !== null) {
     const imageError = validateImagePath(thumbnail.imagePath);
     if (imageError) return 'invalid thumbnail image';
-    if (typeof thumbnail.alt !== 'string' || thumbnail.alt.length > 255) {
-      return 'invalid thumbnail alt';
-    }
-    return null;
   }
-  return 'invalid thumbnail';
+  if (thumbnail.imageAlt !== undefined && thumbnail.imageAlt.length > 255) {
+    return 'invalid thumbnail alt';
+  }
+  return null;
 }
 
 function validateNativeCardPayload(payload: NativeCardPayload): string | null {

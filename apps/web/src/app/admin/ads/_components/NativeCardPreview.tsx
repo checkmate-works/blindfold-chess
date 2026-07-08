@@ -41,10 +41,10 @@ export function NativeCardPreview({
       <div className="rounded-lg border border-border bg-card p-3">
         <div className="flex gap-3">
           <div className="h-24 w-24 shrink-0 overflow-hidden rounded border border-border">
-            {thumbnail.type === 'image' ? (
+            {thumbnail.imagePath ? (
               <Image
                 src={thumbnail.imagePath}
-                alt={thumbnail.alt}
+                alt={thumbnail.imageAlt ?? ''}
                 width={96}
                 height={96}
                 className="h-full w-full object-cover"

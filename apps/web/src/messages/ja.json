@@ -4169,8 +4169,6 @@
       "targetCountryHint": "未選択で全世界に配信。",
       "reorderHint": "ドラッグで並べ替え。",
       "thumbnail": "サムネイル",
-      "thumbnailBoard": "盤面",
-      "thumbnailImage": "画像",
       "thumbnailFen": "盤面（FEN）",
       "thumbnailFenPlaceholder": "FEN文字列",
       "thumbnailImageUpload": "画像をアップロード",
@@ -4180,7 +4178,9 @@
       "filterAll": "すべての国",
       "filterReorderHint": "並べ替えるにはフィルタを解除してください。",
       "preview": "プレビュー",
-      "previewCaption": "「Ad」ラベルとスポンサー名は、表示時に閲覧者の言語でローカライズされます。"
+      "previewCaption": "「Ad」ラベルとスポンサー名は、表示時に閲覧者の言語でローカライズされます。",
+      "thumbnailImageOverride": "上書き画像（任意）",
+      "thumbnailImageRemove": "画像を削除"
     },
     "coins": {
       "title": "コイン",

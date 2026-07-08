@@ -16,12 +16,12 @@ export type AdCreativeFormLabels = {
   avatarUploading: string;
   avatarHintCreate: string;
   thumbnail: string;
-  thumbnailBoard: string;
-  thumbnailImage: string;
   thumbnailFen: string;
   thumbnailFenPlaceholder: string;
+  thumbnailImageOverride: string;
   thumbnailImageUpload: string;
   thumbnailImageUploading: string;
+  thumbnailImageRemove: string;
   thumbnailImageHintCreate: string;
   thumbnailAlt: string;
   preview: string;
@@ -56,12 +56,12 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     avatarUploading: t('avatarUploading'),
     avatarHintCreate: t('avatarHintCreate'),
     thumbnail: t('thumbnail'),
-    thumbnailBoard: t('thumbnailBoard'),
-    thumbnailImage: t('thumbnailImage'),
     thumbnailFen: t('thumbnailFen'),
     thumbnailFenPlaceholder: t('thumbnailFenPlaceholder'),
+    thumbnailImageOverride: t('thumbnailImageOverride'),
     thumbnailImageUpload: t('thumbnailImageUpload'),
     thumbnailImageUploading: t('thumbnailImageUploading'),
+    thumbnailImageRemove: t('thumbnailImageRemove'),
     thumbnailImageHintCreate: t('thumbnailImageHintCreate'),
     thumbnailAlt: t('thumbnailAlt'),
     preview: t('preview'),

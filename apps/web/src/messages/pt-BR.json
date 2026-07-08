@@ -4162,8 +4162,6 @@
       "targetCountryHint": "Deixe vazio para segmentar todos os países.",
       "reorderHint": "Arraste para reordenar.",
       "thumbnail": "Miniatura",
-      "thumbnailBoard": "Tabuleiro",
-      "thumbnailImage": "Imagem",
       "thumbnailFen": "Posição do tabuleiro (FEN)",
       "thumbnailFenPlaceholder": "String FEN",
       "thumbnailImageUpload": "Enviar imagem",
@@ -4173,7 +4171,9 @@
       "filterAll": "Todos os países",
       "filterReorderHint": "Remova o filtro para reordenar.",
       "preview": "Pré-visualização",
-      "previewCaption": "O rótulo “Ad” e o nome do patrocinador são localizados por espectador na renderização."
+      "previewCaption": "O rótulo “Ad” e o nome do patrocinador são localizados por espectador na renderização.",
+      "thumbnailImageOverride": "Imagem de substituição (opcional)",
+      "thumbnailImageRemove": "Remover imagem"
     },
     "coins": {
       "title": "Moedas",

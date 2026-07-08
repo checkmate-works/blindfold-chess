@@ -5,7 +5,7 @@ import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '@/app/admin/ads/_
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
-import { isNativeCardPayload } from '@/lib/ads/payload';
+import { DEFAULT_NATIVE_THUMBNAIL_FEN, isNativeCardPayload } from '@/lib/ads/payload';
 import { checkMutationOrigin } from '@/lib/api-mutation-guard';
 import { adCreatives, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
@@ -128,14 +128,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { data: urlData } = supabase.storage.from(AD_CREATIVES_BUCKET).getPublicUrl(storagePath);
 
   // The field this upload replaces, and the previous image it points at (for
-  // cleanup), depend on the target.
+  // cleanup), depend on the target. The thumbnail keeps its board `fen`; the
+  // uploaded image is an override on top of it.
   const currentThumb = row.payload.thumbnail;
   const previousUrl =
-    target === 'thumbnail'
-      ? currentThumb?.type === 'image'
-        ? currentThumb.imagePath
-        : ''
-      : (row.payload.avatarImagePath ?? '');
+    target === 'thumbnail' ? (currentThumb?.imagePath ?? '') : (row.payload.avatarImagePath ?? '');
   const previousPath = storagePathFromPublicUrl(previousUrl);
 
   const nextPayload =
@@ -143,9 +140,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       ? {
           ...row.payload,
           thumbnail: {
-            type: 'image' as const,
+            fen: currentThumb?.fen ?? DEFAULT_NATIVE_THUMBNAIL_FEN,
             imagePath: urlData.publicUrl,
-            alt: currentThumb?.type === 'image' ? currentThumb.alt : '',
+            imageAlt: currentThumb?.imageAlt ?? '',
           },
         }
       : { ...row.payload, avatarImagePath: urlData.publicUrl };
@@ -170,4 +167,58 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   return NextResponse.json({ imagePath: urlData.publicUrl }, { status: 200 });
+}
+
+/**
+ * Remove an uploaded image. For `thumbnail` the board `fen` is kept (the card
+ * falls back to it); for `avatar` the path is nulled. Best-effort deletes the
+ * storage object too, so removal doesn't orphan files.
+ */
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const originError = checkMutationOrigin(request);
+  if (originError) return originError;
+
+  const auth = await authenticateAdmin();
+  if (auth instanceof NextResponse) return auth;
+
+  const { id } = await params;
+  const target = parseTarget(new URL(request.url).searchParams.get('target'));
+
+  const [row] = await db
+    .select({ payload: adCreatives.payload })
+    .from(adCreatives)
+    .where(eq(adCreatives.id, id))
+    .limit(1);
+  if (!row) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  if (!isNativeCardPayload(row.payload)) {
+    return NextResponse.json({ error: 'unsupported_kind' }, { status: 400 });
+  }
+
+  const currentThumb = row.payload.thumbnail;
+  const removedUrl =
+    target === 'thumbnail' ? (currentThumb?.imagePath ?? '') : (row.payload.avatarImagePath ?? '');
+
+  const nextPayload =
+    target === 'thumbnail'
+      ? {
+          ...row.payload,
+          thumbnail: { fen: currentThumb?.fen ?? DEFAULT_NATIVE_THUMBNAIL_FEN },
+        }
+      : { ...row.payload, avatarImagePath: null };
+
+  await db
+    .update(adCreatives)
+    .set({ payload: nextPayload, updatedAt: new Date() })
+    .where(eq(adCreatives.id, id));
+
+  const removedPath = storagePathFromPublicUrl(removedUrl);
+  if (removedPath) {
+    const supabase = createAdminClient();
+    const { error } = await supabase.storage.from(AD_CREATIVES_BUCKET).remove([removedPath]);
+    if (error) {
+      console.warn('ad-creatives: failed to remove image on delete', removedPath, error);
+    }
+  }
+
+  return NextResponse.json({ ok: true }, { status: 200 });
 }

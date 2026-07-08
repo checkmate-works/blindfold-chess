@@ -9,12 +9,16 @@ export type BannerPayload = {
 };
 
 /**
- * The native card's thumbnail — either a rendered chess board (a FEN) or an
- * uploaded image (e.g. a book cover). Discriminated by `type`.
+ * The native card's thumbnail. A board `fen` is always present (the fallback);
+ * an optional uploaded `imagePath` (e.g. a book cover) overrides the board when
+ * set. So a creative can carry both, and the image simply wins at render time —
+ * removing the image reveals the board again.
  */
-export type NativeCardThumbnail =
-  | { type: 'board'; fen: string }
-  | { type: 'image'; imagePath: string; alt: string };
+export type NativeCardThumbnail = {
+  fen: string;
+  imagePath?: string | null;
+  imageAlt?: string;
+};
 
 /**
  * Default board shown when a native card has no `thumbnail` set — Ruy Lopez
@@ -45,14 +49,52 @@ export type NativeCardPayload = {
 export function isNativeCardThumbnail(value: unknown): value is NativeCardThumbnail {
   if (typeof value !== 'object' || value === null) return false;
   const t = value as Record<string, unknown>;
-  if (t.type === 'board') return typeof t.fen === 'string';
-  if (t.type === 'image') return typeof t.imagePath === 'string' && typeof t.alt === 'string';
-  return false;
+  if (typeof t.fen !== 'string') return false;
+  if (t.imagePath !== undefined && t.imagePath !== null && typeof t.imagePath !== 'string') {
+    return false;
+  }
+  if (t.imageAlt !== undefined && typeof t.imageAlt !== 'string') return false;
+  return true;
 }
 
-/** The effective thumbnail: the payload's, or the default board when unset. */
+/**
+ * The effective thumbnail, normalized to the current shape. Handles unset
+ * thumbnails and legacy discriminated-union payloads (`{type:'board'|'image'}`)
+ * still in the DB, so a schema-free JSONB migration is unnecessary: an old
+ * image thumbnail becomes an override image over the default board.
+ */
 export function resolveNativeThumbnail(payload: NativeCardPayload): NativeCardThumbnail {
-  return payload.thumbnail ?? { type: 'board', fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
+  const t = payload.thumbnail as Record<string, unknown> | null | undefined;
+  if (!t) return { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
+
+  // Current shape: a board `fen`, with an optional override image.
+  if (typeof t.fen === 'string') {
+    if (typeof t.imagePath === 'string' && t.imagePath.length > 0) {
+      return {
+        fen: t.fen,
+        imagePath: t.imagePath,
+        imageAlt: typeof t.imageAlt === 'string' ? t.imageAlt : '',
+      };
+    }
+    return { fen: t.fen };
+  }
+
+  // Legacy `{ type: 'image', imagePath, alt }` → override image over the default.
+  if (t.type === 'image' && typeof t.imagePath === 'string') {
+    return {
+      fen: DEFAULT_NATIVE_THUMBNAIL_FEN,
+      imagePath: t.imagePath,
+      imageAlt: typeof t.alt === 'string' ? t.alt : '',
+    };
+  }
+
+  // Legacy `{ type: 'board' }` or anything unrecognized → the default board.
+  return { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
+}
+
+/** Whether the thumbnail's override image is set (image wins over the board). */
+export function thumbnailHasImage(thumbnail: NativeCardThumbnail): boolean {
+  return typeof thumbnail.imagePath === 'string' && thumbnail.imagePath.length > 0;
 }
 
 export type AdPayloadByKind = {
@@ -74,13 +116,15 @@ export function isBannerPayload(value: unknown): value is BannerPayload {
 export function isNativeCardPayload(value: unknown): value is NativeCardPayload {
   if (typeof value !== 'object' || value === null) return false;
   const p = value as Record<string, unknown>;
+  // The thumbnail's shape is intentionally NOT validated here: it is optional
+  // and best-effort normalized at read time (see `resolveNativeThumbnail`,
+  // which also accepts legacy shapes), so a malformed/old thumbnail must not
+  // disqualify an otherwise-valid native creative.
   return (
     (p.avatarImagePath === null || typeof p.avatarImagePath === 'string') &&
     typeof p.avatarAlt === 'string' &&
     typeof p.title === 'string' &&
-    typeof p.description === 'string' &&
-    // Optional for backward compatibility; when present it must be well-formed.
-    (p.thumbnail === undefined || isNativeCardThumbnail(p.thumbnail))
+    typeof p.description === 'string'
   );
 }
 

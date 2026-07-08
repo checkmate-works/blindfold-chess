@@ -5,19 +5,23 @@ import {
   isNativeCardPayload,
   isNativeCardThumbnail,
   resolveNativeThumbnail,
+  thumbnailHasImage,
 } from './payload';
 
 describe('isNativeCardThumbnail', () => {
-  it('accepts a board thumbnail', () => {
-    expect(isNativeCardThumbnail({ type: 'board', fen: 'startpos' })).toBe(true);
+  it('accepts a board-only thumbnail', () => {
+    expect(isNativeCardThumbnail({ fen: 'startpos' })).toBe(true);
   });
-  it('accepts an image thumbnail', () => {
-    expect(isNativeCardThumbnail({ type: 'image', imagePath: '/x.png', alt: 'a' })).toBe(true);
+  it('accepts a board + override image thumbnail', () => {
+    expect(isNativeCardThumbnail({ fen: 'x', imagePath: '/x.png', imageAlt: 'a' })).toBe(true);
+  });
+  it('accepts a null override image', () => {
+    expect(isNativeCardThumbnail({ fen: 'x', imagePath: null })).toBe(true);
   });
   it('rejects malformed thumbnails', () => {
-    expect(isNativeCardThumbnail({ type: 'board' })).toBe(false);
-    expect(isNativeCardThumbnail({ type: 'image', imagePath: '/x.png' })).toBe(false);
-    expect(isNativeCardThumbnail({ type: 'video', src: 'x' })).toBe(false);
+    expect(isNativeCardThumbnail({})).toBe(false);
+    expect(isNativeCardThumbnail({ fen: 5 })).toBe(false);
+    expect(isNativeCardThumbnail({ fen: 'x', imagePath: 5 })).toBe(false);
     expect(isNativeCardThumbnail(null)).toBe(false);
   });
 });
@@ -29,12 +33,12 @@ describe('isNativeCardPayload with thumbnail', () => {
     expect(isNativeCardPayload(base)).toBe(true);
   });
   it('accepts a valid thumbnail', () => {
-    expect(isNativeCardPayload({ ...base, thumbnail: { type: 'board', fen: 'x' } })).toBe(true);
+    expect(isNativeCardPayload({ ...base, thumbnail: { fen: 'x' } })).toBe(true);
   });
-  it('rejects an invalid thumbnail', () => {
-    expect(isNativeCardPayload({ ...base, thumbnail: { type: 'image', imagePath: 5 } })).toBe(
-      false
-    );
+  it('stays native even with a legacy/odd thumbnail (normalized at read time)', () => {
+    expect(
+      isNativeCardPayload({ ...base, thumbnail: { type: 'image', imagePath: '/x.png' } })
+    ).toBe(true);
   });
 });
 
@@ -42,13 +46,38 @@ describe('resolveNativeThumbnail', () => {
   const base = { avatarImagePath: null, avatarAlt: 'Ad', title: 't', description: 'd' };
 
   it('defaults to the Ruy Lopez board when unset', () => {
-    expect(resolveNativeThumbnail(base)).toEqual({
-      type: 'board',
+    expect(resolveNativeThumbnail(base)).toEqual({ fen: DEFAULT_NATIVE_THUMBNAIL_FEN });
+  });
+  it('returns the current-shape thumbnail when present', () => {
+    expect(
+      resolveNativeThumbnail({
+        ...base,
+        thumbnail: { fen: 'x', imagePath: '/x.png', imageAlt: 'a' },
+      })
+    ).toEqual({ fen: 'x', imagePath: '/x.png', imageAlt: 'a' });
+  });
+  it('normalizes a legacy image thumbnail to an override over the default board', () => {
+    const legacy = { type: 'image', imagePath: '/x.png', alt: 'a' } as unknown;
+    expect(resolveNativeThumbnail({ ...base, thumbnail: legacy as never })).toEqual({
       fen: DEFAULT_NATIVE_THUMBNAIL_FEN,
+      imagePath: '/x.png',
+      imageAlt: 'a',
     });
   });
-  it('returns the configured thumbnail when present', () => {
-    const thumb = { type: 'image' as const, imagePath: '/x.png', alt: 'a' };
-    expect(resolveNativeThumbnail({ ...base, thumbnail: thumb })).toBe(thumb);
+  it('normalizes a legacy board thumbnail to the default board', () => {
+    const legacy = { type: 'board', fen: 'legacy-fen' } as unknown;
+    // A legacy board carried a fen; the current shape keeps it.
+    expect(resolveNativeThumbnail({ ...base, thumbnail: legacy as never })).toEqual({
+      fen: 'legacy-fen',
+    });
+  });
+});
+
+describe('thumbnailHasImage', () => {
+  it('is true only when a non-empty override image is set', () => {
+    expect(thumbnailHasImage({ fen: 'x', imagePath: '/x.png' })).toBe(true);
+    expect(thumbnailHasImage({ fen: 'x', imagePath: '' })).toBe(false);
+    expect(thumbnailHasImage({ fen: 'x', imagePath: null })).toBe(false);
+    expect(thumbnailHasImage({ fen: 'x' })).toBe(false);
   });
 });

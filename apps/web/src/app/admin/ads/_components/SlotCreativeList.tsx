@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { countryCodeToFlag } from '@/lib/countries';
+import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
 import { reorderAdCreatives } from '../_actions/reorderAdCreatives';
 import { setAdCreativeActive } from '../_actions/setAdCreativeActive';
@@ -18,8 +19,10 @@ export type SlotCreativeRow = {
   targetCountry: string | null;
   /** Title (native) or alt (banner); may be empty. */
   summary: string;
-  /** Preview image URL (banner image, or an image-type native thumbnail). */
+  /** Override/banner image URL; takes priority over the board when set. */
   imageUrl: string | null;
+  /** Board FEN for native cards (null for banners); rendered when no image. */
+  boardFen: string | null;
 };
 
 type Props = {
@@ -169,6 +172,10 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
                 className="h-12 w-12 shrink-0 rounded object-cover"
                 unoptimized
               />
+            ) : row.boardFen ? (
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded border border-border">
+                <BoardThumbnail fen={row.boardFen} className="h-full w-full" />
+              </div>
             ) : (
               <div className="h-12 w-12 shrink-0 rounded bg-muted" />
             )}

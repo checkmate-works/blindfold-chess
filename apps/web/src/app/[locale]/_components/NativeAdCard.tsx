@@ -45,10 +45,10 @@ export function NativeAdCard({ creative, locale, variant = 'feed' }: Props) {
       locale={locale}
       variant={variant}
       thumbnail={
-        creative.thumbnail.type === 'image' ? (
+        creative.thumbnail.imagePath ? (
           <Image
             src={creative.thumbnail.imagePath}
-            alt={creative.thumbnail.alt}
+            alt={creative.thumbnail.imageAlt ?? ''}
             width={96}
             height={96}
             className="w-full h-full object-cover"
