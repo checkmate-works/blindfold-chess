@@ -4,18 +4,18 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
+import {
+  ALLOWED_MIME_TYPES,
+  MAX_FILE_SIZE,
+  MIME_TO_EXTENSION,
+  validateBinarySignature,
+} from '@/lib/admin-images/validation';
 import { checkMutationOrigin, parseJsonBody } from '@/lib/api-mutation-guard';
 import { articleImages, articles, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import {
-  ALLOWED_MIME_TYPES,
-  ARTICLE_IMAGES_BUCKET,
-  MAX_FILE_SIZE,
-  MIME_TO_EXTENSION,
-  validateBinarySignature,
-} from './image-validation';
+import { ARTICLE_IMAGES_BUCKET } from './image-validation';
 
 /**
  * Long-edge cap (pixels) applied to raster article images at upload time.

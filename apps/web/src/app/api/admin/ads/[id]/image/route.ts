@@ -6,19 +6,18 @@ import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '@/app/admin/ads/_
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
+import {
+  ALLOWED_MIME_TYPES,
+  MAX_FILE_SIZE,
+  MIME_TO_EXTENSION,
+  validateBinarySignature,
+} from '@/lib/admin-images/validation';
 import type { NativeCardPayload } from '@/lib/ads/payload';
 import { DEFAULT_NATIVE_THUMBNAIL_FEN, isNativeCardPayload } from '@/lib/ads/payload';
 import { checkMutationOrigin } from '@/lib/api-mutation-guard';
 import { adCreatives, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
-
-import {
-  ALLOWED_MIME_TYPES,
-  MAX_FILE_SIZE,
-  MIME_TO_EXTENSION,
-  validateBinarySignature,
-} from './image-validation';
 
 type ImageTarget = 'avatar' | 'thumbnail';
 
