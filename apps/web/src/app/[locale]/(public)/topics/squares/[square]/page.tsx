@@ -27,7 +27,6 @@ import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -176,8 +175,7 @@ async function SquarePostsContent({ params, searchParams }: Props) {
       pageTitle={t('squares.pageTitle')}
       sectionTitle={square}
       topicHeader={topicHeader}
-      adMiddle={<AdSlot slot="content-middle" />}
-      adBottom={<AdSlot slot="content-bottom" />}
+      showMiddleAd
       communitySection={communitySection}
       hasPosts={posts.length > 0}
       postCards={posts.map((post) => {

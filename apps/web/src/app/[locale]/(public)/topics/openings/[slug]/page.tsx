@@ -22,7 +22,6 @@ import {
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -154,7 +153,6 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
       locale={locale}
       pageTitle={dt('pageTitle')}
       sectionTitle={displayName}
-      adBottom={<AdSlot slot="content-bottom" />}
       topicHeader={
         currentPage === 1 ? (
           <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
