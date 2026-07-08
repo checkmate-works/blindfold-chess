@@ -9,6 +9,7 @@ import { Button, Field, Input } from '@/app/admin/_components/forms';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import type { CommonCreativeState } from '../_lib/use-common-creative-state';
+import { AD_CREATIVE_LIMITS } from '../_lib/validation';
 
 type Props = {
   common: CommonCreativeState;
@@ -53,7 +54,7 @@ export function CreativeFormShell({
             onChange={(e) => common.setHref(e.target.value)}
             placeholder={labels.hrefPlaceholder}
             required
-            maxLength={2048}
+            maxLength={AD_CREATIVE_LIMITS.href}
           />
         </Field>
 

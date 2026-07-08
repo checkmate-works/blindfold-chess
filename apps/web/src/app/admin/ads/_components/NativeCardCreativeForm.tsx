@@ -17,6 +17,7 @@ import { useCommonCreativeState } from '../_lib/use-common-creative-state';
 import type { CommonCreativeInitial } from '../_lib/use-common-creative-state';
 import { useCreativeImageUpload } from '../_lib/use-creative-image-upload';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
+import { AD_CREATIVE_LIMITS } from '../_lib/validation';
 import { CreativeFormShell } from './CreativeFormShell';
 import { ImageFileButton } from './ImageFileButton';
 import { NativeCardPreview } from './NativeCardPreview';
@@ -118,7 +119,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
                   value={thumbnailFen}
                   onChange={(e) => setThumbnailFen(e.target.value)}
                   placeholder={labels.thumbnailFenPlaceholder}
-                  maxLength={100}
+                  maxLength={AD_CREATIVE_LIMITS.fen}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">{labels.thumbnailFen}</p>
               </div>
@@ -172,7 +173,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
                       type="text"
                       value={thumbnailAlt}
                       onChange={(e) => setThumbnailAlt(e.target.value)}
-                      maxLength={255}
+                      maxLength={AD_CREATIVE_LIMITS.alt}
                     />
                   </Field>
                 </div>
@@ -216,7 +217,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
             type="text"
             value={avatarAlt}
             onChange={(e) => setAvatarAlt(e.target.value)}
-            maxLength={255}
+            maxLength={AD_CREATIVE_LIMITS.alt}
           />
         </Field>
 
@@ -226,7 +227,8 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            maxLength={2000}
+            required
+            maxLength={AD_CREATIVE_LIMITS.text}
           />
         </Field>
         <Field label={labels.description} htmlFor="description">
@@ -235,7 +237,8 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            maxLength={2000}
+            required
+            maxLength={AD_CREATIVE_LIMITS.text}
           />
         </Field>
       </CreativeFormShell>

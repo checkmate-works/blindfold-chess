@@ -12,6 +12,7 @@ import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
 import type { CommonCreativeInitial } from '../_lib/use-common-creative-state';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
+import { AD_CREATIVE_LIMITS } from '../_lib/validation';
 import { CreativeFormShell } from './CreativeFormShell';
 
 export type BannerFormInitial = CommonCreativeInitial & {
@@ -58,7 +59,7 @@ export function BannerCreativeForm({ mode, slot, creativeId, initial, labels }: 
           onChange={(e) => setImagePath(e.target.value)}
           placeholder={labels.imagePathPlaceholder}
           required
-          maxLength={1024}
+          maxLength={AD_CREATIVE_LIMITS.imagePath}
         />
       </Field>
       <Field label={labels.alt} htmlFor="alt">
@@ -68,7 +69,7 @@ export function BannerCreativeForm({ mode, slot, creativeId, initial, labels }: 
           value={alt}
           onChange={(e) => setAlt(e.target.value)}
           placeholder={labels.altPlaceholder}
-          maxLength={255}
+          maxLength={AD_CREATIVE_LIMITS.alt}
         />
       </Field>
       <div className="grid grid-cols-2 gap-4">

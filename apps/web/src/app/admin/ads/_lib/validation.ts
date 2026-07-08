@@ -19,7 +19,19 @@ export type UpdateAdCreativeData = {
   payload: BannerPayload | NativeCardPayload;
 };
 
-const MAX_TEXT_LEN = 2000;
+/**
+ * Length caps enforced by these validators, exported so the forms' input
+ * `maxLength` attributes are the same numbers and cannot drift.
+ */
+export const AD_CREATIVE_LIMITS = {
+  href: 2048,
+  imagePath: 1024,
+  alt: 255,
+  /** Title / description copy. */
+  text: 2000,
+  /** Thumbnail board FEN (a full FEN is well under 100 chars). */
+  fen: 100,
+} as const;
 
 function validateTargetCountry(country: string | null): string | null {
   if (country === null) return null;
@@ -32,7 +44,7 @@ function validateTargetCountry(country: string | null): string | null {
 }
 
 function validateHref(href: string): string | null {
-  if (!href || href.length > 2048) return 'invalid href';
+  if (!href || href.length > AD_CREATIVE_LIMITS.href) return 'invalid href';
   try {
     const url = new URL(href);
     if (!['https:', 'http:'].includes(url.protocol)) return 'invalid href';
@@ -43,12 +55,12 @@ function validateHref(href: string): string | null {
 }
 
 function validateImagePath(imagePath: string): string | null {
-  if (!imagePath || imagePath.length > 1024) return 'invalid imagePath';
+  if (!imagePath || imagePath.length > AD_CREATIVE_LIMITS.imagePath) return 'invalid imagePath';
   return null;
 }
 
 function validateText(value: string, field: string): string | null {
-  if (typeof value !== 'string' || value.length === 0 || value.length > MAX_TEXT_LEN) {
+  if (typeof value !== 'string' || value.length === 0 || value.length > AD_CREATIVE_LIMITS.text) {
     return `invalid ${field}`;
   }
   return null;
@@ -57,7 +69,9 @@ function validateText(value: string, field: string): string | null {
 function validateBannerPayload(payload: BannerPayload): string | null {
   const imageError = validateImagePath(payload.imagePath);
   if (imageError) return imageError;
-  if (typeof payload.alt !== 'string' || payload.alt.length > 255) return 'invalid alt';
+  if (typeof payload.alt !== 'string' || payload.alt.length > AD_CREATIVE_LIMITS.alt) {
+    return 'invalid alt';
+  }
   if (!payload.width || payload.width <= 0) return 'invalid width';
   if (!payload.height || payload.height <= 0) return 'invalid height';
   return null;
@@ -65,14 +79,18 @@ function validateBannerPayload(payload: BannerPayload): string | null {
 
 function validateThumbnail(thumbnail: NativeCardPayload['thumbnail']): string | null {
   if (thumbnail === undefined) return null;
-  if (typeof thumbnail.fen !== 'string' || thumbnail.fen.trim().length === 0) {
+  if (
+    typeof thumbnail.fen !== 'string' ||
+    thumbnail.fen.trim().length === 0 ||
+    thumbnail.fen.length > AD_CREATIVE_LIMITS.fen
+  ) {
     return 'invalid thumbnail fen';
   }
   if (thumbnail.imagePath !== undefined && thumbnail.imagePath !== null) {
     const imageError = validateImagePath(thumbnail.imagePath);
     if (imageError) return 'invalid thumbnail image';
   }
-  if (thumbnail.imageAlt !== undefined && thumbnail.imageAlt.length > 255) {
+  if (thumbnail.imageAlt !== undefined && thumbnail.imageAlt.length > AD_CREATIVE_LIMITS.alt) {
     return 'invalid thumbnail alt';
   }
   return null;
@@ -83,7 +101,7 @@ function validateNativeCardPayload(payload: NativeCardPayload): string | null {
     const imageError = validateImagePath(payload.avatarImagePath);
     if (imageError) return imageError;
   }
-  if (typeof payload.avatarAlt !== 'string' || payload.avatarAlt.length > 255) {
+  if (typeof payload.avatarAlt !== 'string' || payload.avatarAlt.length > AD_CREATIVE_LIMITS.alt) {
     return 'invalid avatarAlt';
   }
   const titleError = validateText(payload.title, 'title');
