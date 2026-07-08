@@ -1,15 +1,13 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-
 import { eq, sql } from 'drizzle-orm';
 
-import { AD_CREATIVES_CACHE_TAG } from '@/lib/ads/ad';
 import { kindForSlot } from '@/lib/ads/registry';
 import type { AdSlot } from '@/lib/ads/registry';
 import { adCreatives, db } from '@/lib/db';
 
 import { adminMutationGuard } from '../../_lib/action-factories';
+import { revalidateAdCreatives } from '../_lib/revalidate';
 import type { CreateAdCreativeData } from '../_lib/validation';
 import { validateCreateAdCreative } from '../_lib/validation';
 
@@ -44,8 +42,7 @@ export async function createAdCreative(data: CreateAdCreativeData): Promise<Crea
       })
       .returning({ id: adCreatives.id });
 
-    revalidatePath('/admin/ads');
-    revalidateTag(AD_CREATIVES_CACHE_TAG, { expire: 60 });
+    revalidateAdCreatives();
     return { success: true, id: inserted.id };
   } catch {
     return { error: 'Failed to create ad creative' };

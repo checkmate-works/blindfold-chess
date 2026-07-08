@@ -1,15 +1,13 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { AD_CREATIVES_CACHE_TAG } from '@/lib/ads/ad';
 import { isAdKind } from '@/lib/ads/registry';
 import { adCreatives, db } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
+import { revalidateAdCreatives } from '../_lib/revalidate';
 import type { UpdateAdCreativeData } from '../_lib/validation';
 import { validateUpdateAdCreative } from '../_lib/validation';
 
@@ -46,7 +44,6 @@ export async function updateAdCreative(
     })
     .where(eq(adCreatives.id, id));
 
-  revalidatePath('/admin/ads');
-  revalidateTag(AD_CREATIVES_CACHE_TAG, { expire: 60 });
+  revalidateAdCreatives();
   return { success: true };
 }

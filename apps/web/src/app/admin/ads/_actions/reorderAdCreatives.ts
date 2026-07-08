@@ -1,15 +1,13 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { AD_CREATIVES_CACHE_TAG } from '@/lib/ads/ad';
 import { isAdSlot } from '@/lib/ads/registry';
 import { adCreatives, db } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
+import { revalidateAdCreatives } from '../_lib/revalidate';
 
 /**
  * Persist a new display order for a slot's creatives (set by drag-and-drop on
@@ -46,7 +44,6 @@ export async function reorderAdCreatives(
     }
   });
 
-  revalidatePath(`/admin/ads/${slot}`);
-  revalidateTag(AD_CREATIVES_CACHE_TAG, { expire: 60 });
+  revalidateAdCreatives();
   return { success: true };
 }

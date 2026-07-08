@@ -1,14 +1,12 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { AD_CREATIVES_CACHE_TAG } from '@/lib/ads/ad';
 import { adCreatives, db } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
+import { revalidateAdCreatives } from '../_lib/revalidate';
 
 /**
  * Flip a creative's active flag directly from the slot list (no full edit).
@@ -26,7 +24,6 @@ export async function setAdCreativeActive(id: string, isActive: boolean): Promis
     .returning({ id: adCreatives.id });
   if (result.length === 0) return { error: 'not found' };
 
-  revalidatePath('/admin/ads');
-  revalidateTag(AD_CREATIVES_CACHE_TAG, { expire: 60 });
+  revalidateAdCreatives();
   return { success: true };
 }

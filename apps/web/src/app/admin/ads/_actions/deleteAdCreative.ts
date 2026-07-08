@@ -1,16 +1,14 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { AD_CREATIVES_CACHE_TAG } from '@/lib/ads/ad';
 import { isNativeCardPayload } from '@/lib/ads/payload';
 import { adCreatives, db } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';
+import { revalidateAdCreatives } from '../_lib/revalidate';
 import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '../_lib/storage';
 
 export async function deleteAdCreative(id: string): Promise<ActionResult> {
@@ -37,7 +35,6 @@ export async function deleteAdCreative(id: string): Promise<ActionResult> {
     }
   }
 
-  revalidatePath('/admin/ads');
-  revalidateTag(AD_CREATIVES_CACHE_TAG, { expire: 60 });
+  revalidateAdCreatives();
   return { success: true };
 }

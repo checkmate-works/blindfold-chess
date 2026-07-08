@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
+import { revalidateAdCreatives } from '@/app/admin/ads/_lib/revalidate';
 import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '@/app/admin/ads/_lib/storage';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
@@ -158,6 +159,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'update_failed' }, { status: 500 });
   }
 
+  revalidateAdCreatives();
+
   // Best-effort: drop the previous image now that the row points at the new one.
   if (previousPath && previousPath !== storagePath) {
     const { error } = await supabase.storage.from(AD_CREATIVES_BUCKET).remove([previousPath]);
@@ -210,6 +213,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     .update(adCreatives)
     .set({ payload: nextPayload, updatedAt: new Date() })
     .where(eq(adCreatives.id, id));
+
+  revalidateAdCreatives();
 
   const removedPath = storagePathFromPublicUrl(removedUrl);
   if (removedPath) {
