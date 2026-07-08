@@ -175,29 +175,11 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
 
             <span className="min-w-0 flex-1 truncate">{row.summary || '—'}</span>
 
-            <span className="shrink-0 text-muted-foreground">{row.targetCountry ?? '🌐'}</span>
-
-            <div className="flex shrink-0 items-center gap-2">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={row.isActive}
-                aria-label={row.isActive ? labels.active : labels.inactive}
-                onClick={() => toggleActive(row.id, !row.isActive)}
-                className={`relative h-5 w-9 rounded-full transition-colors ${
-                  row.isActive ? 'bg-success' : 'bg-muted'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
-                    row.isActive ? 'translate-x-4' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-              <span className="w-14 text-xs text-muted-foreground">
-                {row.isActive ? labels.active : labels.inactive}
-              </span>
-            </div>
+            <span className="shrink-0 whitespace-nowrap text-muted-foreground">
+              {row.targetCountry
+                ? `${countryCodeToFlag(row.targetCountry)} ${row.targetCountry}`
+                : '🌐'}
+            </span>
 
             <div className="flex shrink-0 items-center gap-2">
               <Link
@@ -214,6 +196,28 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
                   confirm: labels.confirm,
                 }}
               />
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2 pl-1">
+              <span className="whitespace-nowrap text-xs text-muted-foreground">
+                {row.isActive ? labels.active : labels.inactive}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={row.isActive}
+                aria-label={row.isActive ? labels.active : labels.inactive}
+                onClick={() => toggleActive(row.id, !row.isActive)}
+                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+                  row.isActive ? 'bg-success' : 'bg-muted'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                    row.isActive ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
             </div>
           </li>
         ))}
