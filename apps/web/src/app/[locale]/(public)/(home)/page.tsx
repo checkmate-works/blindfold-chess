@@ -4,8 +4,9 @@ import { headers } from 'next/headers';
 
 import { IS_LOCAL_DEV } from '@/config';
 
-import { getFeedNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
+import { getNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
 import { getRequestCountry } from '@/lib/ads/country';
+import { FEED_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
 import { createClient } from '@/lib/supabase/server';
@@ -77,7 +78,7 @@ export default async function HomePage({ params }: Props) {
   const [initialFeed, showAdsResult, nativeAdCreatives] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
     shouldShowAdsForUser(user?.id ?? null),
-    getFeedNativeAdCreatives(country),
+    getNativeAdCreatives(FEED_NATIVE_AD_SLOT, country),
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 

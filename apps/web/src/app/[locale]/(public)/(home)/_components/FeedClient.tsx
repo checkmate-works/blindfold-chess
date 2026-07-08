@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { NativeAdView } from '@/lib/ads/ad';
 
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
+
 import { getFeed } from '../_actions/getFeed';
 import type { FeedScope } from '../_actions/getFeed';
 import { buildDisplayItems } from '../_lib/feed-display';
 import type { DisplayItem, FeedItem } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
-import { NativeAdCard } from './NativeAdCard';
 import { ResponsiveAdSlot } from './ResponsiveAdSlot';
 
 type Props = {

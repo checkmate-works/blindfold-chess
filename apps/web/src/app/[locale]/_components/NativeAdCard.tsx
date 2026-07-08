@@ -28,11 +28,22 @@ type Props = {
 };
 
 /**
- * In-feed native ad card — same `ActivityCard` shell as real feed entries
- * (board thumbnail, avatar row, body text) rather than an AdSense `<ins>`
- * slot. Content is admin-managed (`ad_creatives`, slot `feed-native-ad`);
- * only the disclosure label, avatar fallback, and board are chrome. The
- * whole card links to the creative's `href` (an affiliate URL).
+ * Native ad card — the same `ActivityCard` shell as the surfaces it blends
+ * into (board thumbnail, avatar row, body text) rather than an AdSense `<ins>`
+ * slot. Content is admin-managed (`ad_creatives`, any `native_card` slot);
+ * only the disclosure label, avatar fallback, and board are chrome. The whole
+ * card links to the creative's `href` (an affiliate URL).
+ *
+ * Shared across every native-card surface:
+ * - `variant='feed'` (default) → the home/topics timeline (`FeedClient`).
+ * - `variant='card'` → the catalog lists (puzzle / position-memory), where it
+ *   matches `CatalogListCard` (also `ActivityCard variant="card"`), so the ad
+ *   reads as a list entry minus the like/comment footer.
+ *
+ * i18n note: the ad-chrome strings still live under the `home.feed.nativeAd`
+ * namespace for historical reasons (this card originated in the feed). They are
+ * surface-neutral ("Ad" / sponsor / disclosure); a future rename to a neutral
+ * namespace is a safe isolated follow-up (only this file references it).
  */
 export function NativeAdCard({ creative, locale, variant = 'feed' }: Props) {
   const t = useTranslations('home.feed.nativeAd');

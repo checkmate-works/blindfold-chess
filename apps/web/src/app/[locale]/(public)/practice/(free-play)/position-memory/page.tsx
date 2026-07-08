@@ -30,6 +30,7 @@ const { generateMetadata, Page } = createPositionListPage({
   replyMetaType: 'position_memory',
   sortTranslationKey: 'topics.positionMemory.sort',
   tutorialPath: 'practice/position-memory/tutorial',
+  nativeAdSlot: 'position-memory-list-native-ad',
 });
 
 export { generateMetadata };

@@ -41,6 +41,8 @@ export const AD_SLOTS = {
   'content-middle': { kind: 'banner', defaultSelection: 'priority' },
   'content-bottom': { kind: 'banner', defaultSelection: 'priority' },
   'feed-native-ad': { kind: 'native_card', defaultSelection: 'rotation' },
+  'puzzle-list-native-ad': { kind: 'native_card', defaultSelection: 'rotation' },
+  'position-memory-list-native-ad': { kind: 'native_card', defaultSelection: 'rotation' },
 } as const satisfies Record<string, AdSlotConfig>;
 
 export type AdSlot = keyof typeof AD_SLOTS;

@@ -1,10 +1,17 @@
+import { Fragment } from 'react';
+
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
 
 import { Button } from '@/app/_components';
+import { IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 import { FaPlus } from 'react-icons/fa';
 
+import { getNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
+import { getRequestCountry } from '@/lib/ads/country';
+import type { AdSlot as AdSlotId } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
@@ -21,6 +28,7 @@ import {
 } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -55,7 +63,17 @@ export interface PositionListPageConfig {
   /** When set, the overview help step appends a tutorial link pointing at this
    * path (without locale prefix, e.g. `'practice/position-memory/tutorial'`). */
   tutorialPath?: string;
+  /**
+   * When set, a native ad card (same shell as the list cards) is interleaved
+   * into the list from this `native_card` slot's active creatives. Omit to
+   * render no in-list ad. The page keeps its bottom `content-bottom` AdSlot
+   * regardless.
+   */
+  nativeAdSlot?: AdSlotId;
 }
+
+/** 0-based list index the interleaved native ad is inserted after. */
+const NATIVE_AD_AFTER_INDEX = 5;
 
 /**
  * Build the `generateMetadata` + `Page` pair for a position-list page.
@@ -66,6 +84,7 @@ export interface PositionListPageConfig {
  */
 export function createPositionListPage(config: PositionListPageConfig) {
   const { slug, namespace, positionType, replyMetaType, sortTranslationKey, tutorialPath } = config;
+  const { nativeAdSlot } = config;
   const basePath = `/practice/${slug}`;
   const canonicalPath = `practice/${slug}`;
   const tourIdPrefix = `${slug}-list`;
@@ -124,6 +143,18 @@ export function createPositionListPage(config: PositionListPageConfig) {
 
     const justNowLabel = t('justNow');
 
+    // In-list native ad (opt-in per page via `nativeAdSlot`). Server-gated on
+    // entitlement — mirrors the feed: ad-free users get no node; the CSS-hide
+    // (`.ad-slot-wrapper`) is the un-forgettable second layer. IS_LOCAL_DEV
+    // forces it on locally so the placement is testable. `force-dynamic` makes
+    // the geo header read free.
+    const showAds = IS_LOCAL_DEV || (await shouldShowAdsForUser(currentUser?.id ?? null));
+    const nativeAds =
+      nativeAdSlot && showAds
+        ? await getNativeAdCreatives(nativeAdSlot, getRequestCountry(await headers()))
+        : [];
+    const nativeAd = nativeAds[0] ?? null;
+
     // Help-tour steps: explain what the module is and — only when the create
     // CTA is rendered (signed-in users) — point at it. When `tutorialPath` is
     // set, a tutorial link is folded into the overview popover HTML; driver.js
@@ -179,19 +210,27 @@ export function createPositionListPage(config: PositionListPageConfig) {
           <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
         ) : (
           <div className="space-y-3">
-            {rows.map(({ position, profile }) => (
-              <PositionListCard
-                key={position.id}
-                position={position}
-                profile={profile}
-                likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
-                replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
-                detailHref={`${basePath}/${position.id}`}
-                i18nNamespace={namespace}
-                toggleLikeAction={toggleLike}
-                justNowLabel={justNowLabel}
-                locale={locale}
-              />
+            {rows.map(({ position, profile }, index) => (
+              <Fragment key={position.id}>
+                <PositionListCard
+                  position={position}
+                  profile={profile}
+                  likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+                  replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
+                  detailHref={`${basePath}/${position.id}`}
+                  i18nNamespace={namespace}
+                  toggleLikeAction={toggleLike}
+                  justNowLabel={justNowLabel}
+                  locale={locale}
+                />
+                {nativeAd && index === Math.min(NATIVE_AD_AFTER_INDEX, rows.length - 1) && (
+                  // `ad-slot-wrapper` opts this row into the `bfc_ads_hidden`
+                  // cookie/CSS hide, same as the feed's ad rows.
+                  <div className="ad-slot-wrapper">
+                    <NativeAdCard creative={nativeAd} locale={locale} variant="card" />
+                  </div>
+                )}
+              </Fragment>
             ))}
           </div>
         )}

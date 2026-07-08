@@ -8,7 +8,6 @@ import { hasActiveGrant } from '@/lib/users/user-grants';
 
 import { filterByCountry } from './country';
 import { isNativeCardPayload } from './payload';
-import { FEED_NATIVE_AD_SLOT } from './registry';
 import type { AdKind, AdSlot } from './registry';
 
 /** Cache tag invalidated by every admin creative mutation. */
@@ -113,16 +112,20 @@ export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
 }
 
 /**
- * Feed-slot view: the active native-card creatives (filtered to the visitor's
- * country), mapped to the serializable `NativeAdView` the client `FeedClient`
- * rotates through. Delegates to the cached `getActiveCreatives`, so
- * home/topics (both `force-dynamic`, so reading the geo header server-side is
- * free) share the same tag-invalidated pool as every other slot. `country`
- * comes from `getRequestCountry(headers())`; null = geo unknown (only global
+ * Native-card view for a given slot: the active native-card creatives (filtered
+ * to the visitor's country), mapped to the serializable `NativeAdView` that
+ * client card renderers use. Delegates to the cached `getActiveCreatives`, so
+ * every consuming surface (the home/topics feed, the puzzle and
+ * position-memory lists — all `force-dynamic`, so reading the geo header
+ * server-side is free) shares the same tag-invalidated pool. `country` comes
+ * from `getRequestCountry(headers())`; null = geo unknown (only global
  * creatives qualify).
  */
-export async function getFeedNativeAdCreatives(country: string | null): Promise<NativeAdView[]> {
-  const creatives = filterByCountry(await getActiveCreatives(FEED_NATIVE_AD_SLOT), country);
+export async function getNativeAdCreatives(
+  slot: AdSlot,
+  country: string | null
+): Promise<NativeAdView[]> {
+  const creatives = filterByCountry(await getActiveCreatives(slot), country);
   return creatives.flatMap((c) => {
     if (!isNativeCardPayload(c.payload)) return [];
     return [

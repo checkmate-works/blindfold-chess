@@ -54,7 +54,7 @@ vi.mock('./FeedSkeleton', () => ({
 
 // NativeAdCard pulls in i18n/board-preference context we don't need here.
 // We care about wrapper structure, not ad content, so a trivial stub suffices.
-vi.mock('./NativeAdCard', () => ({
+vi.mock('@/app/[locale]/_components/NativeAdCard', () => ({
   NativeAdCard: () => <div data-testid="ad-slot">ad</div>,
 }));
 

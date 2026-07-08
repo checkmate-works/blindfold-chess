@@ -7,8 +7,9 @@ import { headers } from 'next/headers';
 import { IS_LOCAL_DEV } from '@/config';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { getFeedNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
+import { getNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
 import { getRequestCountry } from '@/lib/ads/country';
+import { FEED_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { createClient } from '@/lib/supabase/server';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
@@ -58,7 +59,7 @@ async function TopicsContent({ params }: Props) {
   const [initialFeed, showAdsResult, nativeAdCreatives] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id, TOPICS_FEED_ENTITY_TYPES),
     shouldShowAdsForUser(user?.id ?? null),
-    getFeedNativeAdCreatives(country),
+    getNativeAdCreatives(FEED_NATIVE_AD_SLOT, country),
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 
