@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useMemo, useRef, useState, useTransition } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -63,6 +63,8 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
   const router = useRouter();
   const [rows, setRows] = useState(initialRows);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  // Order at drag start, to skip the save when a drag ends where it began.
+  const dragStartOrderRef = useRef<string>('');
   const [country, setCountry] = useState<string>(ALL);
   const [isPending, startTransition] = useTransition();
 
@@ -101,8 +103,13 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
     });
   };
 
+  // Fires for both `drop` (on the target row) and `dragend` (on the source
+  // row); the null-check makes whichever arrives second a no-op, so one drag
+  // never persists twice.
   const handleDrop = () => {
+    if (dragIndex === null) return;
     setDragIndex(null);
+    if (rows.map((r) => r.id).join(',') === dragStartOrderRef.current) return;
     persist(rows);
   };
 
@@ -141,7 +148,11 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
           <li
             key={row.id}
             draggable={!filtering}
-            onDragStart={() => !filtering && setDragIndex(index)}
+            onDragStart={() => {
+              if (filtering) return;
+              setDragIndex(index);
+              dragStartOrderRef.current = rows.map((r) => r.id).join(',');
+            }}
             onDragOver={(e) => {
               if (filtering) return;
               e.preventDefault();
