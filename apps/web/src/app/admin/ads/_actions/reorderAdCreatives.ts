@@ -24,26 +24,30 @@ export async function reorderAdCreatives(
   if ('error' in auth) return auth;
   if (!isAdSlot(slot)) return { error: 'invalid slot' };
 
-  const rows = await db
-    .select({ id: adCreatives.id })
-    .from(adCreatives)
-    .where(eq(adCreatives.slot, slot));
-  const slotIds = new Set(rows.map((r) => r.id));
-  const uniqueOrdered = new Set(orderedIds);
-  if (uniqueOrdered.size !== orderedIds.length) return { error: 'duplicate id' };
-  if (orderedIds.length !== slotIds.size || !orderedIds.every((id) => slotIds.has(id))) {
-    return { error: 'invalid order' };
-  }
-
-  await db.transaction(async (tx) => {
-    for (let i = 0; i < orderedIds.length; i++) {
-      await tx
-        .update(adCreatives)
-        .set({ sortOrder: i, updatedAt: new Date() })
-        .where(eq(adCreatives.id, orderedIds[i]));
+  try {
+    const rows = await db
+      .select({ id: adCreatives.id })
+      .from(adCreatives)
+      .where(eq(adCreatives.slot, slot));
+    const slotIds = new Set(rows.map((r) => r.id));
+    const uniqueOrdered = new Set(orderedIds);
+    if (uniqueOrdered.size !== orderedIds.length) return { error: 'duplicate id' };
+    if (orderedIds.length !== slotIds.size || !orderedIds.every((id) => slotIds.has(id))) {
+      return { error: 'invalid order' };
     }
-  });
 
-  revalidateAdCreatives();
-  return { success: true };
+    await db.transaction(async (tx) => {
+      for (let i = 0; i < orderedIds.length; i++) {
+        await tx
+          .update(adCreatives)
+          .set({ sortOrder: i, updatedAt: new Date() })
+          .where(eq(adCreatives.id, orderedIds[i]));
+      }
+    });
+
+    revalidateAdCreatives();
+    return { success: true };
+  } catch {
+    return { error: 'Failed to reorder ad creatives' };
+  }
 }

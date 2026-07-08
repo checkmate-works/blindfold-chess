@@ -17,13 +17,17 @@ export async function setAdCreativeActive(id: string, isActive: boolean): Promis
   const auth = await requireAdmin();
   if ('error' in auth) return auth;
 
-  const result = await db
-    .update(adCreatives)
-    .set({ isActive, updatedAt: new Date() })
-    .where(eq(adCreatives.id, id))
-    .returning({ id: adCreatives.id });
-  if (result.length === 0) return { error: 'not found' };
+  try {
+    const result = await db
+      .update(adCreatives)
+      .set({ isActive, updatedAt: new Date() })
+      .where(eq(adCreatives.id, id))
+      .returning({ id: adCreatives.id });
+    if (result.length === 0) return { error: 'not found' };
 
-  revalidateAdCreatives();
-  return { success: true };
+    revalidateAdCreatives();
+    return { success: true };
+  } catch {
+    return { error: 'Failed to update ad creative' };
+  }
 }

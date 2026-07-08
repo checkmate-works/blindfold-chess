@@ -17,12 +17,17 @@ export async function deleteAdCreative(id: string): Promise<ActionResult> {
     return auth;
   }
 
-  const [row] = await db.select().from(adCreatives).where(eq(adCreatives.id, id)).limit(1);
-  if (!row) return { error: 'not found' };
+  let row: typeof adCreatives.$inferSelect | undefined;
+  try {
+    [row] = await db.select().from(adCreatives).where(eq(adCreatives.id, id)).limit(1);
+    if (!row) return { error: 'not found' };
 
-  // Delete the DB row first (authoritative), then best-effort clean up an
-  // uploaded avatar from Storage — same ordering as the article-images flow.
-  await db.delete(adCreatives).where(eq(adCreatives.id, id));
+    // Delete the DB row first (authoritative), then best-effort clean up an
+    // uploaded avatar from Storage — same ordering as the article-images flow.
+    await db.delete(adCreatives).where(eq(adCreatives.id, id));
+  } catch {
+    return { error: 'Failed to delete ad creative' };
+  }
 
   if (isNativeCardPayload(row.payload) && row.payload.avatarImagePath) {
     const storagePath = storagePathFromPublicUrl(row.payload.avatarImagePath);

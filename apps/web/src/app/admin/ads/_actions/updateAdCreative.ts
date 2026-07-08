@@ -33,17 +33,21 @@ export async function updateAdCreative(
   const validationError = validateUpdateAdCreative(row.kind, data);
   if (validationError) return { error: validationError };
 
-  await db
-    .update(adCreatives)
-    .set({
-      href: data.href,
-      isActive: data.isActive,
-      targetCountry: data.targetCountry,
-      payload: data.payload,
-      updatedAt: new Date(),
-    })
-    .where(eq(adCreatives.id, id));
+  try {
+    await db
+      .update(adCreatives)
+      .set({
+        href: data.href,
+        isActive: data.isActive,
+        targetCountry: data.targetCountry,
+        payload: data.payload,
+        updatedAt: new Date(),
+      })
+      .where(eq(adCreatives.id, id));
 
-  revalidateAdCreatives();
-  return { success: true };
+    revalidateAdCreatives();
+    return { success: true };
+  } catch {
+    return { error: 'Failed to update ad creative' };
+  }
 }
