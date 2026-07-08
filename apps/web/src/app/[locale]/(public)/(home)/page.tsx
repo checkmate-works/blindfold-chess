@@ -1,11 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { headers } from 'next/headers';
 
-import { IS_LOCAL_DEV } from '@/config';
-
-import { getNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
-import { getRequestCountry } from '@/lib/ads/country';
+import { resolveNativeAds } from '@/lib/ads/ad';
 import { FEED_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
@@ -74,13 +70,10 @@ export default async function HomePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const country = getRequestCountry(await headers());
-  const [initialFeed, showAdsResult, nativeAdCreatives] = await Promise.all([
+  const [initialFeed, { showAds, creatives: nativeAdCreatives }] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
-    shouldShowAdsForUser(user?.id ?? null),
-    getNativeAdCreatives(FEED_NATIVE_AD_SLOT, country),
+    resolveNativeAds(FEED_NATIVE_AD_SLOT, user?.id ?? null),
   ]);
-  const showAds = IS_LOCAL_DEV || showAdsResult;
 
   const helpSteps: HelpStep[] = [
     {

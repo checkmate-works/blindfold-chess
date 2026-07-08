@@ -1,12 +1,14 @@
 import { unstable_cache } from 'next/cache';
+import { headers } from 'next/headers';
 
+import { IS_LOCAL_DEV } from '@/config';
 import { and, asc, eq } from 'drizzle-orm';
 
 import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { adCreatives, db } from '@/lib/db';
 import { hasActiveGrant } from '@/lib/users/user-grants';
 
-import { filterByCountry } from './country';
+import { filterByCountry, getRequestCountry } from './country';
 import type { BannerPayload, NativeCardThumbnail } from './payload';
 import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from './payload';
 import type { AdKind, AdSlot } from './registry';
@@ -135,6 +137,25 @@ export async function getNativeAdCreatives(
       },
     ];
   });
+}
+
+/**
+ * The one-call server prologue for a native-card surface: the viewer's ad
+ * entitlement (`showAds`, with the `IS_LOCAL_DEV` force-on so placements are
+ * testable locally) and — only when ads show at all — the slot's creatives
+ * filtered to the request's country. Reads `headers()` for the geo, so callers
+ * must be request-scoped (every native-card surface is `force-dynamic`, which
+ * makes that read free). Ad-free viewers skip the creative read entirely.
+ */
+export async function resolveNativeAds(
+  slot: AdSlot,
+  userId: string | null
+): Promise<{ showAds: boolean; creatives: NativeAdView[] }> {
+  const showAds = IS_LOCAL_DEV || (await shouldShowAdsForUser(userId));
+  if (!showAds) return { showAds: false, creatives: [] };
+
+  const country = getRequestCountry(await headers());
+  return { showAds: true, creatives: await getNativeAdCreatives(slot, country) };
 }
 
 /** A banner creative as `/api/ad-slot/[slot]` serves it to `AdSlotClient`. */

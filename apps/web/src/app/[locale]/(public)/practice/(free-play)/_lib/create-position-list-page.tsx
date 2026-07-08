@@ -1,16 +1,13 @@
 import { Fragment } from 'react';
 
 import { getTranslations } from 'next-intl/server';
-import { headers } from 'next/headers';
 
 import { Button } from '@/app/_components';
-import { IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 import { FaPlus } from 'react-icons/fa';
 
-import { getNativeAdCreatives, shouldShowAdsForUser } from '@/lib/ads/ad';
-import { getRequestCountry } from '@/lib/ads/country';
+import { resolveNativeAds } from '@/lib/ads/ad';
 import type { AdSlot as AdSlotId } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
@@ -144,16 +141,12 @@ export function createPositionListPage(config: PositionListPageConfig) {
     const justNowLabel = t('justNow');
 
     // In-list native ad (opt-in per page via `nativeAdSlot`). Server-gated on
-    // entitlement — mirrors the feed: ad-free users get no node; the CSS-hide
-    // (`.ad-slot-wrapper`) is the un-forgettable second layer. IS_LOCAL_DEV
-    // forces it on locally so the placement is testable. `force-dynamic` makes
-    // the geo header read free.
-    const showAds = IS_LOCAL_DEV || (await shouldShowAdsForUser(currentUser?.id ?? null));
-    const nativeAds =
-      nativeAdSlot && showAds
-        ? await getNativeAdCreatives(nativeAdSlot, getRequestCountry(await headers()))
-        : [];
-    const nativeAd = nativeAds[0] ?? null;
+    // entitlement by `resolveNativeAds` — ad-free users get no node; the
+    // component-owned `.ad-slot-wrapper` CSS-hide is the un-forgettable
+    // second layer.
+    const nativeAd = nativeAdSlot
+      ? ((await resolveNativeAds(nativeAdSlot, currentUser?.id ?? null)).creatives[0] ?? null)
+      : null;
 
     // Help-tour steps: explain what the module is and — only when the create
     // CTA is rendered (signed-in users) — point at it. When `tutorialPath` is
