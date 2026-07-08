@@ -1,6 +1,6 @@
 {
-  "id": "1b5af937-5823-474a-b001-4cc3336e126d",
-  "prevId": "f64c46a4-18e1-48c1-82f6-1f9123945afb",
+  "id": "b48a377f-5a85-42be-82e8-b226cc98073f",
+  "prevId": "d0d75017-9550-4367-98c7-05efdd0eab14",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -2779,18 +2779,6 @@
         "target_country": {
           "name": "target_country",
           "type": "varchar(2)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "start_at": {
-          "name": "start_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "end_at": {
-          "name": "end_at",
-          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },

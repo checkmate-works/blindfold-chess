@@ -5,11 +5,11 @@ CREATE TABLE "ad_creatives" (
 	"href" varchar(2048) NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"sort_order" integer DEFAULT 0 NOT NULL,
-	"start_at" timestamp with time zone,
-	"end_at" timestamp with time zone,
+	"target_country" varchar(2),
 	"payload" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+DROP TABLE "ad_banners" CASCADE;--> statement-breakpoint
 CREATE INDEX "idx_ad_creatives_slot_active" ON "ad_creatives" USING btree ("slot","is_active");

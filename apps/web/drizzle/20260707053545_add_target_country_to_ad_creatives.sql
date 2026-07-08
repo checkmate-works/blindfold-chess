@@ -1,1 +1,0 @@
-ALTER TABLE "ad_creatives" ADD COLUMN "target_country" varchar(2);
