@@ -10,7 +10,7 @@ import { Field, Input, Textarea } from '@/app/admin/_components/forms';
 import type { NativeCardPayload, NativeCardThumbnail } from '@/lib/ads/payload';
 import { DEFAULT_NATIVE_THUMBNAIL_FEN, resolveNativeThumbnail } from '@/lib/ads/payload';
 import type { AdSlot } from '@/lib/ads/registry';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
@@ -107,12 +107,10 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
           <div className="space-y-4">
             {/* Board (FEN) — always present; the fallback when no image is set. */}
             <div className="flex items-start gap-3">
-              <div className="w-24 h-24 shrink-0 overflow-hidden rounded border border-border">
-                <BoardThumbnail
-                  fen={thumbnailFen.trim() || DEFAULT_NATIVE_THUMBNAIL_FEN}
-                  className="w-full h-full"
-                />
-              </div>
+              <CreativeThumbnail
+                fen={thumbnailFen.trim() || DEFAULT_NATIVE_THUMBNAIL_FEN}
+                className="w-24 h-24 shrink-0 overflow-hidden rounded border border-border"
+              />
               <div className="flex-1">
                 <Input
                   id="thumbnailFen"
@@ -132,20 +130,16 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
                 {labels.thumbnailImageOverride}
               </span>
               <div className="flex items-center gap-3">
-                {thumbnailImagePath ? (
-                  <Image
-                    src={thumbnailImagePath}
-                    alt={thumbnailAlt}
-                    width={96}
-                    height={96}
-                    className="w-24 h-24 rounded border border-border object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded border border-border bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                    —
-                  </div>
-                )}
+                <CreativeThumbnail
+                  imagePath={thumbnailImagePath}
+                  imageAlt={thumbnailAlt}
+                  className="w-24 h-24 shrink-0 overflow-hidden rounded border border-border"
+                  placeholder={
+                    <div className="w-full h-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                      —
+                    </div>
+                  }
+                />
                 {mode === 'edit' ? (
                   <div className="flex flex-col gap-2">
                     <ImageFileButton

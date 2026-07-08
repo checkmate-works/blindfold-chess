@@ -2,12 +2,11 @@
 
 import { useMemo, useRef, useState, useTransition } from 'react';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 import { countryCodeToFlag } from '@/lib/countries';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
 import { reorderAdCreatives } from '../_actions/reorderAdCreatives';
 import { setAdCreativeActive } from '../_actions/setAdCreativeActive';
@@ -174,22 +173,13 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
               ⠿
             </span>
 
-            {row.imageUrl ? (
-              <Image
-                src={row.imageUrl}
-                alt={row.summary}
-                width={48}
-                height={48}
-                className="h-12 w-12 shrink-0 rounded object-cover"
-                unoptimized
-              />
-            ) : row.boardFen ? (
-              <div className="h-12 w-12 shrink-0 overflow-hidden rounded border border-border">
-                <BoardThumbnail fen={row.boardFen} className="h-full w-full" />
-              </div>
-            ) : (
-              <div className="h-12 w-12 shrink-0 rounded bg-muted" />
-            )}
+            <CreativeThumbnail
+              imagePath={row.imageUrl}
+              imageAlt={row.summary}
+              fen={row.boardFen}
+              imageSize={48}
+              className="h-12 w-12 shrink-0 overflow-hidden rounded border border-border"
+            />
 
             <span className="min-w-0 flex-1 truncate">{row.summary || '—'}</span>
 

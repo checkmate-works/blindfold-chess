@@ -3,7 +3,7 @@
 import Image from 'next/image';
 
 import type { NativeCardThumbnail } from '@/lib/ads/payload';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 
 type Props = {
   avatarImagePath: string | null;
@@ -40,20 +40,12 @@ export function NativeCardPreview({
       <span className="block text-sm font-medium mb-1">{label}</span>
       <div className="rounded-lg border border-border bg-card p-3">
         <div className="flex gap-3">
-          <div className="h-24 w-24 shrink-0 overflow-hidden rounded border border-border">
-            {thumbnail.imagePath ? (
-              <Image
-                src={thumbnail.imagePath}
-                alt={thumbnail.imageAlt ?? ''}
-                width={96}
-                height={96}
-                className="h-full w-full object-cover"
-                unoptimized
-              />
-            ) : (
-              <BoardThumbnail fen={thumbnail.fen} className="h-full w-full" />
-            )}
-          </div>
+          <CreativeThumbnail
+            imagePath={thumbnail.imagePath}
+            imageAlt={thumbnail.imageAlt}
+            fen={thumbnail.fen}
+            className="h-24 w-24 shrink-0 overflow-hidden rounded border border-border"
+          />
 
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">

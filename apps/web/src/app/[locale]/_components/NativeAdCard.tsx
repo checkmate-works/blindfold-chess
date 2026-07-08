@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { NativeAdView } from '@/lib/ads/ad';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -54,22 +54,13 @@ export function NativeAdCard({ creative, locale, variant = 'feed', className }: 
         locale={locale}
         variant={variant}
         thumbnail={
-          creative.thumbnail.imagePath ? (
-            <Image
-              src={creative.thumbnail.imagePath}
-              alt={creative.thumbnail.imageAlt ?? ''}
-              width={96}
-              height={96}
-              className="w-full h-full object-cover"
-              unoptimized
-            />
-          ) : (
-            <BoardThumbnail
-              fen={creative.thumbnail.fen}
-              className="w-full h-full"
-              boardTheme={preferences.boardTheme}
-            />
-          )
+          <CreativeThumbnail
+            imagePath={creative.thumbnail.imagePath}
+            imageAlt={creative.thumbnail.imageAlt}
+            fen={creative.thumbnail.fen}
+            boardTheme={preferences.boardTheme}
+            className="w-full h-full"
+          />
         }
         author={
           <div className="flex items-start gap-3">
