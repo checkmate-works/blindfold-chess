@@ -55,7 +55,13 @@ vi.mock('./FeedSkeleton', () => ({
 // NativeAdCard pulls in i18n/board-preference context we don't need here.
 // We care about wrapper structure, not ad content, so a trivial stub suffices.
 vi.mock('@/app/[locale]/_components/NativeAdCard', () => ({
-  NativeAdCard: () => <div data-testid="ad-slot">ad</div>,
+  // Mirror the real component's wrapper contract: it owns `ad-slot-wrapper`
+  // and merges the caller's `className` (the feed's row divider) into it.
+  NativeAdCard: ({ className }: { className?: string }) => (
+    <div className={`ad-slot-wrapper${className ? ` ${className}` : ''}`} data-testid="ad-slot">
+      ad
+    </div>
+  ),
 }));
 
 // ResponsiveAdSlot (the AdSense fallback) uses a matchMedia-backed hook jsdom

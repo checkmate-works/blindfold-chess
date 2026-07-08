@@ -85,19 +85,23 @@ export function FeedClient({
     (index: number, displayItem: DisplayItem) => {
       if (displayItem.type === 'ad') {
         // Waterfall: highest-priority admin creative, else AdSense fallback.
-        // `ad-slot-wrapper` opts the whole row into the `bfc_ads_hidden`
-        // no-flash CSS hide so ad-free viewers (subscription or coin grant)
-        // never see it — the same hook every AdSense slot already uses, now
-        // covering the native card too.
+        // The `bfc_ads_hidden` no-flash CSS hide rides on `.ad-slot-wrapper`:
+        // `NativeAdCard` owns its own, and takes the row divider classes via
+        // `className` so the whole row collapses with it; the AdSense fallback
+        // row carries the class here for the same reason.
         const creative =
           adCreatives.length > 0 ? adCreatives[displayItem.adIndex % adCreatives.length] : null;
-        return (
+        return creative ? (
+          <NativeAdCard
+            key={`ad-${index}`}
+            creative={creative}
+            locale={locale}
+            variant={variant}
+            className={itemWrapperClass}
+          />
+        ) : (
           <div key={`ad-${index}`} className={`${itemWrapperClass} ad-slot-wrapper`.trim()}>
-            {creative ? (
-              <NativeAdCard creative={creative} locale={locale} variant={variant} />
-            ) : (
-              <ResponsiveAdSlot />
-            )}
+            <ResponsiveAdSlot />
           </div>
         );
       }

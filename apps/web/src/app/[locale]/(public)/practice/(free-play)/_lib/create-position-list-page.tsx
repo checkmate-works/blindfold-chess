@@ -224,11 +224,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
                   locale={locale}
                 />
                 {nativeAd && index === Math.min(NATIVE_AD_AFTER_INDEX, rows.length - 1) && (
-                  // `ad-slot-wrapper` opts this row into the `bfc_ads_hidden`
-                  // cookie/CSS hide, same as the feed's ad rows.
-                  <div className="ad-slot-wrapper">
-                    <NativeAdCard creative={nativeAd} locale={locale} variant="card" />
-                  </div>
+                  <NativeAdCard creative={nativeAd} locale={locale} variant="card" />
                 )}
               </Fragment>
             ))}
