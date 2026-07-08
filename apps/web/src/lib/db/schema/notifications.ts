@@ -46,9 +46,9 @@ import {
  * `feed_items.entity_type + data` and `moderation_actions.action + metadata`
  * patterns already used elsewhere: adding a new ad format is a new `kind`
  * value + payload type + type guard + renderer, with no migration. The
- * fields that are genuinely common to every format (`href`, scheduling,
- * `is_active`, `slot`, `sort_order`) stay first-class columns so an
- * "active creatives for this slot right now" query is kind-agnostic.
+ * fields that are genuinely common to every format (`href`, `is_active`,
+ * `slot`, `sort_order`) stay first-class columns so an "active creatives for
+ * this slot right now" query is kind-agnostic.
  *
  * @design `slot` is NOT unique — creatives rotate within a placement
  *
@@ -82,13 +82,11 @@ export const adCreatives = pgTable(
      * a code = shown only to visitors in that country. Scalar because a
      * creative's affiliate link is country-specific (amazon.com vs amazon.fr),
      * so a creative targets exactly one country or is global — never a
-     * multi-country set. A cross-kind targeting filter (like schedule /
-     * is_active), applied in-memory after the cached pool read, keyed by the
-     * request's `x-vercel-ip-country`. See `@/lib/ads/country`.
+     * multi-country set. A cross-kind targeting filter (like is_active),
+     * applied in-memory after the cached pool read, keyed by the request's
+     * `x-vercel-ip-country`. See `@/lib/ads/country`.
      */
     targetCountry: varchar('target_country', { length: 2 }),
-    startAt: timestamp('start_at', { withTimezone: true }),
-    endAt: timestamp('end_at', { withTimezone: true }),
     /** Kind-specific fields — see the `*Payload` types in `@/lib/ads/payload`. */
     payload: jsonb('payload').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

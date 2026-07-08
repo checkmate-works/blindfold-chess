@@ -81,6 +81,7 @@ const defaultProps = {
       avatarAlt: 'Ad',
       title: 'Ad title',
       description: 'Ad description',
+      thumbnail: { type: 'board' as const, fen: 'startpos' },
     },
   ],
 };

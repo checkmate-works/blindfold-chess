@@ -7,9 +7,6 @@ export type CreateAdCreativeData = {
   slot: string;
   href: string;
   isActive: boolean;
-  sortOrder: number;
-  startAt: string | null;
-  endAt: string | null;
   /** ISO-3166 alpha-2 target country; null = global. */
   targetCountry: string | null;
   payload: BannerPayload | NativeCardPayload;
@@ -18,9 +15,6 @@ export type CreateAdCreativeData = {
 export type UpdateAdCreativeData = {
   href: string;
   isActive: boolean;
-  sortOrder: number;
-  startAt: string | null;
-  endAt: string | null;
   targetCountry: string | null;
   payload: BannerPayload | NativeCardPayload;
 };
@@ -69,6 +63,25 @@ function validateBannerPayload(payload: BannerPayload): string | null {
   return null;
 }
 
+function validateThumbnail(thumbnail: NativeCardPayload['thumbnail']): string | null {
+  if (thumbnail === undefined) return null;
+  if (thumbnail.type === 'board') {
+    if (typeof thumbnail.fen !== 'string' || thumbnail.fen.trim().length === 0) {
+      return 'invalid thumbnail fen';
+    }
+    return null;
+  }
+  if (thumbnail.type === 'image') {
+    const imageError = validateImagePath(thumbnail.imagePath);
+    if (imageError) return 'invalid thumbnail image';
+    if (typeof thumbnail.alt !== 'string' || thumbnail.alt.length > 255) {
+      return 'invalid thumbnail alt';
+    }
+    return null;
+  }
+  return 'invalid thumbnail';
+}
+
 function validateNativeCardPayload(payload: NativeCardPayload): string | null {
   if (payload.avatarImagePath !== null) {
     const imageError = validateImagePath(payload.avatarImagePath);
@@ -79,7 +92,9 @@ function validateNativeCardPayload(payload: NativeCardPayload): string | null {
   }
   const titleError = validateText(payload.title, 'title');
   if (titleError) return titleError;
-  return validateText(payload.description, 'description');
+  const descriptionError = validateText(payload.description, 'description');
+  if (descriptionError) return descriptionError;
+  return validateThumbnail(payload.thumbnail);
 }
 
 /** Validate a payload against the kind bound to its slot. */
@@ -91,26 +106,10 @@ export function validatePayloadForKind(
   return validateNativeCardPayload(payload as NativeCardPayload);
 }
 
-function validateScheduleAndOrder(data: {
-  sortOrder: number;
-  startAt: string | null;
-  endAt: string | null;
-}): string | null {
-  if (!Number.isInteger(data.sortOrder)) return 'invalid sortOrder';
-  if (data.startAt && Number.isNaN(Date.parse(data.startAt))) return 'invalid startAt';
-  if (data.endAt && Number.isNaN(Date.parse(data.endAt))) return 'invalid endAt';
-  if (data.startAt && data.endAt && Date.parse(data.startAt) >= Date.parse(data.endAt)) {
-    return 'startAt must be before endAt';
-  }
-  return null;
-}
-
 export function validateCreateAdCreative(data: CreateAdCreativeData): string | null {
   if (!isAdSlot(data.slot)) return 'invalid slot';
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  const scheduleError = validateScheduleAndOrder(data);
-  if (scheduleError) return scheduleError;
   const countryError = validateTargetCountry(data.targetCountry);
   if (countryError) return countryError;
   return validatePayloadForKind(kindForSlot(data.slot), data.payload);
@@ -120,8 +119,6 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
 export function validateUpdateAdCreative(kind: AdKind, data: UpdateAdCreativeData): string | null {
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  const scheduleError = validateScheduleAndOrder(data);
-  if (scheduleError) return scheduleError;
   const countryError = validateTargetCountry(data.targetCountry);
   if (countryError) return countryError;
   return validatePayloadForKind(kind, data.payload);

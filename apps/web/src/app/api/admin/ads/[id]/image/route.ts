@@ -19,10 +19,19 @@ import {
 } from './image-validation';
 
 /**
- * Long-edge cap for the native-card avatar. It renders at 32px (2× DPR = 64),
- * but we allow a little headroom for any future larger placement.
+ * Long-edge resize caps per upload target. The avatar renders small (32px, 2×
+ * DPR = 64); the thumbnail fills the card's board slot, so it gets more room.
  */
-const AVATAR_MAX_LONG_EDGE = 256;
+const MAX_LONG_EDGE: Record<ImageTarget, number> = {
+  avatar: 256,
+  thumbnail: 512,
+};
+
+type ImageTarget = 'avatar' | 'thumbnail';
+
+function parseTarget(value: FormDataEntryValue | null): ImageTarget {
+  return value === 'thumbnail' ? 'thumbnail' : 'avatar';
+}
 
 async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
   const auth = await requireAdmin();
@@ -56,7 +65,9 @@ async function parseAndValidateFile(request: Request) {
     return { error: NextResponse.json({ error: 'invalid_file_type' }, { status: 400 }) } as const;
   }
 
-  return { file, buffer } as const;
+  const target = parseTarget(formData.get('target'));
+
+  return { file, buffer, target } as const;
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -89,16 +100,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const fileResult = await parseAndValidateFile(request);
   if ('error' in fileResult) return fileResult.error;
-  const { file, buffer } = fileResult;
+  const { file, buffer, target } = fileResult;
 
+  const maxEdge = MAX_LONG_EDGE[target];
   let processed: Buffer;
   try {
     processed = await sharp(Buffer.from(buffer), { failOn: 'error', pages: 1 })
       .rotate()
-      .resize(AVATAR_MAX_LONG_EDGE, AVATAR_MAX_LONG_EDGE, {
-        fit: 'inside',
-        withoutEnlargement: true,
-      })
+      .resize(maxEdge, maxEdge, { fit: 'inside', withoutEnlargement: true })
       .toBuffer();
   } catch {
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
@@ -117,15 +126,34 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const { data: urlData } = supabase.storage.from(AD_CREATIVES_BUCKET).getPublicUrl(storagePath);
-  const previousPath = storagePathFromPublicUrl(row.payload.avatarImagePath ?? '');
+
+  // The field this upload replaces, and the previous image it points at (for
+  // cleanup), depend on the target.
+  const currentThumb = row.payload.thumbnail;
+  const previousUrl =
+    target === 'thumbnail'
+      ? currentThumb?.type === 'image'
+        ? currentThumb.imagePath
+        : ''
+      : (row.payload.avatarImagePath ?? '');
+  const previousPath = storagePathFromPublicUrl(previousUrl);
+
+  const nextPayload =
+    target === 'thumbnail'
+      ? {
+          ...row.payload,
+          thumbnail: {
+            type: 'image' as const,
+            imagePath: urlData.publicUrl,
+            alt: currentThumb?.type === 'image' ? currentThumb.alt : '',
+          },
+        }
+      : { ...row.payload, avatarImagePath: urlData.publicUrl };
 
   try {
     await db
       .update(adCreatives)
-      .set({
-        payload: { ...row.payload, avatarImagePath: urlData.publicUrl },
-        updatedAt: new Date(),
-      })
+      .set({ payload: nextPayload, updatedAt: new Date() })
       .where(eq(adCreatives.id, id));
   } catch {
     // DB update failed after upload — remove the just-uploaded orphan file.
@@ -133,13 +161,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'update_failed' }, { status: 500 });
   }
 
-  // Best-effort: drop the previous avatar now that the row points at the new one.
+  // Best-effort: drop the previous image now that the row points at the new one.
   if (previousPath && previousPath !== storagePath) {
     const { error } = await supabase.storage.from(AD_CREATIVES_BUCKET).remove([previousPath]);
     if (error) {
-      console.warn('ad-creatives: failed to remove replaced avatar', previousPath, error);
+      console.warn('ad-creatives: failed to remove replaced image', previousPath, error);
     }
   }
 
-  return NextResponse.json({ avatarImagePath: urlData.publicUrl }, { status: 200 });
+  return NextResponse.json({ imagePath: urlData.publicUrl }, { status: 200 });
 }

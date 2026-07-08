@@ -10,16 +10,6 @@ import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-/**
- * Ruy Lopez after 3. Bb5 — a fixed, recognizable opening position chosen so
- * a future opening-book affiliate link (Amazon / Awin) has a natural,
- * on-topic board behind it. Hardcoded rather than derived via
- * `@blindfold-chess/features/chess-core` to keep chess.js out of the client
- * bundle for what is otherwise a static thumbnail (see `BoardThumbnail`'s
- * own rationale).
- */
-const RUY_LOPEZ_FEN = 'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3';
-
 type Props = {
   /** The creative to render (title/description/avatar/href), from the DB. */
   creative: NativeAdView;
@@ -55,11 +45,22 @@ export function NativeAdCard({ creative, locale, variant = 'feed' }: Props) {
       locale={locale}
       variant={variant}
       thumbnail={
-        <BoardThumbnail
-          fen={RUY_LOPEZ_FEN}
-          className="w-full h-full"
-          boardTheme={preferences.boardTheme}
-        />
+        creative.thumbnail.type === 'image' ? (
+          <Image
+            src={creative.thumbnail.imagePath}
+            alt={creative.thumbnail.alt}
+            width={96}
+            height={96}
+            className="w-full h-full object-cover"
+            unoptimized
+          />
+        ) : (
+          <BoardThumbnail
+            fen={creative.thumbnail.fen}
+            className="w-full h-full"
+            boardTheme={preferences.boardTheme}
+          />
+        )
       }
       author={
         <div className="flex items-start gap-3">

@@ -14,12 +14,6 @@ import { adCreatives, db } from '@/lib/db';
 
 type Props = { params: Promise<{ slot: string; id: string }> };
 
-/** DB timestamp → `datetime-local` input value (empty when null). */
-function toDatetimeLocal(date: Date | null): string {
-  if (!date) return '';
-  return new Date(date).toISOString().slice(0, 16);
-}
-
 export default async function EditCreativePage({ params }: Props) {
   const { slot, id } = await params;
   if (!isAdSlot(slot)) notFound();
@@ -33,9 +27,6 @@ export default async function EditCreativePage({ params }: Props) {
   const common: CommonCreativeInitial = {
     href: row.href,
     isActive: row.isActive,
-    sortOrder: row.sortOrder,
-    startAt: toDatetimeLocal(row.startAt),
-    endAt: toDatetimeLocal(row.endAt),
     targetCountry: row.targetCountry,
   };
 

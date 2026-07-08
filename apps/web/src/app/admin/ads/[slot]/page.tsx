@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -9,7 +8,8 @@ import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
 import { AdminPageHeader } from '../../_components/AdminPageHeader';
-import { CreativeDeleteButton } from '../_components/CreativeDeleteButton';
+import { SlotCreativeList } from '../_components/SlotCreativeList';
+import type { SlotCreativeRow } from '../_components/SlotCreativeList';
 
 type Props = { params: Promise<{ slot: string }> };
 
@@ -18,13 +18,36 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
   if (!isAdSlot(slot)) notFound();
 
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' });
+  // Already ordered by (slot, sort_order) — the row order is the display order.
   const creatives = (await getAllAdCreatives()).filter((c) => c.slot === slot);
 
-  const deleteLabels = {
-    delete: t('delete'),
-    deleting: t('deleting'),
-    confirm: t('deleteConfirm'),
-  };
+  const rows: SlotCreativeRow[] = creatives.map((c) => {
+    if (isBannerPayload(c.payload)) {
+      return {
+        id: c.id,
+        isActive: c.isActive,
+        targetCountry: c.targetCountry,
+        summary: c.payload.alt,
+        imageUrl: c.payload.imagePath,
+      };
+    }
+    if (isNativeCardPayload(c.payload)) {
+      return {
+        id: c.id,
+        isActive: c.isActive,
+        targetCountry: c.targetCountry,
+        summary: c.payload.title,
+        imageUrl: c.payload.thumbnail?.type === 'image' ? c.payload.thumbnail.imagePath : null,
+      };
+    }
+    return {
+      id: c.id,
+      isActive: c.isActive,
+      targetCountry: c.targetCountry,
+      summary: '',
+      imageUrl: null,
+    };
+  });
 
   return (
     <div>
@@ -44,69 +67,21 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
         {t('kind')}: <AdminBadge variant="neutral">{kindForSlot(slot)}</AdminBadge>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead className="bg-accent">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium">{t('summary')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('sortOrder')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('targetCountry')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('isActive')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('actions')}</th>
-            </tr>
-          </thead>
-          <tbody className="bg-card">
-            {creatives.map((creative) => (
-              <tr key={creative.id} className="border-t border-border">
-                <td className="px-4 py-3">
-                  {isBannerPayload(creative.payload) ? (
-                    <Image
-                      src={creative.payload.imagePath}
-                      alt={creative.payload.alt}
-                      width={64}
-                      height={64}
-                      className="rounded object-cover"
-                    />
-                  ) : isNativeCardPayload(creative.payload) ? (
-                    <span className="max-w-[240px] truncate inline-block">
-                      {creative.payload.title || '—'}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{creative.sortOrder}</td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {creative.targetCountry ?? '🌐'}
-                </td>
-                <td className="px-4 py-3">
-                  <AdminBadge variant={creative.isActive ? 'success' : 'danger'}>
-                    {creative.isActive ? t('active') : t('inactive')}
-                  </AdminBadge>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/admin/ads/${slot}/${creative.id}/edit`}
-                      className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
-                    >
-                      {t('edit')}
-                    </Link>
-                    <CreativeDeleteButton id={creative.id} labels={deleteLabels} />
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {creatives.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  {t('noBanners')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <SlotCreativeList
+        slot={slot}
+        rows={rows}
+        editHrefBase={`/admin/ads/${slot}`}
+        labels={{
+          active: t('active'),
+          inactive: t('inactive'),
+          edit: t('edit'),
+          delete: t('delete'),
+          deleting: t('deleting'),
+          confirm: t('deleteConfirm'),
+          reorderHint: t('reorderHint'),
+          empty: t('noBanners'),
+        }}
+      />
     </div>
   );
 }

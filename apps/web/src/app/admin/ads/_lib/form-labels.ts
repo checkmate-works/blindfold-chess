@@ -4,9 +4,6 @@ export type AdCreativeFormLabels = {
   href: string;
   hrefPlaceholder: string;
   isActive: string;
-  sortOrder: string;
-  startAt: string;
-  endAt: string;
   imagePath: string;
   imagePathPlaceholder: string;
   alt: string;
@@ -18,6 +15,15 @@ export type AdCreativeFormLabels = {
   avatarUpload: string;
   avatarUploading: string;
   avatarHintCreate: string;
+  thumbnail: string;
+  thumbnailBoard: string;
+  thumbnailImage: string;
+  thumbnailFen: string;
+  thumbnailFenPlaceholder: string;
+  thumbnailImageUpload: string;
+  thumbnailImageUploading: string;
+  thumbnailImageHintCreate: string;
+  thumbnailAlt: string;
   title: string;
   description: string;
   cardCopyHint: string;
@@ -36,9 +42,6 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     href: t('href'),
     hrefPlaceholder: t('hrefPlaceholder'),
     isActive: t('isActive'),
-    sortOrder: t('sortOrder'),
-    startAt: t('startAt'),
-    endAt: t('endAt'),
     imagePath: t('imagePath'),
     imagePathPlaceholder: t('imagePathPlaceholder'),
     alt: t('alt'),
@@ -50,6 +53,15 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     avatarUpload: t('avatarUpload'),
     avatarUploading: t('avatarUploading'),
     avatarHintCreate: t('avatarHintCreate'),
+    thumbnail: t('thumbnail'),
+    thumbnailBoard: t('thumbnailBoard'),
+    thumbnailImage: t('thumbnailImage'),
+    thumbnailFen: t('thumbnailFen'),
+    thumbnailFenPlaceholder: t('thumbnailFenPlaceholder'),
+    thumbnailImageUpload: t('thumbnailImageUpload'),
+    thumbnailImageUploading: t('thumbnailImageUploading'),
+    thumbnailImageHintCreate: t('thumbnailImageHintCreate'),
+    thumbnailAlt: t('thumbnailAlt'),
     title: t('cardTitle'),
     description: t('cardDescription'),
     cardCopyHint: t('cardCopyHint'),

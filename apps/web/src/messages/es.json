@@ -4142,9 +4142,6 @@
       "altPlaceholder": "Publicidad",
       "width": "Ancho",
       "height": "Alto",
-      "sortOrder": "Orden",
-      "startAt": "Inicio",
-      "endAt": "Fin",
       "create": "Crear",
       "creating": "Creando...",
       "kind": "Tipo",
@@ -4162,7 +4159,17 @@
       "cardDescription": "Descripción",
       "cardCopyHint": "Escribe en el idioma del país de destino (inglés si es global).",
       "targetCountry": "País de destino",
-      "targetCountryHint": "Dejar vacío para segmentar todos los países."
+      "targetCountryHint": "Dejar vacío para segmentar todos los países.",
+      "reorderHint": "Arrastra para reordenar.",
+      "thumbnail": "Miniatura",
+      "thumbnailBoard": "Tablero",
+      "thumbnailImage": "Imagen",
+      "thumbnailFen": "Posición del tablero (FEN)",
+      "thumbnailFenPlaceholder": "Cadena FEN",
+      "thumbnailImageUpload": "Subir imagen",
+      "thumbnailImageUploading": "Subiendo...",
+      "thumbnailImageHintCreate": "Guarda primero y luego sube una imagen de miniatura en la pantalla de edición.",
+      "thumbnailAlt": "Texto alternativo de la miniatura"
     },
     "coins": {
       "title": "Monedas",

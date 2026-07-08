@@ -14,9 +14,6 @@ type Props = { params: Promise<{ slot: string }> };
 const EMPTY_COMMON: CommonCreativeInitial = {
   href: '',
   isActive: true,
-  sortOrder: 0,
-  startAt: '',
-  endAt: '',
   targetCountry: null,
 };
 

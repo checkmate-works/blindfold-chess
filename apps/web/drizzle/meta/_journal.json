@@ -414,6 +414,13 @@
       "when": 1783402545287,
       "tag": "20260707053545_add_target_country_to_ad_creatives",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1783497209667,
+      "tag": "20260708075329_drop_ad_creatives_schedule",
+      "breakpoints": true
     }
   ]
 }

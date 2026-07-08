@@ -2,6 +2,8 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 
+import { eq, sql } from 'drizzle-orm';
+
 import { AD_CREATIVES_CACHE_TAG } from '@/lib/ads/ad';
 import { kindForSlot } from '@/lib/ads/registry';
 import type { AdSlot } from '@/lib/ads/registry';
@@ -20,6 +22,15 @@ export async function createAdCreative(data: CreateAdCreativeData): Promise<Crea
   }
 
   try {
+    // Append to the end of the slot's list; order is managed by drag-and-drop
+    // on the slot page thereafter.
+    const [{ nextOrder }] = await db
+      .select({
+        nextOrder: sql<number>`coalesce(max(${adCreatives.sortOrder}), -1) + 1`,
+      })
+      .from(adCreatives)
+      .where(eq(adCreatives.slot, data.slot));
+
     const [inserted] = await db
       .insert(adCreatives)
       .values({
@@ -27,9 +38,7 @@ export async function createAdCreative(data: CreateAdCreativeData): Promise<Crea
         slot: data.slot,
         href: data.href,
         isActive: data.isActive,
-        sortOrder: data.sortOrder,
-        startAt: data.startAt ? new Date(data.startAt) : null,
-        endAt: data.endAt ? new Date(data.endAt) : null,
+        sortOrder: nextOrder,
         targetCountry: data.targetCountry,
         payload: data.payload,
       })

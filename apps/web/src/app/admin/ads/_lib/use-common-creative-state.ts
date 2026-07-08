@@ -6,9 +6,6 @@ import { useState } from 'react';
 export type CommonCreativeInitial = {
   href: string;
   isActive: boolean;
-  sortOrder: number;
-  startAt: string;
-  endAt: string;
   targetCountry: string | null;
 };
 
@@ -16,9 +13,6 @@ export type CommonCreativeInitial = {
 export type CommonCreativeFields = {
   href: string;
   isActive: boolean;
-  sortOrder: number;
-  startAt: string | null;
-  endAt: string | null;
   targetCountry: string | null;
 };
 
@@ -29,24 +23,19 @@ function parseCountry(text: string): string | null {
 }
 
 /**
- * Owns the fields common to every creative kind (href, active, sort order,
- * schedule, country targeting), so the per-kind forms only manage their own
- * payload fields. `toFields()` serializes them for the Server Actions.
+ * Owns the fields common to every creative kind (href, active, country
+ * targeting), so the per-kind forms only manage their own payload fields.
+ * `toFields()` serializes them for the Server Actions. Sort order is set by
+ * drag-and-drop on the slot list, not the form; there is no schedule.
  */
 export function useCommonCreativeState(initial: CommonCreativeInitial) {
   const [href, setHref] = useState(initial.href);
   const [isActive, setIsActive] = useState(initial.isActive);
-  const [sortOrder, setSortOrder] = useState(initial.sortOrder);
-  const [startAt, setStartAt] = useState(initial.startAt);
-  const [endAt, setEndAt] = useState(initial.endAt);
   const [countryText, setCountryText] = useState(initial.targetCountry ?? '');
 
   const toFields = (): CommonCreativeFields => ({
     href,
     isActive,
-    sortOrder,
-    startAt: startAt || null,
-    endAt: endAt || null,
     targetCountry: parseCountry(countryText),
   });
 
@@ -55,12 +44,6 @@ export function useCommonCreativeState(initial: CommonCreativeInitial) {
     setHref,
     isActive,
     setIsActive,
-    sortOrder,
-    setSortOrder,
-    startAt,
-    setStartAt,
-    endAt,
-    setEndAt,
     countryText,
     setCountryText,
     toFields,

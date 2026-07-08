@@ -1,13 +1,14 @@
 import { unstable_cache } from 'next/cache';
 
-import { and, asc, eq, gt, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 
 import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { adCreatives, db } from '@/lib/db';
 import { hasActiveGrant } from '@/lib/users/user-grants';
 
 import { filterByCountry } from './country';
-import { isNativeCardPayload } from './payload';
+import type { NativeCardThumbnail } from './payload';
+import { isNativeCardPayload, resolveNativeThumbnail } from './payload';
 import type { AdKind, AdSlot } from './registry';
 
 /** Cache tag invalidated by every admin creative mutation. */
@@ -52,20 +53,14 @@ export type NativeAdView = {
   avatarAlt: string;
   title: string;
   description: string;
+  thumbnail: NativeCardThumbnail;
 };
 
 async function queryActiveCreatives(slot: string) {
   return db
     .select()
     .from(adCreatives)
-    .where(
-      and(
-        eq(adCreatives.slot, slot),
-        eq(adCreatives.isActive, true),
-        or(isNull(adCreatives.startAt), lte(adCreatives.startAt, sql`now()`)),
-        or(isNull(adCreatives.endAt), gt(adCreatives.endAt, sql`now()`))
-      )
-    )
+    .where(and(eq(adCreatives.slot, slot), eq(adCreatives.isActive, true)))
     .orderBy(asc(adCreatives.sortOrder), asc(adCreatives.createdAt));
 }
 
@@ -136,6 +131,7 @@ export async function getNativeAdCreatives(
         avatarAlt: c.payload.avatarAlt,
         title: c.payload.title,
         description: c.payload.description,
+        thumbnail: resolveNativeThumbnail(c.payload),
       },
     ];
   });

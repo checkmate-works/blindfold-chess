@@ -4149,9 +4149,6 @@
       "altPlaceholder": "広告",
       "width": "幅",
       "height": "高さ",
-      "sortOrder": "表示順",
-      "startAt": "開始日時",
-      "endAt": "終了日時",
       "create": "作成",
       "creating": "作成中...",
       "kind": "種別",
@@ -4169,7 +4166,17 @@
       "cardDescription": "説明",
       "cardCopyHint": "対象国の言語で記載（全世界対象なら英語）。",
       "targetCountry": "配信対象の国",
-      "targetCountryHint": "未選択で全世界に配信。"
+      "targetCountryHint": "未選択で全世界に配信。",
+      "reorderHint": "ドラッグで並べ替え。",
+      "thumbnail": "サムネイル",
+      "thumbnailBoard": "盤面",
+      "thumbnailImage": "画像",
+      "thumbnailFen": "盤面（FEN）",
+      "thumbnailFenPlaceholder": "FEN文字列",
+      "thumbnailImageUpload": "画像をアップロード",
+      "thumbnailImageUploading": "アップロード中...",
+      "thumbnailImageHintCreate": "先に保存してから、編集画面でサムネイル画像をアップロードしてください。",
+      "thumbnailAlt": "サムネイルの代替テキスト"
     },
     "coins": {
       "title": "コイン",

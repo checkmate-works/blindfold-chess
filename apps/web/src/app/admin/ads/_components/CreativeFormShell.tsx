@@ -59,45 +59,16 @@ export function CreativeFormShell({
 
         {children}
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label={labels.sortOrder} htmlFor="sortOrder">
-            <Input
-              id="sortOrder"
-              type="number"
-              value={common.sortOrder}
-              onChange={(e) => common.setSortOrder(Number(e.target.value))}
+        <div className="flex items-center pb-2">
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={common.isActive}
+              onChange={(e) => common.setIsActive(e.target.checked)}
+              className="h-4 w-4"
             />
-          </Field>
-          <div className="flex items-end pb-2">
-            <label className="flex items-center gap-2 text-sm font-medium">
-              <input
-                type="checkbox"
-                checked={common.isActive}
-                onChange={(e) => common.setIsActive(e.target.checked)}
-                className="h-4 w-4"
-              />
-              {labels.isActive}
-            </label>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field label={labels.startAt} htmlFor="startAt">
-            <Input
-              id="startAt"
-              type="datetime-local"
-              value={common.startAt}
-              onChange={(e) => common.setStartAt(e.target.value)}
-            />
-          </Field>
-          <Field label={labels.endAt} htmlFor="endAt">
-            <Input
-              id="endAt"
-              type="datetime-local"
-              value={common.endAt}
-              onChange={(e) => common.setEndAt(e.target.value)}
-            />
-          </Field>
+            {labels.isActive}
+          </label>
         </div>
 
         <Field
