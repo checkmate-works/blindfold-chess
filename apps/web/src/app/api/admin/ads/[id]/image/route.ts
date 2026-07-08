@@ -6,6 +6,7 @@ import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '@/app/admin/ads/_
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
+import type { NativeCardPayload } from '@/lib/ads/payload';
 import { DEFAULT_NATIVE_THUMBNAIL_FEN, isNativeCardPayload } from '@/lib/ads/payload';
 import { checkMutationOrigin } from '@/lib/api-mutation-guard';
 import { adCreatives, db } from '@/lib/db';
@@ -19,6 +20,8 @@ import {
   validateBinarySignature,
 } from './image-validation';
 
+type ImageTarget = 'avatar' | 'thumbnail';
+
 /**
  * Long-edge resize caps per upload target. The avatar renders small (32px, 2×
  * DPR = 64); the thumbnail fills the card's board slot, so it gets more room.
@@ -28,10 +31,9 @@ const MAX_LONG_EDGE: Record<ImageTarget, number> = {
   thumbnail: 512,
 };
 
-type ImageTarget = 'avatar' | 'thumbnail';
-
-function parseTarget(value: FormDataEntryValue | null): ImageTarget {
-  return value === 'thumbnail' ? 'thumbnail' : 'avatar';
+/** Strict: an unrecognized target must 400, not silently overwrite the avatar. */
+function parseTarget(value: unknown): ImageTarget | null {
+  return value === 'avatar' || value === 'thumbnail' ? value : null;
 }
 
 async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
@@ -40,6 +42,55 @@ async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
   return auth;
+}
+
+/**
+ * The creative's payload, narrowed to native-card — or the error response.
+ * Only native-card creatives have uploaded images; banner images are managed
+ * as plain paths, not uploads.
+ */
+async function loadNativeCardPayload(id: string): Promise<NextResponse | NativeCardPayload> {
+  const [row] = await db
+    .select({ payload: adCreatives.payload })
+    .from(adCreatives)
+    .where(eq(adCreatives.id, id))
+    .limit(1);
+  if (!row) {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  }
+  if (!isNativeCardPayload(row.payload)) {
+    return NextResponse.json({ error: 'unsupported_kind' }, { status: 400 });
+  }
+  return row.payload;
+}
+
+/** The image URL the target currently points at (`''` when unset). */
+function currentImageUrl(payload: NativeCardPayload, target: ImageTarget): string {
+  return target === 'thumbnail'
+    ? (payload.thumbnail?.imagePath ?? '')
+    : (payload.avatarImagePath ?? '');
+}
+
+/**
+ * The payload with the target's image replaced, or cleared when `imagePath`
+ * is null. The thumbnail keeps its board `fen` either way — the uploaded
+ * image is an override on top of it.
+ */
+function withTargetImage(
+  payload: NativeCardPayload,
+  target: ImageTarget,
+  imagePath: string | null
+): NativeCardPayload {
+  if (target === 'avatar') {
+    return { ...payload, avatarImagePath: imagePath };
+  }
+  const fen = payload.thumbnail?.fen ?? DEFAULT_NATIVE_THUMBNAIL_FEN;
+  return {
+    ...payload,
+    thumbnail: imagePath
+      ? { fen, imagePath, imageAlt: payload.thumbnail?.imageAlt ?? '' }
+      : { fen },
+  };
 }
 
 async function parseAndValidateFile(request: Request) {
@@ -67,6 +118,9 @@ async function parseAndValidateFile(request: Request) {
   }
 
   const target = parseTarget(formData.get('target'));
+  if (!target) {
+    return { error: NextResponse.json({ error: 'invalid_target' }, { status: 400 }) } as const;
+  }
 
   return { file, buffer, target } as const;
 }
@@ -78,26 +132,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const auth = await authenticateAdmin();
   if (auth instanceof NextResponse) return auth;
 
-  const rateLimitResult = await checkRateLimit(auth.userId, RATE_LIMITS.uploadArticleImage);
+  const rateLimitResult = await checkRateLimit(auth.userId, RATE_LIMITS.uploadAdImage);
   if ('error' in rateLimitResult) {
     return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
   }
 
   const { id } = await params;
 
-  const [row] = await db
-    .select({ payload: adCreatives.payload })
-    .from(adCreatives)
-    .where(eq(adCreatives.id, id))
-    .limit(1);
-  if (!row) {
-    return NextResponse.json({ error: 'not_found' }, { status: 404 });
-  }
-  if (!isNativeCardPayload(row.payload)) {
-    // Only native-card creatives have an avatar. Banner images are managed as
-    // plain paths, not uploads.
-    return NextResponse.json({ error: 'unsupported_kind' }, { status: 400 });
-  }
+  const payload = await loadNativeCardPayload(id);
+  if (payload instanceof NextResponse) return payload;
 
   const fileResult = await parseAndValidateFile(request);
   if ('error' in fileResult) return fileResult.error;
@@ -128,25 +171,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { data: urlData } = supabase.storage.from(AD_CREATIVES_BUCKET).getPublicUrl(storagePath);
 
-  // The field this upload replaces, and the previous image it points at (for
-  // cleanup), depend on the target. The thumbnail keeps its board `fen`; the
-  // uploaded image is an override on top of it.
-  const currentThumb = row.payload.thumbnail;
-  const previousUrl =
-    target === 'thumbnail' ? (currentThumb?.imagePath ?? '') : (row.payload.avatarImagePath ?? '');
-  const previousPath = storagePathFromPublicUrl(previousUrl);
-
-  const nextPayload =
-    target === 'thumbnail'
-      ? {
-          ...row.payload,
-          thumbnail: {
-            fen: currentThumb?.fen ?? DEFAULT_NATIVE_THUMBNAIL_FEN,
-            imagePath: urlData.publicUrl,
-            imageAlt: currentThumb?.imageAlt ?? '',
-          },
-        }
-      : { ...row.payload, avatarImagePath: urlData.publicUrl };
+  // The previous image this upload replaces, for cleanup after the row flips.
+  const previousPath = storagePathFromPublicUrl(currentImageUrl(payload, target));
+  const nextPayload = withTargetImage(payload, target, urlData.publicUrl);
 
   try {
     await db
@@ -186,32 +213,18 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
   const { id } = await params;
   const target = parseTarget(new URL(request.url).searchParams.get('target'));
-
-  const [row] = await db
-    .select({ payload: adCreatives.payload })
-    .from(adCreatives)
-    .where(eq(adCreatives.id, id))
-    .limit(1);
-  if (!row) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-  if (!isNativeCardPayload(row.payload)) {
-    return NextResponse.json({ error: 'unsupported_kind' }, { status: 400 });
+  if (!target) {
+    return NextResponse.json({ error: 'invalid_target' }, { status: 400 });
   }
 
-  const currentThumb = row.payload.thumbnail;
-  const removedUrl =
-    target === 'thumbnail' ? (currentThumb?.imagePath ?? '') : (row.payload.avatarImagePath ?? '');
+  const payload = await loadNativeCardPayload(id);
+  if (payload instanceof NextResponse) return payload;
 
-  const nextPayload =
-    target === 'thumbnail'
-      ? {
-          ...row.payload,
-          thumbnail: { fen: currentThumb?.fen ?? DEFAULT_NATIVE_THUMBNAIL_FEN },
-        }
-      : { ...row.payload, avatarImagePath: null };
+  const removedUrl = currentImageUrl(payload, target);
 
   await db
     .update(adCreatives)
-    .set({ payload: nextPayload, updatedAt: new Date() })
+    .set({ payload: withTargetImage(payload, target, null), updatedAt: new Date() })
     .where(eq(adCreatives.id, id));
 
   revalidateAdCreatives();
