@@ -3527,7 +3527,20 @@
       "default": "コンテンツが評価され、{count} コインを獲得しました"
     },
     "positionEditRequestSubmittedMessage": "{actor}さんがあなたの局面にチャンクを提案しました",
-    "positionEditRequestAcceptedMessage": "{actor}さんがあなたのチャンク提案を承認しました"
+    "positionEditRequestAcceptedMessage": "{actor}さんがあなたのチャンク提案を承認しました",
+    "settings": {
+      "button": "設定",
+      "title": "通知設定",
+      "description": "オフにした種類の通知は届かなくなります。",
+      "types": {
+        "new_post": "新しい投稿",
+        "new_position": "新しい局面",
+        "new_chunk_draft": "チャンク下書きの追加",
+        "chunk_published": "チャンクの公開",
+        "new_game": "対局の公開",
+        "new_comment_on_topic": "投稿へのコメント"
+      }
+    }
   },
   "deleteAccount": {
     "title": "退会",

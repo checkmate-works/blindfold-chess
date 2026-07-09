@@ -3521,7 +3521,20 @@
       "default": "Le gustó tu contenido: ganaste {count, plural, one {# moneda} other {# monedas}}"
     },
     "positionEditRequestSubmittedMessage": "{actor} sugirió chunks para tu posición",
-    "positionEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de chunks"
+    "positionEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de chunks",
+    "settings": {
+      "button": "Configuración",
+      "title": "Configuración de notificaciones",
+      "description": "Los tipos desactivados dejarán de enviarte notificaciones.",
+      "types": {
+        "new_post": "Nuevas publicaciones",
+        "new_position": "Nuevas posiciones",
+        "new_chunk_draft": "Nuevos borradores de chunk",
+        "chunk_published": "Chunk publicado",
+        "new_game": "Nuevas partidas",
+        "new_comment_on_topic": "Comentarios en tus publicaciones"
+      }
+    }
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",

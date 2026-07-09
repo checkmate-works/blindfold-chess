@@ -3521,7 +3521,20 @@
       "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
     },
     "positionEditRequestSubmittedMessage": "{actor} sugeriu chunks para a sua posição",
-    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de chunks"
+    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de chunks",
+    "settings": {
+      "button": "Configurações",
+      "title": "Configurações de notificação",
+      "description": "Os tipos desativados deixarão de enviar notificações para você.",
+      "types": {
+        "new_post": "Novas publicações",
+        "new_position": "Novas posições",
+        "new_chunk_draft": "Novos rascunhos de chunk",
+        "chunk_published": "Chunk publicado",
+        "new_game": "Novas partidas",
+        "new_comment_on_topic": "Comentários nas suas publicações"
+      }
+    }
   },
   "deleteAccount": {
     "title": "Excluir Conta",
