@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 let mockFollowers: { followerId: string }[] = [];
+let mockMutedRows: { id: string }[] = [];
 
 const mockDbInsertValues = vi.fn();
 
 /**
- * The DB mock needs to handle two distinct query patterns:
+ * The DB mock needs to handle three distinct query patterns:
  * 1. notifyFollowersOfNewPost: db.select().from(userFollows).where() -> returns followers
- * 2. createNotification (dedup check): db.select().from(notifications).where().limit() -> returns []
+ * 2. createNotification (mute check): db.select().from(notificationMutes).where().limit() -> returns mockMutedRows
+ * 3. createNotification (dedup check): db.select().from(notifications).where().limit() -> returns []
  *
  * We track which table is queried via the from() argument.
  */
@@ -21,6 +23,9 @@ vi.mock('@/lib/db', () => ({
             // If this is a userFollows query (the first select), return followers
             if (table === 'userFollows_table') {
               return Promise.resolve(mockFollowers);
+            }
+            if (table === 'notificationMutes_table') {
+              return { limit: () => Promise.resolve(mockMutedRows) };
             }
             // Otherwise (notifications dedup check), return { limit: () => [] }
             return {
@@ -39,6 +44,7 @@ vi.mock('@/lib/db', () => ({
   },
   notifications: 'notifications_table',
   userFollows: 'userFollows_table',
+  notificationMutes: 'notificationMutes_table',
 }));
 
 vi.mock('server-only', () => ({}));
@@ -47,6 +53,7 @@ vi.mock('drizzle-orm', () => ({
   and: (...args: unknown[]) => args,
   eq: (a: unknown, b: unknown) => [a, b],
   gte: (a: unknown, b: unknown) => [a, b],
+  inArray: (a: unknown, b: unknown) => [a, b],
 }));
 
 const { notifyFollowersOfNewPost, createNotification } = await import('./notification');
@@ -55,6 +62,7 @@ describe('notifyFollowersOfNewPost', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFollowers = [];
+    mockMutedRows = [];
   });
 
   it('should insert a notification for each follower', async () => {
@@ -157,6 +165,7 @@ describe('notifyFollowersOfNewPost', () => {
 describe('createNotification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockMutedRows = [];
   });
 
   it('should not throw when called (fire-and-forget)', () => {
@@ -209,6 +218,33 @@ describe('createNotification', () => {
     await new Promise((r) => setTimeout(r, 0));
 
     expect(mockDbInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('skips the insert when the recipient has muted a mutable notification type', async () => {
+    mockMutedRows = [{ id: 'mute-1' }];
+
+    createNotification({
+      userId: 'user-1',
+      type: 'new_post',
+      targetType: 'topic_post',
+      targetId: 'post-1',
+    });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('does not consult mutes for a non-mutable notification type', async () => {
+    // If the mutability check were missing, this row would incorrectly
+    // suppress the insert below.
+    mockMutedRows = [{ id: 'mute-1' }];
+
+    createNotification({ userId: 'user-1', type: 'follow', actorId: 'actor-1' });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).toHaveBeenCalledTimes(1);
   });
 });
 
