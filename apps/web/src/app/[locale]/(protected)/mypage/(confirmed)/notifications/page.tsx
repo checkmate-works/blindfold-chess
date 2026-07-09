@@ -3,12 +3,12 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { eq } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { FiSettings } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 
 import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
-import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -62,9 +62,11 @@ export default async function NotificationsPage({ params, searchParams }: Props)
         <Link
           href="/preferences?tab=notifications"
           locale={locale}
-          className={`text-sm ${TEXT_LINK_CLASSES}`}
+          aria-label={t('settingsLink')}
+          title={t('settingsLink')}
+          className="text-muted-foreground transition-colors hover:text-foreground"
         >
-          {t('settingsLink')}
+          <FiSettings className="h-4 w-4" />
         </Link>
         {unreadCount > 0 && <MarkAllReadButton label={t('markAllAsRead')} />}
       </div>
