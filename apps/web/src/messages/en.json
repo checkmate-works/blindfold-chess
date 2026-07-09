@@ -3528,19 +3528,7 @@
     },
     "positionEditRequestSubmittedMessage": "{actor} suggested chunks for your position",
     "positionEditRequestAcceptedMessage": "{actor} accepted your chunk suggestion",
-    "settings": {
-      "button": "Settings",
-      "title": "Notification settings",
-      "description": "Turned-off types will no longer send you notifications.",
-      "types": {
-        "new_post": "New posts",
-        "new_position": "New positions",
-        "new_chunk_draft": "New chunk drafts",
-        "chunk_published": "Chunk published",
-        "new_game": "New games",
-        "new_comment_on_topic": "Comments on your posts"
-      }
-    }
+    "settingsLink": "Notification settings"
   },
   "deleteAccount": {
     "title": "Delete Account",

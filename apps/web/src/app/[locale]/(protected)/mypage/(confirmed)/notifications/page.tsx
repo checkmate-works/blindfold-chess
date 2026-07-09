@@ -1,17 +1,18 @@
 import { getTranslations } from 'next-intl/server';
 
+import { Link } from '@/i18n/routing';
 import { eq } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { getMutedNotificationTypes } from '@/lib/notifications/mutes';
 
 import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
-import { MarkAllReadButton, NotificationItem, NotificationSettingsButton } from './_components';
+import { MarkAllReadButton, NotificationItem } from './_components';
 import { getNotifications, getUnreadCount } from './_lib/queries';
 
 const searchParamsCache = createSearchParamsCache({
@@ -35,12 +36,8 @@ export default async function NotificationsPage({ params, searchParams }: Props)
 
   const user = await getAuthenticatedUser();
   const { page } = await searchParamsCache.parse(searchParams);
-  const [[{ items, totalPages }, unreadCount, mutedTypes], [profile]] = await Promise.all([
-    Promise.all([
-      getNotifications(user.id, page),
-      getUnreadCount(user.id),
-      getMutedNotificationTypes(user.id),
-    ]),
+  const [[{ items, totalPages }, unreadCount], [profile]] = await Promise.all([
+    Promise.all([getNotifications(user.id, page), getUnreadCount(user.id)]),
     db
       .select({ username: profiles.username })
       .from(profiles)
@@ -62,7 +59,13 @@ export default async function NotificationsPage({ params, searchParams }: Props)
       breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
     >
       <div className="flex items-center justify-between gap-3">
-        <NotificationSettingsButton initialMutedTypes={mutedTypes} />
+        <Link
+          href="/preferences?tab=notifications"
+          locale={locale}
+          className={`text-sm ${TEXT_LINK_CLASSES}`}
+        >
+          {t('settingsLink')}
+        </Link>
         {unreadCount > 0 && <MarkAllReadButton label={t('markAllAsRead')} />}
       </div>
 
