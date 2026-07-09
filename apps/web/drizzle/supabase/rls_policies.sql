@@ -194,6 +194,23 @@ CREATE POLICY "notifications_delete" ON "notifications"
   FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================================================
+-- notification_mutes
+-- =============================================================================
+ALTER TABLE "notification_mutes" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "notification_mutes_select" ON "notification_mutes";
+CREATE POLICY "notification_mutes_select" ON "notification_mutes"
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "notification_mutes_insert" ON "notification_mutes";
+CREATE POLICY "notification_mutes_insert" ON "notification_mutes"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "notification_mutes_delete" ON "notification_mutes";
+CREATE POLICY "notification_mutes_delete" ON "notification_mutes"
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- =============================================================================
 -- chess_openings (master data — public read, service role only write)
 -- =============================================================================
 ALTER TABLE "chess_openings" ENABLE ROW LEVEL SECURITY;

@@ -10,6 +10,7 @@ import {
   jsonb,
   pgTable,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -135,6 +136,47 @@ export const notifications = pgTable(
 
 export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
+
+/**
+ * Per-user notification-type mutes.
+ *
+ * @design One row per (user, type), not a JSON column on `profiles`
+ *
+ * Mirrors `user_follows`: a mute is a fact about a (user, type) pair, so it
+ * gets its own row rather than a JSONB array/bitmask settings blob. This
+ * keeps "is this type muted for this recipient?" a single indexed point
+ * lookup from the {@link createNotification} choke point
+ * (`@/lib/notifications/notification.ts`) instead of a full-row read of a
+ * settings document, and needs no migration if the mutable set changes.
+ *
+ * @design Not every notification `type` is eligible to appear here
+ *
+ * Only the "social feed" types a user opts into by following someone or
+ * posting (new_post, new_position, new_chunk_draft, chunk_published,
+ * new_game, new_comment_on_topic) are mutable. `announcement` and other
+ * transactional/account types (follow, like, reply, *_grant,
+ * achievement_granted, *_edit_request_*) are deliberately excluded from the
+ * settings UI so a user can never accidentally silence something like a
+ * ToS notice. The restriction is enforced by `MUTABLE_NOTIFICATION_TYPES` in
+ * `@/lib/notifications/mutable-types.ts`, not by this table — `type` stays a
+ * plain varchar so extending the mutable set later is app-code-only.
+ */
+export const notificationMutes = pgTable(
+  'notification_mutes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    type: varchar('type', { length: 50 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique('uq_notification_mute').on(table.userId, table.type),
+    index('idx_notification_mutes_user').on(table.userId),
+  ]
+);
+
+export type NotificationMute = typeof notificationMutes.$inferSelect;
+export type NewNotificationMute = typeof notificationMutes.$inferInsert;
 
 /**
  * Chess Openings — master data for chess opening families.
