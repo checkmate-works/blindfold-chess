@@ -17,10 +17,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -106,9 +105,7 @@ export default async function ExpLeaderboardPeriodPage({ params }: Props) {
         </Link>
       </div>
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
     </PagePanel>
   );
 }

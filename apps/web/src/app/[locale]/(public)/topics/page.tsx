@@ -3,10 +3,10 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { IS_LOCAL_DEV } from '@/config';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { shouldShowAdsForUser } from '@/lib/ads/ad';
+import { resolveNativeAds } from '@/lib/ads/ad';
+import { FEED_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { createClient } from '@/lib/supabase/server';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
@@ -52,11 +52,10 @@ async function TopicsContent({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [initialFeed, showAdsResult] = await Promise.all([
+  const [initialFeed, { showAds, creatives: nativeAdCreatives }] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id, TOPICS_FEED_ENTITY_TYPES),
-    shouldShowAdsForUser(user?.id ?? null),
+    resolveNativeAds(FEED_NATIVE_AD_SLOT, user?.id ?? null),
   ]);
-  const showAds = IS_LOCAL_DEV || showAdsResult;
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
@@ -76,6 +75,7 @@ async function TopicsContent({ params }: Props) {
           showMoreLabel={t('showMore')}
           justNowLabel={tSquares('justNow')}
           showAds={showAds}
+          nativeAdCreatives={nativeAdCreatives}
           scope="topics"
           variant="card"
         />

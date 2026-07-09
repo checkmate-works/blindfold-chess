@@ -30,14 +30,14 @@ describe('buildDisplayItems', () => {
   });
 
   it('should return only feed items when showAds is false', () => {
-    const items = createFeedItems(10);
+    const items = createFeedItems(AD_INTERVAL * 2);
     const result = buildDisplayItems(items, false);
 
-    expect(result).toHaveLength(10);
+    expect(result).toHaveLength(AD_INTERVAL * 2);
     expect(result.every((d) => d.type === 'feed')).toBe(true);
   });
 
-  it('should insert an ad after every AD_INTERVAL items', () => {
+  it('should insert an ad after every AD_INTERVAL items when showAds is true', () => {
     const items = createFeedItems(AD_INTERVAL * 3);
     const result = buildDisplayItems(items, true);
 
@@ -54,6 +54,16 @@ describe('buildDisplayItems', () => {
         expect(feedCount % AD_INTERVAL).toBe(0);
       }
     }
+  });
+
+  it('should assign a running 0-based adIndex to each inserted ad', () => {
+    const items = createFeedItems(AD_INTERVAL * 3);
+    const result = buildDisplayItems(items, true);
+
+    const adIndexes = result
+      .filter((d) => d.type === 'ad')
+      .map((d) => (d as { adIndex: number }).adIndex);
+    expect(adIndexes).toEqual([0, 1, 2]);
   });
 
   it('should not insert ads when item count is less than AD_INTERVAL', () => {

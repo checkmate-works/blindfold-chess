@@ -74,6 +74,12 @@ export const RATE_LIMITS = {
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
   uploadArticleImage: { action: 'upload_article_image', maxAttempts: 20, windowMs: 600_000 },
   /**
+   * Per-user limit for ad-creative image uploads (avatar / thumbnail).
+   * Same budget as `uploadArticleImage` (both admin-only) but its own
+   * bucket, so ad and article uploads don't drain each other's counter.
+   */
+  uploadAdImage: { action: 'upload_ad_image', maxAttempts: 20, windowMs: 600_000 },
+  /**
    * Per-user limit for post image uploads. Same window as
    * `uploadArticleImage` (10 minutes) but lower max because post images
    * are user-generated content (vs admin-only articles) and the per-post

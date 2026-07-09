@@ -4,7 +4,7 @@ export type AdSlotKind = 'content-middle' | 'content-bottom' | 'native-ad';
  * Single source of truth for the vertical space each ad slot reserves.
  *
  * Reserving the slot height at SSR — on the server-rendered
- * `.ad-slot-wrapper` (see `AdSenseGuard`) — is what stops AdSense fill from
+ * `.ad-slot-wrapper` (see `AdSlot`) — is what stops AdSense fill from
  * pushing the rest of the page down after hydration. That post-paint shove
  * was the root cause of the mobile CLS regression flagged in Search Console:
  * the `<ins data-ad-format="auto">` starts at height 0 and only grows once

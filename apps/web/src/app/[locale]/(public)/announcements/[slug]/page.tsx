@@ -5,13 +5,12 @@ import { getTranslations } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link, routing } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -111,9 +110,7 @@ export default async function AnnouncementPage({ params }: Props) {
             </Link>
           </div>
 
-          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-          )}
+          <AdSlot slot="content-bottom" />
         </PageLayout>
       );
     }
@@ -142,9 +139,7 @@ export default async function AnnouncementPage({ params }: Props) {
 
       {publishedDate && <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>}
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

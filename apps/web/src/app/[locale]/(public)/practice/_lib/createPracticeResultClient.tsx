@@ -362,8 +362,11 @@ export function createPracticeResultClient(config: ResultClientConfig) {
             locale={locale}
           />
         )}
-        {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-        {adBanner && !adBannerStandard && !renderAfterComplete ? adBanner : null}
+        {/* The middle ad (`adBanner`) is positioned by modules via
+            `renderAfterComplete` above; the bottom ad is rendered here.
+            `ad-slot-wrapper` so the spacer collapses with the ad for ad-free
+            viewers. */}
+        {adBannerStandard && <div className="mt-8 ad-slot-wrapper">{adBannerStandard}</div>}
       </PracticeResultPage>
     );
   }

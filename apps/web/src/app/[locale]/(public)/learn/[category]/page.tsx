@@ -5,7 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/config';
+import { SUPPORTED_LOCALES } from '@/config';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import {
@@ -17,7 +17,7 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -102,9 +102,7 @@ async function LearnCategoryContent({ params }: Props) {
         </ListLinkContainer>
       )}
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

@@ -19,14 +19,14 @@ import 'server-only';
  *     return <>{children}</>;
  *   }
  *
- *   // Consumed by `resolveAdGuard()` which short-circuits to 'hidden'
- *   // when `isNoAdsScope()` returns true.
+ *   // Consumed by `<AdSlot>`, which renders nothing when `isNoAdsScope()`
+ *   // returns true.
  *
  * @design
  * - Using `cache()` from React gives us a per-request memoized function.
  *   The returned object reference is stable within a single request, so
  *   mutating `.value` from a layout is observable by a deeper server
- *   component (like `AdSenseGuard`) in the same request.
+ *   component (like `AdSlot`) in the same request.
  * - Layouts are guaranteed to execute their function body before their
  *   children render, so marking the scope in a layout is reliably visible
  *   to descendant pages.
@@ -40,9 +40,9 @@ const getNoAdsContainer = cache((): { value: boolean } => ({ value: false }));
  * Marks the current request as ad-free.
  *
  * Flow: a layout (e.g., `(no-ads)/layout.tsx`) calls `markNoAdsScope()` →
- * `resolveAdGuard()` (see `src/app/[locale]/_components/AdSense/resolveAdGuard.ts`)
- * short-circuits to `'hidden'` before consulting user / ads-enabled state,
- * so descendant ad slots render nothing.
+ * `<AdSlot>` (see `src/app/[locale]/_components/AdSense/AdSlot.tsx`) checks
+ * `isNoAdsScope()` first and renders nothing, so descendant ad slots never
+ * reach the DOM.
  */
 export function markNoAdsScope(): void {
   getNoAdsContainer().value = true;

@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
@@ -23,7 +22,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -112,9 +111,7 @@ async function SquaresContent({ params, searchParams }: Props) {
 
       <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-      )}
+      <AdSlot slot="content-middle" />
 
       {currentPage === 1 && (
         <>
@@ -123,9 +120,7 @@ async function SquaresContent({ params, searchParams }: Props) {
         </>
       )}
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

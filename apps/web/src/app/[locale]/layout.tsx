@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
+import { DevGeoPicker } from '@/app/_components/DevGeoPicker';
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
@@ -230,6 +231,7 @@ export default async function Layout({
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
+        <DevGeoPicker />
         <StorageAvailabilityProvider>
           <GoogleScripts
             adsensePublisherId={ADSENSE_PUBLISHER_ID}

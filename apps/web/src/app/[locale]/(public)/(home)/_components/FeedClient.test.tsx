@@ -52,16 +52,22 @@ vi.mock('./FeedSkeleton', () => ({
   FeedSkeleton: () => <div data-testid="feed-skeleton">Loading...</div>,
 }));
 
-vi.mock('@/app/[locale]/_components/AdSense', () => ({
-  AdSenseInFeed: ({ slotId }: { slotId: string }) => (
-    <div data-testid="adsense-infeed">{slotId}</div>
+// NativeAdCard pulls in i18n/board-preference context we don't need here.
+// We care about wrapper structure, not ad content, so a trivial stub suffices.
+vi.mock('@/app/[locale]/_components/NativeAdCard', () => ({
+  // Mirror the real component's wrapper contract: it owns `ad-slot-wrapper`
+  // and merges the caller's `className` (the feed's row divider) into it.
+  NativeAdCard: ({ className }: { className?: string }) => (
+    <div className={`ad-slot-wrapper${className ? ` ${className}` : ''}`} data-testid="ad-slot">
+      ad
+    </div>
   ),
 }));
 
-// ResponsiveAdSlot uses a matchMedia-backed hook that jsdom does not implement.
-// We care about wrapper structure, not ad content, so a trivial stub suffices.
+// ResponsiveAdSlot (the AdSense fallback) uses a matchMedia-backed hook jsdom
+// doesn't implement; stub it since these tests exercise wrapper structure.
 vi.mock('./ResponsiveAdSlot', () => ({
-  ResponsiveAdSlot: () => <div data-testid="ad-slot">ad</div>,
+  ResponsiveAdSlot: () => <div data-testid="ad-slot-fallback">adsense</div>,
 }));
 
 // --- Helpers ---
@@ -72,6 +78,18 @@ const defaultProps = {
   showMoreLabel: 'Show more',
   justNowLabel: 'Just now',
   showAds: true,
+  // At least one creative must be present for ad slots to be inserted.
+  nativeAdCreatives: [
+    {
+      id: 'creative-1',
+      href: 'https://example.com',
+      avatarImagePath: null,
+      avatarAlt: 'Ad',
+      title: 'Ad title',
+      description: 'Ad description',
+      thumbnail: { fen: 'startpos' },
+    },
+  ],
 };
 
 function makeTopicPostItem(id: string): FeedItem {

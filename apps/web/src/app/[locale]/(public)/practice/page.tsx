@@ -17,7 +17,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ChallengeCard } from '@/app/_components';
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
+import { SITE_URL } from '@/config';
 
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
@@ -26,7 +26,7 @@ import { BeltRankBadge } from '@/app/[locale]/(public)/practice/_components/Belt
 import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -210,9 +210,7 @@ export default async function PracticePage({ params }: Props) {
           </ListLinkContainer>
         </section>
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
+        <AdSlot slot="content-bottom" />
       </PageLayout>
     </>
   );

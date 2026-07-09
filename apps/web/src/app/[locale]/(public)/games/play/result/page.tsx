@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
@@ -12,7 +11,7 @@ import { getOpeningEntries } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -98,9 +97,7 @@ export default async function ResultPage({ params, searchParams }: Props) {
         />
       </Suspense>
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
+      <AdSlot slot="content-bottom" />
 
       {/* Breadcrumb sits below the content-bottom ad, matching the standard
           PageLayout trailing block (content → ad → divider+breadcrumb). It is

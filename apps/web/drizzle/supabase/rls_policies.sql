@@ -640,10 +640,12 @@ ALTER TABLE "announcements" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "announcements" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
--- ad_banners (admin-only write; deny-by-default)
+-- ad_creatives (admin-only write; deny-by-default)
 -- =============================================================================
-ALTER TABLE "ad_banners" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "ad_banners" FORCE ROW LEVEL SECURITY;
+-- Reads go through server-side Drizzle (BYPASSRLS role), same posture as
+-- articles/positions, so no SELECT policy is defined for anon/authenticated.
+ALTER TABLE "ad_creatives" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ad_creatives" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
 -- articles (admin-only write; deny-by-default)

@@ -28,6 +28,7 @@ const { generateMetadata, Page } = createPositionListPage({
   positionType: 'puzzle',
   replyMetaType: 'position_puzzle',
   sortTranslationKey: 'topics.positionPuzzle.sort',
+  nativeAdSlot: 'puzzle-list-native-ad',
 });
 
 export { generateMetadata };

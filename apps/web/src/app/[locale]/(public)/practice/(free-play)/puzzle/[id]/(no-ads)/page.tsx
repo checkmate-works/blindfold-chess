@@ -1,7 +1,7 @@
 /**
  * This page relies on its sibling `(no-ads)/layout.tsx` to suppress ads:
- * the layout calls `markNoAdsScope()`, which causes `resolveAdGuard()` to
- * short-circuit to `'hidden'` for every AdSense slot rendered here.
+ * the layout calls `markNoAdsScope()`, and every `<AdSlot>` rendered here
+ * checks `isNoAdsScope()` first and renders nothing.
  *
  * Moving this page out of the `(no-ads)/` route group will re-enable ads.
  */

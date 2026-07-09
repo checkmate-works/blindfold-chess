@@ -154,6 +154,15 @@ Stripe-based subscription billing ($1/month ad-free plan). Covers API keys, Prod
 
 See [docs/stripe-setup.md](docs/stripe-setup.md) for setup instructions.
 
+## Ads (first-party + AdSense)
+
+Self-served affiliate creatives with an AdSense fallback, country targeting,
+and a single entitlement-based hide for ad-free viewers. Covers the `AdSlot`
+boundary, the `ad_creatives` model, the native card, and the `/admin/ads`
+management UI.
+
+See [docs/ad-slot-design.md](docs/ad-slot-design.md) for details.
+
 ## Cron Jobs
 
 Monthly leaderboard badges are granted automatically via a Vercel Cron Job.
