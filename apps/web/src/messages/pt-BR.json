@@ -339,7 +339,8 @@
     "tabs": {
       "board": "Partida",
       "controls": "Controles",
-      "appearance": "Aparência"
+      "appearance": "Aparência",
+      "notifications": "Notificações"
     },
     "game": {
       "title": "Configuração do Tabuleiro",
@@ -468,6 +469,18 @@
         "text": "Texto",
         "select": "Lista",
         "button": "Botão"
+      }
+    },
+    "notifications": {
+      "description": "Os tipos desativados deixarão de enviar notificações para você.",
+      "loading": "Carregando…",
+      "types": {
+        "new_post": "Novas publicações",
+        "new_position": "Novas posições",
+        "new_chunk_draft": "Novos rascunhos de chunk",
+        "chunk_published": "Chunk publicado",
+        "new_game": "Novas partidas",
+        "new_comment_on_topic": "Comentários nas suas publicações"
       }
     }
   },

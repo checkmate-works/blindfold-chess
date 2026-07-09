@@ -343,7 +343,8 @@
     "tabs": {
       "board": "Game",
       "controls": "Controls",
-      "appearance": "Appearance"
+      "appearance": "Appearance",
+      "notifications": "Notifications"
     },
     "game": {
       "title": "Board Settings",
@@ -472,6 +473,18 @@
         "text": "Text",
         "select": "List",
         "button": "Button"
+      }
+    },
+    "notifications": {
+      "description": "Turned-off types will no longer send you notifications.",
+      "loading": "Loading…",
+      "types": {
+        "new_post": "New posts",
+        "new_position": "New positions",
+        "new_chunk_draft": "New chunk drafts",
+        "chunk_published": "Chunk published",
+        "new_game": "New games",
+        "new_comment_on_topic": "Comments on your posts"
       }
     }
   },
