@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
+import { FaArrowRight, FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
 import { useAiReplyChip } from '@/app/[locale]/(public)/games/play/_components/AiReplyChip';
 import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
@@ -86,12 +86,6 @@ export function RecallClient({
 }: Props) {
   const t = useTranslations('recall');
 
-  // Recall's ephemeral local preferences (seeded from the saved game's
-  // snapshot, never written back) — see useRecallPreferences.
-  const { preferences, updatePreferences, handlePerGamePrefChange } = useRecallPreferences({
-    gameId,
-  });
-
   const {
     gameProgress,
     boardState,
@@ -108,6 +102,19 @@ export function RecallClient({
     autoOpponent: initialAutoOpponent,
     initialOffset,
     startingFen,
+  });
+
+  // Recall's ephemeral local preferences (seeded from the saved game's
+  // snapshot, never written back) — see useRecallPreferences.
+  const {
+    preferences,
+    updatePreferences,
+    handlePerGamePrefChange,
+    initialPlaySettings,
+    preferenceChangeLog,
+  } = useRecallPreferences({
+    gameId,
+    currentMoveIndex: gameProgress.currentMoveIndex,
   });
 
   // UI-only state (modal visibility)
@@ -136,6 +143,18 @@ export function RecallClient({
   const modalPosIndex =
     modalNav.currentPosition === -1 ? originalMoves.length : modalNav.currentPosition + 1;
   const modalLastMove = gamePositions[modalPosIndex]?.lastMove ?? null;
+  // "Open this position": adopt the previewed position onto the live board
+  // and scroll it into view, mirroring GameReview's quick-peek commit
+  // (recall has a single shared board, so no separate ref/scroll target is
+  // needed beyond the board column itself).
+  const boardColumnRef = useRef<HTMLDivElement>(null);
+  const commitQuickPeek = useCallback(() => {
+    navigation.navigateToPosition(modalNav.currentPosition);
+    setIsQuickPeekOpen(false);
+    requestAnimationFrame(() => {
+      boardColumnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [navigation, modalNav.currentPosition]);
 
   const boardFen = displayFen || currentFen;
   const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
@@ -287,7 +306,7 @@ export function RecallClient({
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Progress Bar, Board, Input, Actions */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2" ref={boardColumnRef}>
           <div className="border border-border rounded-lg p-4">
             <div className="flex flex-col gap-6">
               {/* Progress Bar */}
@@ -378,6 +397,8 @@ export function RecallClient({
                   onEntryClick={openQuickPeek}
                   onRestart={onRestart ?? (() => {})}
                   gameId={gameId}
+                  initialPlaySettings={initialPlaySettings}
+                  preferenceChangeLog={preferenceChangeLog}
                 />
               )}
             </div>
@@ -401,7 +422,9 @@ export function RecallClient({
       </div>
 
       {/* Settings Modal — reuses the in-game settings form. Edits update the
-          local preferences only (no persistence, no preferenceChangeLog). */}
+          local preferences only; never persisted, but display-relevant edits
+          ARE tracked into an in-memory preferenceChangeLog for the summary's
+          Change Log (see useRecallPreferences). */}
       <MidGameSettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
@@ -411,8 +434,8 @@ export function RecallClient({
 
       {/* Quick-peek modal — previews a stumbled move's position without
           disturbing the live board, matching games/play/result's "By Move"
-          strip. No footer/commit action: like the result page's own modal,
-          this is a terminal peek-and-close, not an editable replay. */}
+          strip. The footer's "Open this position" adopts the previewed
+          position onto the live board, same as GameReview's own commit. */}
       <BoardViewModal
         isOpen={isQuickPeekOpen}
         onClose={closeQuickPeek}
@@ -428,6 +451,16 @@ export function RecallClient({
         onNavigateNext={modalNav.navigateNext}
         onNavigateToEnd={modalNav.navigateToEnd}
         onNavigateToPosition={modalNav.navigateToPosition}
+        footer={
+          <button
+            type="button"
+            onClick={commitQuickPeek}
+            className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          >
+            {t('openPosition')}
+            <FaArrowRight className="h-3 w-3" aria-hidden />
+          </button>
+        }
       />
 
       {/* Auto Fill All Confirmation Modal */}

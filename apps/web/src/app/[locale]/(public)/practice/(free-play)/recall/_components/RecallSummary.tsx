@@ -5,6 +5,9 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaListOl, FaRedo } from 'react-icons/fa';
 
+import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
+
+import { PlaySettingsChangeLog } from '@/app/[locale]/(public)/games/play/result/_components/PlaySettingsChangeLog';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
@@ -21,6 +24,15 @@ type Props = {
   onRestart: () => void;
   /** Saved game id, for the "back to result" link. */
   gameId?: string;
+  /**
+   * Start-of-session snapshot of the display-relevant settings, and the
+   * mid-session edits on top of it — feeds the Change Log, matching
+   * games/play/result's. Null until useRecallPreferences has seeded (always
+   * non-null by the time this renders, since completion implies the session
+   * — and therefore the seed — has already happened).
+   */
+  initialPlaySettings: GamePlaySettings | null;
+  preferenceChangeLog: PlaySettingsChangeEntry[];
 };
 
 /**
@@ -28,7 +40,15 @@ type Props = {
  * clickable review of the moves the user stumbled on, and next-step actions.
  * Replaces the old "Game Review Completed!" message + hidden log link.
  */
-export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId }: Props) {
+export function RecallSummary({
+  stats,
+  entries,
+  onEntryClick,
+  onRestart,
+  gameId,
+  initialPlaySettings,
+  preferenceChangeLog,
+}: Props) {
   const t = useTranslations('recall');
 
   const hasStats = stats.total > 0;
@@ -106,6 +126,16 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
           </div>
           <RecallMoveStrip entries={entries} onEntryClick={onEntryClick} />
         </div>
+      )}
+
+      {/* Change Log — mid-session board/piece-display setting edits, same
+          component and "Label: from → to" formatting as games/play/result.
+          Renders nothing itself when there were no edits. */}
+      {initialPlaySettings && (
+        <PlaySettingsChangeLog
+          playSettings={initialPlaySettings}
+          playSettingsLog={preferenceChangeLog}
+        />
       )}
 
       {/* Next actions — full-width, stacked (matches the result screen). */}

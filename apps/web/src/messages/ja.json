@@ -2451,6 +2451,7 @@
     "copyFen": "FENをコピー",
     "copied": "コピー済み！",
     "analyzeOnLichess": "Lichessで解析",
+    "openPosition": "この局面を開く",
     "moveLog": "手のログ",
     "cancel": "キャンセル",
     "save": "保存",
