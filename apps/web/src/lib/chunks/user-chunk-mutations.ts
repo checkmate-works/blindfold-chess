@@ -10,7 +10,7 @@ import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { dispatchChunkEvent } from './chunk-event-handlers';
-import { autoRejectPendingEditRequests, guardChunkOwnership } from './chunk-mutation-guards';
+import { autoRejectPendingEditRequests, loadOwnedChunk } from './chunk-mutation-guards';
 import { buildChunkCreateValues, buildChunkUpdateValues } from './mutation-helpers';
 import { findChunkBySlug } from './queries';
 import type { ChunkFeedbackTopic, ChunkMutationData } from './validation';
@@ -40,6 +40,20 @@ async function resetChunkFeedbackTopics(
   if (topics.length > 0) {
     await tx.insert(chunkFeedbackTopics).values(topics.map((topic) => ({ chunkId, topic })));
   }
+}
+
+/**
+ * UX preflight for slug availability, shared by the create path and the
+ * draft-only rename path in `updateChunkEntry`. Preflight only: the DB
+ * UNIQUE on `chunks.slug` is the canonical guarantee, and both write paths
+ * additionally translate PG 23505 into `slugTaken` to close the preflight →
+ * write race window. `findChunkBySlug` returns soft-deleted rows too,
+ * matching the column constraint (the unique index has no
+ * `WHERE deleted_at IS NULL` clause — once minted, a slug is permanently
+ * reserved).
+ */
+async function isSlugTaken(slug: string): Promise<boolean> {
+  return !!(await findChunkBySlug(slug));
 }
 
 /**
@@ -112,12 +126,8 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
     return { error: 'descriptionRequired' };
   }
 
-  // UX preflight only; the DB UNIQUE constraint is the canonical guarantee.
-  // `findChunkBySlug` returns soft-deleted rows too, matching the column
-  // constraint (the unique index has no `WHERE deleted_at IS NULL` clause).
   const slug = dataWithAuthor.slug!.trim();
-  const existing = await findChunkBySlug(slug);
-  if (existing) {
+  if (await isSlugTaken(slug)) {
     return { error: 'slugTaken' };
   }
 
@@ -212,30 +222,11 @@ export async function updateChunkEntry(
     return { error: validationError };
   }
 
-  const [chunk] = await db
-    .select({
-      id: chunks.id,
-      userId: chunks.userId,
-      slug: chunks.slug,
-      status: chunks.status,
-      deletedAt: chunks.deletedAt,
-      // Pre-update values, captured so the activity log can preserve
-      // whatever this in-place edit overwrites (chunks keep no history).
-      title: chunks.title,
-      description: chunks.description,
-      representativeFen: chunks.representativeFen,
-    })
-    .from(chunks)
-    .where(eq(chunks.id, id))
-    .limit(1);
-
-  if (!chunk) {
-    return { error: 'notFound' };
+  const loaded = await loadOwnedChunk(id, user.id);
+  if ('error' in loaded) {
+    return loaded;
   }
-  const ownershipError = guardChunkOwnership(chunk, user.id);
-  if (ownershipError) {
-    return ownershipError;
-  }
+  const { chunk } = loaded;
   // Field-level edits are only allowed while the chunk is in the
   // workshop state. Once published, content is locked at the
   // application layer so existing links / discussion threads keep
@@ -251,13 +242,8 @@ export async function updateChunkEntry(
   // title/description edits.
   const requestedSlug = dataWithAuthor.slug?.trim();
   const slugChanging = !!requestedSlug && requestedSlug !== chunk.slug;
-  if (slugChanging) {
-    // UX preflight only; the DB UNIQUE on chunks.slug is the canonical
-    // guarantee. Matches the create-path pattern in `createChunkEntry`.
-    const existing = await findChunkBySlug(requestedSlug);
-    if (existing) {
-      return { error: 'slugTaken' };
-    }
+  if (slugChanging && (await isSlugTaken(requestedSlug))) {
+    return { error: 'slugTaken' };
   }
 
   try {
@@ -351,26 +337,11 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
     return { error: 'notFound' };
   }
 
-  const [chunk] = await db
-    .select({
-      id: chunks.id,
-      userId: chunks.userId,
-      slug: chunks.slug,
-      description: chunks.description,
-      status: chunks.status,
-      deletedAt: chunks.deletedAt,
-    })
-    .from(chunks)
-    .where(eq(chunks.id, id))
-    .limit(1);
-
-  if (!chunk) {
-    return { error: 'notFound' };
+  const loaded = await loadOwnedChunk(id, user.id);
+  if ('error' in loaded) {
+    return loaded;
   }
-  const ownershipError = guardChunkOwnership(chunk, user.id);
-  if (ownershipError) {
-    return ownershipError;
-  }
+  const { chunk } = loaded;
   if (chunk.status === 'published') {
     return { success: true };
   }
@@ -429,24 +400,11 @@ export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
     return { error: 'notFound' };
   }
 
-  const [chunk] = await db
-    .select({
-      id: chunks.id,
-      userId: chunks.userId,
-      slug: chunks.slug,
-      deletedAt: chunks.deletedAt,
-    })
-    .from(chunks)
-    .where(eq(chunks.id, id))
-    .limit(1);
-
-  if (!chunk) {
-    return { error: 'notFound' };
+  const loaded = await loadOwnedChunk(id, user.id);
+  if ('error' in loaded) {
+    return loaded;
   }
-  const ownershipError = guardChunkOwnership(chunk, user.id);
-  if (ownershipError) {
-    return ownershipError;
-  }
+  const { chunk } = loaded;
 
   const deletedAt = new Date();
 

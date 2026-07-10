@@ -1,7 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
-import { chunkEditRequests } from '@/lib/db';
-import type { db } from '@/lib/db';
+import { chunkEditRequests, chunks, db } from '@/lib/db';
 import { guardOwnership } from '@/lib/ownership-guard';
 
 /**
@@ -19,6 +18,57 @@ export function guardChunkOwnership(
 ): { error: string } | null {
   const error = guardOwnership(chunk, userId);
   return error ? { error } : null;
+}
+
+/**
+ * Columns fetched for every owner-scoped chunk mutation — a single superset
+ * shape rather than per-mutation column lists. `title` / `description` /
+ * `representativeFen` are the pre-update values the update path diffs into
+ * the activity log (chunks keep no revision history); publish reads
+ * `description` for its non-empty requirement; the rest feed the shared
+ * not-found / ownership / soft-delete checks. Fetching the superset
+ * unconditionally costs a few extra columns on a single-row read and keeps
+ * the loader monomorphic.
+ */
+const ownedChunkColumns = {
+  id: chunks.id,
+  userId: chunks.userId,
+  slug: chunks.slug,
+  status: chunks.status,
+  deletedAt: chunks.deletedAt,
+  title: chunks.title,
+  description: chunks.description,
+  representativeFen: chunks.representativeFen,
+};
+
+function selectChunkById(id: string) {
+  return db.select(ownedChunkColumns).from(chunks).where(eq(chunks.id, id)).limit(1);
+}
+
+/** Row shape returned by {@link loadOwnedChunk} on success. */
+export type OwnedChunk = Awaited<ReturnType<typeof selectChunkById>>[number];
+
+/**
+ * Shared preamble of the update / publish / delete chunk mutations: load the
+ * row by id, then reject with `notFound` when it doesn't exist or with the
+ * ownership / soft-delete errors from `guardChunkOwnership`. Callers are
+ * still responsible for their own empty-id short-circuit (it sits at a
+ * different point in each mutation's guard → validate ordering).
+ */
+export async function loadOwnedChunk(
+  id: string,
+  userId: string
+): Promise<{ chunk: OwnedChunk } | { error: string }> {
+  const [chunk] = await selectChunkById(id);
+
+  if (!chunk) {
+    return { error: 'notFound' };
+  }
+  const ownershipError = guardChunkOwnership(chunk, userId);
+  if (ownershipError) {
+    return ownershipError;
+  }
+  return { chunk };
 }
 
 /** Minimal transaction surface needed to reject pending edit requests. */
