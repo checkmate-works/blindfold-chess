@@ -2478,7 +2478,7 @@
       "legendAuto": "Opponent",
       "triedMove": "Tried {move} — correct was {correct}",
       "autoFilledCount": "+{count} auto-filled",
-      "reviewTitle": "Where you stumbled",
+      "reviewTitle": "By Move",
       "reviewHint": "Tap to view the position",
       "restart": "Play again",
       "backToResult": "Back to result",

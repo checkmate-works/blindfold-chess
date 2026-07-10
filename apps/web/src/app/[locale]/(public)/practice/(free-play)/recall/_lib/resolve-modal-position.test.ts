@@ -44,7 +44,7 @@ describe('resolveModalPosition', () => {
     expect(resolveModalPosition(resolved, moveLog)).toBe(1);
   });
 
-  it('excludes opponent auto-fills (auto) from the index count, same as skipped/autoFilled', () => {
+  it('counts opponent auto-fills (auto) toward the move index, same as skipped/autoFilled', () => {
     const first = entry('correct', 'e4');
     const opponentAuto = entry('auto', 'e5');
     const second = entry('autoFilled', 'Nf3');

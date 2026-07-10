@@ -2474,7 +2474,7 @@
       "legendAuto": "Oponente",
       "triedMove": "Tentou {move} — o correto era {correct}",
       "autoFilledCount": "+{count} preenchidos automaticamente",
-      "reviewTitle": "Onde você hesitou",
+      "reviewTitle": "Por Lance",
       "reviewHint": "Toque para ver a posição",
       "restart": "Jogar de novo",
       "backToResult": "Voltar ao resultado",
