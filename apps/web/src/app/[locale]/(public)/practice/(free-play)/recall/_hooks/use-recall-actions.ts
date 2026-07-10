@@ -180,7 +180,7 @@ export function useRecallActions({
         moveNumber,
         isWhiteMove,
         move,
-        status: 'skipped',
+        status: 'autoFilled',
       });
     }
 

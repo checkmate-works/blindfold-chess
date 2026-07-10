@@ -40,6 +40,12 @@ describe('computeRecallStats', () => {
     expect(stats.recallRate).toBe(0);
   });
 
+  it('counts an auto-filled move as missed, same as an explicit skip', () => {
+    const stats = computeRecallStats([entry('autoFilled'), entry('autoFilled')]);
+    expect(stats).toMatchObject({ nailed: 0, struggled: 0, missed: 2, mistakes: 0, total: 2 });
+    expect(stats.recallRate).toBe(0);
+  });
+
   it('excludes opponent auto-fills from the engaged total', () => {
     // White nailed, black auto-filled (opponent), white nailed again.
     const stats = computeRecallStats([entry('correct'), entry('auto'), entry('correct')]);

@@ -6,7 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaListOl, FaRedo } from 'react-icons/fa';
 
 import type { MoveLogEntry, RecallStats } from '../_lib';
-import { RecallMoveLogTable } from './RecallMoveLogTable';
+import { RecallMoveStrip } from './RecallMoveStrip';
 
 type Props = {
   stats: RecallStats;
@@ -94,7 +94,7 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
             </h4>
             <span className="text-xs text-muted-foreground">{t('summary.reviewHint')}</span>
           </div>
-          <RecallMoveLogTable entries={entries} onEntryClick={onEntryClick} />
+          <RecallMoveStrip entries={entries} onEntryClick={onEntryClick} />
         </div>
       )}
 

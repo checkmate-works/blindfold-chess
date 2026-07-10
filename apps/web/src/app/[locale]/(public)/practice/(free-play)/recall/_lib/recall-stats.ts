@@ -21,11 +21,13 @@ export type RecallStats = {
  * Derive the recall recall report from the move log.
  *
  * The log is an ordered stream: `incorrect` entries precede the resolution of
- * the move they belong to (`correct` when the user finally entered it, or
- * `skipped` when they gave up). `auto` entries are the opponent's moves
- * auto-filled in auto-opponent mode — the user never tried them, so they are
- * not counted. A move resolved `correct` counts as `nailed` if it had no
- * preceding wrong attempt, otherwise `struggled`.
+ * the move they belong to (`correct` when the user finally entered it,
+ * `skipped` when they gave up one at a time, or `autoFilled` when "Auto-fill
+ * All" bulk-resolved it). `auto` entries are the opponent's moves auto-filled
+ * in auto-opponent mode — the user never tried them, so they are not counted.
+ * A move resolved `correct` counts as `nailed` if it had no preceding wrong
+ * attempt, otherwise `struggled`. `skipped` and `autoFilled` both count as
+ * `missed`.
  */
 export function computeRecallStats(entries: MoveLogEntry[]): RecallStats {
   let nailed = 0;
@@ -47,6 +49,7 @@ export function computeRecallStats(entries: MoveLogEntry[]): RecallStats {
         mistakesForCurrent = 0;
         break;
       case 'skipped':
+      case 'autoFilled':
         missed++;
         mistakesForCurrent = 0;
         break;
