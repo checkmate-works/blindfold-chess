@@ -473,7 +473,6 @@
     },
     "notifications": {
       "description": "Los tipos desactivados dejarán de enviarte notificaciones.",
-      "loading": "Cargando…",
       "types": {
         "new_post": "Nuevas publicaciones",
         "new_position": "Nuevas posiciones",

@@ -477,7 +477,6 @@
     },
     "notifications": {
       "description": "オフにした種類の通知は届かなくなります。",
-      "loading": "読み込み中…",
       "types": {
         "new_post": "新しい投稿",
         "new_position": "新しい局面",

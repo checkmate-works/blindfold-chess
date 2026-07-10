@@ -477,7 +477,6 @@
     },
     "notifications": {
       "description": "Turned-off types will no longer send you notifications.",
-      "loading": "Loading…",
       "types": {
         "new_post": "New posts",
         "new_position": "New positions",

@@ -19,7 +19,6 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string) => {
     const labels: Record<string, string> = {
       'notifications.description': 'Turned-off types will no longer send you notifications.',
-      'notifications.loading': 'Loading…',
       'notifications.types.new_post': 'New posts',
       'notifications.types.new_position': 'New positions',
       'notifications.types.new_chunk_draft': 'New chunk drafts',
@@ -37,11 +36,13 @@ describe('NotificationSettings', () => {
     mockSetNotificationMute.mockResolvedValue(undefined);
   });
 
-  it('shows a loading state before the mute list resolves', () => {
+  it('shows a skeleton with no switches before the mute list resolves', () => {
     mockGetNotificationMutes.mockReturnValue(new Promise(() => {}));
-    render(<NotificationSettings />);
+    const { container } = render(<NotificationSettings />);
 
-    expect(screen.getByText('Loading…')).toBeDefined();
+    expect(screen.queryAllByRole('switch')).toHaveLength(0);
+    // 6 skeleton rows × 2 shapes (label bar + switch placeholder).
+    expect(container.querySelectorAll('[aria-hidden="true"]')).toHaveLength(12);
   });
 
   it('renders one switch per mutable type once loaded', async () => {

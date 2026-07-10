@@ -7,7 +7,27 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { MUTABLE_NOTIFICATION_TYPES } from '@/lib/notifications/mutable-types';
 import type { MutableNotificationType } from '@/lib/notifications/mutable-types';
 
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+
 import { getNotificationMutes, setNotificationMute } from '../_actions';
+
+/**
+ * Shaped identically to the real `<li>` rows below (same `py-3` height, same
+ * `h-5 w-9` switch footprint) so nothing shifts once `getNotificationMutes`
+ * resolves and the real list replaces this.
+ */
+function NotificationSettingsSkeleton() {
+  return (
+    <ul className="divide-y divide-border">
+      {MUTABLE_NOTIFICATION_TYPES.map((type) => (
+        <li key={type} className="flex items-center justify-between gap-3 py-3">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-5 w-9 shrink-0 rounded-full" />
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function NotificationSettings() {
   const t = useTranslations('Preferences');
@@ -45,7 +65,7 @@ export function NotificationSettings() {
     <div>
       <p className="mb-4 text-sm text-muted-foreground">{t('notifications.description')}</p>
       {mutedTypes === null ? (
-        <p className="text-sm text-muted-foreground">{t('notifications.loading')}</p>
+        <NotificationSettingsSkeleton />
       ) : (
         <ul className="divide-y divide-border">
           {MUTABLE_NOTIFICATION_TYPES.map((type) => {
