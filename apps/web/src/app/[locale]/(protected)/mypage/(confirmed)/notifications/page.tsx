@@ -58,7 +58,8 @@ export default async function NotificationsPage({ params, searchParams }: Props)
       locale={locale}
       breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-end gap-4">
+        {unreadCount > 0 && <MarkAllReadButton label={t('markAllAsRead')} />}
         <Link
           href="/preferences?tab=notifications"
           locale={locale}
@@ -68,7 +69,6 @@ export default async function NotificationsPage({ params, searchParams }: Props)
         >
           <FiSettings className="h-4 w-4" />
         </Link>
-        {unreadCount > 0 && <MarkAllReadButton label={t('markAllAsRead')} />}
       </div>
 
       {items.length === 0 ? (
