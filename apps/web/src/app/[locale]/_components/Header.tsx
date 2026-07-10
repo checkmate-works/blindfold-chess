@@ -24,8 +24,11 @@ type Props = {
  * previously-SSG pages (privacy, terms, preferences, practice tutorials).
  */
 function buildDismissScript(bannerId: string): string {
-  // Keep this tiny and self-contained; no external references.
-  const safeId = JSON.stringify(bannerId);
+  // Keep this tiny and self-contained; no external references. `bannerId` is a
+  // DB-generated uuid today, but escape `<` (as JSON.stringify does not) so a
+  // `</script>` sequence can never break out of this inline script even if the
+  // id ever becomes attacker-influenced — defense in depth, mirroring JsonLd.
+  const safeId = JSON.stringify(bannerId).replace(/</g, '\\u003c');
   return `(function(){try{var m=document.cookie.match(/(?:^|;\\s*)dismissed-announcement=([^;]*)/);if(m&&decodeURIComponent(m[1])===${safeId}){var s=document.createElement('style');s.setAttribute('data-announcement-dismiss','1');s.textContent='[data-announcement-banner-id="'+${safeId}+'"]{display:none!important;}';document.head.appendChild(s);}}catch(e){}})();`;
 }
 
