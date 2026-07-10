@@ -1,11 +1,20 @@
 import Link from 'next/link';
 
-import type { RequirementItem } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
+import type {
+  RequirementDivider,
+  RequirementItem,
+} from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
 import { isWhiteBelt } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { FOCUS_RING_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
+function isRequirementDivider(
+  item: RequirementItem | RequirementDivider
+): item is RequirementDivider {
+  return 'kind' in item && item.kind === 'or';
+}
+
 type NextRankRequirementsProps = {
-  items: RequirementItem[];
+  items: (RequirementItem | RequirementDivider)[];
   /**
    * Hex color of the next rank's belt. The bullet dot on each row uses this
    * color so the list visually ties to the rank it belongs to.
@@ -31,6 +40,17 @@ export function NextRankRequirements({ items, beltColor }: NextRankRequirementsP
       {items.map((item, index) => {
         const baseRowClass =
           'relative flex items-center gap-3 border-t border-border py-3 pl-3 pr-2';
+
+        if (isRequirementDivider(item)) {
+          return (
+            <li
+              key={`or-${index}`}
+              className={`${baseRowClass} justify-center text-xs text-muted-foreground`}
+            >
+              {item.label}
+            </li>
+          );
+        }
 
         const beltDot = (
           <span

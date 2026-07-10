@@ -13,7 +13,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { getCurrentUserAchievedRankIds } from '../_actions/getCurrentUserAchievedRankIds';
 import {
   buildChallengeNameKey,
-  buildSubmissionItemNameKey,
+  buildPositionSubmissionLabels,
   getBeltColorHex,
   getRankCardState,
 } from '../_lib/helpers';
@@ -104,18 +104,17 @@ export function RanksGrid({ locale, dbRanks }: Props) {
           isFirstRank
         );
 
-        const requirementLabels = requirements.map((req) => {
+        const requirementLabels = requirements.flatMap((req) => {
           if (req.type === 'challenge_score') {
             const challengeKey = buildChallengeNameKey(req);
-            return t('challengeScore', {
-              minScore: req.minScore,
-              challengeName: t(`challengeNames.${challengeKey}`),
-            });
+            return [
+              t('challengeScore', {
+                minScore: req.minScore,
+                challengeName: t(`challengeNames.${challengeKey}`),
+              }),
+            ];
           }
-          return t('submissionCount', {
-            minCount: req.minCount,
-            itemName: t(`submissionItemNames.${buildSubmissionItemNameKey(req.positionTypes)}`),
-          });
+          return buildPositionSubmissionLabels(req, t);
         });
 
         return (

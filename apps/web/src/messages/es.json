@@ -5286,10 +5286,10 @@
     "comingSoon": "Próximamente",
     "challengeScore": "Puntuación {minScore}+ en {challengeName}",
     "submissionCount": "Publica al menos {minCount} {itemName}",
+    "orDivider": "o",
     "submissionItemNames": {
       "memory": "problema de memoria de posiciones",
-      "puzzle": "puzzle",
-      "memory_puzzle": "problema de memoria de posiciones o puzzle"
+      "puzzle": "puzzle"
     },
     "challengeNames": {
       "square_colors": "Color de Casillas",

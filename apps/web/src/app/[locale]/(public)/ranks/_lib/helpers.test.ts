@@ -6,8 +6,8 @@ import type { Rank } from '@/lib/db/schema';
 
 import {
   buildChallengeNameKey,
+  buildPositionSubmissionLabels,
   buildRequirementItems,
-  buildSubmissionItemNameKey,
   getBeltColorHex,
   getRankCardState,
   isWhiteBelt,
@@ -90,6 +90,7 @@ describe('buildRequirementItems', () => {
     if (key.startsWith('challengeNames.')) return key.replace('challengeNames.', '');
     if (key === 'submissionCount') return `Submit ${values?.minCount} ${values?.itemName}`;
     if (key.startsWith('submissionItemNames.')) return key.replace('submissionItemNames.', '');
+    if (key === 'orDivider') return 'or';
     return key;
   };
 
@@ -99,7 +100,7 @@ describe('buildRequirementItems', () => {
       'en',
       mockT
     );
-    expect(items[0].href).toBe('/en/practice/legal-moves/challenge?piece=king');
+    expect(items[0]).toMatchObject({ href: '/en/practice/legal-moves/challenge?piece=king' });
   });
 
   it('should generate challenge URL with piece parameter for route_planner', () => {
@@ -115,7 +116,7 @@ describe('buildRequirementItems', () => {
       'en',
       mockT
     );
-    expect(items[0].href).toBe('/en/practice/route-planner/challenge?piece=knight');
+    expect(items[0]).toMatchObject({ href: '/en/practice/route-planner/challenge?piece=knight' });
   });
 
   it('should generate standard practice URL for non-legal_moves', () => {
@@ -131,7 +132,7 @@ describe('buildRequirementItems', () => {
       'en',
       mockT
     );
-    expect(items[0].href).toBe('/en/practice/square-colors');
+    expect(items[0]).toMatchObject({ href: '/en/practice/square-colors' });
   });
 
   it('should generate standard practice URL for legal_moves with default leaderboardKey', () => {
@@ -147,55 +148,77 @@ describe('buildRequirementItems', () => {
       'en',
       mockT
     );
-    expect(items[0].href).toBe('/en/practice/legal-moves');
+    expect(items[0]).toMatchObject({ href: '/en/practice/legal-moves' });
   });
 
-  it('should generate position-memory URL and single-type itemName for a memory-only requirement', () => {
+  it('should generate a single linked item for a memory-only requirement', () => {
     const items = buildRequirementItems(
       [{ type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 }],
       'en',
       mockT
     );
-    expect(items[0].href).toBe('/en/practice/position-memory/new');
-    expect(items[0].label).toBe('Submit 1 memory');
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      href: '/en/practice/position-memory/new',
+      label: 'Submit 1 memory',
+    });
   });
 
-  it('should generate the combined itemName for a memory-or-puzzle requirement', () => {
-    const items = buildRequirementItems(
-      [{ type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 }],
-      'en',
-      mockT
-    );
-    expect(items[0].href).toBe('/en/practice/position-memory/new');
-    expect(items[0].label).toBe('Submit 1 memory_puzzle');
-  });
-
-  it('should generate puzzle URL when puzzle is the first listed positionType', () => {
+  it('should generate the puzzle URL for a puzzle-only requirement', () => {
     const items = buildRequirementItems(
       [{ type: 'position_submission_count', positionTypes: ['puzzle'], minCount: 1 }],
       'en',
       mockT
     );
-    expect(items[0].href).toBe('/en/practice/puzzle/new');
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ href: '/en/practice/puzzle/new' });
+  });
+
+  it('should split a memory-or-puzzle requirement into two linked items joined by an or divider', () => {
+    const items = buildRequirementItems(
+      [{ type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 }],
+      'en',
+      mockT
+    );
+    expect(items).toHaveLength(3);
+    expect(items[0]).toMatchObject({
+      href: '/en/practice/position-memory/new',
+      label: 'Submit 1 memory',
+    });
+    expect(items[1]).toEqual({ kind: 'or', label: 'or' });
+    expect(items[2]).toMatchObject({
+      href: '/en/practice/puzzle/new',
+      label: 'Submit 1 puzzle',
+    });
   });
 });
 
 // ---------------------------------------------------------------------------
-// buildSubmissionItemNameKey
+// buildPositionSubmissionLabels
 // ---------------------------------------------------------------------------
 
-describe('buildSubmissionItemNameKey', () => {
-  it('should return the single type for a one-element array', () => {
-    expect(buildSubmissionItemNameKey(['memory'])).toBe('memory');
-    expect(buildSubmissionItemNameKey(['puzzle'])).toBe('puzzle');
+describe('buildPositionSubmissionLabels', () => {
+  const mockT = (key: string, values?: Record<string, string | number | Date>) => {
+    if (key === 'orDivider') return 'or';
+    if (key === 'submissionCount') return `Submit ${values?.minCount} ${values?.itemName}`;
+    if (key.startsWith('submissionItemNames.')) return key.replace('submissionItemNames.', '');
+    return key;
+  };
+
+  it('should return a single label for a one-type requirement', () => {
+    const labels = buildPositionSubmissionLabels(
+      { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
+      mockT
+    );
+    expect(labels).toEqual(['Submit 1 memory']);
   });
 
-  it('should join multiple types with an underscore, sorted', () => {
-    expect(buildSubmissionItemNameKey(['memory', 'puzzle'])).toBe('memory_puzzle');
-  });
-
-  it('should sort regardless of input order', () => {
-    expect(buildSubmissionItemNameKey(['puzzle', 'memory'])).toBe('memory_puzzle');
+  it('should join multiple types with an or divider entry, no href', () => {
+    const labels = buildPositionSubmissionLabels(
+      { type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 },
+      mockT
+    );
+    expect(labels).toEqual(['Submit 1 memory', { kind: 'or', label: 'or' }, 'Submit 1 puzzle']);
   });
 });
 

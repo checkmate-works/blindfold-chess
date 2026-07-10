@@ -26,8 +26,8 @@ import { createClient } from '@/lib/supabase/server';
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import {
   buildChallengeNameKey,
+  buildPositionSubmissionLabels,
   buildRequirementItems,
-  buildSubmissionItemNameKey,
   getBeltColorHex,
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
@@ -104,20 +104,17 @@ export default async function DojoPage({ params }: LocalePageProps) {
         beltColor: getBeltColorHex(next.slug),
         rankName: tRanks(`rankNames.${next.slug}`),
         state: (next.requirements.length === 0 ? 'coming-soon' : 'next') as 'next' | 'coming-soon',
-        requirementLabels: next.requirements.map((req) => {
+        requirementLabels: next.requirements.flatMap((req) => {
           if (req.type === 'challenge_score') {
             const challengeKey = buildChallengeNameKey(req);
-            return tRanks('challengeScore', {
-              minScore: req.minScore,
-              challengeName: tRanks(`challengeNames.${challengeKey}`),
-            });
+            return [
+              tRanks('challengeScore', {
+                minScore: req.minScore,
+                challengeName: tRanks(`challengeNames.${challengeKey}`),
+              }),
+            ];
           }
-          return tRanks('submissionCount', {
-            minCount: req.minCount,
-            itemName: tRanks(
-              `submissionItemNames.${buildSubmissionItemNameKey(req.positionTypes)}`
-            ),
-          });
+          return buildPositionSubmissionLabels(req, tRanks);
         }),
         requirementsHeading: tRanks('requirements'),
         comingSoonLabel: tRanks('comingSoon'),
