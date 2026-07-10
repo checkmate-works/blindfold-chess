@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -70,6 +70,13 @@ type Props = {
   onCompletedChange?: (completed: boolean) => void;
   /** Restart the review from the beginning (parent remounts the game). */
   onRestart?: () => void;
+  /**
+   * `content-bottom` ad slot, resolved server-side by the page owner and
+   * threaded down here. Rendered below the Moves panel once the review is
+   * complete — this screen has no other trailing content, so this position
+   * doubles as the page's de-facto content-bottom placement.
+   */
+  adBanner?: ReactNode;
 };
 
 export function RecallClient({
@@ -83,6 +90,7 @@ export function RecallClient({
   onFeedbackChange,
   onCompletedChange,
   onRestart,
+  adBanner,
 }: Props) {
   const t = useTranslations('recall');
 
@@ -381,20 +389,27 @@ export function RecallClient({
           </div>
         </div>
 
-        {/* Move List */}
-        <RecallMovesPanel
-          formattedPgn={formattedPgn}
-          currentPosition={navigation.currentPosition}
-          originalMovesLength={originalMoves.length}
-          currentFen={currentFen}
-          displayFen={displayFen}
-          startingFen={startingFen}
-          onNavigateToPosition={navigation.navigateToPosition}
-          onNavigateToStart={navigation.navigateToStart}
-          onNavigatePrevious={navigation.navigatePrevious}
-          onNavigateNext={navigation.navigateNext}
-          onNavigateToEnd={navigation.navigateToEnd}
-        />
+        {/* Move List, plus — once completed — the ad below it. Grouped in one
+            column so the ad sits directly under the Moves panel on desktop
+            without disturbing the board|moves grid, and simply follows Moves
+            when the grid stacks to a single column on mobile. */}
+        <div className="lg:col-span-1 flex flex-col gap-8">
+          <RecallMovesPanel
+            formattedPgn={formattedPgn}
+            currentPosition={navigation.currentPosition}
+            originalMovesLength={originalMoves.length}
+            currentFen={currentFen}
+            displayFen={displayFen}
+            startingFen={startingFen}
+            onNavigateToPosition={navigation.navigateToPosition}
+            onNavigateToStart={navigation.navigateToStart}
+            onNavigatePrevious={navigation.navigatePrevious}
+            onNavigateNext={navigation.navigateNext}
+            onNavigateToEnd={navigation.navigateToEnd}
+          />
+
+          {isCompleted && adBanner}
+        </div>
       </div>
 
       {/* Settings Modal — reuses the in-game settings form. Edits update the

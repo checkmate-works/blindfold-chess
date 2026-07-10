@@ -44,7 +44,7 @@ export function RecallMovesPanel({
   const [isFenCopied, setIsFenCopied] = useState(false);
 
   return (
-    <div className="lg:col-span-1" data-tour-id="recall-moves">
+    <div data-tour-id="recall-moves">
       <div className="border border-border rounded-lg">
         {/* Moves Header */}
         <div className="px-4 py-3 bg-muted/30 rounded-t-lg">
