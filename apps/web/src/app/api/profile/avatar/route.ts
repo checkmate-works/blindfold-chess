@@ -5,7 +5,10 @@ import sharp from 'sharp';
 
 import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { db, profiles } from '@/lib/db';
-import { validatePostImageBinarySignature } from '@/lib/post-images/validation';
+import {
+  POST_IMAGES_MAX_MEGAPIXELS,
+  validatePostImageBinarySignature,
+} from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -65,10 +68,17 @@ export async function POST(request: Request) {
   // strips ALL EXIF / GPS metadata (Sharp's documented default for
   // `.toBuffer()` when `.withMetadata()` is not called). `failOn: 'error'`
   // rejects malformed input early, and `pages: 1` caps decode memory so a
-  // crafted animated WebP cannot blow up libvips.
+  // crafted animated WebP cannot blow up libvips. `limitInputPixels` rejects
+  // a decompression bomb (a highly compressible huge-dimension image that
+  // sits under the 2 MB byte cap but would decode to ~GBs) before the full
+  // decode — same 50 MP policy the post-image path enforces via its probe.
   let processed: Buffer;
   try {
-    processed = await sharp(Buffer.from(buffer), { failOn: 'error', pages: 1 })
+    processed = await sharp(Buffer.from(buffer), {
+      failOn: 'error',
+      pages: 1,
+      limitInputPixels: POST_IMAGES_MAX_MEGAPIXELS,
+    })
       .rotate()
       .resize(AVATAR_PIXEL_SIZE, AVATAR_PIXEL_SIZE, { fit: 'cover' })
       .webp({ quality: AVATAR_WEBP_QUALITY })
