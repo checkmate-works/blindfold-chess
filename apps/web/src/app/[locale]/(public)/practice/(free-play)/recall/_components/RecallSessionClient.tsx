@@ -68,11 +68,14 @@ export function RecallSessionClient({
       align: 'center',
     },
     {
+      // Gear is now pinned to the board's top-right corner, matching
+      // games/play's BoardSettingsButton — mirror its tour placement too
+      // (see PlayHelpTour's 'play-settings-gear' step).
       targetId: 'recall-settings',
       title: t('help.settings.title'),
       description: t('help.settings.description'),
-      side: 'top',
-      align: 'center',
+      side: 'bottom',
+      align: 'end',
     },
     {
       targetId: 'recall-moves',

@@ -5,8 +5,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaCheck, FaCog, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
+import { FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
+import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
 import { usePeekState } from '@/app/[locale]/(public)/games/play/_hooks/use-peek-state';
@@ -181,6 +182,12 @@ export function RecallClient({
       onMove={
         canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
       }
+      // Settings gear pinned to the board's top-right corner, matching
+      // games/play's BoardSettingsButton placement exactly (recall has no
+      // legacy-game gate on editability, so it's always shown here).
+      topRightControl={
+        <BoardSettingsButton onClick={() => setShowSettings(true)} dataTourId="recall-settings" />
+      }
     />
   );
 
@@ -218,23 +225,6 @@ export function RecallClient({
   useEffect(() => {
     onCompletedChange?.(isCompleted);
   }, [onCompletedChange, isCompleted]);
-
-  // Settings gear — placed in the same bottom-right icon row as the in-game
-  // `GameInProgressPanel`, so the two screens feel identical.
-  const settingsRow = (
-    <div className="flex justify-end items-center gap-2 text-muted-foreground">
-      <button
-        type="button"
-        data-tour-id="recall-settings"
-        onClick={() => setShowSettings(true)}
-        className="p-1 leading-none hover:text-foreground"
-        title={t('settings')}
-        aria-label={t('settings')}
-      >
-        <FaCog className="w-4 h-4" />
-      </button>
-    </div>
-  );
 
   return (
     <div>
@@ -320,24 +310,18 @@ export function RecallClient({
                           </button>
                         )}
                       </div>
-
-                      {settingsRow}
                     </>
                   )}
                 </>
               ) : (
                 /* Completion: recall report + stumble review + next actions */
-                <>
-                  <RecallSummary
-                    stats={recallStats}
-                    entries={moveLog.entries}
-                    onEntryClick={handleMistakeClick}
-                    onRestart={onRestart ?? (() => {})}
-                    gameId={gameId}
-                  />
-
-                  {settingsRow}
-                </>
+                <RecallSummary
+                  stats={recallStats}
+                  entries={moveLog.entries}
+                  onEntryClick={handleMistakeClick}
+                  onRestart={onRestart ?? (() => {})}
+                  gameId={gameId}
+                />
               )}
             </div>
           </div>
