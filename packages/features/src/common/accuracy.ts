@@ -104,6 +104,65 @@ export function classifySquares(
   return result;
 }
 
+type DescriptionBuilders = {
+  correct: (piece: string, square: string) => string;
+  wrongPiece: (square: string, expected: string, actual: string) => string;
+  missing: (piece: string, square: string) => string;
+  extra: (piece: string, square: string) => string;
+};
+
+/**
+ * Per-square score weights. `netScore` is the sum of these over all
+ * classified squares, so a weight change here changes the aggregate too —
+ * there is no second copy of the rule to keep in sync.
+ */
+const SQUARE_SCORES: Record<SquareClassification, number> = {
+  correct: 1,
+  wrongPiece: -0.5,
+  missing: 0,
+  extra: -0.5,
+};
+
+function toScoreDetail(
+  { square, expected, actual, kind }: ClassifiedSquare,
+  pieceNames: Record<string, string>,
+  descriptions: DescriptionBuilders,
+): ScoreDetail {
+  const describe = (): string => {
+    switch (kind) {
+      case "correct":
+        return descriptions.correct(
+          getPieceDescription(expected, pieceNames),
+          square,
+        );
+      case "wrongPiece":
+        return descriptions.wrongPiece(
+          square,
+          getPieceDescription(expected, pieceNames),
+          getPieceDescription(actual, pieceNames),
+        );
+      case "missing":
+        return descriptions.missing(
+          getPieceDescription(expected, pieceNames),
+          square,
+        );
+      case "extra":
+        return descriptions.extra(
+          getPieceDescription(actual, pieceNames),
+          square,
+        );
+    }
+  };
+
+  return {
+    square,
+    expected,
+    actual,
+    score: SQUARE_SCORES[kind],
+    description: describe(),
+  };
+}
+
 /**
  * Calculate accuracy between original and recreated positions.
  */
@@ -111,85 +170,24 @@ export function calculateAccuracy(
   originalFen: string,
   recreatedFen: string,
   pieceNames: Record<string, string>,
-  descriptions: {
-    correct: (piece: string, square: string) => string;
-    wrongPiece: (square: string, expected: string, actual: string) => string;
-    missing: (piece: string, square: string) => string;
-    extra: (piece: string, square: string) => string;
-  },
+  descriptions: DescriptionBuilders,
 ): PositionAccuracy {
-  let correctPieces = 0;
-  let totalPieces = 0;
-  let incorrectPieces = 0;
-  let missingPieces = 0;
-  let extraPieces = 0;
-  const details: ScoreDetail[] = [];
+  const classified = classifySquares(originalFen, recreatedFen);
+  const countOf = (kind: SquareClassification): number =>
+    classified.filter((c) => c.kind === kind).length;
 
-  for (const { square, expected, actual, kind } of classifySquares(
-    originalFen,
-    recreatedFen,
-  )) {
-    switch (kind) {
-      case "correct":
-        totalPieces++;
-        correctPieces++;
-        details.push({
-          square,
-          expected,
-          actual,
-          score: 1,
-          description: descriptions.correct(
-            getPieceDescription(expected, pieceNames),
-            square,
-          ),
-        });
-        break;
-      case "wrongPiece":
-        totalPieces++;
-        incorrectPieces++;
-        details.push({
-          square,
-          expected,
-          actual,
-          score: -0.5,
-          description: descriptions.wrongPiece(
-            square,
-            getPieceDescription(expected, pieceNames),
-            getPieceDescription(actual, pieceNames),
-          ),
-        });
-        break;
-      case "missing":
-        totalPieces++;
-        missingPieces++;
-        details.push({
-          square,
-          expected,
-          actual: "",
-          score: 0,
-          description: descriptions.missing(
-            getPieceDescription(expected, pieceNames),
-            square,
-          ),
-        });
-        break;
-      case "extra":
-        extraPieces++;
-        details.push({
-          square,
-          expected: "",
-          actual,
-          score: -0.5,
-          description: descriptions.extra(
-            getPieceDescription(actual, pieceNames),
-            square,
-          ),
-        });
-        break;
-    }
-  }
+  const correctPieces = countOf("correct");
+  const incorrectPieces = countOf("wrongPiece");
+  const missingPieces = countOf("missing");
+  const extraPieces = countOf("extra");
+  // Extra pieces sit on squares that are empty in the original, so they are
+  // not part of the piece total — they only subtract from the score.
+  const totalPieces = correctPieces + incorrectPieces + missingPieces;
 
-  const netScore = correctPieces - (incorrectPieces + extraPieces) * 0.5;
+  const details = classified.map((c) =>
+    toScoreDetail(c, pieceNames, descriptions),
+  );
+  const netScore = details.reduce((sum, d) => sum + d.score, 0);
   const accuracy =
     totalPieces > 0 ? Math.max(0, (netScore / totalPieces) * 100) : 0;
 
