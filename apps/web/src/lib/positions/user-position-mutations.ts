@@ -91,6 +91,53 @@ export type CreatePositionEntryResult =
 export type UpdatePositionEntryResult = ActionResult;
 
 /**
+ * Columns fetched for every owner-scoped position mutation — a single
+ * superset shape rather than per-mutation column lists. `fen` / `title` /
+ * `description` are the pre-update values the update path diffs into the
+ * activity log (positions keep no revision history); the rest feed the
+ * shared not-found / kind / ownership / soft-delete checks.
+ */
+const ownedPositionColumns = {
+  id: positions.id,
+  userId: positions.userId,
+  type: positions.type,
+  deletedAt: positions.deletedAt,
+  fen: positions.fen,
+  title: positions.title,
+  description: positions.description,
+};
+
+function selectPositionById(id: string) {
+  return db.select(ownedPositionColumns).from(positions).where(eq(positions.id, id)).limit(1);
+}
+
+type OwnedPosition = Awaited<ReturnType<typeof selectPositionById>>[number];
+
+/**
+ * Shared preamble of the update / delete position mutations: load the row
+ * by id, reject with `notFound` when it doesn't exist or is of a different
+ * kind (an id of the wrong kind must look nonexistent, not forbidden), then
+ * apply the ownership / soft-delete guard. Mirrors `loadOwnedChunk` in
+ * `lib/chunks/chunk-mutation-guards.ts`.
+ */
+async function loadOwnedPosition(
+  id: string,
+  userId: string,
+  type: PositionKind
+): Promise<{ position: OwnedPosition } | { error: string }> {
+  const [position] = await selectPositionById(id);
+
+  if (!position || position.type !== type) {
+    return { error: 'notFound' };
+  }
+  const ownershipError = guardOwnership(position, userId);
+  if (ownershipError) {
+    return { error: ownershipError };
+  }
+  return { position };
+}
+
+/**
  * Create a `positions` row of the given kind: validate, resolve an
  * optional fork source, validate tags, then in one transaction insert the
  * position, run `applyExtraWrites` (puzzles insert `puzzle_solutions`),
@@ -249,29 +296,11 @@ export async function updatePositionEntry(params: {
     return { error: validationError };
   }
 
-  const [position] = await db
-    .select({
-      id: positions.id,
-      userId: positions.userId,
-      type: positions.type,
-      deletedAt: positions.deletedAt,
-      // Pre-update values, captured so the activity log can preserve
-      // whatever this in-place edit overwrites (positions keep no history).
-      fen: positions.fen,
-      title: positions.title,
-      description: positions.description,
-    })
-    .from(positions)
-    .where(eq(positions.id, data.id))
-    .limit(1);
-
-  if (!position || position.type !== config.type) {
-    return { error: 'notFound' };
+  const loaded = await loadOwnedPosition(data.id, user.id, config.type);
+  if ('error' in loaded) {
+    return loaded;
   }
-  const ownershipError = guardOwnership(position, user.id);
-  if (ownershipError) {
-    return { error: ownershipError };
-  }
+  const { position } = loaded;
 
   const tagValidation = await validateAndDedupeTagIds({
     themeIds: data.themeIds,
@@ -342,23 +371,9 @@ export async function deletePositionEntry(params: {
   }
   const { user } = guardResult;
 
-  const [position] = await db
-    .select({
-      id: positions.id,
-      userId: positions.userId,
-      type: positions.type,
-      deletedAt: positions.deletedAt,
-    })
-    .from(positions)
-    .where(eq(positions.id, positionId))
-    .limit(1);
-
-  if (!position || position.type !== config.type) {
-    return { error: 'notFound' };
-  }
-  const ownershipError = guardOwnership(position, user.id);
-  if (ownershipError) {
-    return { error: ownershipError };
+  const loaded = await loadOwnedPosition(positionId, user.id, config.type);
+  if ('error' in loaded) {
+    return loaded;
   }
 
   await db.transaction(async (tx) => {
