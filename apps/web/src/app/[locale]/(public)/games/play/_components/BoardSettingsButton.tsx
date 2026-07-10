@@ -5,6 +5,13 @@ import { FaCog } from 'react-icons/fa';
 
 type Props = {
   onClick: () => void;
+  /**
+   * Anchor for a help tour targeting this button (see PlayHelpTour). Defaults
+   * to play's own tour target; other consumers reusing this button on a
+   * different screen (e.g. recall) pass their own id so their tour can find
+   * it without colliding with play's step.
+   */
+  dataTourId?: string;
 };
 
 /**
@@ -13,7 +20,7 @@ type Props = {
  * mask when it is masked). Carries a small frosted background so it stays
  * legible over either the move list or the frosted overlay.
  */
-export function BoardSettingsButton({ onClick }: Props) {
+export function BoardSettingsButton({ onClick, dataTourId = 'play-settings-gear' }: Props) {
   const t = useTranslations('play');
   return (
     <button
@@ -21,8 +28,7 @@ export function BoardSettingsButton({ onClick }: Props) {
       onClick={onClick}
       title={t('settings.title')}
       aria-label={t('settings.title')}
-      // Anchor for the play help tour (see PlayHelpTour).
-      data-tour-id="play-settings-gear"
+      data-tour-id={dataTourId}
       className="rounded-full bg-background/80 p-1.5 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:text-foreground"
     >
       <FaCog className="h-4 w-4" />

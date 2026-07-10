@@ -5,19 +5,26 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaCheck, FaCog, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
+import { FaArrowRight, FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
+import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
+import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
+import { usePeekState } from '@/app/[locale]/(public)/games/play/_hooks/use-peek-state';
+import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use-quick-peek-modal';
 import { ACTION_ROW_CONTAINER_CLASSES } from '@/app/[locale]/(public)/games/play/_lib';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 
 import { useRecallGame } from '../_hooks';
+import { useOpponentMoveAnnouncement } from '../_hooks/use-opponent-move-announcement';
 import { useRecallPreferences } from '../_hooks/use-recall-preferences';
-import { computeRecallStats } from '../_lib';
+import type { MoveLogEntry } from '../_lib';
+import { computeRecallStats, resolveModalPosition } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/recall-format';
 import { RecallMovesPanel } from './RecallMovesPanel';
+import { RecallOpponentMoveChip } from './RecallOpponentMoveChip';
 import { RecallSummary } from './RecallSummary';
 
 /**
@@ -28,6 +35,13 @@ export type RecallFeedback = {
   tone: 'correct' | 'incorrect' | 'skipped';
   text: string;
 };
+
+/**
+ * Recall's preferences are ephemeral (never persisted — see
+ * useRecallPreferences), so there is no peek-count ledger for `usePeekState`
+ * to record into, unlike play's `MoveOperationLog.peekCount`.
+ */
+const noOpRecordPeek = () => {};
 
 type Props = {
   pgn: string;
@@ -72,12 +86,6 @@ export function RecallClient({
 }: Props) {
   const t = useTranslations('recall');
 
-  // Recall's ephemeral local preferences (seeded from the saved game's
-  // snapshot, never written back) — see useRecallPreferences.
-  const { preferences, updatePreferences, handlePerGamePrefChange } = useRecallPreferences({
-    gameId,
-  });
-
   const {
     gameProgress,
     boardState,
@@ -96,53 +104,106 @@ export function RecallClient({
     startingFen,
   });
 
+  // Recall's ephemeral local preferences (seeded from the saved game's
+  // snapshot, never written back) — see useRecallPreferences.
+  const {
+    preferences,
+    updatePreferences,
+    handlePerGamePrefChange,
+    initialPlaySettings,
+    preferenceChangeLog,
+  } = useRecallPreferences({
+    gameId,
+    currentMoveIndex: gameProgress.currentMoveIndex,
+  });
+
   // UI-only state (modal visibility)
   const [showAnalyzeAllConfirm, setShowAnalyzeAllConfirm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  const { currentFen, displayFen, currentLastMove } = boardState;
+  const { currentFen, displayFen, currentLastMove, gamePositions } = boardState;
   const { isCompleted, totalMoves, progress, originalMoves } = gameProgress;
 
   const recallStats = computeRecallStats(moveLog.entries);
 
-  // Revisit a stumbled move from the completion summary: jump to its position.
-  // The board is always visible here, so it simply updates to that position.
-  const handleMistakeClick = useCallback(
-    (entry: Parameters<typeof actions.handleMoveClick>[0]) => {
-      actions.handleMoveClick(entry);
-    },
-    [actions]
+  // Revisit a stumbled move from the completion summary: open a quick-peek
+  // modal previewing that position, matching games/play/result's "By Move"
+  // strip. Same hook as GameReview's — an independent nav so opening it never
+  // disturbs the live board's own position, plus the "commit to live" action
+  // behind the modal footer's "Open this position".
+  const lastMoveAt = useCallback(
+    (position: number) =>
+      gamePositions[position === -1 ? originalMoves.length : position + 1]?.lastMove ?? null,
+    [gamePositions, originalMoves.length]
+  );
+  const quickPeek = useQuickPeekModal({
+    notationMoves: originalMoves,
+    startingFen,
+    lastMoveAt,
+    navigateToPosition: navigation.navigateToPosition,
+  });
+  const openQuickPeek = useCallback(
+    (entry: MoveLogEntry) => quickPeek.openAtMove(resolveModalPosition(entry, moveLog.entries)),
+    [quickPeek, moveLog.entries]
   );
 
   const boardFen = displayFen || currentFen;
   const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
-  // Recall is a review surface: the board has no blindfold mask / peek —
-  // matching play's mid-game UI here would be unnatural since the point of
-  // recall is reviewing a finished game, not re-hiding it. It's still
-  // foldable (open by default) via InlineBoardView's plain collapse mode, the
-  // same one puzzle uses (no `alwaysOpen`, no `masked`). Board-driven input is
-  // available at the live position whenever it's a move the reviewer is
-  // expected to enter (`isPlayerTurn` encodes the auto-opponent rule). The
-  // reviewer enters BOTH sides' moves, so the board is
-  // `movablePieces="side-to-move"`.
-  //
-  // `preferences` is seeded from the game's blindfold settings (see
-  // useRecallPreferences), which may hide own/opponent pieces or pawns
-  // specifically. Those piece-visibility fields are overridden to always-on
-  // below — same override puzzle applies — so a blindfold game reviewed here
-  // doesn't inherit its own blindfold, contradicting the "board is always
-  // visible" guarantee above.
-  const recallBoardPreferences = {
-    ...preferences,
-    showOwnPieces: true,
-    showOpponentPieces: true,
-    pawnHideMode: 'none' as const,
-  };
+  // Recall now mirrors play's blindfold semantics exactly: `boardVisibility`
+  // (always/peek/never) drives the same mask/peek overlay as the play
+  // screen, and `showOwnPieces` / `showOpponentPieces` / `pawnHideMode` pass
+  // straight through from `preferences` — a blindfold game reviewed here
+  // re-hides what the game itself hid, since recall is a memory exercise
+  // (the reviewer enters both sides' moves) rather than a passive replay.
+  // See the `usePeekState` wiring below for the mask itself. The reviewer
+  // enters BOTH sides' moves, so the board is `movablePieces="side-to-move"`.
+  const { boardMasked, handleRevealBoard, remask } = usePeekState({
+    boardVisibility: preferences.boardVisibility,
+    recordPeek: noOpRecordPeek,
+  });
+  // Re-mask after every committed move, mirroring play's remask() calls at
+  // its move-commit sites. Recall funnels moves through four paths (correct
+  // guess, "don't know", auto-opponent, and the analyze-all bulk fill) that
+  // all advance `currentMoveIndex` exactly once per commit, so watching it
+  // here covers all four without touching each call site individually.
+  useEffect(() => {
+    remask();
+  }, [gameProgress.currentMoveIndex, remask]);
+  // The completion/summary view — including a position adopted from the
+  // quick-peek modal's "Open this position" — always shows the board
+  // unmasked, mirroring play's separate `finishedBoardView`, which never
+  // re-hides a finished game. `inlineBoardView` below is shared by both the
+  // in-progress and completed JSX branches, so this gate is what keeps the
+  // summary view from inheriting the mid-session mask.
+  const isBoardMaskActive = !isCompleted && boardMasked;
+
+  // Announce the opponent's auto-filled move (from "Auto-fill opponent's
+  // moves") via an on-board chip, mirroring games/play's AiReplyChip.
+  const {
+    notation: opponentMoveNotation,
+    active: opponentChipActive,
+    dismiss: dismissOpponentChip,
+  } = useOpponentMoveAnnouncement({
+    entries: moveLog.entries,
+    durationMs: preferences.aiReplyDuration,
+  });
+  // Only surface the chip while masked — once the board is visible the
+  // opponent's move is already readable on the board itself (same reasoning
+  // as AiReplyChip's own gating on the play screen).
+  const showOpponentChip = isBoardMaskActive;
+  // Revealing the board (peek) also dismisses the chip: once the board is
+  // visible again there's no need for the announcement.
+  const handleReveal = useCallback(() => {
+    handleRevealBoard();
+    dismissOpponentChip();
+  }, [handleRevealBoard, dismissOpponentChip]);
+
   const canBoardInput =
     !isCompleted &&
     !moveInput.isAnalyzingAll &&
     navigation.currentPosition === -1 &&
-    settings.isPlayerTurn;
+    settings.isPlayerTurn &&
+    !isBoardMaskActive;
 
   const inlineBoardView = (
     <InlineBoardView
@@ -151,7 +212,7 @@ export function RecallClient({
       lastMove={
         preferences.highlightLastMove && navigation.currentPosition === -1 ? currentLastMove : null
       }
-      preferences={recallBoardPreferences}
+      preferences={preferences}
       movesLength={originalMoves.length}
       currentPosition={navigation.currentPosition}
       formattedPgn={formattedPgn}
@@ -159,11 +220,26 @@ export function RecallClient({
       onNavigatePrevious={navigation.navigatePrevious}
       onNavigateNext={navigation.navigateNext}
       onNavigateToEnd={navigation.navigateToEnd}
-      defaultOpen
+      alwaysOpen
+      masked={isBoardMaskActive}
+      maskDismissable={!isCompleted && preferences.boardVisibility === 'peek'}
+      onReveal={handleReveal}
       movablePieces="side-to-move"
       onMove={
         canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
       }
+      // Settings gear pinned to the board's top-right corner, matching
+      // games/play's BoardSettingsButton placement exactly (recall has no
+      // legacy-game gate on editability, so it's always shown here).
+      topRightControl={
+        <BoardSettingsButton onClick={() => setShowSettings(true)} dataTourId="recall-settings" />
+      }
+      boardBadge={
+        showOpponentChip ? (
+          <RecallOpponentMoveChip active={opponentChipActive} moveNotation={opponentMoveNotation} />
+        ) : undefined
+      }
+      badgeActive={showOpponentChip && opponentChipActive}
     />
   );
 
@@ -202,34 +278,17 @@ export function RecallClient({
     onCompletedChange?.(isCompleted);
   }, [onCompletedChange, isCompleted]);
 
-  // Settings gear — placed in the same bottom-right icon row as the in-game
-  // `GameInProgressPanel`, so the two screens feel identical.
-  const settingsRow = (
-    <div className="flex justify-end items-center gap-2 text-muted-foreground">
-      <button
-        type="button"
-        data-tour-id="recall-settings"
-        onClick={() => setShowSettings(true)}
-        className="p-1 leading-none hover:text-foreground"
-        title={t('settings')}
-        aria-label={t('settings')}
-      >
-        <FaCog className="w-4 h-4" />
-      </button>
-    </div>
-  );
-
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Progress Bar, Board, Input, Actions */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2" ref={quickPeek.boardColumnRef}>
           <div className="border border-border rounded-lg p-4">
             <div className="flex flex-col gap-6">
               {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
 
-              {/* Board (open by default, foldable — recall is a review surface) */}
+              {/* Board (always present; blindfold mask driven by boardVisibility, same as play) */}
               {inlineBoardView}
 
               {!isCompleted ? (
@@ -245,7 +304,7 @@ export function RecallClient({
                   ) : (
                     <>
                       {/* Move Input */}
-                      <div data-tour-id="recall-input">
+                      <div data-tour-id="recall-input" className="flex flex-col gap-6">
                         <MoveInputPanel
                           preferences={preferences}
                           updatePreferences={updatePreferences}
@@ -303,24 +362,20 @@ export function RecallClient({
                           </button>
                         )}
                       </div>
-
-                      {settingsRow}
                     </>
                   )}
                 </>
               ) : (
                 /* Completion: recall report + stumble review + next actions */
-                <>
-                  <RecallSummary
-                    stats={recallStats}
-                    entries={moveLog.entries}
-                    onEntryClick={handleMistakeClick}
-                    onRestart={onRestart ?? (() => {})}
-                    gameId={gameId}
-                  />
-
-                  {settingsRow}
-                </>
+                <RecallSummary
+                  stats={recallStats}
+                  entries={moveLog.entries}
+                  onEntryClick={openQuickPeek}
+                  onRestart={onRestart ?? (() => {})}
+                  gameId={gameId}
+                  initialPlaySettings={initialPlaySettings}
+                  preferenceChangeLog={preferenceChangeLog}
+                />
               )}
             </div>
           </div>
@@ -343,12 +398,45 @@ export function RecallClient({
       </div>
 
       {/* Settings Modal — reuses the in-game settings form. Edits update the
-          local preferences only (no persistence, no preferenceChangeLog). */}
+          local preferences only; never persisted, but display-relevant edits
+          ARE tracked into an in-memory preferenceChangeLog for the summary's
+          Change Log (see useRecallPreferences). */}
       <MidGameSettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         preferences={preferences}
         onPerGamePrefChange={handlePerGamePrefChange}
+      />
+
+      {/* Quick-peek modal — previews a stumbled move's position without
+          disturbing the live board, matching games/play/result's "By Move"
+          strip. The footer's "Open this position" adopts the previewed
+          position onto the live board, same as GameReview's own commit. */}
+      <BoardViewModal
+        isOpen={quickPeek.isOpen}
+        onClose={quickPeek.close}
+        fen={quickPeek.nav.displayFen ?? quickPeek.nav.latestFen}
+        playerSide={playerColor}
+        lastMove={quickPeek.lastMove}
+        preferences={preferences}
+        movesLength={originalMoves.length}
+        currentPosition={quickPeek.nav.currentPosition}
+        formattedPgn={formattedPgn}
+        onNavigateToStart={quickPeek.nav.navigateToStart}
+        onNavigatePrevious={quickPeek.nav.navigatePrevious}
+        onNavigateNext={quickPeek.nav.navigateNext}
+        onNavigateToEnd={quickPeek.nav.navigateToEnd}
+        onNavigateToPosition={quickPeek.nav.navigateToPosition}
+        footer={
+          <button
+            type="button"
+            onClick={quickPeek.commit}
+            className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          >
+            {t('openPosition')}
+            <FaArrowRight className="h-3 w-3" aria-hidden />
+          </button>
+        }
       />
 
       {/* Auto Fill All Confirmation Modal */}

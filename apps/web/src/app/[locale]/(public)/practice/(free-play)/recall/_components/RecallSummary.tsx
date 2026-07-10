@@ -5,19 +5,34 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaListOl, FaRedo } from 'react-icons/fa';
 
+import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
+
+import { PlaySettingsChangeLog } from '@/app/[locale]/(public)/games/play/result/_components/PlaySettingsChangeLog';
+import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
+import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
+
 import type { MoveLogEntry, RecallStats } from '../_lib';
-import { RecallMoveLogTable } from './RecallMoveLogTable';
+import { RecallMoveStrip } from './RecallMoveStrip';
 
 type Props = {
   stats: RecallStats;
-  /** Full move log — the table filters it to the incorrect / skipped rows. */
+  /** Full move log — RecallMoveStrip derives its per-move markers from this. */
   entries: MoveLogEntry[];
-  /** Open the position-preview modal at a stumbled move. */
+  /** Jump the board to a move's position. */
   onEntryClick: (entry: MoveLogEntry) => void;
   /** Restart the review from the beginning. */
   onRestart: () => void;
   /** Saved game id, for the "back to result" link. */
   gameId?: string;
+  /**
+   * Start-of-session snapshot of the display-relevant settings, and the
+   * mid-session edits on top of it — feeds the Change Log, matching
+   * games/play/result's. Null until useRecallPreferences has seeded (always
+   * non-null by the time this renders, since completion implies the session
+   * — and therefore the seed — has already happened).
+   */
+  initialPlaySettings: GamePlaySettings | null;
+  preferenceChangeLog: PlaySettingsChangeEntry[];
 };
 
 /**
@@ -25,11 +40,19 @@ type Props = {
  * clickable review of the moves the user stumbled on, and next-step actions.
  * Replaces the old "Game Review Completed!" message + hidden log link.
  */
-export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId }: Props) {
+export function RecallSummary({
+  stats,
+  entries,
+  onEntryClick,
+  onRestart,
+  gameId,
+  initialPlaySettings,
+  preferenceChangeLog,
+}: Props) {
   const t = useTranslations('recall');
 
   const hasStats = stats.total > 0;
-  const ratePercent = Math.round(stats.recallRate * 100);
+  const ratePercent = (stats.recallRate * 100).toFixed(1);
 
   // Headline tier. Low-recall runs get no encouraging headline (the bare score
   // speaks for itself) — `null` renders no heading rather than a platitude.
@@ -46,34 +69,41 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTitle>{t('summary.title')}</SectionTitle>
+
       {/* Recall report */}
       <div className="flex flex-col items-center gap-3 text-center">
         {headline && <h3 className="text-xl font-bold">{headline}</h3>}
 
         {hasStats && (
           <>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold tabular-nums">{ratePercent}%</span>
-              <span className="text-sm text-muted-foreground">
-                {t('summary.scoreLine', { recalled: stats.recalled, total: stats.total })}
-              </span>
-            </div>
+            <h2 className="text-2xl font-bold text-center">
+              {t('summary.rateLabel')}: {ratePercent}% ({stats.recalled}/{stats.total})
+            </h2>
 
-            <div className="flex flex-wrap justify-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-3 py-1 text-sm text-success">
-                {t('summary.nailed')} {stats.nailed}
-              </span>
-              {stats.struggled > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-3 py-1 text-sm text-warning">
-                  {t('summary.struggled')} {stats.struggled}
-                </span>
-              )}
-              {stats.missed > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-3 py-1 text-sm text-destructive">
-                  {t('summary.missed')} {stats.missed}
-                </span>
-              )}
-            </div>
+            <SegmentedProgressBar
+              segments={[
+                {
+                  key: 'nailed',
+                  value: stats.nailed,
+                  color: 'bg-success',
+                  label: t('summary.nailed'),
+                },
+                {
+                  key: 'struggled',
+                  value: stats.struggled,
+                  color: 'bg-warning',
+                  label: t('summary.struggled'),
+                },
+                {
+                  key: 'missed',
+                  value: stats.missed,
+                  color: 'bg-destructive',
+                  label: t('summary.missed'),
+                },
+              ]}
+              total={stats.total}
+            />
 
             {stats.mistakes > 0 && (
               <p className="text-xs text-muted-foreground">
@@ -84,8 +114,8 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
         )}
       </div>
 
-      {/* Stumbled-here review */}
-      {stats.struggled + stats.missed > 0 && (
+      {/* Per-move review — includes clean moves too, not just stumbles. */}
+      {hasStats && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <h4 className="flex items-center gap-2 text-sm font-medium">
@@ -94,8 +124,18 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
             </h4>
             <span className="text-xs text-muted-foreground">{t('summary.reviewHint')}</span>
           </div>
-          <RecallMoveLogTable entries={entries} onEntryClick={onEntryClick} />
+          <RecallMoveStrip entries={entries} onEntryClick={onEntryClick} />
         </div>
+      )}
+
+      {/* Change Log — mid-session board/piece-display setting edits, same
+          component and "Label: from → to" formatting as games/play/result.
+          Renders nothing itself when there were no edits. */}
+      {initialPlaySettings && (
+        <PlaySettingsChangeLog
+          playSettings={initialPlaySettings}
+          playSettingsLog={preferenceChangeLog}
+        />
       )}
 
       {/* Next actions — full-width, stacked (matches the result screen). */}

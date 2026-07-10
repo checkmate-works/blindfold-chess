@@ -5,7 +5,7 @@ import { type RefObject, useCallback, useMemo, useRef, useState } from 'react';
 import type { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
+import { useMoveNavigation } from './use-move-navigation';
 
 type LastMove = ReturnType<typeof getLastMoveDetails> | null;
 
@@ -35,13 +35,13 @@ type QuickPeekModal = {
 };
 
 /**
- * The "By Move" quick-peek modal on the game review: an independent
- * `useMoveNavigation` so previewing a position never disturbs the live replay
- * (board, comment thread, URL), plus open/close state and a "commit to live"
- * action that adopts the previewed position and scrolls the board into view.
- * The rAF defers the scroll until the modal's scroll-lock has been released on
- * that render. Split out of {@link GameReview} so its secondary navigation
- * reads separately from the primary one.
+ * A position quick-peek modal over a live board: an independent
+ * `useMoveNavigation` so previewing a position never disturbs the live board
+ * (replay state, comment thread, URL), plus open/close state and a "commit to
+ * live" action that adopts the previewed position and scrolls the board into
+ * view. The rAF defers the scroll until the modal's scroll-lock has been
+ * released on that render. Used by the shared-game review's "By Move" strip
+ * and recall's completion-summary per-move strip.
  */
 export function useQuickPeekModal({
   notationMoves,

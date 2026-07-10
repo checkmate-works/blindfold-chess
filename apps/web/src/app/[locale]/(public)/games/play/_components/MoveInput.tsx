@@ -47,8 +47,13 @@ function SuggestionInput({
 
   const handleSubmit = () => {
     if (value.trim()) {
-      onSubmit(value.trim(), false);
+      const move = value.trim();
+      // Clear the box first: `onChange` also clears any stale error/feedback
+      // (see MoveInputPanel's wiring), and that clear must not run AFTER
+      // `onSubmit` sets the real correct/incorrect result, or it wipes it
+      // out before the user ever sees it.
       onChange('');
+      onSubmit(move, false);
     }
   };
 
@@ -76,8 +81,9 @@ function SuggestionInput({
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    onSubmit(suggestion, true);
+    // Same ordering fix as handleSubmit above — clear before submit, not after.
     onChange('');
+    onSubmit(suggestion, true);
     setIsFocused(false);
   };
 

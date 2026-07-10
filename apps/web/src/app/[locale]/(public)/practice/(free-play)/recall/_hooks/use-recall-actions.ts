@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
@@ -9,7 +9,6 @@ type Props = {
   originalMoves: AlgebraicNotation[];
   userMoves: AlgebraicNotation[];
   currentMoveIndex: number;
-  moveLog: MoveLogEntry[];
   startsAsBlack: boolean;
   startMoveNumber: number;
   isPlayerTurn: boolean;
@@ -25,7 +24,6 @@ export function useRecallActions({
   originalMoves,
   userMoves,
   currentMoveIndex,
-  moveLog,
   startsAsBlack,
   startMoveNumber,
   isPlayerTurn,
@@ -44,10 +42,6 @@ export function useRecallActions({
     isWhiteMove: boolean;
     move: string;
   } | null>(null);
-
-  // Keep moveLog in a ref to avoid it triggering re-renders in dependency arrays
-  const moveLogRef = useRef(moveLog);
-  moveLogRef.current = moveLog;
 
   /**
    * Shared logic for processing a correct / auto-filled move:
@@ -176,11 +170,18 @@ export function useRecallActions({
       const move = originalMoves[i];
       const { moveNumber, isWhiteMove } = computeMoveNumber(i, startsAsBlack, startMoveNumber);
 
+      // In auto-opponent mode the opponent's share of the remaining moves
+      // would have been filled as `auto` (excluded from recall stats) had the
+      // review continued move by move — bulk-filling must not reclassify them
+      // as the user's misses. Sides strictly alternate, so index parity
+      // relative to `currentMoveIndex` (whose side `isPlayerTurn` tells us)
+      // identifies whose move each remaining index is.
+      const isPlayersMove = (i - currentMoveIndex) % 2 === 0 ? isPlayerTurn : !isPlayerTurn;
       newLogEntries.push({
         moveNumber,
         isWhiteMove,
         move,
-        status: 'skipped',
+        status: autoOpponent && !isPlayersMove ? 'auto' : 'autoFilled',
       });
     }
 
@@ -194,6 +195,8 @@ export function useRecallActions({
     userMoves,
     startsAsBlack,
     startMoveNumber,
+    isPlayerTurn,
+    autoOpponent,
     setUserMoves,
     setCurrentMoveIndex,
     setMoveLog,
