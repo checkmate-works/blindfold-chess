@@ -32,7 +32,7 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
   const t = useTranslations('recall');
 
   const hasStats = stats.total > 0;
-  const ratePercent = Math.round(stats.recallRate * 100);
+  const ratePercent = (stats.recallRate * 100).toFixed(1);
 
   // Headline tier. Low-recall runs get no encouraging headline (the bare score
   // speaks for itself) — `null` renders no heading rather than a platitude.
@@ -57,12 +57,9 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
 
         {hasStats && (
           <>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold tabular-nums">{ratePercent}%</span>
-              <span className="text-sm text-muted-foreground">
-                {t('summary.scoreLine', { recalled: stats.recalled, total: stats.total })}
-              </span>
-            </div>
+            <h2 className="text-2xl font-bold text-center">
+              {t('summary.rateLabel')}: {ratePercent}% ({stats.recalled}/{stats.total})
+            </h2>
 
             <SegmentedProgressBar
               segments={[

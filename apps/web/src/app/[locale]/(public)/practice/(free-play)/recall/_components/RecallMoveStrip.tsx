@@ -6,7 +6,7 @@ import type { MoveLogEntry } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/recall-format';
 
 type Props = {
-  /** Full move-log history; `auto` (opponent auto-fill) rows are excluded. */
+  /** Full move-log history. */
   entries: MoveLogEntry[];
   /**
    * When provided, each marker becomes a button that jumps the board to the
@@ -18,15 +18,18 @@ type Props = {
 const MARKER_CLASS = {
   correct: 'bg-success/70',
   skipped: 'bg-warning/70',
+  auto: 'bg-muted-foreground/40',
 } as const;
 
 /**
- * The per-move strip: one small marker per engaged move — a green square for
- * a clean first-try recall, an amber square for an explicit "I don't know"
- * skip, and a red pill (showing the actual wrong SAN, not just a blank
+ * The per-move strip: one small marker per move — a green square for a
+ * clean first-try recall, an amber square for an explicit "I don't know"
+ * skip, a gray square for the opponent's own move when "Auto-fill
+ * opponent's moves" is on (`auto` — not the user's responsibility, so it's
+ * excluded from the recall stats bar above but still shown here for
+ * context), and a red pill (showing the actual wrong SAN, not just a blank
  * color) for each incorrect attempt — same visual language as the
- * games/play result screen's "By Move" effort strip. Opponent auto-fills
- * (`auto`) are not the user's responsibility, so they are excluded.
+ * games/play result screen's "By Move" effort strip.
  *
  * A single "Auto-fill All" click resolves every remaining move in one batch,
  * so `autoFilled` entries always form one trailing run at the end of the
@@ -39,8 +42,11 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
   const t = useTranslations('recall');
 
   const individualEntries = entries.filter(
-    (e): e is MoveLogEntry & { status: 'correct' | 'incorrect' | 'skipped' } =>
-      e.status === 'correct' || e.status === 'incorrect' || e.status === 'skipped'
+    (e): e is MoveLogEntry & { status: 'correct' | 'incorrect' | 'skipped' | 'auto' } =>
+      e.status === 'correct' ||
+      e.status === 'incorrect' ||
+      e.status === 'skipped' ||
+      e.status === 'auto'
   );
   const autoFilledEntries = entries.filter((e) => e.status === 'autoFilled');
 
@@ -78,7 +84,9 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
           const label =
             entry.status === 'correct'
               ? `${prefix} ${entry.move} — ${t('summary.nailed')}`
-              : `${prefix} ${entry.move} — ${t('summary.missed')}`;
+              : entry.status === 'auto'
+                ? `${prefix} ${entry.move} — ${t('summary.legendAuto')}`
+                : `${prefix} ${entry.move} — ${t('summary.missed')}`;
           return (
             <button
               key={index}
@@ -123,6 +131,12 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
           <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
             <span className={`h-3 w-3 rounded-sm ${MARKER_CLASS.skipped}`} />
             {t('summary.missed')}
+          </span>
+        )}
+        {individualEntries.some((e) => e.status === 'auto') && (
+          <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+            <span className={`h-3 w-3 rounded-sm ${MARKER_CLASS.auto}`} />
+            {t('summary.legendAuto')}
           </span>
         )}
         {autoFilledEntries.length > 0 && (
