@@ -389,11 +389,16 @@ export function RecallClient({
           </div>
         </div>
 
-        {/* Move List, plus — once completed — the ad below it. Grouped in one
-            column so the ad sits directly under the Moves panel on desktop
-            without disturbing the board|moves grid, and simply follows Moves
-            when the grid stacks to a single column on mobile. */}
+        {/* Move List, plus — once completed — the ad. Grouped in one column
+            so the ad sits directly under the Moves panel on desktop without
+            disturbing the board|moves grid. On mobile the column stacks
+            below the Summary block, and `lg:order-last` flips the ad back
+            above Moves there (DOM order is ad-then-moves; only `lg:` pins it
+            after Moves), so the ad reads as "between Summary and Moves" on
+            mobile and "below Moves" on desktop from one un-duplicated node. */}
         <div className="lg:col-span-1 flex flex-col gap-8">
+          {isCompleted && <div className="lg:order-last">{adBanner}</div>}
+
           <RecallMovesPanel
             formattedPgn={formattedPgn}
             currentPosition={navigation.currentPosition}
@@ -407,8 +412,6 @@ export function RecallClient({
             onNavigateNext={navigation.navigateNext}
             onNavigateToEnd={navigation.navigateToEnd}
           />
-
-          {isCompleted && adBanner}
         </div>
       </div>
 
