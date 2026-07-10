@@ -23,10 +23,16 @@ import { ARTICLE_IMAGES_BUCKET } from './image-validation';
  * widest article content slot (~800 px). Resizing here means each viewer
  * downloads bounded bytes from Storage and Vercel Image Optimization
  * generates variants from a smaller source — both contribute to the
- * Image Optimization Transformation cost story. SVG is excluded
- * (resizing a vector image to a fixed bounding box would rasterize it).
+ * Image Optimization Transformation cost story.
  */
 const ARTICLE_IMAGE_MAX_LONG_EDGE = 1600;
+
+/**
+ * Decompression-bomb ceiling (input pixels) for the Sharp decode. Matches the
+ * post-image policy (50 MP): rejects a highly compressible huge-dimension
+ * image that sits under the 5 MB byte cap but would decode to ~GBs of memory.
+ */
+const ARTICLE_IMAGE_MAX_INPUT_PIXELS = 50_000_000;
 
 async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
   const auth = await requireAdmin();
@@ -103,26 +109,30 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { file, buffer, altText } = fileResult;
 
-  // Raster images go through Sharp: rotate (bake in EXIF orientation, strip
-  // metadata) → cap long edge to ARTICLE_IMAGE_MAX_LONG_EDGE → re-encode in
-  // the source format. SVG bypasses this entirely (resizing a vector to a
-  // raster bounding box would lose its scalability).
+  // Every accepted image is a raster (jpeg/png/webp — SVG is rejected by the
+  // MIME allow-list and magic-byte check in parseAndValidateFile, so it never
+  // reaches here). Run it through Sharp: rotate (bake in EXIF orientation,
+  // strip metadata) → cap long edge to ARTICLE_IMAGE_MAX_LONG_EDGE →
+  // re-encode in the source format. `limitInputPixels` rejects a
+  // decompression bomb before the full decode.
   let payload: Buffer | ArrayBuffer = buffer;
   let payloadByteLength = file.size;
-  if (file.type !== 'image/svg+xml') {
-    try {
-      const processed = await sharp(Buffer.from(buffer), { failOn: 'error', pages: 1 })
-        .rotate()
-        .resize(ARTICLE_IMAGE_MAX_LONG_EDGE, ARTICLE_IMAGE_MAX_LONG_EDGE, {
-          fit: 'inside',
-          withoutEnlargement: true,
-        })
-        .toBuffer();
-      payload = processed;
-      payloadByteLength = processed.byteLength;
-    } catch {
-      return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
-    }
+  try {
+    const processed = await sharp(Buffer.from(buffer), {
+      failOn: 'error',
+      pages: 1,
+      limitInputPixels: ARTICLE_IMAGE_MAX_INPUT_PIXELS,
+    })
+      .rotate()
+      .resize(ARTICLE_IMAGE_MAX_LONG_EDGE, ARTICLE_IMAGE_MAX_LONG_EDGE, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .toBuffer();
+    payload = processed;
+    payloadByteLength = processed.byteLength;
+  } catch {
+    return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 
   const ext = MIME_TO_EXTENSION[file.type];

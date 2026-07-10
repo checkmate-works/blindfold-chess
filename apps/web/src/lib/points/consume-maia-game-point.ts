@@ -20,8 +20,15 @@ export type ConsumeMaiaGamePointResult =
  * There is no `games` table — Maia games are not persisted — so the charge
  * cannot key off a server-side game id. The caller (client) generates a
  * UUID per game-start attempt and passes it here; the ledger row is keyed
- * `maia_game:<clientGameId>`. A retried call (lost response, double click)
- * reuses the same UUID and is absorbed:
+ * `maia_game:<userId>:<clientGameId>`. The `userId` is part of the key on
+ * purpose: `clientGameId` is fully client-controlled and
+ * `point_events.idempotency_key` is globally UNIQUE, so a key of just
+ * `maia_game:<clientGameId>` let one user replay another user's game id —
+ * the pre-check (and the UNIQUE insert) would match the other user's row and
+ * report `alreadyCharged`, so the second user played for free. Namespacing by
+ * `userId` makes each (user, game) pair its own key and removes that
+ * cross-user collision. A retried call (lost response, double click) reuses
+ * the same UUID and is absorbed:
  *   1. An explicit pre-check on `idempotency_key` lets a retry succeed even
  *      when the balance has since dropped below the cost.
  *   2. The idempotent `recordPointMovement` insert closes the concurrent
@@ -39,11 +46,13 @@ export async function consumeMaiaGamePoint(
   userId: string,
   clientGameId: string
 ): Promise<ConsumeMaiaGamePointResult> {
-  const idempotencyKey = `${MAIA_GAME_SOURCE}:${clientGameId}`;
+  const idempotencyKey = `${MAIA_GAME_SOURCE}:${userId}:${clientGameId}`;
 
   return db.transaction(async (tx) => {
     // (1) Idempotency short-circuit — a retry of the same clientGameId must
     //     not re-charge, and must succeed regardless of the current balance.
+    //     The key already embeds `userId`, so this only ever matches the
+    //     caller's own prior charge.
     const existing = await tx
       .select({ id: pointEvents.id })
       .from(pointEvents)

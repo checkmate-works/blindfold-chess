@@ -211,6 +211,17 @@ export const RATE_LIMITS = {
    * `consumeMaiaGamePoint` transaction.
    */
   startMaiaGame: { action: 'start_maia_game', maxAttempts: 30, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for the post-image-attach cache revalidation action.
+   * Fired once per successful inline image attach, so a generous 60/hour
+   * covers normal use; the cap exists purely to bound the cost of an
+   * authenticated client looping `revalidatePath` to force repeated SSR.
+   */
+  revalidateAttachmentPath: {
+    action: 'revalidate_attachment_path',
+    maxAttempts: 60,
+    windowMs: 3_600_000,
+  },
 } as const;
 
 /**

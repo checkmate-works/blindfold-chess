@@ -148,7 +148,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const maxEdge = MAX_LONG_EDGE[target];
   let processed: Buffer;
   try {
-    processed = await sharp(Buffer.from(buffer), { failOn: 'error', pages: 1 })
+    // `limitInputPixels` (50 MP) rejects a decompression bomb — a highly
+    // compressible huge-dimension image under the byte cap that would
+    // otherwise decode to ~GBs — before the full decode.
+    processed = await sharp(Buffer.from(buffer), {
+      failOn: 'error',
+      pages: 1,
+      limitInputPixels: 50_000_000,
+    })
       .rotate()
       .resize(maxEdge, maxEdge, { fit: 'inside', withoutEnlargement: true })
       .toBuffer();

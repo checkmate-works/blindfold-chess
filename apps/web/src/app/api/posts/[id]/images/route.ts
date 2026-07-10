@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import 'server-only';
 
-import { authenticateAndGuardApi } from '@/lib/auth';
+import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { db, postImageAttachments } from '@/lib/db';
 import {
   AnimatedImageNotSupportedError,
@@ -33,7 +33,7 @@ import { loadAuthoredPost } from '@/lib/topic-posts';
  * `post_image_attachments` are blocked by the table's RLS policy.
  *
  * Defenses, in order:
- *   1. Auth + rate limit (`authenticateAndGuardApi`).
+ *   1. CSRF origin check + auth + rate limit (`guardApiMutation`).
  *   2. Pre-parse `Content-Length` ceiling — refuses large bodies before
  *      `formData()` materializes them in memory.
  *   3. Parent post lookup: must exist, must be owned by the caller, must
@@ -54,7 +54,7 @@ import { loadAuthoredPost } from '@/lib/topic-posts';
  * `post_image_attachments_chk_*` CHECKs are the last line of defense.
  */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const guard = await authenticateAndGuardApi(RATE_LIMITS.uploadPostImage);
+  const guard = await guardApiMutation(request, RATE_LIMITS.uploadPostImage);
   if ('response' in guard) return guard.response;
   const { user } = guard;
 

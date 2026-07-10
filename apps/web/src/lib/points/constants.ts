@@ -183,7 +183,9 @@ export const MAIA_GAME_POINT_COST = 1;
  * a member of `POINT_SOURCES` — that array is the UGC grant surface
  * (`entityTypeForSource` etc.). `maia_game` is a consumption
  * source, like `'redemption'`: `source_id` holds the client-generated game
- * UUID and the idempotency key is `maia_game:<uuid>`.
+ * UUID and the idempotency key is `maia_game:<userId>:<uuid>` (the `userId`
+ * segment prevents one user replaying another user's client game id against
+ * the globally-unique `idempotency_key`).
  */
 export const MAIA_GAME_SOURCE = 'maia_game';
 
