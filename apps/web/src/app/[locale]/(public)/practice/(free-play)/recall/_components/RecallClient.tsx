@@ -9,6 +9,7 @@ import { FaCheck, FaCog, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
+import { usePeekState } from '@/app/[locale]/(public)/games/play/_hooks/use-peek-state';
 import { ACTION_ROW_CONTAINER_CLASSES } from '@/app/[locale]/(public)/games/play/_lib';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
@@ -28,6 +29,13 @@ export type RecallFeedback = {
   tone: 'correct' | 'incorrect' | 'skipped';
   text: string;
 };
+
+/**
+ * Recall's preferences are ephemeral (never persisted — see
+ * useRecallPreferences), so there is no peek-count ledger for `usePeekState`
+ * to record into, unlike play's `MoveOperationLog.peekCount`.
+ */
+const noOpRecordPeek = () => {};
 
 type Props = {
   pgn: string;
@@ -124,11 +132,23 @@ export function RecallClient({
   // (the reviewer enters both sides' moves) rather than a passive replay.
   // See the `usePeekState` wiring below for the mask itself. The reviewer
   // enters BOTH sides' moves, so the board is `movablePieces="side-to-move"`.
+  const { boardMasked, handleRevealBoard } = usePeekState({
+    boardVisibility: preferences.boardVisibility,
+    recordPeek: noOpRecordPeek,
+  });
+  // The completion/summary view — including a mistake-review jump via
+  // handleMistakeClick — always shows the position unmasked, mirroring
+  // play's separate `finishedBoardView`, which never re-hides a finished
+  // game. `inlineBoardView` below is shared by both the in-progress and
+  // completed JSX branches, so this gate is what keeps the summary view
+  // from inheriting the mid-session mask.
+  const isBoardMaskActive = !isCompleted && boardMasked;
   const canBoardInput =
     !isCompleted &&
     !moveInput.isAnalyzingAll &&
     navigation.currentPosition === -1 &&
-    settings.isPlayerTurn;
+    settings.isPlayerTurn &&
+    !isBoardMaskActive;
 
   const inlineBoardView = (
     <InlineBoardView
@@ -145,7 +165,10 @@ export function RecallClient({
       onNavigatePrevious={navigation.navigatePrevious}
       onNavigateNext={navigation.navigateNext}
       onNavigateToEnd={navigation.navigateToEnd}
-      defaultOpen
+      alwaysOpen
+      masked={isBoardMaskActive}
+      maskDismissable={!isCompleted && preferences.boardVisibility === 'peek'}
+      onReveal={handleRevealBoard}
       movablePieces="side-to-move"
       onMove={
         canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
@@ -215,7 +238,7 @@ export function RecallClient({
               {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
 
-              {/* Board (open by default, foldable — recall is a review surface) */}
+              {/* Board (always present; blindfold mask driven by boardVisibility, same as play) */}
               {inlineBoardView}
 
               {!isCompleted ? (
