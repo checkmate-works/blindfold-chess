@@ -262,7 +262,7 @@ export function RecallClient({
                   ) : (
                     <>
                       {/* Move Input */}
-                      <div data-tour-id="recall-input">
+                      <div data-tour-id="recall-input" className="flex flex-col gap-6">
                         <MoveInputPanel
                           preferences={preferences}
                           updatePreferences={updatePreferences}
