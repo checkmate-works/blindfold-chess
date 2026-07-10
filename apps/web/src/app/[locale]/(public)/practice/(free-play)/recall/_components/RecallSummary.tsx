@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaListOl, FaRedo } from 'react-icons/fa';
 
+import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
 import type { MoveLogEntry, RecallStats } from '../_lib';
@@ -63,21 +64,29 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
               </span>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-3 py-1 text-sm text-success">
-                {t('summary.nailed')} {stats.nailed}
-              </span>
-              {stats.struggled > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-3 py-1 text-sm text-warning">
-                  {t('summary.struggled')} {stats.struggled}
-                </span>
-              )}
-              {stats.missed > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-3 py-1 text-sm text-destructive">
-                  {t('summary.missed')} {stats.missed}
-                </span>
-              )}
-            </div>
+            <SegmentedProgressBar
+              segments={[
+                {
+                  key: 'nailed',
+                  value: stats.nailed,
+                  color: 'bg-success',
+                  label: t('summary.nailed'),
+                },
+                {
+                  key: 'struggled',
+                  value: stats.struggled,
+                  color: 'bg-warning',
+                  label: t('summary.struggled'),
+                },
+                {
+                  key: 'missed',
+                  value: stats.missed,
+                  color: 'bg-destructive',
+                  label: t('summary.missed'),
+                },
+              ]}
+              total={stats.total}
+            />
 
             {stats.mistakes > 0 && (
               <p className="text-xs text-muted-foreground">
