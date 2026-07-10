@@ -306,6 +306,34 @@ describe('FeedClient', () => {
     });
   });
 
+  describe('ad fallback when ad_creatives has no eligible rows', () => {
+    it('renders the AdSense fallback, wrapped in .ad-slot-wrapper, instead of a native ad card', () => {
+      // AD_INTERVAL is 10, so 10 items produce exactly one ad slot. With
+      // nativeAdCreatives empty (mirrors an empty ad_creatives table), the
+      // slot must fall back to ResponsiveAdSlot rather than being skipped.
+      const initialItems = Array.from({ length: 10 }, (_, i) => makeTopicPostItem(`noad-${i}`));
+      render(
+        <FeedClient
+          {...defaultProps}
+          nativeAdCreatives={[]}
+          initialItems={initialItems}
+          initialCursor={null}
+        />
+      );
+
+      expect(screen.queryByTestId('ad-slot')).toBeNull();
+      const fallback = screen.getByTestId('ad-slot-fallback');
+      expect(fallback).toBeInTheDocument();
+
+      // The `bfc_ads_hidden` no-flash CSS rule hides `.ad-slot-wrapper`; if
+      // the fallback ever rendered outside that wrapper, ad-free viewers
+      // (subscribers / ad_free grant holders) would still see the AdSense
+      // unit.
+      const wrapper = fallback.parentElement;
+      expect(wrapper?.className).toContain('ad-slot-wrapper');
+    });
+  });
+
   describe('boundary: exactly one item', () => {
     it('renders a single wrapper that is both first and last, with last:border-b-0 applicable', () => {
       const { container } = render(
