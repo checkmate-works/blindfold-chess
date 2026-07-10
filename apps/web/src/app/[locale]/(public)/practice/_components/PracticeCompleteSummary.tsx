@@ -1,7 +1,6 @@
-import { SectionTitle } from '@/app/[locale]/_components';
-
 import type { PracticeCompleteLabels, ScoreStats } from '../_lib/practice-complete-types';
 import { isDetailedPieceStats } from '../_lib/practice-complete-types';
+import { ScoreRateHeading } from './ScoreRateHeading';
 import { SegmentedProgressBar } from './SegmentedProgressBar';
 
 type Props = {
@@ -23,7 +22,7 @@ export function PracticeCompleteSummary({
     <>
       {/* Score display */}
       {scoreStats && labels.recreationProgress ? (
-        <SectionTitle className="text-2xl font-bold mb-6">{labels.score}</SectionTitle>
+        <ScoreRateHeading className="mb-6">{labels.score}</ScoreRateHeading>
       ) : (
         <div className="mb-6 text-center">
           <p className="text-3xl font-bold text-foreground mb-2">

@@ -8,6 +8,7 @@ import { FaListOl, FaRedo } from 'react-icons/fa';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
 import { PlaySettingsChangeLog } from '@/app/[locale]/(public)/games/play/result/_components/PlaySettingsChangeLog';
+import { ScoreRateHeading } from '@/app/[locale]/(public)/practice/_components/ScoreRateHeading';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
@@ -54,32 +55,19 @@ export function RecallSummary({
   const hasStats = stats.total > 0;
   const ratePercent = (stats.recallRate * 100).toFixed(1);
 
-  // Headline tier. Low-recall runs get no encouraging headline (the bare score
-  // speaks for itself) — `null` renders no heading rather than a platitude.
-  const tier =
-    stats.recalled === stats.total && stats.struggled === 0 && stats.mistakes === 0
-      ? 'perfect'
-      : stats.missed === 0
-        ? 'allRecalled'
-        : stats.recallRate >= 0.8
-          ? 'good'
-          : null;
-
-  const headline = hasStats ? (tier ? t(`summary.headline.${tier}`) : null) : t('completed');
-
   return (
     <div className="flex flex-col gap-6">
       <SectionTitle>{t('summary.title')}</SectionTitle>
 
       {/* Recall report */}
       <div className="flex flex-col items-center gap-3 text-center">
-        {headline && <h3 className="text-xl font-bold">{headline}</h3>}
+        {!hasStats && <h3 className="text-xl font-bold">{t('completed')}</h3>}
 
         {hasStats && (
           <>
-            <h2 className="text-2xl font-bold text-center">
+            <ScoreRateHeading>
               {t('summary.rateLabel')}: {ratePercent}% ({stats.recalled}/{stats.total})
-            </h2>
+            </ScoreRateHeading>
 
             <SegmentedProgressBar
               segments={[

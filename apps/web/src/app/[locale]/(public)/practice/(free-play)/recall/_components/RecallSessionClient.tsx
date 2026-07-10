@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -23,6 +23,8 @@ type Props = {
   startingFen?: string;
   gameId?: string;
   breadcrumbItems: BreadcrumbItem[];
+  /** `content-bottom` ad slot, rendered server-side and passed through to RecallClient. */
+  adBanner?: ReactNode;
 };
 
 export function RecallSessionClient({
@@ -34,6 +36,7 @@ export function RecallSessionClient({
   startingFen,
   gameId,
   breadcrumbItems,
+  adBanner,
 }: Props) {
   const t = useTranslations('recall');
   const [feedback, setFeedback] = useState<RecallFeedback | null>(null);
@@ -123,6 +126,7 @@ export function RecallSessionClient({
           setForceStartOver(true);
           setRunId((n) => n + 1);
         }}
+        adBanner={adBanner}
       />
     </PageLayout>
   );

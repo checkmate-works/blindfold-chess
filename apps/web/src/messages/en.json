@@ -2464,11 +2464,6 @@
     "skippedMoveMessage": "The answer was {movePrefix} {move}",
     "summary": {
       "title": "Summary",
-      "headline": {
-        "perfect": "Perfect recall!",
-        "allRecalled": "You recalled every move!",
-        "good": "Good recall!"
-      },
       "rateLabel": "Recall rate",
       "nailed": "First try",
       "struggled": "Stumbled",
