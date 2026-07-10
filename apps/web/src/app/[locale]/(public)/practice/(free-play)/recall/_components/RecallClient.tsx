@@ -12,8 +12,8 @@ import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_compone
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
-import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
 import { usePeekState } from '@/app/[locale]/(public)/games/play/_hooks/use-peek-state';
+import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use-quick-peek-modal';
 import { ACTION_ROW_CONTAINER_CLASSES } from '@/app/[locale]/(public)/games/play/_lib';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
@@ -128,33 +128,24 @@ export function RecallClient({
 
   // Revisit a stumbled move from the completion summary: open a quick-peek
   // modal previewing that position, matching games/play/result's "By Move"
-  // strip. An independent nav (not the live `navigation` above) so opening
-  // it never disturbs the live board's own position.
-  const modalNav = useMoveNavigation({ moves: originalMoves, startingFen });
-  const [isQuickPeekOpen, setIsQuickPeekOpen] = useState(false);
-  const openQuickPeek = useCallback(
-    (entry: MoveLogEntry) => {
-      modalNav.navigateToPosition(resolveModalPosition(entry, moveLog.entries));
-      setIsQuickPeekOpen(true);
-    },
-    [modalNav, moveLog.entries]
+  // strip. Same hook as GameReview's — an independent nav so opening it never
+  // disturbs the live board's own position, plus the "commit to live" action
+  // behind the modal footer's "Open this position".
+  const lastMoveAt = useCallback(
+    (position: number) =>
+      gamePositions[position === -1 ? originalMoves.length : position + 1]?.lastMove ?? null,
+    [gamePositions, originalMoves.length]
   );
-  const closeQuickPeek = useCallback(() => setIsQuickPeekOpen(false), []);
-  const modalPosIndex =
-    modalNav.currentPosition === -1 ? originalMoves.length : modalNav.currentPosition + 1;
-  const modalLastMove = gamePositions[modalPosIndex]?.lastMove ?? null;
-  // "Open this position": adopt the previewed position onto the live board
-  // and scroll it into view, mirroring GameReview's quick-peek commit
-  // (recall has a single shared board, so no separate ref/scroll target is
-  // needed beyond the board column itself).
-  const boardColumnRef = useRef<HTMLDivElement>(null);
-  const commitQuickPeek = useCallback(() => {
-    navigation.navigateToPosition(modalNav.currentPosition);
-    setIsQuickPeekOpen(false);
-    requestAnimationFrame(() => {
-      boardColumnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, [navigation, modalNav.currentPosition]);
+  const quickPeek = useQuickPeekModal({
+    notationMoves: originalMoves,
+    startingFen,
+    lastMoveAt,
+    navigateToPosition: navigation.navigateToPosition,
+  });
+  const openQuickPeek = useCallback(
+    (entry: MoveLogEntry) => quickPeek.openAtMove(resolveModalPosition(entry, moveLog.entries)),
+    [quickPeek, moveLog.entries]
+  );
 
   const boardFen = displayFen || currentFen;
   const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
@@ -306,7 +297,7 @@ export function RecallClient({
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Progress Bar, Board, Input, Actions */}
-        <div className="lg:col-span-2" ref={boardColumnRef}>
+        <div className="lg:col-span-2" ref={quickPeek.boardColumnRef}>
           <div className="border border-border rounded-lg p-4">
             <div className="flex flex-col gap-6">
               {/* Progress Bar */}
@@ -437,24 +428,24 @@ export function RecallClient({
           strip. The footer's "Open this position" adopts the previewed
           position onto the live board, same as GameReview's own commit. */}
       <BoardViewModal
-        isOpen={isQuickPeekOpen}
-        onClose={closeQuickPeek}
-        fen={modalNav.displayFen ?? modalNav.latestFen}
+        isOpen={quickPeek.isOpen}
+        onClose={quickPeek.close}
+        fen={quickPeek.nav.displayFen ?? quickPeek.nav.latestFen}
         playerSide={playerColor}
-        lastMove={modalLastMove}
+        lastMove={quickPeek.lastMove}
         preferences={preferences}
         movesLength={originalMoves.length}
-        currentPosition={modalNav.currentPosition}
+        currentPosition={quickPeek.nav.currentPosition}
         formattedPgn={formattedPgn}
-        onNavigateToStart={modalNav.navigateToStart}
-        onNavigatePrevious={modalNav.navigatePrevious}
-        onNavigateNext={modalNav.navigateNext}
-        onNavigateToEnd={modalNav.navigateToEnd}
-        onNavigateToPosition={modalNav.navigateToPosition}
+        onNavigateToStart={quickPeek.nav.navigateToStart}
+        onNavigatePrevious={quickPeek.nav.navigatePrevious}
+        onNavigateNext={quickPeek.nav.navigateNext}
+        onNavigateToEnd={quickPeek.nav.navigateToEnd}
+        onNavigateToPosition={quickPeek.nav.navigateToPosition}
         footer={
           <button
             type="button"
-            onClick={commitQuickPeek}
+            onClick={quickPeek.commit}
             className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >
             {t('openPosition')}
