@@ -11,7 +11,12 @@ import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCurrentUserAchievedRankIds } from '../_actions/getCurrentUserAchievedRankIds';
-import { buildChallengeNameKey, getBeltColorHex, getRankCardState } from '../_lib/helpers';
+import {
+  buildChallengeNameKey,
+  buildSubmissionItemNameKey,
+  getBeltColorHex,
+  getRankCardState,
+} from '../_lib/helpers';
 import { RankCard } from './RankCard';
 
 type Props = {
@@ -109,7 +114,7 @@ export function RanksGrid({ locale, dbRanks }: Props) {
           }
           return t('submissionCount', {
             minCount: req.minCount,
-            itemName: t(`submissionItemNames.${req.positionType}`),
+            itemName: t(`submissionItemNames.${buildSubmissionItemNameKey(req.positionTypes)}`),
           });
         });
 

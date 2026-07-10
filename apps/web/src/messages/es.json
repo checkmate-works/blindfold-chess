@@ -5288,7 +5288,8 @@
     "submissionCount": "Publica al menos {minCount} {itemName}",
     "submissionItemNames": {
       "memory": "problema de memoria de posiciones",
-      "puzzle": "puzzle"
+      "puzzle": "puzzle",
+      "memory_puzzle": "problema de memoria de posiciones o puzzle"
     },
     "challengeNames": {
       "square_colors": "Color de Casillas",

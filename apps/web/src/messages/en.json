@@ -5299,7 +5299,8 @@
     "submissionCount": "Submit at least {minCount} {itemName}",
     "submissionItemNames": {
       "memory": "position-memory problem",
-      "puzzle": "puzzle"
+      "puzzle": "puzzle",
+      "memory_puzzle": "position-memory problem or puzzle"
     },
     "challengeNames": {
       "square_colors": "Square Colors",

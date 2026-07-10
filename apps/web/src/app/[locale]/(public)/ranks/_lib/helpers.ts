@@ -62,19 +62,29 @@ function buildChallengeScoreItem(
   };
 }
 
+/**
+ * Build the `submissionItemNames` i18n key for a requirement's
+ * `positionTypes`. Sorted so key order is stable regardless of how the
+ * types were declared in seed data — `['memory']` → `"memory"` (unchanged
+ * for single-type requirements), `['memory', 'puzzle']` → `"memory_puzzle"`.
+ */
+export function buildSubmissionItemNameKey(positionTypes: readonly string[]): string {
+  return [...positionTypes].sort().join('_');
+}
+
 function buildPositionSubmissionItem(
   req: PositionSubmissionCountRequirement,
   locale: string,
   t: Translator
 ): RequirementItem {
-  // Only `memory` is wired today (2kyu). When `puzzle` is added we route to
-  // /practice/puzzle/new instead — the slug is statically derived from the
-  // positionType discriminator, no extra mapping table needed.
-  const routeSegment = req.positionType === 'memory' ? 'position-memory' : 'puzzle';
+  // Links to the first listed type's "new" page. For 2kyu (`['memory',
+  // 'puzzle']`) that's position-memory — either post satisfies the
+  // requirement, this link is just a shortcut to one of the valid paths.
+  const routeSegment = req.positionTypes[0] === 'memory' ? 'position-memory' : 'puzzle';
   return {
     label: t('submissionCount', {
       minCount: req.minCount,
-      itemName: t(`submissionItemNames.${req.positionType}`),
+      itemName: t(`submissionItemNames.${buildSubmissionItemNameKey(req.positionTypes)}`),
     }),
     href: `/${locale}/practice/${routeSegment}/new`,
   };
@@ -180,7 +190,7 @@ export function buildRankTeaserCards(
       }
       return tRanks('submissionCount', {
         minCount: req.minCount,
-        itemName: tRanks(`submissionItemNames.${req.positionType}`),
+        itemName: tRanks(`submissionItemNames.${buildSubmissionItemNameKey(req.positionTypes)}`),
       });
     });
     const previousSlug = index > 0 ? TEASER_SLUGS[index - 1] : undefined;

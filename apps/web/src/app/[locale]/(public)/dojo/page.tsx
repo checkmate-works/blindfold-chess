@@ -27,6 +27,7 @@ import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import {
   buildChallengeNameKey,
   buildRequirementItems,
+  buildSubmissionItemNameKey,
   getBeltColorHex,
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
@@ -113,7 +114,9 @@ export default async function DojoPage({ params }: LocalePageProps) {
           }
           return tRanks('submissionCount', {
             minCount: req.minCount,
-            itemName: tRanks(`submissionItemNames.${req.positionType}`),
+            itemName: tRanks(
+              `submissionItemNames.${buildSubmissionItemNameKey(req.positionTypes)}`
+            ),
           });
         }),
         requirementsHeading: tRanks('requirements'),

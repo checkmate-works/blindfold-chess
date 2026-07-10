@@ -192,7 +192,7 @@ describe('evaluateRankRequirements', () => {
     mockSelectResult.mockReturnValue([{ value: 3 }]);
 
     const result = await evaluateRankRequirements(userId, [
-      { type: 'position_submission_count', positionType: 'memory', minCount: 1 },
+      { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
     ]);
 
     expect(result).toBe(true);
@@ -202,7 +202,7 @@ describe('evaluateRankRequirements', () => {
     mockSelectResult.mockReturnValue([{ value: 0 }]);
 
     const result = await evaluateRankRequirements(userId, [
-      { type: 'position_submission_count', positionType: 'memory', minCount: 1 },
+      { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
     ]);
 
     expect(result).toBe(false);
@@ -214,10 +214,23 @@ describe('evaluateRankRequirements', () => {
     mockSelectResult.mockReturnValue([]);
 
     const result = await evaluateRankRequirements(userId, [
-      { type: 'position_submission_count', positionType: 'memory', minCount: 1 },
+      { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
     ]);
 
     expect(result).toBe(false);
+  });
+
+  it('should pass position_submission_count with multiple positionTypes (OR across types)', async () => {
+    // A single puzzle post (or a single memory post) is enough — the count
+    // query sums rows across every listed type, it does not require each
+    // type individually to reach minCount.
+    mockSelectResult.mockReturnValue([{ value: 1 }]);
+
+    const result = await evaluateRankRequirements(userId, [
+      { type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 },
+    ]);
+
+    expect(result).toBe(true);
   });
 
   it('should return false for unknown requirement type', async () => {

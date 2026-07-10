@@ -7,6 +7,7 @@ import type { Rank } from '@/lib/db/schema';
 import {
   buildChallengeNameKey,
   buildRequirementItems,
+  buildSubmissionItemNameKey,
   getBeltColorHex,
   getRankCardState,
   isWhiteBelt,
@@ -87,6 +88,8 @@ describe('buildRequirementItems', () => {
   const mockT = (key: string, values?: Record<string, string | number | Date>) => {
     if (key === 'challengeScore') return `Score ${values?.minScore}+ in ${values?.challengeName}`;
     if (key.startsWith('challengeNames.')) return key.replace('challengeNames.', '');
+    if (key === 'submissionCount') return `Submit ${values?.minCount} ${values?.itemName}`;
+    if (key.startsWith('submissionItemNames.')) return key.replace('submissionItemNames.', '');
     return key;
   };
 
@@ -145,6 +148,54 @@ describe('buildRequirementItems', () => {
       mockT
     );
     expect(items[0].href).toBe('/en/practice/legal-moves');
+  });
+
+  it('should generate position-memory URL and single-type itemName for a memory-only requirement', () => {
+    const items = buildRequirementItems(
+      [{ type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 }],
+      'en',
+      mockT
+    );
+    expect(items[0].href).toBe('/en/practice/position-memory/new');
+    expect(items[0].label).toBe('Submit 1 memory');
+  });
+
+  it('should generate the combined itemName for a memory-or-puzzle requirement', () => {
+    const items = buildRequirementItems(
+      [{ type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 }],
+      'en',
+      mockT
+    );
+    expect(items[0].href).toBe('/en/practice/position-memory/new');
+    expect(items[0].label).toBe('Submit 1 memory_puzzle');
+  });
+
+  it('should generate puzzle URL when puzzle is the first listed positionType', () => {
+    const items = buildRequirementItems(
+      [{ type: 'position_submission_count', positionTypes: ['puzzle'], minCount: 1 }],
+      'en',
+      mockT
+    );
+    expect(items[0].href).toBe('/en/practice/puzzle/new');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildSubmissionItemNameKey
+// ---------------------------------------------------------------------------
+
+describe('buildSubmissionItemNameKey', () => {
+  it('should return the single type for a one-element array', () => {
+    expect(buildSubmissionItemNameKey(['memory'])).toBe('memory');
+    expect(buildSubmissionItemNameKey(['puzzle'])).toBe('puzzle');
+  });
+
+  it('should join multiple types with an underscore, sorted', () => {
+    expect(buildSubmissionItemNameKey(['memory', 'puzzle'])).toBe('memory_puzzle');
+  });
+
+  it('should sort regardless of input order', () => {
+    expect(buildSubmissionItemNameKey(['puzzle', 'memory'])).toBe('memory_puzzle');
   });
 });
 

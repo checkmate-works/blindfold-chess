@@ -5288,7 +5288,8 @@
     "submissionCount": "Publique pelo menos {minCount} {itemName}",
     "submissionItemNames": {
       "memory": "problema de memória de posições",
-      "puzzle": "puzzle"
+      "puzzle": "puzzle",
+      "memory_puzzle": "problema de memória de posições ou puzzle"
     },
     "challengeNames": {
       "square_colors": "Cor das Casas",

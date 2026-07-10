@@ -5299,7 +5299,8 @@
     "submissionCount": "{itemName}を{minCount}件以上投稿する",
     "submissionItemNames": {
       "memory": "ポジション記憶の問題",
-      "puzzle": "パズル"
+      "puzzle": "パズル",
+      "memory_puzzle": "ポジション記憶の問題またはパズル"
     },
     "challengeNames": {
       "square_colors": "マス色チャレンジ",
