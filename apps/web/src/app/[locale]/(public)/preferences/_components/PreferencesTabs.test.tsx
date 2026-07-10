@@ -86,12 +86,20 @@ describe('PreferencesTabs', () => {
     expect(screen.getByTestId('notification-settings')).toBeDefined();
   });
 
-  it('renders nothing for a stale ?tab=notifications link when signed out', () => {
+  it('renders NotificationSettings on ?tab=notifications even while auth is still loading (e.g. a hard reload) — the real gate is server-side', () => {
+    mockTabParam = 'notifications';
+    mockUseAuth.mockReturnValue({ user: null, isLoading: true });
+    render(<PreferencesTabs locale="en" />);
+
+    expect(screen.getByTestId('notification-settings')).toBeDefined();
+  });
+
+  it('renders NotificationSettings on ?tab=notifications even when signed out — its own actions redirect to sign-in server-side', () => {
     mockTabParam = 'notifications';
     mockUseAuth.mockReturnValue({ user: null, isLoading: false });
     render(<PreferencesTabs locale="en" />);
 
-    expect(screen.queryByTestId('notification-settings')).toBeNull();
+    expect(screen.getByTestId('notification-settings')).toBeDefined();
   });
 
   it('navigates to the notifications tab on click', () => {

@@ -69,7 +69,18 @@ export function PreferencesTabs({ locale }: Props) {
         {activeTab === 'game' && <GameSettings />}
         {activeTab === 'controls' && <ControlSettings />}
         {activeTab === 'appearance' && <AppearanceSettings />}
-        {activeTab === 'notifications' && isAuthenticated && <NotificationSettings />}
+        {/*
+          Deliberately NOT gated on isAuthenticated (only the tab button
+          above is): while auth is still resolving client-side — notably on
+          a hard reload landing straight on ?tab=notifications, before
+          useAuth()'s isLoading flips false — gating here left this pane
+          blank with no skeleton at all. The real auth check already
+          happens server-side in getNotificationMutes/setNotificationMute
+          (getAuthenticatedUser() redirects to sign-in on its own), so
+          mounting unconditionally is safe and lets NotificationSettings'
+          own skeleton show immediately regardless of client auth state.
+        */}
+        {activeTab === 'notifications' && <NotificationSettings />}
       </div>
     </div>
   );
