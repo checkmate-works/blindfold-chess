@@ -6,25 +6,27 @@ import type { MoveLogEntry } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/recall-format';
 
 type Props = {
-  /** Full move-log history; only incorrect / skipped / auto-filled rows are shown. */
+  /** Full move-log history; `auto` (opponent auto-fill) rows are excluded. */
   entries: MoveLogEntry[];
   /**
    * When provided, each marker becomes a button that jumps the board to the
-   * move's position. Used by the completion summary's "stumbled here" review.
+   * move's position. Used by the completion summary's per-move review.
    */
   onEntryClick?: (entry: MoveLogEntry) => void;
 };
 
 const MARKER_CLASS = {
-  incorrect: 'bg-destructive/70',
+  correct: 'bg-success/70',
   skipped: 'bg-warning/70',
 } as const;
 
 /**
- * The mistakes strip: one small square per wrong attempt or explicit "I
- * don't know" skip — same visual language as the games/play result screen's
- * "By Move" effort strip. Opponent auto-fills (`auto`) are not mistakes, so
- * they are excluded.
+ * The per-move strip: one small marker per engaged move — a green square for
+ * a clean first-try recall, an amber square for an explicit "I don't know"
+ * skip, and a red pill (showing the actual wrong SAN, not just a blank
+ * color) for each incorrect attempt — same visual language as the
+ * games/play result screen's "By Move" effort strip. Opponent auto-fills
+ * (`auto`) are not the user's responsibility, so they are excluded.
  *
  * A single "Auto-fill All" click resolves every remaining move in one batch,
  * so `autoFilled` entries always form one trailing run at the end of the
@@ -37,8 +39,8 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
   const t = useTranslations('recall');
 
   const individualEntries = entries.filter(
-    (e): e is MoveLogEntry & { status: 'incorrect' | 'skipped' } =>
-      e.status === 'incorrect' || e.status === 'skipped'
+    (e): e is MoveLogEntry & { status: 'correct' | 'incorrect' | 'skipped' } =>
+      e.status === 'correct' || e.status === 'incorrect' || e.status === 'skipped'
   );
   const autoFilledEntries = entries.filter((e) => e.status === 'autoFilled');
 
@@ -47,27 +49,45 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
   }
 
   const interactive = onEntryClick !== undefined;
+  const buttonClass = interactive ? 'hover:scale-110 hover:ring-2 hover:ring-foreground/40' : '';
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap items-center gap-1">
         {individualEntries.map((entry, index) => {
           const prefix = formatMoveNumberPrefix(entry.moveNumber, entry.isWhiteMove);
+          const onClick = interactive ? () => onEntryClick?.(entry) : undefined;
+
+          if (entry.status === 'incorrect') {
+            const label = `${prefix} ${t('summary.triedMove', { move: entry.incorrectMove ?? '', correct: entry.move })}`;
+            return (
+              <button
+                key={index}
+                type="button"
+                onClick={onClick}
+                disabled={!interactive}
+                title={label}
+                aria-label={label}
+                className={`inline-flex h-5 items-center rounded-sm bg-destructive/70 px-1.5 font-mono text-xs text-destructive-foreground transition-transform ${buttonClass}`}
+              >
+                {entry.incorrectMove}
+              </button>
+            );
+          }
+
           const label =
-            entry.status === 'incorrect'
-              ? `${prefix} ${t('summary.triedMove', { move: entry.incorrectMove ?? '', correct: entry.move })}`
+            entry.status === 'correct'
+              ? `${prefix} ${entry.move} — ${t('summary.nailed')}`
               : `${prefix} ${entry.move} — ${t('summary.missed')}`;
           return (
             <button
               key={index}
               type="button"
-              onClick={interactive ? () => onEntryClick?.(entry) : undefined}
+              onClick={onClick}
               disabled={!interactive}
               title={label}
               aria-label={label}
-              className={`h-5 w-5 rounded-sm transition-transform ${
-                interactive ? 'hover:scale-125 hover:ring-2 hover:ring-foreground/40' : ''
-              } ${MARKER_CLASS[entry.status]}`}
+              className={`h-5 w-5 rounded-sm transition-transform ${buttonClass} ${MARKER_CLASS[entry.status]}`}
             />
           );
         })}
@@ -87,9 +107,15 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
         )}
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1">
+        {individualEntries.some((e) => e.status === 'correct') && (
+          <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+            <span className={`h-3 w-3 rounded-sm ${MARKER_CLASS.correct}`} />
+            {t('summary.nailed')}
+          </span>
+        )}
         {individualEntries.some((e) => e.status === 'incorrect') && (
           <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
-            <span className={`h-3 w-3 rounded-sm ${MARKER_CLASS.incorrect}`} />
+            <span className="h-3 w-3 rounded-sm bg-destructive/70" />
             {t('summary.legendIncorrect')}
           </span>
         )}

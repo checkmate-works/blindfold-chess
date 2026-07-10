@@ -2457,6 +2457,7 @@
     "correctMoveMessage": "{movePrefix} {move} es correcto",
     "skippedMoveMessage": "La respuesta era {movePrefix} {move}",
     "summary": {
+      "title": "Resumen",
       "headline": {
         "perfect": "¡Reproducción perfecta!",
         "allRecalled": "¡Recordaste todos los movimientos!",

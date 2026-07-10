@@ -5,14 +5,16 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaListOl, FaRedo } from 'react-icons/fa';
 
+import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
+
 import type { MoveLogEntry, RecallStats } from '../_lib';
 import { RecallMoveStrip } from './RecallMoveStrip';
 
 type Props = {
   stats: RecallStats;
-  /** Full move log — the table filters it to the incorrect / skipped rows. */
+  /** Full move log — RecallMoveStrip derives its per-move markers from this. */
   entries: MoveLogEntry[];
-  /** Open the position-preview modal at a stumbled move. */
+  /** Jump the board to a move's position. */
   onEntryClick: (entry: MoveLogEntry) => void;
   /** Restart the review from the beginning. */
   onRestart: () => void;
@@ -46,6 +48,8 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTitle>{t('summary.title')}</SectionTitle>
+
       {/* Recall report */}
       <div className="flex flex-col items-center gap-3 text-center">
         {headline && <h3 className="text-xl font-bold">{headline}</h3>}
@@ -84,8 +88,8 @@ export function RecallSummary({ stats, entries, onEntryClick, onRestart, gameId 
         )}
       </div>
 
-      {/* Stumbled-here review */}
-      {stats.struggled + stats.missed > 0 && (
+      {/* Per-move review — includes clean moves too, not just stumbles. */}
+      {hasStats && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <h4 className="flex items-center gap-2 text-sm font-medium">

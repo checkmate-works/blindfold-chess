@@ -2461,6 +2461,7 @@
     "correctMoveMessage": "{movePrefix} {move} is correct",
     "skippedMoveMessage": "The answer was {movePrefix} {move}",
     "summary": {
+      "title": "Summary",
       "headline": {
         "perfect": "Perfect recall!",
         "allRecalled": "You recalled every move!",

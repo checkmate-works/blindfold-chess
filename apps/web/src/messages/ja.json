@@ -2461,6 +2461,7 @@
     "correctMoveMessage": "{movePrefix} {move} は正解です",
     "skippedMoveMessage": "正解は {movePrefix} {move} でした",
     "summary": {
+      "title": "サマリー",
       "headline": {
         "perfect": "完全再現！",
         "allRecalled": "全手を再現できました！",
