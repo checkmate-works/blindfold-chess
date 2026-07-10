@@ -43,9 +43,10 @@ const SQUARE_LABEL_KEY = {
  * games/play result screen's "By Move" effort strip.
  *
  * A single "Auto-fill All" click resolves every remaining move in one batch,
- * so `autoFilled` entries always form one trailing run at the end of the
- * log. Repeating an identical square per bulk-resolved move would just be a
- * wall of "couldn't recall" markers, so that whole run collapses into one
+ * so `autoFilled` entries always sit in one trailing run at the end of the
+ * log (interleaved with the opponent's `auto` moves when auto-opponent is
+ * on). Repeating an identical square per bulk-resolved move would just be a
+ * wall of "couldn't recall" markers, so they all collapse into one
  * "+N auto-filled" chip instead — it marks the point the user gave up, not
  * every move after it.
  */
