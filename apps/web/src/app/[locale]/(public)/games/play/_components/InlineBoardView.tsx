@@ -59,11 +59,10 @@ type Props = {
   alwaysOpen?: boolean;
   /**
    * Seeds the initial `isOpen` state for the plain-collapse mode (no
-   * `alwaysOpen`, no `masked`). Lets a caller start the board expanded while
-   * still offering the fold affordance — e.g. Recall, which used to force
-   * `alwaysOpen` but wants the board foldable without adopting play's
-   * peek/blindfold semantics. Ignored when `alwaysOpen` is true. Defaults to
-   * `false` (puzzle's existing closed-by-default behavior).
+   * `alwaysOpen`, no `masked`) — a manual fold/unfold accordion unrelated to
+   * `boardVisibility`. Ignored when `alwaysOpen` is true. Defaults to
+   * `false` (puzzle's closed-by-default behavior, its own `onPeek`-counted
+   * accordion — distinct from the masked-overlay peek used by play/recall).
    */
   defaultOpen?: boolean;
   /**
