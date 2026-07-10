@@ -174,7 +174,7 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
           post_id, embed_provider, embed_id
         )
         VALUES (
-          ${testPostId}::uuid, 'lichess', 'abc/def'
+          ${testPostId}::uuid, 'chesscom', 'abc/def'
         )
       `
     ).rejects.toThrow(/chk_embed_id_format/);
@@ -195,6 +195,23 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
     ).rejects.toThrow(/chk_embed_provider_valid/);
   });
 
+  // #36-lichess — Phase 13 (#83) retired the Lichess /embed iframe and
+  // narrowed the CHECK from IN ('chesscom', 'lichess') to IN ('chesscom').
+  // Regression guard: a Lichess row must never be insertable again.
+  it('#36-lichess rejects an INSERT with embed_provider = "lichess" (chk_embed_provider_valid)', async (ctx) => {
+    const db = requireDb(ctx);
+    await expect(
+      db`
+        INSERT INTO post_game_embed_attachments (
+          post_id, embed_provider, embed_id
+        )
+        VALUES (
+          ${testPostId}::uuid, 'lichess', 'abcd1234'
+        )
+      `
+    ).rejects.toThrow(/chk_embed_provider_valid/);
+  });
+
   // #37 — http:// source_url rejected
   it('#37 rejects an INSERT with source_url = "http://..." (chk_embed_source_url_https)', async (ctx) => {
     const db = requireDb(ctx);
@@ -204,15 +221,15 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
           post_id, embed_provider, embed_id, source_url
         )
         VALUES (
-          ${testPostId}::uuid, 'lichess', 'abcd1234',
-          'http://lichess.org/embed/abcd1234'
+          ${testPostId}::uuid, 'chesscom', 'abcd1234',
+          'http://www.chess.com/game/live/abcd1234'
         )
       `
     ).rejects.toThrow(/chk_embed_source_url_https/);
   });
 
   // #38 — attribution pair invariant (platform set, path NULL)
-  it('#38 rejects INSERT with attribution_platform = "lichess" + attribution_path = NULL (chk_embed_attribution_pair)', async (ctx) => {
+  it('#38 rejects INSERT with attribution_platform = "chesscom" + attribution_path = NULL (chk_embed_attribution_pair)', async (ctx) => {
     const db = requireDb(ctx);
     await expect(
       db`
@@ -221,15 +238,15 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
           attribution_platform, attribution_path
         )
         VALUES (
-          ${testPostId}::uuid, 'lichess', 'abcd1234',
-          'lichess', NULL
+          ${testPostId}::uuid, 'chesscom', 'abcd1234',
+          'chesscom', NULL
         )
       `
     ).rejects.toThrow(/chk_embed_attribution_pair/);
   });
 
   // ─── Belt-and-braces: happy path is accepted ───
-  it('accepts a canonical Lichess embed row (cleanup-friendly happy path)', async (ctx) => {
+  it('accepts a canonical Chess.com embed row (cleanup-friendly happy path)', async (ctx) => {
     const db = requireDb(ctx);
     await db`
       INSERT INTO post_game_embed_attachments (
@@ -237,9 +254,9 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
         attribution_platform, attribution_path
       )
       VALUES (
-        ${testPostId}::uuid, 'lichess', 'abcd1234',
-        'https://lichess.org/embed/abcd1234',
-        'lichess', '/abcd1234'
+        ${testPostId}::uuid, 'chesscom', 'abcd1234',
+        'https://www.chess.com/game/live/abcd1234',
+        'chesscom', '/game/live/abcd1234'
       )
     `;
     const rows = await db<{ embed_id: string }[]>`
@@ -346,7 +363,7 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
         post_id, embed_provider, embed_id
       )
       VALUES (
-        ${secondPostId}::uuid, 'lichess', 'sft1abcd'
+        ${secondPostId}::uuid, 'chesscom', 'sft1abcd'
       )
     `;
     await db`
@@ -394,7 +411,7 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
             post_id, embed_provider, embed_id
           )
           VALUES (
-            ${testPostId}::uuid, 'lichess', 'frnd1234'
+            ${testPostId}::uuid, 'chesscom', 'frnd1234'
           )
         `;
       });
@@ -428,7 +445,7 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
         post_id, embed_provider, embed_id
       )
       VALUES (
-        ${secondPostId}::uuid, 'lichess', 'asym1234'
+        ${secondPostId}::uuid, 'chesscom', 'asym1234'
       )
     `;
 
@@ -466,7 +483,7 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
         post_id, embed_provider, embed_id
       )
       VALUES (
-        ${secondPostId}::uuid, 'lichess', 'asym9999'
+        ${secondPostId}::uuid, 'chesscom', 'asym9999'
       )
     `;
 
@@ -505,7 +522,7 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
         post_id, embed_provider, embed_id
       )
       VALUES (
-        ${secondPostId}::uuid, 'lichess', 'pria1234'
+        ${secondPostId}::uuid, 'chesscom', 'pria1234'
       )
     `;
 
