@@ -2460,11 +2460,6 @@
     "skippedMoveMessage": "La respuesta era {movePrefix} {move}",
     "summary": {
       "title": "Resumen",
-      "headline": {
-        "perfect": "¡Reproducción perfecta!",
-        "allRecalled": "¡Recordaste todos los movimientos!",
-        "good": "¡Buena memoria!"
-      },
       "rateLabel": "Tasa de recuerdo",
       "nailed": "A la primera",
       "struggled": "Con dudas",

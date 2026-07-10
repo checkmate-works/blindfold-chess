@@ -2464,11 +2464,6 @@
     "skippedMoveMessage": "正解は {movePrefix} {move} でした",
     "summary": {
       "title": "サマリー",
-      "headline": {
-        "perfect": "完全再現！",
-        "allRecalled": "全手を再現できました！",
-        "good": "good recall！"
-      },
       "rateLabel": "再現率",
       "nailed": "一発正解",
       "struggled": "つまずき",
