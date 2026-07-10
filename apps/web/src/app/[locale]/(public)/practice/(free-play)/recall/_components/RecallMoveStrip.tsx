@@ -15,11 +15,22 @@ type Props = {
   onEntryClick?: (entry: MoveLogEntry) => void;
 };
 
-const MARKER_CLASS = {
+/** Statuses rendered as their own marker (everything but the collapsed `autoFilled` run). */
+type IndividualStatus = Exclude<MoveLogEntry['status'], 'autoFilled'>;
+
+const MARKER_CLASS: Record<IndividualStatus, string> = {
   correct: 'bg-success/70',
+  incorrect: 'bg-destructive/70',
   skipped: 'bg-warning/70',
   auto: 'bg-muted-foreground/40',
-} as const;
+};
+
+/** Legend label i18n key (under `recall.`) per square-marker status. */
+const SQUARE_LABEL_KEY = {
+  correct: 'summary.nailed',
+  skipped: 'summary.missed',
+  auto: 'summary.legendAuto',
+} as const satisfies Record<Exclude<IndividualStatus, 'incorrect'>, string>;
 
 /**
  * The per-move strip: one small marker per move — a green square for a
@@ -42,20 +53,33 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
   const t = useTranslations('recall');
 
   const individualEntries = entries.filter(
-    (e): e is MoveLogEntry & { status: 'correct' | 'incorrect' | 'skipped' | 'auto' } =>
-      e.status === 'correct' ||
-      e.status === 'incorrect' ||
-      e.status === 'skipped' ||
-      e.status === 'auto'
+    (e): e is MoveLogEntry & { status: IndividualStatus } => e.status !== 'autoFilled'
   );
   const autoFilledEntries = entries.filter((e) => e.status === 'autoFilled');
 
-  if (individualEntries.length === 0 && autoFilledEntries.length === 0) {
+  if (entries.length === 0) {
     return <p className="text-center text-muted-foreground py-4">{t('noMistakes')}</p>;
   }
 
   const interactive = onEntryClick !== undefined;
   const buttonClass = interactive ? 'hover:scale-110 hover:ring-2 hover:ring-foreground/40' : '';
+
+  const legendItems: Array<{ key: string; markerClass: string; label: string }> = (
+    ['correct', 'incorrect', 'skipped', 'auto'] as const
+  )
+    .filter((status) => individualEntries.some((e) => e.status === status))
+    .map((status) => ({
+      key: status,
+      markerClass: `rounded-sm ${MARKER_CLASS[status]}`,
+      label: t(status === 'incorrect' ? 'summary.legendIncorrect' : SQUARE_LABEL_KEY[status]),
+    }));
+  if (autoFilledEntries.length > 0) {
+    legendItems.push({
+      key: 'autoFilled',
+      markerClass: 'rounded-full bg-muted',
+      label: t('logAutoFilled'),
+    });
+  }
 
   return (
     <div className="space-y-2">
@@ -74,19 +98,14 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
                 disabled={!interactive}
                 title={label}
                 aria-label={label}
-                className={`inline-flex h-5 items-center rounded-sm bg-destructive/70 px-1.5 font-mono text-xs text-destructive-foreground transition-transform ${buttonClass}`}
+                className={`inline-flex h-5 items-center rounded-sm px-1.5 font-mono text-xs text-destructive-foreground transition-transform ${MARKER_CLASS.incorrect} ${buttonClass}`}
               >
                 {entry.incorrectMove}
               </button>
             );
           }
 
-          const label =
-            entry.status === 'correct'
-              ? `${prefix} ${entry.move} — ${t('summary.nailed')}`
-              : entry.status === 'auto'
-                ? `${prefix} ${entry.move} — ${t('summary.legendAuto')}`
-                : `${prefix} ${entry.move} — ${t('summary.missed')}`;
+          const label = `${prefix} ${entry.move} — ${t(SQUARE_LABEL_KEY[entry.status])}`;
           return (
             <button
               key={index}
@@ -115,36 +134,12 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
         )}
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1">
-        {individualEntries.some((e) => e.status === 'correct') && (
-          <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
-            <span className={`h-3 w-3 rounded-sm ${MARKER_CLASS.correct}`} />
-            {t('summary.nailed')}
+        {legendItems.map(({ key, markerClass, label }) => (
+          <span key={key} className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+            <span className={`h-3 w-3 ${markerClass}`} />
+            {label}
           </span>
-        )}
-        {individualEntries.some((e) => e.status === 'incorrect') && (
-          <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
-            <span className="h-3 w-3 rounded-sm bg-destructive/70" />
-            {t('summary.legendIncorrect')}
-          </span>
-        )}
-        {individualEntries.some((e) => e.status === 'skipped') && (
-          <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
-            <span className={`h-3 w-3 rounded-sm ${MARKER_CLASS.skipped}`} />
-            {t('summary.missed')}
-          </span>
-        )}
-        {individualEntries.some((e) => e.status === 'auto') && (
-          <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
-            <span className={`h-3 w-3 rounded-sm ${MARKER_CLASS.auto}`} />
-            {t('summary.legendAuto')}
-          </span>
-        )}
-        {autoFilledEntries.length > 0 && (
-          <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
-            <span className="h-3 w-3 rounded-full bg-muted" />
-            {t('logAutoFilled')}
-          </span>
-        )}
+        ))}
       </div>
     </div>
   );
