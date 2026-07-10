@@ -132,10 +132,18 @@ export function RecallClient({
   // (the reviewer enters both sides' moves) rather than a passive replay.
   // See the `usePeekState` wiring below for the mask itself. The reviewer
   // enters BOTH sides' moves, so the board is `movablePieces="side-to-move"`.
-  const { boardMasked, handleRevealBoard } = usePeekState({
+  const { boardMasked, handleRevealBoard, remask } = usePeekState({
     boardVisibility: preferences.boardVisibility,
     recordPeek: noOpRecordPeek,
   });
+  // Re-mask after every committed move, mirroring play's remask() calls at
+  // its move-commit sites. Recall funnels moves through four paths (correct
+  // guess, "don't know", auto-opponent, and the analyze-all bulk fill) that
+  // all advance `currentMoveIndex` exactly once per commit, so watching it
+  // here covers all four without touching each call site individually.
+  useEffect(() => {
+    remask();
+  }, [gameProgress.currentMoveIndex, remask]);
   // The completion/summary view — including a mistake-review jump via
   // handleMistakeClick — always shows the position unmasked, mirroring
   // play's separate `finishedBoardView`, which never re-hides a finished
