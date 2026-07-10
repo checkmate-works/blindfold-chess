@@ -9,8 +9,10 @@ import { FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
 import { useAiReplyChip } from '@/app/[locale]/(public)/games/play/_components/AiReplyChip';
 import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
+import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
+import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
 import { usePeekState } from '@/app/[locale]/(public)/games/play/_hooks/use-peek-state';
 import { ACTION_ROW_CONTAINER_CLASSES } from '@/app/[locale]/(public)/games/play/_lib';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -18,7 +20,8 @@ import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 
 import { useRecallGame } from '../_hooks';
 import { useRecallPreferences } from '../_hooks/use-recall-preferences';
-import { computeRecallStats } from '../_lib';
+import type { MoveLogEntry } from '../_lib';
+import { computeRecallStats, resolveModalPosition } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/recall-format';
 import { RecallMovesPanel } from './RecallMovesPanel';
 import { RecallOpponentMoveChip } from './RecallOpponentMoveChip';
@@ -111,19 +114,28 @@ export function RecallClient({
   const [showAnalyzeAllConfirm, setShowAnalyzeAllConfirm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  const { currentFen, displayFen, currentLastMove } = boardState;
+  const { currentFen, displayFen, currentLastMove, gamePositions } = boardState;
   const { isCompleted, totalMoves, progress, originalMoves } = gameProgress;
 
   const recallStats = computeRecallStats(moveLog.entries);
 
-  // Revisit a stumbled move from the completion summary: jump to its position.
-  // The board is always visible here, so it simply updates to that position.
-  const handleMistakeClick = useCallback(
-    (entry: Parameters<typeof actions.handleMoveClick>[0]) => {
-      actions.handleMoveClick(entry);
+  // Revisit a stumbled move from the completion summary: open a quick-peek
+  // modal previewing that position, matching games/play/result's "By Move"
+  // strip. An independent nav (not the live `navigation` above) so opening
+  // it never disturbs the live board's own position.
+  const modalNav = useMoveNavigation({ moves: originalMoves, startingFen });
+  const [isQuickPeekOpen, setIsQuickPeekOpen] = useState(false);
+  const openQuickPeek = useCallback(
+    (entry: MoveLogEntry) => {
+      modalNav.navigateToPosition(resolveModalPosition(entry, moveLog.entries));
+      setIsQuickPeekOpen(true);
     },
-    [actions]
+    [modalNav, moveLog.entries]
   );
+  const closeQuickPeek = useCallback(() => setIsQuickPeekOpen(false), []);
+  const modalPosIndex =
+    modalNav.currentPosition === -1 ? originalMoves.length : modalNav.currentPosition + 1;
+  const modalLastMove = gamePositions[modalPosIndex]?.lastMove ?? null;
 
   const boardFen = displayFen || currentFen;
   const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
@@ -363,7 +375,7 @@ export function RecallClient({
                 <RecallSummary
                   stats={recallStats}
                   entries={moveLog.entries}
-                  onEntryClick={handleMistakeClick}
+                  onEntryClick={openQuickPeek}
                   onRestart={onRestart ?? (() => {})}
                   gameId={gameId}
                 />
@@ -395,6 +407,27 @@ export function RecallClient({
         onClose={() => setShowSettings(false)}
         preferences={preferences}
         onPerGamePrefChange={handlePerGamePrefChange}
+      />
+
+      {/* Quick-peek modal — previews a stumbled move's position without
+          disturbing the live board, matching games/play/result's "By Move"
+          strip. No footer/commit action: like the result page's own modal,
+          this is a terminal peek-and-close, not an editable replay. */}
+      <BoardViewModal
+        isOpen={isQuickPeekOpen}
+        onClose={closeQuickPeek}
+        fen={modalNav.displayFen ?? modalNav.latestFen}
+        playerSide={playerColor}
+        lastMove={modalLastMove}
+        preferences={preferences}
+        movesLength={originalMoves.length}
+        currentPosition={modalNav.currentPosition}
+        formattedPgn={formattedPgn}
+        onNavigateToStart={modalNav.navigateToStart}
+        onNavigatePrevious={modalNav.navigatePrevious}
+        onNavigateNext={modalNav.navigateNext}
+        onNavigateToEnd={modalNav.navigateToEnd}
+        onNavigateToPosition={modalNav.navigateToPosition}
       />
 
       {/* Auto Fill All Confirmation Modal */}

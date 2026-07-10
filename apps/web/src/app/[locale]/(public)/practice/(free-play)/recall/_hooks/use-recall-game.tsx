@@ -73,7 +73,6 @@ type RecallGameReturn = {
     handleSubmitMove: (move: AlgebraicNotation) => void;
     handleDontKnow: () => void;
     handleAnalyzeAll: () => void;
-    handleMoveClick: (entry: MoveLogEntry) => void;
   };
   formattedPgn: FormattedPgnMove[];
 };
@@ -112,8 +111,7 @@ export function useRecallGame({
     originalMovesLength: originalMoves.length,
     gamePositions,
   });
-  const { currentPosition, selectedMoveIndex, displayFen, navigateToPosition, navigateToStart } =
-    navigation;
+  const { currentPosition, selectedMoveIndex, displayFen } = navigation;
 
   // Get current FEN for board display
   const getCurrentFen = useCallback(() => {
@@ -163,31 +161,6 @@ export function useRecallGame({
   const handleDontKnow = useCallback(
     () => rawHandleDontKnow(setMoveInputValue),
     [rawHandleDontKnow]
-  );
-
-  // Handle move log click
-  const handleMoveClick = useCallback(
-    (entry: MoveLogEntry) => {
-      let originalMoveIndex = 0;
-      for (const logEntry of moveLog) {
-        if (logEntry === entry) {
-          if (entry.status === 'incorrect') {
-            if (originalMoveIndex > 0) {
-              navigateToPosition(originalMoveIndex - 1);
-            } else {
-              navigateToStart();
-            }
-            return;
-          }
-          navigateToPosition(originalMoveIndex);
-          return;
-        }
-        if (logEntry.status !== 'incorrect') {
-          originalMoveIndex++;
-        }
-      }
-    },
-    [moveLog, navigateToPosition, navigateToStart]
   );
 
   const currentFen = getCurrentFen() || gamePositions[0]?.fen;
@@ -249,7 +222,6 @@ export function useRecallGame({
       handleSubmitMove,
       handleDontKnow,
       handleAnalyzeAll,
-      handleMoveClick,
     },
     formattedPgn,
   };
