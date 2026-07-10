@@ -21,6 +21,19 @@ describe('sanitizeNext', () => {
     expect(sanitizeNext('javascript:alert(1)')).toBeNull();
   });
 
+  it('rejects backslash-based protocol-relative bypasses', () => {
+    // Browsers fold `\` to `/`, so `/\evil.com` resolves to `//evil.com`.
+    expect(sanitizeNext('/\\evil.com')).toBeNull();
+    expect(sanitizeNext('\\\\evil.com')).toBeNull();
+    expect(sanitizeNext('/\\/evil.com')).toBeNull();
+  });
+
+  it('rejects values containing control characters that browsers strip', () => {
+    expect(sanitizeNext('\t/\\evil.com')).toBeNull();
+    expect(sanitizeNext('\n//evil.com')).toBeNull();
+    expect(sanitizeNext('/foo\rbar')).toBeNull();
+  });
+
   it('returns null for empty / missing input', () => {
     expect(sanitizeNext('')).toBeNull();
     expect(sanitizeNext(null)).toBeNull();
