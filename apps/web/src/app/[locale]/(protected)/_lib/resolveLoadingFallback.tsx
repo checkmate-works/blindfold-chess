@@ -30,7 +30,10 @@ export function resolveLoadingFallback(pathname: string) {
     return <ChallengesLoadingFallback />;
   }
   if (pathname.includes('/mypage/notifications')) {
-    return <NotificationsLoadingFallback />;
+    // pathname is `/${locale}/mypage/notifications` — the locale segment is
+    // always present and known synchronously, no await needed.
+    const locale = pathname.split('/')[1] ?? 'en';
+    return <NotificationsLoadingFallback locale={locale} />;
   }
   // Dashboard top exactly (`/<locale>/mypage`), not its sub-routes.
   if (/\/mypage\/?$/.test(pathname)) {

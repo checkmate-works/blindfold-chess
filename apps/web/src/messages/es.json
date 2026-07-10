@@ -339,7 +339,8 @@
     "tabs": {
       "board": "Partida",
       "controls": "Controles",
-      "appearance": "Apariencia"
+      "appearance": "Apariencia",
+      "notifications": "Notificaciones"
     },
     "game": {
       "title": "Configuración del Tablero",
@@ -468,6 +469,17 @@
         "text": "Texto",
         "select": "Lista",
         "button": "Botón"
+      }
+    },
+    "notifications": {
+      "description": "Los tipos desactivados dejarán de enviarte notificaciones.",
+      "types": {
+        "new_post": "Nuevas publicaciones",
+        "new_position": "Nuevas posiciones",
+        "new_chunk_draft": "Nuevos borradores de chunk",
+        "chunk_published": "Chunk publicado",
+        "new_game": "Nuevas partidas",
+        "new_comment_on_topic": "Comentarios en tus publicaciones"
       }
     }
   },
@@ -3521,7 +3533,14 @@
       "default": "Le gustó tu contenido: ganaste {count, plural, one {# moneda} other {# monedas}}"
     },
     "positionEditRequestSubmittedMessage": "{actor} sugirió chunks para tu posición",
-    "positionEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de chunks"
+    "positionEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de chunks",
+    "settingsLink": "Configuración de notificaciones",
+    "muteButtonLabel": "Silenciar notificaciones de {type}",
+    "unmuteButtonLabel": "Reactivar notificaciones de {type}",
+    "muteConfirmTitle": "¿Silenciar este tipo de notificación?",
+    "muteConfirmMessage": "Dejarás de recibir notificaciones de \"{type}\". Puedes cambiarlo en cualquier momento desde la configuración de notificaciones.",
+    "muteConfirmButton": "Silenciar",
+    "cancel": "Cancelar"
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",

@@ -339,7 +339,8 @@
     "tabs": {
       "board": "Partida",
       "controls": "Controles",
-      "appearance": "Aparência"
+      "appearance": "Aparência",
+      "notifications": "Notificações"
     },
     "game": {
       "title": "Configuração do Tabuleiro",
@@ -468,6 +469,17 @@
         "text": "Texto",
         "select": "Lista",
         "button": "Botão"
+      }
+    },
+    "notifications": {
+      "description": "Os tipos desativados deixarão de enviar notificações para você.",
+      "types": {
+        "new_post": "Novas publicações",
+        "new_position": "Novas posições",
+        "new_chunk_draft": "Novos rascunhos de chunk",
+        "chunk_published": "Chunk publicado",
+        "new_game": "Novas partidas",
+        "new_comment_on_topic": "Comentários nas suas publicações"
       }
     }
   },
@@ -3521,7 +3533,14 @@
       "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
     },
     "positionEditRequestSubmittedMessage": "{actor} sugeriu chunks para a sua posição",
-    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de chunks"
+    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de chunks",
+    "settingsLink": "Configurações de notificação",
+    "muteButtonLabel": "Silenciar notificações de {type}",
+    "unmuteButtonLabel": "Reativar notificações de {type}",
+    "muteConfirmTitle": "Silenciar este tipo de notificação?",
+    "muteConfirmMessage": "Você deixará de receber notificações de \"{type}\". Você pode alterar isso a qualquer momento nas configurações de notificação.",
+    "muteConfirmButton": "Silenciar",
+    "cancel": "Cancelar"
   },
   "deleteAccount": {
     "title": "Excluir Conta",

@@ -166,6 +166,16 @@ SELECT public.ensure_auth_users_fk('notifications', 'notifications_actor_id_fkey
 GRANT SELECT, UPDATE, DELETE ON TABLE public.notifications TO authenticated;
 
 -- =============================================================================
+-- notification_mutes
+-- =============================================================================
+
+-- FK constraint: notification_mutes.user_id → auth.users(id) ON DELETE CASCADE
+SELECT public.ensure_auth_users_fk('notification_mutes', 'notification_mutes_user_id_fkey', 'user_id', 'CASCADE');
+
+-- Grant necessary permissions (users manage their own mute rows directly, like user_follows)
+GRANT SELECT, INSERT, DELETE ON TABLE public.notification_mutes TO authenticated;
+
+-- =============================================================================
 -- rate_limit_events
 -- =============================================================================
 

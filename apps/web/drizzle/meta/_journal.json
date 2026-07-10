@@ -386,6 +386,13 @@
       "when": 1783505472035,
       "tag": "20260708101112_create_ad_creatives",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1783630044341,
+      "tag": "20260709204724_create_notification_mutes",
+      "breakpoints": true
     }
   ]
 }

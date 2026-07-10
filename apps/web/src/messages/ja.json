@@ -343,7 +343,8 @@
     "tabs": {
       "board": "ゲーム",
       "controls": "コントロール",
-      "appearance": "外観"
+      "appearance": "外観",
+      "notifications": "通知"
     },
     "game": {
       "title": "ボード設定",
@@ -472,6 +473,17 @@
         "text": "テキスト",
         "select": "リスト",
         "button": "ボタン"
+      }
+    },
+    "notifications": {
+      "description": "オフにした種類の通知は届かなくなります。",
+      "types": {
+        "new_post": "新しい投稿",
+        "new_position": "新しい局面",
+        "new_chunk_draft": "チャンク下書きの追加",
+        "chunk_published": "チャンクの公開",
+        "new_game": "対局の公開",
+        "new_comment_on_topic": "投稿へのコメント"
       }
     }
   },
@@ -3527,7 +3539,14 @@
       "default": "コンテンツが評価され、{count} コインを獲得しました"
     },
     "positionEditRequestSubmittedMessage": "{actor}さんがあなたの局面にチャンクを提案しました",
-    "positionEditRequestAcceptedMessage": "{actor}さんがあなたのチャンク提案を承認しました"
+    "positionEditRequestAcceptedMessage": "{actor}さんがあなたのチャンク提案を承認しました",
+    "settingsLink": "通知設定",
+    "muteButtonLabel": "「{type}」の通知をミュート",
+    "unmuteButtonLabel": "「{type}」の通知のミュートを解除",
+    "muteConfirmTitle": "この種類の通知をミュートしますか？",
+    "muteConfirmMessage": "今後「{type}」の通知は届かなくなります。設定はいつでも通知設定から変更できます。",
+    "muteConfirmButton": "ミュートする",
+    "cancel": "キャンセル"
   },
   "deleteAccount": {
     "title": "退会",

@@ -2,6 +2,8 @@ import { and, eq, gte } from 'drizzle-orm';
 import 'server-only';
 
 import { db, notifications, userFollows } from '../db';
+import { isMutableNotificationType } from './mutable-types';
+import { isNotificationTypeMuted } from './mutes';
 
 type NotificationEvent = {
   /**
@@ -37,6 +39,16 @@ export function createNotification(event: NotificationEvent): void {
   if (!userId) return;
 
   (async () => {
+    // Recipient opted out of this notification type. Only mutable types are
+    // checked — this also keeps the extra query off every notification the
+    // recipient can't mute in the first place.
+    if (
+      isMutableNotificationType(event.type) &&
+      (await isNotificationTypeMuted(userId, event.type))
+    ) {
+      return;
+    }
+
     // Deduplication check
     const since = new Date(Date.now() - DEDUP_WINDOW_MS);
     const existing = await db
