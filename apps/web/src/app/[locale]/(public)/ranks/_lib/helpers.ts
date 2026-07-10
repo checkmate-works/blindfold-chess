@@ -14,7 +14,7 @@ import type {
 } from '@/lib/db/data/ranks';
 import type { Rank } from '@/lib/db/schema';
 
-import type { RequirementItem } from '../_components/RequirementsList';
+import type { RequirementDivider, RequirementItem } from '../_components/RequirementsList';
 
 export type RankCardState = 'achieved' | 'next' | 'locked' | 'coming-soon';
 
@@ -62,26 +62,63 @@ function buildChallengeScoreItem(
   };
 }
 
-function buildPositionSubmissionItem(
+function positionSubmissionRouteSegment(positionType: 'memory' | 'puzzle'): string {
+  return positionType === 'memory' ? 'position-memory' : 'puzzle';
+}
+
+function positionSubmissionLabel(
   req: PositionSubmissionCountRequirement,
-  locale: string,
+  positionType: 'memory' | 'puzzle',
   t: Translator
-): RequirementItem {
-  // Only `memory` is wired today (2kyu). When `puzzle` is added we route to
-  // /practice/puzzle/new instead — the slug is statically derived from the
-  // positionType discriminator, no extra mapping table needed.
-  const routeSegment = req.positionType === 'memory' ? 'position-memory' : 'puzzle';
-  return {
-    label: t('submissionCount', {
-      minCount: req.minCount,
-      itemName: t(`submissionItemNames.${req.positionType}`),
-    }),
-    href: `/${locale}/practice/${routeSegment}/new`,
-  };
+): string {
+  return t('submissionCount', {
+    minCount: req.minCount,
+    itemName: t(`submissionItemNames.${positionType}`),
+  });
 }
 
 /**
- * Build RequirementItem[] from rank requirements for use with RequirementsList.
+ * Build one linked RequirementItem per `positionTypes` entry, joined by an
+ * "or" divider — each post type independently satisfies the requirement
+ * (see {@link PositionSubmissionCountRequirement}), so each gets its own
+ * link rather than collapsing into one label/href pointing at only one type.
+ */
+function buildPositionSubmissionItems(
+  req: PositionSubmissionCountRequirement,
+  locale: string,
+  t: Translator
+): (RequirementItem | RequirementDivider)[] {
+  return req.positionTypes.flatMap((positionType, index) => {
+    const item: RequirementItem = {
+      label: positionSubmissionLabel(req, positionType, t),
+      href: `/${locale}/practice/${positionSubmissionRouteSegment(positionType)}/new`,
+    };
+    if (index === 0) return [item];
+    const divider: RequirementDivider = { kind: 'or', label: t('orDivider') };
+    return [divider, item];
+  });
+}
+
+/**
+ * Build the same "or"-joined entries as {@link buildPositionSubmissionItems},
+ * but as plain labels with no href — for the RankCard summary view, which
+ * never links out to a specific practice page.
+ */
+export function buildPositionSubmissionLabels(
+  req: PositionSubmissionCountRequirement,
+  t: Translator
+): (string | RequirementDivider)[] {
+  return req.positionTypes.flatMap((positionType, index) => {
+    const label = positionSubmissionLabel(req, positionType, t);
+    if (index === 0) return [label];
+    const divider: RequirementDivider = { kind: 'or', label: t('orDivider') };
+    return [divider, label];
+  });
+}
+
+/**
+ * Build linked requirement entries from rank requirements for use with
+ * RequirementsList / NextRankRequirements.
  *
  * Shared by rank detail page and guide last page to avoid duplicating the
  * label formatting and href construction logic. Dispatches on `req.type` —
@@ -92,10 +129,10 @@ export function buildRequirementItems(
   requirements: RankRequirement[],
   locale: string,
   t: Translator
-): RequirementItem[] {
-  return requirements.map((req) => {
-    if (req.type === 'challenge_score') return buildChallengeScoreItem(req, locale, t);
-    return buildPositionSubmissionItem(req, locale, t);
+): (RequirementItem | RequirementDivider)[] {
+  return requirements.flatMap((req) => {
+    if (req.type === 'challenge_score') return [buildChallengeScoreItem(req, locale, t)];
+    return buildPositionSubmissionItems(req, locale, t);
   });
 }
 
@@ -178,10 +215,9 @@ export function buildRankTeaserCards(
           challengeName: tRanks(`challengeNames.${challengeKey}`),
         });
       }
-      return tRanks('submissionCount', {
-        minCount: req.minCount,
-        itemName: tRanks(`submissionItemNames.${req.positionType}`),
-      });
+      // TEASER_SLUGS is 5kyu/4kyu only (both challenge_score), so this
+      // branch is unreached today — kept for type exhaustiveness.
+      return positionSubmissionLabel(req, req.positionTypes[0], tRanks);
     });
     const previousSlug = index > 0 ? TEASER_SLUGS[index - 1] : undefined;
 

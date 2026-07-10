@@ -5297,6 +5297,7 @@
     "comingSoon": "Coming Soon",
     "challengeScore": "Score {minScore}+ in {challengeName}",
     "submissionCount": "Submit at least {minCount} {itemName}",
+    "orDivider": "or",
     "submissionItemNames": {
       "memory": "position-memory problem",
       "puzzle": "puzzle"

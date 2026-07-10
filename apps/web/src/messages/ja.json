@@ -5297,6 +5297,7 @@
     "comingSoon": "近日公開",
     "challengeScore": "{challengeName}でスコア{minScore}以上",
     "submissionCount": "{itemName}を{minCount}件以上投稿する",
+    "orDivider": "または",
     "submissionItemNames": {
       "memory": "ポジション記憶の問題",
       "puzzle": "パズル"

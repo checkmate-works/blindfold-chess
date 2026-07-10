@@ -7,6 +7,8 @@
  * Requirement types:
  * - challenge_score: user's best score in a specific challenge must meet minScore.
  *   menuType / leaderboardKey correspond to challenge_results columns.
+ * - position_submission_count: user's total posts across `positionTypes` must
+ *   meet minCount (OR across types, see {@link PositionSubmissionCountRequirement}).
  *
  * Level values use gaps (10, 20, ...) to allow future intermediate ranks
  * without renumbering.
@@ -21,13 +23,15 @@ export type ChallengeScoreRequirement = {
 
 /**
  * Requires the user to have submitted at least `minCount` rows in the
- * `positions` table with the given `positionType`. Counted directly off
- * `positions`, NOT off `exp_events` — submissions grant points, not EXP, so
- * the source of truth is the row count of the user's authored positions.
+ * `positions` table whose `type` is one of `positionTypes` (OR across
+ * types — a `memory` post and a `puzzle` post count toward the same total).
+ * Counted directly off `positions`, NOT off `exp_events` — submissions grant
+ * points, not EXP, so the source of truth is the row count of the user's
+ * authored positions.
  */
 export type PositionSubmissionCountRequirement = {
   type: 'position_submission_count';
-  positionType: 'memory' | 'puzzle';
+  positionTypes: readonly ('memory' | 'puzzle')[];
   minCount: number;
 };
 
@@ -88,7 +92,9 @@ export function isPositionSubmissionCountRequirement(
   const record = value as Record<string, unknown>;
   return (
     record.type === 'position_submission_count' &&
-    (record.positionType === 'memory' || record.positionType === 'puzzle') &&
+    Array.isArray(record.positionTypes) &&
+    record.positionTypes.length > 0 &&
+    record.positionTypes.every((t) => t === 'memory' || t === 'puzzle') &&
     typeof record.minCount === 'number'
   );
 }
@@ -240,7 +246,7 @@ export const ranksSeedData: RankSeed[] = [
     requirements: [
       {
         type: 'position_submission_count',
-        positionType: 'memory',
+        positionTypes: ['memory', 'puzzle'],
         minCount: 1,
       },
     ],

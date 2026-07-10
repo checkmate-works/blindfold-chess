@@ -5286,6 +5286,7 @@
     "comingSoon": "Em breve",
     "challengeScore": "Pontuação {minScore}+ em {challengeName}",
     "submissionCount": "Publique pelo menos {minCount} {itemName}",
+    "orDivider": "ou",
     "submissionItemNames": {
       "memory": "problema de memória de posições",
       "puzzle": "puzzle"

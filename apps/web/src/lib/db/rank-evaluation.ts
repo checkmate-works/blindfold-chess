@@ -25,7 +25,7 @@
  * @see {@link evaluators} — registry of requirement type evaluators
  */
 import * as Sentry from '@sentry/nextjs';
-import { and, asc, count, eq } from 'drizzle-orm';
+import { and, asc, count, eq, inArray } from 'drizzle-orm';
 import 'server-only';
 
 import type {
@@ -90,7 +90,7 @@ const evaluators: Record<string, RequirementEvaluator> = {
     const [row] = await dbInstance
       .select({ value: count() })
       .from(positions)
-      .where(and(eq(positions.userId, userId), eq(positions.type, requirement.positionType)));
+      .where(and(eq(positions.userId, userId), inArray(positions.type, requirement.positionTypes)));
     return (row?.value ?? 0) >= requirement.minCount;
   },
 };

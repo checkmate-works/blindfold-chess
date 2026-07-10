@@ -5,6 +5,7 @@ import { HiCheckCircle, HiChevronRight } from 'react-icons/hi2';
 import type { RankCardState } from '../_lib/helpers';
 import { LockedRankIndicator } from './LockedRankIndicator';
 import { RequirementsList } from './RequirementsList';
+import type { RequirementDivider } from './RequirementsList';
 
 type RankCardProps = {
   slug: string;
@@ -12,7 +13,7 @@ type RankCardProps = {
   beltColor: string;
   rankName: string;
   state: RankCardState;
-  requirementLabels: string[];
+  requirementLabels: (string | RequirementDivider)[];
   requirementsHeading: string;
   comingSoonLabel: string;
   previousRankName?: string;
