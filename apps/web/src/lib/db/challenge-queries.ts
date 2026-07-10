@@ -1,3 +1,4 @@
+import type { SQL } from 'drizzle-orm';
 import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { db } from './index';
@@ -25,6 +26,64 @@ export type LeaderboardPage = {
 export type RankResult = {
   rank: number;
 };
+
+// ---------------------------------------------------------------------------
+// Best-score ordering (the tie-break rule shared by every leaderboard read)
+// ---------------------------------------------------------------------------
+
+/**
+ * The leaderboard tie-break rule: best = highest score, then fewest
+ * incorrect answers, then fastest time. Every ranking read in this module —
+ * page queries, rank lookups, ranked-row lookups — sorts by exactly this
+ * rule. It is stated twice, once for the Drizzle builder queries (this
+ * function) and once for the raw-SQL queries (`BEST_SCORE_ORDER_SQL`);
+ * a change to the rule must update both.
+ */
+function byBestScore(cols: {
+  score: Parameters<typeof desc>[0];
+  incorrectAnswers: Parameters<typeof asc>[0];
+  timeTaken: Parameters<typeof asc>[0];
+}): SQL[] {
+  return [desc(cols.score), asc(cols.incorrectAnswers), asc(cols.timeTaken)];
+}
+
+/** Raw-SQL twin of {@link byBestScore}. */
+const BEST_SCORE_ORDER_SQL = sql`score DESC, incorrect_answers ASC, time_taken ASC`;
+
+/** 1-based rank over the tie-break rule, for use in a SELECT list. */
+const RANK_WINDOW_SQL = sql`ROW_NUMBER() OVER (ORDER BY ${BEST_SCORE_ORDER_SQL})`;
+
+/**
+ * Derived table of every all-time best score for a menu/key, shaped as
+ * `(user_id, score, incorrect_answers, time_taken)` — the score-source
+ * contract expected by `lookupRank` / `lookupRankedRow`.
+ */
+function allTimeBestScoresSql(menuType: string, leaderboardKey: string): SQL {
+  return sql`(
+      SELECT user_id, score, incorrect_answers, time_taken
+      FROM challenge_best_scores
+      WHERE menu_type = ${menuType}
+        AND leaderboard_key = ${leaderboardKey}
+    ) all_time_best`;
+}
+
+/**
+ * Derived table of each user's single best result within a period, same
+ * shape as {@link allTimeBestScoresSql} (DISTINCT ON keeps the first row per
+ * user under the tie-break ordering). Raw-SQL twin of the `bestPerUser`
+ * Drizzle subquery in `getPeriodRanking`.
+ */
+function periodBestScoresSql(menuType: string, leaderboardKey: string, periodStart: Date): SQL {
+  return sql`(
+      SELECT DISTINCT ON (user_id)
+        user_id, score, incorrect_answers, time_taken
+      FROM challenge_results
+      WHERE menu_type = ${menuType}
+        AND leaderboard_key = ${leaderboardKey}
+        AND created_at >= ${periodStart.toISOString()}
+      ORDER BY user_id, ${BEST_SCORE_ORDER_SQL}
+    ) period_best`;
+}
 
 // ---------------------------------------------------------------------------
 // All-time ranking (from challenge_best_scores)
@@ -55,11 +114,7 @@ export async function getAllTimeRanking(
           eq(challengeBestScores.leaderboardKey, leaderboardKey)
         )
       )
-      .orderBy(
-        desc(challengeBestScores.score),
-        asc(challengeBestScores.incorrectAnswers),
-        asc(challengeBestScores.timeTaken)
-      )
+      .orderBy(...byBestScore(challengeBestScores))
       .offset(offset)
       .limit(limit),
     db
@@ -104,12 +159,7 @@ async function getPeriodRanking(
         gte(challengeResults.createdAt, periodStart)
       )
     )
-    .orderBy(
-      challengeResults.userId,
-      desc(challengeResults.score),
-      asc(challengeResults.incorrectAnswers),
-      asc(challengeResults.timeTaken)
-    )
+    .orderBy(challengeResults.userId, ...byBestScore(challengeResults))
     .as('best_per_user');
 
   const [rows, [countRow]] = await Promise.all([
@@ -125,11 +175,7 @@ async function getPeriodRanking(
       })
       .from(bestPerUser)
       .innerJoin(profiles, eq(bestPerUser.userId, profiles.id))
-      .orderBy(
-        desc(bestPerUser.score),
-        asc(bestPerUser.incorrectAnswers),
-        asc(bestPerUser.timeTaken)
-      )
+      .orderBy(...byBestScore(bestPerUser))
       .offset(offset)
       .limit(limit),
     db.select({ count: sql<number>`count(*)::int` }).from(bestPerUser),
@@ -161,6 +207,29 @@ export async function getMonthlyRanking(
 // ---------------------------------------------------------------------------
 
 /**
+ * Returns the user's 1-based rank within `scores` (a derived table from
+ * {@link allTimeBestScoresSql} or {@link periodBestScoresSql}), or null if
+ * the user has no entry there.
+ */
+async function lookupRank(
+  scores: SQL,
+  userId: string,
+  exec: { execute: typeof db.execute } = db
+): Promise<RankResult | null> {
+  const [row] = await exec.execute<{ rank: number }>(sql`
+    SELECT rank::int FROM (
+      SELECT
+        user_id,
+        ${RANK_WINDOW_SQL} AS rank
+      FROM ${scores}
+    ) ranked
+    WHERE user_id = ${userId}
+  `);
+
+  return row ? { rank: row.rank } : null;
+}
+
+/**
  * Returns the user's rank in the all-time leaderboard for a given menu/key.
  * Rank is 1-based. Returns null if the user has no entry.
  *
@@ -173,22 +242,7 @@ export async function getUserAllTimeRank(
   leaderboardKey: string,
   executor?: { execute: typeof db.execute }
 ): Promise<RankResult | null> {
-  const exec = executor ?? db;
-  const [row] = await exec.execute<{ rank: number }>(sql`
-    SELECT rank::int FROM (
-      SELECT
-        user_id,
-        ROW_NUMBER() OVER (
-          ORDER BY score DESC, incorrect_answers ASC, time_taken ASC
-        ) AS rank
-      FROM challenge_best_scores
-      WHERE menu_type = ${menuType}
-        AND leaderboard_key = ${leaderboardKey}
-    ) ranked
-    WHERE user_id = ${userId}
-  `);
-
-  return row ? { rank: row.rank } : null;
+  return lookupRank(allTimeBestScoresSql(menuType, leaderboardKey), userId, executor ?? db);
 }
 
 /**
@@ -202,28 +256,7 @@ async function getUserPeriodRank(
   leaderboardKey: string,
   periodStart: Date
 ): Promise<RankResult | null> {
-  const [row] = await db.execute<{ rank: number }>(sql`
-    WITH best_per_user AS (
-      SELECT DISTINCT ON (user_id)
-        user_id, score, incorrect_answers, time_taken
-      FROM challenge_results
-      WHERE menu_type = ${menuType}
-        AND leaderboard_key = ${leaderboardKey}
-        AND created_at >= ${periodStart.toISOString()}
-      ORDER BY user_id, score DESC, incorrect_answers ASC, time_taken ASC
-    )
-    SELECT rank::int FROM (
-      SELECT
-        user_id,
-        ROW_NUMBER() OVER (
-          ORDER BY score DESC, incorrect_answers ASC, time_taken ASC
-        ) AS rank
-      FROM best_per_user
-    ) ranked
-    WHERE user_id = ${userId}
-  `);
-
-  return row ? { rank: row.rank } : null;
+  return lookupRank(periodBestScoresSql(menuType, leaderboardKey, periodStart), userId);
 }
 
 export async function getUserWeeklyRank(
@@ -277,14 +310,11 @@ function mapRawRankedRow(row: RawRankedRow): RankedLeaderboardRow {
 }
 
 /**
- * Returns the user's full ranked row in the all-time leaderboard.
- * Includes rank, score data, and profile data for UI display.
+ * Returns the user's full ranked row — rank, score data, and profile data
+ * for UI display — within `scores` (a derived table from
+ * {@link allTimeBestScoresSql} or {@link periodBestScoresSql}).
  */
-export async function getUserAllTimeRankedRow(
-  userId: string,
-  menuType: string,
-  leaderboardKey: string
-): Promise<RankedLeaderboardRow | null> {
+async function lookupRankedRow(scores: SQL, userId: string): Promise<RankedLeaderboardRow | null> {
   const [row] = await db.execute<RawRankedRow>(sql`
     SELECT ranked.user_id, ranked.score, ranked.incorrect_answers,
            ranked.time_taken, ranked.rank::int,
@@ -292,12 +322,8 @@ export async function getUserAllTimeRankedRow(
     FROM (
       SELECT
         user_id, score, incorrect_answers, time_taken,
-        ROW_NUMBER() OVER (
-          ORDER BY score DESC, incorrect_answers ASC, time_taken ASC
-        ) AS rank
-      FROM challenge_best_scores
-      WHERE menu_type = ${menuType}
-        AND leaderboard_key = ${leaderboardKey}
+        ${RANK_WINDOW_SQL} AS rank
+      FROM ${scores}
     ) ranked
     INNER JOIN profiles p ON ranked.user_id = p.id
     WHERE ranked.user_id = ${userId}
@@ -306,37 +332,25 @@ export async function getUserAllTimeRankedRow(
   return row ? mapRawRankedRow(row) : null;
 }
 
+/**
+ * Returns the user's full ranked row in the all-time leaderboard.
+ * Includes rank, score data, and profile data for UI display.
+ */
+export async function getUserAllTimeRankedRow(
+  userId: string,
+  menuType: string,
+  leaderboardKey: string
+): Promise<RankedLeaderboardRow | null> {
+  return lookupRankedRow(allTimeBestScoresSql(menuType, leaderboardKey), userId);
+}
+
 async function getUserPeriodRankedRow(
   userId: string,
   menuType: string,
   leaderboardKey: string,
   periodStart: Date
 ): Promise<RankedLeaderboardRow | null> {
-  const [row] = await db.execute<RawRankedRow>(sql`
-    SELECT ranked.user_id, ranked.score, ranked.incorrect_answers,
-           ranked.time_taken, ranked.rank::int,
-           p.username, p.display_name, p.avatar_url, p.country, p.flair
-    FROM (
-      SELECT
-        user_id, score, incorrect_answers, time_taken,
-        ROW_NUMBER() OVER (
-          ORDER BY score DESC, incorrect_answers ASC, time_taken ASC
-        ) AS rank
-      FROM (
-        SELECT DISTINCT ON (user_id)
-          user_id, score, incorrect_answers, time_taken
-        FROM challenge_results
-        WHERE menu_type = ${menuType}
-          AND leaderboard_key = ${leaderboardKey}
-          AND created_at >= ${periodStart.toISOString()}
-        ORDER BY user_id, score DESC, incorrect_answers ASC, time_taken ASC
-      ) best
-    ) ranked
-    INNER JOIN profiles p ON ranked.user_id = p.id
-    WHERE ranked.user_id = ${userId}
-  `);
-
-  return row ? mapRawRankedRow(row) : null;
+  return lookupRankedRow(periodBestScoresSql(menuType, leaderboardKey, periodStart), userId);
 }
 
 export async function getUserWeeklyRankedRow(
