@@ -14,39 +14,15 @@ type SeedCreative = {
   payload: BannerPayload | NativeCardPayload;
 };
 
-// Deliberately NO `feed-native-ad` seed: at launch nothing is configured, so
-// the in-feed slot falls back to AdSense — the intended "no visible change on
-// release" state. Native-card creatives (Amazon/Awin affiliates) are added by
-// admins later. The banner rows are example placeholders for the (not yet
-// publicly rendered) banner slots and are harmless if seeded in production.
-const seedCreatives: SeedCreative[] = [
-  {
-    kind: 'banner',
-    slot: 'content-middle',
-    href: 'https://example.com',
-    sortOrder: 0,
-    payload: {
-      imagePath: '/images/banners/banner1.webp',
-      alt: 'Advertisement',
-      width: 960,
-      height: 208,
-    },
-  },
-  {
-    kind: 'banner',
-    slot: 'content-bottom',
-    href: 'https://example.com',
-    sortOrder: 0,
-    payload: {
-      imagePath: '/images/banners/banner2.webp',
-      alt: 'Advertisement',
-      width: 400,
-      height: 400,
-    },
-  },
-];
+// Deliberately empty at launch: nothing is configured for any slot, so every
+// slot (banner and in-feed alike) falls back to AdSense — the intended "no
+// visible change on release" state. Admins add real creatives via /admin/ads
+// afterward.
+const seedCreatives: SeedCreative[] = [];
 
 export async function seedAds() {
+  if (seedCreatives.length === 0) return;
+
   console.log('Seeding ad creatives...');
 
   // slot is intentionally non-unique (creatives rotate within a placement),
