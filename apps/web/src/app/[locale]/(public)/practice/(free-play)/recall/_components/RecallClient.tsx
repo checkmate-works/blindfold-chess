@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
+import { useAiReplyChip } from '@/app/[locale]/(public)/games/play/_components/AiReplyChip';
 import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
@@ -20,6 +21,7 @@ import { useRecallPreferences } from '../_hooks/use-recall-preferences';
 import { computeRecallStats } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/recall-format';
 import { RecallMovesPanel } from './RecallMovesPanel';
+import { RecallOpponentMoveChip } from './RecallOpponentMoveChip';
 import { RecallSummary } from './RecallSummary';
 
 /**
@@ -152,6 +154,43 @@ export function RecallClient({
   // completed JSX branches, so this gate is what keeps the summary view
   // from inheriting the mid-session mask.
   const isBoardMaskActive = !isCompleted && boardMasked;
+
+  // Announce the opponent's auto-filled move (from "Auto-fill opponent's
+  // moves") via an on-board chip, mirroring games/play's AiReplyChip. The
+  // page title stays reserved for the player's OWN correct/incorrect
+  // feedback (below), so the two never compete for the same slot.
+  const previousMoveLogLengthRef = useRef(moveLog.entries.length);
+  const [opponentMoveNotation, setOpponentMoveNotation] = useState<string | null>(null);
+  const [opponentMoveSignal, setOpponentMoveSignal] = useState(0);
+  useEffect(() => {
+    const entries = moveLog.entries;
+    if (entries.length > previousMoveLogLengthRef.current) {
+      const newEntry = entries[entries.length - 1];
+      if (newEntry.status === 'auto') {
+        setOpponentMoveNotation(
+          `${formatMoveNumberPrefix(newEntry.moveNumber, newEntry.isWhiteMove)} ${newEntry.move}`
+        );
+        setOpponentMoveSignal((s) => s + 1);
+      }
+    }
+    previousMoveLogLengthRef.current = entries.length;
+  }, [moveLog.entries]);
+  const { active: opponentChipActive, dismiss: dismissOpponentChip } = useAiReplyChip({
+    isAiThinking: false,
+    aiMoveSignal: opponentMoveSignal,
+    durationMs: preferences.aiReplyDuration,
+  });
+  // Only surface the chip while masked — once the board is visible the
+  // opponent's move is already readable on the board itself (same reasoning
+  // as AiReplyChip's own gating on the play screen).
+  const showOpponentChip = isBoardMaskActive;
+  // Revealing the board (peek) also dismisses the chip: once the board is
+  // visible again there's no need for the announcement.
+  const handleReveal = useCallback(() => {
+    handleRevealBoard();
+    dismissOpponentChip();
+  }, [handleRevealBoard, dismissOpponentChip]);
+
   const canBoardInput =
     !isCompleted &&
     !moveInput.isAnalyzingAll &&
@@ -177,7 +216,7 @@ export function RecallClient({
       alwaysOpen
       masked={isBoardMaskActive}
       maskDismissable={!isCompleted && preferences.boardVisibility === 'peek'}
-      onReveal={handleRevealBoard}
+      onReveal={handleReveal}
       movablePieces="side-to-move"
       onMove={
         canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
@@ -188,6 +227,12 @@ export function RecallClient({
       topRightControl={
         <BoardSettingsButton onClick={() => setShowSettings(true)} dataTourId="recall-settings" />
       }
+      boardBadge={
+        showOpponentChip ? (
+          <RecallOpponentMoveChip active={opponentChipActive} moveNotation={opponentMoveNotation} />
+        ) : undefined
+      }
+      badgeActive={showOpponentChip && opponentChipActive}
     />
   );
 

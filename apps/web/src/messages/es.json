@@ -2426,6 +2426,7 @@
       }
     },
     "autoOpponentMoves": "Auto-rellenar movimientos del rival",
+    "opponentPlayed": "El oponente jugó <b>{move}</b>",
     "inputMove": "Introduce un movimiento",
     "selectMove": "Selecciona un movimiento",
     "switchInputMode": "Cambiar modo de entrada",

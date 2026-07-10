@@ -2430,6 +2430,7 @@
       }
     },
     "autoOpponentMoves": "Auto-fill opponent's moves",
+    "opponentPlayed": "Opponent played <b>{move}</b>",
     "inputMove": "Enter move",
     "selectMove": "Select a move",
     "switchInputMode": "Switch input mode",

@@ -2430,6 +2430,7 @@
       }
     },
     "autoOpponentMoves": "相手の手を自動入力",
+    "opponentPlayed": "相手が<b>{move}</b>を指しました",
     "inputMove": "手を入力",
     "selectMove": "手を選択",
     "switchInputMode": "入力モードを切り替え",
