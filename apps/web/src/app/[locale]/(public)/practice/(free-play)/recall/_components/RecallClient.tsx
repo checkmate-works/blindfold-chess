@@ -116,28 +116,14 @@ export function RecallClient({
 
   const boardFen = displayFen || currentFen;
   const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
-  // Recall is a review surface: the board has no blindfold mask / peek —
-  // matching play's mid-game UI here would be unnatural since the point of
-  // recall is reviewing a finished game, not re-hiding it. It's still
-  // foldable (open by default) via InlineBoardView's plain collapse mode, the
-  // same one puzzle uses (no `alwaysOpen`, no `masked`). Board-driven input is
-  // available at the live position whenever it's a move the reviewer is
-  // expected to enter (`isPlayerTurn` encodes the auto-opponent rule). The
-  // reviewer enters BOTH sides' moves, so the board is
-  // `movablePieces="side-to-move"`.
-  //
-  // `preferences` is seeded from the game's blindfold settings (see
-  // useRecallPreferences), which may hide own/opponent pieces or pawns
-  // specifically. Those piece-visibility fields are overridden to always-on
-  // below — same override puzzle applies — so a blindfold game reviewed here
-  // doesn't inherit its own blindfold, contradicting the "board is always
-  // visible" guarantee above.
-  const recallBoardPreferences = {
-    ...preferences,
-    showOwnPieces: true,
-    showOpponentPieces: true,
-    pawnHideMode: 'none' as const,
-  };
+  // Recall now mirrors play's blindfold semantics exactly: `boardVisibility`
+  // (always/peek/never) drives the same mask/peek overlay as the play
+  // screen, and `showOwnPieces` / `showOpponentPieces` / `pawnHideMode` pass
+  // straight through from `preferences` — a blindfold game reviewed here
+  // re-hides what the game itself hid, since recall is a memory exercise
+  // (the reviewer enters both sides' moves) rather than a passive replay.
+  // See the `usePeekState` wiring below for the mask itself. The reviewer
+  // enters BOTH sides' moves, so the board is `movablePieces="side-to-move"`.
   const canBoardInput =
     !isCompleted &&
     !moveInput.isAnalyzingAll &&
@@ -151,7 +137,7 @@ export function RecallClient({
       lastMove={
         preferences.highlightLastMove && navigation.currentPosition === -1 ? currentLastMove : null
       }
-      preferences={recallBoardPreferences}
+      preferences={preferences}
       movesLength={originalMoves.length}
       currentPosition={navigation.currentPosition}
       formattedPgn={formattedPgn}
