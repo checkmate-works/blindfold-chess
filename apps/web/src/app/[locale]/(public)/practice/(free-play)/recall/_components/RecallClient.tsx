@@ -1,13 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaArrowRight, FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
-import { useAiReplyChip } from '@/app/[locale]/(public)/games/play/_components/AiReplyChip';
 import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
@@ -19,6 +18,7 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 
 import { useRecallGame } from '../_hooks';
+import { useOpponentMoveAnnouncement } from '../_hooks/use-opponent-move-announcement';
 import { useRecallPreferences } from '../_hooks/use-recall-preferences';
 import type { MoveLogEntry } from '../_lib';
 import { computeRecallStats, resolveModalPosition } from '../_lib';
@@ -178,28 +178,13 @@ export function RecallClient({
   const isBoardMaskActive = !isCompleted && boardMasked;
 
   // Announce the opponent's auto-filled move (from "Auto-fill opponent's
-  // moves") via an on-board chip, mirroring games/play's AiReplyChip. The
-  // page title stays reserved for the player's OWN correct/incorrect
-  // feedback (below), so the two never compete for the same slot.
-  const previousMoveLogLengthRef = useRef(moveLog.entries.length);
-  const [opponentMoveNotation, setOpponentMoveNotation] = useState<string | null>(null);
-  const [opponentMoveSignal, setOpponentMoveSignal] = useState(0);
-  useEffect(() => {
-    const entries = moveLog.entries;
-    if (entries.length > previousMoveLogLengthRef.current) {
-      const newEntry = entries[entries.length - 1];
-      if (newEntry.status === 'auto') {
-        setOpponentMoveNotation(
-          `${formatMoveNumberPrefix(newEntry.moveNumber, newEntry.isWhiteMove)} ${newEntry.move}`
-        );
-        setOpponentMoveSignal((s) => s + 1);
-      }
-    }
-    previousMoveLogLengthRef.current = entries.length;
-  }, [moveLog.entries]);
-  const { active: opponentChipActive, dismiss: dismissOpponentChip } = useAiReplyChip({
-    isAiThinking: false,
-    aiMoveSignal: opponentMoveSignal,
+  // moves") via an on-board chip, mirroring games/play's AiReplyChip.
+  const {
+    notation: opponentMoveNotation,
+    active: opponentChipActive,
+    dismiss: dismissOpponentChip,
+  } = useOpponentMoveAnnouncement({
+    entries: moveLog.entries,
     durationMs: preferences.aiReplyDuration,
   });
   // Only surface the chip while masked — once the board is visible the
