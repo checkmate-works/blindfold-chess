@@ -10,9 +10,11 @@ afterEach(() => {
 });
 
 const mockMarkAsRead = vi.fn();
+const mockSetNotificationMute = vi.fn();
 
 vi.mock('../_actions', () => ({
   markAsRead: (...args: unknown[]) => mockMarkAsRead(...args),
+  setNotificationMute: (...args: unknown[]) => mockSetNotificationMute(...args),
 }));
 
 // Link *values* are the helper's responsibility, exhaustively unit-tested in
@@ -43,6 +45,14 @@ vi.mock('@/i18n/use-safe-translations', () => ({
     if (key === 'achievementSingleMessage' && params) return `🏆 You earned ${params.name}`;
     if (key === 'achievementMultipleMessage' && params)
       return `🏆 You earned ${params.count} achievements`;
+    if (key === 'muteButtonLabel' && params) return `Mute ${params.type} notifications`;
+    if (key === 'muteConfirmTitle') return 'Mute this notification type?';
+    if (key === 'muteConfirmMessage' && params)
+      return `You will no longer receive ${params.type} notifications.`;
+    if (key === 'muteConfirmButton') return 'Mute';
+    if (key === 'cancel') return 'Cancel';
+    if (key === 'mutedLabel' && params) return `${params.type} notifications are muted`;
+    if (key === 'Preferences.notifications.types.new_post') return 'new_post';
     return key;
   },
 }));
@@ -115,6 +125,7 @@ describe('NotificationItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockMarkAsRead.mockResolvedValue(undefined);
+    mockSetNotificationMute.mockResolvedValue(undefined);
     // Default: the helper yields a link, so the item renders as an anchor.
     mockBuildNotificationLink.mockReturnValue('/target');
   });
@@ -205,6 +216,56 @@ describe('NotificationItem', () => {
       fireEvent.click(screen.getByRole('button'));
 
       await waitFor(() => expect(mockMarkAsRead).toHaveBeenCalledWith('notif-btn'));
+    });
+  });
+
+  describe('mute action', () => {
+    it('does not render a mute button for a non-mutable type', () => {
+      render(<NotificationItem notification={createNotification({ type: 'follow' })} />);
+
+      expect(screen.queryByRole('button', { name: /^Mute .* notifications$/ })).toBeNull();
+    });
+
+    it('renders a mute button for a mutable type', () => {
+      render(<NotificationItem notification={createNotification({ type: 'new_post' })} />);
+
+      expect(screen.getByRole('button', { name: 'Mute new_post notifications' })).toBeDefined();
+    });
+
+    it('opens a confirmation dialog without marking as read or navigating', () => {
+      render(
+        <NotificationItem notification={createNotification({ type: 'new_post', isRead: false })} />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Mute new_post notifications' }));
+
+      expect(screen.getByText('Mute this notification type?')).toBeDefined();
+      expect(mockMarkAsRead).not.toHaveBeenCalled();
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    it('calls setNotificationMute and swaps to the muted icon on confirm', async () => {
+      render(<NotificationItem notification={createNotification({ type: 'new_post' })} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Mute new_post notifications' }));
+      fireEvent.click(screen.getByText('Mute'));
+
+      await waitFor(() => expect(mockSetNotificationMute).toHaveBeenCalledWith('new_post', true));
+      await waitFor(() =>
+        expect(screen.queryByRole('button', { name: 'Mute new_post notifications' })).toBeNull()
+      );
+      expect(screen.getByRole('img', { name: 'new_post notifications are muted' })).toBeDefined();
+    });
+
+    it('does not call setNotificationMute when the confirmation is cancelled', () => {
+      render(<NotificationItem notification={createNotification({ type: 'new_post' })} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Mute new_post notifications' }));
+      fireEvent.click(screen.getByText('Cancel'));
+
+      expect(mockSetNotificationMute).not.toHaveBeenCalled();
+      expect(screen.queryByText('Mute this notification type?')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Mute new_post notifications' })).toBeDefined();
     });
   });
 

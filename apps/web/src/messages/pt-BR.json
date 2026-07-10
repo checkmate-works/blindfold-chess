@@ -3534,7 +3534,13 @@
     },
     "positionEditRequestSubmittedMessage": "{actor} sugeriu chunks para a sua posição",
     "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de chunks",
-    "settingsLink": "Configurações de notificação"
+    "settingsLink": "Configurações de notificação",
+    "muteButtonLabel": "Silenciar notificações de {type}",
+    "muteConfirmTitle": "Silenciar este tipo de notificação?",
+    "muteConfirmMessage": "Você deixará de receber notificações de \"{type}\". Você pode alterar isso a qualquer momento nas configurações de notificação.",
+    "muteConfirmButton": "Silenciar",
+    "cancel": "Cancelar",
+    "mutedLabel": "As notificações de \"{type}\" estão silenciadas"
   },
   "deleteAccount": {
     "title": "Excluir Conta",

@@ -3540,7 +3540,13 @@
     },
     "positionEditRequestSubmittedMessage": "{actor}さんがあなたの局面にチャンクを提案しました",
     "positionEditRequestAcceptedMessage": "{actor}さんがあなたのチャンク提案を承認しました",
-    "settingsLink": "通知設定"
+    "settingsLink": "通知設定",
+    "muteButtonLabel": "「{type}」の通知をミュート",
+    "muteConfirmTitle": "この種類の通知をミュートしますか？",
+    "muteConfirmMessage": "今後「{type}」の通知は届かなくなります。設定はいつでも通知設定から変更できます。",
+    "muteConfirmButton": "ミュートする",
+    "cancel": "キャンセル",
+    "mutedLabel": "「{type}」の通知はミュート中です"
   },
   "deleteAccount": {
     "title": "退会",
