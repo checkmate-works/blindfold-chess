@@ -169,12 +169,12 @@ export function RecallClient({
   useEffect(() => {
     remask();
   }, [gameProgress.currentMoveIndex, remask]);
-  // The completion/summary view — including a mistake-review jump via
-  // handleMistakeClick — always shows the position unmasked, mirroring
-  // play's separate `finishedBoardView`, which never re-hides a finished
-  // game. `inlineBoardView` below is shared by both the in-progress and
-  // completed JSX branches, so this gate is what keeps the summary view
-  // from inheriting the mid-session mask.
+  // The completion/summary view — including a position adopted from the
+  // quick-peek modal's "Open this position" — always shows the board
+  // unmasked, mirroring play's separate `finishedBoardView`, which never
+  // re-hides a finished game. `inlineBoardView` below is shared by both the
+  // in-progress and completed JSX branches, so this gate is what keeps the
+  // summary view from inheriting the mid-session mask.
   const isBoardMaskActive = !isCompleted && boardMasked;
 
   // Announce the opponent's auto-filled move (from "Auto-fill opponent's
