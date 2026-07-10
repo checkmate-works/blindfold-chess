@@ -46,12 +46,12 @@ vi.mock('@/i18n/use-safe-translations', () => ({
     if (key === 'achievementMultipleMessage' && params)
       return `🏆 You earned ${params.count} achievements`;
     if (key === 'muteButtonLabel' && params) return `Mute ${params.type} notifications`;
+    if (key === 'unmuteButtonLabel' && params) return `Unmute ${params.type} notifications`;
     if (key === 'muteConfirmTitle') return 'Mute this notification type?';
     if (key === 'muteConfirmMessage' && params)
       return `You will no longer receive ${params.type} notifications.`;
     if (key === 'muteConfirmButton') return 'Mute';
     if (key === 'cancel') return 'Cancel';
-    if (key === 'mutedLabel' && params) return `${params.type} notifications are muted`;
     if (key === 'Preferences.notifications.types.new_post') return 'new_post';
     return key;
   },
@@ -244,17 +244,20 @@ describe('NotificationItem', () => {
       expect(mockRefresh).not.toHaveBeenCalled();
     });
 
-    it('calls setNotificationMute and swaps to the muted icon on confirm', async () => {
+    it('calls setNotificationMute and swaps to an unmute button on confirm', async () => {
       render(<NotificationItem notification={createNotification({ type: 'new_post' })} />);
 
       fireEvent.click(screen.getByRole('button', { name: 'Mute new_post notifications' }));
       fireEvent.click(screen.getByText('Mute'));
 
       await waitFor(() => expect(mockSetNotificationMute).toHaveBeenCalledWith('new_post', true));
-      await waitFor(() =>
-        expect(screen.queryByRole('button', { name: 'Mute new_post notifications' })).toBeNull()
-      );
-      expect(screen.getByRole('img', { name: 'new_post notifications are muted' })).toBeDefined();
+      // The icon stays a real, enabled button — this is the toggle, not a
+      // one-way action that goes dead after the first click. isMuting only
+      // settles back to false a render or two after the label itself
+      // updates, so poll both together instead of asserting immediately.
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Unmute new_post notifications' })).toBeEnabled();
+      });
     });
 
     it('does not call setNotificationMute when the confirmation is cancelled', () => {
@@ -266,6 +269,47 @@ describe('NotificationItem', () => {
       expect(mockSetNotificationMute).not.toHaveBeenCalled();
       expect(screen.queryByText('Mute this notification type?')).toBeNull();
       expect(screen.getByRole('button', { name: 'Mute new_post notifications' })).toBeDefined();
+    });
+
+    it('unmutes immediately on click, with no confirmation dialog', async () => {
+      render(
+        <NotificationItem notification={createNotification({ type: 'new_post' })} isTypeMuted />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Unmute new_post notifications' }));
+
+      // No dialog appears for the restorative direction.
+      expect(screen.queryByText('Mute this notification type?')).toBeNull();
+      await waitFor(() => expect(mockSetNotificationMute).toHaveBeenCalledWith('new_post', false));
+      await screen.findByRole('button', { name: 'Mute new_post notifications' });
+    });
+
+    it('reflects the initial mute status from isTypeMuted on first render', () => {
+      render(
+        <NotificationItem notification={createNotification({ type: 'new_post' })} isTypeMuted />
+      );
+
+      expect(screen.getByRole('button', { name: 'Unmute new_post notifications' })).toBeDefined();
+      expect(screen.queryByRole('button', { name: 'Mute new_post notifications' })).toBeNull();
+    });
+
+    it('stays responsive across repeated mute/unmute cycles', async () => {
+      render(<NotificationItem notification={createNotification({ type: 'new_post' })} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Mute new_post notifications' }));
+      fireEvent.click(screen.getByText('Mute'));
+      await screen.findByRole('button', { name: 'Unmute new_post notifications' });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Unmute new_post notifications' }));
+      await screen.findByRole('button', { name: 'Mute new_post notifications' });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Mute new_post notifications' }));
+      fireEvent.click(screen.getByText('Mute'));
+      await screen.findByRole('button', { name: 'Unmute new_post notifications' });
+
+      expect(mockSetNotificationMute).toHaveBeenNthCalledWith(1, 'new_post', true);
+      expect(mockSetNotificationMute).toHaveBeenNthCalledWith(2, 'new_post', false);
+      expect(mockSetNotificationMute).toHaveBeenNthCalledWith(3, 'new_post', true);
     });
   });
 

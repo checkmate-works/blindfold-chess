@@ -8,7 +8,7 @@ import { notifyNotificationsRead } from '@/config';
 import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FiBellOff } from 'react-icons/fi';
+import { FiBell, FiBellOff } from 'react-icons/fi';
 
 import { isMutableNotificationType } from '@/lib/notifications/mutable-types';
 
@@ -23,9 +23,11 @@ import { NotificationAvatar } from './NotificationAvatar';
 type Props = {
   notification: NotificationWithActor;
   currentUsername?: string;
+  /** Whether `notification.type` is currently muted for the viewer. */
+  isTypeMuted?: boolean;
 };
 
-export function NotificationItem({ notification, currentUsername }: Props) {
+export function NotificationItem({ notification, currentUsername, isTypeMuted = false }: Props) {
   const locale = useLocale();
   const t = useTranslations('MypageNotifications');
   // Root-scoped translator so `getAchievementDisplayName` can resolve
@@ -34,7 +36,9 @@ export function NotificationItem({ notification, currentUsername }: Props) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [showMuteConfirm, setShowMuteConfirm] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  // Seeded from the server (isTypeMuted) so a page reload reflects the real
+  // mute status instead of resetting to "not muted" — see prop doc above.
+  const [isMuted, setIsMuted] = useState(isTypeMuted);
   const [isMuting, startMuteTransition] = useTransition();
 
   const actor = notification.actor;
@@ -51,11 +55,22 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     });
   }
 
+  // Muting is the destructive direction (silences future notifications of
+  // this type) and goes through the confirmation dialog below. Unmuting is
+  // purely restorative, so it applies immediately with no confirmation —
+  // this is what makes the icon a real toggle instead of a one-way action.
   function handleMuteConfirm() {
     startMuteTransition(async () => {
       await setNotificationMute(notification.type, true);
       setIsMuted(true);
       setShowMuteConfirm(false);
+    });
+  }
+
+  function handleUnmute() {
+    startMuteTransition(async () => {
+      await setNotificationMute(notification.type, false);
+      setIsMuted(false);
     });
   }
 
@@ -109,23 +124,16 @@ export function NotificationItem({ notification, currentUsername }: Props) {
 
         {isMutable && (
           <div className="flex-shrink-0 mt-1">
-            {isMuted ? (
-              <FiBellOff
-                className="h-4 w-4 text-muted-foreground/50"
-                role="img"
-                aria-label={t('mutedLabel', { type: typeLabel })}
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowMuteConfirm(true)}
-                aria-label={t('muteButtonLabel', { type: typeLabel })}
-                title={t('muteButtonLabel', { type: typeLabel })}
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <FiBellOff className="h-4 w-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              disabled={isMuting}
+              onClick={isMuted ? handleUnmute : () => setShowMuteConfirm(true)}
+              aria-label={t(isMuted ? 'unmuteButtonLabel' : 'muteButtonLabel', { type: typeLabel })}
+              title={t(isMuted ? 'unmuteButtonLabel' : 'muteButtonLabel', { type: typeLabel })}
+              className="text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+            >
+              {isMuted ? <FiBellOff className="h-4 w-4" /> : <FiBell className="h-4 w-4" />}
+            </button>
           </div>
         )}
 

@@ -3542,11 +3542,11 @@
     "positionEditRequestAcceptedMessage": "{actor} accepted your chunk suggestion",
     "settingsLink": "Notification settings",
     "muteButtonLabel": "Mute {type} notifications",
+    "unmuteButtonLabel": "Unmute {type} notifications",
     "muteConfirmTitle": "Mute this notification type?",
     "muteConfirmMessage": "You'll stop receiving \"{type}\" notifications. You can change this anytime from notification settings.",
     "muteConfirmButton": "Mute",
-    "cancel": "Cancel",
-    "mutedLabel": "\"{type}\" notifications are muted"
+    "cancel": "Cancel"
   },
   "deleteAccount": {
     "title": "Delete Account",

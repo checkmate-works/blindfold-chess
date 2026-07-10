@@ -7,6 +7,7 @@ import { FiSettings } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
+import { getMutedNotificationTypes } from '@/lib/notifications/mutes';
 
 import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -36,14 +37,19 @@ export default async function NotificationsPage({ params, searchParams }: Props)
 
   const user = await getAuthenticatedUser();
   const { page } = await searchParamsCache.parse(searchParams);
-  const [[{ items, totalPages }, unreadCount], [profile]] = await Promise.all([
-    Promise.all([getNotifications(user.id, page), getUnreadCount(user.id)]),
+  const [[{ items, totalPages }, unreadCount, mutedTypes], [profile]] = await Promise.all([
+    Promise.all([
+      getNotifications(user.id, page),
+      getUnreadCount(user.id),
+      getMutedNotificationTypes(user.id),
+    ]),
     db
       .select({ username: profiles.username })
       .from(profiles)
       .where(eq(profiles.id, user.id))
       .limit(1),
   ]);
+  const mutedTypeSet = new Set<string>(mutedTypes);
 
   const currentPage = Math.max(1, Math.min(page, totalPages || 1));
 
@@ -80,6 +86,7 @@ export default async function NotificationsPage({ params, searchParams }: Props)
               key={notification.id}
               notification={notification}
               currentUsername={profile?.username}
+              isTypeMuted={mutedTypeSet.has(notification.type)}
             />
           ))}
         </div>

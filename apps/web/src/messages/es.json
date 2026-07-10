@@ -3536,11 +3536,11 @@
     "positionEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de chunks",
     "settingsLink": "Configuración de notificaciones",
     "muteButtonLabel": "Silenciar notificaciones de {type}",
+    "unmuteButtonLabel": "Reactivar notificaciones de {type}",
     "muteConfirmTitle": "¿Silenciar este tipo de notificación?",
     "muteConfirmMessage": "Dejarás de recibir notificaciones de \"{type}\". Puedes cambiarlo en cualquier momento desde la configuración de notificaciones.",
     "muteConfirmButton": "Silenciar",
-    "cancel": "Cancelar",
-    "mutedLabel": "Las notificaciones de \"{type}\" están silenciadas"
+    "cancel": "Cancelar"
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",
