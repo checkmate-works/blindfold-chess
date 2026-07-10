@@ -42,7 +42,6 @@ function useHarness({
     originalMoves,
     userMoves,
     currentMoveIndex,
-    moveLog,
     startsAsBlack: false,
     startMoveNumber: 1,
     isPlayerTurn,

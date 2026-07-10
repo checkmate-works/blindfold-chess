@@ -141,7 +141,6 @@ export function useRecallGame({
     originalMoves,
     userMoves,
     currentMoveIndex,
-    moveLog,
     startsAsBlack,
     startMoveNumber,
     isPlayerTurn: playerTurn,

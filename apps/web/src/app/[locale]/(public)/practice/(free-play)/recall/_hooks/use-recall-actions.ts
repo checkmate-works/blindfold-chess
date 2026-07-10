@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
@@ -9,7 +9,6 @@ type Props = {
   originalMoves: AlgebraicNotation[];
   userMoves: AlgebraicNotation[];
   currentMoveIndex: number;
-  moveLog: MoveLogEntry[];
   startsAsBlack: boolean;
   startMoveNumber: number;
   isPlayerTurn: boolean;
@@ -25,7 +24,6 @@ export function useRecallActions({
   originalMoves,
   userMoves,
   currentMoveIndex,
-  moveLog,
   startsAsBlack,
   startMoveNumber,
   isPlayerTurn,
@@ -44,10 +42,6 @@ export function useRecallActions({
     isWhiteMove: boolean;
     move: string;
   } | null>(null);
-
-  // Keep moveLog in a ref to avoid it triggering re-renders in dependency arrays
-  const moveLogRef = useRef(moveLog);
-  moveLogRef.current = moveLog;
 
   /**
    * Shared logic for processing a correct / auto-filled move:
