@@ -56,15 +56,16 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
     setSelectedMove(move);
     setIsOpen(false);
 
-    // Call onChange callback if provided
-    if (onChange) {
-      onChange();
-    }
-
-    // Auto-submit on selection
+    // Auto-submit on selection. Unlike text mode, a select pick has no
+    // "in-progress" state distinct from the final submission, so `onChange`
+    // (clears any stale error/feedback) only fires when there is nothing to
+    // submit — otherwise the real correct/incorrect result from `onSubmit`
+    // is the sole source of truth for feedback state.
     if (move && !disabled) {
       onSubmit(move as AlgebraicNotation);
       setSelectedMove('');
+    } else if (onChange) {
+      onChange();
     }
   };
 
