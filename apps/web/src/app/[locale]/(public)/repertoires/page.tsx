@@ -31,6 +31,7 @@ import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -112,6 +113,8 @@ export default async function RepertoiresPage({ params }: Props) {
           </Link>
         </div>
       )}
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

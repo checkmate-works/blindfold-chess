@@ -8,6 +8,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
 
 import { PageLayout, PaginationNav, UserCard } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -124,6 +125,8 @@ export default async function FollowersPage({ params, searchParams }: Props) {
       )}
 
       <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }
