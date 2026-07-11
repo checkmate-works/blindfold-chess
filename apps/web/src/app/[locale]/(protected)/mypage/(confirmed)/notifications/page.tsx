@@ -10,6 +10,7 @@ import { db, profiles } from '@/lib/db';
 import { getMutedNotificationTypes } from '@/lib/notifications/mutes';
 
 import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -93,6 +94,8 @@ export default async function NotificationsPage({ params, searchParams }: Props)
       )}
 
       <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

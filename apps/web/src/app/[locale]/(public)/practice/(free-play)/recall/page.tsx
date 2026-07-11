@@ -20,6 +20,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
 import { PageLayout } from '@/app/[locale]/_components/PageLayout';
@@ -81,6 +82,8 @@ export default async function RecallPage({ params }: Props) {
       ]}
     >
       <RecallSetupForm />
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

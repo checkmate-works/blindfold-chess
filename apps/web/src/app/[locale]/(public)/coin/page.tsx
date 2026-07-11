@@ -27,6 +27,7 @@ import {
 } from '@/lib/points';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale, LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -287,6 +288,8 @@ export default async function CoinPage({ params }: Props) {
           </Link>
         </section>
       </div>
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

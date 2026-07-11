@@ -23,6 +23,7 @@ import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 
 import { formatMovesToPgn } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/format-moves-to-pgn';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -120,6 +121,8 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           currentUserId={currentUser?.id}
         />
       )}
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

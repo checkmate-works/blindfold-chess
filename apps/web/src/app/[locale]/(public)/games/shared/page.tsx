@@ -20,6 +20,7 @@ import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-que
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -123,6 +124,8 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
           ))}
         </div>
       )}
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

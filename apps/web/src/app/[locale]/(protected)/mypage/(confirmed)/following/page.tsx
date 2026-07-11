@@ -7,6 +7,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
 
 import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -73,6 +74,8 @@ export default async function FollowingPage({ params, searchParams }: Props) {
       <FollowingList initialList={followingList} locale={locale} />
 
       <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }
