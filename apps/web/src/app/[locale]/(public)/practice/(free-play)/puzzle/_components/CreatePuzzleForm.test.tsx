@@ -126,18 +126,21 @@ vi.mock('@/app/_components', () => ({
     children,
     type,
     disabled,
+    onClick,
   }: {
     children: ReactNode;
     type?: 'button' | 'submit' | 'reset';
     disabled?: boolean;
+    onClick?: () => void;
   }) => (
-    <button type={type ?? 'button'} disabled={disabled}>
+    <button type={type ?? 'button'} disabled={disabled} onClick={onClick}>
       {children}
     </button>
   ),
   FlipBoardButton: ({ onClick, title }: { onClick: () => void; title: string }) => (
     <button type="button" onClick={onClick} title={title} />
   ),
+  BoardSkeleton: () => <div data-testid="board-skeleton" />,
 }));
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -163,6 +166,12 @@ function seedMoveValue(value: string) {
   input.value = value;
 }
 
+// Advances from the 'position' phase to the 'solution' phase — the button is
+// only enabled once the board holds a valid FEN.
+function advanceToSolution() {
+  fireEvent.click(screen.getByRole('button', { name: 'continueToSolution' }));
+}
+
 beforeEach(() => {
   mockPush.mockReset();
   sessionStorage.clear();
@@ -184,7 +193,9 @@ describe('CreatePuzzleForm', () => {
       // Fill in the required title field.
       fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Mate in 1' } });
 
-      // Enter one solution move through the stubbed MoveInputPanel.
+      // Advance to the solution-moves step, then enter one move through the
+      // stubbed MoveInputPanel.
+      advanceToSolution();
       seedMoveValue('Nf3');
       fireEvent.click(screen.getByTestId('stub-submit'));
 
@@ -243,6 +254,7 @@ describe('CreatePuzzleForm', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
       fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
       fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'quota test' } });
+      advanceToSolution();
       seedMoveValue('Nf3');
       fireEvent.click(screen.getByTestId('stub-submit'));
 
@@ -278,8 +290,12 @@ describe('CreatePuzzleForm', () => {
 
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Hydrated title');
       expect(screen.getByLabelText(/descriptionLabel/)).toHaveValue('Hydrated description');
-      // activeTab defaults to 'fen' in makeDraft, so the fen textarea is visible.
-      expect(screen.getByLabelText('fenLabel')).toHaveValue(VALID_FEN);
+      // A restored draft always has a valid position (writeDraft only ever
+      // runs after validatePuzzleForm passes), so hydration lands directly in
+      // the 'solution' phase: the board renders read-only and the FEN tab is
+      // gone, so we assert the position via the (stubbed) board's data-fen.
+      expect(screen.getByTestId('editable-board')).toHaveAttribute('data-fen', VALID_FEN);
+      expect(screen.queryByLabelText('fenLabel')).not.toBeInTheDocument();
       // Solution move count is rendered as `N / MAX`; assert the prefix.
       expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
     });
@@ -498,20 +514,15 @@ describe('CreatePuzzleForm', () => {
     });
 
     it('Cancel closes the modal and leaves board state unchanged', () => {
-      // Seed a draft (activeTab='fen' by default) so we can assert FEN value,
-      // but the Clear Board button only renders in the Board tab.
-      sessionStorage.setItem(
-        DRAFT_STORAGE_KEY,
-        JSON.stringify(makeDraft({ title: 'Before cancel', moves: ['Nf3', 'e5'] }))
-      );
+      // Clear Board only renders in the 'position' phase (Board tab), which
+      // never has solution moves to lose — that case is covered separately
+      // by the "Edit position" confirmation below.
       render(<CreatePuzzleForm />);
 
-      // Sanity — draft is loaded.
-      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Before cancel');
-      expect(screen.getByLabelText('fenLabel')).toHaveValue(VALID_FEN);
-      expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Before cancel' } });
 
-      // Switch to Board tab so Clear Board button is rendered.
       fireEvent.click(screen.getByRole('tab', { name: 'tabBoard' }));
       fireEvent.click(screen.getByRole('button', { name: 'clearBoard' }));
       expect(screen.getByRole('dialog', { name: 'clearBoardConfirmTitle' })).toBeInTheDocument();
@@ -523,42 +534,128 @@ describe('CreatePuzzleForm', () => {
         screen.queryByRole('dialog', { name: 'clearBoardConfirmTitle' })
       ).not.toBeInTheDocument();
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Before cancel');
-      // Flip back to FEN tab to inspect fenInput value.
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
       expect(screen.getByLabelText('fenLabel')).toHaveValue(VALID_FEN);
-      expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
     });
 
-    it('Confirm closes the modal and resets the board (FEN → empty, moves cleared)', () => {
-      sessionStorage.setItem(
-        DRAFT_STORAGE_KEY,
-        JSON.stringify(makeDraft({ title: 'Before clear', moves: ['Nf3', 'e5'] }))
-      );
+    it('Confirm closes the modal and resets the board to the empty-board FEN', () => {
       render(<CreatePuzzleForm />);
 
-      // Sanity — solution section visible with 2 moves.
-      expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
-      expect(screen.getByLabelText('fenLabel')).toHaveValue(VALID_FEN);
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Before clear' } });
 
-      // Switch to Board tab so Clear Board button is rendered.
       fireEvent.click(screen.getByRole('tab', { name: 'tabBoard' }));
       fireEvent.click(screen.getByRole('button', { name: 'clearBoard' }));
       fireEvent.click(screen.getByRole('button', { name: 'clearBoardConfirmConfirm' }));
 
-      // Modal closes.
       expect(
         screen.queryByRole('dialog', { name: 'clearBoardConfirmTitle' })
       ).not.toBeInTheDocument();
 
-      // Flip to FEN tab to assert fenInput was reset to the empty-board FEN.
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
       expect(screen.getByLabelText('fenLabel')).toHaveValue('8/8/8/8/8/8/8/8 w - - 0 1');
 
-      // Solution section hides because the empty-board FEN fails validateFen.
-      expect(screen.queryByText(/\/\s*20$/)).not.toBeInTheDocument();
+      // Continue-to-solution stays disabled since the empty-board FEN fails validateFen.
+      expect(screen.getByRole('button', { name: 'continueToSolution' })).toBeDisabled();
 
       // Title is untouched (Clear Board only resets board + solution).
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Before clear');
+    });
+  });
+
+  describe('position/solution step wizard', () => {
+    it('continueToSolution is disabled until the board holds a valid FEN', () => {
+      render(<CreatePuzzleForm />);
+      expect(screen.getByRole('button', { name: 'continueToSolution' })).toBeDisabled();
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      expect(screen.getByRole('button', { name: 'continueToSolution' })).not.toBeDisabled();
+    });
+
+    it('advancing to the solution phase locks the board read-only and hides the position editor', () => {
+      render(<CreatePuzzleForm />);
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      advanceToSolution();
+
+      // Position editor (tabs, FEN textarea, Clear Board) is gone.
+      expect(screen.queryByRole('tab', { name: 'tabFen' })).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('fenLabel')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'clearBoard' })).not.toBeInTheDocument();
+
+      // Board still shows the same position, read-only.
+      expect(screen.getByTestId('editable-board')).toHaveAttribute('data-fen', VALID_FEN);
+
+      // Solution-move UI is now reachable.
+      expect(screen.getByTestId('move-input-panel')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'editPosition' })).toBeInTheDocument();
+    });
+
+    it('"Edit position" with no solution moves entered goes straight back without a confirmation', () => {
+      render(<CreatePuzzleForm />);
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      advanceToSolution();
+
+      fireEvent.click(screen.getByRole('button', { name: 'editPosition' }));
+
+      expect(
+        screen.queryByRole('dialog', { name: 'editPositionConfirmTitle' })
+      ).not.toBeInTheDocument();
+      // Back in the position phase — the FEN tab is visible again.
+      expect(screen.getByRole('tab', { name: 'tabFen' })).toBeInTheDocument();
+    });
+
+    it('regression: editing the board after entering solution moves no longer silently clears them — Cancel keeps the moves intact', () => {
+      render(<CreatePuzzleForm />);
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      advanceToSolution();
+
+      seedMoveValue('Nf3');
+      fireEvent.click(screen.getByTestId('stub-submit'));
+      expect(screen.getByText(/^1\s*\/\s*20$/)).toBeInTheDocument();
+
+      // Attempting to go back to the board prompts for confirmation instead
+      // of silently discarding the move just entered.
+      fireEvent.click(screen.getByRole('button', { name: 'editPosition' }));
+      expect(screen.getByRole('dialog', { name: 'editPositionConfirmTitle' })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'editPositionConfirmCancel' }));
+
+      // Still in the solution phase, move untouched.
+      expect(
+        screen.queryByRole('dialog', { name: 'editPositionConfirmTitle' })
+      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('tab', { name: 'tabFen' })).not.toBeInTheDocument();
+      expect(screen.getByText(/^1\s*\/\s*20$/)).toBeInTheDocument();
+    });
+
+    it('confirming "Edit position" clears the entered solution moves and returns to the position phase', () => {
+      render(<CreatePuzzleForm />);
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      advanceToSolution();
+
+      seedMoveValue('Nf3');
+      fireEvent.click(screen.getByTestId('stub-submit'));
+      expect(screen.getByText(/^1\s*\/\s*20$/)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'editPosition' }));
+      fireEvent.click(screen.getByRole('button', { name: 'editPositionConfirmConfirm' }));
+
+      // Back in the position phase.
+      expect(screen.getByRole('tab', { name: 'tabFen' })).toBeInTheDocument();
+
+      // Re-advancing shows the solution section with the move count reset to 0.
+      advanceToSolution();
+      expect(screen.queryByText(/^1\s*\/\s*20$/)).not.toBeInTheDocument();
     });
   });
 
@@ -584,6 +681,7 @@ describe('CreatePuzzleForm', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
       fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
       fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Titled' } });
+      advanceToSolution();
       seedMoveValue('Nf3');
       fireEvent.click(screen.getByTestId('stub-submit'));
 
@@ -599,6 +697,7 @@ describe('CreatePuzzleForm', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
       fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
       fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Titled' } });
+      advanceToSolution();
       seedMoveValue('Nf3');
       fireEvent.click(screen.getByTestId('stub-submit'));
 
