@@ -6,9 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
-import { flushSync } from 'react-dom';
 import { FiInfo } from 'react-icons/fi';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -21,11 +19,14 @@ import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { EMPTY_BOARD_FEN } from '../../_lib/board-editor-constants';
 import { buildDefaultPracticeTitle } from '../../_lib/default-title';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
+import { usePuzzlePositionStep } from '../_hooks/use-puzzle-position-step';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { resolveOptionsByIds } from '../_lib/resolve-options';
-import { validatePuzzlePosition } from '../_lib/validate-puzzle-form';
+import { FormErrorBanner } from './FormErrorBanner';
+import { PositionChangedModal } from './PositionChangedModal';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
+import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 /**
  * Seed payload when the form is opened via `?from=<id>` on the new page.
@@ -106,7 +107,6 @@ export function CreatePuzzlePositionForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('practice.puzzle.create');
-  const tUnsaved = useTranslations('unsavedChanges');
 
   // Set by the solution step's Back button (`?resumed=1`) to distinguish
   // "the user just navigated back within this authoring session" from a
@@ -134,11 +134,7 @@ export function CreatePuzzlePositionForm({
   // trip: later visits to `/new` arrive WITHOUT `?from=`, so `forkSeed` is
   // undefined and only the draft remembers the source.
   const [forkedFromId, setForkedFromId] = useState<string | undefined>(forkSeed?.sourceId);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
-  const [positionChangedOpen, setPositionChangedOpen] = useState(false);
 
   // Resolve fork seed tag IDs into option objects using the loaded catalog,
   // mirroring the draft-hydration resolution.
@@ -152,20 +148,34 @@ export function CreatePuzzlePositionForm({
   const board = useFenBoardEditor({ initialFen: forkSeed?.fen ?? injectedFen });
   const tags = useTagSelection({ initialThemes: seededThemes, initialChunks: seededChunks });
 
-  // Solution moves are never edited on this step — they're only carried
-  // through untouched to the solution step, plus used to detect whether the
-  // position changed under them (see handleContinue below).
-  const injectedNotes = injectedSolution?.map(() => '');
-  const [carriedMoves, setCarriedMoves] = useState<string[]>(
-    forkSeed?.moves ?? injectedSolution ?? []
-  );
-  const [carriedNotes, setCarriedNotes] = useState<string[]>(
-    forkSeed?.notes ?? injectedNotes ?? []
-  );
-  // The FEN `carriedMoves` are valid against. Reassigned inside the
-  // hydration `apply` callback (not just at declaration) so a restored
-  // draft's fen/moves pair is never compared against a stale value.
-  const originalFenRef = useRef(forkSeed?.fen ?? injectedFen ?? '');
+  const seedMoves = forkSeed?.moves ?? injectedSolution ?? [];
+  const seedNotes = forkSeed?.notes ?? injectedSolution?.map(() => '') ?? [];
+  const seedFen = forkSeed?.fen ?? injectedFen ?? '';
+
+  const step = usePuzzlePositionStep({
+    board,
+    initialMoves: seedMoves,
+    initialNotes: seedNotes,
+    initialFen: seedFen,
+    writeDraft: (moves, notes) =>
+      writeDraft({
+        version: 1,
+        fen: board.trimmedFen,
+        title,
+        description,
+        moves,
+        notes,
+        activeTab: board.activeTab,
+        sideToMove: board.sideToMove,
+        flipped: board.flipped,
+        userFlipped: board.userFlipped,
+        themeIds: tags.selectedThemes.map((t) => t.id),
+        chunkIds: tags.selectedChunks.map((c) => c.id),
+        ...(forkedFromId ? { forkedFromId } : {}),
+      }),
+    nextPath: '/practice/puzzle/new/solution',
+    draftWriteFailedMessage: t('draftWriteFailed'),
+  });
 
   // Resolve draft IDs against the loaded catalog so the picker has full
   // option objects (label + slug + category) to render. IDs not present in
@@ -184,9 +194,7 @@ export function CreatePuzzlePositionForm({
       board.setUserFlipped(draft.userFlipped);
       setTitle(draft.title);
       setDescription(draft.description);
-      setCarriedMoves(draft.moves);
-      setCarriedNotes(draft.notes);
-      originalFenRef.current = draft.fen;
+      step.seedCarried(draft.moves, draft.notes, draft.fen);
       if (draft.themeIds && draft.themeIds.length > 0) {
         tags.setSelectedThemes(resolveOptionsByIds(draft.themeIds, availableThemes));
       }
@@ -203,11 +211,11 @@ export function CreatePuzzlePositionForm({
   });
 
   const isDirty =
-    !submitted &&
+    !step.submitted &&
     (title.trim() !== defaultTitleRef.current.trim() ||
       description.trim() !== '' ||
-      carriedMoves.length > 0 ||
-      carriedNotes.some((n) => n.trim() !== '') ||
+      step.carriedMoves.length > 0 ||
+      step.carriedNotes.some((n) => n.trim() !== '') ||
       (board.fenInput.trim() !== '' && board.fenInput !== EMPTY_BOARD_FEN) ||
       tags.selectedThemes.length > 0 ||
       tags.selectedChunks.length > 0);
@@ -216,77 +224,18 @@ export function CreatePuzzlePositionForm({
     isDirty: disableUnsavedGuard ? false : isDirty,
   });
 
-  function writeAndContinue(moves: string[], notes: string[]) {
-    // Persist authoring state to sessionStorage and hand off to the
-    // solution step. If the draft write fails (quota / private mode), stay
-    // on the form and surface an error — navigating to a step that would
-    // immediately bounce back is worse UX.
-    const ok = writeDraft({
-      version: 1,
-      fen: board.trimmedFen,
-      title,
-      description,
-      moves,
-      notes,
-      activeTab: board.activeTab,
-      sideToMove: board.sideToMove,
-      flipped: board.flipped,
-      userFlipped: board.userFlipped,
-      themeIds: tags.selectedThemes.map((t) => t.id),
-      chunkIds: tags.selectedChunks.map((c) => c.id),
-      ...(forkedFromId ? { forkedFromId } : {}),
-    });
-    if (!ok) {
-      setError(t('draftWriteFailed'));
-      setPending(false);
-      return;
-    }
-    // flushSync ensures the re-render (isDirty -> false) completes before
-    // router.push triggers the navigation guard check — otherwise the
-    // intentional push would fire the UnsavedChangesDialog.
-    flushSync(() => setSubmitted(true));
-    router.push('/practice/puzzle/new/solution');
-  }
-
-  function handleContinue() {
-    setError(null);
-    if (!validatePuzzlePosition(board)) return;
-
-    setPending(true);
-
-    const positionChanged = carriedMoves.length > 0 && board.trimmedFen !== originalFenRef.current;
-    if (positionChanged) {
-      setPositionChangedOpen(true);
-      setPending(false);
-      return;
-    }
-
-    writeAndContinue(carriedMoves, carriedNotes);
-  }
-
-  function handleConfirmPositionChanged() {
-    setPositionChangedOpen(false);
-    setPending(true);
-    setCarriedMoves([]);
-    setCarriedNotes([]);
-    originalFenRef.current = board.trimmedFen;
-    writeAndContinue([], []);
-  }
-
   function handleStartOver() {
     clearDraft();
     board.resetBoard();
     tags.reset();
-    setCarriedMoves(forkSeed?.moves ?? injectedSolution ?? []);
-    setCarriedNotes(forkSeed?.notes ?? injectedNotes ?? []);
-    originalFenRef.current = forkSeed?.fen ?? injectedFen ?? '';
+    step.seedCarried(seedMoves, seedNotes, seedFen);
     setTitle(defaultTitleRef.current);
     setDescription('');
     // Start-over also clears the fork lineage held in component state —
     // otherwise the next write would still pin to the old parent even
     // though the user has explicitly asked for a clean slate.
     setForkedFromId(undefined);
-    setError(null);
+    step.setError(null);
     resetHydrated();
     setStartOverOpen(false);
   }
@@ -294,11 +243,7 @@ export function CreatePuzzlePositionForm({
   return (
     <>
       <div className="space-y-6">
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
-          </div>
-        )}
+        <FormErrorBanner message={step.error} />
 
         {hydratedFromDraft && !resumed && (
           <div
@@ -338,23 +283,15 @@ export function CreatePuzzlePositionForm({
           onTitleChange={setTitle}
           description={description}
           onDescriptionChange={setDescription}
-          pending={pending}
+          pending={step.pending}
           availableThemes={availableThemes}
           availableChunks={availableChunks}
-          onContinue={handleContinue}
+          onContinue={step.handleContinue}
           continueLabel={t('continueToSolution')}
         />
       </div>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <PuzzleUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 
       <ConfirmationModal
         isOpen={startOverOpen}
@@ -367,15 +304,10 @@ export function CreatePuzzlePositionForm({
         onCancel={() => setStartOverOpen(false)}
       />
 
-      <ConfirmationModal
-        isOpen={positionChangedOpen}
-        title={t('positionChangedConfirmTitle')}
-        message={t('positionChangedConfirmMessage')}
-        confirmText={t('positionChangedConfirmConfirm')}
-        cancelText={t('positionChangedConfirmCancel')}
-        confirmVariant="danger"
-        onConfirm={handleConfirmPositionChanged}
-        onCancel={() => setPositionChangedOpen(false)}
+      <PositionChangedModal
+        isOpen={step.positionChangedOpen}
+        onConfirm={step.confirmPositionChanged}
+        onCancel={step.cancelPositionChanged}
       />
     </>
   );
