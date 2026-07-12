@@ -41,6 +41,13 @@ vi.mock('@/app/[locale]/_components/LinkedText', () => ({
   LinkedText: ({ text }: { text: string }) => <>{text}</>,
 }));
 
+// AttachmentAddButton (reached via EditableAttachments) imports this server
+// action, whose auth/rate-limit guards pull in `server-only` — unloadable in
+// the jsdom environment. Same workaround as NewPostForm.test.tsx.
+vi.mock('@/app/[locale]/(public)/topics/_actions/revalidatePathAction', () => ({
+  revalidatePathAction: vi.fn(),
+}));
+
 const mockToggleLike = vi.fn();
 const mockReplyPgn = vi.fn();
 const mockReplyFen = vi.fn();
