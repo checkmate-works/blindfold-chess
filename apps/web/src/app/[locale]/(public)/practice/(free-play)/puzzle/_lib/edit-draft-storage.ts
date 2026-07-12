@@ -1,6 +1,10 @@
-import { validateFen } from '@blindfold-chess/features/chess-core';
-
 import type { EditorTab, SideToMove } from '../../_lib/board-editor-constants';
+import {
+  clearSessionDraft,
+  isStringArray,
+  readSessionDraft,
+  writeSessionDraft,
+} from './session-draft-store';
 
 /**
  * sessionStorage key for the in-progress edit draft of a single puzzle,
@@ -31,10 +35,6 @@ export type PuzzleEditDraftV1 = {
   chunkIds: string[];
 };
 
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((v) => typeof v === 'string');
-}
-
 function isPuzzleEditDraftV1(value: unknown): value is PuzzleEditDraftV1 {
   if (value === null || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
@@ -54,75 +54,22 @@ function isPuzzleEditDraftV1(value: unknown): value is PuzzleEditDraftV1 {
 
 /**
  * Read the edit draft for one puzzle from sessionStorage. Returns `null`
- * when sessionStorage is unavailable, the slot is empty, the JSON fails to
- * parse, the shape doesn't match `PuzzleEditDraftV1`, or the stored FEN
- * fails `validateFen` — clearing the slot in every "corrupt payload" branch
- * so the author is never stuck with a draft that can't hydrate. Move-
- * sequence validity is intentionally not checked here (same rationale as
- * `draft-storage.ts`'s `readDraft`): the server re-validates at save time.
+ * (clearing the slot on any corrupt payload) per `readSessionDraft`'s
+ * contract.
  */
 export function readEditDraft(positionId: string): PuzzleEditDraftV1 | null {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return null;
-  }
-  const key = editDraftStorageKey(positionId);
-  let raw: string | null;
-  try {
-    raw = sessionStorage.getItem(key);
-  } catch {
-    return null;
-  }
-  if (raw === null) return null;
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    clearEditDraft(positionId);
-    return null;
-  }
-
-  if (!isPuzzleEditDraftV1(parsed)) {
-    clearEditDraft(positionId);
-    return null;
-  }
-
-  if (!validateFen(parsed.fen)) {
-    clearEditDraft(positionId);
-    return null;
-  }
-
-  return parsed;
+  return readSessionDraft(editDraftStorageKey(positionId), isPuzzleEditDraftV1);
 }
 
 /**
- * Persist an edit draft for one puzzle. Returns `true` on success, `false`
- * when sessionStorage is unavailable or the write throws (e.g. quota
- * exceeded). Callers should surface an error and not navigate on `false`.
+ * Persist an edit draft for one puzzle. Returns `false` (caller surfaces an
+ * error and must not navigate) per `writeSessionDraft`'s contract.
  */
 export function writeEditDraft(positionId: string, draft: PuzzleEditDraftV1): boolean {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return false;
-  }
-  try {
-    sessionStorage.setItem(editDraftStorageKey(positionId), JSON.stringify(draft));
-    return true;
-  } catch {
-    return false;
-  }
+  return writeSessionDraft(editDraftStorageKey(positionId), draft);
 }
 
-/**
- * Remove one puzzle's edit-draft slot. Safe to call even when no draft
- * exists or sessionStorage is unavailable — failures are swallowed.
- */
+/** Remove one puzzle's edit-draft slot. Safe to call unconditionally. */
 export function clearEditDraft(positionId: string): void {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return;
-  }
-  try {
-    sessionStorage.removeItem(editDraftStorageKey(positionId));
-  } catch {
-    // ignore
-  }
+  clearSessionDraft(editDraftStorageKey(positionId));
 }

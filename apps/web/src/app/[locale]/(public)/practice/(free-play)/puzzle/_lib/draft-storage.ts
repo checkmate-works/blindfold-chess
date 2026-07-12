@@ -1,4 +1,9 @@
-import { validateFen } from '@blindfold-chess/features/chess-core';
+import {
+  clearSessionDraft,
+  isStringArray,
+  readSessionDraft,
+  writeSessionDraft,
+} from './session-draft-store';
 
 /**
  * sessionStorage slot used to hand off an authoring draft between
@@ -46,10 +51,6 @@ export type PuzzleDraftV1 = {
   forkedFromId?: string;
 };
 
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((v) => typeof v === 'string');
-}
-
 function isPuzzleDraftV1(value: unknown): value is PuzzleDraftV1 {
   if (value === null || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
@@ -75,82 +76,22 @@ function isPuzzleDraftV1(value: unknown): value is PuzzleDraftV1 {
 }
 
 /**
- * Read the authoring draft from sessionStorage. Returns `null` when:
- *   - sessionStorage is unavailable (private mode, iframe sandbox, SSR)
- *   - the slot is empty
- *   - the stored JSON fails to parse
- *   - the payload shape does not match `PuzzleDraftV1`
- *   - the stored FEN fails `validateFen`
- *
- * In every "corrupt payload" branch (parse failure, shape mismatch, invalid
- * FEN) the slot is cleared so the user is not stuck with a draft that can
- * never hydrate. Move-sequence validity is intentionally NOT checked here —
- * the server action re-runs `validateMoveSequence` at save time, and a
- * hydration-time rejection would trap the author in an empty form after, for
- * example, a chess-core engine update narrowed one edge-case move.
+ * Read the authoring draft from sessionStorage. Returns `null` (clearing the
+ * slot on any corrupt payload) per `readSessionDraft`'s contract.
  */
 export function readDraft(): PuzzleDraftV1 | null {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return null;
-  }
-  let raw: string | null;
-  try {
-    raw = sessionStorage.getItem(DRAFT_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-  if (raw === null) return null;
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    clearDraft();
-    return null;
-  }
-
-  if (!isPuzzleDraftV1(parsed)) {
-    clearDraft();
-    return null;
-  }
-
-  if (!validateFen(parsed.fen)) {
-    clearDraft();
-    return null;
-  }
-
-  return parsed;
+  return readSessionDraft(DRAFT_STORAGE_KEY, isPuzzleDraftV1);
 }
 
 /**
- * Persist a draft. Returns `true` on success, `false` when sessionStorage
- * is unavailable or the write throws (e.g., quota exceeded). Callers should
- * surface an error and NOT navigate to the preview page if this returns
- * `false` — otherwise the preview would immediately bounce back.
+ * Persist a draft. Returns `false` (caller surfaces an error and must not
+ * navigate) per `writeSessionDraft`'s contract.
  */
 export function writeDraft(draft: PuzzleDraftV1): boolean {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return false;
-  }
-  try {
-    sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
-    return true;
-  } catch {
-    return false;
-  }
+  return writeSessionDraft(DRAFT_STORAGE_KEY, draft);
 }
 
-/**
- * Remove the draft slot. Safe to call even when no draft exists or
- * sessionStorage is unavailable — failures are swallowed.
- */
+/** Remove the draft slot. Safe to call unconditionally. */
 export function clearDraft(): void {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return;
-  }
-  try {
-    sessionStorage.removeItem(DRAFT_STORAGE_KEY);
-  } catch {
-    // ignore
-  }
+  clearSessionDraft(DRAFT_STORAGE_KEY);
 }
