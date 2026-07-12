@@ -1295,6 +1295,7 @@
         "noteAriaLabel": "Comentário para o lance {move}",
         "removeLastMove": "Remover último lance ({move})",
         "maxMovesReached": "Máximo de 20 lances atingido",
+        "checkmateReached": "Xeque-mate — a solução termina aqui",
         "sideToMove": "Vez de",
         "sideWhite": "Brancas",
         "sideBlack": "Pretas",

@@ -1299,6 +1299,7 @@
         "noteAriaLabel": "Comment for move {move}",
         "removeLastMove": "Remove last move ({move})",
         "maxMovesReached": "Maximum 20 moves reached",
+        "checkmateReached": "Checkmate — the solution ends here",
         "sideToMove": "Side to move",
         "sideWhite": "White",
         "sideBlack": "Black",

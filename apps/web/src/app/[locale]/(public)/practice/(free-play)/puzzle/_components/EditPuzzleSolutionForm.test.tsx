@@ -177,6 +177,31 @@ describe('EditPuzzleSolutionForm', () => {
     expect(screen.getByText(/^1\s*\/\s*20$/)).toBeInTheDocument();
   });
 
+  it('locks further input once the entered move delivers checkmate, and Undo unlocks it again', () => {
+    // White rook on e1, black king boxed in on g8 by its own pawns — Re8
+    // (chess.js normalizes the SAN to "Re8#") is checkmate in one.
+    const MATE_IN_ONE_FEN = '6k1/5ppp/8/8/8/8/8/K3R3 w - - 0 1';
+    sessionStorage.setItem(
+      editDraftStorageKey(POSITION_ID),
+      JSON.stringify(makeEditDraft({ fen: MATE_IN_ONE_FEN }))
+    );
+    render(<EditPuzzleSolutionForm positionId={POSITION_ID} />);
+
+    seedMoveValue('Re8');
+    fireEvent.click(screen.getByTestId('stub-submit'));
+
+    expect(screen.getByText('checkmateReached')).toBeInTheDocument();
+    expect(screen.queryByTestId('move-input-panel')).not.toBeInTheDocument();
+    expect(screen.getByTestId('chess-board')).toHaveAttribute('data-interactive', 'false');
+    expect(screen.getByText('Re8#')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'removeLastMove' }));
+
+    expect(screen.queryByText('checkmateReached')).not.toBeInTheDocument();
+    expect(screen.getByTestId('move-input-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('chess-board')).toHaveAttribute('data-interactive', 'true');
+  });
+
   it('Back persists newly-entered moves to the edit draft and navigates to /edit', () => {
     sessionStorage.setItem(editDraftStorageKey(POSITION_ID), JSON.stringify(makeEditDraft()));
     render(<EditPuzzleSolutionForm positionId={POSITION_ID} />);

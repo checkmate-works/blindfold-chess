@@ -40,6 +40,7 @@ export {
   isLegalPieceMove,
   findLegalMoveByCoords,
   findLegalMovesByCoords,
+  isCheckmateFen,
 } from "./moves";
 
 export type {

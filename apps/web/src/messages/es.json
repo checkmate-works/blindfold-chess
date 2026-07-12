@@ -1295,6 +1295,7 @@
         "noteAriaLabel": "Comentario para el movimiento {move}",
         "removeLastMove": "Eliminar último movimiento ({move})",
         "maxMovesReached": "Máximo de 20 movimientos alcanzado",
+        "checkmateReached": "Jaque mate — la solución termina aquí",
         "sideToMove": "Turno de",
         "sideWhite": "Blancas",
         "sideBlack": "Negras",

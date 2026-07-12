@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { executeMove, getTurnFromFen } from '@blindfold-chess/features/chess-core';
+import { executeMove, getTurnFromFen, isCheckmateFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { SideToMove } from '../../_lib/board-editor-constants';
@@ -45,6 +45,15 @@ export function usePuzzleSolutionMoves({
     return fen;
   }, [baseFen, moves]);
 
+  // Once the line reaches checkmate, the position is terminal — no further
+  // reply exists, so no further move should be addable. Undoing the mating
+  // move (handleRemoveLast) recomputes `currentFen` to a non-terminal
+  // position and this flips back to `false` on its own; no extra state.
+  const isCheckmate = useMemo(() => {
+    if (!currentFen) return false;
+    return isCheckmateFen(currentFen);
+  }, [currentFen]);
+
   const firstTurn: SideToMove = useMemo(() => {
     if (!baseFen) return 'w';
     try {
@@ -78,12 +87,21 @@ export function usePuzzleSolutionMoves({
         setMoveError(moveSubmitLabels.maxMovesReached);
         return false;
       }
+      if (isCheckmateFen(currentFen)) {
+        setMoveError(moveSubmitLabels.checkmateReached);
+        return false;
+      }
       const r = executeMove(currentFen, trimmed);
       if (!r) {
         setMoveError(moveSubmitLabels.invalidMove);
         return false;
       }
-      setMoves((prev) => [...prev, trimmed]);
+      // Store the engine-normalized SAN (e.g. "Rh8#"), not the raw input —
+      // the two can differ when the author's typed notation omits the
+      // check/checkmate suffix, and `isCheckmate` above re-derives from the
+      // replayed position rather than string-matching this suffix, but the
+      // move list should still display it correctly.
+      setMoves((prev) => [...prev, r.moveResult.san]);
       setNotes((prev) => [...prev, '']);
       setMoveInput('');
       setMoveError(null);
@@ -130,6 +148,7 @@ export function usePuzzleSolutionMoves({
     currentFen,
     firstTurn,
     currentTurn,
+    isCheckmate,
     handleMoveSubmit,
     handleRemoveLast,
     handleNoteChange,

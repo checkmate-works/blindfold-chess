@@ -8,6 +8,7 @@ export type MoveSubmitLabels = {
   positionInvalid: string;
   maxMovesReached: string;
   invalidMove: string;
+  checkmateReached: string;
 };
 
 export function useMoveSubmitLabels(): MoveSubmitLabels {
@@ -18,6 +19,7 @@ export function useMoveSubmitLabels(): MoveSubmitLabels {
       positionInvalid: t('positionInvalid'),
       maxMovesReached: t('maxMovesReached'),
       invalidMove: tPlay('invalidMove'),
+      checkmateReached: t('checkmateReached'),
     }),
     [t, tPlay]
   );

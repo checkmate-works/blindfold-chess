@@ -1299,6 +1299,7 @@
         "noteAriaLabel": "{move} のコメント",
         "removeLastMove": "最後の手 ({move}) を削除",
         "maxMovesReached": "手数の上限 (20) に達しました",
+        "checkmateReached": "チェックメイト — ここで解答は終了です",
         "sideToMove": "手番",
         "sideWhite": "白",
         "sideBlack": "黒",

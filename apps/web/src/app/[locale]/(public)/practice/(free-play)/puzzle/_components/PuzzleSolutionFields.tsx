@@ -62,6 +62,11 @@ export function PuzzleSolutionFields({
   const { preferences, updatePreferences } = useGamePreferences();
 
   const reachedMaxMoves = solution.moves.length >= MAX_SOLUTION_MOVES;
+  // Checkmate ends the line — no further reply exists, so no further move
+  // can be added. Removing the mating move (Undo, via SolutionMoveList's
+  // "remove last") recomputes solution.currentFen away from checkmate and
+  // this flips back automatically.
+  const inputLocked = reachedMaxMoves || solution.isCheckmate;
 
   return (
     <>
@@ -88,7 +93,7 @@ export function PuzzleSolutionFields({
             pawnHideMode="none"
             movablePieces="side-to-move"
             onMove={
-              pending || reachedMaxMoves
+              pending || inputLocked
                 ? undefined
                 : (san) => {
                     solution.handleMoveSubmit(san as AlgebraicNotation);
@@ -141,8 +146,10 @@ export function PuzzleSolutionFields({
           />
         )}
 
-        {reachedMaxMoves ? (
-          <p className="text-sm text-muted-foreground">{t('maxMovesReached')}</p>
+        {inputLocked ? (
+          <p className="text-sm text-muted-foreground">
+            {solution.isCheckmate ? t('checkmateReached') : t('maxMovesReached')}
+          </p>
         ) : (
           <MoveInputPanel
             preferences={preferences}
