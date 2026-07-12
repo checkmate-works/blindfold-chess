@@ -42,12 +42,6 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   }),
 }));
 
-vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard', () => ({
-  EditableChessBoard: ({ fen, editable }: { fen: string; editable?: boolean }) => (
-    <div data-testid="editable-board" data-fen={fen} data-editable={editable ? 'true' : 'false'} />
-  ),
-}));
-
 vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
   MoveInputPanel: ({
     disabled,
@@ -96,6 +90,15 @@ vi.mock('@/app/_components', () => ({
   FlipBoardButton: ({ onClick, title }: { onClick: () => void; title: string }) => (
     <button type="button" onClick={onClick} title={title} />
   ),
+  ChessBoard: ({ fen, onMove }: { fen: string; onMove?: (san: string) => void }) => (
+    <div data-testid="chess-board" data-fen={fen} data-interactive={onMove ? 'true' : 'false'}>
+      {onMove && (
+        <button type="button" data-testid="stub-board-move" onClick={() => onMove('Nf3')}>
+          simulate drag move
+        </button>
+      )}
+    </div>
+  ),
 }));
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -138,10 +141,10 @@ describe('CreatePuzzleSolutionForm', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/practice/puzzle/new');
     });
-    expect(screen.queryByTestId('editable-board')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('chess-board')).not.toBeInTheDocument();
   });
 
-  it('hydrates the read-only board and moves from the draft', () => {
+  it('hydrates the board (showing the position after entered moves) and the move list from the draft', () => {
     sessionStorage.setItem(
       DRAFT_STORAGE_KEY,
       JSON.stringify(makeDraft({ moves: ['Nf3', 'e5'], notes: ['develop', ''] }))
@@ -149,19 +152,42 @@ describe('CreatePuzzleSolutionForm', () => {
 
     render(<CreatePuzzleSolutionForm />);
 
-    const board = screen.getByTestId('editable-board');
-    expect(board).toHaveAttribute('data-fen', VALID_FEN);
-    expect(board).toHaveAttribute('data-editable', 'false');
+    const board = screen.getByTestId('chess-board');
+    // The board now shows the position AFTER the entered moves, not the
+    // frozen starting FEN — it must have advanced past the starting position.
+    expect(board.getAttribute('data-fen')).not.toBe(VALID_FEN);
+    expect(board).toHaveAttribute('data-interactive', 'true');
     expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
   });
 
-  it('renders no board/FEN tabs or side-to-move toggle — the position is fixed here', () => {
+  it('renders no board/FEN tabs or side-to-move toggle — position editing is not part of this step', () => {
     sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(makeDraft()));
     const { container } = render(<CreatePuzzleSolutionForm />);
 
     expect(container.querySelector('[role="tablist"]')).toBeNull();
     expect(container.querySelector('[role="radiogroup"]')).toBeNull();
     expect(screen.queryByLabelText('fenLabel')).not.toBeInTheDocument();
+  });
+
+  it('dragging a move on the board (simulated) appends it just like typing one', () => {
+    sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(makeDraft()));
+    render(<CreatePuzzleSolutionForm />);
+
+    fireEvent.click(screen.getByTestId('stub-board-move'));
+
+    expect(screen.getByText(/^1\s*\/\s*20$/)).toBeInTheDocument();
+  });
+
+  it('the board is not interactive once the max move count is reached', () => {
+    const fullMoves = Array.from({ length: 20 }, (_, i) => (i % 2 === 0 ? 'Nf3' : 'Nc6'));
+    sessionStorage.setItem(
+      DRAFT_STORAGE_KEY,
+      JSON.stringify(makeDraft({ moves: fullMoves, notes: fullMoves.map(() => '') }))
+    );
+
+    render(<CreatePuzzleSolutionForm />);
+
+    expect(screen.getByTestId('chess-board')).toHaveAttribute('data-interactive', 'false');
   });
 
   it('Back persists newly-entered moves to the draft and navigates to /new?resumed=1', () => {

@@ -47,12 +47,6 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   }),
 }));
 
-vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard', () => ({
-  EditableChessBoard: ({ fen }: { fen: string }) => (
-    <div data-testid="editable-board" data-fen={fen} />
-  ),
-}));
-
 vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
   MoveInputPanel: ({
     disabled,
@@ -103,6 +97,15 @@ vi.mock('@/app/_components', () => ({
   FlipBoardButton: ({ onClick, title }: { onClick: () => void; title: string }) => (
     <button type="button" onClick={onClick} title={title} />
   ),
+  ChessBoard: ({ fen, onMove }: { fen: string; onMove?: (san: string) => void }) => (
+    <div data-testid="chess-board" data-fen={fen} data-interactive={onMove ? 'true' : 'false'}>
+      {onMove && (
+        <button type="button" data-testid="stub-board-move" onClick={() => onMove('Nf3')}>
+          simulate drag move
+        </button>
+      )}
+    </div>
+  ),
 }));
 
 const POSITION_ID = '11111111-1111-1111-1111-111111111111';
@@ -148,10 +151,10 @@ describe('EditPuzzleSolutionForm', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/edit`);
     });
-    expect(screen.queryByTestId('editable-board')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('chess-board')).not.toBeInTheDocument();
   });
 
-  it('hydrates the read-only board and moves from the edit draft', () => {
+  it('hydrates the board (showing the position after entered moves) and the move list from the edit draft', () => {
     sessionStorage.setItem(
       editDraftStorageKey(POSITION_ID),
       JSON.stringify(makeEditDraft({ moves: ['Nf3', 'e5'], notes: ['', ''] }))
@@ -159,8 +162,19 @@ describe('EditPuzzleSolutionForm', () => {
 
     render(<EditPuzzleSolutionForm positionId={POSITION_ID} />);
 
-    expect(screen.getByTestId('editable-board')).toHaveAttribute('data-fen', VALID_FEN);
+    const board = screen.getByTestId('chess-board');
+    expect(board.getAttribute('data-fen')).not.toBe(VALID_FEN);
+    expect(board).toHaveAttribute('data-interactive', 'true');
     expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
+  });
+
+  it('dragging a move on the board (simulated) appends it just like typing one', () => {
+    sessionStorage.setItem(editDraftStorageKey(POSITION_ID), JSON.stringify(makeEditDraft()));
+    render(<EditPuzzleSolutionForm positionId={POSITION_ID} />);
+
+    fireEvent.click(screen.getByTestId('stub-board-move'));
+
+    expect(screen.getByText(/^1\s*\/\s*20$/)).toBeInTheDocument();
   });
 
   it('Back persists newly-entered moves to the edit draft and navigates to /edit', () => {

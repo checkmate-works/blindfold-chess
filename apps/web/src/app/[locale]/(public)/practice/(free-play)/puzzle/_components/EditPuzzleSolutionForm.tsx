@@ -133,7 +133,6 @@ export function EditPuzzleSolutionForm({ positionId }: Props) {
         )}
 
         <PuzzleSolutionFields
-          fen={draft.fen}
           flipped={flipped}
           onFlip={() => setFlipped((prev) => !prev)}
           solution={solution}

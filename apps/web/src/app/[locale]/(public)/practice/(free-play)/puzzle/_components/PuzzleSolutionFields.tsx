@@ -2,24 +2,19 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Button, FlipBoardButton } from '@/app/_components';
+import { Button, ChessBoard, FlipBoardButton } from '@/app/_components';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
 
-import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
 import type { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
 import { MAX_SOLUTION_MOVES } from '../_hooks/use-puzzle-solution-moves';
 import { SolutionMoveList } from './SolutionMoveList';
 
 type Props = {
-  /** The puzzle's starting position — fixed for the lifetime of this step,
-   * shown read-only. Solution moves are entered as notation, not replayed
-   * on the board (consistent with the app's blindfold-training premise). */
-  fen: string;
   flipped: boolean;
   onFlip: () => void;
   solution: ReturnType<typeof usePuzzleSolutionMoves>;
@@ -33,14 +28,24 @@ type Props = {
 };
 
 /**
- * The shared field body of the solution step — read-only board, solution
- * move list, and move input — used by both the create and edit flows'
- * solution-step wrapper components. The board can never be edited here, so
- * there is no code path on this step that can invalidate the entered moves;
- * `onBack` is a plain navigation with no confirmation needed.
+ * The shared field body of the solution step — board, solution move list,
+ * and move input — used by both the create and edit flows' solution-step
+ * wrapper components.
+ *
+ * The board shows the position after already-entered moves
+ * (`solution.currentFen`) and is drag-enabled (`movablePieces="side-to-move"`
+ * since a solution line alternates sides across moves) as an alternative to
+ * typing into `MoveInputPanel` below it — both funnel into the same
+ * `solution.handleMoveSubmit`, which independently re-validates whatever SAN
+ * it receives, so there's no special-casing needed between the two input
+ * paths. Visibility is forced fully-visible (not the author's own blindfold
+ * practice prefs) since this is an authoring screen, not a practice session.
+ *
+ * The board can never invalidate already-entered moves here (dragging only
+ * appends a new move, exactly like typing one), so `onBack` is a plain
+ * navigation with no confirmation needed.
  */
 export function PuzzleSolutionFields({
-  fen,
   flipped,
   onFlip,
   solution,
@@ -54,7 +59,6 @@ export function PuzzleSolutionFields({
 }: Props) {
   const t = useTranslations('practice.puzzle.create');
   const tPlay = useTranslations('play');
-  const editableBoardLabels = useEditableBoardLabels();
   const { preferences, updatePreferences } = useGamePreferences();
 
   const reachedMaxMoves = solution.moves.length >= MAX_SOLUTION_MOVES;
@@ -64,22 +68,32 @@ export function PuzzleSolutionFields({
       <div className="flex items-center justify-between gap-2 mb-2">
         <p className="text-sm text-muted-foreground">
           <span aria-hidden className="mr-1">
-            {solution.firstTurn === 'w' ? '⚪' : '⚫'}
+            {solution.currentTurn === 'w' ? '⚪' : '⚫'}
           </span>
-          {solution.firstTurn === 'w' ? t('whiteToMove') : t('blackToMove')}
+          {solution.currentTurn === 'w' ? t('whiteToMove') : t('blackToMove')}
         </p>
         <FlipBoardButton onClick={onFlip} title={t('flipBoard')} />
       </div>
       <div className="flex justify-center">
         <div className="w-full max-w-md">
-          <EditableChessBoard
-            fen={fen}
-            onFenChange={() => {}}
-            labels={editableBoardLabels}
-            editable={false}
+          <ChessBoard
+            fen={solution.currentFen}
             flipped={flipped}
             showCoordinates={true}
             boardTheme={preferences.boardTheme}
+            showOwnPieces={true}
+            showOpponentPieces={true}
+            pieceShapeMode="normal"
+            pieceColors="normal"
+            pawnHideMode="none"
+            movablePieces="side-to-move"
+            onMove={
+              pending || reachedMaxMoves
+                ? undefined
+                : (san) => {
+                    solution.handleMoveSubmit(san as AlgebraicNotation);
+                  }
+            }
           />
         </div>
       </div>
