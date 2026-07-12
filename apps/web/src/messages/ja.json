@@ -1396,7 +1396,9 @@
       "session": {
         "title": "挑戦",
         "correct": "正解！🎉",
+        "correctMove": "正解",
         "incorrect": "不正解です。もう一度挑戦してください。",
+        "showAnswer": "答えを見る",
         "showBoard": "ボードを表示",
         "whitePlayed": "白が {move} を指しました",
         "blackPlayed": "黒が {move} を指しました"

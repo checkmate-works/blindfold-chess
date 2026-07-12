@@ -4,12 +4,13 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { BoardSkeleton, Button, FlipBoardButton } from '@/app/_components';
+import { Button, FlipBoardButton } from '@/app/_components';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
+import { EditableBoardSkeleton } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableBoardSkeleton';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -142,7 +143,7 @@ export function PuzzlePositionFields({
           <div className="flex justify-center">
             <div className="w-full max-w-md">
               {!isLoaded ? (
-                <BoardSkeleton />
+                <EditableBoardSkeleton />
               ) : (
                 <EditableChessBoard
                   fen={board.boardFen}

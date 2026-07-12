@@ -1,16 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useTranslations } from 'next-intl';
 
-import { updatePuzzle } from '../_actions/updatePuzzle';
 import { usePuzzleSolutionStep } from '../_hooks/use-puzzle-solution-step';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
-import { clearEditDraft, readEditDraft, writeEditDraft } from '../_lib/edit-draft-storage';
+import { readEditDraft, writeEditDraft } from '../_lib/edit-draft-storage';
 import { validatePuzzleSolution } from '../_lib/validate-puzzle-form';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzleSolutionFields } from './PuzzleSolutionFields';
+import { PuzzleSolutionSkeleton } from './PuzzleSolutionSkeleton';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
@@ -20,9 +18,6 @@ type Props = {
 
 export function EditPuzzleSolutionForm({ positionId }: Props) {
   const t = useTranslations('practice.puzzle.create');
-  const tEdit = useTranslations('practice.puzzle.edit');
-
-  const [saving, setSaving] = useState(false);
 
   const step = usePuzzleSolutionStep<PuzzleEditDraftV1>({
     read: () => readEditDraft(positionId),
@@ -35,38 +30,9 @@ export function EditPuzzleSolutionForm({ positionId }: Props) {
     draftWriteFailedMessage: t('draftWriteFailed'),
   });
 
-  async function handleSave() {
-    step.setError(null);
-    if (!step.draft) return;
+  function handleContinueToPreview() {
     if (!validatePuzzleSolution(step.solution, t('solutionRequired'))) return;
-
-    setSaving(true);
-    try {
-      const result = await updatePuzzle({
-        id: positionId,
-        fen: step.draft.fen,
-        title: step.draft.title,
-        description: step.draft.description || null,
-        solutionMoves: step.solution.moves.map((san, i) => ({
-          san,
-          note: step.solution.notes[i] || null,
-        })),
-        themeIds: step.draft.themeIds,
-        chunkIds: step.draft.chunkIds,
-      });
-
-      if ('error' in result) {
-        step.setError(result.error);
-        return;
-      }
-
-      clearEditDraft(positionId);
-      step.finishNavigation(`/practice/puzzle/${positionId}?toast=puzzle_updated`);
-    } catch {
-      step.setError(tEdit('saveError'));
-    } finally {
-      setSaving(false);
-    }
+    step.persistAndNavigate(`/practice/puzzle/${positionId}/edit/preview`);
   }
 
   const stepIndicator = <PuzzleStepIndicator flow="edit" current="solution" />;
@@ -75,7 +41,7 @@ export function EditPuzzleSolutionForm({ positionId }: Props) {
     return (
       <div className="space-y-6">
         {stepIndicator}
-        <div className="h-32 animate-pulse rounded bg-muted/30" />
+        <PuzzleSolutionSkeleton />
       </div>
     );
   }
@@ -91,13 +57,12 @@ export function EditPuzzleSolutionForm({ positionId }: Props) {
           flipped={step.flipped}
           onFlip={step.toggleFlip}
           solution={step.solution}
-          pending={saving}
+          pending={false}
           onBack={step.handleBack}
           backLabel={t('backToPosition')}
-          onPrimaryAction={handleSave}
-          primaryActionLabel={saving ? tEdit('submitting') : tEdit('submit')}
+          onPrimaryAction={handleContinueToPreview}
+          primaryActionLabel={t('continueToPreview')}
           primaryActionDisabled={step.solution.moves.length === 0}
-          primaryActionLoading={saving}
         />
       </div>
 

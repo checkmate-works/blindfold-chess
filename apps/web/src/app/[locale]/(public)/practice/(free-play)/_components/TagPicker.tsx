@@ -121,7 +121,10 @@ export function TagPicker({
         switch (type) {
           case useCombobox.stateChangeTypes.InputKeyDownEnter:
           case useCombobox.stateChangeTypes.ItemClick:
-            return { ...changes, isOpen: true, highlightedIndex: 0, inputValue: '' };
+            // Close the menu after a pick and clear the query. Typing again
+            // reopens it (downshift's InputChange default), so adding several
+            // tags in a row still works without leaving the list hanging open.
+            return { ...changes, isOpen: false, highlightedIndex: 0, inputValue: '' };
           // Downshift's default InputClick action toggles isOpen, which
           // collides with our onFocus → openMenu() flow: focus opens the
           // menu, then the click that caused the focus immediately
@@ -161,13 +164,14 @@ export function TagPicker({
       {labels.help && <p className="text-xs text-muted-foreground mb-2">{labels.help}</p>}
 
       {(selectedThemes.length > 0 || selectedChunks.length > 0) && (
-        <ul className="mb-3 flex flex-wrap gap-3">
+        <ul className="mb-3 space-y-3">
           {selectedThemes.map((item) => (
             <SelectedTagCard
               key={`theme-${item.id}`}
               kind="theme"
               label={item.label}
               previewFen={item.previewFen}
+              description={item.definition}
               badgeText={labels.badgeTheme}
               disabled={disabled}
               openDetailLabel={labels.openDetail(item.label)}
@@ -182,6 +186,7 @@ export function TagPicker({
               kind="chunk"
               label={item.label}
               previewFen={item.representativeFen}
+              description={item.description}
               badgeText={labels.badgeChunk}
               disabled={disabled}
               openDetailLabel={labels.openDetail(item.label)}

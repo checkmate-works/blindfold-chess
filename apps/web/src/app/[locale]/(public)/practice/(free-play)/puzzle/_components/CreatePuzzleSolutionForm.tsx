@@ -8,6 +8,7 @@ import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { validatePuzzleSolution } from '../_lib/validate-puzzle-form';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzleSolutionFields } from './PuzzleSolutionFields';
+import { PuzzleSolutionSkeleton } from './PuzzleSolutionSkeleton';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
@@ -44,7 +45,7 @@ export function CreatePuzzleSolutionForm({ disableUnsavedGuard = false }: Props 
     return (
       <div className="space-y-6">
         {stepIndicator}
-        <div className="h-32 animate-pulse rounded bg-muted/30" />
+        <PuzzleSolutionSkeleton />
       </div>
     );
   }

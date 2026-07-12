@@ -72,6 +72,7 @@ vi.mock('next-navigation-guard', () => ({
 
 vi.mock('@/app/_components', () => ({
   UnsavedChangesDialog: () => null,
+  BoardSkeleton: () => <div data-testid="board-skeleton" />,
   Button: ({
     children,
     type,

@@ -52,11 +52,32 @@ export type SolveContext = {
   playerMoveCount: number;
 };
 
+/** A move's origin/destination squares, used to highlight it on the board. */
+export type MoveSquares = { from: string; to: string };
+
 export type PuzzleSubmitOutcome =
   /** The move was illegal or did not match any solution line. */
   | { kind: 'rejected'; nextSession: SessionState }
   /** The move matched; `solve` is non-null only on the puzzle's final move. */
-  | { kind: 'accepted'; nextSession: SessionState; solve: SolveContext | null };
+  | {
+      kind: 'accepted';
+      nextSession: SessionState;
+      solve: SolveContext | null;
+      /** Squares of the player's just-accepted move (for the board highlight). */
+      playerMove: MoveSquares;
+      /**
+       * Board FEN immediately after the player's move, before the opponent's
+       * reply is applied — the frame shown while the reply reveal is pending.
+       * Equals `nextSession.currentFen` when the line has no reply here.
+       */
+      fenAfterPlayer: string;
+      /**
+       * The opponent's auto-reply to reveal a beat after the player's move
+       * (SAN + squares), or `null` when the line has no reply at this point
+       * (e.g. the puzzle's final move).
+       */
+      opponentReply: { san: string; from: string; to: string } | null;
+    };
 
 /**
  * Pure puzzle move-matching engine. Given the current session, the typed SAN,
@@ -126,12 +147,18 @@ export function evaluatePuzzleSubmit(
 
   let fenAfter = afterPlayer.fen;
   let playedOpponentMove: string | null = null;
+  let opponentReply: { san: string; from: string; to: string } | null = null;
   if (opponentSanIndex < solution.moves.length) {
-    const opponentMove = solution.moves[opponentSanIndex]!;
-    const afterOpponent = executeMove(fenAfter, opponentMove);
+    const opponentSan = solution.moves[opponentSanIndex]!;
+    const afterOpponent = executeMove(fenAfter, opponentSan);
     if (afterOpponent) {
       fenAfter = afterOpponent.fen;
-      playedOpponentMove = opponentMove;
+      playedOpponentMove = opponentSan;
+      opponentReply = {
+        san: opponentSan,
+        from: afterOpponent.moveResult.from,
+        to: afterOpponent.moveResult.to,
+      };
     }
   }
 
@@ -154,5 +181,8 @@ export function evaluatePuzzleSubmit(
           playerMoveCount: solution.playerSlots.length,
         }
       : null,
+    playerMove: { from: afterPlayer.moveResult.from, to: afterPlayer.moveResult.to },
+    fenAfterPlayer: afterPlayer.fen,
+    opponentReply,
   };
 }

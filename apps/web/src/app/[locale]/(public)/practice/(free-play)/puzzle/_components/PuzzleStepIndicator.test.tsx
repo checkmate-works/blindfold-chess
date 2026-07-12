@@ -22,12 +22,14 @@ describe('PuzzleStepIndicator', () => {
     expect(items[2]!.textContent).toContain('stepPreview');
   });
 
-  it('renders only position and solution for the edit flow', () => {
+  it('renders the three edit-flow steps in order', () => {
     render(<PuzzleStepIndicator flow="edit" current="solution" />);
 
     const items = screen.getAllByRole('listitem');
-    expect(items).toHaveLength(2);
-    expect(screen.queryByText('stepPreview')).toBeNull();
+    expect(items).toHaveLength(3);
+    expect(items[0]!.textContent).toContain('stepPosition');
+    expect(items[1]!.textContent).toContain('stepSolution');
+    expect(items[2]!.textContent).toContain('stepPreview');
   });
 
   it('marks exactly the current step with aria-current="step"', () => {

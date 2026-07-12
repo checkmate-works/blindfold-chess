@@ -1409,7 +1409,9 @@
       "session": {
         "title": "Resolver",
         "correct": "¡Correcto! 🎉",
+        "correctMove": "Correcto",
         "incorrect": "Incorrecto. Inténtalo de nuevo.",
+        "showAnswer": "Ver respuesta",
         "showBoard": "Mostrar Tablero",
         "whitePlayed": "Blancas juegan {move}",
         "blackPlayed": "Negras juegan {move}"

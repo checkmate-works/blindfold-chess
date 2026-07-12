@@ -77,6 +77,7 @@ vi.mock('next-navigation-guard', () => ({
 
 vi.mock('@/app/_components', () => ({
   UnsavedChangesDialog: () => null,
+  BoardSkeleton: () => <div data-testid="board-skeleton" />,
   Button: ({
     children,
     type,
@@ -216,56 +217,34 @@ describe('EditPuzzleSolutionForm', () => {
     expect(mockUpdatePuzzle).not.toHaveBeenCalled();
   });
 
-  it('Save is disabled while no moves are entered', () => {
+  it('Preview is disabled while no moves are entered', () => {
     sessionStorage.setItem(editDraftStorageKey(POSITION_ID), JSON.stringify(makeEditDraft()));
     render(<EditPuzzleSolutionForm positionId={POSITION_ID} />);
 
-    expect(screen.getByRole('button', { name: 'submit' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'continueToPreview' })).toBeDisabled();
   });
 
-  it('regression: Save calls updatePuzzle with the full carried-through payload, not just the edited moves', async () => {
+  it('Preview persists newly-entered moves to the edit draft and navigates to /edit/preview — without saving to the server', () => {
     sessionStorage.setItem(
       editDraftStorageKey(POSITION_ID),
       JSON.stringify(makeEditDraft({ themeIds: ['theme-1'], chunkIds: ['chunk-1'] }))
     );
-    mockUpdatePuzzle.mockResolvedValue({ success: true });
 
     render(<EditPuzzleSolutionForm positionId={POSITION_ID} />);
 
     seedMoveValue('Nf3');
     fireEvent.click(screen.getByTestId('stub-submit'));
-    fireEvent.click(screen.getByRole('button', { name: 'submit' }));
 
-    await waitFor(() => {
-      expect(mockUpdatePuzzle).toHaveBeenCalledWith({
-        id: POSITION_ID,
-        fen: VALID_FEN,
-        title: 'Mate in 1',
-        description: 'Fork the king',
-        solutionMoves: [{ san: 'Nf3', note: null }],
-        themeIds: ['theme-1'],
-        chunkIds: ['chunk-1'],
-      });
-    });
+    const previewBtn = screen.getByRole('button', { name: 'continueToPreview' });
+    expect(previewBtn).not.toBeDisabled();
+    fireEvent.click(previewBtn);
 
-    expect(sessionStorage.getItem(editDraftStorageKey(POSITION_ID))).toBeNull();
-    expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}?toast=puzzle_updated`);
-  });
-
-  it('surfaces the server error and does not clear the draft when updatePuzzle fails', async () => {
-    sessionStorage.setItem(editDraftStorageKey(POSITION_ID), JSON.stringify(makeEditDraft()));
-    mockUpdatePuzzle.mockResolvedValue({ error: 'nope' });
-
-    render(<EditPuzzleSolutionForm positionId={POSITION_ID} />);
-
-    seedMoveValue('Nf3');
-    fireEvent.click(screen.getByTestId('stub-submit'));
-    fireEvent.click(screen.getByRole('button', { name: 'submit' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('nope')).toBeInTheDocument();
-    });
-    expect(sessionStorage.getItem(editDraftStorageKey(POSITION_ID))).not.toBeNull();
-    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/edit/preview`);
+    // The save-to-server now happens on the preview step, not here.
+    expect(mockUpdatePuzzle).not.toHaveBeenCalled();
+    const parsed = JSON.parse(sessionStorage.getItem(editDraftStorageKey(POSITION_ID))!);
+    expect(parsed.moves).toEqual(['Nf3']);
+    expect(parsed.themeIds).toEqual(['theme-1']);
+    expect(parsed.chunkIds).toEqual(['chunk-1']);
   });
 });

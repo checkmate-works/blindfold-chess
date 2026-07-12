@@ -4,6 +4,7 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import type { ThemeOption } from '@/lib/themes/types';
 import { buildGlossaryUrlForSlug } from '@/lib/themes/url';
 
+import { NoImagePlaceholder } from '@/app/[locale]/_components/NoImagePlaceholder';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type ChunkSummary = {
@@ -74,10 +75,15 @@ export function RelatedTags({ themes, chunks, locale, labels }: Props) {
   );
 }
 
-type CardProps = {
+export type RelatedTagCardProps = {
   kind: 'theme' | 'chunk';
-  href: '/glossary' | '/chunks/[slug]';
-  locale: Locale;
+  /**
+   * Destination when the card should be a link (detail page). Omit to render
+   * a static, non-navigable card — e.g. the puzzle authoring preview, where
+   * clicking through mid-author would trip the unsaved-changes guard.
+   */
+  href?: '/glossary' | '/chunks/[slug]';
+  locale?: Locale;
   /**
    * `null` only on theme rows for abstract concepts that have no
    * canonical example position. Chunks always carry a representative
@@ -87,9 +93,17 @@ type CardProps = {
   label: string;
   description: string | null;
   badgeText: string;
+  /**
+   * When true and `previewFen` is null, render an explicit "No Image"
+   * placeholder in the thumbnail slot. When false/omitted, a blank dashed
+   * placeholder is rendered instead (detail-page behavior). Supplied by
+   * callers — e.g. the preview and the position step's tag chips — that
+   * would rather show "No Image" than an empty box.
+   */
+  showNoImage?: boolean;
 };
 
-function RelatedTagCard({
+export function RelatedTagCard({
   kind,
   href,
   locale,
@@ -97,38 +111,58 @@ function RelatedTagCard({
   label,
   description,
   badgeText,
-}: CardProps) {
+  showNoImage = false,
+}: RelatedTagCardProps) {
+  const thumbnail = previewFen ? (
+    <ThemedBoardThumbnail fen={previewFen} className="w-16 h-16 shrink-0" />
+  ) : showNoImage ? (
+    <NoImagePlaceholder className="w-16 h-16 shrink-0" />
+  ) : (
+    <span
+      aria-hidden
+      className="w-16 h-16 shrink-0 rounded-sm border border-dashed border-border"
+    />
+  );
+
+  const body = (
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-2 mb-0.5">
+        <span
+          className={`text-[10px] uppercase tracking-wider rounded px-1 ${
+            kind === 'theme'
+              ? 'bg-primary/10 text-primary'
+              : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
+          {badgeText}
+        </span>
+        <p className="text-sm font-medium truncate">{label}</p>
+      </div>
+      {description && (
+        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{description}</p>
+      )}
+    </div>
+  );
+
+  const baseClassName = 'flex items-start gap-3 p-3 rounded border border-border';
+
+  if (!href) {
+    return (
+      <div className={baseClassName}>
+        {thumbnail}
+        {body}
+      </div>
+    );
+  }
+
   return (
     <Link
       href={href}
       locale={locale}
-      className="flex items-start gap-3 p-3 rounded border border-border hover:bg-muted transition-colors"
+      className={`${baseClassName} hover:bg-muted transition-colors`}
     >
-      {previewFen ? (
-        <ThemedBoardThumbnail fen={previewFen} className="w-16 h-16 shrink-0" />
-      ) : (
-        <span
-          aria-hidden
-          className="w-16 h-16 shrink-0 rounded-sm border border-dashed border-border"
-        />
-      )}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span
-            className={`text-[10px] uppercase tracking-wider rounded px-1 ${
-              kind === 'theme'
-                ? 'bg-primary/10 text-primary'
-                : 'bg-secondary text-secondary-foreground'
-            }`}
-          >
-            {badgeText}
-          </span>
-          <p className="text-sm font-medium truncate">{label}</p>
-        </div>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{description}</p>
-        )}
-      </div>
+      {thumbnail}
+      {body}
     </Link>
   );
 }

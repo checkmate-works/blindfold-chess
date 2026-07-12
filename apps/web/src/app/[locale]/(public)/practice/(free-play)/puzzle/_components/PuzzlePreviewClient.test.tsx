@@ -1,6 +1,9 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ChunkOption } from '@/lib/chunks/types';
+import type { ThemeOption } from '@/lib/themes/types';
+
 import { DRAFT_STORAGE_KEY } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { PuzzlePreviewClient } from './PuzzlePreviewClient';
@@ -135,7 +138,7 @@ describe('PuzzlePreviewClient', () => {
         notes: ['', '', ''],
       });
 
-      render(<PuzzlePreviewClient />);
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
 
       expect(screen.getByText('Knight fork')).toBeInTheDocument();
       expect(screen.getByText('Win the queen')).toBeInTheDocument();
@@ -148,11 +151,52 @@ describe('PuzzlePreviewClient', () => {
       expect(replay).toHaveAttribute('data-sans', 'Nf3 Nc6 Bc4');
     });
 
+    it('renders the resolved theme and chunk labels attached to the draft', () => {
+      seedDraft({ themeIds: ['t1'], chunkIds: ['c1', 'c2'] });
+
+      render(
+        <PuzzlePreviewClient
+          availableThemes={[{ id: 't1', label: 'Pin' }] as unknown as ThemeOption[]}
+          availableChunks={
+            [
+              { id: 'c1', label: 'Boden pattern' },
+              { id: 'c2', label: 'Greek gift' },
+            ] as unknown as ChunkOption[]
+          }
+        />
+      );
+
+      expect(screen.getByText('Pin')).toBeInTheDocument();
+      expect(screen.getByText('Boden pattern')).toBeInTheDocument();
+      expect(screen.getByText('Greek gift')).toBeInTheDocument();
+    });
+
+    it('end-to-end: a board-less theme in the draft renders the "No Image" fallback', () => {
+      // Regression guard for the full client → PuzzlePreviewTags → RelatedTagCard
+      // chain: a theme whose resolved option has `previewFen: null` must show
+      // the No Image placeholder rather than a blank thumbnail.
+      seedDraft({ themeIds: ['t1'], chunkIds: [] });
+
+      render(
+        <PuzzlePreviewClient
+          availableThemes={
+            [{ id: 't1', label: 'Decoy', previewFen: null }] as unknown as ThemeOption[]
+          }
+          availableChunks={[]}
+        />
+      );
+
+      expect(screen.getByText('Decoy')).toBeInTheDocument();
+      expect(screen.getByText('No Image')).toBeInTheDocument();
+    });
+
     it('renders a skeleton placeholder before hydration settles', () => {
       // No draft seeded — the effect will call `router.replace` on next tick,
       // but synchronously the first render returns the skeleton branch
       // because `hydrated` starts false. We assert on the initial DOM.
-      const { container } = render(<PuzzlePreviewClient />);
+      const { container } = render(
+        <PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />
+      );
 
       // Skeleton is a div with animate-pulse + bg-muted/30; no title / buttons.
       expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
@@ -160,7 +204,7 @@ describe('PuzzlePreviewClient', () => {
     });
 
     it('calls router.replace("/practice/puzzle/new") when no draft exists', async () => {
-      render(<PuzzlePreviewClient />);
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
 
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith('/practice/puzzle/new');
@@ -173,7 +217,7 @@ describe('PuzzlePreviewClient', () => {
     it('calls router.push("/practice/puzzle/new/solution") and does NOT clear the draft', () => {
       seedDraft();
 
-      render(<PuzzlePreviewClient />);
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
 
       fireEvent.click(screen.getByRole('button', { name: 'backToEditCta' }));
 
@@ -188,7 +232,7 @@ describe('PuzzlePreviewClient', () => {
       seedDraft({ moves: ['Nf3'], notes: ['only move'] });
       mockCreatePuzzle.mockResolvedValue({ success: true, id: 'abc-123' });
 
-      render(<PuzzlePreviewClient />);
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
 
       await act(async () => {
         fireEvent.click(screen.getByRole('button', { name: 'createCta' }));
@@ -214,7 +258,7 @@ describe('PuzzlePreviewClient', () => {
       seedDraft({ description: '' });
       mockCreatePuzzle.mockResolvedValue({ success: true, id: 'puzzle-1' });
 
-      render(<PuzzlePreviewClient />);
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
 
       await act(async () => {
         fireEvent.click(screen.getByRole('button', { name: 'createCta' }));
@@ -227,7 +271,7 @@ describe('PuzzlePreviewClient', () => {
       seedDraft();
       mockCreatePuzzle.mockResolvedValue({ error: 'rate_limit_exceeded' });
 
-      render(<PuzzlePreviewClient />);
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
 
       await act(async () => {
         fireEvent.click(screen.getByRole('button', { name: 'createCta' }));
@@ -243,7 +287,7 @@ describe('PuzzlePreviewClient', () => {
       seedDraft();
       mockCreatePuzzle.mockRejectedValue(new Error('network down'));
 
-      render(<PuzzlePreviewClient />);
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
 
       await act(async () => {
         fireEvent.click(screen.getByRole('button', { name: 'createCta' }));

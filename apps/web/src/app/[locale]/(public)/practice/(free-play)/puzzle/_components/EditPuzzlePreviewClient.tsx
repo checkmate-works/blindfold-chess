@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button } from '@/app/_components';
@@ -15,10 +15,10 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
-import { createPuzzle } from '../_actions/createPuzzle';
-import { clearDraft, readDraft } from '../_lib/draft-storage';
-import type { PuzzleDraftV1 } from '../_lib/draft-storage';
+import { updatePuzzle } from '../_actions/updatePuzzle';
 import { draftToSolutionMoves } from '../_lib/draft-to-solution-moves';
+import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
+import { clearEditDraft, readEditDraft } from '../_lib/edit-draft-storage';
 import { resolveOptionsByIds } from '../_lib/resolve-options';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePreviewTags } from './PuzzlePreviewTags';
@@ -27,35 +27,43 @@ import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 type Props = {
+  positionId: string;
   /** Tag catalog used to resolve the draft's persisted theme/chunk IDs into
    * display labels for the read-only preview tag list. */
   availableThemes: ThemeOption[];
   availableChunks: ChunkOption[];
 };
 
-export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props) {
+/**
+ * Final step of the puzzle edit flow — replays the draft one last time before
+ * committing it via `updatePuzzle`. Mirrors `PuzzlePreviewClient` (the create
+ * flow's preview) but reads the ID-scoped edit draft and saves through the
+ * update action instead of the create action. `EditPuzzleSolutionForm`
+ * persists the draft before pushing here; a direct URL hit with no draft
+ * bounces back to the position step.
+ */
+export function EditPuzzlePreviewClient({ positionId, availableThemes, availableChunks }: Props) {
   const t = useTranslations('practice.puzzle.preview');
+  const tEdit = useTranslations('practice.puzzle.edit');
   const router = useRouter();
-  const locale = useLocale();
 
-  const [draft, setDraft] = useState<PuzzleDraftV1 | null>(null);
+  const [draft, setDraft] = useState<PuzzleEditDraftV1 | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // `submitted` flips true in the intentional router.push after a successful
-  // create, letting the `isDirty` guard relax before the navigation fires so
-  // we don't trip UnsavedChangesDialog on our own push.
+  // Flips true just before our own intentional navigation (Save success or
+  // Back), relaxing the unsaved-changes guard so it doesn't fire on our push.
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const d = readDraft();
+    const d = readEditDraft(positionId);
     if (!d) {
-      router.replace('/practice/puzzle/new');
+      router.replace(`/practice/puzzle/${positionId}/edit`);
       return;
     }
     setDraft(d);
     setHydrated(true);
-  }, [router]);
+  }, [router, positionId]);
 
   const solutionMoves = useMemo<PuzzleSolutionMove[]>(
     () => (draft ? draftToSolutionMoves(draft) : []),
@@ -71,70 +79,49 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
     [draft?.chunkIds, availableChunks]
   );
 
-  // Treat the draft as unsaved work for as long as we haven't submitted it;
-  // both "Back to edit" (router.push) and "Create" (after success + clearDraft)
-  // set `submitted` before navigating so the guard doesn't fire on our own
-  // intentional pushes.
   const isDirty = hydrated && !submitted;
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
-  async function handleCreate() {
+  async function handleSave() {
     if (!draft) return;
     setPending(true);
     setError(null);
     try {
-      const result = await createPuzzle({
+      const result = await updatePuzzle({
+        id: positionId,
         fen: draft.fen,
         title: draft.title,
         description: draft.description || null,
         solutionMoves,
         themeIds: draft.themeIds,
         chunkIds: draft.chunkIds,
-        forkedFromId: draft.forkedFromId ?? null,
       });
       if ('error' in result) {
         setError(result.error);
         return;
       }
-      clearDraft();
+      clearEditDraft(positionId);
       flushSync(() => setSubmitted(true));
-      // Point grant fired → route via /thanks so the user lands on the
-      // award screen, then continues to the puzzle detail (toast suppressed
-      // because the /thanks page already celebrates the create). No-grant
-      // flows keep the legacy in-place toast UX.
-      if (result.pointGrant) {
-        const returnUrl = `/${locale}/practice/puzzle/${result.id}`;
-        router.push(
-          `/thanks?pointEventId=${result.pointGrant.pointEventId}&returnUrl=${encodeURIComponent(returnUrl)}`
-        );
-      } else {
-        router.push(`/practice/puzzle/${result.id}?toast=position_created`);
-      }
+      router.push(`/practice/puzzle/${positionId}?toast=puzzle_updated`);
     } catch {
-      setError(t('createError'));
+      setError(tEdit('saveError'));
     } finally {
       setPending(false);
     }
   }
 
   function handleBackToEdit() {
-    // Draft stays in sessionStorage so `/new/solution` can rehydrate it —
-    // that's the immediately-prior step in the position → solution →
-    // preview flow. Flip `submitted` so the isDirty guard doesn't intercept
-    // our own navigation.
+    // Draft stays in sessionStorage so the solution step can rehydrate it.
     flushSync(() => setSubmitted(true));
-    router.push('/practice/puzzle/new/solution');
+    router.push(`/practice/puzzle/${positionId}/edit/solution`);
   }
 
-  const stepIndicator = <PuzzleStepIndicator flow="create" current="preview" />;
+  const stepIndicator = <PuzzleStepIndicator flow="edit" current="preview" />;
 
   if (!hydrated || !draft) {
-    // Show a skeleton during SSR and the brief window before hydration reads
-    // sessionStorage. A lazy `useState(() => readDraft())` would remove this
-    // window entirely, but it produces a hydration mismatch: SSR always
-    // returns `null` (readDraft's `typeof window === 'undefined'` guard),
-    // while the first client render would return the decoded draft, and
-    // React's initial state is required to match across SSR / hydration.
+    // Same SSR/hydration-mismatch rationale as PuzzlePreviewClient: a lazy
+    // `useState(() => readEditDraft())` initializer would mismatch since the
+    // draft read always returns null during SSR.
     return (
       <div className="space-y-6">
         {stepIndicator}
@@ -176,9 +163,9 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
             fullWidth
             disabled={pending}
             loading={pending}
-            onClick={handleCreate}
+            onClick={handleSave}
           >
-            {t('createCta')}
+            {pending ? tEdit('submitting') : tEdit('submit')}
           </Button>
           <Button
             type="button"

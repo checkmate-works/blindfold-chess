@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 const FLOW_STEPS = {
   create: ['position', 'solution', 'preview'],
-  edit: ['position', 'solution'],
+  edit: ['position', 'solution', 'preview'],
 } as const;
 
 type Props =

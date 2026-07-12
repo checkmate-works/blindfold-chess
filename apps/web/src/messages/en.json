@@ -1396,7 +1396,9 @@
       "session": {
         "title": "Solve",
         "correct": "Correct! 🎉",
+        "correctMove": "Correct",
         "incorrect": "Incorrect. Try again.",
+        "showAnswer": "Show answer",
         "showBoard": "Show Board",
         "whitePlayed": "White plays {move}",
         "blackPlayed": "Black plays {move}"
