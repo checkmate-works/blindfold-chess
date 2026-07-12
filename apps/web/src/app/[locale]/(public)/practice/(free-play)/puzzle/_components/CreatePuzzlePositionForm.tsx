@@ -1,11 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 import { FiInfo } from 'react-icons/fi';
@@ -15,13 +16,15 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
+import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
+import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { EMPTY_BOARD_FEN } from '../../_lib/board-editor-constants';
 import { buildDefaultPracticeTitle } from '../../_lib/default-title';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
-import { usePuzzleFormComposition } from '../_hooks/use-puzzle-form-composition';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
-import { validatePuzzleForm } from '../_lib/validate-puzzle-form';
-import { PuzzleFormFields } from './PuzzleFormFields';
+import type { PuzzleDraftV1 } from '../_lib/draft-storage';
+import { validatePuzzlePosition } from '../_lib/validate-puzzle-form';
+import { PuzzlePositionFields } from './PuzzlePositionFields';
 
 /**
  * Seed payload when the form is opened via `?from=<id>` on the new page.
@@ -64,9 +67,6 @@ type Props = {
    * Theme + chunk catalog for the tag picker. Loaded server-side so the
    * picker can render immediately without an extra round-trip and so
    * draft hydration can resolve persisted IDs to display labels.
-   * Optional with empty defaults so the form stays renderable in tests
-   * and on routes that don't supply this data (e.g. the legacy guest
-   * gate path before sign-in completes).
    */
   availableThemes?: ThemeOption[];
   availableChunks?: ChunkOption[];
@@ -93,7 +93,7 @@ type Props = {
   injectedSolution?: string[];
 };
 
-export function CreatePuzzleForm({
+export function CreatePuzzlePositionForm({
   displayName,
   disableUnsavedGuard = false,
   availableThemes = [],
@@ -103,8 +103,22 @@ export function CreatePuzzleForm({
   injectedSolution,
 }: Props = {}) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations('practice.puzzle.create');
   const tUnsaved = useTranslations('unsavedChanges');
+
+  // Set by the solution step's Back button (`?resumed=1`) to distinguish
+  // "the user just navigated back within this authoring session" from a
+  // genuine cold `/new` hit with a leftover draft — only the latter should
+  // show the "Continuing from a previous draft" banner. Stripped from the
+  // URL right after read so it doesn't linger or get bookmarked.
+  const resumed = searchParams.get('resumed') === '1';
+  useEffect(() => {
+    if (resumed) {
+      router.replace('/practice/puzzle/new');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumed]);
 
   // When forking, the source's title carries over verbatim; otherwise the
   // date-based default is used. defaultTitleRef anchors the dirty-check
@@ -115,20 +129,18 @@ export function CreatePuzzleForm({
   const [title, setTitle] = useState(defaultTitleRef.current);
   const [description, setDescription] = useState(forkSeed?.description ?? '');
   // forkedFromId lives in React state (not just the prop) so the lineage
-  // survives a `/new?from=X` → preview → "Back to edit" round-trip: that
-  // second `/new` arrives WITHOUT the `?from=` query, so `forkSeed` is
-  // undefined and only the draft remembers the source. Draft hydration
-  // restores this state below, and writeDraft reads it on submit.
+  // survives a `/new?from=X` → solution → preview → "Back to edit" round
+  // trip: later visits to `/new` arrive WITHOUT `?from=`, so `forkSeed` is
+  // undefined and only the draft remembers the source.
   const [forkedFromId, setForkedFromId] = useState<string | undefined>(forkSeed?.sourceId);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
+  const [positionChangedOpen, setPositionChangedOpen] = useState(false);
 
   // Resolve fork seed tag IDs into option objects using the loaded catalog,
-  // mirroring the draft-hydration resolution. Computed once via lazy useRef
-  // initializer so it survives subsequent renders without re-running the
-  // .find() lookups.
+  // mirroring the draft-hydration resolution.
   const seededThemes = useRef<ThemeOption[]>(
     forkSeed
       ? forkSeed.themeIds
@@ -144,38 +156,44 @@ export function CreatePuzzleForm({
       : []
   ).current;
 
-  // A fork seeds every field; an injected `?fen=` (optionally with a draft
-  // continuation solution) seeds only the position + moves. Notes default to
-  // blanks parallel to the seeded moves.
+  const board = useFenBoardEditor({ initialFen: forkSeed?.fen ?? injectedFen });
+  const tags = useTagSelection({ initialThemes: seededThemes, initialChunks: seededChunks });
+
+  // Solution moves are never edited on this step — they're only carried
+  // through untouched to the solution step, plus used to detect whether the
+  // position changed under them (see handleContinue below).
   const injectedNotes = injectedSolution?.map(() => '');
-  const { board, solution, tags, phase, setPhase } = usePuzzleFormComposition({
-    initialFen: forkSeed?.fen ?? injectedFen,
-    initialMoves: forkSeed?.moves ?? injectedSolution,
-    initialNotes: forkSeed?.notes ?? injectedNotes,
-    initialThemes: seededThemes,
-    initialChunks: seededChunks,
-  });
+  const [carriedMoves, setCarriedMoves] = useState<string[]>(
+    forkSeed?.moves ?? injectedSolution ?? []
+  );
+  const [carriedNotes, setCarriedNotes] = useState<string[]>(
+    forkSeed?.notes ?? injectedNotes ?? []
+  );
+  // The FEN `carriedMoves` are valid against. Reassigned inside the
+  // hydration `apply` callback (not just at declaration) so a restored
+  // draft's fen/moves pair is never compared against a stale value.
+  const originalFenRef = useRef(forkSeed?.fen ?? injectedFen ?? '');
 
   // Resolve draft IDs against the loaded catalog so the picker has full
-  // option objects (label + slug + category) to render. IDs not present
-  // in the catalog (e.g. a chunk soft-deleted between draft write and
-  // hydration) silently drop, since attaching them would fail validation
-  // anyway and we'd rather hydrate cleanly than block the author.
-  // Skipped entirely when forking — the fork seed owns initial state and
-  // an unrelated leftover draft would silently overwrite it.
-  const { hydratedFromDraft, resetHydrated } = usePuzzleDraftHydration({
+  // option objects (label + slug + category) to render. IDs not present in
+  // the catalog (e.g. a chunk soft-deleted between draft write and
+  // hydration) silently drop. Skipped entirely when forking/injecting — the
+  // seed owns initial state and an unrelated leftover draft would silently
+  // overwrite it.
+  const { hydratedFromDraft, resetHydrated } = usePuzzleDraftHydration<PuzzleDraftV1>({
     enabled: !forkSeed && !injectedFen,
     apply: (draft) => {
       board.setFenInput(draft.fen);
       board.setBoardFen(draft.fen);
       board.setSideToMove(draft.sideToMove);
-      setTitle(draft.title);
-      setDescription(draft.description);
-      solution.setMoves(draft.moves);
-      solution.setNotes(draft.notes);
       board.setActiveTab(draft.activeTab);
       board.setFlipped(draft.flipped);
       board.setUserFlipped(draft.userFlipped);
+      setTitle(draft.title);
+      setDescription(draft.description);
+      setCarriedMoves(draft.moves);
+      setCarriedNotes(draft.notes);
+      originalFenRef.current = draft.fen;
       if (draft.themeIds && draft.themeIds.length > 0) {
         const resolved = draft.themeIds
           .map((id) => availableThemes.find((t) => t.id === id))
@@ -188,18 +206,12 @@ export function CreatePuzzleForm({
           .filter((c): c is ChunkOption => c !== undefined);
         tags.setSelectedChunks(resolved);
       }
-      // Restore the fork lineage that writeDraft persisted on the previous
-      // /new visit. Without this, the "Back to edit" round-trip (which
-      // pushes to `/practice/puzzle/new` without preserving `?from=<id>`)
-      // would silently drop forkedFromId on the next submit.
+      // Restore the fork lineage that writeDraft persisted on a previous
+      // /new visit — otherwise a "Back to edit" round-trip would silently
+      // drop forkedFromId on the next write.
       if (draft.forkedFromId) {
         setForkedFromId(draft.forkedFromId);
       }
-      // A draft is only ever written from handleSubmit, which requires a
-      // valid position (see validatePuzzleForm) — so a restored draft always
-      // has a position worth showing read-only, with solution moves editable
-      // straight away.
-      setPhase('solution');
     },
   });
 
@@ -207,8 +219,8 @@ export function CreatePuzzleForm({
     !submitted &&
     (title.trim() !== defaultTitleRef.current.trim() ||
       description.trim() !== '' ||
-      solution.moves.length > 0 ||
-      solution.notes.some((n) => n.trim() !== '') ||
+      carriedMoves.length > 0 ||
+      carriedNotes.some((n) => n.trim() !== '') ||
       (board.fenInput.trim() !== '' && board.fenInput !== EMPTY_BOARD_FEN) ||
       tags.selectedThemes.length > 0 ||
       tags.selectedChunks.length > 0);
@@ -217,28 +229,18 @@ export function CreatePuzzleForm({
     isDirty: disableUnsavedGuard ? false : isDirty,
   });
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    if (!validatePuzzleForm(board, solution, t('solutionRequired'))) {
-      return;
-    }
-
-    setPending(true);
-
-    // Persist authoring state to sessionStorage and hand off to the preview
-    // step. The actual `createPuzzle` Server Action is invoked from the
-    // preview page's "Create" CTA. If the draft write fails (quota / private
-    // mode), stay on the form and surface an error — navigating to a preview
-    // that would immediately bounce back is worse UX.
+  function writeAndContinue(moves: string[], notes: string[]) {
+    // Persist authoring state to sessionStorage and hand off to the
+    // solution step. If the draft write fails (quota / private mode), stay
+    // on the form and surface an error — navigating to a step that would
+    // immediately bounce back is worse UX.
     const ok = writeDraft({
       version: 1,
       fen: board.trimmedFen,
       title,
       description,
-      moves: solution.moves,
-      notes: solution.notes,
+      moves,
+      notes,
       activeTab: board.activeTab,
       sideToMove: board.sideToMove,
       flipped: board.flipped,
@@ -252,24 +254,49 @@ export function CreatePuzzleForm({
       setPending(false);
       return;
     }
-
     // flushSync ensures the re-render (isDirty -> false) completes before
     // router.push triggers the navigation guard check — otherwise the
     // intentional push would fire the UnsavedChangesDialog.
     flushSync(() => setSubmitted(true));
-    router.push('/practice/puzzle/new/preview');
+    router.push('/practice/puzzle/new/solution');
+  }
+
+  function handleContinue() {
+    setError(null);
+    if (!validatePuzzlePosition(board)) return;
+
+    setPending(true);
+
+    const positionChanged = carriedMoves.length > 0 && board.trimmedFen !== originalFenRef.current;
+    if (positionChanged) {
+      setPositionChangedOpen(true);
+      setPending(false);
+      return;
+    }
+
+    writeAndContinue(carriedMoves, carriedNotes);
+  }
+
+  function handleConfirmPositionChanged() {
+    setPositionChangedOpen(false);
+    setPending(true);
+    setCarriedMoves([]);
+    setCarriedNotes([]);
+    originalFenRef.current = board.trimmedFen;
+    writeAndContinue([], []);
   }
 
   function handleStartOver() {
     clearDraft();
     board.resetBoard();
-    solution.reset();
     tags.reset();
-    setPhase(forkSeed || injectedFen ? 'solution' : 'position');
+    setCarriedMoves(forkSeed?.moves ?? injectedSolution ?? []);
+    setCarriedNotes(forkSeed?.notes ?? injectedNotes ?? []);
+    originalFenRef.current = forkSeed?.fen ?? injectedFen ?? '';
     setTitle(defaultTitleRef.current);
     setDescription('');
     // Start-over also clears the fork lineage held in component state —
-    // otherwise the next submit would still pin to the old parent even
+    // otherwise the next write would still pin to the old parent even
     // though the user has explicitly asked for a clean slate.
     setForkedFromId(undefined);
     setError(null);
@@ -279,14 +306,14 @@ export function CreatePuzzleForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         {error && (
           <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
             {error}
           </div>
         )}
 
-        {hydratedFromDraft && (
+        {hydratedFromDraft && !resumed && (
           <div
             role="status"
             aria-live="polite"
@@ -317,12 +344,9 @@ export function CreatePuzzleForm({
           </div>
         )}
 
-        <PuzzleFormFields
+        <PuzzlePositionFields
           board={board}
-          solution={solution}
           tags={tags}
-          phase={phase}
-          onPhaseChange={setPhase}
           title={title}
           onTitleChange={setTitle}
           description={description}
@@ -330,20 +354,10 @@ export function CreatePuzzleForm({
           pending={pending}
           availableThemes={availableThemes}
           availableChunks={availableChunks}
+          onContinue={handleContinue}
+          continueLabel={t('continueToSolution')}
         />
-
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          disabled={
-            pending || !board.isFenValid || solution.moves.length === 0 || title.trim() === ''
-          }
-        >
-          {t('continueToPreview')}
-        </Button>
-      </form>
+      </div>
 
       <UnsavedChangesDialog
         open={isBlocking}
@@ -364,6 +378,17 @@ export function CreatePuzzleForm({
         confirmVariant="danger"
         onConfirm={handleStartOver}
         onCancel={() => setStartOverOpen(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={positionChangedOpen}
+        title={t('positionChangedConfirmTitle')}
+        message={t('positionChangedConfirmMessage')}
+        confirmText={t('positionChangedConfirmConfirm')}
+        cancelText={t('positionChangedConfirmCancel')}
+        confirmVariant="danger"
+        onConfirm={handleConfirmPositionChanged}
+        onCancel={() => setPositionChangedOpen(false)}
       />
     </>
   );

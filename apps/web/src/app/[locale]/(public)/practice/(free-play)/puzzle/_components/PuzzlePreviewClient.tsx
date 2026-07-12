@@ -103,10 +103,12 @@ export function PuzzlePreviewClient() {
   }
 
   function handleBackToEdit() {
-    // Draft stays in sessionStorage so `/new` can rehydrate. Flip `submitted`
-    // so the isDirty guard doesn't intercept our own navigation.
+    // Draft stays in sessionStorage so `/new/solution` can rehydrate it —
+    // that's the immediately-prior step in the position → solution →
+    // preview flow. Flip `submitted` so the isDirty guard doesn't intercept
+    // our own navigation.
     flushSync(() => setSubmitted(true));
-    router.push('/practice/puzzle/new');
+    router.push('/practice/puzzle/new/solution');
   }
 
   if (!hydrated || !draft) {
