@@ -205,7 +205,7 @@ describe('CreatePuzzleSolutionForm', () => {
     expect(screen.getByTestId('chess-board')).toHaveAttribute('data-interactive', 'false');
     // The move list shows the engine-normalized SAN, including "#" — not
     // whatever the author actually typed ("Re8").
-    expect(screen.getByText('Re8#')).toBeInTheDocument();
+    expect(screen.getAllByText('Re8#').length).toBeGreaterThan(0);
 
     // Undo (remove the last/mating move) restores editability.
     fireEvent.click(screen.getByRole('button', { name: 'removeLastMove' }));
@@ -250,5 +250,56 @@ describe('CreatePuzzleSolutionForm', () => {
     expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/preview');
     const parsed = JSON.parse(sessionStorage.getItem(DRAFT_STORAGE_KEY)!);
     expect(parsed.moves).toEqual(['Nf3']);
+  });
+
+  it('stepping back through the line shows the earlier position and locks move entry', () => {
+    sessionStorage.setItem(
+      DRAFT_STORAGE_KEY,
+      JSON.stringify(makeDraft({ moves: ['Nf3', 'e5'], notes: ['', ''] }))
+    );
+    render(<CreatePuzzleSolutionForm />);
+
+    const tipFen = screen.getByTestId('chess-board').getAttribute('data-fen');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Previous move' }));
+
+    const board = screen.getByTestId('chess-board');
+    expect(board.getAttribute('data-fen')).not.toBe(tipFen);
+    expect(board).toHaveAttribute('data-interactive', 'false');
+    expect(screen.getByText('viewingHistory')).toBeInTheDocument();
+    expect(screen.queryByTestId('move-input-panel')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Go to start' }));
+    expect(screen.getByTestId('chess-board').getAttribute('data-fen')).toBe(VALID_FEN);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Go to end' }));
+    expect(screen.getByTestId('chess-board').getAttribute('data-fen')).toBe(tipFen);
+    expect(screen.getByTestId('chess-board')).toHaveAttribute('data-interactive', 'true');
+    expect(screen.getByTestId('move-input-panel')).toBeInTheDocument();
+  });
+
+  it('clicking a move in the horizontal move list jumps there; removing the last move snaps back to the tip', () => {
+    sessionStorage.setItem(
+      DRAFT_STORAGE_KEY,
+      JSON.stringify(makeDraft({ moves: ['Nf3', 'e5'], notes: ['', ''] }))
+    );
+    render(<CreatePuzzleSolutionForm />);
+
+    const tipFen = screen.getByTestId('chess-board').getAttribute('data-fen');
+
+    // The horizontal strip renders each SAN as a clickable button.
+    fireEvent.click(screen.getByRole('button', { name: 'Nf3' }));
+    const ply1Fen = screen.getByTestId('chess-board').getAttribute('data-fen');
+    expect(ply1Fen).not.toBe(tipFen);
+    expect(ply1Fen).not.toBe(VALID_FEN);
+    expect(screen.getByText('viewingHistory')).toBeInTheDocument();
+
+    // Removing the last move acts on the line's end and snaps the view back
+    // to the (new) tip — which is the very ply that was being browsed.
+    fireEvent.click(screen.getByRole('button', { name: 'removeLastMove' }));
+    expect(screen.getByTestId('chess-board').getAttribute('data-fen')).toBe(ply1Fen);
+    expect(screen.getByTestId('chess-board')).toHaveAttribute('data-interactive', 'true');
+    expect(screen.queryByText('viewingHistory')).not.toBeInTheDocument();
+    expect(screen.getByTestId('move-input-panel')).toBeInTheDocument();
   });
 });

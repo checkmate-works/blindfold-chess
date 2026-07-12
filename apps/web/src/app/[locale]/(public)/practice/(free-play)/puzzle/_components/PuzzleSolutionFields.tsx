@@ -7,6 +7,8 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
 
+import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
+import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -33,14 +35,19 @@ type Props = {
  * and move input — used by both the create and edit flows' solution-step
  * wrapper components.
  *
- * The board shows the position after already-entered moves
- * (`solution.currentFen`) and is drag-enabled (`movablePieces="side-to-move"`
- * since a solution line alternates sides across moves) as an alternative to
- * typing into `MoveInputPanel` below it — both funnel into the same
- * `solution.handleMoveSubmit`, which independently re-validates whatever SAN
- * it receives, so there's no special-casing needed between the two input
- * paths. Visibility is forced fully-visible (not the author's own blindfold
- * practice prefs) since this is an authoring screen, not a practice session.
+ * The board shows the currently viewed ply of the entered line
+ * (`solution.viewedFen`) and, like the game screen, carries a clickable move
+ * strip above it and first/prev/next/last controls below it for stepping
+ * through the line. At the tip it is drag-enabled
+ * (`movablePieces="side-to-move"` since a solution line alternates sides
+ * across moves) as an alternative to typing into `MoveInputPanel` below it —
+ * both funnel into the same `solution.handleMoveSubmit`, which independently
+ * re-validates whatever SAN it receives, so there's no special-casing needed
+ * between the two input paths. While an earlier ply is browsed, all move
+ * entry is locked (a dragged move would otherwise read as "branch from
+ * here", which this line-shaped editor doesn't support). Visibility is
+ * forced fully-visible (not the author's own blindfold practice prefs)
+ * since this is an authoring screen, not a practice session.
  *
  * The board can never invalidate already-entered moves here (dragging only
  * appends a new move, exactly like typing one), so `onBack` is a plain
@@ -79,9 +86,19 @@ export function PuzzleSolutionFields({
       </div>
       <div className="flex justify-center">
         <div className="w-full max-w-md">
+          {solution.formattedPgn.length > 0 && (
+            <div className="overflow-x-auto px-2 py-1.5">
+              <HorizontalMoveList
+                formattedPgn={solution.formattedPgn}
+                currentPosition={solution.viewedPly - 1}
+                onNavigateToPosition={(position) => solution.goToPly(position + 1)}
+              />
+            </div>
+          )}
           <ChessBoard
-            fen={solution.currentFen}
+            fen={solution.viewedFen}
             flipped={flipped}
+            lastMove={preferences.highlightLastMove ? solution.viewedLastMove : null}
             showCoordinates={true}
             boardTheme={preferences.boardTheme}
             showOwnPieces={true}
@@ -91,13 +108,25 @@ export function PuzzleSolutionFields({
             pawnHideMode="none"
             movablePieces="side-to-move"
             onMove={
-              pending || inputLocked
+              pending || inputLocked || solution.isViewingHistory
                 ? undefined
                 : (san) => {
                     solution.handleMoveSubmit(san as AlgebraicNotation);
                   }
             }
           />
+          {solution.moves.length > 0 && (
+            <div className="flex items-center justify-center" style={{ aspectRatio: '8 / 1' }}>
+              <MoveNavigationControls
+                onNavigateToStart={() => solution.goToPly(0)}
+                onNavigatePrevious={() => solution.goToPly(solution.viewedPly - 1)}
+                onNavigateNext={() => solution.goToPly(solution.viewedPly + 1)}
+                onNavigateToEnd={() => solution.goToPly(solution.moves.length)}
+                isPreviousDisabled={solution.viewedPly === 0}
+                isNextDisabled={!solution.isViewingHistory}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -134,7 +163,12 @@ export function PuzzleSolutionFields({
           />
         )}
 
-        {inputLocked ? (
+        {solution.isViewingHistory ? (
+          // Move entry always appends to the line's tip, so while an earlier
+          // ply is on the board the input is hidden — a submitted move would
+          // otherwise apply to a position the author isn't looking at.
+          <p className="text-sm text-muted-foreground">{t('viewingHistory')}</p>
+        ) : inputLocked ? (
           <p className="text-sm text-muted-foreground">
             {solution.isCheckmate ? t('checkmateReached') : t('maxMovesReached')}
           </p>

@@ -9,6 +9,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
+
 import { getOptionalUser } from '@/lib/auth';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
@@ -16,7 +18,6 @@ import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
-import { formatMovesToPgn } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/format-moves-to-pgn';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';

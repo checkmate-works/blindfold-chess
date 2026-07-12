@@ -1300,6 +1300,7 @@
         "removeLastMove": "最後の手 ({move}) を削除",
         "maxMovesReached": "手数の上限 (20) に達しました",
         "checkmateReached": "チェックメイト — ここで解答は終了です",
+        "viewingHistory": "過去の局面を表示中です。最新の局面に戻ると手を追加できます。",
         "sideToMove": "手番",
         "sideWhite": "白",
         "sideBlack": "黒",

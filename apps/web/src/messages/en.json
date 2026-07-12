@@ -1300,6 +1300,7 @@
         "removeLastMove": "Remove last move ({move})",
         "maxMovesReached": "Maximum 20 moves reached",
         "checkmateReached": "Checkmate — the solution ends here",
+        "viewingHistory": "Viewing an earlier position — go to the latest move to add more.",
         "sideToMove": "Side to move",
         "sideWhite": "White",
         "sideBlack": "Black",

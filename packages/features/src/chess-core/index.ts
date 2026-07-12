@@ -58,6 +58,7 @@ export {
   validatePgnWithDetails,
   getPgnHeaders,
   getPgnHistory,
+  formatMovesToPgn,
   formatPgnToText,
   getPgnSuggestion,
   parsePgnMoves,

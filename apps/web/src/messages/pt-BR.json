@@ -1296,6 +1296,7 @@
         "removeLastMove": "Remover último lance ({move})",
         "maxMovesReached": "Máximo de 20 lances atingido",
         "checkmateReached": "Xeque-mate — a solução termina aqui",
+        "viewingHistory": "Visualizando uma posição anterior — volte ao último lance para adicionar mais.",
         "sideToMove": "Vez de",
         "sideWhite": "Brancas",
         "sideBlack": "Pretas",

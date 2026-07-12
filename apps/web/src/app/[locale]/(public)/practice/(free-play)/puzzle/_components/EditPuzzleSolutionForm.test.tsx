@@ -193,7 +193,7 @@ describe('EditPuzzleSolutionForm', () => {
     expect(screen.getByText('checkmateReached')).toBeInTheDocument();
     expect(screen.queryByTestId('move-input-panel')).not.toBeInTheDocument();
     expect(screen.getByTestId('chess-board')).toHaveAttribute('data-interactive', 'false');
-    expect(screen.getByText('Re8#')).toBeInTheDocument();
+    expect(screen.getAllByText('Re8#').length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'removeLastMove' }));
 
