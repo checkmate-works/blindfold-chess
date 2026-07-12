@@ -51,7 +51,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const { board, solution, tags } = usePuzzleFormComposition({
+  const { board, solution, tags, phase, setPhase } = usePuzzleFormComposition({
     initialFen: initial.fen,
     initialMoves: initialMovesRef.current,
     initialNotes: initialNotesRef.current,
@@ -139,6 +139,8 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
           board={board}
           solution={solution}
           tags={tags}
+          phase={phase}
+          onPhaseChange={setPhase}
           title={title}
           onTitleChange={setTitle}
           description={description}

@@ -148,7 +148,7 @@ export function CreatePuzzleForm({
   // continuation solution) seeds only the position + moves. Notes default to
   // blanks parallel to the seeded moves.
   const injectedNotes = injectedSolution?.map(() => '');
-  const { board, solution, tags } = usePuzzleFormComposition({
+  const { board, solution, tags, phase, setPhase } = usePuzzleFormComposition({
     initialFen: forkSeed?.fen ?? injectedFen,
     initialMoves: forkSeed?.moves ?? injectedSolution,
     initialNotes: forkSeed?.notes ?? injectedNotes,
@@ -195,6 +195,11 @@ export function CreatePuzzleForm({
       if (draft.forkedFromId) {
         setForkedFromId(draft.forkedFromId);
       }
+      // A draft is only ever written from handleSubmit, which requires a
+      // valid position (see validatePuzzleForm) — so a restored draft always
+      // has a position worth showing read-only, with solution moves editable
+      // straight away.
+      setPhase('solution');
     },
   });
 
@@ -260,6 +265,7 @@ export function CreatePuzzleForm({
     board.resetBoard();
     solution.reset();
     tags.reset();
+    setPhase(forkSeed || injectedFen ? 'solution' : 'position');
     setTitle(defaultTitleRef.current);
     setDescription('');
     // Start-over also clears the fork lineage held in component state —
@@ -315,6 +321,8 @@ export function CreatePuzzleForm({
           board={board}
           solution={solution}
           tags={tags}
+          phase={phase}
+          onPhaseChange={setPhase}
           title={title}
           onTitleChange={setTitle}
           description={description}
