@@ -5,26 +5,33 @@ type BoardEditor = ReturnType<typeof useFenBoardEditor>;
 type SolutionMoves = ReturnType<typeof usePuzzleSolutionMoves>;
 
 /**
- * Shared pre-submit validation for the create and edit puzzle forms. Clears
- * the previous field errors, then re-checks the two hard requirements (a valid
- * position and at least one solution move). On failure it flags the offending
- * field via the hook's error setter and returns `false`; the caller aborts.
- *
- * The form-level (`error` banner) state is intentionally left to the caller —
- * create and edit surface different banners on top of these field errors.
+ * Pre-submit validation for the position step (create and edit). Clears the
+ * previous field error, then re-checks the one hard requirement (a valid
+ * position). On failure it flags `board.positionError` and returns `false`;
+ * the caller aborts the transition to the solution step.
  */
-export function validatePuzzleForm(
-  board: BoardEditor,
-  solution: SolutionMoves,
-  solutionRequiredMessage: string
-): boolean {
+export function validatePuzzlePosition(board: BoardEditor): boolean {
   board.setPositionError(false);
-  solution.setSolutionError(null);
 
   if (!board.trimmedFen || !board.isFenValid) {
     board.setPositionError(true);
     return false;
   }
+
+  return true;
+}
+
+/**
+ * Pre-submit validation for the solution step (create and edit). Clears the
+ * previous field error, then re-checks the one hard requirement (at least
+ * one solution move). On failure it flags `solution.solutionError` and
+ * returns `false`; the caller aborts.
+ */
+export function validatePuzzleSolution(
+  solution: SolutionMoves,
+  solutionRequiredMessage: string
+): boolean {
+  solution.setSolutionError(null);
 
   if (solution.moves.length === 0) {
     solution.setSolutionError(solutionRequiredMessage);
