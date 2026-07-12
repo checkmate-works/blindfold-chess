@@ -1321,7 +1321,13 @@
         "clearBoardConfirmConfirm": "Clear board",
         "clearBoardConfirmCancel": "Cancel",
         "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again.",
-        "forkBanner": "Forking from \"{sourceTitle}\""
+        "forkBanner": "Forking from \"{sourceTitle}\"",
+        "continueToSolution": "Continue to solution moves",
+        "editPosition": "Edit position",
+        "editPositionConfirmTitle": "Edit position?",
+        "editPositionConfirmMessage": "Editing the position will clear the solution moves you've entered. This cannot be undone.",
+        "editPositionConfirmConfirm": "Edit position",
+        "editPositionConfirmCancel": "Cancel"
       },
       "preview": {
         "title": "Preview Puzzle",

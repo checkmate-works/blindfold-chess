@@ -1317,7 +1317,13 @@
         "clearBoardConfirmConfirm": "Limpar",
         "clearBoardConfirmCancel": "Cancelar",
         "draftWriteFailed": "Não foi possível salvar o rascunho. Verifique se o seu navegador permite armazenamento e tente novamente.",
-        "forkBanner": "Bifurcando de \"{sourceTitle}\""
+        "forkBanner": "Bifurcando de \"{sourceTitle}\"",
+        "continueToSolution": "Continuar para os lances da solução",
+        "editPosition": "Editar posição",
+        "editPositionConfirmTitle": "Editar a posição?",
+        "editPositionConfirmMessage": "Editar a posição vai limpar os lances da solução que você já inseriu. Esta ação não pode ser desfeita.",
+        "editPositionConfirmConfirm": "Editar posição",
+        "editPositionConfirmCancel": "Cancelar"
       },
       "preview": {
         "title": "Pré-visualizar Puzzle",
