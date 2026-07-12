@@ -9,7 +9,7 @@ import { usePuzzleSolutionStep } from '../_hooks/use-puzzle-solution-step';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { clearEditDraft, readEditDraft, writeEditDraft } from '../_lib/edit-draft-storage';
 import { validatePuzzleSolution } from '../_lib/validate-puzzle-form';
-import { FormErrorBanner } from './FormErrorBanner';
+import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzleSolutionFields } from './PuzzleSolutionFields';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
@@ -75,7 +75,7 @@ export function EditPuzzleSolutionForm({ positionId }: Props) {
   return (
     <>
       <div className="space-y-6">
-        <FormErrorBanner message={step.error} />
+        <PuzzleFormErrorBanner message={step.error} />
 
         <PuzzleSolutionFields
           flipped={step.flipped}

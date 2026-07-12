@@ -17,8 +17,8 @@ import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { readEditDraft, writeEditDraft } from '../_lib/edit-draft-storage';
 import { resolveOptionsByIds } from '../_lib/resolve-options';
 import { stringArraysEqual } from '../_lib/string-arrays-equal';
-import { FormErrorBanner } from './FormErrorBanner';
 import { PositionChangedModal } from './PositionChangedModal';
+import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
@@ -124,7 +124,7 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
   return (
     <>
       <div className="space-y-6">
-        <FormErrorBanner message={step.error} />
+        <PuzzleFormErrorBanner message={step.error} />
 
         <PuzzlePositionFields
           board={board}

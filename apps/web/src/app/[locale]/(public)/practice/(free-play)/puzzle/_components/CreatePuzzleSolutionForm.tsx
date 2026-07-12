@@ -6,7 +6,7 @@ import { usePuzzleSolutionStep } from '../_hooks/use-puzzle-solution-step';
 import { readDraft, writeDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { validatePuzzleSolution } from '../_lib/validate-puzzle-form';
-import { FormErrorBanner } from './FormErrorBanner';
+import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzleSolutionFields } from './PuzzleSolutionFields';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
@@ -44,7 +44,7 @@ export function CreatePuzzleSolutionForm({ disableUnsavedGuard = false }: Props 
   return (
     <>
       <div className="space-y-6">
-        <FormErrorBanner message={step.error} />
+        <PuzzleFormErrorBanner message={step.error} />
 
         <PuzzleSolutionFields
           flipped={step.flipped}

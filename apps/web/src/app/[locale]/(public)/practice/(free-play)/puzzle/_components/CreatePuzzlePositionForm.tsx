@@ -23,8 +23,8 @@ import { usePuzzlePositionStep } from '../_hooks/use-puzzle-position-step';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { resolveOptionsByIds } from '../_lib/resolve-options';
-import { FormErrorBanner } from './FormErrorBanner';
 import { PositionChangedModal } from './PositionChangedModal';
+import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
@@ -243,7 +243,7 @@ export function CreatePuzzlePositionForm({
   return (
     <>
       <div className="space-y-6">
-        <FormErrorBanner message={step.error} />
+        <PuzzleFormErrorBanner message={step.error} />
 
         {hydratedFromDraft && !resumed && (
           <div

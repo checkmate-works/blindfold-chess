@@ -16,7 +16,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { createPuzzle } from '../_actions/createPuzzle';
 import { clearDraft, readDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
-import { FormErrorBanner } from './FormErrorBanner';
+import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
@@ -141,7 +141,7 @@ export function PuzzlePreviewClient() {
           showSectionTitle={false}
         />
 
-        <FormErrorBanner message={error} />
+        <PuzzleFormErrorBanner message={error} />
 
         <div className="flex flex-col gap-3 pt-2">
           <Button
