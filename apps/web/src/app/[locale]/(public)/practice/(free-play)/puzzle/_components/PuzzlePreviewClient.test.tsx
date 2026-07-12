@@ -170,15 +170,15 @@ describe('PuzzlePreviewClient', () => {
   });
 
   describe('Back to edit', () => {
-    it('calls router.push("/practice/puzzle/new") and does NOT clear the draft', () => {
+    it('calls router.push("/practice/puzzle/new/solution") and does NOT clear the draft', () => {
       seedDraft();
 
       render(<PuzzlePreviewClient />);
 
       fireEvent.click(screen.getByRole('button', { name: 'backToEditCta' }));
 
-      expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new');
-      // Draft remains intact so the form can rehydrate.
+      expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/solution');
+      // Draft remains intact so the solution step can rehydrate it.
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).not.toBeNull();
     });
   });
