@@ -19,6 +19,7 @@ import type { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagPickerLabels } from '../../_hooks/use-tag-picker-labels';
 import type { useTagSelection } from '../../_hooks/use-tag-selection';
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
+import { SideToMoveIndicator } from './SideToMoveIndicator';
 
 type Props = {
   board: ReturnType<typeof useFenBoardEditor>;
@@ -193,10 +194,7 @@ export function PuzzlePositionFields({
 
       {board.turnIndicator && (
         <p className="text-sm text-muted-foreground text-center">
-          <span aria-hidden className="mr-1">
-            {board.turnIndicator === 'w' ? '⚪' : '⚫'}
-          </span>
-          {board.turnIndicator === 'w' ? t('whiteToMove') : t('blackToMove')}
+          <SideToMoveIndicator turn={board.turnIndicator} />
         </p>
       )}
 

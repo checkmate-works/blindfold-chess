@@ -12,6 +12,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 
 import type { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
 import { MAX_SOLUTION_MOVES } from '../_hooks/use-puzzle-solution-moves';
+import { SideToMoveIndicator } from './SideToMoveIndicator';
 import { SolutionMoveList } from './SolutionMoveList';
 
 type Props = {
@@ -72,10 +73,7 @@ export function PuzzleSolutionFields({
     <>
       <div className="flex items-center justify-between gap-2 mb-2">
         <p className="text-sm text-muted-foreground">
-          <span aria-hidden className="mr-1">
-            {solution.currentTurn === 'w' ? '⚪' : '⚫'}
-          </span>
-          {solution.currentTurn === 'w' ? t('whiteToMove') : t('blackToMove')}
+          <SideToMoveIndicator turn={solution.currentTurn} />
         </p>
         <FlipBoardButton onClick={onFlip} title={t('flipBoard')} />
       </div>

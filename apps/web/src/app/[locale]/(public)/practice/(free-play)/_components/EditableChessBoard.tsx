@@ -102,28 +102,27 @@ export function EditableChessBoard({
 
   const pieceAt = useCallback((index: number) => board[index] ?? '', [board]);
 
+  const applyBoard = useCallback(
+    (next: FenPieceChar[]) => {
+      setBoard(next);
+      onFenChange(boardToFen(next, preserveTurnInfo, originalPosition));
+    },
+    [preserveTurnInfo, originalPosition, onFenChange]
+  );
+
   const handleDrop = useCallback(
     (source: EditableBoardDragSource, destIndex: number | null) => {
-      if (destIndex === null) {
-        // Dropped outside the board: a board-origin piece is removed;
-        // dragging a palette piece off the board is a no-op (cancel).
-        if (source.kind !== 'board') return;
-        const newBoard = [...board];
-        newBoard[source.index] = '';
-        setBoard(newBoard);
-        onFenChange(boardToFen(newBoard, preserveTurnInfo, originalPosition));
-        return;
-      }
-
+      // Dropped outside the board: a board-origin piece is removed; dragging
+      // a palette piece off the board is a no-op (cancel).
+      if (destIndex === null && source.kind !== 'board') return;
       if (source.kind === 'board' && source.index === destIndex) return; // dropped back on itself
 
       const newBoard = [...board];
       if (source.kind === 'board') newBoard[source.index] = '';
-      newBoard[destIndex] = source.piece;
-      setBoard(newBoard);
-      onFenChange(boardToFen(newBoard, preserveTurnInfo, originalPosition));
+      if (destIndex !== null) newBoard[destIndex] = source.piece;
+      applyBoard(newBoard);
     },
-    [board, preserveTurnInfo, originalPosition, onFenChange]
+    [board, applyBoard]
   );
 
   const { dragSource, dragSize, handlePointerDown, floatingRef, consumeTrailingClick } =
@@ -159,9 +158,7 @@ export function EditableChessBoard({
       }
     }
 
-    setBoard(newBoard);
-    const newFen = boardToFen(newBoard, preserveTurnInfo, originalPosition);
-    onFenChange(newFen);
+    applyBoard(newBoard);
   };
 
   const handlePaletteSelect = (piece: FenPieceChar) => {

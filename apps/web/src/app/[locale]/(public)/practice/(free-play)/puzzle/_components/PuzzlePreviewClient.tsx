@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -16,7 +16,9 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { createPuzzle } from '../_actions/createPuzzle';
 import { clearDraft, readDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
+import { FormErrorBanner } from './FormErrorBanner';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
+import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 function draftToSolutionMoves(draft: PuzzleDraftV1): PuzzleSolutionMove[] {
   return draft.moves.map((san, i) => {
@@ -28,7 +30,6 @@ function draftToSolutionMoves(draft: PuzzleDraftV1): PuzzleSolutionMove[] {
 
 export function PuzzlePreviewClient() {
   const t = useTranslations('practice.puzzle.preview');
-  const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
   const locale = useLocale();
 
@@ -140,11 +141,7 @@ export function PuzzlePreviewClient() {
           showSectionTitle={false}
         />
 
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
-          </div>
-        )}
+        <FormErrorBanner message={error} />
 
         <div className="flex flex-col gap-3 pt-2">
           <Button
@@ -171,15 +168,7 @@ export function PuzzlePreviewClient() {
         </div>
       </div>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <PuzzleUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </>
   );
 }
