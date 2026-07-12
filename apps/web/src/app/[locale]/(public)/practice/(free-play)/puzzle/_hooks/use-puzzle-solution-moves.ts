@@ -14,19 +14,12 @@ export const MAX_SOLUTION_MOVES = 20;
 export type PuzzleSolutionMovesOptions = {
   /** Validated starting FEN. Empty string while the board is invalid. */
   baseFen: string;
-  initialMoves?: string[];
-  initialNotes?: string[];
   moveSubmitLabels: MoveSubmitLabels;
 };
 
-export function usePuzzleSolutionMoves({
-  baseFen,
-  initialMoves,
-  initialNotes,
-  moveSubmitLabels,
-}: PuzzleSolutionMovesOptions) {
-  const [moves, setMoves] = useState<string[]>(initialMoves ?? []);
-  const [notes, setNotes] = useState<string[]>(initialNotes ?? []);
+export function usePuzzleSolutionMoves({ baseFen, moveSubmitLabels }: PuzzleSolutionMovesOptions) {
+  const [moves, setMoves] = useState<string[]>([]);
+  const [notes, setNotes] = useState<string[]>([]);
   const [moveInput, setMoveInput] = useState('');
   const [moveError, setMoveError] = useState<string | null>(null);
   const [solutionError, setSolutionError] = useState<string | null>(null);
@@ -126,14 +119,6 @@ export function usePuzzleSolutionMoves({
     });
   }
 
-  function reset() {
-    setMoves(initialMoves ?? []);
-    setNotes(initialNotes ?? []);
-    setMoveInput('');
-    setMoveError(null);
-    setSolutionError(null);
-  }
-
   return {
     moves,
     setMoves,
@@ -152,7 +137,6 @@ export function usePuzzleSolutionMoves({
     handleMoveSubmit,
     handleRemoveLast,
     handleNoteChange,
-    reset,
   };
 }
 
