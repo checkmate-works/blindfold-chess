@@ -19,6 +19,7 @@ import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { readEditDraft, writeEditDraft } from '../_lib/edit-draft-storage';
+import { resolveOptionsByIds } from '../_lib/resolve-options';
 import { validatePuzzlePosition } from '../_lib/validate-puzzle-form';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
 
@@ -87,14 +88,8 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
       setCarriedMoves(draft.moves);
       setCarriedNotes(draft.notes);
       originalFenRef.current = draft.fen;
-      const resolvedThemes = draft.themeIds
-        .map((id) => available.themes.find((t) => t.id === id))
-        .filter((t): t is ThemeOption => t !== undefined);
-      tags.setSelectedThemes(resolvedThemes);
-      const resolvedChunks = draft.chunkIds
-        .map((id) => available.chunks.find((c) => c.id === id))
-        .filter((c): c is ChunkOption => c !== undefined);
-      tags.setSelectedChunks(resolvedChunks);
+      tags.setSelectedThemes(resolveOptionsByIds(draft.themeIds, available.themes));
+      tags.setSelectedChunks(resolveOptionsByIds(draft.chunkIds, available.chunks));
     },
   });
 

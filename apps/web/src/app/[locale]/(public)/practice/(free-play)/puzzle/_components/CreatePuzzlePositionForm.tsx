@@ -23,6 +23,7 @@ import { buildDefaultPracticeTitle } from '../../_lib/default-title';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
+import { resolveOptionsByIds } from '../_lib/resolve-options';
 import { validatePuzzlePosition } from '../_lib/validate-puzzle-form';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
 
@@ -142,18 +143,10 @@ export function CreatePuzzlePositionForm({
   // Resolve fork seed tag IDs into option objects using the loaded catalog,
   // mirroring the draft-hydration resolution.
   const seededThemes = useRef<ThemeOption[]>(
-    forkSeed
-      ? forkSeed.themeIds
-          .map((id) => availableThemes.find((t) => t.id === id))
-          .filter((t): t is ThemeOption => t !== undefined)
-      : []
+    forkSeed ? resolveOptionsByIds(forkSeed.themeIds, availableThemes) : []
   ).current;
   const seededChunks = useRef<ChunkOption[]>(
-    forkSeed
-      ? forkSeed.chunkIds
-          .map((id) => availableChunks.find((c) => c.id === id))
-          .filter((c): c is ChunkOption => c !== undefined)
-      : []
+    forkSeed ? resolveOptionsByIds(forkSeed.chunkIds, availableChunks) : []
   ).current;
 
   const board = useFenBoardEditor({ initialFen: forkSeed?.fen ?? injectedFen });
@@ -195,16 +188,10 @@ export function CreatePuzzlePositionForm({
       setCarriedNotes(draft.notes);
       originalFenRef.current = draft.fen;
       if (draft.themeIds && draft.themeIds.length > 0) {
-        const resolved = draft.themeIds
-          .map((id) => availableThemes.find((t) => t.id === id))
-          .filter((t): t is ThemeOption => t !== undefined);
-        tags.setSelectedThemes(resolved);
+        tags.setSelectedThemes(resolveOptionsByIds(draft.themeIds, availableThemes));
       }
       if (draft.chunkIds && draft.chunkIds.length > 0) {
-        const resolved = draft.chunkIds
-          .map((id) => availableChunks.find((c) => c.id === id))
-          .filter((c): c is ChunkOption => c !== undefined);
-        tags.setSelectedChunks(resolved);
+        tags.setSelectedChunks(resolveOptionsByIds(draft.chunkIds, availableChunks));
       }
       // Restore the fork lineage that writeDraft persisted on a previous
       // /new visit — otherwise a "Back to edit" round-trip would silently
