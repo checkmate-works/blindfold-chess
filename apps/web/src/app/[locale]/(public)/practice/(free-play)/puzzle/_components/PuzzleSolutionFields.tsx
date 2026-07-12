@@ -101,16 +101,6 @@ export function PuzzleSolutionFields({
         </div>
       </div>
 
-      <div className="flex justify-center">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
-        >
-          {backLabel}
-        </button>
-      </div>
-
       <div className="space-y-3">
         <div className="flex items-baseline justify-between">
           <label className="text-sm font-medium">
@@ -172,17 +162,31 @@ export function PuzzleSolutionFields({
         )}
       </div>
 
-      <Button
-        type="button"
-        variant="primary"
-        size="lg"
-        fullWidth
-        disabled={pending || primaryActionDisabled}
-        loading={primaryActionLoading}
-        onClick={onPrimaryAction}
-      >
-        {primaryActionLabel}
-      </Button>
+      {/* Same forward-primary / back-secondary stack as the preview step, so
+          every wizard step exposes its prev/next transitions the same way. */}
+      <div className="flex flex-col gap-3 pt-2">
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          fullWidth
+          disabled={pending || primaryActionDisabled}
+          loading={primaryActionLoading}
+          onClick={onPrimaryAction}
+        >
+          {primaryActionLabel}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          fullWidth
+          disabled={pending}
+          onClick={onBack}
+        >
+          {backLabel}
+        </Button>
+      </div>
     </>
   );
 }

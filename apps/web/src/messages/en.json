@@ -1325,7 +1325,7 @@
         "forkBanner": "Forking from \"{sourceTitle}\"",
         "continueToSolution": "Continue to solution moves",
         "solutionPageTitle": "Solution moves",
-        "backToPosition": "Back",
+        "backToPosition": "Back to position",
         "positionChangedConfirmTitle": "Continue with this position?",
         "positionChangedConfirmMessage": "Continuing will clear the solution moves you've entered — they're no longer valid for this position. This cannot be undone.",
         "positionChangedConfirmConfirm": "Continue",

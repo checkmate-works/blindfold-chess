@@ -1325,7 +1325,7 @@
         "forkBanner": "「{sourceTitle}」からフォーク中",
         "continueToSolution": "正解手の入力に進む",
         "solutionPageTitle": "正解手",
-        "backToPosition": "戻る",
+        "backToPosition": "局面の編集に戻る",
         "positionChangedConfirmTitle": "このポジションで進めますか?",
         "positionChangedConfirmMessage": "このまま進めると、入力済みの正解手はこのポジションでは無効になるためクリアされます。この操作は取り消せません。",
         "positionChangedConfirmConfirm": "進める",

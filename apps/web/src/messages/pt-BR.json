@@ -1321,7 +1321,7 @@
         "forkBanner": "Bifurcando de \"{sourceTitle}\"",
         "continueToSolution": "Continuar para os lances da solução",
         "solutionPageTitle": "Lances da solução",
-        "backToPosition": "Voltar",
+        "backToPosition": "Voltar para a posição",
         "positionChangedConfirmTitle": "Continuar com esta posição?",
         "positionChangedConfirmMessage": "Continuar vai limpar os lances da solução que você já inseriu — eles não são mais válidos para esta posição. Esta ação não pode ser desfeita.",
         "positionChangedConfirmConfirm": "Continuar",

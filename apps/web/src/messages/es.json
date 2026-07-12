@@ -1321,7 +1321,7 @@
         "forkBanner": "Bifurcando desde «{sourceTitle}»",
         "continueToSolution": "Continuar a los movimientos de la solución",
         "solutionPageTitle": "Movimientos de la solución",
-        "backToPosition": "Atrás",
+        "backToPosition": "Volver a la posición",
         "positionChangedConfirmTitle": "¿Continuar con esta posición?",
         "positionChangedConfirmMessage": "Continuar eliminará los movimientos de la solución que has introducido — ya no son válidos para esta posición. Esta acción no se puede deshacer.",
         "positionChangedConfirmConfirm": "Continuar",
