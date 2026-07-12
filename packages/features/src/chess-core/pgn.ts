@@ -13,6 +13,7 @@ export type {
   ParsedPgnMove,
 } from "./pgn-format";
 export {
+  formatMovesToPgn,
   formatPgnToText,
   getPgnSuggestion,
   parsePgnMoves,

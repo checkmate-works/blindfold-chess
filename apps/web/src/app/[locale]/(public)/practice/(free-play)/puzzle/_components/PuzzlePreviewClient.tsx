@@ -5,30 +5,36 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
+import type { ChunkOption } from '@/lib/chunks/types';
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import type { ThemeOption } from '@/lib/themes/types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { createPuzzle } from '../_actions/createPuzzle';
 import { clearDraft, readDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
+import { draftToSolutionMoves } from '../_lib/draft-to-solution-moves';
+import { resolveOptionsByIds } from '../_lib/resolve-options';
+import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
+import { PuzzlePreviewTags } from './PuzzlePreviewTags';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
+import { PuzzleStepIndicator } from './PuzzleStepIndicator';
+import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
-function draftToSolutionMoves(draft: PuzzleDraftV1): PuzzleSolutionMove[] {
-  return draft.moves.map((san, i) => {
-    const raw = draft.notes[i];
-    const note = raw && raw.trim().length > 0 ? raw.trim() : null;
-    return { san, note };
-  });
-}
+type Props = {
+  /** Tag catalog used to resolve the draft's persisted theme/chunk IDs into
+   * display labels for the read-only preview tag list. */
+  availableThemes: ThemeOption[];
+  availableChunks: ChunkOption[];
+};
 
-export function PuzzlePreviewClient() {
+export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props) {
   const t = useTranslations('practice.puzzle.preview');
-  const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
   const locale = useLocale();
 
@@ -54,6 +60,15 @@ export function PuzzlePreviewClient() {
   const solutionMoves = useMemo<PuzzleSolutionMove[]>(
     () => (draft ? draftToSolutionMoves(draft) : []),
     [draft]
+  );
+
+  const selectedThemes = useMemo(
+    () => resolveOptionsByIds(draft?.themeIds ?? [], availableThemes),
+    [draft?.themeIds, availableThemes]
+  );
+  const selectedChunks = useMemo(
+    () => resolveOptionsByIds(draft?.chunkIds ?? [], availableChunks),
+    [draft?.chunkIds, availableChunks]
   );
 
   // Treat the draft as unsaved work for as long as we haven't submitted it;
@@ -103,11 +118,15 @@ export function PuzzlePreviewClient() {
   }
 
   function handleBackToEdit() {
-    // Draft stays in sessionStorage so `/new` can rehydrate. Flip `submitted`
-    // so the isDirty guard doesn't intercept our own navigation.
+    // Draft stays in sessionStorage so `/new/solution` can rehydrate it —
+    // that's the immediately-prior step in the position → solution →
+    // preview flow. Flip `submitted` so the isDirty guard doesn't intercept
+    // our own navigation.
     flushSync(() => setSubmitted(true));
-    router.push('/practice/puzzle/new');
+    router.push('/practice/puzzle/new/solution');
   }
+
+  const stepIndicator = <PuzzleStepIndicator flow="create" current="preview" />;
 
   if (!hydrated || !draft) {
     // Show a skeleton during SSR and the brief window before hydration reads
@@ -116,13 +135,20 @@ export function PuzzlePreviewClient() {
     // returns `null` (readDraft's `typeof window === 'undefined'` guard),
     // while the first client render would return the decoded draft, and
     // React's initial state is required to match across SSR / hydration.
-    return <div className="h-32 animate-pulse rounded bg-muted/30" />;
+    return (
+      <div className="space-y-6">
+        {stepIndicator}
+        <div className="h-32 animate-pulse rounded bg-muted/30" />
+      </div>
+    );
   }
 
   return (
     <>
       <div className="space-y-6">
         <SectionTitle>{draft.title}</SectionTitle>
+
+        {stepIndicator}
 
         {draft.description.trim() !== '' && (
           <p className="text-foreground whitespace-pre-wrap">{draft.description}</p>
@@ -138,11 +164,9 @@ export function PuzzlePreviewClient() {
           showSectionTitle={false}
         />
 
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
-          </div>
-        )}
+        <PuzzlePreviewTags themes={selectedThemes} chunks={selectedChunks} />
+
+        <PuzzleFormErrorBanner message={error} />
 
         <div className="flex flex-col gap-3 pt-2">
           <Button
@@ -169,15 +193,7 @@ export function PuzzlePreviewClient() {
         </div>
       </div>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <PuzzleUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </>
   );
 }

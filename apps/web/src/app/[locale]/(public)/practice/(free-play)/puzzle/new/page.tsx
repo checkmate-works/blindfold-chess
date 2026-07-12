@@ -7,7 +7,7 @@ import {
   createPositionCreatePage,
 } from '@/app/[locale]/(public)/practice/(free-play)/_lib/create-position-route-pages';
 
-import { CreatePuzzleForm } from '../_components/CreatePuzzleForm';
+import { CreatePuzzlePositionForm } from '../_components/CreatePuzzlePositionForm';
 
 const { generateMetadata, Page } = createPositionCreatePage(PUZZLE_ROUTE, {
   listTitleKey: 'title',
@@ -26,7 +26,7 @@ const { generateMetadata, Page } = createPositionCreatePage(PUZZLE_ROUTE, {
     const injectedSolution = continuation ? [continuation.moveResult.san] : undefined;
 
     return (
-      <CreatePuzzleForm
+      <CreatePuzzlePositionForm
         displayName={displayName}
         disableUnsavedGuard={!user}
         availableThemes={availableTags.themes}

@@ -246,3 +246,17 @@ export function isLegalPieceMove(
     return false;
   }
 }
+
+/**
+ * Whether `fen` is a checkmate position (the side to move has no legal
+ * moves and is in check). Returns `false` for an unparseable FEN rather
+ * than throwing, so callers can use it directly on derived/replayed
+ * positions without a separate validity check.
+ */
+export function isCheckmateFen(fen: string): boolean {
+  try {
+    return new Chess(fen).isCheckmate();
+  } catch {
+    return false;
+  }
+}

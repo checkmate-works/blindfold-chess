@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { boardFlatToFen, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 import type { PieceType } from '@blindfold-chess/types';
+import { createPortal } from 'react-dom';
 
 import { BoardAnnotationOverlay } from '@/lib/board-annotations/BoardAnnotationOverlay';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
@@ -15,6 +16,8 @@ import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
 import type { FenPieceChar } from './types';
+import type { EditableBoardDragSource } from './use-editable-board-drag-drop';
+import { useEditableBoardDragDrop } from './use-editable-board-drag-drop';
 
 type EditableChessBoardLabels = {
   whitePieces: string;
@@ -97,7 +100,41 @@ export function EditableChessBoard({
     setBoard(fenToBoardFlat(fen) as FenPieceChar[]);
   }, [fen]);
 
+  const pieceAt = useCallback((index: number) => board[index] ?? '', [board]);
+
+  const applyBoard = useCallback(
+    (next: FenPieceChar[]) => {
+      setBoard(next);
+      onFenChange(boardToFen(next, preserveTurnInfo, originalPosition));
+    },
+    [preserveTurnInfo, originalPosition, onFenChange]
+  );
+
+  const handleDrop = useCallback(
+    (source: EditableBoardDragSource, destIndex: number | null) => {
+      // Dropped outside the board: a board-origin piece is removed; dragging
+      // a palette piece off the board is a no-op (cancel).
+      if (destIndex === null && source.kind !== 'board') return;
+      if (source.kind === 'board' && source.index === destIndex) return; // dropped back on itself
+
+      const newBoard = [...board];
+      if (source.kind === 'board') newBoard[source.index] = '';
+      if (destIndex !== null) newBoard[destIndex] = source.piece;
+      applyBoard(newBoard);
+    },
+    [board, applyBoard]
+  );
+
+  const { dragSource, dragSize, handlePointerDown, floatingRef, consumeTrailingClick } =
+    useEditableBoardDragDrop({
+      enabled: editable,
+      boardRef: boardContainerRef,
+      pieceAt,
+      onDrop: handleDrop,
+    });
+
   const handleSquareClick = (squareIndex: number) => {
+    if (consumeTrailingClick()) return;
     if (!editable) return;
 
     const newBoard = [...board];
@@ -121,20 +158,37 @@ export function EditableChessBoard({
       }
     }
 
-    setBoard(newBoard);
-    const newFen = boardToFen(newBoard, preserveTurnInfo, originalPosition);
-    onFenChange(newFen);
+    applyBoard(newBoard);
   };
 
-  const renderPiece = (piece: FenPieceChar) => {
+  const handlePaletteSelect = (piece: FenPieceChar) => {
+    if (consumeTrailingClick()) return;
+    setSelectedPiece(piece);
+  };
+
+  // The palette buttons live outside `boardContainerRef` (a sibling of the
+  // board, not a descendant), so drag hit-testing needs a pointerdown
+  // listener on the outer wrapper that contains both. `onPointerDown` is
+  // pulled out of `annotationContainerProps` and composed here (rather than
+  // left in the spread on the inner board container) so the two gestures'
+  // pointerdown handling doesn't fire twice for presses inside the board.
+  const { onPointerDown: annotationPointerDown, ...boardContainerProps } = annotationContainerProps;
+  const handleWrapperPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    annotationPointerDown?.(e);
+    handlePointerDown(e);
+  };
+
+  const renderPiece = (piece: FenPieceChar, faded = false) => {
     if (!piece) return null;
 
     const isWhite = piece === piece.toUpperCase();
     const color: Color = (isWhite ? 'w' : 'b') as Color;
     const type: PieceType = piece.toLowerCase() as PieceType;
+    const grabClass = editable ? 'cursor-grab active:cursor-grabbing touch-none' : '';
+    const fadeClass = faded ? 'opacity-30' : '';
 
     return (
-      <div className="w-[80%] h-[80%] flex items-center justify-center">
+      <div className={`w-[80%] h-[80%] flex items-center justify-center ${grabClass} ${fadeClass}`}>
         <ChessPiece type={type} color={color} size={45} />
       </div>
     );
@@ -158,7 +212,7 @@ export function EditableChessBoard({
       <div className="flex gap-1 sm:gap-2 p-2 sm:p-3 border border-border rounded-lg">
         <button
           type="button"
-          onClick={() => setSelectedPiece('')}
+          onClick={() => handlePaletteSelect('')}
           className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center text-base sm:text-lg flex-shrink-0 transition-colors touch-manipulation select-none ${
             selectedPiece === ''
               ? 'border-foreground bg-foreground/10 scale-105'
@@ -177,8 +231,9 @@ export function EditableChessBoard({
             <button
               type="button"
               key={piece}
-              onClick={() => setSelectedPiece(piece)}
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors touch-manipulation select-none ${
+              data-palette-piece={piece}
+              onClick={() => handlePaletteSelect(piece)}
+              className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors touch-none select-none cursor-grab active:cursor-grabbing ${
                 selectedPiece === piece
                   ? 'border-foreground bg-foreground/10 scale-105'
                   : 'border-border hover:bg-muted'
@@ -196,7 +251,7 @@ export function EditableChessBoard({
   );
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4" onPointerDown={handleWrapperPointerDown}>
       {/* Top palette */}
       {editable && renderPalette(topPalette.pieces, topPalette.label)}
 
@@ -207,7 +262,7 @@ export function EditableChessBoard({
           className={`relative w-full aspect-square rounded-md overflow-hidden${
             annotationsInteractive ? ' select-none touch-none' : ''
           }`}
-          {...annotationContainerProps}
+          {...boardContainerProps}
         >
           <div className="grid grid-cols-8 gap-0 w-full h-full">
             {board.map((piece, squareIndex) => {
@@ -228,6 +283,9 @@ export function EditableChessBoard({
               const showRankCoordinate = gridFile === 0;
               const showFileCoordinate = gridRank === 7;
 
+              const isDragSource =
+                dragSource?.kind === 'board' && dragSource.index === displayIndex;
+
               return (
                 <Square
                   key={squareIndex}
@@ -238,10 +296,11 @@ export function EditableChessBoard({
                   showRankCoordinate={showRankCoordinate}
                   showFileCoordinate={showFileCoordinate}
                   onClick={() => handleSquareClick(displayIndex)}
+                  dataSquare={editable ? String(displayIndex) : undefined}
                   layoutMode="grid"
                   themeColors={themeColors}
                 >
-                  {renderPiece(displayPiece)}
+                  {renderPiece(displayPiece, isDragSource)}
                 </Square>
               );
             })}
@@ -283,6 +342,25 @@ export function EditableChessBoard({
 
       {/* Bottom palette */}
       {editable && renderPalette(bottomPalette.pieces, bottomPalette.label)}
+
+      {/* Floating piece that follows the cursor during a drag (palette →
+          board, or board → board/off-board). Portaled to <body> so it's
+          never clipped by the board's overflow-hidden. See
+          useEditableBoardDragDrop. */}
+      {dragSource &&
+        dragSize !== null &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            aria-hidden
+            ref={floatingRef}
+            className="pointer-events-none fixed z-[1000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+            style={{ width: dragSize, height: dragSize }}
+          >
+            {renderPiece(dragSource.piece)}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

@@ -1299,6 +1299,8 @@
         "noteAriaLabel": "Comment for move {move}",
         "removeLastMove": "Remove last move ({move})",
         "maxMovesReached": "Maximum 20 moves reached",
+        "checkmateReached": "Checkmate — the solution ends here",
+        "viewingHistory": "Viewing an earlier position — go to the latest move to add more.",
         "sideToMove": "Side to move",
         "sideWhite": "White",
         "sideBlack": "Black",
@@ -1321,7 +1323,18 @@
         "clearBoardConfirmConfirm": "Clear board",
         "clearBoardConfirmCancel": "Cancel",
         "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again.",
-        "forkBanner": "Forking from \"{sourceTitle}\""
+        "forkBanner": "Forking from \"{sourceTitle}\"",
+        "continueToSolution": "Continue to solution moves",
+        "solutionPageTitle": "Solution moves",
+        "backToPosition": "Back to position",
+        "stepIndicatorLabel": "Steps",
+        "stepPosition": "Position",
+        "stepSolution": "Solution",
+        "stepPreview": "Preview",
+        "positionChangedConfirmTitle": "Continue with this position?",
+        "positionChangedConfirmMessage": "Continuing will clear the solution moves you've entered — they're no longer valid for this position. This cannot be undone.",
+        "positionChangedConfirmConfirm": "Continue",
+        "positionChangedConfirmCancel": "Cancel"
       },
       "preview": {
         "title": "Preview Puzzle",
@@ -1383,7 +1396,9 @@
       "session": {
         "title": "Solve",
         "correct": "Correct! 🎉",
+        "correctMove": "Correct",
         "incorrect": "Incorrect. Try again.",
+        "showAnswer": "Show answer",
         "showBoard": "Show Board",
         "whitePlayed": "White plays {move}",
         "blackPlayed": "Black plays {move}"

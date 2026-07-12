@@ -8,7 +8,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaTimes } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
@@ -55,6 +55,73 @@ type Props = {
  */
 const FEEDBACK_DURATION_MS = 1200;
 
+/**
+ * Delay before the opponent's auto-reply is revealed on the board after a
+ * correct move. The player's move lands immediately; the reply follows a beat
+ * later, highlighted — so the two read as distinct moves instead of the reply
+ * appearing simultaneously (which made it unclear which piece the opponent
+ * moved). Mirrors the pace of the preview replay (`PuzzleSolutionReplay`), and
+ * kept under `AUTO_NAVIGATE_DELAY_MS` so a solving line that ends on an
+ * opponent reply still shows that reply before the result-page navigation.
+ */
+const OPPONENT_REPLY_REVEAL_MS = 700;
+
+/**
+ * Transient submit-feedback chip. `incorrect` is a red chip with an × icon;
+ * `correct` (an accepted non-final move) is a green chip with a ✓ icon;
+ * `solved` is a green chip whose label already carries the celebratory 🎉 (so
+ * no separate icon). The `board` variant is larger and solid-filled for
+ * legibility centered over the board; the `input` variant is the compact chip
+ * pinned to the input panel. Re-mount via a changing `key` at the call site is
+ * what replays the one-shot `feedback-pop` animation.
+ */
+function FeedbackChip({
+  kind,
+  variant,
+  label,
+}: {
+  kind: 'incorrect' | 'correct' | 'solved';
+  variant: 'board' | 'input';
+  label: string;
+}) {
+  const positive = kind === 'correct' || kind === 'solved';
+  const icon =
+    kind === 'incorrect' ? (
+      <FaTimes className={variant === 'board' ? 'h-4 w-4' : 'h-3 w-3'} />
+    ) : kind === 'correct' ? (
+      <FaCheck className={variant === 'board' ? 'h-4 w-4' : 'h-3 w-3'} />
+    ) : null;
+  const testId = `submit-feedback-${kind}${variant === 'board' ? '-board' : ''}`;
+
+  if (variant === 'board') {
+    return (
+      <span
+        data-testid={testId}
+        className={`motion-safe:animate-feedback-pop inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold text-white shadow-md ${
+          positive ? 'border-green-500/40 bg-green-600/90' : 'border-red-500/40 bg-red-500/90'
+        }`}
+      >
+        {icon}
+        <span>{label}</span>
+      </span>
+    );
+  }
+
+  return (
+    <span
+      data-testid={testId}
+      className={`motion-safe:animate-feedback-pop inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold shadow-sm ${
+        positive
+          ? 'border-green-500/30 bg-green-500/15 text-green-700 dark:text-green-300'
+          : 'border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-300'
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
+    </span>
+  );
+}
+
 export function PuzzleSessionClient({
   solutions,
   positionId,
@@ -65,7 +132,6 @@ export function PuzzleSessionClient({
 }: Props) {
   const t = useTranslations('practice.puzzle.session');
   const tPlay = useTranslations('play');
-  const tResult = useTranslations('practice.puzzle.result');
   const { preferences, updatePreferences } = useGamePreferences();
 
   const playerColor: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
@@ -102,9 +168,42 @@ export function PuzzleSessionClient({
    * second submit would silently keep the existing element and skip the
    * animation.
    */
-  const [incorrectFlash, setIncorrectFlash] = useState<{ count: number } | null>(null);
-  const incorrectCountRef = useRef(0);
+  const [feedback, setFeedback] = useState<{
+    count: number;
+    /** Where the move was entered — the feedback surfaces next to that input:
+     *  on the board for a drag/click, at the panel otherwise. */
+    source: 'board' | 'input';
+    /** `incorrect` for a rejected move; `correct` for an accepted non-final
+     *  move (a plain positive ring while the opponent's reply is pending);
+     *  `solved` for the puzzle's final correct move — the celebratory chip that
+     *  fills the ~1s window before the result-page navigation. */
+    kind: 'incorrect' | 'correct' | 'solved';
+  } | null>(null);
+  const feedbackCountRef = useRef(0);
   const [peekCount, setPeekCount] = useState(0);
+
+  /**
+   * Board display, decoupled from `session.currentFen` so the opponent's reply
+   * can be revealed a beat after the player's move (highlighted), instead of
+   * both landing at once. `session.currentFen` stays the logical position for
+   * move-input legality; this drives only what the board paints.
+   */
+  const [boardView, setBoardView] = useState<{
+    fen: string;
+    lastMove: { from: string; to: string } | null;
+  }>({ fen, lastMove: null });
+  /** True while the opponent's reply reveal is pending — locks input so the
+   *  player can't answer before seeing which piece moved. */
+  const [isOpponentReplying, setIsOpponentReplying] = useState(false);
+  const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear a pending reply-reveal timer on unmount (e.g. the solve navigation
+  // tears the page down mid-reveal) so it never fires against a gone component.
+  useEffect(() => {
+    return () => {
+      if (replyTimerRef.current) clearTimeout(replyTimerRef.current);
+    };
+  }, []);
 
   // Owns isSolved + isNavigatingToResult + the post-solve handshake
   // (sessionStorage write, EXP grant Server Action, router.push to /result).
@@ -123,27 +222,33 @@ export function PuzzleSessionClient({
     lastOpponentMove: session.lastOpponentMove,
   });
 
-  // Unmount the incorrect-feedback chip once its CSS animation has
-  // completed. Keying off `incorrectFlash.count` (rather than the whole
-  // object) ensures the timer resets on every new wrong attempt, so
-  // back-to-back rejects each get the full duration on screen instead of
-  // the latest one being cut short by the previous timer.
+  // Unmount the feedback chip once its CSS animation has completed. Keying off
+  // `feedback.count` (rather than the whole object) ensures the timer resets on
+  // every new flash, so back-to-back flashes each get the full duration on
+  // screen instead of the latest one being cut short by the previous timer.
   useEffect(() => {
-    if (incorrectFlash === null) return;
-    const timer = setTimeout(() => setIncorrectFlash(null), FEEDBACK_DURATION_MS);
+    if (feedback === null) return;
+    const timer = setTimeout(() => setFeedback(null), FEEDBACK_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [incorrectFlash]);
+  }, [feedback]);
 
-  const hasErrors = session.attempts.some((a) => !a.isCorrect);
-
-  function flashIncorrect() {
-    incorrectCountRef.current += 1;
-    setIncorrectFlash({ count: incorrectCountRef.current });
+  function flashFeedback(kind: 'incorrect' | 'correct' | 'solved', source: 'board' | 'input') {
+    feedbackCountRef.current += 1;
+    setFeedback({ count: feedbackCountRef.current, source, kind });
   }
 
-  function handleSubmit(move: AlgebraicNotation): boolean {
+  /**
+   * `source` records where the move came from so a rejection's feedback shows
+   * next to that input — a drag/click on the board flashes over the board (so
+   * the eyes stay there), while the panel's text/select/button input flashes
+   * at the panel. Defaults to `'input'` since `MoveInputPanel` calls this
+   * bare `onSubmit(move)`.
+   */
+  function handleSubmit(move: AlgebraicNotation, source: 'board' | 'input' = 'input'): boolean {
     const trimmed = move.trim();
-    if (!trimmed || isSolved) return false;
+    // Ignore input while the opponent's reply is still animating in — the
+    // position is mid-transition, so an answer now would race the reveal.
+    if (!trimmed || isSolved || isOpponentReplying) return false;
 
     // All the move-matching logic lives in the pure `evaluatePuzzleSubmit`
     // engine; this handler only applies the resulting state + feedback.
@@ -151,17 +256,40 @@ export function PuzzleSessionClient({
 
     if (outcome.kind === 'rejected') {
       setSession(outcome.nextSession);
-      flashIncorrect();
+      flashFeedback('incorrect', source);
       return false;
     }
 
     setSession(outcome.nextSession);
     setMoveInput('');
-    // Clear any leftover red chip from a prior wrong attempt — there is
-    // no green chip on success (the PageTitle update is the success
-    // signal), but a stale red chip would lie about the just-accepted
-    // move if we did not reset here.
-    setIncorrectFlash(null);
+
+    // Positive feedback for the accepted move, next to where it was entered:
+    // the celebratory solved chip on the final move, or a plain "correct" ring
+    // on an intermediate one. The intermediate ring stays up through the
+    // opponent-reply delay below (so a manual-input player gets the same beat
+    // of confirmation the board reveal gives), then clears as the reply lands.
+    const solved = outcome.solve !== null;
+    flashFeedback(solved ? 'solved' : 'correct', source);
+
+    // Paint the player's move right away (highlighted). If the line has an
+    // opponent reply, reveal it a beat later — highlighted — so the player can
+    // see which piece the opponent moved instead of it landing instantly.
+    setBoardView({ fen: outcome.fenAfterPlayer, lastMove: outcome.playerMove });
+
+    if (outcome.opponentReply) {
+      const reply = outcome.opponentReply;
+      const fenAfterReply = outcome.nextSession.currentFen;
+      setIsOpponentReplying(true);
+      if (replyTimerRef.current) clearTimeout(replyTimerRef.current);
+      replyTimerRef.current = setTimeout(() => {
+        setBoardView({ fen: fenAfterReply, lastMove: { from: reply.from, to: reply.to } });
+        setIsOpponentReplying(false);
+        replyTimerRef.current = null;
+        // Drop the intermediate "correct" ring as the reply lands; the solved
+        // feedback instead persists until the result-page navigation.
+        if (!solved) setFeedback(null);
+      }, OPPONENT_REPLY_REVEAL_MS);
+    }
 
     if (outcome.solve) {
       finishSolve({ ...outcome.solve, peekCount });
@@ -232,6 +360,16 @@ export function PuzzleSessionClient({
     titleContent = positionTitle;
   }
 
+  // Feedback for moves entered through the panel (text / select / button) is
+  // surfaced with the panel's own recall-style affordances — a red ring + inline
+  // message (and its one-shot shake) on a miss, a green ring on the solving move
+  // — which read far clearer than the small corner chip did. A drag/click on the
+  // board still flashes its chip over the board (see `boardBadge`).
+  const panelError =
+    feedback?.source === 'input' && feedback.kind === 'incorrect' ? t('incorrect') : null;
+  const panelSuccess =
+    feedback?.source === 'input' && (feedback.kind === 'correct' || feedback.kind === 'solved');
+
   return (
     <div className="space-y-8">
       <div ref={titleAnchorRef} data-testid="title-anchor">
@@ -255,10 +393,10 @@ export function PuzzleSessionClient({
               keep the full-width layout. `mx-auto` centers it within the panel. */}
           <div className="lg:mx-auto lg:max-w-[calc((200%_-_2rem)/3)]">
             <InlineBoardView
-              fen={session.currentFen}
+              fen={boardView.fen}
               playerSide={playerColor === 'b' ? 'black' : 'white'}
               flipped={playerColor === 'b'}
-              lastMove={null}
+              lastMove={boardView.lastMove}
               preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
               movesLength={0}
               currentPosition={-1}
@@ -268,65 +406,99 @@ export function PuzzleSessionClient({
               // it: a click/drag of an own piece submits that move just like the
               // text/select/button input. ChessBoard only emits legal moves, so
               // this runs the same correct/incorrect evaluation as handleSubmit.
-              onMove={isSolved ? undefined : (san) => handleSubmit(san as AlgebraicNotation)}
+              // Disabled while the opponent's reply is revealing so a move can't
+              // be dropped onto a mid-transition position. `'board'` routes a
+              // rejection's feedback onto the board instead of the input panel.
+              onMove={
+                isSolved || isOpponentReplying
+                  ? undefined
+                  : (san) => handleSubmit(san as AlgebraicNotation, 'board')
+              }
+              // A drag/click move flashes its feedback centered over the board
+              // — where the player's attention is — rather than at the input
+              // panel below: red "Incorrect" on a miss, the celebratory
+              // "Correct! 🎉" on the solving move.
+              boardBadge={
+                feedback?.source === 'board' ? (
+                  <FeedbackChip
+                    key={`fb-board-${feedback.count}`}
+                    kind={feedback.kind}
+                    variant="board"
+                    label={
+                      feedback.kind === 'incorrect'
+                        ? t('incorrect')
+                        : feedback.kind === 'correct'
+                          ? t('correctMove')
+                          : t('correct')
+                    }
+                  />
+                ) : undefined
+              }
+              badgeActive={feedback?.source === 'board'}
             />
           </div>
 
           {/*
             Wrap the panel in a `relative` container so the transient
-            incorrect-feedback chip can absolutely-position itself over
-            the panel's top-right corner without affecting layout. The
-            chip is the *only* acknowledgement the user gets for a wrong
-            submit — the inline "Incorrect" string inside the panel was
-            retired because it stayed on screen until the next submit and
-            felt noisy. There is intentionally no chip on success: the
-            PageTitle's highlight pulse + (N/total) progress update is
-            already the success signal, and a green chip on top of that
-            was visually overpowering the title channel.
-            `error={null}` + `showInlineError={false}` prevent the panel
-            from surfacing its own error string, so the chip is the sole
-            negative-feedback channel. `aria-live` on the chip wrapper
-            announces the rejection to screen-reader users.
+            feedback chip can absolutely-position itself over the panel's
+            top-right corner without affecting layout. `flex flex-col gap-3`
+            spaces the panel's input area from its input-mode toggle button
+            (which `MoveInputPanel` returns as a sibling), mirroring the
+            `flex flex-col gap-6` wrapper the play surface uses.
+            The input-source feedback chip carries both outcomes: a red
+            "Incorrect" on a miss and the celebratory "Correct! 🎉" on the
+            solving move (a wrong/right board move flashes over the board
+            instead — see `boardBadge`). `error={null}` + `showInlineError=
+            {false}` keep the panel from surfacing its own error string, so
+            the chip is the sole in-panel feedback channel. `aria-live` on
+            the chip wrapper announces the outcome to screen-reader users.
           */}
-          <div className="relative">
+          <div className="relative flex flex-col gap-3">
             <MoveInputPanel
               preferences={preferences}
               updatePreferences={updatePreferences}
               currentFen={session.currentFen}
               moveInput={moveInput}
               onMoveInputChange={setMoveInput}
-              error={null}
-              onErrorClear={() => {}}
+              error={panelError}
+              // Editing the move clears the feedback (recall behaviour) so the
+              // red ring / message doesn't linger over a fresh attempt.
+              onErrorClear={() => setFeedback(null)}
               onSubmit={handleSubmit}
-              disabled={isSolved}
+              disabled={isSolved || isOpponentReplying}
               inputPlaceholder={tPlay('inputMove')}
               selectPlaceholder={tPlay('selectMove')}
               toggleTitle={tPlay('switchInputMode')}
               playerColor={playerColor}
               showLegalMovesHint={false}
-              showInlineError={false}
+              success={panelSuccess}
             />
             <div aria-live="polite" className="pointer-events-none absolute -top-2 right-2 z-10">
-              {incorrectFlash && (
-                <span
-                  key={`incorrect-${incorrectFlash.count}`}
-                  data-testid="submit-feedback-incorrect"
-                  className="motion-safe:animate-feedback-pop inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/15 px-2.5 py-1 text-xs font-semibold text-red-700 shadow-sm dark:text-red-300"
-                >
-                  <FaTimes className="h-3 w-3" />
-                  <span>{t('incorrect')}</span>
-                </span>
+              {/* Panel input feedback rides the input's own ring/inline message;
+                  only the celebratory solved chip is surfaced here on top. */}
+              {feedback?.source === 'input' && feedback.kind === 'solved' && (
+                <FeedbackChip
+                  key={`fb-input-${feedback.count}`}
+                  kind="solved"
+                  variant="input"
+                  label={t('correct')}
+                />
               )}
             </div>
           </div>
 
-          {hasErrors && !isSolved && (
+          {!isSolved && (
+            // A give-up: bail out to the result page (which reveals the
+            // solution) at any point, even before a first attempt. `size="lg"`
+            // matches the other full-width action buttons in the flow so its
+            // height lines up with them.
             <Link
               href={`/practice/puzzle/${positionId}/result`}
               onClick={() => {
-                // Save current attempts to sessionStorage even if not yet solved.
-                // First solution line is a safe default here because the user has
-                // not locked onto any specific line yet (or has only guessed wrong).
+                // Save whatever attempts exist (possibly none) to sessionStorage
+                // so the result page can render. First solution line is a safe
+                // default here because the user has not locked onto any specific
+                // line yet (or has only guessed wrong).
                 writePuzzleResult(positionId, {
                   attempts: session.attempts,
                   solutionLine: (solutions[0] ?? []).map((m) => m.san).join(' '),
@@ -335,8 +507,8 @@ export function PuzzleSessionClient({
                 });
               }}
             >
-              <Button asChild variant="secondary" fullWidth>
-                {tResult('viewResult')}
+              <Button asChild variant="secondary" size="lg" fullWidth>
+                {t('showAnswer')}
               </Button>
             </Link>
           )}

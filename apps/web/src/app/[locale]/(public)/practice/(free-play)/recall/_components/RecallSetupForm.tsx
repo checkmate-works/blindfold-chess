@@ -12,6 +12,7 @@ import {
   getPgnHeaders,
   getPgnHistory,
 } from '@blindfold-chess/features/chess-core';
+import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
 import type { Game } from '@/lib/games/saved-game-types';
@@ -23,7 +24,6 @@ import { PgnInput } from '@/app/[locale]/_components/PgnInput';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
 import { importLichessGame } from '../_actions/importLichessGame';
-import { formatMovesToPgn } from '../_lib';
 import { MyGamesImportPanel } from './MyGamesImportPanel';
 
 type InputMode = 'manual' | 'lichess' | 'myGames';

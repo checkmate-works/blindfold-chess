@@ -1295,6 +1295,8 @@
         "noteAriaLabel": "Comentario para el movimiento {move}",
         "removeLastMove": "Eliminar último movimiento ({move})",
         "maxMovesReached": "Máximo de 20 movimientos alcanzado",
+        "checkmateReached": "Jaque mate — la solución termina aquí",
+        "viewingHistory": "Viendo una posición anterior — vuelve al último movimiento para añadir más.",
         "sideToMove": "Turno de",
         "sideWhite": "Blancas",
         "sideBlack": "Negras",
@@ -1317,7 +1319,18 @@
         "clearBoardConfirmConfirm": "Limpiar",
         "clearBoardConfirmCancel": "Cancelar",
         "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo.",
-        "forkBanner": "Bifurcando desde «{sourceTitle}»"
+        "forkBanner": "Bifurcando desde «{sourceTitle}»",
+        "continueToSolution": "Continuar a los movimientos de la solución",
+        "solutionPageTitle": "Movimientos de la solución",
+        "backToPosition": "Volver a la posición",
+        "stepIndicatorLabel": "Pasos",
+        "stepPosition": "Posición",
+        "stepSolution": "Solución",
+        "stepPreview": "Vista previa",
+        "positionChangedConfirmTitle": "¿Continuar con esta posición?",
+        "positionChangedConfirmMessage": "Continuar eliminará los movimientos de la solución que has introducido — ya no son válidos para esta posición. Esta acción no se puede deshacer.",
+        "positionChangedConfirmConfirm": "Continuar",
+        "positionChangedConfirmCancel": "Cancelar"
       },
       "preview": {
         "title": "Previsualizar Puzzle",
@@ -1396,7 +1409,9 @@
       "session": {
         "title": "Resolver",
         "correct": "¡Correcto! 🎉",
+        "correctMove": "Correcto",
         "incorrect": "Incorrecto. Inténtalo de nuevo.",
+        "showAnswer": "Ver respuesta",
         "showBoard": "Mostrar Tablero",
         "whitePlayed": "Blancas juegan {move}",
         "blackPlayed": "Negras juegan {move}"

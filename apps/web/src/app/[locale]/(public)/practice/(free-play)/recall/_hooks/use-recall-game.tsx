@@ -2,12 +2,13 @@ import { useCallback, useMemo, useState } from 'react';
 
 import type { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
+import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getMovingSide } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
 import type { MoveLogEntry } from '../_lib';
-import { isPlayerTurn as computeIsPlayerTurn, formatMovesToPgn } from '../_lib';
+import { isPlayerTurn as computeIsPlayerTurn } from '../_lib';
 import { useRecallActions } from './use-recall-actions';
 import { useRecallInit } from './use-recall-init';
 import { useRecallNavigation } from './use-recall-navigation';

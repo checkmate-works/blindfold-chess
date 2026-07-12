@@ -296,15 +296,27 @@ describe('NotificationItem', () => {
     it('stays responsive across repeated mute/unmute cycles', async () => {
       render(<NotificationItem notification={createNotification({ type: 'new_post' })} />);
 
-      fireEvent.click(screen.getByRole('button', { name: 'Mute new_post notifications' }));
-      fireEvent.click(screen.getByText('Mute'));
+      // The icon button stays disabled while the previous cycle's
+      // useTransition is pending — sometimes a beat longer than the label
+      // swap — so wait for it to be clickable, not just present, or the
+      // click silently no-ops under load.
+      const clickWhenEnabled = async (name: string) => {
+        await waitFor(() => {
+          const button = screen.getByRole('button', { name }) as HTMLButtonElement;
+          expect(button.disabled).toBe(false);
+        });
+        fireEvent.click(screen.getByRole('button', { name }));
+      };
+
+      await clickWhenEnabled('Mute new_post notifications');
+      fireEvent.click(await screen.findByText('Mute'));
       await screen.findByRole('button', { name: 'Unmute new_post notifications' });
 
-      fireEvent.click(screen.getByRole('button', { name: 'Unmute new_post notifications' }));
+      await clickWhenEnabled('Unmute new_post notifications');
       await screen.findByRole('button', { name: 'Mute new_post notifications' });
 
-      fireEvent.click(screen.getByRole('button', { name: 'Mute new_post notifications' }));
-      fireEvent.click(screen.getByText('Mute'));
+      await clickWhenEnabled('Mute new_post notifications');
+      fireEvent.click(await screen.findByText('Mute'));
       await screen.findByRole('button', { name: 'Unmute new_post notifications' });
 
       expect(mockSetNotificationMute).toHaveBeenNthCalledWith(1, 'new_post', true);

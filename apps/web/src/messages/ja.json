@@ -1299,6 +1299,8 @@
         "noteAriaLabel": "{move} のコメント",
         "removeLastMove": "最後の手 ({move}) を削除",
         "maxMovesReached": "手数の上限 (20) に達しました",
+        "checkmateReached": "チェックメイト — ここで解答は終了です",
+        "viewingHistory": "過去の局面を表示中です。最新の局面に戻ると手を追加できます。",
         "sideToMove": "手番",
         "sideWhite": "白",
         "sideBlack": "黒",
@@ -1321,7 +1323,18 @@
         "clearBoardConfirmConfirm": "クリア",
         "clearBoardConfirmCancel": "キャンセル",
         "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。",
-        "forkBanner": "「{sourceTitle}」からフォーク中"
+        "forkBanner": "「{sourceTitle}」からフォーク中",
+        "continueToSolution": "正解手の入力に進む",
+        "solutionPageTitle": "正解手",
+        "backToPosition": "局面の編集に戻る",
+        "stepIndicatorLabel": "ステップ",
+        "stepPosition": "局面",
+        "stepSolution": "正解手",
+        "stepPreview": "プレビュー",
+        "positionChangedConfirmTitle": "このポジションで進めますか?",
+        "positionChangedConfirmMessage": "このまま進めると、入力済みの正解手はこのポジションでは無効になるためクリアされます。この操作は取り消せません。",
+        "positionChangedConfirmConfirm": "進める",
+        "positionChangedConfirmCancel": "キャンセル"
       },
       "preview": {
         "title": "パズルをプレビュー",
@@ -1383,7 +1396,9 @@
       "session": {
         "title": "挑戦",
         "correct": "正解！🎉",
+        "correctMove": "正解",
         "incorrect": "不正解です。もう一度挑戦してください。",
+        "showAnswer": "答えを見る",
         "showBoard": "ボードを表示",
         "whitePlayed": "白が {move} を指しました",
         "blackPlayed": "黒が {move} を指しました"

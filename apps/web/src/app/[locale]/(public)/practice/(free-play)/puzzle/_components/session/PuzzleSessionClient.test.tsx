@@ -67,10 +67,42 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
 vi.mock('@/app/[locale]/(public)/games/play/_components/InlineBoardView', () => ({
   // The puzzle's single peek style is the inline accordion. Expose its `onPeek`
   // as a clickable "showBoard" button so the peek-count tests can trigger a peek.
-  InlineBoardView: ({ onPeek }: { onPeek?: () => void }) => (
-    <button type="button" aria-label="showBoard" data-testid="inline-board-view" onClick={onPeek}>
-      showBoard
-    </button>
+  // `fen` / `lastMove` are surfaced as data attributes so the opponent-reply
+  // reveal tests can assert what the board is painting at each phase.
+  InlineBoardView: ({
+    onPeek,
+    fen,
+    lastMove,
+    onMove,
+    boardBadge,
+  }: {
+    onPeek?: () => void;
+    fen?: string;
+    lastMove?: { from: string; to: string } | null;
+    onMove?: (san: string) => void;
+    boardBadge?: React.ReactNode;
+  }) => (
+    <div data-testid="inline-board-view-wrapper">
+      <button
+        type="button"
+        aria-label="showBoard"
+        data-testid="inline-board-view"
+        data-fen={fen}
+        data-last-move={lastMove ? `${lastMove.from}-${lastMove.to}` : ''}
+        onClick={onPeek}
+      >
+        showBoard
+      </button>
+      {/* Stand-in for a drag/click move on the real board — submits 'e4' so the
+          board-sourced feedback path can be exercised. Present only while the
+          real board is interactive (`onMove` defined). */}
+      {onMove && (
+        <button type="button" data-testid="stub-board-move" onClick={() => onMove('e4')}>
+          board move
+        </button>
+      )}
+      {boardBadge}
+    </div>
   ),
 }));
 
@@ -90,6 +122,7 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
     disabled,
     onSubmit,
     error,
+    success,
     moveInput,
     onMoveInputChange,
     onErrorClear,
@@ -97,6 +130,7 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
     disabled?: boolean;
     onSubmit: (move: AlgebraicNotation) => boolean | void | Promise<void>;
     error?: string | null;
+    success?: boolean;
     moveInput?: string;
     onMoveInputChange?: (value: string) => void;
     onErrorClear?: () => void;
@@ -104,6 +138,7 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
     <div
       data-testid="move-input-panel"
       data-disabled={disabled ? 'true' : 'false'}
+      data-success={success ? 'true' : 'false'}
       data-move-input={moveInput ?? ''}
     >
       {error && <p data-testid="panel-error">{error}</p>}
@@ -244,17 +279,128 @@ describe('PuzzleSessionClient', () => {
     });
   });
 
+  // ---------------------------------------------------------------------------
+  // Opponent reply reveal
+  //
+  // A correct move paints the player's move on the board immediately, then the
+  // opponent's auto-reply is revealed a beat later (highlighted) instead of
+  // both landing at once — so the player can see which piece the opponent
+  // moved. Input is locked during that window.
+  // ---------------------------------------------------------------------------
+  describe('opponent reply reveal', () => {
+    it('paints the player move immediately then reveals the highlighted opponent reply after a beat, locking input in between', () => {
+      vi.useFakeTimers();
+      try {
+        // Two player slots (e4, Nf3) so the first correct move is NOT the solve
+        // — the opponent reply e5 auto-plays and the puzzle continues.
+        renderSession(['e4 e5 Nf3']);
+
+        (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+        act(() => {
+          fireEvent.click(screen.getByTestId('stub-custom-submit'));
+        });
+
+        const board = screen.getByTestId('inline-board-view');
+        // Phase 1: player's move is on the board (highlighted); input locked
+        // while the reply is pending.
+        expect(board).toHaveAttribute('data-last-move', 'e2-e4');
+        expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+
+        // Phase 2: after the reveal delay the opponent's reply is shown and
+        // highlighted, and input is unlocked for the next move.
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(screen.getByTestId('inline-board-view')).toHaveAttribute('data-last-move', 'e7-e5');
+        expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('rings the input green on an intermediate correct move, clearing it as the opponent replies', () => {
+      vi.useFakeTimers();
+      try {
+        // Two player slots (e4, Nf3): the first correct move is not the solve,
+        // so it gets the plain "correct" ring while the opponent reply pends.
+        renderSession(['e4 e5 Nf3']);
+
+        (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+        act(() => {
+          fireEvent.click(screen.getByTestId('stub-custom-submit'));
+        });
+
+        // Green ring on while the reply is pending; input locked meanwhile.
+        expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-success', 'true');
+        expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        // Reply landed → ring cleared, input usable again for the next move.
+        expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-success', 'false');
+        expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('highlights the final player move when the solving line ends without an opponent reply', () => {
+      renderSession(['Nf3']);
+
+      fireEvent.click(screen.getByTestId('stub-submit'));
+
+      // Nf3 = g1→f3. No opponent reply, so the board rests on the player's
+      // winning move, highlighted, with no reveal lockout.
+      expect(screen.getByTestId('inline-board-view')).toHaveAttribute('data-last-move', 'g1-f3');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Feedback placement by input source
+  //
+  // A rejected move surfaces its feedback next to where it was entered: a chip
+  // over the board for a drag/click, the panel's recall-style ring + inline
+  // message for a typed/selected move — so it lands where the player is looking.
+  // ---------------------------------------------------------------------------
+  describe('drag-and-drop feedback placement', () => {
+    it('flashes the incorrect chip over the board (not the panel) for a wrong board move', () => {
+      renderSession(['Nf3']);
+
+      // Stub board move submits 'e4' from the start position — legal but not
+      // the solution, so it is rejected via the board-sourced path.
+      fireEvent.click(screen.getByTestId('stub-board-move'));
+
+      expect(screen.getByTestId('submit-feedback-incorrect-board')).toBeInTheDocument();
+      // The panel feedback stays quiet for a board-sourced miss.
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+    });
+
+    it('surfaces the incorrect feedback on the input panel (not the board) for a wrong typed move', () => {
+      renderSession(['Nf3']);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      // Typed/selected input uses the panel's own recall-style feedback (red
+      // ring + inline message, surfaced here as `panel-error`), not the board.
+      expect(screen.getByTestId('panel-error')).toBeInTheDocument();
+      expect(screen.queryByTestId('submit-feedback-incorrect-board')).not.toBeInTheDocument();
+    });
+  });
+
   describe('incorrect answer', () => {
-    it('records the attempt and surfaces the incorrect-move feedback chip', () => {
+    it('records the attempt and surfaces the incorrect-move panel feedback', () => {
       renderSession(['e4']);
 
       fireEvent.click(screen.getByTestId('stub-submit'));
 
-      // The persistent inline-error string used to live inside the panel
-      // (`panel-error`); it was retired in favour of the transient chip
-      // because both Correct and Incorrect feedback would otherwise stay
-      // on screen until the next submit and felt noisy.
-      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+      // A wrong typed move drives the panel's recall-style feedback (red ring +
+      // inline `panel-error` message + one-shot shake); the input stays enabled
+      // so the user can retry.
+      expect(screen.getByTestId('panel-error')).toBeInTheDocument();
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
       expect(screen.getByTestId('view-result-link')).toBeInTheDocument();
     });
@@ -306,24 +452,24 @@ describe('PuzzleSessionClient', () => {
   });
 
   describe('input lifecycle', () => {
-    it('auto-dismisses the incorrect-move chip after the feedback duration elapses', () => {
+    it('auto-dismisses the incorrect-move panel feedback after the feedback duration elapses', () => {
       vi.useFakeTimers();
       try {
         renderSession(['e4']);
 
         fireEvent.click(screen.getByTestId('stub-submit'));
-        expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+        expect(screen.getByTestId('panel-error')).toBeInTheDocument();
 
-        // The chip's auto-clear timer is what keeps the surface from going
-        // stale. Advance past the timer and the element should be gone.
-        // 1500 > the FEEDBACK_DURATION_MS constant; we deliberately pick a
-        // value larger than the timer so this test is robust against minor
-        // tuning of the duration without needing a re-export.
+        // The auto-clear timer is what keeps the surface from going stale.
+        // Advance past the timer and the feedback should be gone. 1500 > the
+        // FEEDBACK_DURATION_MS constant; we deliberately pick a value larger
+        // than the timer so this test is robust against minor tuning of the
+        // duration without needing a re-export.
         act(() => {
           vi.advanceTimersByTime(1500);
         });
 
-        expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
       } finally {
         vi.useRealTimers();
       }
@@ -333,7 +479,14 @@ describe('PuzzleSessionClient', () => {
       renderSession(['Nf3']);
 
       expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('view-result-link')).not.toBeInTheDocument();
+    });
+
+    it('offers the give-up link from the start, before any attempt', () => {
+      renderSession(['Nf3']);
+
+      // The bail-out link is no longer gated on a prior wrong move — a player
+      // can give up (and reveal the answer) at any time.
+      expect(screen.getByTestId('view-result-link')).toBeInTheDocument();
     });
   });
 
@@ -345,7 +498,8 @@ describe('PuzzleSessionClient', () => {
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
       expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('view-result-link')).not.toBeInTheDocument();
+      // No rejected-attempt chip → the whitespace submit was a true no-op.
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
     });
 
     it('treats the empty string as a no-op (no attempt recorded)', () => {
@@ -355,7 +509,7 @@ describe('PuzzleSessionClient', () => {
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
       expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('view-result-link')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
     });
 
     it('trims surrounding whitespace before comparing against the solution', () => {
@@ -444,7 +598,7 @@ describe('PuzzleSessionClient', () => {
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nh2';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+      expect(screen.getByTestId('panel-error')).toBeInTheDocument();
     });
 
     it('solves a single-move black-to-move puzzle and records the payload with the black-side FEN', () => {
@@ -587,59 +741,94 @@ describe('PuzzleSessionClient', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Submit-feedback chip
+  // Submit feedback
   //
-  // A transient floating chip that pops over the top-right of the input
-  // panel and fades out after ~1.2s. Replaced two earlier surfaces — the
-  // persistent inline-error string in MoveInputPanel and the reserved
-  // success-feedback slot below it — both of which lingered until the
-  // next submit and felt noisy. The chip handles BOTH outcomes (correct
-  // and incorrect) through a single channel, and both auto-dismiss the
-  // same way.
+  // Typed/selected input rides the panel's own recall-style feedback (red ring
+  // + inline `panel-error` message on a miss). The final correct move pops a
+  // celebratory "Correct! 🎉" chip; board drag/clicks flash their chip over the
+  // board. All of it auto-dismisses after ~1.2s.
   // ---------------------------------------------------------------------------
-  describe('submit-feedback chip', () => {
-    it('renders no feedback chip before any submit', () => {
+  describe('submit feedback', () => {
+    it('shows no feedback before any submit', () => {
       renderSession(['Nf3']);
-      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('submit-feedback-solved')).not.toBeInTheDocument();
     });
 
-    it('does NOT pop a chip on a correct submit (the PageTitle update is the success signal)', () => {
-      // Earlier iterations rendered a green "Correct" chip on every
-      // accepted submit, but stacking it on top of the PageTitle's
-      // green highlight + (N/total) progress was visually overpowering
-      // and felt redundant. The success channel is now the PageTitle
-      // alone — no chip should appear when the user gets it right.
+    it('pops the celebratory solved chip (not the incorrect chip) on the final correct submit', () => {
+      // Intermediate correct moves still show no chip (the PageTitle's
+      // opponent-status highlight is the signal there), but the FINAL move —
+      // which otherwise leaves the screen looking frozen during the ~1s before
+      // the result page loads — gets a "Correct! 🎉" chip.
       renderSession(['Nf3']);
 
       fireEvent.click(screen.getByTestId('stub-submit'));
 
+      expect(screen.getByTestId('submit-feedback-solved')).toBeInTheDocument();
       expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
     });
 
-    it('pops the failure chip after an incorrect submit', () => {
-      renderSession(['Nf3']);
+    it('flashes a correct chip over the board on an intermediate correct board move, clearing it as the opponent replies', () => {
+      vi.useFakeTimers();
+      try {
+        // Two player slots: the stub board move ('e4') is correct but not the
+        // solve, so the board gets the plain "correct" chip while the reply pends.
+        renderSession(['e4 e5 Nf3']);
 
-      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
-      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+        act(() => {
+          fireEvent.click(screen.getByTestId('stub-board-move'));
+        });
 
-      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+        expect(screen.getByTestId('submit-feedback-correct-board')).toBeInTheDocument();
+        // It is not the celebratory solved chip, and it stays off the input panel.
+        expect(screen.queryByTestId('submit-feedback-solved-board')).not.toBeInTheDocument();
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        // The chip clears as the opponent's reply lands on the board.
+        expect(screen.queryByTestId('submit-feedback-correct-board')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
-    it('clears a stale incorrect chip immediately on the next correct submit', () => {
-      // Sequence: wrong → chip appears → correct → chip is cleared
-      // even before the auto-clear timer would have fired. Without this
-      // explicit clear, a red "Incorrect" chip would briefly linger
-      // alongside an already-accepted move, which would lie to the user.
+    it('routes the solved chip to the board when the final move was a board drag/click', () => {
+      // Board-sourced solve: the celebration lands over the board, matching
+      // where the incorrect chip goes for a wrong board move.
+      renderSession(['e4']); // stub-board-move submits 'e4' → the solving move
+
+      fireEvent.click(screen.getByTestId('stub-board-move'));
+
+      expect(screen.getByTestId('submit-feedback-solved-board')).toBeInTheDocument();
+      expect(screen.queryByTestId('submit-feedback-solved')).not.toBeInTheDocument();
+    });
+
+    it('surfaces the panel feedback after an incorrect submit', () => {
       renderSession(['Nf3']);
 
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
-      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+
+      expect(screen.getByTestId('panel-error')).toBeInTheDocument();
+    });
+
+    it('clears the stale incorrect feedback immediately on the next correct submit', () => {
+      // Sequence: wrong → panel feedback appears → correct → it is cleared even
+      // before the auto-clear timer would have fired. Without this explicit
+      // clear, a red "Incorrect" ring would briefly linger alongside an
+      // already-accepted move, which would lie to the user.
+      renderSession(['Nf3']);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+      expect(screen.getByTestId('panel-error')).toBeInTheDocument();
 
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nf3';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
     });
   });
 
@@ -705,7 +894,7 @@ describe('PuzzleSessionClient', () => {
       // without any normalization shenanigans.
       renderSession(['Nf3']);
       setCustomInputAndSubmit('Ne5');
-      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+      expect(screen.getByTestId('panel-error')).toBeInTheDocument();
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
     });
 
@@ -716,7 +905,7 @@ describe('PuzzleSessionClient', () => {
       // attempt is incorrect.
       renderSession(['Nf3']);
       setCustomInputAndSubmit('e4');
-      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+      expect(screen.getByTestId('panel-error')).toBeInTheDocument();
     });
 
     it('still accepts the move when the user types the strict, fully-decorated SAN', () => {

@@ -4,7 +4,7 @@ import {
 } from '@/app/[locale]/(public)/practice/(free-play)/_lib/create-position-route-pages';
 
 import { DeletePuzzleButton } from '../../_components/DeletePuzzleButton';
-import { EditPuzzleForm } from '../../_components/EditPuzzleForm';
+import { EditPuzzlePositionForm } from '../../_components/EditPuzzlePositionForm';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 
 const { generateMetadata, Page } = createPositionEditPage(PUZZLE_ROUTE, {
@@ -15,7 +15,7 @@ const { generateMetadata, Page } = createPositionEditPage(PUZZLE_ROUTE, {
       solutions[0]?.solutionMoves.map((m) => ({ san: m.san, note: m.note ?? null })) ?? [];
 
     return (
-      <EditPuzzleForm
+      <EditPuzzlePositionForm
         positionId={position.id}
         initial={{
           title: position.title,

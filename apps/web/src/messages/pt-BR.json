@@ -1295,6 +1295,8 @@
         "noteAriaLabel": "Comentário para o lance {move}",
         "removeLastMove": "Remover último lance ({move})",
         "maxMovesReached": "Máximo de 20 lances atingido",
+        "checkmateReached": "Xeque-mate — a solução termina aqui",
+        "viewingHistory": "Visualizando uma posição anterior — volte ao último lance para adicionar mais.",
         "sideToMove": "Vez de",
         "sideWhite": "Brancas",
         "sideBlack": "Pretas",
@@ -1317,7 +1319,18 @@
         "clearBoardConfirmConfirm": "Limpar",
         "clearBoardConfirmCancel": "Cancelar",
         "draftWriteFailed": "Não foi possível salvar o rascunho. Verifique se o seu navegador permite armazenamento e tente novamente.",
-        "forkBanner": "Bifurcando de \"{sourceTitle}\""
+        "forkBanner": "Bifurcando de \"{sourceTitle}\"",
+        "continueToSolution": "Continuar para os lances da solução",
+        "solutionPageTitle": "Lances da solução",
+        "backToPosition": "Voltar para a posição",
+        "stepIndicatorLabel": "Etapas",
+        "stepPosition": "Posição",
+        "stepSolution": "Solução",
+        "stepPreview": "Pré-visualização",
+        "positionChangedConfirmTitle": "Continuar com esta posição?",
+        "positionChangedConfirmMessage": "Continuar vai limpar os lances da solução que você já inseriu — eles não são mais válidos para esta posição. Esta ação não pode ser desfeita.",
+        "positionChangedConfirmConfirm": "Continuar",
+        "positionChangedConfirmCancel": "Cancelar"
       },
       "preview": {
         "title": "Pré-visualizar Puzzle",
@@ -1396,7 +1409,9 @@
       "session": {
         "title": "Resolver",
         "correct": "Correto! 🎉",
+        "correctMove": "Correto",
         "incorrect": "Incorreto. Tente novamente.",
+        "showAnswer": "Ver resposta",
         "showBoard": "Mostrar Tabuleiro",
         "whitePlayed": "Brancas jogam {move}",
         "blackPlayed": "Pretas jogam {move}"

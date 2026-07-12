@@ -4,16 +4,15 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { BoardSkeleton, FlipBoardButton } from '@/app/_components';
+import { Button, FlipBoardButton } from '@/app/_components';
 
 import type { ChunkOption } from '@/lib/chunks/types';
-import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
+import { EditableBoardSkeleton } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableBoardSkeleton';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { TagPicker } from '../../_components/TagPicker';
@@ -21,13 +20,10 @@ import type { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagPickerLabels } from '../../_hooks/use-tag-picker-labels';
 import type { useTagSelection } from '../../_hooks/use-tag-selection';
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
-import type { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
-import { MAX_SOLUTION_MOVES } from '../_hooks/use-puzzle-solution-moves';
-import { SolutionMoveList } from './SolutionMoveList';
+import { SideToMoveIndicator } from './SideToMoveIndicator';
 
 type Props = {
   board: ReturnType<typeof useFenBoardEditor>;
-  solution: ReturnType<typeof usePuzzleSolutionMoves>;
   tags: ReturnType<typeof useTagSelection>;
   title: string;
   onTitleChange: (value: string) => void;
@@ -36,21 +32,23 @@ type Props = {
   pending: boolean;
   availableThemes: ThemeOption[];
   availableChunks: ChunkOption[];
+  onContinue: () => void;
+  continueLabel: string;
 };
 
 /**
- * The shared field body of the create and edit puzzle forms — title,
- * description, board/FEN editor, solution move list, and the tag picker.
- * Both forms wrap this in their own `<form>` with form-specific banners,
- * submit button, and navigation guards. All strings come from the
- * `practice.puzzle.create` namespace, which both forms reuse.
+ * The shared field body of the position step — title, description, board/FEN
+ * editor, and the tag picker — used by both the create and edit flows'
+ * position-step wrapper components. Continue is the only exit; it is up to
+ * the caller to decide (via `onContinue`) whether advancing needs a
+ * confirmation first (e.g. the position changed under already-entered
+ * solution moves) since only the caller tracks that carried-through state.
  *
  * The "clear board" confirmation is fully self-contained here (button +
  * modal + open state) since it is identical for create and edit.
  */
-export function PuzzleFormFields({
+export function PuzzlePositionFields({
   board,
-  solution,
   tags,
   title,
   onTitleChange,
@@ -59,16 +57,15 @@ export function PuzzleFormFields({
   pending,
   availableThemes,
   availableChunks,
+  onContinue,
+  continueLabel,
 }: Props) {
   const t = useTranslations('practice.puzzle.create');
-  const tPlay = useTranslations('play');
   const tagPickerLabels = useTagPickerLabels();
   const editableBoardLabels = useEditableBoardLabels();
-  const { preferences, updatePreferences, isLoaded } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
-
-  const reachedMaxMoves = solution.moves.length >= MAX_SOLUTION_MOVES;
 
   return (
     <>
@@ -146,7 +143,7 @@ export function PuzzleFormFields({
           <div className="flex justify-center">
             <div className="w-full max-w-md">
               {!isLoaded ? (
-                <BoardSkeleton />
+                <EditableBoardSkeleton />
               ) : (
                 <EditableChessBoard
                   fen={board.boardFen}
@@ -198,72 +195,8 @@ export function PuzzleFormFields({
 
       {board.turnIndicator && (
         <p className="text-sm text-muted-foreground text-center">
-          <span aria-hidden className="mr-1">
-            {board.turnIndicator === 'w' ? '⚪' : '⚫'}
-          </span>
-          {board.turnIndicator === 'w' ? t('whiteToMove') : t('blackToMove')}
+          <SideToMoveIndicator turn={board.turnIndicator} />
         </p>
-      )}
-
-      {board.isFenValid && (
-        <div className="space-y-3">
-          <div className="flex items-baseline justify-between">
-            <label className="text-sm font-medium">
-              {t('solutionSection')} <span className="text-destructive">*</span>
-            </label>
-            <span className="text-xs text-muted-foreground">
-              {solution.moves.length} / {MAX_SOLUTION_MOVES}
-            </span>
-          </div>
-
-          {solution.moves.length > 0 && (
-            <SolutionMoveList
-              moves={solution.moves}
-              firstTurn={solution.firstTurn}
-              onRemoveLast={solution.handleRemoveLast}
-              removeAriaLabel={t('removeLastMove', {
-                move: solution.moves[solution.moves.length - 1]!,
-              })}
-              disabled={pending}
-              renderAfter={(index) => (
-                <input
-                  type="text"
-                  value={solution.notes[index] ?? ''}
-                  onChange={(e) => solution.handleNoteChange(index, e.target.value)}
-                  maxLength={PUZZLE_NOTE_MAX_LENGTH}
-                  placeholder={t('addMoveNote')}
-                  aria-label={t('noteAriaLabel', { move: solution.moves[index]! })}
-                  className="w-full px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
-                />
-              )}
-            />
-          )}
-
-          {reachedMaxMoves ? (
-            <p className="text-sm text-muted-foreground">{t('maxMovesReached')}</p>
-          ) : (
-            <MoveInputPanel
-              preferences={preferences}
-              updatePreferences={updatePreferences}
-              currentFen={solution.currentFen}
-              moveInput={solution.moveInput}
-              onMoveInputChange={solution.setMoveInput}
-              error={solution.moveError}
-              onErrorClear={() => solution.setMoveError(null)}
-              onSubmit={solution.handleMoveSubmit}
-              disabled={pending}
-              inputPlaceholder={t('movePlaceholder')}
-              selectPlaceholder={tPlay('selectMove')}
-              toggleTitle={tPlay('switchInputMode')}
-              playerColor={solution.currentTurn}
-              showLegalMovesHint={false}
-            />
-          )}
-
-          {solution.solutionError && (
-            <p className="text-sm text-destructive">{solution.solutionError}</p>
-          )}
-        </div>
       )}
 
       <TagPicker
@@ -275,6 +208,17 @@ export function PuzzleFormFields({
         onChange={tags.handleTagChange}
         labels={tagPickerLabels}
       />
+
+      <Button
+        type="button"
+        variant="primary"
+        size="lg"
+        fullWidth
+        disabled={pending || !board.isFenValid || title.trim() === ''}
+        onClick={onContinue}
+      >
+        {continueLabel}
+      </Button>
 
       <ConfirmationModal
         isOpen={clearBoardOpen}

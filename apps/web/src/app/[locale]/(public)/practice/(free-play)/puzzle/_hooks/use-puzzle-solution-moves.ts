@@ -2,8 +2,16 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { executeMove, getTurnFromFen } from '@blindfold-chess/features/chess-core';
+import {
+  executeMove,
+  formatMovesToPgn,
+  getTurnFromFen,
+  isCheckmateFen,
+} from '@blindfold-chess/features/chess-core';
+import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
+
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
 import type { SideToMove } from '../../_lib/board-editor-constants';
 import type { MoveSubmitLabels } from './use-move-submit-labels';
@@ -14,36 +22,77 @@ export const MAX_SOLUTION_MOVES = 20;
 export type PuzzleSolutionMovesOptions = {
   /** Validated starting FEN. Empty string while the board is invalid. */
   baseFen: string;
-  initialMoves?: string[];
-  initialNotes?: string[];
   moveSubmitLabels: MoveSubmitLabels;
 };
 
-export function usePuzzleSolutionMoves({
-  baseFen,
-  initialMoves,
-  initialNotes,
-  moveSubmitLabels,
-}: PuzzleSolutionMovesOptions) {
-  const [moves, setMoves] = useState<string[]>(initialMoves ?? []);
-  const [notes, setNotes] = useState<string[]>(initialNotes ?? []);
+type SolutionPosition = {
+  fen: string;
+  /** The move that produced this position, for the board's last-move
+   * highlight. `null` at ply 0 (the starting position). */
+  lastMove: { from: string; to: string } | null;
+};
+
+export function usePuzzleSolutionMoves({ baseFen, moveSubmitLabels }: PuzzleSolutionMovesOptions) {
+  const [moves, setMoves] = useState<string[]>([]);
+  const [notes, setNotes] = useState<string[]>([]);
   const [moveInput, setMoveInput] = useState('');
   const [moveError, setMoveError] = useState<string | null>(null);
   const [solutionError, setSolutionError] = useState<string | null>(null);
+  // Which ply of the entered line the board displays. `null` follows the
+  // tip, so a newly added move is shown without any bookkeeping; a number
+  // is an explicit history position picked via the navigation controls.
+  const [viewPly, setViewPly] = useState<number | null>(null);
 
-  // Defensive: executeMove rejection here would only fire if a move
-  // somehow got stored without going through handleMoveSubmit (which
-  // validates first). Fall back to the last good FEN rather than throw.
-  const currentFen = useMemo(() => {
-    if (!baseFen) return '';
+  // Board position at each ply; index 0 is the start. Defensive: an
+  // executeMove rejection here would only fire if a move somehow got stored
+  // without going through handleMoveSubmit (which validates first). Stop at
+  // the last good position rather than throw.
+  const positions = useMemo<SolutionPosition[]>(() => {
+    const list: SolutionPosition[] = [{ fen: baseFen, lastMove: null }];
+    if (!baseFen) return list;
     let fen = baseFen;
     for (const move of moves) {
       const r = executeMove(fen, move);
-      if (!r) return fen;
+      if (!r) break;
       fen = r.fen;
+      list.push({ fen, lastMove: { from: r.moveResult.from, to: r.moveResult.to } });
     }
-    return fen;
+    return list;
   }, [baseFen, moves]);
+
+  /** FEN at the tip of the line — validation/persistence always use this,
+   * regardless of which ply the board is browsing. */
+  const currentFen = baseFen ? positions[positions.length - 1]!.fen : '';
+
+  const maxPly = positions.length - 1;
+  const viewedPly = viewPly === null ? maxPly : Math.min(viewPly, maxPly);
+  const isViewingHistory = viewedPly < maxPly;
+  const viewedFen = baseFen ? positions[viewedPly]!.fen : '';
+  const viewedLastMove = positions[viewedPly]!.lastMove;
+
+  /** Jump the board to a ply of the line. The tip is stored as `null` so
+   * the view keeps following newly added moves afterwards. */
+  const goToPly = useCallback(
+    (ply: number) => setViewPly(ply >= maxPly ? null : Math.max(0, ply)),
+    [maxPly]
+  );
+
+  // Numbered move pairs for the horizontal move list, honoring a black-to-
+  // move start and the FEN's fullmove counter (same as the game screen).
+  const formattedPgn = useMemo<FormattedPgnMove[]>(() => {
+    if (!baseFen || moves.length === 0) return [];
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(baseFen);
+    return formatMovesToPgn(moves, startsAsBlack, startMoveNumber);
+  }, [baseFen, moves]);
+
+  // Once the line reaches checkmate, the position is terminal — no further
+  // reply exists, so no further move should be addable. Undoing the mating
+  // move (handleRemoveLast) recomputes `currentFen` to a non-terminal
+  // position and this flips back to `false` on its own; no extra state.
+  const isCheckmate = useMemo(() => {
+    if (!currentFen) return false;
+    return isCheckmateFen(currentFen);
+  }, [currentFen]);
 
   const firstTurn: SideToMove = useMemo(() => {
     if (!baseFen) return 'w';
@@ -78,16 +127,26 @@ export function usePuzzleSolutionMoves({
         setMoveError(moveSubmitLabels.maxMovesReached);
         return false;
       }
+      if (isCheckmateFen(currentFen)) {
+        setMoveError(moveSubmitLabels.checkmateReached);
+        return false;
+      }
       const r = executeMove(currentFen, trimmed);
       if (!r) {
         setMoveError(moveSubmitLabels.invalidMove);
         return false;
       }
-      setMoves((prev) => [...prev, trimmed]);
+      // Store the engine-normalized SAN (e.g. "Rh8#"), not the raw input —
+      // the two can differ when the author's typed notation omits the
+      // check/checkmate suffix, and `isCheckmate` above re-derives from the
+      // replayed position rather than string-matching this suffix, but the
+      // move list should still display it correctly.
+      setMoves((prev) => [...prev, r.moveResult.san]);
       setNotes((prev) => [...prev, '']);
       setMoveInput('');
       setMoveError(null);
       setSolutionError(null);
+      setViewPly(null);
       return true;
     },
     [baseFen, currentFen, moves, moveSubmitLabels]
@@ -98,6 +157,9 @@ export function usePuzzleSolutionMoves({
     setNotes((prev) => prev.slice(0, -1));
     setMoveError(null);
     setSolutionError(null);
+    // Snap the view back to the (new) tip — removal always acts on the
+    // line's end, even while an earlier ply is being browsed.
+    setViewPly(null);
   }
 
   function handleNoteChange(index: number, value: string) {
@@ -106,14 +168,6 @@ export function usePuzzleSolutionMoves({
       next[index] = value;
       return next;
     });
-  }
-
-  function reset() {
-    setMoves(initialMoves ?? []);
-    setNotes(initialNotes ?? []);
-    setMoveInput('');
-    setMoveError(null);
-    setSolutionError(null);
   }
 
   return {
@@ -130,10 +184,16 @@ export function usePuzzleSolutionMoves({
     currentFen,
     firstTurn,
     currentTurn,
+    isCheckmate,
+    viewedPly,
+    viewedFen,
+    viewedLastMove,
+    isViewingHistory,
+    goToPly,
+    formattedPgn,
     handleMoveSubmit,
     handleRemoveLast,
     handleNoteChange,
-    reset,
   };
 }
 

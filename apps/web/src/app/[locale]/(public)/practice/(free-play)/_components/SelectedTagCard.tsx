@@ -2,10 +2,15 @@
 
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
+import { NoImagePlaceholder } from '@/app/[locale]/_components/NoImagePlaceholder';
+
 type Props = {
   kind: 'theme' | 'chunk';
   label: string;
   previewFen: string | null;
+  /** Short definition (theme) / description (chunk) snippet, clamped to two
+   * lines — mirrors the authoring preview's `RelatedTagCard`. */
+  description: string | null;
   badgeText: string;
   disabled: boolean;
   openDetailLabel: string;
@@ -15,17 +20,24 @@ type Props = {
 };
 
 /**
- * Card-style chip showing a selected tag with its preview board.
- * Click the body to open the detail modal; click the corner × to
- * detach. The two buttons are siblings (not nested) to satisfy the
- * "no button-in-button" HTML rule — the × is absolute-positioned
- * over the card via CSS, so a click on it dispatches only its own
- * handler and never reaches the card's onClick.
+ * Selected-tag card shown in the position step's `TagPicker`. Matches the
+ * authoring preview's `RelatedTagCard` shape — a horizontal row with a small
+ * board thumbnail on the left and the badge + label on the right — so the two
+ * surfaces read consistently. Board-less tags fall back to the shared
+ * `NoImagePlaceholder`.
+ *
+ * Click the body to open the detail modal; click the corner × to detach. The
+ * two buttons are siblings (not nested) to satisfy the "no button-in-button"
+ * HTML rule — the × is absolute-positioned over the card via CSS, so a click
+ * on it dispatches only its own handler and never reaches the card's onClick.
+ * The body reserves right padding (`pr-9`) so its content never runs under the
+ * × control.
  */
 export function SelectedTagCard({
   kind,
   label,
   previewFen,
+  description,
   badgeText,
   disabled,
   openDetailLabel,
@@ -34,32 +46,37 @@ export function SelectedTagCard({
   onRemove,
 }: Props) {
   return (
-    <li className="relative w-40">
+    <li className="relative">
       <button
         type="button"
         onClick={onOpen}
         disabled={disabled}
         aria-label={openDetailLabel}
-        className="w-full p-2 rounded border border-border bg-card hover:bg-muted/40 transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+        className="flex w-full items-start gap-3 rounded border border-border bg-card p-3 pr-9 text-left transition-colors hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span aria-hidden className="w-32 h-32 flex items-center justify-center">
-          {previewFen ? (
-            <BoardThumbnail fen={previewFen} className="w-32 h-32" />
-          ) : (
-            <span className="w-32 h-32 rounded-sm border border-dashed border-border" />
-          )}
-        </span>
-        <span className="w-full flex flex-col gap-1">
-          <span
-            className={`self-start text-[10px] uppercase tracking-wider rounded px-1 ${
-              kind === 'theme'
-                ? 'bg-primary/10 text-primary'
-                : 'bg-secondary text-secondary-foreground'
-            }`}
-          >
-            {badgeText}
+        {previewFen ? (
+          <BoardThumbnail fen={previewFen} className="w-16 h-16 shrink-0" />
+        ) : (
+          <NoImagePlaceholder className="w-16 h-16 shrink-0" />
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="mb-0.5 flex items-center gap-2">
+            <span
+              className={`flex-shrink-0 rounded px-1 text-[10px] uppercase tracking-wider ${
+                kind === 'theme'
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-secondary text-secondary-foreground'
+              }`}
+            >
+              {badgeText}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+              {label}
+            </span>
           </span>
-          <span className="text-sm text-foreground line-clamp-2 break-words">{label}</span>
+          {description && (
+            <span className="mt-1 line-clamp-2 text-xs text-muted-foreground">{description}</span>
+          )}
         </span>
       </button>
       <button
@@ -67,7 +84,7 @@ export function SelectedTagCard({
         onClick={onRemove}
         disabled={disabled}
         aria-label={removeLabel}
-        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-card/80 border border-border text-muted-foreground hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-colors flex items-center justify-center text-sm leading-none disabled:opacity-30"
+        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card/80 text-sm leading-none text-muted-foreground transition-colors hover:border-destructive hover:bg-destructive hover:text-destructive-foreground disabled:opacity-30"
       >
         ×
       </button>

@@ -10,6 +10,7 @@ import {
   replayMoves,
   findLegalMoveByCoords,
   findLegalMovesByCoords,
+  isCheckmateFen,
 } from "../moves";
 import { getStartingFen } from "../fen";
 
@@ -352,5 +353,38 @@ describe("findLegalMovesByCoords", () => {
     for (const m of moves) {
       expect(m.captured).toBe("r");
     }
+  });
+});
+
+// ============================================================
+// isCheckmateFen
+// ============================================================
+describe("isCheckmateFen", () => {
+  it("returns false at the starting position", () => {
+    expect(isCheckmateFen(STARTING_FEN)).toBe(false);
+  });
+
+  it("returns true for a checkmate position (back-rank mate)", () => {
+    // Black king boxed in on g8 by its own f7/g7/h7 pawns; white rook on
+    // e8 covers the entire back rank with no block or capture available.
+    const mateFen = "4R1k1/5ppp/8/8/8/8/8/6K1 b - - 0 1";
+    expect(isCheckmateFen(mateFen)).toBe(true);
+  });
+
+  it("returns false for a check that is not checkmate", () => {
+    // Queen checks along the open g-file, but the king can step to f8 or h8.
+    const checkOnlyFen = "6k1/8/8/8/8/8/6Q1/6K1 b - - 0 1";
+    expect(isCheckmateFen(checkOnlyFen)).toBe(false);
+  });
+
+  it("returns false for a stalemate (no legal moves but not in check)", () => {
+    // Textbook queen stalemate: black king a8 has no legal move and is not
+    // currently in check.
+    const stalemateFen = "k7/2K5/1Q6/8/8/8/8/8 b - - 0 1";
+    expect(isCheckmateFen(stalemateFen)).toBe(false);
+  });
+
+  it("returns false for an unparseable FEN rather than throwing", () => {
+    expect(isCheckmateFen("not a fen")).toBe(false);
   });
 });
