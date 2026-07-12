@@ -18,6 +18,7 @@ import { clearDraft, readDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
+import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 function draftToSolutionMoves(draft: PuzzleDraftV1): PuzzleSolutionMove[] {
@@ -112,6 +113,8 @@ export function PuzzlePreviewClient() {
     router.push('/practice/puzzle/new/solution');
   }
 
+  const stepIndicator = <PuzzleStepIndicator flow="create" current="preview" />;
+
   if (!hydrated || !draft) {
     // Show a skeleton during SSR and the brief window before hydration reads
     // sessionStorage. A lazy `useState(() => readDraft())` would remove this
@@ -119,12 +122,19 @@ export function PuzzlePreviewClient() {
     // returns `null` (readDraft's `typeof window === 'undefined'` guard),
     // while the first client render would return the decoded draft, and
     // React's initial state is required to match across SSR / hydration.
-    return <div className="h-32 animate-pulse rounded bg-muted/30" />;
+    return (
+      <div className="space-y-6">
+        {stepIndicator}
+        <div className="h-32 animate-pulse rounded bg-muted/30" />
+      </div>
+    );
   }
 
   return (
     <>
       <div className="space-y-6">
+        {stepIndicator}
+
         <SectionTitle>{draft.title}</SectionTitle>
 
         {draft.description.trim() !== '' && (

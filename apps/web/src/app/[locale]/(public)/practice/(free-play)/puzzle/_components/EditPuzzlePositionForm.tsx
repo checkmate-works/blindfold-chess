@@ -20,6 +20,7 @@ import { stringArraysEqual } from '../_lib/string-arrays-equal';
 import { PositionChangedModal } from './PositionChangedModal';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
+import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 type Props = {
@@ -124,6 +125,8 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
   return (
     <>
       <div className="space-y-6">
+        <PuzzleStepIndicator flow="edit" current="position" />
+
         <PuzzleFormErrorBanner message={step.error} />
 
         <PuzzlePositionFields

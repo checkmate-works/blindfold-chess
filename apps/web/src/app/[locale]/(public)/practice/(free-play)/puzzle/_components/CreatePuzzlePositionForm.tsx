@@ -26,6 +26,7 @@ import { resolveOptionsByIds } from '../_lib/resolve-options';
 import { PositionChangedModal } from './PositionChangedModal';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
+import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 /**
@@ -243,6 +244,8 @@ export function CreatePuzzlePositionForm({
   return (
     <>
       <div className="space-y-6">
+        <PuzzleStepIndicator flow="create" current="position" />
+
         <PuzzleFormErrorBanner message={step.error} />
 
         {hydratedFromDraft && !resumed && (

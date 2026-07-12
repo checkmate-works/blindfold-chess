@@ -11,6 +11,7 @@ import { clearEditDraft, readEditDraft, writeEditDraft } from '../_lib/edit-draf
 import { validatePuzzleSolution } from '../_lib/validate-puzzle-form';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzleSolutionFields } from './PuzzleSolutionFields';
+import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 type Props = {
@@ -68,13 +69,22 @@ export function EditPuzzleSolutionForm({ positionId }: Props) {
     }
   }
 
+  const stepIndicator = <PuzzleStepIndicator flow="edit" current="solution" />;
+
   if (!step.ready) {
-    return <div className="h-32 animate-pulse rounded bg-muted/30" />;
+    return (
+      <div className="space-y-6">
+        {stepIndicator}
+        <div className="h-32 animate-pulse rounded bg-muted/30" />
+      </div>
+    );
   }
 
   return (
     <>
       <div className="space-y-6">
+        {stepIndicator}
+
         <PuzzleFormErrorBanner message={step.error} />
 
         <PuzzleSolutionFields
