@@ -1323,11 +1323,12 @@
         "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。",
         "forkBanner": "「{sourceTitle}」からフォーク中",
         "continueToSolution": "正解手の入力に進む",
-        "editPosition": "ポジションを編集",
-        "editPositionConfirmTitle": "ポジションを編集しますか?",
-        "editPositionConfirmMessage": "ポジションを編集すると、入力済みの正解手はクリアされます。この操作は取り消せません。",
-        "editPositionConfirmConfirm": "編集する",
-        "editPositionConfirmCancel": "キャンセル"
+        "solutionPageTitle": "正解手",
+        "backToPosition": "戻る",
+        "positionChangedConfirmTitle": "このポジションで進めますか?",
+        "positionChangedConfirmMessage": "このまま進めると、入力済みの正解手はこのポジションでは無効になるためクリアされます。この操作は取り消せません。",
+        "positionChangedConfirmConfirm": "進める",
+        "positionChangedConfirmCancel": "キャンセル"
       },
       "preview": {
         "title": "パズルをプレビュー",

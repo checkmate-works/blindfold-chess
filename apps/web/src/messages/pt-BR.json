@@ -1319,11 +1319,12 @@
         "draftWriteFailed": "Não foi possível salvar o rascunho. Verifique se o seu navegador permite armazenamento e tente novamente.",
         "forkBanner": "Bifurcando de \"{sourceTitle}\"",
         "continueToSolution": "Continuar para os lances da solução",
-        "editPosition": "Editar posição",
-        "editPositionConfirmTitle": "Editar a posição?",
-        "editPositionConfirmMessage": "Editar a posição vai limpar os lances da solução que você já inseriu. Esta ação não pode ser desfeita.",
-        "editPositionConfirmConfirm": "Editar posição",
-        "editPositionConfirmCancel": "Cancelar"
+        "solutionPageTitle": "Lances da solução",
+        "backToPosition": "Voltar",
+        "positionChangedConfirmTitle": "Continuar com esta posição?",
+        "positionChangedConfirmMessage": "Continuar vai limpar os lances da solução que você já inseriu — eles não são mais válidos para esta posição. Esta ação não pode ser desfeita.",
+        "positionChangedConfirmConfirm": "Continuar",
+        "positionChangedConfirmCancel": "Cancelar"
       },
       "preview": {
         "title": "Pré-visualizar Puzzle",
