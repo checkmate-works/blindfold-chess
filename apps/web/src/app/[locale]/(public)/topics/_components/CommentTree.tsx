@@ -9,9 +9,9 @@ import type {
 } from '../_lib/action-types';
 import type { CommentTreeNode } from '../_lib/comment-tree';
 import { groupReplies } from '../_lib/comment-tree';
+import type { MoveNotationLine } from '../_lib/move-notation';
 import { canUserReply } from '../_lib/permissions';
 import { CommentNode } from './CommentNode';
-import type { MoveNotationLine } from './CommentTreeContext';
 import { CommentTreeProvider } from './CommentTreeContext';
 import type { ReplyAttachmentActions } from './ReplyForm';
 

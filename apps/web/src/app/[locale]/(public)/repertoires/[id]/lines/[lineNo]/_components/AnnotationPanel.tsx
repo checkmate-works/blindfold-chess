@@ -10,8 +10,9 @@ import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';
 
 import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
-import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_components/CommentTreeContext';
+import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { OwnerActionButton } from '@/app/[locale]/_components/OwnerActionChip';
 
 import { deleteAnnotation } from '../_actions/deleteAnnotation';
 import { saveAnnotation } from '../_actions/saveAnnotation';
@@ -122,21 +123,27 @@ export function AnnotationPanel({
     </h3>
   );
 
+  // The saved note as the reader sees it: plain text, except that a move cited
+  // by number ("1... e4") becomes a board-preview link.
+  const noteBody = (
+    <p className="whitespace-pre-wrap text-foreground">
+      <GameCommentBody
+        text={savedText ?? ''}
+        locale={locale}
+        moves={moveNotation.moves}
+        startingFen={moveNotation.startingFen}
+        playerColor={moveNotation.playerColor}
+      />
+    </p>
+  );
+
   // Non-owner: show the note when present, otherwise render nothing.
   if (!isOwner) {
     if (!savedText) return null;
     return (
       <section className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
         {heading}
-        <p className="whitespace-pre-wrap text-foreground">
-          <GameCommentBody
-            text={savedText}
-            locale={locale}
-            moves={moveNotation.moves}
-            startingFen={moveNotation.startingFen}
-            playerColor={moveNotation.playerColor}
-          />
-        </p>
+        {noteBody}
       </section>
     );
   }
@@ -194,49 +201,31 @@ export function AnnotationPanel({
         </div>
       ) : savedText ? (
         <div className="space-y-3">
-          <p className="whitespace-pre-wrap text-foreground">
-            <GameCommentBody
-              text={savedText}
-              locale={locale}
-              moves={moveNotation.moves}
-              startingFen={moveNotation.startingFen}
-              playerColor={moveNotation.playerColor}
-            />
-          </p>
+          {noteBody}
           <FormErrorBanner message={error} />
-          {/* Owner row — the bordered icon-chip pair used by every other UGC
-              detail surface (shared games' OwnerActions, the chunk detail
-              page, the line page's own Edit link). */}
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <button
-              type="button"
-              onClick={openEditor}
-              disabled={isPending}
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 transition-colors hover:border-foreground/20 hover:text-foreground disabled:opacity-50"
-            >
-              <FiEdit2 className="h-3 w-3" aria-hidden />
+          {/* Owner row — Edit and Delete as one pair, the same chips every other
+              UGC detail surface uses. */}
+          <div className="flex flex-wrap items-center gap-3">
+            <OwnerActionButton size="xs" onClick={openEditor} disabled={isPending}>
+              <FiEdit2 aria-hidden />
               {t('editButton')}
-            </button>
-            <button
-              type="button"
+            </OwnerActionButton>
+            <OwnerActionButton
+              size="xs"
+              tone="danger"
               onClick={() => setConfirmingDelete(true)}
               disabled={isPending}
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 transition-colors hover:border-destructive/40 hover:text-destructive disabled:opacity-50"
             >
-              <FiTrash2 className="h-3 w-3" aria-hidden />
+              <FiTrash2 aria-hidden />
               {t('delete')}
-            </button>
+            </OwnerActionButton>
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={openEditor}
-          className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-        >
-          <FiPlus className="h-3 w-3" aria-hidden />
+        <OwnerActionButton size="xs" onClick={openEditor}>
+          <FiPlus aria-hidden />
           {t('addButton')}
-        </button>
+        </OwnerActionButton>
       )}
 
       <ConfirmationModal

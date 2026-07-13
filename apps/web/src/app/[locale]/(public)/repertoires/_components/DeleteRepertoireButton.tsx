@@ -8,6 +8,7 @@ import { useRouter } from '@/i18n/routing';
 import { FiTrash2 } from 'react-icons/fi';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { OwnerActionButton } from '@/app/[locale]/_components/OwnerActionChip';
 
 import { deleteRepertoire } from '../_actions/deleteRepertoire';
 
@@ -45,15 +46,10 @@ export function DeleteRepertoireButton({ id, locale, afterDelete }: Props) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        disabled={pending}
-        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-sm text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive disabled:opacity-50"
-      >
-        <FiTrash2 className="h-3.5 w-3.5" aria-hidden />
+      <OwnerActionButton tone="danger" onClick={() => setOpen(true)} disabled={pending}>
+        <FiTrash2 aria-hidden />
         {t('delete.button')}
-      </button>
+      </OwnerActionButton>
       <ConfirmationModal
         isOpen={open}
         title={t('delete.title')}

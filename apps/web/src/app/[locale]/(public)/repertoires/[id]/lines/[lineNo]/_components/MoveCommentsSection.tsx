@@ -8,9 +8,9 @@ import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
 import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
-import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_components/CommentTreeContext';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
+import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import {
   getCommentTreeForTopic,
   getPostCountByTopicKey,

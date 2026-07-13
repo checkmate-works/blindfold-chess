@@ -15,7 +15,7 @@ import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
-import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_components/CommentTreeContext';
+import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 
 import { saveShapes } from '../_actions/saveShapes';
 import type { LineMove } from '../_lib/line-moves';

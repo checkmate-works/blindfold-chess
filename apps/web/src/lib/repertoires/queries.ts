@@ -71,21 +71,61 @@ async function getOpeningThumbnailFens(repertoireIds: string[]): Promise<Map<str
   return map;
 }
 
+/** The columns every card list selects: the row itself plus its author. */
+const REPERTOIRE_CARD_COLUMNS = {
+  repertoire: repertoires,
+  profile: AUTHOR_PROFILE_COLUMNS,
+};
+
+type RepertoireCardRow = {
+  repertoire: Repertoire;
+  profile: RepertoireAuthorProfile | null;
+};
+
+/**
+ * Attach the card thumbnail to freshly selected rows. One extra query for the
+ * whole page rather than a join, since the thumbnail needs the lowest-sorting
+ * of possibly several linked openings.
+ */
+async function toCards(rows: RepertoireCardRow[]): Promise<RepertoireWithProfile[]> {
+  const openingFens = await getOpeningThumbnailFens(rows.map((r) => r.repertoire.id));
+
+  return rows.map((row) => ({
+    repertoire: row.repertoire,
+    // A left join on a deleted author yields a row of nulls, not no row.
+    profile: row.profile?.username ? row.profile : null,
+    thumbnailFen: orientFenForSide(
+      openingFens.get(row.repertoire.id) ?? row.repertoire.startingFen ?? STANDARD_FEN,
+      row.repertoire.side
+    ),
+  }));
+}
+
 /** Ordering offered on the opening page's Repertoires tab. */
 export type RepertoireSort = 'new' | 'popular';
 
 /**
- * Public, live repertoires linked to one opening (by the master's slug) — the
- * "who has prepared this opening" panel on the opening topic page.
- *
- * `popular` orders by like count (the same polymorphic `likes` rows the cards
- * render), newest first among ties, so a repertoire nobody has liked yet still
- * has a stable place.
+ * Live repertoires linked to one opening and visible to everyone.
  *
  * Filters on `status = 'public'` even though nothing writes that column today
  * (every repertoire is public by default): the paid-plan "make private" toggle
  * then becomes a UI change with no query to revisit — and, more importantly, a
  * repertoire that IS private must never appear here.
+ */
+function publicRepertoiresForOpening(openingSlug: string) {
+  return and(
+    eq(chessOpenings.slug, openingSlug),
+    eq(repertoires.status, 'public'),
+    isNull(repertoires.deletedAt)
+  );
+}
+
+/**
+ * The "who has prepared this opening" panel on the opening topic page.
+ *
+ * `popular` orders by like count (the same polymorphic `likes` rows the cards
+ * render), newest first among ties, so a repertoire nobody has liked yet still
+ * has a stable place.
  */
 export async function listPublicRepertoiresForOpening(
   openingSlug: string,
@@ -98,21 +138,12 @@ export async function listPublicRepertoiresForOpening(
   );
 
   const rows = await db
-    .select({
-      repertoire: repertoires,
-      profile: AUTHOR_PROFILE_COLUMNS,
-    })
+    .select(REPERTOIRE_CARD_COLUMNS)
     .from(repertoireOpenings)
     .innerJoin(chessOpenings, eq(chessOpenings.id, repertoireOpenings.openingId))
     .innerJoin(repertoires, eq(repertoires.id, repertoireOpenings.repertoireId))
     .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
-    .where(
-      and(
-        eq(chessOpenings.slug, openingSlug),
-        eq(repertoires.status, 'public'),
-        isNull(repertoires.deletedAt)
-      )
-    )
+    .where(publicRepertoiresForOpening(openingSlug))
     .orderBy(
       ...(sort === 'popular'
         ? [desc(likeCount), desc(repertoires.createdAt)]
@@ -120,16 +151,7 @@ export async function listPublicRepertoiresForOpening(
     )
     .limit(limit);
 
-  const openingFens = await getOpeningThumbnailFens(rows.map((r) => r.repertoire.id));
-
-  return rows.map((row) => ({
-    repertoire: row.repertoire,
-    profile: row.profile?.username ? row.profile : null,
-    thumbnailFen: orientFenForSide(
-      openingFens.get(row.repertoire.id) ?? row.repertoire.startingFen ?? STANDARD_FEN,
-      row.repertoire.side
-    ),
-  }));
+  return toCards(rows);
 }
 
 /**
@@ -143,13 +165,7 @@ export async function countPublicRepertoiresForOpening(openingSlug: string): Pro
     .from(repertoireOpenings)
     .innerJoin(chessOpenings, eq(chessOpenings.id, repertoireOpenings.openingId))
     .innerJoin(repertoires, eq(repertoires.id, repertoireOpenings.repertoireId))
-    .where(
-      and(
-        eq(chessOpenings.slug, openingSlug),
-        eq(repertoires.status, 'public'),
-        isNull(repertoires.deletedAt)
-      )
-    );
+    .where(publicRepertoiresForOpening(openingSlug));
 
   return row?.value ?? 0;
 }
@@ -157,25 +173,13 @@ export async function countPublicRepertoiresForOpening(openingSlug: string): Pro
 /** A user's own live (non-deleted) repertoires, newest first, with author. */
 export async function listRepertoiresForUser(userId: string): Promise<RepertoireWithProfile[]> {
   const rows = await db
-    .select({
-      repertoire: repertoires,
-      profile: AUTHOR_PROFILE_COLUMNS,
-    })
+    .select(REPERTOIRE_CARD_COLUMNS)
     .from(repertoires)
     .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
     .where(and(eq(repertoires.userId, userId), isNull(repertoires.deletedAt)))
     .orderBy(desc(repertoires.createdAt));
 
-  const openingFens = await getOpeningThumbnailFens(rows.map((r) => r.repertoire.id));
-
-  return rows.map((row) => ({
-    repertoire: row.repertoire,
-    profile: row.profile?.username ? row.profile : null,
-    thumbnailFen: orientFenForSide(
-      openingFens.get(row.repertoire.id) ?? row.repertoire.startingFen ?? STANDARD_FEN,
-      row.repertoire.side
-    ),
-  }));
+  return toCards(rows);
 }
 
 export type RepertoireWithLines = {

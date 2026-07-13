@@ -2,8 +2,6 @@
 
 import { type ReactNode, createContext, useContext } from 'react';
 
-import type { Side } from '@blindfold-chess/types';
-
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import type {
@@ -13,27 +11,13 @@ import type {
   RemoveAttachmentAction,
   ToggleLikeAction,
 } from '../_lib/action-types';
+import type { MoveNotationLine } from '../_lib/move-notation';
 import type { ReplyAttachmentActions } from './ReplyForm';
 
 export type CommentTreeI18n = {
   likeNamespace: string;
   replyNamespace: string;
   deleteNamespace: string;
-};
-
-/**
- * The move sequence a thread is written against, when the thread hangs off a
- * whole line of play rather than a single position. Enables PGN-style numbered
- * references ("1... e4", "3. Nf3 Nc6") in comment bodies — the same parser the
- * shared-game thread uses.
- */
-export type MoveNotationLine = {
-  /** SAN moves of the line, in order. A reference branches off these. */
-  moves: string[];
-  /** The line's root position; null = the standard start. */
-  startingFen: string | null;
-  /** Orientation for the preview board. */
-  playerColor: Side;
 };
 
 /**

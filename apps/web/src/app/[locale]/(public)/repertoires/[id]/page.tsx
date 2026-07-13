@@ -9,7 +9,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { Link } from '@/i18n/routing';
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
 import { FiEdit2 } from 'react-icons/fi';
 
@@ -26,11 +25,13 @@ import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { OwnerActionLink } from '@/app/[locale]/_components/OwnerActionChip';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
 import { DeleteRepertoireButton } from '../_components/DeleteRepertoireButton';
+import { RepertoireChips } from '../_components/RepertoireChips';
 import type { RepertoireViewerLine } from '../_components/RepertoireLineViewer';
 import { RepertoireLineViewer } from '../_components/RepertoireLineViewer';
 import { RepertoireCommentsSection } from './_components/RepertoireCommentsSection';
@@ -120,12 +121,7 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       )}
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span className="rounded-full bg-muted px-2 py-0.5">
-          {t(`form.side_${repertoire.side}`)}
-        </span>
-        <span className="rounded-full bg-muted px-2 py-0.5">
-          {t(`form.phase_${repertoire.phase}`)}
-        </span>
+        <RepertoireChips locale={locale} side={repertoire.side} phase={repertoire.phase} />
         <span>{t('detail.lineCount', { count: lines.length })}</span>
       </div>
 
@@ -148,15 +144,10 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         />
         {isOwner && (
           <div className="flex flex-wrap items-center gap-3">
-            {/* Same chip as DeleteRepertoireButton sitting next to it (text-sm,
-                3.5 icon) so the owner row reads as one pair. */}
-            <Link
-              href={`/repertoires/${id}/edit`}
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-sm text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-            >
-              <FiEdit2 className="h-3.5 w-3.5" aria-hidden />
+            <OwnerActionLink href={`/repertoires/${id}/edit`}>
+              <FiEdit2 aria-hidden />
               {t('edit.editAction')}
-            </Link>
+            </OwnerActionLink>
             <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
           </div>
         )}
