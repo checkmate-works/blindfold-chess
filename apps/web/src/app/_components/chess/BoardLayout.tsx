@@ -37,6 +37,15 @@ type Props = {
    * `window` by the handler so a drag survives the pointer leaving the board.
    */
   onBoardPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  /**
+   * Right-button hooks for the annotation-drawing gesture
+   * (`useBoardAnnotationDrawing`). They live on the same positioned container
+   * as the click/drag hooks above so the gesture reads square coordinates from
+   * the board's own bounding box — hence `containerRef` too.
+   */
+  onBoardContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onBoardPointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  containerRef?: React.Ref<HTMLDivElement>;
   rounded?: boolean;
   className?: string;
   /**
@@ -67,6 +76,9 @@ export function BoardLayout({
   squareProps,
   onBoardClick,
   onBoardPointerDown,
+  onBoardContextMenu,
+  onBoardPointerUp,
+  containerRef,
   rounded = true,
   className = '',
   annotations = null,
@@ -75,9 +87,12 @@ export function BoardLayout({
   return (
     <div className={`w-full ${className}`}>
       <div
+        ref={containerRef}
         className={`relative w-full aspect-square overflow-hidden ${rounded ? 'rounded-md' : ''}`}
         onClick={onBoardClick}
         onPointerDown={onBoardPointerDown}
+        onContextMenu={onBoardContextMenu}
+        onPointerUp={onBoardPointerUp}
       >
         {VISUAL_INDICES.map((row) => {
           return (

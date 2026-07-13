@@ -23,6 +23,7 @@
       "phase_opening": "オープニング",
       "phase_middlegame": "ミドルゲーム",
       "phase_endgame": "エンドゲーム",
+      "phaseComingSoon": "近日対応",
       "openingLabel": "紐づくオープニング",
       "openingHelp": "この型を具体的なオープニングに紐づけられます（任意・転置で複数該当することも）。",
       "pgnLabel": "PGN",
@@ -35,11 +36,28 @@
       "title": "型をインポート",
       "sectionTitle": "型の詳細"
     },
+    "edit": {
+      "editAction": "編集",
+      "title": "型を編集",
+      "breadcrumb": "編集",
+      "nameLabel": "名前",
+      "save": "保存",
+      "saving": "保存中...",
+      "cancel": "キャンセル",
+      "errors": {
+        "unauthorized": "この型を編集できるのは作成者だけです。",
+        "notFound": "この型は存在しません。",
+        "nameRequired": "名前を入力してください。",
+        "nameTooLong": "名前が長すぎます。",
+        "generic": "エラーが発生しました。もう一度お試しください。"
+      }
+    },
     "detail": {
       "title": "型",
       "pgnHeading": "PGN",
       "linesHeading": "ライン",
       "lineCount": "{count} ライン",
+      "forThisOpening": "このオープニングの型",
       "lineFallback": "ライン {n}",
       "openLine": "このラインを開く →",
       "createdBy": "作成者"
@@ -48,6 +66,10 @@
       "title": "ライン",
       "breadcrumb": "ライン {n}",
       "empty": "このラインには手がありません。",
+      "shapes": {
+        "hint": "盤上を右クリックしてドラッグすると矢印、右クリックだけでマスに丸を描けます。Shift / Alt / Ctrl で色が変わります。自動保存されます。",
+        "saveFailed": "盤面の書き込みを保存できませんでした。もう一度お試しください。"
+      },
       "annotation": {
         "title": "この手の狙い",
         "addButton": "メモを追加",
@@ -56,6 +78,8 @@
         "saving": "保存中...",
         "cancel": "キャンセル",
         "delete": "削除",
+        "deleteConfirmTitle": "このノートを削除しますか？",
+        "deleteConfirmMessage": "この手のノートが削除されます。元に戻せません。",
         "placeholder": "なぜこの手を指すのかを説明…",
         "error": "問題が発生しました。もう一度お試しください。",
         "empty": "メモを入力してください。",

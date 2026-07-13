@@ -38,3 +38,12 @@ export const EMPTY_BOARD_ANNOTATIONS: BoardAnnotations = Object.freeze({
   arrows: Object.freeze([]) as unknown as Arrow[],
   circles: Object.freeze([]) as unknown as Circle[],
 }) as BoardAnnotations;
+
+/**
+ * Nothing is drawn. Note this is a value check, not identity — a set that was
+ * emptied by removing its last mark is not the {@link EMPTY_BOARD_ANNOTATIONS}
+ * singleton but is still empty.
+ */
+export function isEmptyBoardAnnotations(annotations: BoardAnnotations): boolean {
+  return annotations.arrows.length === 0 && annotations.circles.length === 0;
+}

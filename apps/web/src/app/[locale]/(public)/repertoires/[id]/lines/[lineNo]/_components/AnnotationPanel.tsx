@@ -5,8 +5,14 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
+import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';
+
+import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
+import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { OwnerActionButton } from '@/app/[locale]/_components/OwnerActionChip';
 
 import { deleteAnnotation } from '../_actions/deleteAnnotation';
 import { saveAnnotation } from '../_actions/saveAnnotation';
@@ -20,6 +26,11 @@ type Props = {
   /** The move this note explains, e.g. "3. d4" — for the heading. */
   moveLabel: string;
   initialText: string | null;
+  /**
+   * The line's moves, so a note that cites a move by number ("1... e4") renders
+   * it as a board-preview link — the same treatment comments get.
+   */
+  moveNotation: MoveNotationLine;
   isOwner: boolean;
 };
 
@@ -36,6 +47,7 @@ export function AnnotationPanel({
   positionKey,
   moveLabel,
   initialText,
+  moveNotation,
   isOwner,
 }: Props) {
   const t = useTranslations('Repertoires.line.annotation');
@@ -45,6 +57,7 @@ export function AnnotationPanel({
   const [draft, setDraft] = useState(initialText ?? '');
   const [error, setError] = useState<string | null>(null);
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const isDirty = draft !== (savedText ?? '');
@@ -94,6 +107,7 @@ export function AnnotationPanel({
     setError(null);
     startTransition(async () => {
       const result = await deleteAnnotation({ repertoireId, lineNo, locale, positionKey });
+      setConfirmingDelete(false);
       if (result.ok) {
         setSavedText(null);
         setEditing(false);
@@ -104,9 +118,23 @@ export function AnnotationPanel({
   }
 
   const heading = (
-    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <h3 className="text-xs font-semibold text-muted-foreground">
       {t('title')} · <span className="text-foreground">{moveLabel}</span>
     </h3>
+  );
+
+  // The saved note as the reader sees it: plain text, except that a move cited
+  // by number ("1... e4") becomes a board-preview link.
+  const noteBody = (
+    <p className="whitespace-pre-wrap text-foreground">
+      <GameCommentBody
+        text={savedText ?? ''}
+        locale={locale}
+        moves={moveNotation.moves}
+        startingFen={moveNotation.startingFen}
+        playerColor={moveNotation.playerColor}
+      />
+    </p>
   );
 
   // Non-owner: show the note when present, otherwise render nothing.
@@ -115,7 +143,7 @@ export function AnnotationPanel({
     return (
       <section className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
         {heading}
-        <p className="whitespace-pre-wrap text-foreground">{savedText}</p>
+        {noteBody}
       </section>
     );
   }
@@ -135,14 +163,15 @@ export function AnnotationPanel({
             placeholder={t('placeholder')}
             autoFocus
           />
-          {/* Save / Cancel mirror the comment edit form (EditPostForm): a
-              full-width primary submit, a quiet cancel link below it, and a
-              discard confirmation when there are unsaved edits. Delete is the
-              annotation-specific extra, kept as a quiet destructive link. */}
-          <div className="space-y-2">
+          {/* Save / Cancel only — Delete belongs to the note, not to the edit
+              session, so it lives in the owner row alongside Edit (the same
+              pairing every other UGC surface uses). Mirrors EditPostForm: a
+              full-width primary submit with a quiet cancel below it. */}
+          <div className="space-y-3 pt-1">
             <Button
               type="button"
               variant="primary"
+              size="lg"
               fullWidth
               onClick={onSave}
               disabled={isPending}
@@ -158,16 +187,6 @@ export function AnnotationPanel({
             >
               {t('cancel')}
             </button>
-            {savedText && (
-              <button
-                type="button"
-                onClick={onDelete}
-                disabled={isPending}
-                className="block w-full text-center text-sm text-destructive transition-colors hover:underline disabled:opacity-50"
-              >
-                {t('delete')}
-              </button>
-            )}
           </div>
 
           <UnsavedChangesDialog
@@ -181,25 +200,45 @@ export function AnnotationPanel({
           />
         </div>
       ) : savedText ? (
-        <div className="space-y-2">
-          <p className="whitespace-pre-wrap text-foreground">{savedText}</p>
-          <button
-            type="button"
-            onClick={openEditor}
-            className="text-sm text-link-primary transition-colors hover:underline"
-          >
-            {t('editButton')}
-          </button>
+        <div className="space-y-3">
+          {noteBody}
+          <FormErrorBanner message={error} />
+          {/* Owner row — Edit and Delete as one pair, the same chips every other
+              UGC detail surface uses. */}
+          <div className="flex flex-wrap items-center gap-3">
+            <OwnerActionButton size="xs" onClick={openEditor} disabled={isPending}>
+              <FiEdit2 aria-hidden />
+              {t('editButton')}
+            </OwnerActionButton>
+            <OwnerActionButton
+              size="xs"
+              tone="danger"
+              onClick={() => setConfirmingDelete(true)}
+              disabled={isPending}
+            >
+              <FiTrash2 aria-hidden />
+              {t('delete')}
+            </OwnerActionButton>
+          </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={openEditor}
-          className="text-sm text-link-primary transition-colors hover:underline"
-        >
+        <OwnerActionButton size="xs" onClick={openEditor}>
+          <FiPlus aria-hidden />
           {t('addButton')}
-        </button>
+        </OwnerActionButton>
       )}
+
+      <ConfirmationModal
+        isOpen={confirmingDelete}
+        title={t('deleteConfirmTitle')}
+        message={t('deleteConfirmMessage')}
+        confirmText={t('delete')}
+        cancelText={t('cancel')}
+        confirmVariant="danger"
+        isLoading={isPending}
+        onConfirm={onDelete}
+        onCancel={() => setConfirmingDelete(false)}
+      />
     </section>
   );
 }

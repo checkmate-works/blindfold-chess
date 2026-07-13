@@ -11,6 +11,7 @@ import type {
   RemoveAttachmentAction,
   ToggleLikeAction,
 } from '../_lib/action-types';
+import type { MoveNotationLine } from '../_lib/move-notation';
 import type { ReplyAttachmentActions } from './ReplyForm';
 
 export type CommentTreeI18n = {
@@ -61,6 +62,13 @@ export type CommentTreeContextValue = {
    * where bodies render as plain linkified text (unchanged behavior).
    */
   moveNotationFen?: string;
+  /**
+   * Like {@link moveNotationFen}, but for a thread anchored to a whole line of
+   * play (a repertoire line): references carry move numbers ("1... e4"), so the
+   * parser needs the line's moves to resolve them. Takes precedence when both
+   * are set.
+   */
+  moveNotationLine?: MoveNotationLine;
 };
 
 const CommentTreeContext = createContext<CommentTreeContextValue | null>(null);

@@ -23,6 +23,7 @@
       "phase_opening": "Apertura",
       "phase_middlegame": "Medio juego",
       "phase_endgame": "Final",
+      "phaseComingSoon": "Próximamente",
       "openingLabel": "Aperturas vinculadas",
       "openingHelp": "Vincula opcionalmente este repertorio a aperturas concretas (una línea con transposiciones puede coincidir con varias).",
       "pgnLabel": "PGN",
@@ -35,11 +36,28 @@
       "title": "Importar una línea",
       "sectionTitle": "Detalles de la línea"
     },
+    "edit": {
+      "editAction": "Editar",
+      "title": "Editar repertorio",
+      "breadcrumb": "Editar",
+      "nameLabel": "Nombre",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "errors": {
+        "unauthorized": "Solo el autor puede editar este repertorio.",
+        "notFound": "Este repertorio ya no existe.",
+        "nameRequired": "Introduce un nombre.",
+        "nameTooLong": "Ese nombre es demasiado largo.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
     "detail": {
       "title": "Repertorio",
       "pgnHeading": "PGN",
       "linesHeading": "Líneas",
       "lineCount": "{count} líneas",
+      "forThisOpening": "Repertorios de esta apertura",
       "lineFallback": "Línea {n}",
       "openLine": "Abrir esta línea →",
       "createdBy": "Creado por"
@@ -48,6 +66,10 @@
       "title": "Línea",
       "breadcrumb": "Línea {n}",
       "empty": "Esta línea no tiene jugadas.",
+      "shapes": {
+        "hint": "Haz clic derecho y arrastra en el tablero para dibujar una flecha; haz clic derecho en una casilla para rodearla. Shift / Alt / Ctrl cambian el color. Se guarda automáticamente.",
+        "saveFailed": "No se pudieron guardar tus marcas en el tablero. Inténtalo de nuevo."
+      },
       "annotation": {
         "title": "Por qué esta jugada",
         "addButton": "Añadir una nota",
@@ -56,6 +78,8 @@
         "saving": "Guardando...",
         "cancel": "Cancelar",
         "delete": "Eliminar",
+        "deleteConfirmTitle": "¿Eliminar esta nota?",
+        "deleteConfirmMessage": "Se eliminará la nota de esta jugada. No se puede deshacer.",
         "placeholder": "Explica por qué se juega esta jugada…",
         "error": "Algo salió mal. Inténtalo de nuevo.",
         "empty": "Introduce una nota.",

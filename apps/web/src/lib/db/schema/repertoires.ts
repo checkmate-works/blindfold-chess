@@ -32,6 +32,8 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { uuidv7 } from '@/lib/uuidv7';
 
 import { chessOpenings } from './openings';
@@ -72,10 +74,18 @@ export const repertoires = pgTable(
     description: text('description'),
     /** Denormalised root for the card thumbnail. NULL = standard start. */
     startingFen: varchar('starting_fen', { length: 100 }),
+    /**
+     * Visibility. Public by default: a repertoire is catalogue content — it is
+     * surfaced on the opening topic pages it is linked to, and viewable by
+     * anyone with the URL regardless. Flipping one back to `private` is planned
+     * as a paid-plan affordance; until that ships nothing writes this column,
+     * so every repertoire is public and the read paths still filter on it
+     * (making the later toggle a UI change, not a query change).
+     */
     status: varchar('status', { length: 20 })
       .$type<'private' | 'public'>()
       .notNull()
-      .default('private'),
+      .default('public'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -285,11 +295,19 @@ export type RepertoireDeviation = typeof repertoireDeviations.$inferSelect;
 export type NewRepertoireDeviation = typeof repertoireDeviations.$inferInsert;
 
 /**
- * Repertoire Annotations — the owner-authored "why" note for a position (the
- * Chessable right-panel text). Content (not social discussion — that is
- * `topic_posts`). Position-keyed so a note is shared across the lines /
- * transpositions that reach it and survives line re-import. One note per
- * (repertoire, position).
+ * Repertoire Annotations — the owner-authored explanation of a position (the
+ * Chessable right-panel content): a "why this move" note and/or the board
+ * markup drawn over it. Content, not social discussion — that is `topic_posts`.
+ * Position-keyed so it is shared across the lines / transpositions that reach
+ * the position and survives line re-import. One row per (repertoire, position).
+ *
+ * @design text and shapes share one row
+ *
+ * Both answer the same question ("what should I see here?") and are keyed
+ * identically, so a second table would only add a join and a second owner
+ * check. Either half may be empty — `text` defaults to '' and `shapes` to the
+ * empty annotation object — and the write paths delete the row once both are
+ * empty, so an untouched position has no row at all.
  */
 export const repertoireAnnotations = pgTable(
   'repertoire_annotations',
@@ -301,7 +319,14 @@ export const repertoireAnnotations = pgTable(
       .notNull()
       .references(() => repertoires.id, { onDelete: 'cascade' }),
     positionKey: varchar('position_key', { length: 100 }).notNull(),
-    text: text('text').notNull(),
+    text: text('text').notNull().default(''),
+    /**
+     * Display-only board markup (arrows + circles) drawn over the position —
+     * the same value object the chunks / glossary boards store, inline JSONB
+     * for the same reason (no independent identity, edit replaces the whole
+     * object). See `apps/web/src/lib/board-annotations/types.ts`.
+     */
+    shapes: jsonb('shapes').$type<BoardAnnotations>().notNull().default(EMPTY_BOARD_ANNOTATIONS),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .defaultNow()

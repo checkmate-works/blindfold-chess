@@ -6,8 +6,12 @@ import { chessOpenings, db, repertoireLines, repertoireOpenings, repertoires } f
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
-import type { RepertoireImportInput, RepertoireLineEditError } from './validation';
-import { validateRepertoireImport, validateRepertoireLineEdit } from './validation';
+import type { RepertoireImportInput, RepertoireLineEditError, RepertoirePhase } from './validation';
+import {
+  REPERTOIRE_NAME_MAX,
+  validateRepertoireImport,
+  validateRepertoireLineEdit,
+} from './validation';
 
 export type CreateRepertoireResult = ActionResult<{ id: string }>;
 export type DeleteRepertoireResult = ActionResult;
@@ -60,6 +64,86 @@ export async function updateRepertoireLine(params: {
   return { ok: true };
 }
 
+export type UpdateRepertoireResult =
+  | { ok: true; name: string }
+  | { ok: false; error: 'unauthorized' | 'notFound' | 'nameRequired' | 'nameTooLong' };
+
+/** The transaction handle drizzle hands to a `db.transaction` callback. */
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+type OpeningLinks = { repertoireId: string; phase: RepertoirePhase; openingIds: string[] };
+
+/**
+ * Link a repertoire to the openings it covers. Only an `opening`-phase
+ * repertoire has links (the picker is hidden for the others, and both write
+ * paths drop the ids for the same reason). The requested ids are deduped and
+ * re-checked against the master, so a stale or forged id is dropped rather than
+ * tripping the FK.
+ */
+async function insertOpeningLinks(tx: Tx, { repertoireId, phase, openingIds }: OpeningLinks) {
+  const requested = phase === 'opening' ? [...new Set(openingIds)] : [];
+  if (requested.length === 0) return;
+
+  const valid = await tx
+    .select({ id: chessOpenings.id })
+    .from(chessOpenings)
+    .where(inArray(chessOpenings.id, requested));
+  if (valid.length === 0) return;
+
+  await tx.insert(repertoireOpenings).values(valid.map((o) => ({ repertoireId, openingId: o.id })));
+}
+
+/**
+ * Point an existing repertoire at a new set of openings. The links are a plain
+ * n:n value with nothing hanging off them, so an edit replaces them wholesale.
+ */
+async function replaceOpeningLinks(tx: Tx, links: OpeningLinks) {
+  await tx
+    .delete(repertoireOpenings)
+    .where(eq(repertoireOpenings.repertoireId, links.repertoireId));
+  await insertOpeningLinks(tx, links);
+}
+
+/**
+ * Owner-only: update a repertoire's title and its opening links.
+ *
+ * Deliberately narrower than the import form — side / phase / PGN are
+ * structural (the lines, and every position-keyed annotation hanging off them,
+ * derive from the PGN), so changing those is a re-import, not an edit. The
+ * title and the opening links are pure metadata.
+ */
+export async function updateRepertoireDetails(params: {
+  repertoireId: string;
+  viewerId: string;
+  name: string;
+  openingIds: string[];
+}): Promise<UpdateRepertoireResult> {
+  const name = params.name.trim();
+  if (!name) return { ok: false, error: 'nameRequired' };
+  if (name.length > REPERTOIRE_NAME_MAX) return { ok: false, error: 'nameTooLong' };
+
+  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
+  if (ownerError) return { ok: false, error: ownerError };
+
+  const [row] = await db
+    .select({ phase: repertoires.phase })
+    .from(repertoires)
+    .where(eq(repertoires.id, params.repertoireId))
+    .limit(1);
+  if (!row) return { ok: false, error: 'notFound' };
+
+  await db.transaction(async (tx) => {
+    await tx.update(repertoires).set({ name }).where(eq(repertoires.id, params.repertoireId));
+    await replaceOpeningLinks(tx, {
+      repertoireId: params.repertoireId,
+      phase: row.phase,
+      openingIds: params.openingIds,
+    });
+  });
+
+  return { ok: true, name };
+}
+
 /**
  * Create a repertoire (型) for the authenticated user, decomposing the imported
  * PGN into one `repertoire_lines` row per line. Repertoire + lines are inserted
@@ -76,11 +160,6 @@ export async function createRepertoireEntry(
   if (!validated.ok) return { error: validated.error };
   const { name, side, phase, description, startingFen, lines } = validated.data;
 
-  // Opening links only apply to opening-phase repertoires. Re-validate the ids
-  // against the master so an invalid id can't trip the FK (and to dedupe).
-  const requestedOpeningIds =
-    phase === 'opening' && input.openingIds?.length ? [...new Set(input.openingIds)] : [];
-
   const id = await db.transaction(async (tx) => {
     const [repertoire] = await tx
       .insert(repertoires)
@@ -96,17 +175,11 @@ export async function createRepertoireEntry(
       }))
     );
 
-    if (requestedOpeningIds.length > 0) {
-      const valid = await tx
-        .select({ id: chessOpenings.id })
-        .from(chessOpenings)
-        .where(inArray(chessOpenings.id, requestedOpeningIds));
-      if (valid.length > 0) {
-        await tx
-          .insert(repertoireOpenings)
-          .values(valid.map((o) => ({ repertoireId: repertoire.id, openingId: o.id })));
-      }
-    }
+    await insertOpeningLinks(tx, {
+      repertoireId: repertoire.id,
+      phase,
+      openingIds: input.openingIds ?? [],
+    });
 
     return repertoire.id;
   });

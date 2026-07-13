@@ -10,22 +10,28 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
+import { getLinkedOpenings } from '@/lib/repertoires/opening-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { OwnerActionLink } from '@/app/[locale]/_components/OwnerActionChip';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
 import { DeleteRepertoireButton } from '../_components/DeleteRepertoireButton';
+import { RepertoireChips } from '../_components/RepertoireChips';
 import type { RepertoireViewerLine } from '../_components/RepertoireLineViewer';
 import { RepertoireLineViewer } from '../_components/RepertoireLineViewer';
 import { RepertoireCommentsSection } from './_components/RepertoireCommentsSection';
@@ -58,6 +64,12 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
   if (!data) notFound();
   const { repertoire, lines, profile, isOwner } = data;
 
+  // The openings this repertoire is linked to (n:n; empty for a non-opening
+  // phase). Rendered as the same cards the topics pages use, linking out to
+  // each opening's topic page.
+  const linkedOpenings = await getLinkedOpenings(repertoire.id);
+  const tOpeningNames = await getTranslations({ locale, namespace: 'topics.openings.names' });
+
   const likeMeta = (await getRepertoireLikeMetaMap([repertoire.id], currentUser?.id)).get(
     repertoire.id
   ) ?? {
@@ -80,16 +92,6 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
     >
       <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
 
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span className="rounded-full bg-muted px-2 py-0.5">
-          {t(`form.side_${repertoire.side}`)}
-        </span>
-        <span className="rounded-full bg-muted px-2 py-0.5">
-          {t(`form.phase_${repertoire.phase}`)}
-        </span>
-        <span>{t('detail.lineCount', { count: lines.length })}</span>
-      </div>
-
       {repertoire.description && (
         <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
       )}
@@ -100,6 +102,28 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         repertoireId={repertoire.id}
         locale={locale}
       />
+
+      {/* Below the board: the openings this repertoire covers (each card links
+          to its topic page), then the side / phase / line-count summary. Both
+          are context ABOUT the repertoire — the board is what the reader came
+          for, so neither is worth pushing it down the page. */}
+      {linkedOpenings.length > 0 && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {linkedOpenings.map((opening) => (
+            <OpeningCard
+              key={opening.id}
+              opening={opening}
+              displayName={getOpeningDisplayName(tOpeningNames, opening.slug, opening.name)}
+              locale={locale}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <RepertoireChips locale={locale} side={repertoire.side} phase={repertoire.phase} />
+        <span>{t('detail.lineCount', { count: lines.length })}</span>
+      </div>
 
       <PositionAuthorAttribution
         profile={profile}
@@ -119,7 +143,13 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
           i18nNamespace="Repertoires"
         />
         {isOwner && (
-          <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
+          <div className="flex flex-wrap items-center gap-3">
+            <OwnerActionLink href={`/repertoires/${id}/edit`}>
+              <FiEdit2 aria-hidden />
+              {t('edit.editAction')}
+            </OwnerActionLink>
+            <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
+          </div>
         )}
       </div>
 

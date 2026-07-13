@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
@@ -69,6 +70,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
     i18n,
     extraContentByPostId,
     moveNotationFen,
+    moveNotationLine,
   } = useCommentTreeContext();
 
   const tTopics = useTranslations('topics');
@@ -206,7 +208,15 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
                       className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
                       aria-hidden={showSpoiler || undefined}
                     >
-                      {moveNotationFen ? (
+                      {moveNotationLine ? (
+                        <GameCommentBody
+                          text={localContent}
+                          locale={locale}
+                          moves={moveNotationLine.moves}
+                          startingFen={moveNotationLine.startingFen}
+                          playerColor={moveNotationLine.playerColor}
+                        />
+                      ) : moveNotationFen ? (
                         <CommentMoveBody
                           text={localContent}
                           locale={locale}

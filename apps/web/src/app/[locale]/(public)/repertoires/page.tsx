@@ -26,18 +26,15 @@ import { Link } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
-import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
-import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
+import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
 import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
-import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { toggleLike } from './_actions/toggleLike';
+import { RepertoireListCard } from './_components/RepertoireListCard';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
@@ -54,13 +51,10 @@ export default async function RepertoiresPage({ params }: Props) {
   const user = await getOptionalUser();
   const rows = user ? await listRepertoiresForUser(user.id) : [];
 
-  const ids = rows.map((r) => r.repertoire.id);
-  const [likeMetaMap, replyMetaMap] = ids.length
-    ? await Promise.all([
-        getRepertoireLikeMetaMap(ids, user?.id),
-        getReplyMetaMap('repertoire', ids),
-      ])
-    : [new Map(), new Map()];
+  const cardMeta = await getRepertoireCardMeta(
+    rows.map((r) => r.repertoire.id),
+    user?.id
+  );
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
@@ -69,39 +63,16 @@ export default async function RepertoiresPage({ params }: Props) {
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
       ) : (
-        <GamePreferencesProvider>
-          <div className="space-y-3">
-            {rows.map(({ repertoire, profile, thumbnailFen }) => (
-              <CatalogListCard
-                key={repertoire.id}
-                id={repertoire.id}
-                fen={thumbnailFen}
-                title={repertoire.name}
-                description={repertoire.description}
-                createdAt={repertoire.createdAt}
-                profile={profile}
-                likeMeta={likeMetaMap.get(repertoire.id) ?? { likeCount: 0, likedByMe: false }}
-                replyMeta={replyMetaMap.get(repertoire.id) ?? EMPTY_REPLY_META}
-                detailHref={`/repertoires/${repertoire.id}`}
-                i18nNamespace="Repertoires"
-                toggleLikeAction={toggleLike}
-                justNowLabel={t('justNow')}
-                locale={locale}
-                topicKey={repertoire.id}
-                badge={
-                  <span className="flex flex-wrap gap-1">
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                      {t(`form.side_${repertoire.side}`)}
-                    </span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                      {t(`form.phase_${repertoire.phase}`)}
-                    </span>
-                  </span>
-                }
-              />
-            ))}
-          </div>
-        </GamePreferencesProvider>
+        <div className="space-y-3">
+          {rows.map((card) => (
+            <RepertoireListCard
+              key={card.repertoire.id}
+              card={card}
+              meta={cardMeta(card.repertoire.id)}
+              locale={locale}
+            />
+          ))}
+        </div>
       )}
 
       {user && (

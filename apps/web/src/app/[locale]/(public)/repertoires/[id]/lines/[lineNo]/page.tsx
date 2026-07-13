@@ -12,7 +12,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { Link } from '@/i18n/routing';
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
 import { FiEdit2 } from 'react-icons/fi';
 
@@ -22,8 +21,10 @@ import { buildPositionTopicKey } from '@/lib/repertoires/position-topic-key';
 import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 
+import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { OwnerActionLink } from '@/app/[locale]/_components/OwnerActionChip';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -71,6 +72,14 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
 
   const lineName = line.name ?? t('detail.lineFallback', { n: lineNo });
 
+  // What a move reference ("1... e4") inside a note or a comment resolves
+  // against — this line's own numbering, not the repertoire's.
+  const moveNotation: MoveNotationLine = {
+    moves: sans,
+    startingFen: line.startingFen,
+    playerColor: repertoire.side,
+  };
+
   return (
     <PageLayout
       title={lineName}
@@ -78,7 +87,9 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
       breadcrumb={[
         { label: t('title'), href: '/repertoires' },
         { label: repertoire.name, href: `/repertoires/${id}` },
-        { label: t('line.breadcrumb', { n: lineNo }) },
+        // The line's own name (falling back to "Line N" when unnamed) — the
+        // same label the heading shows, so renaming a line is reflected here.
+        { label: lineName },
       ]}
     >
       <SectionTitle>{lineName}</SectionTitle>
@@ -96,18 +107,16 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           lineNo={lineNo}
           locale={locale}
           initialPly={initialPly}
+          moveNotation={moveNotation}
         />
       )}
 
       {isOwner && (
-        <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
-          <Link
-            href={`/repertoires/${id}/lines/${lineNo}/edit`}
-            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 transition-colors hover:border-foreground/20 hover:text-foreground"
-          >
-            <FiEdit2 className="h-3 w-3" aria-hidden />
+        <div className="flex items-center justify-end gap-4">
+          <OwnerActionLink href={`/repertoires/${id}/lines/${lineNo}/edit`} size="xs">
+            <FiEdit2 aria-hidden />
             {t('line.edit.editAction')}
-          </Link>
+          </OwnerActionLink>
         </div>
       )}
 
@@ -118,6 +127,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           lineNo={lineNo}
           ply={initialPly}
           topicKey={buildPositionTopicKey(id, positions[initialPly].fen)}
+          moveNotationLine={moveNotation}
           currentUserId={currentUser?.id}
         />
       )}

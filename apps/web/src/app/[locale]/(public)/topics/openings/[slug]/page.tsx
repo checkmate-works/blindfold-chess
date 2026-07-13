@@ -9,6 +9,8 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { paginateItems } from '@/lib/pagination';
+import type { RepertoireSort } from '@/lib/repertoires/queries';
+import { countPublicRepertoiresForOpening } from '@/lib/repertoires/queries';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -21,7 +23,7 @@ import {
   buildPaginationHref,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, LinkTabs, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -29,6 +31,7 @@ import { OpeningBoardWithMoves } from '../_components/OpeningBoardWithMoves';
 import { getOpeningDisplayName } from '../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries';
 import { OpeningPostCard } from './_components';
+import { OpeningRepertoiresSection } from './_components/OpeningRepertoiresSection';
 import { NewOpeningPostForm } from './new/_components';
 
 export const dynamic = 'force-dynamic';
@@ -36,7 +39,20 @@ export const dynamic = 'force-dynamic';
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
   sort: parseAsString.withDefault('new'),
+  tab: parseAsString.withDefault('comments'),
 });
+
+const TAB_VALUES = ['comments', 'repertoires'] as const;
+type OpeningTab = (typeof TAB_VALUES)[number];
+
+/**
+ * Community thoughts stays the default panel — the discussion is what an opening
+ * page has always been. Repertoires is the opt-in second panel, so an unknown
+ * `?tab=` falls back to the comments rather than 404ing.
+ */
+function parseTab(tab: string): OpeningTab {
+  return TAB_VALUES.find((value) => value === tab) ?? 'comments';
+}
 
 type Props = {
   params: Promise<{ locale: Locale; slug: string }>;
@@ -74,12 +90,15 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
     notFound();
   }
 
-  const { page, sort } = await searchParamsCache.parse(searchParams);
+  const { page, sort, tab } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
+  const activeTab = parseTab(tab);
+  const isRepertoiresTab = activeTab === 'repertoires';
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings.detail' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
+  const tRepertoires = await getTranslations({ locale, namespace: 'Repertoires' });
 
   const displayName = getOpeningDisplayName(nameT, slug, opening.name);
 
@@ -95,12 +114,16 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
   } = await supabase.auth.getUser();
 
   const allPosts = await getOpeningPostsWithReplyMeta(slug, user?.id, sortBy);
-  const {
-    totalCount,
-    totalPages,
-    currentPage,
-    paginatedItems: posts,
-  } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
+  const { totalCount, totalPages, currentPage, paginatedItems } = paginateItems(
+    allPosts,
+    TOPIC_PAGE_SIZE,
+    page
+  );
+
+  // The comment list belongs to the comments tab; the other tab renders none of
+  // it (though its count still labels the tab). Emptying the list here is what
+  // switches off the post cards, their attachment lookups, and the pager below.
+  const posts = isRepertoiresTab ? [] : paginatedItems;
 
   // Pre-resolve each visible post's attachment slot upstream because
   // OpeningPostCard is a client component and `getAttachmentsForPosts`
@@ -116,11 +139,61 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
 
   const canPost = !!user && !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));
 
+  const repertoireCount = await countPublicRepertoiresForOpening(slug);
+
   const newPostForm = <NewOpeningPostForm locale={locale} slug={slug} />;
+
+  /*
+   * Community thoughts and the repertoires covering this opening are two
+   * separate bodies of content about the same opening, so they tab rather than
+   * stack (the chunk detail page's pattern, same `LinkTabs` + `?tab=` query
+   * param — each panel is server-rendered on demand and a shared link reopens
+   * on the right tab). Both tabs always render so the tab set is stable and the
+   * count says what's inside; the Repertoires tab is simply empty when nobody
+   * has prepared this opening yet.
+   */
+  const tabs = (
+    <LinkTabs
+      variant="underline"
+      locale={locale}
+      activeValue={activeTab}
+      scroll={false}
+      aria-label={displayName}
+      items={[
+        {
+          value: 'comments',
+          label: `${t('communityThoughts')} (${totalCount})`,
+          href: `/topics/openings/${slug}?tab=comments`,
+        },
+        {
+          value: 'repertoires',
+          label: `${tRepertoires('detail.forThisOpening')} (${repertoireCount})`,
+          href: `/topics/openings/${slug}?tab=repertoires`,
+        },
+      ]}
+    />
+  );
+
+  // The repertoires panel has no reply activity, so it offers `new` / `popular`
+  // only — the same `?sort=` param, narrowed.
+  const repertoireSort: RepertoireSort = sortBy === 'popular' ? 'popular' : 'new';
+
+  const repertoiresSection = (
+    <section className="space-y-4">
+      {tabs}
+      <OpeningRepertoiresSection
+        locale={locale}
+        slug={slug}
+        sort={repertoireSort}
+        count={repertoireCount}
+        currentUserId={user?.id}
+      />
+    </section>
+  );
 
   const communitySection = (
     <section className="space-y-4">
-      <SectionTitle>{t('communityThoughts')}</SectionTitle>
+      {tabs}
 
       {user ? (
         canPost ? (
@@ -158,7 +231,7 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
           <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
         ) : undefined
       }
-      communitySection={communitySection}
+      communitySection={isRepertoiresTab ? repertoiresSection : communitySection}
       hasPosts={posts.length > 0}
       postCards={posts.map((post) => {
         const att = attachments.get(post.id);
@@ -172,7 +245,13 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
           />
         );
       })}
-      pagination={{ currentPage, totalPages, buildHref }}
+      pagination={
+        // The repertoires panel shows a single strip, so there is nothing to
+        // page through — one page hides the pager.
+        isRepertoiresTab
+          ? { currentPage: 1, totalPages: 1, buildHref }
+          : { currentPage, totalPages, buildHref }
+      }
       breadcrumbItems={[
         { label: t('title'), href: '/topics' },
         { label: t('openings.title'), href: '/topics/openings' },
@@ -227,15 +306,19 @@ async function OpeningDetailSkeleton() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-8 mb-6">
-          <div className="h-5 w-24 bg-muted rounded animate-pulse" />
-          <div className="h-9 w-32 bg-muted rounded-md animate-pulse" />
+        {/* Tab row (Community thoughts / Repertoires) — underline variant, so a
+            border under the row and two left-aligned labels. */}
+        <div className="mt-8 mb-4 flex gap-6 border-b border-border pb-2">
+          <div className="h-6 w-44 bg-muted rounded animate-pulse" />
+          <div className="h-6 w-40 bg-muted rounded animate-pulse" />
         </div>
 
-        <div className="flex gap-4 border-b border-border mb-6 pb-2">
-          <div className="h-6 w-12 bg-muted rounded animate-pulse" />
-          <div className="h-6 w-16 bg-muted rounded animate-pulse" />
-          <div className="h-6 w-12 bg-muted rounded animate-pulse" />
+        {/* JoinConversationToggle, then the sort control (label + select). */}
+        <div className="mb-4 h-9 w-48 bg-muted rounded-md animate-pulse" />
+
+        <div className="mb-6 flex items-center gap-2">
+          <div className="h-5 w-14 bg-muted rounded animate-pulse" />
+          <div className="h-9 w-28 bg-muted rounded-md animate-pulse" />
         </div>
 
         <div className="space-y-3">

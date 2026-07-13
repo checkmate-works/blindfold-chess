@@ -143,6 +143,7 @@ export const RATE_LIMITS = {
   createRepertoire: { action: 'create_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   deleteRepertoire: { action: 'delete_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   updateRepertoireLine: { action: 'update_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
+  updateRepertoire: { action: 'update_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   saveRepertoireAnnotation: {
     action: 'save_repertoire_annotation',
     maxAttempts: 30,
@@ -151,6 +152,17 @@ export const RATE_LIMITS = {
   deleteRepertoireAnnotation: {
     action: 'delete_repertoire_annotation',
     maxAttempts: 20,
+    windowMs: 3_600_000,
+  },
+  /**
+   * Board markup (arrows / circles) on a repertoire position. Far looser than
+   * the note limits because this is a drawing surface, not a form: each stroke
+   * saves (debounced), and annotating one line's worth of positions with a few
+   * arrows each legitimately costs dozens of writes in a sitting.
+   */
+  saveRepertoireShapes: {
+    action: 'save_repertoire_shapes',
+    maxAttempts: 300,
     windowMs: 3_600_000,
   },
   /**
