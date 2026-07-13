@@ -35,3 +35,16 @@ description: Build/launch/drive recipe for runtime-verifying apps/web changes en
   those classes client-side, or note the blur.
 - New-game seeding is URL-driven: `/en/games/play?color=white&moves=<JSON array>&fen=<FEN>`.
   A brand-new game auto-saves to localStorage on mount (poll for it).
+- **Driving live play**: the default move-input mode is `button` (SAN composer),
+  which is painful to automate, and the `gamePrefs` URL param can't switch it
+  (the mode is gated by `enabledMoveInputModes` from global preferences). Seed
+  global preferences instead, key `blindfold-chess-game-preferences`:
+  `{"moveInputMode":"text","enabledMoveInputModes":["text"],"boardVisibility":"always"}`
+  → then `input[placeholder*="Enter move"]` + Enter submits moves. Undo/Resign
+  are `button[title="Undo"|"Resign"]` + a confirm modal with the same text.
+  The AI (stockfish wasm) works headless; allow ~10s per reply.
+- Button titles are Title Case from i18n (e.g. "Flip Board", not "Flip board").
+- Screenshot-equality checks across a button click pick up the focus ring —
+  compare DOM state (e.g. coordinate-label order for board orientation), not pixels.
+- Publishing a game from a test writes real rows to the local `games` table
+  (plus `game_tokens` for anonymous authors) — clean them up via psql afterwards.
