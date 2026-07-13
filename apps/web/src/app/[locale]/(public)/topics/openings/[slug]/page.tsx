@@ -45,6 +45,15 @@ const searchParamsCache = createSearchParamsCache({
 const TAB_VALUES = ['comments', 'repertoires'] as const;
 type OpeningTab = (typeof TAB_VALUES)[number];
 
+/**
+ * Community thoughts stays the default panel — the discussion is what an opening
+ * page has always been. Repertoires is the opt-in second panel, so an unknown
+ * `?tab=` falls back to the comments rather than 404ing.
+ */
+function parseTab(tab: string): OpeningTab {
+  return TAB_VALUES.find((value) => value === tab) ?? 'comments';
+}
+
 type Props = {
   params: Promise<{ locale: Locale; slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -83,11 +92,8 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
 
   const { page, sort, tab } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
-  // Community thoughts stays the default panel — the discussion is what an
-  // opening page has always been. Repertoires is the opt-in second panel.
-  const activeTab: OpeningTab = TAB_VALUES.includes(tab as OpeningTab)
-    ? (tab as OpeningTab)
-    : 'comments';
+  const activeTab = parseTab(tab);
+  const isRepertoiresTab = activeTab === 'repertoires';
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings.detail' });
@@ -108,12 +114,16 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
   } = await supabase.auth.getUser();
 
   const allPosts = await getOpeningPostsWithReplyMeta(slug, user?.id, sortBy);
-  const {
-    totalCount,
-    totalPages,
-    currentPage,
-    paginatedItems: posts,
-  } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
+  const { totalCount, totalPages, currentPage, paginatedItems } = paginateItems(
+    allPosts,
+    TOPIC_PAGE_SIZE,
+    page
+  );
+
+  // The comment list belongs to the comments tab; the other tab renders none of
+  // it (though its count still labels the tab). Emptying the list here is what
+  // switches off the post cards, their attachment lookups, and the pager below.
+  const posts = isRepertoiresTab ? [] : paginatedItems;
 
   // Pre-resolve each visible post's attachment slot upstream because
   // OpeningPostCard is a client component and `getAttachmentsForPosts`
@@ -130,8 +140,6 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
   const canPost = !!user && !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));
 
   const repertoireCount = await countPublicRepertoiresForOpening(slug);
-
-  const isRepertoiresTab = activeTab === 'repertoires';
 
   const newPostForm = <NewOpeningPostForm locale={locale} slug={slug} />;
 
@@ -167,32 +175,19 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
   );
 
   // The repertoires panel has no reply activity, so it offers `new` / `popular`
-  // only; the sort control sits in the same slot as the comments panel's (below
-  // the tab row, above the list), driven by the same `?sort=` param.
+  // only — the same `?sort=` param, narrowed.
   const repertoireSort: RepertoireSort = sortBy === 'popular' ? 'popular' : 'new';
 
   const repertoiresSection = (
     <section className="space-y-4">
       {tabs}
-
-      {repertoireCount > 0 ? (
-        <>
-          <SortSelect
-            basePath={`/topics/openings/${slug}`}
-            translationKey="topics.openings.sort"
-            currentSort={repertoireSort}
-            modes={['new', 'popular']}
-          />
-          <OpeningRepertoiresSection
-            locale={locale}
-            slug={slug}
-            sort={repertoireSort}
-            currentUserId={user?.id}
-          />
-        </>
-      ) : (
-        <p className="py-8 text-center text-muted-foreground">{tRepertoires('empty')}</p>
-      )}
+      <OpeningRepertoiresSection
+        locale={locale}
+        slug={slug}
+        sort={repertoireSort}
+        count={repertoireCount}
+        currentUserId={user?.id}
+      />
     </section>
   );
 
@@ -237,7 +232,7 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
         ) : undefined
       }
       communitySection={isRepertoiresTab ? repertoiresSection : communitySection}
-      hasPosts={!isRepertoiresTab && posts.length > 0}
+      hasPosts={posts.length > 0}
       postCards={posts.map((post) => {
         const att = attachments.get(post.id);
         return (
@@ -251,6 +246,8 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
         );
       })}
       pagination={
+        // The repertoires panel shows a single strip, so there is nothing to
+        // page through — one page hides the pager.
         isRepertoiresTab
           ? { currentPage: 1, totalPages: 1, buildHref }
           : { currentPage, totalPages, buildHref }
