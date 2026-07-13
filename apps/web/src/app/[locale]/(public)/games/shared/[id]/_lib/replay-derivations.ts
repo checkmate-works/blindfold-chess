@@ -87,6 +87,35 @@ export function formatMoveLabel(
 }
 
 /**
+ * One-line PGN-style rendering of the seeded setup prefix — "1. e4 e5 2. Nf3
+ * Nc6 3. Bb5", or "3... d5 4. c4 e6" when a custom FEN starts as black. The
+ * Summary's starting-position board captions itself with this so the reader
+ * sees HOW the position was reached, not just what it looks like. Null when
+ * there is no prefix (the board alone tells the story for FEN-only starts).
+ */
+export function formatSetupMovesLine(
+  moves: readonly string[],
+  setupPlies: number,
+  startingFen: string | null
+): string | null {
+  const plies = Math.min(setupPlies, moves.length);
+  if (plies <= 0) return null;
+  const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
+  const parts: string[] = [];
+  for (let ply = 0; ply < plies; ply++) {
+    const { moveNumber, isWhiteMove } = computeMoveNumber(ply, startsAsBlack, startMoveNumber);
+    if (isWhiteMove) {
+      parts.push(`${moveNumber}. ${moves[ply]}`);
+    } else if (ply === 0) {
+      parts.push(`${moveNumber}... ${moves[ply]}`);
+    } else {
+      parts.push(moves[ply]);
+    }
+  }
+  return parts.join(' ');
+}
+
+/**
  * Indices into `moves` that were played by `playerColor`, skipping the seeded
  * setup prefix (those moves have no operation log). Delegates to the
  * canonical operation-log alignment rule in play/_lib/move-ops-alignment.

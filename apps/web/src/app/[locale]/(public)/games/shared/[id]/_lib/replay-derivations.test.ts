@@ -6,6 +6,7 @@ import {
   computeInitialFlipped,
   computePlayerMoveIndices,
   formatMoveLabel,
+  formatSetupMovesLine,
 } from './replay-derivations';
 
 const MOVES = ['d4', 'd5', 'c4', 'e6'];
@@ -84,5 +85,24 @@ describe('computePlayerMoveIndices', () => {
   it('skips the seeded setup prefix', () => {
     expect(computePlayerMoveIndices(8, undefined, 'white', 4)).toEqual([4, 6]);
     expect(computePlayerMoveIndices(8, undefined, 'black', 4)).toEqual([5, 7]);
+  });
+});
+
+describe('formatSetupMovesLine', () => {
+  it('renders the prefix in PGN style with move numbers', () => {
+    expect(formatSetupMovesLine(['e4', 'e5', 'Nf3', 'Nc6', 'Bb5'], 5, null)).toBe(
+      '1. e4 e5 2. Nf3 Nc6 3. Bb5'
+    );
+    expect(formatSetupMovesLine(MOVES, 3, null)).toBe('1. d4 d5 2. c4');
+  });
+
+  it('numbers from the starting FEN, including a black-to-move start', () => {
+    const fen = 'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 3';
+    expect(formatSetupMovesLine(['d5', 'c4'], 2, fen)).toBe('3... d5 4. c4');
+  });
+
+  it('returns null for an empty prefix and clamps to the move list', () => {
+    expect(formatSetupMovesLine(MOVES, 0, null)).toBeNull();
+    expect(formatSetupMovesLine(['e4'], 3, null)).toBe('1. e4');
   });
 });

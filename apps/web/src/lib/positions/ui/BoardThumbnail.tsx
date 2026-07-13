@@ -17,6 +17,13 @@ type Props = {
    * `parseBoardAnnotations`.
    */
   annotations?: BoardAnnotations | null;
+  /**
+   * Override the default orientation (auto-flip when black is to move).
+   * Pass when the viewer has a fixed perspective — e.g. the game review's
+   * starting-position board, which always shows the player's own side at
+   * the bottom regardless of whose turn the position is.
+   */
+  flipped?: boolean;
 };
 
 type Color = 'w' | 'b';
@@ -76,9 +83,10 @@ export function BoardThumbnail({
   className = 'w-20 h-20 sm:w-24 sm:h-24',
   boardTheme = DEFAULT_BOARD_THEME,
   annotations = null,
+  flipped: flippedOverride,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
-  const flipped = isBlackToMove(fen);
+  const flipped = flippedOverride ?? isBlackToMove(fen);
 
   const ranks = parseFenPlacement(fen);
   const board = flipped ? ranks.reverse().map((rank) => [...rank].reverse()) : ranks;

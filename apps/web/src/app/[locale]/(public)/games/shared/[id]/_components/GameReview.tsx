@@ -5,7 +5,11 @@ import { type ReactNode, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { fenToLichessUrl, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import {
+  fenToLichessUrl,
+  getLastMoveDetails,
+  replayMoves,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
@@ -44,6 +48,7 @@ import {
   computeInitialFlipped,
   computePlayerMoveIndices,
   formatMoveLabel,
+  formatSetupMovesLine,
 } from '../_lib/replay-derivations';
 import { GameDiscussionFeed } from './GameDiscussionFeed';
 import { ReproduceViewBar } from './ReproduceViewBar';
@@ -230,6 +235,24 @@ export function GameReview({
     [notationMoves.length, startingFen, playerColor, effectiveSetupPlies]
   );
 
+  // The position the game actually started from — a custom FEN, a seeded
+  // opening/PGN prefix, or both. Null for a plain standard start (the common
+  // case), which keeps the Summary free of a redundant initial board.
+  const startPosition = useMemo(() => {
+    if (!startingFen && effectiveSetupPlies === 0) return null;
+    const positions = replayMoves(
+      notationMoves.slice(0, effectiveSetupPlies) as string[],
+      startingFen ?? undefined
+    );
+    return {
+      fen: positions[positions.length - 1].fen,
+      movesLine: formatSetupMovesLine(notationMoves, effectiveSetupPlies, startingFen),
+      // Where the board above should jump on click: the last seeded move, or
+      // the initial board (-2) for a FEN-only start.
+      jumpIndex: effectiveSetupPlies > 0 ? effectiveSetupPlies - 1 : -2,
+    };
+  }, [notationMoves, effectiveSetupPlies, startingFen]);
+
   // Position→ply/label/continuation math (see replay-derivations).
   const currentPly = computeCurrentPly(currentPosition, notationMoves.length);
   const { continuationSan } = computeContinuation(currentPosition, notationMoves);
@@ -266,6 +289,7 @@ export function GameReview({
         engineConfig={engineConfig}
         playSettings={playSettings ?? undefined}
         playerColor={playerColor}
+        startPosition={startPosition}
         opening={detectedOpening}
         locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
