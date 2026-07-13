@@ -9,6 +9,7 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
+import { useBoardFlip } from '@/app/[locale]/(public)/games/play/_hooks/use-board-flip';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks/use-move-navigation';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -26,6 +27,7 @@ export function PgnPreview({ pgnMoves, startingFen, color }: Props) {
   const t = useTranslations('newGame');
   const { preferences } = useGamePreferences();
   const [isBoardVisible, setIsBoardVisible] = useState(false);
+  const { effectiveFlipped, toggleFlip } = useBoardFlip({ playerSide: color });
 
   const {
     currentPosition,
@@ -87,6 +89,7 @@ export function PgnPreview({ pgnMoves, startingFen, color }: Props) {
         onClose={() => setIsBoardVisible(false)}
         fen={displayFen}
         playerSide={color}
+        flipped={effectiveFlipped}
         lastMove={preferences.highlightLastMove && currentPosition !== -2 ? lastMove : null}
         preferences={preferences}
         movesLength={pgnMoves.length}
@@ -97,6 +100,7 @@ export function PgnPreview({ pgnMoves, startingFen, color }: Props) {
         onNavigateNext={navigateNext}
         onNavigateToEnd={navigateToEnd}
         onNavigateToPosition={navigateToPosition}
+        onFlipBoard={toggleFlip}
       />
     </>
   );
