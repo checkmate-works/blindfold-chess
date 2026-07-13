@@ -4,29 +4,17 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components/Button';
+import { Button, FormErrorBanner, TextInput, Textarea } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
 import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
+import { REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { createRepertoire } from '../_actions/createRepertoire';
-import { OpeningMultiSelect } from './OpeningMultiSelect';
-
-const KNOWN_ERROR_KEYS = new Set([
-  'nameRequired',
-  'nameTooLong',
-  'invalidSide',
-  'invalidPhase',
-  'pgnRequired',
-  'pgnTooLarge',
-  'invalidPgn',
-  'signInRequired',
-  'banned',
-  'rateLimited',
-]);
+import { OpeningLinksField } from './OpeningLinksField';
 
 const PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
 
@@ -101,9 +89,10 @@ export function RepertoireImportForm({ locale, openings }: Props) {
     });
     if ('error' in result) {
       setPending(false);
-      setError(
-        KNOWN_ERROR_KEYS.has(result.error) ? t(`errors.${result.error}`) : t('errors.generic')
-      );
+      // An error the form has copy for is shown as itself; anything else (an
+      // unexpected server failure) falls back to the generic message.
+      const key = `errors.${result.error}`;
+      setError(t.has(key) ? t(key) : t('errors.generic'));
       return;
     }
     router.push(`/repertoires/${result.id}`);
@@ -115,14 +104,13 @@ export function RepertoireImportForm({ locale, openings }: Props) {
         <label htmlFor="repertoire-name" className="block text-sm font-medium text-foreground">
           {t('form.nameLabel')}
         </label>
-        <input
+        <TextInput
           id="repertoire-name"
-          type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('form.namePlaceholder')}
-          maxLength={120}
-          className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-link-primary"
+          maxLength={REPERTOIRE_NAME_MAX}
+          className="mt-1"
         />
       </div>
 
@@ -183,37 +171,26 @@ export function RepertoireImportForm({ locale, openings }: Props) {
           {t('form.pgnLabel')}
         </label>
         <p className="mt-1 text-xs text-muted-foreground">{t('form.pgnHelp')}</p>
-        <textarea
+        <Textarea
           id="repertoire-pgn"
           value={pgn}
           onChange={(e) => setPgn(e.target.value)}
           placeholder={t('form.pgnPlaceholder')}
           rows={10}
-          className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 font-mono text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-link-primary"
+          inputSize="sm"
+          className="mt-1 font-mono"
         />
       </div>
 
       {phase === 'opening' && (
-        <div>
-          <span className="block text-sm font-medium text-foreground">
-            {t('form.openingLabel')}
-          </span>
-          <p className="mt-1 text-xs text-muted-foreground">{t('form.openingHelp')}</p>
-          <div className="mt-2">
-            <OpeningMultiSelect
-              openings={openings}
-              selectedIds={openingIds}
-              onChange={changeOpeningIds}
-            />
-          </div>
-        </div>
+        <OpeningLinksField
+          openings={openings}
+          selectedIds={openingIds}
+          onChange={changeOpeningIds}
+        />
       )}
 
-      {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200">
-          {error}
-        </p>
-      )}
+      <FormErrorBanner message={error} />
 
       <div className="py-4">
         <Button

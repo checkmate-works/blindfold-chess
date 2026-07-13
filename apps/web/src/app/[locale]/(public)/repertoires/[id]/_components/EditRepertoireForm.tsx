@@ -8,11 +8,10 @@ import { Button, FormErrorBanner, TextInput } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
+import { REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
-import { OpeningMultiSelect } from '../../_components/OpeningMultiSelect';
+import { OpeningLinksField } from '../../_components/OpeningLinksField';
 import { updateRepertoire } from '../_actions/updateRepertoire';
-
-const KNOWN_ERRORS = new Set(['unauthorized', 'notFound', 'nameRequired', 'nameTooLong']);
 
 type Props = {
   locale: string;
@@ -43,7 +42,6 @@ export function EditRepertoireForm({
   canLinkOpenings,
 }: Props) {
   const t = useTranslations('Repertoires.edit');
-  const tForm = useTranslations('Repertoires.form');
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
@@ -66,7 +64,8 @@ export function EditRepertoireForm({
     });
     if (!result.ok) {
       setPending(false);
-      setError(KNOWN_ERRORS.has(result.error) ? t(`errors.${result.error}`) : t('errors.generic'));
+      const key = `errors.${result.error}`;
+      setError(t.has(key) ? t(key) : t('errors.generic'));
       return;
     }
     router.push(detailHref);
@@ -82,23 +81,13 @@ export function EditRepertoireForm({
           id="repertoire-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          maxLength={120}
+          maxLength={REPERTOIRE_NAME_MAX}
           className="mt-1 w-full"
         />
       </div>
 
       {canLinkOpenings && (
-        <div>
-          <span className="block text-sm font-medium text-foreground">{tForm('openingLabel')}</span>
-          <p className="mt-1 text-xs text-muted-foreground">{tForm('openingHelp')}</p>
-          <div className="mt-2">
-            <OpeningMultiSelect
-              openings={openings}
-              selectedIds={openingIds}
-              onChange={setOpeningIds}
-            />
-          </div>
-        </div>
+        <OpeningLinksField openings={openings} selectedIds={openingIds} onChange={setOpeningIds} />
       )}
 
       <FormErrorBanner message={error} />
