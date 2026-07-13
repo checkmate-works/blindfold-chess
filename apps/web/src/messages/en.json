@@ -57,6 +57,7 @@
       "pgnHeading": "PGN",
       "linesHeading": "Lines",
       "lineCount": "{count} lines",
+      "forThisOpening": "Repertoires for this opening",
       "lineFallback": "Line {n}",
       "openLine": "Open this line →",
       "createdBy": "Created by"

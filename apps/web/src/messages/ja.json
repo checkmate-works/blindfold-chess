@@ -57,6 +57,7 @@
       "pgnHeading": "PGN",
       "linesHeading": "ライン",
       "lineCount": "{count} ライン",
+      "forThisOpening": "このオープニングの型",
       "lineFallback": "ライン {n}",
       "openLine": "このラインを開く →",
       "createdBy": "作成者"

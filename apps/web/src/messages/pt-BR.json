@@ -57,6 +57,7 @@
       "pgnHeading": "PGN",
       "linesHeading": "Linhas",
       "lineCount": "{count} linhas",
+      "forThisOpening": "Repertórios desta abertura",
       "lineFallback": "Linha {n}",
       "openLine": "Abrir esta linha →",
       "createdBy": "Criado por"

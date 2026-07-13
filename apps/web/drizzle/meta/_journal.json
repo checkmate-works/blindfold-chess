@@ -400,6 +400,13 @@
       "when": 1783925748373,
       "tag": "20260713065548_add_shapes_to_repertoire_annotations",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1783930206425,
+      "tag": "20260713081006_repertoires_public_by_default",
+      "breakpoints": true
     }
   ]
 }

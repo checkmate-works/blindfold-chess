@@ -1,10 +1,11 @@
-import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import type { Repertoire, RepertoireLine } from '@/lib/db';
 import {
   AUTHOR_PROFILE_COLUMNS,
   chessOpenings,
   db,
+  likes,
   liveProfileJoinOn,
   profiles,
   repertoireOpenings,
@@ -68,6 +69,89 @@ async function getOpeningThumbnailFens(repertoireIds: string[]): Promise<Map<str
     if (!map.has(row.repertoireId)) map.set(row.repertoireId, row.fen);
   }
   return map;
+}
+
+/** Ordering offered on the opening page's Repertoires tab. */
+export type RepertoireSort = 'new' | 'popular';
+
+/**
+ * Public, live repertoires linked to one opening (by the master's slug) — the
+ * "who has prepared this opening" panel on the opening topic page.
+ *
+ * `popular` orders by like count (the same polymorphic `likes` rows the cards
+ * render), newest first among ties, so a repertoire nobody has liked yet still
+ * has a stable place.
+ *
+ * Filters on `status = 'public'` even though nothing writes that column today
+ * (every repertoire is public by default): the paid-plan "make private" toggle
+ * then becomes a UI change with no query to revisit — and, more importantly, a
+ * repertoire that IS private must never appear here.
+ */
+export async function listPublicRepertoiresForOpening(
+  openingSlug: string,
+  limit: number,
+  sort: RepertoireSort = 'new'
+): Promise<RepertoireWithProfile[]> {
+  const likeCount = db.$count(
+    likes,
+    and(eq(likes.targetType, 'repertoire'), eq(likes.targetId, repertoires.id))
+  );
+
+  const rows = await db
+    .select({
+      repertoire: repertoires,
+      profile: AUTHOR_PROFILE_COLUMNS,
+    })
+    .from(repertoireOpenings)
+    .innerJoin(chessOpenings, eq(chessOpenings.id, repertoireOpenings.openingId))
+    .innerJoin(repertoires, eq(repertoires.id, repertoireOpenings.repertoireId))
+    .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
+    .where(
+      and(
+        eq(chessOpenings.slug, openingSlug),
+        eq(repertoires.status, 'public'),
+        isNull(repertoires.deletedAt)
+      )
+    )
+    .orderBy(
+      ...(sort === 'popular'
+        ? [desc(likeCount), desc(repertoires.createdAt)]
+        : [desc(repertoires.createdAt)])
+    )
+    .limit(limit);
+
+  const openingFens = await getOpeningThumbnailFens(rows.map((r) => r.repertoire.id));
+
+  return rows.map((row) => ({
+    repertoire: row.repertoire,
+    profile: row.profile?.username ? row.profile : null,
+    thumbnailFen: orientFenForSide(
+      openingFens.get(row.repertoire.id) ?? row.repertoire.startingFen ?? STANDARD_FEN,
+      row.repertoire.side
+    ),
+  }));
+}
+
+/**
+ * How many public repertoires cover an opening — for the tab label, which must
+ * show the true total even though the panel itself renders only the first page
+ * of cards.
+ */
+export async function countPublicRepertoiresForOpening(openingSlug: string): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(repertoireOpenings)
+    .innerJoin(chessOpenings, eq(chessOpenings.id, repertoireOpenings.openingId))
+    .innerJoin(repertoires, eq(repertoires.id, repertoireOpenings.repertoireId))
+    .where(
+      and(
+        eq(chessOpenings.slug, openingSlug),
+        eq(repertoires.status, 'public'),
+        isNull(repertoires.deletedAt)
+      )
+    );
+
+  return row?.value ?? 0;
 }
 
 /** A user's own live (non-deleted) repertoires, newest first, with author. */

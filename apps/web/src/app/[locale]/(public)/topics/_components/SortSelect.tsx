@@ -14,6 +14,12 @@ const SORT_MODES: SortMode[] = ['new', 'popular', 'active'];
 type Props = {
   basePath: string;
   /**
+   * Which modes to offer. Defaults to all three. Narrow it when a list has no
+   * meaning for one of them — the repertoires panel has no reply activity to
+   * sort by, so it offers `new` / `popular` only.
+   */
+  modes?: SortMode[];
+  /**
    * Translation namespace owning `{ new, popular, active }` option labels —
    * each topic family (openings/squares/chunks) has its own copy under
    * `topics.<family>.sort` for now.
@@ -34,7 +40,7 @@ type Props = {
  * page that also tabs via `?tab=` (e.g. the chunk detail page) stays on the
  * comments tab when the sort changes.
  */
-export function SortSelect({ basePath, translationKey, currentSort }: Props) {
+export function SortSelect({ basePath, translationKey, currentSort, modes = SORT_MODES }: Props) {
   const t = useTranslations(translationKey);
   const tTopics = useTranslations('topics');
   const router = useRouter();
@@ -67,7 +73,7 @@ export function SortSelect({ basePath, translationKey, currentSort }: Props) {
         onChange={handleChange}
         className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring"
       >
-        {SORT_MODES.map((mode) => (
+        {modes.map((mode) => (
           <option key={mode} value={mode}>
             {t(mode)}
           </option>

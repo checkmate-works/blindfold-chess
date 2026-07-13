@@ -75,10 +75,18 @@ export const repertoires = pgTable(
     description: text('description'),
     /** Denormalised root for the card thumbnail. NULL = standard start. */
     startingFen: varchar('starting_fen', { length: 100 }),
+    /**
+     * Visibility. Public by default: a repertoire is catalogue content — it is
+     * surfaced on the opening topic pages it is linked to, and viewable by
+     * anyone with the URL regardless. Flipping one back to `private` is planned
+     * as a paid-plan affordance; until that ships nothing writes this column,
+     * so every repertoire is public and the read paths still filter on it
+     * (making the later toggle a UI change, not a query change).
+     */
     status: varchar('status', { length: 20 })
       .$type<'private' | 'public'>()
       .notNull()
-      .default('private'),
+      .default('public'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
