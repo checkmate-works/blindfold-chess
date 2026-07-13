@@ -2116,6 +2116,7 @@
       "columnInvalid": "誤入力",
       "initialSettings": {
         "title": "初期設定",
+        "startingPosition": "開始局面",
         "notRecorded": "このゲームでは初期設定が記録されていません。",
         "on": "オン",
         "off": "オフ",

@@ -106,6 +106,7 @@ export function PlayClient({
     playerSide,
     engineConfig,
     startingFen,
+    setupPlies,
     perGamePrefs,
     initialPerGamePrefs,
     preferenceChangeLog,
@@ -455,7 +456,7 @@ export function PlayClient({
                 onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
                 onNewGameFromPosition: handleNewGameFromPosition,
               }}
-              operations={{ logs: operationLogs, playerSide }}
+              operations={{ logs: operationLogs, playerSide, setupPlies }}
               showBackground={false}
             />
           )}

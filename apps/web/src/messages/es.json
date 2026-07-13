@@ -2112,6 +2112,7 @@
       "columnInvalid": "Ilegal",
       "initialSettings": {
         "title": "Configuración inicial",
+        "startingPosition": "Posición inicial",
         "notRecorded": "La configuración inicial no fue registrada para esta partida.",
         "on": "Activado",
         "off": "Desactivado",

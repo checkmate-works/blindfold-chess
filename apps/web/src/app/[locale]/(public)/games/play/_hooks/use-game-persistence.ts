@@ -14,6 +14,7 @@ import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
 type SavedGameData = {
   moves: AlgebraicNotation[];
   startingFen?: string;
+  setupPlies?: number;
   lastMove: { from: string; to: string } | null;
   gameStatus: GameStatus;
   playerResult: 'win' | 'loss' | 'draw' | null;
@@ -115,6 +116,7 @@ export function useGamePersistence({
           setLoadedGameData({
             moves,
             startingFen,
+            setupPlies: savedGame.setupPlies,
             lastMove,
             gameStatus,
             playerResult,

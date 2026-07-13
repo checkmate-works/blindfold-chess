@@ -2116,6 +2116,7 @@
       "columnInvalid": "Illegal",
       "initialSettings": {
         "title": "Initial Settings",
+        "startingPosition": "Starting position",
         "notRecorded": "Initial settings were not recorded for this game.",
         "on": "On",
         "off": "Off",

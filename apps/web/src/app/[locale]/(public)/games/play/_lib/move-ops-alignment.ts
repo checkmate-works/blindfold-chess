@@ -26,14 +26,19 @@ export function hasOps(log: MoveOperationLog): boolean {
 /**
  * Indices into `moves[]` that the player played: `logs[i]` aligns with
  * `getPlayerMoveIndices(...)[i]`.
+ *
+ * `setupPlies` is the seeded prefix length ({@link Game.setupPlies}): those
+ * leading moves were pre-played at setup, so no log entry exists for them
+ * even when they are the player's colour — alignment starts after them.
  */
 export function getPlayerMoveIndices(
   movesLength: number,
   startingFen: string | undefined,
-  playerSide: Side
+  playerSide: Side,
+  setupPlies = 0
 ): number[] {
   const result: number[] = [];
-  for (let i = 0; i < movesLength; i++) {
+  for (let i = Math.max(0, setupPlies); i < movesLength; i++) {
     if (getMovingSide(i, startingFen) === playerSide) result.push(i);
   }
   return result;

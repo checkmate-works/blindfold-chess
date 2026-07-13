@@ -91,6 +91,7 @@ export function PublishGameClient({ locale }: Props) {
         description: description.trim() || null,
         moves: game.moves,
         startingFen: game.startingFen ?? null,
+        setupPlies: game.setupPlies ?? null,
         playerColor: game.playerColor,
         engineConfig: game.engineConfig,
         result,

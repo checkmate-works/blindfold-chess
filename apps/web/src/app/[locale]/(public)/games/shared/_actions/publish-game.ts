@@ -18,6 +18,8 @@ export type PublishGameActionInput = {
   description?: string | null;
   moves: string[];
   startingFen?: string | null;
+  /** Seeded setup-prefix length; validated to [1, moves.length] on the server. */
+  setupPlies?: number | null;
   playerColor: 'white' | 'black';
   engineConfig: EngineConfig;
   result: 'win' | 'loss' | 'draw';

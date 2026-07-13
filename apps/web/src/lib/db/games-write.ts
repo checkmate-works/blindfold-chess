@@ -48,6 +48,7 @@ export async function publishGame(params: {
         description: game.description,
         moves: game.moves,
         startingFen: game.startingFen,
+        setupPlies: game.setupPlies,
         playerColor: game.playerColor,
         engineConfig: game.engineConfig,
         operationLogs: game.operationLogs,

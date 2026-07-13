@@ -1,11 +1,15 @@
 'use client';
 
-import { type ReactNode, useCallback, useMemo } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { fenToLichessUrl, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import {
+  fenToLichessUrl,
+  getLastMoveDetails,
+  replayMoves,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
@@ -44,6 +48,7 @@ import {
   computeInitialFlipped,
   computePlayerMoveIndices,
   formatMoveLabel,
+  formatSetupMovesLine,
 } from '../_lib/replay-derivations';
 import { GameDiscussionFeed } from './GameDiscussionFeed';
 import { ReproduceViewBar } from './ReproduceViewBar';
@@ -55,6 +60,13 @@ export type { ReplaySocial } from '../_lib/normalize-replay-social';
 type Props = {
   moves: string[];
   startingFen: string | null;
+  /**
+   * Seeded setup-prefix length ({@link Game.setupPlies}): leading moves that
+   * were pre-played at setup (opening line / pasted PGN), so they have no
+   * operation-log entry. Aligns the ops icons and the By Move strip, and
+   * drives the Summary's starting-position board. Null/absent = no prefix.
+   */
+  setupPlies?: number | null;
   playerColor: 'white' | 'black';
   /** Opening detected from the moves (server-side); shown above the stats block. */
   detectedOpening: DetectedOpening | null;
@@ -105,6 +117,7 @@ type Props = {
 export function GameReview({
   moves,
   startingFen,
+  setupPlies,
   playerColor,
   detectedOpening,
   engineConfig,
@@ -208,10 +221,37 @@ export function GameReview({
   // Same game-statistics overview as the result screen, derived from the
   // per-move operation logs. The effort strip jumps the inline board.
   const stats = useMemo(() => computeGameStats(operationLogs ?? []), [operationLogs]);
+  // Clamp against the move list: a stale record could carry a prefix longer
+  // than the moves it describes (e.g. saved before an undo landed).
+  const effectiveSetupPlies = Math.min(setupPlies ?? 0, notationMoves.length);
   const playerMoveIndices = useMemo(
-    () => computePlayerMoveIndices(notationMoves.length, startingFen ?? undefined, playerColor),
-    [notationMoves.length, startingFen, playerColor]
+    () =>
+      computePlayerMoveIndices(
+        notationMoves.length,
+        startingFen ?? undefined,
+        playerColor,
+        effectiveSetupPlies
+      ),
+    [notationMoves.length, startingFen, playerColor, effectiveSetupPlies]
   );
+
+  // The position the game actually started from — a custom FEN, a seeded
+  // opening/PGN prefix, or both. Null for a plain standard start (the common
+  // case), which keeps the Summary free of a redundant initial board.
+  const startPosition = useMemo(() => {
+    if (!startingFen && effectiveSetupPlies === 0) return null;
+    const positions = replayMoves(
+      notationMoves.slice(0, effectiveSetupPlies) as string[],
+      startingFen ?? undefined
+    );
+    return {
+      fen: positions[positions.length - 1].fen,
+      movesLine: formatSetupMovesLine(notationMoves, effectiveSetupPlies, startingFen),
+      // Where the board above should jump on click: the last seeded move, or
+      // the initial board (-2) for a FEN-only start.
+      jumpIndex: effectiveSetupPlies > 0 ? effectiveSetupPlies - 1 : -2,
+    };
+  }, [notationMoves, effectiveSetupPlies, startingFen]);
 
   // Position→ply/label/continuation math (see replay-derivations).
   const currentPly = computeCurrentPly(currentPosition, notationMoves.length);
@@ -233,6 +273,12 @@ export function GameReview({
     comments,
     isInitialPosition,
     currentPosition,
+    // The result screen opens showing where play actually started (the setup
+    // position of a seeded/custom-FEN game). The shared page keeps the
+    // overview board: any move position there swaps the overview for that
+    // move's comment thread, which must not happen on plain load.
+    fallbackPosition:
+      social.mode === 'local' && startPosition ? startPosition.jumpIndex : undefined,
   });
 
   // The opening-board stats overview (engine + By Move + change log). Anonymous
@@ -249,6 +295,7 @@ export function GameReview({
         engineConfig={engineConfig}
         playSettings={playSettings ?? undefined}
         playerColor={playerColor}
+        startPosition={startPosition}
         opening={detectedOpening}
         locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
@@ -289,6 +336,43 @@ export function GameReview({
     if (social.mode === 'local') setOverviewView('discussion');
   }, [commitQuickPeek, social.mode, setOverviewView]);
 
+  // Local mode: user navigation (the arrows under the board, move-list
+  // clicks) onto a move position also routes the viewer to the Discussion
+  // tab — same rationale as handleCommitPosition above. The ref gates the
+  // switch to real interactions: the programmatic initial landing (deep link
+  // / setup position) must leave the Summary visible.
+  const pendingUserNavRef = useRef(false);
+  const withDiscussionReveal = useCallback(
+    <A extends unknown[]>(navigate: (...args: A) => void) =>
+      (...args: A) => {
+        pendingUserNavRef.current = true;
+        navigate(...args);
+      },
+    []
+  );
+  useEffect(() => {
+    if (!pendingUserNavRef.current) return;
+    pendingUserNavRef.current = false;
+    if (social.mode === 'local' && currentPosition !== -2) setOverviewView('discussion');
+  }, [currentPosition, social.mode, setOverviewView]);
+  const userNav = useMemo(
+    () => ({
+      toStart: withDiscussionReveal(navigateToStart),
+      previous: withDiscussionReveal(navigatePrevious),
+      next: withDiscussionReveal(navigateNext),
+      toEnd: withDiscussionReveal(navigateToEnd),
+      toPosition: withDiscussionReveal(navigateToPosition),
+    }),
+    [
+      withDiscussionReveal,
+      navigateToStart,
+      navigatePrevious,
+      navigateNext,
+      navigateToEnd,
+      navigateToPosition,
+    ]
+  );
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -302,11 +386,11 @@ export function GameReview({
             movesLength={notationMoves.length}
             currentPosition={currentPosition}
             formattedPgn={formattedPgn}
-            onNavigateToStart={navigateToStart}
-            onNavigatePrevious={navigatePrevious}
-            onNavigateNext={navigateNext}
-            onNavigateToEnd={navigateToEnd}
-            onNavigateToPosition={navigateToPosition}
+            onNavigateToStart={userNav.toStart}
+            onNavigatePrevious={userNav.previous}
+            onNavigateNext={userNav.next}
+            onNavigateToEnd={userNav.toEnd}
+            onNavigateToPosition={userNav.toPosition}
             onFlipBoard={toggleFlip}
             hiddenPieceStyle={hiddenPieceStyle}
             alwaysOpen
@@ -333,11 +417,11 @@ export function GameReview({
               startingFen: startingFen ?? undefined,
             }}
             navigation={{
-              onNavigateToPosition: navigateToPosition,
-              onNavigateToStart: navigateToStart,
-              onNavigatePrevious: navigatePrevious,
-              onNavigateNext: navigateNext,
-              onNavigateToEnd: navigateToEnd,
+              onNavigateToPosition: userNav.toPosition,
+              onNavigateToStart: userNav.toStart,
+              onNavigatePrevious: userNav.previous,
+              onNavigateNext: userNav.next,
+              onNavigateToEnd: userNav.toEnd,
             }}
             actions={{
               // Read-only view: the game is finished and not the viewer's, so
@@ -358,7 +442,11 @@ export function GameReview({
                   })
                 ),
             }}
-            operations={{ logs: operationLogs ?? [], playerSide: playerColor }}
+            operations={{
+              logs: operationLogs ?? [],
+              playerSide: playerColor,
+              setupPlies: effectiveSetupPlies,
+            }}
             showBackground={false}
           />
         </div>

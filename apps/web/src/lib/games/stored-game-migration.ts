@@ -73,11 +73,23 @@ export function normaliseStoredGame(stored: StoredGame): Game {
     migrateChangeLogEntry(entry as unknown as Record<string, unknown>)
   );
 
+  // Untrusted on-disk value: keep only a usable seeded-prefix length. A value
+  // longer than the move list is clamped rather than dropped — that state is
+  // real (an undo into the prefix ratchets the session's setupPlies, but the
+  // ratchet alone doesn't trigger a save, so the previous save may still
+  // carry the longer prefix) and the clamp IS the ratcheted value. Anything
+  // non-integer or non-positive is corrupt and degrades to "no prefix".
+  const setupPlies =
+    typeof rest.setupPlies === 'number' && Number.isInteger(rest.setupPlies) && rest.setupPlies > 0
+      ? Math.min(rest.setupPlies, rest.moves.length)
+      : undefined;
+
   return {
     ...rest,
     engineConfig,
     gamePreferences,
     preferenceChangeLog,
+    setupPlies,
     // If lastPlayed doesn't exist, use date as fallback.
     lastPlayed: rest.lastPlayed || rest.date,
   };

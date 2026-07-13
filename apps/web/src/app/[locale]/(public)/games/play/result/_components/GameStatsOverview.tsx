@@ -16,6 +16,7 @@ import type {
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
+import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
 import { PlaySettingsIndicator } from '@/app/[locale]/(public)/games/shared/[id]/_components/PlaySettingsIndicator';
 import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
@@ -40,8 +41,17 @@ type Props = {
   operationLogs?: MoveOperationLog[];
   /** SAN per moves[] index, for the per-move cell tooltips. */
   moves: string[];
-  /** Jump to a finished-game position (moves[] index). */
+  /** Jump to a finished-game position (moves[] index, or -2 for the initial board). */
   onSelectMove: (movesIndex: number) => void;
+  /**
+   * The position the game actually started from — a custom FEN, a seeded
+   * opening/PGN prefix, or both — rendered as a small board inside Initial
+   * Settings, so the "this game didn't start from move one" fact survives
+   * into the summary. `movesLine` captions how the position was reached
+   * (null for FEN-only starts); clicking the board jumps the review to
+   * `jumpIndex` via {@link onSelectMove}. Null/omitted for standard starts.
+   */
+  startPosition?: { fen: string; movesLine: string | null; jumpIndex: number } | null;
   /**
    * Open the Game Details modal (engine / settings / change log). Optional —
    * surfaces a "view details" button only when provided. Omitted on the shared
@@ -124,6 +134,7 @@ export function GameStatsOverview({
   engineConfig,
   playSettings,
   playerColor,
+  startPosition,
   opening,
   locale,
   playSettingsLog,
@@ -172,7 +183,7 @@ export function GameStatsOverview({
           engine / colour rows aren't left heading-less. On the shared replay the
           under-board position-aware indicator complements (not duplicates) this
           static start-of-game snapshot. */}
-      {(engineConfig || (playSettings && playerColor)) && (
+      {(engineConfig || (playSettings && playerColor) || startPosition) && (
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-foreground">
             {t('operationLog.initialSettings.title')}
@@ -217,6 +228,34 @@ export function GameStatsOverview({
                 playerColor={playerColor}
                 label={null}
               />
+            )}
+            {/* The position the game started from — only for games that did
+                not start at move one (custom FEN / seeded opening or PGN).
+                Clicking jumps the review to that position. Shown from the
+                player's perspective, like the board above. */}
+            {startPosition && (
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  {t('operationLog.initialSettings.startingPosition')}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onSelectMove(startPosition.jumpIndex)}
+                  className="block rounded-sm hover:opacity-80 transition-opacity"
+                  title={t('operationLog.initialSettings.startingPosition')}
+                >
+                  <BoardThumbnail
+                    fen={startPosition.fen}
+                    flipped={playerColor === 'black'}
+                    className="w-28 h-28 sm:w-32 sm:h-32"
+                  />
+                </button>
+                {startPosition.movesLine && (
+                  <p className="max-w-xs text-xs text-muted-foreground">
+                    {startPosition.movesLine}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>

@@ -20,6 +20,7 @@ export function useGameActions({
   moves,
   playerSide,
   startingFen,
+  setupPlies,
   engineConfig,
   markPlayerInteraction,
   setGameStatus,
@@ -36,6 +37,8 @@ export function useGameActions({
   moves: AlgebraicNotation[];
   playerSide: 'white' | 'black';
   startingFen: string | undefined;
+  /** Seeded setup-prefix length — pre-played moves have no operation log. */
+  setupPlies: number | undefined;
   engineConfig: EngineConfig;
   markPlayerInteraction: () => void;
   setGameStatus: (status: 'checkmate') => void;
@@ -87,7 +90,8 @@ export function useGameActions({
       updateLastMove(newMoves);
 
       // Truncate operation logs to match the number of player moves remaining.
-      truncateLogs(countPlayerMoves(position, playerSide, startingFen));
+      // Seeded setup moves have no log entry, so they are excluded from the count.
+      truncateLogs(countPlayerMoves(position, playerSide, startingFen, setupPlies ?? 0));
     },
     [
       markPlayerInteraction,
@@ -97,6 +101,7 @@ export function useGameActions({
       updateLastMove,
       playerSide,
       startingFen,
+      setupPlies,
       truncateLogs,
     ]
   );

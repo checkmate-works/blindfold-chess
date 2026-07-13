@@ -40,6 +40,8 @@ export type ValidatedGame = {
   description: string | null;
   moves: string[];
   startingFen: string | null;
+  /** Seeded setup-prefix length ({@link Game.setupPlies}); null = no prefix. */
+  setupPlies: number | null;
   playerColor: PlayerColor;
   engineConfig: EngineConfig;
   result: GameOutcome;
@@ -159,6 +161,20 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
     return { ok: false, error: 'illegal_moves' };
   }
 
+  // Seeded setup-prefix length. Display-only metadata (drives the replay's
+  // starting-position board + ops alignment), so a malformed or out-of-range
+  // value is dropped to null — the game still publishes, just without the
+  // prefix info — matching the playSettings posture. 0 is stored as null.
+  let setupPlies: number | null = null;
+  if (
+    typeof v.setupPlies === 'number' &&
+    Number.isInteger(v.setupPlies) &&
+    v.setupPlies > 0 &&
+    v.setupPlies <= moves.length
+  ) {
+    setupPlies = v.setupPlies;
+  }
+
   // operationLogs are self-reported aid counts; accept an array no longer than
   // the move list, else drop to null rather than rejecting (display tolerates
   // missing logs). computeGameStats reads fields defensively. The numeric
@@ -185,6 +201,7 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       description,
       moves,
       startingFen,
+      setupPlies,
       playerColor: v.playerColor as PlayerColor,
       engineConfig: v.engineConfig,
       result: v.result as GameOutcome,
