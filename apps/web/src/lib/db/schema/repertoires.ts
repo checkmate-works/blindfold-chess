@@ -32,12 +32,11 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { uuidv7 } from '@/lib/uuidv7';
 
 import { chessOpenings } from './openings';
-
-const EMPTY_BOARD_ANNOTATIONS_DEFAULT: BoardAnnotations = { arrows: [], circles: [] };
 
 /**
  * Repertoires — a user-owned course (型 / Kata). The unit shown on the /repertoires
@@ -327,10 +326,7 @@ export const repertoireAnnotations = pgTable(
      * for the same reason (no independent identity, edit replaces the whole
      * object). See `apps/web/src/lib/board-annotations/types.ts`.
      */
-    shapes: jsonb('shapes')
-      .$type<BoardAnnotations>()
-      .notNull()
-      .default(EMPTY_BOARD_ANNOTATIONS_DEFAULT),
+    shapes: jsonb('shapes').$type<BoardAnnotations>().notNull().default(EMPTY_BOARD_ANNOTATIONS),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .defaultNow()

@@ -1,7 +1,7 @@
 import type { Square } from '@blindfold-chess/types';
 
 import type { AnnotationColor, Arrow, BoardAnnotations, Circle } from './types';
-import { ANNOTATION_COLORS, EMPTY_BOARD_ANNOTATIONS } from './types';
+import { ANNOTATION_COLORS, EMPTY_BOARD_ANNOTATIONS, isEmptyBoardAnnotations } from './types';
 
 const SQUARE_PATTERN = /^[a-h][1-8]$/;
 
@@ -56,6 +56,6 @@ export function parseBoardAnnotations(input: unknown): BoardAnnotations {
     ? (circlesRaw.map(parseCircle).filter((c): c is Circle => c !== null) as Circle[])
     : [];
 
-  if (arrows.length === 0 && circles.length === 0) return EMPTY_BOARD_ANNOTATIONS;
-  return { arrows, circles };
+  const parsed = { arrows, circles };
+  return isEmptyBoardAnnotations(parsed) ? EMPTY_BOARD_ANNOTATIONS : parsed;
 }
