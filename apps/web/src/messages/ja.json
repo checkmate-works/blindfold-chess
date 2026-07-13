@@ -23,6 +23,7 @@
       "phase_opening": "オープニング",
       "phase_middlegame": "ミドルゲーム",
       "phase_endgame": "エンドゲーム",
+      "phaseComingSoon": "近日対応",
       "openingLabel": "紐づくオープニング",
       "openingHelp": "この型を具体的なオープニングに紐づけられます（任意・転置で複数該当することも）。",
       "pgnLabel": "PGN",
@@ -34,6 +35,22 @@
     "new": {
       "title": "型をインポート",
       "sectionTitle": "型の詳細"
+    },
+    "edit": {
+      "editAction": "編集",
+      "title": "型を編集",
+      "breadcrumb": "編集",
+      "nameLabel": "名前",
+      "save": "保存",
+      "saving": "保存中...",
+      "cancel": "キャンセル",
+      "errors": {
+        "unauthorized": "この型を編集できるのは作成者だけです。",
+        "notFound": "この型は存在しません。",
+        "nameRequired": "名前を入力してください。",
+        "nameTooLong": "名前が長すぎます。",
+        "generic": "エラーが発生しました。もう一度お試しください。"
+      }
     },
     "detail": {
       "title": "型",

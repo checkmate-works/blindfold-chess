@@ -30,6 +30,16 @@ const KNOWN_ERROR_KEYS = new Set([
 
 const PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
 
+/**
+ * Only `opening` can be authored today: a middlegame or endgame repertoire is
+ * meaningless without a custom starting position, and this form has no way to
+ * set one (the PGN is assumed to start from the standard position). The other
+ * two phases stay visible — the schema and the browse pages already support
+ * them — but are locked behind a "coming soon" affordance until a starting-
+ * position picker exists. Unlock by removing the disabled/overlay branch here.
+ */
+const AUTHORABLE_PHASES: readonly RepertoirePhase[] = ['opening'];
+
 type Props = { locale: string; openings: OpeningOption[] };
 
 /**
@@ -139,18 +149,32 @@ export function RepertoireImportForm({ locale, openings }: Props) {
           {t('form.phaseLabel')}
         </legend>
         <div className="mt-2 flex flex-wrap gap-4">
-          {PHASES.map((value) => (
-            <label key={value} className="flex items-center gap-2 text-sm text-foreground">
-              <input
-                type="radio"
-                name="phase"
-                value={value}
-                checked={phase === value}
-                onChange={() => changePhase(value)}
-              />
-              {t(`form.phase_${value}`)}
-            </label>
-          ))}
+          {PHASES.map((value) => {
+            const locked = !AUTHORABLE_PHASES.includes(value);
+            return (
+              <label
+                key={value}
+                className={`flex items-center gap-2 text-sm ${
+                  locked ? 'cursor-not-allowed text-muted-foreground' : 'text-foreground'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="phase"
+                  value={value}
+                  checked={phase === value}
+                  disabled={locked}
+                  onChange={() => changePhase(value)}
+                />
+                {t(`form.phase_${value}`)}
+                {locked && (
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                    {t('form.phaseComingSoon')}
+                  </span>
+                )}
+              </label>
+            );
+          })}
         </div>
       </fieldset>
 

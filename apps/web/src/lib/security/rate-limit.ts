@@ -143,6 +143,7 @@ export const RATE_LIMITS = {
   createRepertoire: { action: 'create_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   deleteRepertoire: { action: 'delete_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   updateRepertoireLine: { action: 'update_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
+  updateRepertoire: { action: 'update_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   saveRepertoireAnnotation: {
     action: 'save_repertoire_annotation',
     maxAttempts: 30,

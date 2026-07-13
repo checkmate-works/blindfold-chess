@@ -23,6 +23,7 @@
       "phase_opening": "Abertura",
       "phase_middlegame": "Meio-jogo",
       "phase_endgame": "Final",
+      "phaseComingSoon": "Em breve",
       "openingLabel": "Aberturas vinculadas",
       "openingHelp": "Vincule opcionalmente este repertório a aberturas específicas (uma linha com transposições pode corresponder a várias).",
       "pgnLabel": "PGN",
@@ -34,6 +35,22 @@
     "new": {
       "title": "Importar uma linha",
       "sectionTitle": "Detalhes da linha"
+    },
+    "edit": {
+      "editAction": "Editar",
+      "title": "Editar repertório",
+      "breadcrumb": "Editar",
+      "nameLabel": "Nome",
+      "save": "Salvar",
+      "saving": "Salvando...",
+      "cancel": "Cancelar",
+      "errors": {
+        "unauthorized": "Somente o autor pode editar este repertório.",
+        "notFound": "Este repertório não existe mais.",
+        "nameRequired": "Digite um nome.",
+        "nameTooLong": "Esse nome é muito longo.",
+        "generic": "Algo deu errado. Tente novamente."
+      }
     },
     "detail": {
       "title": "Repertório",

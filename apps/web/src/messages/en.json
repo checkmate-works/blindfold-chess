@@ -23,6 +23,7 @@
       "phase_opening": "Opening",
       "phase_middlegame": "Middlegame",
       "phase_endgame": "Endgame",
+      "phaseComingSoon": "Coming soon",
       "openingLabel": "Linked openings",
       "openingHelp": "Optionally link this repertoire to specific openings (a transposing line may match several).",
       "pgnLabel": "PGN",
@@ -34,6 +35,22 @@
     "new": {
       "title": "Import a line",
       "sectionTitle": "Line details"
+    },
+    "edit": {
+      "editAction": "Edit",
+      "title": "Edit repertoire",
+      "breadcrumb": "Edit",
+      "nameLabel": "Name",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "errors": {
+        "unauthorized": "Only the owner can edit this repertoire.",
+        "notFound": "This repertoire no longer exists.",
+        "nameRequired": "Please enter a name.",
+        "nameTooLong": "That name is too long.",
+        "generic": "Something went wrong. Please try again."
+      }
     },
     "detail": {
       "title": "Repertoire",

@@ -7,7 +7,11 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
 import type { RepertoireImportInput, RepertoireLineEditError } from './validation';
-import { validateRepertoireImport, validateRepertoireLineEdit } from './validation';
+import {
+  REPERTOIRE_NAME_MAX,
+  validateRepertoireImport,
+  validateRepertoireLineEdit,
+} from './validation';
 
 export type CreateRepertoireResult = ActionResult<{ id: string }>;
 export type DeleteRepertoireResult = ActionResult;
@@ -58,6 +62,69 @@ export async function updateRepertoireLine(params: {
     .where(eq(repertoireLines.id, line.id));
 
   return { ok: true };
+}
+
+export type UpdateRepertoireResult =
+  | { ok: true; name: string }
+  | { ok: false; error: 'unauthorized' | 'notFound' | 'nameRequired' | 'nameTooLong' };
+
+/**
+ * Owner-only: update a repertoire's title and its opening links.
+ *
+ * Deliberately narrower than the import form — side / phase / PGN are
+ * structural (the lines, and every position-keyed annotation hanging off them,
+ * derive from the PGN), so changing those is a re-import, not an edit. The
+ * title and the opening links are pure metadata: the links are a plain n:n set,
+ * so an edit replaces them wholesale, and only for an `opening`-phase
+ * repertoire (the picker is hidden otherwise, and the import path drops the ids
+ * for the same reason).
+ */
+export async function updateRepertoireDetails(params: {
+  repertoireId: string;
+  viewerId: string;
+  name: string;
+  openingIds: string[];
+}): Promise<UpdateRepertoireResult> {
+  const name = params.name.trim();
+  if (!name) return { ok: false, error: 'nameRequired' };
+  if (name.length > REPERTOIRE_NAME_MAX) return { ok: false, error: 'nameTooLong' };
+
+  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
+  if (ownerError) return { ok: false, error: ownerError };
+
+  const [row] = await db
+    .select({ phase: repertoires.phase })
+    .from(repertoires)
+    .where(eq(repertoires.id, params.repertoireId))
+    .limit(1);
+  if (!row) return { ok: false, error: 'notFound' };
+
+  const requestedOpeningIds =
+    row.phase === 'opening' && params.openingIds.length > 0 ? [...new Set(params.openingIds)] : [];
+
+  await db.transaction(async (tx) => {
+    await tx.update(repertoires).set({ name }).where(eq(repertoires.id, params.repertoireId));
+
+    await tx
+      .delete(repertoireOpenings)
+      .where(eq(repertoireOpenings.repertoireId, params.repertoireId));
+
+    if (requestedOpeningIds.length > 0) {
+      // Re-check the ids against the master so a stale / forged id can't trip
+      // the FK — same guard the import path applies.
+      const valid = await tx
+        .select({ id: chessOpenings.id })
+        .from(chessOpenings)
+        .where(inArray(chessOpenings.id, requestedOpeningIds));
+      if (valid.length > 0) {
+        await tx
+          .insert(repertoireOpenings)
+          .values(valid.map((o) => ({ repertoireId: params.repertoireId, openingId: o.id })));
+      }
+    }
+  });
+
+  return { ok: true, name };
 }
 
 /**
