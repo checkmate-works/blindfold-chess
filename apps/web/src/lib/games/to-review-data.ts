@@ -27,6 +27,8 @@ import type {
 export type GameReviewData = {
   moves: string[];
   startingFen: string | null;
+  /** Seeded setup-prefix length ({@link Game.setupPlies}); null = no prefix. */
+  setupPlies: number | null;
   playerColor: Side;
   engineConfig: EngineConfig;
   operationLogs: MoveOperationLog[] | null;
@@ -95,6 +97,7 @@ export function toReviewData(game: Game): GameReviewData {
   return {
     moves: game.moves,
     startingFen: game.startingFen ?? null,
+    setupPlies: game.setupPlies ?? null,
     playerColor: game.playerColor,
     engineConfig: game.engineConfig,
     operationLogs: game.operationLogs ?? null,

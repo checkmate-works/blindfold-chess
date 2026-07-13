@@ -72,6 +72,11 @@ type MovesPanelActionsProps = {
 type MovesPanelOperationsProps = {
   logs: MoveOperationLog[];
   playerSide: Side;
+  /**
+   * Seeded setup-prefix length ({@link Game.setupPlies}): pre-played moves
+   * have no log entry, so alignment skips them. Undefined = no prefix.
+   */
+  setupPlies?: number;
 };
 
 type Props = {
@@ -125,7 +130,15 @@ export function MovesPanel({
   // Recomputed when moves or playerSide change; empty when no operations are
   // wired in.
   const playerMoveIndices = useMemo<number[]>(
-    () => (operations ? getPlayerMoveIndices(movesLength, startingFen, operations.playerSide) : []),
+    () =>
+      operations
+        ? getPlayerMoveIndices(
+            movesLength,
+            startingFen,
+            operations.playerSide,
+            operations.setupPlies ?? 0
+          )
+        : [],
     [operations, movesLength, startingFen]
   );
 

@@ -30,14 +30,19 @@ export function getMovingSide(moveIndex: number, startingFen?: string | null): '
 /**
  * Count how many moves belong to a given side up to (and including) `upToIndex`.
  * Useful for mapping moves array indices to operation log indices.
+ *
+ * `fromIndex` skips a seeded setup prefix ({@link Game.setupPlies}): those
+ * moves were pre-played at setup and have no operation-log entry, so callers
+ * mapping to log indices must not count them.
  */
 export function countPlayerMoves(
   upToIndex: number,
   playerSide: 'white' | 'black',
-  startingFen?: string | null
+  startingFen?: string | null,
+  fromIndex = 0
 ): number {
   let count = 0;
-  for (let i = 0; i <= upToIndex; i++) {
+  for (let i = Math.max(0, fromIndex); i <= upToIndex; i++) {
     if (getMovingSide(i, startingFen) === playerSide) count++;
   }
   return count;

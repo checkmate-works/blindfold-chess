@@ -276,6 +276,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       moves,
       playerSide,
       startingFen,
+      setupPlies,
       engineConfig,
       markPlayerInteraction,
       setGameStatus,

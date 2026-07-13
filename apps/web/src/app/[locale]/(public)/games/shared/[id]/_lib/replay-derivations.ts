@@ -87,13 +87,15 @@ export function formatMoveLabel(
 }
 
 /**
- * Indices into `moves` that were played by `playerColor`. Delegates to the
+ * Indices into `moves` that were played by `playerColor`, skipping the seeded
+ * setup prefix (those moves have no operation log). Delegates to the
  * canonical operation-log alignment rule in play/_lib/move-ops-alignment.
  */
 export function computePlayerMoveIndices(
   movesLength: number,
   startingFen: string | undefined,
-  playerColor: 'white' | 'black'
+  playerColor: 'white' | 'black',
+  setupPlies = 0
 ): number[] {
-  return getPlayerMoveIndices(movesLength, startingFen, playerColor);
+  return getPlayerMoveIndices(movesLength, startingFen, playerColor, setupPlies);
 }

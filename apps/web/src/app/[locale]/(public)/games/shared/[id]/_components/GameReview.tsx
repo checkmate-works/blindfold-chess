@@ -55,6 +55,13 @@ export type { ReplaySocial } from '../_lib/normalize-replay-social';
 type Props = {
   moves: string[];
   startingFen: string | null;
+  /**
+   * Seeded setup-prefix length ({@link Game.setupPlies}): leading moves that
+   * were pre-played at setup (opening line / pasted PGN), so they have no
+   * operation-log entry. Aligns the ops icons and the By Move strip, and
+   * drives the Summary's starting-position board. Null/absent = no prefix.
+   */
+  setupPlies?: number | null;
   playerColor: 'white' | 'black';
   /** Opening detected from the moves (server-side); shown above the stats block. */
   detectedOpening: DetectedOpening | null;
@@ -105,6 +112,7 @@ type Props = {
 export function GameReview({
   moves,
   startingFen,
+  setupPlies,
   playerColor,
   detectedOpening,
   engineConfig,
@@ -208,9 +216,18 @@ export function GameReview({
   // Same game-statistics overview as the result screen, derived from the
   // per-move operation logs. The effort strip jumps the inline board.
   const stats = useMemo(() => computeGameStats(operationLogs ?? []), [operationLogs]);
+  // Clamp against the move list: a stale record could carry a prefix longer
+  // than the moves it describes (e.g. saved before an undo landed).
+  const effectiveSetupPlies = Math.min(setupPlies ?? 0, notationMoves.length);
   const playerMoveIndices = useMemo(
-    () => computePlayerMoveIndices(notationMoves.length, startingFen ?? undefined, playerColor),
-    [notationMoves.length, startingFen, playerColor]
+    () =>
+      computePlayerMoveIndices(
+        notationMoves.length,
+        startingFen ?? undefined,
+        playerColor,
+        effectiveSetupPlies
+      ),
+    [notationMoves.length, startingFen, playerColor, effectiveSetupPlies]
   );
 
   // Position→ply/label/continuation math (see replay-derivations).
@@ -358,7 +375,11 @@ export function GameReview({
                   })
                 ),
             }}
-            operations={{ logs: operationLogs ?? [], playerSide: playerColor }}
+            operations={{
+              logs: operationLogs ?? [],
+              playerSide: playerColor,
+              setupPlies: effectiveSetupPlies,
+            }}
             showBackground={false}
           />
         </div>

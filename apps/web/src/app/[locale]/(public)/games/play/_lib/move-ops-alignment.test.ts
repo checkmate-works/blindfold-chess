@@ -30,6 +30,17 @@ describe('getPlayerMoveIndices', () => {
     expect(getPlayerMoveIndices(5, undefined, 'white')).toEqual([0, 2, 4]);
     expect(getPlayerMoveIndices(5, undefined, 'black')).toEqual([1, 3]);
   });
+
+  it('skips the seeded setup prefix — those moves have no log entry', () => {
+    // Ruy Lopez seed: 1.e4 e5 2.Nf3 Nc6 3.Bb5 (5 plies), then play continues.
+    expect(getPlayerMoveIndices(9, undefined, 'white', 5)).toEqual([6, 8]);
+    expect(getPlayerMoveIndices(9, undefined, 'black', 5)).toEqual([5, 7]);
+  });
+
+  it('treats a whole-game prefix and a negative prefix safely', () => {
+    expect(getPlayerMoveIndices(4, undefined, 'white', 4)).toEqual([]);
+    expect(getPlayerMoveIndices(4, undefined, 'white', -1)).toEqual([0, 2]);
+  });
 });
 
 describe('logForMovesIndex', () => {

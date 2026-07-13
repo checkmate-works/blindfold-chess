@@ -80,4 +80,9 @@ describe('computePlayerMoveIndices', () => {
     expect(computePlayerMoveIndices(4, undefined, 'white')).toEqual([0, 2]);
     expect(computePlayerMoveIndices(4, undefined, 'black')).toEqual([1, 3]);
   });
+
+  it('skips the seeded setup prefix', () => {
+    expect(computePlayerMoveIndices(8, undefined, 'white', 4)).toEqual([4, 6]);
+    expect(computePlayerMoveIndices(8, undefined, 'black', 4)).toEqual([5, 7]);
+  });
 });
