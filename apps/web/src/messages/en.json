@@ -48,6 +48,10 @@
       "title": "Line",
       "breadcrumb": "Line {n}",
       "empty": "This line has no moves.",
+      "shapes": {
+        "hint": "Right-click and drag on the board to draw an arrow; right-click a square to circle it. Shift / Alt / Ctrl change the colour. Saved automatically.",
+        "saveFailed": "Couldn't save your board markup. Please try again."
+      },
       "annotation": {
         "title": "Why this move",
         "addButton": "Add a note",
@@ -56,6 +60,8 @@
         "saving": "Saving...",
         "cancel": "Cancel",
         "delete": "Delete",
+        "deleteConfirmTitle": "Delete this note?",
+        "deleteConfirmMessage": "This removes the note for this move. It can't be undone.",
         "placeholder": "Explain why this move is played…",
         "error": "Something went wrong. Please try again.",
         "empty": "Please enter a note.",

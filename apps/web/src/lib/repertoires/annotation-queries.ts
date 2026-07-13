@@ -1,10 +1,14 @@
 import { eq } from 'drizzle-orm';
 
+import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { db, repertoireAnnotations } from '@/lib/db';
 
-/** A single move's "why" note, as surfaced on the line detail page. */
+/** A single position's owner-authored note + board markup. */
 export type AnnotationView = {
   text: string;
+  /** Arrows / circles drawn over the position; empty when none were drawn. */
+  shapes: BoardAnnotations;
   updatedAt: Date;
 };
 
@@ -22,6 +26,7 @@ export async function getAnnotationsForRepertoire(
     .select({
       positionKey: repertoireAnnotations.positionKey,
       text: repertoireAnnotations.text,
+      shapes: repertoireAnnotations.shapes,
       updatedAt: repertoireAnnotations.updatedAt,
     })
     .from(repertoireAnnotations)
@@ -29,7 +34,12 @@ export async function getAnnotationsForRepertoire(
 
   const map = new Map<string, AnnotationView>();
   for (const row of rows) {
-    map.set(row.positionKey, { text: row.text, updatedAt: row.updatedAt });
+    map.set(row.positionKey, {
+      text: row.text,
+      // JSONB is `unknown` as far as trust goes — parse drops anything malformed.
+      shapes: parseBoardAnnotations(row.shapes),
+      updatedAt: row.updatedAt,
+    });
   }
   return map;
 }

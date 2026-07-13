@@ -48,6 +48,10 @@
       "title": "Linha",
       "breadcrumb": "Linha {n}",
       "empty": "Esta linha não tem lances.",
+      "shapes": {
+        "hint": "Clique com o botão direito e arraste no tabuleiro para desenhar uma seta; clique com o botão direito em uma casa para circulá-la. Shift / Alt / Ctrl mudam a cor. Salvo automaticamente.",
+        "saveFailed": "Não foi possível salvar suas marcações no tabuleiro. Tente novamente."
+      },
       "annotation": {
         "title": "Por que este lance",
         "addButton": "Adicionar uma nota",
@@ -56,6 +60,8 @@
         "saving": "Salvando...",
         "cancel": "Cancelar",
         "delete": "Excluir",
+        "deleteConfirmTitle": "Excluir esta nota?",
+        "deleteConfirmMessage": "Isso remove a nota deste lance. Não é possível desfazer.",
         "placeholder": "Explique por que este lance é jogado…",
         "error": "Algo deu errado. Tente novamente.",
         "empty": "Digite uma nota.",

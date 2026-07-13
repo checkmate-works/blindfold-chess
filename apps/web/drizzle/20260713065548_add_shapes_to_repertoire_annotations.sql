@@ -1,0 +1,2 @@
+ALTER TABLE "repertoire_annotations" ALTER COLUMN "text" SET DEFAULT '';--> statement-breakpoint
+ALTER TABLE "repertoire_annotations" ADD COLUMN "shapes" jsonb DEFAULT '{"arrows":[],"circles":[]}'::jsonb NOT NULL;

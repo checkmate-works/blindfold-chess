@@ -2,6 +2,8 @@
 
 import { type ReactNode, createContext, useContext } from 'react';
 
+import type { Side } from '@blindfold-chess/types';
+
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import type {
@@ -17,6 +19,21 @@ export type CommentTreeI18n = {
   likeNamespace: string;
   replyNamespace: string;
   deleteNamespace: string;
+};
+
+/**
+ * The move sequence a thread is written against, when the thread hangs off a
+ * whole line of play rather than a single position. Enables PGN-style numbered
+ * references ("1... e4", "3. Nf3 Nc6") in comment bodies — the same parser the
+ * shared-game thread uses.
+ */
+export type MoveNotationLine = {
+  /** SAN moves of the line, in order. A reference branches off these. */
+  moves: string[];
+  /** The line's root position; null = the standard start. */
+  startingFen: string | null;
+  /** Orientation for the preview board. */
+  playerColor: Side;
 };
 
 /**
@@ -61,6 +78,13 @@ export type CommentTreeContextValue = {
    * where bodies render as plain linkified text (unchanged behavior).
    */
   moveNotationFen?: string;
+  /**
+   * Like {@link moveNotationFen}, but for a thread anchored to a whole line of
+   * play (a repertoire line): references carry move numbers ("1... e4"), so the
+   * parser needs the line's moves to resolve them. Takes precedence when both
+   * are set.
+   */
+  moveNotationLine?: MoveNotationLine;
 };
 
 const CommentTreeContext = createContext<CommentTreeContextValue | null>(null);

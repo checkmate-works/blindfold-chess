@@ -33,7 +33,6 @@ import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
-import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -69,39 +68,37 @@ export default async function RepertoiresPage({ params }: Props) {
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
       ) : (
-        <GamePreferencesProvider>
-          <div className="space-y-3">
-            {rows.map(({ repertoire, profile, thumbnailFen }) => (
-              <CatalogListCard
-                key={repertoire.id}
-                id={repertoire.id}
-                fen={thumbnailFen}
-                title={repertoire.name}
-                description={repertoire.description}
-                createdAt={repertoire.createdAt}
-                profile={profile}
-                likeMeta={likeMetaMap.get(repertoire.id) ?? { likeCount: 0, likedByMe: false }}
-                replyMeta={replyMetaMap.get(repertoire.id) ?? EMPTY_REPLY_META}
-                detailHref={`/repertoires/${repertoire.id}`}
-                i18nNamespace="Repertoires"
-                toggleLikeAction={toggleLike}
-                justNowLabel={t('justNow')}
-                locale={locale}
-                topicKey={repertoire.id}
-                badge={
-                  <span className="flex flex-wrap gap-1">
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                      {t(`form.side_${repertoire.side}`)}
-                    </span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                      {t(`form.phase_${repertoire.phase}`)}
-                    </span>
+        <div className="space-y-3">
+          {rows.map(({ repertoire, profile, thumbnailFen }) => (
+            <CatalogListCard
+              key={repertoire.id}
+              id={repertoire.id}
+              fen={thumbnailFen}
+              title={repertoire.name}
+              description={repertoire.description}
+              createdAt={repertoire.createdAt}
+              profile={profile}
+              likeMeta={likeMetaMap.get(repertoire.id) ?? { likeCount: 0, likedByMe: false }}
+              replyMeta={replyMetaMap.get(repertoire.id) ?? EMPTY_REPLY_META}
+              detailHref={`/repertoires/${repertoire.id}`}
+              i18nNamespace="Repertoires"
+              toggleLikeAction={toggleLike}
+              justNowLabel={t('justNow')}
+              locale={locale}
+              topicKey={repertoire.id}
+              badge={
+                <span className="flex flex-wrap gap-1">
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    {t(`form.side_${repertoire.side}`)}
                   </span>
-                }
-              />
-            ))}
-          </div>
-        </GamePreferencesProvider>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    {t(`form.phase_${repertoire.phase}`)}
+                  </span>
+                </span>
+              }
+            />
+          ))}
+        </div>
       )}
 
       {user && (

@@ -11,6 +11,7 @@ import type { CommentTreeNode } from '../_lib/comment-tree';
 import { groupReplies } from '../_lib/comment-tree';
 import { canUserReply } from '../_lib/permissions';
 import { CommentNode } from './CommentNode';
+import type { MoveNotationLine } from './CommentTreeContext';
 import { CommentTreeProvider } from './CommentTreeContext';
 import type { ReplyAttachmentActions } from './ReplyForm';
 
@@ -107,6 +108,12 @@ type Props = {
    * their bodies keep rendering as plain linkified text.
    */
   moveNotationFen?: string;
+  /**
+   * Like {@link moveNotationFen}, but for a thread anchored to a whole line of
+   * play (a repertoire line). Numbered references ("1... e4") resolve against
+   * these moves and open the same board preview.
+   */
+  moveNotationLine?: MoveNotationLine;
 };
 
 /**
@@ -143,6 +150,7 @@ export async function CommentTree({
   threadRootPostId,
   extraContentByPostId,
   moveNotationFen,
+  moveNotationLine,
 }: Props) {
   const canReplyByRootId = new Map<string, boolean>();
   await Promise.all(
@@ -184,6 +192,7 @@ export async function CommentTree({
             i18n,
             extraContentByPostId,
             moveNotationFen,
+            moveNotationLine,
           }}
         >
           <CommentNode node={root} replyGroups={groupReplies(root)} />

@@ -8,6 +8,7 @@ import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
 import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_components/CommentTreeContext';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import {
@@ -31,6 +32,12 @@ type Props = {
   ply: number;
   /** Position-based thread key (`${repertoireId}_${positionHash}`). */
   topicKey: string;
+  /**
+   * The line's own moves + root, so a comment can reference moves by number
+   * ("1... e4", "3. Nf3 Nc6") and have them open a board preview — the same
+   * treatment game comments get. Numbers resolve against THIS line's numbering.
+   */
+  moveNotationLine: MoveNotationLine;
   currentUserId?: string;
 };
 
@@ -52,6 +59,7 @@ export async function MoveCommentsSection({
   lineNo,
   ply,
   topicKey,
+  moveNotationLine,
   currentUserId,
 }: Props) {
   const tComments = await getTranslations({ locale, namespace: 'topics.repertoire_move' });
@@ -97,6 +105,7 @@ export async function MoveCommentsSection({
           attachPgnAction={attachPostPgn}
           attachFenAction={attachPostFenFromForm}
           attachmentsByPostId={attachments}
+          moveNotationLine={moveNotationLine}
           i18n={{
             likeNamespace: 'topics.repertoire_move',
             replyNamespace: 'topics.repertoire_move.replies',

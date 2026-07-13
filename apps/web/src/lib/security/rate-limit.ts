@@ -154,6 +154,17 @@ export const RATE_LIMITS = {
     windowMs: 3_600_000,
   },
   /**
+   * Board markup (arrows / circles) on a repertoire position. Far looser than
+   * the note limits because this is a drawing surface, not a form: each stroke
+   * saves (debounced), and annotating one line's worth of positions with a few
+   * arrows each legitimately costs dozens of writes in a sitting.
+   */
+  saveRepertoireShapes: {
+    action: 'save_repertoire_shapes',
+    maxAttempts: 300,
+    windowMs: 3_600_000,
+  },
+  /**
    * Per-user limit for submitting Qiita-style edit requests on a draft
    * chunk. Aligned with `createPost` (10/hour) — a sustained submitter
    * hitting this either has 10 genuinely good ideas in the same hour

@@ -48,6 +48,10 @@
       "title": "ライン",
       "breadcrumb": "ライン {n}",
       "empty": "このラインには手がありません。",
+      "shapes": {
+        "hint": "盤上を右クリックしてドラッグすると矢印、右クリックだけでマスに丸を描けます。Shift / Alt / Ctrl で色が変わります。自動保存されます。",
+        "saveFailed": "盤面の書き込みを保存できませんでした。もう一度お試しください。"
+      },
       "annotation": {
         "title": "この手の狙い",
         "addButton": "メモを追加",
@@ -56,6 +60,8 @@
         "saving": "保存中...",
         "cancel": "キャンセル",
         "delete": "削除",
+        "deleteConfirmTitle": "このノートを削除しますか？",
+        "deleteConfirmMessage": "この手のノートが削除されます。元に戻せません。",
         "placeholder": "なぜこの手を指すのかを説明…",
         "error": "問題が発生しました。もう一度お試しください。",
         "empty": "メモを入力してください。",

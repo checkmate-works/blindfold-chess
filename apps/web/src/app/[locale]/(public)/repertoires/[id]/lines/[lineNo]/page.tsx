@@ -78,7 +78,9 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
       breadcrumb={[
         { label: t('title'), href: '/repertoires' },
         { label: repertoire.name, href: `/repertoires/${id}` },
-        { label: t('line.breadcrumb', { n: lineNo }) },
+        // The line's own name (falling back to "Line N" when unnamed) — the
+        // same label the heading shows, so renaming a line is reflected here.
+        { label: lineName },
       ]}
     >
       <SectionTitle>{lineName}</SectionTitle>
@@ -96,6 +98,11 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           lineNo={lineNo}
           locale={locale}
           initialPly={initialPly}
+          moveNotation={{
+            moves: sans,
+            startingFen: line.startingFen,
+            playerColor: repertoire.side,
+          }}
         />
       )}
 
@@ -118,6 +125,11 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           lineNo={lineNo}
           ply={initialPly}
           topicKey={buildPositionTopicKey(id, positions[initialPly].fen)}
+          moveNotationLine={{
+            moves: sans,
+            startingFen: line.startingFen,
+            playerColor: repertoire.side,
+          }}
           currentUserId={currentUser?.id}
         />
       )}

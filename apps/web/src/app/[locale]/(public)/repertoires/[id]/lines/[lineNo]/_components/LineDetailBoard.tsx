@@ -1,20 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
+import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
+import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_components/CommentTreeContext';
 
+import { saveShapes } from '../_actions/saveShapes';
 import type { LineMove } from '../_lib/line-moves';
 import { AnnotationPanel } from './AnnotationPanel';
 import { LineMovesPanel } from './LineMovesPanel';
+
+/**
+ * How long a stroke sits before it is persisted. Long enough that drawing three
+ * arrows in a row costs one write, short enough that a click-away or a quick
+ * navigation still lands (both flush any pending write immediately).
+ */
+const SHAPES_SAVE_DEBOUNCE_MS = 500;
 
 type Props = {
   side: Side;
@@ -29,6 +42,8 @@ type Props = {
   locale: string;
   /** 1-based ply to focus initially (deep-link / default). */
   initialPly: number;
+  /** The line's moves + root, for move references written inside a note. */
+  moveNotation: MoveNotationLine;
 };
 
 /**
@@ -49,7 +64,9 @@ export function LineDetailBoard({
   lineNo,
   locale,
   initialPly,
+  moveNotation,
 }: Props) {
+  const t = useTranslations('Repertoires.line.shapes');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -57,6 +74,67 @@ export function LineDetailBoard({
 
   const maxPly = positions.length - 1;
   const [ply, setPly] = useState(Math.min(Math.max(initialPly, 0), maxPly));
+
+  // Board markup per position, seeded from the server and edited in place. The
+  // board is the source of truth while the page lives; each stroke is written
+  // back (debounced) rather than staged behind a Save button — the drawing IS
+  // the edit, and there is nothing to confirm.
+  const [shapesByKey, setShapesByKey] = useState<Record<string, BoardAnnotations>>(() =>
+    Object.fromEntries(moves.map((m) => [m.positionKey, m.shapes]))
+  );
+  const [saveFailed, setSaveFailed] = useState(false);
+
+  // One in-flight debounce per position, so drawing on one move and immediately
+  // navigating to the next never cancels the first move's pending write.
+  const pendingShapes = useRef(new Map<string, BoardAnnotations>());
+  const saveTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+
+  const flushShapes = useCallback(
+    (positionKey: string) => {
+      const shapes = pendingShapes.current.get(positionKey);
+      const timer = saveTimers.current.get(positionKey);
+      if (timer) clearTimeout(timer);
+      saveTimers.current.delete(positionKey);
+      pendingShapes.current.delete(positionKey);
+      if (!shapes) return;
+
+      void saveShapes({ repertoireId, positionKey, shapes }).then((result) => {
+        setSaveFailed(!result.ok);
+      });
+    },
+    [repertoireId]
+  );
+
+  // Whatever is still debounced when the page goes away is written immediately —
+  // an un-awaited Server Action call survives the unmount, a lost stroke doesn't.
+  useEffect(() => {
+    const timers = saveTimers.current;
+    const pending = pendingShapes.current;
+    return () => {
+      for (const timer of timers.values()) clearTimeout(timer);
+      for (const [positionKey, shapes] of pending) {
+        void saveShapes({ repertoireId, positionKey, shapes });
+      }
+      timers.clear();
+      pending.clear();
+    };
+  }, [repertoireId]);
+
+  const handleShapesChange = useCallback(
+    (positionKey: string, next: BoardAnnotations) => {
+      setShapesByKey((prev) => ({ ...prev, [positionKey]: next }));
+      setSaveFailed(false);
+      pendingShapes.current.set(positionKey, next);
+
+      const existing = saveTimers.current.get(positionKey);
+      if (existing) clearTimeout(existing);
+      saveTimers.current.set(
+        positionKey,
+        setTimeout(() => flushShapes(positionKey), SHAPES_SAVE_DEBOUNCE_MS)
+      );
+    },
+    [flushShapes]
+  );
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -90,6 +168,17 @@ export function LineDetailBoard({
   const lastMove = clampedPly > 0 ? current.lastMove : null;
   const focusedMove = clampedPly > 0 ? moves[clampedPly - 1] : null;
 
+  // Markup is keyed by the position a move reaches, so the start position (ply
+  // 0) has none — and only the owner can draw.
+  const focusedKey = focusedMove?.positionKey ?? null;
+  const focusedShapes = focusedKey
+    ? (shapesByKey[focusedKey] ?? EMPTY_BOARD_ANNOTATIONS)
+    : EMPTY_BOARD_ANNOTATIONS;
+  const onAnnotationsChange =
+    isOwner && focusedKey
+      ? (next: BoardAnnotations) => handleShapesChange(focusedKey, next)
+      : undefined;
+
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
@@ -115,6 +204,8 @@ export function LineDetailBoard({
               showOpponentPieces
               boardTheme="lichess"
               rounded={false}
+              annotations={focusedShapes}
+              onAnnotationsChange={onAnnotationsChange}
             />
 
             <div
@@ -133,6 +224,15 @@ export function LineDetailBoard({
           </div>
         </div>
 
+        {isOwner && focusedKey && (
+          <p
+            className={`text-xs ${saveFailed ? 'text-destructive' : 'text-muted-foreground'}`}
+            role={saveFailed ? 'alert' : undefined}
+          >
+            {saveFailed ? t('saveFailed') : t('hint')}
+          </p>
+        )}
+
         {focusedMove && (
           <AnnotationPanel
             key={focusedMove.positionKey}
@@ -142,6 +242,7 @@ export function LineDetailBoard({
             positionKey={focusedMove.positionKey}
             moveLabel={focusedMove.label}
             initialText={focusedMove.annotation}
+            moveNotation={moveNotation}
             isOwner={isOwner}
           />
         )}

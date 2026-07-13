@@ -97,7 +97,14 @@ export function EditLineForm({ locale, repertoireId, lineNo, initialName, initia
       <FormErrorBanner message={error} />
 
       <div className="space-y-2">
-        <Button type="submit" variant="primary" fullWidth loading={pending} disabled={pending}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={pending}
+          disabled={pending}
+        >
           {pending ? t('saving') : t('save')}
         </Button>
         <button

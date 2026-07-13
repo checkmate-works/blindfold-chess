@@ -23,6 +23,7 @@ import type { Side } from '@blindfold-chess/types';
 import { createPortal } from 'react-dom';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import { useBoardAnnotationDrawing } from '@/lib/board-annotations/use-board-annotation-drawing';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 import type { EvaluationMark } from '@/lib/games/evaluation';
@@ -96,6 +97,18 @@ type Props = {
    * on the server side first.
    */
   annotations?: BoardAnnotations | null;
+  /**
+   * Supply alongside `annotations` to make the board a drawing surface: the
+   * lichess right-click gesture (right-click a square for a circle, right-click
+   * + drag for an arrow, modifiers pick the color, repeating a mark removes
+   * it). Each gesture emits the whole next annotation set — the caller owns the
+   * state and any persistence.
+   *
+   * Left-click semantics are untouched: right-button events never fire
+   * `onClick`, and the interactive drag ignores anything but the left button,
+   * so a board can be playable and drawable at the same time.
+   */
+  onAnnotationsChange?: (next: BoardAnnotations) => void;
   /**
    * Enables interactive move input — click-to-move + pointer-based drag.
    * When provided:
@@ -193,6 +206,7 @@ export const ChessBoard = memo(function ChessBoard({
   evaluationMark = null,
   className = '',
   annotations = null,
+  onAnnotationsChange,
   onMove,
   onIllegalMove,
   movablePieces = 'own',
@@ -340,6 +354,20 @@ export const ChessBoard = memo(function ChessBoard({
       attemptMove,
       clearSelection,
     });
+
+  // Right-button drawing (arrows / circles). Armed only when the caller passes
+  // both `annotations` and `onAnnotationsChange`; otherwise `containerProps` is
+  // empty and the browser context menu behaves normally. `handleBoardPointerDown`
+  // ignores non-left buttons, so the two gestures coexist on one container.
+  const drawing = useBoardAnnotationDrawing({ annotations, onAnnotationsChange, flipped });
+
+  const handleContainerPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      drawing.containerProps.onPointerDown?.(e);
+      if (interactive) handleBoardPointerDown(e);
+    },
+    [drawing.containerProps, interactive, handleBoardPointerDown]
+  );
 
   // The square whose legal moves should be shown / whose piece is "active":
   // the drag source while dragging, otherwise the click-selected square. Falls
@@ -586,7 +614,12 @@ export const ChessBoard = memo(function ChessBoard({
         renderSquare={renderSquare}
         squareProps={squareProps}
         onBoardClick={onSquareClick || interactive ? handleBoardClick : undefined}
-        onBoardPointerDown={interactive ? handleBoardPointerDown : undefined}
+        onBoardPointerDown={
+          interactive || drawing.interactive ? handleContainerPointerDown : undefined
+        }
+        onBoardContextMenu={drawing.containerProps.onContextMenu}
+        onBoardPointerUp={drawing.containerProps.onPointerUp}
+        containerRef={drawing.interactive ? drawing.containerRef : undefined}
         rounded={rounded}
         className={className}
         annotations={annotations}
