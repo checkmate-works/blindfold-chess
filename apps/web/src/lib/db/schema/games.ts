@@ -92,6 +92,16 @@ export const games = pgTable(
     // --- Immutable game snapshot (read as a whole → JSONB) ---
     moves: jsonb('moves').$type<string[]>().notNull(),
     startingFen: varchar('starting_fen', { length: 100 }),
+    /**
+     * How many leading entries of `moves` were pre-played at setup (an opening
+     * line or a pasted PGN) rather than played by the author. Together with
+     * `starting_fen` this reconstructs the position the game actually started
+     * from — `starting_fen` alone cannot, because opening/PGN starts keep the
+     * standard start and seed `moves` instead. Also the offset aligning
+     * `operation_logs` (one entry per in-session player move) with `moves`.
+     * Null for legacy rows and plain standard-start games (no prefix).
+     */
+    setupPlies: integer('setup_plies'),
     playerColor: varchar('player_color', { length: 5 }).$type<'white' | 'black'>().notNull(),
     engineConfig: jsonb('engine_config').$type<EngineConfig>().notNull(),
     /** Per-move aid counts (self-reported, client-only). Null for legacy/absent. */

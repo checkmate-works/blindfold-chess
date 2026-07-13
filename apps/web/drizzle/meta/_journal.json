@@ -407,6 +407,13 @@
       "when": 1783930206425,
       "tag": "20260713081006_repertoires_public_by_default",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1783937641884,
+      "tag": "20260713101401_add_setup_plies_to_games",
+      "breakpoints": true
     }
   ]
 }

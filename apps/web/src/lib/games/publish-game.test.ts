@@ -94,6 +94,16 @@ describe('validatePublishSnapshot', () => {
     });
   });
 
+  it('keeps a setup prefix within [1, moves.length] and drops anything else to null', () => {
+    const ok = validatePublishSnapshot(validInput({ setupPlies: 3 }));
+    expect(ok.ok && ok.game.setupPlies).toBe(3);
+
+    for (const bad of [0, -1, 5, 1.5, '3', null, undefined]) {
+      const res = validatePublishSnapshot(validInput({ setupPlies: bad }));
+      expect(res.ok && res.game.setupPlies).toBe(null);
+    }
+  });
+
   it('rejects an illegal move sequence', () => {
     // e4 then e4 again is illegal (the pawn is no longer on e2).
     expect(validatePublishSnapshot(validInput({ moves: ['e4', 'e4'] }))).toEqual({
