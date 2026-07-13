@@ -10,6 +10,8 @@ export type OpeningOption = {
   slug: string;
   name: string;
   ecoCode: string;
+  /** Signature position — lets the picker detect openings from a pasted PGN. */
+  fen: string;
   /** Localised display name (falls back to the English `name`). */
   translatedName: string;
 };
@@ -29,6 +31,7 @@ export async function getOpeningOptions(locale: string): Promise<OpeningOption[]
       slug: chessOpenings.slug,
       name: chessOpenings.name,
       ecoCode: chessOpenings.ecoCode,
+      fen: chessOpenings.fen,
     })
     .from(chessOpenings)
     .orderBy(asc(chessOpenings.sortOrder));

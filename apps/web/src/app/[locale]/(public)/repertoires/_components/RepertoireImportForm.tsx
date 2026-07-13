@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -8,6 +8,7 @@ import { Button } from '@/app/_components/Button';
 import { useRouter } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
+import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
 
@@ -50,10 +51,29 @@ export function RepertoireImportForm({ locale, openings }: Props) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Once the author picks or removes an opening by hand, the PGN stops driving
+  // the links — auto-detection is a starting point, not a correction.
+  const openingsEdited = useRef(false);
+
+  // Derive the opening links from what was pasted, while the author hasn't
+  // touched the picker. Debounced so a long PGN isn't re-parsed per keystroke.
+  useEffect(() => {
+    if (phase !== 'opening' || openingsEdited.current) return;
+    const timer = setTimeout(() => {
+      setOpeningIds(detectOpeningIdsFromPgn(pgn, openings));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [pgn, phase, openings]);
+
   function changePhase(next: RepertoirePhase) {
     setPhase(next);
     // Opening links only make sense for opening repertoires.
     if (next !== 'opening') setOpeningIds([]);
+  }
+
+  function changeOpeningIds(ids: string[]) {
+    openingsEdited.current = true;
+    setOpeningIds(ids);
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -134,22 +154,6 @@ export function RepertoireImportForm({ locale, openings }: Props) {
         </div>
       </fieldset>
 
-      {phase === 'opening' && (
-        <div>
-          <span className="block text-sm font-medium text-foreground">
-            {t('form.openingLabel')}
-          </span>
-          <p className="mt-1 text-xs text-muted-foreground">{t('form.openingHelp')}</p>
-          <div className="mt-2">
-            <OpeningMultiSelect
-              openings={openings}
-              selectedIds={openingIds}
-              onChange={setOpeningIds}
-            />
-          </div>
-        </div>
-      )}
-
       <div>
         <label htmlFor="repertoire-pgn" className="block text-sm font-medium text-foreground">
           {t('form.pgnLabel')}
@@ -164,6 +168,22 @@ export function RepertoireImportForm({ locale, openings }: Props) {
           className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 font-mono text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-link-primary"
         />
       </div>
+
+      {phase === 'opening' && (
+        <div>
+          <span className="block text-sm font-medium text-foreground">
+            {t('form.openingLabel')}
+          </span>
+          <p className="mt-1 text-xs text-muted-foreground">{t('form.openingHelp')}</p>
+          <div className="mt-2">
+            <OpeningMultiSelect
+              openings={openings}
+              selectedIds={openingIds}
+              onChange={changeOpeningIds}
+            />
+          </div>
+        </div>
+      )}
 
       {error && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200">
