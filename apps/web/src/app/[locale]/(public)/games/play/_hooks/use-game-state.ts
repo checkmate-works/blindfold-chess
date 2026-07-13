@@ -10,6 +10,7 @@ import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 type LoadedGameData = {
   startingFen?: string;
+  setupPlies?: number;
   moves: AlgebraicNotation[];
   lastMove: { from: string; to: string } | null;
   gameStatus: GameStatus;
@@ -28,6 +29,7 @@ type UseGameStateOptions = {
   loadedGameData: LoadedGameData | null;
   setMovesTo: (moves: AlgebraicNotation[]) => void;
   setStartingFen: (fen: string | undefined) => void;
+  setSetupPliesTo?: (setupPlies: number) => void;
   setOperationLogsTo?: (logs: MoveOperationLog[]) => void;
 };
 
@@ -42,6 +44,7 @@ export function useGameState({
   loadedGameData,
   setMovesTo,
   setStartingFen,
+  setSetupPliesTo,
   setOperationLogsTo,
 }: UseGameStateOptions) {
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
@@ -92,6 +95,9 @@ export function useGameState({
       if (loadedGameData.startingFen) {
         setStartingFen(loadedGameData.startingFen);
       }
+      if (loadedGameData.setupPlies !== undefined && setSetupPliesTo) {
+        setSetupPliesTo(loadedGameData.setupPlies);
+      }
       if (loadedGameData.moves.length > 0) {
         setMovesTo(loadedGameData.moves);
         setLastMove(loadedGameData.lastMove);
@@ -106,7 +112,7 @@ export function useGameState({
       }
       appliedLoadedGameDataRef.current = loadedGameData;
     }
-  }, [loadedGameData, setMovesTo, setStartingFen, setOperationLogsTo]);
+  }, [loadedGameData, setMovesTo, setStartingFen, setSetupPliesTo, setOperationLogsTo]);
 
   // Initialize on mount with initial moves
   useEffect(() => {

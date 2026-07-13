@@ -152,6 +152,18 @@ export type Game = {
   /** Custom starting position FEN. If undefined, standard starting position is used. */
   startingFen?: string;
   /**
+   * How many leading entries of {@link moves} were pre-played at setup (an
+   * opening line or a pasted PGN) rather than played in-session. Together with
+   * {@link startingFen} this reconstructs the position the player actually
+   * started from — `startingFen` alone cannot: opening/PGN starts keep the
+   * standard start and seed `moves` instead. Also the offset that aligns
+   * {@link operationLogs} (one entry per in-session player move) with `moves`.
+   * Undefined on legacy records and plain standard-start games — both mean
+   * "no seeded prefix" (0) to consumers. Undo / restart-from-position can
+   * shrink it (the player took over earlier); it never grows back.
+   */
+  setupPlies?: number;
+  /**
    * Per-game preferences snapshot captured at game start. Immutable for the
    * life of the game — mid-game edits do NOT overwrite this field; they
    * accumulate in {@link preferenceChangeLog} instead. The current effective

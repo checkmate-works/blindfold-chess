@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -56,6 +56,14 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
 
   // Track starting FEN - can be from URL or loaded from saved game
   const [startingFen, setStartingFen] = useState<string | undefined>(initialStartingFen);
+
+  // How many leading half-moves were pre-played at setup (opening line /
+  // pasted PGN) — see {@link Game.setupPlies}. For a new game the URL's seeded
+  // moves ARE the prefix; a resumed game restores it from the saved record
+  // (via useGameState, alongside the moves). Undefined = no seeded prefix.
+  const [setupPlies, setSetupPlies] = useState<number | undefined>(
+    initialGameId ? undefined : initialMovesFromUrl.length || undefined
+  );
 
   // Move input state (managed here to avoid circular deps between usePlayerMove and useAiMoveOrchestration)
   const [moveInput, setMoveInput] = useState('');
@@ -130,8 +138,17 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     loadedGameData,
     setMovesTo,
     setStartingFen,
+    setSetupPliesTo: setSetupPlies,
     setOperationLogsTo: setLogsTo,
   });
+
+  // Undo / restart-from-position can strip seeded setup moves. Once the move
+  // list drops below the prefix the player has taken over from that earlier
+  // point, so the prefix has genuinely shrunk — ratchet it down permanently
+  // (it never grows back, even if play advances past the old length again).
+  useEffect(() => {
+    setSetupPlies((prev) => (prev !== undefined && moves.length < prev ? moves.length : prev));
+  }, [moves.length]);
 
   // `isLoadingFromStorage` flips to `false` the instant `useGamePersistence`
   // resolves, but `useGameState` applies the loaded moves/status/result one
@@ -156,6 +173,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     engineConfig,
     status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
+    setupPlies,
     gamePreferences: initialPerGamePrefs,
     preferenceChangeLog,
     operationLogs,
@@ -320,6 +338,9 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       engineConfig,
       initialGameId,
       startingFen,
+      // Seeded-prefix length — aligns the ops icons / By Move strip with the
+      // operation logs (one entry per in-session player move).
+      setupPlies,
       locale,
       // `perGamePrefs` is the LIVE effective value (initial folded with the
       // change log). PlayClient merges this into its rendering preferences

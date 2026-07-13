@@ -31,6 +31,7 @@ export type GameDataRefs = {
   playerColor: React.RefObject<Side>;
   engineConfig: React.RefObject<EngineConfig>;
   startingFen: React.RefObject<string | undefined>;
+  setupPlies: React.RefObject<number | undefined>;
   /**
    * Initial per-game preferences snapshot. Immutable for the life of the
    * game once captured at game start — see {@link Game.gamePreferences}.
@@ -72,6 +73,7 @@ type UseAutoSaveOptions = {
   engineConfig: EngineConfig;
   status: GameOutcome;
   startingFen?: string;
+  setupPlies?: number;
   gamePreferences?: PerGamePreferences;
   preferenceChangeLog?: PreferenceChangeLogEntry[];
   operationLogs?: MoveOperationLog[];
@@ -102,6 +104,7 @@ export function useAutoSave({
   engineConfig,
   status,
   startingFen,
+  setupPlies,
   gamePreferences,
   preferenceChangeLog,
   operationLogs,
@@ -124,6 +127,7 @@ export function useAutoSave({
     playerColor,
     engineConfig,
     startingFen,
+    setupPlies,
     gamePreferences,
     preferenceChangeLog,
     operationLogs,
@@ -202,6 +206,7 @@ export function useAutoSave({
           engineConfig: gameDataRefs.engineConfig.current,
           status: currentStatus,
           startingFen: gameDataRefs.startingFen.current,
+          setupPlies: gameDataRefs.setupPlies.current,
           gamePreferences: gameDataRefs.gamePreferences.current,
           preferenceChangeLog: gameDataRefs.preferenceChangeLog.current,
           operationLogs: gameDataRefs.operationLogs.current,
