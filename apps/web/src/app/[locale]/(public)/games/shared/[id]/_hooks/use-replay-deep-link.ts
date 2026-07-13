@@ -24,6 +24,13 @@ type Params = {
   comments: GameCommentItem[];
   isInitialPosition: boolean;
   currentPosition: number;
+  /**
+   * Where to open when nothing deep-links (no comment, no hash). Defaults to
+   * the overview board (-2); the result screen passes the game's setup
+   * position instead, so a seeded game opens showing where play actually
+   * started rather than the standard initial board.
+   */
+  fallbackPosition?: number;
 };
 
 /**
@@ -32,7 +39,7 @@ type Params = {
  *
  * Priority for the initial position (runs once after moves load): a deep-linked
  * comment's move, then the `#<half-move>` URL hash (read client-side — the
- * fragment never reaches the server), then the overview board (-2).
+ * fragment never reaches the server), then {@link Params.fallbackPosition}.
  */
 export function useReplayDeepLink({
   notationMovesLength,
@@ -41,6 +48,7 @@ export function useReplayDeepLink({
   comments,
   isInitialPosition,
   currentPosition,
+  fallbackPosition = -2,
 }: Params) {
   const startedRef = useRef(false);
   useEffect(() => {
@@ -52,9 +60,9 @@ export function useReplayDeepLink({
     const commentPly =
       target && target.ply != null && target.ply < notationMovesLength ? target.ply : null;
     const hashPly = parseHashPly(window.location.hash, notationMovesLength);
-    // -2 is the overview board (the starting position, with description + stats).
-    navigateToPosition(commentPly ?? hashPly ?? -2);
-  }, [notationMovesLength, navigateToPosition, highlightCommentId, comments]);
+    navigateToPosition(commentPly ?? hashPly ?? fallbackPosition);
+    // startedRef makes re-runs no-ops, so the extra deps cannot re-trigger it.
+  }, [notationMovesLength, navigateToPosition, highlightCommentId, comments, fallbackPosition]);
 
   // Once the deep-linked comment's move is on the board (its thread mounted),
   // scroll it into view. Runs once.

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useMemo } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -273,6 +273,12 @@ export function GameReview({
     comments,
     isInitialPosition,
     currentPosition,
+    // The result screen opens showing where play actually started (the setup
+    // position of a seeded/custom-FEN game). The shared page keeps the
+    // overview board: any move position there swaps the overview for that
+    // move's comment thread, which must not happen on plain load.
+    fallbackPosition:
+      social.mode === 'local' && startPosition ? startPosition.jumpIndex : undefined,
   });
 
   // The opening-board stats overview (engine + By Move + change log). Anonymous
@@ -330,6 +336,43 @@ export function GameReview({
     if (social.mode === 'local') setOverviewView('discussion');
   }, [commitQuickPeek, social.mode, setOverviewView]);
 
+  // Local mode: user navigation (the arrows under the board, move-list
+  // clicks) onto a move position also routes the viewer to the Discussion
+  // tab — same rationale as handleCommitPosition above. The ref gates the
+  // switch to real interactions: the programmatic initial landing (deep link
+  // / setup position) must leave the Summary visible.
+  const pendingUserNavRef = useRef(false);
+  const withDiscussionReveal = useCallback(
+    <A extends unknown[]>(navigate: (...args: A) => void) =>
+      (...args: A) => {
+        pendingUserNavRef.current = true;
+        navigate(...args);
+      },
+    []
+  );
+  useEffect(() => {
+    if (!pendingUserNavRef.current) return;
+    pendingUserNavRef.current = false;
+    if (social.mode === 'local' && currentPosition !== -2) setOverviewView('discussion');
+  }, [currentPosition, social.mode, setOverviewView]);
+  const userNav = useMemo(
+    () => ({
+      toStart: withDiscussionReveal(navigateToStart),
+      previous: withDiscussionReveal(navigatePrevious),
+      next: withDiscussionReveal(navigateNext),
+      toEnd: withDiscussionReveal(navigateToEnd),
+      toPosition: withDiscussionReveal(navigateToPosition),
+    }),
+    [
+      withDiscussionReveal,
+      navigateToStart,
+      navigatePrevious,
+      navigateNext,
+      navigateToEnd,
+      navigateToPosition,
+    ]
+  );
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -343,11 +386,11 @@ export function GameReview({
             movesLength={notationMoves.length}
             currentPosition={currentPosition}
             formattedPgn={formattedPgn}
-            onNavigateToStart={navigateToStart}
-            onNavigatePrevious={navigatePrevious}
-            onNavigateNext={navigateNext}
-            onNavigateToEnd={navigateToEnd}
-            onNavigateToPosition={navigateToPosition}
+            onNavigateToStart={userNav.toStart}
+            onNavigatePrevious={userNav.previous}
+            onNavigateNext={userNav.next}
+            onNavigateToEnd={userNav.toEnd}
+            onNavigateToPosition={userNav.toPosition}
             onFlipBoard={toggleFlip}
             hiddenPieceStyle={hiddenPieceStyle}
             alwaysOpen
@@ -374,11 +417,11 @@ export function GameReview({
               startingFen: startingFen ?? undefined,
             }}
             navigation={{
-              onNavigateToPosition: navigateToPosition,
-              onNavigateToStart: navigateToStart,
-              onNavigatePrevious: navigatePrevious,
-              onNavigateNext: navigateNext,
-              onNavigateToEnd: navigateToEnd,
+              onNavigateToPosition: userNav.toPosition,
+              onNavigateToStart: userNav.toStart,
+              onNavigatePrevious: userNav.previous,
+              onNavigateNext: userNav.next,
+              onNavigateToEnd: userNav.toEnd,
             }}
             actions={{
               // Read-only view: the game is finished and not the viewer's, so
