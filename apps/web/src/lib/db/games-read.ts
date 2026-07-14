@@ -172,31 +172,49 @@ function mapGameRowsToListItems(rows: GameListRow[]): Promise<SharedGameListItem
 }
 
 /**
- * Publicly-listed games for the gallery. Only `public`, non-deleted games
- * appear here (the planned `private` tier and soft-deleted rows are excluded).
- * Sort:
+ * The gallery's visibility rule: only `public`, non-deleted games are listed
+ * (the planned `private` tier and soft-deleted rows are excluded). Every public
+ * read path composes this so no surface can leak a game the gallery hides.
+ */
+function publiclyVisible() {
+  return and(isNull(games.deletedAt), eq(games.status, 'public'));
+}
+
+/**
+ * Order for a gallery {@link SharedGamesSort}:
  * - 'new' (default): newest first via the time-ordered UUIDv7 id.
  * - 'clean': highest blindfold clean-rate first (nulls last).
  * - 'strong': strongest opponent first (unified Elo).
- * Every mode tie-breaks on id desc so paging stays stable.
+ * Every mode tie-breaks on id desc so paging stays stable across pages.
+ */
+function sharedGamesOrderBy(sort: SharedGamesSort): SQL[] {
+  if (sort === 'clean') return [sql`${games.cleanRate} DESC NULLS LAST`, desc(games.id)];
+  if (sort === 'strong') return [desc(games.engineElo), desc(games.id)];
+  return [desc(games.id)];
+}
+
+/**
+ * One page of publicly-listed games for the gallery, ordered per
+ * {@link sharedGamesOrderBy}. Pair with {@link countSharedGames} to compute the
+ * page count.
  */
 export async function listSharedGames(
   sort: SharedGamesSort = 'new',
-  limit = 30
+  limit: number,
+  offset: number
 ): Promise<SharedGameListItem[]> {
-  const orderBy: SQL[] =
-    sort === 'clean'
-      ? [sql`${games.cleanRate} DESC NULLS LAST`, desc(games.id)]
-      : sort === 'strong'
-        ? [desc(games.engineElo), desc(games.id)]
-        : [desc(games.id)];
-
   const rows = await gameListQuery()
-    .where(and(isNull(games.deletedAt), eq(games.status, 'public')))
-    .orderBy(...orderBy)
-    .limit(limit);
+    .where(publiclyVisible())
+    .orderBy(...sharedGamesOrderBy(sort))
+    .limit(limit)
+    .offset(offset);
 
   return mapGameRowsToListItems(rows);
+}
+
+/** Count the gallery's publicly-listed games (matches {@link listSharedGames}). */
+export async function countSharedGames(): Promise<number> {
+  return countRows(games, publiclyVisible());
 }
 
 /**
@@ -212,7 +230,7 @@ export async function listGamesByAuthorId(
   offset: number
 ): Promise<SharedGameListItem[]> {
   const rows = await gameListQuery()
-    .where(and(eq(games.authorId, authorId), isNull(games.deletedAt), eq(games.status, 'public')))
+    .where(and(eq(games.authorId, authorId), publiclyVisible()))
     .orderBy(desc(games.id))
     .limit(limit)
     .offset(offset);
@@ -245,9 +263,7 @@ export async function listGamesLinkingChunk(
     .select({ gameId: gameChunks.gameId, ply: gameChunks.ply })
     .from(gameChunks)
     .innerJoin(games, eq(games.id, gameChunks.gameId))
-    .where(
-      and(eq(gameChunks.chunkId, chunkId), isNull(games.deletedAt), eq(games.status, 'public'))
-    )
+    .where(and(eq(gameChunks.chunkId, chunkId), publiclyVisible()))
     .orderBy(desc(gameChunks.createdAt), desc(gameChunks.id));
 
   // 2. Group by game, preserving first-seen (newest-link) order; collect a
@@ -282,10 +298,7 @@ export async function listGamesLinkingChunk(
 
 /** Count an author's publicly-visible games (matches {@link listGamesByAuthorId}). */
 export async function countGamesByAuthorId(authorId: string): Promise<number> {
-  return countRows(
-    games,
-    and(eq(games.authorId, authorId), isNull(games.deletedAt), eq(games.status, 'public'))
-  );
+  return countRows(games, and(eq(games.authorId, authorId), publiclyVisible()));
 }
 
 /**

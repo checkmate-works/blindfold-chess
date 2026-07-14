@@ -14,14 +14,16 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
-import { listSharedGames } from '@/lib/db/games-read';
+import { countSharedGames, listSharedGames } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
+import { getPaginationParams } from '@/lib/pagination';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -56,8 +58,13 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'sharedGames' });
 
-  const sort = parseSharedGamesSort((await searchParams).sort);
-  const items = await listSharedGames(sort);
+  const sp = await searchParams;
+  const sort = parseSharedGamesSort(sp.sort);
+  const page = Number(sp.page) || 1;
+
+  const totalCount = await countSharedGames();
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(page, totalCount);
+  const items = await listSharedGames(sort, limit, offset);
 
   const currentUser = await getOptionalUser();
   const ids = items.map((g) => g.id);
@@ -73,7 +80,6 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
 
   return (
     <PageLayout title={t('list.title')} locale={locale}>
-      <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
       <div className="mb-6">
         <GamesTabs active="shared" locale={locale} />
       </div>
@@ -124,6 +130,17 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
           ))}
         </div>
       )}
+
+      <PaginationNav
+        currentPage={currentPage}
+        totalPages={totalPages}
+        buildHref={(p) => {
+          const query = new URLSearchParams();
+          if (sort !== 'new') query.set('sort', sort);
+          query.set('page', String(p));
+          return `/${locale}/games/shared?${query.toString()}`;
+        }}
+      />
 
       <AdSlot slot="content-bottom" />
     </PageLayout>

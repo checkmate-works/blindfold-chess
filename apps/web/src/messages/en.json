@@ -2263,7 +2263,6 @@
     "list": {
       "title": "Published games",
       "empty": "No games have been shared yet.",
-      "sectionTitle": "Games",
       "publishExisting": "Publish a finished game",
       "sortBy": "Sort by",
       "sort": {

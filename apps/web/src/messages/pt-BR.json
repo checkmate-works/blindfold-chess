@@ -2259,7 +2259,6 @@
     "list": {
       "title": "Partidas publicadas",
       "empty": "Nenhuma partida foi compartilhada ainda.",
-      "sectionTitle": "Partidas",
       "publishExisting": "Publicar uma partida encerrada",
       "sortBy": "Ordenar por",
       "sort": {
