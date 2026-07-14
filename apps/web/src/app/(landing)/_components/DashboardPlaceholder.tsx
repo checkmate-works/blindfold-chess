@@ -1,6 +1,7 @@
 import type { getTranslations } from 'next-intl/server';
 
-import { DailyPuzzleCard } from './DailyPuzzleCard';
+import { DailyPuzzleCard } from '@/app/_components/DailyPuzzleCard';
+
 import { DashboardHero } from './DashboardHero';
 import { LatestAnnouncements } from './LatestAnnouncements';
 import { LatestArticles } from './LatestArticles';

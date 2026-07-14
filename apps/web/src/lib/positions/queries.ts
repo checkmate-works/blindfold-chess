@@ -1,5 +1,7 @@
 import { cache } from 'react';
 
+import { unstable_cache } from 'next/cache';
+
 import { type SQL, and, desc, eq, isNull, sql } from 'drizzle-orm';
 
 import {
@@ -240,16 +242,43 @@ export const getPositionLineageMetaById = cache(async (id: string) => {
   return row ?? null;
 });
 
-/**
- * Fetch a single random position of a given type.
- */
-export async function getRandomPosition({ type }: { type: PositionType }) {
-  const [row] = await db
-    .select()
-    .from(positions)
-    .where(and(eq(positions.type, type), isNull(positions.deletedAt)))
-    .orderBy(sql`RANDOM()`)
-    .limit(1);
+/** The current UTC day, as `YYYY-MM-DD`. Used as the daily-position seed. */
+export function utcDayKey(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
 
-  return row ?? null;
+/**
+ * Pick one position of a given type, deterministically for the given day.
+ *
+ * `md5(dayKey || id)` is a stable pseudo-random shuffle: within a day every
+ * caller sees the same row, and the row changes when the day does. This is
+ * what makes the "Daily Puzzle" card actually daily — an unseeded
+ * `ORDER BY RANDOM()` (what this used to be) handed out a different puzzle on
+ * every reload, so a user could never come back to "today's" puzzle.
+ *
+ * The sort is a full scan of the type's rows, so it must not run per request.
+ * `unstable_cache` bounds it to once an hour per (type, day): the day key
+ * pins the *result*, and the hourly revalidate exists only so a soft-deleted
+ * position stops being advertised within the hour rather than at midnight.
+ */
+const selectDailyPosition = unstable_cache(
+  async (type: PositionType, dayKey: string) => {
+    const [row] = await db
+      .select()
+      .from(positions)
+      .where(and(eq(positions.type, type), isNull(positions.deletedAt)))
+      .orderBy(sql`md5(${dayKey} || ${positions.id}::text)`)
+      .limit(1);
+
+    return row ?? null;
+  },
+  ['daily-position'],
+  { revalidate: 3600 }
+);
+
+/**
+ * Fetch the position of the day for a given type (see {@link selectDailyPosition}).
+ */
+export async function getDailyPosition({ type }: { type: PositionType }) {
+  return selectDailyPosition(type, utcDayKey());
 }

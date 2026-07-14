@@ -1,18 +1,32 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
-import { getRandomPosition } from '@/lib/positions/queries';
+import { getDailyPosition } from '@/lib/positions/queries';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
+
+import { Button } from './Button';
 
 type Props = {
   locale: string;
 };
 
+/**
+ * "Daily Puzzle" card — one puzzle per day, linking to its practice page.
+ *
+ * Async Server Component, so it must NOT be re-exported from the
+ * `_components` barrel; import it by path. Rendered on the signed-in
+ * dashboard (`/`) and at the top of the practice index (`/[locale]/practice`);
+ * both share the same puzzle for the day because `getDailyPosition` is seeded
+ * on the UTC date.
+ *
+ * Copy still lives under the `landing` i18n namespace, where the card was
+ * first introduced. Kept there deliberately: renaming the keys would mean
+ * touching every locale file for no user-visible gain.
+ */
 export async function DailyPuzzleCard({ locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'landing' });
-  const puzzle = await getRandomPosition({ type: 'puzzle' });
+  const puzzle = await getDailyPosition({ type: 'puzzle' });
 
   if (!puzzle) return null;
 
