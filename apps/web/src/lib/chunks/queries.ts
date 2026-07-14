@@ -48,36 +48,6 @@ function mapChunkOption(row: ChunkOptionRow): ChunkOption {
   };
 }
 
-type GetChunkByIdOptions = {
-  id: string;
-  /**
-   * When `true`, returns the row even if `deletedAt` is set. Used by the
-   * admin detail / edit pages so moderators can inspect soft-deleted chunks.
-   */
-  includeDeleted?: boolean;
-};
-
-/**
- * Fetch a single chunk by id.
- *
- * Wrapped with `React.cache` for per-request deduplication so multiple
- * callers (page + generateMetadata + siblings) share a single DB roundtrip.
- */
-export const getChunkById = cache(async ({ id, includeDeleted }: GetChunkByIdOptions) => {
-  if (!UUID_RE.test(id)) return null;
-
-  const conditions = [eq(chunks.id, id)];
-  if (!includeDeleted) conditions.push(isNull(chunks.deletedAt));
-
-  const [row] = await db
-    .select()
-    .from(chunks)
-    .where(and(...conditions))
-    .limit(1);
-
-  return row ?? null;
-});
-
 type ListChunksOptions = {
   includeDeleted?: boolean;
   /**
