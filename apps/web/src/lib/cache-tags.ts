@@ -18,7 +18,13 @@
  * - {@link EXP_LEADERBOARD_CACHE_TAG} — global EXP ranking cache
  *   (`getExpLeaderboard`). Also invalidated by `save-practice-result` since
  *   every challenge completion grants EXP.
+ * - {@link DAILY_PUZZLE_CACHE_TAG} — the day's puzzle pick (`getDailyPuzzle`).
+ *   Invalidated by the admin feature/unfeature toggle (`setPuzzleFeatured`)
+ *   and by the admin puzzle soft-delete (`deletePuzzle`) so pool changes and
+ *   removals swap the featured card immediately instead of at the hourly
+ *   revalidate.
  */
 
 export const LEADERBOARD_CACHE_TAG = 'leaderboard' as const;
 export const EXP_LEADERBOARD_CACHE_TAG = 'exp-leaderboard' as const;
+export const DAILY_PUZZLE_CACHE_TAG = 'daily-puzzle' as const;

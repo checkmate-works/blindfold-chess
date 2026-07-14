@@ -414,6 +414,13 @@
       "when": 1783937641884,
       "tag": "20260713101401_add_setup_plies_to_games",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1784070992223,
+      "tag": "20260714231632_create_featured_puzzles_table",
+      "breakpoints": true
     }
   ]
 }

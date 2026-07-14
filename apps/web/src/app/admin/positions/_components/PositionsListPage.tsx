@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 import Link from 'next/link';
 
@@ -11,6 +11,7 @@ import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
+import type { Position } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { countPositions, listPositions } from '@/lib/positions/queries';
 import type { PositionType } from '@/lib/positions/types';
@@ -26,6 +27,12 @@ type PositionsListPageProps = {
   publicPathPrefix: string;
   /** Entity-specific delete button (delete action baked in). */
   DeleteButton: ComponentType<{ id: string; title: string }>;
+  /**
+   * Optional extra per-row action rendered before the delete button (e.g.
+   * the puzzle list's Daily Puzzle featured toggle). Plain server-to-server
+   * function prop — this page and its callers all render on the server.
+   */
+  renderRowAction?: (position: Position) => ReactNode;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
@@ -38,6 +45,7 @@ export async function PositionsListPage({
   title,
   publicPathPrefix,
   DeleteButton,
+  renderRowAction,
   searchParams,
 }: PositionsListPageProps) {
   const { page } = await adminPageSearchParamsCache.parse(searchParams);
@@ -93,7 +101,10 @@ export async function PositionsListPage({
               {formatDateTime(position.createdAt)}
             </td>
             <td className="px-4 py-3">
-              <DeleteButton id={position.id} title={position.title} />
+              <div className="flex items-center gap-2">
+                {renderRowAction?.(position)}
+                <DeleteButton id={position.id} title={position.title} />
+              </div>
             </td>
           </tr>
         )}

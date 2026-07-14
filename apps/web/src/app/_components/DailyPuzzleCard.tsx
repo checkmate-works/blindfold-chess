@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
-import { getDailyPosition } from '@/lib/positions/queries';
+import { getDailyPuzzle } from '@/lib/positions/queries';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
@@ -33,8 +33,11 @@ type Props = {
  * Async Server Component, so it must NOT be re-exported from the
  * `_components` barrel; import it by path. Rendered on the signed-in
  * dashboard (`/`) and at the top of the practice index (`/[locale]/practice`);
- * both share the same puzzle for the day because `getDailyPosition` is seeded
- * on the UTC date.
+ * both share the same puzzle for the day because `getDailyPuzzle` is seeded
+ * on the UTC date. The pick comes from the admin-curated `featured_puzzles`
+ * pool; when the pool is empty this renders `null`, which is the intended
+ * "no daily puzzle" state — both variants (and the compact variant's
+ * SectionTitle) disappear together.
  *
  * Copy still lives under the `landing` i18n namespace, where the card was
  * first introduced. Kept there deliberately: renaming the keys would mean
@@ -42,7 +45,7 @@ type Props = {
  */
 export async function DailyPuzzleCard({ locale, variant = 'full' }: Props) {
   const t = await getTranslations({ locale, namespace: 'landing' });
-  const puzzle = await getDailyPosition({ type: 'puzzle' });
+  const puzzle = await getDailyPuzzle();
 
   if (!puzzle) return null;
 
