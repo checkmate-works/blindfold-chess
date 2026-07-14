@@ -19,7 +19,7 @@ import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -73,7 +73,6 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
 
   return (
     <PageLayout title={t('list.title')} locale={locale}>
-      <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
       <div className="mb-6">
         <GamesTabs active="shared" locale={locale} />
       </div>

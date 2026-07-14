@@ -2263,7 +2263,6 @@
     "list": {
       "title": "公開されたゲーム",
       "empty": "まだ公開された対局はありません。",
-      "sectionTitle": "対局一覧",
       "publishExisting": "対局を公開する",
       "sortBy": "並び替え",
       "sort": {

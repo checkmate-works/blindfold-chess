@@ -14,7 +14,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { NewGameButton } from '@/app/[locale]/(public)/(home)/_components/NewGameButton';
-import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -41,7 +41,6 @@ export default async function GamesPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'gamesPage' });
   const tHelp = await getTranslations({ locale, namespace: 'gamesPage.help' });
-  const tGameList = await getTranslations({ locale, namespace: 'home.gameList' });
 
   const helpSteps: HelpStep[] = [
     {
@@ -77,7 +76,6 @@ export default async function GamesPage({ params }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('pageTitle'), href: undefined }]}
     >
-      <SectionTitle>{tGameList('title')}</SectionTitle>
       <div className="mb-6">
         <GamesTabs active="mine" locale={locale} />
       </div>
