@@ -1,7 +1,6 @@
 import { Link } from '@/i18n/routing';
 
-import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-
+import { TagCardContent } from '@/app/[locale]/_components/TagCardContent';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /** A chunk surfaced in the added / removed diff lists. */
@@ -22,12 +21,13 @@ type Props = {
 };
 
 /**
- * Chunk preview card for the edit-request diff. Mirrors the
- * `RelatedTagCard` used by `RelatedTags` on the position detail page
- * (themed board thumbnail + CHUNK badge + title + description) so chunks
- * look the same everywhere they appear in the position context. A
- * left-border accent (green / red) conveys whether the proposal adds or
- * removes the chunk without departing from the shared card shape.
+ * Chunk preview card for the edit-request diff. Renders the shared
+ * `TagCardContent` (same inner markup as `RelatedTagCard` on the position
+ * detail page) so chunks look the same everywhere they appear in the
+ * position context — including the "No Image" fallback for a hard-deleted
+ * chunk whose FEN is gone. A left-border accent (green / red) conveys
+ * whether the proposal adds or removes the chunk without departing from the
+ * shared card shape.
  */
 export function ChunkDiffCard({ entry, tone, badgeLabel, locale }: Props) {
   const accent =
@@ -36,27 +36,13 @@ export function ChunkDiffCard({ entry, tone, badgeLabel, locale }: Props) {
       : 'border-l-4 border-l-rose-400 dark:border-l-rose-500';
 
   const inner = (
-    <>
-      {entry.representativeFen ? (
-        <ThemedBoardThumbnail fen={entry.representativeFen} className="w-16 h-16 shrink-0" />
-      ) : (
-        <span
-          aria-hidden
-          className="w-16 h-16 shrink-0 rounded-sm border border-dashed border-border"
-        />
-      )}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-[10px] uppercase tracking-wider rounded px-1 bg-secondary text-secondary-foreground">
-            {badgeLabel}
-          </span>
-          <p className="text-sm font-medium truncate">{entry.label}</p>
-        </div>
-        {entry.description && (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{entry.description}</p>
-        )}
-      </div>
-    </>
+    <TagCardContent
+      kind="chunk"
+      previewFen={entry.representativeFen}
+      label={entry.label}
+      description={entry.description}
+      badgeText={badgeLabel}
+    />
   );
 
   const className = `flex items-start gap-3 p-3 rounded border border-border ${accent}`;

@@ -4,7 +4,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
 import type { ChunkOption } from '@/lib/chunks/types';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import type { ThemeOption } from '@/lib/themes/types';
 import { buildGlossaryUrlForSlug } from '@/lib/themes/url';
 
@@ -66,7 +66,7 @@ export function TagDetailModal({ item, onClose, onDetach, labels }: Props) {
                   key={`${pos.fen}-${i}`}
                   className="flex flex-col items-center gap-1 max-w-[12rem]"
                 >
-                  <BoardThumbnail fen={pos.fen} className="w-40 h-40" />
+                  <ThemedBoardThumbnail fen={pos.fen} className="w-40 h-40" />
                   {pos.caption && (
                     <p className="text-xs text-muted-foreground text-center">{pos.caption}</p>
                   )}
@@ -76,7 +76,7 @@ export function TagDetailModal({ item, onClose, onDetach, labels }: Props) {
           )
         ) : (
           <div className="flex justify-center">
-            <BoardThumbnail fen={item.representativeFen} className="w-48 h-48" />
+            <ThemedBoardThumbnail fen={item.representativeFen} className="w-48 h-48" />
           </div>
         )}
 

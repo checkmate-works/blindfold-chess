@@ -3,10 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SelectedTagCard } from './SelectedTagCard';
 
-// BoardThumbnail draws a full board; stub it so the board branch is assertable
-// without pulling the renderer into jsdom.
-vi.mock('@/lib/positions/ui/BoardThumbnail', () => ({
-  BoardThumbnail: ({ fen }: { fen: string }) => <div data-testid="board" data-fen={fen} />,
+// Board rendering needs GamePreferencesContext; stub the themed thumbnail so
+// the board branch is assertable without a provider.
+vi.mock('@/lib/positions/ui/ThemedBoardThumbnail', () => ({
+  ThemedBoardThumbnail: ({ fen }: { fen: string }) => <div data-testid="board" data-fen={fen} />,
 }));
 
 const baseProps = {

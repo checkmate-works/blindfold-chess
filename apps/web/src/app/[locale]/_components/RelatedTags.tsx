@@ -1,10 +1,9 @@
 import { Link } from '@/i18n/routing';
 
-import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import type { ThemeOption } from '@/lib/themes/types';
 import { buildGlossaryUrlForSlug } from '@/lib/themes/url';
 
-import { NoImagePlaceholder } from '@/app/[locale]/_components/NoImagePlaceholder';
+import { TagCardContent } from '@/app/[locale]/_components/TagCardContent';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type ChunkSummary = {
@@ -93,16 +92,13 @@ export type RelatedTagCardProps = {
   label: string;
   description: string | null;
   badgeText: string;
-  /**
-   * When true and `previewFen` is null, render an explicit "No Image"
-   * placeholder in the thumbnail slot. When false/omitted, a blank dashed
-   * placeholder is rendered instead (detail-page behavior). Supplied by
-   * callers — e.g. the preview and the position step's tag chips — that
-   * would rather show "No Image" than an empty box.
-   */
-  showNoImage?: boolean;
 };
 
+/**
+ * Link (or static) shell around the shared {@link TagCardContent}. The
+ * thumbnail fallback for board-less tags ("No Image") lives in the shared
+ * content, so this card renders identically to every other tag surface.
+ */
 export function RelatedTagCard({
   kind,
   href,
@@ -111,48 +107,21 @@ export function RelatedTagCard({
   label,
   description,
   badgeText,
-  showNoImage = false,
 }: RelatedTagCardProps) {
-  const thumbnail = previewFen ? (
-    <ThemedBoardThumbnail fen={previewFen} className="w-16 h-16 shrink-0" />
-  ) : showNoImage ? (
-    <NoImagePlaceholder className="w-16 h-16 shrink-0" />
-  ) : (
-    <span
-      aria-hidden
-      className="w-16 h-16 shrink-0 rounded-sm border border-dashed border-border"
+  const content = (
+    <TagCardContent
+      kind={kind}
+      previewFen={previewFen}
+      label={label}
+      description={description}
+      badgeText={badgeText}
     />
-  );
-
-  const body = (
-    <div className="min-w-0 flex-1">
-      <div className="flex items-center gap-2 mb-0.5">
-        <span
-          className={`text-[10px] uppercase tracking-wider rounded px-1 ${
-            kind === 'theme'
-              ? 'bg-primary/10 text-primary'
-              : 'bg-secondary text-secondary-foreground'
-          }`}
-        >
-          {badgeText}
-        </span>
-        <p className="text-sm font-medium truncate">{label}</p>
-      </div>
-      {description && (
-        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{description}</p>
-      )}
-    </div>
   );
 
   const baseClassName = 'flex items-start gap-3 p-3 rounded border border-border';
 
   if (!href) {
-    return (
-      <div className={baseClassName}>
-        {thumbnail}
-        {body}
-      </div>
-    );
+    return <div className={baseClassName}>{content}</div>;
   }
 
   return (
@@ -161,8 +130,7 @@ export function RelatedTagCard({
       locale={locale}
       className={`${baseClassName} hover:bg-muted transition-colors`}
     >
-      {thumbnail}
-      {body}
+      {content}
     </Link>
   );
 }

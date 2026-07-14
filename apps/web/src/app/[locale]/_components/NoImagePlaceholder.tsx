@@ -2,9 +2,8 @@
  * Fallback shown in a board-thumbnail slot when a tag (typically a themeless
  * abstract concept) has no example position. Locale-agnostic on purpose — the
  * copy is short, universally understood, and not worth a per-locale split.
- * Shared by the puzzle authoring preview (`RelatedTagCard`) and the position
- * step's selected-tag chips (`SelectedTagCard`) so both surfaces render the
- * exact same placeholder.
+ * Every tag card surface renders it through the shared `TagCardContent`;
+ * `TagPicker`'s suggestion rows use it directly at their compact size.
  */
 export const NO_IMAGE_LABEL = 'No Image';
 
