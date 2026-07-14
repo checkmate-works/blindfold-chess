@@ -39,6 +39,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { ForkProvenanceNote } from '../../../_components/ForkProvenanceNote';
 import { PositionAuthorAttribution } from '../../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
+import { PositionPeekBoard } from '../../../_components/PositionPeekBoard';
 import { PositionEditRequestCallout } from '../../../_components/edit-request/PositionEditRequestCallout';
 import { loadPositionDetail } from '../../../_lib/load-position-detail';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
@@ -160,6 +161,8 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
       )}
 
       <PiecesInfo fen={position.fen} />
+
+      <PositionPeekBoard fen={position.fen} />
 
       <div className="flex justify-center">
         <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
