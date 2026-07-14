@@ -1,5 +1,3 @@
-import { cookies } from 'next/headers';
-
 import 'server-only';
 
 import type { BoardVisibility } from './board-visibility';
@@ -7,6 +5,7 @@ import {
   BOARD_VISIBILITY_COOKIE_NAME,
   parseBoardVisibilityCookie,
 } from './board-visibility-cookie';
+import { readPreferenceCookie } from './preference-cookie.server';
 
 /**
  * Read the board-visibility hint cookie from the current request. Used by
@@ -18,7 +17,5 @@ import {
  * `dynamic = 'force-dynamic'`.
  */
 export async function readBoardVisibilityFromCookies(): Promise<BoardVisibility> {
-  const store = await cookies();
-  const raw = store.get(BOARD_VISIBILITY_COOKIE_NAME)?.value ?? null;
-  return parseBoardVisibilityCookie(raw);
+  return readPreferenceCookie(BOARD_VISIBILITY_COOKIE_NAME, parseBoardVisibilityCookie);
 }

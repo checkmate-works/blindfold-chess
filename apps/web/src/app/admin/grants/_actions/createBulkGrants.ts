@@ -3,13 +3,14 @@
 import { revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
+import { validateUserId } from '@/app/admin/_lib/validators';
 
 import { db } from '@/lib/db';
 import { getClientIp } from '@/lib/security/client-ip';
 
 import type { CreatedAdminGrant } from '../_lib/grant-mutations';
 import { insertAdminGrant, notifyAdminGrant } from '../_lib/grant-mutations';
-import { validateDurationDays, validateUuid } from '../_lib/validation';
+import { validateDurationDays } from '../_lib/validation';
 
 export type BulkGrantParams = {
   userIds: string[];
@@ -30,7 +31,7 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
   }
 
   for (const id of userIds) {
-    const uuidError = validateUuid(id);
+    const uuidError = validateUserId(id);
     if (uuidError) {
       return { error: uuidError };
     }

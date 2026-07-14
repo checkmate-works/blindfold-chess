@@ -11,7 +11,7 @@ import {
   profiles,
   topicPosts,
 } from '@/lib/db';
-import { countRows } from '@/lib/db/list-query';
+import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { PositionSortMode, PositionType } from './types';
@@ -28,28 +28,34 @@ type GetPositionByIdOptions = {
 };
 
 /**
+ * Shared `WHERE` conditions for the by-id lookups (`getPositionById`,
+ * `getPositionWithProfileById`), so the two stay in lockstep on the
+ * type / soft-delete filtering rules.
+ */
+function buildByIdConditions({ id, type, includeDeleted }: GetPositionByIdOptions): SQL[] {
+  const conditions: SQL[] = [eq(positions.id, id)];
+  if (type) conditions.push(eq(positions.type, type));
+  if (!includeDeleted) conditions.push(isNull(positions.deletedAt));
+  return conditions;
+}
+
+/**
  * Fetch a single position by id.
  *
  * Wrapped with `React.cache` for per-request deduplication so multiple
  * callers (page + generateMetadata + siblings) share a single DB roundtrip.
  */
-export const getPositionById = cache(
-  async ({ id, type, includeDeleted }: GetPositionByIdOptions) => {
-    if (!UUID_RE.test(id)) return null;
+export const getPositionById = cache(async (options: GetPositionByIdOptions) => {
+  if (!UUID_RE.test(options.id)) return null;
 
-    const conditions = [eq(positions.id, id)];
-    if (type) conditions.push(eq(positions.type, type));
-    if (!includeDeleted) conditions.push(isNull(positions.deletedAt));
+  const [row] = await db
+    .select()
+    .from(positions)
+    .where(and(...buildByIdConditions(options)))
+    .limit(1);
 
-    const [row] = await db
-      .select()
-      .from(positions)
-      .where(and(...conditions))
-      .limit(1);
-
-    return row ?? null;
-  }
-);
+  return row ?? null;
+});
 
 type ListPositionsOptions = {
   type?: PositionType;
@@ -135,12 +141,12 @@ export async function listPositions({
   offset,
 }: ListPositionsOptions) {
   const where = buildListConditions({ type, includeDeleted, userId, forkedFromId });
-  const query = db.select().from(positions);
-  const rows = await (where ? query.where(where) : query)
-    .orderBy(desc(positions.createdAt))
-    .limit(limit)
-    .offset(offset);
-  return rows;
+  return runPaginatedSelect(db.select().from(positions).$dynamic(), {
+    where,
+    orderBy: [desc(positions.createdAt)],
+    limit,
+    offset,
+  });
 }
 
 /**
@@ -163,12 +169,14 @@ export async function listPositionsWithProfile({
       profile: AUTHOR_PROFILE_COLUMNS,
     })
     .from(positions)
-    .leftJoin(profiles, liveProfileJoinOn(positions.userId));
-  const rows = await (where ? query.where(where) : query)
-    .orderBy(...buildPositionOrderBy(sort, topicType))
-    .limit(limit)
-    .offset(offset);
-  return rows;
+    .leftJoin(profiles, liveProfileJoinOn(positions.userId))
+    .$dynamic();
+  return runPaginatedSelect(query, {
+    where,
+    orderBy: buildPositionOrderBy(sort, topicType),
+    limit,
+    offset,
+  });
 }
 
 /**
@@ -189,27 +197,21 @@ export async function countPositions({
  * Wrapped with `React.cache` so `generateMetadata` and the page component
  * can each call it without hitting the DB twice.
  */
-export const getPositionWithProfileById = cache(
-  async ({ id, type, includeDeleted }: GetPositionByIdOptions) => {
-    if (!UUID_RE.test(id)) return null;
+export const getPositionWithProfileById = cache(async (options: GetPositionByIdOptions) => {
+  if (!UUID_RE.test(options.id)) return null;
 
-    const conditions = [eq(positions.id, id)];
-    if (type) conditions.push(eq(positions.type, type));
-    if (!includeDeleted) conditions.push(isNull(positions.deletedAt));
+  const [row] = await db
+    .select({
+      position: positions,
+      profile: AUTHOR_PROFILE_COLUMNS,
+    })
+    .from(positions)
+    .leftJoin(profiles, liveProfileJoinOn(positions.userId))
+    .where(and(...buildByIdConditions(options)))
+    .limit(1);
 
-    const [row] = await db
-      .select({
-        position: positions,
-        profile: AUTHOR_PROFILE_COLUMNS,
-      })
-      .from(positions)
-      .leftJoin(profiles, liveProfileJoinOn(positions.userId))
-      .where(and(...conditions))
-      .limit(1);
-
-    return row ?? null;
-  }
-);
+  return row ?? null;
+});
 /**
  * Lightweight lookup for fork lineage display on detail pages: returns
  * just enough metadata to render a "Forked from <title>" link, including

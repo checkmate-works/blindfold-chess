@@ -11,3 +11,10 @@ export const FEEDBACK_FLASH_MS = {
   correct: 1000,
   incorrect: 2000,
 } as const;
+
+/**
+ * `feedbackDuration` selector for `useTimedSession` implementing the flash
+ * policy above — pass it as-is instead of re-authoring the ternary inline.
+ */
+export const flashFeedbackDuration = (correct: boolean): number =>
+  correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect;

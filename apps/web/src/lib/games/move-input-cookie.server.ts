@@ -1,9 +1,8 @@
-import { cookies } from 'next/headers';
-
 import 'server-only';
 
 import type { MoveInputPreferenceHint } from './move-input-cookie';
 import { MOVE_INPUT_COOKIE_NAME, parseMoveInputCookie } from './move-input-cookie';
+import { readPreferenceCookie } from './preference-cookie.server';
 
 /**
  * Read the move-input preference hint cookie from the current request. Used
@@ -18,7 +17,5 @@ import { MOVE_INPUT_COOKIE_NAME, parseMoveInputCookie } from './move-input-cooki
  * `apps/web/src/lib/isr-user-scope-guard.test.ts` for the repo-wide rule.
  */
 export async function readMoveInputPreferenceFromCookies(): Promise<MoveInputPreferenceHint> {
-  const store = await cookies();
-  const raw = store.get(MOVE_INPUT_COOKIE_NAME)?.value ?? null;
-  return parseMoveInputCookie(raw);
+  return readPreferenceCookie(MOVE_INPUT_COOKIE_NAME, parseMoveInputCookie);
 }

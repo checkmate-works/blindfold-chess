@@ -1,10 +1,4 @@
-import { validateUserId } from '@/app/admin/_lib/validators';
-
 const MAX_DURATION_DAYS = 3650;
-
-export function validateUuid(id: string): string | null {
-  return validateUserId(id);
-}
 
 export function validateDurationDays(durationDays: number): string | null {
   if (!durationDays || durationDays <= 0) {

@@ -1,4 +1,4 @@
-import { IS_LOCAL_DEV } from '@/config';
+import { writePreferenceCookieClient } from './preference-cookie';
 
 /**
  * Single-writer rule: only `GamePreferencesProvider` writes this cookie (via
@@ -48,8 +48,6 @@ import { IS_LOCAL_DEV } from '@/config';
  *                          `document.cookie`, so it must be JS-readable.
  */
 export const MOVE_INPUT_COOKIE_NAME = 'bfc_move_input_pref';
-
-const MOVE_INPUT_COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365; // 1 year
 
 const MOVE_INPUT_MODES = ['button', 'text', 'select'] as const;
 export type MoveInputMode = (typeof MOVE_INPUT_MODES)[number];
@@ -123,8 +121,5 @@ export function parseMoveInputCookie(raw: string | null | undefined): MoveInputP
  * No-op on the server (typeof document === 'undefined').
  */
 export function writeMoveInputCookieClient(hint: MoveInputPreferenceHint): void {
-  if (typeof document === 'undefined') return;
-  const value = encodeMoveInputCookie(hint);
-  const secureFlag = !IS_LOCAL_DEV ? '; Secure' : '';
-  document.cookie = `${MOVE_INPUT_COOKIE_NAME}=${value}; Path=/; Max-Age=${MOVE_INPUT_COOKIE_MAX_AGE_SEC}; SameSite=Lax${secureFlag}`;
+  writePreferenceCookieClient(MOVE_INPUT_COOKIE_NAME, encodeMoveInputCookie(hint));
 }

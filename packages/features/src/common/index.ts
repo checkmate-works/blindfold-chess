@@ -69,7 +69,8 @@ export type {
 export { calculateAccuracy, calculateSquareDifferences } from "./accuracy";
 export type { FeedbackSpeed } from "./feedback-speed";
 export { FEEDBACK_SPEEDS, FEEDBACK_SPEED_MS } from "./feedback-speed";
-export { FEEDBACK_FLASH_MS } from "./flash-policy";
+export { FEEDBACK_FLASH_MS, flashFeedbackDuration } from "./flash-policy";
+export { toggleSelection } from "./toggle-selection";
 export type { PersistentStorage } from "./persistent-storage";
 export type {
   UsePersistentSettingsOptions,

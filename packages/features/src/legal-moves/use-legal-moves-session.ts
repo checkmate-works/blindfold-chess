@@ -2,9 +2,8 @@
 
 import { useCallback } from "react";
 
-import { computePracticeResult } from "../common/practice-result";
 import { useBufferedQuestions } from "../practice-session/use-buffered-questions";
-import { usePracticeCompletion } from "../practice-session/use-practice-completion";
+import { useTimedPracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
   type TimedSessionFacade,
@@ -43,20 +42,7 @@ export function useLegalMovesSession({
     mistakeAllowance,
   });
 
-  const { correctCount, incorrectCount, timeElapsed, isFinished } = session;
-
-  usePracticeCompletion(
-    isFinished,
-    (): LegalMovesResult =>
-      computePracticeResult(
-        correctCount,
-        incorrectCount,
-        timeElapsed,
-        timeLimit,
-        session.questionTimes,
-      ),
-    onComplete,
-  );
+  useTimedPracticeCompletion(session, timeLimit, onComplete);
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 

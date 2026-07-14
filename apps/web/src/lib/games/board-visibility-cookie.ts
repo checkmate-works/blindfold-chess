@@ -1,7 +1,6 @@
-import { IS_LOCAL_DEV } from '@/config';
-
 import type { BoardVisibility } from './board-visibility';
 import { DEFAULT_BOARD_VISIBILITY, isBoardVisibility } from './board-visibility';
+import { writePreferenceCookieClient } from './preference-cookie';
 
 /**
  * Cookie that mirrors the user's GLOBAL `boardVisibility` preference so the
@@ -37,8 +36,6 @@ import { DEFAULT_BOARD_VISIBILITY, isBoardVisibility } from './board-visibility'
  */
 export const BOARD_VISIBILITY_COOKIE_NAME = 'bfc_board_visibility_pref';
 
-const BOARD_VISIBILITY_COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365; // 1 year
-
 /**
  * Parse the cookie value defensively. Unknown / malformed values fall back to
  * {@link DEFAULT_BOARD_VISIBILITY}, matching `GamePreferencesContext`'s own
@@ -54,7 +51,5 @@ export function parseBoardVisibilityCookie(raw: string | null | undefined): Boar
  * server (`typeof document === 'undefined'`).
  */
 export function writeBoardVisibilityCookieClient(value: BoardVisibility): void {
-  if (typeof document === 'undefined') return;
-  const secureFlag = !IS_LOCAL_DEV ? '; Secure' : '';
-  document.cookie = `${BOARD_VISIBILITY_COOKIE_NAME}=${value}; Path=/; Max-Age=${BOARD_VISIBILITY_COOKIE_MAX_AGE_SEC}; SameSite=Lax${secureFlag}`;
+  writePreferenceCookieClient(BOARD_VISIBILITY_COOKIE_NAME, value);
 }
