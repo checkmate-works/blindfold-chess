@@ -11,7 +11,7 @@ import {
   profiles,
   topicPosts,
 } from '@/lib/db';
-import { countRows } from '@/lib/db/list-query';
+import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { PositionSortMode, PositionType } from './types';
@@ -141,12 +141,12 @@ export async function listPositions({
   offset,
 }: ListPositionsOptions) {
   const where = buildListConditions({ type, includeDeleted, userId, forkedFromId });
-  const query = db.select().from(positions);
-  const rows = await (where ? query.where(where) : query)
-    .orderBy(desc(positions.createdAt))
-    .limit(limit)
-    .offset(offset);
-  return rows;
+  return runPaginatedSelect(db.select().from(positions).$dynamic(), {
+    where,
+    orderBy: [desc(positions.createdAt)],
+    limit,
+    offset,
+  });
 }
 
 /**
@@ -169,12 +169,14 @@ export async function listPositionsWithProfile({
       profile: AUTHOR_PROFILE_COLUMNS,
     })
     .from(positions)
-    .leftJoin(profiles, liveProfileJoinOn(positions.userId));
-  const rows = await (where ? query.where(where) : query)
-    .orderBy(...buildPositionOrderBy(sort, topicType))
-    .limit(limit)
-    .offset(offset);
-  return rows;
+    .leftJoin(profiles, liveProfileJoinOn(positions.userId))
+    .$dynamic();
+  return runPaginatedSelect(query, {
+    where,
+    orderBy: buildPositionOrderBy(sort, topicType),
+    limit,
+    offset,
+  });
 }
 
 /**

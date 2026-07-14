@@ -12,7 +12,7 @@ import {
   positions,
   profiles,
 } from '@/lib/db';
-import { countRows } from '@/lib/db/list-query';
+import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { ChunkOption } from './types';
@@ -76,12 +76,12 @@ function buildListConditions({
  */
 export async function listChunks({ includeDeleted, status, limit, offset }: ListChunksOptions) {
   const where = buildListConditions({ includeDeleted, status });
-  const query = db.select().from(chunks);
-  const rows = await (where ? query.where(where) : query)
-    .orderBy(desc(chunks.createdAt))
-    .limit(limit)
-    .offset(offset);
-  return rows;
+  return runPaginatedSelect(db.select().from(chunks).$dynamic(), {
+    where,
+    orderBy: [desc(chunks.createdAt)],
+    limit,
+    offset,
+  });
 }
 
 /**
@@ -105,12 +105,14 @@ export async function listChunksWithProfile({
       profile: AUTHOR_PROFILE_COLUMNS,
     })
     .from(chunks)
-    .leftJoin(profiles, liveProfileJoinOn(chunks.userId));
-  const rows = await (where ? query.where(where) : query)
-    .orderBy(desc(chunks.createdAt))
-    .limit(limit)
-    .offset(offset);
-  return rows;
+    .leftJoin(profiles, liveProfileJoinOn(chunks.userId))
+    .$dynamic();
+  return runPaginatedSelect(query, {
+    where,
+    orderBy: [desc(chunks.createdAt)],
+    limit,
+    offset,
+  });
 }
 
 /**
