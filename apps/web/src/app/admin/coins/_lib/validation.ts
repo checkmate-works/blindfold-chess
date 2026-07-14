@@ -1,5 +1,3 @@
-import { validateUserId } from '@/app/admin/_lib/validators';
-
 /**
  * Upper bound on a single admin grant. 100,000 pt = ~274 years of ad_free
  * at the 1 pt/day rate, which is far beyond any conceivable legitimate
@@ -7,10 +5,6 @@ import { validateUserId } from '@/app/admin/_lib/validators';
  * would warp the user_point_balances cache permanently.
  */
 const MAX_AMOUNT = 100_000;
-
-export function validateUuid(id: string): string | null {
-  return validateUserId(id);
-}
 
 export function validateAmount(amount: number): string | null {
   if (!Number.isInteger(amount) || amount <= 0) {

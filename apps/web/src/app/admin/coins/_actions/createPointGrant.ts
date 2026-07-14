@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
+import { validateUserId } from '@/app/admin/_lib/validators';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions } from '@/lib/db';
@@ -10,7 +11,7 @@ import { createNotification } from '@/lib/notifications/notification';
 import { grantAdminPoints } from '@/lib/points';
 import { getClientIp } from '@/lib/security/client-ip';
 
-import { validateAmount, validateUuid } from '../_lib/validation';
+import { validateAmount } from '../_lib/validation';
 
 /**
  * Issue a point grant from the admin surface.
@@ -32,7 +33,7 @@ export async function createPointGrant(formData: FormData): Promise<ActionResult
   const reasonRaw = (formData.get('reason') as string | null)?.trim();
 
   if (!userId) return { error: 'User ID is required' };
-  const uuidError = validateUuid(userId);
+  const uuidError = validateUserId(userId);
   if (uuidError) return { error: 'Invalid User ID format (expected UUID)' };
 
   const amount = Number(amountStr);

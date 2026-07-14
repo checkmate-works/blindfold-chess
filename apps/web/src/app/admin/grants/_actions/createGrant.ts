@@ -3,6 +3,7 @@
 import { revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
+import { validateUserId } from '@/app/admin/_lib/validators';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db } from '@/lib/db';
@@ -10,7 +11,7 @@ import { isBenefitType } from '@/lib/db/data/grant-types';
 import { getClientIp } from '@/lib/security/client-ip';
 
 import { insertAdminGrant, notifyAdminGrant } from '../_lib/grant-mutations';
-import { validateDurationDays, validateUuid } from '../_lib/validation';
+import { validateDurationDays } from '../_lib/validation';
 
 export async function createGrant(formData: FormData): Promise<ActionResult> {
   const auth = await requireAdmin();
@@ -24,7 +25,7 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
   if (!userId || !userId.trim()) {
     return { error: 'User ID is required' };
   }
-  const uuidError = validateUuid(userId.trim());
+  const uuidError = validateUserId(userId.trim());
   if (uuidError) {
     return { error: 'Invalid User ID format (expected UUID)' };
   }
