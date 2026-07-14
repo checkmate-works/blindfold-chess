@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { toggleSelection } from "@blindfold-chess/features/common";
 import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
 import type { PieceType, LegalMovesSettings } from "../lib/types";
 import { DEFAULT_LEGAL_MOVES_SETTINGS } from "../lib/types";
@@ -14,16 +15,8 @@ export function useLegalMovesSettings() {
 
   const togglePiece = useCallback(
     (piece: PieceType) => {
-      const isSelected = settings.selectedPieces.includes(piece);
-      let newPieces: PieceType[];
-
-      if (isSelected) {
-        if (settings.selectedPieces.length <= 1) return;
-        newPieces = settings.selectedPieces.filter((p) => p !== piece);
-      } else {
-        newPieces = [...settings.selectedPieces, piece];
-      }
-
+      const newPieces = toggleSelection(settings.selectedPieces, piece);
+      if (newPieces === settings.selectedPieces) return;
       updateSettings({ selectedPieces: newPieces });
     },
     [settings.selectedPieces, updateSettings],
