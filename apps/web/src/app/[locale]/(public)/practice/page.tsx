@@ -177,9 +177,7 @@ export default async function PracticePage({ params }: Props) {
         locale={locale}
         breadcrumb={[{ label: t('navigation.practice') }]}
       >
-        <div className="flex justify-center">
-          <DailyPuzzleCard locale={locale} />
-        </div>
+        <DailyPuzzleCard locale={locale} variant="compact" />
 
         {sections.map((section) => (
           <section key={section.title} className="space-y-4">
