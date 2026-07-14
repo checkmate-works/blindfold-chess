@@ -37,7 +37,6 @@ export function PuzzlePreviewTags({ themes, chunks }: Props) {
             label={theme.label}
             description={theme.definition}
             badgeText={t('badge.theme')}
-            showNoImage
           />
         ))}
         {chunks.map((chunk) => (
@@ -48,7 +47,6 @@ export function PuzzlePreviewTags({ themes, chunks }: Props) {
             label={chunk.label}
             description={chunk.description}
             badgeText={t('badge.chunk')}
-            showNoImage
           />
         ))}
       </div>

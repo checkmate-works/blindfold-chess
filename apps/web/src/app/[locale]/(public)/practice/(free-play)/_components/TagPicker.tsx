@@ -5,8 +5,10 @@ import { useMemo, useState } from 'react';
 import { useCombobox } from 'downshift';
 
 import type { ChunkOption } from '@/lib/chunks/types';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import type { ThemeOption } from '@/lib/themes/types';
+
+import { NoImagePlaceholder } from '@/app/[locale]/_components/NoImagePlaceholder';
 
 import { type TagItem, computeTagSuggestions } from '../_lib/tag-suggestions';
 import { SelectedTagCard } from './SelectedTagCard';
@@ -229,16 +231,21 @@ export function TagPicker({
                     isHighlighted ? 'bg-primary text-primary-foreground' : ''
                   }`}
                 >
-                  {/* Reserve the thumbnail slot even when previewFen is
-                      null so that text aligns vertically across rows
-                      regardless of which items have boards (most theme
-                      rows do not — abstract concepts like "Pin" have no
-                      single canonical position). */}
+                  {/* The thumbnail slot is always filled — a board when the
+                      tag has one, the shared "No Image" placeholder when it
+                      doesn't (most theme rows — abstract concepts like "Pin"
+                      have no single canonical position) — so text aligns
+                      vertically across rows and the fallback matches every
+                      other tag surface. */}
                   <span
                     aria-hidden
                     className="flex-shrink-0 w-12 h-12 flex items-center justify-center"
                   >
-                    {previewFen ? <BoardThumbnail fen={previewFen} className="w-12 h-12" /> : null}
+                    {previewFen ? (
+                      <ThemedBoardThumbnail fen={previewFen} className="w-12 h-12" />
+                    ) : (
+                      <NoImagePlaceholder className="w-12 h-12" />
+                    )}
                   </span>
                   <span className="flex-1 flex items-center gap-2 min-w-0">
                     <span
