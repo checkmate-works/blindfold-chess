@@ -2,12 +2,12 @@
 
 import { useCallback, useState } from "react";
 
-import { applyCoordinateBackspace, FEEDBACK_FLASH_MS } from "../common";
-import { computePracticeResult } from "../common/practice-result";
-import { usePracticeCompletion } from "../practice-session/use-practice-completion";
+import { applyCoordinateBackspace, flashFeedbackDuration } from "../common";
+import { useTimedPracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
   type TimedSessionFacade,
+  isInputBlocked,
   toTimedSessionFacade,
 } from "../practice-session/quiz-session";
 import { useTimedSession } from "../practice-session/use-timed-session";
@@ -58,38 +58,15 @@ export function useBoardSymmetrySession({
     generateQuestion,
     onAnswerEffect,
     mistakeAllowance,
-    feedbackDuration: (correct: boolean) =>
-      correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
+    feedbackDuration: flashFeedbackDuration,
     onAdvance: handleAdvance,
   });
 
-  const {
-    correctCount,
-    incorrectCount,
-    timeElapsed,
-    isFinished,
-    showFeedback,
-    countdown,
-    isPaused,
-  } = session;
-
-  usePracticeCompletion(
-    isFinished,
-    (): BoardSymmetryResult =>
-      computePracticeResult(
-        correctCount,
-        incorrectCount,
-        timeElapsed,
-        timeLimit,
-        session.questionTimes,
-      ),
-    onComplete,
-  );
+  useTimedPracticeCompletion(session, timeLimit, onComplete);
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 
-  const isBlocked =
-    isFinished || countdown !== null || isPaused || showFeedback;
+  const isBlocked = isInputBlocked(session);
 
   const handleFileToggle = useCallback(
     (file: string) => {

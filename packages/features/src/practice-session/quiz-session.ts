@@ -30,6 +30,25 @@ export type TimedSessionFacade = {
   finishSession: () => void;
 };
 
+/**
+ * True while answer input must be ignored: during the pre-session countdown,
+ * while paused, during the feedback flash, or once the session has finished.
+ * Accepts any facade-shaped object (a `useTimedSession` return value works).
+ */
+export function isInputBlocked(
+  state: Pick<
+    TimedSessionFacade,
+    "isFinished" | "countdown" | "isPaused" | "showFeedback"
+  >,
+): boolean {
+  return (
+    state.isFinished ||
+    state.countdown !== null ||
+    state.isPaused ||
+    state.showFeedback
+  );
+}
+
 /** Project a `useTimedSession` return value down to the shared facade fields. */
 export function toTimedSessionFacade(
   session: UseTimedSessionReturn<unknown>,

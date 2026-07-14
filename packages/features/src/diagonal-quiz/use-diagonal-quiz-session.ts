@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
-import { computePracticeResult } from "../common/practice-result";
+import { flashFeedbackDuration } from "../common/flash-policy";
 import { generateSquareSequence } from "../common/utils";
 import { useBufferedQuestions } from "../practice-session/use-buffered-questions";
-import { usePracticeCompletion } from "../practice-session/use-practice-completion";
+import { useTimedPracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
   type TimedSessionFacade,
@@ -63,17 +62,10 @@ export function useDiagonalQuizSession({
     generateQuestion,
     onAnswerEffect,
     mistakeAllowance,
-    feedbackDuration: (correct: boolean) =>
-      correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
+    feedbackDuration: flashFeedbackDuration,
   });
 
-  const {
-    correctCount,
-    incorrectCount,
-    timeElapsed,
-    isFinished,
-    showFeedback,
-  } = session;
+  const { showFeedback } = session;
 
   useEffect(() => {
     if (!showFeedback) {
@@ -81,18 +73,7 @@ export function useDiagonalQuizSession({
     }
   }, [showFeedback]);
 
-  usePracticeCompletion(
-    isFinished,
-    (): DiagonalQuizResult =>
-      computePracticeResult(
-        correctCount,
-        incorrectCount,
-        timeElapsed,
-        timeLimit,
-        session.questionTimes,
-      ),
-    onComplete,
-  );
+  useTimedPracticeCompletion(session, timeLimit, onComplete);
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 

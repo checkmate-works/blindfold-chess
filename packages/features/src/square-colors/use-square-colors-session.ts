@@ -2,10 +2,9 @@
 
 import { useCallback } from "react";
 
-import { computePracticeResult } from "../common/practice-result";
 import { generateSquareSequence } from "../common/utils";
 import { useBufferedQuestions } from "../practice-session/use-buffered-questions";
-import { usePracticeCompletion } from "../practice-session/use-practice-completion";
+import { useTimedPracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
   type TimedSessionFacade,
@@ -40,20 +39,7 @@ export function useSquareColorsSession({
     mistakeAllowance,
   });
 
-  const { correctCount, incorrectCount, timeElapsed, isFinished } = session;
-
-  usePracticeCompletion(
-    isFinished,
-    (): SquareColorsResult =>
-      computePracticeResult(
-        correctCount,
-        incorrectCount,
-        timeElapsed,
-        timeLimit,
-        session.questionTimes,
-      ),
-    onComplete,
-  );
+  useTimedPracticeCompletion(session, timeLimit, onComplete);
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 

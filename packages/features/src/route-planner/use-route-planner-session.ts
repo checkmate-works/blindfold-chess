@@ -4,11 +4,12 @@ import { useCallback, useRef } from "react";
 
 import type { Square } from "@blindfold-chess/types";
 
-import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
+import { flashFeedbackDuration } from "../common/flash-policy";
 import { usePracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
   type TimedSessionFacade,
+  isInputBlocked,
   toTimedSessionFacade,
 } from "../practice-session/quiz-session";
 import { useTimedSession } from "../practice-session/use-timed-session";
@@ -55,8 +56,7 @@ export function useRoutePlannerSession({
   const session = useTimedSession<RoutePlannerProblem>({
     timeLimit,
     generateQuestion,
-    feedbackDuration: (correct: boolean) =>
-      correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
+    feedbackDuration: flashFeedbackDuration,
     mistakeAllowance,
     onAnswerEffect,
   });
@@ -84,11 +84,8 @@ export function useRoutePlannerSession({
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 
-  const isBlocked =
-    isFinished ||
-    session.countdown !== null ||
-    session.isPaused ||
-    session.showFeedback;
+  // `isFinished` overrides the session's own flag to include the count limit.
+  const isBlocked = isInputBlocked({ ...session, isFinished });
 
   // Shared result-push step for answers and skips: resolves the model path and
   // appends a problem-result entry. `skipped` is only written when true so
