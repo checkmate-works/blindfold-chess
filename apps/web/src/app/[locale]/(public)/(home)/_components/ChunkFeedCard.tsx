@@ -12,7 +12,7 @@ import { toggleLike } from '@/app/[locale]/(public)/chunks/_actions/toggleLike';
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
-import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -25,8 +25,8 @@ type Props = {
   justNowLabel: string;
   /** ActivityCard layout: `'feed'` (divider list, default) or `'card'` (stand-alone card). */
   variant?: 'feed' | 'card';
-  /** Like button size variant, forwarded to `PostFooter`. */
-  likeSize?: LikeToggleButtonSize;
+  /** Size variant for the footer engagement actions (like + comment counter), forwarded to `PostFooter`. */
+  actionSize?: EngagementCounterSize;
 };
 
 export const ChunkFeedCard = memo(function ChunkFeedCard({
@@ -35,7 +35,7 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
   locale,
   justNowLabel,
   variant,
-  likeSize,
+  actionSize,
 }: Props) {
   const tFeed = useTranslations('home.feed.chunk');
   const tCommon = useTranslations('Common');
@@ -91,7 +91,7 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
           toggleLikeAction={toggleLike}
           i18nNamespace="topics.chunks"
           postHref={href}
-          likeSize={likeSize}
+          actionSize={actionSize}
         />
       }
     >

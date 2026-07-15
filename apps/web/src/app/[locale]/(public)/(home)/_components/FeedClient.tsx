@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { NativeAdView } from '@/lib/ads/ad';
 
-import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 
 import { getFeed } from '../_actions/getFeed';
@@ -50,8 +50,8 @@ type Props = {
    * `ActivityCard` as well so the cards pick up their own border in `'card'`.
    */
   variant?: 'feed' | 'card';
-  /** Like button size variant, forwarded to every `FeedCard`. */
-  likeSize?: LikeToggleButtonSize;
+  /** Size variant for the footer engagement actions (like + comment counter), forwarded to every `FeedCard`. */
+  actionSize?: EngagementCounterSize;
   'data-tour-id'?: string;
 };
 
@@ -65,7 +65,7 @@ export function FeedClient({
   nativeAdCreatives,
   scope = 'home',
   variant = 'feed',
-  likeSize,
+  actionSize,
   ...rest
 }: Props) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
@@ -117,12 +117,12 @@ export function FeedClient({
             showMoreLabel={showMoreLabel}
             justNowLabel={justNowLabel}
             variant={variant}
-            likeSize={likeSize}
+            actionSize={actionSize}
           />
         </div>
       );
     },
-    [locale, showMoreLabel, justNowLabel, variant, likeSize, itemWrapperClass, adCreatives]
+    [locale, showMoreLabel, justNowLabel, variant, actionSize, itemWrapperClass, adCreatives]
   );
 
   const loadMore = useCallback(async () => {

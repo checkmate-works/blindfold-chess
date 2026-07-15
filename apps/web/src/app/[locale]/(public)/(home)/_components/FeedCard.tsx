@@ -1,4 +1,4 @@
-import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 
 import type { FeedItem } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
@@ -19,11 +19,18 @@ type Props = {
    * `chunk`) honor it today.
    */
   variant?: 'feed' | 'card';
-  /** Like button size variant, forwarded to each card's `PostFooter`. */
-  likeSize?: LikeToggleButtonSize;
+  /** Size variant for the footer engagement actions (like + comment counter), forwarded to each card's `PostFooter`. */
+  actionSize?: EngagementCounterSize;
 };
 
-export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant, likeSize }: Props) {
+export function FeedCard({
+  item,
+  locale,
+  showMoreLabel,
+  justNowLabel,
+  variant,
+  actionSize,
+}: Props) {
   switch (item.entityType) {
     case 'topic_post':
       return (
@@ -33,7 +40,7 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant, l
           showMoreLabel={showMoreLabel}
           justNowLabel={justNowLabel}
           variant={variant}
-          likeSize={likeSize}
+          actionSize={actionSize}
         />
       );
     case 'position':
@@ -42,7 +49,7 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant, l
           data={item.data}
           locale={locale}
           justNowLabel={justNowLabel}
-          likeSize={likeSize}
+          actionSize={actionSize}
         />
       );
     case 'game':
@@ -51,7 +58,7 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant, l
           data={item.data}
           locale={locale}
           justNowLabel={justNowLabel}
-          likeSize={likeSize}
+          actionSize={actionSize}
         />
       );
     case 'chunk':
@@ -62,7 +69,7 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant, l
           locale={locale}
           justNowLabel={justNowLabel}
           variant={variant}
-          likeSize={likeSize}
+          actionSize={actionSize}
         />
       );
     case 'challenge_rank_update':

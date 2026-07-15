@@ -7,7 +7,11 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaRegComment } from 'react-icons/fa';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
-import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
+import {
+  EngagementCounter,
+  engagementIconClass,
+} from '@/app/[locale]/_components/EngagementCounter';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 
 import type { ToggleLikeAction } from '../_lib/action-types';
 import type { LikeMeta, ReplyMeta } from '../_lib/shared';
@@ -29,8 +33,8 @@ type Props = {
    * preserving prior behavior at call sites that haven't opted in.
    */
   postHref?: string;
-  /** Like button size variant, forwarded to `LikeButton`. */
-  likeSize?: LikeToggleButtonSize;
+  /** Size variant for the footer engagement actions (like button + comment counter). */
+  actionSize?: EngagementCounterSize;
 };
 
 export function PostFooter({
@@ -42,7 +46,7 @@ export function PostFooter({
   toggleLikeAction,
   i18nNamespace,
   postHref,
-  likeSize,
+  actionSize,
 }: Props) {
   const t = useTranslations(i18nNamespace);
   const tTopics = useTranslations('topics');
@@ -52,10 +56,11 @@ export function PostFooter({
   // and post a reply. Aria-label is namespace-agnostic so screen readers
   // get the same "Reply" cue across every topic type.
   const replyIcon = (
-    <>
-      <FaRegComment className="w-4 h-4" />
-      {replyMeta.replyCount > 0 && <span>{replyMeta.replyCount}</span>}
-    </>
+    <EngagementCounter
+      icon={<FaRegComment className={engagementIconClass(actionSize)} />}
+      count={replyMeta.replyCount}
+      size={actionSize}
+    />
   );
 
   return (
@@ -68,7 +73,7 @@ export function PostFooter({
         initialLikedByMe={likeMeta.likedByMe}
         toggleLikeAction={toggleLikeAction}
         i18nNamespace={i18nNamespace}
-        size={likeSize}
+        size={actionSize}
       />
 
       {postHref ? (
@@ -76,12 +81,12 @@ export function PostFooter({
           href={postHref}
           locale={locale}
           aria-label={tTopics('replyAriaLabel')}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          className="flex items-center text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
         >
           {replyIcon}
         </Link>
       ) : (
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">{replyIcon}</div>
+        <div className="flex items-center text-muted-foreground">{replyIcon}</div>
       )}
 
       {replyMeta.replyCount > 0 && (

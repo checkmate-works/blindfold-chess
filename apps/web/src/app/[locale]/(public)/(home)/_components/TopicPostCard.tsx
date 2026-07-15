@@ -19,7 +19,7 @@ import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/ope
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
 import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
-import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { TopicSquareBoard } from './TopicSquareBoard';
@@ -38,8 +38,8 @@ type Props = {
    * variants stay compact and don't surface per-post attachments.
    */
   attachment?: ReactNode;
-  /** Like button size variant, forwarded to `PostFooter`. */
-  likeSize?: LikeToggleButtonSize;
+  /** Size variant for the footer engagement actions (like + comment counter), forwarded to `PostFooter`. */
+  actionSize?: EngagementCounterSize;
 };
 
 export const TopicPostCard = memo(function TopicPostCard({
@@ -49,7 +49,7 @@ export const TopicPostCard = memo(function TopicPostCard({
   justNowLabel,
   variant,
   attachment,
-  likeSize,
+  actionSize,
 }: Props) {
   const tTopics = useTranslations('topics');
   const tCommon = useTranslations('Common');
@@ -121,7 +121,7 @@ export const TopicPostCard = memo(function TopicPostCard({
           toggleLikeAction={isOpening ? toggleLikeOpening : toggleLikeSquare}
           i18nNamespace={isOpening ? 'topics.openings' : 'topics.squares'}
           postHref={href}
-          likeSize={likeSize}
+          actionSize={actionSize}
         />
       }
     >
