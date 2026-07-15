@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { BoardSkeleton, FlipBoardButton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton, FlipBoardButton } from '@/app/_components';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import {
@@ -163,25 +163,23 @@ export function ChunkFormFields({
             </div>
             <FlipBoardButton onClick={board.handleFlip} title={t('flipBoard')} />
           </div>
-          <div className="flex justify-center">
-            <div className="w-full max-w-md">
-              {!isLoaded ? (
-                <BoardSkeleton />
-              ) : (
-                <EditableChessBoard
-                  fen={board.boardFen}
-                  onFenChange={board.handleBoardChange}
-                  labels={editableBoardLabels}
-                  editable={true}
-                  flipped={board.flipped}
-                  showCoordinates={true}
-                  boardTheme={preferences.boardTheme}
-                  annotations={annotations}
-                  onAnnotationsChange={onAnnotationsChange}
-                />
-              )}
-            </div>
-          </div>
+          {!isLoaded ? (
+            <BoardFrame>
+              <BoardSkeleton />
+            </BoardFrame>
+          ) : (
+            <EditableChessBoard
+              fen={board.boardFen}
+              onFenChange={board.handleBoardChange}
+              labels={editableBoardLabels}
+              editable={true}
+              flipped={board.flipped}
+              showCoordinates={true}
+              boardTheme={preferences.boardTheme}
+              annotations={annotations}
+              onAnnotationsChange={onAnnotationsChange}
+            />
+          )}
 
           {board.positionError && (
             <p className="text-sm text-destructive text-center">{t('errors.invalidFen')}</p>

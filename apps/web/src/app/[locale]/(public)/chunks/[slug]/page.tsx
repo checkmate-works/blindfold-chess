@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { BoardFrame } from '@/app/_components';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 import { FiEdit2 } from 'react-icons/fi';
 
@@ -234,13 +235,13 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         <p className="text-muted-foreground italic">{tChunks('detail.noDescription')}</p>
       )}
 
-      <div className="max-w-xs mx-auto">
+      <BoardFrame>
         <ThemedBoardThumbnail
           fen={chunk.representativeFen}
           annotations={parseBoardAnnotations(chunk.annotations)}
           className="w-full"
         />
-      </div>
+      </BoardFrame>
 
       <PositionAuthorAttribution
         profile={profile}

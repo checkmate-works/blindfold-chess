@@ -17,7 +17,7 @@
  */
 import { getTranslations } from 'next-intl/server';
 
-import { BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
@@ -47,9 +47,9 @@ export default async function ChunkDetailLoading() {
         </div>
 
         {/* Representative board (ThemedBoardThumbnail) */}
-        <div className="max-w-xs mx-auto">
+        <BoardFrame>
           <BoardSkeleton />
-        </div>
+        </BoardFrame>
 
         {/* Author attribution */}
         <div className="flex items-center gap-2" aria-hidden="true">
