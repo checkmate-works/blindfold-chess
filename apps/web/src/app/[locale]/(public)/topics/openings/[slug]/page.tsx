@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { BoardFrame } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -289,7 +290,9 @@ async function OpeningDetailSkeleton() {
 
         {/* OpeningBoardWithMoves skeleton */}
         <div className="space-y-3">
-          <div className="max-w-xs mx-auto aspect-square bg-muted rounded animate-pulse" />
+          <BoardFrame expandOnMobile>
+            <div className="aspect-square bg-muted rounded animate-pulse" />
+          </BoardFrame>
 
           <div className="flex justify-center gap-1">
             {Array.from({ length: 4 }).map((_, i) => (

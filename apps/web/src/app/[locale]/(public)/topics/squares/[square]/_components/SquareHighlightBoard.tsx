@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 
-import { BoardLayout, BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
@@ -47,20 +47,20 @@ export function SquareHighlightBoard({ square, locale, disableLinks = false }: P
 
   if (!isLoaded) {
     return (
-      <div className="max-w-xs mx-auto">
+      <BoardFrame expandOnMobile>
         <BoardSkeleton />
-      </div>
+      </BoardFrame>
     );
   }
 
   return (
-    <div className="max-w-xs mx-auto">
+    <BoardFrame expandOnMobile>
       <BoardLayout
         showCoordinates={preferences.showCoordinates}
         themeColors={themeColors}
         renderSquare={renderSquare}
         squareProps={squareProps}
       />
-    </div>
+    </BoardFrame>
   );
 }

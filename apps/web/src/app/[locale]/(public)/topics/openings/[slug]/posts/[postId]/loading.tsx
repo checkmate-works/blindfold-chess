@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
@@ -22,9 +22,9 @@ export default async function OpeningPostDetailLoading() {
 
         {/* OpeningBoardWithMoves: board + nav controls + move list + new-game button */}
         <div className="space-y-3">
-          <div className="max-w-xs mx-auto">
+          <BoardFrame expandOnMobile>
             <BoardSkeleton />
-          </div>
+          </BoardFrame>
           <div className="flex justify-center gap-1">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="w-10 h-10 bg-muted rounded animate-pulse" />

@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
@@ -21,9 +21,9 @@ export default async function SquarePostDetailLoading() {
         </SectionTitle>
 
         {/* SquareHighlightBoard — chess board */}
-        <div className="max-w-xs mx-auto">
+        <BoardFrame expandOnMobile>
           <BoardSkeleton />
-        </div>
+        </BoardFrame>
 
         {/* Back link — dynamic (square name) */}
         <div>
