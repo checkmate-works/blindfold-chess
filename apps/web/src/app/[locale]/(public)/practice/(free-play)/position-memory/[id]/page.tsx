@@ -191,11 +191,13 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         <Divider className="flex-1" />
       </div>
 
-      <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
-        <Button asChild variant="secondary" size="lg" icon={<FaPlusCircle />} fullWidth>
-          {tPlay('newGameFromHere')}
-        </Button>
-      </Link>
+      <div className="flex flex-col gap-3">
+        <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
+          <Button asChild variant="secondary" size="lg" icon={<FaPlusCircle />} fullWidth>
+            {tPlay('newGameFromHere')}
+          </Button>
+        </Link>
+      </div>
 
       <PositionEditRequestCallout
         positionId={position.id}
