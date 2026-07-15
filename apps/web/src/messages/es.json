@@ -3618,7 +3618,8 @@
     "puzzleUpdated": "Cambios guardados",
     "puzzleDeleted": "Puzzle eliminado",
     "editRequestAccepted": "Sugerencia de edición aceptada",
-    "editRequestRejected": "Sugerencia de edición rechazada"
+    "editRequestRejected": "Sugerencia de edición rechazada",
+    "editRequestWithdrawn": "Sugerencia de edición retirada"
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",

@@ -3625,7 +3625,8 @@
     "puzzleDeleted": "Puzzle deleted",
     "editRequestSubmitted": "Edit suggestion submitted",
     "editRequestAccepted": "Edit suggestion accepted",
-    "editRequestRejected": "Edit suggestion rejected"
+    "editRequestRejected": "Edit suggestion rejected",
+    "editRequestWithdrawn": "Edit suggestion withdrawn"
   },
   "setupUsername": {
     "title": "Create Your Account",
