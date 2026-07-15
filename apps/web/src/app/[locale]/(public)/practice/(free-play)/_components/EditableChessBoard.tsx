@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { ChessPiece, Square } from '@/app/_components';
+import { BoardFrame, ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { boardFlatToFen, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
@@ -51,6 +51,13 @@ type Props = {
    */
   annotations?: BoardAnnotations | null;
   onAnnotationsChange?: (next: BoardAnnotations) => void;
+  /**
+   * Forwarded to the internal `BoardFrame`: lets the board (not the
+   * palettes) run edge-to-edge on phones. Session screens rendered inside a
+   * `p-4` `PagePanel` (position-memory / fen recreate) turn this on; form
+   * screens keep the default gutter.
+   */
+  expandBoardOnMobile?: boolean;
 };
 
 const WHITE_PIECES: FenPieceChar[] = ['K', 'Q', 'R', 'B', 'N', 'P'];
@@ -80,6 +87,7 @@ export function EditableChessBoard({
   showCoordinates = true,
   annotations = null,
   onAnnotationsChange,
+  expandBoardOnMobile = false,
 }: Props) {
   const [board, setBoard] = useState<FenPieceChar[]>(() => fenToBoardFlat(fen) as FenPieceChar[]);
   const [selectedPiece, setSelectedPiece] = useState<FenPieceChar>('');
@@ -256,7 +264,7 @@ export function EditableChessBoard({
       {editable && renderPalette(topPalette.pieces, topPalette.label)}
 
       {/* Chess board */}
-      <div className="w-full max-w-md">
+      <BoardFrame expandOnMobile={expandBoardOnMobile}>
         <div
           ref={boardContainerRef}
           className={`relative w-full aspect-square rounded-md overflow-hidden${
@@ -327,7 +335,7 @@ export function EditableChessBoard({
             </button>
           </div>
         )}
-      </div>
+      </BoardFrame>
 
       {/* Current mode indicator */}
       {editable && (

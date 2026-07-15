@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { BoardFrame, Button, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -137,13 +137,13 @@ export function ChunkPreviewClient() {
           <p className="text-foreground whitespace-pre-wrap">{draft.description}</p>
         )}
 
-        <div className="max-w-xs mx-auto">
+        <BoardFrame expandOnMobile>
           <ThemedBoardThumbnail
             fen={draft.representativeFen}
             annotations={draft.annotations}
             className="w-full"
           />
-        </div>
+        </BoardFrame>
 
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm">
           <dt className="text-muted-foreground">{tForm('fields.slug')}</dt>

@@ -1,6 +1,6 @@
 'use client';
 
-import { BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton } from '@/app/_components';
 
 // Remove ("×") button + 6 piece types (K Q R B N P) — matches the palette
 // rendered by EditableChessBoard's `renderPalette`.
@@ -40,9 +40,9 @@ export function EditableBoardSkeleton() {
   return (
     <div className="flex flex-col items-center gap-4">
       <PaletteSkeleton />
-      <div className="w-full max-w-md">
+      <BoardFrame>
         <BoardSkeleton />
-      </div>
+      </BoardFrame>
       {/* Mode indicator (text-sm) placeholder. */}
       <div className="h-5 w-40 animate-pulse rounded bg-muted" />
       <PaletteSkeleton />

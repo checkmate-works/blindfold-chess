@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { createClient } from '@/lib/supabase/server';
@@ -44,11 +44,9 @@ export async function PuzzleResultContentSkeleton() {
       <div className="space-y-6">
         <SectionTitle>{t('result.replaySection')}</SectionTitle>
 
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            <BoardSkeleton />
-          </div>
-        </div>
+        <BoardFrame>
+          <BoardSkeleton />
+        </BoardFrame>
 
         {/* Solution text — single-move case is the common one
             (`Solution: <san>`). Multi-move puzzles render a numbered list,

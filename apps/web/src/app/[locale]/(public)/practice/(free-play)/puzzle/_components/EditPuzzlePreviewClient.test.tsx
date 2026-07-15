@@ -55,6 +55,7 @@ vi.mock('next-navigation-guard', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Button: ({
     children,
     onClick,

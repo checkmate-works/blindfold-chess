@@ -15,6 +15,7 @@ vi.mock('@/_hooks/useUnsavedChanges', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Button: ({ children }: { children: React.ReactNode }) => (
     <button type="button">{children}</button>
   ),

@@ -1,6 +1,6 @@
 'use client';
 
-import { BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton } from '@/app/_components';
 
 /**
  * Loading placeholder for the solution step's {@link PuzzleSolutionFields},
@@ -21,11 +21,9 @@ export function PuzzleSolutionSkeleton() {
       </div>
 
       {/* Board. */}
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          <BoardSkeleton />
-        </div>
-      </div>
+      <BoardFrame>
+        <BoardSkeleton />
+      </BoardFrame>
 
       {/* Solution section: label row + move-input placeholder. */}
       <div className="space-y-3">

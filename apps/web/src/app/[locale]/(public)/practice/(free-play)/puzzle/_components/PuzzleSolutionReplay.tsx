@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { ChessBoard } from '@/app/_components';
+import { BoardFrame, ChessBoard } from '@/app/_components';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
@@ -72,46 +72,44 @@ export function PuzzleSolutionReplay({ fen, solutionMoves, showSectionTitle = tr
   return (
     <div className="space-y-6">
       {showSectionTitle && <SectionTitle>{t('replaySection')}</SectionTitle>}
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          <div className="relative">
-            <ChessBoard
-              fen={replayFen}
-              flipped={isBlackToMove}
-              showCoordinates={preferences.showCoordinates}
-              boardTheme={preferences.boardTheme}
-              lastMove={preferences.highlightLastMove ? lastMove : null}
-            />
+      <BoardFrame>
+        <div className="relative">
+          <ChessBoard
+            fen={replayFen}
+            flipped={isBlackToMove}
+            showCoordinates={preferences.showCoordinates}
+            boardTheme={preferences.boardTheme}
+            lastMove={preferences.highlightLastMove ? lastMove : null}
+          />
 
-            {!isPlaying && !hasPlayed && solutionMoves.length > 0 && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
-                <button
-                  type="button"
-                  onClick={play}
-                  aria-label={tCommon('play')}
-                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
-                >
-                  <FaPlay className="w-12 h-12 ml-1" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {hasPlayed && !isPlaying && (
-            <div className="mt-3 flex justify-center">
+          {!isPlaying && !hasPlayed && solutionMoves.length > 0 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
               <button
                 type="button"
                 onClick={play}
-                aria-label={tCommon('replay')}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={tCommon('play')}
+                className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
               >
-                <FaRedo className="w-3 h-3" />
-                <span>{tCommon('replay')}</span>
+                <FaPlay className="w-12 h-12 ml-1" />
               </button>
             </div>
           )}
         </div>
-      </div>
+
+        {hasPlayed && !isPlaying && (
+          <div className="mt-3 flex justify-center">
+            <button
+              type="button"
+              onClick={play}
+              aria-label={tCommon('replay')}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <FaRedo className="w-3 h-3" />
+              <span>{tCommon('replay')}</span>
+            </button>
+          </div>
+        )}
+      </BoardFrame>
 
       {solutionMoves.length > 0 && (
         <>

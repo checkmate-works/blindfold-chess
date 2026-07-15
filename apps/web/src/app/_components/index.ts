@@ -4,6 +4,7 @@ export { ChallengeCard } from './ChallengeCard';
 export { TextInput } from './TextInput';
 export { Textarea } from './Textarea';
 export * from './BoardOverlay';
+export { BoardFrame } from './chess/BoardFrame';
 export { BoardLayout } from './chess/BoardLayout';
 export { BoardSkeleton } from './chess/BoardSkeleton';
 export { FlipBoardButton } from './chess/FlipBoardButton';

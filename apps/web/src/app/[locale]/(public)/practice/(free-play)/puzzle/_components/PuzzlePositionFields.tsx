@@ -140,23 +140,19 @@ export function PuzzlePositionFields({
             </div>
             <FlipBoardButton onClick={board.handleFlip} title={t('flipBoard')} />
           </div>
-          <div className="flex justify-center">
-            <div className="w-full max-w-md">
-              {!isLoaded ? (
-                <EditableBoardSkeleton />
-              ) : (
-                <EditableChessBoard
-                  fen={board.boardFen}
-                  onFenChange={board.handleBoardChange}
-                  labels={editableBoardLabels}
-                  editable={true}
-                  flipped={board.flipped}
-                  showCoordinates={true}
-                  boardTheme={preferences.boardTheme}
-                />
-              )}
-            </div>
-          </div>
+          {!isLoaded ? (
+            <EditableBoardSkeleton />
+          ) : (
+            <EditableChessBoard
+              fen={board.boardFen}
+              onFenChange={board.handleBoardChange}
+              labels={editableBoardLabels}
+              editable={true}
+              flipped={board.flipped}
+              showCoordinates={true}
+              boardTheme={preferences.boardTheme}
+            />
+          )}
 
           {board.positionError && (
             <p className="text-sm text-destructive text-center">{t('positionInvalid')}</p>

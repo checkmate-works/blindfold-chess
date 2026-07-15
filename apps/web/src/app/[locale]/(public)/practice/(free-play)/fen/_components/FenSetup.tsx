@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-import { BoardSkeleton, Button } from '@/app/_components';
+import { BoardFrame, BoardSkeleton, Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
@@ -110,11 +110,9 @@ export function FenSetup({ locale }: Props) {
 
           {!useCustomFen &&
             (!isLoaded ? (
-              <div className="flex justify-center">
-                <div className="w-full max-w-xs">
-                  <BoardSkeleton />
-                </div>
-              </div>
+              <BoardFrame>
+                <BoardSkeleton />
+              </BoardFrame>
             ) : (
               <PresetProblemSection
                 problemCount={problemCount}
