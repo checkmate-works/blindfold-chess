@@ -5,13 +5,13 @@
  * Mirrors the saved-position detail/start page (`[id]/page.tsx`) but for a
  * problem whose FEN is encoded in the URL token rather than stored in the DB.
  * No author, no comments, no EXP — just the shared position-detail shell with
- * a board preview and the start form.
+ * the text-first piece list, a collapsible board peek, and the start form.
  *
  * @flow
  * 1. Decode + validate the Base64URL FEN token (404 on malformed input).
  * 2. Render the shared `PositionDetailLayout` (same "Position Description" /
- *    board / "Solve the Problem" structure as the saved-position page),
- *    pointing the start form at the custom session route.
+ *    piece list / collapsible board / "Solve the Problem" structure as the
+ *    saved-position page), pointing the start form at the custom session route.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -21,13 +21,14 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlusCircle } from 'react-icons/fa';
 
+import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
-import { PositionDetailBoard } from '../../_components/single-position/PositionDetailBoard';
+import { PositionPeekBoard } from '../../../_components/PositionPeekBoard';
 import { PositionStartForm } from '../../_components/single-position/PositionStartForm';
 import { resolveCustomProblem } from '../../_lib/custom-problem';
 
@@ -76,9 +77,9 @@ export default async function CustomPositionStartPage({ params }: Props) {
     >
       <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
 
-      <div className="max-w-md mx-auto">
-        <PositionDetailBoard fen={problem.fen} flipped={problem.isBlackToMove} />
-      </div>
+      <PiecesInfo fen={problem.fen} />
+
+      <PositionPeekBoard fen={problem.fen} />
 
       {/* Same primary / "or" / alternative shape as the saved-position and
           puzzle detail pages: memorizing leads, "new game from here" is the

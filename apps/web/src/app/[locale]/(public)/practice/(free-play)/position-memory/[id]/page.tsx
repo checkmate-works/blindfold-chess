@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
@@ -12,6 +11,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
+import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
 import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
 import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
@@ -35,9 +35,9 @@ import { toggleLike } from '../../_actions/toggleLike';
 import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
 import { PositionAuthorAttribution } from '../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
+import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import { PositionEditRequestCallout } from '../../_components/edit-request/PositionEditRequestCallout';
 import { loadPositionDetail } from '../../_lib/load-position-detail';
-import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
 import { createReplyForImageAttach } from './_actions/createReplyForImageAttach';
 import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
@@ -96,7 +96,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const { position, profile } = row;
   const tCommon = await getTranslations({ locale, namespace: 'Common' });
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
-  const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
   const {
@@ -159,9 +158,9 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
       )}
 
-      <div className="max-w-md mx-auto">
-        <PositionDetailBoard fen={position.fen} flipped={isBlackToMove} />
-      </div>
+      <PiecesInfo fen={position.fen} />
+
+      <PositionPeekBoard fen={position.fen} />
 
       <RelatedTags
         themes={relatedThemes}
