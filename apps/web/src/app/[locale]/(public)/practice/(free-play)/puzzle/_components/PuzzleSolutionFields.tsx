@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Button, ChessBoard, FlipBoardButton } from '@/app/_components';
+import { BoardFrame, Button, ChessBoard, FlipBoardButton } from '@/app/_components';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
@@ -84,51 +84,49 @@ export function PuzzleSolutionFields({
         </p>
         <FlipBoardButton onClick={onFlip} title={t('flipBoard')} />
       </div>
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          {solution.formattedPgn.length > 0 && (
-            <div className="overflow-x-auto px-2 py-1.5">
-              <HorizontalMoveList
-                formattedPgn={solution.formattedPgn}
-                currentPosition={solution.viewedPly - 1}
-                onNavigateToPosition={(position) => solution.goToPly(position + 1)}
-              />
-            </div>
-          )}
-          <ChessBoard
-            fen={solution.viewedFen}
-            flipped={flipped}
-            lastMove={preferences.highlightLastMove ? solution.viewedLastMove : null}
-            showCoordinates={true}
-            boardTheme={preferences.boardTheme}
-            showOwnPieces={true}
-            showOpponentPieces={true}
-            pieceShapeMode="normal"
-            pieceColors="normal"
-            pawnHideMode="none"
-            movablePieces="side-to-move"
-            onMove={
-              pending || inputLocked || solution.isViewingHistory
-                ? undefined
-                : (san) => {
-                    solution.handleMoveSubmit(san as AlgebraicNotation);
-                  }
-            }
-          />
-          {solution.moves.length > 0 && (
-            <div className="flex items-center justify-center" style={{ aspectRatio: '8 / 1' }}>
-              <MoveNavigationControls
-                onNavigateToStart={() => solution.goToPly(0)}
-                onNavigatePrevious={() => solution.goToPly(solution.viewedPly - 1)}
-                onNavigateNext={() => solution.goToPly(solution.viewedPly + 1)}
-                onNavigateToEnd={() => solution.goToPly(solution.moves.length)}
-                isPreviousDisabled={solution.viewedPly === 0}
-                isNextDisabled={!solution.isViewingHistory}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      <BoardFrame>
+        {solution.formattedPgn.length > 0 && (
+          <div className="overflow-x-auto px-2 py-1.5">
+            <HorizontalMoveList
+              formattedPgn={solution.formattedPgn}
+              currentPosition={solution.viewedPly - 1}
+              onNavigateToPosition={(position) => solution.goToPly(position + 1)}
+            />
+          </div>
+        )}
+        <ChessBoard
+          fen={solution.viewedFen}
+          flipped={flipped}
+          lastMove={preferences.highlightLastMove ? solution.viewedLastMove : null}
+          showCoordinates={true}
+          boardTheme={preferences.boardTheme}
+          showOwnPieces={true}
+          showOpponentPieces={true}
+          pieceShapeMode="normal"
+          pieceColors="normal"
+          pawnHideMode="none"
+          movablePieces="side-to-move"
+          onMove={
+            pending || inputLocked || solution.isViewingHistory
+              ? undefined
+              : (san) => {
+                  solution.handleMoveSubmit(san as AlgebraicNotation);
+                }
+          }
+        />
+        {solution.moves.length > 0 && (
+          <div className="flex items-center justify-center" style={{ aspectRatio: '8 / 1' }}>
+            <MoveNavigationControls
+              onNavigateToStart={() => solution.goToPly(0)}
+              onNavigatePrevious={() => solution.goToPly(solution.viewedPly - 1)}
+              onNavigateNext={() => solution.goToPly(solution.viewedPly + 1)}
+              onNavigateToEnd={() => solution.goToPly(solution.moves.length)}
+              isPreviousDisabled={solution.viewedPly === 0}
+              isNextDisabled={!solution.isViewingHistory}
+            />
+          </div>
+        )}
+      </BoardFrame>
 
       <div className="space-y-3">
         <div className="flex items-baseline justify-between">
