@@ -93,6 +93,7 @@ vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   UnsavedChangesDialog: () => null,
   Button: ({
     children,

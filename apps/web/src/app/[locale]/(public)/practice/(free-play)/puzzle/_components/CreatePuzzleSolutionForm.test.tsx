@@ -71,6 +71,7 @@ vi.mock('next-navigation-guard', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   UnsavedChangesDialog: () => null,
   BoardSkeleton: () => <div data-testid="board-skeleton" />,
   Button: ({

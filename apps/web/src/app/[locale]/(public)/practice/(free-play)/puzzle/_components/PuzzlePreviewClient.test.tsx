@@ -71,6 +71,7 @@ vi.mock('next-navigation-guard', () => ({
 // pulls in server-only via downstream ChessBoard / modal chain, which fails
 // in the jsdom test environment.
 vi.mock('@/app/_components', () => ({
+  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Button: ({
     children,
     onClick,

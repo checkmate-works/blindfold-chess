@@ -34,6 +34,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ChessBoard: () => <div data-testid="chess-board" />,
   FlipBoardButton: ({ onClick }: { onClick?: () => void }) => (
     <button type="button" data-testid="flip-board" onClick={onClick} />
