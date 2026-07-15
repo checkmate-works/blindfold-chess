@@ -116,7 +116,14 @@ export const ActivityCard = memo(function ActivityCard({
       )}
       {thumbnail && (
         <div
-          className={`w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 ${thumbnailClassName ?? ''}`.trim()}
+          // `pointer-events-none` (only when there's a background link to fall
+          // through to): the board renderers used here lay out squares with
+          // `position: relative` for their pieces, which — despite having no
+          // z-index of their own — paints above the background link's `z-0`
+          // at the same stacking level (later in DOM/tree order wins ties).
+          // Without this, tapping the thumbnail silently hits the board's
+          // decorative markup instead of navigating.
+          className={`w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 ${href ? 'pointer-events-none' : ''} ${thumbnailClassName ?? ''}`.trim()}
         >
           {thumbnail}
         </div>
