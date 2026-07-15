@@ -19,6 +19,7 @@ import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/ope
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
 import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { TopicSquareBoard } from './TopicSquareBoard';
@@ -37,6 +38,8 @@ type Props = {
    * variants stay compact and don't surface per-post attachments.
    */
   attachment?: ReactNode;
+  /** Size variant for the footer engagement actions (like + comment counter), forwarded to `PostFooter`. */
+  actionSize?: EngagementCounterSize;
 };
 
 export const TopicPostCard = memo(function TopicPostCard({
@@ -46,6 +49,7 @@ export const TopicPostCard = memo(function TopicPostCard({
   justNowLabel,
   variant,
   attachment,
+  actionSize,
 }: Props) {
   const tTopics = useTranslations('topics');
   const tCommon = useTranslations('Common');
@@ -56,10 +60,17 @@ export const TopicPostCard = memo(function TopicPostCard({
 
   const isReply = post.rootPostId != null;
   const postId = isReply ? post.rootPostId : post.id;
-  const anchor = isReply ? `#reply-${post.id}` : '';
+  // For a reply, the whole card is a permalink to that reply — matches the
+  // `id="post-<id>"` that `CommentNodeLayout` puts on every node (see
+  // CommentNode.tsx) so the card's links scroll straight to it.
+  const anchor = isReply ? `#post-${post.id}` : '';
   const href = isOpening
     ? `/topics/openings/${post.topicKey}/posts/${postId}${anchor}`
     : `/topics/squares/${post.topicKey}/posts/${postId}${anchor}`;
+  // The comment-icon link additionally targets the "Replies" `SectionTitle`
+  // for a top-level post — scoped to just that link so the rest of the card
+  // (permalink, badges) keeps landing at the top of the OP.
+  const commentHref = isReply ? href : `${href}#comments`;
 
   // Layout note (HTML / a11y): ActivityCard never wraps its body in an
   // outer <a>. Wrapping it would nest the inline <a> elements emitted by
@@ -116,7 +127,8 @@ export const TopicPostCard = memo(function TopicPostCard({
           replyMeta={post.replyMeta}
           toggleLikeAction={isOpening ? toggleLikeOpening : toggleLikeSquare}
           i18nNamespace={isOpening ? 'topics.openings' : 'topics.squares'}
-          postHref={href}
+          postHref={commentHref}
+          actionSize={actionSize}
         />
       }
     >

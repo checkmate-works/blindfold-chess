@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, ScrollToHashOnMount } from '@/app/[locale]/_components';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -49,6 +49,7 @@ export function PositionDetailLayout({
 }: Props) {
   return (
     <PageLayout title={title} locale={locale} breadcrumb={breadcrumbItems} headerNote={headerNote}>
+      <ScrollToHashOnMount />
       <div className="space-y-6">{children}</div>
       {bottomAdSense}
     </PageLayout>

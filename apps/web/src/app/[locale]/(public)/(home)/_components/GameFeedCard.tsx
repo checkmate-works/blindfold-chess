@@ -12,6 +12,7 @@ import { toggleGameLikeAction } from '@/app/[locale]/(public)/games/shared/[id]/
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -21,9 +22,16 @@ type Props = {
   data: GameFeedData;
   locale: string;
   justNowLabel: string;
+  /** Size variant for the footer engagement actions (like + comment counter), forwarded to `PostFooter`. */
+  actionSize?: EngagementCounterSize;
 };
 
-export const GameFeedCard = memo(function GameFeedCard({ data, locale, justNowLabel }: Props) {
+export const GameFeedCard = memo(function GameFeedCard({
+  data,
+  locale,
+  justNowLabel,
+  actionSize,
+}: Props) {
   const tFeed = useTranslations('home.feed.game');
   const { preferences } = useGamePreferences();
   const displayName = resolveDisplayName(data.author);
@@ -71,7 +79,11 @@ export const GameFeedCard = memo(function GameFeedCard({ data, locale, justNowLa
           replyMeta={data.replyMeta}
           toggleLikeAction={toggleGameLikeAction}
           i18nNamespace="sharedGames.detail"
-          postHref={href}
+          // Comment icon scrolls straight to the overview/discussion block
+          // (`id="game-overview"`); the rest of the card keeps linking to
+          // the plain detail page (opening board).
+          postHref={`${href}#game-overview`}
+          actionSize={actionSize}
         />
       }
     >

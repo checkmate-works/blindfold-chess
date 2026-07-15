@@ -13,6 +13,7 @@ import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_action
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -22,12 +23,15 @@ type Props = {
   data: PositionFeedData;
   locale: string;
   justNowLabel: string;
+  /** Size variant for the footer engagement actions (like + comment counter), forwarded to `PostFooter`. */
+  actionSize?: EngagementCounterSize;
 };
 
 export const PositionFeedCard = memo(function PositionFeedCard({
   data,
   locale,
   justNowLabel,
+  actionSize,
 }: Props) {
   const tFeed = useTranslations('home.feed.position');
   const tCommon = useTranslations('Common');
@@ -89,7 +93,11 @@ export const PositionFeedCard = memo(function PositionFeedCard({
             replyMeta={data.replyMeta}
             toggleLikeAction={toggleLike}
             i18nNamespace={data.type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory'}
-            postHref={href}
+            // Comment icon additionally scrolls to the Comments section
+            // (`id="comments"` on the page's SectionTitle); the rest of the
+            // card keeps linking to the plain detail page.
+            postHref={`${href}#comments`}
+            actionSize={actionSize}
           />
         ) : undefined
       }

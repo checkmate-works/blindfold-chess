@@ -1,3 +1,5 @@
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
+
 import type { FeedItem } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
 import { ChunkFeedCard } from './ChunkFeedCard';
@@ -17,9 +19,18 @@ type Props = {
    * `chunk`) honor it today.
    */
   variant?: 'feed' | 'card';
+  /** Size variant for the footer engagement actions (like + comment counter), forwarded to each card's `PostFooter`. */
+  actionSize?: EngagementCounterSize;
 };
 
-export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant }: Props) {
+export function FeedCard({
+  item,
+  locale,
+  showMoreLabel,
+  justNowLabel,
+  variant,
+  actionSize,
+}: Props) {
   switch (item.entityType) {
     case 'topic_post':
       return (
@@ -29,12 +40,27 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant }:
           showMoreLabel={showMoreLabel}
           justNowLabel={justNowLabel}
           variant={variant}
+          actionSize={actionSize}
         />
       );
     case 'position':
-      return <PositionFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
+      return (
+        <PositionFeedCard
+          data={item.data}
+          locale={locale}
+          justNowLabel={justNowLabel}
+          actionSize={actionSize}
+        />
+      );
     case 'game':
-      return <GameFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
+      return (
+        <GameFeedCard
+          data={item.data}
+          locale={locale}
+          justNowLabel={justNowLabel}
+          actionSize={actionSize}
+        />
+      );
     case 'chunk':
       return (
         <ChunkFeedCard
@@ -43,6 +69,7 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant }:
           locale={locale}
           justNowLabel={justNowLabel}
           variant={variant}
+          actionSize={actionSize}
         />
       );
     case 'challenge_rank_update':

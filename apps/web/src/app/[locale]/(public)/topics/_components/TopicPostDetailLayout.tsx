@@ -6,7 +6,7 @@ import type { User } from '@supabase/supabase-js';
 
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, ScrollToHashOnMount, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -214,6 +214,7 @@ export async function TopicPostDetailLayout({
 
   return (
     <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems} divider={false}>
+      <ScrollToHashOnMount />
       <SectionTitle>{sectionTitle}</SectionTitle>
 
       {topicVisual}
@@ -254,7 +255,7 @@ export async function TopicPostDetailLayout({
         deleteI18nNamespace={i18n.deleteNamespace}
       />
 
-      <SectionTitle>{comments.sectionTitle}</SectionTitle>
+      <SectionTitle id="comments">{comments.sectionTitle}</SectionTitle>
 
       {user && !canReply ? (
         replyRestrictionMessage && (

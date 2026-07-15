@@ -14,6 +14,7 @@ export { ListLink, ListLinkContainer } from './ListLink';
 export { PageTitle } from './PageTitle';
 export { ProseArticle } from './ProseArticle';
 export { PaginationNav } from './PaginationNav';
+export { ScrollToHashOnMount } from './ScrollToHashOnMount';
 export { SectionTitle } from './SectionTitle';
 export { Skeleton } from './Skeleton';
 export { UserAvatar } from './UserAvatar';
