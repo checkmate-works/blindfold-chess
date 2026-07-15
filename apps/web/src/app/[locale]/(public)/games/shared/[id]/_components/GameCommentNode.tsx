@@ -81,64 +81,66 @@ export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplay
           </button>
         )}
 
-        <div className="flex-1 min-w-0 space-y-2">
-          {isDeleted ? (
-            <div className="flex items-baseline gap-2 text-xs text-muted-foreground italic">
-              <span>{t('deletedComment')}</span>
-              <time dateTime={node.createdAt.toISOString()} className="not-italic">
-                {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
-              </time>
-            </div>
-          ) : (
-            <UserAvatar
-              profileHref={profileHref}
-              avatarUrl={node.author?.avatarUrl}
-              displayName={displayName}
-              locale={locale}
-            >
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <time dateTime={node.createdAt.toISOString()}>
+        <div className="flex-1 min-w-0 space-y-6">
+          {/* The avatar/timestamp and the body read as one unit, so keep them
+              tightly grouped; the action row and replies below breathe at the
+              column's space-y-6 (≈ the body's own paragraph line spacing). */}
+          <div className="space-y-2">
+            {isDeleted ? (
+              <div className="flex items-baseline gap-2 text-xs text-muted-foreground italic">
+                <span>{t('deletedComment')}</span>
+                <time dateTime={node.createdAt.toISOString()} className="not-italic">
                   {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
                 </time>
-                {wasEdited && (
-                  <abbr
-                    title={t('editedTitle', {
-                      date: formatAbsoluteDateTime(node.updatedAt, locale, 'short'),
-                    })}
-                    className="italic no-underline"
-                  >
-                    {t('editedLabel')}
-                  </abbr>
-                )}
               </div>
-            </UserAvatar>
-          )}
+            ) : (
+              <UserAvatar
+                profileHref={profileHref}
+                avatarUrl={node.author?.avatarUrl}
+                displayName={displayName}
+                locale={locale}
+              >
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <time dateTime={node.createdAt.toISOString()}>
+                    {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
+                  </time>
+                  {wasEdited && (
+                    <abbr
+                      title={t('editedTitle', {
+                        date: formatAbsoluteDateTime(node.updatedAt, locale, 'short'),
+                      })}
+                      className="italic no-underline"
+                    >
+                      {t('editedLabel')}
+                    </abbr>
+                  )}
+                </div>
+              </UserAvatar>
+            )}
 
-          {isCollapsed ? (
-            hiddenReplyCount > 0 && (
-              <p className="text-xs text-muted-foreground italic">
-                {t('hiddenReplies', { count: hiddenReplyCount })}
-              </p>
-            )
-          ) : (
-            <>
-              {!isDeleted && isEditing ? (
-                <GameCommentForm
-                  variant="edit"
-                  initialValue={node.body}
-                  autoFocus
-                  submitLabel={t('save')}
-                  submittingLabel={t('saving')}
-                  cancelLabel={t('cancel')}
-                  onCancel={() => setIsEditing(false)}
-                  onSubmit={async (body) => {
-                    const result = await edit(node.id, body);
-                    if (!result.error) setIsEditing(false);
-                    return result;
-                  }}
-                />
-              ) : (
-                !isDeleted && (
+            {isCollapsed
+              ? hiddenReplyCount > 0 && (
+                  <p className="text-xs text-muted-foreground italic">
+                    {t('hiddenReplies', { count: hiddenReplyCount })}
+                  </p>
+                )
+              : !isDeleted &&
+                (isEditing ? (
+                  <GameCommentForm
+                    variant="edit"
+                    initialValue={node.body}
+                    autoFocus
+                    submitLabel={t('save')}
+                    submittingLabel={t('saving')}
+                    cancelLabel={t('cancel')}
+                    onCancel={() => setIsEditing(false)}
+                    onSubmit={async (body) => {
+                      const result = await edit(node.id, body);
+                      if (!result.error) setIsEditing(false);
+                      return result;
+                    }}
+                  />
+                ) : (
                   <div aria-live="polite">
                     {replyToDisplayName && (
                       <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
@@ -153,100 +155,96 @@ export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplay
                       />
                     </p>
                   </div>
-                )
-              )}
+                ))}
+          </div>
 
-              {!isDeleted && !isEditing && (
-                <div className="flex items-center gap-4 pt-4">
-                  <GameCommentLikeButton
-                    commentId={node.id}
-                    locale={locale}
-                    initialLikeCount={node.likeCount}
-                    initialLikedByMe={node.likedByMe}
-                  />
-                  {currentUserId !== undefined && (
-                    <button
-                      type="button"
-                      onClick={() => setIsReplyOpen((prev) => !prev)}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                    >
-                      {t('reply')}
-                    </button>
-                  )}
-                  {isOwnComment && (
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(true)}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                    >
-                      {t('edit')}
-                    </button>
-                  )}
-                  {isOwnComment && (
-                    <button
-                      type="button"
-                      onClick={() => setDeleteOpen(true)}
-                      className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
-                    >
-                      {t('delete')}
-                    </button>
-                  )}
-                </div>
+          {!isCollapsed && !isDeleted && !isEditing && (
+            <div className="flex items-center gap-4">
+              <GameCommentLikeButton
+                commentId={node.id}
+                locale={locale}
+                initialLikeCount={node.likeCount}
+                initialLikedByMe={node.likedByMe}
+              />
+              {currentUserId !== undefined && (
+                <button
+                  type="button"
+                  onClick={() => setIsReplyOpen((prev) => !prev)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {t('reply')}
+                </button>
               )}
+              {isOwnComment && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {t('edit')}
+                </button>
+              )}
+              {isOwnComment && (
+                <button
+                  type="button"
+                  onClick={() => setDeleteOpen(true)}
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                >
+                  {t('delete')}
+                </button>
+              )}
+            </div>
+          )}
 
-              {isReplyOpen && (
-                <div className="mt-2">
-                  <GameCommentForm
-                    autoFocus
-                    placeholder={t('replyPlaceholder')}
-                    submitLabel={t('replySubmit')}
-                    submittingLabel={t('submitting')}
-                    header={
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{t('replyingTo', { name: displayName })}</span>
-                        <button
-                          type="button"
-                          onClick={() => setIsReplyOpen(false)}
-                          aria-label={t('cancelReply')}
-                          className="hover:text-foreground transition-colors"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    }
-                    onSubmit={async (body) => {
-                      const result = await reply(node.id, body);
-                      if (!result.error) setIsReplyOpen(false);
-                      return result;
-                    }}
-                  />
+          {!isCollapsed && isReplyOpen && (
+            <GameCommentForm
+              autoFocus
+              placeholder={t('replyPlaceholder')}
+              submitLabel={t('replySubmit')}
+              submittingLabel={t('submitting')}
+              header={
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>{t('replyingTo', { name: displayName })}</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsReplyOpen(false)}
+                    aria-label={t('cancelReply')}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    &times;
+                  </button>
                 </div>
-              )}
+              }
+              onSubmit={async (body) => {
+                const result = await reply(node.id, body);
+                if (!result.error) setIsReplyOpen(false);
+                return result;
+              }}
+            />
+          )}
 
-              {replyGroups && replyGroups.length > 0 && (
-                <div className="mt-3 border-l-2 border-border pl-4 space-y-4">
-                  {replyGroups.map((group) => (
-                    <GameCommentNode
-                      key={group.first.id}
-                      node={group.first}
-                      flatReplies={group.deeper}
-                    />
-                  ))}
-                </div>
-              )}
+          {!isCollapsed && replyGroups && replyGroups.length > 0 && (
+            <div className="border-l-2 border-border pl-4 space-y-4">
+              {replyGroups.map((group) => (
+                <GameCommentNode
+                  key={group.first.id}
+                  node={group.first}
+                  flatReplies={group.deeper}
+                />
+              ))}
+            </div>
+          )}
 
-              {flatReplies && flatReplies.length > 0 && (
-                <div className="mt-3 border-l-2 border-border pl-4 space-y-4">
-                  {flatReplies.map(({ node: replyNode, replyToDisplayName: prefix }) => (
-                    <GameCommentNode
-                      key={replyNode.id}
-                      node={replyNode}
-                      replyToDisplayName={prefix ?? undefined}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
+          {!isCollapsed && flatReplies && flatReplies.length > 0 && (
+            <div className="border-l-2 border-border pl-4 space-y-4">
+              {flatReplies.map(({ node: replyNode, replyToDisplayName: prefix }) => (
+                <GameCommentNode
+                  key={replyNode.id}
+                  node={replyNode}
+                  replyToDisplayName={prefix ?? undefined}
+                />
+              ))}
+            </div>
           )}
         </div>
       </div>
