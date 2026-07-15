@@ -66,6 +66,7 @@ export function PositionMemoryRecreate({
 
         {/* Chess Board */}
         <EditableChessBoard
+          expandBoardOnMobile
           fen={recreatedPosition}
           onFenChange={onPositionChange}
           labels={editableBoardLabels}

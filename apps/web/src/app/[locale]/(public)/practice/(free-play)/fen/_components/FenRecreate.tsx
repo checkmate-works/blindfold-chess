@@ -83,6 +83,7 @@ export function FenRecreate({
             <FlipBoardButton onClick={() => setIsFlipped(!isFlipped)} title={t('flipBoard')} />
           </div>
           <EditableChessBoard
+            expandBoardOnMobile
             fen={recreatedPosition}
             onFenChange={onPositionChange}
             labels={editableBoardLabels}

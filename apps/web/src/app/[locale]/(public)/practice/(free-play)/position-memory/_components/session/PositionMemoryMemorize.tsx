@@ -84,8 +84,9 @@ export function PositionMemoryMemorize({
           </div>
         </div>
 
-        {/* Position Display (board or character list) */}
-        <BoardFrame className="relative">
+        {/* Position Display (board or character list). The board expands
+            edge-to-edge on phones; the text list keeps the panel gutter. */}
+        <BoardFrame className="relative" expandOnMobile={displayMode !== 'text'}>
           {displayMode === 'text' ? (
             <PiecesInfo fen={position.fen} />
           ) : (
