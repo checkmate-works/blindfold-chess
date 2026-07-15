@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-import { Button, FlipBoardButton } from '@/app/_components';
+import { BoardFrame, Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -81,24 +81,22 @@ export function FenRecreate({
           </div>
 
           {/* Chess Board */}
-          <div className="flex justify-center">
-            <div className="w-full max-w-md">
-              <div className="flex justify-end mb-2">
-                <FlipBoardButton onClick={() => setIsFlipped(!isFlipped)} title={t('flipBoard')} />
-              </div>
-              <EditableChessBoard
-                fen={recreatedPosition}
-                onFenChange={onPositionChange}
-                labels={editableBoardLabels}
-                flipped={isFlipped}
-                editable={true}
-                preserveTurnInfo={true}
-                originalPosition={originalPosition.fen}
-                boardTheme={boardTheme}
-                showCoordinates={showCoordinates}
-              />
+          <BoardFrame>
+            <div className="flex justify-end mb-2">
+              <FlipBoardButton onClick={() => setIsFlipped(!isFlipped)} title={t('flipBoard')} />
             </div>
-          </div>
+            <EditableChessBoard
+              fen={recreatedPosition}
+              onFenChange={onPositionChange}
+              labels={editableBoardLabels}
+              flipped={isFlipped}
+              editable={true}
+              preserveTurnInfo={true}
+              originalPosition={originalPosition.fen}
+              boardTheme={boardTheme}
+              showCoordinates={showCoordinates}
+            />
+          </BoardFrame>
 
           {/* Submit Button */}
           <Button onClick={onSubmit} variant="primary" size="lg" fullWidth>

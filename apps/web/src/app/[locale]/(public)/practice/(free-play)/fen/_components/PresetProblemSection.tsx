@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { BoardFrame } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
@@ -59,14 +60,14 @@ export function PresetProblemSection({
         {/* Preview */}
         {previewPreset && (
           <div className="mt-4">
-            <div className="max-w-xs mx-auto">
+            <BoardFrame>
               <AnimatedChessBoard
                 initialFen={previewPreset.fen}
                 showCoordinates={true}
                 flipped={isBlackToMoveFromFen(previewPreset.fen)}
                 boardTheme={boardTheme}
               />
-            </div>
+            </BoardFrame>
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { Button } from '@/app/_components';
+import { BoardFrame, Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { calculateSquareDifferences } from '@blindfold-chess/features/common';
 import type { PositionAccuracy } from '@blindfold-chess/features/common';
@@ -121,20 +121,20 @@ export function FenProblemResult({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-2">{t('original')}</p>
-              <div className="w-full max-w-xs mx-auto">
+              <BoardFrame>
                 <AnimatedChessBoard
                   initialFen={originalPosition.fen}
                   showCoordinates={showCoordinates}
                   flipped={originalPosition.isBlackToMove}
                   boardTheme={boardTheme}
                 />
-              </div>
+              </BoardFrame>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-2">
                 {t('yourRecreation')}
               </p>
-              <div className="w-full max-w-xs mx-auto">
+              <BoardFrame>
                 <ChessBoardWithOverlay
                   fen={recreatedPosition}
                   flipped={originalPosition.isBlackToMove}
@@ -142,7 +142,7 @@ export function FenProblemResult({
                   boardTheme={boardTheme}
                   showCoordinates={showCoordinates}
                 />
-              </div>
+              </BoardFrame>
             </div>
           </div>
 
