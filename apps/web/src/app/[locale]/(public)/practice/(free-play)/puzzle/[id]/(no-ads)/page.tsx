@@ -166,6 +166,17 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
 
       <PositionPeekBoard fen={position.fen} />
 
+      <RelatedTags
+        themes={relatedThemes}
+        chunks={relatedChunks}
+        locale={locale}
+        labels={{
+          sectionTitle: (count) => t('detail.usefulSection', { count }),
+          badgeTheme: tTags('badge.theme'),
+          badgeChunk: tTags('badge.chunk'),
+        }}
+      />
+
       <div className="pt-2">
         {/* Puzzle-solving is the primary action, so it leads and sits high
             enough to land in the first view. The "or" divider then frames the
@@ -197,17 +208,6 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           </Link>
         </div>
       </div>
-
-      <RelatedTags
-        themes={relatedThemes}
-        chunks={relatedChunks}
-        locale={locale}
-        labels={{
-          sectionTitle: (count) => t('detail.usefulSection', { count }),
-          badgeTheme: tTags('badge.theme'),
-          badgeChunk: tTags('badge.chunk'),
-        }}
-      />
 
       <PositionEditRequestCallout
         positionId={position.id}
