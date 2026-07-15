@@ -21,7 +21,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlusCircle } from 'react-icons/fa';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -61,6 +61,7 @@ export default async function CustomPositionStartPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
+  const tPractice = await getTranslations({ locale, namespace: 'practice' });
 
   return (
     <PositionDetailLayout
@@ -77,21 +78,31 @@ export default async function CustomPositionStartPage({ params }: Props) {
 
       <div className="max-w-md mx-auto">
         <PositionDetailBoard fen={problem.fen} flipped={problem.isBlackToMove} />
-        <div className="flex justify-center mt-4">
-          <Link href={`/games/new/position?fen=${encodeURIComponent(problem.fen)}`}>
-            <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
-              {tPlay('newGameFromHere')}
-            </Button>
-          </Link>
-        </div>
       </div>
 
+      {/* Same primary / "or" / alternative shape as the saved-position and
+          puzzle detail pages: memorizing leads, "new game from here" is the
+          alternative below the divider. */}
       <SectionTitle>{t('detail.solveSection')}</SectionTitle>
 
       <PositionStartForm
         sessionPath={`/practice/position-memory/custom/${token}/session`}
         locale={locale}
       />
+
+      <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
+        <Divider className="flex-1" />
+        <span className="text-sm text-muted-foreground">{tPractice('orDivider')}</span>
+        <Divider className="flex-1" />
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <Link href={`/games/new/position?fen=${encodeURIComponent(problem.fen)}`}>
+          <Button asChild variant="secondary" size="lg" icon={<FaPlusCircle />} fullWidth>
+            {tPlay('newGameFromHere')}
+          </Button>
+        </Link>
+      </div>
     </PositionDetailLayout>
   );
 }
