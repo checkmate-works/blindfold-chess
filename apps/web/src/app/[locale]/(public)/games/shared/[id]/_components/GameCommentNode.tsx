@@ -157,7 +157,7 @@ export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplay
               )}
 
               {!isDeleted && !isEditing && (
-                <div className="flex items-center gap-4 pt-2">
+                <div className="flex items-center gap-4 pt-4">
                   <GameCommentLikeButton
                     commentId={node.id}
                     locale={locale}
