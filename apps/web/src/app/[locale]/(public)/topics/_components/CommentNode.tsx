@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
+import { CommentNodeLayout } from '@/app/[locale]/_components/CommentNodeLayout';
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
@@ -105,188 +106,168 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
   const hiddenReplyCount =
     replyGroups?.reduce((acc, group) => acc + 1 + group.deeper.length, 0) ?? 0;
 
+  // A node carries either replyGroups (thread root) or flatReplies
+  // (first-level reply), never both — resolve to one mapped list.
+  const replyItems = replyGroups?.length
+    ? replyGroups.map((group) => (
+        <CommentNode key={group.first.id} node={group.first} flatReplies={group.deeper} />
+      ))
+    : flatReplies?.length
+      ? flatReplies.map(({ node: replyNode, replyToDisplayName: prefix }) => (
+          <CommentNode
+            key={replyNode.id}
+            node={replyNode}
+            replyToDisplayName={prefix ?? undefined}
+          />
+        ))
+      : null;
+
   return (
-    <div id={`post-${node.id}`} className="scroll-mt-20">
-      <div className="flex items-start gap-2">
-        {isRoot && (
-          <button
-            type="button"
-            onClick={() => setIsCollapsed((prev) => !prev)}
-            aria-label={tTopics(isCollapsed ? 'expandAriaLabel' : 'collapseAriaLabel')}
-            aria-expanded={!isCollapsed}
-            className="flex-shrink-0 mt-1 w-5 h-5 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground border border-border rounded cursor-pointer"
-          >
-            {isCollapsed ? '+' : '−'}
-          </button>
-        )}
+    <CommentNodeLayout
+      id={`post-${node.id}`}
+      toggle={
+        isRoot
+          ? {
+              isCollapsed,
+              onToggle: () => setIsCollapsed((prev) => !prev),
+              ariaLabel: tTopics(isCollapsed ? 'expandAriaLabel' : 'collapseAriaLabel'),
+            }
+          : undefined
+      }
+      actions={
+        !isCollapsed &&
+        !isDeleted &&
+        !isEditing && (
+          <CommentActions
+            node={node}
+            isOwnComment={isOwnComment}
+            onReply={() => setIsReplyOpen((prev) => !prev)}
+            onEdit={() => setIsEditing(true)}
+          />
+        )
+      }
+      replyForm={
+        !isCollapsed &&
+        isReplyOpen && (
+          <ReplyForm
+            locale={locale}
+            topicKey={topicKey}
+            postId={rootPostId}
+            attachmentActions={replyAttachmentActions}
+            i18nNamespace={i18n.replyNamespace}
+            replyToId={node.id}
+            replyToUsername={displayName}
+            onCancelReply={() => setIsReplyOpen(false)}
+            enableSpoilerToggle={enableSpoiler}
+          />
+        )
+      }
+      replies={!isCollapsed && replyItems}
+    >
+      {isDeleted ? (
+        // Tombstone: hide avatar, displayName, profile link, country, and
+        // flair so a deleted comment cannot be traced back to its author.
+        // Keep the timestamp — it's not identifying and helps readers
+        // place the deletion in the conversation flow.
+        <div className="flex items-baseline gap-2 text-xs text-muted-foreground italic">
+          <span>{tTopics('deletedComment')}</span>
+          <time dateTime={node.createdAt.toISOString()} className="not-italic">
+            {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
+          </time>
+        </div>
+      ) : (
+        <UserAvatar
+          profileHref={profileHref}
+          avatarUrl={node.author?.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          flair={node.author?.flair}
+          country={node.author?.country}
+        >
+          {/*
+            Wrap the timestamp in a block-level <div> so it lands below the
+            displayName instead of running inline next to it. UserAvatar
+            renders the displayName in a `inline-flex` <span>, so a bare
+            <time> child would flow on the same line — matching that to
+            `BaseTopicPostCard`, which wraps its timestamp in a <div> for
+            the same reason.
+          */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <time dateTime={node.createdAt.toISOString()}>
+              {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
+            </time>
+            {wasEdited && <EditedIndicator updatedAt={localUpdatedAt} locale={locale} />}
+          </div>
+        </UserAvatar>
+      )}
 
-        <div className="flex-1 min-w-0 space-y-2">
-          {isDeleted ? (
-            // Tombstone: hide avatar, displayName, profile link, country, and
-            // flair so a deleted comment cannot be traced back to its author.
-            // Keep the timestamp — it's not identifying and helps readers
-            // place the deletion in the conversation flow.
-            <div className="flex items-baseline gap-2 text-xs text-muted-foreground italic">
-              <span>{tTopics('deletedComment')}</span>
-              <time dateTime={node.createdAt.toISOString()} className="not-italic">
-                {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
-              </time>
-            </div>
-          ) : (
-            <UserAvatar
-              profileHref={profileHref}
-              avatarUrl={node.author?.avatarUrl}
-              displayName={displayName}
-              locale={locale}
-              flair={node.author?.flair}
-              country={node.author?.country}
-            >
-              {/*
-                Wrap the timestamp in a block-level <div> so it lands below the
-                displayName instead of running inline next to it. UserAvatar
-                renders the displayName in a `inline-flex` <span>, so a bare
-                <time> child would flow on the same line — matching that to
-                `BaseTopicPostCard`, which wraps its timestamp in a <div> for
-                the same reason.
-              */}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <time dateTime={node.createdAt.toISOString()}>
-                  {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
-                </time>
-                {wasEdited && <EditedIndicator updatedAt={localUpdatedAt} locale={locale} />}
-              </div>
-            </UserAvatar>
-          )}
-
-          {isCollapsed ? (
-            hiddenReplyCount > 0 && (
-              <p className="text-xs text-muted-foreground italic">
-                {tTopics('hiddenReplies', { count: hiddenReplyCount })}
-              </p>
-            )
-          ) : (
+      {isCollapsed
+        ? hiddenReplyCount > 0 && (
+            <p className="text-xs text-muted-foreground italic">
+              {tTopics('hiddenReplies', { count: hiddenReplyCount })}
+            </p>
+          )
+        : !isDeleted &&
+          (isEditing && editPostAction ? (
             <>
-              {!isDeleted && isEditing && editPostAction ? (
-                <>
-                  <EditPostForm
+              <EditPostForm
+                postId={node.id}
+                locale={locale}
+                initialContent={localContent}
+                initialIsSpoiler={localIsSpoiler}
+                enableSpoilerToggle={enableSpoiler}
+                editPostAction={editPostAction}
+                onSaved={(next) => {
+                  setLocalContent(next.content);
+                  setLocalIsSpoiler(next.isSpoiler);
+                  setLocalUpdatedAt(next.updatedAt);
+                  setIsEditing(false);
+                }}
+                onCancel={() => setIsEditing(false)}
+              />
+              {removeAttachmentAction &&
+                (attachmentsByPostId?.get(node.id) ||
+                  attachPgnAction !== undefined ||
+                  attachFenAction !== undefined) && (
+                  <EditableAttachments
                     postId={node.id}
                     locale={locale}
-                    initialContent={localContent}
-                    initialIsSpoiler={localIsSpoiler}
-                    enableSpoilerToggle={enableSpoiler}
-                    editPostAction={editPostAction}
-                    onSaved={(next) => {
-                      setLocalContent(next.content);
-                      setLocalIsSpoiler(next.isSpoiler);
-                      setLocalUpdatedAt(next.updatedAt);
-                      setIsEditing(false);
-                    }}
-                    onCancel={() => setIsEditing(false)}
+                    attachment={attachmentsByPostId?.get(node.id) ?? null}
+                    removeAttachmentAction={removeAttachmentAction}
+                    attachPgnAction={attachPgnAction}
+                    attachFenAction={attachFenAction}
+                    fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
                   />
-                  {removeAttachmentAction &&
-                    (attachmentsByPostId?.get(node.id) ||
-                      attachPgnAction !== undefined ||
-                      attachFenAction !== undefined) && (
-                      <EditableAttachments
-                        postId={node.id}
-                        locale={locale}
-                        attachment={attachmentsByPostId?.get(node.id) ?? null}
-                        removeAttachmentAction={removeAttachmentAction}
-                        attachPgnAction={attachPgnAction}
-                        attachFenAction={attachFenAction}
-                        fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
-                      />
-                    )}
-                </>
-              ) : (
-                !isDeleted && (
-                  <div className="relative" aria-live="polite">
-                    {replyToDisplayName && (
-                      <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
-                    )}
-                    <p
-                      className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
-                      aria-hidden={showSpoiler || undefined}
-                    >
-                      {moveNotationLine ? (
-                        <GameCommentBody
-                          text={localContent}
-                          locale={locale}
-                          moves={moveNotationLine.moves}
-                          startingFen={moveNotationLine.startingFen}
-                          playerColor={moveNotationLine.playerColor}
-                        />
-                      ) : moveNotationFen ? (
-                        <CommentMoveBody
-                          text={localContent}
-                          locale={locale}
-                          fen={moveNotationFen}
-                        />
-                      ) : (
-                        <LinkedText text={localContent} locale={locale} />
-                      )}
-                    </p>
-                    {showSpoiler && (
-                      <CommentSpoilerOverlay onReveal={() => setIsSpoilerRevealed(true)} />
-                    )}
-                  </div>
-                )
-              )}
-
-              {!isDeleted && !isEditing && extraContentByPostId?.get(node.id)}
-
-              {!isDeleted && !isEditing && (
-                <CommentActions
-                  node={node}
-                  isOwnComment={isOwnComment}
-                  onReply={() => setIsReplyOpen((prev) => !prev)}
-                  onEdit={() => setIsEditing(true)}
-                />
-              )}
-
-              {isReplyOpen && (
-                <div className="mt-2">
-                  <ReplyForm
-                    locale={locale}
-                    topicKey={topicKey}
-                    postId={rootPostId}
-                    attachmentActions={replyAttachmentActions}
-                    i18nNamespace={i18n.replyNamespace}
-                    replyToId={node.id}
-                    replyToUsername={displayName}
-                    onCancelReply={() => setIsReplyOpen(false)}
-                    enableSpoilerToggle={enableSpoiler}
-                  />
-                </div>
-              )}
-
-              {replyGroups && replyGroups.length > 0 && (
-                <div className="mt-3 border-l-2 border-border pl-4 space-y-4">
-                  {replyGroups.map((group) => (
-                    <CommentNode
-                      key={group.first.id}
-                      node={group.first}
-                      flatReplies={group.deeper}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {flatReplies && flatReplies.length > 0 && (
-                <div className="mt-3 border-l-2 border-border pl-4 space-y-4">
-                  {flatReplies.map(({ node: replyNode, replyToDisplayName: prefix }) => (
-                    <CommentNode
-                      key={replyNode.id}
-                      node={replyNode}
-                      replyToDisplayName={prefix ?? undefined}
-                    />
-                  ))}
-                </div>
-              )}
+                )}
             </>
-          )}
-        </div>
-      </div>
-    </div>
+          ) : (
+            <div className="relative" aria-live="polite">
+              {replyToDisplayName && (
+                <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
+              )}
+              <p
+                className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
+                aria-hidden={showSpoiler || undefined}
+              >
+                {moveNotationLine ? (
+                  <GameCommentBody
+                    text={localContent}
+                    locale={locale}
+                    moves={moveNotationLine.moves}
+                    startingFen={moveNotationLine.startingFen}
+                    playerColor={moveNotationLine.playerColor}
+                  />
+                ) : moveNotationFen ? (
+                  <CommentMoveBody text={localContent} locale={locale} fen={moveNotationFen} />
+                ) : (
+                  <LinkedText text={localContent} locale={locale} />
+                )}
+              </p>
+              {showSpoiler && <CommentSpoilerOverlay onReveal={() => setIsSpoilerRevealed(true)} />}
+            </div>
+          ))}
+
+      {!isCollapsed && !isDeleted && !isEditing && extraContentByPostId?.get(node.id)}
+    </CommentNodeLayout>
   );
 }
