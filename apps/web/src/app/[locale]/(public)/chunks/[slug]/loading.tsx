@@ -47,7 +47,7 @@ export default async function ChunkDetailLoading() {
         </div>
 
         {/* Representative board (ThemedBoardThumbnail) */}
-        <BoardFrame>
+        <BoardFrame expandOnMobile>
           <BoardSkeleton />
         </BoardFrame>
 

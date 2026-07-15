@@ -235,7 +235,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         <p className="text-muted-foreground italic">{tChunks('detail.noDescription')}</p>
       )}
 
-      <BoardFrame>
+      <BoardFrame expandOnMobile>
         <ThemedBoardThumbnail
           fen={chunk.representativeFen}
           annotations={parseBoardAnnotations(chunk.annotations)}

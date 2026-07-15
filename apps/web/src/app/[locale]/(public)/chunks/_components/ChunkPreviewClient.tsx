@@ -137,7 +137,7 @@ export function ChunkPreviewClient() {
           <p className="text-foreground whitespace-pre-wrap">{draft.description}</p>
         )}
 
-        <BoardFrame>
+        <BoardFrame expandOnMobile>
           <ThemedBoardThumbnail
             fen={draft.representativeFen}
             annotations={draft.annotations}
