@@ -15,7 +15,13 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { HelpTourButton, LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import {
+  HelpTourButton,
+  LinkTabs,
+  PageLayout,
+  ScrollToHashOnMount,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -184,6 +190,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: tChunks('listTitle'), href: '/chunks' }, { label: chunk.title }]}
     >
+      <ScrollToHashOnMount />
       {/*
        * Edit-suggestion callout — only meaningful while the chunk is in
        * draft. Hoisted to the very top of the content area so the
