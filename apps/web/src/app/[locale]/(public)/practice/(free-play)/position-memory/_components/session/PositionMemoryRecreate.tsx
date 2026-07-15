@@ -68,20 +68,16 @@ export function PositionMemoryRecreate({
           <p className="text-lg text-muted-foreground">{t('recreatePosition')}</p>
 
           {/* Chess Board */}
-          <div className="flex justify-center">
-            <div className="w-full max-w-md">
-              <EditableChessBoard
-                fen={recreatedPosition}
-                onFenChange={onPositionChange}
-                labels={editableBoardLabels}
-                flipped={originalPosition.isBlackToMove}
-                editable={true}
-                preserveTurnInfo={true}
-                originalPosition={originalPosition.fen}
-                boardTheme={boardTheme}
-              />
-            </div>
-          </div>
+          <EditableChessBoard
+            fen={recreatedPosition}
+            onFenChange={onPositionChange}
+            labels={editableBoardLabels}
+            flipped={originalPosition.isBlackToMove}
+            editable={true}
+            preserveTurnInfo={true}
+            originalPosition={originalPosition.fen}
+            boardTheme={boardTheme}
+          />
 
           {/* Submit Button */}
           <Button onClick={onSubmit} variant="primary" size="lg" fullWidth>

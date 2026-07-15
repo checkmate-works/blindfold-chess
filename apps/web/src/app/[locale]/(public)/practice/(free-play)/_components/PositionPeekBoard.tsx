@@ -1,5 +1,6 @@
 'use client';
 
+import { BoardFrame } from '@/app/_components';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
@@ -27,7 +28,7 @@ export function PositionPeekBoard({ fen }: Props) {
   const blackToMove = isBlackToMoveFromFen(fen);
 
   return (
-    <div className="mx-auto max-w-md">
+    <BoardFrame>
       <InlineBoardView
         fen={fen}
         playerSide={blackToMove ? 'black' : 'white'}
@@ -38,6 +39,6 @@ export function PositionPeekBoard({ fen }: Props) {
         currentPosition={-1}
         formattedPgn={[]}
       />
-    </div>
+    </BoardFrame>
   );
 }

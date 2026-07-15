@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { BoardSkeleton, FlipBoardButton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton, FlipBoardButton } from '@/app/_components';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -111,23 +111,21 @@ export function PositionFormFields({
           <div className="flex justify-end mb-2">
             <FlipBoardButton onClick={handleFlip} title={t('flipBoard')} />
           </div>
-          <div className="flex justify-center">
-            <div className="w-full max-w-md">
-              {!isLoaded ? (
-                <BoardSkeleton />
-              ) : (
-                <EditableChessBoard
-                  fen={board.boardFen}
-                  onFenChange={board.handleBoardChange}
-                  labels={editableBoardLabels}
-                  editable={true}
-                  flipped={board.flipped}
-                  showCoordinates={true}
-                  boardTheme={preferences.boardTheme}
-                />
-              )}
-            </div>
-          </div>
+          {!isLoaded ? (
+            <BoardFrame>
+              <BoardSkeleton />
+            </BoardFrame>
+          ) : (
+            <EditableChessBoard
+              fen={board.boardFen}
+              onFenChange={board.handleBoardChange}
+              labels={editableBoardLabels}
+              editable={true}
+              flipped={board.flipped}
+              showCoordinates={true}
+              boardTheme={preferences.boardTheme}
+            />
+          )}
 
           {board.positionError && (
             <p className="text-sm text-destructive text-center">{t('positionInvalid')}</p>

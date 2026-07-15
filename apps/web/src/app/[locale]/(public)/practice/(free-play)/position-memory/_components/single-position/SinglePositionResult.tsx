@@ -5,7 +5,7 @@ import { type ReactNode, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardFrame, Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
@@ -139,27 +139,27 @@ export function SinglePositionResult({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-2">{t('original')}</p>
-                <div className="w-full max-w-xs mx-auto">
+                <BoardFrame>
                   <AnimatedChessBoard
                     initialFen={resultItem.fen}
                     showCoordinates={false}
                     flipped={isBlackToMove}
                     boardTheme={preferences.boardTheme}
                   />
-                </div>
+                </BoardFrame>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-2">
                   {t('yourRecreation')}
                 </p>
-                <div className="w-full max-w-xs mx-auto">
+                <BoardFrame>
                   <ChessBoardWithOverlay
                     fen={resultItem.recreatedFen || '8/8/8/8/8/8/8/8 w - - 0 1'}
                     flipped={isBlackToMove}
                     squareDifferences={squareDifferences}
                     boardTheme={preferences.boardTheme}
                   />
-                </div>
+                </BoardFrame>
               </div>
             </div>
           )}

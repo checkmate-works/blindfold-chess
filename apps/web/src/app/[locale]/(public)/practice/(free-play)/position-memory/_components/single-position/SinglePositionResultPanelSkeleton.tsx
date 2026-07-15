@@ -1,4 +1,4 @@
-import { BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton } from '@/app/_components';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
@@ -65,15 +65,15 @@ export function SinglePositionResultPanelSkeleton({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-2">{labels.original}</p>
-          <div className="w-full max-w-xs mx-auto">
+          <BoardFrame>
             <BoardSkeleton />
-          </div>
+          </BoardFrame>
         </div>
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-2">{labels.yourRecreation}</p>
-          <div className="w-full max-w-xs mx-auto">
+          <BoardFrame>
             <BoardSkeleton />
-          </div>
+          </BoardFrame>
         </div>
       </div>
 
