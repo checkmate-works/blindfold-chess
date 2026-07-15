@@ -645,6 +645,17 @@ CREATE POLICY "puzzle_solutions_select_policy" ON "puzzle_solutions"
   FOR SELECT USING (true);
 
 -- =============================================================================
+-- featured_puzzles (admin-curated Daily Puzzle pool; deny-by-default)
+-- =============================================================================
+-- No policies and no grants: all reads/writes go through server-side Drizzle
+-- (BYPASSRLS role). Deny-by-default is load-bearing here, not just posture —
+-- `positions` has an owner-writable UPDATE policy, so pool membership must
+-- live where the puzzle's author cannot reach it via PostgREST, or authors
+-- could feature their own puzzles.
+ALTER TABLE "featured_puzzles" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "featured_puzzles" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
 -- user_grants (admin-only write, server-side only read; deny-by-default)
 -- =============================================================================
 ALTER TABLE "user_grants" ENABLE ROW LEVEL SECURITY;

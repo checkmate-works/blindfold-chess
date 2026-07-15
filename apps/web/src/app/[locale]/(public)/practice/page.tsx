@@ -6,7 +6,11 @@
  * Intermediate, Advanced, Introduction). Each module links to its dedicated
  * practice page. Uses PRACTICE_EMOJIS as the single source of truth for icons.
  *
+ * Leads with the Daily Puzzle card (the same one the signed-in dashboard
+ * shows) so the page offers a concrete thing to do before the module grid.
+ *
  * @flow
+ * - Daily Puzzle: today's puzzle, seeded on the UTC date
  * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
  * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
  * - Advanced: Position Memory, Puzzle
@@ -17,6 +21,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ChallengeCard } from '@/app/_components';
+import { DailyPuzzleCard } from '@/app/_components/DailyPuzzleCard';
 import { SITE_URL } from '@/config';
 
 import { resolveCspNonce } from '@/lib/security/nonce';
@@ -172,6 +177,8 @@ export default async function PracticePage({ params }: Props) {
         locale={locale}
         breadcrumb={[{ label: t('navigation.practice') }]}
       >
+        <DailyPuzzleCard locale={locale} variant="compact" />
+
         {sections.map((section) => (
           <section key={section.title} className="space-y-4">
             <SectionTitle>{section.title}</SectionTitle>

@@ -1387,6 +1387,7 @@
         "title": "Puzzle Detail",
         "descriptionSection": "About This Puzzle",
         "startSolving": "Start solving",
+        "memorizeOnly": "Just memorize this position",
         "whitePiecesLabel": "White Pieces",
         "blackPiecesLabel": "Black Pieces",
         "whiteToMove": "White to move",

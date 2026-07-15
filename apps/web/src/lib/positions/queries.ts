@@ -1,10 +1,14 @@
 import { cache } from 'react';
 
+import { unstable_cache } from 'next/cache';
+
 import { type SQL, and, desc, eq, isNull, sql } from 'drizzle-orm';
 
+import { DAILY_PUZZLE_CACHE_TAG } from '@/lib/cache-tags';
 import {
   AUTHOR_PROFILE_COLUMNS,
   db,
+  featuredPuzzles,
   likes,
   liveProfileJoinOn,
   positions,
@@ -240,16 +244,64 @@ export const getPositionLineageMetaById = cache(async (id: string) => {
   return row ?? null;
 });
 
-/**
- * Fetch a single random position of a given type.
- */
-export async function getRandomPosition({ type }: { type: PositionType }) {
-  const [row] = await db
-    .select()
-    .from(positions)
-    .where(and(eq(positions.type, type), isNull(positions.deletedAt)))
-    .orderBy(sql`RANDOM()`)
-    .limit(1);
+/** The current UTC day, as `YYYY-MM-DD`. Used as the daily-puzzle seed. */
+export function utcDayKey(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
 
-  return row ?? null;
+/**
+ * Pick the day's puzzle from the admin-curated `featured_puzzles` pool.
+ *
+ * `md5(dayKey || id)` is a stable pseudo-random shuffle: within a day every
+ * caller sees the same row, and the row changes when the day does. This is
+ * what makes the "Daily Puzzle" card actually daily — an unseeded
+ * `ORDER BY RANDOM()` (what this used to be) handed out a different puzzle on
+ * every reload, so a user could never come back to "today's" puzzle. The hash
+ * has no memory, so a small pool can repeat a puzzle on consecutive days —
+ * accepted; keep a few puzzles featured.
+ *
+ * Selection is restricted to pool members (not all puzzles): the pool is UGC
+ * that an admin has explicitly vouched for, since this card is effectively an
+ * editorial recommendation on the two most prominent signed-in surfaces. The
+ * `type` / `deletedAt` filters re-check what the admin toggle already
+ * enforces, so a soft-deleted pool member drops out on its own.
+ *
+ * `unstable_cache` bounds the query to once an hour per day key; the day key
+ * pins the *result*. Admin pool changes and puzzle deletes revalidate
+ * {@link DAILY_PUZZLE_CACHE_TAG} for an immediate swap, so the hourly
+ * revalidate is only a backstop for un-tagged writes (e.g. an owner deleting
+ * their own featured puzzle from the public side).
+ */
+const selectDailyPuzzle = unstable_cache(
+  async (dayKey: string) => {
+    const [row] = await db
+      .select({ position: positions })
+      .from(featuredPuzzles)
+      .innerJoin(positions, eq(positions.id, featuredPuzzles.positionId))
+      .where(and(eq(positions.type, 'puzzle'), isNull(positions.deletedAt)))
+      .orderBy(sql`md5(${dayKey} || ${positions.id}::text)`)
+      .limit(1);
+
+    return row?.position ?? null;
+  },
+  ['daily-puzzle'],
+  { tags: [DAILY_PUZZLE_CACHE_TAG], revalidate: 3600 }
+);
+
+/**
+ * Fetch the puzzle of the day (see {@link selectDailyPuzzle}). Returns `null`
+ * when the featured pool is empty — callers hide the Daily Puzzle UI.
+ */
+export async function getDailyPuzzle() {
+  return selectDailyPuzzle(utcDayKey());
+}
+
+/**
+ * All position ids currently in the Daily Puzzle pool. Admin-only consumer
+ * (the puzzle list page marks featured rows); the pool is expected to stay
+ * small, so this is an unpaginated full read.
+ */
+export async function listFeaturedPuzzleIds(): Promise<Set<string>> {
+  const rows = await db.select({ id: featuredPuzzles.positionId }).from(featuredPuzzles);
+  return new Set(rows.map((r) => r.id));
 }

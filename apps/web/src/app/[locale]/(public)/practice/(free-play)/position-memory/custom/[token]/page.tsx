@@ -4,22 +4,29 @@
  * @description
  * Mirrors the saved-position detail/start page (`[id]/page.tsx`) but for a
  * problem whose FEN is encoded in the URL token rather than stored in the DB.
- * No author, no comments, no EXP — just a board preview and the start form.
+ * No author, no comments, no EXP — just the shared position-detail shell with
+ * a board preview and the start form.
  *
  * @flow
  * 1. Decode + validate the Base64URL FEN token (404 on malformed input).
- * 2. Render the board preview and the shared start form, pointing it at the
- *    custom session route.
+ * 2. Render the shared `PositionDetailLayout` (same "Position Description" /
+ *    board / "Solve the Problem" structure as the saved-position page),
+ *    pointing the start form at the custom session route.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { Button } from '@/app/_components';
+import { Link } from '@/i18n/routing';
+import { FaPlusCircle } from 'react-icons/fa';
+
+import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
 import { PositionDetailBoard } from '../../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../../_components/single-position/PositionStartForm';
 import { resolveCustomProblem } from '../../_lib/custom-problem';
@@ -53,30 +60,38 @@ export default async function CustomPositionStartPage({ params }: Props) {
 
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
 
   return (
-    <PageLayout
+    <PositionDetailLayout
       title={t('custom.title')}
       locale={locale}
-      breadcrumb={[
+      bottomAdSense={<AdSlot slot="content-bottom" />}
+      breadcrumbItems={[
         { label: tNav('practice'), href: '/practice' },
         { label: t('list.title'), href: '/practice/position-memory' },
         { label: t('custom.title') },
       ]}
     >
-      <div className="my-6 max-w-md mx-auto">
+      <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
+
+      <div className="max-w-md mx-auto">
         <PositionDetailBoard fen={problem.fen} flipped={problem.isBlackToMove} />
+        <div className="flex justify-center mt-4">
+          <Link href={`/games/new/position?fen=${encodeURIComponent(problem.fen)}`}>
+            <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
+              {tPlay('newGameFromHere')}
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      <SectionTitle>{t('detail.start')}</SectionTitle>
-      <div className="mt-4">
-        <PositionStartForm
-          sessionPath={`/practice/position-memory/custom/${token}/session`}
-          locale={locale}
-        />
-      </div>
+      <SectionTitle>{t('detail.solveSection')}</SectionTitle>
 
-      <AdSlot slot="content-bottom" />
-    </PageLayout>
+      <PositionStartForm
+        sessionPath={`/practice/position-memory/custom/${token}/session`}
+        locale={locale}
+      />
+    </PositionDetailLayout>
   );
 }

@@ -31,10 +31,12 @@ function actionBadgeVariant(action: string): AdminBadgeVariant {
     case 'unban':
     case 'create_grant':
     case 'create_point_grant':
+    case 'feature_puzzle':
       return 'success';
     case 'delete_post':
     case 'delete_position':
     case 'revoke_grant':
+    case 'unfeature_puzzle':
       return 'caution';
     default:
       return 'neutral';
@@ -142,6 +144,8 @@ export default async function AdminAuditLogPage({
             <option value="unban">unban</option>
             <option value="delete_post">delete_post</option>
             <option value="delete_position">delete_position</option>
+            <option value="feature_puzzle">feature_puzzle</option>
+            <option value="unfeature_puzzle">unfeature_puzzle</option>
             <option value="create_grant">create_grant</option>
             <option value="revoke_grant">revoke_grant</option>
             <option value="create_point_grant">create_point_grant</option>

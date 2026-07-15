@@ -1383,6 +1383,7 @@
         "title": "Detalhes do Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
         "startSolving": "Começar a resolver",
+        "memorizeOnly": "Apenas memorizar esta posição",
         "whitePiecesLabel": "Peças Brancas",
         "blackPiecesLabel": "Peças Pretas",
         "whiteToMove": "Brancas jogam",

@@ -101,3 +101,47 @@ export const puzzleSolutions = pgTable(
 
 export type PuzzleSolution = typeof puzzleSolutions.$inferSelect;
 export type NewPuzzleSolution = typeof puzzleSolutions.$inferInsert;
+
+/**
+ * Featured Puzzles — the admin-curated pool the Daily Puzzle is drawn from.
+ *
+ * @description
+ * Row existence IS pool membership: featuring inserts a row, unfeaturing
+ * deletes it, so the table always reads as "the current pool" with no
+ * status column to interpret. The daily reader (`getDailyPuzzle`) picks one
+ * member per UTC day via a seeded hash; an empty pool hides the Daily
+ * Puzzle card entirely.
+ *
+ * @design Separate table, not a `featured_at` column on `positions`
+ * Curation is editorial data owned by admins, not an attribute of the UGC
+ * row. Keeping it out of `positions` follows the same normalization
+ * rationale as `puzzle_solutions` above, and lets RLS make the whole table
+ * deny-by-default (ENABLE + FORCE, no policies — see rls_policies.sql):
+ * `positions` has an owner-writable UPDATE policy, so a flag column there
+ * would be self-settable by the puzzle's author via PostgREST.
+ *
+ * @design No `featured_by` column, no `updated_at`
+ * Who featured what (and the unfeature history) lives in
+ * `moderation_actions` (`feature_puzzle` / `unfeature_puzzle`), mirroring
+ * the user_grants decision to keep admin attribution in the audit table.
+ * Rows are insert/delete only, so there is nothing for `updated_at` to
+ * track; `featured_at` doubles as the row's creation timestamp.
+ *
+ * @design `position_id` as primary key
+ * A puzzle is either in the pool or not — a natural 1:0..1 relation, so the
+ * FK itself is the key (no surrogate id, no separate unique index).
+ * `onDelete: 'cascade'` covers physical deletes; soft-deleted puzzles are
+ * filtered out by the daily reader instead (the row survives, which also
+ * means an un-delete would restore pool membership). Enforcement that the
+ * referenced position has `type = 'puzzle'` is at the app layer (the admin
+ * action checks; the reader re-filters), since a DB-level check would need
+ * a composite (id, type) FK for little gain.
+ */
+export const featuredPuzzles = pgTable('featured_puzzles', {
+  positionId: uuid('position_id')
+    .primaryKey()
+    .references(() => positions.id, { onDelete: 'cascade' }),
+  featuredAt: timestamp('featured_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type FeaturedPuzzle = typeof featuredPuzzles.$inferSelect;

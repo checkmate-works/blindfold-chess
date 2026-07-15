@@ -171,7 +171,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
               targetId: `${tourIdPrefix}-create`,
               title: t('help.create.title'),
               description: nl2br(t('help.create.description')),
-              side: 'top' as const,
+              side: 'bottom' as const,
               align: 'center' as const,
             },
           ]
@@ -188,6 +188,16 @@ export function createPositionListPage(config: PositionListPageConfig) {
         <div data-tour-id={`${tourIdPrefix}-intro`}>
           <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
         </div>
+
+        {currentUser && (
+          <div data-tour-id={`${tourIdPrefix}-create`}>
+            <Link href={`${basePath}/new`} locale={locale}>
+              <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
+                {t('list.createButton')}
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {totalCount > 0 && (
           <div className="flex justify-end">
@@ -225,16 +235,6 @@ export function createPositionListPage(config: PositionListPageConfig) {
         )}
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        {currentUser && (
-          <div className="py-4" data-tour-id={`${tourIdPrefix}-create`}>
-            <Link href={`${basePath}/new`} locale={locale}>
-              <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
-                {t('list.createButton')}
-              </Button>
-            </Link>
-          </div>
-        )}
 
         <AdSlot slot="content-bottom" />
       </PageLayout>
