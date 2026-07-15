@@ -25,7 +25,7 @@ import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelec
 import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { SectionTitle } from '@/app/[locale]/_components';
+import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -85,6 +85,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
+  const tPractice = await getTranslations({ locale, namespace: 'practice' });
 
   const row = await getPositionWithProfileById({ id, type: 'memory' });
 
@@ -160,13 +161,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
 
       <div className="max-w-md mx-auto">
         <PositionDetailBoard fen={position.fen} flipped={isBlackToMove} />
-        <div className="flex justify-center mt-4">
-          <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
-            <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
-              {tPlay('newGameFromHere')}
-            </Button>
-          </Link>
-        </div>
       </div>
 
       <RelatedTags
@@ -179,6 +173,29 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           badgeChunk: tTags('badge.chunk'),
         }}
       />
+
+      {/* Memorizing is the primary action here, so it leads; the "or" divider
+          then frames "new game from here" as the alternative way to reuse the
+          position — the same primary / "or" / alternatives shape the puzzle
+          detail page and the challenge modules use. */}
+      <SectionTitle>{t('detail.solveSection')}</SectionTitle>
+
+      <PositionStartForm
+        sessionPath={`/practice/position-memory/${position.id}/session`}
+        locale={locale}
+      />
+
+      <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
+        <Divider className="flex-1" />
+        <span className="text-sm text-muted-foreground">{tPractice('orDivider')}</span>
+        <Divider className="flex-1" />
+      </div>
+
+      <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
+        <Button asChild variant="secondary" size="lg" icon={<FaPlusCircle />} fullWidth>
+          {tPlay('newGameFromHere')}
+        </Button>
+      </Link>
 
       <PositionEditRequestCallout
         positionId={position.id}
@@ -236,13 +253,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           )}
         </div>
       </div>
-
-      <SectionTitle>{t('detail.solveSection')}</SectionTitle>
-
-      <PositionStartForm
-        sessionPath={`/practice/position-memory/${position.id}/session`}
-        locale={locale}
-      />
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
