@@ -68,7 +68,7 @@ export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplay
 
   return (
     <div id={`game-comment-${node.id}`} className="scroll-mt-20">
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-3">
         {isRoot && (
           <button
             type="button"
@@ -157,7 +157,7 @@ export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplay
               )}
 
               {!isDeleted && !isEditing && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 pt-2">
                   <GameCommentLikeButton
                     commentId={node.id}
                     locale={locale}
