@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
@@ -222,9 +222,9 @@ async function SquarePostsSkeleton() {
         </SectionTitle>
 
         {/* SquareHighlightBoard (renders BoardSkeleton until preferences load) */}
-        <div className="max-w-xs mx-auto">
+        <BoardFrame expandOnMobile>
           <BoardSkeleton />
-        </div>
+        </BoardFrame>
 
         {/* Openings whose first move lands on this square (up to 3 cards) */}
         <div className="space-y-3">

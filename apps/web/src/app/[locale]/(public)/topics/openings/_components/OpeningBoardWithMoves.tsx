@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardFrame, Button } from '@/app/_components';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getFenAfterMoves, getStartingFen, parsePgn } from '@blindfold-chess/features/chess-core';
@@ -85,9 +85,9 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="max-w-xs mx-auto">
+      <BoardFrame expandOnMobile>
         <MiniBoard fen={currentFen} responsive flipped={isBlackOpening(fen)} />
-      </div>
+      </BoardFrame>
 
       {/* Navigation Controls */}
       <div className="flex justify-center gap-1">

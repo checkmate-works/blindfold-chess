@@ -1,6 +1,6 @@
 'use client';
 
-import { BoardLayout, BoardSkeleton } from '@/app/_components';
+import { BoardFrame, BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
@@ -32,20 +32,20 @@ export function SquareBoard({ locale }: Props) {
 
   if (!isLoaded) {
     return (
-      <div className="max-w-xs mx-auto">
+      <BoardFrame expandOnMobile>
         <BoardSkeleton />
-      </div>
+      </BoardFrame>
     );
   }
 
   return (
-    <div className="max-w-xs mx-auto">
+    <BoardFrame expandOnMobile>
       <BoardLayout
         showCoordinates={false}
         rounded={true}
         themeColors={themeColors}
         renderSquare={renderSquare}
       />
-    </div>
+    </BoardFrame>
   );
 }
