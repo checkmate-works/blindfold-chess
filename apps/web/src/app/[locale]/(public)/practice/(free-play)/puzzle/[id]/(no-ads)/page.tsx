@@ -11,13 +11,14 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { FaPlay, FaPlusCircle } from 'react-icons/fa';
+import { FaBrain, FaPlay, FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
+import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
 import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
@@ -164,10 +165,15 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
 
       <PositionPeekBoard fen={position.fen} />
 
-      <div className="flex justify-center">
+      <div className="flex flex-wrap justify-center gap-3">
         <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
           <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
             {tPlay('newGameFromHere')}
+          </Button>
+        </Link>
+        <Link href={`/practice/position-memory/custom/${encodeFenToBase64Url(position.fen)}`}>
+          <Button asChild variant="secondary" icon={<FaBrain className="w-3 h-3" />}>
+            {t('detail.memorizeFromHere')}
           </Button>
         </Link>
       </div>
