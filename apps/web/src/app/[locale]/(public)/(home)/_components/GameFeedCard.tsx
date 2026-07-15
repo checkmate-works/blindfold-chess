@@ -79,7 +79,10 @@ export const GameFeedCard = memo(function GameFeedCard({
           replyMeta={data.replyMeta}
           toggleLikeAction={toggleGameLikeAction}
           i18nNamespace="sharedGames.detail"
-          postHref={href}
+          // Comment icon scrolls straight to the overview/discussion block
+          // (`id="game-overview"`); the rest of the card keeps linking to
+          // the plain detail page (opening board).
+          postHref={`${href}#game-overview`}
           actionSize={actionSize}
         />
       }

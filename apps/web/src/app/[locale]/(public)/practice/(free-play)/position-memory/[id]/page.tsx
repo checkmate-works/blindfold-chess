@@ -255,7 +255,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         </div>
       </div>
 
-      <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
+      <SectionTitle id="comments">{tComments('commentsTitle')}</SectionTitle>
 
       {currentUser && commentCount === 0 ? (
         <NewPostForm locale={locale} positionId={position.id} />

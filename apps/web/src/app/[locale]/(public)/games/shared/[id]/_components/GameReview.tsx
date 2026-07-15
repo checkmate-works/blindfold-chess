@@ -281,6 +281,23 @@ export function GameReview({
       social.mode === 'local' && startPosition ? startPosition.jumpIndex : undefined,
   });
 
+  // `#game-overview` deep-link from the home feed's comment-count icon.
+  // Native hash-anchor scrolling can't reach this block: `useMoveNavigation`
+  // defaults `currentPosition` to -1 (latest move) on first paint, so
+  // `isInitialPosition` — and the `id="game-overview"` div below — doesn't
+  // exist until the `useReplayDeepLink` effect above navigates to -2, by
+  // which point the browser's one-shot scroll-to-hash has already fired and
+  // found nothing. Scroll manually once the block actually mounts.
+  const scrolledToOverviewRef = useRef(false);
+  useEffect(() => {
+    if (scrolledToOverviewRef.current || !isInitialPosition) return;
+    if (window.location.hash !== '#game-overview') return;
+    const el = document.getElementById('game-overview');
+    if (!el) return;
+    scrolledToOverviewRef.current = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [isInitialPosition]);
+
   // The opening-board stats overview (engine + By Move + change log). Anonymous
   // viewers get it gated behind a members-only sign-up CTA, matching the result
   // page; signed-in viewers see it directly.
@@ -474,7 +491,12 @@ export function GameReview({
       ) : /* On a move position: that move's comment thread, directly under the
           move list. On the opening board: the description + statistics. */
       isInitialPosition ? (
-        <>
+        // `id` + `scroll-mt-20`: lets a link from elsewhere (e.g. the home
+        // feed's comment-count icon, via `#game-overview`) land here instead
+        // of the top of the page — this sits below the board/move-list widget.
+        // `space-y-6` replaces the gap the parent's own `space-y-6` used to
+        // apply between these (previously fragment-spread, now grouped) children.
+        <div id="game-overview" className="scroll-mt-20 space-y-6">
           {children}
 
           {overview.showOverviewTabs && (
@@ -499,7 +521,7 @@ export function GameReview({
               locale={locale}
             />
           )}
-        </>
+        </div>
       ) : (
         currentPly != null && (
           <ReviewMovePositionPanel

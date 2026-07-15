@@ -93,7 +93,10 @@ export const PositionFeedCard = memo(function PositionFeedCard({
             replyMeta={data.replyMeta}
             toggleLikeAction={toggleLike}
             i18nNamespace={data.type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory'}
-            postHref={href}
+            // Comment icon additionally scrolls to the Comments section
+            // (`id="comments"` on the page's SectionTitle); the rest of the
+            // card keeps linking to the plain detail page.
+            postHref={`${href}#comments`}
             actionSize={actionSize}
           />
         ) : undefined

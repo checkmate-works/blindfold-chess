@@ -266,7 +266,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         </div>
       </div>
 
-      <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
+      <SectionTitle id="comments">{tComments('commentsTitle')}</SectionTitle>
 
       {currentUser && commentCount === 0 ? (
         <NewPostForm locale={locale} positionId={position.id} />

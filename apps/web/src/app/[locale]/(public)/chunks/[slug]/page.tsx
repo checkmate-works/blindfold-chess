@@ -328,34 +328,42 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
        * All three tabs always render so the tab set is stable and the count
        * tells you what's inside.
        */}
-      <LinkTabs
-        variant="underline"
-        locale={locale}
-        activeValue={activeTab}
-        scroll={false}
-        aria-label={t('relatedGames.tabsLabel')}
-        items={[
-          {
-            value: 'positions',
-            // Explicit `?tab=positions` (not the bare slug) so this tab always
-            // lands on the Positions panel. The bare URL resolves to the first
-            // non-empty tab (`resolveDefaultChunkTab`), so on a chunk with zero
-            // positions a bare-URL link here would loop back to Comments.
-            label: `${tChunks('detail.positionsSection')} (${linkedPositions.length})`,
-            href: `/chunks/${slug}?tab=positions`,
-          },
-          {
-            value: 'games',
-            label: `${t('relatedGames.tab')} (${relatedGames.length})`,
-            href: `/chunks/${slug}?tab=games`,
-          },
-          {
-            value: 'comments',
-            label: `${t('commentsTitle')} (${commentCount})`,
-            href: `/chunks/${slug}?tab=comments`,
-          },
-        ]}
-      />
+      {/*
+       * `id` + `scroll-mt-20`: lets a link from elsewhere (e.g. the home feed's
+       * comment-count icon) land on this tab bar via `#chunk-tabs` instead of
+       * the top of the page — the tabs sit well below the description/board/
+       * metadata block above.
+       */}
+      <div id="chunk-tabs" className="scroll-mt-20">
+        <LinkTabs
+          variant="underline"
+          locale={locale}
+          activeValue={activeTab}
+          scroll={false}
+          aria-label={t('relatedGames.tabsLabel')}
+          items={[
+            {
+              value: 'positions',
+              // Explicit `?tab=positions` (not the bare slug) so this tab always
+              // lands on the Positions panel. The bare URL resolves to the first
+              // non-empty tab (`resolveDefaultChunkTab`), so on a chunk with zero
+              // positions a bare-URL link here would loop back to Comments.
+              label: `${tChunks('detail.positionsSection')} (${linkedPositions.length})`,
+              href: `/chunks/${slug}?tab=positions`,
+            },
+            {
+              value: 'games',
+              label: `${t('relatedGames.tab')} (${relatedGames.length})`,
+              href: `/chunks/${slug}?tab=games`,
+            },
+            {
+              value: 'comments',
+              label: `${t('commentsTitle')} (${commentCount})`,
+              href: `/chunks/${slug}?tab=comments`,
+            },
+          ]}
+        />
+      </div>
 
       {activeTab === 'positions' && (
         <ChunkPositionsTab

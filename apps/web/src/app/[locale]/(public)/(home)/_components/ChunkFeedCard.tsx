@@ -90,7 +90,10 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
           replyMeta={data.replyMeta}
           toggleLikeAction={toggleLike}
           i18nNamespace="topics.chunks"
-          postHref={href}
+          // Comment icon opens the Comments tab and scrolls to the tab bar
+          // (`id="chunk-tabs"`); the rest of the card keeps linking to the
+          // plain detail page (default tab).
+          postHref={`${href}?tab=comments#chunk-tabs`}
           actionSize={actionSize}
         />
       }

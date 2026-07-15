@@ -254,7 +254,7 @@ export async function TopicPostDetailLayout({
         deleteI18nNamespace={i18n.deleteNamespace}
       />
 
-      <SectionTitle>{comments.sectionTitle}</SectionTitle>
+      <SectionTitle id="comments">{comments.sectionTitle}</SectionTitle>
 
       {user && !canReply ? (
         replyRestrictionMessage && (
