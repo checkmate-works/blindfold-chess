@@ -15,7 +15,8 @@ import {
   listEditRequestsForPosition,
 } from '@/lib/position-edit-requests/queries';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ChunkDiffCard } from './ChunkDiffCard';
@@ -157,11 +158,28 @@ export async function PositionEditRequestSection({
   const currentChunkIds = new Set(currentChunks.map((c) => c.id));
   const pendingCount = rows.filter((row) => row.request.status === 'pending').length;
 
+  // The submission form only renders for a signed-in non-owner without an
+  // open request. The `?` tour (which explains how to submit) is shown in
+  // lockstep so its single step always has a live `data-tour-id` target.
+  const canSubmit = viewerCanPropose && !viewerHasPending;
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'position-edit-request-form',
+      title: t('sectionTitle'),
+      description: t('formHint'),
+      side: 'bottom',
+      align: 'center',
+    },
+  ];
+
   return (
     <section className="space-y-4">
       <SectionTitle>
         <span className="flex flex-wrap items-center justify-between gap-2">
-          <span>{t('sectionTitle')}</span>
+          <span className="flex items-center gap-2">
+            <span>{t('sectionTitle')}</span>
+            {canSubmit && <HelpTourButton steps={helpSteps} label={t('help.label')} />}
+          </span>
           {pendingCount > 0 && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
               {t('pendingCount', { count: pendingCount })}

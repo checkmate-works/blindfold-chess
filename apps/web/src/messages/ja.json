@@ -1829,6 +1829,9 @@
       "signInToSuggest": "チャンクを提案するにはサインインしてください。",
       "empty": "まだ提案はありません。",
       "formHint": "下で紐づけるチャンクを調整して送信してください。現在の紐づけと同じ選択は自動的に拒否されます。",
+      "help": {
+        "label": "ヘルプ"
+      },
       "deletedProposer": "(退会したユーザー)",
       "deletedChunk": "(削除されたチャンク)",
       "proposerComment": "提案者からの理由",

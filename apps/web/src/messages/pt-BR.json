@@ -1825,6 +1825,9 @@
       "signInToSuggest": "Faça login para sugerir chunks vinculados.",
       "empty": "Ainda não há sugestões.",
       "formHint": "Ajuste os chunks vinculados abaixo e envie. Uma seleção idêntica aos vínculos atuais é rejeitada automaticamente.",
+      "help": {
+        "label": "Ajuda"
+      },
       "deletedProposer": "(usuário excluído)",
       "deletedChunk": "(chunk removido)",
       "proposerComment": "Motivo do proponente",

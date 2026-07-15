@@ -1829,6 +1829,9 @@
       "signInToSuggest": "Sign in to suggest linked chunks.",
       "empty": "No suggestions yet.",
       "formHint": "Adjust the linked chunks below, then submit. A selection identical to the current links is rejected automatically.",
+      "help": {
+        "label": "Help"
+      },
       "deletedProposer": "(deleted user)",
       "deletedChunk": "(removed chunk)",
       "proposerComment": "Reason from the proposer",

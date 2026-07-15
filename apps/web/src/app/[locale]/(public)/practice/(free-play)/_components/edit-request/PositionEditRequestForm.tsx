@@ -93,9 +93,11 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded border border-border bg-card p-4">
-      <p className="text-sm text-muted-foreground">{t('formHint')}</p>
-
+    <form
+      onSubmit={handleSubmit}
+      data-tour-id="position-edit-request-form"
+      className="space-y-4 rounded border border-border bg-card p-4"
+    >
       {error && (
         <div
           role="alert"
@@ -112,7 +114,11 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
         availableChunks={availableChunks}
         disabled={pending}
         onChange={handlePickerChange}
-        labels={pickerLabels}
+        // The proposer picks chunks only (empty theme catalog), so the
+        // shared "Themes vs. chunks" help line would be misleading here —
+        // drop it. It still shows on the position create / edit forms,
+        // where themes are selectable.
+        labels={{ ...pickerLabels, help: undefined }}
       />
 
       <div>
