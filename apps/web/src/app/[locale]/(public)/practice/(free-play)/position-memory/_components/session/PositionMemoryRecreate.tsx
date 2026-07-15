@@ -57,33 +57,29 @@ export function PositionMemoryRecreate({
 
   return (
     <div className="space-y-4">
-      <div className="p-4">
-        <div className="flex flex-col gap-6">
-          {/* Progress */}
-          {problemCount > 1 && (
-            <ProgressBar current={currentProblemIndex + 1} total={problemCount} />
-          )}
+      <div className="flex flex-col gap-6">
+        {/* Progress */}
+        {problemCount > 1 && <ProgressBar current={currentProblemIndex + 1} total={problemCount} />}
 
-          {/* Instruction */}
-          <p className="text-lg text-muted-foreground">{t('recreatePosition')}</p>
+        {/* Instruction */}
+        <p className="text-lg text-muted-foreground">{t('recreatePosition')}</p>
 
-          {/* Chess Board */}
-          <EditableChessBoard
-            fen={recreatedPosition}
-            onFenChange={onPositionChange}
-            labels={editableBoardLabels}
-            flipped={originalPosition.isBlackToMove}
-            editable={true}
-            preserveTurnInfo={true}
-            originalPosition={originalPosition.fen}
-            boardTheme={boardTheme}
-          />
+        {/* Chess Board */}
+        <EditableChessBoard
+          fen={recreatedPosition}
+          onFenChange={onPositionChange}
+          labels={editableBoardLabels}
+          flipped={originalPosition.isBlackToMove}
+          editable={true}
+          preserveTurnInfo={true}
+          originalPosition={originalPosition.fen}
+          boardTheme={boardTheme}
+        />
 
-          {/* Submit Button */}
-          <Button onClick={onSubmit} variant="primary" size="lg" fullWidth>
-            {t('submit')}
-          </Button>
-        </div>
+        {/* Submit Button */}
+        <Button onClick={onSubmit} variant="primary" size="lg" fullWidth>
+          {t('submit')}
+        </Button>
       </div>
 
       {/* Action Links */}

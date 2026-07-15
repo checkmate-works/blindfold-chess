@@ -55,54 +55,50 @@ export function FenRecreate({
 
   return (
     <div className="space-y-4">
-      <div className="p-4">
-        <div className="flex flex-col gap-6">
-          {/* Progress */}
-          {problemCount > 1 && (
-            <ProgressBar current={currentProblemIndex + 1} total={problemCount} />
-          )}
+      <div className="flex flex-col gap-6">
+        {/* Progress */}
+        {problemCount > 1 && <ProgressBar current={currentProblemIndex + 1} total={problemCount} />}
 
-          {/* FEN Display */}
-          <div>
-            <p className="text-lg text-muted-foreground mb-3">{t('recreateFromFen')}</p>
-            <div
-              onClick={() => {
-                const selection = window.getSelection();
-                const range = document.createRange();
-                range.selectNodeContents(document.getElementById('fen-display')!);
-                selection?.removeAllRanges();
-                selection?.addRange(range);
-              }}
-              id="fen-display"
-              className="w-full px-3 py-2 bg-muted border border-border rounded-md font-mono text-sm cursor-pointer break-all"
-            >
-              {originalPosition.fen}
-            </div>
+        {/* FEN Display */}
+        <div>
+          <p className="text-lg text-muted-foreground mb-3">{t('recreateFromFen')}</p>
+          <div
+            onClick={() => {
+              const selection = window.getSelection();
+              const range = document.createRange();
+              range.selectNodeContents(document.getElementById('fen-display')!);
+              selection?.removeAllRanges();
+              selection?.addRange(range);
+            }}
+            id="fen-display"
+            className="w-full px-3 py-2 bg-muted border border-border rounded-md font-mono text-sm cursor-pointer break-all"
+          >
+            {originalPosition.fen}
           </div>
-
-          {/* Chess Board */}
-          <BoardFrame>
-            <div className="flex justify-end mb-2">
-              <FlipBoardButton onClick={() => setIsFlipped(!isFlipped)} title={t('flipBoard')} />
-            </div>
-            <EditableChessBoard
-              fen={recreatedPosition}
-              onFenChange={onPositionChange}
-              labels={editableBoardLabels}
-              flipped={isFlipped}
-              editable={true}
-              preserveTurnInfo={true}
-              originalPosition={originalPosition.fen}
-              boardTheme={boardTheme}
-              showCoordinates={showCoordinates}
-            />
-          </BoardFrame>
-
-          {/* Submit Button */}
-          <Button onClick={onSubmit} variant="primary" size="lg" fullWidth>
-            {t('submit')}
-          </Button>
         </div>
+
+        {/* Chess Board */}
+        <BoardFrame>
+          <div className="flex justify-end mb-2">
+            <FlipBoardButton onClick={() => setIsFlipped(!isFlipped)} title={t('flipBoard')} />
+          </div>
+          <EditableChessBoard
+            fen={recreatedPosition}
+            onFenChange={onPositionChange}
+            labels={editableBoardLabels}
+            flipped={isFlipped}
+            editable={true}
+            preserveTurnInfo={true}
+            originalPosition={originalPosition.fen}
+            boardTheme={boardTheme}
+            showCoordinates={showCoordinates}
+          />
+        </BoardFrame>
+
+        {/* Submit Button */}
+        <Button onClick={onSubmit} variant="primary" size="lg" fullWidth>
+          {t('submit')}
+        </Button>
       </div>
 
       {/* Skip/Quit Links */}
