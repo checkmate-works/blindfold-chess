@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { ChessPiece, Square } from '@/app/_components';
+import { BoardFrame, ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { boardFlatToFen, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
@@ -256,7 +256,7 @@ export function EditableChessBoard({
       {editable && renderPalette(topPalette.pieces, topPalette.label)}
 
       {/* Chess board */}
-      <div className="w-full max-w-md">
+      <BoardFrame>
         <div
           ref={boardContainerRef}
           className={`relative w-full aspect-square rounded-md overflow-hidden${
@@ -327,7 +327,7 @@ export function EditableChessBoard({
             </button>
           </div>
         )}
-      </div>
+      </BoardFrame>
 
       {/* Current mode indicator */}
       {editable && (
