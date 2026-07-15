@@ -19,6 +19,7 @@ import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/ope
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
 import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { TopicSquareBoard } from './TopicSquareBoard';
@@ -37,6 +38,8 @@ type Props = {
    * variants stay compact and don't surface per-post attachments.
    */
   attachment?: ReactNode;
+  /** Like button size variant, forwarded to `PostFooter`. */
+  likeSize?: LikeToggleButtonSize;
 };
 
 export const TopicPostCard = memo(function TopicPostCard({
@@ -46,6 +49,7 @@ export const TopicPostCard = memo(function TopicPostCard({
   justNowLabel,
   variant,
   attachment,
+  likeSize,
 }: Props) {
   const tTopics = useTranslations('topics');
   const tCommon = useTranslations('Common');
@@ -117,6 +121,7 @@ export const TopicPostCard = memo(function TopicPostCard({
           toggleLikeAction={isOpening ? toggleLikeOpening : toggleLikeSquare}
           i18nNamespace={isOpening ? 'topics.openings' : 'topics.squares'}
           postHref={href}
+          likeSize={likeSize}
         />
       }
     >

@@ -13,6 +13,7 @@ import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_action
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -22,12 +23,15 @@ type Props = {
   data: PositionFeedData;
   locale: string;
   justNowLabel: string;
+  /** Like button size variant, forwarded to `PostFooter`. */
+  likeSize?: LikeToggleButtonSize;
 };
 
 export const PositionFeedCard = memo(function PositionFeedCard({
   data,
   locale,
   justNowLabel,
+  likeSize,
 }: Props) {
   const tFeed = useTranslations('home.feed.position');
   const tCommon = useTranslations('Common');
@@ -90,6 +94,7 @@ export const PositionFeedCard = memo(function PositionFeedCard({
             toggleLikeAction={toggleLike}
             i18nNamespace={data.type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory'}
             postHref={href}
+            likeSize={likeSize}
           />
         ) : undefined
       }

@@ -51,8 +51,8 @@ export function LikeToggleButton({
   initialLikedByMe,
   onToggle,
   i18nNamespace,
-  size = 'sm',
-  hitArea = 'sm',
+  size = 'md',
+  hitArea = 'none',
 }: Props) {
   const t = useTranslations(i18nNamespace);
   const [isPending, startTransition] = useTransition();

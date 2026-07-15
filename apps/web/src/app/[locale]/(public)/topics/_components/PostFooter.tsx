@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaRegComment } from 'react-icons/fa';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
 
 import type { ToggleLikeAction } from '../_lib/action-types';
 import type { LikeMeta, ReplyMeta } from '../_lib/shared';
@@ -28,6 +29,8 @@ type Props = {
    * preserving prior behavior at call sites that haven't opted in.
    */
   postHref?: string;
+  /** Like button size variant, forwarded to `LikeButton`. */
+  likeSize?: LikeToggleButtonSize;
 };
 
 export function PostFooter({
@@ -39,6 +42,7 @@ export function PostFooter({
   toggleLikeAction,
   i18nNamespace,
   postHref,
+  likeSize,
 }: Props) {
   const t = useTranslations(i18nNamespace);
   const tTopics = useTranslations('topics');
@@ -64,6 +68,7 @@ export function PostFooter({
         initialLikedByMe={likeMeta.likedByMe}
         toggleLikeAction={toggleLikeAction}
         i18nNamespace={i18nNamespace}
+        size={likeSize}
       />
 
       {postHref ? (

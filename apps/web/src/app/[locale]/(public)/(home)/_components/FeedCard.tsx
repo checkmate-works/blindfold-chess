@@ -1,3 +1,5 @@
+import type { LikeToggleButtonSize } from '@/app/[locale]/_components/LikeToggleButton';
+
 import type { FeedItem } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
 import { ChunkFeedCard } from './ChunkFeedCard';
@@ -17,9 +19,11 @@ type Props = {
    * `chunk`) honor it today.
    */
   variant?: 'feed' | 'card';
+  /** Like button size variant, forwarded to each card's `PostFooter`. */
+  likeSize?: LikeToggleButtonSize;
 };
 
-export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant }: Props) {
+export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant, likeSize }: Props) {
   switch (item.entityType) {
     case 'topic_post':
       return (
@@ -29,12 +33,27 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant }:
           showMoreLabel={showMoreLabel}
           justNowLabel={justNowLabel}
           variant={variant}
+          likeSize={likeSize}
         />
       );
     case 'position':
-      return <PositionFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
+      return (
+        <PositionFeedCard
+          data={item.data}
+          locale={locale}
+          justNowLabel={justNowLabel}
+          likeSize={likeSize}
+        />
+      );
     case 'game':
-      return <GameFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
+      return (
+        <GameFeedCard
+          data={item.data}
+          locale={locale}
+          justNowLabel={justNowLabel}
+          likeSize={likeSize}
+        />
+      );
     case 'chunk':
       return (
         <ChunkFeedCard
@@ -43,6 +62,7 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant }:
           locale={locale}
           justNowLabel={justNowLabel}
           variant={variant}
+          likeSize={likeSize}
         />
       );
     case 'challenge_rank_update':
