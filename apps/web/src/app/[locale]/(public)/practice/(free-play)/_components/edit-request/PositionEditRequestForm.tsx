@@ -93,11 +93,7 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      data-tour-id="position-edit-request-form"
-      className="space-y-4 rounded border border-border bg-card p-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4 rounded border border-border bg-card p-4">
       {error && (
         <div
           role="alert"

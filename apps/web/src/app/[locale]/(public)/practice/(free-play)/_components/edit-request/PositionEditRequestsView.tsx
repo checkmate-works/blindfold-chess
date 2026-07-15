@@ -5,7 +5,8 @@ import { getOptionalUser } from '@/lib/auth';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import type { PositionType } from '@/lib/positions/types';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PositionEditRequestSection } from './PositionEditRequestSection';
@@ -46,9 +47,24 @@ export async function PositionEditRequestsView({ positionId, positionType, local
     getTranslations({ locale, namespace }),
   ]);
 
+  // Page-title help tour: explains the suggest-a-chunk concept ("you can
+  // propose which chunks relate to this position; the owner reviews each
+  // one"). Shown to every viewer, so it targets the always-present section
+  // heading rather than the form (which only renders for eligible proposers).
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'position-edit-requests-intro',
+      title: t('sectionTitle'),
+      description: t('sectionHint'),
+      side: 'bottom',
+      align: 'center',
+    },
+  ];
+
   return (
     <PageLayout
       title={t('pageTitle', { name: position.title })}
+      titleAction={<HelpTourButton steps={helpSteps} label={t('help.label')} />}
       locale={locale}
       breadcrumb={[
         { label: tNav('practice'), href: '/practice' },

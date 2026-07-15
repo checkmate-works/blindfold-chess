@@ -1828,7 +1828,6 @@
       "alreadyHasPendingNotice": "Your earlier suggestion is still pending below. Withdraw it first if you want to propose something different.",
       "signInToSuggest": "Sign in to suggest linked chunks.",
       "empty": "No suggestions yet.",
-      "formHint": "Adjust the linked chunks below, then submit. A selection identical to the current links is rejected automatically.",
       "help": {
         "label": "Help"
       },
