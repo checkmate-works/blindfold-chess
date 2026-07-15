@@ -1383,7 +1383,7 @@
         "title": "Detalhes do Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
         "startSolving": "Começar a resolver",
-        "memorizeFromHere": "Memorizar a partir daqui",
+        "memorizeOnly": "Apenas memorizar esta posição",
         "whitePiecesLabel": "Peças Brancas",
         "blackPiecesLabel": "Peças Pretas",
         "whiteToMove": "Brancas jogam",

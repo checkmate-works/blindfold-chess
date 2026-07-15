@@ -32,7 +32,7 @@ import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelec
 import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { SectionTitle } from '@/app/[locale]/_components';
+import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -90,6 +90,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
+  const tPractice = await getTranslations({ locale, namespace: 'practice' });
 
   const row = await loadPuzzleWithSolutions(id);
 
@@ -165,17 +166,36 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
 
       <PositionPeekBoard fen={position.fen} />
 
-      <div className="flex flex-wrap justify-center gap-3">
-        <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
-          <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
-            {tPlay('newGameFromHere')}
+      <div className="pt-2">
+        {/* Puzzle-solving is the primary action, so it leads and sits high
+            enough to land in the first view. The "or" divider then frames the
+            two alternative ways to reuse this position — the same primary /
+            "or" / alternatives shape the challenge modules use for
+            challenge-vs-training (see PracticeSetupActions). */}
+        <Link href={`/practice/puzzle/${position.id}/session`}>
+          <Button asChild variant="primary" size="lg" icon={<FaPlay />} fullWidth>
+            {t('detail.startSolving')}
           </Button>
         </Link>
-        <Link href={`/practice/position-memory/custom/${encodeFenToBase64Url(position.fen)}`}>
-          <Button asChild variant="secondary" icon={<FaBrain className="w-3 h-3" />}>
-            {t('detail.memorizeFromHere')}
-          </Button>
-        </Link>
+
+        <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
+          <Divider className="flex-1" />
+          <span className="text-sm text-muted-foreground">{tPractice('orDivider')}</span>
+          <Divider className="flex-1" />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <Link href={`/practice/position-memory/custom/${encodeFenToBase64Url(position.fen)}`}>
+            <Button asChild variant="secondary" size="lg" icon={<FaBrain />} fullWidth>
+              {t('detail.memorizeOnly')}
+            </Button>
+          </Link>
+          <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
+            <Button asChild variant="secondary" size="lg" icon={<FaPlusCircle />} fullWidth>
+              {tPlay('newGameFromHere')}
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <RelatedTags
@@ -244,14 +264,6 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
             <span className="text-muted-foreground">{t('detail.edited')}</span>
           )}
         </div>
-      </div>
-
-      <div className="pt-2">
-        <Link href={`/practice/puzzle/${position.id}/session`}>
-          <Button asChild variant="primary" size="lg" icon={<FaPlay />} fullWidth>
-            {t('detail.startSolving')}
-          </Button>
-        </Link>
       </div>
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
