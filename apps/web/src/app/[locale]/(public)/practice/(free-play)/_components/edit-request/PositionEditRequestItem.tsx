@@ -12,6 +12,7 @@ import type { EditRequestStatus } from '@/lib/edit-requests/shared';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { acceptPositionEditRequest } from '../../_actions/acceptPositionEditRequest';
 import { rejectPositionEditRequest } from '../../_actions/rejectPositionEditRequest';
@@ -66,7 +67,9 @@ const STATUS_BADGE_CLASS: Record<EditRequestStatus, string> = {
 
 export function PositionEditRequestItem(props: Props) {
   const t = useTranslations('practice.positionEditRequests');
+  const tToast = useTranslations('toast');
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [pending, setPending] = useState<null | 'accept' | 'reject' | 'withdraw'>(null);
   const [error, setError] = useState<string | null>(null);
@@ -90,8 +93,11 @@ export function PositionEditRequestItem(props: Props) {
     // Accept / reject are owner resolutions: send the owner back to the
     // position page with a toast confirming the outcome (the linked chunks
     // there reflect an accepted change). Withdraw is the proposer dropping
-    // their own row — keep them on the list so they can submit a fresh one.
+    // their own row — keep them on the list so they can submit a fresh one,
+    // and surface a direct toast since there's no navigation to carry a
+    // `?toast=` param.
     if (kind === 'withdraw') {
+      showToast(tToast('editRequestWithdrawn'), 'success');
       router.refresh();
       return;
     }

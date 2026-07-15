@@ -318,6 +318,78 @@ describe('buildNotificationLink — positions', () => {
   });
 });
 
+describe('buildNotificationLink — position edit requests', () => {
+  it('routes a submitted notification to the position edit-requests page (memory)', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'position_edit_request_submitted',
+          targetType: 'position_edit_request',
+          targetId: 'req-1',
+          metadata: { positionId: 'pos-mem', positionType: 'memory' },
+        }),
+        {}
+      )
+    ).toBe('/practice/position-memory/pos-mem/edit-requests');
+  });
+
+  it('routes a submitted notification to the puzzle edit-requests page', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'position_edit_request_submitted',
+          targetType: 'position_edit_request',
+          targetId: 'req-2',
+          metadata: { positionId: 'pos-puz', positionType: 'puzzle' },
+        }),
+        {}
+      )
+    ).toBe('/practice/puzzle/pos-puz/edit-requests');
+  });
+
+  it('falls back to the memory edit-requests page for a submitted notification missing positionType', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'position_edit_request_submitted',
+          targetType: 'position_edit_request',
+          targetId: 'req-3',
+          metadata: { positionId: 'pos-legacy' },
+        }),
+        {}
+      )
+    ).toBe('/practice/position-memory/pos-legacy/edit-requests');
+  });
+
+  it('returns null for a submitted notification with no metadata', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'position_edit_request_submitted',
+          targetType: 'position_edit_request',
+          targetId: 'req',
+          metadata: {},
+        }),
+        {}
+      )
+    ).toBeNull();
+  });
+
+  it('routes an accepted notification to the position detail page (not edit-requests)', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'position_edit_request_accepted',
+          targetType: 'position_edit_request',
+          targetId: 'req-4',
+          metadata: { positionId: 'pos-mem', positionType: 'memory' },
+        }),
+        {}
+      )
+    ).toBe('/practice/position-memory/pos-mem');
+  });
+});
+
 describe('buildNotificationLink — chunk lifecycle & edit requests', () => {
   it('links chunk edit-request notifications (submitted / accepted) to the edit-requests page', () => {
     expect(

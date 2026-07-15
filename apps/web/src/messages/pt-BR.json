@@ -1824,7 +1824,9 @@
       "alreadyHasPendingNotice": "Sua sugestão anterior ainda está pendente abaixo. Retire-a primeiro se quiser propor algo diferente.",
       "signInToSuggest": "Faça login para sugerir chunks vinculados.",
       "empty": "Ainda não há sugestões.",
-      "formHint": "Ajuste os chunks vinculados abaixo e envie. Uma seleção idêntica aos vínculos atuais é rejeitada automaticamente.",
+      "help": {
+        "label": "Ajuda"
+      },
       "deletedProposer": "(usuário excluído)",
       "deletedChunk": "(chunk removido)",
       "proposerComment": "Motivo do proponente",
@@ -3618,7 +3620,8 @@
     "puzzleUpdated": "Alterações salvas",
     "puzzleDeleted": "Puzzle excluído",
     "editRequestAccepted": "Sugestão de edição aceita",
-    "editRequestRejected": "Sugestão de edição rejeitada"
+    "editRequestRejected": "Sugestão de edição rejeitada",
+    "editRequestWithdrawn": "Sugestão de edição retirada"
   },
   "setupUsername": {
     "title": "Crie sua Conta",

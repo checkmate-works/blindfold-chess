@@ -159,18 +159,20 @@ export async function PositionEditRequestSection({
 
   return (
     <section className="space-y-4">
-      <SectionTitle>
-        <span className="flex flex-wrap items-center justify-between gap-2">
-          <span>{t('sectionTitle')}</span>
-          {pendingCount > 0 && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-              {t('pendingCount', { count: pendingCount })}
-            </span>
-          )}
-        </span>
-      </SectionTitle>
-
-      <p className="text-sm text-muted-foreground">{t('sectionHint')}</p>
+      {/* `data-tour-id` anchors the page-title HelpTourButton step, which
+          explains the suggest-a-chunk concept (see PositionEditRequestsView). */}
+      <div data-tour-id="position-edit-requests-intro">
+        <SectionTitle>
+          <span className="flex flex-wrap items-center justify-between gap-2">
+            <span>{t('sectionTitle')}</span>
+            {pendingCount > 0 && (
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+                {t('pendingCount', { count: pendingCount })}
+              </span>
+            )}
+          </span>
+        </SectionTitle>
+      </div>
 
       {viewerCanPropose ? (
         viewerHasPending ? (

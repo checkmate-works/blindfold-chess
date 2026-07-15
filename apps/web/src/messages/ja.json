@@ -1828,7 +1828,9 @@
       "alreadyHasPendingNotice": "以前の提案がまだ下に保留されています。別の内容を提案したい場合は、先に取り下げてください。",
       "signInToSuggest": "チャンクを提案するにはサインインしてください。",
       "empty": "まだ提案はありません。",
-      "formHint": "下で紐づけるチャンクを調整して送信してください。現在の紐づけと同じ選択は自動的に拒否されます。",
+      "help": {
+        "label": "ヘルプ"
+      },
       "deletedProposer": "(退会したユーザー)",
       "deletedChunk": "(削除されたチャンク)",
       "proposerComment": "提案者からの理由",
@@ -3625,7 +3627,8 @@
     "puzzleDeleted": "パズルを削除しました",
     "editRequestSubmitted": "編集リクエストを送信しました",
     "editRequestAccepted": "編集リクエストを承認しました",
-    "editRequestRejected": "編集リクエストを却下しました"
+    "editRequestRejected": "編集リクエストを却下しました",
+    "editRequestWithdrawn": "編集リクエストを取り下げました"
   },
   "setupUsername": {
     "title": "アカウント登録",

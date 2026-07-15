@@ -10,6 +10,8 @@ import { useRouter } from '@/i18n/routing';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+
 import { submitPositionEditRequest } from '../../_actions/submitPositionEditRequest';
 import { useTagPickerLabels } from '../../_hooks/use-tag-picker-labels';
 import { TagPicker } from '../TagPicker';
@@ -48,8 +50,10 @@ const WELL_KNOWN_ERRORS = new Set([
  */
 export function PositionEditRequestForm({ positionId, currentChunks, availableChunks }: Props) {
   const t = useTranslations('practice.positionEditRequests');
+  const tToast = useTranslations('toast');
   const pickerLabels = useTagPickerLabels();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [selectedChunks, setSelectedChunks] = useState<ChunkOption[]>(currentChunks);
   const [comment, setComment] = useState('');
@@ -81,15 +85,15 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
 
     // Stay on the detail page; refresh so the new pending row appears and
     // the form is replaced by the "you already have a pending request"
-    // notice (one-pending invariant).
+    // notice (one-pending invariant). The view doesn't navigate, so surface
+    // the confirmation via a direct toast rather than the `?toast=` redirect.
     setComment('');
+    showToast(tToast('editRequestSubmitted'), 'success');
     router.refresh();
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded border border-border bg-card p-4">
-      <p className="text-sm text-muted-foreground">{t('formHint')}</p>
-
       {error && (
         <div
           role="alert"
@@ -106,7 +110,11 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
         availableChunks={availableChunks}
         disabled={pending}
         onChange={handlePickerChange}
-        labels={pickerLabels}
+        // The proposer picks chunks only (empty theme catalog), so the
+        // shared "Themes vs. chunks" help line would be misleading here —
+        // drop it. It still shows on the position create / edit forms,
+        // where themes are selectable.
+        labels={{ ...pickerLabels, help: undefined }}
       />
 
       <div>

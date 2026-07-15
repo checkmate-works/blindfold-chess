@@ -45,6 +45,22 @@ function resolvePositionLinkFromMetadata(id: string, metadata: PositionMetadata)
   return `/practice/position-memory/${id}`;
 }
 
+/**
+ * Resolve the edit-requests page path for a position notification.
+ *
+ * Mirrors `resolvePositionLinkFromMetadata` but points at the position's
+ * `/edit-requests` sub-page. Returns `null` when the position type has no
+ * detail page (currently `'sequence'`), since it has no edit-requests page
+ * either — callers degrade to a non-link button.
+ */
+function resolvePositionEditRequestsLinkFromMetadata(
+  id: string,
+  metadata: PositionMetadata
+): string | null {
+  const detailPath = resolvePositionLinkFromMetadata(id, metadata);
+  return detailPath === null ? null : `${detailPath}/edit-requests`;
+}
+
 function getTopicSegment(topicType: string): string {
   if (topicType === 'opening') return 'openings';
   return `${topicType}s`;
@@ -218,14 +234,25 @@ export function buildNotificationLink(
     return `/chunks/${notification.metadata.slug}/edit-requests`;
   }
   if (
-    (notification.type === 'position_edit_request_submitted' ||
-      notification.type === 'position_edit_request_accepted') &&
+    notification.type === 'position_edit_request_submitted' &&
     isPositionMetadata(notification.metadata)
   ) {
-    // Route to the position detail page, where the edit-request section is
-    // mounted (the owner reviews there; the accepted proposer sees the
-    // applied links there). `positionType` in metadata selects memory vs.
-    // puzzle; a missing type falls back to the memory URL.
+    // Route the owner to the position's edit-requests page — the full
+    // per-request list with the current position values for comparison,
+    // which is the context this notification asks the owner to review
+    // (mirrors the chunk edit-request routing above).
+    return resolvePositionEditRequestsLinkFromMetadata(
+      notification.metadata.positionId,
+      notification.metadata
+    );
+  }
+  if (
+    notification.type === 'position_edit_request_accepted' &&
+    isPositionMetadata(notification.metadata)
+  ) {
+    // The accepted proposer lands on the position detail page, where the
+    // applied change is now visible. `positionType` in metadata selects
+    // memory vs. puzzle; a missing type falls back to the memory URL.
     return resolvePositionLinkFromMetadata(notification.metadata.positionId, notification.metadata);
   }
   if (
