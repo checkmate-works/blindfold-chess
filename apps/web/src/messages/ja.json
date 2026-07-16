@@ -4,8 +4,8 @@
   },
   "Repertoires": {
     "title": "型",
-    "description": "あなた専用の定跡ツリー — オープニング、詰みパターン、覚えておきたい手順をまとめておけます。",
-    "sectionTitle": "あなたの型",
+    "description": "みんなが公開している型 — オープニング、詰みパターン、覚えておきたい手順。",
+    "sectionTitle": "みんなの型",
     "importCta": "インポート",
     "empty": "型はまだありません",
     "summary": "{lines} ライン・{moves} 手",

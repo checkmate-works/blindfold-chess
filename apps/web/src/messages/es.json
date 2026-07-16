@@ -4,8 +4,8 @@
   },
   "Repertoires": {
     "title": "Kata",
-    "description": "Tus katas privados: líneas de apertura, patrones de mate y secuencias memorizadas.",
-    "sectionTitle": "Tus katas",
+    "description": "Katas compartidos por la comunidad: líneas de apertura, patrones de mate y secuencias memorizadas.",
+    "sectionTitle": "Katas de la comunidad",
     "importCta": "Importar",
     "empty": "Aún no hay katas registrados",
     "summary": "{lines} líneas · {moves} jugadas",

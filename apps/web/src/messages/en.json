@@ -4,8 +4,8 @@
   },
   "Repertoires": {
     "title": "Kata",
-    "description": "Your private kata — opening lines, mate patterns, and memorized sequences.",
-    "sectionTitle": "Your kata",
+    "description": "Kata shared by the community — opening lines, mate patterns, and memorized sequences.",
+    "sectionTitle": "Community kata",
     "importCta": "Import",
     "empty": "No kata registered yet",
     "summary": "{lines} lines · {moves} moves",
