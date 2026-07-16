@@ -4,6 +4,10 @@
  * builder (`build-repertoire-check-path`), the page's own param parsing, and every
  * self-link the page renders (picker cards, side menu) all go through here,
  * so a param can't be renamed in one spot and missed in another.
+ *
+ * The route says `repertoire`, the page title says "Kata": the brand name
+ * lives only in i18n message values, never in URLs or code identifiers —
+ * see "Kata / Repertoire (型)" in apps/web/CLAUDE.md.
  */
 
 /** Locale-less route path; callers prepend `/${locale}` where needed. */
