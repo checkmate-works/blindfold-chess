@@ -13,23 +13,14 @@ import {
   mutationSuccess,
 } from '../../_lib/action-factories';
 import type { MutationResult } from '../../_lib/action-factories';
+import type { AnnouncementUpdateData } from '../_lib/mutation-helpers';
 import { buildAnnouncementMutationValues, maybeNotifyAnnouncement } from '../_lib/mutation-helpers';
 import { validateAnnouncementData } from '../_lib/validation';
 
-type UpdateData = {
-  slug: string;
-  title: string;
-  content: string;
-  locale: string;
-  status: string;
-  visibility: string;
-  showAsBanner: boolean;
-  pinnedAt: string | null;
-  publishedAt: string | null;
-  sendNotification?: boolean;
-};
-
-export async function updateAnnouncement(id: string, data: UpdateData): Promise<MutationResult> {
+export async function updateAnnouncement(
+  id: string,
+  data: AnnouncementUpdateData
+): Promise<MutationResult> {
   const guard = await adminMutationGuard(data, validateAnnouncementData);
   if (guard) {
     return guard;
