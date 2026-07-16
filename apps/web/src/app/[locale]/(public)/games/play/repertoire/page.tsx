@@ -21,6 +21,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
+import { Button } from '@/app/_components';
 import {
   formatMovesToPgn,
   formatPgnToText,
@@ -81,16 +82,16 @@ function parseMoves(param: string | string[] | undefined): string[] | null {
   return null;
 }
 
-const PRIMARY_LINK =
-  'inline-block rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors';
-const SECONDARY_LINK =
-  'inline-block rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors';
-
+/**
+ * Message + stacked full-width CTA(s), unadorned (no card/border) to match the
+ * rest of the app's empty states (e.g. `/repertoires`'s own "no repertoires
+ * yet" message) rather than boxing content in a bordered panel.
+ */
 function EmptyState({ message, children }: { message: string; children?: React.ReactNode }) {
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-6 text-center">
+    <div className="space-y-4 py-8 text-center">
       <p className="text-sm text-muted-foreground">{message}</p>
-      {children && <div className="flex flex-wrap justify-center gap-3">{children}</div>}
+      {children && <div className="flex flex-col gap-3">{children}</div>}
     </div>
   );
 }
@@ -155,16 +156,20 @@ export default async function KataPage({ params, searchParams }: Props) {
   if (!moves) {
     content = (
       <EmptyState message={t('kataPage.invalid')}>
-        <Link href={`/${locale}/games/play`} className={PRIMARY_LINK}>
-          {t('kataPage.backToPlay')}
+        <Link href={`/${locale}/games/play`}>
+          <Button asChild variant="primary" size="lg" fullWidth>
+            {t('kataPage.backToPlay')}
+          </Button>
         </Link>
       </EmptyState>
     );
   } else if (!user) {
     content = (
       <EmptyState message={t('kataPage.signInRequired')}>
-        <Link href={`/${locale}/sign-in`} className={PRIMARY_LINK}>
-          {t('kataPage.signIn')}
+        <Link href={`/${locale}/sign-in`}>
+          <Button asChild variant="primary" size="lg" fullWidth>
+            {t('kataPage.signIn')}
+          </Button>
         </Link>
       </EmptyState>
     );
@@ -178,11 +183,15 @@ export default async function KataPage({ params, searchParams }: Props) {
     const newRepertoireHref = `/${locale}/repertoires/new?pgn=${encodeURIComponent(gamePgnText)}&side=${playerColor}`;
     const registerCtas = (
       <>
-        <Link href={newRepertoireHref} className={PRIMARY_LINK}>
-          {t('kataPage.registerCta')}
+        <Link href={newRepertoireHref}>
+          <Button asChild variant="primary" size="lg" fullWidth>
+            {t('kataPage.registerCta')}
+          </Button>
         </Link>
-        <Link href={`/${locale}/repertoires`} className={SECONDARY_LINK}>
-          {t('kataPage.viewRepertoires')}
+        <Link href={`/${locale}/repertoires`}>
+          <Button asChild variant="outline" size="lg" fullWidth>
+            {t('kataPage.viewRepertoires')}
+          </Button>
         </Link>
       </>
     );
@@ -191,39 +200,7 @@ export default async function KataPage({ params, searchParams }: Props) {
       ? report.entries.find((entry) => entry.repertoire.id === selectedId)
       : undefined;
 
-    if (!report.hasRepertoiresForSide) {
-      content = (
-        <EmptyState message={t('kataPage.noRepertoires', { side })}>{registerCtas}</EmptyState>
-      );
-    } else if (report.entries.length === 0) {
-      content = <EmptyState message={t('kataPage.noneApplicable')}>{registerCtas}</EmptyState>;
-    } else if (!selected) {
-      // Pick which kata to check against — the same catalogue cards the
-      // /repertoires list and the opening topic's Repertoires tab render, just
-      // pointed at this page's replay view instead of the detail page. The
-      // verdict stays unrevealed until the replay arrives at it.
-      const applicableIds = new Set(report.entries.map((entry) => entry.repertoire.id));
-      const cards = (await listRepertoiresForUser(user.id)).filter((card) =>
-        applicableIds.has(card.repertoire.id)
-      );
-      const cardMeta = await getRepertoireCardMeta([...applicableIds], user.id);
-      content = (
-        <>
-          <SectionTitle>{t('kataPage.selectHeading')}</SectionTitle>
-          <div className="space-y-3">
-            {cards.map((card) => (
-              <RepertoireListCard
-                key={card.repertoire.id}
-                card={card}
-                meta={cardMeta(card.repertoire.id)}
-                locale={locale}
-                detailHref={pathFor(card.repertoire.id)}
-              />
-            ))}
-          </div>
-        </>
-      );
-    } else {
+    if (selected) {
       content = renderReplay({
         selected,
         entries: report.entries,
@@ -235,6 +212,47 @@ export default async function KataPage({ params, searchParams }: Props) {
         t,
         pathFor,
       });
+    } else {
+      // Whether there's something to pick or not, this is the "select a
+      // kata" section — the heading stays put and only the body beneath it
+      // changes (an empty-state message + CTAs, or the card list).
+      let body: React.ReactNode;
+      if (!report.hasRepertoiresForSide) {
+        body = (
+          <EmptyState message={t('kataPage.noRepertoires', { side })}>{registerCtas}</EmptyState>
+        );
+      } else if (report.entries.length === 0) {
+        body = <EmptyState message={t('kataPage.noneApplicable')}>{registerCtas}</EmptyState>;
+      } else {
+        // Pick which kata to check against — the same catalogue cards the
+        // /repertoires list and the opening topic's Repertoires tab render,
+        // just pointed at this page's replay view instead of the detail
+        // page. The verdict stays unrevealed until the replay arrives at it.
+        const applicableIds = new Set(report.entries.map((entry) => entry.repertoire.id));
+        const cards = (await listRepertoiresForUser(user.id)).filter((card) =>
+          applicableIds.has(card.repertoire.id)
+        );
+        const cardMeta = await getRepertoireCardMeta([...applicableIds], user.id);
+        body = (
+          <div className="space-y-3">
+            {cards.map((card) => (
+              <RepertoireListCard
+                key={card.repertoire.id}
+                card={card}
+                meta={cardMeta(card.repertoire.id)}
+                locale={locale}
+                detailHref={pathFor(card.repertoire.id)}
+              />
+            ))}
+          </div>
+        );
+      }
+      content = (
+        <>
+          <SectionTitle>{t('kataPage.selectHeading')}</SectionTitle>
+          {body}
+        </>
+      );
     }
   }
 
