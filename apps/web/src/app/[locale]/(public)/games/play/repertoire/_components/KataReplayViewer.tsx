@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -12,6 +10,7 @@ import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_componen
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 
+import { useKataPlayback } from '../_hooks/use-kata-playback';
 import type { KataVerdict } from '../_lib/build-replay';
 
 type Props = {
@@ -29,11 +28,6 @@ type Props = {
   verdict: KataVerdict;
 };
 
-// Same pacing as PuzzleSolutionReplay / MoveSequenceMemorize, so playback
-// feels consistent across surfaces.
-const MOVE_INTERVAL_MS = 1000;
-const PLAY_INITIAL_DELAY_MS = 500;
-
 /**
  * Replays the game against the chosen kata behind an overlay Play button (the
  * PuzzleSolutionReplay pattern): the moves the game followed on-book play
@@ -41,69 +35,15 @@ const PLAY_INITIAL_DELAY_MS = 500;
  * where the prepared line ran out), revealing the verdict. Manual navigation
  * (move strip / controls / arrow keys) pauses playback and dismisses the
  * overlay; the verdict panel's Replay restarts it. Same board chrome as the
- * repertoire line viewer.
+ * repertoire line viewer. Playback timing/state lives in useKataPlayback.
  */
 export function KataReplayViewer({ positions, formatted, side, stopPly, verdict }: Props) {
   const t = useTranslations('play');
   const maxPly = positions.length - 1;
-  const target = Math.max(0, Math.min(stopPly, maxPly));
+  const { ply, revealed, showOverlay, goTo, play } = useKataPlayback({ maxPly, stopPly });
 
-  const [ply, setPly] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [revealed, setRevealed] = useState(target === 0);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    let interval: ReturnType<typeof setInterval> | undefined;
-    const timeout = setTimeout(() => {
-      setPly((p) => (p < target ? p + 1 : p));
-      interval = setInterval(() => {
-        setPly((p) => (p < target ? p + 1 : p));
-      }, MOVE_INTERVAL_MS);
-    }, PLAY_INITIAL_DELAY_MS);
-    return () => {
-      clearTimeout(timeout);
-      if (interval) clearInterval(interval);
-    };
-  }, [isPlaying, target]);
-
-  useEffect(() => {
-    if (ply >= target) {
-      setIsPlaying(false);
-      setRevealed(true);
-    }
-  }, [ply, target]);
-
-  const clampedPly = Math.min(ply, maxPly);
-  const current = positions[clampedPly];
-  const lastMove = clampedPly > 0 ? current.lastMove : null;
-
-  const goTo = (p: number) => {
-    setIsPlaying(false);
-    setHasStarted(true);
-    setPly(Math.max(0, Math.min(maxPly, p)));
-  };
-
-  const play = () => {
-    setPly(0);
-    setRevealed(target === 0);
-    setHasStarted(true);
-    setIsPlaying(target > 0);
-  };
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowLeft') {
-        goTo(clampedPly - 1);
-      } else if (e.key === 'ArrowRight') {
-        goTo(clampedPly + 1);
-      }
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- goTo is stable in effect terms; clampedPly/maxPly drive it
-  }, [clampedPly, maxPly]);
+  const current = positions[ply];
+  const lastMove = ply > 0 ? current.lastMove : null;
 
   const detail =
     verdict.status === 'in-book'
@@ -114,8 +54,6 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
           expected: verdict.expected ?? '',
         });
 
-  const showOverlay = !isPlaying && !hasStarted && target > 0;
-
   return (
     <div className="space-y-4">
       <div className={INLINE_BOARD_CARD_CHROME}>
@@ -124,7 +62,7 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
             <div className="overflow-x-auto px-2 py-1.5">
               <HorizontalMoveList
                 formattedPgn={formatted}
-                currentPosition={clampedPly - 1}
+                currentPosition={ply - 1}
                 onNavigateToPosition={(position) => goTo(position + 1)}
               />
             </div>
@@ -163,11 +101,11 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
           >
             <MoveNavigationControls
               onNavigateToStart={() => goTo(0)}
-              onNavigatePrevious={() => goTo(clampedPly - 1)}
-              onNavigateNext={() => goTo(clampedPly + 1)}
+              onNavigatePrevious={() => goTo(ply - 1)}
+              onNavigateNext={() => goTo(ply + 1)}
               onNavigateToEnd={() => goTo(maxPly)}
-              isPreviousDisabled={clampedPly === 0}
-              isNextDisabled={clampedPly === maxPly}
+              isPreviousDisabled={ply === 0}
+              isNextDisabled={ply === maxPly}
             />
           </div>
         </div>
