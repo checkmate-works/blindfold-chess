@@ -259,16 +259,18 @@ export function PlayClient({
 
   // Finished-game navigation hub: prefetches the result route and exposes the
   // game-finished modal's actions.
-  const { handleViewResult, openRecall, isShared } = useFinishedGameNavigation({
-    locale,
-    isFinishedView,
-    gameId,
-    formattedPgn,
-    playerSide,
-    moves,
-    engineConfig,
-    startingFen,
-  });
+  const { handleViewResult, openRecall, openRepertoireCheck, isShared } = useFinishedGameNavigation(
+    {
+      locale,
+      isFinishedView,
+      gameId,
+      formattedPgn,
+      playerSide,
+      moves,
+      engineConfig,
+      startingFen,
+    }
+  );
 
   // Game-finished modal (Result / Game Review / Kata) — auto-open-once state
   // machine, see useFinishModal.
@@ -485,6 +487,7 @@ export function PlayClient({
         result={playerResult}
         onReview={handleViewResult}
         onRecall={openRecall}
+        onRepertoireCheck={openRepertoireCheck}
         published={isShared}
       />
     </div>

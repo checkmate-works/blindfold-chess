@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
@@ -62,6 +62,69 @@ export async function updateRepertoireLine(params: {
     .where(eq(repertoireLines.id, line.id));
 
   return { ok: true };
+}
+
+export type AddLineResult =
+  | { ok: true; lineNo: number }
+  | { ok: false; error: 'unauthorized' | 'notFound' | RepertoireLineEditError };
+
+/**
+ * Owner-only: append a new line to an existing repertoire, at the repertoire's
+ * fixed root position (`repertoires.starting_fen`) — a differently-rooted line
+ * belongs to a different repertoire, not this one. Reuses
+ * `validateRepertoireLineEdit` (same shape as editing a line: name + moves
+ * against a fixed root), just an INSERT with the next `seq` instead of an
+ * UPDATE of an existing row.
+ *
+ * The max-seq read + insert run in one transaction so two concurrent adds
+ * can't compute the same `seq` (ordering only — `seq` has no unique
+ * constraint, so a collision would misorder lines rather than fail).
+ */
+export async function addRepertoireLine(params: {
+  repertoireId: string;
+  viewerId: string;
+  name: string | null;
+  pgn: string;
+}): Promise<AddLineResult> {
+  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
+  if (ownerError) return { ok: false, error: ownerError };
+
+  const [repertoire] = await db
+    .select({ startingFen: repertoires.startingFen })
+    .from(repertoires)
+    .where(eq(repertoires.id, params.repertoireId))
+    .limit(1);
+  if (!repertoire) return { ok: false, error: 'notFound' };
+
+  const validated = validateRepertoireLineEdit({
+    name: params.name,
+    pgn: params.pgn,
+    startingFen: repertoire.startingFen,
+  });
+  if (!validated.ok) return { ok: false, error: validated.error };
+
+  const seq = await db.transaction(async (tx) => {
+    const [{ maxSeq }] = await tx
+      .select({ maxSeq: sql<number>`coalesce(max(${repertoireLines.seq}), -1)` })
+      .from(repertoireLines)
+      .where(
+        and(
+          eq(repertoireLines.repertoireId, params.repertoireId),
+          isNull(repertoireLines.deletedAt)
+        )
+      );
+    const nextSeq = maxSeq + 1;
+    await tx.insert(repertoireLines).values({
+      repertoireId: params.repertoireId,
+      pgn: validated.data.pgn,
+      startingFen: repertoire.startingFen,
+      name: validated.data.name,
+      seq: nextSeq,
+    });
+    return nextSeq;
+  });
+
+  return { ok: true, lineNo: seq + 1 };
 }
 
 export type UpdateRepertoireResult =

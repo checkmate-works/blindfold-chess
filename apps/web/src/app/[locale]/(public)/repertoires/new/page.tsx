@@ -10,7 +10,7 @@ import { getOpeningOptions } from '@/lib/repertoires/opening-queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
-import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RepertoireImportForm } from '../_components/RepertoireImportForm';
 
@@ -25,11 +25,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function NewLinePage({ params }: Props) {
+export default async function NewLinePage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
   await getAuthenticatedUser();
   const openings = await getOpeningOptions(locale);
+
+  // Optional prefill from another feature handing the player a game to turn
+  // into a repertoire (e.g. the kata check's "none of your kata cover this
+  // opening" CTA, which links here with the finished game's own PGN + side).
+  const sp = await searchParams;
+  const initialPgn = typeof sp.pgn === 'string' && sp.pgn ? sp.pgn : undefined;
+  const initialSide = sp.side === 'black' ? 'black' : sp.side === 'white' ? 'white' : undefined;
 
   return (
     <PageLayout
@@ -38,7 +45,12 @@ export default async function NewLinePage({ params }: Props) {
       breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: t('new.title') }]}
     >
       <SectionTitle>{t('new.sectionTitle')}</SectionTitle>
-      <RepertoireImportForm locale={locale} openings={openings} />
+      <RepertoireImportForm
+        locale={locale}
+        openings={openings}
+        initialPgn={initialPgn}
+        initialSide={initialSide}
+      />
     </PageLayout>
   );
 }

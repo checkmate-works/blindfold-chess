@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { buildRecallPath } from '../_lib';
+import { buildRecallPath, buildRepertoireCheckPath } from '../_lib';
 import { useSharedGameLink } from './use-shared-game-link';
 
 type RecallArgs = Parameters<typeof buildRecallPath>[0];
@@ -29,6 +29,8 @@ type Result = {
   handleViewResult: () => void;
   /** Navigate to Recall — open to everyone, no sign-up required. */
   openRecall: () => void;
+  /** Navigate to the Kata check — compare the opening against registered 型. */
+  openRepertoireCheck: () => void;
   /** Publish this game (or open it if already published from this browser). */
   handleShare: () => void;
   /** Whether this game was already published from this browser. */
@@ -38,7 +40,7 @@ type Result = {
 /**
  * The finished-game navigation hub for the play screen: it prefetches the
  * result route and exposes the actions the game-finished modal wires to —
- * "view result", Recall, and Share.
+ * "view result", Recall, Kata, and Share.
  */
 export function useFinishedGameNavigation({
   locale,
@@ -102,9 +104,23 @@ export function useFinishedGameNavigation({
     );
   }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
 
+  const openRepertoireCheck = useCallback(() => {
+    if (!gameId) return;
+    router.push(
+      buildRepertoireCheckPath({
+        locale,
+        moves,
+        playerColor: playerSide,
+        gameId,
+        startingFen,
+      })
+    );
+  }, [router, locale, moves, playerSide, gameId, startingFen]);
+
   return {
     handleViewResult,
     openRecall,
+    openRepertoireCheck,
     handleShare,
     isShared,
   };

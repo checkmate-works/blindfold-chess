@@ -511,6 +511,43 @@ They are the same unit, 1:1. There is no conversion between them.
   `/admin/users/[id]`. Do not duplicate coin movements into
   `moderation_actions` / `user_activity_log` (that splits the source of truth).
 
+## Kata / Repertoire (型)
+
+Like Coin/points above, this feature has **two names for one thing**, by
+deliberate design:
+
+- **"Kata" (型)** — the product/brand name, borrowed from the martial-arts
+  practice method (rehearsing a pre-arranged sequence). This is the ONLY
+  term users ever see: every i18n message VALUE says Kata (ja: 型), across
+  the /repertoires pages, the game-finish modal card, the post-game check,
+  and comment threads.
+- **"repertoire"** — the internal primitive. Used everywhere code speaks:
+  identifiers, file/component names, i18n KEYS (`play.repertoireCheck`,
+  `Repertoires`), URLs (`/repertoires`, `/games/play/repertoire`), DB tables
+  (`repertoires`, `repertoire_lines`), and DOM ids/testids. Never surfaced
+  to a human.
+
+### Why two names
+
+1. **Brand vs. implementation.** "Kata" is a coined analogy that could be
+   rebranded; "repertoire" is the standard chess term other engineers (and
+   the DB schema) already understand. Renaming copy is a message-file edit;
+   renaming routes/tables is a migration.
+2. **URL/SEO stability.** Routes and canonical URLs must not chase branding.
+
+### Rules when extending
+
+- A new **facing surface** (label, description, toast, help copy) says
+  "Kata" / 「型」. Do NOT ship a user-visible string that says "repertoire"
+  (レパートリー). One deliberate exception: the Terms' content enumeration
+  keeps a gloss — "kata (opening repertoires)" / 型（レパートリー） — since
+  legal text should not assume the reader knows the coinage.
+- New **code** stays "repertoire": identifiers, files, i18n keys, params,
+  routes, DB. Comments may say "kata" when explaining the brand/feature.
+- The `topicType` values `'repertoire'` / `'repertoire_move'` and the
+  `Repertoires` i18n namespace name are **stored/wired identifiers** —
+  never rename them; map to display labels at the read layer.
+
 ## Glossary (Japanese ↔ English)
 
 The app was originally designed in Japanese, and the team still thinks about
@@ -523,6 +560,7 @@ files when a user refers to a concept in Japanese.
 | ----------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | 実績 / 実績バッジ             | achievement / achievement badge          | `src/lib/achievements/`, `src/lib/db/data/achievements.ts`, `src/app/admin/achievements/`, `src/messages/*.json` (`achievements`)    |
 | 感想戦                        | recall                                   | `src/app/[locale]/(public)/practice/(free-play)/recall/`                                                                             |
+| 型 / Kata                     | repertoire (code) / Kata (UI brand)      | See "Kata / Repertoire (型)" above: `src/lib/repertoires/`, `src/app/[locale]/(public)/repertoires/`, `.../games/play/repertoire/`   |
 | 目隠しチェス / 心眼チェス     | blindfold chess / Shingan Chess (brand)  | See "Title Suffix Rule" in this file; strings in `src/messages/*.json`                                                               |
 | 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/ranks/`                 |
 | 無級                          | Mukyu — "no rank" (default)              | `MUKYU_SLUG` in `src/lib/db/data/ranks.ts`                                                                                           |

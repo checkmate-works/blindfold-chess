@@ -182,6 +182,50 @@ export async function listRepertoiresForUser(userId: string): Promise<Repertoire
   return toCards(rows);
 }
 
+/**
+ * A user's live repertoires for one side, each with its live lines — the kata
+ * check's input (a game is only compared against repertoires prepared for the
+ * colour the player actually held).
+ */
+export async function listRepertoiresWithLinesForSide(
+  userId: string,
+  side: 'white' | 'black'
+): Promise<{ repertoire: Repertoire; lines: RepertoireLine[] }[]> {
+  const reps = await db
+    .select()
+    .from(repertoires)
+    .where(
+      and(eq(repertoires.userId, userId), eq(repertoires.side, side), isNull(repertoires.deletedAt))
+    )
+    .orderBy(desc(repertoires.createdAt));
+  if (reps.length === 0) return [];
+
+  const allLines = await db
+    .select()
+    .from(repertoireLines)
+    .where(
+      and(
+        inArray(
+          repertoireLines.repertoireId,
+          reps.map((r) => r.id)
+        ),
+        isNull(repertoireLines.deletedAt)
+      )
+    )
+    .orderBy(asc(repertoireLines.seq));
+
+  const byRepertoire = new Map<string, RepertoireLine[]>();
+  for (const line of allLines) {
+    const bucket = byRepertoire.get(line.repertoireId);
+    if (bucket) bucket.push(line);
+    else byRepertoire.set(line.repertoireId, [line]);
+  }
+  return reps.map((repertoire) => ({
+    repertoire,
+    lines: byRepertoire.get(repertoire.id) ?? [],
+  }));
+}
+
 export type RepertoireWithLines = {
   repertoire: Repertoire;
   lines: RepertoireLine[];

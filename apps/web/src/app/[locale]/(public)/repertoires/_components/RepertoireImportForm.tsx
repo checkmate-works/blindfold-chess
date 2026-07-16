@@ -28,7 +28,14 @@ const PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
  */
 const AUTHORABLE_PHASES: readonly RepertoirePhase[] = ['opening'];
 
-type Props = { locale: string; openings: OpeningOption[] };
+type Props = {
+  locale: string;
+  openings: OpeningOption[];
+  /** Prefills the PGN textarea — e.g. a finished game handed in by another feature. */
+  initialPgn?: string;
+  /** Prefills the side radio to match {@link initialPgn}'s player colour. */
+  initialSide?: RepertoireSide;
+};
 
 /**
  * Import form for a repertoire (型): name, your side, the game phase, and a
@@ -37,15 +44,15 @@ type Props = { locale: string; openings: OpeningOption[] };
  * server-side into one line per variation; validation (move legality across all
  * variations) also happens in `createRepertoire`.
  */
-export function RepertoireImportForm({ locale, openings }: Props) {
+export function RepertoireImportForm({ locale, openings, initialPgn, initialSide }: Props) {
   const t = useTranslations('Repertoires');
   const router = useRouter();
 
   const [name, setName] = useState('');
-  const [side, setSide] = useState<RepertoireSide>('white');
+  const [side, setSide] = useState<RepertoireSide>(initialSide ?? 'white');
   const [phase, setPhase] = useState<RepertoirePhase>('opening');
   const [openingIds, setOpeningIds] = useState<string[]>([]);
-  const [pgn, setPgn] = useState('');
+  const [pgn, setPgn] = useState(initialPgn ?? '');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

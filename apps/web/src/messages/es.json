@@ -3,11 +3,11 @@
     "deletedUser": "(usuario eliminado)"
   },
   "Repertoires": {
-    "title": "Repertorios",
-    "description": "Tus árboles de repertorio privados: líneas de apertura, patrones de mate y secuencias memorizadas.",
-    "sectionTitle": "Tus repertorios",
+    "title": "Kata",
+    "description": "Tus katas privados: líneas de apertura, patrones de mate y secuencias memorizadas.",
+    "sectionTitle": "Tus katas",
     "importCta": "Importar",
-    "empty": "Aún no hay repertorios disponibles",
+    "empty": "Aún no hay katas registrados",
     "summary": "{lines} líneas · {moves} jugadas",
     "like": "Me gusta",
     "unlike": "Ya no me gusta",
@@ -25,7 +25,7 @@
       "phase_endgame": "Final",
       "phaseComingSoon": "Próximamente",
       "openingLabel": "Aperturas vinculadas",
-      "openingHelp": "Vincula opcionalmente este repertorio a aperturas concretas (una línea con transposiciones puede coincidir con varias).",
+      "openingHelp": "Vincula opcionalmente este kata a aperturas concretas (una línea con transposiciones puede coincidir con varias).",
       "pgnLabel": "PGN",
       "pgnHelp": "Pega un PGN con variantes: las exportaciones de estudios de Lichess o de Chess.com funcionan tal cual.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
@@ -38,26 +38,26 @@
     },
     "edit": {
       "editAction": "Editar",
-      "title": "Editar repertorio",
+      "title": "Editar kata",
       "breadcrumb": "Editar",
       "nameLabel": "Nombre",
       "save": "Guardar",
       "saving": "Guardando...",
       "cancel": "Cancelar",
       "errors": {
-        "unauthorized": "Solo el autor puede editar este repertorio.",
-        "notFound": "Este repertorio ya no existe.",
+        "unauthorized": "Solo el autor puede editar este kata.",
+        "notFound": "Este kata ya no existe.",
         "nameRequired": "Introduce un nombre.",
         "nameTooLong": "Ese nombre es demasiado largo.",
         "generic": "Algo salió mal. Inténtalo de nuevo."
       }
     },
     "detail": {
-      "title": "Repertorio",
+      "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Líneas",
       "lineCount": "{count} líneas",
-      "forThisOpening": "Repertorios de esta apertura",
+      "forThisOpening": "Katas de esta apertura",
       "lineFallback": "Línea {n}",
       "openLine": "Abrir esta línea →",
       "createdBy": "Creado por"
@@ -85,7 +85,7 @@
         "empty": "Introduce una nota.",
         "tooLong": "Esta nota es demasiado larga.",
         "unauthorized": "Solo el propietario puede editar las anotaciones.",
-        "notFound": "Este repertorio ya no existe."
+        "notFound": "Este kata ya no existe."
       },
       "edit": {
         "editAction": "Editar",
@@ -2216,10 +2216,58 @@
         "title": "De memoria",
         "description": "Reconstruye toda la partida de memoria, jugada a jugada."
       },
-      "kata": {
+      "repertoireCheck": {
         "title": "Kata",
-        "description": "Comprueba si tu apertura siguió tu repertorio registrado."
+        "description": "Comprueba si tu apertura siguió tu kata registrado."
       }
+    },
+    "repertoireCheck": {
+      "title": "Comprobación de Kata",
+      "help": {
+        "label": "Acerca de Kata",
+        "title": "¿Qué es un Kata?",
+        "description": "Un kata es un método de entrenamiento habitual en las artes marciales orientales, como el kárate o el taekwondo, en el que se repite una secuencia prefijada de ataques y defensas en un orden fijo. Esta función toma esa idea como analogía para practicar aperturas de ajedrez."
+      },
+      "side_white": "blancas",
+      "side_black": "negras",
+      "invalid": "No hay datos de partida que comprobar. Termina una partida y abre Kata desde las opciones de fin de partida.",
+      "backToPlay": "Jugar una partida",
+      "signInRequired": "Inicia sesión para comparar esta partida con tus katas registrados.",
+      "signIn": "Iniciar sesión",
+      "noRepertoires": "Aún no has registrado ningún kata con {side}.",
+      "noneApplicable": "Ninguno de tus katas cubre la apertura de esta partida.",
+      "registerCta": "Registrar un kata",
+      "viewRepertoires": "Tu lista de katas",
+      "selectHeading": "Elige el kata con el que comparar",
+      "play": "Reproducir",
+      "replay": "Reproducir de nuevo",
+      "status": {
+        "inBook": "Según el kata",
+        "deviation": "Desviación",
+        "gap": "El rival salió de tu kata"
+      },
+      "followedPlies": "{count, plural, one {# media jugada coincidente} other {# medias jugadas coincidentes}}",
+      "inBookDetail": "Seguiste este kata hasta el final de sus líneas preparadas.",
+      "deviationDetail": "En la jugada {moveNo} jugaste {played}; tu kata prepara {expected}.",
+      "gapDetail": "En la jugada {moveNo} tu rival jugó {played}, que este kata no cubre (preparado: {expected}).",
+      "addLine": {
+        "cta": "Añadir esta línea a tu kata",
+        "confirmDetail": "Esto guarda las jugadas de esta partida —incluida la parte que coincidió con {repertoireName}— como una nueva línea:",
+        "save": "Guardar línea",
+        "saving": "Guardando…",
+        "cancel": "Cancelar",
+        "errors": {
+          "unauthorized": "Solo el propietario puede añadir una línea a este kata.",
+          "notFound": "Este kata ya no existe.",
+          "nameTooLong": "El título es demasiado largo.",
+          "pgnRequired": "Introduce las jugadas.",
+          "pgnTooLarge": "El PGN es demasiado grande.",
+          "invalidPgn": "No se pudieron leer estas jugadas. Revisa la notación.",
+          "noMoves": "Introduce al menos una jugada.",
+          "generic": "Algo salió mal. Inténtalo de nuevo."
+        }
+      },
+      "backToResult": "Volver a la revisión de la partida"
     }
   },
   "sharedGames": {
@@ -2734,7 +2782,7 @@
     "accountDeletionTitle": "Eliminación de cuenta y tratamiento del contenido",
     "accountDeletionDescription": "Cuando eliminas tu cuenta, tus datos se tratan como se describe a continuación. Revísalo antes de usar las funciones de cuenta.",
     "accountDeletionItem1": "La información personal asociada a tu cuenta (como tu nombre visible, los datos de tu perfil y tu imagen de avatar) se elimina o se anonimiza al eliminar la cuenta.",
-    "accountDeletionItem2": "El contenido que hayas compartido públicamente —como publicaciones del foro, comentarios, posiciones y problemas enviados, chunks y repertorios— puede permanecer disponible en el Servicio tras eliminar tu cuenta, con su autoría anonimizada (mostrada como usuario eliminado).",
+    "accountDeletionItem2": "El contenido que hayas compartido públicamente —como publicaciones del foro, comentarios, posiciones y problemas enviados, chunks y katas (repertorios de apertura)— puede permanecer disponible en el Servicio tras eliminar tu cuenta, con su autoría anonimizada (mostrada como usuario eliminado).",
     "accountDeletionItem3": "Si deseas que se elimine algún contenido concreto que hayas creado, contáctanos y lo gestionaremos de forma individual.",
     "userResponsibilitiesTitle": "Responsabilidades del Usuario",
     "userResponsibilitiesDescription": "Al usar el Servicio, por favor ten en cuenta lo siguiente:",
@@ -3617,6 +3665,7 @@
     "positionDeleted": "Problema eliminado",
     "positionUpdated": "Cambios guardados",
     "lineUpdated": "Línea actualizada",
+    "lineAdded": "Línea añadida",
     "puzzleUpdated": "Cambios guardados",
     "puzzleDeleted": "Puzzle eliminado",
     "editRequestAccepted": "Sugerencia de edición aceptada",
@@ -4959,7 +5008,7 @@
         "active": "Activos"
       },
       "detail": {
-        "pageTitle": "Comentario sobre Repertorio"
+        "pageTitle": "Comentario sobre Kata"
       },
       "postDetail": {
         "authorView": "Comentarios de {author} sobre {name}",
@@ -4967,7 +5016,7 @@
       },
       "newPostForm": {
         "contentLabel": "Comentario",
-        "contentPlaceholder": "Comparte tus ideas sobre este repertorio...",
+        "contentPlaceholder": "Comparte tus ideas sobre este kata...",
         "submit": "Comentar",
         "submitting": "Publicando...",
         "contentRequired": "Por favor escribe algún contenido",
@@ -5022,7 +5071,7 @@
         "active": "Activos"
       },
       "detail": {
-        "pageTitle": "Comentario sobre Repertorio"
+        "pageTitle": "Comentario sobre Kata"
       },
       "postDetail": {
         "authorView": "Comentarios de {author} sobre {name}",

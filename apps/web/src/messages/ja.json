@@ -85,7 +85,7 @@
         "empty": "メモを入力してください。",
         "tooLong": "メモが長すぎます。",
         "unauthorized": "アノテーションを編集できるのはオーナーのみです。",
-        "notFound": "このレパートリーは存在しません。"
+        "notFound": "この型は存在しません。"
       },
       "edit": {
         "editAction": "編集",
@@ -2220,10 +2220,58 @@
         "title": "棋譜再現",
         "description": "記憶だけを頼りに、棋譜を最初から再現します。"
       },
-      "kata": {
+      "repertoireCheck": {
         "title": "Kata",
-        "description": "登録したレパートリー通りにオープニングを指せたかを確認します。"
+        "description": "登録した型どおりにオープニングを指せたかを確認します。"
       }
+    },
+    "repertoireCheck": {
+      "title": "型チェック",
+      "help": {
+        "label": "型について",
+        "title": "型とは？",
+        "description": "型とは、空手やテコンドーなど東洋の武術で慣習的に行われている稽古法で、あらかじめ想定された攻防を決められた手順で繰り返すものです。これをアナロジーとしてチェスのオープニングの練習メニューであるこの機能に適用しました。"
+      },
+      "side_white": "白番",
+      "side_black": "黒番",
+      "invalid": "チェック対象の対局データがありません。対局を終えてから、終了時のメニューで Kata を開いてください。",
+      "backToPlay": "対局する",
+      "signInRequired": "型チェックを使うにはサインインしてください。",
+      "signIn": "サインイン",
+      "noRepertoires": "{side}の型はまだ登録されていません。",
+      "noneApplicable": "この対局のオープニングに該当する型はありませんでした。",
+      "registerCta": "型を登録する",
+      "viewRepertoires": "自分の型一覧",
+      "selectHeading": "チェックに使う型を選んでください",
+      "play": "再生",
+      "replay": "もう一度再生",
+      "status": {
+        "inBook": "型どおり",
+        "deviation": "型から逸脱",
+        "gap": "相手が型の外"
+      },
+      "followedPlies": "型と一致: {count}手（半手単位）",
+      "inBookDetail": "準備したラインの最後まで型どおりに指せました。",
+      "deviationDetail": "{moveNo}手目、あなたは {played} を指しました（型の準備手: {expected}）。",
+      "gapDetail": "{moveNo}手目、相手の {played} はこの型にない手です（準備していた応手: {expected}）。",
+      "addLine": {
+        "cta": "このラインを型に追加する",
+        "confirmDetail": "この対局の指し手を、{repertoireName} と一致した部分も含めて新しいラインとして保存します:",
+        "save": "ラインを保存",
+        "saving": "保存中…",
+        "cancel": "キャンセル",
+        "errors": {
+          "unauthorized": "この型を編集できるのは所有者のみです。",
+          "notFound": "この型は既に存在しません。",
+          "nameTooLong": "タイトルが長すぎます。",
+          "pgnRequired": "手順を入力してください。",
+          "pgnTooLarge": "PGNが大きすぎます。",
+          "invalidPgn": "手順を読み取れませんでした。表記を確認してください。",
+          "noMoves": "少なくとも1手は入力してください。",
+          "generic": "エラーが発生しました。もう一度お試しください。"
+        }
+      },
+      "backToResult": "振り返りに戻る"
     }
   },
   "sharedGames": {
@@ -2738,7 +2786,7 @@
     "accountDeletionTitle": "退会とコンテンツの取り扱い",
     "accountDeletionDescription": "退会（アカウント削除）時のデータの取り扱いは以下のとおりです。アカウント機能をご利用の前にご確認ください。",
     "accountDeletionItem1": "表示名・プロフィール情報・アバター画像など、アカウントに紐づく個人情報は、退会時に削除または匿名化されます。",
-    "accountDeletionItem2": "フォーラムへの投稿・コメント・投稿した局面やパズル・チャンク・レパートリーなど、あなたが公開したコンテンツは、退会後も投稿者を匿名化した状態（「退会したユーザー」と表示）でサービス上に残る場合があります。",
+    "accountDeletionItem2": "フォーラムへの投稿・コメント・投稿した局面やパズル・チャンク・型（レパートリー）など、あなたが公開したコンテンツは、退会後も投稿者を匿名化した状態（「退会したユーザー」と表示）でサービス上に残る場合があります。",
     "accountDeletionItem3": "あなたが作成した特定のコンテンツの削除をご希望の場合は、お問い合わせください。個別に対応いたします。",
     "userResponsibilitiesTitle": "ユーザーの責任",
     "userResponsibilitiesDescription": "本サービスをご利用いただくにあたり、以下の点についてご理解ください:",
@@ -3623,6 +3671,7 @@
     "positionDeleted": "問題を削除しました",
     "positionUpdated": "変更を保存しました",
     "lineUpdated": "ラインを更新しました",
+    "lineAdded": "ラインを追加しました",
     "puzzleUpdated": "変更を保存しました",
     "puzzleDeleted": "パズルを削除しました",
     "editRequestSubmitted": "編集リクエストを送信しました",
