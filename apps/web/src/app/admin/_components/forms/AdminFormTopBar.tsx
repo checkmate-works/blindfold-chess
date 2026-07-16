@@ -1,9 +1,6 @@
-'use client';
+import type { ReactNode } from 'react';
 
-import { LuSettings } from 'react-icons/lu';
-
-type ArticleFormTopBarLabels = {
-  metadata: string;
+type AdminFormTopBarLabels = {
   saveDraft: string;
   savingDraft: string;
   savePublished: string;
@@ -12,25 +9,33 @@ type ArticleFormTopBarLabels = {
   cancel: string;
 };
 
-type ArticleFormTopBarProps = {
-  labels: ArticleFormTopBarLabels;
+type AdminFormTopBarProps = {
+  labels: AdminFormTopBarLabels;
   isPending: boolean;
+  /** Switches the save button between its draft and published label pair. */
   isPublished: boolean;
-  onToggleMetadata: () => void;
   onSave: () => void;
-  onPublishSettings: () => void;
+  onPreview: () => void;
   onCancel: () => void;
+  /** Extra buttons rendered before the save button (e.g. a metadata toggle). */
+  leadingActions?: ReactNode;
 };
 
-export function ArticleFormTopBar({
+/**
+ * The save / preview / cancel bar pinned above the full-height admin editors
+ * (articles, announcements). Pure presentational (no hooks); the compact
+ * `py-1.5` buttons are deliberate — the bar is denser than the shared form
+ * `Button`.
+ */
+export function AdminFormTopBar({
   labels,
   isPending,
   isPublished,
-  onToggleMetadata,
   onSave,
-  onPublishSettings,
+  onPreview,
   onCancel,
-}: ArticleFormTopBarProps) {
+  leadingActions,
+}: AdminFormTopBarProps) {
   const saveLabel = isPending
     ? isPublished
       ? labels.savingPublished
@@ -42,14 +47,7 @@ export function ArticleFormTopBar({
   return (
     <div className="flex items-center justify-end border-b border-border px-4 py-2 shrink-0">
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onToggleMetadata}
-          className="p-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
-          title={labels.metadata}
-        >
-          <LuSettings size={16} />
-        </button>
+        {leadingActions}
 
         <button
           type="button"
@@ -61,7 +59,7 @@ export function ArticleFormTopBar({
         </button>
         <button
           type="button"
-          onClick={onPublishSettings}
+          onClick={onPreview}
           disabled={isPending}
           className="px-4 py-1.5 text-sm rounded bg-card border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
         >

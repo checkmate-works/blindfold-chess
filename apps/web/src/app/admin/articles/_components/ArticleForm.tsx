@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components';
+import { AdminFormTopBar } from '@/app/admin/_components/forms';
+import { LuSettings } from 'react-icons/lu';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
@@ -14,7 +16,6 @@ import { useArticleFormState } from '../_hooks/useArticleFormState';
 import { buildArticleFormData } from '../_lib/build-form-data';
 import type { ArticleEditData, ContentFormat } from '../_lib/types';
 import { ArticleContentEditor } from './article-form/ArticleContentEditor';
-import { ArticleFormTopBar } from './article-form/ArticleFormTopBar';
 import { ArticleMetadataPanel } from './article-form/ArticleMetadataPanel';
 
 type ArticleFormProps = {
@@ -220,9 +221,8 @@ export function ArticleForm({
 
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)]">
-      <ArticleFormTopBar
+      <AdminFormTopBar
         labels={{
-          metadata: labels.metadata,
           saveDraft: labels.saveDraft,
           savingDraft: labels.savingDraft,
           savePublished: labels.savePublished,
@@ -232,10 +232,19 @@ export function ArticleForm({
         }}
         isPending={isPending}
         isPublished={isPublished}
-        onToggleMetadata={() => setMetadataOpen(!metadataOpen)}
         onSave={handleSaveDraft}
-        onPublishSettings={handlePublishSettings}
+        onPreview={handlePublishSettings}
         onCancel={() => router.push('/admin/articles')}
+        leadingActions={
+          <button
+            type="button"
+            onClick={() => setMetadataOpen(!metadataOpen)}
+            className="p-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
+            title={labels.metadata}
+          >
+            <LuSettings size={16} />
+          </button>
+        }
       />
 
       {error && (

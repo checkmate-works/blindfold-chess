@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
+import { AdminFormTopBar } from '@/app/admin/_components/forms';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { PublishedConfirmModal } from '../../_components/PublishedConfirmModal';
-import { AnnouncementFormTopBar } from './announcement-form/AnnouncementFormTopBar';
 
 type AnnouncementEditData = {
   slug: string;
@@ -155,7 +155,7 @@ export function AnnouncementForm({
 
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)]">
-      <AnnouncementFormTopBar
+      <AdminFormTopBar
         labels={{
           saveDraft: labels.saveDraft,
           savingDraft: labels.savingDraft,
