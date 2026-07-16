@@ -27,6 +27,11 @@ type Props = {
    */
   onRecall: () => void;
   /**
+   * Open the Kata check — compare the game's opening against the player's
+   * registered repertoires (型). Labelled "Kata".
+   */
+  onKata: () => void;
+  /**
    * Whether this game has already been published/shared (from this browser).
    * When true, a small "published" mark rides in the Game Review card's
    * top-right corner so the player can see at a glance it is already shared.
@@ -38,8 +43,8 @@ type Props = {
  * Shown when a game ends in live play, in place of the old auto-redirect to the
  * result screen. Leads with the win/loss/draw result, then offers three next
  * steps as cards — Game Review (result screen: stats + reflections), Recall
- * (memory reconstruction), and Kata (repertoire opening check,
- * coming soon) — each with a help-tour explanation. Dismissing it leaves the
+ * (memory reconstruction), and Kata (repertoire opening check) — each with a
+ * help-tour explanation. Dismissing it leaves the
  * player on the finished board (reopen via the board's "Next action" button).
  */
 export function GameFinishModal({
@@ -48,6 +53,7 @@ export function GameFinishModal({
   result,
   onReview,
   onRecall,
+  onKata,
   published = false,
 }: Props) {
   const t = useTranslations('play');
@@ -119,8 +125,7 @@ export function GameFinishModal({
             icon={<FaBook aria-hidden />}
             title={t('finishModal.kata.title')}
             description={t('finishModal.kata.description')}
-            comingSoon
-            comingSoonLabel={t('finishModal.comingSoon')}
+            onClick={onKata}
           />
         </div>
       </div>
