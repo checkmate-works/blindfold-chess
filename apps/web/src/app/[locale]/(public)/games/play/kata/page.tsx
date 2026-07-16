@@ -1,21 +1,28 @@
 /**
  * Kata Check (型チェック)
  *
- * @description Compares a finished game's opening against the repertoires (型)
- * the signed-in user registered for the colour they played, and reports — per
- * repertoire — whether the game stayed on kata, deviated at the player's own
- * move, or ran into an unprepared opponent move.
+ * @description Checks a finished game's opening against the repertoires (型)
+ * the signed-in user registered for the colour they played. The player picks
+ * which kata to check against; the game then auto-replays on a board and
+ * halts where it left the kata (or where the prepared line ran out),
+ * revealing the verdict — on kata, the player's own deviation, or an
+ * unprepared opponent move.
  * @flow Game finishes → the finish modal's Kata card deep-links here with the
  * game's SAN moves in the URL (like Recall, the page has no game-loading
- * logic) → the server matches them against the user's repertoires and renders
- * the report; anonymous visitors get a sign-in prompt, users without a
- * matching-side repertoire get a register CTA.
+ * logic) → pick a kata (`?repertoire=`) → server precomputes the replay
+ * positions + verdict, the client viewer animates to the stop point.
+ * Anonymous visitors get a sign-in prompt; users without a matching-side
+ * repertoire get a register CTA.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
+import { formatMovesToPgn, replayMoves } from '@blindfold-chess/features/chess-core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
+
 import { getOptionalUser } from '@/lib/auth';
+import type { KataEntry } from '@/lib/repertoires/kata-report';
 import { getKataReport } from '@/lib/repertoires/kata-report';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -23,7 +30,9 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { KataReportCard } from './_components/KataReportCard';
+import type { KataVerdict } from './_components/KataReplayViewer';
+import { KataReplayViewer } from './_components/KataReplayViewer';
+import { KATA_STATUS_BADGE, KATA_STATUS_KEY, type KataStatus } from './_lib/kata-status';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -72,6 +81,14 @@ function EmptyState({ message, children }: { message: string; children?: React.R
   );
 }
 
+function StatusBadge({ status, label }: { status: KataStatus; label: string }) {
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${KATA_STATUS_BADGE[status]}`}>
+      {label}
+    </span>
+  );
+}
+
 export default async function KataPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -82,6 +99,18 @@ export default async function KataPage({ params, searchParams }: Props) {
   const playerColor = sp.color === 'black' ? 'black' : 'white';
   const startingFen = typeof sp.fen === 'string' && sp.fen ? sp.fen : undefined;
   const gameId = typeof sp.gameId === 'string' && sp.gameId ? sp.gameId : undefined;
+  const selectedId = typeof sp.repertoire === 'string' && sp.repertoire ? sp.repertoire : undefined;
+
+  /** This page's own URL, with or without a kata selected (drives the picker). */
+  const hrefFor = (repertoireId?: string) => {
+    const p = new URLSearchParams();
+    if (typeof sp.moves === 'string') p.set('moves', sp.moves);
+    p.set('color', playerColor);
+    if (startingFen) p.set('fen', startingFen);
+    if (gameId) p.set('gameId', gameId);
+    if (repertoireId) p.set('repertoire', repertoireId);
+    return `/${locale}/games/play/kata?${p.toString()}`;
+  };
 
   const user = await getOptionalUser();
 
@@ -105,45 +134,54 @@ export default async function KataPage({ params, searchParams }: Props) {
   } else {
     const report = await getKataReport({ userId: user.id, moves, playerColor, startingFen });
     const side = t(`kataPage.side_${playerColor}`);
+    const registerCtas = (
+      <>
+        <Link href={`/${locale}/repertoires/new`} className={PRIMARY_LINK}>
+          {t('kataPage.registerCta')}
+        </Link>
+        <Link href={`/${locale}/repertoires`} className={SECONDARY_LINK}>
+          {t('kataPage.viewRepertoires')}
+        </Link>
+      </>
+    );
+
+    const selected = selectedId
+      ? report.entries.find((entry) => entry.repertoire.id === selectedId)
+      : undefined;
 
     if (!report.hasRepertoiresForSide) {
       content = (
-        <EmptyState message={t('kataPage.noRepertoires', { side })}>
-          <Link href={`/${locale}/repertoires/new`} className={PRIMARY_LINK}>
-            {t('kataPage.registerCta')}
-          </Link>
-          <Link href={`/${locale}/repertoires`} className={SECONDARY_LINK}>
-            {t('kataPage.viewRepertoires')}
-          </Link>
-        </EmptyState>
+        <EmptyState message={t('kataPage.noRepertoires', { side })}>{registerCtas}</EmptyState>
       );
     } else if (report.entries.length === 0) {
-      content = (
-        <EmptyState message={t('kataPage.noneApplicable')}>
-          <Link href={`/${locale}/repertoires/new`} className={PRIMARY_LINK}>
-            {t('kataPage.registerCta')}
-          </Link>
-          <Link href={`/${locale}/repertoires`} className={SECONDARY_LINK}>
-            {t('kataPage.viewRepertoires')}
-          </Link>
-        </EmptyState>
-      );
-    } else {
+      content = <EmptyState message={t('kataPage.noneApplicable')}>{registerCtas}</EmptyState>;
+    } else if (!selected) {
+      // Pick which kata to check against; the verdict stays unrevealed until
+      // the replay arrives at it, so the picker shows only names + depth.
       content = (
         <>
           <p className="text-sm text-muted-foreground">{t('kataPage.lead', { side })}</p>
-          <div className="space-y-4">
+          <h2 className="text-base font-semibold text-foreground">{t('kataPage.selectHeading')}</h2>
+          <div className="space-y-3">
             {report.entries.map((entry) => (
-              <KataReportCard
+              <Link
                 key={entry.repertoire.id}
-                entry={entry}
-                locale={locale}
-                playerColor={playerColor}
-              />
+                href={hrefFor(entry.repertoire.id)}
+                className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-secondary"
+              >
+                <span className="text-base font-semibold text-foreground">
+                  {entry.repertoire.name}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {t('kataPage.followedPlies', { count: entry.result.followedPlies })}
+                </span>
+              </Link>
             ))}
           </div>
         </>
       );
+    } else {
+      content = renderReplay({ selected, moves, playerColor, startingFen, locale, t, hrefFor });
     }
   }
 
@@ -162,5 +200,84 @@ export default async function KataPage({ params, searchParams }: Props) {
         </p>
       )}
     </PageLayout>
+  );
+}
+
+/**
+ * The replay view for one chosen kata: header (name, verdict badge, switch
+ * link) + the client auto-replay viewer. Positions and move formatting are
+ * precomputed here so the viewer stays chess.js-free.
+ */
+function renderReplay({
+  selected,
+  moves,
+  playerColor,
+  startingFen,
+  locale,
+  t,
+  hrefFor,
+}: {
+  selected: KataEntry;
+  moves: string[];
+  playerColor: 'white' | 'black';
+  startingFen: string | undefined;
+  locale: string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  hrefFor: (repertoireId?: string) => string;
+}) {
+  const { repertoire, result } = selected;
+  const status = result.status as KataStatus;
+
+  const positions = replayMoves(moves as AlgebraicNotation[], startingFen).map((p) => ({
+    fen: p.fen,
+    lastMove: p.lastMove ?? null,
+  }));
+  const startField = startingFen?.split(' ');
+  const startsAsBlack = startField?.[1] === 'b';
+  const startMoveNumber = startField ? Number(startField[5]) || 1 : 1;
+  const formatted = formatMovesToPgn(moves as AlgebraicNotation[], startsAsBlack, startMoveNumber);
+
+  const stopPly = result.divergence
+    ? result.divergence.ply
+    : (result.enteredAtPly ?? 0) + result.followedPlies;
+
+  const verdict: KataVerdict = result.divergence
+    ? {
+        status,
+        // The FEN before the diverging move carries the full-move number directly.
+        moveNo: Number(result.divergence.fen.split(' ')[5]) || 1,
+        played: result.divergence.played,
+        expected: result.divergence.expected.join(' / '),
+      }
+    : { status, moveNo: null };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/${locale}/repertoires/${repertoire.id}`}
+            className="text-base font-semibold text-foreground hover:underline"
+          >
+            {repertoire.name}
+          </Link>
+          <StatusBadge status={status} label={t(`kataPage.status.${KATA_STATUS_KEY[status]}`)} />
+        </div>
+        <Link
+          href={hrefFor()}
+          className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+        >
+          {t('kataPage.changeKata')}
+        </Link>
+      </div>
+
+      <KataReplayViewer
+        positions={positions}
+        formatted={formatted}
+        side={playerColor}
+        stopPly={stopPly}
+        verdict={verdict}
+      />
+    </div>
   );
 }

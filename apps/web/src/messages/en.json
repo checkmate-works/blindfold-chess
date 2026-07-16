@@ -2238,6 +2238,9 @@
       "noneApplicable": "None of your registered kata cover this game's opening.",
       "registerCta": "Register a kata",
       "viewRepertoires": "Your kata",
+      "selectHeading": "Choose the kata to check against",
+      "changeKata": "Choose another kata",
+      "replay": "Replay",
       "status": {
         "inBook": "On kata",
         "deviation": "Deviated",

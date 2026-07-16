@@ -2238,6 +2238,9 @@
       "noneApplicable": "この対局のオープニングに該当する型はありませんでした。",
       "registerCta": "型を登録する",
       "viewRepertoires": "型の一覧",
+      "selectHeading": "チェックに使う型を選んでください",
+      "changeKata": "別の型を選ぶ",
+      "replay": "もう一度再生",
       "status": {
         "inBook": "型どおり",
         "deviation": "型から逸脱",
