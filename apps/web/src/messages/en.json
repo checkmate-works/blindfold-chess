@@ -2243,7 +2243,7 @@
         "deviation": "Deviated",
         "gap": "Opponent left your kata"
       },
-      "followedPlies": "Matched {count} half-moves",
+      "followedPlies": "{count, plural, one {Matched # half-move} other {Matched # half-moves}}",
       "inBookDetail": "You stayed on this kata to the end of its prepared lines.",
       "deviationDetail": "At move {moveNo}, you played {played} — your kata prepares {expected}.",
       "gapDetail": "At move {moveNo}, your opponent played {played}, which this kata doesn't cover (prepared: {expected}).",

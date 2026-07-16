@@ -2239,7 +2239,7 @@
         "deviation": "Desvio",
         "gap": "O adversário saiu do seu kata"
       },
-      "followedPlies": "{count} meios-lances correspondentes",
+      "followedPlies": "{count, plural, one {# meio-lance correspondente} other {# meios-lances correspondentes}}",
       "inBookDetail": "Você seguiu este kata até o fim das linhas preparadas.",
       "deviationDetail": "No lance {moveNo}, você jogou {played} — seu kata prepara {expected}.",
       "gapDetail": "No lance {moveNo}, o adversário jogou {played}, que este kata não cobre (preparado: {expected}).",

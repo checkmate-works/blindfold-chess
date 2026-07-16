@@ -2239,7 +2239,7 @@
         "deviation": "Desviación",
         "gap": "El rival salió de tu kata"
       },
-      "followedPlies": "{count} medias jugadas coincidentes",
+      "followedPlies": "{count, plural, one {# media jugada coincidente} other {# medias jugadas coincidentes}}",
       "inBookDetail": "Seguiste este kata hasta el final de sus líneas preparadas.",
       "deviationDetail": "En la jugada {moveNo} jugaste {played}; tu kata prepara {expected}.",
       "gapDetail": "En la jugada {moveNo} tu rival jugó {played}, que este kata no cubre (preparado: {expected}).",
