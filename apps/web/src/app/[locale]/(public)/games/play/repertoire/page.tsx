@@ -27,7 +27,6 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
-import type { KataEntry } from '@/lib/repertoires/kata-report';
 import { getKataReport } from '@/lib/repertoires/kata-report';
 import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
@@ -40,10 +39,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { AddLineButton } from './_components/AddLineButton';
-import { KataReplayViewer } from './_components/KataReplayViewer';
-import { buildKataReplayModel } from './_lib/build-replay';
-import { KATA_STATUS_BADGE, KATA_STATUS_KEY, type KataStatus } from './_lib/kata-status';
+import { KataReplayView } from './_components/KataReplayView';
 import { KATA_CHECK_PATH, buildKataCheckQuery, parseKataCheckParams } from './_lib/kata-url';
 
 const KATA_HELP_TARGET = 'kata-help-target';
@@ -84,11 +80,22 @@ function EmptyState({ message, children }: { message: string; children?: React.R
   );
 }
 
-function StatusBadge({ status, label }: { status: KataStatus; label: string }) {
+/** A full-width button-styled link — the shape every CTA on this page takes. */
+function CtaLink({
+  href,
+  variant = 'primary',
+  children,
+}: {
+  href: string;
+  variant?: 'primary' | 'outline';
+  children: React.ReactNode;
+}) {
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${KATA_STATUS_BADGE[status]}`}>
-      {label}
-    </span>
+    <Link href={href}>
+      <Button asChild variant={variant} size="lg" fullWidth>
+        {children}
+      </Button>
+    </Link>
   );
 }
 
@@ -106,13 +113,6 @@ export default async function KataPage({ params, searchParams }: Props) {
     repertoireId: selectedId,
   } = parseKataCheckParams(sp);
 
-  // Formatted once here (not per-branch) so both the replay view and the
-  // "turn this game into a kata" CTA below share the same move formatting.
-  const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-  const formattedGame = moves
-    ? formatMovesToPgn(moves as AlgebraicNotation[], startsAsBlack, startMoveNumber)
-    : [];
-
   const helpSteps: HelpStep[] = [
     {
       targetId: KATA_HELP_TARGET,
@@ -124,11 +124,10 @@ export default async function KataPage({ params, searchParams }: Props) {
   ];
 
   /**
-   * This page's own path, with or without a kata selected — locale-less, since
-   * the picker card's i18n Link adds the prefix itself; plain next/link call
-   * sites prepend `/${locale}` explicitly.
+   * This page's own path with a kata selected — locale-less, since the picker
+   * card's i18n Link adds the prefix itself.
    */
-  const pathFor = (repertoireId?: string) =>
+  const pickPathFor = (repertoireId: string) =>
     `${KATA_CHECK_PATH}?${buildKataCheckQuery({
       moves: moves ?? [],
       playerColor,
@@ -143,26 +142,26 @@ export default async function KataPage({ params, searchParams }: Props) {
   if (!moves) {
     content = (
       <EmptyState message={t('kataPage.invalid')}>
-        <Link href={`/${locale}/games/play`}>
-          <Button asChild variant="primary" size="lg" fullWidth>
-            {t('kataPage.backToPlay')}
-          </Button>
-        </Link>
+        <CtaLink href={`/${locale}/games/play`}>{t('kataPage.backToPlay')}</CtaLink>
       </EmptyState>
     );
   } else if (!user) {
     content = (
       <EmptyState message={t('kataPage.signInRequired')}>
-        <Link href={`/${locale}/sign-in`}>
-          <Button asChild variant="primary" size="lg" fullWidth>
-            {t('kataPage.signIn')}
-          </Button>
-        </Link>
+        <CtaLink href={`/${locale}/sign-in`}>{t('kataPage.signIn')}</CtaLink>
       </EmptyState>
     );
   } else {
     const report = await getKataReport({ userId: user.id, moves, playerColor, startingFen });
     const side = t(`kataPage.side_${playerColor}`);
+    // The game as move pairs — the replay view's move strip and the "turn
+    // this game into a kata" CTA below share the same formatting.
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
+    const formattedGame = formatMovesToPgn(
+      moves as AlgebraicNotation[],
+      startsAsBlack,
+      startMoveNumber
+    );
     // Prefilled with this game's own PGN + side, so "register a kata" doubles
     // as "turn this game into one" — the common case when the reason nothing
     // applies is that no kata for this opening exists yet.
@@ -170,16 +169,10 @@ export default async function KataPage({ params, searchParams }: Props) {
     const newRepertoireHref = `/${locale}/repertoires/new?pgn=${encodeURIComponent(gamePgnText)}&side=${playerColor}`;
     const registerCtas = (
       <>
-        <Link href={newRepertoireHref}>
-          <Button asChild variant="primary" size="lg" fullWidth>
-            {t('kataPage.registerCta')}
-          </Button>
-        </Link>
-        <Link href={`/${locale}/repertoires`}>
-          <Button asChild variant="outline" size="lg" fullWidth>
-            {t('kataPage.viewRepertoires')}
-          </Button>
-        </Link>
+        <CtaLink href={newRepertoireHref}>{t('kataPage.registerCta')}</CtaLink>
+        <CtaLink href={`/${locale}/repertoires`} variant="outline">
+          {t('kataPage.viewRepertoires')}
+        </CtaLink>
       </>
     );
 
@@ -188,17 +181,18 @@ export default async function KataPage({ params, searchParams }: Props) {
       : undefined;
 
     if (selected) {
-      content = renderReplay({
-        selected,
-        entries: report.entries,
-        moves,
-        formatted: formattedGame,
-        playerColor,
-        startingFen,
-        locale,
-        t,
-        pathFor,
-      });
+      content = (
+        <KataReplayView
+          selected={selected}
+          entries={report.entries}
+          moves={moves}
+          formatted={formattedGame}
+          playerColor={playerColor}
+          startingFen={startingFen}
+          gameId={gameId}
+          locale={locale}
+        />
+      );
     } else {
       // Whether there's something to pick or not, this is the "select a
       // kata" section — the heading stays put and only the body beneath it
@@ -228,7 +222,7 @@ export default async function KataPage({ params, searchParams }: Props) {
                 card={card}
                 meta={cardMeta(card.repertoire.id)}
                 locale={locale}
-                detailHref={pathFor(card.repertoire.id)}
+                detailHref={pickPathFor(card.repertoire.id)}
               />
             ))}
           </div>
@@ -262,103 +256,5 @@ export default async function KataPage({ params, searchParams }: Props) {
         </p>
       )}
     </PageLayout>
-  );
-}
-
-/**
- * The replay view for one chosen kata, laid out like the repertoire detail
- * page: the board column on the left (name + verdict badge above the same
- * board chrome), and a side menu of the other applicable katas on the right
- * for switching without going back to the picker. Positions and move
- * formatting are precomputed here so the viewer stays chess.js-free.
- */
-function renderReplay({
-  selected,
-  entries,
-  moves,
-  formatted,
-  playerColor,
-  startingFen,
-  locale,
-  t,
-  pathFor,
-}: {
-  selected: KataEntry;
-  entries: KataEntry[];
-  moves: string[];
-  formatted: ReturnType<typeof formatMovesToPgn>;
-  playerColor: 'white' | 'black';
-  startingFen: string | undefined;
-  locale: string;
-  t: (key: string, values?: Record<string, string | number>) => string;
-  pathFor: (repertoireId?: string) => string;
-}) {
-  const { repertoire, result } = selected;
-  const { positions, stopPly, verdict, addLinePgn } = buildKataReplayModel({
-    result,
-    moves,
-    gameStartingFen: startingFen,
-    repertoireStartingFen: repertoire.startingFen,
-  });
-  const status: KataStatus = verdict.status;
-
-  return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-      <div className="space-y-4 lg:col-span-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/${locale}/repertoires/${repertoire.id}`}
-            className="text-base font-semibold text-foreground hover:underline"
-          >
-            {repertoire.name}
-          </Link>
-          <StatusBadge status={status} label={t(`kataPage.status.${KATA_STATUS_KEY[status]}`)} />
-        </div>
-
-        {/* Keyed by repertoire so switching via the side menu remounts the
-            viewer — same-route search-param navigation would otherwise keep
-            the previous kata's playback state (overlay dismissed, verdict
-            revealed). */}
-        <KataReplayViewer
-          key={repertoire.id}
-          positions={positions}
-          formatted={formatted}
-          side={playerColor}
-          stopPly={stopPly}
-          verdict={verdict}
-        />
-
-        {addLinePgn && (
-          <AddLineButton
-            locale={locale}
-            repertoireId={repertoire.id}
-            repertoireName={repertoire.name}
-            pgn={addLinePgn}
-          />
-        )}
-      </div>
-
-      {/* The other applicable katas sit in the right column, the same place
-          (and styling) the repertoire detail page puts its line list. */}
-      <ul className="space-y-1 lg:col-span-1">
-        {entries.map((entry) => {
-          const isSelected = entry.repertoire.id === repertoire.id;
-          return (
-            <li key={entry.repertoire.id}>
-              <Link
-                href={`/${locale}${pathFor(entry.repertoire.id)}`}
-                className={`block w-full truncate rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                  isSelected
-                    ? 'bg-link-primary/10 font-medium text-link-primary'
-                    : 'text-foreground hover:bg-muted'
-                }`}
-              >
-                {entry.repertoire.name}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
   );
 }
