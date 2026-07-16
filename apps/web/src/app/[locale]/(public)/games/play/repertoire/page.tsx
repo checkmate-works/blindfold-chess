@@ -317,8 +317,12 @@ function renderReplay({
     lastMove: p.lastMove ?? null,
   }));
 
+  // `divergence.ply` indexes the move that diverges (moves[ply] is the
+  // played-but-uncovered move), so `positions[ply]` is the position BEFORE
+  // it. Stop one ply later so the board actually shows that move played —
+  // the point isn't "where the kata ended," it's "what actually happened."
   const stopPly = result.divergence
-    ? result.divergence.ply
+    ? result.divergence.ply + 1
     : (result.enteredAtPly ?? 0) + result.followedPlies;
 
   const verdict: KataVerdict = result.divergence
