@@ -12,18 +12,7 @@ import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_componen
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 
-import type { KataStatus } from '../_lib/kata-status';
-
-/** What the playback arrives at: the verdict against the chosen kata. */
-export type KataVerdict = {
-  status: KataStatus;
-  /** Full-move number of the divergence; null for a clean in-book run. */
-  moveNo: number | null;
-  /** SAN actually played at the divergence. */
-  played?: string;
-  /** Prepared alternatives at the divergence, pre-joined for display. */
-  expected?: string;
-};
+import type { KataVerdict } from '../_lib/build-replay';
 
 type Props = {
   /** Board position at each ply; index 0 is the start (server-precomputed). */

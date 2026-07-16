@@ -22,11 +22,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
-import {
-  formatMovesToPgn,
-  formatPgnToText,
-  replayMoves,
-} from '@blindfold-chess/features/chess-core';
+import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -35,6 +31,7 @@ import type { KataEntry } from '@/lib/repertoires/kata-report';
 import { getKataReport } from '@/lib/repertoires/kata-report';
 import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { RepertoireListCard } from '@/app/[locale]/(public)/repertoires/_components/RepertoireListCard';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
@@ -44,8 +41,8 @@ import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AddLineButton } from './_components/AddLineButton';
-import type { KataVerdict } from './_components/KataReplayViewer';
 import { KataReplayViewer } from './_components/KataReplayViewer';
+import { buildKataReplayModel } from './_lib/build-replay';
 import { KATA_STATUS_BADGE, KATA_STATUS_KEY, type KataStatus } from './_lib/kata-status';
 import { KATA_CHECK_PATH, buildKataCheckQuery, parseKataCheckParams } from './_lib/kata-url';
 
@@ -111,9 +108,7 @@ export default async function KataPage({ params, searchParams }: Props) {
 
   // Formatted once here (not per-branch) so both the replay view and the
   // "turn this game into a kata" CTA below share the same move formatting.
-  const startField = startingFen?.split(' ');
-  const startsAsBlack = startField?.[1] === 'b';
-  const startMoveNumber = startField ? Number(startField[5]) || 1 : 1;
+  const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
   const formattedGame = moves
     ? formatMovesToPgn(moves as AlgebraicNotation[], startsAsBlack, startMoveNumber)
     : [];
@@ -299,50 +294,13 @@ function renderReplay({
   pathFor: (repertoireId?: string) => string;
 }) {
   const { repertoire, result } = selected;
-  const status = result.status as KataStatus;
-
-  const positions = replayMoves(moves as AlgebraicNotation[], startingFen).map((p) => ({
-    fen: p.fen,
-    lastMove: p.lastMove ?? null,
-  }));
-
-  // `divergence.ply` indexes the move that diverges (moves[ply] is the
-  // played-but-uncovered move), so `positions[ply]` is the position BEFORE
-  // it. Stop one ply later so the board actually shows that move played —
-  // the point isn't "where the kata ended," it's "what actually happened."
-  const stopPly = result.divergence
-    ? result.divergence.ply + 1
-    : (result.enteredAtPly ?? 0) + result.followedPlies;
-
-  const verdict: KataVerdict = result.divergence
-    ? {
-        status,
-        // The FEN before the diverging move carries the full-move number directly.
-        moveNo: Number(result.divergence.fen.split(' ')[5]) || 1,
-        played: result.divergence.played,
-        expected: result.divergence.expected.join(' / '),
-      }
-    : { status, moveNo: null };
-
-  // Only a deviation/gap has something new to add — an in-book result means
-  // the game never left ground the repertoire doesn't already cover.
-  let addLinePgn: string | null = null;
-  if (status !== 'in-book') {
-    // The new line runs root-to-leaf like every repertoire line: the matched
-    // prefix (from where the game entered the kata) through the diverging
-    // move itself — `stopPly` (divergence.ply + 1), the same endpoint the
-    // board above stops at — NOT the rest of the game, which may wander
-    // through unrelated middlegame/endgame moves no repertoire line wants.
-    // Formatted against the repertoire's OWN root (not the game's), since
-    // that's the line's actual starting position.
-    const lineMoves = moves.slice(result.enteredAtPly ?? 0, stopPly);
-    const repStartField = repertoire.startingFen?.split(' ');
-    const repStartsAsBlack = repStartField?.[1] === 'b';
-    const repStartMoveNumber = repStartField ? Number(repStartField[5]) || 1 : 1;
-    addLinePgn = formatPgnToText(
-      formatMovesToPgn(lineMoves as AlgebraicNotation[], repStartsAsBlack, repStartMoveNumber)
-    );
-  }
+  const { positions, stopPly, verdict, addLinePgn } = buildKataReplayModel({
+    result,
+    moves,
+    gameStartingFen: startingFen,
+    repertoireStartingFen: repertoire.startingFen,
+  });
+  const status: KataStatus = verdict.status;
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
