@@ -1,23 +1,23 @@
 import { useCallback } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { Check, X } from "lucide-react-native";
 
+import { CountdownOverlay, ScoreFooter } from "../../../../components";
 import {
   QuestionCard,
   LegalIllegalButtons,
 } from "../../../../features/legal-moves/components";
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
 import { useLegalMovesSession } from "@blindfold-chess/features/legal-moves/client";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
+import { useTheme, spacing } from "../../../../theme";
 import type { PieceType } from "../../../../features/legal-moves/lib/types";
 import type { LegalMovesResult } from "../../../../features/legal-moves/hooks";
 
 export default function LegalMovesSession() {
   const router = useRouter();
-  const { colors, feedbackColors } = useTheme();
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     duration: string;
     pieces: string;
@@ -78,14 +78,7 @@ export default function LegalMovesSession() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Countdown overlay */}
-      {countdown !== null && (
-        <View style={styles.countdownContainer}>
-          <Text style={[styles.countdownText, { color: colors.primary }]}>
-            {countdown > 0 ? countdown : "START!"}
-          </Text>
-        </View>
-      )}
+      <CountdownOverlay countdown={countdown} />
 
       {/* Main content */}
       {countdown === null && (
@@ -115,36 +108,10 @@ export default function LegalMovesSession() {
             />
           </View>
 
-          {/* Score */}
-          <View style={styles.footer}>
-            <View style={styles.scoreItem}>
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: feedbackColors.successSoft },
-                ]}
-              >
-                <Check size={16} color={feedbackColors.success} />
-              </View>
-              <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-                {correctCount}
-              </Text>
-            </View>
-
-            <View style={styles.scoreItem}>
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: feedbackColors.errorSoft },
-                ]}
-              >
-                <X size={16} color={feedbackColors.error} />
-              </View>
-              <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-                {incorrectCount}
-              </Text>
-            </View>
-          </View>
+          <ScoreFooter
+            correctCount={correctCount}
+            incorrectCount={incorrectCount}
+          />
         </>
       )}
     </SafeAreaView>
@@ -154,15 +121,6 @@ export default function LegalMovesSession() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  countdownContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  countdownText: {
-    fontSize: 72,
-    fontWeight: fontWeight.bold,
   },
   timerRow: {
     flexDirection: "row",
@@ -181,26 +139,5 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.md,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: spacing.xxl,
-    paddingBottom: spacing.xxl,
-  },
-  scoreItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  iconContainer: {
-    padding: spacing.xs,
-    borderRadius: 999,
-  },
-  scoreValue: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    fontVariant: ["tabular-nums"],
   },
 });

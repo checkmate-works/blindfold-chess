@@ -20,7 +20,7 @@ import {
 } from "@blindfold-chess/features/route-planner";
 import type { Square } from "@blindfold-chess/types";
 
-import { Button } from "../../../../components";
+import { Button, CountdownOverlay } from "../../../../components";
 import {
   ProblemCard,
   ProblemResultCard,
@@ -158,14 +158,7 @@ export default function RoutePlannerSessionScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Countdown overlay */}
-      {countdown !== null && (
-        <View style={styles.countdownContainer}>
-          <Text style={[styles.countdownText, { color: colors.primary }]}>
-            {countdown > 0 ? countdown : "START!"}
-          </Text>
-        </View>
-      )}
+      <CountdownOverlay countdown={countdown} />
 
       {countdown === null && (
         <ScrollView
@@ -254,15 +247,6 @@ export default function RoutePlannerSessionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  countdownContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  countdownText: {
-    fontSize: 72,
-    fontWeight: "bold",
   },
   scrollView: {
     flex: 1,
