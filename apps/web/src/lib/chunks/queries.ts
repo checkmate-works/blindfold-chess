@@ -12,7 +12,7 @@ import {
   positions,
   profiles,
 } from '@/lib/db';
-import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
+import { combineConditions, countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { ChunkOption } from './types';
@@ -68,7 +68,7 @@ function buildListConditions({
   const conditions: SQL[] = [];
   if (!includeDeleted) conditions.push(isNull(chunks.deletedAt));
   if (status) conditions.push(eq(chunks.status, status));
-  return conditions.length > 0 ? and(...conditions) : undefined;
+  return combineConditions(conditions);
 }
 
 /**
@@ -253,18 +253,6 @@ export const findChunkBySlug = cache(async (slug: string) => {
 });
 
 /**
- * Fetch positions linked to a chunk via the position_chunks junction table.
- * Only returns non-deleted positions, ordered by creation date descending.
- *
- * @design position_chunks rows are intentionally preserved when a chunk is
- * soft-deleted. Because chunks use logical deletion (`deletedAt`), the
- * junction rows remain so that restoring the chunk also restores its
- * position associations without data loss. Callers that display chunk data
- * on public pages should filter out soft-deleted chunks at the chunk query
- * level (e.g. `getChunkBySlug` already enforces `deletedAt IS NULL`),
- * which prevents the linked positions from surfacing indirectly.
- */
-/**
  * Fetch chunks linked to a position via the position_chunks junction table.
  * Only returns non-deleted chunks, ordered by chunk title ascending.
  * Used on position detail pages to show related patterns.
@@ -355,6 +343,14 @@ export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]
  * `/practice/puzzle` and `/practice/position-memory`. Soft-deleted positions
  * are excluded; profile join is `LEFT` so a deleted-author position still
  * surfaces with a null profile (matches `listPositionsWithProfile`).
+ *
+ * @design position_chunks rows are intentionally preserved when a chunk is
+ * soft-deleted. Because chunks use logical deletion (`deletedAt`), the
+ * junction rows remain so that restoring the chunk also restores its
+ * position associations without data loss. Callers that display chunk data
+ * on public pages should filter out soft-deleted chunks at the chunk query
+ * level (e.g. `getChunkBySlug` already enforces `deletedAt IS NULL`),
+ * which prevents the linked positions from surfacing indirectly.
  */
 export async function getLinkedPositionsForChunk(chunkId: string) {
   const rows = await db

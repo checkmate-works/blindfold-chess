@@ -1,7 +1,18 @@
-import { type SQL, count } from 'drizzle-orm';
+import { type SQL, and, count } from 'drizzle-orm';
 import type { PgSelect, PgTable } from 'drizzle-orm/pg-core';
 
 import { db } from './index';
+
+/**
+ * AND together an optionally-empty condition list, yielding `undefined` when
+ * there is nothing to filter on (the shape `runPaginatedSelect` and drizzle's
+ * `.where()` both expect). Centralizes the
+ * `conditions.length > 0 ? and(...conditions) : undefined` tail that
+ * per-entity condition builders were hand-copying.
+ */
+export function combineConditions(conditions: SQL[]): SQL | undefined {
+  return conditions.length > 0 ? and(...conditions) : undefined;
+}
 
 /**
  * Apply the standard paginated-list tail to a select builder:

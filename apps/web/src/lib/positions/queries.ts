@@ -15,7 +15,7 @@ import {
   profiles,
   topicPosts,
 } from '@/lib/db';
-import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
+import { combineConditions, countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { PositionSortMode, PositionType } from './types';
@@ -130,7 +130,7 @@ function buildListConditions({
   if (!includeDeleted) conditions.push(isNull(positions.deletedAt));
   if (userId) conditions.push(eq(positions.userId, userId));
   if (forkedFromId) conditions.push(eq(positions.forkedFromId, forkedFromId));
-  return conditions.length > 0 ? and(...conditions) : undefined;
+  return combineConditions(conditions);
 }
 
 /**
