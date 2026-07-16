@@ -7,6 +7,8 @@ import { useTranslations } from 'next-intl';
 import { Button, FormErrorBanner, TextInput, Textarea } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
+import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
+
 import { updateLine } from '../_actions/updateLine';
 
 type Props = {
@@ -16,16 +18,6 @@ type Props = {
   initialName: string;
   initialPgn: string;
 };
-
-const KNOWN_ERRORS = new Set([
-  'unauthorized',
-  'notFound',
-  'nameTooLong',
-  'pgnRequired',
-  'pgnTooLarge',
-  'invalidPgn',
-  'noMoves',
-]);
 
 /**
  * Owner-only editor for a single line: its title and its moves (a plain PGN
@@ -58,7 +50,9 @@ export function EditLineForm({ locale, repertoireId, lineNo, initialName, initia
     });
     if (!result.ok) {
       setPending(false);
-      setError(KNOWN_ERRORS.has(result.error) ? t(`errors.${result.error}`) : t('errors.generic'));
+      setError(
+        KNOWN_LINE_FORM_ERRORS.has(result.error) ? t(`errors.${result.error}`) : t('errors.generic')
+      );
       return;
     }
     router.push(`${lineHref}?toast=line_updated`);

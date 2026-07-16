@@ -6,6 +6,8 @@ import { Button, FormErrorBanner } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
+
 import { addLine } from '@/app/[locale]/(public)/repertoires/[id]/_actions/addLine';
 
 type Props = {
@@ -16,22 +18,12 @@ type Props = {
   pgn: string;
 };
 
-const KNOWN_ERRORS = new Set([
-  'unauthorized',
-  'notFound',
-  'nameTooLong',
-  'pgnRequired',
-  'pgnTooLarge',
-  'invalidPgn',
-  'noMoves',
-]);
-
 /**
  * Turns a kata check's divergence into a new line on the repertoire it
  * diverged from: "this game did something the kata doesn't cover yet — save
  * it as a new prepared line?" Expands into a read-only preview of the exact
  * moves to be saved before writing anything (the game's moves from where it
- * entered the kata through the end of the game — the matched prefix is
+ * entered the kata through the diverging move — the matched prefix is
  * included on purpose, since a repertoire line always runs root-to-leaf).
  */
 export function AddLineButton({ locale, repertoireId, repertoireName, pgn }: Props) {
@@ -47,7 +39,9 @@ export function AddLineButton({ locale, repertoireId, repertoireName, pgn }: Pro
     const result = await addLine({ repertoireId, locale, name: null, pgn });
     if (!result.ok) {
       setPending(false);
-      setError(KNOWN_ERRORS.has(result.error) ? t(`errors.${result.error}`) : t('errors.generic'));
+      setError(
+        KNOWN_LINE_FORM_ERRORS.has(result.error) ? t(`errors.${result.error}`) : t('errors.generic')
+      );
       return;
     }
     router.push(`/repertoires/${repertoireId}/lines/${result.lineNo}?toast=line_added`);
