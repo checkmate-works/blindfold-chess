@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { View, StyleSheet, useWindowDimensions } from "react-native";
 import { ChessBoardSquare } from "./ChessBoardSquare";
-import { coordinatesToSquare } from "../lib/utils";
+import { coordinatesToSquare } from "@blindfold-chess/features/coordinate-quiz";
 import type { Square, AnswerFeedback } from "../lib/types";
 import { useTheme, spacing } from "../../../theme";
 
