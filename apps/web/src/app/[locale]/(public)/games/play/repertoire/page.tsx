@@ -85,11 +85,14 @@ function parseMoves(param: string | string[] | undefined): string[] | null {
 /**
  * Message + stacked full-width CTA(s), unadorned (no card/border) to match the
  * rest of the app's empty states (e.g. `/repertoires`'s own "no repertoires
- * yet" message) rather than boxing content in a bordered panel.
+ * yet" message) rather than boxing content in a bordered panel. No padding of
+ * its own — the panel's `space-y-8` already sets the rhythm between this and
+ * its siblings (the SectionTitle above, the "back" link below), the same as
+ * the picker's card list; adding padding here on top of that doubled it.
  */
 function EmptyState({ message, children }: { message: string; children?: React.ReactNode }) {
   return (
-    <div className="space-y-4 py-8 text-center">
+    <div className="space-y-4 text-center">
       <p className="text-sm text-muted-foreground">{message}</p>
       {children && <div className="flex flex-col gap-3">{children}</div>}
     </div>
