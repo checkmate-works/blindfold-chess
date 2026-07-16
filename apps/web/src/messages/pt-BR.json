@@ -2223,6 +2223,11 @@
     },
     "kataPage": {
       "title": "Verificação de Kata",
+      "help": {
+        "label": "Sobre o Kata",
+        "title": "O que é um Kata?",
+        "description": "Kata é um método de treino comum em artes marciais orientais, como caratê e taekwondo, no qual uma sequência pré-estabelecida de ataques e defesas é repetida em uma ordem fixa. Este recurso usa essa ideia como analogia para praticar aberturas de xadrez."
+      },
       "side_white": "brancas",
       "side_black": "pretas",
       "invalid": "Não há dados de partida para verificar. Termine uma partida e abra o Kata nas opções de fim de partida.",

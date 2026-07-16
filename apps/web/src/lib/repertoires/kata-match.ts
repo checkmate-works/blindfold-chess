@@ -71,6 +71,21 @@ function isBetter(a: LineMatchResult, b: LineMatchResult): boolean {
 }
 
 /**
+ * Whether a matched kata is worth surfacing in the check UI: the game must
+ * have followed the kata for at least one ply past where it entered the tree.
+ * A result whose divergence lands immediately at entry (`followedPlies === 0`)
+ * means the very first move the kata prepares — the player's own opening
+ * choice, or (for a kata prepared against a specific reply) the opponent's
+ * first move — already isn't what happened. That reads as "this kata doesn't
+ * apply to this game" rather than a deviation worth reporting, so such
+ * results are filtered out before reaching the picker.
+ */
+export function isKataApplicableFromFirstMove(result: LineMatchResult): boolean {
+  if (result.status === 'not-applicable') return false;
+  return result.status === 'in-book' || result.followedPlies > 0;
+}
+
+/**
  * Match a game against one repertoire's line PGNs. Returns the best applicable
  * {@link LineMatchResult}, or null when the repertoire does not apply to this
  * game at all.

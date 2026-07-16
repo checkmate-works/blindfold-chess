@@ -2227,6 +2227,11 @@
     },
     "kataPage": {
       "title": "Kata Check",
+      "help": {
+        "label": "About Kata",
+        "title": "What is a Kata?",
+        "description": "A kata is a training method common in Eastern martial arts such as karate and taekwondo, where a pre-arranged sequence of attacks and defenses is repeated in a fixed order. This feature borrows that idea as a practice routine for chess openings."
+      },
       "side_white": "White",
       "side_black": "Black",
       "invalid": "No game data to check. Finish a game and open Kata from the game-end options.",

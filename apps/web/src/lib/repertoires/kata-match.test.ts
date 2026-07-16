@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { matchGameToKata } from './kata-match';
+import { isKataApplicableFromFirstMove, matchGameToKata } from './kata-match';
 
 // Two stored lines sharing the 1. e4 c5 2. Nf3 prefix, as the import
 // decomposition would produce them from one PGN with a variation.
@@ -71,5 +71,50 @@ describe('matchGameToKata', () => {
       NAJDORF_LINE,
     ]);
     expect(result?.status).toBe('in-book');
+  });
+
+  it("does not surface a kata the game's own first move already leaves", () => {
+    // White played 1. d4, not the 1. e4 this kata prepares — a deviation at
+    // ply 0, followedPlies 0.
+    const result = matchGameToKata({ moves: ['d4', 'd5'], playerColor: 'white' }, [NAJDORF_LINE]);
+    expect(result?.status).toBe('deviation');
+    expect(result?.followedPlies).toBe(0);
+    expect(isKataApplicableFromFirstMove(result!)).toBe(false);
+  });
+
+  it("does not surface a black kata the opponent's own first move already leaves", () => {
+    // Prepared as a reply to 1. e4; the opponent opened 1. d4 instead — a gap
+    // at ply 0, followedPlies 0.
+    const result = matchGameToKata({ moves: ['d4', 'd5'], playerColor: 'black' }, [NAJDORF_LINE]);
+    expect(result?.status).toBe('gap');
+    expect(result?.followedPlies).toBe(0);
+    expect(isKataApplicableFromFirstMove(result!)).toBe(false);
+  });
+});
+
+describe('isKataApplicableFromFirstMove', () => {
+  it('keeps an in-book result even with zero followed plies (degenerate empty kata)', () => {
+    expect(
+      isKataApplicableFromFirstMove({ status: 'in-book', enteredAtPly: 0, followedPlies: 0 })
+    ).toBe(true);
+  });
+
+  it('keeps a deviation/gap once at least one move matched', () => {
+    expect(
+      isKataApplicableFromFirstMove({ status: 'deviation', enteredAtPly: 0, followedPlies: 4 })
+    ).toBe(true);
+    expect(
+      isKataApplicableFromFirstMove({ status: 'gap', enteredAtPly: 0, followedPlies: 1 })
+    ).toBe(true);
+  });
+
+  it('drops a not-applicable result', () => {
+    expect(
+      isKataApplicableFromFirstMove({
+        status: 'not-applicable',
+        enteredAtPly: null,
+        followedPlies: 0,
+      })
+    ).toBe(false);
   });
 });

@@ -2,23 +2,30 @@
  * Kata Check (型チェック)
  *
  * @description Checks a finished game's opening against the repertoires (型)
- * the signed-in user registered for the colour they played. The player picks
- * which kata to check against; the game then auto-replays on a board and
- * halts where it left the kata (or where the prepared line ran out),
- * revealing the verdict — on kata, the player's own deviation, or an
- * unprepared opponent move.
+ * the signed-in user OWNS for the colour they played (never another user's).
+ * The player picks which kata to check against; the game then replays on a
+ * board (behind a Play button) and halts where it left the kata — or where
+ * the prepared line ran out — revealing the verdict: on kata, the player's
+ * own deviation, or an unprepared opponent move. A kata whose very first
+ * prepared move the game didn't play is left out of the picker entirely (it
+ * says nothing useful about this game); when that leaves no applicable kata,
+ * the page offers to turn the game itself into a new repertoire instead.
  * @flow Game finishes → the finish modal's Kata card deep-links here with the
  * game's SAN moves in the URL (like Recall, the page has no game-loading
  * logic) → pick a kata (`?repertoire=`) → server precomputes the replay
  * positions + verdict, the client viewer animates to the stop point.
- * Anonymous visitors get a sign-in prompt; users without a matching-side
- * repertoire get a register CTA.
+ * Anonymous visitors get a sign-in prompt; a user with no applicable kata for
+ * the side gets a "register a kata" CTA prefilled with this game's own PGN.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
-import { formatMovesToPgn, replayMoves } from '@blindfold-chess/features/chess-core';
+import {
+  formatMovesToPgn,
+  formatPgnToText,
+  replayMoves,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -29,6 +36,8 @@ import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
 import { RepertoireListCard } from '@/app/[locale]/(public)/repertoires/_components/RepertoireListCard';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
+import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -36,6 +45,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import type { KataVerdict } from './_components/KataReplayViewer';
 import { KataReplayViewer } from './_components/KataReplayViewer';
 import { KATA_STATUS_BADGE, KATA_STATUS_KEY, type KataStatus } from './_lib/kata-status';
+
+const KATA_HELP_TARGET = 'kata-help-target';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -104,6 +115,25 @@ export default async function KataPage({ params, searchParams }: Props) {
   const gameId = typeof sp.gameId === 'string' && sp.gameId ? sp.gameId : undefined;
   const selectedId = typeof sp.repertoire === 'string' && sp.repertoire ? sp.repertoire : undefined;
 
+  // Formatted once here (not per-branch) so both the replay view and the
+  // "turn this game into a kata" CTA below share the same move formatting.
+  const startField = startingFen?.split(' ');
+  const startsAsBlack = startField?.[1] === 'b';
+  const startMoveNumber = startField ? Number(startField[5]) || 1 : 1;
+  const formattedGame = moves
+    ? formatMovesToPgn(moves as AlgebraicNotation[], startsAsBlack, startMoveNumber)
+    : [];
+
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: KATA_HELP_TARGET,
+      title: t('kataPage.help.title'),
+      description: t('kataPage.help.description'),
+      side: 'bottom',
+      align: 'center',
+    },
+  ];
+
   /**
    * This page's own path, with or without a kata selected — locale-less, since
    * the picker card's i18n Link adds the prefix itself; plain next/link call
@@ -141,9 +171,14 @@ export default async function KataPage({ params, searchParams }: Props) {
   } else {
     const report = await getKataReport({ userId: user.id, moves, playerColor, startingFen });
     const side = t(`kataPage.side_${playerColor}`);
+    // Prefilled with this game's own PGN + side, so "register a kata" doubles
+    // as "turn this game into one" — the common case when the reason nothing
+    // applies is that no kata for this opening exists yet.
+    const gamePgnText = formatPgnToText(formattedGame, startingFen);
+    const newRepertoireHref = `/${locale}/repertoires/new?pgn=${encodeURIComponent(gamePgnText)}&side=${playerColor}`;
     const registerCtas = (
       <>
-        <Link href={`/${locale}/repertoires/new`} className={PRIMARY_LINK}>
+        <Link href={newRepertoireHref} className={PRIMARY_LINK}>
           {t('kataPage.registerCta')}
         </Link>
         <Link href={`/${locale}/repertoires`} className={SECONDARY_LINK}>
@@ -193,6 +228,7 @@ export default async function KataPage({ params, searchParams }: Props) {
         selected,
         entries: report.entries,
         moves,
+        formatted: formattedGame,
         playerColor,
         startingFen,
         locale,
@@ -203,7 +239,11 @@ export default async function KataPage({ params, searchParams }: Props) {
   }
 
   return (
-    <PageLayout title={t('kataPage.title')} locale={locale}>
+    <PageLayout
+      title={<span data-tour-id={KATA_HELP_TARGET}>{t('kataPage.title')}</span>}
+      titleAction={<HelpTourButton steps={helpSteps} label={t('kataPage.help.label')} />}
+      locale={locale}
+    >
       {content}
 
       {gameId && (
@@ -231,6 +271,7 @@ function renderReplay({
   selected,
   entries,
   moves,
+  formatted,
   playerColor,
   startingFen,
   locale,
@@ -240,6 +281,7 @@ function renderReplay({
   selected: KataEntry;
   entries: KataEntry[];
   moves: string[];
+  formatted: ReturnType<typeof formatMovesToPgn>;
   playerColor: 'white' | 'black';
   startingFen: string | undefined;
   locale: string;
@@ -253,10 +295,6 @@ function renderReplay({
     fen: p.fen,
     lastMove: p.lastMove ?? null,
   }));
-  const startField = startingFen?.split(' ');
-  const startsAsBlack = startField?.[1] === 'b';
-  const startMoveNumber = startField ? Number(startField[5]) || 1 : 1;
-  const formatted = formatMovesToPgn(moves as AlgebraicNotation[], startsAsBlack, startMoveNumber);
 
   const stopPly = result.divergence
     ? result.divergence.ply
