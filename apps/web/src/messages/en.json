@@ -3,11 +3,11 @@
     "deletedUser": "(deleted user)"
   },
   "Repertoires": {
-    "title": "Repertoires",
-    "description": "Your private repertoire trees — opening lines, mate patterns, and memorized sequences.",
-    "sectionTitle": "Your repertoires",
+    "title": "Kata",
+    "description": "Your private kata — opening lines, mate patterns, and memorized sequences.",
+    "sectionTitle": "Your kata",
     "importCta": "Import",
-    "empty": "No repertoires available yet",
+    "empty": "No kata registered yet",
     "summary": "{lines} lines · {moves} moves",
     "like": "Like",
     "unlike": "Unlike",
@@ -25,7 +25,7 @@
       "phase_endgame": "Endgame",
       "phaseComingSoon": "Coming soon",
       "openingLabel": "Linked openings",
-      "openingHelp": "Optionally link this repertoire to specific openings (a transposing line may match several).",
+      "openingHelp": "Optionally link this kata to specific openings (a transposing line may match several).",
       "pgnLabel": "PGN",
       "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
@@ -38,26 +38,26 @@
     },
     "edit": {
       "editAction": "Edit",
-      "title": "Edit repertoire",
+      "title": "Edit kata",
       "breadcrumb": "Edit",
       "nameLabel": "Name",
       "save": "Save",
       "saving": "Saving...",
       "cancel": "Cancel",
       "errors": {
-        "unauthorized": "Only the owner can edit this repertoire.",
-        "notFound": "This repertoire no longer exists.",
+        "unauthorized": "Only the owner can edit this kata.",
+        "notFound": "This kata no longer exists.",
         "nameRequired": "Please enter a name.",
         "nameTooLong": "That name is too long.",
         "generic": "Something went wrong. Please try again."
       }
     },
     "detail": {
-      "title": "Repertoire",
+      "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Lines",
       "lineCount": "{count} lines",
-      "forThisOpening": "Repertoires for this opening",
+      "forThisOpening": "Kata for this opening",
       "lineFallback": "Line {n}",
       "openLine": "Open this line →",
       "createdBy": "Created by"
@@ -85,7 +85,7 @@
         "empty": "Please enter a note.",
         "tooLong": "This note is too long.",
         "unauthorized": "Only the owner can edit annotations.",
-        "notFound": "This repertoire no longer exists."
+        "notFound": "This kata no longer exists."
       },
       "edit": {
         "editAction": "Edit",
@@ -2222,7 +2222,7 @@
       },
       "kata": {
         "title": "Kata",
-        "description": "Check whether your opening followed your registered repertoire."
+        "description": "Check whether your opening followed your registered kata."
       }
     },
     "kataPage": {
@@ -2786,7 +2786,7 @@
     "accountDeletionTitle": "Account Deletion and Content Handling",
     "accountDeletionDescription": "When you delete your account, your data is handled as described below. Please review this before using account features.",
     "accountDeletionItem1": "Personal information associated with your account (such as your display name, profile details, and avatar image) is deleted or anonymised when you delete your account.",
-    "accountDeletionItem2": "Content you have shared publicly — such as forum posts, comments, submitted positions and puzzles, chunks, and repertoires — may remain available on the Service after you delete your account, with its authorship anonymised (shown as a deleted user).",
+    "accountDeletionItem2": "Content you have shared publicly — such as forum posts, comments, submitted positions and puzzles, chunks, and kata (opening repertoires) — may remain available on the Service after you delete your account, with its authorship anonymised (shown as a deleted user).",
     "accountDeletionItem3": "If you would like specific content you created to be removed, please contact us and we will address it individually.",
     "userResponsibilitiesTitle": "User Responsibilities",
     "userResponsibilitiesDescription": "When using the Service, please understand the following:",
@@ -5019,7 +5019,7 @@
         "active": "Active"
       },
       "detail": {
-        "pageTitle": "Repertoire Comment"
+        "pageTitle": "Kata Comment"
       },
       "postDetail": {
         "authorView": "{author}'s thoughts on {name}",
@@ -5027,7 +5027,7 @@
       },
       "newPostForm": {
         "contentLabel": "Comment",
-        "contentPlaceholder": "Share your thoughts about this repertoire...",
+        "contentPlaceholder": "Share your thoughts about this kata...",
         "submit": "Comment",
         "submitting": "Posting...",
         "contentRequired": "Please enter some content",
@@ -5082,7 +5082,7 @@
         "active": "Active"
       },
       "detail": {
-        "pageTitle": "Repertoire Comment"
+        "pageTitle": "Kata Comment"
       },
       "postDetail": {
         "authorView": "{author}'s thoughts on {name}",

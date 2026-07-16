@@ -3,11 +3,11 @@
     "deletedUser": "(usuário excluído)"
   },
   "Repertoires": {
-    "title": "Repertórios",
-    "description": "Suas árvores de repertório privadas — linhas de abertura, padrões de mate e sequências memorizadas.",
-    "sectionTitle": "Seus repertórios",
+    "title": "Kata",
+    "description": "Seus katas privados — linhas de abertura, padrões de mate e sequências memorizadas.",
+    "sectionTitle": "Seus katas",
     "importCta": "Importar",
-    "empty": "Nenhum repertório disponível ainda",
+    "empty": "Nenhum kata registrado ainda",
     "summary": "{lines} linhas · {moves} lances",
     "like": "Curtir",
     "unlike": "Descurtir",
@@ -25,7 +25,7 @@
       "phase_endgame": "Final",
       "phaseComingSoon": "Em breve",
       "openingLabel": "Aberturas vinculadas",
-      "openingHelp": "Vincule opcionalmente este repertório a aberturas específicas (uma linha com transposições pode corresponder a várias).",
+      "openingHelp": "Vincule opcionalmente este kata a aberturas específicas (uma linha com transposições pode corresponder a várias).",
       "pgnLabel": "PGN",
       "pgnHelp": "Cole um PGN com variantes — exportações de estudos do Lichess ou do Chess.com funcionam como estão.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
@@ -38,26 +38,26 @@
     },
     "edit": {
       "editAction": "Editar",
-      "title": "Editar repertório",
+      "title": "Editar kata",
       "breadcrumb": "Editar",
       "nameLabel": "Nome",
       "save": "Salvar",
       "saving": "Salvando...",
       "cancel": "Cancelar",
       "errors": {
-        "unauthorized": "Somente o autor pode editar este repertório.",
-        "notFound": "Este repertório não existe mais.",
+        "unauthorized": "Somente o autor pode editar este kata.",
+        "notFound": "Este kata não existe mais.",
         "nameRequired": "Digite um nome.",
         "nameTooLong": "Esse nome é muito longo.",
         "generic": "Algo deu errado. Tente novamente."
       }
     },
     "detail": {
-      "title": "Repertório",
+      "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Linhas",
       "lineCount": "{count} linhas",
-      "forThisOpening": "Repertórios desta abertura",
+      "forThisOpening": "Katas desta abertura",
       "lineFallback": "Linha {n}",
       "openLine": "Abrir esta linha →",
       "createdBy": "Criado por"
@@ -85,7 +85,7 @@
         "empty": "Digite uma nota.",
         "tooLong": "Esta nota é muito longa.",
         "unauthorized": "Apenas o proprietário pode editar anotações.",
-        "notFound": "Este repertório não existe mais."
+        "notFound": "Este kata não existe mais."
       },
       "edit": {
         "editAction": "Editar",
@@ -2218,7 +2218,7 @@
       },
       "kata": {
         "title": "Kata",
-        "description": "Verifique se sua abertura seguiu seu repertório registrado."
+        "description": "Verifique se sua abertura seguiu seu kata registrado."
       }
     },
     "kataPage": {
@@ -2782,7 +2782,7 @@
     "accountDeletionTitle": "Exclusão de conta e tratamento do conteúdo",
     "accountDeletionDescription": "Quando você exclui sua conta, seus dados são tratados conforme descrito abaixo. Revise isto antes de usar os recursos de conta.",
     "accountDeletionItem1": "As informações pessoais associadas à sua conta (como nome de exibição, dados do perfil e imagem de avatar) são excluídas ou anonimizadas ao excluir a conta.",
-    "accountDeletionItem2": "O conteúdo que você compartilhou publicamente — como publicações no fórum, comentários, posições e quebra-cabeças enviados, chunks e repertórios — pode permanecer disponível no Serviço após a exclusão da conta, com a autoria anonimizada (exibida como usuário excluído).",
+    "accountDeletionItem2": "O conteúdo que você compartilhou publicamente — como publicações no fórum, comentários, posições e quebra-cabeças enviados, chunks e katas (repertórios de abertura) — pode permanecer disponível no Serviço após a exclusão da conta, com a autoria anonimizada (exibida como usuário excluído).",
     "accountDeletionItem3": "Se desejar que algum conteúdo específico criado por você seja removido, entre em contato conosco e trataremos individualmente.",
     "userResponsibilitiesTitle": "Responsabilidades do Usuário",
     "userResponsibilitiesDescription": "Ao usar o Serviço, por favor tenha em conta o seguinte:",
@@ -5008,7 +5008,7 @@
         "active": "Ativos"
       },
       "detail": {
-        "pageTitle": "Comentário sobre Repertório"
+        "pageTitle": "Comentário sobre Kata"
       },
       "postDetail": {
         "authorView": "Comentário de {author} sobre {name}",
@@ -5016,7 +5016,7 @@
       },
       "newPostForm": {
         "contentLabel": "Comentário",
-        "contentPlaceholder": "Compartilhe suas ideias sobre este repertório...",
+        "contentPlaceholder": "Compartilhe suas ideias sobre este kata...",
         "submit": "Comentar",
         "submitting": "Publicando...",
         "contentRequired": "Por favor, insira algum conteúdo",
@@ -5071,7 +5071,7 @@
         "active": "Ativos"
       },
       "detail": {
-        "pageTitle": "Comentário sobre Repertório"
+        "pageTitle": "Comentário sobre Kata"
       },
       "postDetail": {
         "authorView": "Comentário de {author} sobre {name}",
