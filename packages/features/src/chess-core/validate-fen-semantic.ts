@@ -30,6 +30,7 @@
 
 import { Chess } from "chess.js";
 
+import { fenToBoardFlat } from "./fen-pure";
 import { validateFenStructure } from "./validate-fen-structure";
 
 export type FenSemanticReason =
@@ -61,28 +62,6 @@ const FILE_INDEX: Record<string, number> = {
   g: 6,
   h: 7,
 };
-
-/**
- * Expand a FEN piece-placement field into a flat 64-element array of single
- * piece characters (or `null` for empty squares). Index 0 = a8, 63 = h1.
- *
- * Assumes `validateFenStructure` has already vetted the placement string;
- * this helper does not re-check rank sums.
- */
-function expandPlacement(placement: string): (string | null)[] {
-  const board: (string | null)[] = new Array(64).fill(null);
-  let i = 0;
-  for (const ch of placement) {
-    if (ch === "/") continue;
-    if (ch >= "1" && ch <= "8") {
-      i += parseInt(ch, 10);
-    } else {
-      board[i] = ch;
-      i += 1;
-    }
-  }
-  return board;
-}
 
 /**
  * Convert algebraic square name (e.g. "e4") to a flat index where 0 = a8 and
@@ -139,7 +118,11 @@ type FenSemanticFailure = {
   error: string;
 };
 
-type Board = (string | null)[];
+/**
+ * Flat 64-square board as produced by {@link fenToBoardFlat}: index 0 = a8,
+ * 63 = h1, empty squares are `""`.
+ */
+type Board = readonly string[];
 
 /** Per-side piece tallies, computed in a single board pass. */
 type BoardTally = {
@@ -161,7 +144,7 @@ function tallyBoard(board: Board): BoardTally {
     blackPieces: 0,
   };
   for (const piece of board) {
-    if (piece === null) continue;
+    if (piece === "") continue;
     if (piece === piece.toUpperCase()) tally.whitePieces += 1;
     else tally.blackPieces += 1;
     if (piece === "K") tally.whiteKings += 1;
@@ -341,7 +324,7 @@ function checkEnPassant(
   }
   // The ep target square itself must be empty.
   const targetIdx = squareToIndex(enPassant);
-  if (targetIdx === null || board[targetIdx] !== null) {
+  if (targetIdx === null || board[targetIdx] !== "") {
     return {
       ok: false,
       reason: "en_passant",
@@ -366,7 +349,7 @@ export function validateFenSemantic(fen: string): FenSemanticResult {
 
   const trimmed = fen.trim();
   const [placement, sideToMove, castling, enPassant] = trimmed.split(/\s+/);
-  const board = expandPlacement(placement);
+  const board = fenToBoardFlat(placement);
   const tally = tallyBoard(board);
 
   // Run each rule in order; the first failure wins. Ordering is observable
