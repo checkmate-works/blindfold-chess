@@ -10,22 +10,11 @@ import {
   mutationSuccess,
 } from '../../_lib/action-factories';
 import type { MutationResult } from '../../_lib/action-factories';
+import type { AnnouncementMutationData } from '../_lib/mutation-helpers';
 import { buildAnnouncementMutationValues, maybeNotifyAnnouncement } from '../_lib/mutation-helpers';
 import { validateAnnouncementData } from '../_lib/validation';
 
-type CreateData = {
-  slug: string;
-  title: string;
-  content: string;
-  locale: string;
-  status: string;
-  visibility: string;
-  pinnedAt: string | null;
-  publishedAt: string | null;
-  sendNotification?: boolean;
-};
-
-export async function createAnnouncement(data: CreateData): Promise<MutationResult> {
+export async function createAnnouncement(data: AnnouncementMutationData): Promise<MutationResult> {
   const guard = await adminMutationGuard(data, validateAnnouncementData);
   if (guard) {
     return guard;

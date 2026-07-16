@@ -1,11 +1,11 @@
 import { useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { Check, X } from "lucide-react-native";
 import { useDiagonalQuiz } from "@blindfold-chess/features/diagonal-quiz/client";
 
+import { CountdownOverlay, ScoreFooter } from "../../../../components";
 import {
   QuestionCard,
   DiagonalInputFields,
@@ -13,12 +13,12 @@ import {
 } from "../../../../features/diagonal-quiz/components";
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
 import type { ActiveField } from "../../../../features/diagonal-quiz/hooks";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
+import { useTheme, spacing } from "../../../../theme";
 import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
 
 export default function DiagonalQuizSession() {
   const router = useRouter();
-  const { colors, feedbackColors } = useTheme();
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     timeLimit: string;
   }>();
@@ -92,14 +92,7 @@ export default function DiagonalQuizSession() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Countdown overlay */}
-      {countdown !== null && (
-        <View style={styles.countdownContainer}>
-          <Text style={[styles.countdownText, { color: colors.primary }]}>
-            {countdown > 0 ? countdown : "START!"}
-          </Text>
-        </View>
-      )}
+      <CountdownOverlay countdown={countdown} />
 
       {/* Main content */}
       {countdown === null && (
@@ -162,36 +155,13 @@ export default function DiagonalQuizSession() {
             </View>
           </ScrollView>
 
-          {/* Score */}
-          <View style={styles.footer}>
-            <View style={styles.scoreItem}>
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: feedbackColors.successSoft },
-                ]}
-              >
-                <Check size={16} color={feedbackColors.success} />
-              </View>
-              <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-                {correctCount}
-              </Text>
-            </View>
-
-            <View style={styles.scoreItem}>
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: feedbackColors.errorSoft },
-                ]}
-              >
-                <X size={16} color={feedbackColors.error} />
-              </View>
-              <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-                {incorrectCount}
-              </Text>
-            </View>
-          </View>
+          {/* Tighter footer spacing than the other quizzes: the file/rank
+              button grid above already carries its own bottom padding. */}
+          <ScoreFooter
+            correctCount={correctCount}
+            incorrectCount={incorrectCount}
+            style={styles.footer}
+          />
         </>
       )}
     </SafeAreaView>
@@ -201,15 +171,6 @@ export default function DiagonalQuizSession() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  countdownContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  countdownText: {
-    fontSize: 72,
-    fontWeight: fontWeight.bold,
   },
   timerRow: {
     flexDirection: "row",
@@ -234,25 +195,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: spacing.xxl,
     paddingBottom: spacing.lg,
     paddingTop: spacing.sm,
-  },
-  scoreItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  iconContainer: {
-    padding: spacing.xs,
-    borderRadius: 999,
-  },
-  scoreValue: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    fontVariant: ["tabular-nums"],
   },
 });

@@ -3,13 +3,30 @@ import {
   notifyAllUsersOfAnnouncement,
 } from '@/lib/notifications/announcement-notification';
 
-type AnnouncementMutationData = {
+/**
+ * The payload `createAnnouncement` accepts. Defined here (a plain module)
+ * rather than in the `"use server"` action files so both actions and the form
+ * can share one shape — `export type` re-exports are forbidden inside
+ * `"use server"` files (see the Server Actions convention in CLAUDE.md).
+ */
+export type AnnouncementMutationData = {
   slug: string;
   title: string;
   content: string;
   locale: string;
+  status: string;
+  visibility: string;
   pinnedAt: string | null;
   publishedAt: string | null;
+  sendNotification?: boolean;
+};
+
+/**
+ * `updateAnnouncement` additionally toggles the banner flag; create leaves it
+ * at the column default.
+ */
+export type AnnouncementUpdateData = AnnouncementMutationData & {
+  showAsBanner: boolean;
 };
 
 /**
@@ -21,7 +38,12 @@ type AnnouncementMutationData = {
  * Keeping the column list in one place ensures the two paths stay in lockstep
  * when fields are added or removed from the `announcements` table.
  */
-export function buildAnnouncementMutationValues(data: AnnouncementMutationData) {
+export function buildAnnouncementMutationValues(
+  data: Pick<
+    AnnouncementMutationData,
+    'slug' | 'title' | 'content' | 'locale' | 'pinnedAt' | 'publishedAt'
+  >
+) {
   return {
     slug: data.slug,
     title: data.title,

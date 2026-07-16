@@ -2,9 +2,10 @@
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import type { SQL } from 'drizzle-orm';
-import { and, gte, isNotNull, isNull, lt } from 'drizzle-orm';
+import { gte, isNotNull, isNull, lt } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
+import { combineConditions } from '@/lib/db/list-query';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export type ProfileStatus = 'all' | 'anonymous' | 'has_profile';
@@ -59,7 +60,7 @@ export async function searchUsers(params: SearchUsersParams): Promise<ActionResu
         createdAt: profiles.createdAt,
       })
       .from(profiles)
-      .where(conditions.length > 0 ? and(...conditions) : undefined);
+      .where(combineConditions(conditions));
 
     if (profileRows.length === 0) {
       return { users: [] };

@@ -12,6 +12,7 @@ import {
   repertoires,
 } from '@/lib/db';
 import { repertoireLines } from '@/lib/db';
+import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { guardOwnership } from '@/lib/ownership-guard';
 
 /** Author subset joined onto a repertoire for catalog cards. */
@@ -105,19 +106,20 @@ async function toCards(rows: RepertoireCardRow[]): Promise<RepertoireWithProfile
 export type RepertoireSort = 'new' | 'popular';
 
 /**
- * Live repertoires linked to one opening and visible to everyone.
+ * Live repertoires visible to everyone.
  *
  * Filters on `status = 'public'` even though nothing writes that column today
  * (every repertoire is public by default): the paid-plan "make private" toggle
  * then becomes a UI change with no query to revisit — and, more importantly, a
- * repertoire that IS private must never appear here.
+ * repertoire that IS private must never appear in a public listing.
  */
+function publicRepertoiresOnly() {
+  return and(eq(repertoires.status, 'public'), isNull(repertoires.deletedAt));
+}
+
+/** {@link publicRepertoiresOnly} narrowed to repertoires linked to one opening. */
 function publicRepertoiresForOpening(openingSlug: string) {
-  return and(
-    eq(chessOpenings.slug, openingSlug),
-    eq(repertoires.status, 'public'),
-    isNull(repertoires.deletedAt)
-  );
+  return and(eq(chessOpenings.slug, openingSlug), publicRepertoiresOnly());
 }
 
 /**
@@ -183,26 +185,26 @@ export async function listPublicRepertoires(
   limit: number,
   offset: number
 ): Promise<RepertoireWithProfile[]> {
-  const rows = await db
-    .select(REPERTOIRE_CARD_COLUMNS)
-    .from(repertoires)
-    .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
-    .where(and(eq(repertoires.status, 'public'), isNull(repertoires.deletedAt)))
-    .orderBy(desc(repertoires.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const rows = await runPaginatedSelect(
+    db
+      .select(REPERTOIRE_CARD_COLUMNS)
+      .from(repertoires)
+      .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
+      .$dynamic(),
+    {
+      where: publicRepertoiresOnly(),
+      orderBy: [desc(repertoires.createdAt)],
+      limit,
+      offset,
+    }
+  );
 
   return toCards(rows);
 }
 
 /** Total live public repertoires — the catalog's pagination denominator. */
 export async function countPublicRepertoires(): Promise<number> {
-  const [row] = await db
-    .select({ value: count() })
-    .from(repertoires)
-    .where(and(eq(repertoires.status, 'public'), isNull(repertoires.deletedAt)));
-
-  return row?.value ?? 0;
+  return countRows(repertoires, publicRepertoiresOnly());
 }
 
 /** A user's own live (non-deleted) repertoires, newest first, with author. */
@@ -286,12 +288,16 @@ export async function getRepertoireForViewer(
   id: string,
   viewerId: string | null
 ): Promise<RepertoireForViewer | null> {
-  const [repertoire] = await db
-    .select()
+  // Same live-author LEFT JOIN as the catalog lists, so the detail page shows
+  // (or hides) a deleted author exactly like the cards that link to it.
+  const [row]: RepertoireCardRow[] = await db
+    .select(REPERTOIRE_CARD_COLUMNS)
     .from(repertoires)
+    .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
     .where(and(eq(repertoires.id, id), isNull(repertoires.deletedAt)))
     .limit(1);
-  if (!repertoire) return null;
+  if (!row) return null;
+  const { repertoire } = row;
 
   const isOwner = viewerId != null && repertoire.userId === viewerId;
 
@@ -301,15 +307,8 @@ export async function getRepertoireForViewer(
     .where(and(eq(repertoireLines.repertoireId, repertoire.id), isNull(repertoireLines.deletedAt)))
     .orderBy(asc(repertoireLines.seq));
 
-  let profile: RepertoireAuthorProfile | null = null;
-  if (repertoire.userId) {
-    const [row] = await db
-      .select(AUTHOR_PROFILE_COLUMNS)
-      .from(profiles)
-      .where(eq(profiles.id, repertoire.userId))
-      .limit(1);
-    profile = row?.username ? row : null;
-  }
+  // A left join on a deleted author yields a row of nulls, not no row.
+  const profile = row.profile?.username ? row.profile : null;
 
   return { repertoire, lines, profile, isOwner };
 }

@@ -4,9 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { Check, X } from "lucide-react-native";
 import { useCoordinateQuizSession } from "@blindfold-chess/features/coordinate-quiz/client";
 
+import { CountdownOverlay, ScoreFooter } from "../../../../components";
 import {
   ChessBoard,
   QuizTimer,
@@ -22,7 +22,7 @@ import type {
 export default function CoordinateQuizSession() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { colors, feedbackColors } = useTheme();
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     duration: string;
     orientation: string;
@@ -82,14 +82,7 @@ export default function CoordinateQuizSession() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Countdown overlay */}
-      {countdown !== null && (
-        <View style={styles.countdownContainer}>
-          <Text style={[styles.countdownText, { color: colors.primary }]}>
-            {countdown > 0 ? countdown : "START!"}
-          </Text>
-        </View>
-      )}
+      <CountdownOverlay countdown={countdown} />
 
       {/* Main content */}
       {countdown === null && (
@@ -158,36 +151,10 @@ export default function CoordinateQuizSession() {
             </View>
           </View>
 
-          {/* Footer Score */}
-          <View style={styles.footer}>
-            <View style={styles.scoreItem}>
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: feedbackColors.successSoft },
-                ]}
-              >
-                <Check size={16} color={feedbackColors.success} />
-              </View>
-              <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-                {correctCount}
-              </Text>
-            </View>
-
-            <View style={styles.scoreItem}>
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: feedbackColors.errorSoft },
-                ]}
-              >
-                <X size={16} color={feedbackColors.error} />
-              </View>
-              <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-                {incorrectCount}
-              </Text>
-            </View>
-          </View>
+          <ScoreFooter
+            correctCount={correctCount}
+            incorrectCount={incorrectCount}
+          />
         </>
       )}
     </SafeAreaView>
@@ -197,15 +164,6 @@ export default function CoordinateQuizSession() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  countdownContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  countdownText: {
-    fontSize: 72,
-    fontWeight: fontWeight.bold,
   },
   boardContainer: {
     flex: 1,
@@ -260,26 +218,5 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
     elevation: 5,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: spacing.xxl,
-    paddingBottom: spacing.xxl,
-  },
-  scoreItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  iconContainer: {
-    padding: spacing.xs,
-    borderRadius: 999,
-  },
-  scoreValue: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    fontVariant: ["tabular-nums"],
   },
 });

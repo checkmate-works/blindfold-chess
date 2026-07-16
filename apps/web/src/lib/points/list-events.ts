@@ -1,7 +1,8 @@
-import { type SQL, and, desc, eq, gt, lt, sql } from 'drizzle-orm';
+import { type SQL, desc, eq, gt, lt, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
+import { combineConditions } from '@/lib/db/list-query';
 
 import {
   ADMIN_GRANT_SOURCE,
@@ -76,7 +77,7 @@ function buildWhere(filters: PointEventFilters): SQL | undefined {
   if (filters.userId) conditions.push(eq(pointEvents.userId, filters.userId));
   if (filters.direction === 'grant') conditions.push(gt(pointEvents.delta, 0));
   if (filters.direction === 'spend') conditions.push(lt(pointEvents.delta, 0));
-  return conditions.length > 0 ? and(...conditions) : undefined;
+  return combineConditions(conditions);
 }
 
 /** Count ledger rows matching `filters` — drives `/admin/coins` pagination. */

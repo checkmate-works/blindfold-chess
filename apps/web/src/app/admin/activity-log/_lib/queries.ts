@@ -1,7 +1,8 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
+import { combineConditions } from '@/lib/db/list-query';
 
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
 import { loadUsersEmailMap } from '../../_lib/users-email-map';
@@ -49,7 +50,7 @@ export async function fetchActivityLogPageData(
     }
   }
 
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+  const whereClause = combineConditions(conditions);
 
   // Get total count for pagination
   const [countResult] = await db

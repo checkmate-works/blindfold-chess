@@ -1,17 +1,12 @@
-import { View, Text, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
-import { Button } from "../../../../components";
+import { PracticeResultScreen } from "../../../../components";
 import { ResultCard } from "../../../../features/route-planner/components";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { RoutePlannerResult } from "../../../../features/route-planner/hooks";
 
 export default function RoutePlannerResultScreen() {
   const { t } = useTranslation();
-  const router = useRouter();
-  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     correctCount: string;
     totalProblems: string;
@@ -25,63 +20,14 @@ export default function RoutePlannerResultScreen() {
     accuracy: parseFloat(params.accuracy || "0"),
   };
 
-  const handlePlayAgain = () => {
-    router.replace("/(tabs)/practice/route-planner/setup");
-  };
-
-  const handleBackToMenu = () => {
-    router.replace("/(tabs)/practice");
-  };
-
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={["bottom"]}
+    <PracticeResultScreen
+      title={t("routePlanner.result.title")}
+      playAgainLabel={t("routePlanner.result.playAgain")}
+      backToMenuLabel={t("routePlanner.result.backToMenu")}
+      setupHref="/(tabs)/practice/route-planner/setup"
     >
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.foreground }]}>
-          {t("routePlanner.result.title")}
-        </Text>
-
-        <ResultCard result={result} />
-      </View>
-
-      <View style={styles.footer}>
-        <Button
-          title={t("routePlanner.result.playAgain")}
-          onPress={handlePlayAgain}
-          size="lg"
-          fullWidth
-        />
-        <Button
-          title={t("routePlanner.result.backToMenu")}
-          onPress={handleBackToMenu}
-          variant="ghost"
-          size="md"
-          fullWidth
-        />
-      </View>
-    </SafeAreaView>
+      <ResultCard result={result} />
+    </PracticeResultScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.lg,
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
-    textAlign: "center",
-    marginBottom: spacing.xl,
-  },
-  footer: {
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
-});

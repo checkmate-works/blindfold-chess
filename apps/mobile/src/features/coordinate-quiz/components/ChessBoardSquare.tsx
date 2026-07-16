@@ -2,7 +2,7 @@ import { memo } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme, touchTarget } from "../../../theme";
 import type { Square, AnswerFeedback } from "../lib/types";
-import { computeSquareColor } from "../lib/utils";
+import { computeSquareColor } from "@blindfold-chess/features/coordinate-quiz";
 
 type ChessBoardSquareProps = {
   square: Square;
