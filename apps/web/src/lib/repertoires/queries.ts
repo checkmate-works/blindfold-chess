@@ -170,6 +170,41 @@ export async function countPublicRepertoiresForOpening(openingSlug: string): Pro
   return row?.value ?? 0;
 }
 
+/**
+ * Every live public repertoire, newest first — the /repertoires catalog.
+ *
+ * Repertoires are UGC surfaced to everyone (the feature is concealed only by
+ * not being linked from global nav yet, not by being private), so this powers
+ * the signed-out-visible catalog. Filters on `status = 'public'` for the same
+ * reason `publicRepertoiresForOpening` does: nothing writes `private` today,
+ * but a future "make private" toggle must never leak a private course here.
+ */
+export async function listPublicRepertoires(
+  limit: number,
+  offset: number
+): Promise<RepertoireWithProfile[]> {
+  const rows = await db
+    .select(REPERTOIRE_CARD_COLUMNS)
+    .from(repertoires)
+    .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
+    .where(and(eq(repertoires.status, 'public'), isNull(repertoires.deletedAt)))
+    .orderBy(desc(repertoires.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return toCards(rows);
+}
+
+/** Total live public repertoires — the catalog's pagination denominator. */
+export async function countPublicRepertoires(): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(repertoires)
+    .where(and(eq(repertoires.status, 'public'), isNull(repertoires.deletedAt)));
+
+  return row?.value ?? 0;
+}
+
 /** A user's own live (non-deleted) repertoires, newest first, with author. */
 export async function listRepertoiresForUser(userId: string): Promise<RepertoireWithProfile[]> {
   const rows = await db

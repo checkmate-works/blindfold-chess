@@ -4,8 +4,19 @@
   },
   "Repertoires": {
     "title": "Kata",
-    "description": "Seus katas privados — linhas de abertura, padrões de mate e sequências memorizadas.",
-    "sectionTitle": "Seus katas",
+    "description": "Katas compartilhados pela comunidade — linhas de abertura, padrões de mate e sequências memorizadas.",
+    "sectionTitle": "Katas da comunidade",
+    "help": {
+      "label": "Sobre os katas",
+      "catalog": {
+        "title": "Um catálogo de katas",
+        "description": "Um kata é uma sequência preestabelecida que você repete até virar automático — a ideia vem das artes marciais, aplicada aqui ao xadrez: linhas de abertura, padrões de mate e sequências que valem a pena memorizar. Esta página lista todos os katas compartilhados pela comunidade, para você explorar e estudar o que outros jogadores prepararam."
+      },
+      "import": {
+        "title": "Importe seu próprio kata",
+        "description": "Tem uma abertura que quer treinar? Qualquer pessoa logada pode importar uma por este botão — cole um PGN com variantes (uma exportação de estudo do Lichess ou do Chess.com funciona como está) e ele vira um kata que você pode revisar e compartilhar."
+      }
+    },
     "importCta": "Importar",
     "empty": "Nenhum kata registrado ainda",
     "summary": "{lines} linhas · {moves} lances",
