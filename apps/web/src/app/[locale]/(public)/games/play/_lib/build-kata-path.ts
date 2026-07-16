@@ -14,7 +14,8 @@ type BuildKataPathArgs = {
  * Build the kata-check deep-link for a finished game. Same shape as the
  * Recall deep-link (`buildRecallPath`): the kata page has no game-loading
  * logic and matches the SAN moves straight from the URL, so it also works for
- * a game that was never persisted.
+ * a game that was never persisted. "Kata" is the UI-facing name only; the URL
+ * speaks the repertoire vocabulary, like the rest of the feature's routes.
  */
 export function buildKataPath({
   locale,
@@ -29,5 +30,5 @@ export function buildKataPath({
   if (startingFen) params.set('fen', startingFen);
   params.set('gameId', gameId);
 
-  return `/${locale}/games/play/kata?${params.toString()}`;
+  return `/${locale}/games/play/repertoire?${params.toString()}`;
 }

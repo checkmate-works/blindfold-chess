@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = t('kataPage.title');
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'games/play/kata', title }),
+    ...generateCanonicalMetadata({ locale, path: 'games/play/repertoire', title }),
     title: resolveTitle(title, locale),
   };
 }
@@ -116,7 +116,7 @@ export default async function KataPage({ params, searchParams }: Props) {
     if (startingFen) p.set('fen', startingFen);
     if (gameId) p.set('gameId', gameId);
     if (repertoireId) p.set('repertoire', repertoireId);
-    return `/games/play/kata?${p.toString()}`;
+    return `/games/play/repertoire?${p.toString()}`;
   };
 
   const user = await getOptionalUser();
