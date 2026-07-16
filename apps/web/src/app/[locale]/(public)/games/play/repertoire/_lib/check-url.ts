@@ -1,15 +1,15 @@
 /**
  * The kata check page's URL contract, in one place: the route path, the
  * search-param names, and the parse/build pair over them. The deep-link
- * builder (`build-kata-path`), the page's own param parsing, and every
+ * builder (`build-repertoire-check-path`), the page's own param parsing, and every
  * self-link the page renders (picker cards, side menu) all go through here,
  * so a param can't be renamed in one spot and missed in another.
  */
 
 /** Locale-less route path; callers prepend `/${locale}` where needed. */
-export const KATA_CHECK_PATH = '/games/play/repertoire';
+export const REPERTOIRE_CHECK_PATH = '/games/play/repertoire';
 
-export type KataCheckParams = {
+export type RepertoireCheckParams = {
   /** SAN moves of the finished game; null when absent or malformed. */
   moves: string[] | null;
   playerColor: 'white' | 'black';
@@ -38,9 +38,9 @@ function optional(param: string | string[] | undefined): string | undefined {
   return typeof param === 'string' && param ? param : undefined;
 }
 
-export function parseKataCheckParams(
+export function parseRepertoireCheckParams(
   sp: Record<string, string | string[] | undefined>
-): KataCheckParams {
+): RepertoireCheckParams {
   return {
     moves: parseMoves(sp.moves),
     playerColor: sp.color === 'black' ? 'black' : 'white',
@@ -50,8 +50,8 @@ export function parseKataCheckParams(
   };
 }
 
-/** Serialize check params back into the query string `parseKataCheckParams` reads. */
-export function buildKataCheckQuery(params: {
+/** Serialize check params back into the query string `parseRepertoireCheckParams` reads. */
+export function buildRepertoireCheckQuery(params: {
   moves: readonly string[];
   playerColor: string;
   startingFen?: string;

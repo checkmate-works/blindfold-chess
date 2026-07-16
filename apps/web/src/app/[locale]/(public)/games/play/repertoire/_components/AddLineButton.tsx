@@ -27,7 +27,7 @@ type Props = {
  * included on purpose, since a repertoire line always runs root-to-leaf).
  */
 export function AddLineButton({ locale, repertoireId, repertoireName, pgn }: Props) {
-  const t = useTranslations('play.kataPage.addLine');
+  const t = useTranslations('play.repertoireCheck.addLine');
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [pending, setPending] = useState(false);

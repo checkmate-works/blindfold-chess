@@ -2216,12 +2216,12 @@
         "title": "De memoria",
         "description": "Reconstruye toda la partida de memoria, jugada a jugada."
       },
-      "kata": {
+      "repertoireCheck": {
         "title": "Kata",
         "description": "Comprueba si tu apertura siguió tu kata registrado."
       }
     },
-    "kataPage": {
+    "repertoireCheck": {
       "title": "Comprobación de Kata",
       "help": {
         "label": "Acerca de Kata",

@@ -2,25 +2,25 @@ import type { GameForMatch, LineMatchResult, Side } from '@blindfold-chess/featu
 
 import type { Repertoire } from '@/lib/db';
 
-import { isKataApplicableFromFirstMove, matchGameToKata } from './kata-match';
+import { isRepertoireApplicableFromFirstMove, matchGameToRepertoire } from './match';
 import { listRepertoiresWithLinesForSide } from './queries';
 
-export type KataEntry = {
+export type RepertoireCheckEntry = {
   repertoire: Repertoire;
   result: LineMatchResult;
 };
 
-export type KataReport = {
+export type RepertoireCheckReport = {
   /** Whether the user has ANY live repertoire for the side they played. */
   hasRepertoiresForSide: boolean;
   /**
    * One entry per repertoire that applies to the game from its very first
-   * move (see {@link isKataApplicableFromFirstMove}), deepest match first. A
+   * move (see {@link isRepertoireApplicableFromFirstMove}), deepest match first. A
    * repertoire whose first prepared move the game never played is omitted —
    * "no repertoires for the side" and "had repertoires, none applicable" are
    * distinguished via {@link hasRepertoiresForSide} vs an empty `entries`.
    */
-  entries: KataEntry[];
+  entries: RepertoireCheckEntry[];
 };
 
 const STATUS_ORDER = { 'in-book': 0, deviation: 1, gap: 2, 'not-applicable': 3 } as const;
@@ -34,12 +34,12 @@ const STATUS_ORDER = { 'in-book': 0, deviation: 1, gap: 2, 'not-applicable': 3 }
  * whose very first prepared move the game didn't play, are omitted (they say
  * nothing useful about this game).
  */
-export async function getKataReport(args: {
+export async function getRepertoireCheckReport(args: {
   userId: string;
   moves: string[];
   playerColor: Side;
   startingFen?: string;
-}): Promise<KataReport> {
+}): Promise<RepertoireCheckReport> {
   const repertoiresWithLines = await listRepertoiresWithLinesForSide(args.userId, args.playerColor);
 
   const game: GameForMatch = {
@@ -50,11 +50,11 @@ export async function getKataReport(args: {
 
   const entries = repertoiresWithLines
     .flatMap(({ repertoire, lines }) => {
-      const result = matchGameToKata(
+      const result = matchGameToRepertoire(
         game,
         lines.map((line) => line.pgn)
       );
-      if (!result || !isKataApplicableFromFirstMove(result)) return [];
+      if (!result || !isRepertoireApplicableFromFirstMove(result)) return [];
       return [{ repertoire, result }];
     })
     .sort(

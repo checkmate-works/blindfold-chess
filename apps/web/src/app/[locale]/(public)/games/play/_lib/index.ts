@@ -1,4 +1,4 @@
-export { buildKataPath } from './build-kata-path';
+export { buildRepertoireCheckPath } from './build-repertoire-check-path';
 export { buildRecallPath } from './build-recall-path';
 export { sortMoves } from './move-sorter';
 export { formatPgnToText } from './pgn-parser';

@@ -30,7 +30,7 @@ type Props = {
    * Open the Kata check — compare the game's opening against the player's
    * registered repertoires (型). Labelled "Kata".
    */
-  onKata: () => void;
+  onRepertoireCheck: () => void;
   /**
    * Whether this game has already been published/shared (from this browser).
    * When true, a small "published" mark rides in the Game Review card's
@@ -53,7 +53,7 @@ export function GameFinishModal({
   result,
   onReview,
   onRecall,
-  onKata,
+  onRepertoireCheck,
   published = false,
 }: Props) {
   const t = useTranslations('play');
@@ -71,9 +71,9 @@ export function GameFinishModal({
       description: t('finishModal.recall.description'),
     },
     {
-      targetId: 'finish-card-kata',
-      title: t('finishModal.kata.title'),
-      description: t('finishModal.kata.description'),
+      targetId: 'finish-card-repertoire-check',
+      title: t('finishModal.repertoireCheck.title'),
+      description: t('finishModal.repertoireCheck.description'),
     },
   ];
 
@@ -121,11 +121,11 @@ export function GameFinishModal({
             onClick={onRecall}
           />
           <FinishChoiceCard
-            tourId="finish-card-kata"
+            tourId="finish-card-repertoire-check"
             icon={<FaBook aria-hidden />}
-            title={t('finishModal.kata.title')}
-            description={t('finishModal.kata.description')}
-            onClick={onKata}
+            title={t('finishModal.repertoireCheck.title')}
+            description={t('finishModal.repertoireCheck.description')}
+            onClick={onRepertoireCheck}
           />
         </div>
       </div>

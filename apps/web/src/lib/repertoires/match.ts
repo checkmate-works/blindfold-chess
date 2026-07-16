@@ -8,7 +8,7 @@ import type {
 import { matchGameToLine, parsePgnTree, toPositionKey } from '@blindfold-chess/features/chess-core';
 
 /**
- * kata-match: compare a finished game against ONE repertoire's stored lines
+ * match: compare a finished game against ONE repertoire's stored lines
  * and report how far the game stayed "on kata".
  *
  * A repertoire is persisted as flat `repertoire_lines` rows (one PGN per
@@ -80,7 +80,7 @@ function isBetter(a: LineMatchResult, b: LineMatchResult): boolean {
  * apply to this game" rather than a deviation worth reporting, so such
  * results are filtered out before reaching the picker.
  */
-export function isKataApplicableFromFirstMove(result: LineMatchResult): boolean {
+export function isRepertoireApplicableFromFirstMove(result: LineMatchResult): boolean {
   if (result.status === 'not-applicable') return false;
   return result.status === 'in-book' || result.followedPlies > 0;
 }
@@ -90,7 +90,10 @@ export function isKataApplicableFromFirstMove(result: LineMatchResult): boolean 
  * {@link LineMatchResult}, or null when the repertoire does not apply to this
  * game at all.
  */
-export function matchGameToKata(game: GameForMatch, linePgns: string[]): LineMatchResult | null {
+export function matchGameToRepertoire(
+  game: GameForMatch,
+  linePgns: string[]
+): LineMatchResult | null {
   const trees: PgnTree[] = [];
   for (const pgn of linePgns) {
     try {

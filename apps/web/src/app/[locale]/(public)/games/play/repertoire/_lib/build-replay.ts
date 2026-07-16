@@ -10,11 +10,11 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 // vite-node fails to apply the `@` alias to specifiers containing `[locale]` /
 // `(public)`, and this module is under unit test.
 import { parseFenMeta } from '../../_lib/fen-utils';
-import type { KataStatus } from './kata-status';
+import type { MatchStatus } from './match-status';
 
 /** What the playback arrives at: the verdict against the chosen kata. */
-export type KataVerdict = {
-  status: KataStatus;
+export type MatchVerdict = {
+  status: MatchStatus;
   /** Full-move number of the divergence; null for a clean in-book run. */
   moveNo: number | null;
   /** SAN actually played at the divergence. */
@@ -23,7 +23,7 @@ export type KataVerdict = {
   expected?: string;
 };
 
-export type KataReplayModel = {
+export type ReplayModel = {
   /** Board position at each ply of the game; index 0 is the start. */
   positions: { fen: string; lastMove: { from: string; to: string } | null }[];
   /**
@@ -32,7 +32,7 @@ export type KataReplayModel = {
    * the end of the matched book for in-book.
    */
   stopPly: number;
-  verdict: KataVerdict;
+  verdict: MatchVerdict;
   /**
    * PGN of the line to offer as a new addition to the repertoire — the
    * matched prefix (from where the game entered the kata) through the
@@ -52,7 +52,7 @@ export type KataReplayModel = {
  * diverging move itself (so `positions[ply]` is the position BEFORE it), and
  * the candidate line must stop AT that move, not run to the end of the game.
  */
-export function buildKataReplayModel(args: {
+export function buildReplayModel(args: {
   result: LineMatchResult;
   /** The full game's SAN moves. */
   moves: string[];
@@ -60,9 +60,9 @@ export function buildKataReplayModel(args: {
   gameStartingFen?: string;
   /** The repertoire's root position; null for the standard start. */
   repertoireStartingFen: string | null;
-}): KataReplayModel {
+}): ReplayModel {
   const { result, moves, gameStartingFen, repertoireStartingFen } = args;
-  const status = result.status as KataStatus;
+  const status = result.status as MatchStatus;
 
   const positions = replayMoves(moves as AlgebraicNotation[], gameStartingFen).map((p) => ({
     fen: p.fen,
@@ -73,7 +73,7 @@ export function buildKataReplayModel(args: {
     ? result.divergence.ply + 1
     : (result.enteredAtPly ?? 0) + result.followedPlies;
 
-  const verdict: KataVerdict = result.divergence
+  const verdict: MatchVerdict = result.divergence
     ? {
         status,
         // The FEN before the diverging move carries the full-move number directly.

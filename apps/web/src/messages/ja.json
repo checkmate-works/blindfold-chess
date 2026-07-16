@@ -2220,12 +2220,12 @@
         "title": "棋譜再現",
         "description": "記憶だけを頼りに、棋譜を最初から再現します。"
       },
-      "kata": {
+      "repertoireCheck": {
         "title": "Kata",
         "description": "登録した型どおりにオープニングを指せたかを確認します。"
       }
     },
-    "kataPage": {
+    "repertoireCheck": {
       "title": "型チェック",
       "help": {
         "label": "型について",

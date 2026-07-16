@@ -3,19 +3,19 @@ import Link from 'next/link';
 
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 
-import type { KataEntry } from '@/lib/repertoires/kata-report';
+import type { RepertoireCheckEntry } from '@/lib/repertoires/check-report';
 
-import { buildKataReplayModel } from '../_lib/build-replay';
-import { KATA_STATUS_BADGE, KATA_STATUS_KEY, type KataStatus } from '../_lib/kata-status';
-import { KATA_CHECK_PATH, buildKataCheckQuery } from '../_lib/kata-url';
+import { buildReplayModel } from '../_lib/build-replay';
+import { REPERTOIRE_CHECK_PATH, buildRepertoireCheckQuery } from '../_lib/check-url';
+import { MATCH_STATUS_BADGE, MATCH_STATUS_KEY, type MatchStatus } from '../_lib/match-status';
 import { AddLineButton } from './AddLineButton';
-import { KataReplayViewer } from './KataReplayViewer';
+import { ReplayBoard } from './ReplayBoard';
 
 type Props = {
   /** The kata being checked. */
-  selected: KataEntry;
+  selected: RepertoireCheckEntry;
   /** Every applicable kata, for the side menu. */
-  entries: KataEntry[];
+  entries: RepertoireCheckEntry[];
   /** The full game's SAN moves. */
   moves: string[];
   /** The game's move pairs, for the viewer's move strip. */
@@ -27,9 +27,9 @@ type Props = {
   locale: string;
 };
 
-function StatusBadge({ status, label }: { status: KataStatus; label: string }) {
+function StatusBadge({ status, label }: { status: MatchStatus; label: string }) {
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${KATA_STATUS_BADGE[status]}`}>
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${MATCH_STATUS_BADGE[status]}`}>
       {label}
     </span>
   );
@@ -43,7 +43,7 @@ function StatusBadge({ status, label }: { status: KataStatus; label: string }) {
  * without going back to the picker. Positions and move formatting are
  * precomputed server-side so the client viewer stays chess.js-free.
  */
-export async function KataReplayView({
+export async function RepertoireCheckView({
   selected,
   entries,
   moves,
@@ -56,7 +56,7 @@ export async function KataReplayView({
   const t = await getTranslations({ locale, namespace: 'play' });
 
   const { repertoire, result } = selected;
-  const { positions, stopPly, verdict, addLinePgn } = buildKataReplayModel({
+  const { positions, stopPly, verdict, addLinePgn } = buildReplayModel({
     result,
     moves,
     gameStartingFen: startingFen,
@@ -64,7 +64,7 @@ export async function KataReplayView({
   });
 
   const pathFor = (repertoireId: string) =>
-    `/${locale}${KATA_CHECK_PATH}?${buildKataCheckQuery({
+    `/${locale}${REPERTOIRE_CHECK_PATH}?${buildRepertoireCheckQuery({
       moves,
       playerColor,
       startingFen,
@@ -84,7 +84,7 @@ export async function KataReplayView({
           </Link>
           <StatusBadge
             status={verdict.status}
-            label={t(`kataPage.status.${KATA_STATUS_KEY[verdict.status]}`)}
+            label={t(`repertoireCheck.status.${MATCH_STATUS_KEY[verdict.status]}`)}
           />
         </div>
 
@@ -92,7 +92,7 @@ export async function KataReplayView({
             viewer — same-route search-param navigation would otherwise keep
             the previous kata's playback state (overlay dismissed, verdict
             revealed). */}
-        <KataReplayViewer
+        <ReplayBoard
           key={repertoire.id}
           positions={positions}
           formatted={formatted}

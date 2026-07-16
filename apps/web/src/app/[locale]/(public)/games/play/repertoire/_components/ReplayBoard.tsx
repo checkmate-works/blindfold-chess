@@ -10,8 +10,8 @@ import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_componen
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 
-import { useKataPlayback } from '../_hooks/use-kata-playback';
-import type { KataVerdict } from '../_lib/build-replay';
+import { useReplayPlayback } from '../_hooks/use-replay-playback';
+import type { MatchVerdict } from '../_lib/build-replay';
 
 type Props = {
   /** Board position at each ply; index 0 is the start (server-precomputed). */
@@ -25,7 +25,7 @@ type Props = {
    * (e.g. to see the off-book move actually played).
    */
   stopPly: number;
-  verdict: KataVerdict;
+  verdict: MatchVerdict;
 };
 
 /**
@@ -35,24 +35,29 @@ type Props = {
  * where the prepared line ran out), revealing the verdict. Manual navigation
  * (move strip / controls / arrow keys) pauses playback and dismisses the
  * overlay; the verdict panel's Replay restarts it. Same board chrome as the
- * repertoire line viewer. Playback timing/state lives in useKataPlayback.
+ * repertoire line viewer. Playback timing/state lives in useReplayPlayback.
  */
-export function KataReplayViewer({ positions, formatted, side, stopPly, verdict }: Props) {
+export function ReplayBoard({ positions, formatted, side, stopPly, verdict }: Props) {
   const t = useTranslations('play');
   const maxPly = positions.length - 1;
-  const { ply, revealed, showOverlay, goTo, play } = useKataPlayback({ maxPly, stopPly });
+  const { ply, revealed, showOverlay, goTo, play } = useReplayPlayback({ maxPly, stopPly });
 
   const current = positions[ply];
   const lastMove = ply > 0 ? current.lastMove : null;
 
   const detail =
     verdict.status === 'in-book'
-      ? t('kataPage.inBookDetail')
-      : t(verdict.status === 'deviation' ? 'kataPage.deviationDetail' : 'kataPage.gapDetail', {
-          moveNo: verdict.moveNo ?? 0,
-          played: verdict.played ?? '',
-          expected: verdict.expected ?? '',
-        });
+      ? t('repertoireCheck.inBookDetail')
+      : t(
+          verdict.status === 'deviation'
+            ? 'repertoireCheck.deviationDetail'
+            : 'repertoireCheck.gapDetail',
+          {
+            moveNo: verdict.moveNo ?? 0,
+            played: verdict.played ?? '',
+            expected: verdict.expected ?? '',
+          }
+        );
 
   return (
     <div className="space-y-4">
@@ -86,7 +91,7 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
                 <button
                   type="button"
                   onClick={play}
-                  aria-label={t('kataPage.play')}
+                  aria-label={t('repertoireCheck.play')}
                   className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
                 >
                   <FaPlay className="w-12 h-12 ml-1" />
@@ -114,11 +119,11 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
       {revealed && (
         <div
           className="space-y-3 rounded-xl border border-border bg-card p-4"
-          data-testid="kata-verdict"
+          data-testid="repertoire-check-verdict"
         >
           <p className="text-sm text-foreground">{detail}</p>
           <Button variant="outline" onClick={play}>
-            {t('kataPage.replay')}
+            {t('repertoireCheck.replay')}
           </Button>
         </div>
       )}

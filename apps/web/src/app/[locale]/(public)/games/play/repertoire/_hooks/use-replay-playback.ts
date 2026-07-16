@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 const MOVE_INTERVAL_MS = 1000;
 const PLAY_INITIAL_DELAY_MS = 500;
 
-export type KataPlayback = {
+export type ReplayPlayback = {
   /** Current position index, already clamped to [0, maxPly]. */
   ply: number;
   /** Whether the reveal target has been reached (verdict may be shown). */
@@ -27,7 +27,7 @@ export type KataPlayback = {
  * playback. Extracted from the viewer so the component is presentation only
  * and the timer/keyboard wiring lives in one testable place.
  */
-export function useKataPlayback({
+export function useReplayPlayback({
   maxPly,
   stopPly,
 }: {
@@ -35,7 +35,7 @@ export function useKataPlayback({
   maxPly: number;
   /** The ply playback stops (and the verdict reveals) at; clamped to maxPly. */
   stopPly: number;
-}): KataPlayback {
+}): ReplayPlayback {
   const target = Math.max(0, Math.min(stopPly, maxPly));
 
   const [ply, setPly] = useState(0);

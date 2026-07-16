@@ -27,7 +27,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
-import { getKataReport } from '@/lib/repertoires/kata-report';
+import { getRepertoireCheckReport } from '@/lib/repertoires/check-report';
 import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
@@ -39,10 +39,14 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { KataReplayView } from './_components/KataReplayView';
-import { KATA_CHECK_PATH, buildKataCheckQuery, parseKataCheckParams } from './_lib/kata-url';
+import { RepertoireCheckView } from './_components/RepertoireCheckView';
+import {
+  REPERTOIRE_CHECK_PATH,
+  buildRepertoireCheckQuery,
+  parseRepertoireCheckParams,
+} from './_lib/check-url';
 
-const KATA_HELP_TARGET = 'kata-help-target';
+const REPERTOIRE_CHECK_HELP_TARGET = 'repertoire-check-help-target';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -55,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'play' });
-  const title = t('kataPage.title');
+  const title = t('repertoireCheck.title');
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'games/play/repertoire', title }),
@@ -99,7 +103,7 @@ function CtaLink({
   );
 }
 
-export default async function KataPage({ params, searchParams }: Props) {
+export default async function RepertoireCheckPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'play' });
@@ -111,13 +115,13 @@ export default async function KataPage({ params, searchParams }: Props) {
     startingFen,
     gameId,
     repertoireId: selectedId,
-  } = parseKataCheckParams(sp);
+  } = parseRepertoireCheckParams(sp);
 
   const helpSteps: HelpStep[] = [
     {
-      targetId: KATA_HELP_TARGET,
-      title: t('kataPage.help.title'),
-      description: t('kataPage.help.description'),
+      targetId: REPERTOIRE_CHECK_HELP_TARGET,
+      title: t('repertoireCheck.help.title'),
+      description: t('repertoireCheck.help.description'),
       side: 'bottom',
       align: 'center',
     },
@@ -128,7 +132,7 @@ export default async function KataPage({ params, searchParams }: Props) {
    * card's i18n Link adds the prefix itself.
    */
   const pickPathFor = (repertoireId: string) =>
-    `${KATA_CHECK_PATH}?${buildKataCheckQuery({
+    `${REPERTOIRE_CHECK_PATH}?${buildRepertoireCheckQuery({
       moves: moves ?? [],
       playerColor,
       startingFen,
@@ -141,19 +145,24 @@ export default async function KataPage({ params, searchParams }: Props) {
   let content: React.ReactNode;
   if (!moves) {
     content = (
-      <EmptyState message={t('kataPage.invalid')}>
-        <CtaLink href={`/${locale}/games/play`}>{t('kataPage.backToPlay')}</CtaLink>
+      <EmptyState message={t('repertoireCheck.invalid')}>
+        <CtaLink href={`/${locale}/games/play`}>{t('repertoireCheck.backToPlay')}</CtaLink>
       </EmptyState>
     );
   } else if (!user) {
     content = (
-      <EmptyState message={t('kataPage.signInRequired')}>
-        <CtaLink href={`/${locale}/sign-in`}>{t('kataPage.signIn')}</CtaLink>
+      <EmptyState message={t('repertoireCheck.signInRequired')}>
+        <CtaLink href={`/${locale}/sign-in`}>{t('repertoireCheck.signIn')}</CtaLink>
       </EmptyState>
     );
   } else {
-    const report = await getKataReport({ userId: user.id, moves, playerColor, startingFen });
-    const side = t(`kataPage.side_${playerColor}`);
+    const report = await getRepertoireCheckReport({
+      userId: user.id,
+      moves,
+      playerColor,
+      startingFen,
+    });
+    const side = t(`repertoireCheck.side_${playerColor}`);
     // The game as move pairs — the replay view's move strip and the "turn
     // this game into a kata" CTA below share the same formatting.
     const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
@@ -169,9 +178,9 @@ export default async function KataPage({ params, searchParams }: Props) {
     const newRepertoireHref = `/${locale}/repertoires/new?pgn=${encodeURIComponent(gamePgnText)}&side=${playerColor}`;
     const registerCtas = (
       <>
-        <CtaLink href={newRepertoireHref}>{t('kataPage.registerCta')}</CtaLink>
+        <CtaLink href={newRepertoireHref}>{t('repertoireCheck.registerCta')}</CtaLink>
         <CtaLink href={`/${locale}/repertoires`} variant="outline">
-          {t('kataPage.viewRepertoires')}
+          {t('repertoireCheck.viewRepertoires')}
         </CtaLink>
       </>
     );
@@ -182,7 +191,7 @@ export default async function KataPage({ params, searchParams }: Props) {
 
     if (selected) {
       content = (
-        <KataReplayView
+        <RepertoireCheckView
           selected={selected}
           entries={report.entries}
           moves={moves}
@@ -200,10 +209,14 @@ export default async function KataPage({ params, searchParams }: Props) {
       let body: React.ReactNode;
       if (!report.hasRepertoiresForSide) {
         body = (
-          <EmptyState message={t('kataPage.noRepertoires', { side })}>{registerCtas}</EmptyState>
+          <EmptyState message={t('repertoireCheck.noRepertoires', { side })}>
+            {registerCtas}
+          </EmptyState>
         );
       } else if (report.entries.length === 0) {
-        body = <EmptyState message={t('kataPage.noneApplicable')}>{registerCtas}</EmptyState>;
+        body = (
+          <EmptyState message={t('repertoireCheck.noneApplicable')}>{registerCtas}</EmptyState>
+        );
       } else {
         // Pick which kata to check against — the same catalogue cards the
         // /repertoires list and the opening topic's Repertoires tab render,
@@ -230,7 +243,7 @@ export default async function KataPage({ params, searchParams }: Props) {
       }
       content = (
         <>
-          <SectionTitle>{t('kataPage.selectHeading')}</SectionTitle>
+          <SectionTitle>{t('repertoireCheck.selectHeading')}</SectionTitle>
           {body}
         </>
       );
@@ -239,8 +252,8 @@ export default async function KataPage({ params, searchParams }: Props) {
 
   return (
     <PageLayout
-      title={<span data-tour-id={KATA_HELP_TARGET}>{t('kataPage.title')}</span>}
-      titleAction={<HelpTourButton steps={helpSteps} label={t('kataPage.help.label')} />}
+      title={<span data-tour-id={REPERTOIRE_CHECK_HELP_TARGET}>{t('repertoireCheck.title')}</span>}
+      titleAction={<HelpTourButton steps={helpSteps} label={t('repertoireCheck.help.label')} />}
       locale={locale}
     >
       {content}
@@ -251,7 +264,7 @@ export default async function KataPage({ params, searchParams }: Props) {
             href={`/${locale}/games/play/result?gameId=${gameId}`}
             className="text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
-            {t('kataPage.backToResult')}
+            {t('repertoireCheck.backToResult')}
           </Link>
         </p>
       )}

@@ -1,11 +1,11 @@
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import {
-  KATA_CHECK_PATH,
-  buildKataCheckQuery,
-} from '@/app/[locale]/(public)/games/play/repertoire/_lib/kata-url';
+  REPERTOIRE_CHECK_PATH,
+  buildRepertoireCheckQuery,
+} from '@/app/[locale]/(public)/games/play/repertoire/_lib/check-url';
 
-type BuildKataPathArgs = {
+type BuildRepertoireCheckPathArgs = {
   locale: string;
   moves: AlgebraicNotation[];
   /** Player's colour, forwarded as the `color` param ('white' | 'black'). */
@@ -22,12 +22,12 @@ type BuildKataPathArgs = {
  * a game that was never persisted. "Kata" is the UI-facing name only; the URL
  * speaks the repertoire vocabulary, like the rest of the feature's routes.
  */
-export function buildKataPath({
+export function buildRepertoireCheckPath({
   locale,
   moves,
   playerColor,
   gameId,
   startingFen,
-}: BuildKataPathArgs): string {
-  return `/${locale}${KATA_CHECK_PATH}?${buildKataCheckQuery({ moves, playerColor, gameId, startingFen })}`;
+}: BuildRepertoireCheckPathArgs): string {
+  return `/${locale}${REPERTOIRE_CHECK_PATH}?${buildRepertoireCheckQuery({ moves, playerColor, gameId, startingFen })}`;
 }

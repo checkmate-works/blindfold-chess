@@ -2220,12 +2220,12 @@
         "title": "Recall",
         "description": "Reconstruct the whole game from memory, move by move."
       },
-      "kata": {
+      "repertoireCheck": {
         "title": "Kata",
         "description": "Check whether your opening followed your registered kata."
       }
     },
-    "kataPage": {
+    "repertoireCheck": {
       "title": "Kata Check",
       "help": {
         "label": "About Kata",

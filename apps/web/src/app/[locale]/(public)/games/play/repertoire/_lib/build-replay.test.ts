@@ -2,18 +2,18 @@ import { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { describe, expect, it } from 'vitest';
 
-import { buildKataReplayModel } from './build-replay';
+import { buildReplayModel } from './build-replay';
 
 /** FEN of the position BEFORE game move `ply` (what LineDivergence carries). */
 function fenBefore(moves: string[], ply: number): string {
   return replayMoves(moves as AlgebraicNotation[], undefined)[ply].fen;
 }
 
-describe('buildKataReplayModel', () => {
+describe('buildReplayModel', () => {
   it('stops one ply PAST the diverging move so the board shows it played', () => {
     // White deviates at ply 2: 2. Nc3 where the kata prepares 2. Nf3.
     const moves = ['e4', 'c5', 'Nc3', 'd6', 'd4'];
-    const model = buildKataReplayModel({
+    const model = buildReplayModel({
       result: {
         status: 'deviation',
         enteredAtPly: 0,
@@ -45,7 +45,7 @@ describe('buildKataReplayModel', () => {
     // Black's 2... e6 is uncovered (gap); the game then continues 3. d4 etc.
     // — none of which belongs in the offered line.
     const moves = ['e4', 'c5', 'Nf3', 'e6', 'd4', 'd5', 'e5'];
-    const model = buildKataReplayModel({
+    const model = buildReplayModel({
       result: {
         status: 'gap',
         enteredAtPly: 0,
@@ -69,7 +69,7 @@ describe('buildKataReplayModel', () => {
 
   it('offers nothing to add for an in-book run and stops at the end of the matched book', () => {
     const moves = ['e4', 'c5', 'Nf3', 'd6', 'd4', 'cxd4'];
-    const model = buildKataReplayModel({
+    const model = buildReplayModel({
       result: { status: 'in-book', enteredAtPly: 0, followedPlies: 4 },
       moves,
       repertoireStartingFen: null,
@@ -86,7 +86,7 @@ describe('buildKataReplayModel', () => {
     // own first move.
     const moves = ['d4', 'd5', 'c4'];
     const repertoireStartingFen = 'rnbqkbnr/pppppppp/8/8/3P4/8/PPPPPPPP/RNBQKBNR b KQkq d3 0 1';
-    const model = buildKataReplayModel({
+    const model = buildReplayModel({
       result: {
         status: 'deviation',
         enteredAtPly: 1,
