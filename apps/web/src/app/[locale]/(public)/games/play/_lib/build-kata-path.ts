@@ -1,5 +1,10 @@
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import {
+  KATA_CHECK_PATH,
+  buildKataCheckQuery,
+} from '@/app/[locale]/(public)/games/play/repertoire/_lib/kata-url';
+
 type BuildKataPathArgs = {
   locale: string;
   moves: AlgebraicNotation[];
@@ -24,11 +29,5 @@ export function buildKataPath({
   gameId,
   startingFen,
 }: BuildKataPathArgs): string {
-  const params = new URLSearchParams();
-  params.set('moves', JSON.stringify(moves));
-  params.set('color', playerColor);
-  if (startingFen) params.set('fen', startingFen);
-  params.set('gameId', gameId);
-
-  return `/${locale}/games/play/repertoire?${params.toString()}`;
+  return `/${locale}${KATA_CHECK_PATH}?${buildKataCheckQuery({ moves, playerColor, gameId, startingFen })}`;
 }

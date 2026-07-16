@@ -47,6 +47,7 @@ import { AddLineButton } from './_components/AddLineButton';
 import type { KataVerdict } from './_components/KataReplayViewer';
 import { KataReplayViewer } from './_components/KataReplayViewer';
 import { KATA_STATUS_BADGE, KATA_STATUS_KEY, type KataStatus } from './_lib/kata-status';
+import { KATA_CHECK_PATH, buildKataCheckQuery, parseKataCheckParams } from './_lib/kata-url';
 
 const KATA_HELP_TARGET = 'kata-help-target';
 
@@ -67,20 +68,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...generateCanonicalMetadata({ locale, path: 'games/play/repertoire', title }),
     title: resolveTitle(title, locale),
   };
-}
-
-/** The `moves` param is the same JSON SAN array the Recall deep-link carries. */
-function parseMoves(param: string | string[] | undefined): string[] | null {
-  if (typeof param !== 'string') return null;
-  try {
-    const parsed: unknown = JSON.parse(param);
-    if (Array.isArray(parsed) && parsed.length > 0 && parsed.every((m) => typeof m === 'string')) {
-      return parsed;
-    }
-  } catch {
-    // Malformed JSON → treated as missing.
-  }
-  return null;
 }
 
 /**
@@ -114,11 +101,13 @@ export default async function KataPage({ params, searchParams }: Props) {
   const t = await getTranslations({ locale, namespace: 'play' });
   const sp = await searchParams;
 
-  const moves = parseMoves(sp.moves);
-  const playerColor = sp.color === 'black' ? 'black' : 'white';
-  const startingFen = typeof sp.fen === 'string' && sp.fen ? sp.fen : undefined;
-  const gameId = typeof sp.gameId === 'string' && sp.gameId ? sp.gameId : undefined;
-  const selectedId = typeof sp.repertoire === 'string' && sp.repertoire ? sp.repertoire : undefined;
+  const {
+    moves,
+    playerColor,
+    startingFen,
+    gameId,
+    repertoireId: selectedId,
+  } = parseKataCheckParams(sp);
 
   // Formatted once here (not per-branch) so both the replay view and the
   // "turn this game into a kata" CTA below share the same move formatting.
@@ -144,15 +133,14 @@ export default async function KataPage({ params, searchParams }: Props) {
    * the picker card's i18n Link adds the prefix itself; plain next/link call
    * sites prepend `/${locale}` explicitly.
    */
-  const pathFor = (repertoireId?: string) => {
-    const p = new URLSearchParams();
-    if (typeof sp.moves === 'string') p.set('moves', sp.moves);
-    p.set('color', playerColor);
-    if (startingFen) p.set('fen', startingFen);
-    if (gameId) p.set('gameId', gameId);
-    if (repertoireId) p.set('repertoire', repertoireId);
-    return `/games/play/repertoire?${p.toString()}`;
-  };
+  const pathFor = (repertoireId?: string) =>
+    `${KATA_CHECK_PATH}?${buildKataCheckQuery({
+      moves: moves ?? [],
+      playerColor,
+      startingFen,
+      gameId,
+      repertoireId,
+    })}`;
 
   const user = await getOptionalUser();
 
