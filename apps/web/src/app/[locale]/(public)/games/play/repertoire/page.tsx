@@ -285,7 +285,12 @@ function renderReplay({
           <StatusBadge status={status} label={t(`kataPage.status.${KATA_STATUS_KEY[status]}`)} />
         </div>
 
+        {/* Keyed by repertoire so switching via the side menu remounts the
+            viewer — same-route search-param navigation would otherwise keep
+            the previous kata's playback state (overlay dismissed, verdict
+            revealed). */}
         <KataReplayViewer
+          key={repertoire.id}
           positions={positions}
           formatted={formatted}
           side={playerColor}

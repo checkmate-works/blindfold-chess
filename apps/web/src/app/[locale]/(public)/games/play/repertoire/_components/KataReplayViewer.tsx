@@ -6,6 +6,7 @@ import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
+import { FaPlay } from 'react-icons/fa';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
@@ -13,7 +14,7 @@ import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_li
 
 import type { KataStatus } from '../_lib/kata-status';
 
-/** What the auto-play arrives at: the verdict against the chosen kata. */
+/** What the playback arrives at: the verdict against the chosen kata. */
 export type KataVerdict = {
   status: KataStatus;
   /** Full-move number of the divergence; null for a clean in-book run. */
@@ -31,7 +32,7 @@ type Props = {
   formatted: FormattedPgnMove[];
   side: 'white' | 'black';
   /**
-   * The ply auto-play stops at: the divergence for deviation/gap, the end of
+   * The ply playback stops at: the divergence for deviation/gap, the end of
    * the matched book for in-book. The player can still step past it manually
    * (e.g. to see the off-book move actually played).
    */
@@ -39,14 +40,19 @@ type Props = {
   verdict: KataVerdict;
 };
 
-const AUTOPLAY_MS = 700;
+// Same pacing as PuzzleSolutionReplay / MoveSequenceMemorize, so playback
+// feels consistent across surfaces.
+const MOVE_INTERVAL_MS = 1000;
+const PLAY_INITIAL_DELAY_MS = 500;
 
 /**
- * Auto-replays the game against the chosen kata: the moves the game followed
- * on-book play themselves back, and the replay halts where the game left the
- * kata (or where the prepared line ran out), revealing the verdict. Manual
- * navigation (move strip / controls / arrow keys) pauses auto-play; Replay
- * restarts it. Same board chrome as the repertoire line viewer.
+ * Replays the game against the chosen kata behind an overlay Play button (the
+ * PuzzleSolutionReplay pattern): the moves the game followed on-book play
+ * themselves back, and the playback halts where the game left the kata (or
+ * where the prepared line ran out), revealing the verdict. Manual navigation
+ * (move strip / controls / arrow keys) pauses playback and dismisses the
+ * overlay; the verdict panel's Replay restarts it. Same board chrome as the
+ * repertoire line viewer.
  */
 export function KataReplayViewer({ positions, formatted, side, stopPly, verdict }: Props) {
   const t = useTranslations('play');
@@ -54,20 +60,28 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
   const target = Math.max(0, Math.min(stopPly, maxPly));
 
   const [ply, setPly] = useState(0);
-  const [autoPlaying, setAutoPlaying] = useState(target > 0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const [revealed, setRevealed] = useState(target === 0);
 
   useEffect(() => {
-    if (!autoPlaying) return;
-    const timer = setInterval(() => {
+    if (!isPlaying) return;
+    let interval: ReturnType<typeof setInterval> | undefined;
+    const timeout = setTimeout(() => {
       setPly((p) => (p < target ? p + 1 : p));
-    }, AUTOPLAY_MS);
-    return () => clearInterval(timer);
-  }, [autoPlaying, target]);
+      interval = setInterval(() => {
+        setPly((p) => (p < target ? p + 1 : p));
+      }, MOVE_INTERVAL_MS);
+    }, PLAY_INITIAL_DELAY_MS);
+    return () => {
+      clearTimeout(timeout);
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, target]);
 
   useEffect(() => {
     if (ply >= target) {
-      setAutoPlaying(false);
+      setIsPlaying(false);
       setRevealed(true);
     }
   }, [ply, target]);
@@ -77,14 +91,16 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
   const lastMove = clampedPly > 0 ? current.lastMove : null;
 
   const goTo = (p: number) => {
-    setAutoPlaying(false);
+    setIsPlaying(false);
+    setHasStarted(true);
     setPly(Math.max(0, Math.min(maxPly, p)));
   };
 
-  const replay = () => {
+  const play = () => {
     setPly(0);
     setRevealed(target === 0);
-    setAutoPlaying(target > 0);
+    setHasStarted(true);
+    setIsPlaying(target > 0);
   };
 
   useEffect(() => {
@@ -109,6 +125,8 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
           expected: verdict.expected ?? '',
         });
 
+  const showOverlay = !isPlaying && !hasStarted && target > 0;
+
   return (
     <div className="space-y-4">
       <div className={INLINE_BOARD_CARD_CHROME}>
@@ -123,17 +141,32 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
             </div>
           )}
 
-          <ChessBoard
-            fen={current.fen}
-            flipped={side === 'black'}
-            playerSide={side}
-            lastMove={lastMove}
-            showCoordinates
-            showOwnPieces
-            showOpponentPieces
-            boardTheme="lichess"
-            rounded={false}
-          />
+          <div className="relative">
+            <ChessBoard
+              fen={current.fen}
+              flipped={side === 'black'}
+              playerSide={side}
+              lastMove={lastMove}
+              showCoordinates
+              showOwnPieces
+              showOpponentPieces
+              boardTheme="lichess"
+              rounded={false}
+            />
+
+            {showOverlay && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                <button
+                  type="button"
+                  onClick={play}
+                  aria-label={t('kataPage.play')}
+                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
+                >
+                  <FaPlay className="w-12 h-12 ml-1" />
+                </button>
+              </div>
+            )}
+          </div>
 
           <div
             className="relative flex items-center justify-center"
@@ -157,7 +190,7 @@ export function KataReplayViewer({ positions, formatted, side, stopPly, verdict 
           data-testid="kata-verdict"
         >
           <p className="text-sm text-foreground">{detail}</p>
-          <Button variant="outline" onClick={replay}>
+          <Button variant="outline" onClick={play}>
             {t('kataPage.replay')}
           </Button>
         </div>
