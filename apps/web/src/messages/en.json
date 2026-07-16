@@ -2254,6 +2254,23 @@
       "inBookDetail": "You stayed on this kata to the end of its prepared lines.",
       "deviationDetail": "At move {moveNo}, you played {played} — your kata prepares {expected}.",
       "gapDetail": "At move {moveNo}, your opponent played {played}, which this kata doesn't cover (prepared: {expected}).",
+      "addLine": {
+        "cta": "Add this line to your kata",
+        "confirmDetail": "This saves this game's moves — including where it matched {repertoireName} — as a new line on it:",
+        "save": "Save line",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "errors": {
+          "unauthorized": "Only the owner can add a line to this kata.",
+          "notFound": "This kata no longer exists.",
+          "nameTooLong": "The title is too long.",
+          "pgnRequired": "Please enter the moves.",
+          "pgnTooLarge": "The PGN is too large.",
+          "invalidPgn": "Could not read these moves. Check the notation.",
+          "noMoves": "Please enter at least one move.",
+          "generic": "Something went wrong. Please try again."
+        }
+      },
       "backToResult": "Back to game review"
     }
   },
@@ -3654,6 +3671,7 @@
     "positionDeleted": "Problem deleted",
     "positionUpdated": "Changes saved",
     "lineUpdated": "Line updated",
+    "lineAdded": "Line added",
     "puzzleUpdated": "Changes saved",
     "puzzleDeleted": "Puzzle deleted",
     "editRequestSubmitted": "Edit suggestion submitted",

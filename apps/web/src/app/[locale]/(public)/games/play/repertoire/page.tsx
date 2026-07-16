@@ -43,6 +43,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { AddLineButton } from './_components/AddLineButton';
 import type { KataVerdict } from './_components/KataReplayViewer';
 import { KataReplayViewer } from './_components/KataReplayViewer';
 import { KATA_STATUS_BADGE, KATA_STATUS_KEY, type KataStatus } from './_lib/kata-status';
@@ -335,6 +336,23 @@ function renderReplay({
       }
     : { status, moveNo: null };
 
+  // Only a deviation/gap has something new to add — an in-book result means
+  // the game never left ground the repertoire doesn't already cover.
+  let addLinePgn: string | null = null;
+  if (status !== 'in-book') {
+    // The new line runs root-to-leaf like every repertoire line: the matched
+    // prefix (from where the game entered the kata) plus the divergent
+    // continuation, formatted against the repertoire's OWN root (not the
+    // game's) since that's the line's actual starting position.
+    const lineMoves = moves.slice(result.enteredAtPly ?? 0);
+    const repStartField = repertoire.startingFen?.split(' ');
+    const repStartsAsBlack = repStartField?.[1] === 'b';
+    const repStartMoveNumber = repStartField ? Number(repStartField[5]) || 1 : 1;
+    addLinePgn = formatPgnToText(
+      formatMovesToPgn(lineMoves as AlgebraicNotation[], repStartsAsBlack, repStartMoveNumber)
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
@@ -360,6 +378,15 @@ function renderReplay({
           stopPly={stopPly}
           verdict={verdict}
         />
+
+        {addLinePgn && (
+          <AddLineButton
+            locale={locale}
+            repertoireId={repertoire.id}
+            repertoireName={repertoire.name}
+            pgn={addLinePgn}
+          />
+        )}
       </div>
 
       {/* The other applicable katas sit in the right column, the same place
