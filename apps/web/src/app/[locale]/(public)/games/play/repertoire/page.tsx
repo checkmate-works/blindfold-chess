@@ -189,7 +189,16 @@ export default async function KataPage({ params, searchParams }: Props) {
         </>
       );
     } else {
-      content = renderReplay({ selected, moves, playerColor, startingFen, locale, t, pathFor });
+      content = renderReplay({
+        selected,
+        entries: report.entries,
+        moves,
+        playerColor,
+        startingFen,
+        locale,
+        t,
+        pathFor,
+      });
     }
   }
 
@@ -212,12 +221,15 @@ export default async function KataPage({ params, searchParams }: Props) {
 }
 
 /**
- * The replay view for one chosen kata: header (name, verdict badge, switch
- * link) + the client auto-replay viewer. Positions and move formatting are
- * precomputed here so the viewer stays chess.js-free.
+ * The replay view for one chosen kata, laid out like the repertoire detail
+ * page: the board column on the left (name + verdict badge above the same
+ * board chrome), and a side menu of the other applicable katas on the right
+ * for switching without going back to the picker. Positions and move
+ * formatting are precomputed here so the viewer stays chess.js-free.
  */
 function renderReplay({
   selected,
+  entries,
   moves,
   playerColor,
   startingFen,
@@ -226,6 +238,7 @@ function renderReplay({
   pathFor,
 }: {
   selected: KataEntry;
+  entries: KataEntry[];
   moves: string[];
   playerColor: 'white' | 'black';
   startingFen: string | undefined;
@@ -260,8 +273,8 @@ function renderReplay({
     : { status, moveNo: null };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="space-y-4 lg:col-span-2">
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/${locale}/repertoires/${repertoire.id}`}
@@ -271,21 +284,37 @@ function renderReplay({
           </Link>
           <StatusBadge status={status} label={t(`kataPage.status.${KATA_STATUS_KEY[status]}`)} />
         </div>
-        <Link
-          href={`/${locale}${pathFor()}`}
-          className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-        >
-          {t('kataPage.changeKata')}
-        </Link>
+
+        <KataReplayViewer
+          positions={positions}
+          formatted={formatted}
+          side={playerColor}
+          stopPly={stopPly}
+          verdict={verdict}
+        />
       </div>
 
-      <KataReplayViewer
-        positions={positions}
-        formatted={formatted}
-        side={playerColor}
-        stopPly={stopPly}
-        verdict={verdict}
-      />
+      {/* The other applicable katas sit in the right column, the same place
+          (and styling) the repertoire detail page puts its line list. */}
+      <ul className="space-y-1 lg:col-span-1">
+        {entries.map((entry) => {
+          const isSelected = entry.repertoire.id === repertoire.id;
+          return (
+            <li key={entry.repertoire.id}>
+              <Link
+                href={`/${locale}${pathFor(entry.repertoire.id)}`}
+                className={`block w-full truncate rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                  isSelected
+                    ? 'bg-link-primary/10 font-medium text-link-primary'
+                    : 'text-foreground hover:bg-muted'
+                }`}
+              >
+                {entry.repertoire.name}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
