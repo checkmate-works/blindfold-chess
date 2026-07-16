@@ -2227,7 +2227,6 @@
     },
     "kataPage": {
       "title": "Kata Check",
-      "lead": "How closely this game followed your registered kata for {side}.",
       "side_white": "White",
       "side_black": "Black",
       "invalid": "No game data to check. Finish a game and open Kata from the game-end options.",

@@ -17,6 +17,12 @@ type Props = {
    * opening topic page can only ever list opening repertoires.
    */
   showPhase?: boolean;
+  /**
+   * Where the card navigates (locale-less; the i18n Link adds the prefix).
+   * Defaults to the repertoire detail page — override when the card is a
+   * choice in another flow (e.g. the kata check's picker).
+   */
+  detailHref?: string;
 };
 
 /**
@@ -27,7 +33,13 @@ type Props = {
  * repertoire-scoped like action, its title chips), so the /repertoires list and
  * the opening page's Repertoires tab cannot drift apart.
  */
-export async function RepertoireListCard({ card, meta, locale, showPhase = true }: Props) {
+export async function RepertoireListCard({
+  card,
+  meta,
+  locale,
+  showPhase = true,
+  detailHref,
+}: Props) {
   const { repertoire, profile, thumbnailFen } = card;
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
 
@@ -41,7 +53,7 @@ export async function RepertoireListCard({ card, meta, locale, showPhase = true 
       profile={profile}
       likeMeta={meta.likeMeta}
       replyMeta={meta.replyMeta}
-      detailHref={`/repertoires/${repertoire.id}`}
+      detailHref={detailHref ?? `/repertoires/${repertoire.id}`}
       i18nNamespace="Repertoires"
       toggleLikeAction={toggleLike}
       justNowLabel={t('justNow')}

@@ -2223,7 +2223,6 @@
     },
     "kataPage": {
       "title": "Verificação de Kata",
-      "lead": "O quanto esta partida seguiu os katas que você registrou de {side}.",
       "side_white": "brancas",
       "side_black": "pretas",
       "invalid": "Não há dados de partida para verificar. Termine uma partida e abra o Kata nas opções de fim de partida.",

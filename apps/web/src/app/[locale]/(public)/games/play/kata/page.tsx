@@ -22,10 +22,13 @@ import { formatMovesToPgn, replayMoves } from '@blindfold-chess/features/chess-c
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getOptionalUser } from '@/lib/auth';
+import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
 import type { KataEntry } from '@/lib/repertoires/kata-report';
 import { getKataReport } from '@/lib/repertoires/kata-report';
+import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { RepertoireListCard } from '@/app/[locale]/(public)/repertoires/_components/RepertoireListCard';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -101,15 +104,19 @@ export default async function KataPage({ params, searchParams }: Props) {
   const gameId = typeof sp.gameId === 'string' && sp.gameId ? sp.gameId : undefined;
   const selectedId = typeof sp.repertoire === 'string' && sp.repertoire ? sp.repertoire : undefined;
 
-  /** This page's own URL, with or without a kata selected (drives the picker). */
-  const hrefFor = (repertoireId?: string) => {
+  /**
+   * This page's own path, with or without a kata selected — locale-less, since
+   * the picker card's i18n Link adds the prefix itself; plain next/link call
+   * sites prepend `/${locale}` explicitly.
+   */
+  const pathFor = (repertoireId?: string) => {
     const p = new URLSearchParams();
     if (typeof sp.moves === 'string') p.set('moves', sp.moves);
     p.set('color', playerColor);
     if (startingFen) p.set('fen', startingFen);
     if (gameId) p.set('gameId', gameId);
     if (repertoireId) p.set('repertoire', repertoireId);
-    return `/${locale}/games/play/kata?${p.toString()}`;
+    return `/games/play/kata?${p.toString()}`;
   };
 
   const user = await getOptionalUser();
@@ -156,32 +163,33 @@ export default async function KataPage({ params, searchParams }: Props) {
     } else if (report.entries.length === 0) {
       content = <EmptyState message={t('kataPage.noneApplicable')}>{registerCtas}</EmptyState>;
     } else if (!selected) {
-      // Pick which kata to check against; the verdict stays unrevealed until
-      // the replay arrives at it, so the picker shows only names + depth.
+      // Pick which kata to check against — the same catalogue cards the
+      // /repertoires list and the opening topic's Repertoires tab render, just
+      // pointed at this page's replay view instead of the detail page. The
+      // verdict stays unrevealed until the replay arrives at it.
+      const applicableIds = new Set(report.entries.map((entry) => entry.repertoire.id));
+      const cards = (await listRepertoiresForUser(user.id)).filter((card) =>
+        applicableIds.has(card.repertoire.id)
+      );
+      const cardMeta = await getRepertoireCardMeta([...applicableIds], user.id);
       content = (
         <>
-          <p className="text-sm text-muted-foreground">{t('kataPage.lead', { side })}</p>
-          <h2 className="text-base font-semibold text-foreground">{t('kataPage.selectHeading')}</h2>
+          <SectionTitle>{t('kataPage.selectHeading')}</SectionTitle>
           <div className="space-y-3">
-            {report.entries.map((entry) => (
-              <Link
-                key={entry.repertoire.id}
-                href={hrefFor(entry.repertoire.id)}
-                className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-secondary"
-              >
-                <span className="text-base font-semibold text-foreground">
-                  {entry.repertoire.name}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {t('kataPage.followedPlies', { count: entry.result.followedPlies })}
-                </span>
-              </Link>
+            {cards.map((card) => (
+              <RepertoireListCard
+                key={card.repertoire.id}
+                card={card}
+                meta={cardMeta(card.repertoire.id)}
+                locale={locale}
+                detailHref={pathFor(card.repertoire.id)}
+              />
             ))}
           </div>
         </>
       );
     } else {
-      content = renderReplay({ selected, moves, playerColor, startingFen, locale, t, hrefFor });
+      content = renderReplay({ selected, moves, playerColor, startingFen, locale, t, pathFor });
     }
   }
 
@@ -215,7 +223,7 @@ function renderReplay({
   startingFen,
   locale,
   t,
-  hrefFor,
+  pathFor,
 }: {
   selected: KataEntry;
   moves: string[];
@@ -223,7 +231,7 @@ function renderReplay({
   startingFen: string | undefined;
   locale: string;
   t: (key: string, values?: Record<string, string | number>) => string;
-  hrefFor: (repertoireId?: string) => string;
+  pathFor: (repertoireId?: string) => string;
 }) {
   const { repertoire, result } = selected;
   const status = result.status as KataStatus;
@@ -264,7 +272,7 @@ function renderReplay({
           <StatusBadge status={status} label={t(`kataPage.status.${KATA_STATUS_KEY[status]}`)} />
         </div>
         <Link
-          href={hrefFor()}
+          href={`/${locale}${pathFor()}`}
           className="text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           {t('kataPage.changeKata')}
