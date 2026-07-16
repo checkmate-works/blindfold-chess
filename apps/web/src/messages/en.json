@@ -6,6 +6,17 @@
     "title": "Kata",
     "description": "Kata shared by the community — opening lines, mate patterns, and memorized sequences.",
     "sectionTitle": "Community kata",
+    "help": {
+      "label": "About Kata",
+      "catalog": {
+        "title": "A catalog of kata",
+        "description": "A kata is a pre-arranged sequence you rehearse until it feels automatic — the idea comes from martial arts, applied here to chess: opening lines, mate patterns, and sequences worth memorizing. This page lists every kata shared by the community, so you can browse and study what other players have prepared."
+      },
+      "import": {
+        "title": "Import your own kata",
+        "description": "Have an opening you want to drill? Anyone signed in can import one from this button — paste a PGN with variations (a Lichess study or Chess.com export works as-is) and it becomes a kata you can review and share."
+      }
+    },
     "importCta": "Import",
     "empty": "No kata registered yet",
     "summary": "{lines} lines · {moves} moves",

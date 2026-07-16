@@ -31,7 +31,8 @@ import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
 import { countPublicRepertoires, listPublicRepertoires } from '@/lib/repertoires/queries';
 
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -40,6 +41,10 @@ import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 import { RepertoireListCard } from './_components/RepertoireListCard';
 
 export const dynamic = 'force-dynamic';
+
+/** `data-tour-id`s the help tour points at (see `helpSteps` below). */
+const CATALOG_HELP_TARGET = 'repertoires-catalog-help';
+const IMPORT_HELP_TARGET = 'repertoires-import-help';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
@@ -74,12 +79,41 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
     user?.id
   );
 
+  // Two-step tour: what this catalog is, then (signed-in only) the Import CTA.
+  // A step whose target is absent is skipped by HelpTourButton, but gating the
+  // import step on `user` keeps the tour honest for signed-out visitors.
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: CATALOG_HELP_TARGET,
+      title: t('help.catalog.title'),
+      description: t('help.catalog.description'),
+      side: 'bottom',
+      align: 'center',
+    },
+    ...(user
+      ? [
+          {
+            targetId: IMPORT_HELP_TARGET,
+            title: t('help.import.title'),
+            description: t('help.import.description'),
+            side: 'bottom' as const,
+            align: 'center' as const,
+          },
+        ]
+      : []),
+  ];
+
   return (
-    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+    <PageLayout
+      title={<span data-tour-id={CATALOG_HELP_TARGET}>{t('title')}</span>}
+      titleAction={<HelpTourButton steps={helpSteps} label={t('help.label')} />}
+      locale={locale}
+      breadcrumb={[{ label: t('title') }]}
+    >
       <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
       {user && (
-        <div className="py-4">
+        <div className="py-4" data-tour-id={IMPORT_HELP_TARGET}>
           <Link href="/repertoires/new" locale={locale}>
             <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
               {t('importCta')}

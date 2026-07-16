@@ -6,6 +6,17 @@
     "title": "Kata",
     "description": "Katas compartidos por la comunidad: líneas de apertura, patrones de mate y secuencias memorizadas.",
     "sectionTitle": "Katas de la comunidad",
+    "help": {
+      "label": "Sobre los katas",
+      "catalog": {
+        "title": "Un catálogo de katas",
+        "description": "Un kata es una secuencia preestablecida que repites hasta que te sale sola: la idea viene de las artes marciales, aplicada aquí al ajedrez: líneas de apertura, patrones de mate y secuencias que vale la pena memorizar. Esta página muestra todos los katas compartidos por la comunidad, para que explores y estudies lo que han preparado otros jugadores."
+      },
+      "import": {
+        "title": "Importa tu propio kata",
+        "description": "¿Tienes una apertura que quieres practicar? Cualquiera con la sesión iniciada puede importar una desde este botón: pega un PGN con variantes (una exportación de un estudio de Lichess o de Chess.com funciona tal cual) y se convierte en un kata que puedes repasar y compartir."
+      }
+    },
     "importCta": "Importar",
     "empty": "Aún no hay katas registrados",
     "summary": "{lines} líneas · {moves} jugadas",
