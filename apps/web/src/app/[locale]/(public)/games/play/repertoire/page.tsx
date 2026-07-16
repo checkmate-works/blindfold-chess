@@ -341,10 +341,13 @@ function renderReplay({
   let addLinePgn: string | null = null;
   if (status !== 'in-book') {
     // The new line runs root-to-leaf like every repertoire line: the matched
-    // prefix (from where the game entered the kata) plus the divergent
-    // continuation, formatted against the repertoire's OWN root (not the
-    // game's) since that's the line's actual starting position.
-    const lineMoves = moves.slice(result.enteredAtPly ?? 0);
+    // prefix (from where the game entered the kata) through the diverging
+    // move itself — `stopPly` (divergence.ply + 1), the same endpoint the
+    // board above stops at — NOT the rest of the game, which may wander
+    // through unrelated middlegame/endgame moves no repertoire line wants.
+    // Formatted against the repertoire's OWN root (not the game's), since
+    // that's the line's actual starting position.
+    const lineMoves = moves.slice(result.enteredAtPly ?? 0, stopPly);
     const repStartField = repertoire.startingFen?.split(' ');
     const repStartsAsBlack = repStartField?.[1] === 'b';
     const repStartMoveNumber = repStartField ? Number(repStartField[5]) || 1 : 1;
