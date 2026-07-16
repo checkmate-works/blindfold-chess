@@ -45,12 +45,17 @@ export function useAutoSaveEvents({
     return currentMovesRef.current.length > 0 || hasPendingChanges.current;
   };
 
+  // The game's status must be read from the ref at decision time, not captured
+  // when the effect mounts: these effects run once (stable `saveGame`), so a
+  // captured value would still say "in progress" after the game ends — and the
+  // unmount cleanup would flag a "game saved" toast on the page the player
+  // navigates to from an already-finished game (e.g. finish modal → Kata).
+  const isCurrentGameFinished = () => isGameFinished(currentStatusRef.current);
+
   // Auto-save on page visibility change and show notification when navigating away
   useEffect(() => {
-    const gameFinished = isGameFinished(currentStatusRef.current);
-
     const handleVisibilityChange = async () => {
-      if (document.hidden && hasSaveableState() && !gameFinished) {
+      if (document.hidden && hasSaveableState() && !isCurrentGameFinished()) {
         if (hasPendingChanges.current) {
           await saveGame(false);
         }
@@ -67,7 +72,7 @@ export function useAutoSaveEvents({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
 
-      if (hasSaveableState() && !gameFinished) {
+      if (hasSaveableState() && !isCurrentGameFinished()) {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: read latest ref at unmount
         if (hasPendingChanges.current) {
           saveGame(false);
@@ -98,13 +103,11 @@ export function useAutoSaveEvents({
 
   // Detect pathname changes (navigation)
   useEffect(() => {
-    const gameFinished = isGameFinished(currentStatusRef.current);
-
     if (pathname !== previousPathname.current && previousPathname.current) {
       if (
         hasSaveableState() &&
         (hasSavedInSession.current || hasPendingChanges.current) &&
-        !gameFinished
+        !isCurrentGameFinished()
       ) {
         sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST, 'true');
       }
