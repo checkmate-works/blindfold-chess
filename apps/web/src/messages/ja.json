@@ -2224,6 +2224,30 @@
         "title": "Kata",
         "description": "登録したレパートリー通りにオープニングを指せたかを確認します。"
       }
+    },
+    "kataPage": {
+      "title": "型チェック",
+      "lead": "この対局が{side}の型（レパートリー）にどこまで沿っていたかを表示します。",
+      "side_white": "白番",
+      "side_black": "黒番",
+      "invalid": "チェック対象の対局データがありません。対局を終えてから、終了時のメニューで Kata を開いてください。",
+      "backToPlay": "対局する",
+      "signInRequired": "型チェックを使うにはサインインしてください。",
+      "signIn": "サインイン",
+      "noRepertoires": "{side}の型はまだ登録されていません。",
+      "noneApplicable": "この対局のオープニングに該当する型はありませんでした。",
+      "registerCta": "型を登録する",
+      "viewRepertoires": "型の一覧",
+      "status": {
+        "inBook": "型どおり",
+        "deviation": "型から逸脱",
+        "gap": "相手が型の外"
+      },
+      "followedPlies": "型と一致: {count}手（半手単位）",
+      "inBookDetail": "準備したラインの最後まで型どおりに指せました。",
+      "deviationDetail": "{moveNo}手目、あなたは {played} を指しました（型の準備手: {expected}）。",
+      "gapDetail": "{moveNo}手目、相手の {played} はこの型にない手です（準備していた応手: {expected}）。",
+      "backToResult": "振り返りに戻る"
     }
   },
   "sharedGames": {

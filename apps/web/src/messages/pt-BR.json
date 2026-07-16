@@ -2220,6 +2220,30 @@
         "title": "Kata",
         "description": "Verifique se sua abertura seguiu seu repertório registrado."
       }
+    },
+    "kataPage": {
+      "title": "Verificação de Kata",
+      "lead": "O quanto esta partida seguiu os katas que você registrou de {side}.",
+      "side_white": "brancas",
+      "side_black": "pretas",
+      "invalid": "Não há dados de partida para verificar. Termine uma partida e abra o Kata nas opções de fim de partida.",
+      "backToPlay": "Jogar uma partida",
+      "signInRequired": "Entre na sua conta para comparar esta partida com seus katas registrados.",
+      "signIn": "Entrar",
+      "noRepertoires": "Você ainda não registrou nenhum kata de {side}.",
+      "noneApplicable": "Nenhum dos seus katas cobre a abertura desta partida.",
+      "registerCta": "Registrar um kata",
+      "viewRepertoires": "Seus katas",
+      "status": {
+        "inBook": "Dentro do kata",
+        "deviation": "Desvio",
+        "gap": "O adversário saiu do seu kata"
+      },
+      "followedPlies": "{count} meios-lances correspondentes",
+      "inBookDetail": "Você seguiu este kata até o fim das linhas preparadas.",
+      "deviationDetail": "No lance {moveNo}, você jogou {played} — seu kata prepara {expected}.",
+      "gapDetail": "No lance {moveNo}, o adversário jogou {played}, que este kata não cobre (preparado: {expected}).",
+      "backToResult": "Voltar à revisão da partida"
     }
   },
   "sharedGames": {

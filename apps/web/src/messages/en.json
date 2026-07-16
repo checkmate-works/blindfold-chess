@@ -2224,6 +2224,30 @@
         "title": "Kata",
         "description": "Check whether your opening followed your registered repertoire."
       }
+    },
+    "kataPage": {
+      "title": "Kata Check",
+      "lead": "How closely this game followed your registered kata for {side}.",
+      "side_white": "White",
+      "side_black": "Black",
+      "invalid": "No game data to check. Finish a game and open Kata from the game-end options.",
+      "backToPlay": "Play a game",
+      "signInRequired": "Sign in to check this game against your registered kata.",
+      "signIn": "Sign in",
+      "noRepertoires": "You haven't registered any kata for {side} yet.",
+      "noneApplicable": "None of your registered kata cover this game's opening.",
+      "registerCta": "Register a kata",
+      "viewRepertoires": "Your kata",
+      "status": {
+        "inBook": "On kata",
+        "deviation": "Deviated",
+        "gap": "Opponent left your kata"
+      },
+      "followedPlies": "Matched {count} half-moves",
+      "inBookDetail": "You stayed on this kata to the end of its prepared lines.",
+      "deviationDetail": "At move {moveNo}, you played {played} — your kata prepares {expected}.",
+      "gapDetail": "At move {moveNo}, your opponent played {played}, which this kata doesn't cover (prepared: {expected}).",
+      "backToResult": "Back to game review"
     }
   },
   "sharedGames": {
