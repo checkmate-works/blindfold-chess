@@ -36,7 +36,6 @@ import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
 import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RepertoireCheckView } from './_components/RepertoireCheckView';
@@ -53,7 +52,13 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export const generateStaticParams = generateLocaleStaticParams;
+/**
+ * Per-user SSR page (reads the signed-in user's own repertoires and the
+ * game's searchParams), so it must never be ISR-cached — the shared HTML
+ * would leak one viewer's kata list to everyone. See
+ * `src/lib/isr-user-scope-guard.test.ts`.
+ */
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
