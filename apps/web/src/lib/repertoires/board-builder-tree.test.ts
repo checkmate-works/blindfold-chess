@@ -141,13 +141,19 @@ describe('builderTreeFromPgn', () => {
 });
 
 describe('flattenBuilderTree', () => {
-  it('emits labeled move tokens in PGN reading order with variation markers', () => {
+  it('emits move tokens in PGN reading order with variation markers', () => {
     const main = play([], [], ['e4', 'e5', 'Nf3']);
     const branched = play(main.children, [0], ['c5']);
 
     const tokens = flattenBuilderTree(branched.children, ROOT);
     expect(
-      tokens.map((t) => (t.type === 'move' ? t.label : t.type === 'open' ? '(' : ')'))
+      tokens.map((t) =>
+        t.type === 'move'
+          ? [t.number, t.san].filter(Boolean).join(' ')
+          : t.type === 'open'
+            ? '('
+            : ')'
+      )
     ).toEqual(['1. e4', 'e5', '(', '1... c5', ')', '2. Nf3']);
 
     // Each move token addresses its node so the list can drive the cursor.

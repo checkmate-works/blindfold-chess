@@ -172,22 +172,25 @@ export function builderTreeToPgn(children: BuilderNode[], rootFen: string): stri
 
 /**
  * Flat token stream for rendering the move list: moves (each carrying its
- * cursor path and a PGN-style label) interleaved with `(` / `)` markers around
- * variations — the same RAV order `generatePgnFromTree` emits, so what the
- * author sees reads exactly like the PGN being built.
+ * cursor path and, where PGN requires one, a move-number indicator)
+ * interleaved with `(` / `)` markers around variations — the same RAV order
+ * `generatePgnFromTree` emits, so what the author sees reads exactly like the
+ * PGN being built. `number` is kept separate from `san` so the renderer can
+ * style it like the game screens' move lists (small muted number, SAN button).
  */
 export type MoveListToken =
-  | { type: 'move'; san: string; label: string; path: BuilderPath }
+  | { type: 'move'; san: string; number: string | null; path: BuilderPath }
   | { type: 'open' }
   | { type: 'close' };
 
-function moveLabel(san: string, beforeFen: string, needsNumber: boolean): string {
+/** `"12."` for White, `"12..."` for a Black line opener, `null` otherwise. */
+function moveNumberIndicator(beforeFen: string, needsNumber: boolean): string | null {
   const fields = beforeFen.split(' ');
   const turn = fields[1];
   const fullmove = fields[5] ?? '1';
-  if (turn === 'w') return `${fullmove}. ${san}`;
-  if (needsNumber) return `${fullmove}... ${san}`;
-  return san;
+  if (turn === 'w') return `${fullmove}.`;
+  if (needsNumber) return `${fullmove}...`;
+  return null;
 }
 
 export function flattenBuilderTree(children: BuilderNode[], rootFen: string): MoveListToken[] {
@@ -210,7 +213,7 @@ export function flattenBuilderTree(children: BuilderNode[], rootFen: string): Mo
       tokens.push({
         type: 'move',
         san: main.san,
-        label: moveLabel(main.san, fen, needsNumber),
+        number: moveNumberIndicator(fen, needsNumber),
         path: mainPath,
       });
       variations.forEach((variation, i) => {
@@ -219,7 +222,7 @@ export function flattenBuilderTree(children: BuilderNode[], rootFen: string): Mo
         tokens.push({
           type: 'move',
           san: variation.san,
-          label: moveLabel(variation.san, fen, true),
+          number: moveNumberIndicator(fen, true),
           path: variationPath,
         });
         walkLine(variation.children, variation.fen, variationPath, false);

@@ -61,25 +61,32 @@ export function RepertoireBoardBuilder({ side, initialPgn, onPgnChange }: Props)
         </div>
 
         {/* The move tree as wrapping PGN-style text; the cursor's move is
-            highlighted, every move navigates the board to its position. */}
-        <div className="mb-2 min-h-9 text-sm leading-7">
+            highlighted, every move navigates the board to its position.
+            Token styling mirrors HorizontalMoveList (games/play, line viewer)
+            — small muted move numbers, SAN buttons — with wrapping and `( )`
+            markers added because a repertoire's list carries variations. */}
+        <div className="mb-2 flex min-h-9 flex-wrap items-center gap-x-1 gap-y-0.5 text-sm">
           {builder.isEmpty ? (
             <span className="text-muted-foreground">{t('boardBuilder.empty')}</span>
           ) : (
             builder.tokens.map((token, i) =>
               token.type === 'move' ? (
-                <button
-                  key={`${i}-${token.path.join('.')}`}
-                  type="button"
-                  onClick={() => builder.jumpTo(token.path)}
-                  className={`mx-0.5 rounded px-1 py-0.5 font-mono transition-colors ${
-                    token.path.join('.') === currentPathKey
-                      ? 'bg-link-primary/10 font-medium text-link-primary'
-                      : 'text-foreground hover:bg-muted'
-                  }`}
-                >
-                  {token.label}
-                </button>
+                <span key={`${i}-${token.path.join('.')}`} className="flex items-center gap-0.5">
+                  {token.number && (
+                    <span className="text-xs text-muted-foreground">{token.number}</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => builder.jumpTo(token.path)}
+                    className={`rounded px-1.5 py-0.5 transition-colors ${
+                      token.path.join('.') === currentPathKey
+                        ? 'bg-foreground/15 font-semibold'
+                        : 'hover:bg-muted/40'
+                    }`}
+                  >
+                    {token.san}
+                  </button>
+                </span>
               ) : (
                 <span key={i} className="text-muted-foreground">
                   {token.type === 'open' ? '(' : ')'}
