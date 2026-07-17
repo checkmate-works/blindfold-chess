@@ -4701,6 +4701,7 @@
         "invalidOpening": "無効なオープニングです",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "投稿するにはサインインが必要です",
+        "profileRequired": "投稿するにはユーザー名の設定が必要です",
         "rateLimited": "各オープニングへの投稿は1日1回までです。しばらくしてからもう一度お試しください。"
       },
       "ratings": {
@@ -4735,6 +4736,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
+        "profileRequired": "返信するにはユーザー名の設定が必要です",
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者が返信を無効にしています。",
@@ -4793,6 +4795,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "投稿するにはサインインが必要です",
+        "profileRequired": "投稿するにはユーザー名の設定が必要です",
         "rateLimited": "投稿が多すぎます。しばらくしてからもう一度お試しください。"
       },
       "like": "いいね",
@@ -4815,6 +4818,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
+        "profileRequired": "返信するにはユーザー名の設定が必要です",
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者が返信を無効にしています。",
@@ -4870,6 +4874,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "コメントするにはサインインが必要です",
+        "profileRequired": "投稿するにはユーザー名の設定が必要です",
         "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
       },
       "like": "いいね",
@@ -4888,6 +4893,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
+        "profileRequired": "返信するにはユーザー名の設定が必要です",
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
@@ -4932,6 +4938,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "コメントするにはサインインが必要です",
+        "profileRequired": "投稿するにはユーザー名の設定が必要です",
         "invalidReplyPermission": "無効な返信許可設定です",
         "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
       },
@@ -4951,6 +4958,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
+        "profileRequired": "返信するにはユーザー名の設定が必要です",
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
@@ -4995,6 +5003,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "コメントするにはサインインが必要です",
+        "profileRequired": "投稿するにはユーザー名の設定が必要です",
         "invalidReplyPermission": "無効な返信許可設定です",
         "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
       },
@@ -5014,6 +5023,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
+        "profileRequired": "返信するにはユーザー名の設定が必要です",
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
@@ -5058,6 +5068,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "コメントするにはサインインが必要です",
+        "profileRequired": "投稿するにはユーザー名の設定が必要です",
         "invalidReplyPermission": "無効な返信許可設定です",
         "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
       },
@@ -5077,6 +5088,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
+        "profileRequired": "返信するにはユーザー名の設定が必要です",
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
@@ -5121,6 +5133,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "コメントするにはサインインが必要です",
+        "profileRequired": "投稿するにはユーザー名の設定が必要です",
         "invalidReplyPermission": "無効な返信許可設定です",
         "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
       },
@@ -5140,6 +5153,7 @@
         "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
+        "profileRequired": "返信するにはユーザー名の設定が必要です",
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",

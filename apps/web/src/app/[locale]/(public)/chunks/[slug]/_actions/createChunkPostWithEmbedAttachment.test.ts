@@ -25,6 +25,7 @@ const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockEmbedInsertValues = vi.fn();
 const mockPgnSelectWhereLimit = vi.fn();
+const mockSelectProfile = vi.fn();
 
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
@@ -89,10 +90,18 @@ const mockTx = {
 vi.mock('@/lib/db', () => ({
   db: {
     transaction: (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => mockSelectProfile(),
+        }),
+      }),
+    }),
   },
   topicPosts: { id: 'id', __name: 'topic_posts' },
   postGamePgnAttachments: { id: 'id', postId: 'post_id', __name: 'post_game_pgn_attachments' },
   postGameEmbedAttachments: { __name: 'post_game_embed_attachments' },
+  profiles: { id: 'id', __name: 'profiles' },
   feedItems: { __name: 'feed_items' },
 }));
 
@@ -169,6 +178,27 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     mockCheckRateLimit.mockResolvedValue({ success: true });
     mockPgnSelectWhereLimit.mockResolvedValue([]); // no pre-existing PGN
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
+  });
+
+  describe('profile requirement', () => {
+    it('returns the profileRequired error and never inserts when the user has no profile', async () => {
+      mockSelectProfile.mockResolvedValue([]);
+
+      const result = await createChunkPostWithEmbedAttachment(
+        'en',
+        testSlug,
+        {},
+        makeFormData({
+          embedProvider: 'chesscom',
+          embedSourceUrl: 'https://www.chess.com/emboard?id=98765',
+        })
+      );
+
+      expect(result).toEqual({ error: 'profileRequired' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+      expect(mockEmbedInsertValues).not.toHaveBeenCalled();
+    });
   });
 
   // #45 — DB CHECK passes but per-provider regex fails
@@ -321,6 +351,7 @@ describe('createChunkPostWithEmbedAttachment — Phase 13 (#83) lichess narrowin
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     mockCheckRateLimit.mockResolvedValue({ success: true });
     mockPgnSelectWhereLimit.mockResolvedValue([]);
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   it('rejects embedProvider="lichess" with the invalidUrl error key (Phase 13 narrowing)', async () => {
@@ -362,6 +393,7 @@ describe('createChunkPostWithEmbedAttachment — application-layer exclusivity (
     mockIsUserBanned.mockResolvedValue(false);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     mockCheckRateLimit.mockResolvedValue({ success: true });
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   it('#42 throws when a PGN attachment already exists for the same post (exclusivity invariant)', async () => {

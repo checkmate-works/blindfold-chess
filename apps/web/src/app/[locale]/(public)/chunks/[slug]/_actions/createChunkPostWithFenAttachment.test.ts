@@ -28,6 +28,7 @@ const mockCheckRateLimit = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockFenInsertValues = vi.fn();
+const mockSelectProfile = vi.fn();
 
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
@@ -74,9 +75,17 @@ const mockTx = {
 vi.mock('@/lib/db', () => ({
   db: {
     transaction: (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => mockSelectProfile(),
+        }),
+      }),
+    }),
   },
   topicPosts: { id: 'id', __name: 'topic_posts' },
   postFenAttachments: { __name: 'post_fen_attachments' },
+  profiles: { id: 'id', __name: 'profiles' },
   feedItems: { __name: 'feed_items' },
 }));
 
@@ -141,6 +150,20 @@ describe('createChunkPostWithFenAttachment', () => {
     mockIsUserBanned.mockResolvedValue(false);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     mockCheckRateLimit.mockResolvedValue({ success: true });
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
+  });
+
+  it('returns profileRequired and does not insert when the user has no profile', async () => {
+    mockSelectProfile.mockResolvedValue([]);
+    const result = await createChunkPostWithFenAttachment(
+      'en',
+      testSlug,
+      {},
+      makeFormData({ fen: VALID_FEN })
+    );
+    expect(result).toEqual({ error: 'profileRequired' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+    expect(mockFenInsertValues).not.toHaveBeenCalled();
   });
 
   it('happy path inserts a FEN row alongside the post and redirects', async () => {

@@ -17,6 +17,7 @@ const mockCheckRateLimit = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockAttachmentInsertValues = vi.fn();
+const mockSelectProfile = vi.fn();
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
@@ -67,9 +68,17 @@ const mockTx = {
 vi.mock('@/lib/db', () => ({
   db: {
     transaction: (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => mockSelectProfile(),
+        }),
+      }),
+    }),
   },
   topicPosts: { id: 'id', __name: 'topic_posts' },
   postGamePgnAttachments: { __name: 'post_game_pgn_attachments' },
+  profiles: { id: 'id', __name: 'profiles' },
   feedItems: { __name: 'feed_items' },
 }));
 
@@ -147,6 +156,24 @@ describe('createChunkPostWithAttachment', () => {
     mockIsUserBanned.mockResolvedValue(false);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     mockCheckRateLimit.mockResolvedValue({ success: true });
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
+  });
+
+  describe('profile requirement', () => {
+    it('returns the profileRequired error and never inserts when the user has no profile', async () => {
+      mockSelectProfile.mockResolvedValue([]);
+
+      const result = await createChunkPostWithAttachment(
+        'en',
+        testSlug,
+        {},
+        makeFormData({ attachment: SIMPLE_PGN })
+      );
+
+      expect(result).toEqual({ error: 'profileRequired' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+      expect(mockAttachmentInsertValues).not.toHaveBeenCalled();
+    });
   });
 
   describe('no-attachment fast path', () => {

@@ -12,6 +12,7 @@ import { createChunkReplyWithFenAttachment } from './createChunkReplyWithFenAtta
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
+const mockSelectProfile = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockFenInsertValues = vi.fn();
@@ -56,8 +57,11 @@ const mockTx = {
 vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
-      from: () => ({
+      from: (table: { __name?: string }) => ({
         where: (...args: unknown[]) => {
+          if (table.__name === 'profiles') {
+            return { limit: () => mockSelectProfile() };
+          }
           mockSelectFromWhere(...args);
           return (
             mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ?? []
@@ -80,6 +84,7 @@ vi.mock('@/lib/db', () => ({
     replyPermission: 'reply_permission',
   },
   postFenAttachments: { __name: 'post_fen_attachments' },
+  profiles: { __name: 'profiles', id: 'id' },
   userFollows: { id: 'id', followerId: 'follower_id', followingId: 'following_id' },
 }));
 
@@ -143,6 +148,7 @@ describe('createChunkReplyWithFenAttachment', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   it('happy path inserts the FEN row keyed on the new reply id and redirects to the list page anchor', async () => {
@@ -200,6 +206,24 @@ describe('createChunkReplyWithFenAttachment', () => {
     );
 
     expect(result).toEqual({ error: 'postFenAttachment.error.fenRequired' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+    expect(mockFenInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('returns profileRequired when the signed-in user has no profiles row', async () => {
+    setupHappyAuth();
+    setupParentPost();
+    mockSelectProfile.mockResolvedValue([]);
+
+    const result = await createChunkReplyWithFenAttachment(
+      'en',
+      testSlug,
+      validPostId,
+      {},
+      makeFormData({ fen: VALID_FEN })
+    );
+
+    expect(result).toEqual({ error: 'profileRequired' });
     expect(mockInsertValues).not.toHaveBeenCalled();
     expect(mockFenInsertValues).not.toHaveBeenCalled();
   });

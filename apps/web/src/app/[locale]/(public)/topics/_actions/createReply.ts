@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, topicPosts } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 import { createNotification } from '@/lib/notifications/notification';
@@ -98,7 +98,7 @@ async function insertReply(
   const targetId =
     replyToId && typeof replyToId === 'string' && UUID_RE.test(replyToId) ? replyToId : postId;
 
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.createReply);
+  const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.createReply);
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }

@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 
-import { authenticateAndCheckBan } from '@/lib/auth';
+import { authenticateCheckBanAndRequireProfile } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 import {
@@ -107,7 +107,7 @@ async function insertPost(
     return { error: invalidTopicError };
   }
 
-  const guardResult = await authenticateAndCheckBan();
+  const guardResult = await authenticateCheckBanAndRequireProfile();
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }

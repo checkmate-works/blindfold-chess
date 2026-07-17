@@ -9,6 +9,7 @@ import { createReplyBase } from './createReply';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
+const mockSelectProfile = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockIsUserBanned = vi.fn();
@@ -40,46 +41,64 @@ const txInsert = () => ({
   },
 });
 
-vi.mock('@/lib/db', () => ({
-  db: {
-    select: () => ({
-      from: () => ({
-        where: (...args: unknown[]) => {
-          mockSelectFromWhere(...args);
-          return (
-            mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ?? []
-          );
+vi.mock('@/lib/db', () => {
+  const profilesTable = { id: 'id' };
+
+  return {
+    db: {
+      select: () => ({
+        from: (table: unknown) => {
+          // The auth guard's own-profile lookup selects from `profiles` with
+          // `.where(...).limit(1)`; route it to mockSelectProfile so it never
+          // consumes mockSelectFromWhere's queued results.
+          if (table === profilesTable) {
+            return {
+              where: () => ({
+                limit: () => mockSelectProfile(),
+              }),
+            };
+          }
+          return {
+            where: (...args: unknown[]) => {
+              mockSelectFromWhere(...args);
+              return (
+                mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]
+                  ?.value ?? []
+              );
+            },
+          };
         },
       }),
-    }),
-    insert: () => ({
-      values: (...args: unknown[]) => {
-        mockInsertValues(...args);
-        return {
-          returning: () => mockInsertReturning(),
-        };
-      },
-    }),
-    transaction: async (cb: (tx: { insert: typeof txInsert }) => Promise<unknown>) =>
-      cb({ insert: txInsert }),
-  },
-  topicPosts: {
-    id: 'id',
-    userId: 'user_id',
-    topicType: 'topic_type',
-    topicKey: 'topic_key',
-    parentId: 'parent_id',
-    rootPostId: 'root_post_id',
-    content: 'content',
-    deletedAt: 'deleted_at',
-    replyPermission: 'reply_permission',
-  },
-  userFollows: {
-    id: 'id',
-    followerId: 'follower_id',
-    followingId: 'following_id',
-  },
-}));
+      insert: () => ({
+        values: (...args: unknown[]) => {
+          mockInsertValues(...args);
+          return {
+            returning: () => mockInsertReturning(),
+          };
+        },
+      }),
+      transaction: async (cb: (tx: { insert: typeof txInsert }) => Promise<unknown>) =>
+        cb({ insert: txInsert }),
+    },
+    topicPosts: {
+      id: 'id',
+      userId: 'user_id',
+      topicType: 'topic_type',
+      topicKey: 'topic_key',
+      parentId: 'parent_id',
+      rootPostId: 'root_post_id',
+      content: 'content',
+      deletedAt: 'deleted_at',
+      replyPermission: 'reply_permission',
+    },
+    userFollows: {
+      id: 'id',
+      followerId: 'follower_id',
+      followingId: 'following_id',
+    },
+    profiles: profilesTable,
+  };
+});
 
 vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
@@ -152,6 +171,7 @@ describe('createReplyBase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     baseParams.validateTopic.mockResolvedValue(true);
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   describe('topic validation', () => {
@@ -232,6 +252,17 @@ describe('createReplyBase', () => {
 
       const result = await createReplyBase(baseParams);
       expect(result).toEqual({ error: 'banned' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('should return profileRequired when user has no profile', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockCheckRateLimit.mockResolvedValue({ success: true });
+      mockSelectProfile.mockResolvedValue([]);
+
+      const result = await createReplyBase(baseParams);
+      expect(result).toEqual({ error: 'profileRequired' });
       expect(mockInsertValues).not.toHaveBeenCalled();
     });
 
