@@ -15,6 +15,7 @@ import { REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { createRepertoire } from '../_actions/createRepertoire';
 import { OpeningLinksField } from './OpeningLinksField';
+import { RepertoireBoardBuilder } from './RepertoireBoardBuilder';
 
 const PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
 
@@ -53,6 +54,10 @@ export function RepertoireImportForm({ locale, openings, initialPgn, initialSide
   const [phase, setPhase] = useState<RepertoirePhase>('opening');
   const [openingIds, setOpeningIds] = useState<string[]>([]);
   const [pgn, setPgn] = useState(initialPgn ?? '');
+  // How the moves are entered: pasting a PGN or playing them on a board. Both
+  // modes read and write the same `pgn` state — the board serializes its move
+  // tree through it — so detection, validation and submission are shared.
+  const [inputMode, setInputMode] = useState<'pgn' | 'board'>('pgn');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -174,19 +179,50 @@ export function RepertoireImportForm({ locale, openings, initialPgn, initialSide
       </fieldset>
 
       <div>
-        <label htmlFor="repertoire-pgn" className="block text-sm font-medium text-foreground">
-          {t('form.pgnLabel')}
-        </label>
-        <p className="mt-1 text-xs text-muted-foreground">{t('form.pgnHelp')}</p>
-        <Textarea
-          id="repertoire-pgn"
-          value={pgn}
-          onChange={(e) => setPgn(e.target.value)}
-          placeholder={t('form.pgnPlaceholder')}
-          rows={10}
-          inputSize="sm"
-          className="mt-1 font-mono"
-        />
+        <span className="block text-sm font-medium text-foreground">{t('form.pgnLabel')}</span>
+        <div
+          role="tablist"
+          className="mt-2 inline-flex rounded-md border border-input p-0.5 text-sm"
+        >
+          {(['pgn', 'board'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              role="tab"
+              aria-selected={inputMode === mode}
+              onClick={() => setInputMode(mode)}
+              className={`rounded px-3 py-1 transition-colors ${
+                inputMode === mode
+                  ? 'bg-link-primary/10 font-medium text-link-primary'
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {t(mode === 'pgn' ? 'form.inputModePgn' : 'form.inputModeBoard')}
+            </button>
+          ))}
+        </div>
+        {inputMode === 'pgn' ? (
+          <>
+            <p className="mt-2 text-xs text-muted-foreground">{t('form.pgnHelp')}</p>
+            <Textarea
+              id="repertoire-pgn"
+              value={pgn}
+              onChange={(e) => setPgn(e.target.value)}
+              placeholder={t('form.pgnPlaceholder')}
+              rows={10}
+              inputSize="sm"
+              className="mt-1 font-mono"
+              aria-label={t('form.pgnLabel')}
+            />
+          </>
+        ) : (
+          <div className="mt-2">
+            {/* Remounts on each switch, re-importing whatever the pgn state
+                holds — so paste → board carries the moves over, and board →
+                paste shows the serialized tree in the textarea. */}
+            <RepertoireBoardBuilder side={side} initialPgn={pgn} onPgnChange={setPgn} />
+          </div>
+        )}
       </div>
 
       {phase === 'opening' && (
