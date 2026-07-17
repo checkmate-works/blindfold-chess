@@ -9,6 +9,13 @@
  *   menuType / leaderboardKey correspond to challenge_results columns.
  * - position_submission_count: user's total posts across `positionTypes` must
  *   meet minCount (OR across types, see {@link PositionSubmissionCountRequirement}).
+ * - game_publish_win: user must have published minCount won engine games played
+ *   under a blindfold constraint (see {@link GamePublishWinRequirement}).
+ *
+ * A requirement type the parser does not recognise is DROPPED, not failed — so
+ * a rank seeded with only unknown requirements parses to `[]` and reads as
+ * "conditions not defined yet", silently letting the progression walk past it.
+ * A new type's guard and its seed data must therefore ship together.
  *
  * Level values use gaps (10, 20, ...) to allow future intermediate ranks
  * without renumbering.
@@ -35,7 +42,32 @@ export type PositionSubmissionCountRequirement = {
   minCount: number;
 };
 
-export type RankRequirement = ChallengeScoreRequirement | PositionSubmissionCountRequirement;
+/**
+ * Requires the user to have published at least one WON game against the engine
+ * that was played under some blindfold constraint.
+ *
+ * Checked against `games` (every row there is an engine game — there is no
+ * human-vs-human path into that table), so engine kind and strength are
+ * deliberately not part of the condition: the rank is about playing without
+ * full sight, not about beating a particular rating.
+ *
+ * "Under a constraint" is judged on the start-of-game settings snapshot alone —
+ * see {@link isConstrainedPlaySettings}, which owns that predicate.
+ *
+ * The win is self-reported. `games.result` is not verified server-side (a game
+ * can end in resignation or timeout, which a final-position check cannot
+ * confirm — publish-time integrity is move legality, not outcome), so this
+ * requirement inherits that posture.
+ */
+export type GamePublishWinRequirement = {
+  type: 'game_publish_win';
+  minCount: number;
+};
+
+export type RankRequirement =
+  | ChallengeScoreRequirement
+  | PositionSubmissionCountRequirement
+  | GamePublishWinRequirement;
 
 type RankSeed = {
   slug: string;
@@ -99,8 +131,18 @@ export function isPositionSubmissionCountRequirement(
   );
 }
 
+export function isGamePublishWinRequirement(value: unknown): value is GamePublishWinRequirement {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return record.type === 'game_publish_win' && typeof record.minCount === 'number';
+}
+
 function isRankRequirement(value: unknown): value is RankRequirement {
-  return isChallengeScoreRequirement(value) || isPositionSubmissionCountRequirement(value);
+  return (
+    isChallengeScoreRequirement(value) ||
+    isPositionSubmissionCountRequirement(value) ||
+    isGamePublishWinRequirement(value)
+  );
 }
 
 export function parseRequirements(raw: unknown): RankRequirement[] {
@@ -251,7 +293,17 @@ export const ranksSeedData: RankSeed[] = [
       },
     ],
   },
-  { slug: '1kyu', level: 50, color: RANK_COLORS['1kyu'], requirements: [] },
+  {
+    slug: '1kyu',
+    level: 50,
+    color: RANK_COLORS['1kyu'],
+    requirements: [
+      {
+        type: 'game_publish_win',
+        minCount: 1,
+      },
+    ],
+  },
   // Gap between 1kyu (50) and 1dan (110) is intentionally large to reserve
   // space for future intermediate ranks between kyū and dan tiers.
   { slug: '1dan', level: 110, color: RANK_COLORS['1dan'], requirements: [] },

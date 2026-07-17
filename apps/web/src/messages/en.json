@@ -5398,6 +5398,7 @@
     "comingSoon": "Coming Soon",
     "challengeScore": "Score {minScore}+ in {challengeName}",
     "submissionCount": "Submit at least {minCount} {itemName}",
+    "gamePublishWin": "Beat the engine with at least one constraint enabled, and publish the game",
     "orDivider": "or",
     "submissionItemNames": {
       "memory": "position-memory problem",
@@ -5432,7 +5433,8 @@
         "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",
         "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids.",
         "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids.",
-        "2kyu": "Able to recognize multiple pieces as a single meaningful chunk."
+        "2kyu": "Able to recognize multiple pieces as a single meaningful chunk.",
+        "1kyu": "Being able to beat the engine without full sight of the board."
       },
       "tips": "Tips",
       "tryChallenge": "Meet the requirements",

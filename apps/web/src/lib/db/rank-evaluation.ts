@@ -25,18 +25,21 @@
  * @see {@link evaluators} — registry of requirement type evaluators
  */
 import * as Sentry from '@sentry/nextjs';
-import { and, asc, count, eq, inArray } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
+
+import { isConstrainedPlaySettings } from '@/lib/games/play-settings-constraint';
 
 import type {
   ChallengeScoreRequirement,
+  GamePublishWinRequirement,
   GrantedRank,
   PositionSubmissionCountRequirement,
   RankRequirement,
 } from './data/ranks';
 import { parseRequirements } from './data/ranks';
 import { db } from './index';
-import { challengeBestScores, positions, ranks, userRanks } from './schema';
+import { challengeBestScores, games, positions, ranks, userRanks } from './schema';
 
 // ---------------------------------------------------------------------------
 // Pre-fetched scores cache type
@@ -92,6 +95,23 @@ const evaluators: Record<string, RequirementEvaluator> = {
       .from(positions)
       .where(and(eq(positions.userId, userId), inArray(positions.type, requirement.positionTypes)));
     return (row?.value ?? 0) >= requirement.minCount;
+  },
+  game_publish_win: async (userId, req, executor) => {
+    const requirement = req as GamePublishWinRequirement;
+    const dbInstance = executor ?? db;
+
+    // The "was it constrained?" test reads a JSONB blob and is product logic
+    // worth keeping honest and unit-tested, so it stays in TS rather than
+    // becoming an un-indexable SQL predicate over `play_settings`. Only the
+    // cheap, indexed half of the filter goes to the database; the row set left
+    // over is one user's won games, which is small.
+    const rows = await dbInstance
+      .select({ playSettings: games.playSettings })
+      .from(games)
+      .where(and(eq(games.authorId, userId), eq(games.result, 'win'), isNull(games.deletedAt)));
+
+    const qualifying = rows.filter((row) => isConstrainedPlaySettings(row.playSettings));
+    return qualifying.length >= requirement.minCount;
   },
 };
 

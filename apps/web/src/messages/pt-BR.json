@@ -5387,6 +5387,7 @@
     "comingSoon": "Em breve",
     "challengeScore": "Pontuação {minScore}+ em {challengeName}",
     "submissionCount": "Publique pelo menos {minCount} {itemName}",
+    "gamePublishWin": "Vença o motor com ao menos uma restrição ativada e publique a partida",
     "orDivider": "ou",
     "submissionItemNames": {
       "memory": "problema de memória de posições",
@@ -5421,7 +5422,8 @@
         "5kyu": "Capacidade de identificar corretamente a casa no tabuleiro de xadrez a partir da notação algébrica (ex., e4, Bg7).",
         "4kyu": "Capacidade de determinar os movimentos legais em uma coordenada específica para todas as peças sem ajudas visuais.",
         "3kyu": "Capacidade de planejar rotas de manobra de peças para todas as peças sem auxílios visuais.",
-        "2kyu": "Ser capaz de reconhecer várias peças como uma única unidade com significado (um “chunk”)."
+        "2kyu": "Ser capaz de reconhecer várias peças como uma única unidade com significado (um “chunk”).",
+        "1kyu": "Ser capaz de vencer o motor sem ver o tabuleiro por completo."
       },
       "tips": "Dicas",
       "tryChallenge": "Cumprir os requisitos",

@@ -8,6 +8,7 @@ import {
 } from '@/lib/db/data/ranks';
 import type {
   ChallengeScoreRequirement,
+  GamePublishWinRequirement,
   PositionSubmissionCountRequirement,
   RankRequirement,
   RankSlug,
@@ -137,6 +138,9 @@ export function buildRequirementLabels(
       }),
     ];
   }
+  if (req.type === 'game_publish_win') {
+    return [t('gamePublishWin', { minCount: req.minCount })];
+  }
   return buildPositionSubmissionLabels(req, t);
 }
 
@@ -156,8 +160,25 @@ export function buildRequirementItems(
 ): (RequirementItem | RequirementDivider)[] {
   return requirements.flatMap((req) => {
     if (req.type === 'challenge_score') return [buildChallengeScoreItem(req, locale, t)];
+    if (req.type === 'game_publish_win') return [buildGamePublishWinItem(req, locale, t)];
     return buildPositionSubmissionItems(req, locale, t);
   });
+}
+
+/**
+ * Unlike every other requirement, this one is not earned in `practice/` — it
+ * links to the game setup, since the way to satisfy it is to play the engine
+ * with something hidden and publish the win.
+ */
+function buildGamePublishWinItem(
+  req: GamePublishWinRequirement,
+  locale: string,
+  t: Translator
+): RequirementItem {
+  return {
+    label: t('gamePublishWin', { minCount: req.minCount }),
+    href: `/${locale}/games/new/standard`,
+  };
 }
 
 export function getBeltColorHex(slug: RankSlug): string {
