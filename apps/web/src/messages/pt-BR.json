@@ -51,7 +51,8 @@
       "submitting": "Importando…",
       "inputModePgn": "PGN",
       "inputModeBoard": "Tabuleiro",
-      "movesLabel": "Lances"
+      "movesLabel": "Lances",
+      "defaultName": "Meu sistema - {username}"
     },
     "boardBuilder": {
       "flip": "Girar tabuleiro",

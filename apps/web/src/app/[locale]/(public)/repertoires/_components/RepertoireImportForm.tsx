@@ -38,6 +38,12 @@ type Props = {
   initialPgn?: string;
   /** Prefills the side radio to match {@link initialPgn}'s player colour. */
   initialSide?: RepertoireSide;
+  /**
+   * Prefilled kata name (localized "My System - {username}", built server-side
+   * where the profile is at hand). Freely editable — just a starting point so
+   * the required field never blocks a quick import.
+   */
+  initialName?: string;
 };
 
 /**
@@ -47,11 +53,17 @@ type Props = {
  * server-side into one line per variation; validation (move legality across all
  * variations) also happens in `createRepertoire`.
  */
-export function RepertoireImportForm({ locale, openings, initialPgn, initialSide }: Props) {
+export function RepertoireImportForm({
+  locale,
+  openings,
+  initialPgn,
+  initialSide,
+  initialName,
+}: Props) {
   const t = useTranslations('Repertoires');
   const router = useRouter();
 
-  const [name, setName] = useState('');
+  const [name, setName] = useState(initialName ?? '');
   const [side, setSide] = useState<RepertoireSide>(initialSide ?? 'white');
   const [phase, setPhase] = useState<RepertoirePhase>('opening');
   const [openingIds, setOpeningIds] = useState<string[]>([]);
@@ -116,7 +128,7 @@ export function RepertoireImportForm({ locale, openings, initialPgn, initialSide
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label htmlFor="repertoire-name" className="block text-sm font-medium text-foreground">
-          {t('form.nameLabel')}
+          {t('form.nameLabel')} <span className="text-destructive">*</span>
         </label>
         <TextInput
           id="repertoire-name"
@@ -181,7 +193,9 @@ export function RepertoireImportForm({ locale, openings, initialPgn, initialSide
       </fieldset>
 
       <div className="space-y-2">
-        <span className="block text-sm font-medium text-foreground">{t('form.movesLabel')}</span>
+        <span className="block text-sm font-medium text-foreground">
+          {t('form.movesLabel')} <span className="text-destructive">*</span>
+        </span>
         {/* Same switcher chrome as the chunk / puzzle position editors — here
             the text tab holds a PGN instead of a FEN. */}
         <BoardFenTabs

@@ -51,7 +51,8 @@
       "submitting": "インポート中…",
       "inputModePgn": "PGN",
       "inputModeBoard": "盤面",
-      "movesLabel": "手順"
+      "movesLabel": "手順",
+      "defaultName": "マイシステム - {username}"
     },
     "boardBuilder": {
       "flip": "盤を反転",

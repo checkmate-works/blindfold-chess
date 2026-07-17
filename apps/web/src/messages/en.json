@@ -51,7 +51,8 @@
       "submitting": "Importing…",
       "inputModePgn": "PGN",
       "inputModeBoard": "Board",
-      "movesLabel": "Moves"
+      "movesLabel": "Moves",
+      "defaultName": "My System - {username}"
     },
     "boardBuilder": {
       "flip": "Flip board",

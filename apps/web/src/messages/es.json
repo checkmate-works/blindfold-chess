@@ -51,7 +51,8 @@
       "submitting": "Importando…",
       "inputModePgn": "PGN",
       "inputModeBoard": "Tablero",
-      "movesLabel": "Jugadas"
+      "movesLabel": "Jugadas",
+      "defaultName": "Mi sistema - {username}"
     },
     "boardBuilder": {
       "flip": "Girar tablero",
