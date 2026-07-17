@@ -12,6 +12,36 @@ import { getVisualAid } from '../paragraphVisualAids';
 import type { Translator } from './context';
 
 /**
+ * The prose part of a paragraph block, dispatched on the paragraph's shape
+ * (plain string / bulleted list / heading + body — see {@link GuideParagraph}).
+ *
+ * `whitespace-pre-line` keeps authored `\n` as a line break while still
+ * collapsing the incidental indentation of the JSON message files.
+ */
+function renderParagraphProse(paragraph: GuideParagraph): ReactNode {
+  if (typeof paragraph === 'string') {
+    return <p className="whitespace-pre-line text-foreground/80">{paragraph}</p>;
+  }
+  if (isGuideListParagraph(paragraph)) {
+    return (
+      <ul className="ml-6 list-disc space-y-2 text-foreground/80">
+        {paragraph.items.map((item, i) => (
+          <li key={i} className="whitespace-pre-line">
+            {item}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <p className="whitespace-pre-line text-foreground/80">
+      <strong className="block">{paragraph.heading}</strong>
+      {paragraph.body}
+    </p>
+  );
+}
+
+/**
  * Render a single paragraph-sized block: the paragraph prose itself, its
  * optional visual aid, and its optional inline link card. This is the
  * innermost "block type" — the file's content model has only one block
@@ -36,24 +66,7 @@ function renderParagraphBlock({
 
   return (
     <React.Fragment key={index}>
-      {/* `whitespace-pre-line` keeps authored `\n` as a line break while still
-          collapsing the incidental indentation of the JSON message files. */}
-      {typeof paragraph === 'string' ? (
-        <p className="whitespace-pre-line text-foreground/80">{paragraph}</p>
-      ) : isGuideListParagraph(paragraph) ? (
-        <ul className="ml-6 list-disc space-y-2 text-foreground/80">
-          {paragraph.items.map((item, i) => (
-            <li key={i} className="whitespace-pre-line">
-              {item}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="whitespace-pre-line text-foreground/80">
-          <strong className="block">{paragraph.heading}</strong>
-          {paragraph.body}
-        </p>
-      )}
+      {renderParagraphProse(paragraph)}
       {getVisualAid(rankSlug, pageNumber, index)}
       {linkInfo && (
         <>

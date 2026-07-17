@@ -7,9 +7,16 @@ import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_comp
 import { PAWN_BREAKTHROUGH_FEN } from './pawn-breakthrough-fen';
 
 /**
- * The forced winning line from {@link PAWN_BREAKTHROUGH_FEN}. Reuses the same
- * move-reference affordance as game comments: the run renders as a button that
- * opens a steppable board preview, so a reader can walk the breakthrough
+ * The forced winning line from {@link PAWN_BREAKTHROUGH_FEN}. Exported so a
+ * test can pin every ply as legal from that position — the move-reference
+ * parser truncates silently at the first illegal move.
+ */
+export const BREAKTHROUGH_LINE = '1. b6 axb6 2. c6 bxc6 3. a6 Kf7 4. a7 b5 5. a8=Q';
+
+/**
+ * The 1kyu guide's steppable replay of {@link BREAKTHROUGH_LINE}. Reuses the
+ * same move-reference affordance as game comments: the run renders as a button
+ * that opens a steppable board preview, so a reader can walk the breakthrough
  * instead of visualising nine plies unaided.
  *
  * `moves={[]}` is what anchors the replay to the guide's position rather than a
@@ -22,8 +29,6 @@ import { PAWN_BREAKTHROUGH_FEN } from './pawn-breakthrough-fen';
  * `paragraphVisualAids` instantiates its entries at module scope, where no
  * per-request locale exists.
  */
-export const BREAKTHROUGH_LINE = '1. b6 axb6 2. c6 bxc6 3. a6 Kf7 4. a7 b5 5. a8=Q';
-
 export function PawnBreakthroughLine() {
   const locale = useLocale();
 
