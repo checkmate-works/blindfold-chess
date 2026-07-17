@@ -118,7 +118,10 @@ END;
 $$;
 
 -- Grant necessary permissions
-GRANT SELECT, INSERT, DELETE ON TABLE public.topic_posts TO authenticated;
+-- UPDATE matches the "topic_posts_update" RLS policy (own rows only): post
+-- editing exists (editPost soft-edits, delete-core soft-deletes), so the
+-- PostgREST surface mirrors what the app's privileged connection allows.
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.topic_posts TO authenticated;
 GRANT SELECT ON TABLE public.topic_posts TO anon;
 
 -- =============================================================================
