@@ -5800,37 +5800,37 @@
         "pages": [
           {
             "paragraphs": [
-              "ここまで到達したあなたは目隠しチェスを実践するための基本的なスキルは全て保有していると思います。\n物理的なボードがなくても、メンタルボード上で駒をマヌーバリングできるし、パターン認識についても理解ができています。",
-              "パターン認識が必要なのはフェーズ的にはミドルゲームです。\nここが最も難解であり、認知的な負荷がかかる段階です。\nパターン認識は身につけるのが難しいと思いますが、実際に目隠しチェスを数多くこなしていく中で、認識ができるパターンが増えていくと思います。",
-              "しかし、オープニングやエンドゲームはミドルゲームよりも簡単にプレイできるのではないでしょうか。",
-              "オープニングに関しては、ある程度利用するもの固定して、遭遇する頻度が高いラインを予め暗記しておくという方法が目隠しチェスに関しても有効です。\nなぜなら、暗記しておくと無意識にブックムーブが返せるので、認知的なコストがかからないからです。\n結果的に Tabia に到達するまでほぼ自動的に進められるという展開になることも珍しくありません。",
-              "オープニングを暗記することに関しては否定的な意見もあると思います。\n例えば以下のようなものです。",
+              "Se você chegou até aqui, já tem todas as habilidades básicas que o xadrez às cegas exige.\nVocê consegue manobrar as peças em um tabuleiro mental sem ter um físico à frente, e entende o que significa reconhecimento de padrões.",
+              "O reconhecimento de padrões é o que sustenta o meio-jogo.\nEssa é a fase mais difícil, e a que mais pesa cognitivamente.\nAdquirir esse reconhecimento é trabalhoso, mas quanto mais partidas às cegas você jogar de fato, mais padrões vai começar a enxergar.",
+              "Já as aberturas e os finais — não são mais fáceis de jogar que o meio-jogo?",
+              "Nas aberturas, fixar um conjunto limitado e memorizar as linhas que você mais encontra também funciona no xadrez às cegas.\nUma vez memorizada a linha, você responde com lances de livro sem pensar, então não custa nada em termos cognitivos.\nNão é raro acabar avançando quase automaticamente até chegar à Tabia.",
+              "É claro que há argumentos contra memorizar aberturas.\nDo tipo:",
               {
                 "items": [
-                  "チェスは記憶ではなくてアイデアが重要",
-                  "相手が変わった応手をすると暗記したパターンから外れて役に立たない",
-                  "暗記してもどうせ半年後には忘れてしまっている"
+                  "Xadrez é sobre ideias, não sobre memória",
+                  "No momento em que seu adversário joga algo estranho você sai das linhas memorizadas e não serve de nada",
+                  "De qualquer forma você vai ter esquecido tudo em seis meses"
                 ]
               },
-              "どれも正論だと思うのでオープニングを暗記することをここで強制はしません。\nただ、オープニングの暗記に挑戦したい方のために以下のような機能も用意しました。",
-              "上記で自分で利用するオープニングを登録しておくと、このアプリで行った目隠しチェスのゲームでどの段階でラインから外れたのかをチェックできます。\nもし気が向いたら利用してみてください。",
-              "このサービスでの機能はベータ版でまだ品質が荒いので、Chessableなども併用するといいと思います。"
+              "Todos me parecem justos, então ninguém aqui vai obrigar você a memorizar aberturas.\nMas, para quem quiser tentar, existe um recurso para isso:",
+              "Registre ali em cima as aberturas que você joga e poderá verificar em que ponto uma das suas partidas às cegas neste aplicativo saiu da linha.\nExperimente se tiver vontade.",
+              "A versão deste aplicativo está em beta e ainda é rústica, então combiná-la com algo como o Chessable é uma boa ideia."
             ]
           },
           {
             "paragraphs": [
-              "エンドゲームにも暗記しておくと便利なパターンがいくつも存在します。\n例えば以下です。",
-              "このポジションでは白は確実にポーンを昇格できます。",
-              "このように、特定のポーン構造になればプロモーションが確実にできるなどパターン認識をしておけば、目隠しチェスでも認知負荷をかけずに再現ができるはずです。",
-              "ただし、このような特定のパターンを適用できるゲームは滅多にないでしょう。\nこの点は、覚えておくと確実に使用する機会があるオープニングとは、暗記に対するモチベーションや得られる効力が異なる点です。"
+              "O final também tem vários padrões que vale a pena memorizar.\nPor exemplo, este:",
+              "Nesta posição as brancas promovem com certeza.",
+              "Reconheça padrões assim — chegue a certa estrutura de peões e a promoção está garantida — e você deve conseguir reproduzi-lo às cegas sem nenhuma carga cognitiva.",
+              "Dito isso, partidas em que um padrão específico como este se aplica são raras.\nÉ aí que difere das aberturas, que você com certeza vai aproveitar: tanto a motivação para memorizar quanto o retorno são diferentes."
             ]
           },
           {
             "paragraphs": [
-              "エンドゲームは単純に駒が少ないため、目隠しチェスの実践練習に向いています。\nエンドゲームでは、膨大な必勝パターンを暗記するよりは、2 Pawn + 1 Pawn など単純なものから始めて勝ちパターンを増やしたらいいと思います。",
-              "このアプリでは、任意のポジションからAI対戦ができる機能があります。",
-              "これは、先ほどの例のように特定のポーン構造を知っておけば勝てるという次元ではなくて、任意のマテリアルの組み合わせになれば勝てるという次元を目指す訓練となります。\n根気よく続ければ、ポーンアップしたら勝てる、Rook Endings になったらまず負けないだろうという自信がつくかもしれません。",
-              "エンドゲームに関しても人それぞれ流儀があると思いますが、自身に合うような方式でぜひ挑戦してください。"
+              "Finais simplesmente têm menos peças, o que os torna muito adequados para praticar xadrez às cegas de verdade.\nEm vez de memorizar um catálogo enorme de padrões vencedores, comece por algo simples como 2 peões contra 1 e vá ampliando seu repertório de padrões vencedores.",
+              "Este aplicativo permite jogar contra a IA a partir de qualquer posição.",
+              "Isto não é o nível de “conheça esta estrutura de peões e você vence” do exemplo anterior — é um treino que mira o nível de “obtenha qualquer vantagem material e você vence”.\nSe persistir, talvez passe a confiar que um peão a mais é vitória, e que um final de torres não se perde.",
+              "Cada um tem seu jeito com os finais, então encare do modo que combinar com você."
             ]
           }
         ]
@@ -5867,8 +5867,8 @@
         "5kyuGuideLabel": "Ver o guia do 5º Kyū"
       },
       "1kyu": {
-        "repertoiresLabel": "型（オープニングを暗記する）",
-        "newGameFromPositionLabel": "2 Pawn + 1 Pawn で AI と対戦する"
+        "repertoiresLabel": "Kata (memorize suas aberturas)",
+        "newGameFromPositionLabel": "Jogar contra a IA a partir de 2 peões contra 1"
       }
     },
     "visualAids": {

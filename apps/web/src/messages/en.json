@@ -5811,37 +5811,37 @@
         "pages": [
           {
             "paragraphs": [
-              "ここまで到達したあなたは目隠しチェスを実践するための基本的なスキルは全て保有していると思います。\n物理的なボードがなくても、メンタルボード上で駒をマヌーバリングできるし、パターン認識についても理解ができています。",
-              "パターン認識が必要なのはフェーズ的にはミドルゲームです。\nここが最も難解であり、認知的な負荷がかかる段階です。\nパターン認識は身につけるのが難しいと思いますが、実際に目隠しチェスを数多くこなしていく中で、認識ができるパターンが増えていくと思います。",
-              "しかし、オープニングやエンドゲームはミドルゲームよりも簡単にプレイできるのではないでしょうか。",
-              "オープニングに関しては、ある程度利用するもの固定して、遭遇する頻度が高いラインを予め暗記しておくという方法が目隠しチェスに関しても有効です。\nなぜなら、暗記しておくと無意識にブックムーブが返せるので、認知的なコストがかからないからです。\n結果的に Tabia に到達するまでほぼ自動的に進められるという展開になることも珍しくありません。",
-              "オープニングを暗記することに関しては否定的な意見もあると思います。\n例えば以下のようなものです。",
+              "If you have made it this far, you have every basic skill blindfold chess asks for.\nYou can maneuver pieces on a mental board without a physical one in front of you, and you understand what pattern recognition means.",
+              "Pattern recognition is what the middlegame runs on.\nThat is the hardest phase, and the one that loads you up cognitively.\nPattern recognition is hard to acquire, but the more blindfold games you actually play, the more patterns you will start to see.",
+              "Openings and endgames, though — are those not easier to play than the middlegame?",
+              "For openings, settling on a fixed set and memorising the lines you meet most often works for blindfold chess too.\nOnce a line is memorised you answer with book moves without thinking, so it costs you nothing cognitively.\nIt is not unusual to end up coasting almost automatically until you reach the Tabia.",
+              "There are arguments against memorising openings, of course.\nOnes like these:",
               {
                 "items": [
-                  "チェスは記憶ではなくてアイデアが重要",
-                  "相手が変わった応手をすると暗記したパターンから外れて役に立たない",
-                  "暗記してもどうせ半年後には忘れてしまっている"
+                  "Chess is about ideas, not memory",
+                  "The moment your opponent plays something odd you are out of your memorised lines and it is worthless",
+                  "You will have forgotten it all in six months anyway"
                 ]
               },
-              "どれも正論だと思うのでオープニングを暗記することをここで強制はしません。\nただ、オープニングの暗記に挑戦したい方のために以下のような機能も用意しました。",
-              "上記で自分で利用するオープニングを登録しておくと、このアプリで行った目隠しチェスのゲームでどの段階でラインから外れたのかをチェックできます。\nもし気が向いたら利用してみてください。",
-              "このサービスでの機能はベータ版でまだ品質が荒いので、Chessableなども併用するといいと思います。"
+              "Each of those is fair, so nothing here is going to force you to memorise openings.\nBut for anyone who wants to try, there is a feature for it:",
+              "Register the openings you play up there, and you can check at which point one of your blindfold games in this app left the line.\nGive it a go if you feel like it.",
+              "This app's version is a beta and still rough, so pairing it with something like Chessable is a good idea."
             ]
           },
           {
             "paragraphs": [
-              "エンドゲームにも暗記しておくと便利なパターンがいくつも存在します。\n例えば以下です。",
-              "このポジションでは白は確実にポーンを昇格できます。",
-              "このように、特定のポーン構造になればプロモーションが確実にできるなどパターン認識をしておけば、目隠しチェスでも認知負荷をかけずに再現ができるはずです。",
-              "ただし、このような特定のパターンを適用できるゲームは滅多にないでしょう。\nこの点は、覚えておくと確実に使用する機会があるオープニングとは、暗記に対するモチベーションや得られる効力が異なる点です。"
+              "The endgame has plenty of patterns worth memorising too.\nHere is one:",
+              "In this position White is certain to promote a pawn.",
+              "Recognise patterns like this — reach a given pawn structure and promotion is guaranteed — and you should be able to reproduce it blindfold with no cognitive load at all.",
+              "That said, games where a specific pattern like this applies are rare.\nThat is where it differs from openings, which you are certain to get use out of: both the motivation to memorise and the payoff are different."
             ]
           },
           {
             "paragraphs": [
-              "エンドゲームは単純に駒が少ないため、目隠しチェスの実践練習に向いています。\nエンドゲームでは、膨大な必勝パターンを暗記するよりは、2 Pawn + 1 Pawn など単純なものから始めて勝ちパターンを増やしたらいいと思います。",
-              "このアプリでは、任意のポジションからAI対戦ができる機能があります。",
-              "これは、先ほどの例のように特定のポーン構造を知っておけば勝てるという次元ではなくて、任意のマテリアルの組み合わせになれば勝てるという次元を目指す訓練となります。\n根気よく続ければ、ポーンアップしたら勝てる、Rook Endings になったらまず負けないだろうという自信がつくかもしれません。",
-              "エンドゲームに関しても人それぞれ流儀があると思いますが、自身に合うような方式でぜひ挑戦してください。"
+              "Endgames simply have fewer pieces, which makes them well suited to practising blindfold chess for real.\nRather than memorising a vast catalogue of winning patterns, start with something simple like 2 pawns vs 1 and build your stock of winning patterns from there.",
+              "This app lets you play the AI from any position.",
+              "This is not the level of “know this pawn structure and you win” from the earlier example — it is training aimed at the level of “get any material edge and you win”.\nKeep at it and you may find yourself confident that a pawn up is a win, and that a rook ending is one you will not lose.",
+              "Everyone has their own way with endgames, so please take it on in whatever way suits you."
             ]
           }
         ]
@@ -5878,8 +5878,8 @@
         "5kyuGuideLabel": "View the 5th Kyū guide"
       },
       "1kyu": {
-        "repertoiresLabel": "型（オープニングを暗記する）",
-        "newGameFromPositionLabel": "2 Pawn + 1 Pawn で AI と対戦する"
+        "repertoiresLabel": "Kata (memorise your openings)",
+        "newGameFromPositionLabel": "Play the AI from 2 pawns vs 1"
       }
     },
     "visualAids": {
