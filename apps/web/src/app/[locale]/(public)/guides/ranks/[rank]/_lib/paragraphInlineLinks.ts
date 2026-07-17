@@ -13,6 +13,8 @@
  */
 import type { RankSlug } from '@/lib/db/data/ranks';
 
+import { TWO_PAWNS_VS_ONE_FEN } from '@/app/[locale]/(public)/ranks/_components/two-pawns-vs-one-fen';
+
 type GuideLinkKey = `${RankSlug}:${number}:${number}`;
 
 type GuideLinkEntry = {
@@ -144,6 +146,16 @@ const GUIDE_LINK_MAP: Partial<Record<GuideLinkKey, GuideLinkEntry>> = {
     inlineLinkKey: '1kyu',
     labelKey: 'repertoiresLabel',
     href: 'repertoires',
+  },
+  // 1kyu guide - page 3, start an AI game from the 2-vs-1 pawn endgame. The
+  // position editor pre-fills itself from `?fen=` (plain percent-encoded, not
+  // the Base64URL token position-memory uses), the same way getting-started and
+  // the position-memory/puzzle pages link into it. Built from the constant
+  // rather than a pasted string, so the href cannot drift from the FEN.
+  '1kyu:3:1': {
+    inlineLinkKey: '1kyu',
+    labelKey: 'newGameFromPositionLabel',
+    href: `games/new/position?fen=${encodeURIComponent(TWO_PAWNS_VS_ONE_FEN)}`,
   },
   // 2kyu guide - Chunks list (page 4, paragraph 1)
   '2kyu:4:1': {

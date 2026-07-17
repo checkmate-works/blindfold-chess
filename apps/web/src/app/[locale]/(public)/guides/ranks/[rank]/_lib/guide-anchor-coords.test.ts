@@ -1,8 +1,11 @@
 import jaMessages from '@/messages/ja.json';
+import { validateFen } from '@blindfold-chess/features/chess-core';
 import { describe, expect, it } from 'vitest';
 
 import { getRankGuide, paragraphToPlainText } from '@/lib/guides';
 import type { FlatGuide } from '@/lib/guides';
+
+import { TWO_PAWNS_VS_ONE_FEN } from '@/app/[locale]/(public)/ranks/_components/two-pawns-vs-one-fen';
 
 import { getGuideInlineLink } from './paragraphInlineLinks';
 
@@ -43,5 +46,26 @@ describe('1kyu guide anchor coordinates', () => {
 
   it('keeps the paragraph that follows the card referring back to it', () => {
     expect(paragraphAt('1kyu', 1, 7)).toContain('上記で');
+  });
+
+  it('anchors the AI-game card under the paragraph announcing the feature', () => {
+    expect(paragraphAt('1kyu', 3, 1)).toContain('任意のポジションからAI対戦ができる機能');
+
+    const info = getGuideInlineLink('1kyu', 3, 1, 'ja', () => 'label');
+    expect(info?.href).toBe(
+      `/ja/games/new/position?fen=${encodeURIComponent(TWO_PAWNS_VS_ONE_FEN)}`
+    );
+  });
+
+  it('pre-fills the position editor with a real 2-vs-1 pawn endgame', () => {
+    // The editor writes `?fen` straight into its board state without validating
+    // it, so a malformed FEN here would silently render a broken position with
+    // Start greyed out rather than failing anywhere visible.
+    expect(validateFen(TWO_PAWNS_VS_ONE_FEN)).toBe(true);
+
+    const [placement, turn] = TWO_PAWNS_VS_ONE_FEN.split(' ');
+    expect(turn).toBe('w');
+    expect(placement.split('').filter((c) => c === 'P')).toHaveLength(2);
+    expect(placement.split('').filter((c) => c === 'p')).toHaveLength(1);
   });
 });

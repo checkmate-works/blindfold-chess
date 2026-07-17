@@ -56,6 +56,7 @@ import { RookMovementBoard } from '@/app/[locale]/(public)/ranks/_components/Roo
 import { ScatteredPawnsBoard } from '@/app/[locale]/(public)/ranks/_components/ScatteredPawnsBoard';
 import { Step3Board } from '@/app/[locale]/(public)/ranks/_components/Step3Board';
 import { SymmetryBoard } from '@/app/[locale]/(public)/ranks/_components/SymmetryBoard';
+import { TwoPawnsVsOneBoard } from '@/app/[locale]/(public)/ranks/_components/TwoPawnsVsOneBoard';
 
 type VisualAidKey = `${RankSlug}:${number}:${number}`;
 
@@ -125,6 +126,10 @@ const VISUAL_AID_MAP: Record<VisualAidKey, ReactNode> = {
   // click-to-replay move reference.
   '1kyu:2:0': <PawnBreakthroughBoard />,
   '1kyu:2:1': <PawnBreakthroughLine />,
+  // 1kyu guide - page 3: the 2-vs-1 pawn endgame the reader is invited to play
+  // against the AI. Sits between the paragraph and the link card, so the
+  // position is visible before the click.
+  '1kyu:3:1': <TwoPawnsVsOneBoard />,
 };
 
 export function getVisualAid(
