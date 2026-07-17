@@ -48,6 +48,8 @@ import { KingsideCastledBoard } from '@/app/[locale]/(public)/ranks/_components/
 import { KnightFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/KnightFormulaBlock';
 import { KnightMovementBoard } from '@/app/[locale]/(public)/ranks/_components/KnightMovementBoard';
 import { MiniBoard } from '@/app/[locale]/(public)/ranks/_components/MiniBoard';
+import { PawnBreakthroughBoard } from '@/app/[locale]/(public)/ranks/_components/PawnBreakthroughBoard';
+import { PawnBreakthroughLine } from '@/app/[locale]/(public)/ranks/_components/PawnBreakthroughLine';
 import { QuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/QuadrantBoard';
 import { QueenMovementBoard } from '@/app/[locale]/(public)/ranks/_components/QueenMovementBoard';
 import { RookMovementBoard } from '@/app/[locale]/(public)/ranks/_components/RookMovementBoard';
@@ -118,6 +120,11 @@ const VISUAL_AID_MAP: Record<VisualAidKey, ReactNode> = {
   // counterpart. Both link to an instant "custom" problem of the same FEN.
   '2kyu:1:3': <ScatteredPawnsBoard />,
   '2kyu:2:3': <KingsideCastledBoard />,
+  // 1kyu guide - page 2 (endgame patterns worth memorising): the pawn
+  // breakthrough position, followed by its forced winning line as a
+  // click-to-replay move reference.
+  '1kyu:2:0': <PawnBreakthroughBoard />,
+  '1kyu:2:1': <PawnBreakthroughLine />,
 };
 
 export function getVisualAid(
