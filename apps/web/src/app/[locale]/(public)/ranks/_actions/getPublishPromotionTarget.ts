@@ -23,7 +23,7 @@ import { getAllRanks, getUserAchievedRankIds } from '../_lib/queries';
  * under a constraint) — it is the only side that knows the game, which lives in
  * localStorage until publish.
  */
-export async function getPublishPromotionTarget(): Promise<{ slug: RankSlug } | null> {
+export async function getPublishPromotionTarget(): Promise<RankSlug | null> {
   const user = await getOptionalUser();
   if (!user) return null;
   if (!(await userHasProfile(user.id))) return null;
@@ -36,5 +36,5 @@ export async function getPublishPromotionTarget(): Promise<{ slug: RankSlug } | 
   const { next } = resolveNextRank(dbRanks, resolveAchievedSlugs(dbRanks, achievedRankIds));
   if (!next || !isRankEarnedByPlaying(next.requirements)) return null;
 
-  return { slug: next.slug };
+  return next.slug;
 }

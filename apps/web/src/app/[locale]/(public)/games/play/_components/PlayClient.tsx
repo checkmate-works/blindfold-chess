@@ -283,7 +283,7 @@ export function PlayClient({
   // Would publishing this win earn a rank? The grant happens at publish, not
   // at checkmate, so the finish modal is the last place to say so before the
   // player walks away from it.
-  const promotionTarget = usePublishPromotion({
+  const promotionRankSlug = usePublishPromotion({
     result: playerResult,
     initialPerGamePrefs,
     enabled: isFinished && !isFinishedView,
@@ -498,7 +498,7 @@ export function PlayClient({
         onRecall={openRecall}
         onRepertoireCheck={openRepertoireCheck}
         published={isShared}
-        promotionRankSlug={promotionTarget?.slug ?? null}
+        promotionRankSlug={promotionRankSlug}
         onShare={handleShare}
       />
     </div>

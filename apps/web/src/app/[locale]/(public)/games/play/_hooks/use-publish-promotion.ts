@@ -35,12 +35,15 @@ type Args = {
  * predicate the server evaluator runs against the published row — so the
  * promise made here and the grant made later cannot drift apart.
  *
- * Returns null until confirmed, so the UI defaults to promising nothing.
+ * Returns the rank's slug, or null until confirmed — so the UI defaults to
+ * promising nothing.
  */
-export function usePublishPromotion({ result, initialPerGamePrefs, enabled }: Args): {
-  slug: RankSlug;
-} | null {
-  const [target, setTarget] = useState<{ slug: RankSlug } | null>(null);
+export function usePublishPromotion({
+  result,
+  initialPerGamePrefs,
+  enabled,
+}: Args): RankSlug | null {
+  const [target, setTarget] = useState<RankSlug | null>(null);
 
   // Cheap local disqualifiers first — most finished games are not a constrained
   // win, and those must not cost a round-trip.
