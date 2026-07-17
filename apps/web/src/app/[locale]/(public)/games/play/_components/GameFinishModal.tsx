@@ -58,7 +58,7 @@ type Props = {
  * help-tour explanation. Dismissing it leaves the
  * player on the finished board (reopen via the board's "Next action" button).
  *
- * When this win would earn a rank (`promotionRankName`), the cards give way to
+ * When this win would earn a rank (`promotionRankSlug`), the cards give way to
  * a single call to publish. The rank is granted at publish, not at checkmate,
  * so the ordinary modal would send the player off to a screen where publishing
  * reads as an optional extra — and quietly cost them the promotion. The three
@@ -102,28 +102,37 @@ export function GameFinishModal({
     },
   ];
 
-  if (showPromotion) {
-    return (
-      <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" aria-labelledby={titleId}>
-        <div className="relative space-y-4">
-          <CloseButton
-            onClick={onClose}
-            size="w-5 h-5"
-            className="absolute top-0 right-0 text-muted-foreground hover:text-foreground transition-colors"
-          />
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" aria-labelledby={titleId}>
+      <div className="relative space-y-4">
+        <CloseButton
+          onClick={onClose}
+          size="w-5 h-5"
+          className="absolute top-0 right-0 text-muted-foreground hover:text-foreground transition-colors"
+        />
 
-          <div id={titleId} className="flex flex-col items-center gap-2 pr-8">
-            {result && <CompactResultHeader result={result} />}
-            <p className="text-center font-semibold text-foreground">
-              {t('finishModal.promotion.title', {
-                rankName: tRanks(`rankNames.${promotionRankSlug}`),
-              })}
-            </p>
-            <p className="text-center text-sm text-muted-foreground">
-              {t('finishModal.promotion.description')}
-            </p>
-          </div>
+        <div id={titleId} className="flex flex-col items-center gap-2 pr-8">
+          {result && <CompactResultHeader result={result} />}
+          {showPromotion ? (
+            <>
+              <p className="text-center font-semibold text-foreground">
+                {t('finishModal.promotion.title', {
+                  rankName: tRanks(`rankNames.${promotionRankSlug}`),
+                })}
+              </p>
+              <p className="text-center text-sm text-muted-foreground">
+                {t('finishModal.promotion.description')}
+              </p>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{t('finishModal.title')}</span>
+              <HelpTourButton steps={tourSteps} label={t('finishModal.help')} />
+            </div>
+          )}
+        </div>
 
+        {showPromotion ? (
           <div className="flex flex-col items-center gap-3">
             <button
               type="button"
@@ -136,62 +145,42 @@ export function GameFinishModal({
               {t('finishModal.promotion.skip')}
             </button>
           </div>
-        </div>
-      </Modal>
-    );
-  }
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" aria-labelledby={titleId}>
-      <div className="relative space-y-4">
-        <CloseButton
-          onClick={onClose}
-          size="w-5 h-5"
-          className="absolute top-0 right-0 text-muted-foreground hover:text-foreground transition-colors"
-        />
-
-        <div id={titleId} className="flex flex-col items-center gap-2 pr-8">
-          {result && <CompactResultHeader result={result} />}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t('finishModal.title')}</span>
-            <HelpTourButton steps={tourSteps} label={t('finishModal.help')} />
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <FinishChoiceCard
+              tourId="finish-card-review"
+              icon={<FaClipboardList aria-hidden />}
+              title={t('finishModal.review.title')}
+              description={t('finishModal.review.description')}
+              onClick={onReview}
+              badge={
+                published ? (
+                  <span
+                    title={t('finishModal.publishedBadge')}
+                    className="inline-flex items-center rounded-full bg-success/15 p-1 text-success"
+                  >
+                    <FaCloudUploadAlt className="h-3 w-3" aria-hidden />
+                    <span className="sr-only">{t('finishModal.publishedBadge')}</span>
+                  </span>
+                ) : undefined
+              }
+            />
+            <FinishChoiceCard
+              tourId="finish-card-recall"
+              icon={<FaBrain aria-hidden />}
+              title={t('finishModal.recall.title')}
+              description={t('finishModal.recall.description')}
+              onClick={onRecall}
+            />
+            <FinishChoiceCard
+              tourId="finish-card-repertoire-check"
+              icon={<FaBook aria-hidden />}
+              title={t('finishModal.repertoireCheck.title')}
+              description={t('finishModal.repertoireCheck.description')}
+              onClick={onRepertoireCheck}
+            />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <FinishChoiceCard
-            tourId="finish-card-review"
-            icon={<FaClipboardList aria-hidden />}
-            title={t('finishModal.review.title')}
-            description={t('finishModal.review.description')}
-            onClick={onReview}
-            badge={
-              published ? (
-                <span
-                  title={t('finishModal.publishedBadge')}
-                  className="inline-flex items-center rounded-full bg-success/15 p-1 text-success"
-                >
-                  <FaCloudUploadAlt className="h-3 w-3" aria-hidden />
-                  <span className="sr-only">{t('finishModal.publishedBadge')}</span>
-                </span>
-              ) : undefined
-            }
-          />
-          <FinishChoiceCard
-            tourId="finish-card-recall"
-            icon={<FaBrain aria-hidden />}
-            title={t('finishModal.recall.title')}
-            description={t('finishModal.recall.description')}
-            onClick={onRecall}
-          />
-          <FinishChoiceCard
-            tourId="finish-card-repertoire-check"
-            icon={<FaBook aria-hidden />}
-            title={t('finishModal.repertoireCheck.title')}
-            description={t('finishModal.repertoireCheck.description')}
-            onClick={onRepertoireCheck}
-          />
-        </div>
+        )}
       </div>
     </Modal>
   );
