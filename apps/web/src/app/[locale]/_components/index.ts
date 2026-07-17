@@ -13,7 +13,9 @@ export { LinkTabs, type LinkTabItem } from './LinkTabs';
 export { ListLink, ListLinkContainer } from './ListLink';
 export { PageTitle } from './PageTitle';
 export { ProseArticle } from './ProseArticle';
-export { PaginationNav } from './PaginationNav';
+// PaginationNav (async Server Component) is intentionally NOT re-exported
+// here — import it directly from './PaginationNav' (see barrel convention).
+export { PaginationNavView, type PaginationNavLabels } from './PaginationNavView';
 export { ScrollToHashOnMount } from './ScrollToHashOnMount';
 export { SectionTitle } from './SectionTitle';
 export { Skeleton } from './Skeleton';

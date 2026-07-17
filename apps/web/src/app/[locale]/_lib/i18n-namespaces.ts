@@ -49,6 +49,13 @@ export const NAMESPACE_CLASSIFICATION = {
   Achievements: 'client',
   Admin: 'client',
   AuthStatusDisplay: 'client',
+  // Common: deletedUser (feed/comment cards) and pagination
+  // (LeaderboardDetailContent) are read via useTranslations in Client
+  // Components.
+  Common: 'client',
+  // Repertoires: Delete/Import/LineViewer client components read it via
+  // useTranslations.
+  Repertoires: 'client',
   Footer: 'client',
   MobileTabBar: 'client',
   Mypage: 'client',

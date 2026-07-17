@@ -7,7 +7,8 @@ import { getMissColorClass } from '@/lib/challenge/ui';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -125,7 +126,12 @@ export default async function ChallengeResultsPage({ params, searchParams }: Pro
         </div>
       )}
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <PaginationNav
+        currentPage={currentPage}
+        totalPages={totalPages}
+        buildHref={buildHref}
+        locale={locale}
+      />
     </PageLayout>
   );
 }

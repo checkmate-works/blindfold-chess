@@ -17,15 +17,11 @@ import { countPositions, listPositionsWithProfile } from '@/lib/positions/querie
 
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
-  HelpTourButton,
-  PageLayout,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -234,7 +230,12 @@ export function createPositionListPage(config: PositionListPageConfig) {
           </div>
         )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+        <PaginationNav
+          locale={locale}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          buildHref={buildHref}
+        />
 
         <AdSlot slot="content-bottom" />
       </PageLayout>

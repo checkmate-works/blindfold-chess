@@ -140,6 +140,7 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
           query.set('page', String(p));
           return `/${locale}/games/shared?${query.toString()}`;
         }}
+        locale={locale}
       />
 
       <AdSlot slot="content-bottom" />

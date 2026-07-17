@@ -4,7 +4,7 @@ import { type ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { PaginationNavView, SectionTitle } from '@/app/[locale]/_components';
 
 import {
   type LeaderboardModule,
@@ -44,6 +44,10 @@ export function LeaderboardDetailContent({
   periodSelector,
 }: Props) {
   const t = useTranslations('leaderboard');
+  // This is a Client Component, so it cannot render the async PaginationNav
+  // server wrapper — it resolves the same `Common.pagination` labels itself
+  // from the client-side provider and feeds the presentational view.
+  const tPagination = useTranslations('Common.pagination');
 
   const title = t(`cardTitle.${module}.${settingKey}`);
   const periodLabel = t(`period.${period}`);
@@ -70,7 +74,18 @@ export function LeaderboardDetailContent({
           currentUserRank={data.currentUserRank}
           locale={locale}
         />
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+        <PaginationNavView
+          currentPage={currentPage}
+          totalPages={totalPages}
+          buildHref={buildHref}
+          labels={{
+            navLabel: tPagination('navLabel'),
+            previous: tPagination('previous'),
+            next: tPagination('next'),
+            previousPage: tPagination('previousPage'),
+            nextPage: tPagination('nextPage'),
+          }}
+        />
       </div>
     </div>
   );

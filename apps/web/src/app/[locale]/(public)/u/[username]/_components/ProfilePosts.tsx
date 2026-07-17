@@ -1,8 +1,9 @@
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { PaginationNav } from '@/app/[locale]/_components';
 import { LinkTabs } from '@/app/[locale]/_components/LinkTabs';
 import type { LinkTabItem } from '@/app/[locale]/_components/LinkTabs';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   posts: ProfilePostWithReplyMeta[];
@@ -12,7 +13,7 @@ type Props = {
   activeTab: string;
   currentPage: number;
   totalPages: number;
-  locale: string;
+  locale: Locale;
   buildHref: (page: number) => string;
   buildTabHref: (tab: string) => string;
   labels: {
@@ -97,7 +98,12 @@ export function ProfilePosts({
             )}
           </div>
 
-          <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+          <PaginationNav
+            locale={locale}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            buildHref={buildHref}
+          />
         </>
       ) : activeTab === 'games' ? (
         gamesSlot

@@ -50,7 +50,7 @@ vi.mock('drizzle-orm', () => ({
 }));
 
 vi.mock('@/app/[locale]/_components', () => ({
-  PaginationNav: ({
+  PaginationNavView: ({
     currentPage,
     totalPages,
   }: {

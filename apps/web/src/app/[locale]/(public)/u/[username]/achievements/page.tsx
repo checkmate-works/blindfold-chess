@@ -10,7 +10,8 @@ import {
   getUserAchievementsPaginated,
 } from '@/lib/db/achievement-queries';
 
-import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -103,7 +104,12 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
         }}
       />
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <PaginationNav
+        locale={locale}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        buildHref={buildHref}
+      />
     </PageLayout>
   );
 }

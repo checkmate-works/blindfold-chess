@@ -7,14 +7,9 @@ import { SITE_URL } from '@/config';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
-import {
-  ListLink,
-  ListLinkContainer,
-  PageLayout,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -96,6 +91,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
               currentPage={currentPage}
               totalPages={totalPages}
               buildHref={(p) => `/${locale}/articles${p > 1 ? `?page=${p}` : ''}`}
+              locale={locale}
             />
           </>
         )}

@@ -6,8 +6,8 @@ import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 
 import { toggleGameLikeAction } from '@/app/[locale]/(public)/games/shared/[id]/_actions/game-like';
 import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
-import { PaginationNav } from '@/app/[locale]/_components';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -92,7 +92,12 @@ export function ProfileGames({
         )}
       </div>
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <PaginationNav
+        locale={locale}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        buildHref={buildHref}
+      />
     </div>
   );
 }

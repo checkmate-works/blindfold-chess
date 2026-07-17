@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -67,6 +68,7 @@ export function TopicListPageLayout({
         currentPage={pagination.currentPage}
         totalPages={pagination.totalPages}
         buildHref={pagination.buildHref}
+        locale={locale}
       />
     </PageLayout>
   );

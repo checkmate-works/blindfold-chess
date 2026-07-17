@@ -3,24 +3,27 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AdminPaginationNav } from './AdminPaginationNav';
 
-// Mock the barrel import to avoid pulling in next-intl transitive deps.
-// We only need PaginationNav, which we mock to inspect forwarded props.
+// Mock the barrel import to avoid pulling in transitive deps.
+// We only need PaginationNavView, which we mock to inspect forwarded props.
 vi.mock('@/app/[locale]/_components', () => ({
-  PaginationNav: ({
+  PaginationNavView: ({
     currentPage,
     totalPages,
     buildHref,
+    labels,
   }: {
     currentPage: number;
     totalPages: number;
     buildHref: (page: number) => string;
+    labels: { navLabel: string; previous: string; next: string };
   }) => (
     <nav
-      aria-label="Pagination"
+      aria-label={labels.navLabel}
       data-testid="pagination-nav"
       data-current-page={currentPage}
       data-total-pages={totalPages}
       data-href-sample={buildHref(1)}
+      data-labels={`${labels.previous}/${labels.next}`}
     />
   ),
 }));

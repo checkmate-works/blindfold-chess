@@ -1,143 +1,51 @@
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { PaginationNavView } from './PaginationNavView';
 
 type PaginationNavProps = {
   currentPage: number;
   totalPages: number;
   buildHref: (page: number) => string;
+  locale: Locale;
 };
 
 /**
- * Build the list of page items to display in pagination.
- * Inspired by GitHub/Primer pagination truncation logic.
+ * Localised pagination bar for Server Component callers.
  *
- * - Always shows first and last page
- * - Shows `surroundingPageCount` pages around the current page
- * - Uses ellipsis (null) for gaps
- * - When totalPages <= 5, shows all pages without truncation
+ * Accepts `locale` as a prop rather than resolving it internally: this app
+ * runs no next-intl middleware and never calls `setRequestLocale()`, so the
+ * bare `getTranslations(namespace)` shorthand can resolve to the default
+ * locale outside a page's own `params` (see getLocaleFromPathnameHeader's
+ * TSDoc), and every caller already has `locale` in scope.
+ *
+ * Async Server Component — must NOT be re-exported from the `_components`
+ * barrel (see the barrel convention in apps/web/CLAUDE.md); import it
+ * directly from this file. Client Components cannot render this — use
+ * `PaginationNavView` with labels from `useTranslations('Common.pagination')`
+ * instead (see LeaderboardDetailContent).
  */
-function buildPageItems(currentPage: number, totalPages: number): (number | null)[] {
-  const surroundingPageCount = 1;
-
-  if (totalPages <= 5) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  }
-
-  const items: (number | null)[] = [];
-
-  // Always include first page
-  items.push(1);
-
-  const rangeStart = Math.max(2, currentPage - surroundingPageCount);
-  const rangeEnd = Math.min(totalPages - 1, currentPage + surroundingPageCount);
-
-  // Ellipsis after first page if needed
-  if (rangeStart > 2) {
-    items.push(null);
-  }
-
-  // Pages around current
-  for (let i = rangeStart; i <= rangeEnd; i++) {
-    items.push(i);
-  }
-
-  // Ellipsis before last page if needed
-  if (rangeEnd < totalPages - 1) {
-    items.push(null);
-  }
-
-  // Always include last page
-  items.push(totalPages);
-
-  return items;
-}
-
-// Shared box metrics so every item (Previous/Next, numbers, current, ellipsis)
-// renders at the same height. A fixed `h-9` is used instead of vertical padding
-// because the Previous/Next buttons collapse to an icon-only line on mobile,
-// whose intrinsic height is shorter than the numbers' text line — `h-9` pins
-// them all to the same height regardless of content.
-const itemClass =
-  'inline-flex items-center justify-center h-9 px-3 text-sm rounded border border-border transition-colors';
-const linkClass = `${itemClass} gap-1 hover:bg-secondary`;
-// Disabled state fades only the content (icon + label via currentColor), not
-// the whole element — keeping the border at full strength so the box reads at
-// the same size/crispness as the active controls next to it.
-const disabledClass = `${itemClass} gap-1 text-muted-foreground/50 cursor-not-allowed`;
-const pageClass = `${itemClass} min-w-[2.5rem] hover:bg-secondary`;
-const currentPageClass = `${itemClass} min-w-[2.5rem] bg-foreground text-background font-semibold`;
-
-export function PaginationNav({ currentPage, totalPages, buildHref }: PaginationNavProps) {
-  if (totalPages <= 1) {
-    return null;
-  }
-
-  const pageItems = buildPageItems(currentPage, totalPages);
+export async function PaginationNav({
+  currentPage,
+  totalPages,
+  buildHref,
+  locale,
+}: PaginationNavProps) {
+  const t = await getTranslations({ locale, namespace: 'Common.pagination' });
 
   return (
-    <nav aria-label="Pagination" className="flex items-center justify-center gap-1 mt-4">
-      {/* Previous button */}
-      {currentPage > 1 ? (
-        <Link
-          href={buildHref(currentPage - 1)}
-          className={linkClass}
-          aria-label="Previous page"
-          data-pagination-item="link"
-        >
-          <FaChevronLeft aria-hidden="true" className="size-3" />
-          <span className="hidden sm:inline">Previous</span>
-        </Link>
-      ) : (
-        <span className={disabledClass} aria-label="Previous page" data-pagination-item="disabled">
-          <FaChevronLeft aria-hidden="true" className="size-3" />
-          <span className="hidden sm:inline">Previous</span>
-        </span>
-      )}
-
-      {/* Page numbers */}
-      {pageItems.map((item, index) =>
-        item === null ? (
-          <span
-            key={`ellipsis-${index}`}
-            className="inline-flex items-center justify-center h-9 px-2 text-sm text-muted-foreground"
-            data-pagination-item="ellipsis"
-          >
-            ...
-          </span>
-        ) : item === currentPage ? (
-          <span
-            key={item}
-            aria-current="page"
-            className={currentPageClass}
-            data-pagination-item="current"
-          >
-            {item}
-          </span>
-        ) : (
-          <Link key={item} href={buildHref(item)} className={pageClass} data-pagination-item="link">
-            {item}
-          </Link>
-        )
-      )}
-
-      {/* Next button */}
-      {currentPage < totalPages ? (
-        <Link
-          href={buildHref(currentPage + 1)}
-          className={linkClass}
-          aria-label="Next page"
-          data-pagination-item="link"
-        >
-          <span className="hidden sm:inline">Next</span>
-          <FaChevronRight aria-hidden="true" className="size-3" />
-        </Link>
-      ) : (
-        <span className={disabledClass} aria-label="Next page" data-pagination-item="disabled">
-          <span className="hidden sm:inline">Next</span>
-          <FaChevronRight aria-hidden="true" className="size-3" />
-        </span>
-      )}
-    </nav>
+    <PaginationNavView
+      currentPage={currentPage}
+      totalPages={totalPages}
+      buildHref={buildHref}
+      labels={{
+        navLabel: t('navLabel'),
+        previous: t('previous'),
+        next: t('next'),
+        previousPage: t('previousPage'),
+        nextPage: t('nextPage'),
+      }}
+    />
   );
 }
