@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, TextInput, Textarea } from '@/app/_components';
+import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
+import { flushSync } from 'react-dom';
 import { FaPlus } from 'react-icons/fa';
 
 import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
@@ -74,6 +77,16 @@ export function RepertoireImportForm({
   const [inputMode, setInputMode] = useState<'pgn' | 'board'>('pgn');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Successful submit: flipped (synchronously) before router.push so the
+  // navigation guard below doesn't challenge the redirect to the new kata.
+  const [submitted, setSubmitted] = useState(false);
+
+  // Guard back/away navigation once the author has changed the content
+  // fields (name / moves) from what the page loaded with — prefills don't
+  // count. Same reusable pieces as the chunk / puzzle / topic forms.
+  const tUnsaved = useTranslations('unsavedChanges');
+  const isDirty = !submitted && (name !== (initialName ?? '') || pgn !== (initialPgn ?? ''));
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   // Once the author picks or removes an opening by hand, the PGN stops driving
   // the links — auto-detection is a starting point, not a correction.
@@ -121,6 +134,9 @@ export function RepertoireImportForm({
       setError(t.has(key) ? t(key) : t('errors.generic'));
       return;
     }
+    // flushSync so the isDirty -> false re-render completes before
+    // router.push triggers the navigation guard (same as ChunkForm).
+    flushSync(() => setSubmitted(true));
     router.push(`/repertoires/${result.id}`);
   }
 
@@ -235,6 +251,16 @@ export function RepertoireImportForm({
       )}
 
       <FormErrorBanner message={error} />
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirm}
+        onCancel={cancel}
+        title={tUnsaved('title')}
+        message={tUnsaved('message')}
+        confirmLabel={tUnsaved('confirm')}
+        cancelLabel={tUnsaved('cancel')}
+      />
 
       <div className="py-4">
         <Button
