@@ -3,6 +3,14 @@ import type { SortMode } from './shared';
 /** Default page size for topic and profile listing pages. */
 export const TOPIC_PAGE_SIZE = 5;
 
+/**
+ * Batch size for incrementally loaded comment trees (chunks / puzzle /
+ * position-memory / repertoire pages). Counts TOP-LEVEL comments only —
+ * each root always arrives with its full reply tree, so the rendered
+ * comment count per batch is ≥ this number.
+ */
+export const COMMENT_TREE_PAGE_SIZE = 20;
+
 const VALID_SORTS: SortMode[] = ['new', 'popular', 'active'];
 
 /**

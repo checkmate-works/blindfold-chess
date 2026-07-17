@@ -4513,6 +4513,12 @@
     "replyButton": "Responder",
     "sortByLabel": "Ordenar por",
     "joinConversation": "Únete a la conversación",
+    "loadMoreComments": {
+      "showMore": "Mostrar más comentarios",
+      "loading": "Cargando…",
+      "retry": "Reintentar",
+      "error": "No se pudieron cargar más comentarios."
+    },
     "communityThoughts": "Pensamientos de la comunidad",
     "signInToJoin": "Inicia sesión para unirte a la conversación",
     "categories": {

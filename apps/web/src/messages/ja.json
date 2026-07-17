@@ -4520,6 +4520,12 @@
     "replyButton": "返信",
     "sortByLabel": "並び替え",
     "joinConversation": "コメントする",
+    "loadMoreComments": {
+      "showMore": "さらにコメントを表示",
+      "loading": "読み込み中…",
+      "retry": "再試行",
+      "error": "コメントの読み込みに失敗しました"
+    },
     "communityThoughts": "みんなの考え",
     "signInToJoin": "サインインしてコメントする",
     "categories": {

@@ -4520,6 +4520,12 @@
     "replyButton": "Reply",
     "sortByLabel": "Sort by",
     "joinConversation": "Join the conversation",
+    "loadMoreComments": {
+      "showMore": "Show more comments",
+      "loading": "Loading…",
+      "retry": "Retry",
+      "error": "Couldn't load more comments."
+    },
     "communityThoughts": "Community thoughts",
     "signInToJoin": "Sign in to join the conversation",
     "categories": {
