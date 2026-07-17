@@ -83,10 +83,9 @@ async function main() {
   console.log(`  inserted ${inserted} challenge_results rows + matching best_scores`);
 
   console.log('dev-seed: granting belt ranks...');
-  for (const u of SEED_USERS) {
+  for (const [index, u] of SEED_USERS.entries()) {
     if (!u.rankUpTo) continue;
-    const userId = userIds[SEED_USERS.indexOf(u)];
-    const granted = await grantRanksUpTo(db, userId, u.rankUpTo);
+    const granted = await grantRanksUpTo(db, userIds[index], u.rankUpTo);
     console.log(`  ${u.username.padEnd(12)} → ${granted.join(', ')}`);
     console.log(`  ${''.padEnd(12)}   sign in as ${u.email} / ${SEED_PASSWORD}`);
   }

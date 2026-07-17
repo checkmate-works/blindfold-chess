@@ -101,9 +101,7 @@ export async function publishGameAction(
     // a real author: an account-less (or provisional) publisher has no user to
     // grant a rank to. Such a game stays uncounted even if the author later
     // claims it via its manage token — claiming does not re-evaluate.
-    const grantedRanks = authorId
-      ? await evaluateRanksAfterCreate(authorId, 'game publish')
-      : ([] as GrantedRank[]);
+    const grantedRanks = authorId ? await evaluateRanksAfterCreate(authorId, 'game publish') : [];
 
     return {
       success: true,
