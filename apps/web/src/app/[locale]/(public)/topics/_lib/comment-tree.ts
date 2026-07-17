@@ -12,8 +12,13 @@ import type { PostWithReplyMeta, SortMode } from './shared';
  * Differs from `sortPosts` only in 'new' handling: `sortPosts` treats 'new'
  * as a no-op assuming `createdAt DESC` input; tree path receives
  * `createdAt ASC` (so sibling replies stay chronological), so we re-sort.
+ *
+ * Exported (beyond `buildCommentTree`'s internal use) for
+ * `getCommentTreePageForTopic`, which must slice the globally-sorted root
+ * list with the exact comparator the rendered tree uses — if the two ever
+ * diverged, batch boundaries would drop or duplicate roots.
  */
-function sortRoots<T extends PostWithReplyMeta>(roots: T[], sortBy: SortMode): T[] {
+export function sortRoots<T extends PostWithReplyMeta>(roots: T[], sortBy: SortMode): T[] {
   if (sortBy === 'popular') {
     return [...roots].sort((a, b) => {
       const likeDiff = b.likeMeta.likeCount - a.likeMeta.likeCount;

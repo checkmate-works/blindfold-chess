@@ -22,13 +22,15 @@ import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 
+import { COMMENT_TREE_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
-  getCommentTreeForTopic,
+  getCommentTreePageForTopic,
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
+import type { SortMode } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 type LinkedPositions = Awaited<ReturnType<typeof getLinkedPositionsForChunk>>;
-type CommentTreeRows = Awaited<ReturnType<typeof getCommentTreeForTopic>>;
+type CommentTreeRows = Awaited<ReturnType<typeof getCommentTreePageForTopic>>['posts'];
 type AttachmentMap = Awaited<ReturnType<typeof getAttachmentsForPosts>>;
 
 /**
@@ -57,7 +59,7 @@ type AttachmentMap = Awaited<ReturnType<typeof getAttachmentsForPosts>>;
  * the page module — see `./resolve-chunk-display-state.ts` for the pure
  * derivation that *does* live here.
  */
-export async function loadChunkDetail(slug: string, userId: string | undefined) {
+export async function loadChunkDetail(slug: string, userId: string | undefined, sortBy: SortMode) {
   const row = await getChunkBySlugWithProfile(slug);
   if (!row) {
     notFound();
@@ -68,7 +70,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
   const [
     linkedPositions,
     commentCount,
-    allComments,
+    commentsPage,
     pendingEditRequestCount,
     requestedFeedbackTopics,
     viewerPendingRequestId,
@@ -77,7 +79,12 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
   ] = await Promise.all([
     getLinkedPositionsForChunk(chunk.id),
     getPostCountByTopicKey('chunk', slug),
-    getCommentTreeForTopic('chunk', slug, userId),
+    getCommentTreePageForTopic(
+      'chunk',
+      slug,
+      { sortBy, offset: 0, limit: COMMENT_TREE_PAGE_SIZE },
+      userId
+    ),
     countPendingEditRequestsForChunk(chunk.id),
     getFeedbackTopicsForChunk(chunk.id),
     getViewerPendingEditRequestForChunk(chunk.id, userId ?? null),
@@ -129,20 +136,22 @@ export async function loadChunkDetail(slug: string, userId: string | undefined) 
     ...memoryReplyMetaMap,
   ]);
 
-  // Fetch attachments for every post in the topic — top-level posts AND
-  // every reply — so an attached PGN/FEN/embed/image card renders under
-  // its author regardless of depth. The page threads the resulting Map
-  // through to every CommentNode it spawns.
-  const allPostIds = allComments.map((c) => c.id);
+  // Fetch attachments for every post in the first comment batch — top-level
+  // posts AND every reply — so an attached PGN/FEN/embed/image card renders
+  // under its author regardless of depth. Later batches fetch their own
+  // attachments inside `loadMoreChunkComments`.
+  const comments = commentsPage.posts;
+  const commentPostIds = comments.map((c) => c.id);
   const attachments: AttachmentMap =
-    allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
+    commentPostIds.length > 0 ? await getAttachmentsForPosts(commentPostIds) : new Map();
 
   return {
     chunk,
     profile,
     linkedPositions,
     commentCount,
-    allComments,
+    comments,
+    hasMoreComments: commentsPage.hasMore,
     pendingEditRequestCount,
     requestedFeedbackTopics,
     viewerPendingRequestId,

@@ -1,9 +1,10 @@
 import { cache } from 'react';
 
-import { and, asc, count, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 
 import { db, liveProfileJoinOn, profiles, topicPosts } from '@/lib/db';
 
+import { sortRoots } from './comment-tree';
 import type { TopicType } from './constants';
 import { attachPostMeta } from './post-meta';
 import { authorSelect, sortPosts } from './shared';
@@ -275,6 +276,135 @@ export async function getCommentTreeForTopic(
   }));
 
   return attachPostMeta(posts, currentUserId);
+}
+
+/** One batch of an incrementally loaded comment tree. */
+export type CommentTreePage = {
+  /**
+   * Flat rows for the batch — the page's top-level roots plus EVERY
+   * descendant of those roots — ready to hand to `buildCommentTree`.
+   * Ordered `createdAt ASC` so sibling replies stay chronological.
+   */
+  posts: PostWithReplyMeta[];
+  /** Whether another batch exists after this one. */
+  hasMore: boolean;
+};
+
+/**
+ * A top-level root belongs in the tree when it is live, OR when it is
+ * soft-deleted but still anchors at least one live reply — those roots
+ * render as "[deleted]" tombstones (see `buildCommentTree`'s pruning).
+ * The paginated query must apply the same rule in SQL, otherwise batch
+ * boundaries would shift relative to what the tree actually renders.
+ */
+const liveOrTombstoneRootFilter = (topicType: TopicType, topicKey: string) =>
+  and(
+    eq(topicPosts.topicType, topicType),
+    eq(topicPosts.topicKey, topicKey),
+    isNull(topicPosts.parentId),
+    or(
+      isNull(topicPosts.deletedAt),
+      sql`EXISTS (
+        SELECT 1 FROM topic_posts descendant
+        WHERE descendant.root_post_id = ${topicPosts.id}
+          AND descendant.deleted_at IS NULL
+      )`
+    )
+  );
+
+/**
+ * One batch of `getCommentTreeForTopic` — the incremental-loading variant.
+ *
+ * Pagination is over TOP-LEVEL roots only; each root in the page arrives
+ * with its full descendant tree (Reddit-style: a thread is never split
+ * across batches). Mirrors the `getPostsWithReplyMetaPaginatedByTopicKey`
+ * precedent for sort handling:
+ *
+ * - `'new'` (the default): root ids are paginated in SQL
+ *   (`createdAt DESC, id DESC`) so nothing beyond the page is fetched.
+ * - `'popular'` / `'active'`: sorting needs like counts / reply
+ *   timestamps, so all roots are fetched with meta, sorted with the SAME
+ *   comparator the tree renderer uses (`sortRoots`), then sliced.
+ *
+ * Offset-based by design (comments are low-churn): a concurrent insert can
+ * shift offsets between batches, at worst duplicating a root across two
+ * client-appended batches until the next full render. Accepted trade-off —
+ * a cursor cannot express the 'popular'/'active' orders anyway, and the
+ * duplicate rate is bounded by insert traffic during a single reading
+ * session.
+ */
+export async function getCommentTreePageForTopic(
+  topicType: TopicType,
+  topicKey: string,
+  { sortBy, offset, limit }: { sortBy: SortMode; offset: number; limit: number },
+  currentUserId?: string
+): Promise<CommentTreePage> {
+  const rootFilter = liveOrTombstoneRootFilter(topicType, topicKey);
+
+  let pageRootIds: string[];
+  let hasMore: boolean;
+
+  if (sortBy === 'new') {
+    // `sortRoots`' 'new' comparator is createdAt DESC; the id tiebreak only
+    // stabilizes SQL pagination for equal timestamps.
+    const rows = await db
+      .select({ id: topicPosts.id })
+      .from(topicPosts)
+      .where(rootFilter)
+      .orderBy(desc(topicPosts.createdAt), desc(topicPosts.id))
+      .limit(limit + 1)
+      .offset(offset);
+
+    hasMore = rows.length > limit;
+    pageRootIds = rows.slice(0, limit).map((r) => r.id);
+  } else {
+    const rootRows = await db
+      .select({
+        post: topicPosts,
+        author: authorSelect,
+      })
+      .from(topicPosts)
+      .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
+      .where(rootFilter);
+
+    const rootsWithMeta = await attachPostMeta(
+      rootRows.map((r) => ({ ...r.post, author: r.author })),
+      currentUserId
+    );
+    const sorted = sortRoots(rootsWithMeta, sortBy);
+
+    hasMore = sorted.length > offset + limit;
+    pageRootIds = sorted.slice(offset, offset + limit).map((r) => r.id);
+  }
+
+  if (pageRootIds.length === 0) {
+    return { posts: [], hasMore };
+  }
+
+  // Fetch the page roots AND all their descendants in one pass so a single
+  // `attachPostMeta` round covers the whole batch.
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: authorSelect,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
+    .where(
+      and(
+        eq(topicPosts.topicType, topicType),
+        eq(topicPosts.topicKey, topicKey),
+        or(inArray(topicPosts.id, pageRootIds), inArray(topicPosts.rootPostId, pageRootIds))
+      )
+    )
+    .orderBy(asc(topicPosts.createdAt));
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  return { posts: await attachPostMeta(posts, currentUserId), hasMore };
 }
 
 /**

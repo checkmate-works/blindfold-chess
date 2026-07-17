@@ -2,28 +2,23 @@ import { getTranslations } from 'next-intl/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
-import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
-import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
-import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
-import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
-import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
-import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
-  getCommentTreeForTopic,
+  COMMENT_TREE_PAGE_SIZE,
+  validateSort,
+} from '@/app/[locale]/(public)/topics/_lib/pagination';
+import {
+  getCommentTreePageForTopic,
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { createReplyForImageAttach } from '../_actions/createReplyForImageAttach';
-import { createReplyWithAttachment } from '../_actions/createReplyWithAttachment';
-import { createReplyWithFenAttachment } from '../_actions/createReplyWithFenAttachment';
-import { toggleRepertoirePostLike } from '../_actions/toggleRepertoirePostLike';
+import { loadMoreRepertoireComments } from '../_actions/loadMoreRepertoireComments';
 import { NewPostForm } from './NewPostForm';
+import { RepertoireCommentTreeBatch } from './RepertoireCommentTreeBatch';
 
 type Props = {
   locale: Locale;
@@ -38,6 +33,10 @@ type Props = {
  * topic_posts UI identical to the puzzle / topics pages. Owns its own fetch and
  * sort handling so the detail page is left to compose the repertoire view.
  * Anonymous visitors read; composing requires sign-in.
+ *
+ * Comments load incrementally (issue #81): the first batch is SSR'd through
+ * `RepertoireCommentTreeBatch`, further batches stream in through the
+ * `loadMoreRepertoireComments` Server Action via `CommentTreeLoadMore`.
  */
 export async function RepertoireCommentsSection({
   locale,
@@ -50,10 +49,14 @@ export async function RepertoireCommentsSection({
 
   const sortBy = validateSort(sort ?? 'new');
   const commentCount = await getPostCountByTopicKey('repertoire', repertoireId);
-  const allComments = await getCommentTreeForTopic('repertoire', repertoireId, currentUserId);
-  const commentTree = buildCommentTree(allComments, sortBy);
-  const allPostIds = allComments.map((c) => c.id);
-  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
+  const { posts, hasMore } = await getCommentTreePageForTopic(
+    'repertoire',
+    repertoireId,
+    { sortBy, offset: 0, limit: COMMENT_TREE_PAGE_SIZE },
+    currentUserId
+  );
+  const attachments =
+    posts.length > 0 ? await getAttachmentsForPosts(posts.map((p) => p.id)) : new Map();
 
   return (
     <>
@@ -67,38 +70,34 @@ export async function RepertoireCommentsSection({
         </JoinConversationToggle>
       )}
 
-      {commentTree.length > 0 && (
+      {posts.length > 0 && (
         <>
           <SortSelect
             basePath={`/repertoires/${repertoireId}`}
             translationKey="topics.repertoire.sort"
             currentSort={sortBy}
           />
-          <CommentTree
-            comments={commentTree}
-            locale={locale}
-            topicKey={repertoireId}
-            currentUserId={currentUserId}
-            enableSpoiler={false}
-            redirectPath={`/${locale}/repertoires/${repertoireId}`}
-            toggleLikeAction={toggleRepertoirePostLike}
-            replyAttachmentActions={{
-              pgn: createReplyWithAttachment,
-              fen: createReplyWithFenAttachment,
-              image: createReplyForImageAttach,
+          <CommentTreeLoadMore
+            resetKey={sortBy}
+            initialHasMore={hasMore}
+            initialOffset={COMMENT_TREE_PAGE_SIZE}
+            loadMoreAction={loadMoreRepertoireComments.bind(null, repertoireId, locale, sortBy)}
+            labels={{
+              showMore: tTopics('loadMoreComments.showMore'),
+              loading: tTopics('loadMoreComments.loading'),
+              retry: tTopics('loadMoreComments.retry'),
+              error: tTopics('loadMoreComments.error'),
             }}
-            deletePostAction={deletePost}
-            editPostAction={editPost}
-            removeAttachmentAction={removePostAttachment}
-            attachPgnAction={attachPostPgn}
-            attachFenAction={attachPostFenFromForm}
-            attachmentsByPostId={attachments}
-            i18n={{
-              likeNamespace: 'topics.repertoire',
-              replyNamespace: 'topics.repertoire.replies',
-              deleteNamespace: 'topics.repertoire.deletePost',
-            }}
-          />
+          >
+            <RepertoireCommentTreeBatch
+              locale={locale}
+              repertoireId={repertoireId}
+              userId={currentUserId}
+              comments={posts}
+              attachments={attachments}
+              sortBy={sortBy}
+            />
+          </CommentTreeLoadMore>
         </>
       )}
     </>

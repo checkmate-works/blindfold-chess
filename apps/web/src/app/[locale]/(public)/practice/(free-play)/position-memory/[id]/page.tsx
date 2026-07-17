@@ -13,18 +13,14 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
-import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
-import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
-import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
-import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
-import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
-import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
-import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
+import {
+  COMMENT_TREE_PAGE_SIZE,
+  validateSort,
+} from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
@@ -39,11 +35,9 @@ import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import { PositionEditRequestCallout } from '../../_components/edit-request/PositionEditRequestCallout';
 import { loadPositionDetail } from '../../_lib/load-position-detail';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
-import { createReplyForImageAttach } from './_actions/createReplyForImageAttach';
-import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
-import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
-import { togglePositionMemoryPostLike } from './_actions/togglePositionMemoryPostLike';
+import { loadMorePositionMemoryComments } from './_actions/loadMorePositionMemoryComments';
 import { NewPostForm } from './_components/NewPostForm';
+import { PositionMemoryCommentTreeBatch } from './_components/PositionMemoryCommentTreeBatch';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,7 +97,8 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     relatedChunks,
     relatedThemes,
     commentCount,
-    allComments,
+    comments,
+    hasMoreComments,
     forkParent,
     forkCount,
     canFork,
@@ -113,17 +108,8 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     kind: 'memory',
     currentUserId: currentUser?.id,
     locale,
+    sortBy,
   });
-
-  const commentTree = buildCommentTree(allComments, sortBy);
-
-  const allPostIds = allComments.map((c) => c.id);
-  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
-  const extraContentByPostId = buildAttachmentNodeMap(
-    allPostIds,
-    attachments,
-    tVideo('fallbackTitle')
-  );
 
   const forkedFromNote = (
     <ForkProvenanceNote
@@ -265,40 +251,34 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         </JoinConversationToggle>
       )}
 
-      {commentTree.length > 0 && (
+      {comments.length > 0 && (
         <>
           <SortSelect
             basePath={`/practice/position-memory/${position.id}`}
             translationKey="topics.positionMemory.sort"
             currentSort={sortBy}
           />
-          <CommentTree
-            comments={commentTree}
-            locale={locale}
-            topicKey={position.id}
-            currentUserId={currentUser?.id}
-            enableSpoiler={false}
-            redirectPath={`/${locale}/practice/position-memory/${position.id}`}
-            toggleLikeAction={togglePositionMemoryPostLike}
-            replyAttachmentActions={{
-              pgn: createReplyWithAttachment,
-              fen: createReplyWithFenAttachment,
-              image: createReplyForImageAttach,
+          <CommentTreeLoadMore
+            resetKey={sortBy}
+            initialHasMore={hasMoreComments}
+            initialOffset={COMMENT_TREE_PAGE_SIZE}
+            loadMoreAction={loadMorePositionMemoryComments.bind(null, position.id, locale, sortBy)}
+            labels={{
+              showMore: tTopics('loadMoreComments.showMore'),
+              loading: tTopics('loadMoreComments.loading'),
+              retry: tTopics('loadMoreComments.retry'),
+              error: tTopics('loadMoreComments.error'),
             }}
-            deletePostAction={deletePost}
-            editPostAction={editPost}
-            removeAttachmentAction={removePostAttachment}
-            attachPgnAction={attachPostPgn}
-            attachFenAction={attachPostFenFromForm}
-            attachmentsByPostId={attachments}
-            attachmentFallbackVideoTitle={tVideo('fallbackTitle')}
-            extraContentByPostId={extraContentByPostId}
-            i18n={{
-              likeNamespace: 'topics.positionMemory',
-              replyNamespace: 'topics.positionMemory.replies',
-              deleteNamespace: 'topics.positionMemory.deletePost',
-            }}
-          />
+          >
+            <PositionMemoryCommentTreeBatch
+              locale={locale}
+              positionId={position.id}
+              userId={currentUser?.id}
+              comments={comments}
+              attachments={attachments}
+              sortBy={sortBy}
+            />
+          </CommentTreeLoadMore>
         </>
       )}
       <RankAchievementModal locale={locale} />
