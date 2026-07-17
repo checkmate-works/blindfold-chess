@@ -2,26 +2,19 @@ import { getTranslations } from 'next-intl/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
-import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
-import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
-import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
-import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
-import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
+import { COMMENT_TREE_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
-  getCommentTreeForTopic,
+  getCommentTreePageForTopic,
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { createMoveReplyForImageAttach } from '../_actions/createMoveReplyForImageAttach';
-import { createMoveReplyWithAttachment } from '../_actions/createMoveReplyWithAttachment';
-import { createMoveReplyWithFenAttachment } from '../_actions/createMoveReplyWithFenAttachment';
-import { toggleMovePostLike } from '../_actions/toggleMovePostLike';
+import { loadMoreMoveComments } from '../_actions/loadMoreMoveComments';
+import { MoveCommentTreeBatch } from './MoveCommentTreeBatch';
 import { NewMovePostForm } from './NewMovePostForm';
 
 type Props = {
@@ -43,15 +36,17 @@ type Props = {
 
 /**
  * The comment thread for a single move, keyed to topicType 'repertoire_move'
- * (topicKey `${repertoireId}_${lineNo}_${ply}`). Reuses the shared topic_posts
- * infrastructure — identical to the repertoire / puzzle threads — so per-move
- * discussion gets replies, likes, edits, deletes and attachments for free.
- * Anonymous visitors read; composing requires sign-in.
+ * (position-based topicKey — see the prop TSDoc). Reuses the shared
+ * topic_posts infrastructure — identical to the repertoire / puzzle threads —
+ * so per-move discussion gets replies, likes, edits, deletes and attachments
+ * for free. Anonymous visitors read; composing requires sign-in.
  *
  * Server-rendered from the focused move (the `?move` param the line viewer
  * keeps in sync), so a post/edit/delete redirect lands back here and the new
  * state shows immediately. Comments are chronological (no sort control yet —
- * per-move volume is low).
+ * per-move volume is low) and load incrementally (issue #81): the first batch
+ * is SSR'd through `MoveCommentTreeBatch`, further batches stream in through
+ * the `loadMoreMoveComments` Server Action via `CommentTreeLoadMore`.
  */
 export async function MoveCommentsSection({
   locale,
@@ -66,12 +61,14 @@ export async function MoveCommentsSection({
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
 
   const commentCount = await getPostCountByTopicKey('repertoire_move', topicKey);
-  const allComments = await getCommentTreeForTopic('repertoire_move', topicKey, currentUserId);
-  const commentTree = buildCommentTree(allComments, 'new');
-  const allPostIds = allComments.map((c) => c.id);
-  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
-
-  const redirectPath = `/${locale}/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}`;
+  const { posts, hasMore } = await getCommentTreePageForTopic(
+    'repertoire_move',
+    topicKey,
+    { sortBy: 'new', offset: 0, limit: COMMENT_TREE_PAGE_SIZE },
+    currentUserId
+  );
+  const attachments =
+    posts.length > 0 ? await getAttachmentsForPosts(posts.map((p) => p.id)) : new Map();
 
   return (
     <section className="space-y-4">
@@ -85,33 +82,41 @@ export async function MoveCommentsSection({
         </JoinConversationToggle>
       )}
 
-      {commentTree.length > 0 && (
-        <CommentTree
-          comments={commentTree}
-          locale={locale}
-          topicKey={topicKey}
-          currentUserId={currentUserId}
-          enableSpoiler={false}
-          redirectPath={redirectPath}
-          toggleLikeAction={toggleMovePostLike}
-          replyAttachmentActions={{
-            pgn: createMoveReplyWithAttachment,
-            fen: createMoveReplyWithFenAttachment,
-            image: createMoveReplyForImageAttach,
+      {posts.length > 0 && (
+        <CommentTreeLoadMore
+          // No sort control here; the key still remounts the accumulated
+          // batches when a soft navigation moves focus to another ply's
+          // thread.
+          resetKey={topicKey}
+          initialHasMore={hasMore}
+          initialOffset={COMMENT_TREE_PAGE_SIZE}
+          loadMoreAction={loadMoreMoveComments.bind(
+            null,
+            repertoireId,
+            lineNo,
+            ply,
+            topicKey,
+            locale
+          )}
+          labels={{
+            showMore: tTopics('loadMoreComments.showMore'),
+            loading: tTopics('loadMoreComments.loading'),
+            retry: tTopics('loadMoreComments.retry'),
+            error: tTopics('loadMoreComments.error'),
           }}
-          deletePostAction={deletePost}
-          editPostAction={editPost}
-          removeAttachmentAction={removePostAttachment}
-          attachPgnAction={attachPostPgn}
-          attachFenAction={attachPostFenFromForm}
-          attachmentsByPostId={attachments}
-          moveNotationLine={moveNotationLine}
-          i18n={{
-            likeNamespace: 'topics.repertoire_move',
-            replyNamespace: 'topics.repertoire_move.replies',
-            deleteNamespace: 'topics.repertoire_move.deletePost',
-          }}
-        />
+        >
+          <MoveCommentTreeBatch
+            locale={locale}
+            repertoireId={repertoireId}
+            lineNo={lineNo}
+            ply={ply}
+            topicKey={topicKey}
+            moveNotationLine={moveNotationLine}
+            userId={currentUserId}
+            comments={posts}
+            attachments={attachments}
+          />
+        </CommentTreeLoadMore>
       )}
     </section>
   );
