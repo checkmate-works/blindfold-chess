@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { BuilderNode, BuilderPath } from './board-builder-tree';
 import {
+  builderTreeFromPgn,
   builderTreeToPgn,
   deleteAtPath,
   fenAtPath,
@@ -115,6 +116,27 @@ describe('builderTreeToPgn', () => {
     expect(lines).toHaveLength(2);
     expect(lines).toContainEqual(['e4', 'e5', 'Nf3']);
     expect(lines).toContainEqual(['e4', 'c5', 'Nf3']);
+  });
+});
+
+describe('builderTreeFromPgn', () => {
+  it('imports a pasted PGN with variations, re-deriving from/to squares', () => {
+    const children = builderTreeFromPgn('1. e4 e5 (1... c5 2. Nf3) 2. Nf3')!;
+    expect(children).not.toBeNull();
+    expect(children[0].san).toBe('e4');
+    expect(children[0].from).toBe('e2');
+    expect(children[0].children.map((c) => c.san)).toEqual(['e5', 'c5']);
+    // Round trip back to the same PGN.
+    expect(builderTreeToPgn(children, ROOT)).toBe('1. e4 e5 (1... c5 2. Nf3) 2. Nf3');
+  });
+
+  it('returns null for unparseable text', () => {
+    expect(builderTreeFromPgn('not a pgn')).toBeNull();
+  });
+
+  it('returns null for a non-standard starting position', () => {
+    const fen = '4k3/P7/8/8/8/8/8/4K3 w - - 0 1';
+    expect(builderTreeFromPgn(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+`)).toBeNull();
   });
 });
 

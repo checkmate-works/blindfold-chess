@@ -48,7 +48,16 @@
       "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "Import line",
-      "submitting": "Importing…"
+      "submitting": "Importing…",
+      "inputModePgn": "Paste PGN",
+      "inputModeBoard": "Build on the board"
+    },
+    "boardBuilder": {
+      "empty": "Play moves on the board to build your kata.",
+      "whiteToMove": "White to move",
+      "blackToMove": "Black to move",
+      "deleteFromHere": "Delete this move and everything after it",
+      "help": "Play the moves for both sides. Go back to an earlier move and play a different one to add an alternative — each branch becomes its own line on import."
     },
     "new": {
       "title": "Import a line",

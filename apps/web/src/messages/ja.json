@@ -48,7 +48,16 @@
       "pgnHelp": "変化手を含む PGN を貼り付けてください。Lichess スタディや Chess.com のエクスポートをそのまま使えます。",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "型をインポート",
-      "submitting": "インポート中…"
+      "submitting": "インポート中…",
+      "inputModePgn": "PGN を貼り付け",
+      "inputModeBoard": "盤面で作成"
+    },
+    "boardBuilder": {
+      "empty": "盤面で駒を動かすと型の手順が作られます。",
+      "whiteToMove": "白番",
+      "blackToMove": "黒番",
+      "deleteFromHere": "この手以降を削除",
+      "help": "両陣営の手を順に指してください。途中の手に戻って別の手を指すと変化（別の手順）が追加され、インポート時にそれぞれ独立したラインになります。"
     },
     "new": {
       "title": "型をインポート",

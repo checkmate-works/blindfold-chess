@@ -48,7 +48,16 @@
       "pgnHelp": "Cole um PGN com variantes — exportações de estudos do Lichess ou do Chess.com funcionam como estão.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "Importar linha",
-      "submitting": "Importando…"
+      "submitting": "Importando…",
+      "inputModePgn": "Colar PGN",
+      "inputModeBoard": "Criar no tabuleiro"
+    },
+    "boardBuilder": {
+      "empty": "Mova as peças no tabuleiro para montar seu kata.",
+      "whiteToMove": "Brancas jogam",
+      "blackToMove": "Pretas jogam",
+      "deleteFromHere": "Excluir este lance e tudo depois dele",
+      "help": "Jogue os lances dos dois lados. Volte a um lance anterior e jogue outro diferente para adicionar uma alternativa — cada ramificação vira uma linha própria na importação."
     },
     "new": {
       "title": "Importar uma linha",

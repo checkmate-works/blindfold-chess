@@ -1,4 +1,10 @@
-import { executeMove, generatePgnFromTree } from '@blindfold-chess/features/chess-core';
+import type { MoveTreeNode } from '@blindfold-chess/features/chess-core';
+import {
+  executeMove,
+  generatePgnFromTree,
+  getStartingFen,
+  parsePgnTree,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 /**
@@ -119,6 +125,43 @@ export function deleteAtPath(children: BuilderNode[], path: BuilderPath): PlayMo
     ),
     path: parentPath,
   };
+}
+
+/**
+ * Parse an existing PGN into a builder tree, so switching the import form from
+ * paste mode to board mode carries the pasted moves over. Re-derives each
+ * node's from/to squares (chess-core's parsed tree doesn't carry them).
+ * Returns `null` when the text doesn't parse or starts from a non-standard
+ * position (the board builder only authors standard-start repertoires today).
+ */
+export function builderTreeFromPgn(pgn: string): BuilderNode[] | null {
+  let parsed: ReturnType<typeof parsePgnTree>;
+  try {
+    parsed = parsePgnTree(pgn);
+  } catch {
+    return null;
+  }
+  if (parsed.startingFen !== getStartingFen()) return null;
+
+  const convert = (nodes: MoveTreeNode[], beforeFen: string): BuilderNode[] | null => {
+    const out: BuilderNode[] = [];
+    for (const node of nodes) {
+      const result = executeMove(beforeFen, node.san);
+      if (!result) return null;
+      const children = convert(node.children, node.fen);
+      if (!children) return null;
+      out.push({
+        san: node.san,
+        fen: node.fen,
+        from: result.moveResult.from,
+        to: result.moveResult.to,
+        children,
+      });
+    }
+    return out;
+  };
+
+  return convert(parsed.children, parsed.startingFen);
 }
 
 /** Serialize the built tree to the PGN string the import pipeline accepts. */

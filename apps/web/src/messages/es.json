@@ -48,7 +48,16 @@
       "pgnHelp": "Pega un PGN con variantes: las exportaciones de estudios de Lichess o de Chess.com funcionan tal cual.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "Importar línea",
-      "submitting": "Importando…"
+      "submitting": "Importando…",
+      "inputModePgn": "Pegar PGN",
+      "inputModeBoard": "Crear en el tablero"
+    },
+    "boardBuilder": {
+      "empty": "Mueve las piezas en el tablero para construir tu kata.",
+      "whiteToMove": "Juegan blancas",
+      "blackToMove": "Juegan negras",
+      "deleteFromHere": "Eliminar esta jugada y todo lo que sigue",
+      "help": "Juega las jugadas de ambos bandos. Vuelve a una jugada anterior y juega otra distinta para añadir una alternativa: cada rama se convertirá en su propia línea al importar."
     },
     "new": {
       "title": "Importar una línea",
