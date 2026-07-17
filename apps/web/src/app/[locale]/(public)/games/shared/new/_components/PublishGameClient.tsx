@@ -12,6 +12,7 @@ import { MAX_DESCRIPTION_LENGTH, MAX_TITLE_LENGTH } from '@/lib/games/publish-co
 import type { Game } from '@/lib/games/saved-game-types';
 import { recordSharedGame } from '@/lib/games/shared-game-store';
 
+import { SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/practice/_lib/session-storage-keys';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -112,6 +113,18 @@ export function PublishGameClient({ locale }: Props) {
       // authors, its manage token) so the result screen links to it instead of
       // offering to publish again.
       recordSharedGame(sourceGameId, res.id, res.manageToken);
+
+      // Stash any belt-rank grants this publish triggered, for the
+      // RankAchievementModal on the destination to pick up. Mirrors the
+      // challenge-completion and position-submission flows. 1kyu is earned here
+      // rather than at checkmate, so without this the one rank you earn by
+      // playing would be the only one granted in silence.
+      if (res.grantedRanks && res.grantedRanks.length > 0) {
+        sessionStorage.setItem(
+          SESSION_STORAGE_KEYS.GRANTED_RANKS,
+          JSON.stringify(res.grantedRanks)
+        );
+      }
       // `?toast=game_published` both shows the success toast and opens the
       // detail at the opening board (description + stats), not move 1.
       router.push(`/${locale}/games/shared/${res.id}?toast=game_published`);

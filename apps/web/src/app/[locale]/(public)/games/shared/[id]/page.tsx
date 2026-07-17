@@ -10,6 +10,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 
+import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SharedGameDetailView } from './_components/SharedGameDetailView';
@@ -41,11 +42,17 @@ export default async function SharedGamePage({ params, searchParams }: Props) {
   setRequestLocale(locale);
 
   return (
-    <SharedGameDetailView
-      locale={locale}
-      id={id}
-      highlightCommentId={highlightCommentId}
-      orientation={orientation}
-    />
+    <>
+      <SharedGameDetailView
+        locale={locale}
+        id={id}
+        highlightCommentId={highlightCommentId}
+        orientation={orientation}
+      />
+      {/* Publishing is where 1kyu is earned, so this is the landing screen that
+          has to celebrate it — same sessionStorage hand-off the practice flows
+          use. Renders nothing unless a grant was just stashed. */}
+      <RankAchievementModal locale={locale} />
+    </>
   );
 }
