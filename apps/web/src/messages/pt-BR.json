@@ -2230,6 +2230,12 @@
       "repertoireCheck": {
         "title": "Kata",
         "description": "Verifique se sua abertura seguiu seu kata registrado."
+      },
+      "promotion": {
+        "title": "Você cumpriu as condições para {rankName}",
+        "description": "Publique esta partida para conquistar o grau.",
+        "publish": "Publicar esta partida",
+        "skip": "Não publicar"
       }
     },
     "repertoireCheck": {

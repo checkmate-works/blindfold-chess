@@ -100,6 +100,13 @@ vi.mock('./skeletons', () => ({
   IconButtonSkeleton: () => <div />,
   TextLinkSkeleton: () => <div />,
 }));
+// The promotion check reaches a Server Action, whose module graph pulls in the
+// DB. Next.js swaps that for a client reference in the real bundle; vitest
+// resolves it as plain ESM and trips `server-only`. The hook's own behaviour is
+// not what these tests are about.
+vi.mock('../_hooks/use-publish-promotion', () => ({
+  usePublishPromotion: () => null,
+}));
 // The game-finished modal is exercised via its two navigating cards.
 vi.mock('./GameFinishModal', () => ({
   GameFinishModal: (props: { isOpen: boolean; onReview: () => void; onRecall: () => void }) =>

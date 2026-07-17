@@ -2234,6 +2234,12 @@
       "repertoireCheck": {
         "title": "Kata",
         "description": "Check whether your opening followed your registered kata."
+      },
+      "promotion": {
+        "title": "You have met the conditions for {rankName}",
+        "description": "Publish this game to earn the rank.",
+        "publish": "Publish this game",
+        "skip": "Don't publish"
       }
     },
     "repertoireCheck": {

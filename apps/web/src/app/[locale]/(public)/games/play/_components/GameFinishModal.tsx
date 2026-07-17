@@ -5,10 +5,13 @@ import { useId } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaBook, FaBrain, FaClipboardList, FaCloudUploadAlt } from 'react-icons/fa';
 
+import type { RankSlug } from '@/lib/db/data/ranks';
+
 import { CompactResultHeader } from '@/app/[locale]/(public)/games/play/result/_components/CompactResultHeader';
 import { CloseButton } from '@/app/[locale]/_components/CloseButton';
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { Modal } from '@/app/[locale]/_components/Modal';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { FinishChoiceCard } from './FinishChoiceCard';
 
@@ -37,6 +40,14 @@ type Props = {
    * top-right corner so the player can see at a glance it is already shared.
    */
   published?: boolean;
+  /**
+   * The rank this win would earn by being published, when it would earn one.
+   * Present only for a win that qualifies and a player one rung away — see
+   * {@link usePublishPromotion}.
+   */
+  promotionRankSlug?: RankSlug | null;
+  /** Publish this game — the promotion view's primary action. */
+  onShare?: () => void;
 };
 
 /**
@@ -46,6 +57,13 @@ type Props = {
  * (memory reconstruction), and Kata (repertoire opening check) — each with a
  * help-tour explanation. Dismissing it leaves the
  * player on the finished board (reopen via the board's "Next action" button).
+ *
+ * When this win would earn a rank (`promotionRankName`), the cards give way to
+ * a single call to publish. The rank is granted at publish, not at checkmate,
+ * so the ordinary modal would send the player off to a screen where publishing
+ * reads as an optional extra — and quietly cost them the promotion. The three
+ * cards stay one click away behind "don't publish", which lands on the same
+ * result screen the Game Review card does.
  */
 export function GameFinishModal({
   isOpen,
@@ -55,9 +73,16 @@ export function GameFinishModal({
   onRecall,
   onRepertoireCheck,
   published = false,
+  promotionRankSlug = null,
+  onShare,
 }: Props) {
   const t = useTranslations('play');
+  const tRanks = useTranslations('ranks');
   const titleId = useId();
+
+  // An already-published game has earned whatever it was going to earn, so the
+  // nudge would be stale.
+  const showPromotion = !!promotionRankSlug && !!onShare && !published;
 
   const tourSteps: HelpStep[] = [
     {
@@ -76,6 +101,45 @@ export function GameFinishModal({
       description: t('finishModal.repertoireCheck.description'),
     },
   ];
+
+  if (showPromotion) {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" aria-labelledby={titleId}>
+        <div className="relative space-y-4">
+          <CloseButton
+            onClick={onClose}
+            size="w-5 h-5"
+            className="absolute top-0 right-0 text-muted-foreground hover:text-foreground transition-colors"
+          />
+
+          <div id={titleId} className="flex flex-col items-center gap-2 pr-8">
+            {result && <CompactResultHeader result={result} />}
+            <p className="text-center font-semibold text-foreground">
+              {t('finishModal.promotion.title', {
+                rankName: tRanks(`rankNames.${promotionRankSlug}`),
+              })}
+            </p>
+            <p className="text-center text-sm text-muted-foreground">
+              {t('finishModal.promotion.description')}
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={onShare}
+              className="w-full rounded-md bg-primary px-4 py-2.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto sm:px-8"
+            >
+              {t('finishModal.promotion.publish')}
+            </button>
+            <button type="button" onClick={onReview} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+              {t('finishModal.promotion.skip')}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" aria-labelledby={titleId}>

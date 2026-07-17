@@ -2234,6 +2234,12 @@
       "repertoireCheck": {
         "title": "Kata",
         "description": "登録した型どおりにオープニングを指せたかを確認します。"
+      },
+      "promotion": {
+        "title": "{rankName}昇格条件を満たしました",
+        "description": "ゲームを公開すると、昇級できます。",
+        "publish": "ゲームを公開する",
+        "skip": "公開しない"
       }
     },
     "repertoireCheck": {

@@ -23,6 +23,7 @@ import type { GameSession } from '../_hooks/use-game-session';
 import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayBoardViews } from '../_hooks/use-play-board-views';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
+import { usePublishPromotion } from '../_hooks/use-publish-promotion';
 import { useAiReplyChip } from './AiReplyChip';
 import { GameFinishModal } from './GameFinishModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
@@ -259,8 +260,8 @@ export function PlayClient({
 
   // Finished-game navigation hub: prefetches the result route and exposes the
   // game-finished modal's actions.
-  const { handleViewResult, openRecall, openRepertoireCheck, isShared } = useFinishedGameNavigation(
-    {
+  const { handleViewResult, handleShare, openRecall, openRepertoireCheck, isShared } =
+    useFinishedGameNavigation({
       locale,
       isFinishedView,
       gameId,
@@ -269,8 +270,7 @@ export function PlayClient({
       moves,
       engineConfig,
       startingFen,
-    }
-  );
+    });
 
   // Game-finished modal (Result / Game Review / Kata) — auto-open-once state
   // machine, see useFinishModal.
@@ -278,6 +278,15 @@ export function PlayClient({
     isFinished,
     isFinishedView,
     isInitializing,
+  });
+
+  // Would publishing this win earn a rank? The grant happens at publish, not
+  // at checkmate, so the finish modal is the last place to say so before the
+  // player walks away from it.
+  const promotionTarget = usePublishPromotion({
+    result: playerResult,
+    initialPerGamePrefs,
+    enabled: isFinished && !isFinishedView,
   });
 
   // Grant AI-game Exp on finish, independent of navigation (the game-finished
@@ -489,6 +498,8 @@ export function PlayClient({
         onRecall={openRecall}
         onRepertoireCheck={openRepertoireCheck}
         published={isShared}
+        promotionRankSlug={promotionTarget?.slug ?? null}
+        onShare={handleShare}
       />
     </div>
   );
