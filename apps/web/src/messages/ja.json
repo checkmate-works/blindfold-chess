@@ -82,6 +82,9 @@
         "notFound": "この型は存在しません。",
         "nameRequired": "名前を入力してください。",
         "nameTooLong": "名前が長すぎます。",
+        "pgnRequired": "手順を入力してください。",
+        "pgnTooLarge": "PGN が大きすぎます。",
+        "invalidPgn": "手順を読み取れませんでした。記譜を確認してください。",
         "generic": "エラーが発生しました。もう一度お試しください。"
       }
     },

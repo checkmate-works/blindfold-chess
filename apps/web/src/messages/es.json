@@ -82,6 +82,9 @@
         "notFound": "Este kata ya no existe.",
         "nameRequired": "Introduce un nombre.",
         "nameTooLong": "Ese nombre es demasiado largo.",
+        "pgnRequired": "Introduce las jugadas.",
+        "pgnTooLarge": "El PGN es demasiado grande.",
+        "invalidPgn": "No se pudieron leer estas jugadas. Revisa la notación.",
         "generic": "Algo salió mal. Inténtalo de nuevo."
       }
     },

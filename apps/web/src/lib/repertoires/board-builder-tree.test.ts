@@ -8,6 +8,7 @@ import {
   deleteAtPath,
   fenAtPath,
   flattenBuilderTree,
+  mergeLinePgns,
   nodeAtPath,
   playMoveAtPath,
 } from './board-builder-tree';
@@ -164,6 +165,35 @@ describe('playMoveAtPath — replace mode (single-line editors)', () => {
     const result = playMoveAtPath(line.children, [0], ROOT, 'e5', { replace: true })!;
     expect(result.children).toBe(line.children);
     expect(nodeAtPath(result.children, [0, 0, 0])?.san).toBe('Nf3');
+  });
+});
+
+describe('mergeLinePgns', () => {
+  it('recomposes decomposed lines back into a PGN-with-variations', () => {
+    // The import decomposition of "1. e4 e5 (1... c5 2. Nf3) 2. Nf3".
+    const merged = mergeLinePgns(['1. e4 e5 2. Nf3', '1. e4 c5 2. Nf3']);
+    expect(merged).toBe('1. e4 e5 (1... c5 2. Nf3) 2. Nf3');
+    // Round trip: the merged PGN enumerates to the same lines, in order.
+    expect(enumerateLines(parsePgnTree(merged!))).toEqual([
+      ['e4', 'e5', 'Nf3'],
+      ['e4', 'c5', 'Nf3'],
+    ]);
+  });
+
+  it('handles a single line and non-standard roots', () => {
+    const fen = '4k3/P7/8/8/8/8/8/4K3 w - - 0 1';
+    const pgn = `[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+`;
+    expect(mergeLinePgns([pgn])).toBe(pgn);
+  });
+
+  it('returns null when line roots disagree', () => {
+    const fen = '4k3/P7/8/8/8/8/8/4K3 w - - 0 1';
+    expect(mergeLinePgns(['1. e4', `[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+`])).toBeNull();
+  });
+
+  it('returns null for an empty set or an unparseable line', () => {
+    expect(mergeLinePgns([])).toBeNull();
+    expect(mergeLinePgns(['nonsense'])).toBeNull();
   });
 });
 

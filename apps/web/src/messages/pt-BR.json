@@ -82,6 +82,9 @@
         "notFound": "Este kata não existe mais.",
         "nameRequired": "Digite um nome.",
         "nameTooLong": "Esse nome é muito longo.",
+        "pgnRequired": "Digite os lances.",
+        "pgnTooLarge": "O PGN é muito grande.",
+        "invalidPgn": "Não foi possível ler estes lances. Verifique a notação.",
         "generic": "Algo deu errado. Tente novamente."
       }
     },

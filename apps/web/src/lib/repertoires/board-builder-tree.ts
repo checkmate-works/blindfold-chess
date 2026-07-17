@@ -174,6 +174,46 @@ export function builderTreeFromPgn(
   return children ? { rootFen: parsed.startingFen, children } : null;
 }
 
+/**
+ * Recompose a repertoire's stored lines (one linear PGN each, shared root)
+ * into a single PGN-with-variations — the inverse of the import's
+ * `enumerateLines` decomposition, up to variation nesting. Lines merge on
+ * their common SAN prefix (the first line becomes the main line), so editing
+ * the whole repertoire on a board starts from the exact tree its lines form.
+ * Returns `null` when a line doesn't parse or the roots disagree.
+ */
+export function mergeLinePgns(pgns: string[]): string | null {
+  if (pgns.length === 0) return null;
+
+  let rootFen: string | null = null;
+  const children: BuilderNode[] = [];
+
+  for (const pgn of pgns) {
+    const parsed = builderTreeFromPgn(pgn);
+    if (!parsed) return null;
+    if (rootFen === null) rootFen = parsed.rootFen;
+    else if (rootFen !== parsed.rootFen) return null;
+
+    // Walk the line's single chain, descending while the tree already has the
+    // move; the first novel move hangs the chain's remainder as a new branch.
+    let level = children;
+    let chain: BuilderNode[] = parsed.children;
+    while (chain.length > 0) {
+      const node = chain[0];
+      const existing = level.find((c) => c.san === node.san);
+      if (existing) {
+        level = existing.children;
+        chain = node.children;
+      } else {
+        level.push(node);
+        break;
+      }
+    }
+  }
+
+  return rootFen ? builderTreeToPgn(children, rootFen) : null;
+}
+
 /** Serialize the built tree to the PGN string the import pipeline accepts. */
 export function builderTreeToPgn(children: BuilderNode[], rootFen: string): string {
   if (children.length === 0) return '';

@@ -1,14 +1,18 @@
 /**
- * Repertoire (型) — edit page (owner only). Metadata only: the title and, for an
- * opening-phase repertoire, its opening links. The lines and the position-keyed
- * annotations hanging off them derive from the imported PGN / side / phase, so
- * re-shaping those is a re-import, not an edit.
+ * Repertoire (型) — edit page (owner only). The title, the opening links, and
+ * the whole move tree — the lines recomposed into one PGN-with-variations and
+ * edited on the same board the import form uses (with per-move notes and
+ * markup). Saving diffs the tree against the stored lines so unchanged lines
+ * keep their identity. Side / phase stay fixed: they define the repertoire.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
+import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
+import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
+import { mergeLinePgns } from '@/lib/repertoires/board-builder-tree';
 import { getLinkedOpeningIds, getOpeningOptions } from '@/lib/repertoires/opening-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 
@@ -41,7 +45,21 @@ export default async function EditRepertoirePage({ params }: Props) {
   const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
   // Editing is owner-only — don't even reveal the page to others.
   if (!data || !data.isOwner) notFound();
-  const { repertoire } = data;
+  const { repertoire, lines } = data;
+
+  // The whole tree as one editable PGN (defensive null: a stored line that no
+  // longer parses hides the moves editor rather than breaking the page), plus
+  // the existing notes / markup for the board editor.
+  const initialPgn = mergeLinePgns(lines.map((line) => line.pgn));
+  const annotationViews = await getAnnotationsForRepertoire(id);
+  const initialAnnotations = Object.fromEntries(
+    [...annotationViews].filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
+  );
+  const initialShapes = Object.fromEntries(
+    [...annotationViews]
+      .filter(([, v]) => !isEmptyBoardAnnotations(v.shapes))
+      .map(([key, v]) => [key, v.shapes])
+  );
 
   // Opening links only exist for an opening-phase repertoire; skip both queries
   // (the whole master + the link rows) for the other phases.
@@ -68,6 +86,10 @@ export default async function EditRepertoirePage({ params }: Props) {
         openings={openings}
         initialOpeningIds={initialOpeningIds}
         canLinkOpenings={canLinkOpenings}
+        side={repertoire.side}
+        initialPgn={initialPgn}
+        initialAnnotations={initialAnnotations}
+        initialShapes={initialShapes}
       />
     </PageLayout>
   );
