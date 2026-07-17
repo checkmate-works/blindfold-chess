@@ -14,8 +14,17 @@
  */
 
 // -- Guide data (i18n resolver) --
-export { findChapter, getRankGuide } from './guideData';
-export type { ChapteredGuide, FlatGuide, GuideChapter, GuidePage, RankGuide } from './guideData';
+export { findChapter, getRankGuide, isGuideListParagraph, paragraphToPlainText } from './guideData';
+export type {
+  ChapteredGuide,
+  FlatGuide,
+  GuideChapter,
+  GuideHeadingParagraph,
+  GuideListParagraph,
+  GuidePage,
+  GuideParagraph,
+  RankGuide,
+} from './guideData';
 
 // -- URL segment parser --
 export { parseGuideSegments } from './parseGuideSegments';

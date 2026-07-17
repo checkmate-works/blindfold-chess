@@ -22,7 +22,7 @@ import { SUPPORTED_LOCALES } from '@/config';
 
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
-import { buildGuidePath, getRankGuide } from '@/lib/guides';
+import { buildGuidePath, getRankGuide, paragraphToPlainText } from '@/lib/guides';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -85,7 +85,8 @@ export default async function RankDetailPage({ params }: Props) {
   const getTeaserParagraph = (rankKey: string): string => {
     const guide = getRankGuide(guidesPages, rankKey as RankSlug);
     if (!guide || guide.format !== 'flat') return '';
-    return guide.pages[0]?.paragraphs[0] ?? '';
+    const first = guide.pages[0]?.paragraphs[0];
+    return first === undefined ? '' : paragraphToPlainText(first);
   };
   const hasGuideFor = (rankKey: string): boolean =>
     getRankGuide(guidesPages, rankKey as RankSlug) !== null;

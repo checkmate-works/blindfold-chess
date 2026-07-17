@@ -2,7 +2,8 @@ import React from 'react';
 import type { ReactNode } from 'react';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
-import type { GuidePage } from '@/lib/guides';
+import { isGuideListParagraph } from '@/lib/guides';
+import type { GuidePage, GuideParagraph } from '@/lib/guides';
 
 import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
 
@@ -27,7 +28,7 @@ function renderParagraphBlock({
   rankSlug: RankSlug;
   pageNumber: number;
   index: number;
-  paragraph: string;
+  paragraph: GuideParagraph;
   tGuides: Translator;
   locale: string;
 }): ReactNode {
@@ -35,13 +36,23 @@ function renderParagraphBlock({
 
   return (
     <React.Fragment key={index}>
-      {paragraph.includes('\n') ? (
-        <p className="text-foreground/80">
-          <strong className="block">{paragraph.split('\n')[0]}</strong>
-          {paragraph.split('\n').slice(1).join('\n')}
-        </p>
+      {/* `whitespace-pre-line` keeps authored `\n` as a line break while still
+          collapsing the incidental indentation of the JSON message files. */}
+      {typeof paragraph === 'string' ? (
+        <p className="whitespace-pre-line text-foreground/80">{paragraph}</p>
+      ) : isGuideListParagraph(paragraph) ? (
+        <ul className="ml-6 list-disc space-y-2 text-foreground/80">
+          {paragraph.items.map((item, i) => (
+            <li key={i} className="whitespace-pre-line">
+              {item}
+            </li>
+          ))}
+        </ul>
       ) : (
-        <p className="text-foreground/80">{paragraph}</p>
+        <p className="whitespace-pre-line text-foreground/80">
+          <strong className="block">{paragraph.heading}</strong>
+          {paragraph.body}
+        </p>
       )}
       {getVisualAid(rankSlug, pageNumber, index)}
       {linkInfo && (

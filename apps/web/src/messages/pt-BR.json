@@ -5599,9 +5599,18 @@
               "Depois de estabelecer esses pontos de ancoragem, você está pronto para colocá-los em prática.",
               "A maior vantagem desse método é que toda casa do tabuleiro é, ela própria, um ponto de ancoragem, ou é adjacente a um.",
               "Por exemplo, suponha que seu oponente jogue 1...Cf6. Veja como você pode reconhecer f6:",
-              "Passo 1: Identifique a área.\nMesmo que não consiga localizar f6 imediatamente, você pode determinar rapidamente que ela cai dentro da área superior direita (e5–h8).",
-              "Passo 2: Determine o ponto de ancoragem.\nOs pontos de ancoragem nessa área são e5, h5, e8 e h8. Procure o ponto de ancoragem mais próximo por coluna e fileira — neste caso, e5 funciona bem.",
-              "Passo 3: Verifique a posição relativa.\nf6 está uma casa à direita e uma casa acima de e5 — em outras palavras, diagonalmente para cima e à direita.",
+              {
+                "heading": "Passo 1: Identifique a área.",
+                "body": "Mesmo que não consiga localizar f6 imediatamente, você pode determinar rapidamente que ela cai dentro da área superior direita (e5–h8)."
+              },
+              {
+                "heading": "Passo 2: Determine o ponto de ancoragem.",
+                "body": "Os pontos de ancoragem nessa área são e5, h5, e8 e h8. Procure o ponto de ancoragem mais próximo por coluna e fileira — neste caso, e5 funciona bem."
+              },
+              {
+                "heading": "Passo 3: Verifique a posição relativa.",
+                "body": "f6 está uma casa à direita e uma casa acima de e5 — em outras palavras, diagonalmente para cima e à direita."
+              },
               "Dessa forma, em vez de construir uma imagem mental a partir de coordenadas absolutas como \"a coluna f... a 6ª fileira...\", você reconhece posições de forma relativa: \"área superior direita, acima e à direita de e5.\" Isso reduz a carga cognitiva e permite uma visualização do tabuleiro mais eficiente.",
               "O artigo a seguir também explica esse método."
             ]
