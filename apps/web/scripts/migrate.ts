@@ -2,9 +2,16 @@ import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { readFileSync } from 'fs';
+import { setDefaultResultOrder } from 'node:dns';
 import { dirname, join } from 'path';
 import postgres from 'postgres';
 import { fileURLToPath } from 'url';
+
+// Vercel's build containers have no IPv6 route, but the Supabase DB host can
+// resolve to an IPv6 address first, failing the migration with ENETUNREACH
+// (issue #54). Prefer IPv4 in this process; prebuild-db.ts runs this script
+// as a child, so the setting must live here, not in the parent.
+setDefaultResultOrder('ipv4first');
 
 dotenv.config({ path: ['.env.local', '.env'] });
 
