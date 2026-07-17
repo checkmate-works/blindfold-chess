@@ -9,6 +9,8 @@ import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import { FlipBoardButton } from '@/app/_components/chess/FlipBoardButton';
 import { FaTrash } from 'react-icons/fa';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
@@ -33,6 +35,15 @@ type Props = {
    * per-move UI (the line edit form's "why this move" note) to the board.
    */
   onCursorChange?: (cursor: { positionKey: string; label: string } | null) => void;
+  /**
+   * Position-keyed board markup (arrows / circles). Supplying both props arms
+   * the lichess right-click drawing surface on the board for the cursor's
+   * position — same gesture and hint as the line detail page. Like the note
+   * editor, drawing targets the position after a move, so the surface is off
+   * at the root.
+   */
+  shapes?: Record<string, BoardAnnotations>;
+  onShapesChange?: (positionKey: string, next: BoardAnnotations) => void;
 };
 
 /**
@@ -52,6 +63,8 @@ export function RepertoireBoardBuilder({
   onPgnChange,
   singleLine = false,
   onCursorChange,
+  shapes,
+  onShapesChange,
 }: Props) {
   const t = useTranslations('Repertoires');
   const builder = useRepertoireBoardBuilder({ initialPgn, onPgnChange, singleLine });
@@ -75,6 +88,11 @@ export function RepertoireBoardBuilder({
   }
 
   const currentPathKey = builder.path.join('.');
+
+  // The drawing surface arms only on a move's position (parity with the note
+  // editor and the detail page, which annotate positions after moves).
+  const drawingKey =
+    shapes && onShapesChange && builder.currentMove ? builder.currentMove.positionKey : null;
 
   return (
     <div className="space-y-2">
@@ -131,6 +149,10 @@ export function RepertoireBoardBuilder({
           movablePieces="side-to-move"
           showCoordinates
           boardTheme="lichess"
+          annotations={drawingKey ? (shapes?.[drawingKey] ?? EMPTY_BOARD_ANNOTATIONS) : null}
+          onAnnotationsChange={
+            drawingKey ? (next) => onShapesChange?.(drawingKey, next) : undefined
+          }
         />
 
         <div className="flex items-center justify-between" style={{ aspectRatio: '8 / 1' }}>
@@ -159,6 +181,7 @@ export function RepertoireBoardBuilder({
 
       <p className="text-xs text-muted-foreground">
         {t(singleLine ? 'boardBuilder.helpSingleLine' : 'boardBuilder.help')}
+        {shapes && onShapesChange && <> {t('boardBuilder.shapesHint')}</>}
       </p>
     </div>
   );

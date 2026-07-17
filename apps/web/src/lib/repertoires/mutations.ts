@@ -245,14 +245,16 @@ export async function createRepertoireEntry(
       }))
     );
 
-    // Board-authored "why this move" notes land with the kata, under the same
-    // position keys saveAnnotation writes to later.
+    // Board-authored "why this move" notes and arrow/circle markup land with
+    // the kata, under the same position keys the detail page writes to later.
+    // An absent half keeps its column default (empty note / no markup).
     if (annotations.length > 0) {
       await tx.insert(repertoireAnnotations).values(
-        annotations.map(({ positionKey, text }) => ({
+        annotations.map(({ positionKey, text, shapes }) => ({
           repertoireId: repertoire.id,
           positionKey,
-          text,
+          ...(text !== undefined ? { text } : {}),
+          ...(shapes !== undefined ? { shapes } : {}),
         }))
       );
     }

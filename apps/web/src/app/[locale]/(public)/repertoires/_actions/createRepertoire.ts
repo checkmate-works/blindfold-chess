@@ -19,6 +19,8 @@ export async function createRepertoire(input: {
   openingIds?: string[];
   /** Position-keyed "why this move" notes authored in board mode. */
   annotations?: Record<string, string>;
+  /** Position-keyed board markup (arrows / circles) drawn in board mode. */
+  shapes?: Record<string, unknown>;
   locale: string;
 }): Promise<CreateRepertoireResult> {
   const result = await createRepertoireEntry({
@@ -29,6 +31,7 @@ export async function createRepertoire(input: {
     pgn: input.pgn,
     openingIds: input.openingIds,
     annotations: input.annotations,
+    shapes: input.shapes,
   });
   if ('success' in result) {
     revalidatePath(`/${input.locale}/repertoires`);

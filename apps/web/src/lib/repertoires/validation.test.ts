@@ -43,4 +43,21 @@ describe('validateRepertoireImport — annotations', () => {
     });
     expect(result).toEqual({ ok: false, error: 'invalidAnnotations' });
   });
+
+  it('merges shapes with a note on the same position and drops malformed markup', () => {
+    const circle = { circles: [{ square: 'e4', color: 'green' }], arrows: [] };
+    const result = validateRepertoireImport({
+      ...BASE,
+      annotations: { [KEY]: 'Grabs the center.' },
+      shapes: { [KEY]: circle, other: { not: 'markup' } },
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.annotations).toHaveLength(1);
+      const entry = result.data.annotations[0];
+      expect(entry.positionKey).toBe(KEY);
+      expect(entry.text).toBe('Grabs the center.');
+      expect(entry.shapes?.circles).toHaveLength(1);
+    }
+  });
 });

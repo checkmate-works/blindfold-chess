@@ -57,6 +57,7 @@
     "boardBuilder": {
       "flip": "Girar tabuleiro",
       "helpSingleLine": "Jogue os lances dos dois lados. Voltar e jogar um lance diferente substitui o resto da linha — uma linha não contém ramificações.",
+      "shapesHint": "Clique com o botão direito e arraste no tabuleiro para desenhar uma seta; clique com o botão direito em uma casa para circulá-la. Shift / Alt / Ctrl mudam a cor.",
       "annotationHelp": "As notas ficam associadas à posição após o lance selecionado e são compartilhadas por todas as linhas deste kata que a alcançam. São salvas ao enviar o formulário.",
       "empty": "Mova as peças no tabuleiro para montar seu kata.",
       "whiteToMove": "Brancas jogam",

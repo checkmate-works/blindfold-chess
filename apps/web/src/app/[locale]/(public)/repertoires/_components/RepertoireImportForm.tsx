@@ -11,6 +11,8 @@ import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 import { FaPlus } from 'react-icons/fa';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
@@ -76,9 +78,10 @@ export function RepertoireImportForm({
   // modes read and write the same `pgn` state — the board serializes its move
   // tree through it — so detection, validation and submission are shared.
   const [inputMode, setInputMode] = useState<'pgn' | 'board'>('pgn');
-  // Per-position "why this move" drafts, edited inline under the board for
-  // whichever move the cursor rests on; created with the kata on submit.
+  // Per-position "why this move" drafts and board markup, authored on the
+  // board for whichever move the cursor rests on; created with the kata.
   const [annotations, setAnnotations] = useState<Record<string, string>>({});
+  const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>({});
   const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +93,9 @@ export function RepertoireImportForm({
   // fields (name / moves) from what the page loaded with — prefills don't
   // count. Same reusable pieces as the chunk / puzzle / topic forms.
   const tUnsaved = useTranslations('unsavedChanges');
-  const hasAnnotationDrafts = Object.values(annotations).some((text) => text.trim());
+  const hasAnnotationDrafts =
+    Object.values(annotations).some((text) => text.trim()) ||
+    Object.values(shapes).some((s) => !isEmptyBoardAnnotations(s));
   const isDirty =
     !submitted &&
     (name !== (initialName ?? '') || pgn !== (initialPgn ?? '') || hasAnnotationDrafts);
@@ -133,6 +138,7 @@ export function RepertoireImportForm({
       pgn,
       openingIds: phase === 'opening' ? openingIds : [],
       annotations,
+      shapes,
       locale,
     });
     if ('error' in result) {
@@ -253,6 +259,10 @@ export function RepertoireImportForm({
               initialPgn={pgn}
               onPgnChange={setPgn}
               onCursorChange={setCursor}
+              shapes={shapes}
+              onShapesChange={(positionKey, next) =>
+                setShapes((prev) => ({ ...prev, [positionKey]: next }))
+              }
             />
             {cursor && (
               <MoveAnnotationField

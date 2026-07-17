@@ -10,6 +10,7 @@ import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 
@@ -19,6 +20,7 @@ import { RepertoireBoardBuilder } from '@/app/[locale]/(public)/repertoires/_com
 
 import { deleteAnnotation } from '../_actions/deleteAnnotation';
 import { saveAnnotation } from '../_actions/saveAnnotation';
+import { saveShapes } from '../_actions/saveShapes';
 import { updateLine } from '../_actions/updateLine';
 
 type Props = {
@@ -34,6 +36,11 @@ type Props = {
    * prefills the per-move note editor under the board.
    */
   initialAnnotations: Record<string, string>;
+  /**
+   * The repertoire's existing board markup (arrows / circles), keyed by
+   * position key — displayed and editable on the board in board mode.
+   */
+  initialShapes: Record<string, BoardAnnotations>;
 };
 
 /**
@@ -53,6 +60,7 @@ export function EditLineForm({
   initialPgn,
   side,
   initialAnnotations,
+  initialShapes,
 }: Props) {
   const t = useTranslations('Repertoires.line.edit');
   const tForm = useTranslations('Repertoires.form');
@@ -64,6 +72,7 @@ export function EditLineForm({
   // whichever move the cursor rests on, and persisted on Save alongside the
   // line (notes are position-keyed, so they need no line row to exist).
   const [annotations, setAnnotations] = useState<Record<string, string>>(initialAnnotations);
+  const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>(initialShapes);
   const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
   // Editing an existing line starts on the board — the stored moves are
   // already there to step through; the PGN tab remains for raw editing.
@@ -77,11 +86,20 @@ export function EditLineForm({
   const changedAnnotations = Object.entries(annotations).filter(
     ([key, text]) => text.trim() !== (initialAnnotations[key] ?? '').trim()
   );
+  // Markup that differs from the server's. Shapes are value objects saved
+  // wholesale (see saveShapes), so a JSON comparison is the equality we need.
+  const changedShapes = Object.entries(shapes).filter(
+    ([key, value]) => JSON.stringify(value) !== JSON.stringify(initialShapes[key] ?? null)
+  );
 
   // Same leave-guard pieces as the import / chunk / puzzle forms.
   const tUnsaved = useTranslations('unsavedChanges');
   const isDirty =
-    !submitted && (name !== initialName || pgn !== initialPgn || changedAnnotations.length > 0);
+    !submitted &&
+    (name !== initialName ||
+      pgn !== initialPgn ||
+      changedAnnotations.length > 0 ||
+      changedShapes.length > 0);
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   const lineHref = `/repertoires/${repertoireId}/lines/${lineNo}`;
@@ -106,17 +124,20 @@ export function EditLineForm({
       return;
     }
 
-    // Persist the changed per-move notes alongside the line. Position-keyed
-    // writes are independent of each other and of the line row, so a partial
-    // failure leaves the successful ones in place; we stay on the page (still
-    // dirty) so retrying the save only re-sends what still differs.
-    const noteResults = await Promise.all(
-      changedAnnotations.map(([positionKey, text]) =>
+    // Persist the changed per-move notes and board markup alongside the line.
+    // Position-keyed writes are independent of each other and of the line row,
+    // so a partial failure leaves the successful ones in place; we stay on the
+    // page (still dirty) and a retry re-sends what differs from the load.
+    const noteResults = await Promise.all([
+      ...changedAnnotations.map(([positionKey, text]) =>
         text.trim()
           ? saveAnnotation({ repertoireId, lineNo, locale, positionKey, text: text.trim() })
           : deleteAnnotation({ repertoireId, lineNo, locale, positionKey })
-      )
-    );
+      ),
+      ...changedShapes.map(([positionKey, value]) =>
+        saveShapes({ repertoireId, positionKey, shapes: value })
+      ),
+    ]);
     if (noteResults.some((r) => !r.ok)) {
       setPending(false);
       setError(t('errors.generic'));
@@ -178,6 +199,10 @@ export function EditLineForm({
               onPgnChange={setPgn}
               singleLine
               onCursorChange={setCursor}
+              shapes={shapes}
+              onShapesChange={(positionKey, next) =>
+                setShapes((prev) => ({ ...prev, [positionKey]: next }))
+              }
             />
 
             {cursor && (
