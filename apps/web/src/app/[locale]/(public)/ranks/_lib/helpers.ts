@@ -181,6 +181,21 @@ function buildGamePublishWinItem(
   };
 }
 
+/**
+ * Whether a rank is earned at the board rather than in `practice/`.
+ *
+ * Everything up to 2kyu is drilled in the practice modules; 1kyu is earned by
+ * publishing a won game. Callers use this to point their CTA somewhere that can
+ * actually satisfy the rank — the practice index is a dead end for 1kyu.
+ *
+ * Keyed on the requirement types, not the slug, so a rank lands on the right
+ * destination by virtue of what it asks for. A rank with no requirements yet
+ * ("Coming Soon") is not earned by playing — there is nothing to earn.
+ */
+export function isRankEarnedByPlaying(requirements: RankRequirement[]): boolean {
+  return requirements.length > 0 && requirements.every((req) => req.type === 'game_publish_win');
+}
+
 export function getBeltColorHex(slug: RankSlug): string {
   const colorName = RANK_COLORS[slug];
   return BELT_COLOR_HEX[colorName] ?? '#6b7280';

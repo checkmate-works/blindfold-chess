@@ -28,6 +28,7 @@ import {
   buildRequirementItems,
   buildRequirementLabels,
   getBeltColorHex,
+  isRankEarnedByPlaying,
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
@@ -116,6 +117,10 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const nextRequirementItems = next ? buildRequirementItems(next.requirements, locale, tRanks) : [];
   const nextBeltColor = next ? getBeltColorHex(next.slug) : getBeltColorHex('mukyu');
 
+  // Send the reader where the next rank is actually earned — the practice index
+  // is a dead end for a rank you earn at the board.
+  const nextIsEarnedByPlaying = next !== null && isRankEarnedByPlaying(next.requirements);
+
   const helpSteps: HelpStep[] = [
     {
       targetId: 'dojo-current-rank',
@@ -184,10 +189,14 @@ export default async function DojoPage({ params }: LocalePageProps) {
                 </p>
               )}
 
-              {/* Centered "View all practices" link directly below the list */}
+              {/* Centered CTA directly below the list — the practice index, or
+                  the game setup once the next rank is earned by playing. */}
               <div className="flex justify-center">
-                <Link href={`/${locale}/practice`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
-                  {t('viewAllPractices')}
+                <Link
+                  href={nextIsEarnedByPlaying ? `/${locale}/games/new` : `/${locale}/practice`}
+                  className={`text-sm ${TEXT_LINK_CLASSES}`}
+                >
+                  {nextIsEarnedByPlaying ? t('startAiGame') : t('viewAllPractices')}
                 </Link>
               </div>
             </div>
