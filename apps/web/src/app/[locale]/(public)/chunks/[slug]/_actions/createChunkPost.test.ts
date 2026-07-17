@@ -10,6 +10,7 @@ const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockGetChunkBySlug = vi.fn();
+const mockSelectProfile = vi.fn();
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
@@ -47,8 +48,18 @@ const mockTx = {
 vi.mock('@/lib/db', () => ({
   db: {
     transaction: (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => mockSelectProfile(),
+        }),
+      }),
+    }),
   },
   topicPosts: {
+    id: 'id',
+  },
+  profiles: {
     id: 'id',
   },
   feedItems: {},
@@ -102,6 +113,7 @@ describe('createChunkPost', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   describe('chunk validation', () => {
@@ -111,6 +123,18 @@ describe('createChunkPost', () => {
       const result = await createChunkPost('en', 'no-such-chunk', {}, makeFormData('hello'));
       expect(result).toEqual({ error: 'Invalid chunk' });
       expect(mockGetUser).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('profile requirement', () => {
+    it('should return error for an authenticated, non-banned user without a profile', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockSelectProfile.mockResolvedValue([]);
+
+      const result = await createChunkPost('en', testSlug, {}, makeFormData('hello'));
+      expect(result).toEqual({ error: 'profileRequired' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
     });
   });
 

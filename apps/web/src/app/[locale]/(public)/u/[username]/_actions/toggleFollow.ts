@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, profiles, userFollows } from '@/lib/db';
 import { toggleByInsert } from '@/lib/db/toggle-by-insert';
 import { createNotification } from '@/lib/notifications/notification';
@@ -20,7 +20,7 @@ export async function toggleFollow(
 ): Promise<ToggleFollowResult> {
   assertSupportedLocale(locale);
 
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.toggleFollow);
+  const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.toggleFollow);
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }

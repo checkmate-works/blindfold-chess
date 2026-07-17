@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { eq } from 'drizzle-orm';
 
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, topicPosts } from '@/lib/db';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
 import { createNotification } from '@/lib/notifications/notification';
@@ -42,7 +42,7 @@ export async function toggleLikeBase(params: {
     return { error: `invalid${topicType.charAt(0).toUpperCase()}${topicType.slice(1)}` };
   }
 
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.toggleLike);
+  const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.toggleLike);
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }

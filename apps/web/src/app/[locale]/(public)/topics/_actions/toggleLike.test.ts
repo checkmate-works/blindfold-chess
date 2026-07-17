@@ -28,6 +28,7 @@ const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
 const mockSelectCount = vi.fn();
 const mockSelectPostAuthor = vi.fn();
+const mockSelectProfile = vi.fn();
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
@@ -60,6 +61,7 @@ vi.mock('@/lib/security/rate-limit', () => ({
 vi.mock('@/lib/db', () => {
   const topicPostsTable = { id: 'id', userId: 'user_id' };
   const likesTable = { userId: 'user_id', targetType: 'target_type', targetId: 'target_id' };
+  const profilesTable = { id: 'id' };
 
   return {
     db: {
@@ -75,6 +77,10 @@ vi.mock('@/lib/db', () => {
             if (table === topicPostsTable) {
               return { limit: () => mockSelectPostAuthor() };
             }
+            if (table === profilesTable) {
+              // The auth guard's own-profile lookup: .where(...).limit(1).
+              return { limit: () => mockSelectProfile() };
+            }
             return mockSelectCount();
           },
         }),
@@ -82,6 +88,7 @@ vi.mock('@/lib/db', () => {
     },
     topicPosts: topicPostsTable,
     likes: likesTable,
+    profiles: profilesTable,
   };
 });
 
@@ -107,6 +114,7 @@ describe('toggleLikeBase', () => {
     vi.clearAllMocks();
     validParams.validateTopic.mockResolvedValue(true);
     mockSelectPostAuthor.mockResolvedValue([{ userId: testPostAuthorId }]);
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   describe('input validation', () => {
@@ -153,6 +161,19 @@ describe('toggleLikeBase', () => {
       const result = await toggleLikeBase(validParams);
       expect(result).toEqual({ liked: true, likeCount: 1 });
       expect(mockIsUserBanned).toHaveBeenCalledWith(testUserId);
+    });
+  });
+
+  describe('profile requirement', () => {
+    it('should return profileRequired when user has no profile', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockSelectProfile.mockResolvedValue([]);
+
+      const result = await toggleLikeBase(validParams);
+      expect(result).toEqual({ error: 'profileRequired' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+      expect(mockDeleteWhere).not.toHaveBeenCalled();
     });
   });
 

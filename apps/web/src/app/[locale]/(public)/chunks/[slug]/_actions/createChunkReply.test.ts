@@ -8,6 +8,7 @@ import { createChunkReply } from './createChunkReply';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
+const mockSelectProfile = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockIsUserBanned = vi.fn();
@@ -40,46 +41,57 @@ const txInsert = () => ({
   },
 });
 
-vi.mock('@/lib/db', () => ({
-  db: {
-    select: () => ({
-      from: () => ({
-        where: (...args: unknown[]) => {
-          mockSelectFromWhere(...args);
-          return (
-            mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ?? []
-          );
+vi.mock('@/lib/db', () => {
+  const profilesTable = {
+    id: 'id',
+  };
+
+  return {
+    db: {
+      select: () => ({
+        from: (table: unknown) => ({
+          where: (...args: unknown[]) => {
+            if (table === profilesTable) {
+              return { limit: () => mockSelectProfile() };
+            }
+            mockSelectFromWhere(...args);
+            return (
+              mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ??
+              []
+            );
+          },
+        }),
+      }),
+      insert: () => ({
+        values: (...args: unknown[]) => {
+          mockInsertValues(...args);
+          return {
+            returning: () => mockInsertReturning(),
+          };
         },
       }),
-    }),
-    insert: () => ({
-      values: (...args: unknown[]) => {
-        mockInsertValues(...args);
-        return {
-          returning: () => mockInsertReturning(),
-        };
-      },
-    }),
-    transaction: async (cb: (tx: { insert: typeof txInsert }) => Promise<unknown>) =>
-      cb({ insert: txInsert }),
-  },
-  topicPosts: {
-    id: 'id',
-    userId: 'user_id',
-    topicType: 'topic_type',
-    topicKey: 'topic_key',
-    parentId: 'parent_id',
-    rootPostId: 'root_post_id',
-    content: 'content',
-    deletedAt: 'deleted_at',
-    replyPermission: 'reply_permission',
-  },
-  userFollows: {
-    id: 'id',
-    followerId: 'follower_id',
-    followingId: 'following_id',
-  },
-}));
+      transaction: async (cb: (tx: { insert: typeof txInsert }) => Promise<unknown>) =>
+        cb({ insert: txInsert }),
+    },
+    topicPosts: {
+      id: 'id',
+      userId: 'user_id',
+      topicType: 'topic_type',
+      topicKey: 'topic_key',
+      parentId: 'parent_id',
+      rootPostId: 'root_post_id',
+      content: 'content',
+      deletedAt: 'deleted_at',
+      replyPermission: 'reply_permission',
+    },
+    userFollows: {
+      id: 'id',
+      followerId: 'follower_id',
+      followingId: 'following_id',
+    },
+    profiles: profilesTable,
+  };
+});
 
 vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
@@ -127,6 +139,7 @@ describe('createChunkReply', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockCheckRateLimit.mockResolvedValue({ success: true });
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
     mockSelectFromWhere.mockReturnValue([
       { id: validPostId, userId: otherUserId, replyPermission: 'everyone' },
     ]);
@@ -194,6 +207,14 @@ describe('createChunkReply', () => {
 
     const result = await createChunkReply('en', testSlug, validPostId, {}, makeFormData('hi'));
     expect(result).toEqual({ error: 'postNotFound' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('returns profileRequired when the signed-in user has no profiles row', async () => {
+    mockSelectProfile.mockResolvedValue([]);
+
+    const result = await createChunkReply('en', testSlug, validPostId, {}, makeFormData('hi'));
+    expect(result).toEqual({ error: 'profileRequired' });
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 

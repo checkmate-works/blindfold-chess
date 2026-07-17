@@ -119,6 +119,26 @@ export async function userHasProfile(userId: string): Promise<boolean> {
 }
 
 /**
+ * Auth + ban guard (no rate limiting) that additionally requires a completed
+ * profile. Counterpart to `authenticateAndCheckBan` for action cores that
+ * charge their rate limit later (after content validation): a provisional
+ * user (signed in, no `profiles` row) is rejected with `profileRequired`
+ * before any content lands, mirroring `authenticateGuardAndRequireProfile`.
+ */
+export async function authenticateCheckBanAndRequireProfile(): Promise<
+  { user: User } | { error: string }
+> {
+  const guardResult = await authenticateAndCheckBan();
+  if ('error' in guardResult) {
+    return guardResult;
+  }
+  if (!(await userHasProfile(guardResult.user.id))) {
+    return { error: 'profileRequired' };
+  }
+  return guardResult;
+}
+
+/**
  * Auth + ban + rate limit guard that additionally requires a completed profile.
  * Use for Server Actions that create public-attributed content (e.g. game
  * comments / chunk links): a provisional user is rejected with

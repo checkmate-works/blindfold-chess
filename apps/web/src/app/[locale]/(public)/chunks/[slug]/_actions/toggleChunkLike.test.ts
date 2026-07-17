@@ -9,6 +9,7 @@ const mockIsUserBanned = vi.fn();
 const mockInsertValues = vi.fn();
 const mockSelectCount = vi.fn();
 const mockSelectPostAuthor = vi.fn();
+const mockSelectProfile = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 
 vi.mock('@/lib/users/activity-log', () => ({
@@ -42,6 +43,7 @@ vi.mock('@/lib/security/rate-limit', () => ({
 vi.mock('@/lib/db', () => {
   const topicPostsTable = { id: 'id', userId: 'user_id' };
   const likesTable = { userId: 'user_id', targetType: 'target_type', targetId: 'target_id' };
+  const profilesTable = { id: 'id' };
 
   return {
     db: {
@@ -57,6 +59,9 @@ vi.mock('@/lib/db', () => {
             if (table === topicPostsTable) {
               return { limit: () => mockSelectPostAuthor() };
             }
+            if (table === profilesTable) {
+              return { limit: () => mockSelectProfile() };
+            }
             return mockSelectCount();
           },
         }),
@@ -64,6 +69,7 @@ vi.mock('@/lib/db', () => {
     },
     topicPosts: topicPostsTable,
     likes: likesTable,
+    profiles: profilesTable,
   };
 });
 
@@ -89,12 +95,20 @@ describe('toggleChunkLike', () => {
     mockInsertValues.mockResolvedValue(undefined);
     mockSelectCount.mockResolvedValue([{ count: 1 }]);
     mockSelectPostAuthor.mockResolvedValue([{ userId: testPostAuthorId }]);
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   it('returns error when chunk slug does not exist', async () => {
     mockGetChunkBySlug.mockResolvedValue(null);
     const result = await toggleChunkLike(testPostId, 'en', 'no-such-chunk');
     expect(result).toEqual({ error: 'invalidChunk' });
+  });
+
+  it('returns profileRequired when the signed-in user has no profiles row', async () => {
+    mockSelectProfile.mockResolvedValue([]);
+    const result = await toggleChunkLike(testPostId, 'en', testSlug);
+    expect(result).toEqual({ error: 'profileRequired' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
   it('toggles like and returns liked=true with count', async () => {

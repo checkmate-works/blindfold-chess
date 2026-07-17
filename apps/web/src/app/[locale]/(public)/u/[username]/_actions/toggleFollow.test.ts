@@ -7,6 +7,7 @@ import { toggleFollow } from './toggleFollow';
 const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockSelectFromWhere = vi.fn();
+const mockSelectProfile = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
 
@@ -43,7 +44,13 @@ vi.mock('@/lib/db', () => ({
     select: () => ({
       from: () => ({
         where: () => ({
-          limit: () => mockSelectFromWhere(),
+          // Both the auth guard's own-profile lookup and the target user
+          // lookup select from `profiles` with `.where(...).limit(1)`, so
+          // table identity cannot tell them apart. The guard always runs
+          // first, so the first select resolves via mockSelectProfile and
+          // every later select via mockSelectFromWhere.
+          limit: () =>
+            mockSelectProfile.mock.calls.length === 0 ? mockSelectProfile() : mockSelectFromWhere(),
         }),
       }),
     }),
@@ -75,6 +82,7 @@ const targetProfileId = 'target-00000000-0000-0000-0000-000000000001';
 describe('toggleFollow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   describe('authentication', () => {
@@ -105,6 +113,19 @@ describe('toggleFollow', () => {
       const result = await toggleFollow('validuser', 'en');
       expect(result).toEqual({ following: true });
       expect(mockIsUserBanned).toHaveBeenCalledWith(testUserId);
+    });
+  });
+
+  describe('profile requirement', () => {
+    it('should return profileRequired when user has no profile', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockSelectProfile.mockResolvedValue([]);
+
+      const result = await toggleFollow('validuser', 'en');
+      expect(result).toEqual({ error: 'profileRequired' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+      expect(mockDeleteWhere).not.toHaveBeenCalled();
     });
   });
 

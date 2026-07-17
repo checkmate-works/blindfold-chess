@@ -22,6 +22,7 @@ import { createChunkReplyWithAttachment } from './createChunkReplyWithAttachment
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
+const mockSelectProfile = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockTxAttachmentValues = vi.fn();
@@ -67,8 +68,11 @@ const mockTx = {
 vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
-      from: () => ({
+      from: (table: { __name?: string }) => ({
         where: (...args: unknown[]) => {
+          if (table.__name === 'profiles') {
+            return { limit: () => mockSelectProfile() };
+          }
           mockSelectFromWhere(...args);
           return (
             mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ?? []
@@ -91,6 +95,7 @@ vi.mock('@/lib/db', () => ({
     replyPermission: 'reply_permission',
   },
   postGamePgnAttachments: { __name: 'post_game_pgn_attachments' },
+  profiles: { __name: 'profiles', id: 'id' },
   userFollows: {
     id: 'id',
     followerId: 'follower_id',
@@ -175,6 +180,7 @@ describe('createChunkReplyWithAttachment', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   it('fast-paths to plain reply when no attachment is provided (no per-attachment rate-limit charge)', async () => {
@@ -293,5 +299,23 @@ describe('createChunkReplyWithAttachment', () => {
     expect(result).toEqual({ error: 'attachment.error.rateLimitedPostWithAttachment' });
     expect(mockTxAttachmentValues).not.toHaveBeenCalled();
     expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('returns profileRequired when the signed-in user has no profiles row', async () => {
+    setupHappyAuth();
+    setupParentPost();
+    mockSelectProfile.mockResolvedValue([]);
+
+    const result = await createChunkReplyWithAttachment(
+      'en',
+      testSlug,
+      validPostId,
+      {},
+      makeFormData({ attachment: VALID_PGN })
+    );
+
+    expect(result).toEqual({ error: 'profileRequired' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+    expect(mockTxAttachmentValues).not.toHaveBeenCalled();
   });
 });
