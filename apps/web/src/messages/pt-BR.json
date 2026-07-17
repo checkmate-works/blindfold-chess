@@ -125,6 +125,7 @@
         "nameLabel": "Título",
         "namePlaceholder": "Nome opcional para esta linha",
         "pgnLabel": "Lances (PGN)",
+        "annotationHelp": "As notas ficam associadas ao lance selecionado e são salvas junto com a linha.",
         "pgnHelp": "Edite a sequência de lances. As anotações e os comentários permanecem vinculados às suas posições.",
         "save": "Salvar",
         "saving": "Salvando...",

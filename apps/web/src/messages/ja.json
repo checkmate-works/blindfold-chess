@@ -125,6 +125,7 @@
         "nameLabel": "タイトル",
         "namePlaceholder": "このラインの名前（任意）",
         "pgnLabel": "手順 (PGN)",
+        "annotationHelp": "メモは選択中の手に紐づき、ラインと一緒に保存されます。",
         "pgnHelp": "手順を編集します。アノテーションとコメントは局面に紐づいたまま保持されます。",
         "save": "保存",
         "saving": "保存中...",

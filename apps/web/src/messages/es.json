@@ -125,6 +125,7 @@
         "nameLabel": "Título",
         "namePlaceholder": "Nombre opcional para esta línea",
         "pgnLabel": "Jugadas (PGN)",
+        "annotationHelp": "Las notas se asocian a la jugada seleccionada y se guardan junto con la línea.",
         "pgnHelp": "Edita la secuencia de jugadas. Las anotaciones y los comentarios siguen asociados a sus posiciones.",
         "save": "Guardar",
         "saving": "Guardando...",

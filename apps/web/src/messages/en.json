@@ -125,6 +125,7 @@
         "nameLabel": "Title",
         "namePlaceholder": "Optional name for this line",
         "pgnLabel": "Moves (PGN)",
+        "annotationHelp": "Notes attach to the selected move and are saved together with the line.",
         "pgnHelp": "Edit the move sequence. Annotations and comments stay attached to their positions.",
         "save": "Save",
         "saving": "Saving...",

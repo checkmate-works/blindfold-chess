@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -27,6 +27,12 @@ type Props = {
    * of the line instead of branching, and the help copy says so.
    */
   singleLine?: boolean;
+  /**
+   * Observes the cursor's move — the position key its note is stored under
+   * and a display label ("3. d4"); `null` at the root. Lets the parent attach
+   * per-move UI (the line edit form's "why this move" note) to the board.
+   */
+  onCursorChange?: (cursor: { positionKey: string; label: string } | null) => void;
 };
 
 /**
@@ -45,9 +51,19 @@ export function RepertoireBoardBuilder({
   initialPgn,
   onPgnChange,
   singleLine = false,
+  onCursorChange,
 }: Props) {
   const t = useTranslations('Repertoires');
   const builder = useRepertoireBoardBuilder({ initialPgn, onPgnChange, singleLine });
+
+  // Report cursor movement to the parent (ref'd so a new callback identity per
+  // parent render doesn't re-fire the effect).
+  const onCursorChangeRef = useRef(onCursorChange);
+  onCursorChangeRef.current = onCursorChange;
+  const { positionKey, label } = builder.currentMove ?? { positionKey: null, label: null };
+  useEffect(() => {
+    onCursorChangeRef.current?.(positionKey && label ? { positionKey, label } : null);
+  }, [positionKey, label]);
 
   // Orientation defaults to the author's side and re-follows it when the side
   // radio changes; the flip button then adjusts freely from that base.

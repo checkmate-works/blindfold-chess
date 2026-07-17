@@ -2,13 +2,18 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { getStartingFen, getTurnFromFen } from '@blindfold-chess/features/chess-core';
+import {
+  getStartingFen,
+  getTurnFromFen,
+  toPositionKey,
+} from '@blindfold-chess/features/chess-core';
 
 import type { BuilderNode, BuilderPath } from '@/lib/repertoires/board-builder-tree';
 import {
   builderTreeFromPgn,
   builderTreeToPgn,
   deleteAtPath,
+  fenAtPath,
   flattenBuilderTree,
   nodeAtPath,
   playMoveAtPath,
@@ -70,6 +75,21 @@ export function useRepertoireBoardBuilder({
   const lastMove = currentNode ? { from: currentNode.from, to: currentNode.to } : null;
   const turn = getTurnFromFen(currentFen);
 
+  // The cursor's move as annotation-ready view data: the reached position's
+  // key (how "why this move" notes are stored) and a standalone numbered
+  // label ("3. d4" / "3... Nf6" — Black always numbered, since the label is
+  // shown outside the move list's running order). Null at the root position.
+  const currentMove = useMemo(() => {
+    if (!currentNode) return null;
+    const beforeFen = fenAtPath(children, path.slice(0, -1), rootFen);
+    const fields = beforeFen.split(' ');
+    const indicator = fields[1] === 'w' ? `${fields[5] ?? '1'}.` : `${fields[5] ?? '1'}...`;
+    return {
+      positionKey: toPositionKey(currentNode.fen),
+      label: `${indicator} ${currentNode.san}`,
+    };
+  }, [currentNode, children, path, rootFen]);
+
   const tokens = useMemo(() => flattenBuilderTree(children, rootFen), [children, rootFen]);
 
   const handleMove = useCallback(
@@ -117,6 +137,8 @@ export function useRepertoireBoardBuilder({
     lastMove,
     /** Side to move at the cursor — drives the "White/Black to play" hint. */
     turn,
+    /** The cursor's move (position key + display label); null at the root. */
+    currentMove,
     isAtStart: path.length === 0,
     hasNext: nodeAtPath(children, [...path, 0]) !== null,
     isEmpty: children.length === 0,

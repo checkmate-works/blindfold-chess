@@ -12,10 +12,13 @@ import { flushSync } from 'react-dom';
 
 import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
+import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 import { RepertoireBoardBuilder } from '@/app/[locale]/(public)/repertoires/_components/RepertoireBoardBuilder';
 
+import { deleteAnnotation } from '../_actions/deleteAnnotation';
+import { saveAnnotation } from '../_actions/saveAnnotation';
 import { updateLine } from '../_actions/updateLine';
 
 type Props = {
@@ -26,6 +29,11 @@ type Props = {
   initialPgn: string;
   /** The repertoire's side — orients the board in board mode. */
   side: RepertoireSide;
+  /**
+   * The repertoire's existing "why this move" notes, keyed by position key —
+   * prefills the per-move note editor under the board.
+   */
+  initialAnnotations: Record<string, string>;
 };
 
 /**
@@ -44,13 +52,20 @@ export function EditLineForm({
   initialName,
   initialPgn,
   side,
+  initialAnnotations,
 }: Props) {
   const t = useTranslations('Repertoires.line.edit');
   const tForm = useTranslations('Repertoires.form');
+  const tAnnotation = useTranslations('Repertoires.line.annotation');
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
   const [pgn, setPgn] = useState(initialPgn);
+  // Per-position "why this move" drafts, edited inline under the board for
+  // whichever move the cursor rests on, and persisted on Save alongside the
+  // line (notes are position-keyed, so they need no line row to exist).
+  const [annotations, setAnnotations] = useState<Record<string, string>>(initialAnnotations);
+  const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
   // Editing an existing line starts on the board — the stored moves are
   // already there to step through; the PGN tab remains for raw editing.
   const [inputMode, setInputMode] = useState<'pgn' | 'board'>('board');
@@ -58,9 +73,16 @@ export function EditLineForm({
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
+  // Note drafts that differ from what the server holds (trimmed comparison —
+  // whitespace-only edits are not changes worth writing).
+  const changedAnnotations = Object.entries(annotations).filter(
+    ([key, text]) => text.trim() !== (initialAnnotations[key] ?? '').trim()
+  );
+
   // Same leave-guard pieces as the import / chunk / puzzle forms.
   const tUnsaved = useTranslations('unsavedChanges');
-  const isDirty = !submitted && (name !== initialName || pgn !== initialPgn);
+  const isDirty =
+    !submitted && (name !== initialName || pgn !== initialPgn || changedAnnotations.length > 0);
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   const lineHref = `/repertoires/${repertoireId}/lines/${lineNo}`;
@@ -84,6 +106,24 @@ export function EditLineForm({
       );
       return;
     }
+
+    // Persist the changed per-move notes alongside the line. Position-keyed
+    // writes are independent of each other and of the line row, so a partial
+    // failure leaves the successful ones in place; we stay on the page (still
+    // dirty) so retrying the save only re-sends what still differs.
+    const noteResults = await Promise.all(
+      changedAnnotations.map(([positionKey, text]) =>
+        text.trim()
+          ? saveAnnotation({ repertoireId, lineNo, locale, positionKey, text: text.trim() })
+          : deleteAnnotation({ repertoireId, lineNo, locale, positionKey })
+      )
+    );
+    if (noteResults.some((r) => !r.ok)) {
+      setPending(false);
+      setError(t('errors.generic'));
+      return;
+    }
+
     // flushSync so the isDirty -> false re-render completes before
     // router.push triggers the navigation guard (same as ChunkForm).
     flushSync(() => setSubmitted(true));
@@ -132,7 +172,39 @@ export function EditLineForm({
           /* Remounts on each switch, re-importing whatever the pgn state holds
              (including a non-standard [FEN] root) — so board → PGN shows the
              serialized line and PGN → board replays the edited text. */
-          <RepertoireBoardBuilder side={side} initialPgn={pgn} onPgnChange={setPgn} singleLine />
+          <>
+            <RepertoireBoardBuilder
+              side={side}
+              initialPgn={pgn}
+              onPgnChange={setPgn}
+              singleLine
+              onCursorChange={setCursor}
+            />
+
+            {/* The owner's "why this move" note for the move the cursor rests
+                on — the same framed section the line detail page shows it in,
+                but directly editable here: on an owner-only edit form the
+                note is just another field, no edit-mode dance. Saved with the
+                line via the form's Save. */}
+            {cursor && (
+              <section className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
+                <h3 className="text-xs font-semibold text-muted-foreground">
+                  {tAnnotation('title')} · <span className="text-foreground">{cursor.label}</span>
+                </h3>
+                <Textarea
+                  value={annotations[cursor.positionKey] ?? ''}
+                  onChange={(e) =>
+                    setAnnotations((prev) => ({ ...prev, [cursor.positionKey]: e.target.value }))
+                  }
+                  rows={3}
+                  maxLength={REPERTOIRE_ANNOTATION_MAX}
+                  placeholder={tAnnotation('placeholder')}
+                  aria-label={tAnnotation('title')}
+                />
+                <p className="text-xs text-muted-foreground">{t('annotationHelp')}</p>
+              </section>
+            )}
+          </>
         )}
       </div>
 
