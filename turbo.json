@@ -1,10 +1,39 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["NODE_ENV"],
+  "globalPassThroughEnv": [
+    "CI",
+    "NODE_OPTIONS",
+    "NEXT_RUNTIME",
+    "VERCEL",
+    "VERCEL_ENV",
+    "VERCEL_URL",
+    "VERCEL_BRANCH_URL",
+    "VERCEL_PROJECT_PRODUCTION_URL",
+    "VERCEL_REGION",
+    "VERCEL_GIT_COMMIT_SHA"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["POSTGRES_URL"]
+      "env": ["POSTGRES_URL"],
+      "passThroughEnv": [
+        "POSTGRES_URL_NON_POOLING",
+        "DATABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_ENABLE_DEV",
+        "MAIA_MODEL_URL",
+        "RESEND_API_KEY",
+        "CONTACT_FROM_EMAIL",
+        "CONTACT_TO_EMAIL",
+        "STRIPE_SECRET_KEY",
+        "CRON_SECRET",
+        "CSP_REPORT_SAMPLE_RATE"
+      ]
     },
     "dev": {
       "cache": false,
@@ -12,7 +41,13 @@
     },
     "lint": {},
     "typecheck": {},
-    "test": {},
+    "test": {
+      "passThroughEnv": [
+        "POSTGRES_URL",
+        "POSTGRES_URL_NON_POOLING",
+        "DATABASE_URL"
+      ]
+    },
     "test:ui": {
       "cache": false,
       "persistent": true
