@@ -22,6 +22,11 @@ type Props = {
   initialPgn?: string;
   /** Receives the serialized PGN-with-variations after every authoring action. */
   onPgnChange: (pgn: string) => void;
+  /**
+   * Single-line editing (line edit form): a divergent move replaces the rest
+   * of the line instead of branching, and the help copy says so.
+   */
+  singleLine?: boolean;
 };
 
 /**
@@ -35,9 +40,14 @@ type Props = {
  * Presentation follows the other position-based UGC editors (chunk / puzzle
  * forms): the standard `BoardFrame` width and a flip control above the board.
  */
-export function RepertoireBoardBuilder({ side, initialPgn, onPgnChange }: Props) {
+export function RepertoireBoardBuilder({
+  side,
+  initialPgn,
+  onPgnChange,
+  singleLine = false,
+}: Props) {
   const t = useTranslations('Repertoires');
-  const builder = useRepertoireBoardBuilder({ initialPgn, onPgnChange });
+  const builder = useRepertoireBoardBuilder({ initialPgn, onPgnChange, singleLine });
 
   // Orientation defaults to the author's side and re-follows it when the side
   // radio changes; the flip button then adjusts freely from that base.
@@ -131,7 +141,9 @@ export function RepertoireBoardBuilder({ side, initialPgn, onPgnChange }: Props)
         </div>
       </BoardFrame>
 
-      <p className="text-xs text-muted-foreground">{t('boardBuilder.help')}</p>
+      <p className="text-xs text-muted-foreground">
+        {t(singleLine ? 'boardBuilder.helpSingleLine' : 'boardBuilder.help')}
+      </p>
     </div>
   );
 }

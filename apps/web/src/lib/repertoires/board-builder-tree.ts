@@ -2,7 +2,6 @@ import type { MoveTreeNode } from '@blindfold-chess/features/chess-core';
 import {
   executeMove,
   generatePgnFromTree,
-  getStartingFen,
   parsePgnTree,
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -71,9 +70,15 @@ export type PlayMoveResult = { children: BuilderNode[]; path: BuilderPath };
  * Play `san` from the position the cursor addresses.
  *
  * If a child with the same (normalized) SAN already exists there, the cursor
- * just steps into it — replaying a known move never duplicates a node. A new
- * move is appended as a sibling: at a position that already has continuations
- * this is exactly how an alternative line (variation) is born.
+ * just steps into it — replaying a known move never duplicates a node (and, in
+ * either mode, keeps that child's continuation intact).
+ *
+ * A NEW move's behavior depends on the editing mode:
+ * - default (tree): appended as a sibling — at a position that already has
+ *   continuations this is exactly how an alternative line (variation) is born.
+ * - `replace: true` (single-line editors, e.g. line edit): the new move
+ *   REPLACES every continuation from this position — a single line holds no
+ *   branches, so diverging mid-line means rewriting its tail.
  *
  * Returns `null` for an illegal move (the interactive board only emits legal
  * SANs, so this is defensive).
@@ -82,7 +87,8 @@ export function playMoveAtPath(
   children: BuilderNode[],
   path: BuilderPath,
   rootFen: string,
-  san: string
+  san: string,
+  options?: { replace?: boolean }
 ): PlayMoveResult | null {
   const fen = fenAtPath(children, path, rootFen);
   const result = executeMove(fen, san);
@@ -101,9 +107,10 @@ export function playMoveAtPath(
     to: result.moveResult.to,
     children: [],
   };
+  const nextSiblings = options?.replace ? [node] : [...siblings, node];
   return {
-    children: withChildrenAt(children, path, [...siblings, node]),
-    path: [...path, siblings.length],
+    children: withChildrenAt(children, path, nextSiblings),
+    path: [...path, nextSiblings.length - 1],
   };
 }
 
@@ -128,20 +135,22 @@ export function deleteAtPath(children: BuilderNode[], path: BuilderPath): PlayMo
 }
 
 /**
- * Parse an existing PGN into a builder tree, so switching the import form from
- * paste mode to board mode carries the pasted moves over. Re-derives each
- * node's from/to squares (chess-core's parsed tree doesn't carry them).
- * Returns `null` when the text doesn't parse or starts from a non-standard
- * position (the board builder only authors standard-start repertoires today).
+ * Parse an existing PGN into a builder tree, so a board editor opens with the
+ * text's moves loaded (the import form's paste → board switch; the line edit
+ * form's stored PGN). Re-derives each node's from/to squares (chess-core's
+ * parsed tree doesn't carry them). A `[FEN]` header becomes `rootFen`, so a
+ * non-standard-start line replays from its own root. Returns `null` when the
+ * text doesn't parse.
  */
-export function builderTreeFromPgn(pgn: string): BuilderNode[] | null {
+export function builderTreeFromPgn(
+  pgn: string
+): { rootFen: string; children: BuilderNode[] } | null {
   let parsed: ReturnType<typeof parsePgnTree>;
   try {
     parsed = parsePgnTree(pgn);
   } catch {
     return null;
   }
-  if (parsed.startingFen !== getStartingFen()) return null;
 
   const convert = (nodes: MoveTreeNode[], beforeFen: string): BuilderNode[] | null => {
     const out: BuilderNode[] = [];
@@ -161,7 +170,8 @@ export function builderTreeFromPgn(pgn: string): BuilderNode[] | null {
     return out;
   };
 
-  return convert(parsed.children, parsed.startingFen);
+  const children = convert(parsed.children, parsed.startingFen);
+  return children ? { rootFen: parsed.startingFen, children } : null;
 }
 
 /** Serialize the built tree to the PGN string the import pipeline accepts. */

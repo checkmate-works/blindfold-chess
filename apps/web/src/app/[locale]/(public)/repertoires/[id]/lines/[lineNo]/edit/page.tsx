@@ -66,6 +66,7 @@ export default async function EditRepertoireLinePage({ params }: Props) {
         lineNo={lineNo}
         initialName={line.name ?? ''}
         initialPgn={line.pgn}
+        side={repertoire.side}
       />
     </PageLayout>
   );

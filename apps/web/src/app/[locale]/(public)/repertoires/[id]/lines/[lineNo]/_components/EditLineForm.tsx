@@ -4,10 +4,17 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, TextInput, Textarea } from '@/app/_components';
+import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
+import { flushSync } from 'react-dom';
 
 import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
+import type { RepertoireSide } from '@/lib/repertoires/validation';
+
+import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
+import { RepertoireBoardBuilder } from '@/app/[locale]/(public)/repertoires/_components/RepertoireBoardBuilder';
 
 import { updateLine } from '../_actions/updateLine';
 
@@ -17,22 +24,44 @@ type Props = {
   lineNo: number;
   initialName: string;
   initialPgn: string;
+  /** The repertoire's side — orients the board in board mode. */
+  side: RepertoireSide;
 };
 
 /**
- * Owner-only editor for a single line: its title and its moves (a plain PGN
- * textbox). On save we just store the new moves — annotations and per-move
- * comments are position-keyed, so they follow the surviving positions with no
- * migration here.
+ * Owner-only editor for a single line: its title and its moves. The moves are
+ * editable two ways behind the same Board / PGN switcher as the import form —
+ * an interactive board (opens with the stored line loaded; in single-line mode
+ * a divergent move replaces the tail, since a line holds no branches) or the
+ * raw PGN textbox. On save we just store the new moves — annotations and
+ * per-move comments are position-keyed, so they follow the surviving positions
+ * with no migration here.
  */
-export function EditLineForm({ locale, repertoireId, lineNo, initialName, initialPgn }: Props) {
+export function EditLineForm({
+  locale,
+  repertoireId,
+  lineNo,
+  initialName,
+  initialPgn,
+  side,
+}: Props) {
   const t = useTranslations('Repertoires.line.edit');
+  const tForm = useTranslations('Repertoires.form');
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
   const [pgn, setPgn] = useState(initialPgn);
+  // Editing an existing line starts on the board — the stored moves are
+  // already there to step through; the PGN tab remains for raw editing.
+  const [inputMode, setInputMode] = useState<'pgn' | 'board'>('board');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  // Same leave-guard pieces as the import / chunk / puzzle forms.
+  const tUnsaved = useTranslations('unsavedChanges');
+  const isDirty = !submitted && (name !== initialName || pgn !== initialPgn);
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   const lineHref = `/repertoires/${repertoireId}/lines/${lineNo}`;
 
@@ -55,6 +84,9 @@ export function EditLineForm({ locale, repertoireId, lineNo, initialName, initia
       );
       return;
     }
+    // flushSync so the isDirty -> false re-render completes before
+    // router.push triggers the navigation guard (same as ChunkForm).
+    flushSync(() => setSubmitted(true));
     router.push(`${lineHref}?toast=line_updated`);
   }
 
@@ -74,21 +106,47 @@ export function EditLineForm({ locale, repertoireId, lineNo, initialName, initia
         />
       </div>
 
-      <div>
-        <label htmlFor="line-pgn" className="block text-sm font-medium text-foreground">
-          {t('pgnLabel')}
-        </label>
-        <p className="mt-1 text-xs text-muted-foreground">{t('pgnHelp')}</p>
-        <Textarea
-          id="line-pgn"
-          value={pgn}
-          onChange={(e) => setPgn(e.target.value)}
-          rows={8}
-          className="mt-1 font-mono text-sm"
+      <div className="space-y-2">
+        <span className="block text-sm font-medium text-foreground">
+          {tForm('movesLabel')} <span className="text-destructive">*</span>
+        </span>
+        <BoardFenTabs
+          activeTab={inputMode === 'board' ? 'board' : 'fen'}
+          onTabChange={(tab) => setInputMode(tab === 'board' ? 'board' : 'pgn')}
+          boardLabel={tForm('inputModeBoard')}
+          fenLabel={tForm('inputModePgn')}
         />
+        {inputMode === 'pgn' ? (
+          <>
+            <p className="text-xs text-muted-foreground">{t('pgnHelp')}</p>
+            <Textarea
+              id="line-pgn"
+              value={pgn}
+              onChange={(e) => setPgn(e.target.value)}
+              rows={8}
+              className="font-mono text-sm"
+              aria-label={t('pgnLabel')}
+            />
+          </>
+        ) : (
+          /* Remounts on each switch, re-importing whatever the pgn state holds
+             (including a non-standard [FEN] root) — so board → PGN shows the
+             serialized line and PGN → board replays the edited text. */
+          <RepertoireBoardBuilder side={side} initialPgn={pgn} onPgnChange={setPgn} singleLine />
+        )}
       </div>
 
       <FormErrorBanner message={error} />
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirm}
+        onCancel={cancel}
+        title={tUnsaved('title')}
+        message={tUnsaved('message')}
+        confirmLabel={tUnsaved('confirm')}
+        cancelLabel={tUnsaved('cancel')}
+      />
 
       <div className="space-y-2">
         <Button

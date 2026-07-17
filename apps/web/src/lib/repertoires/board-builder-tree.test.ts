@@ -121,8 +121,10 @@ describe('builderTreeToPgn', () => {
 
 describe('builderTreeFromPgn', () => {
   it('imports a pasted PGN with variations, re-deriving from/to squares', () => {
-    const children = builderTreeFromPgn('1. e4 e5 (1... c5 2. Nf3) 2. Nf3')!;
-    expect(children).not.toBeNull();
+    const parsed = builderTreeFromPgn('1. e4 e5 (1... c5 2. Nf3) 2. Nf3')!;
+    expect(parsed).not.toBeNull();
+    expect(parsed.rootFen).toBe(ROOT);
+    const children = parsed.children;
     expect(children[0].san).toBe('e4');
     expect(children[0].from).toBe('e2');
     expect(children[0].children.map((c) => c.san)).toEqual(['e5', 'c5']);
@@ -134,9 +136,34 @@ describe('builderTreeFromPgn', () => {
     expect(builderTreeFromPgn('not a pgn')).toBeNull();
   });
 
-  it('returns null for a non-standard starting position', () => {
+  it('imports a non-standard starting position as the root', () => {
     const fen = '4k3/P7/8/8/8/8/8/4K3 w - - 0 1';
-    expect(builderTreeFromPgn(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+`)).toBeNull();
+    const parsed = builderTreeFromPgn(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+`)!;
+    expect(parsed.rootFen).toBe(fen);
+    expect(parsed.children[0].san).toBe('a8=Q+');
+    expect(parsed.children[0].from).toBe('a7');
+    // Serializing from that root re-emits the FEN header.
+    expect(builderTreeToPgn(parsed.children, parsed.rootFen)).toBe(
+      `[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+`
+    );
+  });
+});
+
+describe('playMoveAtPath — replace mode (single-line editors)', () => {
+  it('replaces the continuation when a different move is played mid-line', () => {
+    const line = play([], [], ['e4', 'e5', 'Nf3', 'Nc6']);
+    // Back to the position after 1. e4, then a different reply in replace mode.
+    const result = playMoveAtPath(line.children, [0], ROOT, 'c5', { replace: true })!;
+    expect(result.path).toEqual([0, 0]);
+    // The e5 subtree (with Nf3, Nc6) is gone — a line holds no branches.
+    expect(result.children[0].children.map((c) => c.san)).toEqual(['c5']);
+  });
+
+  it('keeps the tail when replaying the same move', () => {
+    const line = play([], [], ['e4', 'e5', 'Nf3']);
+    const result = playMoveAtPath(line.children, [0], ROOT, 'e5', { replace: true })!;
+    expect(result.children).toBe(line.children);
+    expect(nodeAtPath(result.children, [0, 0, 0])?.san).toBe('Nf3');
   });
 });
 

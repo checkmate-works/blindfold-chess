@@ -56,6 +56,7 @@
     },
     "boardBuilder": {
       "flip": "Girar tabuleiro",
+      "helpSingleLine": "Jogue os lances dos dois lados. Voltar e jogar um lance diferente substitui o resto da linha — uma linha não contém ramificações.",
       "empty": "Mova as peças no tabuleiro para montar seu kata.",
       "whiteToMove": "Brancas jogam",
       "blackToMove": "Pretas jogam",

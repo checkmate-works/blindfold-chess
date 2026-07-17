@@ -56,6 +56,7 @@
     },
     "boardBuilder": {
       "flip": "Girar tablero",
+      "helpSingleLine": "Juega las jugadas de ambos bandos. Volver atrás y jugar otra jugada reemplaza el resto de la línea: una línea no contiene ramas.",
       "empty": "Mueve las piezas en el tablero para construir tu kata.",
       "whiteToMove": "Juegan blancas",
       "blackToMove": "Juegan negras",
