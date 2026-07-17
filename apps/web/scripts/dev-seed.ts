@@ -1,10 +1,13 @@
 /**
  * Local-only dev seed.
  *
- * Populates auth users, profiles, and challenge_results / challenge_best_scores
- * with predictable test data so the practice leaderboards have entries during
+ * Populates auth users, profiles, challenge_results / challenge_best_scores, and
+ * belt ranks with predictable test data so the practice leaderboards have
+ * entries — and so rank conditions can be exercised from a known rung — during
  * local development. Refuses to run against any non-local DB or Supabase URL
  * (host check) — the master-data seed (`pnpm db:seed`) remains the prod path.
+ *
+ * Run `pnpm db:seed` first: the rank grants look up `ranks` by slug.
  *
  * Required env in apps/web/.env.local:
  *   - NEXT_PUBLIC_SUPABASE_URL  (defaults to http://127.0.0.1:54321 if unset)
@@ -17,7 +20,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
 import { reseedChallenges } from './dev-seed/challenges';
-import { SEED_USERS, ensureSeedUser } from './dev-seed/users';
+import { grantRanksUpTo } from './dev-seed/ranks';
+import { SEED_PASSWORD, SEED_USERS, ensureSeedUser } from './dev-seed/users';
 
 dotenv.config({ path: ['.env.local', '.env'] });
 
@@ -77,6 +81,15 @@ async function main() {
   console.log('dev-seed: reseeding challenge data...');
   const inserted = await reseedChallenges(db, userIds);
   console.log(`  inserted ${inserted} challenge_results rows + matching best_scores`);
+
+  console.log('dev-seed: granting belt ranks...');
+  for (const u of SEED_USERS) {
+    if (!u.rankUpTo) continue;
+    const userId = userIds[SEED_USERS.indexOf(u)];
+    const granted = await grantRanksUpTo(db, userId, u.rankUpTo);
+    console.log(`  ${u.username.padEnd(12)} → ${granted.join(', ')}`);
+    console.log(`  ${''.padEnd(12)}   sign in as ${u.email} / ${SEED_PASSWORD}`);
+  }
 }
 
 main()
