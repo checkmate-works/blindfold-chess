@@ -5423,7 +5423,7 @@
         "4kyu": "Capacidade de determinar os movimentos legais em uma coordenada específica para todas as peças sem ajudas visuais.",
         "3kyu": "Capacidade de planejar rotas de manobra de peças para todas as peças sem auxílios visuais.",
         "2kyu": "Ser capaz de reconhecer várias peças como uma única unidade com significado (um “chunk”).",
-        "1kyu": "Ser capaz de vencer o motor sem ver o tabuleiro por completo."
+        "1kyu": "Ser capaz de vencer o motor sob alguma restrição de xadrez às cegas."
       },
       "tips": "Dicas",
       "tryChallenge": "Cumprir os requisitos",

@@ -34,6 +34,7 @@ import { CoordinateBoard } from '../_components/CoordinateBoard';
 import { DiagonalBoard } from '../_components/DiagonalBoard';
 import { GuideLinkCard } from '../_components/GuideLinkCard';
 import { KingMovementBoard } from '../_components/KingMovementBoard';
+import { PawnBreakthroughBoard } from '../_components/PawnBreakthroughBoard';
 import { RankHeader } from '../_components/RankHeader';
 import { RequirementsList } from '../_components/RequirementsList';
 import { ScatteredPawnsBoard } from '../_components/ScatteredPawnsBoard';
@@ -234,6 +235,8 @@ export default async function RankDetailPage({ params }: Props) {
               <DiagonalBoard className="mx-auto max-w-[10rem]" />
             ) : rankSlug === '2kyu' ? (
               <ScatteredPawnsBoard className="mx-auto max-w-[10rem]" />
+            ) : rankSlug === '1kyu' ? (
+              <PawnBreakthroughBoard className="mx-auto max-w-[10rem]" />
             ) : (
               <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
             )}
