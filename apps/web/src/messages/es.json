@@ -5519,7 +5519,8 @@
         "anchorPoints": "Percepción del tablero con puntos de anclaje",
         "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
         "diagonals": "Cálculo de diagonales y antidiagonales",
-        "chunking": "Reconocimiento de patrones con chunks"
+        "chunking": "Reconocimiento de patrones con chunks",
+        "memorisation": "Memorizar aperturas y finales"
       }
     },
     "help": {

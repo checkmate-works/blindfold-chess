@@ -5519,7 +5519,8 @@
         "anchorPoints": "Percepção do tabuleiro com pontos de ancoragem",
         "blindfoldLegalMoves": "Detecção de movimentos legais no xadrez às cegas",
         "diagonals": "Cálculo de diagonais e antidiagonais",
-        "chunking": "Reconhecimento de padrões com chunks"
+        "chunking": "Reconhecimento de padrões com chunks",
+        "memorisation": "Memorizar aberturas e finais"
       }
     },
     "help": {

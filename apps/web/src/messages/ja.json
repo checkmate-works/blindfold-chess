@@ -5530,7 +5530,8 @@
         "anchorPoints": "アンカーポイントによる盤面の把握",
         "blindfoldLegalMoves": "目隠しチェスでのリーガルムーブ判定",
         "diagonals": "ダイアゴナルと逆ダイアゴナルの算出",
-        "chunking": "チャンクによるパターン認識"
+        "chunking": "チャンクによるパターン認識",
+        "memorisation": "オープニングとエンドゲームの暗記"
       }
     },
     "help": {

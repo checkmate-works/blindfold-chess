@@ -5530,7 +5530,8 @@
         "anchorPoints": "Board awareness with anchor points",
         "blindfoldLegalMoves": "Legal move detection in blindfold chess",
         "diagonals": "Computing diagonals and anti-diagonals",
-        "chunking": "Pattern recognition with chunks"
+        "chunking": "Pattern recognition with chunks",
+        "memorisation": "Memorising openings and endgames"
       }
     },
     "help": {
