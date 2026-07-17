@@ -138,6 +138,13 @@ const GUIDE_LINK_MAP: Partial<Record<GuideLinkKey, GuideLinkEntry>> = {
     labelKey: 'deGrootExperimentLabel',
     href: 'learn/memory/de-groot-experiment',
   },
+  // 1kyu guide - Kata catalog (page 1, paragraph 6 — the "so here's a feature
+  // for it" hand-off; the two paragraphs after the card describe it).
+  '1kyu:1:6': {
+    inlineLinkKey: '1kyu',
+    labelKey: 'repertoiresLabel',
+    href: 'repertoires',
+  },
   // 2kyu guide - Chunks list (page 4, paragraph 1)
   '2kyu:4:1': {
     inlineLinkKey: '2kyu',

@@ -87,9 +87,9 @@ describe('RankGuideRootPage', () => {
     expect(renderSpy).not.toHaveBeenCalled();
   });
 
-  it('calls notFound() for a rank without guide content (1kyu)', async () => {
+  it('calls notFound() for a rank without guide content (1dan)', async () => {
     await expect(
-      RankGuideRootPage({ params: mkParams({ locale: 'en', rank: '1kyu' }) } as never)
+      RankGuideRootPage({ params: mkParams({ locale: 'en', rank: '1dan' }) } as never)
     ).rejects.toBeInstanceOf(NotFoundError);
     expect(renderSpy).not.toHaveBeenCalled();
   });
