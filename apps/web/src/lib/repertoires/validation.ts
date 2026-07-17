@@ -31,7 +31,18 @@ export type RepertoireImportInput = {
   pgn: string;
   /** Opening ids to link (only honoured when phase === 'opening'). */
   openingIds?: string[];
+  /**
+   * Owner's "why this move" notes authored during board-mode import, keyed by
+   * position key (normalised FEN after the move — same key `saveAnnotation`
+   * writes under). Inserted with the repertoire so a board-built kata lands
+   * with its notes attached.
+   */
+  annotations?: Record<string, string>;
 };
+
+/** Sanity caps for imported notes (the map is client-built, so belt+braces). */
+const ANNOTATION_MAX_COUNT = 500;
+const POSITION_KEY_MAX = 120;
 
 /** One decomposed line, ready to insert as a `repertoire_lines` row. */
 export type ImportedLine = { pgn: string; startingFen: string | null };
@@ -44,6 +55,8 @@ export type ValidatedRepertoireImport = {
   /** Root position shared by every line. NULL = standard start. */
   startingFen: string | null;
   lines: ImportedLine[];
+  /** Cleaned position-keyed notes to insert alongside (may be empty). */
+  annotations: { positionKey: string; text: string }[];
 };
 
 export type RepertoireValidationError =
@@ -53,7 +66,8 @@ export type RepertoireValidationError =
   | 'invalidPhase'
   | 'pgnRequired'
   | 'pgnTooLarge'
-  | 'invalidPgn';
+  | 'invalidPgn'
+  | 'invalidAnnotations';
 
 export type ValidateRepertoireResult =
   | { ok: true; data: ValidatedRepertoireImport }
@@ -156,8 +170,36 @@ export function validateRepertoireImport(input: RepertoireImportInput): Validate
 
   const description = input.description?.trim() || null;
 
+  // Clean the board-authored notes: whitespace-only entries are dropped (an
+  // emptied draft is "no note"), anything over the caps rejects the import —
+  // the form enforces the same limits, so hitting them means a bad client.
+  const annotationEntries = Object.entries(input.annotations ?? {});
+  if (annotationEntries.length > ANNOTATION_MAX_COUNT) {
+    return { ok: false, error: 'invalidAnnotations' };
+  }
+  const annotations: { positionKey: string; text: string }[] = [];
+  for (const [positionKey, rawText] of annotationEntries) {
+    const text = rawText?.trim() ?? '';
+    if (!text) continue;
+    if (!positionKey || positionKey.length > POSITION_KEY_MAX) {
+      return { ok: false, error: 'invalidAnnotations' };
+    }
+    if (text.length > REPERTOIRE_ANNOTATION_MAX) {
+      return { ok: false, error: 'invalidAnnotations' };
+    }
+    annotations.push({ positionKey, text });
+  }
+
   return {
     ok: true,
-    data: { name, side: input.side, phase: input.phase, description, startingFen, lines },
+    data: {
+      name,
+      side: input.side,
+      phase: input.phase,
+      description,
+      startingFen,
+      lines,
+      annotations,
+    },
   };
 }

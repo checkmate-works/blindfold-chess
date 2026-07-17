@@ -57,6 +57,7 @@
     "boardBuilder": {
       "flip": "Girar tablero",
       "helpSingleLine": "Juega las jugadas de ambos bandos. Volver atrás y jugar otra jugada reemplaza el resto de la línea: una línea no contiene ramas.",
+      "annotationHelp": "Las notas se asocian a la posición tras la jugada seleccionada y se comparten entre todas las líneas de este kata que la alcanzan. Se guardan al enviar el formulario.",
       "empty": "Mueve las piezas en el tablero para construir tu kata.",
       "whiteToMove": "Juegan blancas",
       "blackToMove": "Juegan negras",
@@ -125,7 +126,6 @@
         "nameLabel": "Título",
         "namePlaceholder": "Nombre opcional para esta línea",
         "pgnLabel": "Jugadas (PGN)",
-        "annotationHelp": "Las notas se asocian a la jugada seleccionada y se guardan junto con la línea.",
         "pgnHelp": "Edita la secuencia de jugadas. Las anotaciones y los comentarios siguen asociados a sus posiciones.",
         "save": "Guardar",
         "saving": "Guardando...",

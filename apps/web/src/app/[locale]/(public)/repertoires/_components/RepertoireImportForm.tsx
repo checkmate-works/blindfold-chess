@@ -19,6 +19,7 @@ import { REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 
 import { createRepertoire } from '../_actions/createRepertoire';
+import { MoveAnnotationField } from './MoveAnnotationField';
 import { OpeningLinksField } from './OpeningLinksField';
 import { RepertoireBoardBuilder } from './RepertoireBoardBuilder';
 
@@ -75,6 +76,10 @@ export function RepertoireImportForm({
   // modes read and write the same `pgn` state — the board serializes its move
   // tree through it — so detection, validation and submission are shared.
   const [inputMode, setInputMode] = useState<'pgn' | 'board'>('pgn');
+  // Per-position "why this move" drafts, edited inline under the board for
+  // whichever move the cursor rests on; created with the kata on submit.
+  const [annotations, setAnnotations] = useState<Record<string, string>>({});
+  const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Successful submit: flipped (synchronously) before router.push so the
@@ -85,7 +90,10 @@ export function RepertoireImportForm({
   // fields (name / moves) from what the page loaded with — prefills don't
   // count. Same reusable pieces as the chunk / puzzle / topic forms.
   const tUnsaved = useTranslations('unsavedChanges');
-  const isDirty = !submitted && (name !== (initialName ?? '') || pgn !== (initialPgn ?? ''));
+  const hasAnnotationDrafts = Object.values(annotations).some((text) => text.trim());
+  const isDirty =
+    !submitted &&
+    (name !== (initialName ?? '') || pgn !== (initialPgn ?? '') || hasAnnotationDrafts);
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   // Once the author picks or removes an opening by hand, the PGN stops driving
@@ -124,6 +132,7 @@ export function RepertoireImportForm({
       phase,
       pgn,
       openingIds: phase === 'opening' ? openingIds : [],
+      annotations,
       locale,
     });
     if ('error' in result) {
@@ -238,7 +247,23 @@ export function RepertoireImportForm({
           /* Remounts on each switch, re-importing whatever the pgn state
              holds — so paste → board carries the moves over, and board →
              paste shows the serialized tree in the textarea. */
-          <RepertoireBoardBuilder side={side} initialPgn={pgn} onPgnChange={setPgn} />
+          <>
+            <RepertoireBoardBuilder
+              side={side}
+              initialPgn={pgn}
+              onPgnChange={setPgn}
+              onCursorChange={setCursor}
+            />
+            {cursor && (
+              <MoveAnnotationField
+                moveLabel={cursor.label}
+                value={annotations[cursor.positionKey] ?? ''}
+                onChange={(next) =>
+                  setAnnotations((prev) => ({ ...prev, [cursor.positionKey]: next }))
+                }
+              />
+            )}
+          </>
         )}
       </div>
 

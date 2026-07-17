@@ -12,9 +12,9 @@ import { flushSync } from 'react-dom';
 
 import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
-import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
+import { MoveAnnotationField } from '@/app/[locale]/(public)/repertoires/_components/MoveAnnotationField';
 import { RepertoireBoardBuilder } from '@/app/[locale]/(public)/repertoires/_components/RepertoireBoardBuilder';
 
 import { deleteAnnotation } from '../_actions/deleteAnnotation';
@@ -56,7 +56,6 @@ export function EditLineForm({
 }: Props) {
   const t = useTranslations('Repertoires.line.edit');
   const tForm = useTranslations('Repertoires.form');
-  const tAnnotation = useTranslations('Repertoires.line.annotation');
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
@@ -181,28 +180,14 @@ export function EditLineForm({
               onCursorChange={setCursor}
             />
 
-            {/* The owner's "why this move" note for the move the cursor rests
-                on — the same framed section the line detail page shows it in,
-                but directly editable here: on an owner-only edit form the
-                note is just another field, no edit-mode dance. Saved with the
-                line via the form's Save. */}
             {cursor && (
-              <section className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
-                <h3 className="text-xs font-semibold text-muted-foreground">
-                  {tAnnotation('title')} · <span className="text-foreground">{cursor.label}</span>
-                </h3>
-                <Textarea
-                  value={annotations[cursor.positionKey] ?? ''}
-                  onChange={(e) =>
-                    setAnnotations((prev) => ({ ...prev, [cursor.positionKey]: e.target.value }))
-                  }
-                  rows={3}
-                  maxLength={REPERTOIRE_ANNOTATION_MAX}
-                  placeholder={tAnnotation('placeholder')}
-                  aria-label={tAnnotation('title')}
-                />
-                <p className="text-xs text-muted-foreground">{t('annotationHelp')}</p>
-              </section>
+              <MoveAnnotationField
+                moveLabel={cursor.label}
+                value={annotations[cursor.positionKey] ?? ''}
+                onChange={(next) =>
+                  setAnnotations((prev) => ({ ...prev, [cursor.positionKey]: next }))
+                }
+              />
             )}
           </>
         )}

@@ -57,6 +57,7 @@
     "boardBuilder": {
       "flip": "Flip board",
       "helpSingleLine": "Play the moves for both sides. Going back and playing a different move replaces the rest of the line — a single line holds no branches.",
+      "annotationHelp": "Notes attach to the position after the selected move and are shared by every line in this kata that reaches it. They are saved when you submit the form.",
       "empty": "Play moves on the board to build your kata.",
       "whiteToMove": "White to move",
       "blackToMove": "Black to move",
@@ -125,7 +126,6 @@
         "nameLabel": "Title",
         "namePlaceholder": "Optional name for this line",
         "pgnLabel": "Moves (PGN)",
-        "annotationHelp": "Notes attach to the selected move and are saved together with the line.",
         "pgnHelp": "Edit the move sequence. Annotations and comments stay attached to their positions.",
         "save": "Save",
         "saving": "Saving...",

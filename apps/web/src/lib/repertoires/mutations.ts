@@ -2,7 +2,14 @@ import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { chessOpenings, db, repertoireLines, repertoireOpenings, repertoires } from '@/lib/db';
+import {
+  chessOpenings,
+  db,
+  repertoireAnnotations,
+  repertoireLines,
+  repertoireOpenings,
+  repertoires,
+} from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
@@ -221,7 +228,7 @@ export async function createRepertoireEntry(
 
   const validated = validateRepertoireImport(input);
   if (!validated.ok) return { error: validated.error };
-  const { name, side, phase, description, startingFen, lines } = validated.data;
+  const { name, side, phase, description, startingFen, lines, annotations } = validated.data;
 
   const id = await db.transaction(async (tx) => {
     const [repertoire] = await tx
@@ -237,6 +244,18 @@ export async function createRepertoireEntry(
         seq: index,
       }))
     );
+
+    // Board-authored "why this move" notes land with the kata, under the same
+    // position keys saveAnnotation writes to later.
+    if (annotations.length > 0) {
+      await tx.insert(repertoireAnnotations).values(
+        annotations.map(({ positionKey, text }) => ({
+          repertoireId: repertoire.id,
+          positionKey,
+          text,
+        }))
+      );
+    }
 
     await insertOpeningLinks(tx, {
       repertoireId: repertoire.id,

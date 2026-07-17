@@ -57,6 +57,7 @@
     "boardBuilder": {
       "flip": "Girar tabuleiro",
       "helpSingleLine": "Jogue os lances dos dois lados. Voltar e jogar um lance diferente substitui o resto da linha — uma linha não contém ramificações.",
+      "annotationHelp": "As notas ficam associadas à posição após o lance selecionado e são compartilhadas por todas as linhas deste kata que a alcançam. São salvas ao enviar o formulário.",
       "empty": "Mova as peças no tabuleiro para montar seu kata.",
       "whiteToMove": "Brancas jogam",
       "blackToMove": "Pretas jogam",
@@ -125,7 +126,6 @@
         "nameLabel": "Título",
         "namePlaceholder": "Nome opcional para esta linha",
         "pgnLabel": "Lances (PGN)",
-        "annotationHelp": "As notas ficam associadas ao lance selecionado e são salvas junto com a linha.",
         "pgnHelp": "Edite a sequência de lances. As anotações e os comentários permanecem vinculados às suas posições.",
         "save": "Salvar",
         "saving": "Salvando...",
