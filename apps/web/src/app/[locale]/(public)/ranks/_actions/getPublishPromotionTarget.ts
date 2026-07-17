@@ -1,10 +1,9 @@
 'use server';
 
 import { getOptionalUser, userHasProfile } from '@/lib/auth';
-import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
-import { isRankEarnedByPlaying, resolveNextRank } from '../_lib/helpers';
+import { isRankEarnedByPlaying, resolveAchievedSlugs, resolveNextRank } from '../_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '../_lib/queries';
 
 /**
@@ -29,17 +28,12 @@ export async function getPublishPromotionTarget(): Promise<{ slug: RankSlug } | 
   if (!user) return null;
   if (!(await userHasProfile(user.id))) return null;
 
-  const dbRanks = await getAllRanks();
-  const achievedRankIds = await getUserAchievedRankIds(user.id);
+  const [dbRanks, achievedRankIds] = await Promise.all([
+    getAllRanks(),
+    getUserAchievedRankIds(user.id),
+  ]);
 
-  const achievedSlugs: ReadonlySet<RankSlug> = new Set(
-    dbRanks
-      .filter((r) => achievedRankIds.has(r.id))
-      .map((r) => r.slug)
-      .filter((slug): slug is RankSlug => (ALL_RANK_SLUGS as readonly string[]).includes(slug))
-  );
-
-  const { next } = resolveNextRank(dbRanks, achievedSlugs);
+  const { next } = resolveNextRank(dbRanks, resolveAchievedSlugs(dbRanks, achievedRankIds));
   if (!next || !isRankEarnedByPlaying(next.requirements)) return null;
 
   return { slug: next.slug };

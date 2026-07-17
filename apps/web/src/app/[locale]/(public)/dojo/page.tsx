@@ -29,6 +29,7 @@ import {
   buildRequirementLabels,
   getBeltColorHex,
   isRankEarnedByPlaying,
+  resolveAchievedSlugs,
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
@@ -77,15 +78,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
 
   const dbRanks = await getAllRanks();
   const achievedRankIds = user ? await getUserAchievedRankIds(user.id) : new Set<string>();
-
-  // Build a typed ReadonlySet<RankSlug>, guarding DB slugs against the known
-  // progression order so stale / unknown slugs cannot leak into helpers.
-  const achievedSlugs: ReadonlySet<RankSlug> = new Set(
-    dbRanks
-      .filter((r) => achievedRankIds.has(r.id))
-      .map((r) => r.slug)
-      .filter((slug): slug is RankSlug => (ALL_RANK_SLUGS as readonly string[]).includes(slug))
-  );
+  const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
 
   const { current, next } = resolveNextRank(dbRanks, achievedSlugs);
 

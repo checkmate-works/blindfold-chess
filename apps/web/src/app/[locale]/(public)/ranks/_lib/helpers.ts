@@ -293,6 +293,23 @@ export function buildRankTeaserCards(
 }
 
 /**
+ * Convert a user's achieved rank IDs into a typed slug set, guarding DB slugs
+ * against the known progression order so stale / unknown slugs cannot leak
+ * into the helpers below (notably {@link resolveNextRank}).
+ */
+export function resolveAchievedSlugs(
+  dbRanks: Rank[],
+  achievedRankIds: ReadonlySet<string>
+): ReadonlySet<RankSlug> {
+  return new Set(
+    dbRanks
+      .filter((r) => achievedRankIds.has(r.id))
+      .map((r) => r.slug)
+      .filter((slug): slug is RankSlug => (ALL_RANK_SLUGS as readonly string[]).includes(slug))
+  );
+}
+
+/**
  * View model for the dojo page — identifies the user's current rank and the
  * next rank they are working toward.
  *
