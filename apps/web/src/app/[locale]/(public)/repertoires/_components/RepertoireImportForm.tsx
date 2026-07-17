@@ -181,7 +181,7 @@ export function RepertoireImportForm({ locale, openings, initialPgn, initialSide
       </fieldset>
 
       <div className="space-y-2">
-        <span className="block text-sm font-medium text-foreground">{t('form.pgnLabel')}</span>
+        <span className="block text-sm font-medium text-foreground">{t('form.movesLabel')}</span>
         {/* Same switcher chrome as the chunk / puzzle position editors — here
             the text tab holds a PGN instead of a FEN. */}
         <BoardFenTabs

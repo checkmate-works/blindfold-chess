@@ -50,7 +50,8 @@
       "submit": "Importar linha",
       "submitting": "Importando…",
       "inputModePgn": "PGN",
-      "inputModeBoard": "Tabuleiro"
+      "inputModeBoard": "Tabuleiro",
+      "movesLabel": "Lances"
     },
     "boardBuilder": {
       "flip": "Girar tabuleiro",
@@ -3215,6 +3216,7 @@
         "confirm": "Excluir",
         "cancel": "Cancelar"
       },
+      "positionLabel": "Posição",
       "tabBoard": "Tabuleiro",
       "tabFen": "FEN",
       "sideToMove": "Lado a jogar",

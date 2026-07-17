@@ -50,7 +50,8 @@
       "submit": "型をインポート",
       "submitting": "インポート中…",
       "inputModePgn": "PGN",
-      "inputModeBoard": "盤面"
+      "inputModeBoard": "盤面",
+      "movesLabel": "手順"
     },
     "boardBuilder": {
       "flip": "盤を反転",
@@ -3219,6 +3220,7 @@
         "confirm": "削除",
         "cancel": "キャンセル"
       },
+      "positionLabel": "局面",
       "tabBoard": "盤面",
       "tabFen": "FEN",
       "sideToMove": "手番",

@@ -50,7 +50,8 @@
       "submit": "Import line",
       "submitting": "Importing…",
       "inputModePgn": "PGN",
-      "inputModeBoard": "Board"
+      "inputModeBoard": "Board",
+      "movesLabel": "Moves"
     },
     "boardBuilder": {
       "flip": "Flip board",
@@ -3219,6 +3220,7 @@
         "confirm": "Delete",
         "cancel": "Cancel"
       },
+      "positionLabel": "Position",
       "tabBoard": "Board",
       "tabFen": "FEN",
       "sideToMove": "Side to move",
