@@ -68,7 +68,7 @@ export {
 } from "./pgn";
 
 export type { MoveTreeNode, PgnTree } from "./pgn-tree";
-export { parsePgnTree, enumerateLines } from "./pgn-tree";
+export { parsePgnTree, enumerateLines, generatePgnFromTree } from "./pgn-tree";
 
 export type {
   Side,

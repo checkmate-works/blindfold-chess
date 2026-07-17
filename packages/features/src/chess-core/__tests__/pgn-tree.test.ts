@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { enumerateLines, parsePgnTree } from "../pgn-tree";
+import { enumerateLines, generatePgnFromTree, parsePgnTree } from "../pgn-tree";
 import type { MoveTreeNode } from "../pgn-tree";
 
 const STANDARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -183,6 +183,78 @@ describe("enumerateLines", () => {
     const fen = "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1";
     const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. Rd8#`);
     expect(enumerateLines(tree)).toEqual([["Rd8#"]]);
+  });
+});
+
+// ============================================================
+// generatePgnFromTree — the inverse of parsePgnTree
+// ============================================================
+describe("generatePgnFromTree", () => {
+  it("emits numbered movetext for a linear tree", () => {
+    const tree = parsePgnTree("1. e4 e5 2. Nf3 Nc6");
+    expect(generatePgnFromTree(tree)).toBe("1. e4 e5 2. Nf3 Nc6");
+  });
+
+  it("emits variations in parens, numbering the black branch opener", () => {
+    const pgn = "1. e4 e5 (1... c5 2. Nf3) 2. Nf3";
+    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(pgn);
+  });
+
+  it("restates the move number for a black reply after a variation block", () => {
+    const pgn = "1. d4 d5 2. Nd2 (2. Nf3 Nf6) 2... b6 3. Ngf3";
+    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(pgn);
+  });
+
+  it("emits consecutive variations on the same move", () => {
+    const pgn = "1. e4 e5 (1... c5) (1... e6) 2. Nf3";
+    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(pgn);
+  });
+
+  it("emits nested variations flattened to siblings of the same branch point", () => {
+    // parsePgnTree attaches a nested variation as another sibling of the move
+    // it branches from (2. c3 is a third alternative to 2. Nf3, not a child of
+    // 2. Nc3), so the serialized form lists the alternatives consecutively.
+    // The line set is identical — see the round-trip test below.
+    const pgn = "1. e4 c5 2. Nf3 (2. Nc3 (2. c3 d5) Nc6) 2... d6";
+    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(
+      "1. e4 c5 2. Nf3 (2. Nc3 Nc6) (2. c3 d5) 2... d6",
+    );
+  });
+
+  it("emits a variation on the very first move", () => {
+    const pgn = "1. e4 (1. d4 d5) 1... e5";
+    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(pgn);
+  });
+
+  it("carries a non-standard root as SetUp/FEN headers", () => {
+    const fen = "4k3/P7/8/8/8/8/8/4K3 w - - 0 1";
+    const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+ Kd7`);
+    const pgn = generatePgnFromTree(tree);
+    expect(pgn).toBe(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+ Kd7`);
+    // And the headers survive a re-parse.
+    expect(parsePgnTree(pgn).startingFen).toBe(fen);
+  });
+
+  it("numbers a black first move from a black-to-move root", () => {
+    const fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+    const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1... e5 2. Nf3`);
+    expect(generatePgnFromTree(tree)).toBe(
+      `[SetUp "1"]\n[FEN "${fen}"]\n\n1... e5 2. Nf3`,
+    );
+  });
+
+  it("round-trips: parse(generate(tree)) preserves every line", () => {
+    const pgns = [
+      "1. e4 e5 2. Nf3 Nc6",
+      "1. Nf3 d5 (1... Nc6 2. d4 d5 3. c4) (1... Nf6 2. b3 d5 3. Bb2) 2. g3 Nc6 3. d4",
+      "1. e4 c5 2. Nf3 (2. Nc3 (2. c3 d5) Nc6) d6",
+      "1. e4 (1. d4 d5) e5",
+    ];
+    for (const pgn of pgns) {
+      const tree = parsePgnTree(pgn);
+      const reparsed = parsePgnTree(generatePgnFromTree(tree));
+      expect(enumerateLines(reparsed)).toEqual(enumerateLines(tree));
+    }
   });
 });
 
