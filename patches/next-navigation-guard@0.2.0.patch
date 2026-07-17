@@ -1,0 +1,49 @@
+diff --git a/dist/hooks/useInterceptPopState.js b/dist/hooks/useInterceptPopState.js
+index 9fbf9f7b0027fdde96177e20e4802e5dbc14887f..d2fc8c62a631909bf10d7b7ff27f9b85fb247425 100644
+--- a/dist/hooks/useInterceptPopState.js
++++ b/dist/hooks/useInterceptPopState.js
+@@ -42,8 +42,11 @@ function useInterceptPopState({ guardMapRef, }) {
+ function createHandlePopState(guardMapRef, writeState) {
+     let dispatchedState;
+     return (nextState) => {
+-        const token = nextState.__next_navigation_guard_token;
+-        const nextIndex = Number(nextState.__next_navigation_guard_stack_index) || 0;
++        // PATCH(next16): event.state is null on some back/forward navigations
++        // from Next.js 16 routes (and on hash-only history entries).
++        const state = nextState !== null && nextState !== void 0 ? nextState : {};
++        const token = state.__next_navigation_guard_token;
++        const nextIndex = Number(state.__next_navigation_guard_stack_index) || 0;
+         if (!token || token !== renderedStateRef.current.token) {
+             if (debug_1.DEBUG)
+                 console.log(`useInterceptPopState(): token mismatch, skip handling (current: ${renderedStateRef.current.token}, next: ${token})`);
+diff --git a/dist/utils/historyAugmentation.js b/dist/utils/historyAugmentation.js
+index 610d5fe7fe59aa575adad6a0a05a2bbb7c9641c6..0cc122718cf20c15f76693a879c5ca297640cae3 100644
+--- a/dist/utils/historyAugmentation.js
++++ b/dist/utils/historyAugmentation.js
+@@ -26,10 +26,13 @@ function setupHistoryAugmentationOnce({ renderedStateRef, }) {
+             originalReplaceState,
+         };
+     }
++    // PATCH(next16): window.history.state can be null on hash-anchored direct
++    // loads before Next.js seeds the history entry with replaceState().
++    const initialState = window.history.state ?? {};
+     renderedStateRef.current.index =
+-        parseInt(window.history.state.__next_navigation_guard_stack_index) || 0;
++        parseInt(initialState.__next_navigation_guard_stack_index) || 0;
+     renderedStateRef.current.token =
+-        String((_a = window.history.state.__next_navigation_guard_token) !== null && _a !== void 0 ? _a : "") ||
++        String((_a = initialState.__next_navigation_guard_token) !== null && _a !== void 0 ? _a : "") ||
+             newToken();
+     if (debug_1.DEBUG)
+         console.log(`setupHistoryAugmentationOnce: initial currentIndex is ${renderedStateRef.current.index}, token is ${renderedStateRef.current.token}`);
+@@ -43,8 +46,8 @@ function setupHistoryAugmentationOnce({ renderedStateRef, }) {
+         };
+         originalReplaceState.call(window.history, modifiedState, "", window.location.href);
+     };
+-    if (window.history.state.__next_navigation_guard_stack_index == null ||
+-        window.history.state.__next_navigation_guard_token == null) {
++    if (initialState.__next_navigation_guard_stack_index == null ||
++        initialState.__next_navigation_guard_token == null) {
+         writeState();
+     }
+     window.history.pushState = function (state, unused, url) {
