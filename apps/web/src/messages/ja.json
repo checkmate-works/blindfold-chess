@@ -49,10 +49,11 @@
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "型をインポート",
       "submitting": "インポート中…",
-      "inputModePgn": "PGN を貼り付け",
-      "inputModeBoard": "盤面で作成"
+      "inputModePgn": "PGN",
+      "inputModeBoard": "盤面"
     },
     "boardBuilder": {
+      "flip": "盤を反転",
       "empty": "盤面で駒を動かすと型の手順が作られます。",
       "whiteToMove": "白番",
       "blackToMove": "黒番",

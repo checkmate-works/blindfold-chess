@@ -49,10 +49,11 @@
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "Importar línea",
       "submitting": "Importando…",
-      "inputModePgn": "Pegar PGN",
-      "inputModeBoard": "Crear en el tablero"
+      "inputModePgn": "PGN",
+      "inputModeBoard": "Tablero"
     },
     "boardBuilder": {
+      "flip": "Girar tablero",
       "empty": "Mueve las piezas en el tablero para construir tu kata.",
       "whiteToMove": "Juegan blancas",
       "blackToMove": "Juegan negras",

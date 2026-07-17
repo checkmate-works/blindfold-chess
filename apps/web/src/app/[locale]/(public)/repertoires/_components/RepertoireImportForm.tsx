@@ -13,6 +13,8 @@ import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
 import { REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
+import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
+
 import { createRepertoire } from '../_actions/createRepertoire';
 import { OpeningLinksField } from './OpeningLinksField';
 import { RepertoireBoardBuilder } from './RepertoireBoardBuilder';
@@ -178,32 +180,19 @@ export function RepertoireImportForm({ locale, openings, initialPgn, initialSide
         </div>
       </fieldset>
 
-      <div>
+      <div className="space-y-2">
         <span className="block text-sm font-medium text-foreground">{t('form.pgnLabel')}</span>
-        <div
-          role="tablist"
-          className="mt-2 inline-flex rounded-md border border-input p-0.5 text-sm"
-        >
-          {(['pgn', 'board'] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              role="tab"
-              aria-selected={inputMode === mode}
-              onClick={() => setInputMode(mode)}
-              className={`rounded px-3 py-1 transition-colors ${
-                inputMode === mode
-                  ? 'bg-link-primary/10 font-medium text-link-primary'
-                  : 'text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t(mode === 'pgn' ? 'form.inputModePgn' : 'form.inputModeBoard')}
-            </button>
-          ))}
-        </div>
+        {/* Same switcher chrome as the chunk / puzzle position editors — here
+            the text tab holds a PGN instead of a FEN. */}
+        <BoardFenTabs
+          activeTab={inputMode === 'board' ? 'board' : 'fen'}
+          onTabChange={(tab) => setInputMode(tab === 'board' ? 'board' : 'pgn')}
+          boardLabel={t('form.inputModeBoard')}
+          fenLabel={t('form.inputModePgn')}
+        />
         {inputMode === 'pgn' ? (
           <>
-            <p className="mt-2 text-xs text-muted-foreground">{t('form.pgnHelp')}</p>
+            <p className="text-xs text-muted-foreground">{t('form.pgnHelp')}</p>
             <Textarea
               id="repertoire-pgn"
               value={pgn}
@@ -211,17 +200,15 @@ export function RepertoireImportForm({ locale, openings, initialPgn, initialSide
               placeholder={t('form.pgnPlaceholder')}
               rows={10}
               inputSize="sm"
-              className="mt-1 font-mono"
+              className="font-mono"
               aria-label={t('form.pgnLabel')}
             />
           </>
         ) : (
-          <div className="mt-2">
-            {/* Remounts on each switch, re-importing whatever the pgn state
-                holds — so paste → board carries the moves over, and board →
-                paste shows the serialized tree in the textarea. */}
-            <RepertoireBoardBuilder side={side} initialPgn={pgn} onPgnChange={setPgn} />
-          </div>
+          /* Remounts on each switch, re-importing whatever the pgn state
+             holds — so paste → board carries the moves over, and board →
+             paste shows the serialized tree in the textarea. */
+          <RepertoireBoardBuilder side={side} initialPgn={pgn} onPgnChange={setPgn} />
         )}
       </div>
 

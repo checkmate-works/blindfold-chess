@@ -49,10 +49,11 @@
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "Import line",
       "submitting": "Importing…",
-      "inputModePgn": "Paste PGN",
-      "inputModeBoard": "Build on the board"
+      "inputModePgn": "PGN",
+      "inputModeBoard": "Board"
     },
     "boardBuilder": {
+      "flip": "Flip board",
       "empty": "Play moves on the board to build your kata.",
       "whiteToMove": "White to move",
       "blackToMove": "Black to move",
