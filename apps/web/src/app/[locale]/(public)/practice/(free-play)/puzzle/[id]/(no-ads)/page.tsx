@@ -20,18 +20,14 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
-import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
-import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
-import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
-import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
-import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
-import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
-import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
+import {
+  COMMENT_TREE_PAGE_SIZE,
+  validateSort,
+} from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -44,11 +40,9 @@ import { PositionPeekBoard } from '../../../_components/PositionPeekBoard';
 import { PositionEditRequestCallout } from '../../../_components/edit-request/PositionEditRequestCallout';
 import { loadPositionDetail } from '../../../_lib/load-position-detail';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
-import { createReplyForImageAttach } from './_actions/createReplyForImageAttach';
-import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
-import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
-import { togglePositionPuzzlePostLike } from './_actions/togglePositionPuzzlePostLike';
+import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
 import { NewPostForm } from './_components/NewPostForm';
+import { PuzzleCommentTreeBatch } from './_components/PuzzleCommentTreeBatch';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,7 +102,8 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
     relatedChunks,
     relatedThemes,
     commentCount,
-    allComments,
+    comments,
+    hasMoreComments,
     forkParent,
     forkCount,
     canFork,
@@ -118,17 +113,8 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
     kind: 'puzzle',
     currentUserId: currentUser?.id,
     locale,
+    sortBy,
   });
-
-  const commentTree = buildCommentTree(allComments, sortBy);
-
-  const allPostIds = allComments.map((c) => c.id);
-  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
-  const extraContentByPostId = buildAttachmentNodeMap(
-    allPostIds,
-    attachments,
-    tVideo('fallbackTitle')
-  );
 
   const forkedFromNote = (
     <ForkProvenanceNote
@@ -276,40 +262,34 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         </JoinConversationToggle>
       )}
 
-      {commentTree.length > 0 && (
+      {comments.length > 0 && (
         <>
           <SortSelect
             basePath={`/practice/puzzle/${position.id}`}
             translationKey="topics.positionPuzzle.sort"
             currentSort={sortBy}
           />
-          <CommentTree
-            comments={commentTree}
-            locale={locale}
-            topicKey={position.id}
-            currentUserId={currentUser?.id}
-            enableSpoiler
-            redirectPath={`/${locale}/practice/puzzle/${position.id}`}
-            toggleLikeAction={togglePositionPuzzlePostLike}
-            replyAttachmentActions={{
-              pgn: createReplyWithAttachment,
-              fen: createReplyWithFenAttachment,
-              image: createReplyForImageAttach,
+          <CommentTreeLoadMore
+            resetKey={sortBy}
+            initialHasMore={hasMoreComments}
+            initialOffset={COMMENT_TREE_PAGE_SIZE}
+            loadMoreAction={loadMorePuzzleComments.bind(null, position.id, locale, sortBy)}
+            labels={{
+              showMore: tTopics('loadMoreComments.showMore'),
+              loading: tTopics('loadMoreComments.loading'),
+              retry: tTopics('loadMoreComments.retry'),
+              error: tTopics('loadMoreComments.error'),
             }}
-            deletePostAction={deletePost}
-            editPostAction={editPost}
-            removeAttachmentAction={removePostAttachment}
-            attachPgnAction={attachPostPgn}
-            attachFenAction={attachPostFenFromForm}
-            attachmentsByPostId={attachments}
-            attachmentFallbackVideoTitle={tVideo('fallbackTitle')}
-            extraContentByPostId={extraContentByPostId}
-            i18n={{
-              likeNamespace: 'topics.positionPuzzle',
-              replyNamespace: 'topics.positionPuzzle.replies',
-              deleteNamespace: 'topics.positionPuzzle.deletePost',
-            }}
-          />
+          >
+            <PuzzleCommentTreeBatch
+              locale={locale}
+              positionId={position.id}
+              userId={currentUser?.id}
+              comments={comments}
+              attachments={attachments}
+              sortBy={sortBy}
+            />
+          </CommentTreeLoadMore>
         </>
       )}
     </PositionDetailLayout>

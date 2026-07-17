@@ -4,10 +4,12 @@ import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { countPositions, getPositionLineageMetaById } from '@/lib/positions/queries';
 import { getLinkedThemesForPosition } from '@/lib/themes/queries';
 
+import { COMMENT_TREE_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
-  getCommentTreeForTopic,
+  getCommentTreePageForTopic,
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
+import type { SortMode } from '@/app/[locale]/(public)/topics/_lib/shared';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**
@@ -51,56 +53,77 @@ type PositionRow = {
  * @param kind Which position type the parent surface is — drives the
  *   `topicType` used for comments / post counts.
  * @param currentUserId The viewer's id (or `undefined` for guests);
- *   forwarded to `getPositionLikeMeta` and `getCommentTreeForTopic`
+ *   forwarded to `getPositionLikeMeta` and `getCommentTreePageForTopic`
  *   so they can carry per-viewer `likedByMe` / `selfDeleted` flags.
  * @param locale Locale forwarded to `getLinkedThemesForPosition` so
  *   theme labels resolve in the viewer's language.
+ * @param sortBy Validated comment sort — parsed by the page BEFORE this
+ *   loader runs so the first SSR'd comment batch is already in the
+ *   viewer's requested order.
  */
 export async function loadPositionDetail({
   position,
   kind,
   currentUserId,
   locale,
+  sortBy,
 }: {
   position: PositionRow;
   kind: PositionKind;
   currentUserId: string | undefined;
   locale: Locale;
+  sortBy: SortMode;
 }) {
   const topicType = kind === 'memory' ? 'position_memory' : 'position_puzzle';
 
-  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments, forkParent, forkCount] =
-    await Promise.all([
-      getPositionLikeMeta(position.id, currentUserId),
-      getLinkedChunksForPosition(position.id),
-      getLinkedThemesForPosition(position.id, locale),
-      getPostCountByTopicKey(topicType, position.id),
-      getCommentTreeForTopic(topicType, position.id, currentUserId),
-      position.forkedFromId
-        ? getPositionLineageMetaById(position.forkedFromId)
-        : Promise.resolve(null),
-      // Only the count is needed at this surface — the dedicated /forks
-      // page handles the listing (with pagination).
-      countPositions({ type: kind, forkedFromId: position.id }),
-    ]);
+  const [
+    likeMeta,
+    relatedChunks,
+    relatedThemes,
+    commentCount,
+    commentsPage,
+    forkParent,
+    forkCount,
+  ] = await Promise.all([
+    getPositionLikeMeta(position.id, currentUserId),
+    getLinkedChunksForPosition(position.id),
+    getLinkedThemesForPosition(position.id, locale),
+    getPostCountByTopicKey(topicType, position.id),
+    getCommentTreePageForTopic(
+      topicType,
+      position.id,
+      { sortBy, offset: 0, limit: COMMENT_TREE_PAGE_SIZE },
+      currentUserId
+    ),
+    position.forkedFromId
+      ? getPositionLineageMetaById(position.forkedFromId)
+      : Promise.resolve(null),
+    // Only the count is needed at this surface — the dedicated /forks
+    // page handles the listing (with pagination).
+    countPositions({ type: kind, forkedFromId: position.id }),
+  ]);
 
   // Self-forking is allowed (owners can derive a variation of their own work),
   // so ownership no longer gates the fork entry point — only auth state and the
   // permanent forks-disabled lock do. See validateForkSource in @/lib/positions/fork.
   const canFork = currentUserId != null && position.forksDisabledAt === null;
 
-  // Fetch attachments for every post in the topic (root + every reply)
-  // so attached PGN/FEN/embed/image cards render under each author
-  // regardless of depth in the thread.
-  const allPostIds = allComments.map((c) => c.id);
-  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
+  // Fetch attachments for every post in the first comment batch — top-level
+  // posts AND every reply — so attached PGN/FEN/embed/image cards render
+  // under their author regardless of depth. Later batches fetch their own
+  // attachments inside the page's `loadMore*Comments` Server Action.
+  const comments = commentsPage.posts;
+  const commentPostIds = comments.map((c) => c.id);
+  const attachments =
+    commentPostIds.length > 0 ? await getAttachmentsForPosts(commentPostIds) : new Map();
 
   return {
     likeMeta,
     relatedChunks,
     relatedThemes,
     commentCount,
-    allComments,
+    comments,
+    hasMoreComments: commentsPage.hasMore,
     forkParent,
     forkCount,
     canFork,
