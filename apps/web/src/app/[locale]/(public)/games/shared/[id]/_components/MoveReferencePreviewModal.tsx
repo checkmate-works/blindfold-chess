@@ -3,16 +3,16 @@
 import { useMemo } from 'react';
 
 import { ChessBoard } from '@/app/_components';
-import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { formatMovesToPgn, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-
-import { formatPlyLabel } from '../_lib/replay-derivations';
 
 type Props = {
   onClose: () => void;
@@ -38,6 +38,11 @@ type Props = {
  * forward, with "previous" available back to the position before it (-2).
  * Mounted only while open (the caller conditionally renders it), so navigation
  * state resets between references for free.
+ *
+ * Chrome and move list are the house board+moves stack — `HorizontalMoveList`
+ * above the board, `MoveNavigationControls` in an 8:1 row below it — so this
+ * reads the same as the quick-peek modal and the inline board rather than
+ * inventing a third arrangement.
  */
 export function MoveReferencePreviewModal({
   onClose,
@@ -55,9 +60,15 @@ export function MoveReferencePreviewModal({
     initialPosition: 0,
   });
 
-  const stepLabels = useMemo(() => {
+  // The branch is renumbered against the GAME's clock: `basePly` says which ply
+  // `sans[0]` occupies, so a run quoted mid-game still reads "8...Nf6 9. O-O".
+  // `formatMovesToPgn` then indexes each move by its offset within `sans`, which
+  // is exactly the cursor space `useMoveNavigation` is scoped to here — so the
+  // list's indices need no remapping.
+  const formattedPgn = useMemo(() => {
     const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-    return sans.map((san, i) => formatPlyLabel(basePly + i, san, startsAsBlack, startMoveNumber));
+    const base = computeMoveNumber(basePly, startsAsBlack, startMoveNumber);
+    return formatMovesToPgn(sans, !base.isWhiteMove, base.moveNumber);
   }, [sans, basePly, startingFen]);
 
   const effectivePosition =
@@ -78,43 +89,39 @@ export function MoveReferencePreviewModal({
 
   return (
     <Modal isOpen onClose={onClose} title={raw} maxWidth="max-w-lg">
-      <div className="space-y-3">
+      {/* Move strip above the board, then board, then the 8:1 nav row — the
+          same stack every other board+moves surface uses (InlineBoardView,
+          BoardViewModal, the repertoire viewers). */}
+      <div className="rounded-md overflow-hidden">
+        <div className="bg-card px-2 py-1.5 overflow-x-auto">
+          <HorizontalMoveList
+            formattedPgn={formattedPgn}
+            currentPosition={effectivePosition}
+            onNavigateToPosition={(position) => nav.navigateToPosition(position)}
+          />
+        </div>
+
         <ChessBoard
           fen={fen}
           flipped={playerColor === 'black'}
           lastMove={lastMove}
           boardTheme={preferences.boardTheme}
-          rounded
+          rounded={false}
         />
 
-        <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm">
-          {stepLabels.map((label, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => nav.navigateToPosition(i)}
-              className={
-                i === effectivePosition
-                  ? 'font-semibold text-primary'
-                  : 'text-muted-foreground hover:text-foreground transition-colors'
-              }
-            >
-              {label}
-            </button>
-          ))}
+        <div className="bg-card flex items-center justify-center" style={{ aspectRatio: '8 / 1' }}>
+          <MoveNavigationControls
+            onNavigateToStart={nav.navigateToStart}
+            onNavigatePrevious={nav.navigatePrevious}
+            onNavigateNext={nav.navigateNext}
+            onNavigateToEnd={nav.navigateToEnd}
+            isPreviousDisabled={nav.currentPosition === -2}
+            isNextDisabled={
+              nav.currentPosition === -1 ||
+              (sans.length > 0 && nav.currentPosition === sans.length - 1)
+            }
+          />
         </div>
-
-        <MoveNavigationControls
-          onNavigateToStart={nav.navigateToStart}
-          onNavigatePrevious={nav.navigatePrevious}
-          onNavigateNext={nav.navigateNext}
-          onNavigateToEnd={nav.navigateToEnd}
-          isPreviousDisabled={nav.currentPosition === -2}
-          isNextDisabled={
-            nav.currentPosition === -1 ||
-            (sans.length > 0 && nav.currentPosition === sans.length - 1)
-          }
-        />
       </div>
     </Modal>
   );
