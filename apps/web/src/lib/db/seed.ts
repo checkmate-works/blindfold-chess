@@ -16,12 +16,19 @@
  * The actual seed logic is split into per-domain modules under `./seed/`.
  * This file is a thin orchestrator that runs them in dependency order.
  */
+import { setDefaultResultOrder } from 'node:dns';
+
 import { seedAchievements } from './seed/achievements';
 import { seedAds } from './seed/ads';
 import { seedArticleCategories } from './seed/article-categories';
 import { seedGlossaryTerms } from './seed/glossary';
 import { seedChessOpenings } from './seed/openings';
 import { seedRanks } from './seed/ranks';
+
+// Same IPv4 preference as scripts/migrate.ts: Vercel build containers have no
+// IPv6 route, and this script runs as its own child process during prebuild,
+// so it needs its own copy (issue #54).
+setDefaultResultOrder('ipv4first');
 
 async function seed() {
   console.log('Seeding database...');
