@@ -61,6 +61,14 @@ async function runStorageSetup() {
   await client.unsafe(sql);
 }
 
+async function runScheduledJobs() {
+  const sql = readFileSync(
+    join(__dirname, '..', 'drizzle', 'supabase', 'scheduled_jobs.sql'),
+    'utf-8'
+  );
+  await client.unsafe(sql);
+}
+
 async function main() {
   console.log('Running migrations...');
   await migrate(db, { migrationsFolder: './drizzle' });
@@ -82,6 +90,10 @@ async function main() {
     console.log('Applying storage setup...');
     await runStorageSetup();
     console.log('Storage setup applied!');
+
+    console.log('Applying scheduled jobs...');
+    await runScheduledJobs();
+    console.log('Scheduled jobs applied!');
   } else {
     console.log('Local environment detected. Skipping Supabase-only setup.');
   }
