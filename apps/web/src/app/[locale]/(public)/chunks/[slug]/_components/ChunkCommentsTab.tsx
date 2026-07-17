@@ -1,34 +1,32 @@
 import { getTranslations } from 'next-intl/server';
 
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
-import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
-import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
+import { COMMENT_TREE_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import type { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { createChunkReplyWithAttachment } from '../_actions/createChunkReplyWithAttachment';
-import { createChunkReplyWithFenAttachment } from '../_actions/createChunkReplyWithFenAttachment';
-import { toggleChunkLike } from '../_actions/toggleChunkLike';
+import { loadMoreChunkComments } from '../_actions/loadMoreChunkComments';
 import type { ChunkDetailData } from '../_lib/load-chunk-detail';
+import { ChunkCommentTreeBatch } from './ChunkCommentTreeBatch';
 import { NewPostForm } from './NewPostForm';
 
 /**
  * The Comments tab panel of the chunk detail page: the new-post affordance
  * (inline form for the signed-in first commenter, "Join the conversation"
- * toggle otherwise), the sort control, and the threaded comment tree with
- * per-post attachment cards. Server component — builds the tree and the
- * attachment node map from the already-loaded rows and fetches only the
- * translations it renders.
+ * toggle otherwise), the sort control, and the incrementally loaded
+ * threaded comment tree (issue #81) — the first batch is SSR'd through
+ * `ChunkCommentTreeBatch`, further batches stream in through the
+ * `loadMoreChunkComments` Server Action via `CommentTreeLoadMore`.
  */
 export async function ChunkCommentsTab({
   locale,
   slug,
   userId,
   commentCount,
-  allComments,
+  comments,
+  hasMoreComments,
   attachments,
   sortBy,
   representativeFen,
@@ -37,7 +35,10 @@ export async function ChunkCommentsTab({
   slug: string;
   userId: string | undefined;
   commentCount: number;
-  allComments: ChunkDetailData['allComments'];
+  /** First comment-tree batch (page roots + their reply trees). */
+  comments: ChunkDetailData['comments'];
+  /** Whether batches exist beyond the SSR'd first one. */
+  hasMoreComments: boolean;
   attachments: ChunkDetailData['attachments'];
   sortBy: ReturnType<typeof validateSort>;
   /**
@@ -47,21 +48,7 @@ export async function ChunkCommentsTab({
    */
   representativeFen: string;
 }) {
-  const [tTopics, tVideo] = await Promise.all([
-    getTranslations({ locale, namespace: 'topics' }),
-    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
-  ]);
-
-  const commentTree = buildCommentTree(allComments, sortBy);
-
-  // CommentTree threads `extraContentByPostId` through to every CommentNode
-  // it spawns so attached PGN/FEN/embed/image cards render under their
-  // author at any depth.
-  const extraContentByPostId = buildAttachmentNodeMap(
-    allComments.map((c) => c.id),
-    attachments,
-    tVideo('fallbackTitle')
-  );
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
 
   return (
     <>
@@ -82,34 +69,35 @@ export async function ChunkCommentsTab({
         </JoinConversationToggle>
       )}
 
-      {commentTree.length > 0 && (
+      {comments.length > 0 && (
         <>
           <SortSelect
             basePath={`/chunks/${slug}`}
             translationKey="topics.chunks.sort"
             currentSort={sortBy}
           />
-          <CommentTree
-            comments={commentTree}
-            locale={locale}
-            topicKey={slug}
-            currentUserId={userId}
-            enableSpoiler={false}
-            redirectPath={`/${locale}/chunks/${slug}`}
-            toggleLikeAction={toggleChunkLike}
-            replyAttachmentActions={{
-              pgn: createChunkReplyWithAttachment,
-              fen: createChunkReplyWithFenAttachment,
+          <CommentTreeLoadMore
+            resetKey={sortBy}
+            initialHasMore={hasMoreComments}
+            initialOffset={COMMENT_TREE_PAGE_SIZE}
+            loadMoreAction={loadMoreChunkComments.bind(null, slug, locale, sortBy)}
+            labels={{
+              showMore: tTopics('loadMoreComments.showMore'),
+              loading: tTopics('loadMoreComments.loading'),
+              retry: tTopics('loadMoreComments.retry'),
+              error: tTopics('loadMoreComments.error'),
             }}
-            deletePostAction={deletePost}
-            extraContentByPostId={extraContentByPostId}
-            moveNotationFen={representativeFen}
-            i18n={{
-              likeNamespace: 'topics.chunks',
-              replyNamespace: 'topics.chunks.replies',
-              deleteNamespace: 'topics.chunks.deletePost',
-            }}
-          />
+          >
+            <ChunkCommentTreeBatch
+              locale={locale}
+              slug={slug}
+              userId={userId}
+              comments={comments}
+              attachments={attachments}
+              sortBy={sortBy}
+              representativeFen={representativeFen}
+            />
+          </CommentTreeLoadMore>
         </>
       )}
     </>

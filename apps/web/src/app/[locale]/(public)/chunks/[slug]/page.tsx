@@ -110,13 +110,17 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const data = await loadChunkDetail(slug, user?.id);
+  const { sort, tab } = await searchParamsCache.parse(searchParams);
+  const sortBy = validateSort(sort);
+
+  const data = await loadChunkDetail(slug, user?.id, sortBy);
   const {
     chunk,
     profile,
     linkedPositions,
     commentCount,
-    allComments,
+    comments,
+    hasMoreComments,
     pendingEditRequestCount,
     requestedFeedbackTopics,
     viewerPendingRequestId,
@@ -132,8 +136,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
   const tCommon = await getTranslations({ locale, namespace: 'Common' });
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
-  const { sort, tab } = await searchParamsCache.parse(searchParams);
-  const sortBy = validateSort(sort);
   const activeTab: ChunkTab =
     tab && TAB_VALUES.includes(tab as ChunkTab)
       ? (tab as ChunkTab)
@@ -396,7 +398,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           slug={slug}
           userId={user?.id}
           commentCount={commentCount}
-          allComments={allComments}
+          comments={comments}
+          hasMoreComments={hasMoreComments}
           attachments={attachments}
           sortBy={sortBy}
           representativeFen={chunk.representativeFen}
