@@ -1,6 +1,13 @@
 {
   "Common": {
-    "deletedUser": "(usuario eliminado)"
+    "deletedUser": "(usuario eliminado)",
+    "pagination": {
+      "navLabel": "Paginación",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "previousPage": "Página anterior",
+      "nextPage": "Página siguiente"
+    }
   },
   "Repertoires": {
     "title": "Kata",

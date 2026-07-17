@@ -153,10 +153,15 @@ vi.mock('@/app/[locale]/_components', () => ({
   ),
   PagePanel: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
   PageTitle: ({ children }: { children: React.ReactNode }) => <h1>{children}</h1>,
+  SectionTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+}));
+
+// The localised PaginationNav is an async Server Component imported directly
+// (not via the barrel), so it gets its own module mock.
+vi.mock('@/app/[locale]/_components/PaginationNav', () => ({
   PaginationNav: ({ totalPages }: { totalPages: number }) => (
     <nav data-testid="pagination-nav" data-total={totalPages} />
   ),
-  SectionTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }));
 
 // Paragraph-level registries return nothing: we only care about layer logic.

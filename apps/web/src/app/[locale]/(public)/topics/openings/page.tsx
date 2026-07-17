@@ -17,14 +17,9 @@ import { TopicTabsSkeleton } from '@/app/[locale]/(public)/topics/_components/To
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
-import {
-  PageLayout,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -138,7 +133,12 @@ async function OpeningsContent({ params, searchParams }: Props) {
               );
             })}
           </div>
-          <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+          <PaginationNav
+            currentPage={currentPage}
+            totalPages={totalPages}
+            buildHref={buildHref}
+            locale={locale}
+          />
         </>
       )}
 

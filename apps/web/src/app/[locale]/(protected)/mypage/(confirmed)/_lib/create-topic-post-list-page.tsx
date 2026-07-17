@@ -8,7 +8,8 @@ import { getPaginationParams } from '@/lib/pagination';
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -95,7 +96,12 @@ export function createMypageTopicPostListPage(config: CreateTopicPostListPageCon
           </div>
         )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+        <PaginationNav
+          currentPage={currentPage}
+          totalPages={totalPages}
+          buildHref={buildHref}
+          locale={locale}
+        />
       </PageLayout>
     );
   }

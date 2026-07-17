@@ -17,8 +17,9 @@ import { getPositionById, getPositionWithProfileById } from '@/lib/positions/que
 import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
 import type { PositionTagBundle } from '@/lib/positions/tag-loader';
 
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { GuestCreateGate } from '@/app/[locale]/_components/GuestCreateGate';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import {
   createPageMetadata,
   generateCanonicalMetadata,
@@ -210,7 +211,12 @@ export function createPositionForksPage(route: PositionRouteKind) {
           </div>
         )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+        <PaginationNav
+          locale={locale}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          buildHref={buildHref}
+        />
       </PageLayout>
     );
   }

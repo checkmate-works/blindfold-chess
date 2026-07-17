@@ -37,7 +37,8 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -210,7 +211,12 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
         </>
       )}
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <PaginationNav
+        currentPage={currentPage}
+        totalPages={totalPages}
+        buildHref={buildHref}
+        locale={locale}
+      />
     </PageLayout>
   );
 }

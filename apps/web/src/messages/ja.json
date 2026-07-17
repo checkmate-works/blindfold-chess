@@ -1,6 +1,13 @@
 {
   "Common": {
-    "deletedUser": "(退会したユーザー)"
+    "deletedUser": "(退会したユーザー)",
+    "pagination": {
+      "navLabel": "ページ送り",
+      "previous": "前へ",
+      "next": "次へ",
+      "previousPage": "前のページ",
+      "nextPage": "次のページ"
+    }
   },
   "Repertoires": {
     "title": "型",

@@ -24,7 +24,8 @@ import { countPositions, listPositionsWithProfile } from '@/lib/positions/querie
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -121,7 +122,12 @@ export default async function PositionMemoryProblemsPage({ params, searchParams 
         </div>
       )}
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <PaginationNav
+        currentPage={currentPage}
+        totalPages={totalPages}
+        buildHref={buildHref}
+        locale={locale}
+      />
     </PageLayout>
   );
 }

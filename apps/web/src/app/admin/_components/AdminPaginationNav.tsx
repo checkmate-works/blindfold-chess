@@ -1,4 +1,4 @@
-import { PaginationNav } from '@/app/[locale]/_components';
+import { type PaginationNavLabels, PaginationNavView } from '@/app/[locale]/_components';
 
 type AdminPaginationNavProps = {
   currentPage: number;
@@ -6,12 +6,23 @@ type AdminPaginationNavProps = {
   buildHref: (page: number) => string;
 };
 
+// The admin area sits outside `[locale]` and is English-only by convention
+// (`<html lang="en">`), so the labels are fixed English strings rather than
+// `Common.pagination` translations.
+const ADMIN_LABELS: PaginationNavLabels = {
+  navLabel: 'Pagination',
+  previous: 'Previous',
+  next: 'Next',
+  previousPage: 'Previous page',
+  nextPage: 'Next page',
+};
+
 /**
- * Admin-only wrapper around the shared PaginationNav.
+ * Admin-only wrapper around the shared PaginationNavView.
  *
  * Why this exists
  * ---------------
- * The shared PaginationNav is used on public-facing pages where the surrounding
+ * The shared pagination bar is used on public-facing pages where the surrounding
  * background already provides enough contrast that transparent page items look
  * fine. In the admin area the surrounding `<main>` uses `bg-background`, so the
  * transparent pager items visually blend in. This wrapper paints an opaque
@@ -20,7 +31,7 @@ type AdminPaginationNavProps = {
  *
  * How the selector works
  * ----------------------
- * The shared PaginationNav tags each rendered cell with a stable
+ * The shared PaginationNavView tags each rendered cell with a stable
  * `data-pagination-item` attribute:
  *
  *   - `link`     — clickable Link (prev, next, page number)
@@ -45,7 +56,12 @@ export function AdminPaginationNav({
 }: AdminPaginationNavProps) {
   return (
     <div className="[&_[data-pagination-item=link]]:bg-card [&_[data-pagination-item=disabled]]:bg-card [&_[data-pagination-item=link]:hover]:bg-secondary">
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <PaginationNavView
+        currentPage={currentPage}
+        totalPages={totalPages}
+        buildHref={buildHref}
+        labels={ADMIN_LABELS}
+      />
     </div>
   );
 }

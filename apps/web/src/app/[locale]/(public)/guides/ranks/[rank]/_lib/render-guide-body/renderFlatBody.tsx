@@ -12,7 +12,8 @@ import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/Guid
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
 import { RequirementsList } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
 import { buildRequirementItems } from '@/app/[locale]/(public)/ranks/_lib/helpers';
-import { Divider, PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildFlatBodyBreadcrumbs, buildFlatBodyLearningResourceSchema } from '../guide-metadata';
@@ -89,6 +90,7 @@ export async function renderFlatBody(
           <>
             <Divider />
             <PaginationNav
+              locale={locale}
               currentPage={pageNumber}
               totalPages={pages.length}
               buildHref={(p) => buildFlatHref(locale, rankSlug, p)}

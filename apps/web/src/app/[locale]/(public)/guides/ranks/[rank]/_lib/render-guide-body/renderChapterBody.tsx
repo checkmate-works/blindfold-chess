@@ -9,7 +9,8 @@ import { JsonLd } from '@/lib/seo/jsonld';
 
 import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
-import { Divider, PageLayout, PaginationNav } from '@/app/[locale]/_components';
+import { Divider, PageLayout } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import {
@@ -86,6 +87,7 @@ export async function renderChapterBody(
           <>
             <Divider />
             <PaginationNav
+              locale={locale}
               currentPage={pageNumber}
               totalPages={chapter.pages.length}
               buildHref={(p) => buildChapterHref(locale, rankSlug, chapterSlug, p)}

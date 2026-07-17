@@ -142,6 +142,7 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
           currentPage={currentPage}
           totalPages={totalPages}
           buildHref={(p) => `/${locale}/repertoires?page=${p}`}
+          locale={locale}
         />
       )}
 

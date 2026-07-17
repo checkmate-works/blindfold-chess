@@ -255,6 +255,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
             params.set('page', String(p));
             return `/${locale}/chunks?${params.toString()}`;
           }}
+          locale={locale}
         />
       )}
 

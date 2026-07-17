@@ -4,7 +4,8 @@ import type { Position } from '@/lib/db/schema';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
-import { PaginationNav } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type AuthorProfile = {
   username: string;
@@ -21,7 +22,7 @@ type Props = {
   emptyReplyMeta: ReplyMeta;
   currentPage: number;
   totalPages: number;
-  locale: string;
+  locale: Locale;
   buildHref: (page: number) => string;
   /** `t('justNow')` resolved per practice namespace. */
   justNowLabels: {
@@ -102,7 +103,12 @@ export function ProfileProblems({
         )}
       </div>
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <PaginationNav
+        locale={locale}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        buildHref={buildHref}
+      />
     </div>
   );
 }
