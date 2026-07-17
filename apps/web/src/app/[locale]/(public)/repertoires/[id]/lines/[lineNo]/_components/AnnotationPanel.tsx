@@ -1,21 +1,26 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
-import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { Textarea } from '@/app/_components';
 
 import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';
 
 import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
-import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { OwnerActionButton } from '@/app/[locale]/_components/OwnerActionChip';
 
 import { deleteAnnotation } from '../_actions/deleteAnnotation';
 import { saveAnnotation } from '../_actions/saveAnnotation';
+
+/**
+ * How long an edit sits before it is persisted — matching the board markup's
+ * autosave (see `use-shape-autosave`): long enough to not save every
+ * keystroke, short enough that navigating away still lands it (unmount
+ * flushes whatever is pending).
+ */
+const SAVE_DEBOUNCE_MS = 800;
 
 type Props = {
   repertoireId: string;
@@ -34,11 +39,16 @@ type Props = {
   isOwner: boolean;
 };
 
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
 /**
  * The owner-authored "why this move" note for the selected move (the Chessable
- * right-panel idea). Read-only for everyone; the owner gets an inline editor.
- * Remounted per move (keyed on positionKey by the parent), so editing state
- * resets cleanly when navigating between moves.
+ * right-panel idea). Read-only for everyone else; the owner gets the same
+ * inline always-editable field the import / line edit forms use — no
+ * add/edit-mode chips. On this page there is no form to submit, so edits
+ * autosave like the board markup does (debounced, flushed on unmount); an
+ * emptied note is a deletion. Remounted per move (keyed on positionKey by the
+ * parent), so state resets cleanly when navigating between moves.
  */
 export function AnnotationPanel({
   repertoireId,
@@ -51,71 +61,66 @@ export function AnnotationPanel({
   isOwner,
 }: Props) {
   const t = useTranslations('Repertoires.line.annotation');
-  const tUnsaved = useTranslations('unsavedChanges');
-  const [savedText, setSavedText] = useState<string | null>(initialText);
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(initialText ?? '');
-  const [error, setError] = useState<string | null>(null);
-  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [text, setText] = useState(initialText ?? '');
+  const [status, setStatus] = useState<SaveStatus>('idle');
 
-  const isDirty = draft !== (savedText ?? '');
+  // The draft awaiting persistence (null = nothing pending) + its timer.
+  const pendingRef = useRef<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // What the server currently holds, so a no-op edit (type + revert) is not
+  // written, and an emptied note is only deleted when one actually exists.
+  const savedRef = useRef((initialText ?? '').trim());
 
-  function openEditor() {
-    setDraft(savedText ?? '');
-    setError(null);
-    setEditing(true);
-  }
-
-  // Mirror the comment edit form: confirm before discarding, but only when the
-  // draft actually diverges from the saved note.
-  function handleCancel() {
-    if (isDirty) {
-      setConfirmingDiscard(true);
-    } else {
-      setEditing(false);
+  function persist(draft: string) {
+    const value = draft.trim();
+    if (value === savedRef.current) {
+      setStatus((s) => (s === 'saving' ? 'idle' : s));
+      return;
     }
-  }
-
-  function discardAndClose() {
-    setConfirmingDiscard(false);
-    setDraft(savedText ?? '');
-    setEditing(false);
-  }
-
-  function onSave() {
-    setError(null);
-    startTransition(async () => {
-      const result = await saveAnnotation({
-        repertoireId,
-        lineNo,
-        locale,
-        positionKey,
-        text: draft,
-      });
+    setStatus('saving');
+    const write = value
+      ? saveAnnotation({ repertoireId, lineNo, locale, positionKey, text: value })
+      : deleteAnnotation({ repertoireId, lineNo, locale, positionKey });
+    void write.then((result) => {
       if (result.ok) {
-        setSavedText(result.text);
-        setEditing(false);
+        savedRef.current = value;
+        setStatus('saved');
       } else {
-        setError(t.has(result.error) ? t(result.error) : t('error'));
+        setStatus('error');
       }
     });
   }
 
-  function onDelete() {
-    setError(null);
-    startTransition(async () => {
-      const result = await deleteAnnotation({ repertoireId, lineNo, locale, positionKey });
-      setConfirmingDelete(false);
-      if (result.ok) {
-        setSavedText(null);
-        setEditing(false);
-      } else {
-        setError(t.has(result.error) ? t(result.error) : t('error'));
-      }
-    });
+  function handleChange(next: string) {
+    setText(next);
+    pendingRef.current = next;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      const draft = pendingRef.current;
+      pendingRef.current = null;
+      if (draft !== null) persist(draft);
+    }, SAVE_DEBOUNCE_MS);
   }
+
+  // Flush the pending draft on unmount (move navigation / page leave) — an
+  // un-awaited Server Action survives the unmount, a lost edit doesn't. The
+  // status updates inside persist() are harmless no-ops after unmount.
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      const draft = pendingRef.current;
+      pendingRef.current = null;
+      if (draft !== null && draft.trim() !== savedRef.current) {
+        const value = draft.trim();
+        void (value
+          ? saveAnnotation({ repertoireId, lineNo, locale, positionKey, text: value })
+          : deleteAnnotation({ repertoireId, lineNo, locale, positionKey }));
+      }
+    };
+    // Save params are fixed for this mount (remounted per positionKey).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const heading = (
     <h3 className="text-xs font-semibold text-muted-foreground">
@@ -123,122 +128,52 @@ export function AnnotationPanel({
     </h3>
   );
 
-  // The saved note as the reader sees it: plain text, except that a move cited
-  // by number ("1... e4") becomes a board-preview link.
-  const noteBody = (
-    <p className="whitespace-pre-wrap text-foreground">
-      <GameCommentBody
-        text={savedText ?? ''}
-        locale={locale}
-        moves={moveNotation.moves}
-        startingFen={moveNotation.startingFen}
-        playerColor={moveNotation.playerColor}
-      />
-    </p>
-  );
-
-  // Non-owner: show the note when present, otherwise render nothing.
+  // Non-owner: show the note when present — plain text, except that a move
+  // cited by number ("1... e4") becomes a board-preview link — else nothing.
   if (!isOwner) {
-    if (!savedText) return null;
+    if (!initialText) return null;
     return (
       <section className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
         {heading}
-        {noteBody}
+        <p className="whitespace-pre-wrap text-foreground">
+          <GameCommentBody
+            text={initialText}
+            locale={locale}
+            moves={moveNotation.moves}
+            startingFen={moveNotation.startingFen}
+            playerColor={moveNotation.playerColor}
+          />
+        </p>
       </section>
     );
   }
 
   return (
     <section className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
-      {heading}
-
-      {editing ? (
-        <div className="space-y-2">
-          <FormErrorBanner message={error} />
-          <Textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            rows={4}
-            maxLength={REPERTOIRE_ANNOTATION_MAX}
-            placeholder={t('placeholder')}
-            autoFocus
-          />
-          {/* Save / Cancel only — Delete belongs to the note, not to the edit
-              session, so it lives in the owner row alongside Edit (the same
-              pairing every other UGC surface uses). Mirrors EditPostForm: a
-              full-width primary submit with a quiet cancel below it. */}
-          <div className="space-y-3 pt-1">
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              fullWidth
-              onClick={onSave}
-              disabled={isPending}
-              loading={isPending}
-            >
-              {isPending ? t('saving') : t('save')}
-            </Button>
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isPending}
-              className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-            >
-              {t('cancel')}
-            </button>
-          </div>
-
-          <UnsavedChangesDialog
-            open={confirmingDiscard}
-            onConfirm={discardAndClose}
-            onCancel={() => setConfirmingDiscard(false)}
-            title={tUnsaved('title')}
-            message={tUnsaved('message')}
-            confirmLabel={tUnsaved('confirm')}
-            cancelLabel={tUnsaved('cancel')}
-          />
-        </div>
-      ) : savedText ? (
-        <div className="space-y-3">
-          {noteBody}
-          <FormErrorBanner message={error} />
-          {/* Owner row — Edit and Delete as one pair, the same chips every other
-              UGC detail surface uses. */}
-          <div className="flex flex-wrap items-center gap-3">
-            <OwnerActionButton size="xs" onClick={openEditor} disabled={isPending}>
-              <FiEdit2 aria-hidden />
-              {t('editButton')}
-            </OwnerActionButton>
-            <OwnerActionButton
-              size="xs"
-              tone="danger"
-              onClick={() => setConfirmingDelete(true)}
-              disabled={isPending}
-            >
-              <FiTrash2 aria-hidden />
-              {t('delete')}
-            </OwnerActionButton>
-          </div>
-        </div>
-      ) : (
-        <OwnerActionButton size="xs" onClick={openEditor}>
-          <FiPlus aria-hidden />
-          {t('addButton')}
-        </OwnerActionButton>
-      )}
-
-      <ConfirmationModal
-        isOpen={confirmingDelete}
-        title={t('deleteConfirmTitle')}
-        message={t('deleteConfirmMessage')}
-        confirmText={t('delete')}
-        cancelText={t('cancel')}
-        confirmVariant="danger"
-        isLoading={isPending}
-        onConfirm={onDelete}
-        onCancel={() => setConfirmingDelete(false)}
+      <div className="flex items-baseline justify-between gap-2">
+        {heading}
+        <span
+          aria-live="polite"
+          className={`text-xs ${status === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}
+        >
+          {status === 'saving'
+            ? t('saving')
+            : status === 'saved'
+              ? t('saved')
+              : status === 'error'
+                ? t('error')
+                : ''}
+        </span>
+      </div>
+      <Textarea
+        value={text}
+        onChange={(e) => handleChange(e.target.value)}
+        rows={3}
+        maxLength={REPERTOIRE_ANNOTATION_MAX}
+        placeholder={t('placeholder')}
+        aria-label={t('title')}
       />
+      <p className="text-xs text-muted-foreground">{t('autosaveHelp')}</p>
     </section>
   );
 }
