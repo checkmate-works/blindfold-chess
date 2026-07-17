@@ -4690,6 +4690,7 @@
         "invalidOpening": "Apertura inválida",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para crear una publicación",
+        "profileRequired": "Configura tu nombre de usuario para crear una publicación",
         "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde."
       },
       "ratings": {
@@ -4724,6 +4725,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
+        "profileRequired": "Configura tu nombre de usuario para responder",
         "loginToReply": "Inicia sesión para responder",
         "rateLimited": "Demasiadas respuestas. Por favor, inténtalo más tarde.",
         "repliesDisabled": "El autor ha desactivado las respuestas en esta publicación.",
@@ -4782,6 +4784,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para crear una publicación",
+        "profileRequired": "Configura tu nombre de usuario para crear una publicación",
         "rateLimited": "Demasiadas publicaciones. Por favor, inténtalo más tarde."
       },
       "like": "Me gusta",
@@ -4804,6 +4807,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
+        "profileRequired": "Configura tu nombre de usuario para responder",
         "loginToReply": "Inicia sesión para responder",
         "rateLimited": "Demasiadas respuestas. Por favor, inténtalo más tarde.",
         "repliesDisabled": "El autor ha desactivado las respuestas en esta publicación.",
@@ -4859,6 +4863,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para comentar",
+        "profileRequired": "Configura tu nombre de usuario para crear una publicación",
         "rateLimited": "Demasiados comentarios. Por favor, inténtalo más tarde."
       },
       "like": "Me gusta",
@@ -4877,6 +4882,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
+        "profileRequired": "Configura tu nombre de usuario para responder",
         "loginToReply": "Inicia sesión para responder",
         "rateLimited": "Demasiadas respuestas. Por favor, inténtalo más tarde.",
         "repliesDisabled": "El autor ha desactivado las respuestas en este comentario.",
@@ -4921,6 +4927,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para comentar",
+        "profileRequired": "Configura tu nombre de usuario para crear una publicación",
         "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
         "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
       },
@@ -4940,6 +4947,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
+        "profileRequired": "Configura tu nombre de usuario para responder",
         "loginToReply": "Inicia sesión para responder",
         "rateLimited": "Demasiadas respuestas. Inténtalo de nuevo más tarde.",
         "repliesDisabled": "El autor ha desactivado las respuestas a este comentario.",
@@ -4984,6 +4992,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para comentar",
+        "profileRequired": "Configura tu nombre de usuario para crear una publicación",
         "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
         "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
       },
@@ -5003,6 +5012,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
+        "profileRequired": "Configura tu nombre de usuario para responder",
         "loginToReply": "Inicia sesión para responder",
         "rateLimited": "Demasiadas respuestas. Inténtalo de nuevo más tarde.",
         "repliesDisabled": "El autor ha desactivado las respuestas a este comentario.",
@@ -5047,6 +5057,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para comentar",
+        "profileRequired": "Configura tu nombre de usuario para crear una publicación",
         "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
         "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
       },
@@ -5066,6 +5077,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
+        "profileRequired": "Configura tu nombre de usuario para responder",
         "loginToReply": "Inicia sesión para responder",
         "rateLimited": "Demasiadas respuestas. Inténtalo de nuevo más tarde.",
         "repliesDisabled": "El autor ha desactivado las respuestas a este comentario.",
@@ -5110,6 +5122,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para comentar",
+        "profileRequired": "Configura tu nombre de usuario para crear una publicación",
         "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
         "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
       },
@@ -5129,6 +5142,7 @@
         "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
+        "profileRequired": "Configura tu nombre de usuario para responder",
         "loginToReply": "Inicia sesión para responder",
         "rateLimited": "Demasiadas respuestas. Inténtalo de nuevo más tarde.",
         "repliesDisabled": "El autor ha desactivado las respuestas a este comentario.",

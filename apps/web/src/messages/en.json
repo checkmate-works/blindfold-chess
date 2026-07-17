@@ -4701,6 +4701,7 @@
         "invalidOpening": "Invalid opening",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to create a post",
+        "profileRequired": "Please set up your username to create a post",
         "rateLimited": "You can only post once per day for each opening. Please try again later."
       },
       "ratings": {
@@ -4735,6 +4736,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
+        "profileRequired": "Please set up your username to reply",
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this post.",
@@ -4793,6 +4795,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to create a post",
+        "profileRequired": "Please set up your username to create a post",
         "rateLimited": "Too many posts. Please try again later."
       },
       "like": "Like",
@@ -4815,6 +4818,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
+        "profileRequired": "Please set up your username to reply",
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this post.",
@@ -4870,6 +4874,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to comment",
+        "profileRequired": "Please set up your username to create a post",
         "rateLimited": "Too many comments. Please try again later."
       },
       "like": "Like",
@@ -4888,6 +4893,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
+        "profileRequired": "Please set up your username to reply",
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this comment.",
@@ -4932,6 +4938,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to comment",
+        "profileRequired": "Please set up your username to create a post",
         "invalidReplyPermission": "Invalid reply permission setting",
         "rateLimited": "Too many comments. Please try again later."
       },
@@ -4951,6 +4958,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
+        "profileRequired": "Please set up your username to reply",
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this comment.",
@@ -4995,6 +5003,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to comment",
+        "profileRequired": "Please set up your username to create a post",
         "invalidReplyPermission": "Invalid reply permission setting",
         "rateLimited": "Too many comments. Please try again later."
       },
@@ -5014,6 +5023,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
+        "profileRequired": "Please set up your username to reply",
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this comment.",
@@ -5058,6 +5068,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to comment",
+        "profileRequired": "Please set up your username to create a post",
         "invalidReplyPermission": "Invalid reply permission setting",
         "rateLimited": "Too many comments. Please try again later."
       },
@@ -5077,6 +5088,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
+        "profileRequired": "Please set up your username to reply",
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this comment.",
@@ -5121,6 +5133,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to comment",
+        "profileRequired": "Please set up your username to create a post",
         "invalidReplyPermission": "Invalid reply permission setting",
         "rateLimited": "Too many comments. Please try again later."
       },
@@ -5140,6 +5153,7 @@
         "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
+        "profileRequired": "Please set up your username to reply",
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this comment.",
