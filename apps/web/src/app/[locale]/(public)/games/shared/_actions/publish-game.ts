@@ -1,7 +1,9 @@
 'use server';
 
 import { userHasProfile } from '@/lib/auth';
+import type { GrantedRank } from '@/lib/db/data/ranks';
 import { publishGame } from '@/lib/db/games-write';
+import { evaluateRanksAfterCreate } from '@/lib/db/rank-evaluation';
 import type { EngineConfig } from '@/lib/engines';
 import { deriveGameColumns, validatePublishSnapshot } from '@/lib/games/publish-game';
 import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
@@ -36,7 +38,7 @@ export type PublishGameActionInput = {
 };
 
 export type PublishGameResponse =
-  | { success: true; id: string; manageToken?: string }
+  | { success: true; id: string; manageToken?: string; grantedRanks?: GrantedRank[] }
   | { success: false; error: string };
 
 /**
@@ -93,7 +95,20 @@ export async function publishGameAction(
       notifyFollowersOfNewGame({ actorId: authorId, gameId: id });
     }
 
-    return { success: true, id, manageToken };
+    // 1kyu is earned by publishing a won, constrained game, so the publish is
+    // the trigger — there is no challenge to hang it off. Runs after
+    // `publishGame`'s transaction so the row just written counts, and only for
+    // a real author: an account-less (or provisional) publisher has no user to
+    // grant a rank to. Such a game stays uncounted even if the author later
+    // claims it via its manage token — claiming does not re-evaluate.
+    const grantedRanks = authorId ? await evaluateRanksAfterCreate(authorId, 'game publish') : [];
+
+    return {
+      success: true,
+      id,
+      manageToken,
+      ...(grantedRanks.length > 0 ? { grantedRanks } : {}),
+    };
   } catch (error) {
     return handleServerActionError(error, '[publishGameAction]');
   }

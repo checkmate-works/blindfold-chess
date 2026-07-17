@@ -7,17 +7,33 @@ export type SeedUser = {
   email: string;
   username: string;
   displayName: string;
+  /**
+   * Grant every rank up to this slug, bypassing the conditions.
+   *
+   * Belt progression is linear — `checkAndGrantRanks` stops at the first unmet
+   * rank — so testing any condition means first satisfying every one below it.
+   * Parking a user one rung short lets that condition be exercised on its own.
+   */
+  rankUpTo?: string;
 };
 
 export const SEED_USERS: SeedUser[] = [
-  { email: 'alice@example.local', username: 'seed-alice', displayName: 'Alice (seed)' },
+  // Sits at 2kyu, so the next thing they earn is 1kyu: publishing one won game
+  // played under a blindfold constraint promotes them, with nothing else in the
+  // way.
+  {
+    email: 'alice@example.local',
+    username: 'seed-alice',
+    displayName: 'Alice (seed)',
+    rankUpTo: '2kyu',
+  },
   { email: 'bob@example.local', username: 'seed-bob', displayName: 'Bob (seed)' },
   { email: 'carol@example.local', username: 'seed-carol', displayName: 'Carol (seed)' },
   { email: 'dave@example.local', username: 'seed-dave', displayName: 'Dave (seed)' },
   { email: 'eve@example.local', username: 'seed-eve', displayName: 'Eve (seed)' },
 ];
 
-const SEED_PASSWORD = 'dev-password';
+export const SEED_PASSWORD = 'dev-password';
 
 /**
  * Idempotently create an auth user + profile pair. The auth_hook in this

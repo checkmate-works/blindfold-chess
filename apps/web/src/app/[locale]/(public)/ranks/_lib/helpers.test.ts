@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { ALL_RANK_SLUGS, BELT_COLOR_HEX, RANK_COLORS } from '@/lib/db/data/ranks';
+import {
+  ALL_RANK_SLUGS,
+  BELT_COLOR_HEX,
+  RANK_COLORS,
+  parseRequirements,
+  ranksSeedData,
+} from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
 import type { Rank } from '@/lib/db/schema';
 
@@ -10,6 +16,7 @@ import {
   buildRequirementItems,
   getBeltColorHex,
   getRankCardState,
+  isRankEarnedByPlaying,
   isWhiteBelt,
   resolveNextRank,
 } from './helpers';
@@ -569,5 +576,48 @@ describe('resolveNextRank', () => {
       leaderboardKey: 'default',
       minScore: 15,
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isRankEarnedByPlaying
+// ---------------------------------------------------------------------------
+
+describe('isRankEarnedByPlaying', () => {
+  const seeded = (slug: string) =>
+    parseRequirements(ranksSeedData.find((r) => r.slug === slug)!.requirements);
+
+  it('is false for the practice-drilled ranks', () => {
+    // Asserted against the real seed rather than fixtures: the dojo CTA switches
+    // on this, so a seed change that moves a rank between "drill it" and "play
+    // it" should surface here.
+    for (const slug of ['5kyu', '4kyu', '3kyu', '2kyu']) {
+      expect(isRankEarnedByPlaying(seeded(slug)), slug).toBe(false);
+    }
+  });
+
+  it('is true for 1kyu — earned at the board, not in practice/', () => {
+    expect(isRankEarnedByPlaying(seeded('1kyu'))).toBe(true);
+  });
+
+  it('is false for a rank with no requirements yet', () => {
+    // "Coming Soon" ranks have nothing to earn, so they must not claim the
+    // play-a-game CTA. 1dan is seeded this way today.
+    expect(isRankEarnedByPlaying([])).toBe(false);
+    expect(isRankEarnedByPlaying(seeded('1dan'))).toBe(false);
+  });
+
+  it('is false when a game requirement is mixed with a practice one', () => {
+    expect(
+      isRankEarnedByPlaying([
+        { type: 'game_publish_win', minCount: 1 },
+        {
+          type: 'challenge_score',
+          menuType: 'square_colors',
+          leaderboardKey: 'default',
+          minScore: 1,
+        },
+      ])
+    ).toBe(false);
   });
 });

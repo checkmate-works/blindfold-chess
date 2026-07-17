@@ -8,6 +8,7 @@ import {
 } from '@/lib/db/data/ranks';
 import type {
   ChallengeScoreRequirement,
+  GamePublishWinRequirement,
   PositionSubmissionCountRequirement,
   RankRequirement,
   RankSlug,
@@ -117,6 +118,33 @@ export function buildPositionSubmissionLabels(
 }
 
 /**
+ * Labels for one requirement, with no hrefs — the summary view used by the
+ * ranks grid, the dojo's next-rank card, and the landing teasers.
+ *
+ * Those three each used to inline `if (challenge_score) … else <position>`,
+ * which silently assumed only two requirement types existed: a third would have
+ * hit the position branch and thrown on `req.positionTypes`. Dispatching in one
+ * place means a new type is one edit here, not four scattered ones.
+ */
+export function buildRequirementLabels(
+  req: RankRequirement,
+  t: Translator
+): (string | RequirementDivider)[] {
+  if (req.type === 'challenge_score') {
+    return [
+      t('challengeScore', {
+        minScore: req.minScore,
+        challengeName: t(`challengeNames.${buildChallengeNameKey(req)}`),
+      }),
+    ];
+  }
+  if (req.type === 'game_publish_win') {
+    return [t('gamePublishWin', { minCount: req.minCount })];
+  }
+  return buildPositionSubmissionLabels(req, t);
+}
+
+/**
  * Build linked requirement entries from rank requirements for use with
  * RequirementsList / NextRankRequirements.
  *
@@ -132,8 +160,40 @@ export function buildRequirementItems(
 ): (RequirementItem | RequirementDivider)[] {
   return requirements.flatMap((req) => {
     if (req.type === 'challenge_score') return [buildChallengeScoreItem(req, locale, t)];
+    if (req.type === 'game_publish_win') return [buildGamePublishWinItem(req, locale, t)];
     return buildPositionSubmissionItems(req, locale, t);
   });
+}
+
+/**
+ * Unlike every other requirement, this one is not earned in `practice/` — it
+ * links to the game setup, since the way to satisfy it is to play the engine
+ * with something hidden and publish the win.
+ */
+function buildGamePublishWinItem(
+  req: GamePublishWinRequirement,
+  locale: string,
+  t: Translator
+): RequirementItem {
+  return {
+    label: t('gamePublishWin', { minCount: req.minCount }),
+    href: `/${locale}/games/new/standard`,
+  };
+}
+
+/**
+ * Whether a rank is earned at the board rather than in `practice/`.
+ *
+ * Everything up to 2kyu is drilled in the practice modules; 1kyu is earned by
+ * publishing a won game. Callers use this to point their CTA somewhere that can
+ * actually satisfy the rank — the practice index is a dead end for 1kyu.
+ *
+ * Keyed on the requirement types, not the slug, so a rank lands on the right
+ * destination by virtue of what it asks for. A rank with no requirements yet
+ * ("Coming Soon") is not earned by playing — there is nothing to earn.
+ */
+export function isRankEarnedByPlaying(requirements: RankRequirement[]): boolean {
+  return requirements.length > 0 && requirements.every((req) => req.type === 'game_publish_win');
 }
 
 export function getBeltColorHex(slug: RankSlug): string {
@@ -207,18 +267,14 @@ export function buildRankTeaserCards(
     const seed = ranksSeedData.find((r) => r.slug === slug);
     const requirements = seed ? parseRequirements(seed.requirements) : [];
     const beltColor = getBeltColorHex(slug);
-    const requirementLabels = requirements.map((req) => {
-      if (req.type === 'challenge_score') {
-        const challengeKey = buildChallengeNameKey(req);
-        return tRanks('challengeScore', {
-          minScore: req.minScore,
-          challengeName: tRanks(`challengeNames.${challengeKey}`),
-        });
-      }
-      // TEASER_SLUGS is 5kyu/4kyu only (both challenge_score), so this
-      // branch is unreached today — kept for type exhaustiveness.
-      return positionSubmissionLabel(req, req.positionTypes[0], tRanks);
-    });
+    // TEASER_SLUGS is 5kyu/4kyu only (both challenge_score today), but go
+    // through the shared dispatcher anyway so a reshuffle of the teaser slugs
+    // cannot reintroduce a wrong-branch crash.
+    const requirementLabels = requirements.flatMap((req) =>
+      buildRequirementLabels(req, tRanks).filter(
+        (label): label is string => typeof label === 'string'
+      )
+    );
     const previousSlug = index > 0 ? TEASER_SLUGS[index - 1] : undefined;
 
     return {
@@ -234,6 +290,23 @@ export function buildRankTeaserCards(
       previousSlug,
     };
   });
+}
+
+/**
+ * Convert a user's achieved rank IDs into a typed slug set, guarding DB slugs
+ * against the known progression order so stale / unknown slugs cannot leak
+ * into the helpers below (notably {@link resolveNextRank}).
+ */
+export function resolveAchievedSlugs(
+  dbRanks: Rank[],
+  achievedRankIds: ReadonlySet<string>
+): ReadonlySet<RankSlug> {
+  return new Set(
+    dbRanks
+      .filter((r) => achievedRankIds.has(r.id))
+      .map((r) => r.slug)
+      .filter((slug): slug is RankSlug => (ALL_RANK_SLUGS as readonly string[]).includes(slug))
+  );
 }
 
 /**

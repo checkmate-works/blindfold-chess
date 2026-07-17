@@ -11,7 +11,7 @@ import type { GrantedRank } from '@/lib/db/data/ranks';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
 
-import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
+import { takeGrantedRanks } from '../_lib/granted-ranks-stash';
 
 type Props = {
   locale: string;
@@ -25,18 +25,10 @@ export function RankAchievementModal({ locale }: Props) {
   const descId = useId();
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(SESSION_STORAGE_KEYS.GRANTED_RANKS);
-    if (stored) {
-      sessionStorage.removeItem(SESSION_STORAGE_KEYS.GRANTED_RANKS);
-      try {
-        const parsed = JSON.parse(stored) as GrantedRank[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setGrantedRanks(parsed);
-          setIsOpen(true);
-        }
-      } catch {
-        // Invalid JSON — ignore
-      }
+    const stashed = takeGrantedRanks();
+    if (stashed.length > 0) {
+      setGrantedRanks(stashed);
+      setIsOpen(true);
     }
   }, []);
 

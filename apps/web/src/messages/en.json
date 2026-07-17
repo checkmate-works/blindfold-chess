@@ -2234,6 +2234,12 @@
       "repertoireCheck": {
         "title": "Kata",
         "description": "Check whether your opening followed your registered kata."
+      },
+      "promotion": {
+        "title": "You have met the conditions for {rankName}",
+        "description": "Publish this game to earn the rank.",
+        "publish": "Publish this game",
+        "skip": "Don't publish"
       }
     },
     "repertoireCheck": {
@@ -5398,6 +5404,7 @@
     "comingSoon": "Coming Soon",
     "challengeScore": "Score {minScore}+ in {challengeName}",
     "submissionCount": "Submit at least {minCount} {itemName}",
+    "gamePublishWin": "Beat the engine with at least one constraint enabled, and publish the game",
     "orDivider": "or",
     "submissionItemNames": {
       "memory": "position-memory problem",
@@ -5432,7 +5439,8 @@
         "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",
         "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids.",
         "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids.",
-        "2kyu": "Able to recognize multiple pieces as a single meaningful chunk."
+        "2kyu": "Able to recognize multiple pieces as a single meaningful chunk.",
+        "1kyu": "Being able to beat the engine under some blindfold constraint."
       },
       "tips": "Tips",
       "tryChallenge": "Meet the requirements",
@@ -5517,6 +5525,7 @@
     "allAchieved": "You have achieved every rank 🎉",
     "viewAllRanks": "View all ranks",
     "viewAllPractices": "View all practices",
+    "startAiGame": "Start a game vs the AI",
     "viewAllGuides": "View all guides",
     "curriculum": {
       "title": "Curriculum",
@@ -5527,7 +5536,8 @@
         "anchorPoints": "Board awareness with anchor points",
         "blindfoldLegalMoves": "Legal move detection in blindfold chess",
         "diagonals": "Computing diagonals and anti-diagonals",
-        "chunking": "Pattern recognition with chunks"
+        "chunking": "Pattern recognition with chunks",
+        "memorisation": "Memorising openings and endgames"
       }
     },
     "help": {
@@ -5610,9 +5620,18 @@
               "Once you've established these anchor points, you're ready to put them into practice.",
               "The greatest advantage of this method is that every single square on the board is either an anchor point itself, or adjacent to one.",
               "For example, suppose your opponent plays 1...Nf6. Here's how you might recognize f6:",
-              "Step 1: Identify the area.\nEven if you can't pinpoint f6 immediately, you can quickly determine that it falls within the top-right area (e5–h8).",
-              "Step 2: Determine the anchor point.\nThe anchor points in this area are e5, h5, e8, and h8. Look for the nearest anchor point by file and rank — in this case, e5 works well.",
-              "Step 3: Check the relative position.\nf6 is one square to the right and one square up from e5 — in other words, diagonally upper-right.",
+              {
+                "heading": "Step 1: Identify the area.",
+                "body": "Even if you can't pinpoint f6 immediately, you can quickly determine that it falls within the top-right area (e5–h8)."
+              },
+              {
+                "heading": "Step 2: Determine the anchor point.",
+                "body": "The anchor points in this area are e5, h5, e8, and h8. Look for the nearest anchor point by file and rank — in this case, e5 works well."
+              },
+              {
+                "heading": "Step 3: Check the relative position.",
+                "body": "f6 is one square to the right and one square up from e5 — in other words, diagonally upper-right."
+              },
               "In this way, instead of constructing a mental image from absolute coordinates like \"the f-file... the 6th rank...\", you recognize positions relatively: \"top-right area, upper-right of e5.\" This reduces cognitive load and allows for more efficient board visualization.",
               "The following article also explains this method."
             ]
@@ -5786,6 +5805,46 @@
             ]
           }
         ]
+      },
+      "1kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "If you have made it this far, you have every basic skill blindfold chess asks for.\nYou can maneuver pieces on a mental board without a physical one in front of you, and you understand what pattern recognition means.",
+              "Pattern recognition is what the middlegame runs on.\nThat is the hardest phase, and the one that loads you up cognitively.\nPattern recognition is hard to acquire, but the more blindfold games you actually play, the more patterns you will start to see.",
+              "Openings and endgames, though — are those not easier to play than the middlegame?",
+              "For openings, settling on a fixed set and memorising the lines you meet most often works for blindfold chess too.\nOnce a line is memorised you answer with book moves without thinking, so it costs you nothing cognitively.\nIt is not unusual to end up coasting almost automatically until you reach the Tabia.",
+              "There are arguments against memorising openings, of course.\nOnes like these:",
+              {
+                "items": [
+                  "Chess is about ideas, not memory",
+                  "The moment your opponent plays something odd you are out of your memorised lines and it is worthless",
+                  "You will have forgotten it all in six months anyway"
+                ]
+              },
+              "Each of those is fair, so nothing here is going to force you to memorise openings.\nBut for anyone who wants to try, there is a feature for it:",
+              "Register the openings you play up there, and you can check at which point one of your blindfold games in this app left the line.\nGive it a go if you feel like it.",
+              "This app's version is a beta and still rough, so pairing it with something like Chessable is a good idea."
+            ]
+          },
+          {
+            "paragraphs": [
+              "The endgame has plenty of patterns worth memorising too.\nHere is one:",
+              "In this position White is certain to promote a pawn.",
+              "Recognise patterns like this — reach a given pawn structure and promotion is guaranteed — and you should be able to reproduce it blindfold with no cognitive load at all.",
+              "That said, games where a specific pattern like this applies are rare.\nThat is where it differs from openings, which you are certain to get use out of: both the motivation to memorise and the payoff are different."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Endgames simply have fewer pieces, which makes them well suited to practising blindfold chess for real.\nRather than memorising a vast catalogue of winning patterns, start with something simple like 2 pawns vs 1 and build your stock of winning patterns from there.",
+              "This app lets you play the AI from any position.",
+              "This is not the level of “know this pawn structure and you win” from the earlier example — it is training aimed at the level of “get any material edge and you win”.\nKeep at it and you may find yourself confident that a pawn up is a win, and that a rook ending is one you will not lose.",
+              "Everyone has their own way with endgames, so please take it on in whatever way suits you."
+            ]
+          }
+        ]
       }
     },
     "inlineLinks": {
@@ -5817,6 +5876,10 @@
         "coordinateConfusionLabel": "About coordinate confusion",
         "quadrantsLabel": "Quadrant Training",
         "5kyuGuideLabel": "View the 5th Kyū guide"
+      },
+      "1kyu": {
+        "repertoiresLabel": "Kata (memorise your openings)",
+        "newGameFromPositionLabel": "Play the AI from 2 pawns vs 1"
       }
     },
     "visualAids": {

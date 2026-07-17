@@ -5,6 +5,7 @@ import {
   BELT_COLOR_HEX,
   RANK_COLORS,
   isChallengeScoreRequirement,
+  isGamePublishWinRequirement,
   isMukyuSlug,
   isPositionSubmissionCountRequirement,
   parseRequirements,
@@ -339,6 +340,54 @@ describe('ranksSeedData – 2kyu', () => {
   it('should have level 40 and green color', () => {
     expect(entry2kyu!.level).toBe(40);
     expect(entry2kyu!.color).toBe(RANK_COLORS['2kyu']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isGamePublishWinRequirement / 1kyu seed
+// ---------------------------------------------------------------------------
+
+describe('isGamePublishWinRequirement', () => {
+  it('should return true for a valid GamePublishWinRequirement', () => {
+    expect(isGamePublishWinRequirement({ type: 'game_publish_win', minCount: 1 })).toBe(true);
+  });
+
+  it.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['a string', 'game_publish_win'],
+    ['an empty object', {}],
+    ['a wrong type tag', { type: 'challenge_score', minCount: 1 }],
+    ['a missing minCount', { type: 'game_publish_win' }],
+    ['a non-numeric minCount', { type: 'game_publish_win', minCount: '1' }],
+  ])('should return false for %s', (_label, value) => {
+    expect(isGamePublishWinRequirement(value)).toBe(false);
+  });
+});
+
+describe('1kyu seed', () => {
+  const entry1kyu = ranksSeedData.find((r) => r.slug === '1kyu');
+
+  it('requires one published, constrained win', () => {
+    expect(entry1kyu).toBeDefined();
+    expect(entry1kyu!.requirements).toHaveLength(1);
+    const [req] = entry1kyu!.requirements;
+    expect(req.type).toBe('game_publish_win');
+    if (req.type !== 'game_publish_win') return;
+    expect(req.minCount).toBe(1);
+  });
+
+  it('parses its seeded requirements back out — the guard and the seed agree', () => {
+    // `parseRequirements` DROPS requirements it does not recognise rather than
+    // failing, and an empty list reads as "conditions not defined yet" — which
+    // makes the rank Coming Soon and lets the progression walk straight past it.
+    // So a seed whose type guard was never added would silently un-gate 1kyu
+    // instead of erroring. This pins the two together.
+    expect(parseRequirements(entry1kyu!.requirements)).toEqual(entry1kyu!.requirements);
+  });
+
+  it('is no longer a "Coming Soon" rank', () => {
+    expect(parseRequirements(entry1kyu!.requirements).length).toBeGreaterThan(0);
   });
 });
 

@@ -25,10 +25,11 @@ import { createClient } from '@/lib/supabase/server';
 
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import {
-  buildChallengeNameKey,
-  buildPositionSubmissionLabels,
   buildRequirementItems,
+  buildRequirementLabels,
   getBeltColorHex,
+  isRankEarnedByPlaying,
+  resolveAchievedSlugs,
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
@@ -77,15 +78,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
 
   const dbRanks = await getAllRanks();
   const achievedRankIds = user ? await getUserAchievedRankIds(user.id) : new Set<string>();
-
-  // Build a typed ReadonlySet<RankSlug>, guarding DB slugs against the known
-  // progression order so stale / unknown slugs cannot leak into helpers.
-  const achievedSlugs: ReadonlySet<RankSlug> = new Set(
-    dbRanks
-      .filter((r) => achievedRankIds.has(r.id))
-      .map((r) => r.slug)
-      .filter((slug): slug is RankSlug => (ALL_RANK_SLUGS as readonly string[]).includes(slug))
-  );
+  const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
 
   const { current, next } = resolveNextRank(dbRanks, achievedSlugs);
 
@@ -104,18 +97,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
         beltColor: getBeltColorHex(next.slug),
         rankName: tRanks(`rankNames.${next.slug}`),
         state: (next.requirements.length === 0 ? 'coming-soon' : 'next') as 'next' | 'coming-soon',
-        requirementLabels: next.requirements.flatMap((req) => {
-          if (req.type === 'challenge_score') {
-            const challengeKey = buildChallengeNameKey(req);
-            return [
-              tRanks('challengeScore', {
-                minScore: req.minScore,
-                challengeName: tRanks(`challengeNames.${challengeKey}`),
-              }),
-            ];
-          }
-          return buildPositionSubmissionLabels(req, tRanks);
-        }),
+        requirementLabels: next.requirements.flatMap((req) => buildRequirementLabels(req, tRanks)),
         requirementsHeading: tRanks('requirements'),
         comingSoonLabel: tRanks('comingSoon'),
         hideRequirements: true,
@@ -127,6 +109,10 @@ export default async function DojoPage({ params }: LocalePageProps) {
   // by `buildRequirementItems`).
   const nextRequirementItems = next ? buildRequirementItems(next.requirements, locale, tRanks) : [];
   const nextBeltColor = next ? getBeltColorHex(next.slug) : getBeltColorHex('mukyu');
+
+  // Send the reader where the next rank is actually earned — the practice index
+  // is a dead end for a rank you earn at the board.
+  const nextIsEarnedByPlaying = next !== null && isRankEarnedByPlaying(next.requirements);
 
   const helpSteps: HelpStep[] = [
     {
@@ -196,10 +182,14 @@ export default async function DojoPage({ params }: LocalePageProps) {
                 </p>
               )}
 
-              {/* Centered "View all practices" link directly below the list */}
+              {/* Centered CTA directly below the list — the practice index, or
+                  the game setup once the next rank is earned by playing. */}
               <div className="flex justify-center">
-                <Link href={`/${locale}/practice`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
-                  {t('viewAllPractices')}
+                <Link
+                  href={nextIsEarnedByPlaying ? `/${locale}/games/new` : `/${locale}/practice`}
+                  className={`text-sm ${TEXT_LINK_CLASSES}`}
+                >
+                  {nextIsEarnedByPlaying ? t('startAiGame') : t('viewAllPractices')}
                 </Link>
               </div>
             </div>

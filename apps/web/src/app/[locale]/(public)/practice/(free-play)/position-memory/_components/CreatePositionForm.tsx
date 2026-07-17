@@ -18,7 +18,7 @@ import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/
 import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 import { EMPTY_BOARD_FEN } from '@/app/[locale]/(public)/practice/(free-play)/_lib/board-editor-constants';
 import { buildDefaultPracticeTitle } from '@/app/[locale]/(public)/practice/(free-play)/_lib/default-title';
-import { SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/practice/_lib/session-storage-keys';
+import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
 
 import { createPosition } from '../_actions/createPosition';
 import { PositionFormFields } from './PositionFormFields';
@@ -182,12 +182,7 @@ export function CreatePositionForm({
       // Stash any belt-rank grants triggered by this submission so the
       // RankAchievementModal mounted on the destination page can pick them
       // up. Mirrors the challenge-completion flow.
-      if (result.grantedRanks && result.grantedRanks.length > 0) {
-        sessionStorage.setItem(
-          SESSION_STORAGE_KEYS.GRANTED_RANKS,
-          JSON.stringify(result.grantedRanks)
-        );
-      }
+      stashGrantedRanks(result.grantedRanks);
 
       // flushSync ensures the re-render (isDirty → false) completes
       // before router.push triggers the navigation guard check.

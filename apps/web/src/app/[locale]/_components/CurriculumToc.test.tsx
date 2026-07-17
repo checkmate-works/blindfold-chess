@@ -184,7 +184,7 @@ describe('CurriculumToc', () => {
 
   it('renders a coming-soon placeholder row (non-clickable) for ranks with empty sections', () => {
     const { container } = renderToc();
-    for (const slug of ['1kyu', '1dan'] as const) {
+    for (const slug of ['1dan'] as const) {
       const row = container.querySelector(`[data-rank="${slug}"]`);
       expect(row).not.toBeNull();
       expect(row!.getAttribute('data-disabled')).toBe('true');
@@ -192,6 +192,17 @@ describe('CurriculumToc', () => {
       // Non-clickable coming-soon rows must not contain an anchor.
       expect(row!.querySelector('a')).toBeNull();
     }
+  });
+
+  it('renders 1kyu as a real section row, not a placeholder', () => {
+    // Its curriculum entry sat empty while its guide shipped, so the dojo went
+    // on advertising "Coming soon" for a rank you could already study.
+    const { container } = renderToc();
+    const row = container.querySelector('[data-rank="1kyu"]');
+    expect(row).not.toBeNull();
+    expect(row!.getAttribute('data-disabled')).toBeNull();
+    expect(row!.textContent).not.toContain('Coming soon');
+    expect(row!.querySelector('a')).not.toBeNull();
   });
 
   it('renders section titles for ranks with defined sections', () => {

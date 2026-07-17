@@ -2,13 +2,44 @@ import React from 'react';
 import type { ReactNode } from 'react';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
-import type { GuidePage } from '@/lib/guides';
+import { isGuideListParagraph } from '@/lib/guides';
+import type { GuidePage, GuideParagraph } from '@/lib/guides';
 
 import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
 
 import { getGuideInlineLink } from '../paragraphInlineLinks';
 import { getVisualAid } from '../paragraphVisualAids';
 import type { Translator } from './context';
+
+/**
+ * The prose part of a paragraph block, dispatched on the paragraph's shape
+ * (plain string / bulleted list / heading + body — see {@link GuideParagraph}).
+ *
+ * `whitespace-pre-line` keeps authored `\n` as a line break while still
+ * collapsing the incidental indentation of the JSON message files.
+ */
+function renderParagraphProse(paragraph: GuideParagraph): ReactNode {
+  if (typeof paragraph === 'string') {
+    return <p className="whitespace-pre-line text-foreground/80">{paragraph}</p>;
+  }
+  if (isGuideListParagraph(paragraph)) {
+    return (
+      <ul className="ml-6 list-disc space-y-2 text-foreground/80">
+        {paragraph.items.map((item, i) => (
+          <li key={i} className="whitespace-pre-line">
+            {item}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <p className="whitespace-pre-line text-foreground/80">
+      <strong className="block">{paragraph.heading}</strong>
+      {paragraph.body}
+    </p>
+  );
+}
 
 /**
  * Render a single paragraph-sized block: the paragraph prose itself, its
@@ -27,7 +58,7 @@ function renderParagraphBlock({
   rankSlug: RankSlug;
   pageNumber: number;
   index: number;
-  paragraph: string;
+  paragraph: GuideParagraph;
   tGuides: Translator;
   locale: string;
 }): ReactNode {
@@ -35,14 +66,7 @@ function renderParagraphBlock({
 
   return (
     <React.Fragment key={index}>
-      {paragraph.includes('\n') ? (
-        <p className="text-foreground/80">
-          <strong className="block">{paragraph.split('\n')[0]}</strong>
-          {paragraph.split('\n').slice(1).join('\n')}
-        </p>
-      ) : (
-        <p className="text-foreground/80">{paragraph}</p>
-      )}
+      {renderParagraphProse(paragraph)}
       {getVisualAid(rankSlug, pageNumber, index)}
       {linkInfo && (
         <>

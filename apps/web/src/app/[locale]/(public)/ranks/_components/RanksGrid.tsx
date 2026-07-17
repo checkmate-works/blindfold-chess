@@ -11,12 +11,7 @@ import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCurrentUserAchievedRankIds } from '../_actions/getCurrentUserAchievedRankIds';
-import {
-  buildChallengeNameKey,
-  buildPositionSubmissionLabels,
-  getBeltColorHex,
-  getRankCardState,
-} from '../_lib/helpers';
+import { buildRequirementLabels, getBeltColorHex, getRankCardState } from '../_lib/helpers';
 import { RankCard } from './RankCard';
 
 type Props = {
@@ -104,18 +99,7 @@ export function RanksGrid({ locale, dbRanks }: Props) {
           isFirstRank
         );
 
-        const requirementLabels = requirements.flatMap((req) => {
-          if (req.type === 'challenge_score') {
-            const challengeKey = buildChallengeNameKey(req);
-            return [
-              t('challengeScore', {
-                minScore: req.minScore,
-                challengeName: t(`challengeNames.${challengeKey}`),
-              }),
-            ];
-          }
-          return buildPositionSubmissionLabels(req, t);
-        });
+        const requirementLabels = requirements.flatMap((req) => buildRequirementLabels(req, t));
 
         return (
           <RankCard

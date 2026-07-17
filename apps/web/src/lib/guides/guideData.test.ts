@@ -29,8 +29,10 @@ describe('getRankGuide', () => {
     expect(guide!.format).toBe('flat');
   });
 
-  it('returns null for a rank without guide data (1kyu)', () => {
-    expect(getRankGuide(realPages, '1kyu')).toBeNull();
+  it('returns a flat guide for the 1kyu rank (opening memorisation)', () => {
+    const guide = getRankGuide(realPages, '1kyu');
+    expect(guide).not.toBeNull();
+    expect(guide!.format).toBe('flat');
   });
 
   it('returns null for a rank without guide data (1dan)', () => {

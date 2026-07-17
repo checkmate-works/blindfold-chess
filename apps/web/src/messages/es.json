@@ -2230,6 +2230,12 @@
       "repertoireCheck": {
         "title": "Kata",
         "description": "Comprueba si tu apertura siguió tu kata registrado."
+      },
+      "promotion": {
+        "title": "Has cumplido las condiciones para {rankName}",
+        "description": "Publica esta partida para conseguir el rango.",
+        "publish": "Publicar esta partida",
+        "skip": "No publicar"
       }
     },
     "repertoireCheck": {
@@ -5387,6 +5393,7 @@
     "comingSoon": "Próximamente",
     "challengeScore": "Puntuación {minScore}+ en {challengeName}",
     "submissionCount": "Publica al menos {minCount} {itemName}",
+    "gamePublishWin": "Gana al motor con al menos una restricción activada y publica la partida",
     "orDivider": "o",
     "submissionItemNames": {
       "memory": "problema de memoria de posiciones",
@@ -5421,7 +5428,8 @@
         "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",
         "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales.",
         "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales.",
-        "2kyu": "Ser capaz de reconocer varias piezas como una sola unidad con significado (un «chunk»)."
+        "2kyu": "Ser capaz de reconocer varias piezas como una sola unidad con significado (un «chunk»).",
+        "1kyu": "Ser capaz de ganar al motor bajo alguna restricción de ajedrez a ciegas."
       },
       "tips": "Consejos",
       "tryChallenge": "Cumple los requisitos",
@@ -5506,6 +5514,7 @@
     "allAchieved": "¡Has conseguido todos los rangos! 🎉",
     "viewAllRanks": "Ver todos los rangos",
     "viewAllPractices": "Ver todas las prácticas",
+    "startAiGame": "Empezar una partida contra la IA",
     "viewAllGuides": "Ver todas las guías",
     "curriculum": {
       "title": "Temario",
@@ -5516,7 +5525,8 @@
         "anchorPoints": "Percepción del tablero con puntos de anclaje",
         "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
         "diagonals": "Cálculo de diagonales y antidiagonales",
-        "chunking": "Reconocimiento de patrones con chunks"
+        "chunking": "Reconocimiento de patrones con chunks",
+        "memorisation": "Memorizar aperturas y finales"
       }
     },
     "help": {
@@ -5599,9 +5609,18 @@
               "Una vez que hayas establecido estos puntos de anclaje, estás listo para ponerlos en práctica.",
               "La mayor ventaja de este método es que cada casilla del tablero es un punto de anclaje en sí misma, o está adyacente a uno.",
               "Por ejemplo, supongamos que tu oponente juega 1...Cf6. Así es como podrías reconocer f6:",
-              "Paso 1: Identificar el área.\nIncluso si no puedes localizar f6 inmediatamente, puedes determinar rápidamente que cae dentro del área superior derecha (e5–h8).",
-              "Paso 2: Determinar el punto de anclaje.\nLos puntos de anclaje en esta área son e5, h5, e8 y h8. Busca el punto de anclaje más cercano por columna y fila — en este caso, e5 funciona bien.",
-              "Paso 3: Verificar la posición relativa.\nf6 está una casilla a la derecha y una casilla arriba de e5 — es decir, diagonalmente arriba a la derecha.",
+              {
+                "heading": "Paso 1: Identificar el área.",
+                "body": "Incluso si no puedes localizar f6 inmediatamente, puedes determinar rápidamente que cae dentro del área superior derecha (e5–h8)."
+              },
+              {
+                "heading": "Paso 2: Determinar el punto de anclaje.",
+                "body": "Los puntos de anclaje en esta área son e5, h5, e8 y h8. Busca el punto de anclaje más cercano por columna y fila — en este caso, e5 funciona bien."
+              },
+              {
+                "heading": "Paso 3: Verificar la posición relativa.",
+                "body": "f6 está una casilla a la derecha y una casilla arriba de e5 — es decir, diagonalmente arriba a la derecha."
+              },
               "De esta manera, en lugar de construir una imagen mental a partir de coordenadas absolutas como \"la columna f... la fila 6...\", reconoces posiciones de forma relativa: \"área superior derecha, arriba a la derecha de e5.\" Esto reduce la carga cognitiva y permite una visualización del tablero más eficiente.",
               "El siguiente artículo también explica este método."
             ]
@@ -5775,6 +5794,46 @@
             ]
           }
         ]
+      },
+      "1kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "Si has llegado hasta aquí, ya tienes todas las habilidades básicas que exige el ajedrez a ciegas.\nPuedes maniobrar las piezas en un tablero mental sin tener uno físico delante, y entiendes qué significa el reconocimiento de patrones.",
+              "El reconocimiento de patrones es lo que sostiene el medio juego.\nEsa es la fase más difícil, y la que más carga cognitiva impone.\nAdquirir ese reconocimiento cuesta, pero cuantas más partidas a ciegas juegues de verdad, más patrones empezarás a ver.",
+              "Las aperturas y los finales, en cambio, ¿no son más fáciles de jugar que el medio juego?",
+              "En las aperturas, fijar un repertorio limitado y memorizar las líneas que más te encuentras también funciona en el ajedrez a ciegas.\nUna vez memorizada una línea, respondes con jugadas de libro sin pensar, así que no te cuesta nada a nivel cognitivo.\nNo es raro acabar avanzando casi en automático hasta llegar a la Tabia.",
+              "Por supuesto, hay argumentos en contra de memorizar aperturas.\nComo estos:",
+              {
+                "items": [
+                  "El ajedrez va de ideas, no de memoria",
+                  "En cuanto tu rival juega algo raro te sales de las líneas memorizadas y no sirve de nada",
+                  "De todos modos lo habrás olvidado todo en seis meses"
+                ]
+              },
+              "Todos me parecen razonables, así que aquí nadie te va a obligar a memorizar aperturas.\nPero para quien quiera intentarlo, hay una función para ello:",
+              "Registra ahí arriba las aperturas que juegas y podrás comprobar en qué punto una de tus partidas a ciegas en esta aplicación se salió de la línea.\nPruébalo si te apetece.",
+              "La versión de esta aplicación está en beta y aún es tosca, así que combinarla con algo como Chessable es buena idea."
+            ]
+          },
+          {
+            "paragraphs": [
+              "El final también tiene muchos patrones que vale la pena memorizar.\nPor ejemplo, este:",
+              "En esta posición las blancas coronan con seguridad.",
+              "Reconoce patrones así — llega a cierta estructura de peones y la coronación está garantizada — y deberías poder reproducirlo a ciegas sin carga cognitiva alguna.",
+              "Dicho esto, las partidas donde se aplica un patrón concreto como este son raras.\nAhí está la diferencia con las aperturas, que seguro que aprovechas: tanto la motivación para memorizar como el rendimiento son distintos."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Los finales simplemente tienen menos piezas, lo que los hace muy adecuados para practicar ajedrez a ciegas de verdad.\nEn lugar de memorizar un catálogo enorme de patrones ganadores, empieza por algo simple como 2 peones contra 1 y ve ampliando tu repertorio de patrones ganadores.",
+              "Esta aplicación te permite jugar contra la IA desde cualquier posición.",
+              "Esto no es el nivel de «conoce esta estructura de peones y ganas» del ejemplo anterior: es un entrenamiento que apunta al nivel de «consigue cualquier ventaja material y ganas».\nSi perseveras, puede que llegues a confiar en que un peón de más es victoria, y en que un final de torres no lo vas a perder.",
+              "Cada cual tiene su manera con los finales, así que abórdalo del modo que mejor te encaje."
+            ]
+          }
+        ]
       }
     },
     "inlineLinks": {
@@ -5806,6 +5865,10 @@
         "coordinateConfusionLabel": "Sobre la confusión de coordenadas",
         "quadrantsLabel": "Entrenamiento de Cuadrantes",
         "5kyuGuideLabel": "Ver la guía del 5.º Kyū"
+      },
+      "1kyu": {
+        "repertoiresLabel": "Kata (memoriza tus aperturas)",
+        "newGameFromPositionLabel": "Jugar contra la IA desde 2 peones contra 1"
       }
     },
     "visualAids": {

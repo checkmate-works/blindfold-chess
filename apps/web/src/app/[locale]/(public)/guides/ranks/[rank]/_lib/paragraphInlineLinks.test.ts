@@ -125,6 +125,8 @@ describe('getGuideInlineLink', () => {
       ['2kyu', 3, 3],
       ['2kyu', 4, 1],
       ['2kyu', 4, 3],
+      ['1kyu', 1, 6],
+      ['1kyu', 3, 1],
     ];
 
     // Keep in sync with SUPPORTED_LOCALES in @/config. Every locale shipped

@@ -48,12 +48,15 @@ import { KingsideCastledBoard } from '@/app/[locale]/(public)/ranks/_components/
 import { KnightFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/KnightFormulaBlock';
 import { KnightMovementBoard } from '@/app/[locale]/(public)/ranks/_components/KnightMovementBoard';
 import { MiniBoard } from '@/app/[locale]/(public)/ranks/_components/MiniBoard';
+import { PawnBreakthroughBoard } from '@/app/[locale]/(public)/ranks/_components/PawnBreakthroughBoard';
+import { PawnBreakthroughLine } from '@/app/[locale]/(public)/ranks/_components/PawnBreakthroughLine';
 import { QuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/QuadrantBoard';
 import { QueenMovementBoard } from '@/app/[locale]/(public)/ranks/_components/QueenMovementBoard';
 import { RookMovementBoard } from '@/app/[locale]/(public)/ranks/_components/RookMovementBoard';
 import { ScatteredPawnsBoard } from '@/app/[locale]/(public)/ranks/_components/ScatteredPawnsBoard';
 import { Step3Board } from '@/app/[locale]/(public)/ranks/_components/Step3Board';
 import { SymmetryBoard } from '@/app/[locale]/(public)/ranks/_components/SymmetryBoard';
+import { TwoPawnsVsOneBoard } from '@/app/[locale]/(public)/ranks/_components/TwoPawnsVsOneBoard';
 
 type VisualAidKey = `${RankSlug}:${number}:${number}`;
 
@@ -118,6 +121,15 @@ const VISUAL_AID_MAP: Record<VisualAidKey, ReactNode> = {
   // counterpart. Both link to an instant "custom" problem of the same FEN.
   '2kyu:1:3': <ScatteredPawnsBoard />,
   '2kyu:2:3': <KingsideCastledBoard />,
+  // 1kyu guide - page 2 (endgame patterns worth memorising): the pawn
+  // breakthrough position, followed by its forced winning line as a
+  // click-to-replay move reference.
+  '1kyu:2:0': <PawnBreakthroughBoard />,
+  '1kyu:2:1': <PawnBreakthroughLine />,
+  // 1kyu guide - page 3: the 2-vs-1 pawn endgame the reader is invited to play
+  // against the AI. Sits between the paragraph and the link card, so the
+  // position is visible before the click.
+  '1kyu:3:1': <TwoPawnsVsOneBoard />,
 };
 
 export function getVisualAid(

@@ -8,10 +8,11 @@ describe('enumerateGuideRoutes', () => {
   it('emits a root entry for every rank that has guide content', () => {
     const routes = enumerateGuideRoutes(enMessages.guides.pages as Record<string, unknown>);
     const roots = routes.filter((r) => r.kind === 'root').map((r) => r.slug);
-    // Real i18n data currently has mukyu, 5kyu, 4kyu, 3kyu, 2kyu as flat guides.
-    expect(roots).toEqual(expect.arrayContaining(['mukyu', '5kyu', '4kyu', '3kyu', '2kyu']));
+    // Real i18n data currently has mukyu, 5kyu, 4kyu, 3kyu, 2kyu, 1kyu as flat guides.
+    expect(roots).toEqual(
+      expect.arrayContaining(['mukyu', '5kyu', '4kyu', '3kyu', '2kyu', '1kyu'])
+    );
     // Ranks without guide data must be absent.
-    expect(roots).not.toContain('1kyu');
     expect(roots).not.toContain('1dan');
   });
 
