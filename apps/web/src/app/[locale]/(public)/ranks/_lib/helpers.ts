@@ -117,6 +117,30 @@ export function buildPositionSubmissionLabels(
 }
 
 /**
+ * Labels for one requirement, with no hrefs — the summary view used by the
+ * ranks grid, the dojo's next-rank card, and the landing teasers.
+ *
+ * Those three each used to inline `if (challenge_score) … else <position>`,
+ * which silently assumed only two requirement types existed: a third would have
+ * hit the position branch and thrown on `req.positionTypes`. Dispatching in one
+ * place means a new type is one edit here, not four scattered ones.
+ */
+export function buildRequirementLabels(
+  req: RankRequirement,
+  t: Translator
+): (string | RequirementDivider)[] {
+  if (req.type === 'challenge_score') {
+    return [
+      t('challengeScore', {
+        minScore: req.minScore,
+        challengeName: t(`challengeNames.${buildChallengeNameKey(req)}`),
+      }),
+    ];
+  }
+  return buildPositionSubmissionLabels(req, t);
+}
+
+/**
  * Build linked requirement entries from rank requirements for use with
  * RequirementsList / NextRankRequirements.
  *
@@ -207,18 +231,14 @@ export function buildRankTeaserCards(
     const seed = ranksSeedData.find((r) => r.slug === slug);
     const requirements = seed ? parseRequirements(seed.requirements) : [];
     const beltColor = getBeltColorHex(slug);
-    const requirementLabels = requirements.map((req) => {
-      if (req.type === 'challenge_score') {
-        const challengeKey = buildChallengeNameKey(req);
-        return tRanks('challengeScore', {
-          minScore: req.minScore,
-          challengeName: tRanks(`challengeNames.${challengeKey}`),
-        });
-      }
-      // TEASER_SLUGS is 5kyu/4kyu only (both challenge_score), so this
-      // branch is unreached today — kept for type exhaustiveness.
-      return positionSubmissionLabel(req, req.positionTypes[0], tRanks);
-    });
+    // TEASER_SLUGS is 5kyu/4kyu only (both challenge_score today), but go
+    // through the shared dispatcher anyway so a reshuffle of the teaser slugs
+    // cannot reintroduce a wrong-branch crash.
+    const requirementLabels = requirements.flatMap((req) =>
+      buildRequirementLabels(req, tRanks).filter(
+        (label): label is string => typeof label === 'string'
+      )
+    );
     const previousSlug = index > 0 ? TEASER_SLUGS[index - 1] : undefined;
 
     return {
