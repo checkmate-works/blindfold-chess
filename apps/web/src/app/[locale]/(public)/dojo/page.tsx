@@ -18,6 +18,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide } from '@/lib/guides';
@@ -113,6 +114,16 @@ export default async function DojoPage({ params }: LocalePageProps) {
   // Send the reader where the next rank is actually earned — the practice index
   // is a dead end for a rank you earn at the board.
   const nextIsEarnedByPlaying = next !== null && isRankEarnedByPlaying(next.requirements);
+
+  // Curriculum truncation cutoff, and whether it actually hides anything:
+  // the "view all guides" link below the TOC is redundant once every rank
+  // with curriculum content is already visible (the guides index would show
+  // the identical list).
+  const maxVisibleSlug = next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1];
+  const maxVisibleIndex = ALL_RANK_SLUGS.indexOf(maxVisibleSlug);
+  const hasHiddenCurriculum = CURRICULUM.some(
+    ({ slug, sections }) => sections.length > 0 && ALL_RANK_SLUGS.indexOf(slug) > maxVisibleIndex
+  );
 
   const helpSteps: HelpStep[] = [
     {
@@ -219,17 +230,23 @@ export default async function DojoPage({ params }: LocalePageProps) {
         <CurriculumToc
           achievedSlugs={achievedSlugs}
           nextSlug={next?.slug ?? null}
-          maxVisibleSlug={next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1]}
+          maxVisibleSlug={maxVisibleSlug}
           rankName={(slug) => tRanks(`rankNames.${slug}`)}
           sectionTitle={(key) => t(`curriculum.sections.${key}`)}
           achievedLabel={t('curriculum.achieved')}
           guideHrefBySlug={guideHrefBySlug}
         />
-        <div className="flex justify-center">
-          <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
-            {t('viewAllGuides')}
-          </Link>
-        </div>
+        {/* "View all guides" only earns its place while the truncation is
+            actually hiding curriculum content — for a player far enough along
+            (e.g. 1kyu holders, next=1dan) the TOC above already IS the full
+            guide list, and the link would open an identical page. */}
+        {hasHiddenCurriculum && (
+          <div className="flex justify-center">
+            <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+              {t('viewAllGuides')}
+            </Link>
+          </div>
+        )}
       </section>
 
       <AdSlot slot="content-bottom" />
