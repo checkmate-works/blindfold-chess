@@ -37,6 +37,7 @@ type RenderOpts = {
   maxVisibleSlug?: RankSlug | null;
   guideHrefBySlug?: Partial<Record<RankSlug, string | null>>;
   userAware?: boolean;
+  showComingSoonPlaceholders?: boolean;
 };
 
 function renderToc({
@@ -45,6 +46,7 @@ function renderToc({
   maxVisibleSlug,
   guideHrefBySlug = buildGuideHrefs(),
   userAware = true,
+  showComingSoonPlaceholders,
 }: RenderOpts = {}) {
   const userProps = userAware
     ? {
@@ -61,6 +63,7 @@ function renderToc({
       emptyLabel="Coming soon"
       achievedLabel="Achieved"
       guideHrefBySlug={guideHrefBySlug}
+      showComingSoonPlaceholders={showComingSoonPlaceholders}
     />
   );
 }
@@ -192,6 +195,23 @@ describe('CurriculumToc', () => {
       // Non-clickable coming-soon rows must not contain an anchor.
       expect(row!.querySelector('a')).toBeNull();
     }
+  });
+
+  it('omits ranks with empty sections entirely when showComingSoonPlaceholders is false', () => {
+    const { container } = renderToc({ showComingSoonPlaceholders: false });
+    for (const slug of ['1dan'] as const) {
+      expect(container.querySelector(`[data-rank="${slug}"]`)).toBeNull();
+    }
+    expect(screen.queryByText('Coming soon')).toBeNull();
+    // Ranks with real sections are unaffected.
+    expect(container.querySelector('[data-rank="1kyu"]')).not.toBeNull();
+  });
+
+  it('renders one <li> per rank fewer when placeholders are suppressed', () => {
+    const { container } = renderToc({ showComingSoonPlaceholders: false });
+    const ol = container.querySelector('ol')!;
+    const expectedRows = CURRICULUM.reduce((sum, { sections }) => sum + sections.length, 0);
+    expect(ol.querySelectorAll(':scope > li').length).toBe(expectedRows);
   });
 
   it('renders 1kyu as a real section row, not a placeholder', () => {

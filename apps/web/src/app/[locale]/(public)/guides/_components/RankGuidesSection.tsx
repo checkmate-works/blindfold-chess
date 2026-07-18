@@ -16,6 +16,10 @@ type RankGuidesSectionProps = {
  * of contents. Reuses the shared `CurriculumToc` component in plain mode:
  * no user-dependent data (no achievement marks, no next-rank highlight,
  * no truncation), so the page stays SSR-friendly and public.
+ *
+ * `showComingSoonPlaceholders={false}` — this is a content index, not a
+ * progression roadmap (that's Dojo's job), so a rank with no curriculum yet
+ * is simply omitted rather than advertised as "coming soon".
  */
 export async function RankGuidesSection({ locale }: RankGuidesSectionProps) {
   const tGuides = await getTranslations({ locale, namespace: 'guides' });
@@ -46,6 +50,7 @@ export async function RankGuidesSection({ locale }: RankGuidesSectionProps) {
         emptyLabel={tDojo('curriculum.empty')}
         achievedLabel={tDojo('curriculum.achieved')}
         guideHrefBySlug={guideHrefBySlug}
+        showComingSoonPlaceholders={false}
       />
     </section>
   );

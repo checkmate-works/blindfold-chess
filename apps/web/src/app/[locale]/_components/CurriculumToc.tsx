@@ -37,6 +37,15 @@ type CurriculumTocProps = {
    * non-clickable placeholder.
    */
   guideHrefBySlug: Readonly<Partial<Record<RankSlug, string | null>>>;
+  /**
+   * Whether to render a "coming soon" placeholder row for ranks whose
+   * `sections` list is empty. Defaults to `true` (Dojo's use case: the TOC
+   * doubles as a progression roadmap, so an empty rank is still worth a row
+   * showing what's ahead). The guides index sets this `false` — it is a
+   * content listing, not a roadmap, so a rank with nothing to read yet is
+   * simply omitted rather than advertised.
+   */
+  showComingSoonPlaceholders?: boolean;
 };
 
 /**
@@ -73,6 +82,7 @@ export function CurriculumToc({
   emptyLabel,
   achievedLabel,
   guideHrefBySlug,
+  showComingSoonPlaceholders = true,
 }: CurriculumTocProps) {
   type Row =
     | {
@@ -110,7 +120,9 @@ export function CurriculumToc({
     const href = guideHrefBySlug[slug] ?? null;
 
     if (sections.length === 0) {
-      rows.push({ kind: 'placeholder', slug, isAchieved, isNext });
+      if (showComingSoonPlaceholders) {
+        rows.push({ kind: 'placeholder', slug, isAchieved, isNext });
+      }
       continue;
     }
     for (const section of sections) {
