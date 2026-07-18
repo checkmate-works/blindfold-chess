@@ -50,8 +50,8 @@ describe('RankAchievementModal', () => {
 
     renderModal();
 
+    expect(screen.getByText('Rank Achieved!')).toBeInTheDocument();
     expect(screen.getByText('5th Kyū')).toBeInTheDocument();
-    expect(screen.queryByText(/also cleared/i)).not.toBeInTheDocument();
   });
 
   it('headlines the highest-level rank, not the first array element, when several are granted', () => {
@@ -73,7 +73,7 @@ describe('RankAchievementModal', () => {
     expect(screen.queryByText('1st Kyū')).not.toBeInTheDocument();
   });
 
-  it('mentions the lower ranks cleared along the way, in progression order', () => {
+  it('does not mention lower ranks cleared in the same pass — skip-grants made that routine', () => {
     const granted: GrantedRank[] = [
       { slug: '2kyu', level: 40, color: 'green' },
       { slug: '1kyu', level: 50, color: 'brown' },
@@ -83,12 +83,10 @@ describe('RankAchievementModal', () => {
 
     renderModal();
 
-    const note = screen.getByText(/also cleared/i);
-    expect(note.textContent).toContain('2nd Kyū');
-    expect(note.textContent).toContain('1st Kyū');
-    expect(note.textContent).not.toContain('1st Dan');
-    // 2kyu mentioned before 1kyu — natural progression order, not reversed.
-    expect(note.textContent!.indexOf('2nd Kyū')).toBeLessThan(note.textContent!.indexOf('1st Kyū'));
+    expect(screen.getByText('1st Dan')).toBeInTheDocument();
+    expect(screen.queryByText(/also cleared/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('2nd Kyū')).not.toBeInTheDocument();
+    expect(screen.queryByText('1st Kyū')).not.toBeInTheDocument();
   });
 
   it('clears the stash so a reload does not re-show the celebration', () => {

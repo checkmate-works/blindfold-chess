@@ -36,12 +36,11 @@ export function RankAchievementModal({ locale }: Props) {
 
   // `grantedRanks` arrives in the level-ascending order checkAndGrantRanks
   // pushed them in — a single trigger can clear several ranks at once (e.g.
-  // a game published long ago already met a higher rank's bar, so reaching
-  // a lower rank in the same pass cascades straight through it). Headline
-  // the highest one; the rest get a small "also cleared" mention below
-  // rather than vanishing silently.
+  // a 1dan-grade game satisfies 1kyu's looser bar too, so both are granted
+  // together). Headline the highest one; skip-grants make multi-rank passes
+  // routine enough that calling out the rest is no longer worth the noise —
+  // /ranks shows the full achieved set.
   const rank = grantedRanks.reduce((highest, r) => (r.level > highest.level ? r : highest));
-  const otherRanks = grantedRanks.filter((r) => r.slug !== rank.slug);
   const beltColor = BELT_COLOR_HEX[rank.color ?? ''] ?? '#6b7280';
 
   return (
@@ -67,24 +66,12 @@ export function RankAchievementModal({ locale }: Props) {
           style={{ backgroundColor: beltColor }}
         />
 
-        {/* Rank name */}
-        <p className="mt-3 text-2xl font-bold text-foreground">{t(`rankNames.${rank.slug}`)}</p>
-
-        {/* Description */}
-        <p id={descId} className="mt-2 text-sm text-muted-foreground">
-          {t('description')}
+        {/* Rank name — also the modal's accessible description: the name
+            achieved IS the description, so no separate "you earned a new
+            rank" line is needed. */}
+        <p id={descId} className="mt-3 text-2xl font-bold text-foreground">
+          {t(`rankNames.${rank.slug}`)}
         </p>
-
-        {/* Lower ranks cleared in the same pass — small and muted, secondary to the headline rank */}
-        {otherRanks.length > 0 && (
-          <p className="mt-1 text-xs text-muted-foreground/70">
-            {t('alsoCleared', {
-              ranks: otherRanks
-                .map((r) => t(`rankNames.${r.slug}`))
-                .join(locale === 'ja' ? '・' : ', '),
-            })}
-          </p>
-        )}
 
         {/* CTA: Link to ranks page */}
         <div className="mt-6 flex flex-col gap-3">

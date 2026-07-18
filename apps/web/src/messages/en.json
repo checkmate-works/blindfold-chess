@@ -5529,8 +5529,6 @@
   },
   "rankAchievement": {
     "title": "Rank Achieved!",
-    "description": "Congratulations! You've earned a new belt rank.",
-    "alsoCleared": "You also cleared the requirements for {ranks} along the way",
     "viewRanks": "View Ranks",
     "close": "Close",
     "rankNames": {
