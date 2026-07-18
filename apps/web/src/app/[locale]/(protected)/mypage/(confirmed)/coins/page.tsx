@@ -25,6 +25,7 @@ import { CoinIcon } from '@blindfold-chess/icons';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { AD_FREE_DAYS_PER_POINT } from '@/lib/points';
+import { hasDanTierRank } from '@/lib/users/dan-rank';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -47,7 +48,10 @@ export default async function CoinsPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'MypagePoints' });
 
   const user = await getAuthenticatedUser();
-  const { balance, history, hasMore, dailyCap } = await getPointsPageData(user.id);
+  const [{ balance, history, hasMore, dailyCap }, danAdFree] = await Promise.all([
+    getPointsPageData(user.id),
+    hasDanTierRank(user.id),
+  ]);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
 
@@ -90,7 +94,11 @@ export default async function CoinsPage({ params }: Props) {
         </div>
 
         {/* Redeem control */}
-        <RedeemForm balance={balance.total} daysPerPoint={AD_FREE_DAYS_PER_POINT} />
+        <RedeemForm
+          balance={balance.total}
+          daysPerPoint={AD_FREE_DAYS_PER_POINT}
+          danAdFree={danAdFree}
+        />
 
         {/* History */}
         <div>

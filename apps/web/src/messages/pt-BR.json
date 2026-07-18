@@ -3497,12 +3497,14 @@
       "submit": "Resgatar {amount} moedas",
       "submitting": "Resgatando…",
       "successMessage": "Pronto — {days, plural, one {# dia} other {# dias}} sem anúncios foram adicionados.",
+      "danAdFreeNotice": "Como detentor de uma graduação dan, você sempre navega sem anúncios — não precisa gastar moedas nisso.",
       "errors": {
         "invalid_amount": "Informe um número inteiro positivo.",
         "insufficient_balance": "Você não tem moedas disponíveis suficientes.",
         "signInRequired": "Entre na sua conta para resgatar.",
         "banned": "Sua conta está restrita.",
-        "rateLimited": "Muitos resgates em pouco tempo — tente novamente mais tarde."
+        "rateLimited": "Muitos resgates em pouco tempo — tente novamente mais tarde.",
+        "danAdFree": "Como detentor de uma graduação dan, você já navega sem anúncios."
       }
     },
     "history": {
