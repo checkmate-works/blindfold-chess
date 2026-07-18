@@ -19,7 +19,6 @@
       "outputs": [".next/**", "!.next/cache/**"],
       "env": ["POSTGRES_URL"],
       "passThroughEnv": [
-        "POSTGRES_URL_NON_POOLING",
         "DATABASE_URL",
         "SUPABASE_SERVICE_ROLE_KEY",
         "SENTRY_AUTH_TOKEN",
