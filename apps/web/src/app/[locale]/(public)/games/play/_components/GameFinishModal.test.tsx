@@ -117,3 +117,48 @@ describe('GameFinishModal — promotion view', () => {
     });
   });
 });
+
+describe('GameFinishModal — guest promotion view', () => {
+  const GUEST_1KYU_TITLE = jaMessages.play.finishModal.guestPromotion.title1kyu;
+  const GUEST_1DAN_TITLE = jaMessages.play.finishModal.guestPromotion.title1dan;
+
+  it('pitches the 1kyu requirement with the honest incremental-progression copy', () => {
+    renderModal({ guestPromotionRankSlug: '1kyu', onShare: vi.fn() });
+
+    expect(screen.getByText(GUEST_1KYU_TITLE)).toBeInTheDocument();
+    expect(
+      screen.getByText(jaMessages.play.finishModal.guestPromotion.description)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(jaMessages.play.finishModal.guestPromotion.accountPitch)
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ゲームを公開する' })).toBeInTheDocument();
+  });
+
+  it('pitches 1dan as the black belt', () => {
+    renderModal({ guestPromotionRankSlug: '1dan', onShare: vi.fn() });
+
+    expect(screen.getByText(GUEST_1DAN_TITLE)).toBeInTheDocument();
+    expect(screen.queryByText(GUEST_1KYU_TITLE)).not.toBeInTheDocument();
+  });
+
+  it('yields to the signed-in promotion when both are set', () => {
+    renderModal({ promotionRankSlug: '1kyu', guestPromotionRankSlug: '1dan', onShare: vi.fn() });
+
+    expect(screen.getByText(/1級昇格条件を満たしました/)).toBeInTheDocument();
+    expect(screen.queryByText(GUEST_1DAN_TITLE)).not.toBeInTheDocument();
+  });
+
+  it('does not pitch an already-published game', () => {
+    renderModal({ guestPromotionRankSlug: '1dan', onShare: vi.fn(), published: true });
+
+    expect(screen.queryByText(GUEST_1DAN_TITLE)).not.toBeInTheDocument();
+    expect(screen.getByText(jaMessages.play.finishModal.recall.title)).toBeInTheDocument();
+  });
+
+  it('does not pitch without a way to publish', () => {
+    renderModal({ guestPromotionRankSlug: '1dan', onShare: undefined });
+
+    expect(screen.queryByText(GUEST_1DAN_TITLE)).not.toBeInTheDocument();
+  });
+});

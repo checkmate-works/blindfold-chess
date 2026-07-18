@@ -2263,6 +2263,12 @@
         "description": "Publique esta partida para conquistar o grau.",
         "publish": "Publicar esta partida",
         "skip": "Não publicar"
+      },
+      "guestPromotion": {
+        "title1kyu": "Você cumpriu as condições de promoção para 1.º Kyū",
+        "title1dan": "Você cumpriu as condições para a faixa preta (1.º Dan)",
+        "description": "As graduações são obtidas em ordem a partir do 5.º Kyū. Publique esta partida e ela contará automaticamente quando você alcançar essa graduação.",
+        "accountPitch": "Não é preciso ter conta para publicar — e se você se registrar depois, poderá vincular esta partida ao seu histórico."
       }
     },
     "repertoireCheck": {

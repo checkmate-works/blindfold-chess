@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaBook, FaBrain, FaClipboardList, FaCloudUploadAlt } from 'react-icons/fa';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
+import type { GuestPromotionQualification } from '@/lib/games/guest-promotion';
 
 import { CompactResultHeader } from '@/app/[locale]/(public)/games/play/result/_components/CompactResultHeader';
 import { CloseButton } from '@/app/[locale]/_components/CloseButton';
@@ -46,6 +47,13 @@ type Props = {
    * {@link usePublishPromotion}.
    */
   promotionRankSlug?: RankSlug | null;
+  /**
+   * The rank requirement this win satisfies, for a signed-out (or
+   * provisional) player — see {@link useGuestPromotion}. Weaker than
+   * `promotionRankSlug`: no promotion is promised, only that the published
+   * game will count once their linear progression reaches the rank.
+   */
+  guestPromotionRankSlug?: GuestPromotionQualification | null;
   /** Publish this game — the promotion view's primary action. */
   onShare?: () => void;
 };
@@ -64,6 +72,13 @@ type Props = {
  * reads as an optional extra — and quietly cost them the promotion. The three
  * cards stay one click away behind "don't publish", which lands on the same
  * result screen the Game Review card does.
+ *
+ * For a signed-out player the server-backed promotion never fires, so a
+ * weaker, purely local pitch (`guestPromotionRankSlug`) takes its place when
+ * the game satisfies the 1kyu / 1dan game requirement: it names the
+ * requirement met (1dan is pitched as the black belt), explains that ranks
+ * are earned in order and the published game counts when they get there, and
+ * notes an account can be linked later.
  */
 export function GameFinishModal({
   isOpen,
@@ -74,6 +89,7 @@ export function GameFinishModal({
   onRepertoireCheck,
   published = false,
   promotionRankSlug = null,
+  guestPromotionRankSlug = null,
   onShare,
 }: Props) {
   const t = useTranslations('play');
@@ -83,6 +99,9 @@ export function GameFinishModal({
   // An already-published game has earned whatever it was going to earn, so the
   // nudge would be stale.
   const showPromotion = !!promotionRankSlug && !!onShare && !published;
+  // The signed-out pitch — never shown alongside the signed-in promotion,
+  // which makes the stronger (server-confirmed) promise.
+  const showGuestPromotion = !showPromotion && !!guestPromotionRankSlug && !!onShare && !published;
 
   const tourSteps: HelpStep[] = [
     {
@@ -124,6 +143,20 @@ export function GameFinishModal({
                 {t('finishModal.promotion.description')}
               </p>
             </>
+          ) : showGuestPromotion ? (
+            <>
+              <p className="text-center font-semibold text-foreground">
+                {guestPromotionRankSlug === '1dan'
+                  ? t('finishModal.guestPromotion.title1dan')
+                  : t('finishModal.guestPromotion.title1kyu')}
+              </p>
+              <p className="text-center text-sm text-muted-foreground">
+                {t('finishModal.guestPromotion.description')}
+              </p>
+              <p className="text-center text-xs text-muted-foreground">
+                {t('finishModal.guestPromotion.accountPitch')}
+              </p>
+            </>
           ) : (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{t('finishModal.title')}</span>
@@ -132,7 +165,7 @@ export function GameFinishModal({
           )}
         </div>
 
-        {showPromotion ? (
+        {showPromotion || showGuestPromotion ? (
           <div className="flex flex-col items-center gap-3">
             <button
               type="button"
