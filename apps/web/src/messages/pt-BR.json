@@ -5496,6 +5496,7 @@
   "rankAchievement": {
     "title": "Graduação Alcançada!",
     "description": "Parabéns! Você obteve uma nova graduação de faixa.",
+    "alsoCleared": "Você também cumpriu os requisitos de {ranks} pelo caminho",
     "viewRanks": "Ver Graduações",
     "close": "Fechar",
     "rankNames": {

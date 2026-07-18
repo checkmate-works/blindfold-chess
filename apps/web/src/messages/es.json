@@ -5496,6 +5496,7 @@
   "rankAchievement": {
     "title": "¡Rango Alcanzado!",
     "description": "¡Felicitaciones! Has obtenido un nuevo rango de cinturón.",
+    "alsoCleared": "También cumpliste los requisitos de {ranks} en el camino",
     "viewRanks": "Ver Rangos",
     "close": "Cerrar",
     "rankNames": {

@@ -5507,6 +5507,7 @@
   "rankAchievement": {
     "title": "昇級おめでとう！",
     "description": "新しい級位を獲得しました。",
+    "alsoCleared": "{ranks}の昇級条件も同時にクリアしました",
     "viewRanks": "段級位を見る",
     "close": "閉じる",
     "rankNames": {
