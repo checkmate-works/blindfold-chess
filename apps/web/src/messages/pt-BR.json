@@ -95,6 +95,7 @@
       "lineCount": "{count} linhas",
       "forThisOpening": "Katas desta abertura",
       "lineFallback": "Linha {n}",
+      "previewToggle": "Mostrar lances",
       "openLine": "Abrir esta linha →",
       "createdBy": "Criado por"
     },

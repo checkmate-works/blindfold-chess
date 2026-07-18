@@ -95,6 +95,7 @@
       "lineCount": "{count} lines",
       "forThisOpening": "Kata for this opening",
       "lineFallback": "Line {n}",
+      "previewToggle": "Show moves",
       "openLine": "Open this line →",
       "createdBy": "Created by"
     },

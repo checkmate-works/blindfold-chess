@@ -95,6 +95,7 @@
       "lineCount": "{count} ライン",
       "forThisOpening": "このオープニングの型",
       "lineFallback": "ライン {n}",
+      "previewToggle": "手順を表示",
       "openLine": "このラインを開く →",
       "createdBy": "作成者"
     },

@@ -95,6 +95,7 @@
       "lineCount": "{count} líneas",
       "forThisOpening": "Katas de esta apertura",
       "lineFallback": "Línea {n}",
+      "previewToggle": "Mostrar jugadas",
       "openLine": "Abrir esta línea →",
       "createdBy": "Creado por"
     },
