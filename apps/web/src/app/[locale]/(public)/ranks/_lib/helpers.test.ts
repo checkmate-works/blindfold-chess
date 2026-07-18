@@ -19,6 +19,7 @@ import {
   getRankCardState,
   isRankEarnedByPlaying,
   isWhiteBelt,
+  resolveEffectiveAchievedSlugs,
   resolveNextRank,
   resolveRecommendedNextSlug,
 } from './helpers';
@@ -612,6 +613,45 @@ describe('resolveRecommendedNextSlug', () => {
 
   it('ignores mukyu (UI-only, never a real achieved rank)', () => {
     expect(resolveRecommendedNextSlug(new Set<RankSlug>(['mukyu']))).toBe('5kyu');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveEffectiveAchievedSlugs
+// ---------------------------------------------------------------------------
+
+describe('resolveEffectiveAchievedSlugs', () => {
+  it('returns the same empty set when nothing is achieved', () => {
+    const achieved = new Set<RankSlug>();
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(new Set<RankSlug>());
+  });
+
+  it('fills in every lower rank when only the top rank (1dan) is achieved — the reported bug', () => {
+    // A 1dan holder with no kyū rows should see every lower rank checked
+    // off on the ranks grid / curriculum, not just 1dan itself.
+    const achieved = new Set<RankSlug>(['1dan']);
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(
+      new Set<RankSlug>(['5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan'])
+    );
+  });
+
+  it('fills gaps below the highest achieved rank even with a skip-granted middle gap', () => {
+    // 3kyu achieved without 5kyu/4kyu — effective achievement still back-fills
+    // 5kyu and 4kyu since they're below the highest achieved level.
+    const achieved = new Set<RankSlug>(['3kyu']);
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(
+      new Set<RankSlug>(['5kyu', '4kyu', '3kyu'])
+    );
+  });
+
+  it('is a no-op when every rank below the highest is already literally achieved', () => {
+    const achieved = new Set<RankSlug>(['5kyu', '4kyu', '3kyu']);
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(achieved);
+  });
+
+  it('leaves the set untouched when only mukyu is present — no real rank to expand from', () => {
+    const achieved = new Set<RankSlug>(['mukyu']);
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(achieved);
   });
 });
 

@@ -391,6 +391,34 @@ export function resolveRecommendedNextSlug(achievedSlugs: ReadonlySet<RankSlug>)
 }
 
 /**
+ * Expand a literal (DB-row-backed) achieved-slugs set into "effective"
+ * achievement for DISPLAY purposes: every real rank at or below the highest
+ * actually-achieved rank's level counts as achieved too, even without its
+ * own `user_ranks` row.
+ *
+ * Skip-grants make sparse achievement a normal DB state (e.g. a 1dan holder
+ * with no kyū rows at all), but a checkmark UI showing gaps below the
+ * user's actual rank reads as broken, not as a nuance of the grant model —
+ * real-world belt systems don't ask a black belt to separately "prove" 5th
+ * kyū. Use this wherever achievement is rendered as a checkmark (the ranks
+ * grid, the curriculum roadmap). Do NOT use it for grant-adjacent logic —
+ * {@link resolveRecommendedNextSlug} and the grant evaluator must stay keyed
+ * off literal rows; expanding first would be harmless there today (both
+ * only look at the highest level) but conflating "earned" and "implied"
+ * achievement is the wrong default for anything that isn't pure display.
+ */
+export function resolveEffectiveAchievedSlugs(
+  achievedSlugs: ReadonlySet<RankSlug>
+): ReadonlySet<RankSlug> {
+  let highestAchievedIndex = -1;
+  for (let i = 0; i < REAL_RANK_SLUGS.length; i++) {
+    if (achievedSlugs.has(REAL_RANK_SLUGS[i])) highestAchievedIndex = i;
+  }
+  if (highestAchievedIndex === -1) return achievedSlugs;
+  return new Set(REAL_RANK_SLUGS.slice(0, highestAchievedIndex + 1));
+}
+
+/**
  * Resolve the highest achieved rank and the next rank to pursue from DB ranks
  * and the set of achieved slugs.
  *

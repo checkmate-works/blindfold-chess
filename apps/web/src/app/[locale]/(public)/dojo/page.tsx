@@ -32,6 +32,7 @@ import {
   getBeltColorHex,
   isRankEarnedByPlaying,
   resolveAchievedSlugs,
+  resolveEffectiveAchievedSlugs,
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
@@ -81,6 +82,13 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const dbRanks = await getAllRanks();
   const achievedRankIds = user ? await getUserAchievedRankIds(user.id) : new Set<string>();
   const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
+  // The curriculum TOC's checkmarks use the EXPANDED set: a 1dan holder with
+  // no kyū rows should still see every lower rank checked off, not just
+  // 1dan itself. `resolveNextRank` below stays on the literal set — it
+  // doesn't matter for its output (current/next are both about the highest
+  // level), but literal is the more honest default for anything beyond pure
+  // display.
+  const displayAchievedSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
 
   const { current, next } = resolveNextRank(dbRanks, achievedSlugs);
 
@@ -235,7 +243,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
       <section className="mt-8 space-y-3">
         <SectionTitle>{t('curriculum.title')}</SectionTitle>
         <CurriculumToc
-          achievedSlugs={achievedSlugs}
+          achievedSlugs={displayAchievedSlugs}
           nextSlug={next?.slug ?? null}
           maxVisibleSlug={maxVisibleSlug}
           rankName={(slug) => tRanks(`rankNames.${slug}`)}

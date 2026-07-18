@@ -16,6 +16,7 @@ import {
   getBeltColorHex,
   getRankCardState,
   resolveAchievedSlugs,
+  resolveEffectiveAchievedSlugs,
   resolveRecommendedNextSlug,
 } from '../_lib/helpers';
 import { RankCard } from './RankCard';
@@ -71,6 +72,10 @@ export function RanksGrid({ locale, dbRanks }: Props) {
   // signed-out viewer this is always the first rank.
   const recommendedNextSlug = resolveRecommendedNextSlug(achievedSlugs);
 
+  // Checkmarks use the EXPANDED set: a 1dan holder with no kyū rows should
+  // still see every lower rank checked off, not just 1dan itself.
+  const displayAchievedSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
+
   return (
     <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {ALL_RANK_SLUGS.map((slug) => {
@@ -97,7 +102,7 @@ export function RanksGrid({ locale, dbRanks }: Props) {
 
         const rank = dbRanksBySlug.get(slug);
         const beltColor = getBeltColorHex(slug);
-        const isAchieved = achievedSlugs.has(slug);
+        const isAchieved = displayAchievedSlugs.has(slug);
         const requirements = rank ? parseRequirements(rank.requirements) : [];
 
         const state = getRankCardState(
