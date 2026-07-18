@@ -121,7 +121,7 @@ describe('GameFinishModal — promotion view', () => {
 describe('GameFinishModal — guest promotion view', () => {
   const GUEST_1KYU_TITLE = jaMessages.play.finishModal.guestPromotion.title1kyu;
   const DAN_TITLE = jaMessages.play.finishModal.dan.title;
-  const SIGN_UP_HREF = '/ja/sign-up?next=%2Fja%2Fgames%2Fshared%2Fnew%3FgameId%3Dlocal-1';
+  const SIGN_UP_HREF = '/ja/sign-up';
 
   function renderGuest(props: Partial<Parameters<typeof GameFinishModal>[0]> = {}) {
     return renderModal({

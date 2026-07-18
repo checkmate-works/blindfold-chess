@@ -515,9 +515,7 @@ export function PlayClient({
         published={isShared}
         promotionRankSlug={promotionRankSlug}
         guestPromotionRankSlug={guestPromotionRankSlug}
-        guestSignUpHref={`/${locale}/sign-up?next=${encodeURIComponent(
-          `/${locale}/games/shared/new?gameId=${gameId}`
-        )}`}
+        guestSignUpHref={`/${locale}/sign-up`}
         onShare={handleShare}
       />
     </div>

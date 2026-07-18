@@ -190,39 +190,16 @@ describe('Auth callback route', () => {
       expect(redirectUrl.pathname).toBe('/ja/mypage/setup-username');
     });
 
-    it('forwards an explicit next through setup-username (CTA-gated sign-up funnel)', async () => {
+    it('drops any next when routing a new user to setup-username — onboarding is unconditional', async () => {
+      // Threading next through username setup was tried and abandoned (the
+      // email-confirmation hop makes it unreliable); in-app surfaces pick
+      // the funnel back up instead.
       mockDbSelect.mockResolvedValue([]);
       mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const next = '/en/games/shared/abc?claim=1';
       const request = new Request(
         `http://localhost:3000/auth/callback?code=test-code&next=${encodeURIComponent(next)}`
-      );
-      await GET(request);
-
-      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
-      expect(redirectUrl.pathname).toBe('/en/mypage/setup-username');
-      expect(redirectUrl.searchParams.get('next')).toBe(next);
-    });
-
-    it('does NOT attach next to setup-username for an ordinary sign-up — onboarding stays the default', async () => {
-      mockDbSelect.mockResolvedValue([]);
-      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
-
-      const request = new Request('http://localhost:3000/auth/callback?code=test-code');
-      await GET(request);
-
-      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
-      expect(redirectUrl.pathname).toBe('/en/mypage/setup-username');
-      expect(redirectUrl.searchParams.get('next')).toBeNull();
-    });
-
-    it('does not forward a malicious absolute-URL next to setup-username', async () => {
-      mockDbSelect.mockResolvedValue([]);
-      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
-
-      const request = new Request(
-        'http://localhost:3000/auth/callback?code=test-code&next=https%3A%2F%2Fevil.example'
       );
       await GET(request);
 

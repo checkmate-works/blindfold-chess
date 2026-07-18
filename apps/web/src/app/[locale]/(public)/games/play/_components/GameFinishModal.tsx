@@ -57,9 +57,11 @@ type Props = {
    */
   guestPromotionRankSlug?: GuestPromotionQualification | null;
   /**
-   * Sign-up URL for the guest pitch's primary CTA, with a `next` that lands
-   * back on this game's publish form after registration. Built by the
-   * caller — the modal knows neither locale nor game id.
+   * Sign-up URL for the guest pitch's primary CTA (a plain, locale-prefixed
+   * /sign-up — built by the caller, since the modal doesn't know the
+   * locale). Deliberately carries no `next`: the email-confirmation hop
+   * makes a post-registration hand-off unreliable, so after onboarding the
+   * /games publish nudge picks the funnel back up instead.
    */
   guestSignUpHref?: string;
   /** Publish this game — the promotion view's primary action. */
@@ -84,9 +86,11 @@ type Props = {
  * For a signed-out player the server-backed promotion never fires, so a
  * purely local pitch (`guestPromotionRankSlug`) takes its place when the
  * game satisfies the 1kyu / 1dan game requirement. Registration-first: the
- * primary CTA is "sign up" (landing back on this game's publish form), with
- * anonymous publishing as the secondary path and "don't publish" last.
- * 1dan is pitched as the black belt, with its ad-exemption perk called out.
+ * primary CTA is a plain "sign up", with anonymous publishing as the
+ * secondary path and "don't publish" last. After onboarding the /games
+ * publish nudge surfaces the still-unpublished game and completes the
+ * promotion. 1dan is pitched as the black belt, with its ad-exemption perk
+ * called out.
  */
 export function GameFinishModal({
   isOpen,
