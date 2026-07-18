@@ -218,6 +218,14 @@ export const RATE_LIMITS = {
    */
   redeemPoints: { action: 'redeem_points', maxAttempts: 10, windowMs: 3_600_000 },
   /**
+   * Per-user limit for claiming an anonymously published game. A user can
+   * hold at most a handful of unclaimed games in localStorage, so 10/hour
+   * covers any honest batch; the cap bounds token-guessing loops (the
+   * 256-bit manage token already makes guessing hopeless — this is layered
+   * defense, not the security boundary).
+   */
+  claimSharedGame: { action: 'claim_shared_game', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
    * Per-user limit for starting a Maia game (the per-game point charge).
    * Generous (30/hour) — a normal user starts far fewer games than this;
    * the cap is purely a backstop against scripted loops hammering the
