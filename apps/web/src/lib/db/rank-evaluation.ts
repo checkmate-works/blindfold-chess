@@ -28,10 +28,14 @@ import * as Sentry from '@sentry/nextjs';
 import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
-import { isConstrainedPlaySettings } from '@/lib/games/play-settings-constraint';
+import {
+  isConstrainedPlaySettings,
+  maintainedHiddenBoard,
+} from '@/lib/games/play-settings-constraint';
 
 import type {
   ChallengeScoreRequirement,
+  GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
   GrantedRank,
   PositionSubmissionCountRequirement,
@@ -111,6 +115,26 @@ const evaluators: Record<string, RequirementEvaluator> = {
       .where(and(eq(games.authorId, userId), eq(games.result, 'win'), isNull(games.deletedAt)));
 
     const qualifying = rows.filter((row) => isConstrainedPlaySettings(row.playSettings));
+    return qualifying.length >= requirement.minCount;
+  },
+  game_publish_win_hidden_board: async (userId, req, executor) => {
+    const requirement = req as GamePublishWinHiddenBoardRequirement;
+    const dbInstance = executor ?? db;
+
+    const rows = await dbInstance
+      .select({
+        playSettings: games.playSettings,
+        playSettingsLog: games.playSettingsLog,
+        operationLogs: games.operationLogs,
+      })
+      .from(games)
+      .where(and(eq(games.authorId, userId), eq(games.result, 'win'), isNull(games.deletedAt)));
+
+    const qualifying = rows.filter((row) => {
+      if (!maintainedHiddenBoard(row.playSettings, row.playSettingsLog)) return false;
+      const peeks = (row.operationLogs ?? []).reduce((sum, log) => sum + log.peekCount, 0);
+      return peeks <= requirement.maxPeeks;
+    });
     return qualifying.length >= requirement.minCount;
   },
 };

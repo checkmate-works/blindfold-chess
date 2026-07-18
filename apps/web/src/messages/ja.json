@@ -5439,6 +5439,8 @@
     "challengeScore": "{challengeName}でスコア{minScore}以上",
     "submissionCount": "{itemName}を{minCount}件以上投稿する",
     "gamePublishWin": "何らかの制約を加えた設定でAIに勝利し、ゲームを公開する",
+    "gamePublishWinHiddenBoard": "Hide the board オプションを維持してAIに勝利し、ゲームを公開する",
+    "gamePublishWinHiddenBoardNote": "※〈ピークを許可〉は{maxPeeks}回まで有効",
     "orDivider": "または",
     "submissionItemNames": {
       "memory": "ポジション記憶の問題",
@@ -5474,7 +5476,8 @@
         "4kyu": "視覚的な補助がなくても、全ての駒で指定された座標における合法手の判定ができること。",
         "3kyu": "視覚的な補助がなくても、全ての駒でマヌーバリングができること。",
         "2kyu": "複数の駒を意味のある一つのまとまりとして認識ができること。",
-        "1kyu": "目隠しチェスに関する何らかの制約がかかった状態で、AIに勝利できること。"
+        "1kyu": "目隠しチェスに関する何らかの制約がかかった状態で、AIに勝利できること。",
+        "1dan": "目隠しチェスでAIに勝利できること。"
       },
       "tips": "解説",
       "tryChallenge": "条件を達成しよう",

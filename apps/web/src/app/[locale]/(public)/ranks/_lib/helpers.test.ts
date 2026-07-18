@@ -14,6 +14,7 @@ import {
   buildChallengeNameKey,
   buildPositionSubmissionLabels,
   buildRequirementItems,
+  buildRequirementLabels,
   getBeltColorHex,
   getRankCardState,
   isRankEarnedByPlaying,
@@ -98,6 +99,9 @@ describe('buildRequirementItems', () => {
     if (key === 'submissionCount') return `Submit ${values?.minCount} ${values?.itemName}`;
     if (key.startsWith('submissionItemNames.')) return key.replace('submissionItemNames.', '');
     if (key === 'orDivider') return 'or';
+    if (key === 'gamePublishWin') return `Beat the engine ${values?.minCount}+ times`;
+    if (key === 'gamePublishWinHiddenBoard') return `Keep the board hidden and win`;
+    if (key === 'gamePublishWinHiddenBoardNote') return `Peeking allowed up to ${values?.maxPeeks}`;
     return key;
   };
 
@@ -197,6 +201,47 @@ describe('buildRequirementItems', () => {
       href: '/en/practice/puzzle/new',
       label: 'Submit 1 puzzle',
     });
+  });
+
+  it('should generate the game setup URL and a peek-allowance note for game_publish_win_hidden_board', () => {
+    const items = buildRequirementItems(
+      [{ type: 'game_publish_win_hidden_board', minCount: 1, maxPeeks: 5 }],
+      'en',
+      mockT
+    );
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      href: '/en/games/new/standard',
+      label: 'Keep the board hidden and win',
+      note: 'Peeking allowed up to 5',
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildRequirementLabels
+// ---------------------------------------------------------------------------
+
+describe('buildRequirementLabels', () => {
+  const mockT = (key: string, values?: Record<string, string | number | Date>) => {
+    if (key === 'gamePublishWin') return `Beat the engine ${values?.minCount}+ times`;
+    if (key === 'gamePublishWinHiddenBoard') return `Keep the board hidden and win`;
+    return key;
+  };
+
+  it('should return a plain label (no href) for game_publish_win', () => {
+    expect(buildRequirementLabels({ type: 'game_publish_win', minCount: 1 }, mockT)).toEqual([
+      'Beat the engine 1+ times',
+    ]);
+  });
+
+  it('should return a plain label (no href) for game_publish_win_hidden_board', () => {
+    expect(
+      buildRequirementLabels(
+        { type: 'game_publish_win_hidden_board', minCount: 1, maxPeeks: 5 },
+        mockT
+      )
+    ).toEqual(['Keep the board hidden and win']);
   });
 });
 
@@ -600,11 +645,14 @@ describe('isRankEarnedByPlaying', () => {
     expect(isRankEarnedByPlaying(seeded('1kyu'))).toBe(true);
   });
 
-  it('is false for a rank with no requirements yet', () => {
+  it('is true for 1dan — earned at the board, the board-hidden variant', () => {
+    expect(isRankEarnedByPlaying(seeded('1dan'))).toBe(true);
+  });
+
+  it('is false for a rank with no requirements at all', () => {
     // "Coming Soon" ranks have nothing to earn, so they must not claim the
-    // play-a-game CTA. 1dan is seeded this way today.
+    // play-a-game CTA.
     expect(isRankEarnedByPlaying([])).toBe(false);
-    expect(isRankEarnedByPlaying(seeded('1dan'))).toBe(false);
   });
 
   it('is false when a game requirement is mixed with a practice one', () => {
@@ -619,5 +667,14 @@ describe('isRankEarnedByPlaying', () => {
         },
       ])
     ).toBe(false);
+  });
+
+  it('is true when both game-publish variants are present together', () => {
+    expect(
+      isRankEarnedByPlaying([
+        { type: 'game_publish_win', minCount: 1 },
+        { type: 'game_publish_win_hidden_board', minCount: 1, maxPeeks: 5 },
+      ])
+    ).toBe(true);
   });
 });

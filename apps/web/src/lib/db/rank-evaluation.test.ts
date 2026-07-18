@@ -348,6 +348,121 @@ describe('evaluateRankRequirements', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Tests: game_publish_win_hidden_board evaluator
+// ---------------------------------------------------------------------------
+
+describe('game_publish_win_hidden_board evaluator', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSelectResult.mockReturnValue([]);
+  });
+
+  const requirement = { type: 'game_publish_win_hidden_board' as const, minCount: 1, maxPeeks: 5 };
+
+  it('should pass a game that stayed hidden throughout with peeks under the cap', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'peek' },
+        playSettingsLog: null,
+        operationLogs: [{ peekCount: 3 }, { peekCount: 2 }],
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(true);
+  });
+
+  it('should fail when the game started fully sighted', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'always' },
+        playSettingsLog: null,
+        operationLogs: [],
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('should fail when the board was revealed mid-game (play_settings_log reverts to always)', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'never' },
+        playSettingsLog: [{ atMoveIndex: 4, key: 'boardVisibility', to: 'always' }],
+        operationLogs: [],
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('should fail when total peeks exceed maxPeeks', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'peek' },
+        playSettingsLog: null,
+        operationLogs: [{ peekCount: 4 }, { peekCount: 2 }],
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('should pass when peeks exactly equal maxPeeks (boundary)', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'peek' },
+        playSettingsLog: null,
+        operationLogs: [{ peekCount: 5 }],
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(true);
+  });
+
+  it('should treat null operationLogs as zero peeks', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'never' },
+        playSettingsLog: null,
+        operationLogs: null,
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(true);
+  });
+
+  it('should fail when no qualifying game rows are returned', async () => {
+    mockSelectResult.mockReturnValue([]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('should require minCount qualifying games', async () => {
+    mockSelectResult.mockReturnValue([
+      { playSettings: { boardVisibility: 'peek' }, playSettingsLog: null, operationLogs: [] },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [{ ...requirement, minCount: 2 }]);
+
+    expect(result).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Tests: checkAndGrantRanks
 // ---------------------------------------------------------------------------
 

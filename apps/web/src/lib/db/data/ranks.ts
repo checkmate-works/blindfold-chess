@@ -11,6 +11,9 @@
  *   meet minCount (OR across types, see {@link PositionSubmissionCountRequirement}).
  * - game_publish_win: user must have published minCount won engine games played
  *   under a blindfold constraint (see {@link GamePublishWinRequirement}).
+ * - game_publish_win_hidden_board: like game_publish_win, but stricter — the
+ *   board must stay hidden for the whole game (not just at the start) and
+ *   peeking is capped (see {@link GamePublishWinHiddenBoardRequirement}).
  *
  * A requirement type the parser does not recognise is DROPPED, not failed — so
  * a rank seeded with only unknown requirements parses to `[]` and reads as
@@ -64,10 +67,35 @@ export type GamePublishWinRequirement = {
   minCount: number;
 };
 
+/**
+ * Requires the user to have published at least `minCount` WON games against
+ * the engine that stayed under a blindfold constraint for the ENTIRE game,
+ * with peeking capped at `maxPeeks`.
+ *
+ * Stricter than {@link GamePublishWinRequirement} in two ways:
+ * - "Hidden" is judged on `boardVisibility` specifically (not the full
+ *   {@link isConstrainedPlaySettings} constraint set), and it must hold at
+ *   the start AND stay that way the whole game — checked against the
+ *   self-reported `games.play_settings_log`, not just the start snapshot.
+ *   See {@link maintainedHiddenBoard}, which owns that predicate.
+ * - The total `peekCount` across the game's self-reported `operationLogs`
+ *   must not exceed `maxPeeks`.
+ *
+ * Like `game_publish_win`, this inherits the app's self-reported posture:
+ * `games.result`, `play_settings_log`, and `operation_logs` are all trusted
+ * as-is (only move legality is verified server-side at publish time).
+ */
+export type GamePublishWinHiddenBoardRequirement = {
+  type: 'game_publish_win_hidden_board';
+  minCount: number;
+  maxPeeks: number;
+};
+
 export type RankRequirement =
   | ChallengeScoreRequirement
   | PositionSubmissionCountRequirement
-  | GamePublishWinRequirement;
+  | GamePublishWinRequirement
+  | GamePublishWinHiddenBoardRequirement;
 
 type RankSeed = {
   slug: string;
@@ -137,11 +165,24 @@ export function isGamePublishWinRequirement(value: unknown): value is GamePublis
   return record.type === 'game_publish_win' && typeof record.minCount === 'number';
 }
 
+export function isGamePublishWinHiddenBoardRequirement(
+  value: unknown
+): value is GamePublishWinHiddenBoardRequirement {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    record.type === 'game_publish_win_hidden_board' &&
+    typeof record.minCount === 'number' &&
+    typeof record.maxPeeks === 'number'
+  );
+}
+
 function isRankRequirement(value: unknown): value is RankRequirement {
   return (
     isChallengeScoreRequirement(value) ||
     isPositionSubmissionCountRequirement(value) ||
-    isGamePublishWinRequirement(value)
+    isGamePublishWinRequirement(value) ||
+    isGamePublishWinHiddenBoardRequirement(value)
   );
 }
 
@@ -306,5 +347,16 @@ export const ranksSeedData: RankSeed[] = [
   },
   // Gap between 1kyu (50) and 1dan (110) is intentionally large to reserve
   // space for future intermediate ranks between kyū and dan tiers.
-  { slug: '1dan', level: 110, color: RANK_COLORS['1dan'], requirements: [] },
+  {
+    slug: '1dan',
+    level: 110,
+    color: RANK_COLORS['1dan'],
+    requirements: [
+      {
+        type: 'game_publish_win_hidden_board',
+        minCount: 1,
+        maxPeeks: 5,
+      },
+    ],
+  },
 ];

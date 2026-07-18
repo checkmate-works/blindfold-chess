@@ -5428,6 +5428,8 @@
     "challengeScore": "Puntuación {minScore}+ en {challengeName}",
     "submissionCount": "Publica al menos {minCount} {itemName}",
     "gamePublishWin": "Gana al motor con al menos una restricción activada y publica la partida",
+    "gamePublishWinHiddenBoard": "Gana al motor manteniendo el tablero oculto todo el tiempo, y publica la partida",
+    "gamePublishWinHiddenBoardNote": "※ La opción «Permitir vistazos» puede usarse hasta {maxPeeks} veces",
     "orDivider": "o",
     "submissionItemNames": {
       "memory": "problema de memoria de posiciones",
@@ -5463,7 +5465,8 @@
         "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales.",
         "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales.",
         "2kyu": "Ser capaz de reconocer varias piezas como una sola unidad con significado (un «chunk»).",
-        "1kyu": "Ser capaz de ganar al motor bajo alguna restricción de ajedrez a ciegas."
+        "1kyu": "Ser capaz de ganar al motor bajo alguna restricción de ajedrez a ciegas.",
+        "1dan": "Ser capaz de ganar al motor en ajedrez a ciegas."
       },
       "tips": "Consejos",
       "tryChallenge": "Cumple los requisitos",

@@ -6,6 +6,8 @@ import { Divider } from '@/app/[locale]/_components/Divider';
 
 export type RequirementItem = {
   label: string;
+  /** Small caption rendered under the label — e.g. a peek-count allowance. */
+  note?: string;
 } & ({ href: string } | { href?: never });
 
 /**
@@ -49,6 +51,7 @@ export function RequirementsList({
 
         const label = typeof item === 'string' ? item : item.label;
         const href = typeof item === 'string' ? undefined : item.href;
+        const note = typeof item === 'string' ? undefined : item.note;
 
         return (
           <li key={i} className={`${textSize} text-foreground`}>
@@ -65,11 +68,15 @@ export function RequirementsList({
                     className="size-5 shrink-0 text-foreground/40"
                   />
                 </div>
+                {note && <p className="mt-1 pl-6 text-xs text-muted-foreground">{note}</p>}
               </Link>
             ) : (
               <div className="flex items-start gap-2">
                 <HiMiniStar className={`mt-0.5 ${iconSize} shrink-0 text-amber-500`} />
-                <span>{label}</span>
+                <div>
+                  <span>{label}</span>
+                  {note && <p className="mt-1 text-xs text-muted-foreground">{note}</p>}
+                </div>
               </div>
             )}
           </li>

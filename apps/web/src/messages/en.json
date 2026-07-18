@@ -5439,6 +5439,8 @@
     "challengeScore": "Score {minScore}+ in {challengeName}",
     "submissionCount": "Submit at least {minCount} {itemName}",
     "gamePublishWin": "Beat the engine with at least one constraint enabled, and publish the game",
+    "gamePublishWinHiddenBoard": "Beat the engine with the board hidden throughout, and publish the game",
+    "gamePublishWinHiddenBoardNote": "※ The \"Allow peeking\" option may still be used, up to {maxPeeks} times",
     "orDivider": "or",
     "submissionItemNames": {
       "memory": "position-memory problem",
@@ -5474,7 +5476,8 @@
         "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids.",
         "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids.",
         "2kyu": "Able to recognize multiple pieces as a single meaningful chunk.",
-        "1kyu": "Being able to beat the engine under some blindfold constraint."
+        "1kyu": "Being able to beat the engine under some blindfold constraint.",
+        "1dan": "Being able to beat the engine at blindfold chess."
       },
       "tips": "Tips",
       "tryChallenge": "Meet the requirements",

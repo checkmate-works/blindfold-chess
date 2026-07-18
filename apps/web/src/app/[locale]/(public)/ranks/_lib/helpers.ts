@@ -8,6 +8,7 @@ import {
 } from '@/lib/db/data/ranks';
 import type {
   ChallengeScoreRequirement,
+  GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
   PositionSubmissionCountRequirement,
   RankRequirement,
@@ -141,6 +142,9 @@ export function buildRequirementLabels(
   if (req.type === 'game_publish_win') {
     return [t('gamePublishWin', { minCount: req.minCount })];
   }
+  if (req.type === 'game_publish_win_hidden_board') {
+    return [t('gamePublishWinHiddenBoard', { minCount: req.minCount })];
+  }
   return buildPositionSubmissionLabels(req, t);
 }
 
@@ -161,6 +165,9 @@ export function buildRequirementItems(
   return requirements.flatMap((req) => {
     if (req.type === 'challenge_score') return [buildChallengeScoreItem(req, locale, t)];
     if (req.type === 'game_publish_win') return [buildGamePublishWinItem(req, locale, t)];
+    if (req.type === 'game_publish_win_hidden_board') {
+      return [buildGamePublishWinHiddenBoardItem(req, locale, t)];
+    }
     return buildPositionSubmissionItems(req, locale, t);
   });
 }
@@ -182,18 +189,51 @@ function buildGamePublishWinItem(
 }
 
 /**
+ * Same shape as {@link buildGamePublishWinItem}, plus a `note` caption
+ * spelling out the peek allowance — the label alone ("keep the board hidden
+ * and win") doesn't convey that a bounded number of peeks is still tolerated.
+ */
+function buildGamePublishWinHiddenBoardItem(
+  req: GamePublishWinHiddenBoardRequirement,
+  locale: string,
+  t: Translator
+): RequirementItem {
+  return {
+    label: t('gamePublishWinHiddenBoard', { minCount: req.minCount }),
+    href: `/${locale}/games/new/standard`,
+    note: t('gamePublishWinHiddenBoardNote', { maxPeeks: req.maxPeeks }),
+  };
+}
+
+/**
+ * Requirement types that are earned at the board rather than in `practice/`.
+ * Both game-publish variants route their CTA to the game setup instead of the
+ * practice index — see {@link isRankEarnedByPlaying}.
+ */
+const GAME_BASED_REQUIREMENT_TYPES: readonly RankRequirement['type'][] = [
+  'game_publish_win',
+  'game_publish_win_hidden_board',
+];
+
+/**
  * Whether a rank is earned at the board rather than in `practice/`.
  *
- * Everything up to 2kyu is drilled in the practice modules; 1kyu is earned by
- * publishing a won game. Callers use this to point their CTA somewhere that can
- * actually satisfy the rank — the practice index is a dead end for 1kyu.
+ * Everything up to 2kyu is drilled in the practice modules; 1kyu and 1dan are
+ * earned by publishing a won game. Callers use this to point their CTA
+ * somewhere that can actually satisfy the rank — the practice index is a dead
+ * end for either of those.
  *
  * Keyed on the requirement types, not the slug, so a rank lands on the right
  * destination by virtue of what it asks for. A rank with no requirements yet
  * ("Coming Soon") is not earned by playing — there is nothing to earn.
  */
 export function isRankEarnedByPlaying(requirements: RankRequirement[]): boolean {
-  return requirements.length > 0 && requirements.every((req) => req.type === 'game_publish_win');
+  return (
+    requirements.length > 0 &&
+    requirements.every((req) =>
+      (GAME_BASED_REQUIREMENT_TYPES as readonly string[]).includes(req.type)
+    )
+  );
 }
 
 export function getBeltColorHex(slug: RankSlug): string {

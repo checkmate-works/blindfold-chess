@@ -1,4 +1,4 @@
-import type { GamePlaySettings } from './saved-game-types';
+import type { GamePlaySettings, PlaySettingsChangeEntry } from './saved-game-types';
 
 /**
  * The settings of a game played with nothing hidden — a fully sighted game of
@@ -42,4 +42,29 @@ export function isConstrainedPlaySettings(settings: GamePlaySettings | null | un
   return (Object.keys(FULLY_SIGHTED) as (keyof GamePlaySettings)[]).some(
     (key) => settings[key] !== FULLY_SIGHTED[key]
   );
+}
+
+/**
+ * Whether the board stayed hidden (`boardVisibility !== 'always'`) for the
+ * ENTIRE game — the start-of-game snapshot plus every mid-game change,
+ * unlike {@link isConstrainedPlaySettings} which only ever looks at the
+ * start snapshot.
+ *
+ * `log` is the self-reported `games.play_settings_log`: a `to`-only change
+ * list, so "never reverted to `'always'`" is exactly "no entry whose `key`
+ * is `boardVisibility` and `to` is `'always'`" — no need to fold the log to
+ * find this, unlike {@link playSettingsAtHalfMove} which needs the running
+ * state at a specific position.
+ *
+ * `null` settings (legacy row / failed validation) are not eligible, same
+ * posture as {@link isConstrainedPlaySettings}.
+ */
+export function maintainedHiddenBoard(
+  settings: GamePlaySettings | null | undefined,
+  log: readonly PlaySettingsChangeEntry[] | null | undefined
+): boolean {
+  if (!settings) return false;
+  if (settings.boardVisibility === 'always') return false;
+
+  return !(log ?? []).some((entry) => entry.key === 'boardVisibility' && entry.to === 'always');
 }
