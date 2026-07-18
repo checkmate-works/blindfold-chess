@@ -1950,7 +1950,8 @@
       "gameDeletedToast": "Partida excluída com sucesso",
       "gamesDeletedToast": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",
       "deleteFailedToast": "Erro ao excluir a partida",
-      "moreGames": "Todas as partidas"
+      "moreGames": "Todas as partidas",
+      "limitWarning": "Restam apenas {remaining, plural, one {# vaga} other {# vagas}} para salvar (de {max}). <link>Exclua algumas partidas</link> para liberar espaço."
     },
     "yourRankings": {
       "title": "Seus Rankings",

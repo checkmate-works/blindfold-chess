@@ -1,12 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
 import { Button } from '@/app/_components';
 import { MAX_GAMES } from '@/config';
+import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaExclamationTriangle, FaTrash } from 'react-icons/fa';
 
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
 
 export function GameLimitError({ locale }: Props) {
   const t = useTranslations('newGame');
-  const router = useRouter();
+  const tHome = useTranslations('home.gameList');
 
   return (
     <div className="space-y-6 text-center">
@@ -29,15 +29,25 @@ export function GameLimitError({ locale }: Props) {
         </p>
       </div>
 
-      <div className="flex justify-center pt-4">
-        <Button
-          onClick={() => router.push(`/${locale}`)}
-          variant="primary"
-          size="lg"
-          className="rounded-lg font-medium"
+      <div className="pt-4">
+        <Link href="/games/bulk-delete" locale={locale} className="block w-full">
+          <Button
+            variant="primary"
+            size="lg"
+            icon={<FaTrash className="w-4 h-4" />}
+            className="w-full touch-manipulation"
+          >
+            {tHome('bulkDelete')}
+          </Button>
+        </Link>
+
+        <Link
+          href="/games"
+          locale={locale}
+          className={`mt-3 inline-block text-sm ${TEXT_LINK_MUTED_CLASSES}`}
         >
           {t('backToGameList')}
-        </Button>
+        </Link>
       </div>
     </div>
   );

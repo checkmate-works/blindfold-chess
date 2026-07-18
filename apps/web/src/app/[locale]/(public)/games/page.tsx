@@ -13,7 +13,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { NewGameButton } from '@/app/[locale]/(public)/(home)/_components/NewGameButton';
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -78,9 +77,6 @@ export default async function GamesPage({ params }: Props) {
     >
       <div className="mb-6">
         <GamesTabs active="mine" locale={locale} />
-      </div>
-      <div data-tour-id="games-new-button">
-        <NewGameButton locale={locale} />
       </div>
       <GamesPageClient locale={locale} />
 

@@ -1954,7 +1954,8 @@
       "gameDeletedToast": "ゲームを削除しました",
       "gamesDeletedToast": "{count, plural, other {#個のゲームを削除しました}}",
       "deleteFailedToast": "ゲームの削除に失敗しました",
-      "moreGames": "すべてのゲーム"
+      "moreGames": "すべてのゲーム",
+      "limitWarning": "保存できる対局数の残りはあと{remaining}件です(上限{max}件)。空きを作るには、<link>既存の対局を削除</link>してください。"
     },
     "yourRankings": {
       "title": "あなたのランキング",

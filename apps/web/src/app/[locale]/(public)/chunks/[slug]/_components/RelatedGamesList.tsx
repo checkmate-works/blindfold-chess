@@ -1,5 +1,7 @@
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
+import { FaPlus } from 'react-icons/fa';
 
 import type { ChunkLinkedGame } from '@/lib/db/games-read';
 import type { LikeMeta } from '@/lib/db/like-queries';
@@ -23,6 +25,8 @@ type Props = {
   emptyLabel: string;
   /** Builds the "Move {n}" chip label for a 1-based move number. */
   moveLabel: (moveNumber: number) => string;
+  /** Label for the "Start New Game" CTA shown alongside the empty state. */
+  newGameLabel: string;
 };
 
 const EMPTY_LIKE_META: LikeMeta = { likeCount: 0, likedByMe: false };
@@ -48,9 +52,21 @@ export function RelatedGamesList({
   resolveOpeningName,
   emptyLabel,
   moveLabel,
+  newGameLabel,
 }: Props) {
   if (games.length === 0) {
-    return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+    return (
+      <div className="text-center">
+        <p className="text-sm text-muted-foreground">{emptyLabel}</p>
+        <div className="mt-4 flex justify-center">
+          <Link href="/games/new" locale={locale}>
+            <Button variant="outline" size="sm" icon={<FaPlus className="h-3 w-3" />}>
+              {newGameLabel}
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
