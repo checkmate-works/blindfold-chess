@@ -3682,6 +3682,9 @@
     "pointGrantMessage": {
       "default": "You received {amount, plural, one {# coin} other {# coins}}"
     },
+    "rankGrantMessage": {
+      "default": "You were granted the {rankName} rank"
+    },
     "likeCoinGrantMessage": {
       "default": "Your content was liked — you earned {count, plural, one {# coin} other {# coins}}"
     },

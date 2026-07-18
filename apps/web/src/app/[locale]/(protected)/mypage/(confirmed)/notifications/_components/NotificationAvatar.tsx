@@ -1,5 +1,6 @@
 import Image from 'next/image';
 
+import { GiBlackBelt } from 'react-icons/gi';
 import { HiGift, HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
 import type { NotificationWithActor } from '../_lib/queries';
@@ -36,6 +37,14 @@ export function NotificationAvatar({ notification, actorName }: Props) {
     return (
       <div className={ICON_WRAPPER_CLASS}>
         <HiGift className="h-5 w-5" />
+      </div>
+    );
+  }
+
+  if (notification.type === 'rank_grant') {
+    return (
+      <div className={ICON_WRAPPER_CLASS}>
+        <GiBlackBelt className="h-5 w-5" />
       </div>
     );
   }

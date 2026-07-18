@@ -7,6 +7,7 @@ const mockUserRanksReturning = vi.fn();
 const mockModerationInsert = vi.fn();
 const mockRevalidatePath = vi.fn();
 const mockGetClientIp = vi.fn();
+const mockCreateNotification = vi.fn();
 
 vi.mock('../../_lib/auth', () => ({
   requireAdmin: () => mockRequireAdmin(),
@@ -62,6 +63,10 @@ vi.mock('next/cache', () => ({
 
 vi.mock('./getClientIp', () => ({
   getClientIp: () => mockGetClientIp(),
+}));
+
+vi.mock('@/lib/notifications/notification', () => ({
+  createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 
 const { grantRank } = await import('./grantRank');
@@ -132,6 +137,7 @@ describe('grantRank', () => {
     const result = await grantRank(targetUserId, '1dan', 'reason');
     expect(result).toEqual({ error: 'alreadyGranted' });
     expect(mockModerationInsert).not.toHaveBeenCalled();
+    expect(mockCreateNotification).not.toHaveBeenCalled();
   });
 
   it('should insert into user_ranks and succeed on a valid grant', async () => {
@@ -174,6 +180,24 @@ describe('grantRank', () => {
 
     await grantRank(targetUserId, '1dan', 'reason');
     expect(mockRevalidatePath).toHaveBeenCalledWith(`/admin/users/${targetUserId}`);
+  });
+
+  it('should notify the recipient so they have a way to notice the manual grant', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+
+    await grantRank(targetUserId, '1dan', 'Met the requirement pre-launch');
+    expect(mockCreateNotification).toHaveBeenCalledWith({
+      userId: targetUserId,
+      actorId: 'admin-id',
+      type: 'rank_grant',
+      targetType: 'user_rank',
+      targetId: 'user-rank-row-1',
+      metadata: {
+        rankSlug: '1dan',
+        rankLevel: 110,
+        reason: 'Met the requirement pre-launch',
+      },
+    });
   });
 
   it('should return failedToGrantRank when the transaction throws unexpectedly', async () => {

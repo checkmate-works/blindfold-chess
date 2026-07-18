@@ -12,6 +12,7 @@ import {
   isGameCommentLikeMetadata,
   isPositionMetadata,
   isPostMetadata,
+  isRankGrantMetadata,
   isReplyMetadata,
 } from './type-guards';
 
@@ -272,6 +273,9 @@ export function buildNotificationLink(
   }
   if (notification.type === 'benefit_grant') {
     return '/mypage/benefits';
+  }
+  if (notification.type === 'rank_grant' && isRankGrantMetadata(notification.metadata)) {
+    return `/ranks/${notification.metadata.rankSlug}`;
   }
   if (notification.type === 'point_grant' || notification.type === 'like_coin_grant') {
     return '/mypage/coins';

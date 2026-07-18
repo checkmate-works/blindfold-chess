@@ -3676,6 +3676,9 @@
     "pointGrantMessage": {
       "default": "Você recebeu {amount, plural, one {# moeda} other {# moedas}}"
     },
+    "rankGrantMessage": {
+      "default": "Você recebeu o rank {rankName}"
+    },
     "likeCoinGrantMessage": {
       "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
     },

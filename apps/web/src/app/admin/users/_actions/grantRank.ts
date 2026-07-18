@@ -9,6 +9,7 @@ import { db, moderationActions, ranks, userRanks } from '@/lib/db';
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
+import { createNotification } from '@/lib/notifications/notification';
 
 import { requireAdmin } from '../../_lib/auth';
 import { getClientIp } from './getClientIp';
@@ -59,9 +60,10 @@ export async function grantRank(
   }
 
   const ipAddress = await getClientIp();
+  let userRankId: string;
 
   try {
-    await db.transaction(async (tx) => {
+    userRankId = await db.transaction(async (tx) => {
       const [inserted] = await tx
         .insert(userRanks)
         .values({ userId: targetUserId, rankId: rank.id })
@@ -81,6 +83,8 @@ export async function grantRank(
         metadata: { rankSlug: rank.slug, rankLevel: rank.level },
         ipAddress,
       });
+
+      return inserted.id;
     });
   } catch (error) {
     if (error instanceof RankAlreadyGrantedError) {
@@ -91,6 +95,22 @@ export async function grantRank(
   }
 
   revalidatePath(`/admin/users/${targetUserId}`);
+
+  // The recipient has no way to notice a manually-granted rank otherwise —
+  // it doesn't go through the normal challenge/game-publish flow that shows
+  // the RankAchievementModal. Fire-and-forget, after the transaction commits.
+  createNotification({
+    userId: targetUserId,
+    actorId: auth.userId,
+    type: 'rank_grant',
+    targetType: 'user_rank',
+    targetId: userRankId,
+    metadata: {
+      rankSlug: rank.slug,
+      rankLevel: rank.level,
+      reason: trimmedReason,
+    },
+  });
 
   return { success: true };
 }

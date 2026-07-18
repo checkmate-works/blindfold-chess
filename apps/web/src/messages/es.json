@@ -3676,6 +3676,9 @@
     "pointGrantMessage": {
       "default": "Recibiste {amount, plural, one {# moneda} other {# monedas}}"
     },
+    "rankGrantMessage": {
+      "default": "Se te otorgó el rango {rankName}"
+    },
     "likeCoinGrantMessage": {
       "default": "Le gustó tu contenido: ganaste {count, plural, one {# moneda} other {# monedas}}"
     },

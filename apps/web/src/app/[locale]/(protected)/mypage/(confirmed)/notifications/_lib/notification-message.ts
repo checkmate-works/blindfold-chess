@@ -10,6 +10,7 @@ import {
   isLikeCoinGrantMetadata,
   isPointGrantMetadata,
   isPositionMetadata,
+  isRankGrantMetadata,
 } from './type-guards';
 
 /** Minimal subset of the next-intl translator API used by message building. */
@@ -117,6 +118,19 @@ export function buildNotificationMessage(
           return t(benefitDefaultKey, { days: durationDays });
         }
         return t('unknownNotification');
+      }
+      return t('unknownNotification');
+    case 'rank_grant':
+      if (isRankGrantMetadata(notification.metadata)) {
+        // The admin's reason is required at grant time (see grantRank),
+        // so this is always present in practice; the rank-name fallback
+        // only guards against malformed/legacy data.
+        if (notification.metadata.reason) {
+          return notification.metadata.reason;
+        }
+        return t('rankGrantMessage.default', {
+          rankName: tRoot(`ranks.rankNames.${notification.metadata.rankSlug}`),
+        });
       }
       return t('unknownNotification');
     case 'point_grant':

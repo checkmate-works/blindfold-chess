@@ -3682,6 +3682,9 @@
     "pointGrantMessage": {
       "default": "{amount} コインが付与されました"
     },
+    "rankGrantMessage": {
+      "default": "{rankName}が付与されました"
+    },
     "likeCoinGrantMessage": {
       "default": "コンテンツが評価され、{count} コインを獲得しました"
     },
