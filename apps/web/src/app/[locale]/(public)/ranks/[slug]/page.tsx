@@ -125,22 +125,27 @@ export default async function RankDetailPage({ params }: Props) {
           {t('requirements')}
         </RankHeader>
 
-        {/* Criteria description */}
-        <SectionTitle>{t('detail.criteria')}</SectionTitle>
-        <p className="mt-2 text-foreground/80">{t(`detail.criteriaDescriptions.${slug}`)}</p>
+        {/* Criteria description. Grouped in one wrapper so the panel's
+            `space-y-8` treats the whole section as a single child — the
+            heading and its paragraph stay tightly coupled (space-y-2)
+            instead of each getting the panel's full inter-section gap. */}
+        <div className="space-y-2">
+          <SectionTitle>{t('detail.criteria')}</SectionTitle>
+          <p className="text-foreground/80">{t(`detail.criteriaDescriptions.${slug}`)}</p>
+        </div>
 
         {/* Tips callout card with CoordinateBoard visual aid */}
         {hasGuide && (
-          <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
+          <div className="space-y-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
             <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-            <p className="mt-2 text-foreground/80">
+            <p className="text-foreground/80">
               {firstFlatParagraph.length > 100
                 ? `${firstFlatParagraph.slice(0, 100)}…`
                 : firstFlatParagraph}
             </p>
             <Link
               href={buildGuidePath(locale, slug, { kind: 'root' })}
-              className="mt-3 block"
+              className="block"
               aria-label={t('detail.readFullGuide', { rankName })}
             >
               <CoordinateBoard className="mx-auto max-w-[10rem]" />
@@ -152,16 +157,18 @@ export default async function RankDetailPage({ params }: Props) {
         )}
 
         {/* Requirements */}
-        <SectionTitle>{t('detail.requirements')}</SectionTitle>
-        <RequirementsList
-          className="mt-4 space-y-3"
-          iconSize="size-5"
-          textSize="text-base"
-          items={mukyuRequirements}
-        />
+        <div className="space-y-4">
+          <SectionTitle>{t('detail.requirements')}</SectionTitle>
+          <RequirementsList
+            className="space-y-3"
+            iconSize="size-5"
+            textSize="text-base"
+            items={mukyuRequirements}
+          />
+        </div>
 
         {/* Related links */}
-        <div className="mt-6 space-y-3">
+        <div className="space-y-3">
           <p className="text-foreground/80">{mukyuRelatedLinks.learnArticle}</p>
           <GuideLinkCard
             items={[
@@ -218,26 +225,30 @@ export default async function RankDetailPage({ params }: Props) {
         {t('requirements')}
       </RankHeader>
 
-      {/* Criteria description (only if available for this slug) */}
+      {/* Criteria description (only if available for this slug). Grouped in
+          one wrapper so the panel's `space-y-8` treats the whole section as
+          a single child — the heading and its paragraph stay tightly
+          coupled (space-y-2) instead of each getting the panel's full
+          inter-section gap. */}
       {hasCriteriaDescription && (
-        <>
+        <div className="space-y-2">
           <SectionTitle>{t('detail.criteria')}</SectionTitle>
-          <p className="mt-2 text-foreground/80">{t(`detail.criteriaDescriptions.${rankSlug}`)}</p>
-        </>
+          <p className="text-foreground/80">{t(`detail.criteriaDescriptions.${rankSlug}`)}</p>
+        </div>
       )}
 
       {/* Tips callout card (only if available for this slug) */}
       {hasGuide && (
-        <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
+        <div className="space-y-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
           <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-          <p className="mt-2 text-foreground/80">
+          <p className="text-foreground/80">
             {firstDbGuideParagraph.length > 100
               ? `${firstDbGuideParagraph.slice(0, 100)}…`
               : firstDbGuideParagraph}
           </p>
           <Link
             href={buildGuidePath(locale, rankSlug, { kind: 'root' })}
-            className="mt-3 block"
+            className="block"
             aria-label={t('detail.readFullGuide', { rankName })}
           >
             {rankSlug === '4kyu' ? (
@@ -259,13 +270,15 @@ export default async function RankDetailPage({ params }: Props) {
       )}
 
       {/* Score requirements */}
-      <SectionTitle>{t('detail.requirements')}</SectionTitle>
-      <RequirementsList
-        className="mt-4 space-y-3"
-        iconSize="size-5"
-        textSize="text-base"
-        items={buildRequirementItems(requirements, locale, t)}
-      />
+      <div className="space-y-4">
+        <SectionTitle>{t('detail.requirements')}</SectionTitle>
+        <RequirementsList
+          className="space-y-3"
+          iconSize="size-5"
+          textSize="text-base"
+          items={buildRequirementItems(requirements, locale, t)}
+        />
+      </div>
 
       {/* Benefits — dan-tier only (ad-free entitlement). Placed last so the
           layout up through Requirements stays identical across every rank
@@ -276,10 +289,10 @@ export default async function RankDetailPage({ params }: Props) {
           in CLAUDE.md. Add a data-driven benefits list if a second rank
           ever needs one. */}
       {rankSlug === '1dan' && (
-        <>
+        <div className="space-y-2">
           <SectionTitle>{t('detail.benefits')}</SectionTitle>
-          <p className="mt-2 text-foreground/80">{t('detail.benefitsAdFree')}</p>
-        </>
+          <p className="text-foreground/80">{t('detail.benefitsAdFree')}</p>
+        </div>
       )}
 
       <AdSlot slot="content-bottom" />
