@@ -28,6 +28,14 @@ vi.mock('@/app/[locale]/_contexts/AuthContext', () => ({
   useAuth: () => authState,
 }));
 
+// Default: the user has not earned the rank the game satisfies, so the
+// server echoes the qualification back. Tests override to simulate an
+// already-promoted user (null) or the dan-holder fallback ('1kyu').
+const mockGetPublishPromotionTarget = vi.fn();
+vi.mock('@/app/[locale]/(public)/ranks/_actions/getPublishPromotionTarget', () => ({
+  getPublishPromotionTarget: (...args: unknown[]) => mockGetPublishPromotionTarget(...args),
+}));
+
 vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => {
     // Mirror the subset of next-intl's `t` the component uses: plain calls
@@ -144,6 +152,9 @@ describe('GamesPageClient', () => {
     authState.user = null;
     authState.hasProfile = false;
     authState.isLoading = false;
+    mockGetPublishPromotionTarget.mockImplementation((qualification: unknown) =>
+      Promise.resolve(qualification)
+    );
   });
 
   describe('loading state', () => {
@@ -269,15 +280,40 @@ describe('GamesPageClient', () => {
       authState.hasProfile = true;
     }
 
-    it('shows the black-belt nudge with a publish CTA for a signed-in user', () => {
+    it('shows the black-belt nudge with a publish CTA for a signed-in user', async () => {
       signIn();
       mockUseGameList.mockReturnValue({ games: [qualifyingGame()], isLoading: false });
 
       render(<GamesPageClient locale="en" />);
 
-      expect(screen.getByText('publishNudge.body1dan')).toBeInTheDocument();
+      expect(await screen.findByText('publishNudge.body1dan')).toBeInTheDocument();
+      expect(mockGetPublishPromotionTarget).toHaveBeenCalledWith('1dan');
       const cta = screen.getByText('publishNudge.cta');
       expect(cta.closest('a')).toHaveAttribute('href', '/games/shared/new?gameId=game-dan');
+    });
+
+    it('uses the 1kyu wording when the server downgrades the promise (dan already held)', async () => {
+      signIn();
+      mockGetPublishPromotionTarget.mockResolvedValue('1kyu');
+      mockUseGameList.mockReturnValue({ games: [qualifyingGame()], isLoading: false });
+
+      render(<GamesPageClient locale="en" />);
+
+      expect(await screen.findByText('publishNudge.body1kyu')).toBeInTheDocument();
+      expect(screen.queryByText('publishNudge.body1dan')).toBeNull();
+    });
+
+    it('stays hidden when the user already holds every rank the game satisfies', async () => {
+      signIn();
+      mockGetPublishPromotionTarget.mockResolvedValue(null);
+      mockUseGameList.mockReturnValue({ games: [qualifyingGame()], isLoading: false });
+
+      render(<GamesPageClient locale="en" />);
+
+      // Flush the resolved-null promotion promise.
+      await screen.findByTestId('game-list');
+      expect(screen.queryByText('publishNudge.body1dan')).toBeNull();
+      expect(screen.queryByText('publishNudge.body1kyu')).toBeNull();
     });
 
     it('stays hidden for signed-out viewers — the finish modal owns their pitch', () => {
@@ -286,6 +322,7 @@ describe('GamesPageClient', () => {
       render(<GamesPageClient locale="en" />);
 
       expect(screen.queryByText('publishNudge.body1dan')).toBeNull();
+      expect(mockGetPublishPromotionTarget).not.toHaveBeenCalled();
     });
 
     it('stays hidden when no game qualifies (unfinished / unconstrained fixtures)', () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { GAME_LIMIT_WARNING_THRESHOLD, MAX_GAMES } from '@/config';
@@ -12,6 +12,7 @@ import { classifyGuestPromotionQualification } from '@/lib/games/guest-promotion
 import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 import { getSharedGame } from '@/lib/games/shared-game-store';
 
+import { getPublishPromotionTarget } from '@/app/[locale]/(public)/ranks/_actions/getPublishPromotionTarget';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import { TEXT_LINK_CLASSES, TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -69,7 +70,32 @@ export function GamesPageClient({ locale }: Props) {
     }
     return best;
   }, [games, user, hasProfile]);
-  const showPublishNudge = !isLoading && !isAuthLoading && publishNudge !== null;
+
+  // The banner's "publish and you are promoted" must hold for THIS user, not
+  // just this game — a player who already holds the rank the game satisfies
+  // must not be promised it again. getPublishPromotionTarget owns exactly
+  // that question (same promise the finish modal makes): it maps the game's
+  // qualification to the highest rank still unearned, or null.
+  const [nudgeRank, setNudgeRank] = useState<'1kyu' | '1dan' | null>(null);
+  useEffect(() => {
+    if (!publishNudge) {
+      setNudgeRank(null);
+      return;
+    }
+    let cancelled = false;
+    getPublishPromotionTarget(publishNudge.qualification)
+      .then((rank) => {
+        if (!cancelled) setNudgeRank(rank === '1kyu' || rank === '1dan' ? rank : null);
+      })
+      .catch(() => {
+        // Non-load-bearing: on failure the nudge simply stays hidden.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [publishNudge]);
+  const showPublishNudge =
+    !isLoading && !isAuthLoading && publishNudge !== null && nudgeRank !== null;
 
   const handleSortChange = (value: string) => {
     const [column, direction] = value.split('-') as [GameSortOption, SortDirection];
@@ -81,11 +107,7 @@ export function GamesPageClient({ locale }: Props) {
     <>
       {showPublishNudge && (
         <div className="rounded-lg bg-amber-50 p-3 text-sm text-foreground/80 dark:bg-amber-950/20">
-          <p>
-            {publishNudge.qualification === '1dan'
-              ? t('publishNudge.body1dan')
-              : t('publishNudge.body1kyu')}
-          </p>
+          <p>{nudgeRank === '1dan' ? t('publishNudge.body1dan') : t('publishNudge.body1kyu')}</p>
           <Link
             href={`/games/shared/new?gameId=${publishNudge.gameId}`}
             locale={locale}
