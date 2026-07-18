@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { HiCheckCircle, HiChevronRight } from 'react-icons/hi2';
 
 import type { RankCardState } from '../_lib/helpers';
-import { LockedRankIndicator } from './LockedRankIndicator';
 import { RequirementsList } from './RequirementsList';
 import type { RequirementDivider } from './RequirementsList';
 
@@ -16,8 +15,6 @@ type RankCardProps = {
   requirementLabels: (string | RequirementDivider)[];
   requirementsHeading: string;
   comingSoonLabel: string;
-  previousRankName?: string;
-  previousSlug?: string;
   /**
    * When `true`, the requirements list section is omitted from the card.
    * Used by the Dojo page where requirement items are rendered as standalone
@@ -36,8 +33,6 @@ export function RankCard({
   requirementLabels,
   requirementsHeading,
   comingSoonLabel,
-  previousRankName,
-  previousSlug,
   hideRequirements = false,
 }: RankCardProps) {
   const isClickable = state === 'achieved' || state === 'next' || state === 'locked';
@@ -82,18 +77,13 @@ export function RankCard({
               aria-hidden="true"
             />
           )}
-          {state === 'locked' && previousRankName && previousSlug && (
-            <>
-              <LockedRankIndicator
-                locale={locale}
-                previousRankName={previousRankName}
-                previousSlug={previousSlug}
-              />
-              <HiChevronRight
-                className="size-5 shrink-0 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </>
+          {state === 'locked' && (
+            // No lock icon: ranks are earnable in any order (skip-grants),
+            // so an unachieved card is simply browsable, not gated.
+            <HiChevronRight
+              className="ml-auto size-5 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
           )}
         </div>
 

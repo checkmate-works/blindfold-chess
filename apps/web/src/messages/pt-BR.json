@@ -5514,12 +5514,6 @@
       "message": "Conquiste sua faixa preta!",
       "description": "Cadastre-se para acompanhar seu progresso de graduação.",
       "cta": "Cadastro Gratuito"
-    },
-    "lockedModal": {
-      "title": "Graduação Bloqueada",
-      "message": "Passe {rankName} para desbloquear esta graduação",
-      "linkLabel": "Ver detalhes de {rankName}",
-      "ariaLabel": "Bloqueado"
     }
   },
   "rankAchievement": {

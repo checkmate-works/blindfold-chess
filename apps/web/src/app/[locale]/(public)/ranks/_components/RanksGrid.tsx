@@ -60,13 +60,24 @@ export function RanksGrid({ locale, dbRanks }: Props) {
     dbRanks.filter((r) => achievedRankIds.has(r.id)).map((r) => r.slug)
   );
 
+  // The single recommended rank to pursue: the first unachieved slug in
+  // progression order. Ranks grant independently (skip-grants allowed), so
+  // this is a recommendation, not a gate — every other unachieved rank
+  // renders as a plain browsable card. For a signed-out viewer this is
+  // always the first rank.
+  const recommendedNextSlug = ALL_RANK_SLUGS.find(
+    (slug) => !isMukyuSlug(slug) && !achievedSlugs.has(slug)
+  );
+
   return (
     <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {ALL_RANK_SLUGS.map((slug, index) => {
+      {ALL_RANK_SLUGS.map((slug) => {
         if (isMukyuSlug(slug)) {
           const beltColor = getBeltColorHex(slug);
           const mukyuRequirements = t.raw('detail.mukyuRequirements') as string[];
-          const mukyuState = user && achievedSlugs.has('5kyu') ? 'achieved' : 'next';
+          // Mukyu is the starting state — earning ANY real rank leaves it
+          // behind (under skip-grants that need not be 5kyu specifically).
+          const mukyuState = user && achievedSlugs.size > 0 ? 'achieved' : 'next';
           return (
             <RankCard
               key={slug}
@@ -84,9 +95,6 @@ export function RanksGrid({ locale, dbRanks }: Props) {
 
         const rank = dbRanksBySlug.get(slug);
         const beltColor = getBeltColorHex(slug);
-        const isFirstRank = index === 1; // index 1 because mukyu is index 0
-        const previousSlug = ALL_RANK_SLUGS[index - 1];
-        const previousAchieved = previousSlug ? achievedSlugs.has(previousSlug) : false;
         const isAchieved = achievedSlugs.has(slug);
         const requirements = rank ? parseRequirements(rank.requirements) : [];
 
@@ -94,9 +102,7 @@ export function RanksGrid({ locale, dbRanks }: Props) {
           !!rank,
           requirements,
           isAchieved,
-          previousAchieved,
-          !!user,
-          isFirstRank
+          slug === recommendedNextSlug
         );
 
         const requirementLabels = requirements.flatMap((req) => buildRequirementLabels(req, t));
@@ -112,8 +118,6 @@ export function RanksGrid({ locale, dbRanks }: Props) {
             requirementLabels={requirementLabels}
             requirementsHeading={t('requirements')}
             comingSoonLabel={t('comingSoon')}
-            previousRankName={previousSlug ? t(`rankNames.${previousSlug}`) : undefined}
-            previousSlug={previousSlug}
           />
         );
       })}

@@ -5525,12 +5525,6 @@
       "message": "黒帯を取得しよう！",
       "description": "段級位の取得には会員登録が必要です",
       "cta": "無料登録"
-    },
-    "lockedModal": {
-      "title": "ロックされた級",
-      "message": "{rankName}を合格したら挑戦できます",
-      "linkLabel": "{rankName}の詳細を見る",
-      "ariaLabel": "ロックされています"
     }
   },
   "rankAchievement": {

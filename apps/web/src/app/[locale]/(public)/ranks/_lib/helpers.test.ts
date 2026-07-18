@@ -331,9 +331,7 @@ describe('getRankCardState', () => {
     inDb?: boolean;
     requirements?: ChallengeScoreRequirement[];
     isAchieved?: boolean;
-    previousAchieved?: boolean;
-    isLoggedIn?: boolean;
-    isFirstRank?: boolean;
+    isRecommendedNext?: boolean;
   }) => {
     const defaults = {
       inDb: true,
@@ -346,19 +344,10 @@ describe('getRankCardState', () => {
         },
       ],
       isAchieved: false,
-      previousAchieved: false,
-      isLoggedIn: true,
-      isFirstRank: false,
+      isRecommendedNext: false,
     };
     const args = { ...defaults, ...overrides };
-    return getRankCardState(
-      args.inDb,
-      args.requirements,
-      args.isAchieved,
-      args.previousAchieved,
-      args.isLoggedIn,
-      args.isFirstRank
-    );
+    return getRankCardState(args.inDb, args.requirements, args.isAchieved, args.isRecommendedNext);
   };
 
   // --- "coming-soon" states ---
@@ -375,85 +364,42 @@ describe('getRankCardState', () => {
     expect(call({ inDb: false, isAchieved: true })).toBe('coming-soon');
   });
 
-  // --- Logged-in states ---
+  // --- Achievement / recommendation states ---
 
-  it('should return "achieved" when logged in and rank is achieved', () => {
+  it('should return "achieved" when the rank is achieved', () => {
     expect(call({ isAchieved: true })).toBe('achieved');
   });
 
-  it('should return "next" when logged in, not achieved, and is first rank', () => {
-    expect(call({ isFirstRank: true })).toBe('next');
+  it('should return "next" for the recommended next rank', () => {
+    expect(call({ isRecommendedNext: true })).toBe('next');
   });
 
-  it('should return "next" when logged in, not achieved, and previous rank is achieved', () => {
-    expect(call({ previousAchieved: true })).toBe('next');
-  });
-
-  it('should return "locked" when logged in, not achieved, not first, and previous not achieved', () => {
+  it('should return "locked" (plain unachieved) otherwise — there is NO gate on lower ranks', () => {
+    // Under skip-grants every defined rank is browsable and earnable; the
+    // state only decides styling (recommended glow vs plain card).
     expect(call({})).toBe('locked');
   });
 
-  it('should return "next" when both isFirstRank and previousAchieved are true', () => {
-    expect(call({ isFirstRank: true, previousAchieved: true })).toBe('next');
-  });
-
-  // --- Logged-out states ---
-
-  it('should return "next" when not logged in and is first rank', () => {
-    expect(call({ isLoggedIn: false, isFirstRank: true })).toBe('next');
-  });
-
-  it('should return "locked" when not logged in and is not first rank', () => {
-    expect(call({ isLoggedIn: false })).toBe('locked');
-  });
-
-  it('should return "locked" when not logged in even if previousAchieved is true (impossible but safe)', () => {
-    expect(call({ isLoggedIn: false, previousAchieved: true })).toBe('locked');
+  it('should prefer "achieved" over the recommendation flag', () => {
+    expect(call({ isAchieved: true, isRecommendedNext: true })).toBe('achieved');
   });
 
   // --- Priority checks ---
 
-  it('"coming-soon" (not in DB) takes priority over logged-in achieved state', () => {
-    expect(call({ inDb: false, isAchieved: true, isLoggedIn: true })).toBe('coming-soon');
+  it('"coming-soon" (not in DB) takes priority over achieved state', () => {
+    expect(call({ inDb: false, isAchieved: true })).toBe('coming-soon');
   });
 
-  it('"coming-soon" (empty requirements) takes priority over logged-in achieved state', () => {
-    expect(call({ requirements: [], isAchieved: true, isLoggedIn: true })).toBe('coming-soon');
+  it('"coming-soon" (empty requirements) takes priority over achieved state', () => {
+    expect(call({ requirements: [], isAchieved: true })).toBe('coming-soon');
   });
 
-  // --- 4kyu-specific: non-empty requirements should NOT be "coming-soon" ---
-
-  it('should not return "coming-soon" for a rank with legal_moves requirements (4kyu)', () => {
+  it('should not return "coming-soon" for a rank with defined requirements (4kyu)', () => {
     const legalMovesRequirements: ChallengeScoreRequirement[] = [
       { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
       { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
     ];
-    const result = call({ requirements: legalMovesRequirements });
-    expect(result).not.toBe('coming-soon');
-  });
-
-  it('should return "locked" for 4kyu requirements when not first rank and previous not achieved', () => {
-    const legalMovesRequirements: ChallengeScoreRequirement[] = [
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
-    ];
-    expect(call({ requirements: legalMovesRequirements })).toBe('locked');
-  });
-
-  it('should return "next" for 4kyu requirements when previous rank is achieved', () => {
-    const legalMovesRequirements: ChallengeScoreRequirement[] = [
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
-    ];
-    expect(call({ requirements: legalMovesRequirements, previousAchieved: true })).toBe('next');
-  });
-
-  it('should return "achieved" for 4kyu requirements when rank is achieved', () => {
-    const legalMovesRequirements: ChallengeScoreRequirement[] = [
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
-    ];
-    expect(call({ requirements: legalMovesRequirements, isAchieved: true })).toBe('achieved');
+    expect(call({ requirements: legalMovesRequirements })).not.toBe('coming-soon');
   });
 });
 

@@ -252,13 +252,21 @@ export function isWhiteBelt(beltColor: string): boolean {
   return beltColor.toLowerCase() === '#ffffff';
 }
 
+/**
+ * Card state for the ranks grid. Ranks are granted independently
+ * (skip-grants allowed), so there is NO gate on lower ranks: every defined
+ * rank is openly browsable and earnable. `'locked'` therefore no longer
+ * means "blocked until the previous rank is passed" — it is simply
+ * "unachieved and not the recommended next", rendered as a plain clickable
+ * card. `'next'` highlights the single recommended rank to pursue (the
+ * first unachieved in progression order — computed by the caller), which
+ * for a signed-out viewer is always the first rank.
+ */
 export function getRankCardState(
   inDb: boolean,
   requirements: RankRequirement[],
   isAchieved: boolean,
-  previousAchieved: boolean,
-  isLoggedIn: boolean,
-  isFirstRank: boolean
+  isRecommendedNext: boolean
 ): RankCardState {
   // Not in DB = Coming Soon
   if (!inDb) return 'coming-soon';
@@ -266,16 +274,8 @@ export function getRankCardState(
   // Has empty requirements = coming soon (conditions not yet defined)
   if (requirements.length === 0) return 'coming-soon';
 
-  // Logged in: check achievement
-  if (isLoggedIn) {
-    if (isAchieved) return 'achieved';
-    if (isFirstRank || previousAchieved) return 'next';
-    return 'locked';
-  }
-
-  // Not logged in: first rank is visible, rest are locked
-  if (isFirstRank) return 'next';
-  return 'locked';
+  if (isAchieved) return 'achieved';
+  return isRecommendedNext ? 'next' : 'locked';
 }
 
 export type RankTeaserCardProps = {
@@ -287,8 +287,6 @@ export type RankTeaserCardProps = {
   requirementLabels: string[];
   requirementsHeading: string;
   comingSoonLabel: string;
-  previousRankName?: string;
-  previousSlug?: string;
 };
 
 const TEASER_SLUGS = ['5kyu', '4kyu'] as const;
@@ -303,7 +301,7 @@ export function buildRankTeaserCards(
   locale: string,
   tRanks: (key: string, values?: Record<string, string | number | Date>) => string
 ): RankTeaserCardProps[] {
-  return TEASER_SLUGS.map((slug, index) => {
+  return TEASER_SLUGS.map((slug) => {
     const seed = ranksSeedData.find((r) => r.slug === slug);
     const requirements = seed ? parseRequirements(seed.requirements) : [];
     const beltColor = getBeltColorHex(slug);
@@ -315,7 +313,6 @@ export function buildRankTeaserCards(
         (label): label is string => typeof label === 'string'
       )
     );
-    const previousSlug = index > 0 ? TEASER_SLUGS[index - 1] : undefined;
 
     return {
       slug,
@@ -326,8 +323,6 @@ export function buildRankTeaserCards(
       requirementLabels,
       requirementsHeading: tRanks('requirements'),
       comingSoonLabel: tRanks('comingSoon'),
-      previousRankName: previousSlug ? tRanks(`rankNames.${previousSlug}`) : undefined,
-      previousSlug,
     };
   });
 }

@@ -5514,12 +5514,6 @@
       "message": "¡Obtén tu cinturón negro!",
       "description": "Regístrate para seguir tu progreso de rango.",
       "cta": "Registro Gratuito"
-    },
-    "lockedModal": {
-      "title": "Rango Bloqueado",
-      "message": "Supera {rankName} para desbloquear este rango",
-      "linkLabel": "Ver detalles de {rankName}",
-      "ariaLabel": "Bloqueado"
     }
   },
   "rankAchievement": {
