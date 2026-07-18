@@ -46,6 +46,7 @@ const STATIC_PAGES = [
   '/topics',
   '/topics/openings',
   '/topics/squares',
+  '/repertoires',
   '/interview',
   '/games',
   '/games/new',
