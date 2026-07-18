@@ -112,7 +112,7 @@ describe('claimSharedGameAction', () => {
     expect(result).toEqual({ success: true, grantedRanks: granted });
   });
 
-  it('omits grantedRanks when nothing was granted (fresh account, linear progression)', async () => {
+  it('omits grantedRanks when nothing was granted (e.g. a non-qualifying game)', async () => {
     const result = await claimSharedGameAction(GAME_ID, TOKEN);
 
     expect(result).toEqual({ success: true });

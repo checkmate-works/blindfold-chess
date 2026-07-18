@@ -511,13 +511,13 @@ describe('checkAndGrantRanks', () => {
     expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(1);
   });
 
-  it('should stop at the first rank whose requirements are NOT met', async () => {
+  it('skips an unmet rank and still grants a later met one (skip-grants)', async () => {
     let callCount = 0;
     mockSelectResult.mockImplementation(() => {
       callCount++;
       // Call 1: userRanks (none achieved)
       if (callCount === 1) return [];
-      // Call 2: ranks (two ranks)
+      // Call 2: ranks (three ranks — the middle one is unmet)
       if (callCount === 2)
         return [
           {
@@ -546,22 +546,87 @@ describe('checkAndGrantRanks', () => {
               },
             ],
           },
+          {
+            id: 'rank-3',
+            slug: '3kyu',
+            level: 30,
+            requirements: [
+              {
+                type: 'challenge_score',
+                menuType: 'route_planner',
+                leaderboardKey: 'knight',
+                minScore: 3,
+              },
+            ],
+          },
         ];
-      // Call 3: allBestScores — score 25 meets rank-1 (>=20) but NOT rank-2 (< 30)
+      // Call 3: allBestScores — meets rank-1 (25 >= 20) and rank-3 (5 >= 3)
+      // but NOT rank-2 (25 < 30).
       if (callCount === 3)
-        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }];
+        return [
+          { menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 },
+          { menuType: 'route_planner', leaderboardKey: 'knight', score: 5 },
+        ];
       return [];
     });
 
     const result = await checkAndGrantRanks(userId);
 
-    // Only rank-1 should be granted
-    expect(result).toEqual([{ slug: '5kyu', level: 10, color: undefined }]);
-    expect(mockInsertValues).toHaveBeenCalledTimes(1);
-    expect(mockInsertValues).toHaveBeenCalledWith({
-      userId,
-      rankId: 'rank-1',
+    // rank-1 and rank-3 granted; the unmet rank-2 no longer blocks rank-3.
+    expect(result).toEqual([
+      { slug: '5kyu', level: 10, color: undefined },
+      { slug: '3kyu', level: 30, color: undefined },
+    ]);
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+    expect(mockInsertValues).toHaveBeenNthCalledWith(1, { userId, rankId: 'rank-1' });
+    expect(mockInsertValues).toHaveBeenNthCalledWith(2, { userId, rankId: 'rank-3' });
+  });
+
+  it('grants a top rank alone when no lower rank is met (jump straight to 1dan)', async () => {
+    let callCount = 0;
+    mockSelectResult.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return []; // no achieved ranks
+      if (callCount === 2)
+        return [
+          {
+            id: 'rank-5kyu',
+            slug: '5kyu',
+            level: 10,
+            requirements: [
+              {
+                type: 'challenge_score',
+                menuType: 'coordinate_quiz',
+                leaderboardKey: 'white',
+                minScore: 20,
+              },
+            ],
+          },
+          {
+            id: 'rank-1dan',
+            slug: '1dan',
+            level: 110,
+            requirements: [{ type: 'game_publish_win_hidden_board', minCount: 1, maxPeeks: 5 }],
+          },
+        ];
+      if (callCount === 3) return []; // no challenge scores at all
+      // Call 4: the 1dan evaluator's games query — one qualifying hidden-board win
+      if (callCount === 4)
+        return [
+          {
+            playSettings: { boardVisibility: 'never' },
+            playSettingsLog: null,
+            operationLogs: [],
+          },
+        ];
+      return [];
     });
+
+    const result = await checkAndGrantRanks(userId);
+
+    expect(result).toEqual([{ slug: '1dan', level: 110, color: undefined }]);
+    expect(mockInsertValues).toHaveBeenCalledTimes(1);
+    expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-1dan' });
   });
 
   it('should grant multiple consecutive ranks when all requirements are met', async () => {

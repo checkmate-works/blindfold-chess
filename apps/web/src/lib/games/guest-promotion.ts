@@ -50,10 +50,10 @@ type Args = {
  * is the exact publish-time normalization of the change log, and the peek
  * allowance comes from the 1dan seed requirement itself.
  *
- * Note the phrasing this feeds must stay honest: belt progression is linear
- * from 5kyu, so a signed-out player who signs up does NOT get the rank from
- * this game immediately — the published game counts automatically once their
- * progression reaches it (the grant cascade handles multi-rank passes).
+ * Ranks are evaluated independently (skip-grants allowed), so the pitch this
+ * feeds can promise promotion outright: a signed-out player who signs up and
+ * publishes this game is granted the named rank immediately, even with no
+ * lower ranks at all.
  */
 export function classifyGuestPromotionQualification({
   result,

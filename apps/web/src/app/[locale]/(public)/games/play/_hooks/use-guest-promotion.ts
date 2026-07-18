@@ -27,12 +27,12 @@ type Args = {
  * this finished game satisfies, for the guest pitch in the finish modal.
  *
  * `usePublishPromotion` answers "would publishing promote YOU right now?" —
- * a question only the server can answer, and only for a signed-in player one
- * rung away. For a guest there is no progression to consult, so this hook
- * answers the weaker question entirely client-side: "does this game satisfy
- * the 1kyu / 1dan game requirement?" The pitch built on it must stay honest —
- * progression is linear from 5kyu, so the copy promises "counts when you get
- * there", never "you'll be promoted".
+ * which needs the server (has this user already earned the rank?). For a
+ * guest there is no account to consult, so this hook answers entirely
+ * client-side: "does this game satisfy the 1kyu / 1dan game requirement?"
+ * Ranks are granted independently (skip-grants allowed), so the pitch can
+ * promise promotion outright: sign up, publish, and the rank is granted —
+ * no lower ranks needed.
  *
  * Returns null for confirmed signed-in users (the server-backed promotion
  * owns them). Provisional users (signed in, no profile) are included: their

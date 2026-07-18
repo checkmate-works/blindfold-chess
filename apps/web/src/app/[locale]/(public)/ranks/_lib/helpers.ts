@@ -376,12 +376,11 @@ export type ResolveNextRankResult = {
  *   once everything is achieved).
  *
  * @remarks
- * - Linear grant progression is assumed: ranks are granted in order, so in
- *   practice `next` will be the slug immediately after `current`.
- * - If achievement gaps exist (e.g. user somehow has 3kyu without 5kyu), the
- *   linear walk assigns `next` to the first non-achieved slug it encounters,
- *   which may end up being lower than `current` in theory. This behaviour is
- *   intentional and locked in by tests.
+ * - Achievement gaps are a normal state: ranks are granted independently
+ *   (skip-grants allowed), so e.g. a player can hold 1dan with no kyū ranks.
+ *   The walk then assigns `next` to the first non-achieved slug — possibly
+ *   lower than `current` — which is the right recommendation: fill in the
+ *   lower belts. Locked in by tests.
  * - Mukyu is UI-only and is always skipped — it is never counted as achieved
  *   or assigned as `current` / `next`.
  */

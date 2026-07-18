@@ -4,8 +4,9 @@
  * @description
  * Evaluates whether a user qualifies for belt rank promotions after completing
  * challenges. Uses an evaluator pattern: one function per requirement `type`
- * (e.g., `challenge_score`). Ranks are evaluated linearly — stops at the first
- * unmet rank. Grants are idempotent via `onConflictDoNothing`.
+ * (e.g., `challenge_score`). Every unachieved rank is evaluated independently —
+ * an unmet lower rank never blocks a higher one (skip-grants are allowed by
+ * design). Grants are idempotent via `onConflictDoNothing`.
  *
  * @design Evaluator pattern, not per-rank strategy
  *
@@ -166,12 +167,18 @@ export async function evaluateRankRequirements(
 /**
  * Check and grant any newly achievable ranks for a user.
  *
- * Called after a challenge result is saved. Finds the next rank(s)
- * the user hasn't achieved yet (ordered by level), evaluates their
- * requirements, and grants them if all conditions are met.
+ * Called after every rank-relevant trigger (challenge save, position
+ * create, game publish, game claim). Evaluates every unachieved rank
+ * INDEPENDENTLY, in level order: each rank grants the moment its own
+ * requirements are met, regardless of lower ranks — so a brand-new
+ * player who publishes a black-belt-grade win jumps straight to 1dan
+ * with no kyū ranks at all. Sparse achievement sets are a supported
+ * state everywhere downstream (`resolveNextRank` walks to the first
+ * unachieved slug; the ranks grid and admin stats key off actual rows).
  *
- * Stops at the first rank whose requirements are NOT met, since
- * progression is linear (can't skip ranks).
+ * This is a deliberate product choice (UGC first): the old linear
+ * "stop at the first unmet rank" gate was removed 2026-07-18 so a
+ * single published game can promote anyone immediately.
  *
  * Note: This function uses its own transaction. It should be called
  * AFTER the challenge result transaction commits, so that
@@ -212,7 +219,7 @@ export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]>
     if (requirements.length === 0) continue; // No requirements = skip
 
     const met = await evaluateRankRequirements(userId, requirements, undefined, scoreCache);
-    if (!met) break; // Linear progression: stop at first unmet rank
+    if (!met) continue; // Independent evaluation: an unmet rank never blocks higher ones
 
     // 4. Grant the rank
     await db

@@ -26,9 +26,9 @@ export type ClaimSharedGameResponse =
  *
  * Claiming re-evaluates belt ranks: the game only now has an author, so
  * this is its first chance to count toward `game_publish_win*`
- * requirements — for a fresh account that usually grants nothing yet
- * (progression is linear from 5kyu), and the game simply counts later when
- * their progression reaches it.
+ * requirements. Ranks are evaluated independently (skip-grants allowed),
+ * so a fresh account claiming a qualifying win is promoted on the spot —
+ * a black-belt-grade game jumps them straight to 1dan.
  *
  * No feed item is emitted: the publish already happened, possibly long
  * ago, and a retroactive "new game" feed entry would misrepresent it.
