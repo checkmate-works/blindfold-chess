@@ -115,11 +115,15 @@ export default async function RankDetailPage({ params }: Props) {
     return (
       <PageLayout
         title={rankName}
-        headerNote={<RankAchievedBadge slug={slug} label={t('detail.achieved')} />}
         locale={locale}
         breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
       >
-        <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
+        <RankHeader
+          beltColor={beltColor}
+          trailing={<RankAchievedBadge slug={slug} label={t('detail.achieved')} />}
+        >
+          {t('requirements')}
+        </RankHeader>
 
         {/* Criteria description */}
         <SectionTitle>{t('detail.criteria')}</SectionTitle>
@@ -204,11 +208,15 @@ export default async function RankDetailPage({ params }: Props) {
   return (
     <PageLayout
       title={rankName}
-      headerNote={<RankAchievedBadge slug={rankSlug} label={t('detail.achieved')} />}
       locale={locale}
       breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
     >
-      <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
+      <RankHeader
+        beltColor={beltColor}
+        trailing={<RankAchievedBadge slug={rankSlug} label={t('detail.achieved')} />}
+      >
+        {t('requirements')}
+      </RankHeader>
 
       {/* Criteria description (only if available for this slug) */}
       {hasCriteriaDescription && (
