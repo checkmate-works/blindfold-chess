@@ -1,10 +1,13 @@
 import 'server-only';
 
 import { hasActiveSubscription } from '@/lib/billing/subscription';
+import { hasDanTierRank } from '@/lib/users/dan-rank';
 import { hasActiveGrant } from '@/lib/users/user-grants';
 
 /**
- * Whether a user is entitled to browse ad-free.
+ * Whether a user is entitled to browse ad-free. Three sources, ORed:
+ * an active Stripe subscription, an active `ad_free` grant, or a dan-tier
+ * belt rank (the permanent dan perk — see {@link hasDanTierRank}).
  *
  * This is THE single decision point for ad-free status. Both ad-gating
  * layers delegate here:
@@ -22,10 +25,11 @@ import { hasActiveGrant } from '@/lib/users/user-grants';
 export async function hasAdFreeEntitlement(userId: string | null): Promise<boolean> {
   if (!userId) return false;
 
-  const [hasSub, hasGrant] = await Promise.all([
+  const [hasSub, hasGrant, hasDan] = await Promise.all([
     hasActiveSubscription(userId),
     hasActiveGrant(userId, 'ad_free'),
+    hasDanTierRank(userId),
   ]);
 
-  return hasSub || hasGrant;
+  return hasSub || hasGrant || hasDan;
 }

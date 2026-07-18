@@ -35,6 +35,11 @@ vi.mock('@/lib/users/user-grants', () => ({
   hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
 }));
 
+const mockHasDanTierRank = vi.fn();
+vi.mock('@/lib/users/dan-rank', () => ({
+  hasDanTierRank: (...args: unknown[]) => mockHasDanTierRank(...args),
+}));
+
 const { getAllAdCreatives, shouldShowAdsForUser } = await import('./ad');
 
 describe('getAllAdCreatives', () => {
@@ -77,6 +82,9 @@ describe('getAllAdCreatives', () => {
 describe('shouldShowAdsForUser', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockHasActiveSubscription.mockResolvedValue(false);
+    mockHasActiveGrant.mockResolvedValue(false);
+    mockHasDanTierRank.mockResolvedValue(false);
   });
 
   it('should return true for unauthenticated user (null) without checking subscription', async () => {
@@ -84,11 +92,11 @@ describe('shouldShowAdsForUser', () => {
     expect(result).toBe(true);
     expect(mockHasActiveSubscription).not.toHaveBeenCalled();
     expect(mockHasActiveGrant).not.toHaveBeenCalled();
+    expect(mockHasDanTierRank).not.toHaveBeenCalled();
   });
 
   it('should return false for user with active subscription', async () => {
     mockHasActiveSubscription.mockResolvedValue(true);
-    mockHasActiveGrant.mockResolvedValue(false);
 
     const result = await shouldShowAdsForUser('user-123');
     expect(result).toBe(false);
@@ -96,7 +104,6 @@ describe('shouldShowAdsForUser', () => {
   });
 
   it('should return false for user with active ad_free grant', async () => {
-    mockHasActiveSubscription.mockResolvedValue(false);
     mockHasActiveGrant.mockResolvedValue(true);
 
     const result = await shouldShowAdsForUser('user-789');
@@ -104,13 +111,19 @@ describe('shouldShowAdsForUser', () => {
     expect(mockHasActiveGrant).toHaveBeenCalledWith('user-789', 'ad_free');
   });
 
-  it('should return true for user without subscription and without grant', async () => {
-    mockHasActiveSubscription.mockResolvedValue(false);
-    mockHasActiveGrant.mockResolvedValue(false);
+  it('should return false for user with a dan-tier rank', async () => {
+    mockHasDanTierRank.mockResolvedValue(true);
 
+    const result = await shouldShowAdsForUser('user-dan');
+    expect(result).toBe(false);
+    expect(mockHasDanTierRank).toHaveBeenCalledWith('user-dan');
+  });
+
+  it('should return true for user without subscription, grant, or dan rank', async () => {
     const result = await shouldShowAdsForUser('user-456');
     expect(result).toBe(true);
     expect(mockHasActiveSubscription).toHaveBeenCalledWith('user-456');
     expect(mockHasActiveGrant).toHaveBeenCalledWith('user-456', 'ad_free');
+    expect(mockHasDanTierRank).toHaveBeenCalledWith('user-456');
   });
 });

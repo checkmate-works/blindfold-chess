@@ -115,6 +115,20 @@ export const ALL_RANK_SLUGS = ['mukyu', '5kyu', '4kyu', '3kyu', '2kyu', '1kyu', 
 
 export type RankSlug = (typeof ALL_RANK_SLUGS)[number];
 
+/**
+ * The `level` at which the dan tier begins (1dan = 110; kyū ranks are ≤50).
+ *
+ * Holding any rank at or above this level carries the dan perk: permanent
+ * ad-free browsing (see `hasDanTierRank` / `hasAdFreeEntitlement`). Defined
+ * as a level threshold rather than a slug list so future dan ranks (2dan,
+ * 3dan, …) inherit the perk without code changes — they will all seed with
+ * `level >= 110` per the numbering scheme above.
+ *
+ * `user_ranks` is INSERT-only (ranks are never revoked), so crossing this
+ * threshold is a one-way, permanent entitlement.
+ */
+export const DAN_TIER_MIN_LEVEL = 110;
+
 /** Belt colors for each rank. */
 export const RANK_COLORS: Record<RankSlug, string> = {
   mukyu: 'white',

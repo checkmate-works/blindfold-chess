@@ -10,6 +10,11 @@ vi.mock('@/lib/users/user-grants', () => ({
   hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
 }));
 
+const mockHasDanTierRank = vi.fn();
+vi.mock('@/lib/users/dan-rank', () => ({
+  hasDanTierRank: (...args: unknown[]) => mockHasDanTierRank(...args),
+}));
+
 vi.mock('server-only', () => ({}));
 
 const { computeAdsHiddenValueForUser } = await import('./ads-hidden-cookie-compute');
@@ -17,6 +22,9 @@ const { computeAdsHiddenValueForUser } = await import('./ads-hidden-cookie-compu
 describe('computeAdsHiddenValueForUser', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockHasActiveSubscription.mockResolvedValue(false);
+    mockHasActiveGrant.mockResolvedValue(false);
+    mockHasDanTierRank.mockResolvedValue(false);
   });
 
   it('returns null for anonymous visitors (userId === null)', async () => {
@@ -24,11 +32,11 @@ describe('computeAdsHiddenValueForUser', () => {
     expect(result).toBeNull();
     expect(mockHasActiveSubscription).not.toHaveBeenCalled();
     expect(mockHasActiveGrant).not.toHaveBeenCalled();
+    expect(mockHasDanTierRank).not.toHaveBeenCalled();
   });
 
   it('returns "1" when the user has an active subscription', async () => {
     mockHasActiveSubscription.mockResolvedValue(true);
-    mockHasActiveGrant.mockResolvedValue(false);
 
     const result = await computeAdsHiddenValueForUser('user-1');
 
@@ -36,7 +44,6 @@ describe('computeAdsHiddenValueForUser', () => {
   });
 
   it('returns "1" when the user has an active ad_free grant', async () => {
-    mockHasActiveSubscription.mockResolvedValue(false);
     mockHasActiveGrant.mockResolvedValue(true);
 
     const result = await computeAdsHiddenValueForUser('user-2');
@@ -45,10 +52,16 @@ describe('computeAdsHiddenValueForUser', () => {
     expect(mockHasActiveGrant).toHaveBeenCalledWith('user-2', 'ad_free');
   });
 
-  it('returns null when the user has neither a subscription nor a grant', async () => {
-    mockHasActiveSubscription.mockResolvedValue(false);
-    mockHasActiveGrant.mockResolvedValue(false);
+  it('returns "1" when the user holds a dan-tier rank', async () => {
+    mockHasDanTierRank.mockResolvedValue(true);
 
+    const result = await computeAdsHiddenValueForUser('user-dan');
+
+    expect(result).toBe('1');
+    expect(mockHasDanTierRank).toHaveBeenCalledWith('user-dan');
+  });
+
+  it('returns null when the user has no subscription, grant, or dan rank', async () => {
     const result = await computeAdsHiddenValueForUser('user-3');
 
     expect(result).toBeNull();
