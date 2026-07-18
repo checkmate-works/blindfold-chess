@@ -5492,6 +5492,8 @@
       "criteria": "Criterios",
       "requirements": "Requisitos",
       "achieved": "Conseguido",
+      "benefits": "Beneficios",
+      "benefitsAdFree": "Los anuncios en todo el sitio quedan ocultos.",
       "criteriaDescriptions": {
         "mukyu": "Listo para comenzar el entrenamiento básico de ajedrez a ciegas.",
         "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",

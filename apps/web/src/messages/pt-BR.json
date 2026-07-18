@@ -5492,6 +5492,8 @@
       "criteria": "Critérios",
       "requirements": "Requisitos",
       "achieved": "Conquistado",
+      "benefits": "Benefícios",
+      "benefitsAdFree": "Os anúncios em todo o site ficam ocultos.",
       "criteriaDescriptions": {
         "mukyu": "Pronto para começar o treinamento básico de xadrez às cegas.",
         "5kyu": "Capacidade de identificar corretamente a casa no tabuleiro de xadrez a partir da notação algébrica (ex., e4, Bg7).",

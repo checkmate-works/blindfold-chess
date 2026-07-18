@@ -226,6 +226,19 @@ export default async function RankDetailPage({ params }: Props) {
         </>
       )}
 
+      {/* Benefits — dan-tier only (ad-free entitlement). Hardcoded to 1dan
+          rather than driven by rank data: today only 1dan carries a
+          benefit, and `hasDanTierRank` is intentionally derived from
+          `user_ranks`, not materialized — see the User Grants System notes
+          in CLAUDE.md. Add a data-driven benefits list if a second rank
+          ever needs one. */}
+      {rankSlug === '1dan' && (
+        <>
+          <SectionTitle>{t('detail.benefits')}</SectionTitle>
+          <p className="mt-2 text-foreground/80">{t('detail.benefitsAdFree')}</p>
+        </>
+      )}
+
       {/* Tips callout card (only if available for this slug) */}
       {hasGuide && (
         <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">

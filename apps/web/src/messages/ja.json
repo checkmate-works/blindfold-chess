@@ -5503,6 +5503,8 @@
       "criteria": "合格基準",
       "requirements": "合格条件",
       "achieved": "達成済み",
+      "benefits": "特典",
+      "benefitsAdFree": "サービス内の広告が非表示になります。",
       "criteriaDescriptions": {
         "mukyu": "目隠しチェスの簡単なトレーニングを始める準備ができていること。",
         "5kyu": "代数記法（例：e4、Bg7）から、該当するチェスボード上のマスを正しく特定できること。",
