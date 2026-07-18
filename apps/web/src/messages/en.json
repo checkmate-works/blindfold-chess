@@ -2328,6 +2328,15 @@
       "cancel": "Cancel",
       "deleteConfirmTitle": "Delete this shared game?",
       "deleteConfirmBody": "This removes it from the public catalog and can't be undone.",
+      "claim": {
+        "signedOutTitle": "Make this game part of your record",
+        "signedOutBody": "You published this game without an account. Sign up and link it, and it will count toward belt-rank requirements as your progression reaches them.",
+        "signUpCta": "Sign up and link this game",
+        "claimTitle": "Link this game to your account",
+        "claimBody": "You published this game before signing in. Link it to your account and it will count toward belt-rank requirements as your progression reaches them.",
+        "claimButton": "Link to my account",
+        "claiming": "Linking…"
+      },
       "errors": {
         "forbidden": "You don't have permission to do that.",
         "generic": "Something went wrong. Please try again."
@@ -3701,6 +3710,7 @@
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
     "gamePublished": "Game published",
+    "gameClaimed": "The game is now linked to your account",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",

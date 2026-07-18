@@ -18,6 +18,7 @@ import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleGameLikeAction } from '../_actions/game-like';
+import { ClaimGameBanner } from './ClaimGameBanner';
 import { GameHelpTour } from './GameHelpTour';
 import { GameOutcomeLabel } from './GameOutcomeLabel';
 import { GameReview } from './GameReview';
@@ -77,6 +78,9 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
       breadcrumb={[{ label: t('list.title'), href: '/games/shared' }, { label: game.title }]}
     >
       <div className="space-y-6">
+        {/* Account-linking funnel for the anonymous publisher's own browser —
+            renders nothing for everyone else (no token / already authored). */}
+        <ClaimGameBanner gameId={game.id} isAuthorless={game.authorId == null} locale={locale} />
         {/* Board + move list (games/play layout); the description sits below
             the board, above the stats, via GameReview's slot. The blindfold
             difficulty (board visibility + piece obfuscation) is surfaced inside

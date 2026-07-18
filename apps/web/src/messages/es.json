@@ -2324,6 +2324,15 @@
       "cancel": "Cancelar",
       "deleteConfirmTitle": "¿Eliminar esta partida compartida?",
       "deleteConfirmBody": "Se quitará del catálogo público y no se puede deshacer.",
+      "claim": {
+        "signedOutTitle": "Haz que esta partida forme parte de tu historial",
+        "signedOutBody": "Publicaste esta partida sin una cuenta. Regístrate y vincúlala, y contará para los requisitos de rango a medida que progreses.",
+        "signUpCta": "Registrarme y vincular esta partida",
+        "claimTitle": "Vincular esta partida a tu cuenta",
+        "claimBody": "Publicaste esta partida antes de iniciar sesión. Vincúlala a tu cuenta y contará para los requisitos de rango a medida que progreses.",
+        "claimButton": "Vincular a mi cuenta",
+        "claiming": "Vinculando…"
+      },
       "errors": {
         "forbidden": "No tienes permiso para hacer eso.",
         "generic": "Algo salió mal. Inténtalo de nuevo."
@@ -3695,6 +3704,7 @@
     "profileUpdated": "Perfil actualizado",
     "postCreated": "Publicado correctamente",
     "gamePublished": "Partida publicada",
+    "gameClaimed": "La partida ya está vinculada a tu cuenta",
     "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde.",
     "gameSaved": "Partida guardada correctamente",
     "gamesDeleted": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
