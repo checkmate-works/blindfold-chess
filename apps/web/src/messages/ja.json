@@ -5590,7 +5590,6 @@
     "viewAllGuides": "ガイドを全て見る",
     "curriculum": {
       "title": "教本",
-      "empty": "近日公開",
       "achieved": "達成済み",
       "sections": {
         "algebraicNotation": "代数記法の理解",

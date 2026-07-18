@@ -222,7 +222,6 @@ export default async function DojoPage({ params }: LocalePageProps) {
           maxVisibleSlug={next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1]}
           rankName={(slug) => tRanks(`rankNames.${slug}`)}
           sectionTitle={(key) => t(`curriculum.sections.${key}`)}
-          emptyLabel={t('curriculum.empty')}
           achievedLabel={t('curriculum.achieved')}
           guideHrefBySlug={guideHrefBySlug}
         />

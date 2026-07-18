@@ -37,7 +37,6 @@ type RenderOpts = {
   maxVisibleSlug?: RankSlug | null;
   guideHrefBySlug?: Partial<Record<RankSlug, string | null>>;
   userAware?: boolean;
-  showComingSoonPlaceholders?: boolean;
 };
 
 function renderToc({
@@ -46,7 +45,6 @@ function renderToc({
   maxVisibleSlug,
   guideHrefBySlug = buildGuideHrefs(),
   userAware = true,
-  showComingSoonPlaceholders,
 }: RenderOpts = {}) {
   const userProps = userAware
     ? {
@@ -60,25 +58,24 @@ function renderToc({
       maxVisibleSlug={maxVisibleSlug}
       rankName={rankName}
       sectionTitle={sectionTitle}
-      emptyLabel="Coming soon"
       achievedLabel="Achieved"
       guideHrefBySlug={guideHrefBySlug}
-      showComingSoonPlaceholders={showComingSoonPlaceholders}
     />
   );
 }
+
+/** Slugs that actually render: only ranks with at least one curriculum section. */
+const RANKS_WITH_SECTIONS = CURRICULUM.filter(({ sections }) => sections.length > 0);
 
 describe('CurriculumToc', () => {
   it('renders a flat list without <details> elements', () => {
     const { container } = renderToc();
     expect(container.querySelectorAll('details').length).toBe(0);
-    // One <ol> with one <li> per expected row.
+    // One <ol> with one <li> per curriculum section — section-less ranks
+    // are omitted entirely, never shown as placeholders.
     const ol = container.querySelector('ol');
     expect(ol).not.toBeNull();
-    const expectedRows = CURRICULUM.reduce(
-      (sum, { sections }) => sum + Math.max(sections.length, 1),
-      0
-    );
+    const expectedRows = CURRICULUM.reduce((sum, { sections }) => sum + sections.length, 0);
     expect(ol!.querySelectorAll(':scope > li').length).toBe(expectedRows);
   });
 
@@ -99,9 +96,9 @@ describe('CurriculumToc', () => {
     }
   });
 
-  it('renders every rank in CURRICULUM (as a section row or placeholder)', () => {
+  it('renders every rank that has curriculum sections', () => {
     const { container } = renderToc();
-    for (const { slug } of CURRICULUM) {
+    for (const { slug } of RANKS_WITH_SECTIONS) {
       const rows = container.querySelectorAll(`[data-rank="${slug}"]`);
       expect(rows.length).toBeGreaterThanOrEqual(1);
     }
@@ -185,20 +182,10 @@ describe('CurriculumToc', () => {
     expect(checks.length).toBe(3);
   });
 
-  it('renders a coming-soon placeholder row (non-clickable) for ranks with empty sections', () => {
+  it('omits ranks with no curriculum sections — no "coming soon" placeholder anywhere', () => {
+    // A rank without study material (1dan today) must simply be absent: an
+    // achieved 1dan holder's dojo showing 「初段・近日公開」 was the bug.
     const { container } = renderToc();
-    for (const slug of ['1dan'] as const) {
-      const row = container.querySelector(`[data-rank="${slug}"]`);
-      expect(row).not.toBeNull();
-      expect(row!.getAttribute('data-disabled')).toBe('true');
-      expect(row!.textContent).toContain('Coming soon');
-      // Non-clickable coming-soon rows must not contain an anchor.
-      expect(row!.querySelector('a')).toBeNull();
-    }
-  });
-
-  it('omits ranks with empty sections entirely when showComingSoonPlaceholders is false', () => {
-    const { container } = renderToc({ showComingSoonPlaceholders: false });
     for (const slug of ['1dan'] as const) {
       expect(container.querySelector(`[data-rank="${slug}"]`)).toBeNull();
     }
@@ -207,21 +194,19 @@ describe('CurriculumToc', () => {
     expect(container.querySelector('[data-rank="1kyu"]')).not.toBeNull();
   });
 
-  it('renders one <li> per rank fewer when placeholders are suppressed', () => {
-    const { container } = renderToc({ showComingSoonPlaceholders: false });
-    const ol = container.querySelector('ol')!;
-    const expectedRows = CURRICULUM.reduce((sum, { sections }) => sum + sections.length, 0);
-    expect(ol.querySelectorAll(':scope > li').length).toBe(expectedRows);
+  it('still omits section-less ranks when they are achieved (user-aware mode)', () => {
+    const { container } = renderToc({
+      achieved: new Set<RankSlug>(['1dan']),
+      nextSlug: '5kyu',
+    });
+    expect(container.querySelector('[data-rank="1dan"]')).toBeNull();
   });
 
-  it('renders 1kyu as a real section row, not a placeholder', () => {
-    // Its curriculum entry sat empty while its guide shipped, so the dojo went
-    // on advertising "Coming soon" for a rank you could already study.
+  it('renders 1kyu as a real section row', () => {
     const { container } = renderToc();
     const row = container.querySelector('[data-rank="1kyu"]');
     expect(row).not.toBeNull();
     expect(row!.getAttribute('data-disabled')).toBeNull();
-    expect(row!.textContent).not.toContain('Coming soon');
     expect(row!.querySelector('a')).not.toBeNull();
   });
 
@@ -247,7 +232,7 @@ describe('CurriculumToc', () => {
 
     it('renders every rank (no truncation)', () => {
       const { container } = renderToc({ userAware: false });
-      for (const { slug } of CURRICULUM) {
+      for (const { slug } of RANKS_WITH_SECTIONS) {
         const rows = container.querySelectorAll(`[data-rank="${slug}"]`);
         expect(rows.length).toBeGreaterThanOrEqual(1);
       }
@@ -278,7 +263,7 @@ describe('CurriculumToc', () => {
         achieved: new Set<RankSlug>(),
         nextSlug: '5kyu',
       });
-      for (const { slug } of CURRICULUM) {
+      for (const { slug } of RANKS_WITH_SECTIONS) {
         expect(container.querySelectorAll(`[data-rank="${slug}"]`).length).toBeGreaterThan(0);
       }
     });

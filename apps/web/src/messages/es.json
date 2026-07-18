@@ -5579,7 +5579,6 @@
     "viewAllGuides": "Ver todas las guías",
     "curriculum": {
       "title": "Temario",
-      "empty": "Próximamente",
       "achieved": "Conseguido",
       "sections": {
         "algebraicNotation": "Notación algebraica",
