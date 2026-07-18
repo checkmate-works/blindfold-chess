@@ -435,13 +435,13 @@ A generic system for granting time-limited benefits to users. Supports ad-free a
 
 ### Architecture Overview
 
-| Layer              | File                                  | Responsibility                                                                                                                  |
-| ------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Schema**         | `src/lib/db/schema.ts` (`userGrants`) | DB table. See TSDoc `@design` tags for full design rationale                                                                    |
-| **Core logic**     | `src/lib/user-grants.ts`              | `hasActiveGrant(userId, benefitType)` — cached lookup; `calcGrantStartsAt(userId, benefitType)` — additive stacking calculation |
-| **Ad integration** | `src/lib/ad.ts`                       | `shouldShowAdsForUser()` checks both Stripe subscriptions AND `hasActiveGrant(userId, 'ad_free')`                               |
-| **Admin page**     | `src/app/admin/grants/page.tsx`       | Grant creation form, paginated list, revoke. See TSDoc for full description                                                     |
-| **Server actions** | `src/app/admin/grants/_actions/`      | `createGrant` (with UUID + duration validation), `revokeGrant` (logical delete via `revokedAt`)                                 |
+| Layer              | File                                  | Responsibility                                                                                                                                                                                                                              |
+| ------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema**         | `src/lib/db/schema.ts` (`userGrants`) | DB table. See TSDoc `@design` tags for full design rationale                                                                                                                                                                                |
+| **Core logic**     | `src/lib/users/user-grants.ts`        | `hasActiveGrant(userId, benefitType)` — cached lookup; `calcGrantStartsAt(userId, benefitType)` — additive stacking calculation                                                                                                             |
+| **Ad integration** | `src/lib/ads/ad-free-entitlement.ts`  | `hasAdFreeEntitlement()` — the single ad-free decision point (subscription OR ad_free grant OR dan-tier rank); both ad-gating layers (`shouldShowAdsForUser` in `src/lib/ads/ad.ts` and the `bfc_ads_hidden` cookie compute) delegate to it |
+| **Admin page**     | `src/app/admin/grants/page.tsx`       | Grant creation form, paginated list, revoke. See TSDoc for full description                                                                                                                                                                 |
+| **Server actions** | `src/app/admin/grants/_actions/`      | `createGrant` (with UUID + duration validation), `revokeGrant` (logical delete via `revokedAt`)                                                                                                                                             |
 
 ### Key Design Decisions
 
@@ -450,7 +450,7 @@ A generic system for granting time-limited benefits to users. Supports ad-free a
 - **Additive stacking** — New grants start from `max(expiresAt)` of existing non-revoked grants, so multiple grants extend the benefit period.
 - **No `grantedBy` column** — Admin audit trail is handled by the existing `moderation_actions` table.
 - **`revokedAt` logical deletion** — Grants are never physically deleted.
-- **Ad-free sources** — A user sees no ads if they have EITHER an active Stripe subscription (`subscriptions` table) OR an active ad_free grant (`user_grants` table). Both are checked in `shouldShowAdsForUser()`.
+- **Ad-free sources** — A user sees no ads if they have ANY of: an active Stripe subscription (`subscriptions` table), an active ad_free grant (`user_grants` table), or a dan-tier belt rank (`user_ranks` with `level >= DAN_TIER_MIN_LEVEL` — permanent, since ranks are never revoked; derived, NOT materialized as a grant, so admins will see no grant row for these users). All three are ORed in `hasAdFreeEntitlement()` (`src/lib/ads/ad-free-entitlement.ts`) — add future sources there, nowhere else. Dan holders are also blocked from redeeming coins for ad_free days (the redemption would be a no-op waste).
 
 ### Adding a New Benefit Type
 
@@ -579,7 +579,7 @@ files when a user refers to a concept in Japanese.
 | リーダーボード                | leaderboard                              | `src/app/[locale]/(public)/leaderboard/`, `src/lib/db/leaderboard-key.ts`                                                            |
 | チャレンジモード / フリー対局 | challenge mode / free-play mode          | `src/app/[locale]/(public)/practice/(challenge)/`, `src/app/[locale]/(public)/practice/(free-play)/`                                 |
 | ミス上限 / 完走               | mistake limit / completion               | `MISTAKE_LIMIT` in `src/lib/challenge/constants.ts`                                                                                  |
-| 特典 / 権限付与               | benefit / user grant                     | `src/lib/user-grants.ts`, `src/app/admin/grants/`, `src/app/[locale]/(protected)/mypage/(confirmed)/benefits/`                       |
+| 特典 / 権限付与               | benefit / user grant                     | `src/lib/users/user-grants.ts`, `src/app/admin/grants/`, `src/app/[locale]/(protected)/mypage/(confirmed)/benefits/`                 |
 | コイン / ポイント             | coin (facing) / points (ledger)          | See "Points / Coin Economy" above: `src/lib/points/`, `src/app/admin/coins/`, `src/app/[locale]/(public)/coin/`, `MypagePoints` i18n |
 | モデレーション / 通報         | moderation / reporting                   | `moderationActions` table in `src/lib/db/schema/tables.ts`, `src/app/admin/`, `src/lib/ban.ts`                                       |
 | 記事                          | article                                  | `src/app/admin/articles/`, `src/app/[locale]/(public)/articles/`, `articles` / `articleImages` tables                                |

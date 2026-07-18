@@ -63,6 +63,14 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
+// Cuts the request-layer cookie chain (next/headers, billing, grants) that
+// the shared position-mutation lib pulls in via its dan-promotion cookie
+// refresh; the helper itself is unit-tested in
+// `@/lib/ads/ads-hidden-cookie-writer.test.ts`.
+vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
+  refreshAdsHiddenCookieOnDanPromotion: vi.fn(),
+}));
+
 const VALID_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3';
 const VALID_SOLUTION = [{ san: 'Nc3', note: null }];
 
