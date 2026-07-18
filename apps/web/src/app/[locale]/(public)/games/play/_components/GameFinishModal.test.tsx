@@ -120,45 +120,113 @@ describe('GameFinishModal — promotion view', () => {
 
 describe('GameFinishModal — guest promotion view', () => {
   const GUEST_1KYU_TITLE = jaMessages.play.finishModal.guestPromotion.title1kyu;
-  const GUEST_1DAN_TITLE = jaMessages.play.finishModal.guestPromotion.title1dan;
+  const DAN_TITLE = jaMessages.play.finishModal.dan.title;
+  const SIGN_UP_HREF = '/ja/sign-up?next=%2Fja%2Fgames%2Fshared%2Fnew%3FgameId%3Dlocal-1';
 
-  it('pitches the 1kyu requirement with the honest incremental-progression copy', () => {
-    renderModal({ guestPromotionRankSlug: '1kyu', onShare: vi.fn() });
+  function renderGuest(props: Partial<Parameters<typeof GameFinishModal>[0]> = {}) {
+    return renderModal({
+      guestPromotionRankSlug: '1dan',
+      guestSignUpHref: SIGN_UP_HREF,
+      onShare: vi.fn(),
+      ...props,
+    });
+  }
 
-    expect(screen.getByText(GUEST_1KYU_TITLE)).toBeInTheDocument();
-    expect(
-      screen.getByText(jaMessages.play.finishModal.guestPromotion.description)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(jaMessages.play.finishModal.guestPromotion.accountPitch)
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'ゲームを公開する' })).toBeInTheDocument();
-  });
+  it('pitches 1dan as the black belt with the sign-up promise and the ad-exemption perk', () => {
+    renderGuest();
 
-  it('pitches 1dan as the black belt', () => {
-    renderModal({ guestPromotionRankSlug: '1dan', onShare: vi.fn() });
-
-    expect(screen.getByText(GUEST_1DAN_TITLE)).toBeInTheDocument();
+    expect(screen.getByText(DAN_TITLE)).toBeInTheDocument();
+    expect(screen.getByText(jaMessages.play.finishModal.dan.signUpBody)).toBeInTheDocument();
+    expect(screen.getByText(jaMessages.play.finishModal.dan.perk)).toBeInTheDocument();
     expect(screen.queryByText(GUEST_1KYU_TITLE)).not.toBeInTheDocument();
   });
 
+  it('pitches 1kyu with its one-line sign-up promise (no perk line)', () => {
+    renderGuest({ guestPromotionRankSlug: '1kyu' });
+
+    expect(screen.getByText(GUEST_1KYU_TITLE)).toBeInTheDocument();
+    expect(
+      screen.getByText(jaMessages.play.finishModal.guestPromotion.body1kyu)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(jaMessages.play.finishModal.dan.perk)).not.toBeInTheDocument();
+  });
+
+  it('renders sign-up (link) primary, anonymous publish secondary, and skip last', () => {
+    renderGuest();
+
+    const signUp = screen.getByRole('link', { name: '登録する' });
+    expect(signUp).toHaveAttribute('href', SIGN_UP_HREF);
+    expect(screen.getByRole('button', { name: '匿名でゲームを投稿する' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '公開しない' })).toBeInTheDocument();
+  });
+
+  it('routes anonymous publish to onShare and skip to onReview', () => {
+    const onShare = vi.fn();
+    const onReview = vi.fn();
+    act(() => {
+      render(
+        <NextIntlClientProvider locale="ja" messages={jaMessages}>
+          <IntlAvailableContext.Provider value={true}>
+            <GameFinishModal
+              isOpen
+              onClose={vi.fn()}
+              result="win"
+              onReview={onReview}
+              onRecall={vi.fn()}
+              onRepertoireCheck={vi.fn()}
+              guestPromotionRankSlug="1dan"
+              guestSignUpHref={SIGN_UP_HREF}
+              onShare={onShare}
+            />
+          </IntlAvailableContext.Provider>
+        </NextIntlClientProvider>
+      );
+    });
+
+    screen.getByRole('button', { name: '匿名でゲームを投稿する' }).click();
+    expect(onShare).toHaveBeenCalledTimes(1);
+    screen.getByRole('button', { name: '公開しない' }).click();
+    expect(onReview).toHaveBeenCalledTimes(1);
+  });
+
   it('yields to the signed-in promotion when both are set', () => {
-    renderModal({ promotionRankSlug: '1kyu', guestPromotionRankSlug: '1dan', onShare: vi.fn() });
+    renderGuest({ promotionRankSlug: '1kyu' });
 
     expect(screen.getByText(/1級昇格条件を満たしました/)).toBeInTheDocument();
-    expect(screen.queryByText(GUEST_1DAN_TITLE)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '登録する' })).not.toBeInTheDocument();
   });
 
   it('does not pitch an already-published game', () => {
-    renderModal({ guestPromotionRankSlug: '1dan', onShare: vi.fn(), published: true });
+    renderGuest({ published: true });
 
-    expect(screen.queryByText(GUEST_1DAN_TITLE)).not.toBeInTheDocument();
+    expect(screen.queryByText(DAN_TITLE)).not.toBeInTheDocument();
     expect(screen.getByText(jaMessages.play.finishModal.recall.title)).toBeInTheDocument();
   });
 
-  it('does not pitch without a way to publish', () => {
-    renderModal({ guestPromotionRankSlug: '1dan', onShare: undefined });
+  it('does not pitch without a way to publish or without a sign-up URL', () => {
+    renderGuest({ onShare: undefined });
+    expect(screen.queryByText(DAN_TITLE)).not.toBeInTheDocument();
 
-    expect(screen.queryByText(GUEST_1DAN_TITLE)).not.toBeInTheDocument();
+    renderGuest({ guestSignUpHref: undefined });
+    expect(screen.queryByText(DAN_TITLE)).not.toBeInTheDocument();
+  });
+});
+
+describe('GameFinishModal — signed-in 1dan promotion (black-belt wording)', () => {
+  it('uses the black-belt title, publish promise, and perk instead of the rankName template', () => {
+    renderModal({ promotionRankSlug: '1dan', onShare: vi.fn() });
+
+    expect(screen.getByText(jaMessages.play.finishModal.dan.title)).toBeInTheDocument();
+    expect(screen.getByText(jaMessages.play.finishModal.dan.publishBody)).toBeInTheDocument();
+    expect(screen.getByText(jaMessages.play.finishModal.dan.perk)).toBeInTheDocument();
+    expect(screen.queryByText(/昇格条件を満たしました/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ゲームを公開する' })).toBeInTheDocument();
+  });
+
+  it('keeps the rankName template for a 1kyu promotion', () => {
+    renderModal({ promotionRankSlug: '1kyu', onShare: vi.fn() });
+
+    expect(screen.getByText(/1級昇格条件を満たしました/)).toBeInTheDocument();
+    expect(screen.queryByText(jaMessages.play.finishModal.dan.title)).not.toBeInTheDocument();
   });
 });

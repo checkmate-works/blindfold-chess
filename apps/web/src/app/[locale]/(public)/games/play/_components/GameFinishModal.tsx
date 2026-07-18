@@ -2,6 +2,8 @@
 
 import { useId } from 'react';
 
+import Link from 'next/link';
+
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaBook, FaBrain, FaClipboardList, FaCloudUploadAlt } from 'react-icons/fa';
 
@@ -49,11 +51,17 @@ type Props = {
   promotionRankSlug?: RankSlug | null;
   /**
    * The rank requirement this win satisfies, for a signed-out (or
-   * provisional) player — see {@link useGuestPromotion}. Weaker than
-   * `promotionRankSlug`: no promotion is promised, only that the published
-   * game will count once their linear progression reaches the rank.
+   * provisional) player — see {@link useGuestPromotion}. With independent
+   * rank evaluation this is a full promise: sign up, publish, and the rank
+   * is granted.
    */
   guestPromotionRankSlug?: GuestPromotionQualification | null;
+  /**
+   * Sign-up URL for the guest pitch's primary CTA, with a `next` that lands
+   * back on this game's publish form after registration. Built by the
+   * caller — the modal knows neither locale nor game id.
+   */
+  guestSignUpHref?: string;
   /** Publish this game — the promotion view's primary action. */
   onShare?: () => void;
 };
@@ -74,11 +82,11 @@ type Props = {
  * result screen the Game Review card does.
  *
  * For a signed-out player the server-backed promotion never fires, so a
- * weaker, purely local pitch (`guestPromotionRankSlug`) takes its place when
- * the game satisfies the 1kyu / 1dan game requirement: it names the
- * requirement met (1dan is pitched as the black belt), explains that ranks
- * are earned in order and the published game counts when they get there, and
- * notes an account can be linked later.
+ * purely local pitch (`guestPromotionRankSlug`) takes its place when the
+ * game satisfies the 1kyu / 1dan game requirement. Registration-first: the
+ * primary CTA is "sign up" (landing back on this game's publish form), with
+ * anonymous publishing as the secondary path and "don't publish" last.
+ * 1dan is pitched as the black belt, with its ad-exemption perk called out.
  */
 export function GameFinishModal({
   isOpen,
@@ -90,6 +98,7 @@ export function GameFinishModal({
   published = false,
   promotionRankSlug = null,
   guestPromotionRankSlug = null,
+  guestSignUpHref,
   onShare,
 }: Props) {
   const t = useTranslations('play');
@@ -101,7 +110,8 @@ export function GameFinishModal({
   const showPromotion = !!promotionRankSlug && !!onShare && !published;
   // The signed-out pitch — never shown alongside the signed-in promotion,
   // which makes the stronger (server-confirmed) promise.
-  const showGuestPromotion = !showPromotion && !!guestPromotionRankSlug && !!onShare && !published;
+  const showGuestPromotion =
+    !showPromotion && !!guestPromotionRankSlug && !!onShare && !!guestSignUpHref && !published;
 
   const tourSteps: HelpStep[] = [
     {
@@ -133,30 +143,53 @@ export function GameFinishModal({
         <div id={titleId} className="flex flex-col items-center gap-2 pr-8">
           {result && <CompactResultHeader result={result} />}
           {showPromotion ? (
-            <>
-              <p className="text-center font-semibold text-foreground">
-                {t('finishModal.promotion.title', {
-                  rankName: tRanks(`rankNames.${promotionRankSlug}`),
-                })}
-              </p>
-              <p className="text-center text-sm text-muted-foreground">
-                {t('finishModal.promotion.description')}
-              </p>
-            </>
+            promotionRankSlug === '1dan' ? (
+              <>
+                <p className="text-center font-semibold text-foreground">
+                  {t('finishModal.dan.title')}
+                </p>
+                <p className="text-center text-sm text-muted-foreground">
+                  {t('finishModal.dan.publishBody')}
+                </p>
+                <p className="text-center text-xs text-muted-foreground">
+                  {t('finishModal.dan.perk')}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-center font-semibold text-foreground">
+                  {t('finishModal.promotion.title', {
+                    rankName: tRanks(`rankNames.${promotionRankSlug}`),
+                  })}
+                </p>
+                <p className="text-center text-sm text-muted-foreground">
+                  {t('finishModal.promotion.description')}
+                </p>
+              </>
+            )
           ) : showGuestPromotion ? (
-            <>
-              <p className="text-center font-semibold text-foreground">
-                {guestPromotionRankSlug === '1dan'
-                  ? t('finishModal.guestPromotion.title1dan')
-                  : t('finishModal.guestPromotion.title1kyu')}
-              </p>
-              <p className="text-center text-sm text-muted-foreground">
-                {t('finishModal.guestPromotion.description')}
-              </p>
-              <p className="text-center text-xs text-muted-foreground">
-                {t('finishModal.guestPromotion.accountPitch')}
-              </p>
-            </>
+            guestPromotionRankSlug === '1dan' ? (
+              <>
+                <p className="text-center font-semibold text-foreground">
+                  {t('finishModal.dan.title')}
+                </p>
+                <p className="text-center text-sm text-muted-foreground">
+                  {t('finishModal.dan.signUpBody')}
+                </p>
+                <p className="text-center text-xs text-muted-foreground">
+                  {t('finishModal.dan.perk')}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-center font-semibold text-foreground">
+                  {t('finishModal.guestPromotion.title1kyu')}
+                </p>
+                <p className="text-center text-sm text-muted-foreground">
+                  {t('finishModal.guestPromotion.body1kyu')}
+                </p>
+              </>
+            )
           ) : (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{t('finishModal.title')}</span>
@@ -165,7 +198,26 @@ export function GameFinishModal({
           )}
         </div>
 
-        {showPromotion || showGuestPromotion ? (
+        {showGuestPromotion ? (
+          <div className="flex flex-col items-center gap-3">
+            <Link
+              href={guestSignUpHref!}
+              className="w-full rounded-md bg-primary px-4 py-2.5 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto sm:px-8"
+            >
+              {t('finishModal.guestPromotion.signUp')}
+            </Link>
+            <button
+              type="button"
+              onClick={onShare}
+              className="w-full rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground/30 sm:w-auto sm:px-6"
+            >
+              {t('finishModal.guestPromotion.publishAnonymously')}
+            </button>
+            <button type="button" onClick={onReview} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+              {t('finishModal.promotion.skip')}
+            </button>
+          </div>
+        ) : showPromotion ? (
           <div className="flex flex-col items-center gap-3">
             <button
               type="button"

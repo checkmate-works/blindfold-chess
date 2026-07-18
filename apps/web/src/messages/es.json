@@ -2264,11 +2264,17 @@
         "publish": "Publicar esta partida",
         "skip": "No publicar"
       },
+      "dan": {
+        "title": "Has cumplido las condiciones para el cinturón negro (1.er Dan)",
+        "perk": "Los poseedores del cinturón negro están exentos de anuncios.",
+        "publishBody": "Publica esta partida para ascender al cinturón negro.",
+        "signUpBody": "Regístrate y publica esta partida para ascender al cinturón negro."
+      },
       "guestPromotion": {
         "title1kyu": "Has cumplido las condiciones de ascenso a 1.er Kyū",
-        "title1dan": "Has cumplido las condiciones para el cinturón negro (1.er Dan)",
-        "description": "Los rangos se obtienen en orden desde 5.º Kyū. Publica esta partida y contará automáticamente cuando alcances ese rango.",
-        "accountPitch": "No necesitas cuenta para publicar — y si te registras más tarde, podrás vincular esta partida a tu historial."
+        "body1kyu": "Regístrate y publica esta partida para ascender a 1.er Kyū.",
+        "signUp": "Registrarme",
+        "publishAnonymously": "Publicar de forma anónima"
       }
     },
     "repertoireCheck": {

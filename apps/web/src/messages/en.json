@@ -2268,11 +2268,17 @@
         "publish": "Publish this game",
         "skip": "Don't publish"
       },
+      "dan": {
+        "title": "You have met the conditions for the black belt (1st Dan)",
+        "perk": "Black belt holders are exempt from ads.",
+        "publishBody": "Publish this game to be promoted to the black belt.",
+        "signUpBody": "Sign up and publish this game to be promoted to the black belt."
+      },
       "guestPromotion": {
         "title1kyu": "You have met the promotion conditions for 1st Kyū",
-        "title1dan": "You have met the conditions for the black belt (1st Dan)",
-        "description": "Belt ranks are earned in order from 5th Kyū. Publish this game and it will count automatically once you reach that rank.",
-        "accountPitch": "No account needed to publish — and if you sign up later, you can link this game to your own record."
+        "body1kyu": "Sign up and publish this game to be promoted to 1st Kyū.",
+        "signUp": "Sign Up",
+        "publishAnonymously": "Publish anonymously"
       }
     },
     "repertoireCheck": {
