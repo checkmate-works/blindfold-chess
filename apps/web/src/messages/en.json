@@ -2336,10 +2336,10 @@
       "deleteConfirmBody": "This removes it from the public catalog and can't be undone.",
       "claim": {
         "signedOutTitle": "Make this game part of your record",
-        "signedOutBody": "You published this game without an account. Sign up and link it, and it will count toward belt-rank requirements as your progression reaches them.",
+        "signedOutBody": "You published this game without an account. Sign up and link it — if it meets a belt rank's requirements, you are promoted right away (a black-belt-grade game promotes you to the black belt).",
         "signUpCta": "Sign up and link this game",
         "claimTitle": "Link this game to your account",
-        "claimBody": "You published this game before signing in. Link it to your account and it will count toward belt-rank requirements as your progression reaches them.",
+        "claimBody": "You published this game before signing in. Link it to your account — if it meets a belt rank's requirements, you are promoted right away.",
         "claimButton": "Link to my account",
         "claiming": "Linking…"
       },

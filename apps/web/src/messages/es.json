@@ -2332,10 +2332,10 @@
       "deleteConfirmBody": "Se quitará del catálogo público y no se puede deshacer.",
       "claim": {
         "signedOutTitle": "Haz que esta partida forme parte de tu historial",
-        "signedOutBody": "Publicaste esta partida sin una cuenta. Regístrate y vincúlala, y contará para los requisitos de rango a medida que progreses.",
+        "signedOutBody": "Publicaste esta partida sin una cuenta. Regístrate y vincúlala — si cumple los requisitos de un rango, asciendes de inmediato (una partida de nivel cinturón negro te asciende al cinturón negro).",
         "signUpCta": "Registrarme y vincular esta partida",
         "claimTitle": "Vincular esta partida a tu cuenta",
-        "claimBody": "Publicaste esta partida antes de iniciar sesión. Vincúlala a tu cuenta y contará para los requisitos de rango a medida que progreses.",
+        "claimBody": "Publicaste esta partida antes de iniciar sesión. Vincúlala a tu cuenta — si cumple los requisitos de un rango, asciendes de inmediato.",
         "claimButton": "Vincular a mi cuenta",
         "claiming": "Vinculando…"
       },

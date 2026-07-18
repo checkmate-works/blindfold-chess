@@ -2332,10 +2332,10 @@
       "deleteConfirmBody": "Ela será removida do catálogo público e não pode ser desfeita.",
       "claim": {
         "signedOutTitle": "Faça esta partida fazer parte do seu histórico",
-        "signedOutBody": "Você publicou esta partida sem uma conta. Registre-se e vincule-a, e ela contará para os requisitos de graduação conforme você progride.",
+        "signedOutBody": "Você publicou esta partida sem uma conta. Registre-se e vincule-a — se ela cumprir os requisitos de uma graduação, você é promovido na hora (uma partida de nível faixa preta promove você à faixa preta).",
         "signUpCta": "Registrar-me e vincular esta partida",
         "claimTitle": "Vincular esta partida à sua conta",
-        "claimBody": "Você publicou esta partida antes de entrar. Vincule-a à sua conta e ela contará para os requisitos de graduação conforme você progride.",
+        "claimBody": "Você publicou esta partida antes de entrar. Vincule-a à sua conta — se ela cumprir os requisitos de uma graduação, você é promovido na hora.",
         "claimButton": "Vincular à minha conta",
         "claiming": "Vinculando…"
       },
