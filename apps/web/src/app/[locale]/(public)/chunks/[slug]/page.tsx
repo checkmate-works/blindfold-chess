@@ -377,6 +377,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       {activeTab === 'positions' && (
         <ChunkPositionsTab
           locale={locale}
+          chunkSlug={chunk.slug}
           linkedPositions={linkedPositions}
           likeMetaMap={linkedLikeMetaMap}
           replyMetaMap={linkedReplyMetaMap}

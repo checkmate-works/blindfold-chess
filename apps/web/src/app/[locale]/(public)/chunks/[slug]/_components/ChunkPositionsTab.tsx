@@ -1,4 +1,8 @@
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+
+import { Button } from '@/app/_components';
+import { FaPlus } from 'react-icons/fa';
 
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parsePositionType } from '@/lib/positions/types';
@@ -17,23 +21,42 @@ import type { ChunkDetailData } from '../_lib/load-chunk-detail';
  */
 export async function ChunkPositionsTab({
   locale,
+  chunkSlug,
   linkedPositions,
   likeMetaMap,
   replyMetaMap,
 }: {
   locale: Locale;
+  chunkSlug: string;
   linkedPositions: ChunkDetailData['linkedPositions'];
   likeMetaMap: ChunkDetailData['linkedLikeMetaMap'];
   replyMetaMap: ChunkDetailData['linkedReplyMetaMap'];
 }) {
-  const [tChunks, tPuzzle, tMemory] = await Promise.all([
+  const [tChunks, tPuzzle, tMemory, tCreate] = await Promise.all([
     getTranslations({ locale, namespace: 'chunks' }),
     getTranslations({ locale, namespace: 'practice.puzzle' }),
     getTranslations({ locale, namespace: 'practice.positionMemory' }),
+    getTranslations({ locale, namespace: 'sharedGames.create' }),
   ]);
 
   if (linkedPositions.length === 0) {
-    return <p className="text-sm text-muted-foreground">{tChunks('detail.positionsEmpty')}</p>;
+    return (
+      <div className="text-center">
+        <p className="text-sm text-muted-foreground">{tChunks('detail.positionsEmpty')}</p>
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
+          <Link href={`/${locale}/practice/position-memory/new?chunk=${chunkSlug}`}>
+            <Button variant="outline" size="sm" icon={<FaPlus className="h-3 w-3" />}>
+              {tCreate('positionMemory')}
+            </Button>
+          </Link>
+          <Link href={`/${locale}/practice/puzzle/new?chunk=${chunkSlug}`}>
+            <Button variant="outline" size="sm" icon={<FaPlus className="h-3 w-3" />}>
+              {tCreate('puzzle')}
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

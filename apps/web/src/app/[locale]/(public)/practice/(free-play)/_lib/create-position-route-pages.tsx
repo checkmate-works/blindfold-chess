@@ -338,6 +338,10 @@ export interface CreatePositionFormContext<TSeed> {
   /** `?fen=` board seed (e.g. "create from this game position"), present only
    * when structurally valid — a stray URL never breaks the form. */
   injectedFen: string | undefined;
+  /** `?chunk=<slug-or-id>` tag seed (e.g. "add a position for this chunk"),
+   * resolved against `availableTags.chunks` — present only when it matches
+   * a real chunk, a stray URL never breaks the form. */
+  injectedChunkIds: string[] | undefined;
   /** Resolved search params, for feature-specific extras (e.g. the puzzle
    * page's `?solution=` SAN seed). */
   searchParams: Record<string, string | string[] | undefined>;
@@ -384,7 +388,7 @@ export function createPositionCreatePage<TSeed>(
   async function Page({ params, searchParams }: LocaleSearchPageProps) {
     const { locale } = await params;
     const resolvedSearchParams = await searchParams;
-    const { from, fen: fenParam } = resolvedSearchParams;
+    const { from, fen: fenParam, chunk: chunkParam } = resolvedSearchParams;
     const user = await getOptionalUser();
     const t = await getTranslations({ locale, namespace });
     const tNav = await getTranslations({ locale, namespace: 'navigation' });
@@ -400,12 +404,19 @@ export function createPositionCreatePage<TSeed>(
     const injectedFen =
       typeof fenParam === 'string' && validateFenStructure(fenParam).ok ? fenParam : undefined;
 
+    const injectedChunk =
+      typeof chunkParam === 'string'
+        ? availableTags.chunks.find((c) => c.slug === chunkParam || c.id === chunkParam)
+        : undefined;
+    const injectedChunkIds = injectedChunk ? [injectedChunk.id] : undefined;
+
     const form = renderForm({
       user,
       displayName,
       availableTags,
       forkSeed,
       injectedFen,
+      injectedChunkIds,
       searchParams: resolvedSearchParams,
     });
 
