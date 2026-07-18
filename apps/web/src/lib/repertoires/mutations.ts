@@ -1,14 +1,29 @@
+import {
+  enumerateLines,
+  generatePgn,
+  getStartingFen,
+  parsePgnTree,
+} from '@blindfold-chess/features/chess-core';
+import type { PgnTree } from '@blindfold-chess/features/chess-core';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { chessOpenings, db, repertoireLines, repertoireOpenings, repertoires } from '@/lib/db';
+import {
+  chessOpenings,
+  db,
+  repertoireAnnotations,
+  repertoireLines,
+  repertoireOpenings,
+  repertoires,
+} from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
 import type { RepertoireImportInput, RepertoireLineEditError, RepertoirePhase } from './validation';
 import {
   REPERTOIRE_NAME_MAX,
+  REPERTOIRE_PGN_MAX_BYTES,
   validateRepertoireImport,
   validateRepertoireLineEdit,
 } from './validation';
@@ -207,6 +222,122 @@ export async function updateRepertoireDetails(params: {
   return { ok: true, name };
 }
 
+export type UpdateRepertoireMovesResult =
+  | { ok: true }
+  | {
+      ok: false;
+      error: 'unauthorized' | 'notFound' | 'pgnRequired' | 'pgnTooLarge' | 'invalidPgn';
+    };
+
+/**
+ * Owner-only: replace a repertoire's whole move tree from one
+ * PGN-with-variations (the edit form's board serializes to it), re-decomposing
+ * into lines like the import does — but as a DIFF against the existing rows,
+ * so line identity survives editing:
+ *
+ * - a line whose move sequence is unchanged keeps its row (id + name),
+ *   only its `seq` moving to the new enumeration order;
+ * - a line no longer produced is soft-deleted;
+ * - a new line is inserted at its enumeration position.
+ *
+ * The root is fixed (`repertoires.starting_fen`) — a differently-rooted PGN is
+ * rejected, mirroring `addRepertoireLine`. Position-keyed annotations and
+ * comments need no migration: they follow the surviving positions.
+ */
+export async function updateRepertoireLinesFromPgn(params: {
+  repertoireId: string;
+  viewerId: string;
+  pgn: string;
+}): Promise<UpdateRepertoireMovesResult> {
+  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
+  if (ownerError) return { ok: false, error: ownerError };
+
+  const [repertoire] = await db
+    .select({ startingFen: repertoires.startingFen })
+    .from(repertoires)
+    .where(eq(repertoires.id, params.repertoireId))
+    .limit(1);
+  if (!repertoire) return { ok: false, error: 'notFound' };
+
+  const pgn = params.pgn.trim();
+  if (!pgn) return { ok: false, error: 'pgnRequired' };
+  if (new TextEncoder().encode(pgn).length > REPERTOIRE_PGN_MAX_BYTES) {
+    return { ok: false, error: 'pgnTooLarge' };
+  }
+
+  let tree: PgnTree;
+  try {
+    tree = parsePgnTree(pgn);
+  } catch {
+    return { ok: false, error: 'invalidPgn' };
+  }
+  if (tree.startingFen !== (repertoire.startingFen ?? getStartingFen())) {
+    return { ok: false, error: 'invalidPgn' };
+  }
+
+  const nextPgns = enumerateLines(tree).map((moves) =>
+    generatePgn(moves, repertoire.startingFen ?? undefined)
+  );
+
+  await db.transaction(async (tx) => {
+    const existing = await tx
+      .select({ id: repertoireLines.id, pgn: repertoireLines.pgn, seq: repertoireLines.seq })
+      .from(repertoireLines)
+      .where(
+        and(
+          eq(repertoireLines.repertoireId, params.repertoireId),
+          isNull(repertoireLines.deletedAt)
+        )
+      );
+
+    // Both sides are generatePgn output, so string equality IS line equality.
+    // Grouped into queues so duplicate lines (possible in a hand-built tree)
+    // match one-to-one instead of all claiming the same row.
+    const pool = new Map<string, { id: string; seq: number }[]>();
+    for (const row of existing) {
+      const queue = pool.get(row.pgn) ?? [];
+      queue.push({ id: row.id, seq: row.seq });
+      pool.set(row.pgn, queue);
+    }
+
+    const matched = new Set<string>();
+    for (const [index, linePgn] of nextPgns.entries()) {
+      const row = pool.get(linePgn)?.shift();
+      if (row) {
+        matched.add(row.id);
+        if (row.seq !== index) {
+          await tx
+            .update(repertoireLines)
+            .set({ seq: index })
+            .where(eq(repertoireLines.id, row.id));
+        }
+      } else {
+        await tx.insert(repertoireLines).values({
+          repertoireId: params.repertoireId,
+          pgn: linePgn,
+          startingFen: repertoire.startingFen,
+          seq: index,
+        });
+      }
+    }
+
+    const removed = existing.filter((row) => !matched.has(row.id));
+    if (removed.length > 0) {
+      await tx
+        .update(repertoireLines)
+        .set({ deletedAt: new Date() })
+        .where(
+          inArray(
+            repertoireLines.id,
+            removed.map((row) => row.id)
+          )
+        );
+    }
+  });
+
+  return { ok: true };
+}
+
 /**
  * Create a repertoire (型) for the authenticated user, decomposing the imported
  * PGN into one `repertoire_lines` row per line. Repertoire + lines are inserted
@@ -221,7 +352,7 @@ export async function createRepertoireEntry(
 
   const validated = validateRepertoireImport(input);
   if (!validated.ok) return { error: validated.error };
-  const { name, side, phase, description, startingFen, lines } = validated.data;
+  const { name, side, phase, description, startingFen, lines, annotations } = validated.data;
 
   const id = await db.transaction(async (tx) => {
     const [repertoire] = await tx
@@ -237,6 +368,20 @@ export async function createRepertoireEntry(
         seq: index,
       }))
     );
+
+    // Board-authored "why this move" notes and arrow/circle markup land with
+    // the kata, under the same position keys the detail page writes to later.
+    // An absent half keeps its column default (empty note / no markup).
+    if (annotations.length > 0) {
+      await tx.insert(repertoireAnnotations).values(
+        annotations.map(({ positionKey, text, shapes }) => ({
+          repertoireId: repertoire.id,
+          positionKey,
+          ...(text !== undefined ? { text } : {}),
+          ...(shapes !== undefined ? { shapes } : {}),
+        }))
+      );
+    }
 
     await insertOpeningLinks(tx, {
       repertoireId: repertoire.id,

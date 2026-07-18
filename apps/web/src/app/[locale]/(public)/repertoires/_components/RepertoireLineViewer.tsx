@@ -9,6 +9,7 @@ import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
+import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
@@ -25,6 +26,9 @@ export type RepertoireViewerLine = {
   /** Board position at each ply; index 0 is the start. */
   positions: { fen: string; lastMove: { from: string; to: string } | null }[];
 };
+
+/** Move pairs shown in a list row's unfolded preview before truncating. */
+const PREVIEW_PAIRS = 4;
 
 type Props = {
   lines: RepertoireViewerLine[];
@@ -44,6 +48,9 @@ type Props = {
 export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Props) {
   const t = useTranslations('Repertoires');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  // The line whose truncated moves are unfolded in the list; accordion-style
+  // (one at a time). Expanding also previews the line on the big board.
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [ply, setPly] = useState(0);
 
   const line = lines[selectedIndex] ?? lines[0];
@@ -64,9 +71,13 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
     return () => window.removeEventListener('keydown', onKey);
   }, [maxPly]);
 
-  function selectLine(index: number) {
-    setSelectedIndex(index);
-    setPly(0);
+  function toggleExpand(index: number) {
+    setExpandedIndex((prev) => (prev === index ? null : index));
+    // Unfolding a line also previews it on the board (collapsing keeps it).
+    if (expandedIndex !== index) {
+      setSelectedIndex(index);
+      setPly(0);
+    }
   }
 
   return (
@@ -124,24 +135,67 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
         </Link>
       </div>
 
-      {/* The line list sits in the right column, the same place (and width) the
-          game / line-detail screens put the move list. */}
-      <ul className="space-y-1 lg:col-span-1">
+      {/* The line list sits in the right column, styled like the app's
+          standard link lists (ListLinkContainer / ListLink): a bordered card
+          with row separators, row click navigating to the line's detail page.
+          The chevron toggle unfolds a truncated preview of the line's moves
+          (and mirrors it on the big board). */}
+      <ul className="h-fit overflow-hidden rounded-md border border-border bg-card lg:col-span-1">
         {lines.map((l, i) => {
           const isSelected = i === selectedIndex;
+          const isExpanded = i === expandedIndex;
+          const previewPairs = l.formatted.slice(0, PREVIEW_PAIRS);
+          const truncated = l.formatted.length > PREVIEW_PAIRS;
           return (
-            <li key={l.id}>
-              <button
-                type="button"
-                onClick={() => selectLine(i)}
-                className={`w-full truncate rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                  isSelected
-                    ? 'bg-link-primary/10 font-medium text-link-primary'
-                    : 'text-foreground hover:bg-muted'
+            <li key={l.id} className="border-b border-border last:border-b-0">
+              <div
+                className={`flex items-center transition-colors ${
+                  isSelected ? 'bg-link-primary/5' : ''
                 }`}
               >
-                {l.name ?? t('detail.lineFallback', { n: i + 1 })}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => toggleExpand(i)}
+                  aria-expanded={isExpanded}
+                  aria-label={t('detail.previewToggle')}
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  {isExpanded ? (
+                    <HiChevronUp aria-hidden className="size-4" />
+                  ) : (
+                    <HiChevronDown aria-hidden className="size-4" />
+                  )}
+                </button>
+                <Link
+                  href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
+                  className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 transition-colors hover:bg-muted"
+                >
+                  <span
+                    className={`truncate text-sm ${
+                      isSelected ? 'font-medium text-link-primary' : 'text-foreground'
+                    }`}
+                  >
+                    {l.name ?? t('detail.lineFallback', { n: i + 1 })}
+                  </span>
+                  <HiChevronRight
+                    aria-hidden
+                    className="ml-auto size-4 flex-shrink-0 text-foreground/40"
+                  />
+                </Link>
+              </div>
+
+              {isExpanded && (
+                <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 px-3 pb-2.5 pl-10 text-sm">
+                  {previewPairs.map((pair) => (
+                    <span key={pair.moveNumber} className="flex items-center gap-0.5">
+                      <span className="text-xs text-muted-foreground">{pair.moveNumber}.</span>
+                      {pair.whiteMove && <span className="text-foreground">{pair.whiteMove}</span>}
+                      {pair.blackMove && <span className="text-foreground">{pair.blackMove}</span>}
+                    </span>
+                  ))}
+                  {truncated && <span className="text-muted-foreground">…</span>}
+                </div>
+              )}
             </li>
           );
         })}

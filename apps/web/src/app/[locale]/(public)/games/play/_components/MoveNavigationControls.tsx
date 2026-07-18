@@ -18,6 +18,7 @@ export function MoveNavigationControls({
   return (
     <div className="flex justify-center gap-1">
       <button
+        type="button"
         onClick={onNavigateToStart}
         className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-2xl"
         aria-label="Go to start"
@@ -26,6 +27,7 @@ export function MoveNavigationControls({
         «
       </button>
       <button
+        type="button"
         onClick={onNavigatePrevious}
         className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-2xl"
         aria-label="Previous move"
@@ -34,6 +36,7 @@ export function MoveNavigationControls({
         ‹
       </button>
       <button
+        type="button"
         onClick={onNavigateNext}
         className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-2xl"
         aria-label="Next move"
@@ -42,6 +45,7 @@ export function MoveNavigationControls({
         ›
       </button>
       <button
+        type="button"
         onClick={onNavigateToEnd}
         className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-2xl"
         aria-label="Go to end"

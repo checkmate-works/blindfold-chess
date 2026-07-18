@@ -190,6 +190,72 @@ export function parsePgnTree(pgn: string): PgnTree {
 }
 
 /**
+ * Emit one move token from the position *before* it: `12. san` for White,
+ * `12... san` for a Black move that opens a line / follows a variation block,
+ * bare `san` for a Black move continuing an unbroken line.
+ */
+function writeMoveToken(
+  san: string,
+  beforeFen: string,
+  needsNumber: boolean,
+): string {
+  const fields = beforeFen.split(" ");
+  const turn = fields[1];
+  const fullmove = fields[5] ?? "1";
+  if (turn === "w") return `${fullmove}. ${san}`;
+  if (needsNumber) return `${fullmove}... ${san}`;
+  return san;
+}
+
+/**
+ * Serialize one sibling list as movetext: the first sibling is the line's
+ * continuation, each further sibling becomes a `( ... )` variation branching
+ * from the same position (standard RAV semantics — the inverse of
+ * {@link parseLine}).
+ */
+function writeLine(
+  siblings: MoveTreeNode[],
+  beforeFen: string,
+  opensLine: boolean,
+): string {
+  const parts: string[] = [];
+  let nodes = siblings;
+  let fen = beforeFen;
+  let needsNumber = opensLine;
+
+  while (nodes.length > 0) {
+    const [main, ...variations] = nodes;
+    parts.push(writeMoveToken(main.san, fen, needsNumber));
+    for (const variation of variations) {
+      parts.push(`(${writeLine([variation], fen, true)})`);
+    }
+    // After an interposed `( ... )` block a Black continuation must restate
+    // its move number ("2... Nf6"), exactly as a line opener would.
+    needsNumber = variations.length > 0;
+    fen = main.fen;
+    nodes = main.children;
+  }
+
+  return parts.join(" ");
+}
+
+/**
+ * Serialize a {@link PgnTree} back to a PGN-with-variations string — the
+ * inverse of {@link parsePgnTree}. The first child at every level is written
+ * as the main line; every further child becomes a `( ... )` variation. A
+ * non-standard root emits the `[SetUp]` / `[FEN]` headers so the round trip
+ * preserves the starting position.
+ *
+ * Comments and NAGs are not represented in the tree, so a
+ * parse → serialize round trip normalizes them away by construction.
+ */
+export function generatePgnFromTree(tree: PgnTree): string {
+  const movetext = writeLine(tree.children, tree.startingFen, true);
+  if (tree.startingFen === DEFAULT_POSITION) return movetext;
+  return `[SetUp "1"]\n[FEN "${tree.startingFen}"]\n\n${movetext}`;
+}
+
+/**
  * Decompose a {@link PgnTree} into its individual *lines* — one SAN sequence
  * per root-to-leaf path. A repertoire imported as a single PGN-with-variations
  * is stored as N line rows; this is the decomposition that produces them.

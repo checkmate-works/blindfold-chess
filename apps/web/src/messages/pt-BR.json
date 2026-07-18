@@ -48,7 +48,22 @@
       "pgnHelp": "Cole um PGN com variantes — exportações de estudos do Lichess ou do Chess.com funcionam como estão.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "Importar linha",
-      "submitting": "Importando…"
+      "submitting": "Importando…",
+      "inputModePgn": "PGN",
+      "inputModeBoard": "Tabuleiro",
+      "movesLabel": "Lances",
+      "defaultName": "Meu sistema - {username}"
+    },
+    "boardBuilder": {
+      "flip": "Girar tabuleiro",
+      "helpSingleLine": "Jogue os lances dos dois lados. Voltar e jogar um lance diferente substitui o resto da linha — uma linha não contém ramificações.",
+      "shapesHint": "Clique com o botão direito e arraste no tabuleiro para desenhar uma seta; clique com o botão direito em uma casa para circulá-la. Shift / Alt / Ctrl mudam a cor.",
+      "annotationHelp": "As notas ficam associadas à posição após o lance selecionado e são compartilhadas por todas as linhas deste kata que a alcançam. São salvas ao enviar o formulário.",
+      "empty": "Mova as peças no tabuleiro para montar seu kata.",
+      "whiteToMove": "Brancas jogam",
+      "blackToMove": "Pretas jogam",
+      "deleteFromHere": "Excluir este lance e tudo depois dele",
+      "help": "Jogue os lances dos dois lados. Volte a um lance anterior e jogue outro diferente para adicionar uma alternativa — cada ramificação vira uma linha própria na importação."
     },
     "new": {
       "title": "Importar uma linha",
@@ -67,6 +82,9 @@
         "notFound": "Este kata não existe mais.",
         "nameRequired": "Digite um nome.",
         "nameTooLong": "Esse nome é muito longo.",
+        "pgnRequired": "Digite os lances.",
+        "pgnTooLarge": "O PGN é muito grande.",
+        "invalidPgn": "Não foi possível ler estes lances. Verifique a notação.",
         "generic": "Algo deu errado. Tente novamente."
       }
     },
@@ -77,10 +95,16 @@
       "lineCount": "{count} linhas",
       "forThisOpening": "Katas desta abertura",
       "lineFallback": "Linha {n}",
+      "previewToggle": "Mostrar lances",
       "openLine": "Abrir esta linha →",
       "createdBy": "Criado por"
     },
     "line": {
+      "new": {
+        "title": "Adicionar uma linha",
+        "submit": "Adicionar linha",
+        "saving": "Adicionando…"
+      },
       "title": "Linha",
       "breadcrumb": "Linha {n}",
       "empty": "Esta linha não tem lances.",
@@ -90,15 +114,10 @@
       },
       "annotation": {
         "title": "Por que este lance",
-        "addButton": "Adicionar uma nota",
-        "editButton": "Editar",
-        "save": "Salvar",
         "saving": "Salvando...",
-        "cancel": "Cancelar",
-        "delete": "Excluir",
-        "deleteConfirmTitle": "Excluir esta nota?",
-        "deleteConfirmMessage": "Isso remove a nota deste lance. Não é possível desfazer.",
         "placeholder": "Explique por que este lance é jogado…",
+        "saved": "Salvo",
+        "autosaveHelp": "As notas são salvas automaticamente e compartilhadas por todas as linhas deste kata que alcançam esta posição.",
         "error": "Algo deu errado. Tente novamente.",
         "empty": "Digite uma nota.",
         "tooLong": "Esta nota é muito longa.",
@@ -2275,21 +2294,7 @@
       "deviationDetail": "No lance {moveNo}, você jogou {played} — seu kata prepara {expected}.",
       "gapDetail": "No lance {moveNo}, o adversário jogou {played}, que este kata não cobre (preparado: {expected}).",
       "addLine": {
-        "cta": "Adicionar esta linha ao seu kata",
-        "confirmDetail": "Isso salva os lances desta partida — incluindo a parte que seguiu {repertoireName} — como uma nova linha:",
-        "save": "Salvar linha",
-        "saving": "Salvando…",
-        "cancel": "Cancelar",
-        "errors": {
-          "unauthorized": "Somente o proprietário pode adicionar uma linha a este kata.",
-          "notFound": "Este kata não existe mais.",
-          "nameTooLong": "O título é muito longo.",
-          "pgnRequired": "Informe os lances.",
-          "pgnTooLarge": "O PGN é muito grande.",
-          "invalidPgn": "Não foi possível ler esses lances. Verifique a notação.",
-          "noMoves": "Informe pelo menos um lance.",
-          "generic": "Algo deu errado. Tente novamente."
-        }
+        "cta": "Adicionar esta linha ao seu kata"
       },
       "backToResult": "Voltar à revisão da partida"
     }
@@ -3205,6 +3210,7 @@
         "confirm": "Excluir",
         "cancel": "Cancelar"
       },
+      "positionLabel": "Posição",
       "tabBoard": "Tabuleiro",
       "tabFen": "FEN",
       "sideToMove": "Lado a jogar",

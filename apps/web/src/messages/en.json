@@ -48,7 +48,22 @@
       "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "Import line",
-      "submitting": "Importing…"
+      "submitting": "Importing…",
+      "inputModePgn": "PGN",
+      "inputModeBoard": "Board",
+      "movesLabel": "Moves",
+      "defaultName": "My System - {username}"
+    },
+    "boardBuilder": {
+      "flip": "Flip board",
+      "helpSingleLine": "Play the moves for both sides. Going back and playing a different move replaces the rest of the line — a single line holds no branches.",
+      "shapesHint": "Right-click and drag on the board to draw an arrow; right-click a square to circle it. Shift / Alt / Ctrl change the colour.",
+      "annotationHelp": "Notes attach to the position after the selected move and are shared by every line in this kata that reaches it. They are saved when you submit the form.",
+      "empty": "Play moves on the board to build your kata.",
+      "whiteToMove": "White to move",
+      "blackToMove": "Black to move",
+      "deleteFromHere": "Delete this move and everything after it",
+      "help": "Play the moves for both sides. Go back to an earlier move and play a different one to add an alternative — each branch becomes its own line on import."
     },
     "new": {
       "title": "Import a line",
@@ -67,6 +82,9 @@
         "notFound": "This kata no longer exists.",
         "nameRequired": "Please enter a name.",
         "nameTooLong": "That name is too long.",
+        "pgnRequired": "Please enter the moves.",
+        "pgnTooLarge": "The PGN is too large.",
+        "invalidPgn": "Could not read these moves. Check the notation.",
         "generic": "Something went wrong. Please try again."
       }
     },
@@ -77,10 +95,16 @@
       "lineCount": "{count} lines",
       "forThisOpening": "Kata for this opening",
       "lineFallback": "Line {n}",
+      "previewToggle": "Show moves",
       "openLine": "Open this line →",
       "createdBy": "Created by"
     },
     "line": {
+      "new": {
+        "title": "Add a line",
+        "submit": "Add line",
+        "saving": "Adding…"
+      },
       "title": "Line",
       "breadcrumb": "Line {n}",
       "empty": "This line has no moves.",
@@ -90,15 +114,10 @@
       },
       "annotation": {
         "title": "Why this move",
-        "addButton": "Add a note",
-        "editButton": "Edit",
-        "save": "Save",
         "saving": "Saving...",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "deleteConfirmTitle": "Delete this note?",
-        "deleteConfirmMessage": "This removes the note for this move. It can't be undone.",
         "placeholder": "Explain why this move is played…",
+        "saved": "Saved",
+        "autosaveHelp": "Notes save automatically and are shared by every line in this kata that reaches this position.",
         "error": "Something went wrong. Please try again.",
         "empty": "Please enter a note.",
         "tooLong": "This note is too long.",
@@ -2279,21 +2298,7 @@
       "deviationDetail": "At move {moveNo}, you played {played} — your kata prepares {expected}.",
       "gapDetail": "At move {moveNo}, your opponent played {played}, which this kata doesn't cover (prepared: {expected}).",
       "addLine": {
-        "cta": "Add this line to your kata",
-        "confirmDetail": "This saves this game's moves — including where it matched {repertoireName} — as a new line on it:",
-        "save": "Save line",
-        "saving": "Saving…",
-        "cancel": "Cancel",
-        "errors": {
-          "unauthorized": "Only the owner can add a line to this kata.",
-          "notFound": "This kata no longer exists.",
-          "nameTooLong": "The title is too long.",
-          "pgnRequired": "Please enter the moves.",
-          "pgnTooLarge": "The PGN is too large.",
-          "invalidPgn": "Could not read these moves. Check the notation.",
-          "noMoves": "Please enter at least one move.",
-          "generic": "Something went wrong. Please try again."
-        }
+        "cta": "Add this line to your kata"
       },
       "backToResult": "Back to game review"
     }
@@ -3209,6 +3214,7 @@
         "confirm": "Delete",
         "cancel": "Cancel"
       },
+      "positionLabel": "Position",
       "tabBoard": "Board",
       "tabFen": "FEN",
       "sideToMove": "Side to move",

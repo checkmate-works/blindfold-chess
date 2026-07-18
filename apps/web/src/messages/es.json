@@ -48,7 +48,22 @@
       "pgnHelp": "Pega un PGN con variantes: las exportaciones de estudios de Lichess o de Chess.com funcionan tal cual.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "Importar línea",
-      "submitting": "Importando…"
+      "submitting": "Importando…",
+      "inputModePgn": "PGN",
+      "inputModeBoard": "Tablero",
+      "movesLabel": "Jugadas",
+      "defaultName": "Mi sistema - {username}"
+    },
+    "boardBuilder": {
+      "flip": "Girar tablero",
+      "helpSingleLine": "Juega las jugadas de ambos bandos. Volver atrás y jugar otra jugada reemplaza el resto de la línea: una línea no contiene ramas.",
+      "shapesHint": "Haz clic derecho y arrastra sobre el tablero para dibujar una flecha; clic derecho en una casilla para rodearla. Shift / Alt / Ctrl cambian el color.",
+      "annotationHelp": "Las notas se asocian a la posición tras la jugada seleccionada y se comparten entre todas las líneas de este kata que la alcanzan. Se guardan al enviar el formulario.",
+      "empty": "Mueve las piezas en el tablero para construir tu kata.",
+      "whiteToMove": "Juegan blancas",
+      "blackToMove": "Juegan negras",
+      "deleteFromHere": "Eliminar esta jugada y todo lo que sigue",
+      "help": "Juega las jugadas de ambos bandos. Vuelve a una jugada anterior y juega otra distinta para añadir una alternativa: cada rama se convertirá en su propia línea al importar."
     },
     "new": {
       "title": "Importar una línea",
@@ -67,6 +82,9 @@
         "notFound": "Este kata ya no existe.",
         "nameRequired": "Introduce un nombre.",
         "nameTooLong": "Ese nombre es demasiado largo.",
+        "pgnRequired": "Introduce las jugadas.",
+        "pgnTooLarge": "El PGN es demasiado grande.",
+        "invalidPgn": "No se pudieron leer estas jugadas. Revisa la notación.",
         "generic": "Algo salió mal. Inténtalo de nuevo."
       }
     },
@@ -77,10 +95,16 @@
       "lineCount": "{count} líneas",
       "forThisOpening": "Katas de esta apertura",
       "lineFallback": "Línea {n}",
+      "previewToggle": "Mostrar jugadas",
       "openLine": "Abrir esta línea →",
       "createdBy": "Creado por"
     },
     "line": {
+      "new": {
+        "title": "Añadir una línea",
+        "submit": "Añadir línea",
+        "saving": "Añadiendo…"
+      },
       "title": "Línea",
       "breadcrumb": "Línea {n}",
       "empty": "Esta línea no tiene jugadas.",
@@ -90,15 +114,10 @@
       },
       "annotation": {
         "title": "Por qué esta jugada",
-        "addButton": "Añadir una nota",
-        "editButton": "Editar",
-        "save": "Guardar",
         "saving": "Guardando...",
-        "cancel": "Cancelar",
-        "delete": "Eliminar",
-        "deleteConfirmTitle": "¿Eliminar esta nota?",
-        "deleteConfirmMessage": "Se eliminará la nota de esta jugada. No se puede deshacer.",
         "placeholder": "Explica por qué se juega esta jugada…",
+        "saved": "Guardado",
+        "autosaveHelp": "Las notas se guardan automáticamente y se comparten entre todas las líneas de este kata que alcanzan esta posición.",
         "error": "Algo salió mal. Inténtalo de nuevo.",
         "empty": "Introduce una nota.",
         "tooLong": "Esta nota es demasiado larga.",
@@ -2275,21 +2294,7 @@
       "deviationDetail": "En la jugada {moveNo} jugaste {played}; tu kata prepara {expected}.",
       "gapDetail": "En la jugada {moveNo} tu rival jugó {played}, que este kata no cubre (preparado: {expected}).",
       "addLine": {
-        "cta": "Añadir esta línea a tu kata",
-        "confirmDetail": "Esto guarda las jugadas de esta partida —incluida la parte que coincidió con {repertoireName}— como una nueva línea:",
-        "save": "Guardar línea",
-        "saving": "Guardando…",
-        "cancel": "Cancelar",
-        "errors": {
-          "unauthorized": "Solo el propietario puede añadir una línea a este kata.",
-          "notFound": "Este kata ya no existe.",
-          "nameTooLong": "El título es demasiado largo.",
-          "pgnRequired": "Introduce las jugadas.",
-          "pgnTooLarge": "El PGN es demasiado grande.",
-          "invalidPgn": "No se pudieron leer estas jugadas. Revisa la notación.",
-          "noMoves": "Introduce al menos una jugada.",
-          "generic": "Algo salió mal. Inténtalo de nuevo."
-        }
+        "cta": "Añadir esta línea a tu kata"
       },
       "backToResult": "Volver a la revisión de la partida"
     }
@@ -3205,6 +3210,7 @@
         "confirm": "Eliminar",
         "cancel": "Cancelar"
       },
+      "positionLabel": "Posición",
       "tabBoard": "Tablero",
       "tabFen": "FEN",
       "sideToMove": "Turno de juego",

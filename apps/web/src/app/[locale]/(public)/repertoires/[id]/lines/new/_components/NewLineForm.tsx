@@ -15,107 +15,86 @@ import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
+import { addLine } from '@/app/[locale]/(public)/repertoires/[id]/_actions/addLine';
+import { deleteAnnotation } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/deleteAnnotation';
+import { saveAnnotation } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/saveAnnotation';
+import { saveShapes } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/saveShapes';
 import { MoveAnnotationField } from '@/app/[locale]/(public)/repertoires/_components/MoveAnnotationField';
 import { RepertoireBoardBuilder } from '@/app/[locale]/(public)/repertoires/_components/RepertoireBoardBuilder';
-
-import { deleteAnnotation } from '../_actions/deleteAnnotation';
-import { saveAnnotation } from '../_actions/saveAnnotation';
-import { saveShapes } from '../_actions/saveShapes';
-import { updateLine } from '../_actions/updateLine';
 
 type Props = {
   locale: string;
   repertoireId: string;
-  lineNo: number;
-  initialName: string;
-  initialPgn: string;
   /** The repertoire's side — orients the board in board mode. */
   side: RepertoireSide;
   /**
-   * The repertoire's existing "why this move" notes, keyed by position key —
-   * prefills the per-move note editor under the board.
+   * Moves to start from — e.g. the kata check's uncovered line (matched prefix
+   * through the diverging move). Empty for a blank new line.
    */
+  initialPgn: string;
+  /** Existing "why this move" notes, keyed by position key. */
   initialAnnotations: Record<string, string>;
-  /**
-   * The repertoire's existing board markup (arrows / circles), keyed by
-   * position key — displayed and editable on the board in board mode.
-   */
+  /** Existing board markup (arrows / circles), keyed by position key. */
   initialShapes: Record<string, BoardAnnotations>;
 };
 
 /**
- * Owner-only editor for a single line: its title and its moves. The moves are
- * editable two ways behind the same Board / PGN switcher as the import form —
- * an interactive board (opens with the stored line loaded; in single-line mode
- * a divergent move replaces the tail, since a line holds no branches) or the
- * raw PGN textbox. On save we just store the new moves — annotations and
- * per-move comments are position-keyed, so they follow the surviving positions
- * with no migration here.
+ * Owner-only form for appending a new line to a repertoire — the same
+ * Board / PGN editor as the line edit form (single-line semantics: a
+ * divergent move replaces the tail), starting from whatever moves were
+ * handed in (a kata check's uncovered line arrives via `?pgn=`). Notes and
+ * markup authored here persist right after the line is created — they are
+ * position-keyed, so positions already annotated by other lines show their
+ * existing notes.
  */
-export function EditLineForm({
+export function NewLineForm({
   locale,
   repertoireId,
-  lineNo,
-  initialName,
-  initialPgn,
   side,
+  initialPgn,
   initialAnnotations,
   initialShapes,
 }: Props) {
   const t = useTranslations('Repertoires.line.edit');
+  const tNew = useTranslations('Repertoires.line.new');
   const tForm = useTranslations('Repertoires.form');
   const router = useRouter();
 
-  const [name, setName] = useState(initialName);
+  const [name, setName] = useState('');
   const [pgn, setPgn] = useState(initialPgn);
-  // Per-position "why this move" drafts, edited inline under the board for
-  // whichever move the cursor rests on, and persisted on Save alongside the
-  // line (notes are position-keyed, so they need no line row to exist).
   const [annotations, setAnnotations] = useState<Record<string, string>>(initialAnnotations);
   const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>(initialShapes);
   const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
-  // Editing an existing line starts on the board — the stored moves are
-  // already there to step through; the PGN tab remains for raw editing.
+  // The handed-in line is the point of this page — open on the board with it.
   const [inputMode, setInputMode] = useState<'pgn' | 'board'>('board');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
-  // Note drafts that differ from what the server holds (trimmed comparison —
-  // whitespace-only edits are not changes worth writing).
   const changedAnnotations = Object.entries(annotations).filter(
     ([key, text]) => text.trim() !== (initialAnnotations[key] ?? '').trim()
   );
-  // Markup that differs from the server's. Shapes are value objects saved
-  // wholesale (see saveShapes), so a JSON comparison is the equality we need.
   const changedShapes = Object.entries(shapes).filter(
     ([key, value]) => JSON.stringify(value) !== JSON.stringify(initialShapes[key] ?? null)
   );
 
-  // Same leave-guard pieces as the import / chunk / puzzle forms.
+  // Same leave-guard pieces as the other repertoire forms. The prefilled pgn
+  // doesn't count as dirty — leaving without touching anything is fine.
   const tUnsaved = useTranslations('unsavedChanges');
   const isDirty =
     !submitted &&
-    (name !== initialName ||
+    (name !== '' ||
       pgn !== initialPgn ||
       changedAnnotations.length > 0 ||
       changedShapes.length > 0);
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
-
-  const lineHref = `/repertoires/${repertoireId}/lines/${lineNo}`;
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setPending(true);
     setError(null);
 
-    const result = await updateLine({
-      repertoireId,
-      lineNo,
-      locale,
-      name: name.trim() || null,
-      pgn,
-    });
+    const result = await addLine({ repertoireId, locale, name: name.trim() || null, pgn });
     if (!result.ok) {
       setPending(false);
       setError(
@@ -124,15 +103,20 @@ export function EditLineForm({
       return;
     }
 
-    // Persist the changed per-move notes and board markup alongside the line.
-    // Position-keyed writes are independent of each other and of the line row,
-    // so a partial failure leaves the successful ones in place; we stay on the
-    // page (still dirty) and a retry re-sends what differs from the load.
+    // Persist notes / markup authored alongside; position-keyed, so they only
+    // needed a repertoire (which already existed) — the fresh lineNo merely
+    // picks the page these actions revalidate.
     const noteResults = await Promise.all([
       ...changedAnnotations.map(([positionKey, text]) =>
         text.trim()
-          ? saveAnnotation({ repertoireId, lineNo, locale, positionKey, text: text.trim() })
-          : deleteAnnotation({ repertoireId, lineNo, locale, positionKey })
+          ? saveAnnotation({
+              repertoireId,
+              lineNo: result.lineNo,
+              locale,
+              positionKey,
+              text: text.trim(),
+            })
+          : deleteAnnotation({ repertoireId, lineNo: result.lineNo, locale, positionKey })
       ),
       ...changedShapes.map(([positionKey, value]) =>
         saveShapes({ repertoireId, positionKey, shapes: value })
@@ -147,7 +131,7 @@ export function EditLineForm({
     // flushSync so the isDirty -> false re-render completes before
     // router.push triggers the navigation guard (same as ChunkForm).
     flushSync(() => setSubmitted(true));
-    router.push(`${lineHref}?toast=line_updated`);
+    router.push(`/repertoires/${repertoireId}/lines/${result.lineNo}?toast=line_added`);
   }
 
   return (
@@ -189,9 +173,6 @@ export function EditLineForm({
             />
           </>
         ) : (
-          /* Remounts on each switch, re-importing whatever the pgn state holds
-             (including a non-standard [FEN] root) — so board → PGN shows the
-             serialized line and PGN → board replays the edited text. */
           <>
             <RepertoireBoardBuilder
               side={side}
@@ -204,7 +185,6 @@ export function EditLineForm({
                 setShapes((prev) => ({ ...prev, [positionKey]: next }))
               }
             />
-
             {cursor && (
               <MoveAnnotationField
                 moveLabel={cursor.label}
@@ -239,11 +219,11 @@ export function EditLineForm({
           loading={pending}
           disabled={pending}
         >
-          {pending ? t('saving') : t('save')}
+          {pending ? tNew('saving') : tNew('submit')}
         </Button>
         <button
           type="button"
-          onClick={() => router.push(lineHref)}
+          onClick={() => router.push(`/repertoires/${repertoireId}`)}
           disabled={pending}
           className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
         >

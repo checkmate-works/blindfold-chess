@@ -1,9 +1,8 @@
 /**
- * Repertoire (型) — edit page (owner only). The title, the opening links, and
- * the whole move tree — the lines recomposed into one PGN-with-variations and
- * edited on the same board the import form uses (with per-move notes and
- * markup). Saving diffs the tree against the stored lines so unchanged lines
- * keep their identity. Side / phase stay fixed: they define the repertoire.
+ * Repertoire Line — add page (owner only). The same Board / PGN editor as the
+ * line edit page, starting from the moves handed in via `?pgn=` — the kata
+ * check's "add this line to your kata" CTA lands here with the uncovered line
+ * preloaded, ready to review, extend and name before saving.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -12,18 +11,17 @@ import { notFound } from 'next/navigation';
 import { getOptionalUser } from '@/lib/auth';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
-import { mergeLinePgns } from '@/lib/repertoires/board-builder-tree';
-import { getLinkedOpeningIds, getOpeningOptions } from '@/lib/repertoires/opening-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { EditRepertoireForm } from '../_components/EditRepertoireForm';
+import { NewLineForm } from './_components/NewLineForm';
 
 type Props = {
   params: Promise<{ locale: Locale; id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -31,26 +29,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     params,
     namespace: 'Repertoires',
     path: 'repertoires',
-    titleKey: 'edit.title',
+    titleKey: 'line.new.title',
     noIndex: true,
     omitDescription: true,
   });
 }
 
-export default async function EditRepertoirePage({ params }: Props) {
+export default async function NewRepertoireLinePage({ params, searchParams }: Props) {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
   const currentUser = await getOptionalUser();
 
   const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
-  // Editing is owner-only — don't even reveal the page to others.
+  // Adding lines is owner-only — don't even reveal the page to others.
   if (!data || !data.isOwner) notFound();
-  const { repertoire, lines } = data;
+  const { repertoire } = data;
 
-  // The whole tree as one editable PGN (defensive null: a stored line that no
-  // longer parses hides the moves editor rather than breaking the page), plus
-  // the existing notes / markup for the board editor.
-  const initialPgn = mergeLinePgns(lines.map((line) => line.pgn));
+  // The handed-in moves (bare movetext). A non-standard-root repertoire's
+  // moves only replay from its own root, so prepend the FEN header the board
+  // parser (and the addLine validator) key on when it isn't already there.
+  const sp = await searchParams;
+  const rawPgn = typeof sp.pgn === 'string' ? sp.pgn.trim() : '';
+  const initialPgn =
+    rawPgn && repertoire.startingFen && !/\[FEN\b/i.test(rawPgn)
+      ? `[FEN "${repertoire.startingFen}"]\n[SetUp "1"]\n\n${rawPgn}`
+      : rawPgn;
+
+  // Existing notes / markup: positions the new line shares with existing
+  // lines (the matched prefix) show what's already written there.
   const annotationViews = await getAnnotationsForRepertoire(id);
   const initialAnnotations = Object.fromEntries(
     [...annotationViews].filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
@@ -61,31 +67,21 @@ export default async function EditRepertoirePage({ params }: Props) {
       .map(([key, v]) => [key, v.shapes])
   );
 
-  // Opening links only exist for an opening-phase repertoire; skip both queries
-  // (the whole master + the link rows) for the other phases.
-  const canLinkOpenings = repertoire.phase === 'opening';
-  const openings = canLinkOpenings ? await getOpeningOptions(locale) : [];
-  const initialOpeningIds = canLinkOpenings ? await getLinkedOpeningIds(id) : [];
-
   return (
     <PageLayout
-      title={t('edit.title')}
+      title={t('line.new.title')}
       locale={locale}
       breadcrumb={[
         { label: t('title'), href: '/repertoires' },
         { label: repertoire.name, href: `/repertoires/${id}` },
-        { label: t('edit.breadcrumb') },
+        { label: t('line.new.title') },
       ]}
     >
-      <SectionTitle>{t('edit.title')}</SectionTitle>
+      <SectionTitle>{t('line.new.title')}</SectionTitle>
 
-      <EditRepertoireForm
+      <NewLineForm
         locale={locale}
         repertoireId={id}
-        initialName={repertoire.name}
-        openings={openings}
-        initialOpeningIds={initialOpeningIds}
-        canLinkOpenings={canLinkOpenings}
         side={repertoire.side}
         initialPgn={initialPgn}
         initialAnnotations={initialAnnotations}

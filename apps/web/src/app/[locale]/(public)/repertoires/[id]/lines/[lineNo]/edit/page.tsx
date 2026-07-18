@@ -9,6 +9,8 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
+import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
+import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
 import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -47,6 +49,19 @@ export default async function EditRepertoireLinePage({ params }: Props) {
 
   const lineName = line.name ?? t('detail.lineFallback', { n: lineNo });
 
+  // Existing "why this move" notes and board markup — prefill the per-move
+  // note editor and the board's drawing surface. Repertoire-wide by design:
+  // both are keyed by position, so a transposing line shares them.
+  const annotationViews = await getAnnotationsForRepertoire(id);
+  const initialAnnotations = Object.fromEntries(
+    [...annotationViews].filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
+  );
+  const initialShapes = Object.fromEntries(
+    [...annotationViews]
+      .filter(([, v]) => !isEmptyBoardAnnotations(v.shapes))
+      .map(([key, v]) => [key, v.shapes])
+  );
+
   return (
     <PageLayout
       title={t('line.edit.title')}
@@ -66,6 +81,9 @@ export default async function EditRepertoireLinePage({ params }: Props) {
         lineNo={lineNo}
         initialName={line.name ?? ''}
         initialPgn={line.pgn}
+        side={repertoire.side}
+        initialAnnotations={initialAnnotations}
+        initialShapes={initialShapes}
       />
     </PageLayout>
   );

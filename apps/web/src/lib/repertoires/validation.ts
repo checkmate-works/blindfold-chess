@@ -1,6 +1,10 @@
 import type { PgnTree } from '@blindfold-chess/features/chess-core';
 import { enumerateLines, generatePgn, parsePgnTree } from '@blindfold-chess/features/chess-core';
 
+import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
+
 /**
  * Validation + decomposition for an imported repertoire (型 / course).
  *
@@ -31,7 +35,24 @@ export type RepertoireImportInput = {
   pgn: string;
   /** Opening ids to link (only honoured when phase === 'opening'). */
   openingIds?: string[];
+  /**
+   * Owner's "why this move" notes authored during board-mode import, keyed by
+   * position key (normalised FEN after the move — same key `saveAnnotation`
+   * writes under). Inserted with the repertoire so a board-built kata lands
+   * with its notes attached.
+   */
+  annotations?: Record<string, string>;
+  /**
+   * Board markup (arrows / circles) drawn during board-mode import, keyed by
+   * position key. Crosses the network as JSON, so each entry is re-parsed
+   * (`parseBoardAnnotations`) rather than trusted — same as `saveShapes`.
+   */
+  shapes?: Record<string, unknown>;
 };
+
+/** Sanity caps for imported notes (the map is client-built, so belt+braces). */
+const ANNOTATION_MAX_COUNT = 500;
+const POSITION_KEY_MAX = 120;
 
 /** One decomposed line, ready to insert as a `repertoire_lines` row. */
 export type ImportedLine = { pgn: string; startingFen: string | null };
@@ -44,6 +65,11 @@ export type ValidatedRepertoireImport = {
   /** Root position shared by every line. NULL = standard start. */
   startingFen: string | null;
   lines: ImportedLine[];
+  /**
+   * Cleaned position-keyed notes / board markup to insert alongside (may be
+   * empty). One entry per annotated position; either half may be absent.
+   */
+  annotations: { positionKey: string; text?: string; shapes?: BoardAnnotations }[];
 };
 
 export type RepertoireValidationError =
@@ -53,7 +79,8 @@ export type RepertoireValidationError =
   | 'invalidPhase'
   | 'pgnRequired'
   | 'pgnTooLarge'
-  | 'invalidPgn';
+  | 'invalidPgn'
+  | 'invalidAnnotations';
 
 export type ValidateRepertoireResult =
   | { ok: true; data: ValidatedRepertoireImport }
@@ -156,8 +183,60 @@ export function validateRepertoireImport(input: RepertoireImportInput): Validate
 
   const description = input.description?.trim() || null;
 
+  // Clean the board-authored notes + markup into one entry per position.
+  // Whitespace-only notes and empty / malformed markup are dropped (an emptied
+  // draft is "nothing here"); anything over the caps rejects the import — the
+  // form enforces the same limits, so hitting them means a bad client.
+  const annotationEntries = Object.entries(input.annotations ?? {});
+  const shapeEntries = Object.entries(input.shapes ?? {});
+  if (
+    annotationEntries.length > ANNOTATION_MAX_COUNT ||
+    shapeEntries.length > ANNOTATION_MAX_COUNT
+  ) {
+    return { ok: false, error: 'invalidAnnotations' };
+  }
+  type AnnotationEntry = { positionKey: string; text?: string; shapes?: BoardAnnotations };
+  const byPosition = new Map<string, AnnotationEntry>();
+  const entryFor = (positionKey: string): AnnotationEntry => {
+    const existing = byPosition.get(positionKey);
+    if (existing) return existing;
+    const created: AnnotationEntry = { positionKey };
+    byPosition.set(positionKey, created);
+    return created;
+  };
+  for (const [positionKey, rawText] of annotationEntries) {
+    const text = rawText?.trim() ?? '';
+    if (!text) continue;
+    if (!positionKey || positionKey.length > POSITION_KEY_MAX) {
+      return { ok: false, error: 'invalidAnnotations' };
+    }
+    if (text.length > REPERTOIRE_ANNOTATION_MAX) {
+      return { ok: false, error: 'invalidAnnotations' };
+    }
+    entryFor(positionKey).text = text;
+  }
+  for (const [positionKey, rawShapes] of shapeEntries) {
+    // The parse drops malformed elements; a set that parses to empty is "no
+    // markup" and simply isn't inserted.
+    const shapes = parseBoardAnnotations(rawShapes);
+    if (isEmptyBoardAnnotations(shapes)) continue;
+    if (!positionKey || positionKey.length > POSITION_KEY_MAX) {
+      return { ok: false, error: 'invalidAnnotations' };
+    }
+    entryFor(positionKey).shapes = shapes;
+  }
+  const annotations = [...byPosition.values()];
+
   return {
     ok: true,
-    data: { name, side: input.side, phase: input.phase, description, startingFen, lines },
+    data: {
+      name,
+      side: input.side,
+      phase: input.phase,
+      description,
+      startingFen,
+      lines,
+      annotations,
+    },
   };
 }

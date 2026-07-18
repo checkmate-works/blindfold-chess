@@ -119,12 +119,15 @@ export function ChunkFormFields({
         />
       </div>
 
-      <BoardFenTabs
-        activeTab={board.activeTab}
-        onTabChange={board.setActiveTab}
-        boardLabel={t('tabBoard')}
-        fenLabel={t('tabFen')}
-      />
+      <div>
+        <span className="block text-sm font-medium mb-1">{t('positionLabel')}</span>
+        <BoardFenTabs
+          activeTab={board.activeTab}
+          onTabChange={board.setActiveTab}
+          boardLabel={t('tabBoard')}
+          fenLabel={t('tabFen')}
+        />
+      </div>
 
       {board.activeTab === 'board' && (
         <>

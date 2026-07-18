@@ -1,0 +1,290 @@
+import type { MoveTreeNode } from '@blindfold-chess/features/chess-core';
+import {
+  executeMove,
+  generatePgnFromTree,
+  parsePgnTree,
+} from '@blindfold-chess/features/chess-core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
+
+/**
+ * Pure editing model for authoring a repertoire (型) as a move tree on an
+ * interactive board.
+ *
+ * The tree is the builder's source of truth; it serializes to the same
+ * PGN-with-variations string the paste-a-PGN flow submits, so the server
+ * pipeline (`validateRepertoireImport` → `enumerateLines`) is shared verbatim.
+ * Node shape is a superset of chess-core's {@link MoveTreeNode} (adds the
+ * from/to squares for the board's last-move highlight), so a tree of
+ * {@link BuilderNode}s is directly serializable by `generatePgnFromTree`.
+ *
+ * A *cursor* into the tree is a path of child indices from the root
+ * (`[]` = the starting position). All operations are immutable — they return
+ * new nodes along the touched path and share the rest, so React state can
+ * hold `{ children, path }` directly.
+ */
+export type BuilderNode = {
+  san: AlgebraicNotation;
+  /** FEN of the position AFTER this move (mirrors MoveTreeNode). */
+  fen: string;
+  /** Source / destination squares, for the board's last-move highlight. */
+  from: string;
+  to: string;
+  children: BuilderNode[];
+};
+
+/** Child-index path from the root; `[]` addresses the starting position. */
+export type BuilderPath = number[];
+
+export function nodeAtPath(children: BuilderNode[], path: BuilderPath): BuilderNode | null {
+  let node: BuilderNode | null = null;
+  let level = children;
+  for (const index of path) {
+    node = level[index] ?? null;
+    if (!node) return null;
+    level = node.children;
+  }
+  return node;
+}
+
+export function fenAtPath(children: BuilderNode[], path: BuilderPath, rootFen: string): string {
+  return nodeAtPath(children, path)?.fen ?? rootFen;
+}
+
+/** Immutably replace the child list of the node at `path` (root when empty). */
+function withChildrenAt(
+  children: BuilderNode[],
+  path: BuilderPath,
+  nextChildren: BuilderNode[]
+): BuilderNode[] {
+  if (path.length === 0) return nextChildren;
+  const [head, ...rest] = path;
+  const node = children[head];
+  if (!node) return children;
+  const updated = { ...node, children: withChildrenAt(node.children, rest, nextChildren) };
+  return children.map((c, i) => (i === head ? updated : c));
+}
+
+export type PlayMoveResult = { children: BuilderNode[]; path: BuilderPath };
+
+/**
+ * Play `san` from the position the cursor addresses.
+ *
+ * If a child with the same (normalized) SAN already exists there, the cursor
+ * just steps into it — replaying a known move never duplicates a node (and, in
+ * either mode, keeps that child's continuation intact).
+ *
+ * A NEW move's behavior depends on the editing mode:
+ * - default (tree): appended as a sibling — at a position that already has
+ *   continuations this is exactly how an alternative line (variation) is born.
+ * - `replace: true` (single-line editors, e.g. line edit): the new move
+ *   REPLACES every continuation from this position — a single line holds no
+ *   branches, so diverging mid-line means rewriting its tail.
+ *
+ * Returns `null` for an illegal move (the interactive board only emits legal
+ * SANs, so this is defensive).
+ */
+export function playMoveAtPath(
+  children: BuilderNode[],
+  path: BuilderPath,
+  rootFen: string,
+  san: string,
+  options?: { replace?: boolean }
+): PlayMoveResult | null {
+  const fen = fenAtPath(children, path, rootFen);
+  const result = executeMove(fen, san);
+  if (!result) return null;
+
+  const siblings = path.length === 0 ? children : (nodeAtPath(children, path)?.children ?? []);
+  const existing = siblings.findIndex((c) => c.san === result.moveResult.san);
+  if (existing >= 0) {
+    return { children, path: [...path, existing] };
+  }
+
+  const node: BuilderNode = {
+    san: result.moveResult.san as AlgebraicNotation,
+    fen: result.fen,
+    from: result.moveResult.from,
+    to: result.moveResult.to,
+    children: [],
+  };
+  const nextSiblings = options?.replace ? [node] : [...siblings, node];
+  return {
+    children: withChildrenAt(children, path, nextSiblings),
+    path: [...path, nextSiblings.length - 1],
+  };
+}
+
+/**
+ * Delete the node the cursor addresses (with its whole subtree) and move the
+ * cursor to its parent. A no-op at the root position.
+ */
+export function deleteAtPath(children: BuilderNode[], path: BuilderPath): PlayMoveResult {
+  if (path.length === 0) return { children, path };
+  const parentPath = path.slice(0, -1);
+  const index = path[path.length - 1];
+  const siblings =
+    parentPath.length === 0 ? children : (nodeAtPath(children, parentPath)?.children ?? []);
+  return {
+    children: withChildrenAt(
+      children,
+      parentPath,
+      siblings.filter((_, i) => i !== index)
+    ),
+    path: parentPath,
+  };
+}
+
+/**
+ * Parse an existing PGN into a builder tree, so a board editor opens with the
+ * text's moves loaded (the import form's paste → board switch; the line edit
+ * form's stored PGN). Re-derives each node's from/to squares (chess-core's
+ * parsed tree doesn't carry them). A `[FEN]` header becomes `rootFen`, so a
+ * non-standard-start line replays from its own root. Returns `null` when the
+ * text doesn't parse.
+ */
+export function builderTreeFromPgn(
+  pgn: string
+): { rootFen: string; children: BuilderNode[] } | null {
+  let parsed: ReturnType<typeof parsePgnTree>;
+  try {
+    parsed = parsePgnTree(pgn);
+  } catch {
+    return null;
+  }
+
+  const convert = (nodes: MoveTreeNode[], beforeFen: string): BuilderNode[] | null => {
+    const out: BuilderNode[] = [];
+    for (const node of nodes) {
+      const result = executeMove(beforeFen, node.san);
+      if (!result) return null;
+      const children = convert(node.children, node.fen);
+      if (!children) return null;
+      out.push({
+        san: node.san,
+        fen: node.fen,
+        from: result.moveResult.from,
+        to: result.moveResult.to,
+        children,
+      });
+    }
+    return out;
+  };
+
+  const children = convert(parsed.children, parsed.startingFen);
+  return children ? { rootFen: parsed.startingFen, children } : null;
+}
+
+/**
+ * Recompose a repertoire's stored lines (one linear PGN each, shared root)
+ * into a single PGN-with-variations — the inverse of the import's
+ * `enumerateLines` decomposition, up to variation nesting. Lines merge on
+ * their common SAN prefix (the first line becomes the main line), so editing
+ * the whole repertoire on a board starts from the exact tree its lines form.
+ * Returns `null` when a line doesn't parse or the roots disagree.
+ */
+export function mergeLinePgns(pgns: string[]): string | null {
+  if (pgns.length === 0) return null;
+
+  let rootFen: string | null = null;
+  const children: BuilderNode[] = [];
+
+  for (const pgn of pgns) {
+    const parsed = builderTreeFromPgn(pgn);
+    if (!parsed) return null;
+    if (rootFen === null) rootFen = parsed.rootFen;
+    else if (rootFen !== parsed.rootFen) return null;
+
+    // Walk the line's single chain, descending while the tree already has the
+    // move; the first novel move hangs the chain's remainder as a new branch.
+    let level = children;
+    let chain: BuilderNode[] = parsed.children;
+    while (chain.length > 0) {
+      const node = chain[0];
+      const existing = level.find((c) => c.san === node.san);
+      if (existing) {
+        level = existing.children;
+        chain = node.children;
+      } else {
+        level.push(node);
+        break;
+      }
+    }
+  }
+
+  return rootFen ? builderTreeToPgn(children, rootFen) : null;
+}
+
+/** Serialize the built tree to the PGN string the import pipeline accepts. */
+export function builderTreeToPgn(children: BuilderNode[], rootFen: string): string {
+  if (children.length === 0) return '';
+  return generatePgnFromTree({ startingFen: rootFen, children });
+}
+
+/**
+ * Flat token stream for rendering the move list: moves (each carrying its
+ * cursor path and, where PGN requires one, a move-number indicator)
+ * interleaved with `(` / `)` markers around variations — the same RAV order
+ * `generatePgnFromTree` emits, so what the author sees reads exactly like the
+ * PGN being built. `number` is kept separate from `san` so the renderer can
+ * style it like the game screens' move lists (small muted number, SAN button).
+ */
+export type MoveListToken =
+  | { type: 'move'; san: string; number: string | null; path: BuilderPath }
+  | { type: 'open' }
+  | { type: 'close' };
+
+/** `"12."` for White, `"12..."` for a Black line opener, `null` otherwise. */
+function moveNumberIndicator(beforeFen: string, needsNumber: boolean): string | null {
+  const fields = beforeFen.split(' ');
+  const turn = fields[1];
+  const fullmove = fields[5] ?? '1';
+  if (turn === 'w') return `${fullmove}.`;
+  if (needsNumber) return `${fullmove}...`;
+  return null;
+}
+
+export function flattenBuilderTree(children: BuilderNode[], rootFen: string): MoveListToken[] {
+  const tokens: MoveListToken[] = [];
+
+  const walkLine = (
+    siblings: BuilderNode[],
+    beforeFen: string,
+    basePath: BuilderPath,
+    opensLine: boolean
+  ): void => {
+    let nodes = siblings;
+    let fen = beforeFen;
+    let path = basePath;
+    let needsNumber = opensLine;
+
+    while (nodes.length > 0) {
+      const [main, ...variations] = nodes;
+      const mainPath = [...path, 0];
+      tokens.push({
+        type: 'move',
+        san: main.san,
+        number: moveNumberIndicator(fen, needsNumber),
+        path: mainPath,
+      });
+      variations.forEach((variation, i) => {
+        tokens.push({ type: 'open' });
+        const variationPath = [...path, i + 1];
+        tokens.push({
+          type: 'move',
+          san: variation.san,
+          number: moveNumberIndicator(fen, true),
+          path: variationPath,
+        });
+        walkLine(variation.children, variation.fen, variationPath, false);
+        tokens.push({ type: 'close' });
+      });
+      needsNumber = variations.length > 0;
+      fen = main.fen;
+      path = mainPath;
+      nodes = main.children;
+    }
+  };
+
+  walkLine(children, rootFen, [], true);
+  return tokens;
+}

@@ -8,7 +8,6 @@ import type { RepertoireCheckEntry } from '@/lib/repertoires/check-report';
 import { buildReplayModel } from '../_lib/build-replay';
 import { REPERTOIRE_CHECK_PATH, buildRepertoireCheckQuery } from '../_lib/check-url';
 import { MATCH_STATUS_BADGE, MATCH_STATUS_KEY, type MatchStatus } from '../_lib/match-status';
-import { AddLineButton } from './AddLineButton';
 import { ReplayBoard } from './ReplayBoard';
 
 type Props = {
@@ -99,16 +98,12 @@ export async function RepertoireCheckView({
           side={playerColor}
           stopPly={stopPly}
           verdict={verdict}
+          addLineHref={
+            addLinePgn
+              ? `/${locale}/repertoires/${repertoire.id}/lines/new?pgn=${encodeURIComponent(addLinePgn)}`
+              : null
+          }
         />
-
-        {addLinePgn && (
-          <AddLineButton
-            locale={locale}
-            repertoireId={repertoire.id}
-            repertoireName={repertoire.name}
-            pgn={addLinePgn}
-          />
-        )}
       </div>
 
       {/* The other applicable katas sit in the right column, the same place

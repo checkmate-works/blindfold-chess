@@ -48,7 +48,22 @@
       "pgnHelp": "変化手を含む PGN を貼り付けてください。Lichess スタディや Chess.com のエクスポートをそのまま使えます。",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
       "submit": "型をインポート",
-      "submitting": "インポート中…"
+      "submitting": "インポート中…",
+      "inputModePgn": "PGN",
+      "inputModeBoard": "盤面",
+      "movesLabel": "手順",
+      "defaultName": "マイシステム - {username}"
+    },
+    "boardBuilder": {
+      "flip": "盤を反転",
+      "helpSingleLine": "両陣営の手を順に指してください。途中の手に戻って別の手を指すと、それ以降は新しい手順に置き換わります（1つのラインに分岐は持てません）。",
+      "shapesHint": "盤上で右クリック＋ドラッグすると矢印、マスを右クリックすると丸を描けます。Shift / Alt / Ctrl で色が変わります。",
+      "annotationHelp": "メモは選択中の手の後の局面に紐づき、同じ局面を通るこの型のすべてのラインで共有されます。フォームの保存時に確定します。",
+      "empty": "盤面で駒を動かすと型の手順が作られます。",
+      "whiteToMove": "白番",
+      "blackToMove": "黒番",
+      "deleteFromHere": "この手以降を削除",
+      "help": "両陣営の手を順に指してください。途中の手に戻って別の手を指すと変化（別の手順）が追加され、インポート時にそれぞれ独立したラインになります。"
     },
     "new": {
       "title": "型をインポート",
@@ -67,6 +82,9 @@
         "notFound": "この型は存在しません。",
         "nameRequired": "名前を入力してください。",
         "nameTooLong": "名前が長すぎます。",
+        "pgnRequired": "手順を入力してください。",
+        "pgnTooLarge": "PGN が大きすぎます。",
+        "invalidPgn": "手順を読み取れませんでした。記譜を確認してください。",
         "generic": "エラーが発生しました。もう一度お試しください。"
       }
     },
@@ -77,10 +95,16 @@
       "lineCount": "{count} ライン",
       "forThisOpening": "このオープニングの型",
       "lineFallback": "ライン {n}",
+      "previewToggle": "手順を表示",
       "openLine": "このラインを開く →",
       "createdBy": "作成者"
     },
     "line": {
+      "new": {
+        "title": "ラインを追加",
+        "submit": "ラインを追加",
+        "saving": "追加中…"
+      },
       "title": "ライン",
       "breadcrumb": "ライン {n}",
       "empty": "このラインには手がありません。",
@@ -90,15 +114,10 @@
       },
       "annotation": {
         "title": "この手の狙い",
-        "addButton": "メモを追加",
-        "editButton": "編集",
-        "save": "保存",
         "saving": "保存中...",
-        "cancel": "キャンセル",
-        "delete": "削除",
-        "deleteConfirmTitle": "このノートを削除しますか？",
-        "deleteConfirmMessage": "この手のノートが削除されます。元に戻せません。",
         "placeholder": "なぜこの手を指すのかを説明…",
+        "saved": "保存済み",
+        "autosaveHelp": "メモは自動保存され、同じ局面を通るこの型のすべてのラインで共有されます。",
         "error": "問題が発生しました。もう一度お試しください。",
         "empty": "メモを入力してください。",
         "tooLong": "メモが長すぎます。",
@@ -2279,21 +2298,7 @@
       "deviationDetail": "{moveNo}手目、あなたは {played} を指しました（型の準備手: {expected}）。",
       "gapDetail": "{moveNo}手目、相手の {played} はこの型にない手です（準備していた応手: {expected}）。",
       "addLine": {
-        "cta": "このラインを型に追加する",
-        "confirmDetail": "この対局の指し手を、{repertoireName} と一致した部分も含めて新しいラインとして保存します:",
-        "save": "ラインを保存",
-        "saving": "保存中…",
-        "cancel": "キャンセル",
-        "errors": {
-          "unauthorized": "この型を編集できるのは所有者のみです。",
-          "notFound": "この型は既に存在しません。",
-          "nameTooLong": "タイトルが長すぎます。",
-          "pgnRequired": "手順を入力してください。",
-          "pgnTooLarge": "PGNが大きすぎます。",
-          "invalidPgn": "手順を読み取れませんでした。表記を確認してください。",
-          "noMoves": "少なくとも1手は入力してください。",
-          "generic": "エラーが発生しました。もう一度お試しください。"
-        }
+        "cta": "このラインを型に追加する"
       },
       "backToResult": "振り返りに戻る"
     }
@@ -3209,6 +3214,7 @@
         "confirm": "削除",
         "cancel": "キャンセル"
       },
+      "positionLabel": "局面",
       "tabBoard": "盤面",
       "tabFen": "FEN",
       "sideToMove": "手番",
