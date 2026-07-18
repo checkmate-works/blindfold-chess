@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -26,6 +28,13 @@ type Props = {
    */
   stopPly: number;
   verdict: MatchVerdict;
+  /**
+   * Where "Add this line to your kata" navigates (the add-line form, preloaded
+   * with the uncovered line) — set exactly when the game left the kata. The
+   * verdict panel then offers saving the line instead of a replay: capturing
+   * the gap is the action that matters there.
+   */
+  addLineHref?: string | null;
 };
 
 /**
@@ -37,7 +46,14 @@ type Props = {
  * overlay; the verdict panel's Replay restarts it. Same board chrome as the
  * repertoire line viewer. Playback timing/state lives in useReplayPlayback.
  */
-export function ReplayBoard({ positions, formatted, side, stopPly, verdict }: Props) {
+export function ReplayBoard({
+  positions,
+  formatted,
+  side,
+  stopPly,
+  verdict,
+  addLineHref = null,
+}: Props) {
   const t = useTranslations('play');
   const maxPly = positions.length - 1;
   const { ply, revealed, showOverlay, goTo, play } = useReplayPlayback({ maxPly, stopPly });
@@ -122,9 +138,17 @@ export function ReplayBoard({ positions, formatted, side, stopPly, verdict }: Pr
           data-testid="repertoire-check-verdict"
         >
           <p className="text-sm text-foreground">{detail}</p>
-          <Button variant="outline" onClick={play}>
-            {t('repertoireCheck.replay')}
-          </Button>
+          {addLineHref ? (
+            <Link href={addLineHref} className="block">
+              <Button asChild variant="primary" fullWidth>
+                {t('repertoireCheck.addLine.cta')}
+              </Button>
+            </Link>
+          ) : (
+            <Button variant="outline" onClick={play}>
+              {t('repertoireCheck.replay')}
+            </Button>
+          )}
         </div>
       )}
     </div>

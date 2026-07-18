@@ -58,10 +58,19 @@ export function useRepertoireBoardBuilder({
 }: UseRepertoireBoardBuilderOptions) {
   const [state, setState] = useState<BuilderState>(() => {
     const parsed = initialPgn?.trim() ? builderTreeFromPgn(initialPgn) : null;
+    const children = parsed?.children ?? [];
+    // A single-line editor opens with the cursor at the line's TIP: that is
+    // where extending continues, and it keeps an immediate move from silently
+    // replacing the whole prefilled line (the replace-mode semantics at the
+    // root). Tree mode keeps the root — browsing variations starts there.
+    let path: BuilderPath = [];
+    if (singleLine) {
+      while (nodeAtPath(children, [...path, 0])) path = [...path, 0];
+    }
     return {
       rootFen: parsed?.rootFen ?? getStartingFen(),
-      children: parsed?.children ?? [],
-      path: [],
+      children,
+      path,
     };
   });
   const { rootFen, children, path } = state;

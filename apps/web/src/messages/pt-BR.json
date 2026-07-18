@@ -99,6 +99,11 @@
       "createdBy": "Criado por"
     },
     "line": {
+      "new": {
+        "title": "Adicionar uma linha",
+        "submit": "Adicionar linha",
+        "saving": "Adicionando…"
+      },
       "title": "Linha",
       "breadcrumb": "Linha {n}",
       "empty": "Esta linha não tem lances.",
@@ -2288,21 +2293,7 @@
       "deviationDetail": "No lance {moveNo}, você jogou {played} — seu kata prepara {expected}.",
       "gapDetail": "No lance {moveNo}, o adversário jogou {played}, que este kata não cobre (preparado: {expected}).",
       "addLine": {
-        "cta": "Adicionar esta linha ao seu kata",
-        "confirmDetail": "Isso salva os lances desta partida — incluindo a parte que seguiu {repertoireName} — como uma nova linha:",
-        "save": "Salvar linha",
-        "saving": "Salvando…",
-        "cancel": "Cancelar",
-        "errors": {
-          "unauthorized": "Somente o proprietário pode adicionar uma linha a este kata.",
-          "notFound": "Este kata não existe mais.",
-          "nameTooLong": "O título é muito longo.",
-          "pgnRequired": "Informe os lances.",
-          "pgnTooLarge": "O PGN é muito grande.",
-          "invalidPgn": "Não foi possível ler esses lances. Verifique a notação.",
-          "noMoves": "Informe pelo menos um lance.",
-          "generic": "Algo deu errado. Tente novamente."
-        }
+        "cta": "Adicionar esta linha ao seu kata"
       },
       "backToResult": "Voltar à revisão da partida"
     }

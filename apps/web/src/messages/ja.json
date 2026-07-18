@@ -99,6 +99,11 @@
       "createdBy": "作成者"
     },
     "line": {
+      "new": {
+        "title": "ラインを追加",
+        "submit": "ラインを追加",
+        "saving": "追加中…"
+      },
       "title": "ライン",
       "breadcrumb": "ライン {n}",
       "empty": "このラインには手がありません。",
@@ -2292,21 +2297,7 @@
       "deviationDetail": "{moveNo}手目、あなたは {played} を指しました（型の準備手: {expected}）。",
       "gapDetail": "{moveNo}手目、相手の {played} はこの型にない手です（準備していた応手: {expected}）。",
       "addLine": {
-        "cta": "このラインを型に追加する",
-        "confirmDetail": "この対局の指し手を、{repertoireName} と一致した部分も含めて新しいラインとして保存します:",
-        "save": "ラインを保存",
-        "saving": "保存中…",
-        "cancel": "キャンセル",
-        "errors": {
-          "unauthorized": "この型を編集できるのは所有者のみです。",
-          "notFound": "この型は既に存在しません。",
-          "nameTooLong": "タイトルが長すぎます。",
-          "pgnRequired": "手順を入力してください。",
-          "pgnTooLarge": "PGNが大きすぎます。",
-          "invalidPgn": "手順を読み取れませんでした。表記を確認してください。",
-          "noMoves": "少なくとも1手は入力してください。",
-          "generic": "エラーが発生しました。もう一度お試しください。"
-        }
+        "cta": "このラインを型に追加する"
       },
       "backToResult": "振り返りに戻る"
     }
