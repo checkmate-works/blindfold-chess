@@ -46,3 +46,25 @@ Both services should be in the same region (US East) for optimal performance.
 
 - Go to Vercel Dashboard → Project → Settings → Functions
 - Set the region to `iad1` (Washington, D.C., USA)
+
+### Migrations deliberately run over the pooled connection, not Direct
+
+`scripts/migrate.ts` and `drizzle.config.ts` both fall back through
+`POSTGRES_URL_NON_POOLING || POSTGRES_URL || DATABASE_URL`, but
+`POSTGRES_URL_NON_POOLING` (Supabase's Direct connection) is intentionally
+**left out of `turbo.json`'s `build` task `passThroughEnv`**, so it never
+reaches the build process and migrations always run over the pooled
+`POSTGRES_URL` instead.
+
+This is a deliberate workaround, not an oversight: this project's Supabase
+Direct connection endpoint is IPv6-only (no IPv4 add-on purchased), and
+Vercel's build containers have no outbound IPv6 route. Allow-listing
+`POSTGRES_URL_NON_POOLING` made migrations pick that endpoint and fail the
+build with `ENETUNREACH` (2026-07-18). The pooled connection has run every
+migration this app has (Drizzle migrations + all of `drizzle/supabase/*.sql`)
+without incident, so this is safe as-is — but see
+[#94](https://github.com/checkmate-works/blindfold-chess/issues/94) before
+re-adding `POSTGRES_URL_NON_POOLING` here: it documents the two ways to make
+Direct (or Session-pooler) connections work if a future migration needs
+session-level guarantees the Transaction-mode pooler can't give (e.g.
+`CREATE INDEX CONCURRENTLY`, advisory locks spanning multiple statements).
