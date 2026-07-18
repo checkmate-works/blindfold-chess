@@ -129,6 +129,19 @@ export type RankSlug = (typeof ALL_RANK_SLUGS)[number];
  */
 export const DAN_TIER_MIN_LEVEL = 110;
 
+/**
+ * Cache tag for per-user rank-derived status (the `hasDanTierRank` check in
+ * `@/lib/users/dan-rank`). Revalidated by the rank-granting flows right
+ * before they refresh the `bfc_ads_hidden` cookie, so a fresh dan promotion
+ * is not served a stale "no dan rank" from that cache. Reads also self-heal
+ * via `revalidate: 60` even if a future granting path forgets the tag.
+ *
+ * Lives in this pure data module (not `dan-rank.ts`) so the ads cookie
+ * writer can import it without pulling the server-only DB module graph into
+ * client-component unit tests.
+ */
+export const RANK_STATUS_CACHE_TAG = 'rank-status';
+
 /** Belt colors for each rank. */
 export const RANK_COLORS: Record<RankSlug, string> = {
   mukyu: 'white',

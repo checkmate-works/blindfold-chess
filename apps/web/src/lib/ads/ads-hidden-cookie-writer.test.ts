@@ -2,6 +2,9 @@ import type { NextResponse } from 'next/server';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { RANK_STATUS_CACHE_TAG } from '@/lib/db/data/ranks';
+import type { GrantedRank } from '@/lib/db/data/ranks';
+
 import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from './ads-hidden-cookie';
 
 const mockComputeAdsHiddenValueForUser = vi.fn();
@@ -10,15 +13,20 @@ vi.mock('./ads-hidden-cookie-compute', () => ({
   computeAdsHiddenValueForUser: (...args: unknown[]) => mockComputeAdsHiddenValueForUser(...args),
 }));
 
-// `next/headers` `cookies()` is referenced at module load (the *other* writer
-// helper, `writeAdsHiddenCookieForUser`, uses it). It is not invoked by
-// `refreshAdsHiddenCookieOnResponse`, but the import must resolve. Mock it
-// to a no-op so the module loads cleanly under jsdom.
+// Shared spy store so the dan-promotion tests can observe `cookies().set`
+// calls; the `refreshAdsHiddenCookieOnResponse` tests never invoke it.
+const mockCookieStore = { set: vi.fn(), delete: vi.fn() };
 vi.mock('next/headers', () => ({
-  cookies: () => Promise.resolve({ set: vi.fn(), delete: vi.fn() }),
+  cookies: () => Promise.resolve(mockCookieStore),
 }));
 
-const { refreshAdsHiddenCookieOnResponse } = await import('./ads-hidden-cookie-writer');
+const mockRevalidateTag = vi.fn();
+vi.mock('next/cache', () => ({
+  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
+}));
+
+const { refreshAdsHiddenCookieOnDanPromotion, refreshAdsHiddenCookieOnResponse } =
+  await import('./ads-hidden-cookie-writer');
 
 type SpyCookies = {
   set: ReturnType<typeof vi.fn>;
@@ -132,5 +140,60 @@ describe('refreshAdsHiddenCookieOnResponse', () => {
       expect(cookies.set).not.toHaveBeenCalled();
       expect(cookies.delete).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('refreshAdsHiddenCookieOnDanPromotion', () => {
+  const danRank: GrantedRank = { slug: '1dan', level: 110, color: 'black' };
+  const kyuRanks: GrantedRank[] = [
+    { slug: '2kyu', level: 40, color: 'green' },
+    { slug: '1kyu', level: 50, color: 'brown' },
+  ];
+
+  beforeEach(() => {
+    mockCookieStore.set.mockReset();
+    mockCookieStore.delete.mockReset();
+    mockRevalidateTag.mockReset();
+  });
+
+  it('is a no-op for an empty grant batch', async () => {
+    await refreshAdsHiddenCookieOnDanPromotion([]);
+
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
+    expect(mockCookieStore.set).not.toHaveBeenCalled();
+  });
+
+  it('is a no-op when the batch contains only kyū ranks', async () => {
+    await refreshAdsHiddenCookieOnDanPromotion(kyuRanks);
+
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
+    expect(mockCookieStore.set).not.toHaveBeenCalled();
+  });
+
+  it("revalidates the rank-status tag and sets the cookie to '1' when the batch crosses into dan", async () => {
+    // The cascade case: one trigger granting [2kyu, 1kyu, 1dan] at once.
+    await refreshAdsHiddenCookieOnDanPromotion([...kyuRanks, danRank]);
+
+    expect(mockRevalidateTag).toHaveBeenCalledWith(RANK_STATUS_CACHE_TAG, { expire: 60 });
+    expect(mockCookieStore.set).toHaveBeenCalledWith(
+      ADS_HIDDEN_COOKIE_NAME,
+      '1',
+      adsHiddenCookieOptions()
+    );
+    expect(mockCookieStore.delete).not.toHaveBeenCalled();
+  });
+
+  it('never deletes the cookie — a dan promotion can only add the entitlement', async () => {
+    await refreshAdsHiddenCookieOnDanPromotion([danRank]);
+
+    expect(mockCookieStore.delete).not.toHaveBeenCalled();
+  });
+
+  it('swallows cookie-write failures — the rank grant already happened', async () => {
+    mockCookieStore.set.mockImplementation(() => {
+      throw new Error('cookies unavailable');
+    });
+
+    await expect(refreshAdsHiddenCookieOnDanPromotion([danRank])).resolves.toBeUndefined();
   });
 });

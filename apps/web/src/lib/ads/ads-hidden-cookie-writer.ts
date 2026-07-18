@@ -1,7 +1,11 @@
+import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { NextResponse } from 'next/server';
 
 import type { User } from '@supabase/supabase-js';
+
+import type { GrantedRank } from '@/lib/db/data/ranks';
+import { DAN_TIER_MIN_LEVEL, RANK_STATUS_CACHE_TAG } from '@/lib/db/data/ranks';
 
 import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from './ads-hidden-cookie';
 import { computeAdsHiddenValueForUser } from './ads-hidden-cookie-compute';
@@ -72,5 +76,36 @@ export async function refreshAdsHiddenCookieOnResponse(
     response.cookies.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
   } else {
     response.cookies.delete(ADS_HIDDEN_COOKIE_NAME);
+  }
+}
+
+/**
+ * Make a just-granted dan promotion's ad-free perk visible immediately,
+ * within the same Server Action that granted it. No-op unless the granted
+ * batch actually crosses into the dan tier.
+ *
+ * Sets the cookie to `'1'` directly instead of recomputing through
+ * `computeAdsHiddenValueForUser`: the dan grant makes the user entitled by
+ * definition, while the cached `hasDanTierRank` behind a recompute could
+ * still hold a pre-promotion "false" — the tag revalidation issued here is
+ * for *subsequent* reads (native-ad gates, later cookie refreshes), not
+ * something this call can rely on within the same request.
+ *
+ * Best-effort by design, mirroring the rank evaluation itself: the rank is
+ * already granted, so a cookie hiccup must not fail the caller's flow —
+ * `getSessionUser` rewrites the cookie on the next session resolution
+ * anyway (within the cache's 60s revalidate window).
+ */
+export async function refreshAdsHiddenCookieOnDanPromotion(
+  grantedRanks: readonly GrantedRank[]
+): Promise<void> {
+  if (!grantedRanks.some((rank) => rank.level >= DAN_TIER_MIN_LEVEL)) return;
+
+  try {
+    revalidateTag(RANK_STATUS_CACHE_TAG, { expire: 60 });
+    const store = await cookies();
+    store.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
+  } catch (error) {
+    console.warn('Failed to refresh ads-hidden cookie after dan promotion:', error);
   }
 }

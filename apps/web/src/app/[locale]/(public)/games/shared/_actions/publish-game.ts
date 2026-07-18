@@ -1,5 +1,6 @@
 'use server';
 
+import { refreshAdsHiddenCookieOnDanPromotion } from '@/lib/ads/ads-hidden-cookie-writer';
 import { userHasProfile } from '@/lib/auth';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { publishGame } from '@/lib/db/games-write';
@@ -102,6 +103,7 @@ export async function publishGameAction(
     // grant a rank to. Such a game stays uncounted even if the author later
     // claims it via its manage token — claiming does not re-evaluate.
     const grantedRanks = authorId ? await evaluateRanksAfterCreate(authorId, 'game publish') : [];
+    await refreshAdsHiddenCookieOnDanPromotion(grantedRanks);
 
     return {
       success: true,

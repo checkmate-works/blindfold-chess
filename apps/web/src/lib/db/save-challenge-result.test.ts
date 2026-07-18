@@ -29,6 +29,13 @@ vi.mock('next/cache', () => ({
   revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
+// Cuts the request-layer cookie chain (next/headers, billing, grants) out of
+// this DB-focused test; the helper itself is unit-tested in
+// `@/lib/ads/ads-hidden-cookie-writer.test.ts`.
+vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
+  refreshAdsHiddenCookieOnDanPromotion: vi.fn(),
+}));
+
 vi.mock('./rank-evaluation', () => ({
   checkAndGrantRanks: (...args: unknown[]) => mockCheckAndGrantRanks(...args),
 }));

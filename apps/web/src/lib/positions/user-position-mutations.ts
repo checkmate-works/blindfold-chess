@@ -4,6 +4,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
+import { refreshAdsHiddenCookieOnDanPromotion } from '@/lib/ads/ads-hidden-cookie-writer';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions } from '@/lib/db';
 import type { GrantedRank } from '@/lib/db/data/ranks';
@@ -242,6 +243,7 @@ export async function createPositionEntry(params: {
   // requirements (e.g. 2kyu). Best-effort by design — see
   // evaluateRanksAfterCreate.
   const grantedRanks: GrantedRank[] = await evaluateRanksAfterCreate(user.id, 'position create');
+  await refreshAdsHiddenCookieOnDanPromotion(grantedRanks);
 
   revalidatePath(`/practice/${config.urlSegment}`);
 

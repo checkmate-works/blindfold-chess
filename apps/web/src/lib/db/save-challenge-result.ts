@@ -2,6 +2,8 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
 
+import { refreshAdsHiddenCookieOnDanPromotion } from '@/lib/ads/ads-hidden-cookie-writer';
+
 import { detectScoreImprovement } from './challenge-best-score';
 import { getUserAllTimeRank } from './challenge-queries';
 import { decideChallengeRankFeedItem } from './challenge-rank-feed';
@@ -219,6 +221,7 @@ export async function saveChallengeResult(
     console.error('Failed to check/grant ranks:', error);
     Sentry.captureException(error);
   }
+  await refreshAdsHiddenCookieOnDanPromotion(grantedRanks);
 
   return { grantedRanks, exp: expInfo, challengeResultId };
 }
