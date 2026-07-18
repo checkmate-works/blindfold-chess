@@ -200,16 +200,18 @@ export function GameFinishModal({
 
         {showGuestPromotion ? (
           <div className="flex flex-col items-center gap-3">
+            {/* Both actions full-width at matching heights — mismatched
+                widths/heights read as visual noise in a stacked pair. */}
             <Link
               href={guestSignUpHref!}
-              className="w-full rounded-md bg-primary px-4 py-2.5 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto sm:px-8"
+              className="w-full rounded-md bg-primary px-4 py-2.5 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               {t('finishModal.guestPromotion.signUp')}
             </Link>
             <button
               type="button"
               onClick={onShare}
-              className="w-full rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground/30 sm:w-auto sm:px-6"
+              className="w-full rounded-md border border-border px-4 py-2.5 text-center font-semibold text-foreground transition-colors hover:border-foreground/30"
             >
               {t('finishModal.guestPromotion.publishAnonymously')}
             </button>
