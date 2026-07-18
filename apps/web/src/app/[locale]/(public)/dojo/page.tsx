@@ -24,6 +24,7 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide } from '@/lib/guides';
 import { createClient } from '@/lib/supabase/server';
 
+import { PublishNudgeBanner } from '@/app/[locale]/(public)/games/_components/PublishNudgeBanner';
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import {
   buildRequirementItems,
@@ -149,6 +150,11 @@ export default async function DojoPage({ params }: LocalePageProps) {
       locale={locale}
       breadcrumb={[{ label: t('pageTitle') }]}
     >
+      {/* A publishable promotion beats everything below: if an unpublished
+          game already satisfies a rank the viewer hasn't earned, say so
+          before showing them what to grind next. Renders nothing otherwise. */}
+      <PublishNudgeBanner locale={locale} className="mb-6" />
+
       {/* Section 1: Current rank belt */}
       <section className="space-y-3" data-tour-id="dojo-current-rank">
         <SectionTitle>{t('currentRankTitle')}</SectionTitle>
