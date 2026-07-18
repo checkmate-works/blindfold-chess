@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
@@ -16,6 +17,7 @@ import { GameSelectorSkeleton } from './GameSelectorSkeleton';
 export function BulkDeleteClient() {
   const t = useTranslations('bulkDelete');
   const { showToast } = useToast();
+  const router = useRouter();
 
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,8 +44,8 @@ export function BulkDeleteClient() {
         await gameRepository.delete(gameId);
       }
 
-      setGames((prev) => prev.filter((game) => !gameIdsToDelete.includes(game.id)));
       showToast(t('deletedToast', { count: gameIdsToDelete.length }), 'success');
+      router.push('/games');
     } catch (error) {
       console.error('Failed to delete games:', error);
       showToast(t('deleteFailedToast'), 'error');

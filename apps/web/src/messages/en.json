@@ -1954,7 +1954,8 @@
       "gameDeletedToast": "Game deleted successfully",
       "gamesDeletedToast": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
       "deleteFailedToast": "Failed to delete game",
-      "moreGames": "All games"
+      "moreGames": "All games",
+      "limitWarning": "{remaining, plural, one {Only # save slot left} other {Only # save slots left}} (out of {max}). <link>Delete some games</link> to make room."
     },
     "yourRankings": {
       "title": "Your Rankings",

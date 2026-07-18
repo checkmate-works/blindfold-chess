@@ -9,7 +9,7 @@ import { CreatePositionForm } from '../_components/CreatePositionForm';
 
 const { generateMetadata, Page } = createPositionCreatePage(POSITION_MEMORY_ROUTE, {
   loadForkSeed: loadPositionForkSeed,
-  renderForm: ({ user, displayName, availableTags, forkSeed, injectedFen }) => (
+  renderForm: ({ user, displayName, availableTags, forkSeed, injectedFen, injectedChunkIds }) => (
     <CreatePositionForm
       displayName={displayName}
       disableUnsavedGuard={!user}
@@ -17,6 +17,7 @@ const { generateMetadata, Page } = createPositionCreatePage(POSITION_MEMORY_ROUT
       availableChunks={availableTags.chunks}
       forkSeed={forkSeed}
       injectedFen={injectedFen}
+      injectedChunkIds={injectedChunkIds}
     />
   ),
 });

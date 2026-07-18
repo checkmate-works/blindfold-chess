@@ -2,13 +2,16 @@
 
 import { useState } from 'react';
 
+import { Button } from '@/app/_components';
+import { GAME_LIMIT_WARNING_THRESHOLD, MAX_GAMES } from '@/config';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FaExclamationTriangle, FaPlus } from 'react-icons/fa';
 
 import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import { TEXT_LINK_CLASSES, TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { EmptyGameList } from '../../(home)/_components/EmptyGameList';
@@ -33,6 +36,9 @@ export function GamesPageClient({ locale }: Props) {
   const { games, isLoading } = useGameList(sortBy, sortDirection);
 
   const displayGames = games.slice(0, GAMES_PAGE_MAX_COUNT);
+  const remainingSlots = MAX_GAMES - games.length;
+  const showLimitWarning = !isLoading && remainingSlots <= GAME_LIMIT_WARNING_THRESHOLD;
+  const isAtLimit = !isLoading && remainingSlots <= 0;
 
   const handleSortChange = (value: string) => {
     const [column, direction] = value.split('-') as [GameSortOption, SortDirection];
@@ -42,6 +48,55 @@ export function GamesPageClient({ locale }: Props) {
 
   return (
     <>
+      {showLimitWarning && (
+        <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-foreground/80 dark:bg-amber-950/20">
+          <FaExclamationTriangle
+            className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500"
+            aria-hidden
+          />
+          <span>
+            {t.rich('limitWarning', {
+              remaining: remainingSlots,
+              max: MAX_GAMES,
+              link: (chunks) => (
+                <Link
+                  href="/games/bulk-delete"
+                  locale={locale}
+                  className={`font-medium ${TEXT_LINK_CLASSES}`}
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </span>
+        </div>
+      )}
+
+      <div data-tour-id="games-new-button">
+        {isAtLimit ? (
+          <Button
+            variant="primary"
+            size="lg"
+            icon={<FaPlus className="w-5 h-5" />}
+            className="w-full touch-manipulation"
+            disabled
+          >
+            {t('newGame')}
+          </Button>
+        ) : (
+          <Link href="/games/new" locale={locale} className="block w-full">
+            <Button
+              variant="primary"
+              size="lg"
+              icon={<FaPlus className="w-5 h-5" />}
+              className="w-full touch-manipulation"
+            >
+              {t('newGame')}
+            </Button>
+          </Link>
+        )}
+      </div>
+
       {!isLoading && games.length > 0 && (
         <div className="flex justify-end">
           <SortButton

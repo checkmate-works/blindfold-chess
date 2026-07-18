@@ -69,6 +69,9 @@ export const MIN_PASSWORD_LENGTH = 6;
 
 export const MAX_GAMES = 20;
 
+/** Below this many remaining save slots, `/games` shows a low-slots warning. */
+export const GAME_LIMIT_WARNING_THRESHOLD = 3;
+
 export const GAME_UPDATED_EVENT = 'blindfold-chess:game-updated';
 export const NOTIFICATIONS_READ_EVENT = 'blindfold-chess:notifications-read';
 

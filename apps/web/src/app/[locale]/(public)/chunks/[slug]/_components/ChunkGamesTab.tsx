@@ -23,12 +23,13 @@ export async function ChunkGamesTab({
   likeMetaMap: ChunkDetailData['relatedGamesLikeMetaMap'];
   replyMetaMap: ChunkDetailData['relatedGamesReplyMetaMap'];
 }) {
-  const [t, tChunks, tSharedGames, tPlay, tOpeningNames] = await Promise.all([
+  const [t, tChunks, tSharedGames, tPlay, tOpeningNames, tHome] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
     getTranslations({ locale, namespace: 'chunks' }),
     getTranslations({ locale, namespace: 'sharedGames' }),
     getTranslations({ locale, namespace: 'play' }),
     getTranslations({ locale, namespace: 'topics.openings.names' }),
+    getTranslations({ locale, namespace: 'home.gameList' }),
   ]);
 
   return (
@@ -52,6 +53,7 @@ export async function ChunkGamesTab({
         }
         emptyLabel={t('relatedGames.empty')}
         moveLabel={(n) => t('relatedGames.moveLabel', { n })}
+        newGameLabel={tHome('newGame')}
       />
     </>
   );

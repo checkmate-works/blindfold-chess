@@ -17,7 +17,15 @@ const { generateMetadata, Page } = createPositionCreatePage(PUZZLE_ROUTE, {
   // position"). An optional `?solution=` SAN move (the game's continuation)
   // seeds the first solution move, but only when it is legal from the seeded
   // position — otherwise the position is seeded alone.
-  renderForm: ({ user, displayName, availableTags, forkSeed, injectedFen, searchParams }) => {
+  renderForm: ({
+    user,
+    displayName,
+    availableTags,
+    forkSeed,
+    injectedFen,
+    injectedChunkIds,
+    searchParams,
+  }) => {
     const solutionParam = searchParams.solution;
     const continuation =
       injectedFen && typeof solutionParam === 'string'
@@ -34,6 +42,7 @@ const { generateMetadata, Page } = createPositionCreatePage(PUZZLE_ROUTE, {
         forkSeed={forkSeed}
         injectedFen={injectedFen}
         injectedSolution={injectedSolution}
+        injectedChunkIds={injectedChunkIds}
       />
     );
   },

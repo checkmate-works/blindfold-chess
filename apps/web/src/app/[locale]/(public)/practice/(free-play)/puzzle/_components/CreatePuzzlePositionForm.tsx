@@ -94,6 +94,12 @@ type Props = {
    * move is already validated legal from `injectedFen` server-side.
    */
   injectedSolution?: string[];
+  /**
+   * Seed the chunk tag picker (e.g. "add a puzzle for this chunk", passed
+   * via `?chunk=<slug-or-id>` and resolved server-side). Merged with any
+   * fork-seeded chunks rather than overridden by them.
+   */
+  injectedChunkIds?: string[];
 };
 
 export function CreatePuzzlePositionForm({
@@ -104,6 +110,7 @@ export function CreatePuzzlePositionForm({
   forkSeed,
   injectedFen,
   injectedSolution,
+  injectedChunkIds,
 }: Props = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -143,7 +150,10 @@ export function CreatePuzzlePositionForm({
     forkSeed ? resolveOptionsByIds(forkSeed.themeIds, availableThemes) : []
   ).current;
   const seededChunks = useRef<ChunkOption[]>(
-    forkSeed ? resolveOptionsByIds(forkSeed.chunkIds, availableChunks) : []
+    resolveOptionsByIds(
+      [...(forkSeed?.chunkIds ?? []), ...(injectedChunkIds ?? [])],
+      availableChunks
+    )
   ).current;
 
   const board = useFenBoardEditor({ initialFen: forkSeed?.fen ?? injectedFen });

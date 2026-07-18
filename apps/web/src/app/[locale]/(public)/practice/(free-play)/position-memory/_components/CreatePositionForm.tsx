@@ -81,6 +81,12 @@ type Props = {
    * title/tags and shows no banner; `forkSeed` wins if both are present.
    */
   injectedFen?: string;
+  /**
+   * Seed the chunk tag picker (e.g. "add a position for this chunk", passed
+   * via `?chunk=<slug-or-id>` and resolved server-side). Merged with any
+   * fork-seeded chunks rather than overridden by them.
+   */
+  injectedChunkIds?: string[];
 };
 
 export function CreatePositionForm({
@@ -90,6 +96,7 @@ export function CreatePositionForm({
   availableChunks = [],
   forkSeed,
   injectedFen,
+  injectedChunkIds,
 }: Props = {}) {
   const router = useRouter();
   const locale = useLocale();
@@ -106,11 +113,10 @@ export function CreatePositionForm({
       : []
   ).current;
   const seededChunks = useRef<ChunkOption[]>(
-    forkSeed
-      ? forkSeed.chunkIds
-          .map((id) => availableChunks.find((c) => c.id === id))
-          .filter((c): c is ChunkOption => c !== undefined)
-      : []
+    (() => {
+      const ids = new Set([...(forkSeed?.chunkIds ?? []), ...(injectedChunkIds ?? [])]);
+      return availableChunks.filter((c) => ids.has(c.id));
+    })()
   ).current;
 
   // A fork seeds the whole row; an injected `?fen=` seeds only the position.
