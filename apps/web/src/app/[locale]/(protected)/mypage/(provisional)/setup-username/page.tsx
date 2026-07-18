@@ -1,12 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 
+import { sanitizeNext } from '@/lib/safe-next';
+
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
-import type { LocalePageProps } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { UsernameForm } from './_components';
-
-type Props = LocalePageProps;
 
 export function generateMetadata({ params }: Props) {
   return createPageMetadata({
@@ -17,10 +17,15 @@ export function generateMetadata({ params }: Props) {
   });
 }
 
-export default async function SetupUsernamePage({ params }: Props) {
+export default async function SetupUsernamePage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'setupUsername' });
   const tSignUp = await getTranslations({ locale, namespace: 'signUp' });
+
+  // Post-setup destination from a CTA-gated sign-up funnel (forwarded by the
+  // auth callback). Re-sanitized here — the URL is user-controllable.
+  const { next: nextRaw } = await searchParams;
+  const next = sanitizeNext(typeof nextRaw === 'string' ? nextRaw : null);
 
   return (
     <PageLayout
@@ -35,7 +40,7 @@ export default async function SetupUsernamePage({ params }: Props) {
       locale={locale}
     >
       <SectionTitle>{t('sectionTitle')}</SectionTitle>
-      <UsernameForm locale={locale} />
+      <UsernameForm locale={locale} next={next} />
     </PageLayout>
   );
 }

@@ -13,9 +13,16 @@ import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type Props = {
   locale: string;
+  /**
+   * Sanitized post-setup destination from a CTA-gated sign-up funnel (e.g.
+   * "sign up and link this game"). When present it REPLACES the onboarding
+   * redirect — an accepted trade-off: completing the funnel the user came
+   * for beats a tour they can find later. Null for ordinary sign-ups.
+   */
+  next?: string | null;
 };
 
-export function UsernameForm({ locale }: Props) {
+export function UsernameForm({ locale, next = null }: Props) {
   const t = useTranslations('setupUsername');
   const router = useRouter();
   const [username, setUsername] = useState('');
@@ -87,7 +94,7 @@ export function UsernameForm({ locale }: Props) {
         return;
       }
 
-      router.push(`/${locale}/mypage/onboarding`);
+      router.push(next ?? `/${locale}/mypage/onboarding`);
     } catch {
       setError(getValidationMessage('unknown'));
       setIsSubmitting(false);

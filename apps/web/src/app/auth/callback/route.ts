@@ -35,7 +35,14 @@ async function handleSuccessfulAuth(
   userId: string,
   locale: string,
   origin: string,
-  safeNext: string
+  safeNext: string,
+  /**
+   * The sanitized `next` ONLY when the callback URL explicitly carried one
+   * (null otherwise, while `safeNext` falls back to /mypage). The
+   * setup-username hand-off must distinguish the two: forwarding the
+   * fallback would make every ordinary new user skip onboarding.
+   */
+  explicitNext: string | null
 ): Promise<NextResponse> {
   logActivityEvent({
     userId,
@@ -69,6 +76,13 @@ async function handleSuccessfulAuth(
 
   if (!profile) {
     const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
+    // Carry the sign-up funnel's destination through username setup — the
+    // form pushes it after success (skipping onboarding, an accepted
+    // trade-off; see UsernameForm). Without this, a CTA-gated sign-up
+    // (e.g. "sign up and link this game") would strand new users on
+    // onboarding and lose the funnel's tail. Only an EXPLICIT next is
+    // forwarded — ordinary sign-ups keep the onboarding default.
+    if (explicitNext) setupUrl.searchParams.set('next', explicitNext);
     const response = NextResponse.redirect(setupUrl);
     applyAdsHiddenCookie(response, adsHiddenValue);
     return response;
@@ -96,7 +110,8 @@ export async function GET(request: Request) {
   const type = searchParams.get('type');
   const locale = await getLocaleFromRequest();
   const defaultNext = `/${locale}/mypage`;
-  const safeNext = sanitizeNext(searchParams.get('next')) ?? defaultNext;
+  const explicitNext = sanitizeNext(searchParams.get('next'));
+  const safeNext = explicitNext ?? defaultNext;
 
   const supabase = await createClient();
 
@@ -108,7 +123,7 @@ export async function GET(request: Request) {
     });
 
     if (!error && data.session) {
-      return handleSuccessfulAuth(data.session.user.id, locale, origin, safeNext);
+      return handleSuccessfulAuth(data.session.user.id, locale, origin, safeNext, explicitNext);
     }
 
     return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);
@@ -154,7 +169,7 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/${locale}/reset-password`);
       }
 
-      return handleSuccessfulAuth(data.session.user.id, locale, origin, safeNext);
+      return handleSuccessfulAuth(data.session.user.id, locale, origin, safeNext, explicitNext);
     }
   }
 
