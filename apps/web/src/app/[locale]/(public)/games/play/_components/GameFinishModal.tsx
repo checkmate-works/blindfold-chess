@@ -204,7 +204,7 @@ export function GameFinishModal({
                 widths/heights read as visual noise in a stacked pair. */}
             <Link
               href={guestSignUpHref!}
-              className="w-full rounded-md bg-primary px-4 py-2.5 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              className="w-full rounded-md border border-transparent bg-primary px-4 py-2.5 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               {t('finishModal.guestPromotion.signUp')}
             </Link>
