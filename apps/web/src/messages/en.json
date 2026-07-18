@@ -1940,6 +1940,11 @@
       "inProgress": "In Progress",
       "bulkDelete": "Bulk Delete",
       "ranksLink": "🥋 Curriculum to beat the AI",
+      "publishNudge": {
+        "body1dan": "You have an unpublished game that meets the black belt (1st Dan) conditions. Publish it and you are promoted.",
+        "body1kyu": "You have an unpublished game that meets the 1st Kyū promotion conditions. Publish it and you are promoted.",
+        "cta": "Publish this game"
+      },
       "startGuidance": "You can start a blindfold chess game against AI from <link>here</link>.",
       "sortBy": "Sort by",
       "lastPlayedDesc": "Last played ↓",

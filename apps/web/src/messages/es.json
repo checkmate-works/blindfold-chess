@@ -1936,6 +1936,11 @@
       "inProgress": "En Progreso",
       "bulkDelete": "Eliminación Masiva",
       "ranksLink": "🥋 Programa para vencer a la IA",
+      "publishNudge": {
+        "body1dan": "Tienes una partida sin publicar que cumple las condiciones del cinturón negro (1.er Dan). Publícala y ascenderás.",
+        "body1kyu": "Tienes una partida sin publicar que cumple las condiciones de ascenso a 1.er Kyū. Publícala y ascenderás.",
+        "cta": "Publicar esta partida"
+      },
       "startGuidance": "Puedes iniciar una partida de ajedrez a ciegas contra la IA desde <link>aquí</link>.",
       "sortBy": "Ordenar por",
       "lastPlayedDesc": "Último jugado ↓",

@@ -1936,6 +1936,11 @@
       "inProgress": "Em Andamento",
       "bulkDelete": "Exclusão em Massa",
       "ranksLink": "🥋 Programa para vencer a IA",
+      "publishNudge": {
+        "body1dan": "Você tem uma partida não publicada que cumpre as condições da faixa preta (1.º Dan). Publique-a e você será promovido.",
+        "body1kyu": "Você tem uma partida não publicada que cumpre as condições de promoção a 1.º Kyū. Publique-a e você será promovido.",
+        "cta": "Publicar esta partida"
+      },
       "startGuidance": "Você pode iniciar uma partida de xadrez às cegas contra a IA a partir de <link>aqui</link>.",
       "sortBy": "Ordenar por",
       "lastPlayedDesc": "Última jogada ↓",
