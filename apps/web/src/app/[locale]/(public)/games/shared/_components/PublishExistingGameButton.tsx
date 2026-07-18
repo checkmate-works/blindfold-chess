@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaShareSquare } from 'react-icons/fa';
+import { FaPlus, FaShareSquare } from 'react-icons/fa';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type { Game } from '@/lib/games/saved-game-types';
@@ -32,6 +33,7 @@ type Props = { locale: Locale };
  */
 export function PublishExistingGameButton({ locale }: Props) {
   const t = useTranslations('sharedGames');
+  const tHome = useTranslations('home.gameList');
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   // null = still loading the localStorage list; array = loaded (possibly empty).
@@ -75,7 +77,19 @@ export function PublishExistingGameButton({ locale }: Props) {
         {games === null ? (
           <p className="text-muted-foreground py-8 text-center">{t('new.loading')}</p>
         ) : games.length === 0 ? (
-          <p className="text-muted-foreground py-8 text-center">{t('publishPicker.empty')}</p>
+          <div className="text-center">
+            <p className="text-muted-foreground">{t('publishPicker.empty')}</p>
+            <Link href={`/${locale}/games/new`} className="mt-4 block">
+              <Button
+                variant="primary"
+                size="lg"
+                icon={<FaPlus className="h-5 w-5" />}
+                className="w-full touch-manipulation"
+              >
+                {tHome('newGame')}
+              </Button>
+            </Link>
+          </div>
         ) : (
           <div className="bg-card overflow-hidden rounded-md border border-border">
             <ul>
