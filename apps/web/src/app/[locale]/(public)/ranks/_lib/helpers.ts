@@ -362,22 +362,44 @@ export type ResolveNextRankResult = {
   next: ResolvedRankView | null;
 };
 
+/** Non-mukyu rank slugs, in ascending progression order. */
+const REAL_RANK_SLUGS = ALL_RANK_SLUGS.filter((slug) => !isMukyuSlug(slug));
+
+/**
+ * The single rank slug to recommend as "next" — the first unachieved slug
+ * with a level HIGHER than the highest currently achieved rank (forward-only
+ * progression), or the first real rank if nothing is achieved yet.
+ *
+ * Skip-grants make achievement gaps a normal state (e.g. a player can hold
+ * 1dan with no kyū ranks at all — a black-belt-grade game grants it
+ * outright). A lower unachieved rank must never be recommended once a higher
+ * one is already held: "next" means "work toward this", and recommending a
+ * rank BELOW what the user already has reads as a regression, not a goal.
+ * Returns `null` once the highest defined rank is achieved — there is
+ * nothing higher to recommend (skipped lower ranks stay freely earnable via
+ * `/ranks`, just not pushed as "next").
+ */
+export function resolveRecommendedNextSlug(achievedSlugs: ReadonlySet<RankSlug>): RankSlug | null {
+  let highestAchievedIndex = -1;
+  for (let i = 0; i < REAL_RANK_SLUGS.length; i++) {
+    if (achievedSlugs.has(REAL_RANK_SLUGS[i])) highestAchievedIndex = i;
+  }
+  for (let i = highestAchievedIndex + 1; i < REAL_RANK_SLUGS.length; i++) {
+    if (!achievedSlugs.has(REAL_RANK_SLUGS[i])) return REAL_RANK_SLUGS[i];
+  }
+  return null;
+}
+
 /**
  * Resolve the highest achieved rank and the next rank to pursue from DB ranks
- * and the set of achieved slugs. Walks `ALL_RANK_SLUGS` in progression order.
+ * and the set of achieved slugs.
  *
  * - `current` = highest achieved slug (or `null` when nothing is achieved).
- * - `next` = first non-achieved slug encountered in the linear walk (or `null`
- *   once everything is achieved).
+ * - `next` = {@link resolveRecommendedNextSlug} resolved to its DB row and
+ *   requirements (or `null` once the highest rank is achieved).
  *
- * @remarks
- * - Achievement gaps are a normal state: ranks are granted independently
- *   (skip-grants allowed), so e.g. a player can hold 1dan with no kyū ranks.
- *   The walk then assigns `next` to the first non-achieved slug — possibly
- *   lower than `current` — which is the right recommendation: fill in the
- *   lower belts. Locked in by tests.
- * - Mukyu is UI-only and is always skipped — it is never counted as achieved
- *   or assigned as `current` / `next`.
+ * Mukyu is UI-only and is always skipped — it is never counted as achieved
+ * or assigned as `current` / `next`.
  */
 export function resolveNextRank(
   dbRanks: Rank[],
@@ -392,16 +414,12 @@ export function resolveNextRank(
   };
 
   let current: ResolvedRankView | null = null;
-  let next: ResolvedRankView | null = null;
-
-  for (const slug of ALL_RANK_SLUGS) {
-    if (isMukyuSlug(slug)) continue;
-    if (achievedSlugs.has(slug)) {
-      current = toView(slug);
-    } else if (next === null) {
-      next = toView(slug);
-    }
+  for (const slug of REAL_RANK_SLUGS) {
+    if (achievedSlugs.has(slug)) current = toView(slug);
   }
+
+  const nextSlug = resolveRecommendedNextSlug(achievedSlugs);
+  const next = nextSlug ? toView(nextSlug) : null;
 
   return { current, next };
 }

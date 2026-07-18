@@ -20,6 +20,7 @@ import {
   isRankEarnedByPlaying,
   isWhiteBelt,
   resolveNextRank,
+  resolveRecommendedNextSlug,
 } from './helpers';
 
 // ---------------------------------------------------------------------------
@@ -491,21 +492,29 @@ describe('resolveNextRank', () => {
     expect(next?.slug).toBe('5kyu');
   });
 
-  it('with a gap in achievements (3kyu only), still reports current=3kyu and next=2kyu', () => {
-    // A corrupted / partial state where the user somehow has 3kyu without
-    // 5kyu or 4kyu. The implementation walks linearly so `current` becomes
-    // the highest slug present in the set, and `next` is the first gap AFTER
-    // any achievement... but because the linear walk sets `next` on the first
-    // non-achieved slug encountered, 5kyu is assigned to `next` first.
-    //
-    // This test locks in the current documented behavior so that any future
-    // change is a deliberate decision.
+  it('with a gap in achievements (3kyu only, no 5kyu/4kyu), recommends next=2kyu — never a rank below current', () => {
+    // Skip-grants make this a normal state: the user jumped straight to
+    // 3kyu without 5kyu or 4kyu. `next` must be forward-only (the first
+    // unachieved slug ABOVE current), never a lower rank the user could
+    // read as "you regressed".
     const dbRanks = buildFullDbRanks();
     const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['3kyu']));
 
     expect(current?.slug).toBe('3kyu');
-    // First non-achieved slug in progression order = 5kyu.
-    expect(next?.slug).toBe('5kyu');
+    expect(next?.slug).toBe('2kyu');
+  });
+
+  it('with only 1dan achieved (skip-granted, no kyū ranks at all), reports current=1dan and next=null', () => {
+    // Reproduces the reported bug: a rank-less user publishes a
+    // black-belt-grade game and is skip-granted straight to 1dan. The old
+    // "first unachieved overall" walk wrongly recommended 5kyu as next —
+    // a rank strictly below what the user already holds. 1dan is the top
+    // rank, so next must be null (nothing higher to recommend), not 5kyu.
+    const dbRanks = buildFullDbRanks();
+    const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['1dan']));
+
+    expect(current?.slug).toBe('1dan');
+    expect(next).toBeNull();
   });
 
   it('returns both null when dbRanks is empty and nothing achieved', () => {
@@ -567,6 +576,42 @@ describe('resolveNextRank', () => {
       leaderboardKey: 'default',
       minScore: 15,
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveRecommendedNextSlug
+// ---------------------------------------------------------------------------
+
+describe('resolveRecommendedNextSlug', () => {
+  it('returns 5kyu when nothing is achieved', () => {
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>())).toBe('5kyu');
+  });
+
+  it('returns the slug directly above the highest achieved rank', () => {
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>(['5kyu', '4kyu', '3kyu']))).toBe('2kyu');
+  });
+
+  it('never recommends a rank below current, even with skip-granted gaps', () => {
+    // 3kyu achieved without 5kyu/4kyu — a lower unachieved rank must not be
+    // recommended; only a forward step counts as "next".
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>(['3kyu']))).toBe('2kyu');
+  });
+
+  it('returns null once the top rank (1dan) is achieved, even with no kyū ranks at all', () => {
+    // Reproduces the reported bug scenario directly.
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>(['1dan']))).toBeNull();
+  });
+
+  it('returns null when every real rank is achieved', () => {
+    const allAchieved = new Set<RankSlug>(
+      ALL_RANK_SLUGS.filter((s): s is RankSlug => s !== 'mukyu')
+    );
+    expect(resolveRecommendedNextSlug(allAchieved)).toBeNull();
+  });
+
+  it('ignores mukyu (UI-only, never a real achieved rank)', () => {
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>(['mukyu']))).toBe('5kyu');
   });
 });
 

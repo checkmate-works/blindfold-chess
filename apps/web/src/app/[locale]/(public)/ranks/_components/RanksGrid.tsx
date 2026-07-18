@@ -11,7 +11,13 @@ import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCurrentUserAchievedRankIds } from '../_actions/getCurrentUserAchievedRankIds';
-import { buildRequirementLabels, getBeltColorHex, getRankCardState } from '../_lib/helpers';
+import {
+  buildRequirementLabels,
+  getBeltColorHex,
+  getRankCardState,
+  resolveAchievedSlugs,
+  resolveRecommendedNextSlug,
+} from '../_lib/helpers';
 import { RankCard } from './RankCard';
 
 type Props = {
@@ -56,18 +62,14 @@ export function RanksGrid({ locale, dbRanks }: Props) {
   }, [user, authLoading]);
 
   const dbRanksBySlug = new Map(dbRanks.map((r) => [r.slug, r]));
-  const achievedSlugs = new Set<string>(
-    dbRanks.filter((r) => achievedRankIds.has(r.id)).map((r) => r.slug)
-  );
+  const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
 
-  // The single recommended rank to pursue: the first unachieved slug in
-  // progression order. Ranks grant independently (skip-grants allowed), so
-  // this is a recommendation, not a gate — every other unachieved rank
-  // renders as a plain browsable card. For a signed-out viewer this is
-  // always the first rank.
-  const recommendedNextSlug = ALL_RANK_SLUGS.find(
-    (slug) => !isMukyuSlug(slug) && !achievedSlugs.has(slug)
-  );
+  // The single recommended rank to pursue: the first unachieved slug ABOVE
+  // the highest achieved rank (forward-only). Ranks grant independently
+  // (skip-grants allowed), so this is a recommendation, not a gate — every
+  // other unachieved rank renders as a plain browsable card. For a
+  // signed-out viewer this is always the first rank.
+  const recommendedNextSlug = resolveRecommendedNextSlug(achievedSlugs);
 
   return (
     <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

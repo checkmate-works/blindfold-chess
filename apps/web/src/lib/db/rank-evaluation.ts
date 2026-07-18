@@ -173,8 +173,9 @@ export async function evaluateRankRequirements(
  * requirements are met, regardless of lower ranks — so a brand-new
  * player who publishes a black-belt-grade win jumps straight to 1dan
  * with no kyū ranks at all. Sparse achievement sets are a supported
- * state everywhere downstream (`resolveNextRank` walks to the first
- * unachieved slug; the ranks grid and admin stats key off actual rows).
+ * state everywhere downstream (`resolveNextRank` recommends the first
+ * unachieved slug above the highest achieved rank; the ranks grid and
+ * admin stats key off actual rows).
  *
  * This is a deliberate product choice (UGC first): the old linear
  * "stop at the first unmet rank" gate was removed 2026-07-18 so a
