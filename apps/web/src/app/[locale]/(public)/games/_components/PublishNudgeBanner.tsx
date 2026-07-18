@@ -97,13 +97,15 @@ export function PublishNudgeBanner({ locale, className }: Props) {
         .join(' ')}
     >
       <p>{nudgeRank === '1dan' ? t('publishNudge.body1dan') : t('publishNudge.body1kyu')}</p>
-      <Link
-        href={`/games/shared/new?gameId=${publishNudge.gameId}`}
-        locale={locale}
-        className={`mt-1 inline-block font-medium ${TEXT_LINK_CLASSES}`}
-      >
-        {t('publishNudge.cta')}
-      </Link>
+      <div className="mt-1 flex justify-center">
+        <Link
+          href={`/games/shared/new?gameId=${publishNudge.gameId}`}
+          locale={locale}
+          className={`font-medium ${TEXT_LINK_CLASSES}`}
+        >
+          {t('publishNudge.cta')}
+        </Link>
+      </div>
     </div>
   );
 }

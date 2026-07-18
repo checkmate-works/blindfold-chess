@@ -150,16 +150,17 @@ export default async function DojoPage({ params }: LocalePageProps) {
       locale={locale}
       breadcrumb={[{ label: t('pageTitle') }]}
     >
-      {/* A publishable promotion beats everything below: if an unpublished
-          game already satisfies a rank the viewer hasn't earned, say so
-          before showing them what to grind next. Renders nothing otherwise. */}
-      <PublishNudgeBanner locale={locale} className="mb-6" />
-
       {/* Section 1: Current rank belt */}
       <section className="space-y-3" data-tour-id="dojo-current-rank">
         <SectionTitle>{t('currentRankTitle')}</SectionTitle>
         <BeltStrip slug={beltSlug} rankName={beltLabel} />
       </section>
+
+      {/* A publishable promotion beats the "next rank to grind toward"
+          section below it: if an unpublished game already satisfies a rank
+          the viewer hasn't earned, say so right after their current rank.
+          Renders nothing otherwise. */}
+      <PublishNudgeBanner locale={locale} className="mt-6" />
 
       {/* Section 2: Next rank */}
       <section
