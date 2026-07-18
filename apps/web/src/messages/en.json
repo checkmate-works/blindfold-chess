@@ -5502,6 +5502,7 @@
     "detail": {
       "criteria": "Criteria",
       "requirements": "Requirements",
+      "achieved": "Achieved",
       "criteriaDescriptions": {
         "mukyu": "Ready to begin simple blindfold chess training.",
         "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",

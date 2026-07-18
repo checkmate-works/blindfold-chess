@@ -35,6 +35,7 @@ import { DiagonalBoard } from '../_components/DiagonalBoard';
 import { GuideLinkCard } from '../_components/GuideLinkCard';
 import { KingMovementBoard } from '../_components/KingMovementBoard';
 import { PawnBreakthroughBoard } from '../_components/PawnBreakthroughBoard';
+import { RankAchievedBadge } from '../_components/RankAchievedBadge';
 import { RankHeader } from '../_components/RankHeader';
 import { RequirementsList } from '../_components/RequirementsList';
 import { ScatteredPawnsBoard } from '../_components/ScatteredPawnsBoard';
@@ -114,6 +115,7 @@ export default async function RankDetailPage({ params }: Props) {
     return (
       <PageLayout
         title={rankName}
+        headerNote={<RankAchievedBadge slug={slug} label={t('detail.achieved')} />}
         locale={locale}
         breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
       >
@@ -202,6 +204,7 @@ export default async function RankDetailPage({ params }: Props) {
   return (
     <PageLayout
       title={rankName}
+      headerNote={<RankAchievedBadge slug={rankSlug} label={t('detail.achieved')} />}
       locale={locale}
       breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
     >
