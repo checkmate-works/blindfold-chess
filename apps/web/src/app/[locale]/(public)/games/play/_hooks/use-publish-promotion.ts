@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
-import { isConstrainedPlaySettings } from '@/lib/games/play-settings-constraint';
+import { classifyGuestPromotionQualification } from '@/lib/games/guest-promotion';
+import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import { getPublishPromotionTarget } from '@/app/[locale]/(public)/ranks/_actions/getPublishPromotionTarget';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -17,6 +18,12 @@ type Args = {
    * column. Anything else would let the two disagree.
    */
   initialPerGamePrefs: PerGamePreferences | undefined;
+  /** Mid-game preference edits, as the play surface records them. */
+  preferenceChangeLog: readonly PreferenceChangeLogEntry[] | undefined;
+  /** Per-move aid counts — source of the peek total for the 1dan bar. */
+  operationLogs: readonly MoveOperationLog[] | undefined;
+  /** Half-moves played. */
+  moveCount: number;
   /** Gate the round-trip until the game is actually over. */
   enabled: boolean;
 };
@@ -29,11 +36,13 @@ type Args = {
  * player is told "you win", sent to a screen where publishing looks optional,
  * and never learns the rank was one click away.
  *
- * Split across the boundary along what each side knows: the server owns the
- * belt progression (is this rank next? is it earned by playing?), the client
- * owns the game. The game half reuses `isConstrainedPlaySettings` — the very
- * predicate the server evaluator runs against the published row — so the
- * promise made here and the grant made later cannot drift apart.
+ * Split across the boundary along what each side knows: the client owns the
+ * game and classifies which rank requirement it satisfies (the same
+ * `classifyGuestPromotionQualification` the guest pitch uses — so the two
+ * pitches and the server evaluator cannot drift apart); the server owns the
+ * achievement state and answers which of those ranks is still unearned.
+ * Ranks are granted independently (skip-grants allowed), so the promise
+ * holds for any player, even one with no ranks at all.
  *
  * Returns the rank's slug, or null until confirmed — so the UI defaults to
  * promising nothing.
@@ -41,22 +50,31 @@ type Args = {
 export function usePublishPromotion({
   result,
   initialPerGamePrefs,
+  preferenceChangeLog,
+  operationLogs,
+  moveCount,
   enabled,
 }: Args): RankSlug | null {
   const [target, setTarget] = useState<RankSlug | null>(null);
 
-  // Cheap local disqualifiers first — most finished games are not a constrained
-  // win, and those must not cost a round-trip.
-  const gameQualifies = result === 'win' && isConstrainedPlaySettings(initialPerGamePrefs);
+  // Cheap local disqualifier first — most finished games satisfy no rank's
+  // game requirement, and those must not cost a round-trip.
+  const qualification = classifyGuestPromotionQualification({
+    result,
+    playSettings: initialPerGamePrefs,
+    changeLog: preferenceChangeLog,
+    operationLogs,
+    moveCount,
+  });
 
   useEffect(() => {
-    if (!enabled || !gameQualifies) {
+    if (!enabled || !qualification) {
       setTarget(null);
       return;
     }
 
     let cancelled = false;
-    getPublishPromotionTarget()
+    getPublishPromotionTarget(qualification)
       .then((next) => {
         if (!cancelled) setTarget(next);
       })
@@ -69,7 +87,7 @@ export function usePublishPromotion({
     return () => {
       cancelled = true;
     };
-  }, [enabled, gameQualifies]);
+  }, [enabled, qualification]);
 
   return target;
 }

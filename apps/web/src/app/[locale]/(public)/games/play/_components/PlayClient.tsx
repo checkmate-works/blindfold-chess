@@ -287,6 +287,9 @@ export function PlayClient({
   const promotionRankSlug = usePublishPromotion({
     result: playerResult,
     initialPerGamePrefs,
+    preferenceChangeLog,
+    operationLogs,
+    moveCount: moves.length,
     enabled: isFinished && !isFinishedView,
   });
 
