@@ -5,8 +5,10 @@
  * Every user's repertoire courses (UGC, modelled on games): opening /
  * middlegame / endgame studies. Each card is one repertoire (name, side,
  * phase); its lines (variations) live inside it. The list is a public catalog —
- * a signed-out visitor sees everyone's kata. The feature is concealed only by
- * not being linked from global nav while it is built out, not by being private.
+ * a signed-out visitor sees everyone's kata, and it is crawlable (sitemap +
+ * indexable) like any other public UGC catalog. The feature is soft-launched
+ * only in the sense that it isn't linked from global nav yet, not by being
+ * private or hidden from search engines.
  *
  * Cards reuse the shared `CatalogListCard` so they carry the same board
  * thumbnail, author, like, and comment affordances as the puzzle /
@@ -51,7 +53,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     params,
     namespace: 'Repertoires',
     path: 'repertoires',
-    noIndex: true,
   });
 }
 
