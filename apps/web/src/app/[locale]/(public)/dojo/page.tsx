@@ -88,7 +88,13 @@ export default async function DojoPage({ params }: LocalePageProps) {
   // doesn't matter for its output (current/next are both about the highest
   // level), but literal is the more honest default for anything beyond pure
   // display.
-  const displayAchievedSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
+  const effectiveAchievedSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
+  // Mukyu is never a `user_ranks` row (UI-only starting state), so it never
+  // appears in `effectiveAchievedSlugs`. Mirror the /ranks grid's rule (see
+  // `getCurrentUserAchievedRankSlugs.ts`): mukyu counts as achieved once the
+  // user holds ANY real rank, not for a freshly signed-in user with zero.
+  const displayAchievedSlugs: ReadonlySet<RankSlug> =
+    achievedSlugs.size > 0 ? new Set([...effectiveAchievedSlugs, 'mukyu']) : effectiveAchievedSlugs;
 
   const { current, next } = resolveNextRank(dbRanks, achievedSlugs);
 

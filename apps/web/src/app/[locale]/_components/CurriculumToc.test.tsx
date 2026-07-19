@@ -171,15 +171,35 @@ describe('CurriculumToc', () => {
     }
   });
 
-  it('shows a check mark for achieved ranks (including mukyu)', () => {
+  it('shows a check mark for every slug present in achievedSlugs', () => {
     renderToc({
       achieved: new Set<RankSlug>(['5kyu', '4kyu']),
       nextSlug: '3kyu',
     });
     const checks = screen.getAllByTestId('curriculum-achieved-mark');
-    // mukyu (always achieved) + 5kyu + 4kyu = 3 achieved rows, each with one
-    // section row → 3 checks.
-    expect(checks.length).toBe(3);
+    // 5kyu + 4kyu = 2 achieved rows, each with one section row → 2 checks.
+    // mukyu is intentionally absent from this achievedSlugs set and must NOT
+    // be auto-checked — its achieved-ness is the caller's decision (mirroring
+    // the /ranks grid rule: mukyu counts as achieved only once the user
+    // holds a real rank), not a hardcoded default inside CurriculumToc.
+    expect(checks.length).toBe(2);
+  });
+
+  it('does not check mukyu when the caller omits it (e.g. a user with zero real ranks)', () => {
+    const { container } = renderToc({ achieved: new Set<RankSlug>(), nextSlug: 'mukyu' });
+    const mukyuRow = container.querySelector('[data-rank="mukyu"]');
+    expect(mukyuRow).not.toBeNull();
+    expect(mukyuRow!.querySelector('[data-testid="curriculum-achieved-mark"]')).toBeNull();
+  });
+
+  it('checks mukyu when the caller includes it (e.g. a user who has earned a real rank)', () => {
+    renderToc({
+      achieved: new Set<RankSlug>(['5kyu', 'mukyu']),
+      nextSlug: '4kyu',
+    });
+    const checks = screen.getAllByTestId('curriculum-achieved-mark');
+    // mukyu + 5kyu = 2 achieved rows, each with one section row → 2 checks.
+    expect(checks.length).toBe(2);
   });
 
   it('omits ranks with no curriculum sections — no "coming soon" placeholder anywhere', () => {

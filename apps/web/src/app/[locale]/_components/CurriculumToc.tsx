@@ -96,8 +96,10 @@ export function CurriculumToc({
       }
     }
 
-    // Mukyu is treated as always achieved — starting state every user holds.
-    const isAchieved = achievedSlugs != null ? slug === 'mukyu' || achievedSlugs.has(slug) : false;
+    // Mukyu's achieved-ness is decided by the caller (mirroring the /ranks
+    // grid rule: achieved only once the user holds a real rank), not
+    // hardcoded here — see `getCurrentUserAchievedRankSlugs.ts`.
+    const isAchieved = achievedSlugs != null && achievedSlugs.has(slug);
     const isNext = nextSlug != null && slug === nextSlug;
     const href = guideHrefBySlug[slug] ?? null;
 
