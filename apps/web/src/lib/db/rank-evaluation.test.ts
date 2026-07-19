@@ -447,7 +447,10 @@ describe('game_publish_win_hidden_board evaluator', () => {
       {
         playSettings: { boardVisibility: 'peek' },
         playSettingsLog: null,
-        operationLogs: [{ peekCount: 3 }, { peekCount: 2 }],
+        operationLogs: [
+          { peekCount: 3, undoCount: 0 },
+          { peekCount: 2, undoCount: 0 },
+        ],
       },
     ]);
 
@@ -489,7 +492,10 @@ describe('game_publish_win_hidden_board evaluator', () => {
       {
         playSettings: { boardVisibility: 'peek' },
         playSettingsLog: null,
-        operationLogs: [{ peekCount: 4 }, { peekCount: 2 }],
+        operationLogs: [
+          { peekCount: 4, undoCount: 0 },
+          { peekCount: 2, undoCount: 0 },
+        ],
       },
     ]);
 
@@ -503,7 +509,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       {
         playSettings: { boardVisibility: 'peek' },
         playSettingsLog: null,
-        operationLogs: [{ peekCount: 5 }],
+        operationLogs: [{ peekCount: 5, undoCount: 0 }],
       },
     ]);
 
@@ -549,7 +555,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       {
         playSettings: { boardVisibility: 'peek' },
         playSettingsLog: null,
-        operationLogs: [null, { peekCount: 1 }],
+        operationLogs: [null, { peekCount: 1, undoCount: 0 }],
       },
     ]);
 
@@ -580,6 +586,91 @@ describe('game_publish_win_hidden_board evaluator', () => {
     expect(findEq(capturedWhere, games.status)?.__eq.value).toBe('public');
     expect(findEq(capturedWhere, games.result)?.__eq.value).toBe('win');
     expect(findEq(capturedWhere, games.authorId)?.__eq.value).toBe(userId);
+  });
+
+  // -------------------------------------------------------------------------
+  // operation_totals (issue #95 — undo must not launder peeks)
+  // -------------------------------------------------------------------------
+
+  it('reads peeks from operationTotals when present, even when the per-move log looks clean', async () => {
+    // Laundered game: peek → undo → replay left the per-move log at 0 peeks,
+    // but the monotonic totals kept all 12. Must fail on the totals.
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'peek' },
+        playSettingsLog: null,
+        operationLogs: [{ peekCount: 0, undoCount: 6 }],
+        operationTotals: { peeks: 12, movePeeks: 0, undos: 6, invalidMoves: 0 },
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('passes on totals within the cap even when the game recorded undos', async () => {
+    // With truthful monotonic peeks, undo is no longer a laundering vector,
+    // so undos alone do not disqualify a totals-bearing game.
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'peek' },
+        playSettingsLog: null,
+        operationLogs: [{ peekCount: 1, undoCount: 2 }],
+        operationTotals: { peeks: 5, movePeeks: 3, undos: 2, invalidMoves: 1 },
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
+
+    expect(result).toBe(true);
+  });
+
+  it('disqualifies a game with malformed operationTotals (fail closed, no crash)', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'never' },
+        playSettingsLog: null,
+        operationLogs: [],
+        operationTotals: { peeks: 'zero', movePeeks: 0, undos: 0, invalidMoves: 0 },
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('disqualifies a legacy game (no totals) that recorded any undo', async () => {
+    // Undo deleted log lines with their peekCount, so the visible peek sum
+    // (here 0) is unverifiable — the game must not count toward 1dan.
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'never' },
+        playSettingsLog: null,
+        operationLogs: [{ peekCount: 0, undoCount: 1 }],
+        operationTotals: null,
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('disqualifies a legacy game with an undoCount-less log entry (fail closed)', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'never' },
+        playSettingsLog: null,
+        operationLogs: [{ peekCount: 0 }],
+        operationTotals: null,
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
+
+    expect(result).toBe(false);
   });
 });
 

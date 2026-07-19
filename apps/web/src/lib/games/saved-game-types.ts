@@ -1,3 +1,51 @@
+/**
+ * Saved-game domain types — including the game-operation audit model.
+ *
+ * ## The three-record model (game operation logging, issue #95)
+ *
+ * A play session keeps THREE related records of the player's aid usage
+ * (peeks, undos, invalid move attempts). They answer different questions and
+ * follow different mutation rules — never conflate them:
+ *
+ * 1. {@link MoveOperationLog}[] (`operationLogs`) — the DISPLAY record.
+ *    One entry per committed player move. Follows "undo = the move never
+ *    happened": a rollback deletes the entry. Drives the per-move UI and the
+ *    denormalized `clean_rate`.
+ * 2. {@link OperationTotals} (`operationTotals`) — the COUNT ledger.
+ *    Monotonic game-lifetime counters, bumped at the instant each operation
+ *    happens; nothing ever decrements them. Invariant: each counter equals
+ *    the exact number of corresponding record calls over the game's life, so
+ *    peek → undo → replay cannot launder aid usage. This is the audit and
+ *    promotion source of truth (the 1dan hidden-board evaluator reads
+ *    `peeks`).
+ * 3. {@link UndoneMoveLog}[] (`undoneLogs`) — the DETAIL archive. Whatever a
+ *    rollback (Undo / restart-from-position) removes from `operationLogs` —
+ *    notably rejected SAN texts, which counts cannot reconstruct — is
+ *    archived here at the moment of removal, capped per game.
+ *
+ * Together: a rollback moves information (counts stay in 2, detail moves to
+ * 3) — it never destroys it.
+ *
+ * ## Pipeline
+ *
+ * `useMoveOperationTracker` (records all three) → `useAutoSave` →
+ * localStorage {@link Game} → publish payload → `validatePublishSnapshot`
+ * (`@/lib/games/publish-game`, server-side re-bounding) →
+ * `games.operation_logs` / `operation_totals` / `undone_logs` (JSONB) →
+ * `game_publish_win_hidden_board` evaluator (`@/lib/db/rank-evaluation`,
+ * policy TSDoc in `@/lib/db/data/ranks`).
+ *
+ * ## Restore is a merge, not an overwrite
+ *
+ * A brand-new game saves on mount, the URL then gains its gameId, and the
+ * restore effect re-applies that stale snapshot over live state. Every
+ * restore path therefore merges: totals per-counter max, undoneLogs
+ * longer-list, and log restoration leaves in-flight counters untouched.
+ *
+ * The executable specification of these laws is
+ * `games/play/_hooks/use-move-operation-tracker.invariants.test.ts` —
+ * change the semantics there consciously, not incidentally.
+ */
 import type { SkillLevel as AiGameSkillLevel } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation, GameOutcome, Side } from '@blindfold-chess/types';
 
@@ -76,6 +124,54 @@ export type MoveOperationLog = {
    * empty and on legacy records — consumers fall back to the bare count.
    */
   invalidAttempts?: string[];
+};
+
+/**
+ * One per-move log record discarded by a player rollback (Undo or
+ * restart-from-position), archived so the rollback erases nothing from the
+ * audit record — {@link OperationTotals} keeps the counts, this keeps the
+ * detail (issue #95: notably the rejected SAN texts, which counts alone
+ * cannot reconstruct).
+ *
+ * Two kinds of loss feed it:
+ * - A committed entry removed from `operationLogs` → archived as `log`,
+ *   with `index` = the operationLogs position it occupied.
+ * - Rejected attempts typed after the last commit and discarded before any
+ *   commit → archived as `pendingInvalidAttempts`. When `log` is present
+ *   they belong to the NEXT move slot (`index + 1`); on a pending-only
+ *   record `index` is the slot the uncommitted move would have taken.
+ *
+ * Capped per game (see the tracker) so pathological undo streaks cannot
+ * bloat the record; totals keep counting past the cap.
+ */
+export type UndoneMoveLog = {
+  index: number;
+  log?: MoveOperationLog;
+  pendingInvalidAttempts?: string[];
+};
+
+/**
+ * Game-lifetime monotonic operation counters.
+ *
+ * {@link MoveOperationLog} entries follow the "undo = the move never happened"
+ * principle: undoing a move deletes its log line, peeks and all. That is right
+ * for display, but it lets a player launder aid usage — peek → undo → replay
+ * keeps the visible peek sum at 0 no matter how often the board was checked
+ * (issue #95). These totals close that hole: every counter only ever
+ * increases for the life of the game, counting each operation at the moment
+ * it happens, so undo/restart can never subtract from them.
+ *
+ * Per-move logs stay the display source of truth; totals are the audit and
+ * promotion-eligibility source (the 1dan hidden-board evaluator reads
+ * `peeks`). `undefined` on records saved before this field existed —
+ * consumers derive a lossy baseline via `sumOperationLogs` or treat the game
+ * as legacy (see the rank evaluator's fail-closed handling).
+ */
+export type OperationTotals = {
+  peeks: number;
+  movePeeks: number;
+  undos: number;
+  invalidMoves: number;
 };
 
 /**
@@ -182,6 +278,18 @@ export type Game = {
   preferenceChangeLog?: PreferenceChangeLogEntry[];
   /** Per-move operation logs for player moves. Each entry corresponds to one player move. */
   operationLogs?: MoveOperationLog[];
+  /**
+   * Monotonic game-lifetime counters — see {@link OperationTotals}. Unlike
+   * {@link operationLogs}, undo and restart-from-position never shrink these.
+   * Undefined on records saved before the field existed.
+   */
+  operationTotals?: OperationTotals;
+  /**
+   * Per-move log records discarded by Undo / restart-from-position — see
+   * {@link UndoneMoveLog}. Append-only, capped. Undefined on records saved
+   * before the field existed and on games with no rollbacks.
+   */
+  undoneLogs?: UndoneMoveLog[];
 };
 
 /**

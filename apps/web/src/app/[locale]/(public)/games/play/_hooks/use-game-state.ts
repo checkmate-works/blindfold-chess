@@ -6,7 +6,12 @@ import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import { sumOperationLogs } from '@/lib/games/operation-totals';
+import type {
+  MoveOperationLog,
+  OperationTotals,
+  UndoneMoveLog,
+} from '@/lib/games/saved-game-types';
 
 type LoadedGameData = {
   startingFen?: string;
@@ -16,6 +21,8 @@ type LoadedGameData = {
   gameStatus: GameStatus;
   playerResult: 'win' | 'loss' | 'draw' | null;
   operationLogs?: MoveOperationLog[];
+  operationTotals?: OperationTotals;
+  undoneLogs?: UndoneMoveLog[];
 };
 
 type UseGameStateOptions = {
@@ -31,6 +38,10 @@ type UseGameStateOptions = {
   setStartingFen: (fen: string | undefined) => void;
   setSetupPliesTo?: (setupPlies: number) => void;
   setOperationLogsTo?: (logs: MoveOperationLog[]) => void;
+  /** Monotonic max-merge, not overwrite — see the tracker's `restoreTotals`. */
+  restoreOperationTotals?: (totals: OperationTotals) => void;
+  /** Longer-list merge, not overwrite — see the tracker's `restoreUndoneLogs`. */
+  restoreUndoneLogs?: (undoneLogs: UndoneMoveLog[]) => void;
 };
 
 export function useGameState({
@@ -46,6 +57,8 @@ export function useGameState({
   setStartingFen,
   setSetupPliesTo,
   setOperationLogsTo,
+  restoreOperationTotals,
+  restoreUndoneLogs,
 }: UseGameStateOptions) {
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
@@ -110,9 +123,31 @@ export function useGameState({
       if (loadedGameData.operationLogs && setOperationLogsTo) {
         setOperationLogsTo(loadedGameData.operationLogs);
       }
+      if (restoreOperationTotals) {
+        // Records saved before operationTotals existed get a lossy baseline
+        // (the sum of the surviving per-move counters) so the totals stay
+        // monotonic from here on. Anything undo already erased is gone.
+        // The restore is a max-merge, so when this effect fires mid-session
+        // with a stale snapshot (new game → initial save → URL gains its
+        // gameId), live counters recorded in the meantime are kept.
+        restoreOperationTotals(
+          loadedGameData.operationTotals ?? sumOperationLogs(loadedGameData.operationLogs ?? [])
+        );
+      }
+      if (loadedGameData.undoneLogs && restoreUndoneLogs) {
+        restoreUndoneLogs(loadedGameData.undoneLogs);
+      }
       appliedLoadedGameDataRef.current = loadedGameData;
     }
-  }, [loadedGameData, setMovesTo, setStartingFen, setSetupPliesTo, setOperationLogsTo]);
+  }, [
+    loadedGameData,
+    setMovesTo,
+    setStartingFen,
+    setSetupPliesTo,
+    setOperationLogsTo,
+    restoreOperationTotals,
+    restoreUndoneLogs,
+  ]);
 
   // Initialize on mount with initial moves
   useEffect(() => {

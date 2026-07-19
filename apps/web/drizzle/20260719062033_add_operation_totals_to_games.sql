@@ -1,0 +1,1 @@
+ALTER TABLE "games" ADD COLUMN "operation_totals" jsonb;

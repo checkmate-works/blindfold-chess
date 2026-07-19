@@ -5,7 +5,12 @@ import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
+import type {
+  MoveOperationLog,
+  OperationTotals,
+  PreferenceChangeLogEntry,
+  UndoneMoveLog,
+} from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -22,6 +27,8 @@ type SavedGameData = {
   gamePreferences?: PerGamePreferences;
   preferenceChangeLog?: PreferenceChangeLogEntry[];
   operationLogs?: MoveOperationLog[];
+  operationTotals?: OperationTotals;
+  undoneLogs?: UndoneMoveLog[];
 };
 
 type UseGamePersistenceOptions = {
@@ -124,6 +131,8 @@ export function useGamePersistence({
             gamePreferences: savedGame.gamePreferences,
             preferenceChangeLog: savedGame.preferenceChangeLog,
             operationLogs: savedGame.operationLogs,
+            operationTotals: savedGame.operationTotals,
+            undoneLogs: savedGame.undoneLogs,
           });
         } else {
           setGameNotFound(true);

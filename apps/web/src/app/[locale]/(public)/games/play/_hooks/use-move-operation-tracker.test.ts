@@ -422,6 +422,245 @@ describe('useMoveOperationTracker', () => {
     expect(result.current.logs[0].invalidAttempts?.[0]).toBe('m0');
   });
 
+  describe('totals (monotonic lifetime counters — issue #95)', () => {
+    it('starts at zero and counts every recorded operation', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      expect(result.current.totals).toEqual({
+        peeks: 0,
+        movePeeks: 0,
+        undos: 0,
+        invalidMoves: 0,
+      });
+
+      act(() => {
+        result.current.recordPeek();
+        result.current.recordPeek();
+        result.current.recordMovePeek();
+        result.current.recordInvalid('Rc8');
+        result.current.recordUndo();
+        result.current.commitMove('text');
+      });
+
+      expect(result.current.totals).toEqual({
+        peeks: 2,
+        movePeeks: 1,
+        undos: 1,
+        invalidMoves: 1,
+      });
+    });
+
+    it('survives undo: peek → undo → replay cannot launder the peek total', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      // Peek 3 times, commit, then undo the move and replay it cleanly —
+      // the per-move log ends with peekCount 0, but the total keeps the 3.
+      act(() => {
+        result.current.recordPeek();
+        result.current.recordPeek();
+        result.current.recordPeek();
+        result.current.commitMove('text');
+        result.current.handleUndoLog();
+        result.current.recordUndo();
+        result.current.commitMove('text');
+      });
+
+      expect(result.current.logs).toEqual([
+        { inputMethod: 'text', peekCount: 0, undoCount: 1, movePeekCount: 0, invalidCount: 0 },
+      ]);
+      expect(result.current.totals).toEqual({
+        peeks: 3,
+        movePeeks: 0,
+        undos: 1,
+        invalidMoves: 0,
+      });
+    });
+
+    it('keeps in-flight invalid attempts counted when an undo discards them', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.commitMove('text');
+        result.current.recordInvalid('Rc8');
+        result.current.recordInvalid('Re1');
+        result.current.handleUndoLog();
+        result.current.recordUndo();
+        result.current.commitMove('button');
+      });
+
+      // Per-move view forgot the two invalids; the lifetime total did not.
+      expect(result.current.logs[0].invalidCount).toBe(0);
+      expect(result.current.totals.invalidMoves).toBe(2);
+      expect(result.current.totals.undos).toBe(1);
+    });
+
+    it('survives truncateLogs (restart-from-position)', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.recordPeek();
+        result.current.commitMove('text');
+        result.current.recordPeek();
+        result.current.truncateLogs(0);
+      });
+
+      expect(result.current.logs).toEqual([]);
+      expect(result.current.totals.peeks).toBe(2);
+    });
+
+    it('restores via restoreTotals and keeps accumulating from there', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.restoreTotals({ peeks: 4, movePeeks: 2, undos: 3, invalidMoves: 1 });
+        result.current.recordPeek();
+      });
+
+      expect(result.current.totals).toEqual({
+        peeks: 5,
+        movePeeks: 2,
+        undos: 3,
+        invalidMoves: 1,
+      });
+    });
+
+    it('restoreTotals is a max-merge: a stale snapshot cannot roll back live counters', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      // Live session already recorded 2 invalids and 1 peek…
+      act(() => {
+        result.current.recordInvalid('Rc8');
+        result.current.recordInvalid('Re1');
+        result.current.recordPeek();
+      });
+
+      // …then the mid-session restore fires with the record saved at mount
+      // (all zeros except a counter the live side has not touched).
+      act(() => {
+        result.current.restoreTotals({ peeks: 0, movePeeks: 5, undos: 0, invalidMoves: 0 });
+      });
+
+      expect(result.current.totals).toEqual({
+        peeks: 1,
+        movePeeks: 5,
+        undos: 0,
+        invalidMoves: 2,
+      });
+    });
+  });
+
+  describe('undoneLogs (archive of rollback discards — issue #95)', () => {
+    it('archives the removed entry on undo, keeping its rejected SAN texts', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.recordInvalid('Rc8');
+        result.current.recordInvalid('Re1');
+        result.current.commitMove('text'); // Rfe1 finally committed
+        result.current.handleUndoLog();
+        result.current.recordUndo();
+      });
+
+      expect(result.current.logs).toHaveLength(0);
+      expect(result.current.undoneLogs).toEqual([
+        {
+          index: 0,
+          log: {
+            inputMethod: 'text',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 2,
+            invalidAttempts: ['Rc8', 'Re1'],
+          },
+        },
+      ]);
+    });
+
+    it('archives in-flight rejected attempts discarded by the same undo', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.commitMove('text');
+        result.current.recordInvalid('Qd5'); // typed after the commit, never committed
+        result.current.handleUndoLog();
+        result.current.recordUndo();
+      });
+
+      expect(result.current.undoneLogs).toHaveLength(1);
+      expect(result.current.undoneLogs[0].index).toBe(0);
+      expect(result.current.undoneLogs[0].pendingInvalidAttempts).toEqual(['Qd5']);
+      expect(result.current.undoneLogs[0].log?.inputMethod).toBe('text');
+    });
+
+    it('archives nothing for an undo with no committed entry and no pending attempts', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.handleUndoLog();
+      });
+
+      expect(result.current.undoneLogs).toEqual([]);
+    });
+
+    it('archives entries truncated away by restart-from-position', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.commitMove('text');
+        result.current.recordInvalid('Nf6');
+        result.current.commitMove('button');
+        result.current.commitMove('select');
+        result.current.truncateLogs(1);
+      });
+
+      expect(result.current.logs).toHaveLength(1);
+      expect(result.current.undoneLogs.map((e) => e.index)).toEqual([1, 2]);
+      expect(result.current.undoneLogs[0].log?.invalidAttempts).toEqual(['Nf6']);
+    });
+
+    it('caps the archive at 50 records (earliest kept)', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        for (let i = 0; i < 55; i++) {
+          result.current.commitMove('text');
+          result.current.handleUndoLog();
+          result.current.recordUndo();
+        }
+      });
+
+      expect(result.current.undoneLogs).toHaveLength(50);
+      // Totals keep counting past the cap.
+      expect(result.current.totals.undos).toBe(55);
+    });
+
+    it('restoreUndoneLogs keeps the longer list (stale mid-session snapshot cannot shrink it)', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.commitMove('text');
+        result.current.handleUndoLog();
+        result.current.commitMove('text');
+        result.current.handleUndoLog();
+      });
+      expect(result.current.undoneLogs).toHaveLength(2);
+
+      // Stale snapshot with fewer records → ignored.
+      act(() => {
+        result.current.restoreUndoneLogs([{ index: 0, pendingInvalidAttempts: ['a4'] }]);
+      });
+      expect(result.current.undoneLogs).toHaveLength(2);
+
+      // Genuine resume baseline with more records → adopted.
+      const longer = [0, 1, 2].map((i) => ({ index: i, pendingInvalidAttempts: [`m${i}`] }));
+      act(() => {
+        result.current.restoreUndoneLogs(longer);
+      });
+      expect(result.current.undoneLogs).toEqual(longer);
+    });
+  });
+
   describe('truncateLogs', () => {
     it('should truncate logs to the specified count', () => {
       const { result } = renderHook(() => useMoveOperationTracker());
@@ -519,23 +758,34 @@ describe('useMoveOperationTracker', () => {
       expect(result.current.logs).toEqual(newLogs);
     });
 
-    it('should reset counters when replacing logs', () => {
+    it('should preserve in-flight counters when replacing logs (mid-session restore race)', () => {
       const { result } = renderHook(() => useMoveOperationTracker());
 
+      // Operations recorded between mount and the restore (new game →
+      // initial save → URL gains its gameId) must survive the restore and
+      // land on the next committed entry — a reset here silently dropped
+      // pre-restore invalid attempts (caught by runtime verification).
       act(() => {
         result.current.recordPeek();
         result.current.recordUndo();
         result.current.recordMovePeek();
+        result.current.recordInvalid('Rc8');
         result.current.setLogsTo([]);
       });
 
-      // Counters should be reset, so next commit starts fresh
       act(() => {
         result.current.commitMove('text');
       });
 
       expect(result.current.logs).toEqual([
-        { inputMethod: 'text', peekCount: 0, undoCount: 0, movePeekCount: 0, invalidCount: 0 },
+        {
+          inputMethod: 'text',
+          peekCount: 1,
+          undoCount: 1,
+          movePeekCount: 1,
+          invalidCount: 1,
+          invalidAttempts: ['Rc8'],
+        },
       ]);
     });
 

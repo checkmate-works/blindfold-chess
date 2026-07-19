@@ -6,8 +6,13 @@ const mockClaim = vi.fn();
 const mockEvaluateRanks = vi.fn();
 const mockCookieRefresh = vi.fn();
 const mockGameLookup = vi.fn();
+const mockLogActivityEvent = vi.fn();
 
 vi.mock('server-only', () => ({}));
+
+vi.mock('@/lib/users/activity-log', () => ({
+  logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
+}));
 
 vi.mock('@/lib/auth', () => ({
   authenticateGuardAndRequireProfile: (...args: unknown[]) => mockGuard(...args),
@@ -124,6 +129,29 @@ describe('claimSharedGameAction', () => {
 
     expect(result).toEqual({ success: false, error: 'already_claimed' });
     expect(mockEvaluateRanks).not.toHaveBeenCalled();
+    expect(mockLogActivityEvent).not.toHaveBeenCalled();
+  });
+
+  it('records the claim in the activity log, including any minted ranks (issue #95)', async () => {
+    mockEvaluateRanks.mockResolvedValue([{ slug: '1dan', level: 110, color: 'black' }]);
+
+    await claimSharedGameAction(GAME_ID, TOKEN);
+
+    expect(mockLogActivityEvent).toHaveBeenCalledWith({
+      userId: USER_ID,
+      action: 'claim_game',
+      targetType: 'game',
+      targetId: GAME_ID,
+      metadata: { grantedRanks: ['1dan'] },
+    });
+  });
+
+  it('does not log a claim when authorization fails', async () => {
+    mockAuthorize.mockResolvedValue('forbidden');
+
+    await claimSharedGameAction(GAME_ID, TOKEN);
+
+    expect(mockLogActivityEvent).not.toHaveBeenCalled();
   });
 
   it('re-evaluates ranks on success and surfaces the grants', async () => {

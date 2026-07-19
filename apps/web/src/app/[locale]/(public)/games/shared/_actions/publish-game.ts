@@ -6,7 +6,12 @@ import { publishGame } from '@/lib/db/games-write';
 import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
 import type { EngineConfig } from '@/lib/engines';
 import { deriveGameColumns, validatePublishSnapshot } from '@/lib/games/publish-game';
-import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
+import type {
+  MoveOperationLog,
+  OperationTotals,
+  PreferenceChangeLogEntry,
+  UndoneMoveLog,
+} from '@/lib/games/saved-game-types';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { notifyFollowersOfNewGame } from '@/lib/notifications/notification';
 import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
@@ -26,6 +31,10 @@ export type PublishGameActionInput = {
   engineConfig: EngineConfig;
   result: 'win' | 'loss' | 'draw';
   operationLogs?: MoveOperationLog[] | null;
+  /** Monotonic lifetime aid counters (undo-proof); validated on the server. */
+  operationTotals?: OperationTotals | null;
+  /** Archived undo/restart discards; validated + re-bounded on the server. */
+  undoneLogs?: UndoneMoveLog[] | null;
   /** Per-game blindfold settings snapshot; validated + subset on the server. */
   playSettings?: PerGamePreferences | null;
   /**
