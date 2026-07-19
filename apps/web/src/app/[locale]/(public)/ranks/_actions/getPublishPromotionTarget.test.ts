@@ -15,6 +15,17 @@ vi.mock('@/lib/auth', () => ({
 vi.mock('../_lib/queries', () => ({
   getAllRanks: (...args: unknown[]) => mockGetAllRanks(...args),
   getUserAchievedRankIds: (...args: unknown[]) => mockGetUserAchievedRankIds(...args),
+  getAchievedSlugsForUser: async (userId: string) => {
+    const [dbRanks, achievedRankIds] = await Promise.all([
+      mockGetAllRanks(),
+      mockGetUserAchievedRankIds(userId),
+    ]);
+    return new Set(
+      dbRanks
+        .filter((r: { id: string; slug: string }) => achievedRankIds.has(r.id))
+        .map((r: { id: string; slug: string }) => r.slug)
+    );
+  },
 }));
 
 const { getPublishPromotionTarget } = await import('./getPublishPromotionTarget');

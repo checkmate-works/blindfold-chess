@@ -2,8 +2,8 @@
 
 import { getOptionalUser } from '@/lib/auth';
 
-import { resolveAchievedSlugs, resolveDisplayAchievedSlugs } from '../_lib/helpers';
-import { getAllRanks, getUserAchievedRankIds } from '../_lib/queries';
+import { resolveDisplayAchievedSlugs } from '../_lib/helpers';
+import { getAchievedSlugsForUser } from '../_lib/queries';
 
 /**
  * Return the DISPLAY set of rank slugs the currently-signed-in user has
@@ -19,10 +19,6 @@ export async function getCurrentUserAchievedRankSlugs(): Promise<string[]> {
   const user = await getOptionalUser();
   if (!user) return [];
 
-  const [dbRanks, achievedRankIds] = await Promise.all([
-    getAllRanks(),
-    getUserAchievedRankIds(user.id),
-  ]);
-  const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
+  const achievedSlugs = await getAchievedSlugsForUser(user.id);
   return Array.from(resolveDisplayAchievedSlugs(achievedSlugs));
 }

@@ -4,8 +4,7 @@ import { getOptionalUser, userHasProfile } from '@/lib/auth';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import type { GuestPromotionQualification } from '@/lib/games/guest-promotion';
 
-import { resolveAchievedSlugs } from '../_lib/helpers';
-import { getAllRanks, getUserAchievedRankIds } from '../_lib/queries';
+import { getAchievedSlugsForUser } from '../_lib/queries';
 
 /**
  * The rank the caller would earn by publishing THIS game right now — or
@@ -35,11 +34,7 @@ export async function getPublishPromotionTarget(
   if (!user) return null;
   if (!(await userHasProfile(user.id))) return null;
 
-  const [dbRanks, achievedRankIds] = await Promise.all([
-    getAllRanks(),
-    getUserAchievedRankIds(user.id),
-  ]);
-  const achieved = resolveAchievedSlugs(dbRanks, achievedRankIds);
+  const achieved = await getAchievedSlugsForUser(user.id);
 
   if (qualification === '1dan') {
     if (!achieved.has('1dan')) return '1dan';
