@@ -10,9 +10,9 @@ import { ALL_RANK_SLUGS, RANK_STATUS_CACHE_TAG, isMukyuSlug } from '@/lib/db/dat
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { createNotification } from '@/lib/notifications/notification';
+import { getClientIp } from '@/lib/security/client-ip';
 
 import { requireAdmin } from '../../_lib/auth';
-import { getClientIp } from './getClientIp';
 
 function isGrantableRankSlug(value: string): value is RankSlug {
   return (ALL_RANK_SLUGS as readonly string[]).includes(value) && !isMukyuSlug(value);

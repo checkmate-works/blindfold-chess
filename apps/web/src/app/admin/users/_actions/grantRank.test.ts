@@ -63,7 +63,7 @@ vi.mock('next/cache', () => ({
   revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
-vi.mock('./getClientIp', () => ({
+vi.mock('@/lib/security/client-ip', () => ({
   getClientIp: () => mockGetClientIp(),
 }));
 

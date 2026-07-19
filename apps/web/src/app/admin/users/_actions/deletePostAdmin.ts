@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, topicPosts } from '@/lib/db';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
+import { getClientIp } from '@/lib/security/client-ip';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
   deletePostCore,
@@ -14,7 +15,6 @@ import {
 } from '@/lib/topic-posts/delete-core';
 
 import { requireAdmin } from '../../_lib/auth';
-import { getClientIp } from './getClientIp';
 
 export async function deletePostAdmin(postId: string, reason: string): Promise<ActionResult> {
   const auth = await requireAdmin();
