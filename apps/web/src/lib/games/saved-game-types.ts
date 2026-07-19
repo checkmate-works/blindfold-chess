@@ -79,6 +79,30 @@ export type MoveOperationLog = {
 };
 
 /**
+ * Game-lifetime monotonic operation counters.
+ *
+ * {@link MoveOperationLog} entries follow the "undo = the move never happened"
+ * principle: undoing a move deletes its log line, peeks and all. That is right
+ * for display, but it lets a player launder aid usage — peek → undo → replay
+ * keeps the visible peek sum at 0 no matter how often the board was checked
+ * (issue #95). These totals close that hole: every counter only ever
+ * increases for the life of the game, counting each operation at the moment
+ * it happens, so undo/restart can never subtract from them.
+ *
+ * Per-move logs stay the display source of truth; totals are the audit and
+ * promotion-eligibility source (the 1dan hidden-board evaluator reads
+ * `peeks`). `undefined` on records saved before this field existed —
+ * consumers derive a lossy baseline via `sumOperationLogs` or treat the game
+ * as legacy (see the rank evaluator's fail-closed handling).
+ */
+export type OperationTotals = {
+  peeks: number;
+  movePeeks: number;
+  undos: number;
+  invalidMoves: number;
+};
+
+/**
  * Discriminated entry for the mid-game per-game-preferences change log.
  * Each entry records one user-initiated edit of one preference field. The
  * `key` discriminator pairs `from`/`to` types tightly so the storage shape
@@ -182,6 +206,12 @@ export type Game = {
   preferenceChangeLog?: PreferenceChangeLogEntry[];
   /** Per-move operation logs for player moves. Each entry corresponds to one player move. */
   operationLogs?: MoveOperationLog[];
+  /**
+   * Monotonic game-lifetime counters — see {@link OperationTotals}. Unlike
+   * {@link operationLogs}, undo and restart-from-position never shrink these.
+   * Undefined on records saved before the field existed.
+   */
+  operationTotals?: OperationTotals;
 };
 
 /**

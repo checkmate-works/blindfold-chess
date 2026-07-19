@@ -422,6 +422,109 @@ describe('useMoveOperationTracker', () => {
     expect(result.current.logs[0].invalidAttempts?.[0]).toBe('m0');
   });
 
+  describe('totals (monotonic lifetime counters — issue #95)', () => {
+    it('starts at zero and counts every recorded operation', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      expect(result.current.totals).toEqual({
+        peeks: 0,
+        movePeeks: 0,
+        undos: 0,
+        invalidMoves: 0,
+      });
+
+      act(() => {
+        result.current.recordPeek();
+        result.current.recordPeek();
+        result.current.recordMovePeek();
+        result.current.recordInvalid('Rc8');
+        result.current.recordUndo();
+        result.current.commitMove('text');
+      });
+
+      expect(result.current.totals).toEqual({
+        peeks: 2,
+        movePeeks: 1,
+        undos: 1,
+        invalidMoves: 1,
+      });
+    });
+
+    it('survives undo: peek → undo → replay cannot launder the peek total', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      // Peek 3 times, commit, then undo the move and replay it cleanly —
+      // the per-move log ends with peekCount 0, but the total keeps the 3.
+      act(() => {
+        result.current.recordPeek();
+        result.current.recordPeek();
+        result.current.recordPeek();
+        result.current.commitMove('text');
+        result.current.handleUndoLog();
+        result.current.recordUndo();
+        result.current.commitMove('text');
+      });
+
+      expect(result.current.logs).toEqual([
+        { inputMethod: 'text', peekCount: 0, undoCount: 1, movePeekCount: 0, invalidCount: 0 },
+      ]);
+      expect(result.current.totals).toEqual({
+        peeks: 3,
+        movePeeks: 0,
+        undos: 1,
+        invalidMoves: 0,
+      });
+    });
+
+    it('keeps in-flight invalid attempts counted when an undo discards them', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.commitMove('text');
+        result.current.recordInvalid('Rc8');
+        result.current.recordInvalid('Re1');
+        result.current.handleUndoLog();
+        result.current.recordUndo();
+        result.current.commitMove('button');
+      });
+
+      // Per-move view forgot the two invalids; the lifetime total did not.
+      expect(result.current.logs[0].invalidCount).toBe(0);
+      expect(result.current.totals.invalidMoves).toBe(2);
+      expect(result.current.totals.undos).toBe(1);
+    });
+
+    it('survives truncateLogs (restart-from-position)', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.recordPeek();
+        result.current.commitMove('text');
+        result.current.recordPeek();
+        result.current.truncateLogs(0);
+      });
+
+      expect(result.current.logs).toEqual([]);
+      expect(result.current.totals.peeks).toBe(2);
+    });
+
+    it('restores via setTotalsTo and keeps accumulating from there', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.setTotalsTo({ peeks: 4, movePeeks: 2, undos: 3, invalidMoves: 1 });
+        result.current.recordPeek();
+      });
+
+      expect(result.current.totals).toEqual({
+        peeks: 5,
+        movePeeks: 2,
+        undos: 3,
+        invalidMoves: 1,
+      });
+    });
+  });
+
   describe('truncateLogs', () => {
     it('should truncate logs to the specified count', () => {
       const { result } = renderHook(() => useMoveOperationTracker());

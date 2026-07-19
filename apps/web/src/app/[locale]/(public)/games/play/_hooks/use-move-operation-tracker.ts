@@ -1,6 +1,11 @@
 import { useCallback, useRef, useState } from 'react';
 
-import type { MoveInputMethod, MoveOperationLog } from '@/lib/games/saved-game-types';
+import { EMPTY_OPERATION_TOTALS } from '@/lib/games/operation-totals';
+import type {
+  MoveInputMethod,
+  MoveOperationLog,
+  OperationTotals,
+} from '@/lib/games/saved-game-types';
 
 type UseMoveOperationTrackerOptions = {
   initialLogs?: MoveOperationLog[];
@@ -11,9 +16,16 @@ type UseMoveOperationTrackerOptions = {
  *
  * Each entry in the logs array corresponds to one player move.
  * Counters (peekCount, undoCount) accumulate during a move and reset on commit.
+ *
+ * Alongside the per-move log it keeps {@link OperationTotals}: game-lifetime
+ * counters bumped at the moment each operation happens. The per-move log
+ * follows "undo = the move never happened" (entries and in-flight counters
+ * are discarded), but the totals deliberately do NOT — they are the audit /
+ * promotion-eligibility record that survives undo and restart (issue #95).
  */
 export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTrackerOptions = {}) {
   const [logs, setLogs] = useState<MoveOperationLog[]>(initialLogs ?? []);
+  const [totals, setTotals] = useState<OperationTotals>(EMPTY_OPERATION_TOTALS);
   const peekCountRef = useRef(0);
   const undoCountRef = useRef(0);
   const movePeekCountRef = useRef(0);
@@ -35,19 +47,22 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     invalidAttemptsRef.current = [];
   }, []);
 
-  /** Increment peek counter for the current move. */
+  /** Increment peek counter for the current move (and the lifetime total). */
   const recordPeek = useCallback(() => {
     peekCountRef.current += 1;
+    setTotals((t) => ({ ...t, peeks: t.peeks + 1 }));
   }, []);
 
-  /** Increment undo counter for the current move. */
+  /** Increment undo counter for the current move (and the lifetime total). */
   const recordUndo = useCallback(() => {
     undoCountRef.current += 1;
+    setTotals((t) => ({ ...t, undos: t.undos + 1 }));
   }, []);
 
   /** Increment move-peek counter for the current move (viewing legal moves hint). */
   const recordMovePeek = useCallback(() => {
     movePeekCountRef.current += 1;
+    setTotals((t) => ({ ...t, movePeeks: t.movePeeks + 1 }));
   }, []);
 
   /**
@@ -59,6 +74,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
    */
   const recordInvalid = useCallback((attempt?: string) => {
     invalidCountRef.current += 1;
+    setTotals((t) => ({ ...t, invalidMoves: t.invalidMoves + 1 }));
     if (attempt && invalidAttemptsRef.current.length < 20) {
       invalidAttemptsRef.current.push(attempt);
     }
@@ -101,6 +117,10 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
    * record of every undo but the most recent when the player Undos twice
    * in a row. The caller still calls `recordUndo()` after this to
    * increment the count by one for this undo.
+   *
+   * `totals` is deliberately untouched: it is the monotonic audit record,
+   * so the peeks/invalids discarded from the per-move view here stay
+   * counted there (issue #95 — undo must not launder aid usage).
    */
   const handleUndoLog = useCallback(() => {
     setLogs((prev) => prev.slice(0, -1));
@@ -112,7 +132,8 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
 
   /**
    * Truncate logs to the specified count and reset current counters.
-   * Used when restarting from a specific position.
+   * Used when restarting from a specific position. `totals` keeps
+   * accumulating across the restart — same-game history never resets.
    */
   const truncateLogs = useCallback(
     (count: number) => {
@@ -124,7 +145,8 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
 
   /**
    * Replace all logs with the given array and reset counters.
-   * Used to restore logs from a loaded game.
+   * Used to restore logs from a loaded game (restore `totals` alongside
+   * via {@link setTotalsTo} — the two are separate state slices).
    */
   const setLogsTo = useCallback(
     (newLogs: MoveOperationLog[]) => {
@@ -134,8 +156,14 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     [resetCounters]
   );
 
+  /** Restore the lifetime totals from a loaded game. */
+  const setTotalsTo = useCallback((newTotals: OperationTotals) => {
+    setTotals(newTotals);
+  }, []);
+
   return {
     logs,
+    totals,
     recordPeek,
     recordUndo,
     recordMovePeek,
@@ -144,5 +172,6 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     handleUndoLog,
     truncateLogs,
     setLogsTo,
+    setTotalsTo,
   };
 }
