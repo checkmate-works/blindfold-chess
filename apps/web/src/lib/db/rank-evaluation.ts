@@ -44,6 +44,7 @@ import * as Sentry from '@sentry/nextjs';
 import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
+import { isOperationTotals } from '@/lib/games/operation-totals';
 import {
   isConstrainedPlaySettings,
   maintainedHiddenBoard,
@@ -51,6 +52,7 @@ import {
 import type {
   GamePlaySettings,
   MoveOperationLog,
+  OperationTotals,
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
 
@@ -85,6 +87,7 @@ type WonPublicGameRow = {
   playSettings: GamePlaySettings | null;
   playSettingsLog: PlaySettingsChangeEntry[] | null;
   operationLogs: MoveOperationLog[] | null;
+  operationTotals: OperationTotals | null;
 };
 
 type RankEvalContext = {
@@ -112,6 +115,7 @@ export function createRankEvalContext(userId: string, scoreCache: BestScoreCache
           playSettings: games.playSettings,
           playSettingsLog: games.playSettingsLog,
           operationLogs: games.operationLogs,
+          operationTotals: games.operationTotals,
         })
         .from(games)
         .where(
@@ -173,20 +177,34 @@ const evaluators: EvaluatorRegistry = {
   game_publish_win_hidden_board: async (ctx, requirement: GamePublishWinHiddenBoardRequirement) => {
     const rows = await ctx.getWonPublicGames();
 
-    // A game with a malformed operationLogs entry is disqualified rather than
-    // crashing — a crash here would take down checkAndGrantRanks for every
-    // future trigger of this user (the error is swallowed and only reaches
-    // Sentry), permanently blocking promotion. Lenient (treat as 0 peeks)
-    // is deliberately not chosen: don't promote on unverifiable logs.
+    // Malformed / unverifiable data always disqualifies the game rather than
+    // crashing or passing — a crash here would take down checkAndGrantRanks
+    // for every future trigger of this user (the error is swallowed and only
+    // reaches Sentry), permanently blocking promotion, and leniency would
+    // promote on unverifiable logs.
     const qualifying = rows.filter((row) => {
       if (!maintainedHiddenBoard(row.playSettings, row.playSettingsLog)) return false;
-      const logs = row.operationLogs ?? [];
-      let peeks = 0;
-      for (const log of logs) {
-        if (typeof log?.peekCount !== 'number' || Number.isNaN(log.peekCount)) return false;
-        peeks += log.peekCount;
+
+      // Preferred source: the monotonic lifetime totals, which undo cannot
+      // shrink — so peek → undo → replay counts every peek (issue #95).
+      if (row.operationTotals != null) {
+        if (!isOperationTotals(row.operationTotals)) return false;
+        return row.operationTotals.peeks <= requirement.maxPeeks;
       }
-      return peeks <= requirement.maxPeeks;
+
+      // Legacy rows published before operation_totals existed: only the
+      // per-move log survives, and undo deleted log lines together with
+      // their peekCount. A game with any recorded undo therefore has an
+      // unverifiable peek total — fail closed on it.
+      let peeks = 0;
+      let undos = 0;
+      for (const log of row.operationLogs ?? []) {
+        if (typeof log?.peekCount !== 'number' || Number.isNaN(log.peekCount)) return false;
+        if (typeof log?.undoCount !== 'number' || Number.isNaN(log.undoCount)) return false;
+        peeks += log.peekCount;
+        undos += log.undoCount;
+      }
+      return undos === 0 && peeks <= requirement.maxPeeks;
     });
     return qualifying.length >= requirement.minCount;
   },

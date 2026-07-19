@@ -78,12 +78,18 @@ export type GamePublishWinRequirement = {
  *   the start AND stay that way the whole game — checked against the
  *   self-reported `games.play_settings_log`, not just the start snapshot.
  *   See {@link maintainedHiddenBoard}, which owns that predicate.
- * - The total `peekCount` across the game's self-reported `operationLogs`
- *   must not exceed `maxPeeks`.
+ * - The game's peek total must not exceed `maxPeeks`. The count comes from
+ *   `games.operation_totals.peeks` — the monotonic lifetime counter that
+ *   undo cannot shrink, so peek → undo → replay counts every peek
+ *   (issue #95). Legacy rows without totals fall back to summing the
+ *   per-move `operationLogs`, but qualify only when they also record zero
+ *   undos: undo deletes log lines together with their peekCount, so a
+ *   legacy game with any undo has an unverifiable peek total (fail closed).
  *
  * Like `game_publish_win`, this inherits the app's self-reported posture:
- * `games.result`, `play_settings_log`, and `operation_logs` are all trusted
- * as-is (only move legality is verified server-side at publish time).
+ * `games.result`, `play_settings_log`, `operation_logs`, and
+ * `operation_totals` are all trusted as-is (only move legality is verified
+ * server-side at publish time).
  */
 export type GamePublishWinHiddenBoardRequirement = {
   type: 'game_publish_win_hidden_board';
