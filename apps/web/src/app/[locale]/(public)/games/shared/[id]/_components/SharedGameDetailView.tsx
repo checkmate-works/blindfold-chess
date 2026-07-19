@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
-import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
+import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -124,20 +124,24 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           )}
         </GameReview>
 
-        {/* Author attribution — avatar + name + profile link, matching the
-            chunk / position UGC pages. Anonymous authors get a fallback name
-            and no profile link. */}
-        <PositionAuthorAttribution
+        {/* SNS-style author block — "Shared by" caption, avatar + name with
+            the shared date underneath, and a "⋯" overflow menu (edit /
+            delete) matching the chunk / position UGC pages. Anonymous
+            authors get a fallback name and no profile link. OwnerActions
+            renders the whole menu client-side (ownership can hinge on this
+            browser's manage token) and returns null for non-owners. */}
+        <PositionAuthorHeader
           profile={author ? { username: author.username, avatarUrl: author.avatarUrl } : null}
           displayName={authorDisplayName}
           createdByLabel={t('detail.sharedBy')}
           locale={locale}
+          createdAt={game.createdAt}
+          menu={
+            <OwnerActions gameId={game.id} isRegisteredOwner={isRegisteredOwner} locale={locale} />
+          }
         />
 
-        {/* Like (left) + owner edit/delete and the shared date (right) — same
-            row convention as the puzzle / position detail pages. OwnerActions
-            renders nothing for non-owners, leaving just the date on the right. */}
-        <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center text-xs text-muted-foreground">
           <LikeButton
             postId={game.id}
             locale={locale}
@@ -147,16 +151,6 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
             toggleLikeAction={toggleGameLikeAction}
             i18nNamespace="sharedGames.detail"
           />
-          <div className="flex items-center gap-4">
-            <OwnerActions gameId={game.id} isRegisteredOwner={isRegisteredOwner} locale={locale} />
-            <time dateTime={game.createdAt.toISOString()}>
-              {game.createdAt.toLocaleDateString(locale, {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </time>
-          </div>
         </div>
       </div>
 

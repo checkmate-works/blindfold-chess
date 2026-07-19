@@ -97,7 +97,9 @@
       "lineFallback": "Linha {n}",
       "previewToggle": "Mostrar lances",
       "openLine": "Abrir esta linha →",
-      "createdBy": "Criado por"
+      "createdBy": "Criado por",
+      "edited": "(editado)",
+      "moreActions": "Mais ações"
     },
     "line": {
       "new": {
@@ -1298,6 +1300,7 @@
         "edited": "(editado)",
         "editAction": "Editar",
         "forkAction": "Bifurcar",
+        "moreActions": "Mais ações",
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de uma posição excluída",
         "forksSection": "{count, plural, one {# bifurcação} other {# bifurcações}}",
@@ -2331,6 +2334,7 @@
       "fallbackTitle": "Partida compartilhada",
       "by": "Publicado por {name}",
       "sharedBy": "Publicado por",
+      "moreActions": "Mais ações",
       "guest": "Convidado",
       "cleanRate": "Limpos",
       "like": "Curtir",
@@ -3179,6 +3183,7 @@
       "descriptionSection": "Descrição",
       "noDescription": "Ainda não há descrição.",
       "edited": "Editado",
+      "moreActions": "Mais ações",
       "createdBy": "Criado por",
       "positionsSection": "Posições",
       "positionsDescription": "Problemas em que este padrão de chunk é eficaz.",

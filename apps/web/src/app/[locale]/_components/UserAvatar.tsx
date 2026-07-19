@@ -16,8 +16,7 @@ import { countryCodeToFlag } from '@/lib/countries';
  *   `displayName` (+ optional `flair` / `country`) on the right; `children`
  *   render below the name (e.g. timestamp, badge).
  * - `inline`: a single-line "[avatar] [displayName]" badge used inside larger
- *   layouts (e.g. "Submitted by [avatar] [name]" rows on list pages and the
- *   `PositionAuthorAttribution` block).
+ *   layouts (e.g. "Submitted by [avatar] [name]" rows on list pages).
  *
  * Sizes (`xs`/`sm`/`md`/`lg` → 24/32/40/64px). `xs` and `lg` extend the
  * legacy topics palette (`sm`/`md` only) to cover, respectively, the

@@ -97,7 +97,9 @@
       "lineFallback": "Line {n}",
       "previewToggle": "Show moves",
       "openLine": "Open this line →",
-      "createdBy": "Created by"
+      "createdBy": "Created by",
+      "edited": "(edited)",
+      "moreActions": "More actions"
     },
     "line": {
       "new": {
@@ -1298,6 +1300,7 @@
         "edited": "(edited)",
         "editAction": "Edit",
         "forkAction": "Fork",
+        "moreActions": "More actions",
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted position",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
@@ -2331,6 +2334,7 @@
       "fallbackTitle": "Shared game",
       "by": "Posted by {name}",
       "sharedBy": "Posted by",
+      "moreActions": "More actions",
       "guest": "Guest",
       "cleanRate": "Clean",
       "like": "Like",
@@ -3179,6 +3183,7 @@
       "descriptionSection": "Description",
       "noDescription": "No description yet.",
       "edited": "Edited",
+      "moreActions": "More actions",
       "createdBy": "Created by",
       "positionsSection": "Positions",
       "positionsDescription": "Problems where this chunk pattern is effective.",

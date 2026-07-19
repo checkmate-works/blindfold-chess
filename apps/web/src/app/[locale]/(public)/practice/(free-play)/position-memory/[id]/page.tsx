@@ -29,7 +29,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../../_actions/toggleLike';
 import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
-import { PositionAuthorAttribution } from '../../_components/PositionAuthorAttribution';
+import type { PositionActionsMenuItem } from '../../_components/PositionActionsMenu';
+import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import { PositionEditRequestCallout } from '../../_components/edit-request/PositionEditRequestCallout';
@@ -126,6 +127,29 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     />
   );
 
+  const menuItems: PositionActionsMenuItem[] = [
+    ...(currentUser?.id === position.userId
+      ? [
+          {
+            key: 'edit',
+            label: t('detail.editAction'),
+            href: `/${locale}/practice/position-memory/${position.id}/edit`,
+            icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
+          },
+        ]
+      : []),
+    ...(canFork
+      ? [
+          {
+            key: 'fork',
+            label: t('detail.forkAction'),
+            href: `/${locale}/practice/position-memory/new?from=${position.id}`,
+            icon: <FiGitBranch className="h-4 w-4" aria-hidden />,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <PositionDetailLayout
       title={position.title}
@@ -192,14 +216,19 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         locale={locale}
       />
 
-      <PositionAuthorAttribution
+      <PositionAuthorHeader
         profile={profile}
         displayName={displayName}
         createdByLabel={t('detail.createdBy')}
         locale={locale}
+        createdAt={position.createdAt}
+        edited={position.updatedAt.getTime() - position.createdAt.getTime() > 1000}
+        editedLabel={t('detail.edited')}
+        menuAriaLabel={t('detail.moreActions')}
+        menuItems={menuItems}
       />
 
-      <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+      <div className="flex items-center text-xs text-muted-foreground">
         <LikeButton
           postId={position.id}
           locale={locale}
@@ -209,39 +238,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           toggleLikeAction={toggleLike}
           i18nNamespace="practice.positionMemory"
         />
-        <div className="flex items-center gap-4">
-          {currentUser?.id === position.userId && (
-            <Link
-              href={`/practice/position-memory/${position.id}/edit`}
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
-            >
-              <FiEdit2 className="h-3 w-3" aria-hidden />
-              {t('detail.editAction')}
-            </Link>
-          )}
-          {canFork && (
-            <Link
-              href={`/practice/position-memory/new?from=${position.id}`}
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
-            >
-              <FiGitBranch className="h-3 w-3" aria-hidden />
-              {t('detail.forkAction')}
-            </Link>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
-        <time dateTime={position.createdAt.toISOString()}>
-          {position.createdAt.toLocaleDateString(locale, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </time>
-        {position.updatedAt.getTime() - position.createdAt.getTime() > 1000 && (
-          <span className="text-muted-foreground">{t('detail.edited')}</span>
-        )}
       </div>
 
       <SectionTitle id="comments">{tComments('commentsTitle')}</SectionTitle>

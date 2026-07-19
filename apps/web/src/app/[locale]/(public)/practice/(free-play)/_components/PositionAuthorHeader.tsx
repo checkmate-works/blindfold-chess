@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -22,21 +24,27 @@ type Props = {
   createdByLabel: string;
   locale: Locale;
   createdAt: Date;
-  /** Renders the translated "(edited)" label next to the date when true. */
-  edited: boolean;
-  editedLabel: string;
+  /** Renders the translated `editedLabel` next to the date when true. */
+  edited?: boolean;
+  editedLabel?: string;
   /** Accessible label for the "⋯" menu trigger, e.g. translated "More actions". */
-  menuAriaLabel: string;
-  /** Owner/viewer actions (edit, fork). The "⋯" menu is hidden when empty. */
-  menuItems: PositionActionsMenuItem[];
+  menuAriaLabel?: string;
+  /** Owner/viewer link actions (edit, fork). The "⋯" menu is hidden when empty. */
+  menuItems?: PositionActionsMenuItem[];
+  /**
+   * Fully custom "⋯" menu node — takes precedence over `menuItems`. Use when
+   * menu visibility or entries depend on client-side state (e.g. the shared
+   * game's token-based ownership) by passing a client component that renders
+   * `PositionActionsMenu` itself (or nothing).
+   */
+  menu?: ReactNode;
 };
 
 /**
- * SNS-style author header for position detail pages: avatar and author name
- * with the creation date underneath (the familiar two-line post header from
- * X / Instagram), and a "⋯" overflow menu on the right holding owner/viewer
- * actions. Sits at the top of the content, where SNS-conditioned readers
- * look for "whose content is this".
+ * SNS-style author header for content detail pages: a "Created by" caption,
+ * then avatar and author name with the creation date underneath (the familiar
+ * two-line post header from X / Instagram), and a "⋯" overflow menu on the
+ * right holding owner/viewer actions.
  */
 export function PositionAuthorHeader({
   profile,
@@ -44,10 +52,11 @@ export function PositionAuthorHeader({
   createdByLabel,
   locale,
   createdAt,
-  edited,
+  edited = false,
   editedLabel,
   menuAriaLabel,
-  menuItems,
+  menuItems = [],
+  menu,
 }: Props) {
   return (
     <div className="space-y-2">
@@ -69,12 +78,13 @@ export function PositionAuthorHeader({
                 day: 'numeric',
               })}
             </time>
-            {edited && <span>{editedLabel}</span>}
+            {edited && editedLabel && <span>{editedLabel}</span>}
           </div>
         </UserAvatar>
-        {menuItems.length > 0 && (
-          <PositionActionsMenu ariaLabel={menuAriaLabel} items={menuItems} />
-        )}
+        {menu ??
+          (menuItems.length > 0 && menuAriaLabel && (
+            <PositionActionsMenu ariaLabel={menuAriaLabel} items={menuItems} />
+          ))}
       </div>
     </div>
   );

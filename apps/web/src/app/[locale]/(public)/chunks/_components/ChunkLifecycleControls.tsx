@@ -9,6 +9,7 @@ import { FiSend } from 'react-icons/fi';
 
 import type { ChunkStatus } from '@/lib/chunks/validation';
 
+import { PositionActionsMenuButton } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { publishChunk } from '../_actions/publishChunk';
@@ -43,17 +44,18 @@ type Props = {
 };
 
 /**
- * Owner-side Publish button on the chunk detail page.
- *
- * Styled as a subtle inline link to match the Edit / Fork affordances
- * on `/practice/puzzle/[id]` and `/practice/position-memory/[id]` —
- * the chunk detail page's bottom metadata row mirrors those surfaces.
+ * Owner-side Publish entry for the chunk detail page's "⋯" overflow menu
+ * (`PositionActionsMenu`).
  *
  * Renders only when the chunk is still in draft. Publish is a one-way
  * transition; the only way out of `published` afterwards is soft
  * delete (`ChunkDeleteButton`). Disabled when the chunk has no
  * description yet — `descriptionRequired` from the server fires the
  * same intent if a stale client somehow bypasses the disable.
+ *
+ * On failure the publish confirmation modal stays open and shows the
+ * error — inline text next to the trigger would be invisible inside the
+ * closed popup.
  */
 export function ChunkLifecycleControls({ chunkId, chunkSlug, status, hasDescription }: Props) {
   const t = useTranslations('chunks');
@@ -68,7 +70,6 @@ export function ChunkLifecycleControls({ chunkId, chunkSlug, status, hasDescript
   if (status !== 'draft') return null;
 
   async function handleConfirm() {
-    setModal(null);
     setPending(true);
     setError(null);
     const result = await publishChunk(chunkId);
@@ -78,6 +79,7 @@ export function ChunkLifecycleControls({ chunkId, chunkSlug, status, hasDescript
       setError(localizeChunkError(result.error, t, PUBLISH_ERROR_CODES, 'form.errors'));
       return;
     }
+    setModal(null);
     router.refresh();
   }
 
@@ -88,29 +90,23 @@ export function ChunkLifecycleControls({ chunkId, chunkSlug, status, hasDescript
 
   return (
     <>
-      <button
-        type="button"
+      <PositionActionsMenuButton
         onClick={() => setModal(hasDescription ? 'publish' : 'needsDescription')}
         disabled={pending}
-        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground transition-colors"
       >
-        <FiSend className="h-3 w-3" aria-hidden />
+        <FiSend className="h-4 w-4" aria-hidden />
         {pending ? t('actions.publishPending') : t('actions.publish')}
-      </button>
-
-      {error && (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      )}
+      </PositionActionsMenuButton>
 
       <ConfirmationModal
         isOpen={modal === 'publish'}
         title={t('actions.publishConfirmTitle')}
         message={t('actions.publishConfirmMessage')}
+        error={error}
         confirmText={t('actions.publishConfirmCta')}
         cancelText={t('actions.publishConfirmCancel')}
         confirmVariant="primary"
+        isLoading={pending}
         onConfirm={handleConfirm}
         onCancel={() => setModal(null)}
       />

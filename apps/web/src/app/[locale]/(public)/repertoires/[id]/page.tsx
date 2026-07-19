@@ -10,7 +10,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
-import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
@@ -19,18 +18,17 @@ import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
-import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
+import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { OwnerActionLink } from '@/app/[locale]/_components/OwnerActionChip';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
-import { DeleteRepertoireButton } from '../_components/DeleteRepertoireButton';
+import { RepertoireActionsMenu } from '../_components/RepertoireActionsMenu';
 import { RepertoireChips } from '../_components/RepertoireChips';
 import type { RepertoireViewerLine } from '../_components/RepertoireLineViewer';
 import { RepertoireLineViewer } from '../_components/RepertoireLineViewer';
@@ -125,14 +123,18 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         <span>{t('detail.lineCount', { count: lines.length })}</span>
       </div>
 
-      <PositionAuthorAttribution
+      <PositionAuthorHeader
         profile={profile}
         displayName={resolveAuthorName(profile, { fallback: tCommon('deletedUser') })}
         createdByLabel={t('detail.createdBy')}
         locale={locale}
+        createdAt={repertoire.createdAt}
+        edited={repertoire.updatedAt.getTime() - repertoire.createdAt.getTime() > 1000}
+        editedLabel={t('detail.edited')}
+        menu={isOwner ? <RepertoireActionsMenu id={repertoire.id} locale={locale} /> : undefined}
       />
 
-      <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+      <div className="flex items-center text-xs text-muted-foreground">
         <LikeButton
           postId={repertoire.id}
           locale={locale}
@@ -142,15 +144,6 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
           toggleLikeAction={toggleLike}
           i18nNamespace="Repertoires"
         />
-        {isOwner && (
-          <div className="flex flex-wrap items-center gap-3">
-            <OwnerActionLink href={`/repertoires/${id}/edit`}>
-              <FiEdit2 aria-hidden />
-              {t('edit.editAction')}
-            </OwnerActionLink>
-            <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
-          </div>
-        )}
       </div>
 
       <RepertoireCommentsSection

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 import { BoardFrame } from '@/app/_components';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
@@ -12,7 +11,8 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
-import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
+import { PositionActionsMenu } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
+import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
@@ -252,31 +252,60 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         />
       </BoardFrame>
 
-      <PositionAuthorAttribution
+      {/*
+       * SNS-style author block — "Created by" caption, avatar + name with
+       * the created / edited timestamp underneath, and (for the owner) a
+       * "⋯" overflow menu carrying Edit / Publish / Delete. This is the
+       * canonical "owner actions" surface for the page rather than
+       * scattering controls near the title. Delete stays available in both
+       * draft and published states — publish is one-way and the edit page
+       * is 404 once published, so without it the owner has no way to
+       * retire a mistakenly-published chunk.
+       */}
+      <PositionAuthorHeader
         profile={profile}
         displayName={displayName}
         createdByLabel={tChunks('detail.createdBy')}
         locale={locale}
+        createdAt={chunk.createdAt}
+        edited={chunk.updatedAt.getTime() - chunk.createdAt.getTime() > 1000}
+        editedLabel={tChunks('detail.edited')}
+        menu={
+          isOwner ? (
+            <PositionActionsMenu
+              ariaLabel={tChunks('detail.moreActions')}
+              items={
+                isDraft
+                  ? [
+                      {
+                        key: 'edit',
+                        label: tChunks('editCta'),
+                        href: `/${locale}/chunks/${slug}/edit`,
+                        icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
+                      },
+                    ]
+                  : []
+              }
+            >
+              <ChunkLifecycleControls
+                chunkId={chunk.id}
+                chunkSlug={chunk.slug}
+                status={status}
+                hasDescription={!!chunk.description && chunk.description.trim().length > 0}
+              />
+              <ChunkDeleteButton chunkId={chunk.id} />
+            </PositionActionsMenu>
+          ) : undefined
+        }
       />
 
       {/*
-       * Bottom metadata row — mirrors the layout used by
-       * `/practice/puzzle/[id]` and `/practice/position-memory/[id]`.
-       * Inline-link styled affordances (Edit suggestions, Edit,
-       * Publish, Delete) sit on the right with the chunk's created /
-       * edited timestamp; this is the canonical "owner + visitor
-       * actions" surface for the page rather than scattering controls
-       * near the title.
+       * Chunk-entity like — same slot as the puzzle / position-memory
+       * detail pages. `topics.chunks` is the same i18n namespace the
+       * home-feed ChunkFeedCard uses for its like affordance, so the label
+       * copy stays consistent across surfaces.
        */}
-      <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
-        {/*
-         * Chunk-entity like — sits on the left of the metadata row, the
-         * same slot the puzzle / position-memory detail pages place their
-         * LikeButton (`/practice/puzzle/[id]`,
-         * `/practice/position-memory/[id]`). `topics.chunks` is the same
-         * i18n namespace the home-feed ChunkFeedCard uses for its like
-         * affordance, so the label copy stays consistent across surfaces.
-         */}
+      <div className="flex items-center text-xs text-muted-foreground">
         <LikeButton
           postId={chunk.id}
           locale={locale}
@@ -286,42 +315,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           toggleLikeAction={toggleChunkEntityLike}
           i18nNamespace="topics.chunks"
         />
-        <div className="flex flex-wrap items-center justify-end gap-4">
-          {isOwner && isDraft && (
-            <Link
-              href={`/${locale}/chunks/${slug}/edit`}
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
-            >
-              <FiEdit2 className="h-3 w-3" aria-hidden />
-              {tChunks('editCta')}
-            </Link>
-          )}
-          {isOwner && (
-            <ChunkLifecycleControls
-              chunkId={chunk.id}
-              chunkSlug={chunk.slug}
-              status={status}
-              hasDescription={!!chunk.description && chunk.description.trim().length > 0}
-            />
-          )}
-          {/*
-           * Delete stays available to the owner in both draft and
-           * published states — publish is one-way and the edit page is
-           * 404 once published, so without this control the owner has
-           * no way to retire a mistakenly-published chunk.
-           */}
-          {isOwner && <ChunkDeleteButton chunkId={chunk.id} />}
-          <time dateTime={chunk.createdAt.toISOString()}>
-            {chunk.createdAt.toLocaleDateString(locale, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </time>
-          {chunk.updatedAt.getTime() - chunk.createdAt.getTime() > 1000 && (
-            <span>{tChunks('detail.edited')}</span>
-          )}
-        </div>
       </div>
 
       {/*

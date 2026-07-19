@@ -97,7 +97,9 @@
       "lineFallback": "ライン {n}",
       "previewToggle": "手順を表示",
       "openLine": "このラインを開く →",
-      "createdBy": "作成者"
+      "createdBy": "作成者",
+      "edited": "（編集済み）",
+      "moreActions": "その他の操作"
     },
     "line": {
       "new": {
@@ -1298,6 +1300,7 @@
         "edited": "（編集済み）",
         "editAction": "編集",
         "forkAction": "フォーク",
+        "moreActions": "その他の操作",
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
@@ -2331,6 +2334,7 @@
       "fallbackTitle": "公開対局",
       "by": "{name} さんの対局",
       "sharedBy": "投稿者",
+      "moreActions": "その他の操作",
       "guest": "ゲスト",
       "cleanRate": "クリーン率",
       "like": "いいね",
@@ -3146,6 +3150,7 @@
       "descriptionSection": "説明",
       "noDescription": "説明はまだありません。",
       "edited": "編集済み",
+      "moreActions": "その他の操作",
       "createdBy": "投稿者",
       "positionsSection": "ポジション",
       "positionsDescription": "このチャンクパターンが効果的な問題。",

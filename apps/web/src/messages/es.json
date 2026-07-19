@@ -97,7 +97,9 @@
       "lineFallback": "Línea {n}",
       "previewToggle": "Mostrar jugadas",
       "openLine": "Abrir esta línea →",
-      "createdBy": "Creado por"
+      "createdBy": "Creado por",
+      "edited": "(editado)",
+      "moreActions": "Más acciones"
     },
     "line": {
       "new": {
@@ -1298,6 +1300,7 @@
         "edited": "(editado)",
         "editAction": "Editar",
         "forkAction": "Bifurcar",
+        "moreActions": "Más acciones",
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de una posición eliminada",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
@@ -2331,6 +2334,7 @@
       "fallbackTitle": "Partida compartida",
       "by": "Publicado por {name}",
       "sharedBy": "Publicado por",
+      "moreActions": "Más acciones",
       "guest": "Invitado",
       "cleanRate": "Limpias",
       "like": "Me gusta",
@@ -3179,6 +3183,7 @@
       "descriptionSection": "Descripción",
       "noDescription": "Todavía no hay descripción.",
       "edited": "Editado",
+      "moreActions": "Más acciones",
       "createdBy": "Creado por",
       "positionsSection": "Posiciones",
       "positionsDescription": "Problemas donde este patrón de chunk es eficaz.",
