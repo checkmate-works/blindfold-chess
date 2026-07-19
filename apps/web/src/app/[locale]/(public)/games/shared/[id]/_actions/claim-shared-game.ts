@@ -8,6 +8,7 @@ import { claimSharedGame } from '@/lib/db/games-write';
 import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
+import { logActivityEvent } from '@/lib/users/activity-log';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 export type ClaimSharedGameResponse =
@@ -72,6 +73,20 @@ export async function claimSharedGameAction(
       guardResult.user.id,
       'game claim'
     );
+
+    // Audit trail (issue #95, item 2): claiming converts bare token
+    // possession into authorship — and possibly a rank + permanent ad-free —
+    // yet afterwards the games row is indistinguishable from an authored
+    // publish (author_id is all the claim writes). Record who claimed what,
+    // and which ranks it minted, so a disputed or abusive claim can be
+    // investigated after the fact. Fire-and-forget like every activity log.
+    logActivityEvent({
+      userId: guardResult.user.id,
+      action: 'claim_game',
+      targetType: 'game',
+      targetId: gameId,
+      metadata: { grantedRanks: grantedRanks.map((r) => r.slug) },
+    });
 
     return {
       success: true,
