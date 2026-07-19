@@ -105,12 +105,7 @@ export function RanksGrid({ locale, dbRanks }: Props) {
         const isAchieved = displayAchievedSlugs.has(slug);
         const requirements = rank ? parseRequirements(rank.requirements) : [];
 
-        const state = getRankCardState(
-          !!rank,
-          requirements,
-          isAchieved,
-          slug === recommendedNextSlug
-        );
+        const state = getRankCardState(requirements, isAchieved, slug === recommendedNextSlug);
 
         const requirementLabels = requirements.flatMap((req) => buildRequirementLabels(req, t));
 

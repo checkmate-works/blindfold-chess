@@ -331,13 +331,11 @@ describe('isWhiteBelt', () => {
 describe('getRankCardState', () => {
   // Common arguments helper
   const call = (overrides: {
-    inDb?: boolean;
     requirements?: ChallengeScoreRequirement[];
     isAchieved?: boolean;
     isRecommendedNext?: boolean;
   }) => {
     const defaults = {
-      inDb: true,
       requirements: [
         {
           type: 'challenge_score' as const,
@@ -350,21 +348,17 @@ describe('getRankCardState', () => {
       isRecommendedNext: false,
     };
     const args = { ...defaults, ...overrides };
-    return getRankCardState(args.inDb, args.requirements, args.isAchieved, args.isRecommendedNext);
+    return getRankCardState(args.requirements, args.isAchieved, args.isRecommendedNext);
   };
 
   // --- "coming-soon" states ---
 
-  it('should return "coming-soon" when rank is not in DB', () => {
-    expect(call({ inDb: false })).toBe('coming-soon');
-  });
-
-  it('should return "coming-soon" when requirements array is empty', () => {
+  it('should return "coming-soon" when requirements array is empty (not in DB, or conditions not yet defined)', () => {
     expect(call({ requirements: [] })).toBe('coming-soon');
   });
 
-  it('should return "coming-soon" when not in DB even if achieved', () => {
-    expect(call({ inDb: false, isAchieved: true })).toBe('coming-soon');
+  it('"coming-soon" (empty requirements) takes priority over achieved state', () => {
+    expect(call({ requirements: [], isAchieved: true })).toBe('coming-soon');
   });
 
   // --- Achievement / recommendation states ---
@@ -377,24 +371,14 @@ describe('getRankCardState', () => {
     expect(call({ isRecommendedNext: true })).toBe('next');
   });
 
-  it('should return "locked" (plain unachieved) otherwise — there is NO gate on lower ranks', () => {
+  it('should return "unachieved" (plain, not the recommended next) otherwise — there is NO gate on lower ranks', () => {
     // Under skip-grants every defined rank is browsable and earnable; the
     // state only decides styling (recommended glow vs plain card).
-    expect(call({})).toBe('locked');
+    expect(call({})).toBe('unachieved');
   });
 
   it('should prefer "achieved" over the recommendation flag', () => {
     expect(call({ isAchieved: true, isRecommendedNext: true })).toBe('achieved');
-  });
-
-  // --- Priority checks ---
-
-  it('"coming-soon" (not in DB) takes priority over achieved state', () => {
-    expect(call({ inDb: false, isAchieved: true })).toBe('coming-soon');
-  });
-
-  it('"coming-soon" (empty requirements) takes priority over achieved state', () => {
-    expect(call({ requirements: [], isAchieved: true })).toBe('coming-soon');
   });
 
   it('should not return "coming-soon" for a rank with defined requirements (4kyu)', () => {

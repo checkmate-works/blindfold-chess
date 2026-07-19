@@ -19,7 +19,7 @@ import type { Rank } from '@/lib/db/schema';
 
 import type { RequirementDivider, RequirementItem } from '../_components/RequirementsList';
 
-export type RankCardState = 'achieved' | 'next' | 'locked' | 'coming-soon';
+export type RankCardState = 'achieved' | 'next' | 'unachieved' | 'coming-soon';
 
 export function buildChallengeNameKey(req: ChallengeScoreRequirement): string {
   if (req.leaderboardKey === 'default') {
@@ -256,27 +256,23 @@ export function isWhiteBelt(beltColor: string): boolean {
 /**
  * Card state for the ranks grid. Ranks are granted independently
  * (skip-grants allowed), so there is NO gate on lower ranks: every defined
- * rank is openly browsable and earnable. `'locked'` therefore no longer
- * means "blocked until the previous rank is passed" — it is simply
- * "unachieved and not the recommended next", rendered as a plain clickable
+ * rank is openly browsable and earnable. `'unachieved'` means simply "not
+ * achieved and not the recommended next", rendered as a plain clickable
  * card. `'next'` highlights the single recommended rank to pursue (the
  * first unachieved in progression order — computed by the caller), which
  * for a signed-out viewer is always the first rank.
  */
 export function getRankCardState(
-  inDb: boolean,
   requirements: RankRequirement[],
   isAchieved: boolean,
   isRecommendedNext: boolean
 ): RankCardState {
-  // Not in DB = Coming Soon
-  if (!inDb) return 'coming-soon';
-
-  // Has empty requirements = coming soon (conditions not yet defined)
+  // Empty requirements = coming soon (either not in DB yet, or conditions
+  // not yet defined — callers pass [] for both, so a single check covers it).
   if (requirements.length === 0) return 'coming-soon';
 
   if (isAchieved) return 'achieved';
-  return isRecommendedNext ? 'next' : 'locked';
+  return isRecommendedNext ? 'next' : 'unachieved';
 }
 
 export type RankTeaserCardProps = {
@@ -284,7 +280,7 @@ export type RankTeaserCardProps = {
   locale: string;
   beltColor: string;
   rankName: string;
-  state: 'locked';
+  state: 'unachieved';
   requirementLabels: string[];
   requirementsHeading: string;
   comingSoonLabel: string;
@@ -320,7 +316,7 @@ export function buildRankTeaserCards(
       locale,
       beltColor,
       rankName: tRanks(`rankNames.${slug}`),
-      state: 'locked' as const,
+      state: 'unachieved' as const,
       requirementLabels,
       requirementsHeading: tRanks('requirements'),
       comingSoonLabel: tRanks('comingSoon'),

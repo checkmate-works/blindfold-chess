@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { HiCheckCircle, HiChevronRight } from 'react-icons/hi2';
 
+import { isWhiteBelt } from '../_lib/helpers';
 import type { RankCardState } from '../_lib/helpers';
 import { RequirementsList } from './RequirementsList';
 import type { RequirementDivider } from './RequirementsList';
@@ -35,10 +36,7 @@ export function RankCard({
   comingSoonLabel,
   hideRequirements = false,
 }: RankCardProps) {
-  const isClickable = state === 'achieved' || state === 'next' || state === 'locked';
-
-  // White belt needs a visible border since #ffffff is invisible on light backgrounds
-  const isWhiteBelt = beltColor === '#ffffff';
+  const isClickable = state !== 'coming-soon';
 
   const cardContent = (
     <>
@@ -47,7 +45,7 @@ export function RankCard({
         className="h-2"
         style={{
           backgroundColor: beltColor,
-          ...(isWhiteBelt ? { borderBottom: '1px solid #d4d4d4' } : {}),
+          ...(isWhiteBelt(beltColor) ? { borderBottom: '1px solid #d4d4d4' } : {}),
         }}
       />
 
@@ -58,7 +56,7 @@ export function RankCard({
             className="inline-block size-4 shrink-0 rounded-full"
             style={{
               backgroundColor: beltColor,
-              ...(isWhiteBelt ? { border: '1px solid #d4d4d4' } : {}),
+              ...(isWhiteBelt(beltColor) ? { border: '1px solid #d4d4d4' } : {}),
             }}
           />
           <h3 className="text-lg font-bold text-foreground">{rankName}</h3>
@@ -71,15 +69,9 @@ export function RankCard({
               />
             </>
           )}
-          {state === 'next' && (
-            <HiChevronRight
-              className="ml-auto size-5 shrink-0 text-muted-foreground"
-              aria-hidden="true"
-            />
-          )}
-          {state === 'locked' && (
-            // No lock icon: ranks are earnable in any order (skip-grants),
-            // so an unachieved card is simply browsable, not gated.
+          {(state === 'next' || state === 'unachieved') && (
+            // No lock icon on 'unachieved': ranks are earnable in any order
+            // (skip-grants), so an unachieved card is simply browsable, not gated.
             <HiChevronRight
               className="ml-auto size-5 shrink-0 text-muted-foreground"
               aria-hidden="true"

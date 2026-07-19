@@ -4,8 +4,10 @@
  * @description
  * Displays all belt ranks and their requirements in the blindfold chess
  * training progression system. Shows defined ranks with their score
- * thresholds and visual state indicators: achieved ✓, next (actionable),
- * locked 🔒 (conditions not yet defined), or Coming Soon (not in DB).
+ * thresholds and visual state indicators: achieved ✓, next (the recommended
+ * rank to pursue), unachieved (plain, simply not yet achieved — every rank
+ * is freely earnable in any order, so there is no lock), or Coming Soon
+ * (not in DB, or conditions not yet defined).
  *
  * @flow
  * 1. Fetch all ranks from the database (ordered by level ascending).

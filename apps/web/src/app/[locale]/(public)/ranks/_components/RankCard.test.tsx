@@ -50,14 +50,14 @@ const baseProps = {
 };
 
 describe('RankCard', () => {
-  describe('when state is "locked" (unachieved, not the recommended next)', () => {
-    const lockedProps = {
+  describe('when state is "unachieved" (not the recommended next)', () => {
+    const unachievedProps = {
       ...baseProps,
-      state: 'locked' as const,
+      state: 'unachieved' as const,
     };
 
     it('should render as a link — every defined rank is browsable (skip-grants)', () => {
-      render(<RankCard {...lockedProps} />);
+      render(<RankCard {...unachievedProps} />);
 
       const link = screen.getByRole('link', { name: /9級/ });
       expect(link).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('RankCard', () => {
     });
 
     it('should not display a smoke overlay', () => {
-      const { container } = render(<RankCard {...lockedProps} />);
+      const { container } = render(<RankCard {...unachievedProps} />);
 
       // Check that no overlay with backdrop-blur or bg-foreground/30 exists
       const overlays = container.querySelectorAll('[class*="backdrop-blur"]');
@@ -73,13 +73,13 @@ describe('RankCard', () => {
     });
 
     it('should not render any lock button — ranks are earnable in any order', () => {
-      render(<RankCard {...lockedProps} />);
+      render(<RankCard {...unachievedProps} />);
 
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('should render a chevron icon', () => {
-      const { container } = render(<RankCard {...lockedProps} />);
+      const { container } = render(<RankCard {...unachievedProps} />);
 
       // HiChevronRight has aria-hidden="true"
       const chevrons = container.querySelectorAll('[aria-hidden="true"]');
