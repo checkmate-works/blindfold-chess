@@ -539,7 +539,7 @@
     "notifications": {
       "description": "Turned-off types will no longer send you notifications.",
       "types": {
-        "new_position": "New positions",
+        "new_position": "New problem posts",
         "new_chunk_draft": "New chunk drafts",
         "chunk_published": "Chunk published",
         "new_game": "New games",

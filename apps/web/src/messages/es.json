@@ -539,7 +539,7 @@
     "notifications": {
       "description": "Los tipos desactivados dejarán de enviarte notificaciones.",
       "types": {
-        "new_position": "Nuevas posiciones",
+        "new_position": "Nuevas publicaciones de problemas",
         "new_chunk_draft": "Nuevos borradores de chunk",
         "chunk_published": "Chunk publicado",
         "new_game": "Nuevas partidas",

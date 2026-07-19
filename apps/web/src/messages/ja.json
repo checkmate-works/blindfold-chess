@@ -539,7 +539,7 @@
     "notifications": {
       "description": "オフにした種類の通知は届かなくなります。",
       "types": {
-        "new_position": "新しい局面",
+        "new_position": "問題の新規投稿",
         "new_chunk_draft": "チャンク下書きの追加",
         "chunk_published": "チャンクの公開",
         "new_game": "対局の公開",

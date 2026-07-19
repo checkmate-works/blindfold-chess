@@ -19,7 +19,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string) => {
     const labels: Record<string, string> = {
       'notifications.description': 'Turned-off types will no longer send you notifications.',
-      'notifications.types.new_position': 'New positions',
+      'notifications.types.new_position': 'New problem posts',
       'notifications.types.new_chunk_draft': 'New chunk drafts',
       'notifications.types.chunk_published': 'Chunk published',
       'notifications.types.new_game': 'New games',
@@ -57,7 +57,7 @@ describe('NotificationSettings', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByRole('switch', { name: 'New positions' }).getAttribute('aria-checked')
+        screen.getByRole('switch', { name: 'New problem posts' }).getAttribute('aria-checked')
       ).toBe('false')
     );
     expect(screen.getByRole('switch', { name: 'New games' }).getAttribute('aria-checked')).toBe(
@@ -70,12 +70,12 @@ describe('NotificationSettings', () => {
     render(<NotificationSettings />);
     await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(5));
 
-    fireEvent.click(screen.getByRole('switch', { name: 'New positions' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'New problem posts' }));
 
     expect(mockSetNotificationMute).toHaveBeenCalledWith('new_position', true);
-    expect(screen.getByRole('switch', { name: 'New positions' }).getAttribute('aria-checked')).toBe(
-      'false'
-    );
+    expect(
+      screen.getByRole('switch', { name: 'New problem posts' }).getAttribute('aria-checked')
+    ).toBe('false');
   });
 
   it('calls setNotificationMute(type, false) when toggling a muted type back on', async () => {
@@ -83,11 +83,11 @@ describe('NotificationSettings', () => {
     render(<NotificationSettings />);
     await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(5));
 
-    fireEvent.click(screen.getByRole('switch', { name: 'New positions' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'New problem posts' }));
 
     expect(mockSetNotificationMute).toHaveBeenCalledWith('new_position', false);
-    expect(screen.getByRole('switch', { name: 'New positions' }).getAttribute('aria-checked')).toBe(
-      'true'
-    );
+    expect(
+      screen.getByRole('switch', { name: 'New problem posts' }).getAttribute('aria-checked')
+    ).toBe('true');
   });
 });
