@@ -539,8 +539,7 @@
     "notifications": {
       "description": "Turned-off types will no longer send you notifications.",
       "types": {
-        "new_post": "New posts",
-        "new_position": "New positions",
+        "new_position": "New problem posts",
         "new_chunk_draft": "New chunk drafts",
         "chunk_published": "Chunk published",
         "new_game": "New games",
@@ -3668,7 +3667,8 @@
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
-    "newCommentOnTopicMessage": "{actor} commented on your problem",
+    "newCommentOnTopicMessage": "{actor} commented on your post",
+    "newCommentOnGameMessage": "{actor} commented on your game",
     "chunkEditRequestSubmittedMessage": "{actor} suggested an edit to your chunk",
     "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
     "newChunkDraftMessage": "{actor} posted a chunk draft",

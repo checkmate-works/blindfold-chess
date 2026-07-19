@@ -147,12 +147,23 @@ async function insertReply(
     return reply;
   });
 
+  // On /topics (opening/square) the root topic_post is itself authored
+  // content, so anything landing in its thread is "a comment on your post"
+  // for the post author — the mutable 'new_comment_on_topic' type, same as
+  // comments on positions/chunks/repertoires. Everywhere else the root post
+  // is already a comment on some other entity (whose owner was notified via
+  // notifyTopicAuthorOfNewComment when it was created), so replies stay the
+  // person-to-person 'reply' type, which is deliberately not mutable.
+  const rootIsAuthoredPost = topicType === 'opening' || topicType === 'square';
+
   // (createNotification no-ops when notifyUserId is null — anonymised author.)
   if (notifyUserId !== user.id) {
     createNotification({
       userId: notifyUserId,
       actorId: user.id,
-      type: 'reply',
+      // A direct reply to the top-level post notifies its author; on
+      // authored-post topics that is a comment on their content.
+      type: rootIsAuthoredPost && parentId === rootPostId ? 'new_comment_on_topic' : 'reply',
       targetType: 'topic_post',
       targetId: postId,
       metadata: { topicType, topicKey, postId, replyId: inserted.id },
@@ -167,7 +178,10 @@ async function insertReply(
       createNotification({
         userId: rootPostAuthorId,
         actorId: user.id,
-        type: 'reply',
+        // For the post author, activity anywhere in their post's thread is
+        // still "a comment on your post"; for a comment author (positions
+        // etc.) it is thread-reply noise, kept as 'reply'.
+        type: rootIsAuthoredPost ? 'new_comment_on_topic' : 'reply',
         targetType: 'topic_post',
         targetId: postId,
         metadata: { topicType, topicKey, postId, replyId: inserted.id },

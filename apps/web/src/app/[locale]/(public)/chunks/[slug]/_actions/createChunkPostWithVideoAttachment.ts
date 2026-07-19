@@ -79,6 +79,8 @@ export async function createChunkPostWithVideoAttachment(
   }
   const { provider, providerVideoId, sourceUrl } = parsed.value;
 
+  const chunk = await getChunkBySlug(slug);
+
   try {
     return await createPostBase({
       locale,
@@ -86,11 +88,12 @@ export async function createChunkPostWithVideoAttachment(
       topicType: 'chunk',
       topicKey: slug,
       urlSegment: 'chunks',
-      validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
+      validateTopic: () => chunk !== null,
       invalidTopicError: 'Invalid chunk',
       rateLimit: RATE_LIMITS.createPost,
       validateContent,
       emitFeedItem: false,
+      topicAuthorId: chunk?.userId,
       redirectPath: (postId, { toast }) =>
         `/${locale}/chunks/${slug}${toast ? '?toast=post_created' : ''}#post-${postId}`,
       afterInsert: async (tx, postId) => {

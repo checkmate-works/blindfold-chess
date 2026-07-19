@@ -54,6 +54,12 @@ export function buildNotificationMessage(
     case 'new_post':
       return t('newPostMessage', { actor: actorName });
     case 'new_comment_on_topic':
+      // A comment on your shared game reads "commented on your game";
+      // every other surface (topic posts, positions, chunks, repertoires)
+      // keeps the generic "commented on your post".
+      if (notification.targetType === 'game_comment') {
+        return t('newCommentOnGameMessage', { actor: actorName });
+      }
       return t('newCommentOnTopicMessage', { actor: actorName });
     case 'chunk_edit_request_submitted':
       return t('chunkEditRequestSubmittedMessage', { actor: actorName });

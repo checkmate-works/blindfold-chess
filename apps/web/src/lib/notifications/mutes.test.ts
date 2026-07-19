@@ -49,19 +49,19 @@ describe('isNotificationTypeMuted', () => {
   });
 
   it('returns false when no mute row exists', async () => {
-    expect(await isNotificationTypeMuted('user-1', 'new_post')).toBe(false);
+    expect(await isNotificationTypeMuted('user-1', 'new_position')).toBe(false);
   });
 
   it('returns true when a mute row exists', async () => {
     mockSelectRows = [{ id: 'mute-1' }];
-    expect(await isNotificationTypeMuted('user-1', 'new_post')).toBe(true);
+    expect(await isNotificationTypeMuted('user-1', 'new_position')).toBe(true);
   });
 });
 
 describe('getMutedNotificationTypes', () => {
   it('returns the muted types for the user', async () => {
-    mockSelectRows = [{ type: 'new_post' }, { type: 'new_game' }];
-    expect(await getMutedNotificationTypes('user-1')).toEqual(['new_post', 'new_game']);
+    mockSelectRows = [{ type: 'new_position' }, { type: 'new_game' }];
+    expect(await getMutedNotificationTypes('user-1')).toEqual(['new_position', 'new_game']);
   });
 
   it('returns an empty array when nothing is muted', async () => {
@@ -77,14 +77,14 @@ describe('setNotificationTypeMuted', () => {
   });
 
   it('inserts a mute row when muted=true', async () => {
-    await setNotificationTypeMuted('user-1', 'new_post', true);
+    await setNotificationTypeMuted('user-1', 'new_position', true);
 
-    expect(mockDbInsertValues).toHaveBeenCalledWith({ userId: 'user-1', type: 'new_post' });
+    expect(mockDbInsertValues).toHaveBeenCalledWith({ userId: 'user-1', type: 'new_position' });
     expect(mockDbDeleteWhere).not.toHaveBeenCalled();
   });
 
   it('deletes the mute row when muted=false', async () => {
-    await setNotificationTypeMuted('user-1', 'new_post', false);
+    await setNotificationTypeMuted('user-1', 'new_position', false);
 
     expect(mockDbDeleteWhere).toHaveBeenCalledTimes(1);
     expect(mockDbInsertValues).not.toHaveBeenCalled();

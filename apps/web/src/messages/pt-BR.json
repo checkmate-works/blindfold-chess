@@ -539,8 +539,7 @@
     "notifications": {
       "description": "Os tipos desativados deixarão de enviar notificações para você.",
       "types": {
-        "new_post": "Novas publicações",
-        "new_position": "Novas posições",
+        "new_position": "Novas publicações de problemas",
         "new_chunk_draft": "Novos rascunhos de chunk",
         "chunk_published": "Chunk publicado",
         "new_game": "Novas partidas",
@@ -3668,7 +3667,8 @@
     "unknownNotification": "Você tem uma nova notificação",
     "announcementMessage": "Novo anúncio: {title}",
     "newPostMessage": "{actor} compartilhou uma nova publicação",
-    "newCommentOnTopicMessage": "{actor} comentou no seu problema",
+    "newCommentOnTopicMessage": "{actor} comentou na sua publicação",
+    "newCommentOnGameMessage": "{actor} comentou na sua partida",
     "chunkEditRequestSubmittedMessage": "{actor} sugeriu uma edição para o seu chunk",
     "chunkEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de edição",
     "newChunkDraftMessage": "{actor} publicou um rascunho de chunk",

@@ -225,6 +225,24 @@ describe('createNotification', () => {
 
     createNotification({
       userId: 'user-1',
+      type: 'new_position',
+      targetType: 'position',
+      targetId: 'position-1',
+    });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('delivers new_post despite a stale mute row (type removed from the mutable set)', async () => {
+    // new_post toggles were removed from the settings UI in 2026-07, but rows
+    // created before then may still exist in notification_mutes. The fallback
+    // is to notify: mutes are only consulted for currently-mutable types.
+    mockMutedRows = [{ id: 'stale-mute-1' }];
+
+    createNotification({
+      userId: 'user-1',
       type: 'new_post',
       targetType: 'topic_post',
       targetId: 'post-1',
@@ -232,7 +250,7 @@ describe('createNotification', () => {
 
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(mockDbInsertValues).not.toHaveBeenCalled();
+    expect(mockDbInsertValues).toHaveBeenCalledTimes(1);
   });
 
   it('does not consult mutes for a non-mutable notification type', async () => {

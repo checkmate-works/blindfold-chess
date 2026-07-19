@@ -179,8 +179,13 @@ export function buildNotificationLink(
       notification.type === 'new_comment_on_topic') &&
     isPostMetadata(notification.metadata)
   ) {
+    // Both thread-derived types carry the concrete comment's id as replyId
+    // ('new_comment_on_topic' rows written by notifyTopicAuthorOfNewComment
+    // have no replyId — the post itself is the comment — and fall through
+    // to the post anchor).
     const replyId =
-      notification.type === 'reply' && isReplyMetadata(notification.metadata)
+      (notification.type === 'reply' || notification.type === 'new_comment_on_topic') &&
+      isReplyMetadata(notification.metadata)
         ? notification.metadata.replyId
         : undefined;
     return buildPostDetailUrl(
@@ -199,13 +204,17 @@ export function buildNotificationLink(
     return `/games/shared/${notification.targetId}`;
   }
   if (
-    notification.type === 'like' &&
+    (notification.type === 'like' ||
+      notification.type === 'reply' ||
+      notification.type === 'new_comment_on_topic') &&
     notification.targetType === 'game_comment' &&
     notification.targetId &&
     isGameCommentLikeMetadata(notification.metadata)
   ) {
-    // Deep-link to the liked comment: the detail page opens that comment's
-    // move and scrolls to it (the threads are per-move).
+    // Deep-link to the comment (the liked one, the reply, or the new
+    // top-level comment — targetId is always the comment to show): the
+    // detail page opens that comment's move and scrolls to it (the threads
+    // are per-move).
     return `/games/shared/${notification.metadata.gameId}?comment=${notification.targetId}`;
   }
   if (

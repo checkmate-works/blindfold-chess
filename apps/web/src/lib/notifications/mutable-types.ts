@@ -12,13 +12,27 @@
  * left out here: `announcement` carries ToS/billing-relevant notices a user
  * must not be able to silence by accident, and the rest are direct
  * consequences of another user's one-to-one action toward this user (being
- * followed, liked, replied to) rather than "feed noise" from accounts they
- * follow — muting them would mean missing something addressed to them
- * specifically. Only the follower fan-out types below are exposed as mute
- * toggles.
+ * followed, liked, replied to within a thread) rather than "feed noise" from
+ * accounts they follow — muting them would mean missing something addressed
+ * to them specifically.
+ *
+ * `new_comment_on_topic` is the one non-fan-out entry: "someone commented on
+ * your content". Since 2026-07 it covers every commentable surface uniformly —
+ * positions (memory/puzzle), repertoires (incl. move comments), chunks,
+ * /topics posts (direct comments on your post; formerly typed 'reply'), and
+ * shared games ('game_comment' target; see addGameCommentAction). 'reply'
+ * remains the non-mutable type for replies deeper in a thread.
+ *
+ * @design Removing a type from this list is safe with stale mute rows around
+ *
+ * `new_post` (topic posts) was removed in 2026-07: the label was unclear and
+ * posts are too rare to be worth a toggle. Rows for a removed type may still
+ * exist in `notification_mutes`, but every consumer degrades to "notify":
+ * `createNotification` only consults mutes for types in this list, and
+ * `getMutedNotificationTypes` filters by this list — so stale rows are
+ * ignored, never an error.
  */
 export const MUTABLE_NOTIFICATION_TYPES = [
-  'new_post',
   'new_position',
   'new_chunk_draft',
   'chunk_published',

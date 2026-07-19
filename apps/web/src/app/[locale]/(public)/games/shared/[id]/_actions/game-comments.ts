@@ -10,8 +10,10 @@ import {
   insertGameComment,
   softDeleteGameComment,
 } from '@/lib/db/game-comments';
+import { getLiveGameAuthorId } from '@/lib/db/games-read';
 import { performEntityToggleLike } from '@/lib/db/like-actions';
 import type { ToggleLikeResult } from '@/lib/db/like-actions';
+import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -81,12 +83,14 @@ export async function addGameCommentAction(
 
     // A reply must target a live comment on the same game; it inherits that
     // comment's ply (authoritative — the client-sent ply is ignored for replies).
+    let parentAuthorId: string | null = null;
     if (parentId !== null) {
       const parent = await getGameCommentParent(parentId);
       if (!parent || parent.gameId !== input.gameId) {
         return { success: false, error: 'not_found' };
       }
       ply = parent.ply;
+      parentAuthorId = parent.authorId;
     }
 
     const { id, createdAt, updatedAt } = await insertGameComment({
@@ -96,6 +100,37 @@ export async function addGameCommentAction(
       authorId: user.id,
       body,
     });
+
+    // Mirrors the topic-post comment model: a top-level comment notifies the
+    // content owner as 'new_comment_on_topic' (the mutable "comments on your
+    // posts" toggle); a reply notifies the parent comment's author as
+    // 'reply'. The owner is not re-notified of replies within a thread —
+    // same as position/chunk comment threads. Both recipients may be null
+    // (account-less game / anonymised author); createNotification no-ops.
+    if (parentId === null) {
+      const ownerId = await getLiveGameAuthorId(input.gameId);
+      if (ownerId !== undefined && ownerId !== user.id) {
+        createNotification({
+          userId: ownerId,
+          actorId: user.id,
+          type: 'new_comment_on_topic',
+          targetType: 'game_comment',
+          targetId: id,
+          // Same shape as game-comment like notifications: gameId rides in
+          // metadata to build /games/shared/{gameId}?comment={targetId}.
+          metadata: { gameId: input.gameId },
+        });
+      }
+    } else if (parentAuthorId !== user.id) {
+      createNotification({
+        userId: parentAuthorId,
+        actorId: user.id,
+        type: 'reply',
+        targetType: 'game_comment',
+        targetId: id,
+        metadata: { gameId: input.gameId },
+      });
+    }
 
     return {
       success: true,
