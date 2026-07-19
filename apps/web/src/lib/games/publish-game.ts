@@ -9,11 +9,13 @@ import type { EngineConfig } from '@/lib/engines';
 
 import { isBoardVisibility } from './board-visibility';
 import { computeGameStats } from './compute-game-stats';
+import { isOperationTotals } from './operation-totals';
 import { normalizePlaySettingsLog } from './play-settings-log';
 import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
 import type {
   GamePlaySettings,
   MoveOperationLog,
+  OperationTotals,
   PlaySettingsChangeEntry,
 } from './saved-game-types';
 
@@ -46,6 +48,11 @@ export type ValidatedGame = {
   engineConfig: EngineConfig;
   result: GameOutcome;
   operationLogs: MoveOperationLog[] | null;
+  /**
+   * Monotonic game-lifetime aid counters — the undo-proof companion to
+   * {@link operationLogs}. Null when absent or malformed (legacy clients).
+   */
+  operationTotals: OperationTotals | null;
   playSettings: GamePlaySettings | null;
   /** Display-relevant mid-game settings edits, enabling per-position display. */
   playSettingsLog: PlaySettingsChangeEntry[] | null;
@@ -194,6 +201,20 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
     });
   }
 
+  // Monotonic lifetime totals: same self-reported posture as operationLogs
+  // (numbers trusted as-is once the shape checks out), but a malformed blob
+  // drops to null rather than rejecting the publish. Whitelist-copied so no
+  // extra keys reach the DB. Null feeds the rank evaluator's legacy path,
+  // which fails closed on undos — absence never makes promotion easier.
+  const operationTotals: OperationTotals | null = isOperationTotals(v.operationTotals)
+    ? {
+        peeks: v.operationTotals.peeks,
+        movePeeks: v.operationTotals.movePeeks,
+        undos: v.operationTotals.undos,
+        invalidMoves: v.operationTotals.invalidMoves,
+      }
+    : null;
+
   return {
     ok: true,
     game: {
@@ -206,6 +227,7 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       engineConfig: v.engineConfig,
       result: v.result as GameOutcome,
       operationLogs,
+      operationTotals,
       playSettings: normalizePlaySettings(v.playSettings),
       // Self-reported mid-game settings timeline; validated to the display
       // subset and anchored within [0, moves.length]. Folded over playSettings

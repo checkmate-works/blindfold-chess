@@ -160,6 +160,36 @@ describe('validatePublishSnapshot', () => {
     expect(logs[0].invalidAttempts).toEqual(['Nf3']); // non-strings dropped
     expect(logs[1].invalidAttempts).toBeUndefined(); // empty → undefined
   });
+
+  it('keeps well-formed operationTotals, whitelisting the known counters', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        operationTotals: { peeks: 3, movePeeks: 1, undos: 2, invalidMoves: 4, extra: 'nope' },
+      })
+    );
+    expect(res.ok && res.game.operationTotals).toEqual({
+      peeks: 3,
+      movePeeks: 1,
+      undos: 2,
+      invalidMoves: 4,
+    });
+  });
+
+  it('drops absent or malformed operationTotals to null without rejecting the publish', () => {
+    const absent = validatePublishSnapshot(validInput());
+    expect(absent.ok && absent.game.operationTotals).toBeNull();
+
+    for (const bad of [
+      { peeks: -1, movePeeks: 0, undos: 0, invalidMoves: 0 },
+      { peeks: 1.5, movePeeks: 0, undos: 0, invalidMoves: 0 },
+      { peeks: 1, movePeeks: 0, undos: 0 }, // missing counter
+      'totals',
+    ]) {
+      const res = validatePublishSnapshot(validInput({ operationTotals: bad }));
+      expect(res.ok).toBe(true);
+      expect(res.ok && res.game.operationTotals).toBeNull();
+    }
+  });
 });
 
 describe('deriveGameColumns', () => {

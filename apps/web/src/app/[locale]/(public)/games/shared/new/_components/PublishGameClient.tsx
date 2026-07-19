@@ -97,6 +97,7 @@ export function PublishGameClient({ locale }: Props) {
         engineConfig: game.engineConfig,
         result,
         operationLogs: game.operationLogs ?? null,
+        operationTotals: game.operationTotals ?? null,
         playSettings: game.gamePreferences ?? null,
         playSettingsLog: game.preferenceChangeLog ?? null,
       });

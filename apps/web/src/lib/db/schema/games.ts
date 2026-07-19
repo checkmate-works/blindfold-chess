@@ -28,6 +28,7 @@ import type { EngineConfig } from '@/lib/engines';
 import type {
   GamePlaySettings,
   MoveOperationLog,
+  OperationTotals,
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
 import { uuidv7 } from '@/lib/uuidv7';
@@ -106,6 +107,16 @@ export const games = pgTable(
     engineConfig: jsonb('engine_config').$type<EngineConfig>().notNull(),
     /** Per-move aid counts (self-reported, client-only). Null for legacy/absent. */
     operationLogs: jsonb('operation_logs').$type<MoveOperationLog[]>(),
+    /**
+     * Monotonic game-lifetime aid counters ({@link OperationTotals}). Unlike
+     * `operation_logs` — whose entries are deleted when a move is undone —
+     * these only ever increase during play, so peek → undo → replay cannot
+     * launder the peek count (issue #95). The 1dan hidden-board evaluator
+     * reads `peeks` from here; rows without it (published before this
+     * column) fall back to the per-move sums and fail closed on any undo.
+     * Self-reported like the rest of the snapshot. Null for legacy rows.
+     */
+    operationTotals: jsonb('operation_totals').$type<OperationTotals>(),
     /**
      * Blindfold difficulty snapshot captured at game start (board visibility,
      * which side was hidden, piece shape / color) — the validated
