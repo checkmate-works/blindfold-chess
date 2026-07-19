@@ -48,10 +48,8 @@ function editRequestsPath(positionType: PositionType, id: string): string | null
  * page (matches the chunk detail / `EditRequestCallout` pattern).
  *
  * Owner-side, an empty *pending* queue carries no review action, so the
- * amber action banner is suppressed — but if the position has resolved
- * history (accepted / rejected / withdrawn requests), a quiet "history"
- * link is shown instead so the trail of what was changed via edit requests
- * stays discoverable from the position page. Non-owners always see the
+ * amber action banner is suppressed — that state is covered by the sibling
+ * `PositionEditRequestHistoryLink` instead. Non-owners always see the
  * action banner — it is their entry point into the flow.
  */
 export async function PositionEditRequestCallout({
@@ -66,13 +64,11 @@ export async function PositionEditRequestCallout({
 
   const isOwner = !!viewerId && viewerId === ownerId;
 
-  const [pendingCount, totalCount, viewerPendingId, t] = await Promise.all([
+  const [pendingCount, viewerPendingId, t] = await Promise.all([
     countPendingEditRequestsForPosition(positionId),
-    countEditRequestsForPosition(positionId),
     isOwner ? Promise.resolve(null) : getViewerPendingEditRequestForPosition(positionId, viewerId),
     getTranslations({ locale, namespace: 'practice.positionEditRequests' }),
   ]);
-  const resolvedCount = totalCount - pendingCount;
 
   const viewerState: CalloutViewerState = !viewerId
     ? 'signedOut'
@@ -82,23 +78,10 @@ export async function PositionEditRequestCallout({
         ? 'hasPending'
         : 'canSuggest';
 
-  // Owner with an empty pending queue: no review action. Fall back to a
-  // quiet history link when there is resolved history, else suppress.
-  if (viewerState === 'owner' && pendingCount === 0) {
-    if (resolvedCount === 0) return null;
-    return (
-      <div>
-        <Link
-          href={href as '/practice/position-memory/[id]/edit-requests'}
-          locale={locale}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <FiClock className="h-3 w-3" aria-hidden />
-          {t('callout.historyLink', { count: resolvedCount })}
-        </Link>
-      </div>
-    );
-  }
+  // Owner with an empty pending queue: no review action, no banner. The
+  // resolved-history trail stays discoverable via the quiet
+  // `PositionEditRequestHistoryLink` in the like row.
+  if (viewerState === 'owner' && pendingCount === 0) return null;
 
   const ctaByState: Record<CalloutViewerState, string> = {
     owner: t('callout.ctaOwner'),
@@ -131,5 +114,50 @@ export async function PositionEditRequestCallout({
         </Link>
       </div>
     </div>
+  );
+}
+
+/**
+ * Quiet "Edit request history (n)" link for the position owner, slotted into
+ * the like row (right-aligned). Renders only when the owner has no pending
+ * requests to review but the position has resolved history (accepted /
+ * rejected / withdrawn) — the trail of what was changed via edit requests
+ * stays discoverable without the amber banner. `ml-auto` keeps it pinned to
+ * the right even when a narrow viewport wraps it onto its own line.
+ *
+ * All counts are `cache()`-wrapped, so sharing queries with the sibling
+ * `PositionEditRequestCallout` costs no extra DB round-trips.
+ */
+export async function PositionEditRequestHistoryLink({
+  positionId,
+  positionType,
+  viewerId,
+  ownerId,
+  locale,
+}: Props) {
+  const href = editRequestsPath(positionType, positionId);
+  if (!href) return null;
+
+  const isOwner = !!viewerId && viewerId === ownerId;
+  if (!isOwner) return null;
+
+  const [pendingCount, totalCount, t] = await Promise.all([
+    countPendingEditRequestsForPosition(positionId),
+    countEditRequestsForPosition(positionId),
+    getTranslations({ locale, namespace: 'practice.positionEditRequests' }),
+  ]);
+  if (pendingCount > 0) return null;
+  const resolvedCount = totalCount - pendingCount;
+  if (resolvedCount === 0) return null;
+
+  return (
+    <Link
+      href={href as '/practice/position-memory/[id]/edit-requests'}
+      locale={locale}
+      className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+    >
+      <FiClock className="h-3 w-3" aria-hidden />
+      {t('callout.historyLink', { count: resolvedCount })}
+    </Link>
   );
 }

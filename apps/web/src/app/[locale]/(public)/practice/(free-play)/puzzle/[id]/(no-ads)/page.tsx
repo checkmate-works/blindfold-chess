@@ -38,7 +38,10 @@ import type { PositionActionsMenuItem } from '../../../_components/PositionActio
 import { PositionAuthorHeader } from '../../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../../_components/PositionPeekBoard';
-import { PositionEditRequestCallout } from '../../../_components/edit-request/PositionEditRequestCallout';
+import {
+  PositionEditRequestCallout,
+  PositionEditRequestHistoryLink,
+} from '../../../_components/edit-request/PositionEditRequestCallout';
 import { loadPositionDetail } from '../../../_lib/load-position-detail';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
@@ -239,7 +242,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         menuItems={menuItems}
       />
 
-      <div className="flex items-center text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
         <LikeButton
           postId={position.id}
           locale={locale}
@@ -248,6 +251,13 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           initialLikedByMe={likeMeta.likedByMe}
           toggleLikeAction={toggleLike}
           i18nNamespace="practice.puzzle"
+        />
+        <PositionEditRequestHistoryLink
+          positionId={position.id}
+          positionType="puzzle"
+          viewerId={currentUser?.id ?? null}
+          ownerId={position.userId}
+          locale={locale}
         />
       </div>
 
