@@ -59,3 +59,34 @@ export function logForMovesIndex(
   if (logIndex === -1 || logIndex >= logs.length) return null;
   return logs[logIndex];
 }
+
+export type OpsRow = { label: string; value: number; detail?: string };
+
+/**
+ * A single move's non-zero op counters as display rows, in a fixed order
+ * (peek, undo, hints, invalid). `detail` on the invalid row carries the
+ * rejected move texts (e.g. "Nf3, Bb4") when captured, so a review can show
+ * *what* was tried, not just how many attempts — see
+ * {@link MoveOperationLog.invalidAttempts}. Shared by `OpsPopover` (the live
+ * play move list) and the shared-game per-move position panel so both render
+ * identically from the same log entry.
+ */
+export function buildOpsRows(
+  log: MoveOperationLog,
+  labels: { peek: string; undo: string; hints: string; invalid: string }
+): OpsRow[] {
+  const rows: OpsRow[] = [];
+  if (log.peekCount > 0) rows.push({ label: labels.peek, value: log.peekCount });
+  if (log.undoCount > 0) rows.push({ label: labels.undo, value: log.undoCount });
+  if ((log.movePeekCount ?? 0) > 0)
+    rows.push({ label: labels.hints, value: log.movePeekCount as number });
+  if ((log.invalidCount ?? 0) > 0) {
+    const attempts = (log.invalidAttempts ?? []).filter((s) => typeof s === 'string');
+    rows.push({
+      label: labels.invalid,
+      value: log.invalidCount as number,
+      detail: attempts.length > 0 ? attempts.join(', ') : undefined,
+    });
+  }
+  return rows;
+}

@@ -32,6 +32,7 @@ import {
 } from '@/app/[locale]/(public)/games/play/_hooks';
 import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use-quick-peek-modal';
 import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/_lib/build-new-game-from-position-url';
+import { logForMovesIndex } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -271,6 +272,12 @@ export function GameReview({
   const moveLabel = useMemo(
     () => formatMoveLabel(currentPly, notationMoves, startingFen),
     [currentPly, notationMoves, startingFen]
+  );
+  // This move's aid-usage log, for the per-move position panel's stats block
+  // — null for a non-player (AI) move or when the log has no entry for it.
+  const currentMoveOperationLog = useMemo(
+    () => logForMovesIndex(currentPly ?? undefined, playerMoveIndices, operationLogs ?? []),
+    [currentPly, playerMoveIndices, operationLogs]
   );
 
   // The opening (pre-move) board is the game's overview: show the description
@@ -552,6 +559,7 @@ export function GameReview({
             moves={notationMoves}
             startingFen={startingFen}
             playerColor={playerColor}
+            moveOperationLog={currentMoveOperationLog}
           />
         )
       )}
