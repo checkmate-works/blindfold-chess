@@ -113,7 +113,14 @@ const evaluators: Record<string, RequirementEvaluator> = {
     const rows = await dbInstance
       .select({ playSettings: games.playSettings })
       .from(games)
-      .where(and(eq(games.authorId, userId), eq(games.result, 'win'), isNull(games.deletedAt)));
+      .where(
+        and(
+          eq(games.authorId, userId),
+          eq(games.result, 'win'),
+          eq(games.status, 'public'),
+          isNull(games.deletedAt)
+        )
+      );
 
     const qualifying = rows.filter((row) => isConstrainedPlaySettings(row.playSettings));
     return qualifying.length >= requirement.minCount;
@@ -129,11 +136,28 @@ const evaluators: Record<string, RequirementEvaluator> = {
         operationLogs: games.operationLogs,
       })
       .from(games)
-      .where(and(eq(games.authorId, userId), eq(games.result, 'win'), isNull(games.deletedAt)));
+      .where(
+        and(
+          eq(games.authorId, userId),
+          eq(games.result, 'win'),
+          eq(games.status, 'public'),
+          isNull(games.deletedAt)
+        )
+      );
 
+    // A game with a malformed operationLogs entry is disqualified rather than
+    // crashing — a crash here would take down checkAndGrantRanks for every
+    // future trigger of this user (the error is swallowed and only reaches
+    // Sentry), permanently blocking promotion. Lenient (treat as 0 peeks)
+    // is deliberately not chosen: don't promote on unverifiable logs.
     const qualifying = rows.filter((row) => {
       if (!maintainedHiddenBoard(row.playSettings, row.playSettingsLog)) return false;
-      const peeks = (row.operationLogs ?? []).reduce((sum, log) => sum + log.peekCount, 0);
+      const logs = row.operationLogs ?? [];
+      let peeks = 0;
+      for (const log of logs) {
+        if (typeof log?.peekCount !== 'number' || Number.isNaN(log.peekCount)) return false;
+        peeks += log.peekCount;
+      }
       return peeks <= requirement.maxPeeks;
     });
     return qualifying.length >= requirement.minCount;

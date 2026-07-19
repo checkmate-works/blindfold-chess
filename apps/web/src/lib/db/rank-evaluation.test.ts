@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 import { checkAndGrantRanks, evaluateRankRequirements } from './rank-evaluation';
+import { games } from './schema';
 
 vi.mock('server-only', () => ({}));
 
@@ -15,6 +16,10 @@ vi.mock('server-only', () => ({}));
 const mockInsertValues = vi.fn();
 const mockOnConflictDoNothing = vi.fn();
 const mockSelectResult = vi.fn<() => unknown[]>().mockReturnValue([]);
+// Captures the WHERE expression passed to the most recent `.where(...)`
+// call, so tests can assert which columns a query filters on even though
+// `db` itself is fully stubbed. See `findEq`/`extractEqs` below.
+let capturedWhere: unknown = null;
 
 vi.mock('./index', () => {
   const makeDbOps = () => ({
@@ -31,7 +36,10 @@ vi.mock('./index', () => {
     select: () => ({
       from: () => {
         return {
-          where: () => mockSelectResult(),
+          where: (whereExpr: unknown) => {
+            capturedWhere = whereExpr;
+            return mockSelectResult();
+          },
           orderBy: () => {
             // This is the ranks table query — return mockSelectResult
             return mockSelectResult();
@@ -67,6 +75,34 @@ vi.mock('./index', () => {
     },
   };
 });
+
+// `eq`/`and` are wrapped (real `drizzle-orm` still backs everything else,
+// e.g. `isNull`/`inArray`/`asc`/`count`) so a captured WHERE expression can
+// be introspected by column identity without emulating real SQL objects.
+vi.mock('drizzle-orm', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('drizzle-orm')>();
+  return {
+    ...actual,
+    and: (...args: unknown[]) => ({ __and: args }),
+    eq: (column: unknown, value: unknown) => ({ __eq: { column, value } }),
+  };
+});
+
+type EqNode = { __eq: { column: unknown; value: unknown } };
+type AndNode = { __and: unknown[] };
+
+function extractEqs(expr: unknown): EqNode[] {
+  if (expr == null || typeof expr !== 'object') return [];
+  if ('__eq' in (expr as object)) return [expr as EqNode];
+  if ('__and' in (expr as object)) {
+    return (expr as AndNode).__and.flatMap((child) => extractEqs(child));
+  }
+  return [];
+}
+
+function findEq(expr: unknown, column: unknown): EqNode | undefined {
+  return extractEqs(expr).find((e) => e.__eq.column === column);
+}
 
 // ---------------------------------------------------------------------------
 // Test data
@@ -348,6 +384,30 @@ describe('evaluateRankRequirements', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Tests: game_publish_win evaluator
+// ---------------------------------------------------------------------------
+
+describe('game_publish_win evaluator', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSelectResult.mockReturnValue([]);
+    capturedWhere = null;
+  });
+
+  const requirement = { type: 'game_publish_win' as const, minCount: 1 };
+
+  it('filters the query to public, non-deleted, won games authored by the user', async () => {
+    mockSelectResult.mockReturnValue([]);
+
+    await evaluateRankRequirements(userId, [requirement]);
+
+    expect(findEq(capturedWhere, games.status)?.__eq.value).toBe('public');
+    expect(findEq(capturedWhere, games.result)?.__eq.value).toBe('win');
+    expect(findEq(capturedWhere, games.authorId)?.__eq.value).toBe(userId);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Tests: game_publish_win_hidden_board evaluator
 // ---------------------------------------------------------------------------
 
@@ -355,6 +415,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelectResult.mockReturnValue([]);
+    capturedWhere = null;
   });
 
   const requirement = { type: 'game_publish_win_hidden_board' as const, minCount: 1, maxPeeks: 5 };
@@ -459,6 +520,44 @@ describe('game_publish_win_hidden_board evaluator', () => {
     const result = await evaluateRankRequirements(userId, [{ ...requirement, minCount: 2 }]);
 
     expect(result).toBe(false);
+  });
+
+  it('should disqualify (not crash on) a game with a null operationLogs entry', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'peek' },
+        playSettingsLog: null,
+        operationLogs: [null, { peekCount: 1 }],
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('should disqualify (not crash on) a game with a peekCount-less operationLogs entry', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'peek' },
+        playSettingsLog: null,
+        operationLogs: [{}],
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(userId, [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('filters the query to public, non-deleted, won games authored by the user', async () => {
+    mockSelectResult.mockReturnValue([]);
+
+    await evaluateRankRequirements(userId, [requirement]);
+
+    expect(findEq(capturedWhere, games.status)?.__eq.value).toBe('public');
+    expect(findEq(capturedWhere, games.result)?.__eq.value).toBe('win');
+    expect(findEq(capturedWhere, games.authorId)?.__eq.value).toBe(userId);
   });
 });
 
