@@ -497,6 +497,7 @@ export function PlayClient({
         engineConfig={engineConfig}
         initialPerGamePrefs={initialPerGamePrefs}
         preferenceChangeLog={preferenceChangeLog}
+        startingFen={startingFen}
         canEditPerGameSettings={canEditPerGameSettings}
         showSettingsModal={showSettingsModal}
         onCloseSettingsModal={() => setShowSettingsModal(false)}

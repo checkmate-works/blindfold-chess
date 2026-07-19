@@ -1,11 +1,15 @@
 'use client';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
+import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
+import { OpsRowsList } from '@/app/[locale]/(public)/games/play/_components/OpsRowsList';
+import { buildOpsRows, hasOps } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -15,9 +19,10 @@ import { GameMoveContributions } from './GameMoveContributions';
 
 /**
  * The per-move block shown under the move list while a move position is on
- * the board: the move's PGN-style title, the create-from-position menu
- * (signed-in only, mirroring the chunk picker's gate), and that move's
- * comment / chunk-link thread.
+ * the board: the move's PGN-style title, that move's aid-usage stats (peeks /
+ * undos / hints / rejected-move texts, when the player used any at this
+ * exact move), the create-from-position menu (signed-in only, mirroring the
+ * chunk picker's gate), and that move's comment / chunk-link thread.
  */
 export function ReviewMovePositionPanel({
   title,
@@ -34,6 +39,7 @@ export function ReviewMovePositionPanel({
   moves,
   startingFen,
   playerColor,
+  moveOperationLog,
 }: {
   title: string;
   locale: Locale;
@@ -49,10 +55,37 @@ export function ReviewMovePositionPanel({
   moves: string[];
   startingFen: string | null;
   playerColor: Side;
+  /**
+   * This move's operation log — peek / undo / hint counts and the rejected
+   * SAN texts behind `invalidCount` (see `MoveOperationLog.invalidAttempts`).
+   * Null for a non-player move (e.g. the AI's) or a legacy game with no
+   * recorded log. Only rendered when it has at least one non-zero counter.
+   */
+  moveOperationLog: MoveOperationLog | null;
 }) {
+  const t = useTranslations('play');
+  const opsRows =
+    moveOperationLog && hasOps(moveOperationLog)
+      ? buildOpsRows(moveOperationLog, {
+          peek: t('operationLog.columnPeek'),
+          undo: t('operationLog.columnUndo'),
+          hints: t('operationLog.columnMovePeek'),
+          invalid: t('operationLog.columnInvalid'),
+        })
+      : [];
+
   return (
     <div className="space-y-4">
       <SectionTitle>{title}</SectionTitle>
+
+      {/* This move's aid-usage stats — most notably what SAN the player
+          actually tried when an illegal-move attempt was rejected here.
+          Omitted when the move has nothing notable (the common case). */}
+      {opsRows.length > 0 && (
+        <div className="rounded-md border border-border bg-card overflow-hidden text-sm">
+          <OpsRowsList rows={opsRows} />
+        </div>
+      )}
 
       {/* Author something from the position currently on the board —
           chunk / position-memory / puzzle. Signed-in only, mirroring the

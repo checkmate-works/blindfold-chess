@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
-import { getPlayerMoveIndices, hasOps, logForMovesIndex } from './move-ops-alignment';
+import { buildOpsRows, getPlayerMoveIndices, hasOps, logForMovesIndex } from './move-ops-alignment';
+
+const LABELS = { peek: 'Peek', undo: 'Undo', hints: 'Hints', invalid: 'Illegal' };
 
 const log = (overrides: Partial<MoveOperationLog> = {}): MoveOperationLog => ({
   inputMethod: 'text',
@@ -57,5 +59,30 @@ describe('logForMovesIndex', () => {
     // Player move 4 exists in the index list but has no log entry yet.
     expect(logForMovesIndex(4, playerIndices, logs)).toBeNull();
     expect(logForMovesIndex(undefined, playerIndices, logs)).toBeNull();
+  });
+});
+
+describe('buildOpsRows', () => {
+  it('returns no rows when every counter is zero', () => {
+    expect(buildOpsRows(log(), LABELS)).toEqual([]);
+  });
+
+  it('includes only the non-zero counters, in peek/undo/hints/invalid order', () => {
+    const rows = buildOpsRows(log({ peekCount: 2, invalidCount: 1 }), LABELS);
+    expect(rows).toEqual([
+      { label: 'Peek', value: 2 },
+      { label: 'Illegal', value: 1, detail: undefined },
+    ]);
+  });
+
+  it('attaches the rejected SAN texts as the invalid row detail', () => {
+    const rows = buildOpsRows(log({ invalidCount: 2, invalidAttempts: ['Nf3', 'Bb4'] }), LABELS);
+    expect(rows).toEqual([{ label: 'Illegal', value: 2, detail: 'Nf3, Bb4' }]);
+  });
+
+  it('omits the detail when invalidCount is set but no attempt texts were captured', () => {
+    // Board mis-grabs bump the count but carry no SAN — invalidAttempts stays undefined.
+    const rows = buildOpsRows(log({ invalidCount: 1 }), LABELS);
+    expect(rows).toEqual([{ label: 'Illegal', value: 1, detail: undefined }]);
   });
 });

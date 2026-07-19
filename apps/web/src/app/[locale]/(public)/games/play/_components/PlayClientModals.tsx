@@ -43,6 +43,7 @@ type Props = {
   engineConfig: EngineConfig;
   initialPerGamePrefs: PerGamePreferences | undefined;
   preferenceChangeLog: PreferenceChangeLogEntry[];
+  startingFen: string | undefined;
   // Mid-game settings modal
   canEditPerGameSettings: boolean;
   showSettingsModal: boolean;
@@ -61,6 +62,7 @@ export function PlayClientModals({
   engineConfig,
   initialPerGamePrefs,
   preferenceChangeLog,
+  startingFen,
   canEditPerGameSettings,
   showSettingsModal,
   onCloseSettingsModal,
@@ -112,6 +114,7 @@ export function PlayClientModals({
         engineConfig={engineConfig}
         gamePreferences={initialPerGamePrefs}
         preferenceChangeLog={preferenceChangeLog}
+        startingFen={startingFen}
       />
 
       {/* Mid-game Settings Modal. Always rendered when an initial snapshot

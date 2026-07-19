@@ -4,6 +4,9 @@ import { useEffect, useRef } from 'react';
 
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
+import { buildOpsRows } from '../_lib/move-ops-alignment';
+import { OpsRowsList } from './OpsRowsList';
+
 /**
  * Small popover that lists each non-zero counter for a single move. Self
  * dismisses on outside click + Esc. Positioned absolutely relative to its
@@ -41,23 +44,7 @@ export function OpsPopover({
     };
   }, [onClose]);
 
-  // `detail` carries the rejected move texts for the invalid row (e.g.
-  // "Nf3, Bb4"); shown on a second line under the count so the reviewer sees
-  // *what* was tried. Absent when no texts were captured (board mis-grabs or
-  // legacy records) — then only the count shows.
-  const rows: { label: string; value: number; detail?: string }[] = [];
-  if (log.peekCount > 0) rows.push({ label: labels.peek, value: log.peekCount });
-  if (log.undoCount > 0) rows.push({ label: labels.undo, value: log.undoCount });
-  if ((log.movePeekCount ?? 0) > 0)
-    rows.push({ label: labels.hints, value: log.movePeekCount as number });
-  if ((log.invalidCount ?? 0) > 0) {
-    const attempts = (log.invalidAttempts ?? []).filter((s) => typeof s === 'string');
-    rows.push({
-      label: labels.invalid,
-      value: log.invalidCount as number,
-      detail: attempts.length > 0 ? attempts.join(', ') : undefined,
-    });
-  }
+  const rows = buildOpsRows(log, labels);
 
   return (
     <div
@@ -65,19 +52,7 @@ export function OpsPopover({
       role="dialog"
       className="absolute z-20 right-0 top-full mt-1 min-w-[8rem] rounded-md border border-border bg-card shadow-md text-xs font-sans"
     >
-      <dl className="divide-y divide-border/50">
-        {rows.map(({ label, value, detail }) => (
-          <div key={label} className="px-3 py-1.5">
-            <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">{label}</dt>
-              <dd className="font-medium">{value}</dd>
-            </div>
-            {detail && (
-              <div className="mt-0.5 text-right font-medium text-foreground">{detail}</div>
-            )}
-          </div>
-        ))}
-      </dl>
+      <OpsRowsList rows={rows} />
     </div>
   );
 }

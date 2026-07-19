@@ -1,11 +1,20 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { gameUsedNotablePlaySettings, playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
+type PositionPreferences = {
+  /** Effective blindfold settings at the given half-move, or null. */
+  effectivePlaySettings: GamePlaySettings | null;
+  /** Preferences to hand the board: revealed, or the player's view when reproducing. */
+  boardPreferences: GamePreferences;
+  /** See {@link Result.hiddenPieceStyle}. */
+  hiddenPieceStyle: 'absent' | 'ghost';
+};
 
 type Params = {
   /** The viewer's own base preferences. */
@@ -34,6 +43,17 @@ type Result = {
    * `ChessBoard.hiddenPieceStyle`.
    */
   hiddenPieceStyle: 'absent' | 'ghost';
+  /**
+   * Same computation as {@link effectivePlaySettings} / {@link boardPreferences}
+   * / {@link hiddenPieceStyle}, but for an arbitrary position rather than the
+   * live board's `currentPosition` — needed by the "By Move" quick-peek modal,
+   * whose navigation is independent of the live replay (see
+   * `useQuickPeekModal`). Without this, the modal always showed the live
+   * board's obfuscation regardless of which position was previewed inside it,
+   * so scrubbing past a mid-game "reveal" change-log entry kept pieces hidden.
+   * Shares the same `reproduceView` on/off state as the live board.
+   */
+  preferencesAt: (position: number) => PositionPreferences;
 };
 
 /**
@@ -73,37 +93,63 @@ export function useReplayPreferences({
   const showPlaySettings =
     playSettings != null && gameUsedNotablePlaySettings(playSettings, playSettingsLog);
 
-  const effectivePlaySettings = useMemo<GamePlaySettings | null>(() => {
-    if (!playSettings) return null;
-    const halfMovesShown =
-      currentPosition >= 0 ? currentPosition + 1 : currentPosition === -1 ? notationMovesLength : 0;
-    return playSettingsAtHalfMove(playSettings, playSettingsLog, halfMovesShown);
-  }, [playSettings, playSettingsLog, currentPosition, notationMovesLength]);
+  // Position → { effective settings, board preferences, hidden-piece style },
+  // shared by the live board (via `currentPosition` below) and the quick-peek
+  // modal (via `preferencesAt`, called with its own independent position).
+  const computeAt = useCallback(
+    (position: number): PositionPreferences => {
+      if (!playSettings) {
+        return {
+          effectivePlaySettings: null,
+          boardPreferences: revealedPreferences,
+          hiddenPieceStyle: 'absent',
+        };
+      }
+      const halfMovesShown =
+        position >= 0 ? position + 1 : position === -1 ? notationMovesLength : 0;
+      const effectivePlaySettings = playSettingsAtHalfMove(
+        playSettings,
+        playSettingsLog,
+        halfMovesShown
+      );
+      // A hidden whole board (`never` / `peek`) means the player saw no pieces at
+      // this position, so fold it into "hide both sides" — the per-piece hide path
+      // then renders them all as ghosts, matching side / pawn hides. `always`
+      // keeps the per-piece settings as-is.
+      const boardHidden =
+        effectivePlaySettings.boardVisibility === 'never' ||
+        effectivePlaySettings.boardVisibility === 'peek';
+      const reflectedPreferences: GamePreferences = {
+        ...preferences,
+        showOwnPieces: boardHidden ? false : effectivePlaySettings.showOwnPieces,
+        showOpponentPieces: boardHidden ? false : effectivePlaySettings.showOpponentPieces,
+        pieceShapeMode: effectivePlaySettings.pieceShapeMode,
+        pieceColors: effectivePlaySettings.pieceColors,
+        pawnHideMode: effectivePlaySettings.pawnHideMode,
+      };
+      const reproducing = reproduceView;
+      return {
+        effectivePlaySettings,
+        boardPreferences: reproducing ? reflectedPreferences : revealedPreferences,
+        // While reproducing, hidden pieces are drawn as faint ghosts (what the
+        // player could not see); a fully-revealed board has nothing hidden to style.
+        hiddenPieceStyle: reproducing ? 'ghost' : 'absent',
+      };
+    },
+    [
+      playSettings,
+      playSettingsLog,
+      notationMovesLength,
+      preferences,
+      revealedPreferences,
+      reproduceView,
+    ]
+  );
 
-  const reflectedPreferences = useMemo<GamePreferences | null>(() => {
-    if (!effectivePlaySettings) return null;
-    // A hidden whole board (`never` / `peek`) means the player saw no pieces at
-    // this position, so fold it into "hide both sides" — the per-piece hide path
-    // then renders them all as ghosts, matching side / pawn hides. `always`
-    // keeps the per-piece settings as-is.
-    const boardHidden =
-      effectivePlaySettings.boardVisibility === 'never' ||
-      effectivePlaySettings.boardVisibility === 'peek';
-    return {
-      ...preferences,
-      showOwnPieces: boardHidden ? false : effectivePlaySettings.showOwnPieces,
-      showOpponentPieces: boardHidden ? false : effectivePlaySettings.showOpponentPieces,
-      pieceShapeMode: effectivePlaySettings.pieceShapeMode,
-      pieceColors: effectivePlaySettings.pieceColors,
-      pawnHideMode: effectivePlaySettings.pawnHideMode,
-    };
-  }, [preferences, effectivePlaySettings]);
-
-  const reproducing = reproduceView && reflectedPreferences != null;
-  const boardPreferences = reproducing ? reflectedPreferences : revealedPreferences;
-  // While reproducing, hidden pieces are drawn as faint ghosts (what the player
-  // could not see); a fully-revealed board has nothing hidden to style.
-  const hiddenPieceStyle: 'absent' | 'ghost' = reproducing ? 'ghost' : 'absent';
+  const { effectivePlaySettings, boardPreferences, hiddenPieceStyle } = useMemo(
+    () => computeAt(currentPosition),
+    [computeAt, currentPosition]
+  );
 
   return {
     reproduceView,
@@ -112,5 +158,6 @@ export function useReplayPreferences({
     effectivePlaySettings,
     boardPreferences,
     hiddenPieceStyle,
+    preferencesAt: computeAt,
   };
 }

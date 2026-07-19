@@ -2181,6 +2181,7 @@
         "title": "変更履歴",
         "noChanges": "このゲームでは設定の途中変更はありませんでした。",
         "columnAtMove": "何手目以降",
+        "atStart": "開始時",
         "columnSetting": "設定項目",
         "columnChange": "変更"
       }

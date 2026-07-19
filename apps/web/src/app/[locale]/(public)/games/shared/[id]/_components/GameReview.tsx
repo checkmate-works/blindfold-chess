@@ -32,6 +32,7 @@ import {
 } from '@/app/[locale]/(public)/games/play/_hooks';
 import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use-quick-peek-modal';
 import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/_lib/build-new-game-from-position-url';
+import { logForMovesIndex } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -178,6 +179,7 @@ export function GameReview({
     effectivePlaySettings,
     boardPreferences,
     hiddenPieceStyle,
+    preferencesAt,
   } = useReplayPreferences({
     preferences,
     playSettings,
@@ -213,6 +215,17 @@ export function GameReview({
     lastMoveAt,
     navigateToPosition,
   });
+
+  // The modal previews its own position independent of the live board (see
+  // useQuickPeekModal), so its "as played" obfuscation must be recomputed for
+  // THAT position — reusing the live board's boardPreferences/hiddenPieceStyle
+  // here would freeze the modal at whatever the live board happened to show
+  // when it was opened, ignoring mid-game reveal/hide changes as the viewer
+  // scrubs inside the modal.
+  const quickPeekPreferences = useMemo(
+    () => preferencesAt(quickPeek.nav.currentPosition),
+    [preferencesAt, quickPeek.nav.currentPosition]
+  );
 
   const lichessAnalysisUrl = fenToLichessUrl(
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
@@ -259,6 +272,12 @@ export function GameReview({
   const moveLabel = useMemo(
     () => formatMoveLabel(currentPly, notationMoves, startingFen),
     [currentPly, notationMoves, startingFen]
+  );
+  // This move's aid-usage log, for the per-move position panel's stats block
+  // — null for a non-player (AI) move or when the log has no entry for it.
+  const currentMoveOperationLog = useMemo(
+    () => logForMovesIndex(currentPly ?? undefined, playerMoveIndices, operationLogs ?? []),
+    [currentPly, playerMoveIndices, operationLogs]
   );
 
   // The opening (pre-move) board is the game's overview: show the description
@@ -316,6 +335,7 @@ export function GameReview({
         opening={detectedOpening}
         locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
+        startingFen={startingFen}
         headingAsSection
         // Result screen's win/loss/draw label, shown directly under the
         // "Game Stats" heading. Omitted (undefined) on the shared game.
@@ -539,6 +559,7 @@ export function GameReview({
             moves={notationMoves}
             startingFen={startingFen}
             playerColor={playerColor}
+            moveOperationLog={currentMoveOperationLog}
           />
         )
       )}
@@ -553,8 +574,8 @@ export function GameReview({
         playerSide={playerColor}
         flipped={effectiveFlipped}
         lastMove={quickPeek.lastMove}
-        preferences={boardPreferences}
-        hiddenPieceStyle={hiddenPieceStyle}
+        preferences={quickPeekPreferences.boardPreferences}
+        hiddenPieceStyle={quickPeekPreferences.hiddenPieceStyle}
         movesLength={notationMoves.length}
         currentPosition={quickPeek.nav.currentPosition}
         formattedPgn={formattedPgn}

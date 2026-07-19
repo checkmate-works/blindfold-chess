@@ -94,6 +94,11 @@ type Props = {
    */
   playSettingsLog?: PlaySettingsChangeEntry[];
   /**
+   * The position the game started from, forwarded to {@link PlaySettingsChangeLog}
+   * so its move badges read as PGN move numbers instead of a raw half-move count.
+   */
+  startingFen?: string | null;
+  /**
    * Render the heading as a page-level {@link SectionTitle} (underlined h2)
    * instead of the compact inline label. The result page uses this so Game
    * Stats reads as a top-level section; the shared game detail page keeps the
@@ -138,6 +143,7 @@ export function GameStatsOverview({
   opening,
   locale,
   playSettingsLog,
+  startingFen,
   headingAsSection = false,
   afterTitle,
 }: Props) {
@@ -276,7 +282,12 @@ export function GameStatsOverview({
           (rare). Placed under the By Move strip so the timeline reads
           top-to-bottom: where effort clustered, then where the setup changed. */}
       {playSettings && (
-        <PlaySettingsChangeLog playSettings={playSettings} playSettingsLog={playSettingsLog} />
+        <PlaySettingsChangeLog
+          playSettings={playSettings}
+          playSettingsLog={playSettingsLog}
+          startingFen={startingFen}
+          onSelectMove={onSelectMove}
+        />
       )}
     </div>
   );
