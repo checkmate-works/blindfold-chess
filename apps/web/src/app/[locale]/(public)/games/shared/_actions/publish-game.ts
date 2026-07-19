@@ -10,6 +10,7 @@ import type {
   MoveOperationLog,
   OperationTotals,
   PreferenceChangeLogEntry,
+  UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { notifyFollowersOfNewGame } from '@/lib/notifications/notification';
@@ -32,6 +33,8 @@ export type PublishGameActionInput = {
   operationLogs?: MoveOperationLog[] | null;
   /** Monotonic lifetime aid counters (undo-proof); validated on the server. */
   operationTotals?: OperationTotals | null;
+  /** Archived undo/restart discards; validated + re-bounded on the server. */
+  undoneLogs?: UndoneMoveLog[] | null;
   /** Per-game blindfold settings snapshot; validated + subset on the server. */
   playSettings?: PerGamePreferences | null;
   /**

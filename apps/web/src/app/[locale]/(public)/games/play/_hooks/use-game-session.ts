@@ -106,6 +106,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   const {
     logs: operationLogs,
     totals: operationTotals,
+    undoneLogs,
     recordPeek,
     recordUndo,
     recordMovePeek,
@@ -115,6 +116,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     truncateLogs,
     setLogsTo,
     restoreTotals,
+    restoreUndoneLogs,
   } = useMoveOperationTracker();
 
   // Game state hook
@@ -143,6 +145,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setSetupPliesTo: setSetupPlies,
     setOperationLogsTo: setLogsTo,
     restoreOperationTotals: restoreTotals,
+    restoreUndoneLogs,
   });
 
   // Undo / restart-from-position can strip seeded setup moves. Once the move
@@ -181,6 +184,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     preferenceChangeLog,
     operationLogs,
     operationTotals,
+    undoneLogs,
     enabled: !isRestoringGameData && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });
@@ -425,6 +429,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     },
     operationLogs,
     operationTotals,
+    undoneLogs,
   };
 }
 

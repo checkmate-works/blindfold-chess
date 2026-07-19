@@ -7,7 +7,11 @@ import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { sumOperationLogs } from '@/lib/games/operation-totals';
-import type { MoveOperationLog, OperationTotals } from '@/lib/games/saved-game-types';
+import type {
+  MoveOperationLog,
+  OperationTotals,
+  UndoneMoveLog,
+} from '@/lib/games/saved-game-types';
 
 type LoadedGameData = {
   startingFen?: string;
@@ -18,6 +22,7 @@ type LoadedGameData = {
   playerResult: 'win' | 'loss' | 'draw' | null;
   operationLogs?: MoveOperationLog[];
   operationTotals?: OperationTotals;
+  undoneLogs?: UndoneMoveLog[];
 };
 
 type UseGameStateOptions = {
@@ -35,6 +40,8 @@ type UseGameStateOptions = {
   setOperationLogsTo?: (logs: MoveOperationLog[]) => void;
   /** Monotonic max-merge, not overwrite — see the tracker's `restoreTotals`. */
   restoreOperationTotals?: (totals: OperationTotals) => void;
+  /** Longer-list merge, not overwrite — see the tracker's `restoreUndoneLogs`. */
+  restoreUndoneLogs?: (undoneLogs: UndoneMoveLog[]) => void;
 };
 
 export function useGameState({
@@ -51,6 +58,7 @@ export function useGameState({
   setSetupPliesTo,
   setOperationLogsTo,
   restoreOperationTotals,
+  restoreUndoneLogs,
 }: UseGameStateOptions) {
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
@@ -126,6 +134,9 @@ export function useGameState({
           loadedGameData.operationTotals ?? sumOperationLogs(loadedGameData.operationLogs ?? [])
         );
       }
+      if (loadedGameData.undoneLogs && restoreUndoneLogs) {
+        restoreUndoneLogs(loadedGameData.undoneLogs);
+      }
       appliedLoadedGameDataRef.current = loadedGameData;
     }
   }, [
@@ -135,6 +146,7 @@ export function useGameState({
     setSetupPliesTo,
     setOperationLogsTo,
     restoreOperationTotals,
+    restoreUndoneLogs,
   ]);
 
   // Initialize on mount with initial moves

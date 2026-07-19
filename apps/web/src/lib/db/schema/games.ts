@@ -30,6 +30,7 @@ import type {
   MoveOperationLog,
   OperationTotals,
   PlaySettingsChangeEntry,
+  UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
 import { uuidv7 } from '@/lib/uuidv7';
 
@@ -117,6 +118,15 @@ export const games = pgTable(
      * Self-reported like the rest of the snapshot. Null for legacy rows.
      */
     operationTotals: jsonb('operation_totals').$type<OperationTotals>(),
+    /**
+     * Per-move log records discarded by Undo / restart-from-position
+     * ({@link UndoneMoveLog}), archived at the moment of the rollback so
+     * "undo = the move never happened" applies only to the display log —
+     * the audit record keeps what was tried (notably rejected SAN texts,
+     * which `operation_totals` counts but cannot reconstruct). Capped and
+     * re-bounded at publish. Null for legacy rows and rollback-free games.
+     */
+    undoneLogs: jsonb('undone_logs').$type<UndoneMoveLog[]>(),
     /**
      * Blindfold difficulty snapshot captured at game start (board visibility,
      * which side was hidden, piece shape / color) — the validated

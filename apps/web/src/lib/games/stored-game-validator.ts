@@ -5,6 +5,7 @@ import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import { isBoardVisibility } from '@/lib/games/board-visibility';
 import { isOperationTotals } from '@/lib/games/operation-totals';
 import type { StoredGame } from '@/lib/games/saved-game-types';
+import { isUndoneMoveLog } from '@/lib/games/undone-logs';
 
 /**
  * Shape checks for a single `PreferenceChangeLogEntry` as read off
@@ -124,6 +125,8 @@ export function isValidStoredGame(stored: unknown): stored is StoredGame {
                 )))
         ))) &&
     (g.operationTotals === undefined || isOperationTotals(g.operationTotals)) &&
+    (g.undoneLogs === undefined ||
+      (Array.isArray(g.undoneLogs) && g.undoneLogs.every((entry) => isUndoneMoveLog(entry)))) &&
     (g.preferenceChangeLog === undefined ||
       (Array.isArray(g.preferenceChangeLog) &&
         g.preferenceChangeLog.every((entry) => isValidPreferenceChangeEntry(entry))))

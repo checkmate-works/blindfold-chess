@@ -428,6 +428,13 @@
       "when": 1784442033539,
       "tag": "20260719062033_add_operation_totals_to_games",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1784443375887,
+      "tag": "20260719064255_add_undone_logs_to_games",
+      "breakpoints": true
     }
   ]
 }

@@ -79,6 +79,30 @@ export type MoveOperationLog = {
 };
 
 /**
+ * One per-move log record discarded by a player rollback (Undo or
+ * restart-from-position), archived so the rollback erases nothing from the
+ * audit record — {@link OperationTotals} keeps the counts, this keeps the
+ * detail (issue #95: notably the rejected SAN texts, which counts alone
+ * cannot reconstruct).
+ *
+ * Two kinds of loss feed it:
+ * - A committed entry removed from `operationLogs` → archived as `log`,
+ *   with `index` = the operationLogs position it occupied.
+ * - Rejected attempts typed after the last commit and discarded before any
+ *   commit → archived as `pendingInvalidAttempts`. When `log` is present
+ *   they belong to the NEXT move slot (`index + 1`); on a pending-only
+ *   record `index` is the slot the uncommitted move would have taken.
+ *
+ * Capped per game (see the tracker) so pathological undo streaks cannot
+ * bloat the record; totals keep counting past the cap.
+ */
+export type UndoneMoveLog = {
+  index: number;
+  log?: MoveOperationLog;
+  pendingInvalidAttempts?: string[];
+};
+
+/**
  * Game-lifetime monotonic operation counters.
  *
  * {@link MoveOperationLog} entries follow the "undo = the move never happened"
@@ -212,6 +236,12 @@ export type Game = {
    * Undefined on records saved before the field existed.
    */
   operationTotals?: OperationTotals;
+  /**
+   * Per-move log records discarded by Undo / restart-from-position — see
+   * {@link UndoneMoveLog}. Append-only, capped. Undefined on records saved
+   * before the field existed and on games with no rollbacks.
+   */
+  undoneLogs?: UndoneMoveLog[];
 };
 
 /**

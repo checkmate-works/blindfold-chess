@@ -11,6 +11,7 @@ import type {
   MoveOperationLog,
   OperationTotals,
   PreferenceChangeLogEntry,
+  UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -43,6 +44,7 @@ export type GameDataRefs = {
   preferenceChangeLog: React.RefObject<PreferenceChangeLogEntry[] | undefined>;
   operationLogs: React.RefObject<MoveOperationLog[] | undefined>;
   operationTotals: React.RefObject<OperationTotals | undefined>;
+  undoneLogs: React.RefObject<UndoneMoveLog[] | undefined>;
 };
 
 /** Options accepted by the {@link useAutoSave} save function. */
@@ -80,6 +82,7 @@ type UseAutoSaveOptions = {
   preferenceChangeLog?: PreferenceChangeLogEntry[];
   operationLogs?: MoveOperationLog[];
   operationTotals?: OperationTotals;
+  undoneLogs?: UndoneMoveLog[];
   enabled?: boolean;
   saveOnInit?: boolean;
   /**
@@ -112,6 +115,7 @@ export function useAutoSave({
   preferenceChangeLog,
   operationLogs,
   operationTotals,
+  undoneLogs,
   enabled = true,
   saveOnInit = false,
   repository,
@@ -136,6 +140,7 @@ export function useAutoSave({
     preferenceChangeLog,
     operationLogs,
     operationTotals,
+    undoneLogs,
   });
 
   // Mirror the save-gating props so async callbacks read the latest values.
@@ -216,6 +221,7 @@ export function useAutoSave({
           preferenceChangeLog: gameDataRefs.preferenceChangeLog.current,
           operationLogs: gameDataRefs.operationLogs.current,
           operationTotals: gameDataRefs.operationTotals.current,
+          undoneLogs: gameDataRefs.undoneLogs.current,
         };
 
         const gameIdFromRef = currentGameIdRef.current;

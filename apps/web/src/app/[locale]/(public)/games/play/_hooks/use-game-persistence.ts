@@ -9,6 +9,7 @@ import type {
   MoveOperationLog,
   OperationTotals,
   PreferenceChangeLogEntry,
+  UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -27,6 +28,7 @@ type SavedGameData = {
   preferenceChangeLog?: PreferenceChangeLogEntry[];
   operationLogs?: MoveOperationLog[];
   operationTotals?: OperationTotals;
+  undoneLogs?: UndoneMoveLog[];
 };
 
 type UseGamePersistenceOptions = {
@@ -130,6 +132,7 @@ export function useGamePersistence({
             preferenceChangeLog: savedGame.preferenceChangeLog,
             operationLogs: savedGame.operationLogs,
             operationTotals: savedGame.operationTotals,
+            undoneLogs: savedGame.undoneLogs,
           });
         } else {
           setGameNotFound(true);

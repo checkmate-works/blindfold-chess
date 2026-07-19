@@ -53,6 +53,7 @@ export async function publishGame(params: {
         engineConfig: game.engineConfig,
         operationLogs: game.operationLogs,
         operationTotals: game.operationTotals,
+        undoneLogs: game.undoneLogs,
         playSettings: game.playSettings,
         playSettingsLog: game.playSettingsLog,
         result: game.result,

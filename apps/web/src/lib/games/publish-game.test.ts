@@ -175,6 +175,71 @@ describe('validatePublishSnapshot', () => {
     });
   });
 
+  it('keeps well-formed undoneLogs, re-bounding entry count and SAN lists', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        undoneLogs: [
+          {
+            index: 0,
+            log: log({ invalidCount: 2, invalidAttempts: ['Rc8', 'Re1'] }),
+            extra: 'nope',
+          },
+          {
+            index: 1,
+            pendingInvalidAttempts: [...Array(30).fill('e4'), 'x'.repeat(50)],
+          },
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const undone = res.game.undoneLogs!;
+    expect(undone).toHaveLength(2);
+    expect(undone[0]).toEqual({
+      index: 0,
+      log: {
+        inputMethod: 'text',
+        peekCount: 0,
+        undoCount: 0,
+        movePeekCount: 0,
+        invalidCount: 2,
+        invalidAttempts: ['Rc8', 'Re1'],
+      },
+    });
+    expect('extra' in undone[0]).toBe(false); // whitelist copy
+    expect(undone[1].pendingInvalidAttempts).toHaveLength(20); // capped
+    expect(undone[1].pendingInvalidAttempts!.every((s) => s.length <= 12)).toBe(true);
+  });
+
+  it('caps undoneLogs at 50 entries', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        undoneLogs: Array.from({ length: 60 }, (_, i) => ({
+          index: i,
+          pendingInvalidAttempts: ['a4'],
+        })),
+      })
+    );
+    expect(res.ok && res.game.undoneLogs).toHaveLength(50);
+  });
+
+  it('drops absent or malformed undoneLogs to null without rejecting the publish', () => {
+    const absent = validatePublishSnapshot(validInput());
+    expect(absent.ok && absent.game.undoneLogs).toBeNull();
+
+    for (const bad of [
+      [{ index: -1, pendingInvalidAttempts: ['a4'] }], // negative index
+      [{ index: 0 }], // carries nothing
+      [{ index: 0, log: { inputMethod: 'telepathy', peekCount: 0, undoCount: 0 } }],
+      [{ index: 0, pendingInvalidAttempts: [42] }],
+      'nope',
+    ]) {
+      const res = validatePublishSnapshot(validInput({ undoneLogs: bad }));
+      expect(res.ok).toBe(true);
+      expect(res.ok && res.game.undoneLogs).toBeNull();
+    }
+  });
+
   it('drops absent or malformed operationTotals to null without rejecting the publish', () => {
     const absent = validatePublishSnapshot(validInput());
     expect(absent.ok && absent.game.operationTotals).toBeNull();

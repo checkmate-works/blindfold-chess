@@ -17,7 +17,9 @@ import type {
   MoveOperationLog,
   OperationTotals,
   PlaySettingsChangeEntry,
+  UndoneMoveLog,
 } from './saved-game-types';
+import { MAX_UNDONE_LOGS, isUndoneMoveLog } from './undone-logs';
 
 /**
  * Validation + denormalization for publishing a shared game.
@@ -53,6 +55,12 @@ export type ValidatedGame = {
    * {@link operationLogs}. Null when absent or malformed (legacy clients).
    */
   operationTotals: OperationTotals | null;
+  /**
+   * Per-move log records discarded by Undo / restart-from-position, archived
+   * so rollbacks erase nothing (notably rejected SAN texts). Null when
+   * absent or malformed.
+   */
+  undoneLogs: UndoneMoveLog[] | null;
   playSettings: GamePlaySettings | null;
   /** Display-relevant mid-game settings edits, enabling per-position display. */
   playSettingsLog: PlaySettingsChangeEntry[] | null;
@@ -215,6 +223,37 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       }
     : null;
 
+  // Archived rollback discards: same audit-metadata posture (malformed →
+  // null, never a rejection). Entry count and every free-text SAN list are
+  // re-bounded server-side — the client caps them too, but a crafted payload
+  // must not bloat the public row. Whitelist-copied per entry.
+  let undoneLogs: UndoneMoveLog[] | null = null;
+  if (Array.isArray(v.undoneLogs) && v.undoneLogs.every((entry) => isUndoneMoveLog(entry))) {
+    const boundAttempts = (attempts: string[] | undefined): string[] | undefined => {
+      if (!attempts || attempts.length === 0) return undefined;
+      return attempts
+        .slice(0, MAX_INVALID_ATTEMPTS)
+        .map((s) => s.slice(0, MAX_INVALID_ATTEMPT_LEN));
+    };
+    const bounded = (v.undoneLogs as UndoneMoveLog[]).slice(0, MAX_UNDONE_LOGS).map((entry) => {
+      const out: UndoneMoveLog = { index: entry.index };
+      if (entry.log !== undefined) {
+        out.log = {
+          inputMethod: entry.log.inputMethod,
+          peekCount: entry.log.peekCount,
+          undoCount: entry.log.undoCount,
+          movePeekCount: entry.log.movePeekCount,
+          invalidCount: entry.log.invalidCount,
+          invalidAttempts: boundAttempts(entry.log.invalidAttempts),
+        };
+      }
+      const pending = boundAttempts(entry.pendingInvalidAttempts);
+      if (pending) out.pendingInvalidAttempts = pending;
+      return out;
+    });
+    undoneLogs = bounded.length > 0 ? bounded : null;
+  }
+
   return {
     ok: true,
     game: {
@@ -228,6 +267,7 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       result: v.result as GameOutcome,
       operationLogs,
       operationTotals,
+      undoneLogs,
       playSettings: normalizePlaySettings(v.playSettings),
       // Self-reported mid-game settings timeline; validated to the display
       // subset and anchored within [0, moves.length]. Folded over playSettings
