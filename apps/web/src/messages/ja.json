@@ -97,7 +97,9 @@
       "lineFallback": "ライン {n}",
       "previewToggle": "手順を表示",
       "openLine": "このラインを開く →",
-      "createdBy": "作成者"
+      "createdBy": "作成者",
+      "edited": "（編集済み）",
+      "moreActions": "その他の操作"
     },
     "line": {
       "new": {
@@ -1298,6 +1300,7 @@
         "edited": "（編集済み）",
         "editAction": "編集",
         "forkAction": "フォーク",
+        "moreActions": "その他の操作",
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
@@ -1433,6 +1436,7 @@
         "edited": "（編集済み）",
         "editAction": "編集",
         "forkAction": "フォーク",
+        "moreActions": "その他の操作",
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
@@ -1916,14 +1920,9 @@
       "pageTitle": "チャンクの提案 · {name}",
       "breadcrumb": "チャンクの提案",
       "callout": {
-        "body": "この局面に紐づくチャンクに気づきましたか？提案できます。作成者がすべての提案を確認します。",
-        "ownerBodyWithPending": "{count, plural, other {確認待ちのチャンク提案が # 件あります。}}",
-        "ctaOwner": "提案を確認",
-        "ctaHasPending": "提案を確認 / 取り下げ",
-        "ctaCanSuggest": "チャンクを提案",
-        "ctaSignedOut": "サインインして提案",
         "historyLink": "編集リクエストの履歴 ({count})"
-      }
+      },
+      "suggestCta": "パターンを提案する"
     }
   },
   "home": {
@@ -2330,6 +2329,7 @@
       "fallbackTitle": "公開対局",
       "by": "{name} さんの対局",
       "sharedBy": "投稿者",
+      "moreActions": "その他の操作",
       "guest": "ゲスト",
       "cleanRate": "クリーン率",
       "like": "いいね",
@@ -3145,6 +3145,7 @@
       "descriptionSection": "説明",
       "noDescription": "説明はまだありません。",
       "edited": "編集済み",
+      "moreActions": "その他の操作",
       "createdBy": "投稿者",
       "positionsSection": "ポジション",
       "positionsDescription": "このチャンクパターンが効果的な問題。",

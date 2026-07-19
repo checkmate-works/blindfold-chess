@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -10,6 +9,10 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 import { getSharedGameByPublishedId, removeSharedGame } from '@/lib/games/shared-game-store';
 
+import {
+  PositionActionsMenu,
+  PositionActionsMenuButton,
+} from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deleteSharedGameAction } from '../_actions/manage-shared-game';
@@ -22,11 +25,14 @@ type Props = {
 };
 
 /**
- * Owner-only edit / delete controls for a shared game, rendered as a subtle
- * inline row matching the chunk / position UGC pages. Ownership is dual:
- * registered authors are flagged server-side (`isRegisteredOwner`); account-less
- * authors are detected client-side by the manage token this browser stored at
- * publish time. Edit links to a dedicated page; delete soft-deletes here.
+ * Owner-only "⋯" overflow menu (edit / delete) for a shared game, matching
+ * the chunk / position UGC pages. Ownership is dual: registered authors are
+ * flagged server-side (`isRegisteredOwner`); account-less authors are
+ * detected client-side by the manage token this browser stored at publish
+ * time — which is why the whole menu (trigger included) is client-rendered
+ * and returns null for non-owners. Edit links to a dedicated page; delete
+ * soft-deletes here. On failure the confirmation modal stays open and shows
+ * the error.
  */
 export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
   const t = useTranslations('sharedGames');
@@ -54,7 +60,6 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
   if (!isOwner) return null;
 
   async function handleDelete() {
-    setConfirmOpen(false);
     setPending(true);
     setError(null);
     const res = await deleteSharedGameAction(gameId, token ?? undefined);
@@ -65,37 +70,42 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
       );
       return;
     }
+    setConfirmOpen(false);
     if (localGameId) removeSharedGame(localGameId);
     router.push(`/${locale}/games/shared`);
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-4 text-xs text-muted-foreground">
-      <Link
-        href={`/${locale}/games/shared/${gameId}/edit`}
-        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 transition-colors hover:border-foreground/20 hover:text-foreground"
+    <>
+      <PositionActionsMenu
+        ariaLabel={t('detail.moreActions')}
+        items={[
+          {
+            key: 'edit',
+            label: t('detail.edit'),
+            href: `/${locale}/games/shared/${gameId}/edit`,
+            icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
+          },
+        ]}
       >
-        <FiEdit2 className="h-3 w-3" aria-hidden />
-        {t('detail.edit')}
-      </Link>
-      <button
-        type="button"
-        onClick={() => {
-          setError(null);
-          setConfirmOpen(true);
-        }}
-        disabled={pending}
-        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 transition-colors hover:border-destructive/40 hover:text-destructive disabled:opacity-50"
-      >
-        <FiTrash2 className="h-3 w-3" aria-hidden />
-        {pending ? t('detail.deleting') : t('detail.delete')}
-      </button>
-      {error && <span className="text-destructive">{error}</span>}
+        <PositionActionsMenuButton
+          tone="danger"
+          onClick={() => {
+            setError(null);
+            setConfirmOpen(true);
+          }}
+          disabled={pending}
+        >
+          <FiTrash2 className="h-4 w-4" aria-hidden />
+          {pending ? t('detail.deleting') : t('detail.delete')}
+        </PositionActionsMenuButton>
+      </PositionActionsMenu>
 
       <ConfirmationModal
         isOpen={confirmOpen}
         title={t('detail.deleteConfirmTitle')}
         message={t('detail.deleteConfirmBody')}
+        error={error}
         confirmText={t('detail.delete')}
         cancelText={t('detail.cancel')}
         confirmVariant="danger"
@@ -103,6 +113,6 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
         onConfirm={handleDelete}
         onCancel={() => setConfirmOpen(false)}
       />
-    </div>
+    </>
   );
 }

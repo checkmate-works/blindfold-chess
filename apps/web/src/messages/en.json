@@ -97,7 +97,9 @@
       "lineFallback": "Line {n}",
       "previewToggle": "Show moves",
       "openLine": "Open this line →",
-      "createdBy": "Created by"
+      "createdBy": "Created by",
+      "edited": "(edited)",
+      "moreActions": "More actions"
     },
     "line": {
       "new": {
@@ -1298,6 +1300,7 @@
         "edited": "(edited)",
         "editAction": "Edit",
         "forkAction": "Fork",
+        "moreActions": "More actions",
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted position",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
@@ -1433,6 +1436,7 @@
         "edited": "(edited)",
         "editAction": "Edit",
         "forkAction": "Fork",
+        "moreActions": "More actions",
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted puzzle",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
@@ -1916,14 +1920,9 @@
       "pageTitle": "Chunk suggestions · {name}",
       "breadcrumb": "Chunk suggestions",
       "callout": {
-        "body": "Spotted a chunk this position should link to? Suggest it — the owner reviews every suggestion.",
-        "ownerBodyWithPending": "{count, plural, one {# pending chunk suggestion waiting for your review.} other {# pending chunk suggestions waiting for your review.}}",
-        "ctaOwner": "Review suggestions",
-        "ctaHasPending": "View / withdraw your suggestion",
-        "ctaCanSuggest": "Suggest linked chunks",
-        "ctaSignedOut": "Sign in to suggest",
         "historyLink": "Edit request history ({count})"
-      }
+      },
+      "suggestCta": "Suggest a pattern"
     }
   },
   "home": {
@@ -2330,6 +2329,7 @@
       "fallbackTitle": "Shared game",
       "by": "Posted by {name}",
       "sharedBy": "Posted by",
+      "moreActions": "More actions",
       "guest": "Guest",
       "cleanRate": "Clean",
       "like": "Like",
@@ -3178,6 +3178,7 @@
       "descriptionSection": "Description",
       "noDescription": "No description yet.",
       "edited": "Edited",
+      "moreActions": "More actions",
       "createdBy": "Created by",
       "positionsSection": "Positions",
       "positionsDescription": "Problems where this chunk pattern is effective.",

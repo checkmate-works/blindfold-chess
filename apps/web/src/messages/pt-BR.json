@@ -97,7 +97,9 @@
       "lineFallback": "Linha {n}",
       "previewToggle": "Mostrar lances",
       "openLine": "Abrir esta linha →",
-      "createdBy": "Criado por"
+      "createdBy": "Criado por",
+      "edited": "(editado)",
+      "moreActions": "Mais ações"
     },
     "line": {
       "new": {
@@ -1298,6 +1300,7 @@
         "edited": "(editado)",
         "editAction": "Editar",
         "forkAction": "Bifurcar",
+        "moreActions": "Mais ações",
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de uma posição excluída",
         "forksSection": "{count, plural, one {# bifurcação} other {# bifurcações}}",
@@ -1433,6 +1436,7 @@
         "edited": "(editado)",
         "editAction": "Editar",
         "forkAction": "Bifurcar",
+        "moreActions": "Mais ações",
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de um puzzle excluído",
         "forksSection": "{count, plural, one {# bifurcação} other {# bifurcações}}",
@@ -1916,14 +1920,9 @@
       "pageTitle": "Sugestões de chunks · {name}",
       "breadcrumb": "Sugestões de chunks",
       "callout": {
-        "body": "Notou um chunk que esta posição deveria vincular? Sugira — o proprietário revisa cada sugestão.",
-        "ownerBodyWithPending": "{count, plural, one {# sugestão de chunks aguardando sua revisão.} other {# sugestões de chunks aguardando sua revisão.}}",
-        "ctaOwner": "Revisar sugestões",
-        "ctaHasPending": "Ver / retirar sua sugestão",
-        "ctaCanSuggest": "Sugerir chunks vinculados",
-        "ctaSignedOut": "Entrar para sugerir",
         "historyLink": "Histórico de sugestões ({count})"
-      }
+      },
+      "suggestCta": "Sugerir um padrão"
     }
   },
   "home": {
@@ -2330,6 +2329,7 @@
       "fallbackTitle": "Partida compartilhada",
       "by": "Publicado por {name}",
       "sharedBy": "Publicado por",
+      "moreActions": "Mais ações",
       "guest": "Convidado",
       "cleanRate": "Limpos",
       "like": "Curtir",
@@ -3178,6 +3178,7 @@
       "descriptionSection": "Descrição",
       "noDescription": "Ainda não há descrição.",
       "edited": "Editado",
+      "moreActions": "Mais ações",
       "createdBy": "Criado por",
       "positionsSection": "Posições",
       "positionsDescription": "Problemas em que este padrão de chunk é eficaz.",

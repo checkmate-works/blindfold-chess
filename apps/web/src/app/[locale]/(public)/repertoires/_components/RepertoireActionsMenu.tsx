@@ -5,21 +5,27 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useRouter } from '@/i18n/routing';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
+import {
+  PositionActionsMenu,
+  PositionActionsMenuButton,
+} from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { OwnerActionButton } from '@/app/[locale]/_components/OwnerActionChip';
 
 import { deleteRepertoire } from '../_actions/deleteRepertoire';
 
 type Props = {
   id: string;
   locale: string;
-  /** Where to go after a successful delete: refresh the list, or leave the detail page. */
-  afterDelete: 'refresh' | 'list';
 };
 
-export function DeleteRepertoireButton({ id, locale, afterDelete }: Props) {
+/**
+ * Owner-only "⋯" menu on the repertoire detail page: edit link + delete with
+ * a confirmation modal. Rendered only for owners (the page checks `isOwner`
+ * server-side). On failure the modal stays open and shows the error.
+ */
+export function RepertoireActionsMenu({ id, locale }: Props) {
   const t = useTranslations('Repertoires');
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -37,19 +43,27 @@ export function DeleteRepertoireButton({ id, locale, afterDelete }: Props) {
     }
     setPending(false);
     setOpen(false);
-    if (afterDelete === 'list') {
-      router.push('/repertoires');
-    } else {
-      router.refresh();
-    }
+    router.push('/repertoires');
   }
 
   return (
     <>
-      <OwnerActionButton tone="danger" onClick={() => setOpen(true)} disabled={pending}>
-        <FiTrash2 aria-hidden />
-        {t('delete.button')}
-      </OwnerActionButton>
+      <PositionActionsMenu
+        ariaLabel={t('detail.moreActions')}
+        items={[
+          {
+            key: 'edit',
+            label: t('edit.editAction'),
+            href: `/${locale}/repertoires/${id}/edit`,
+            icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
+          },
+        ]}
+      >
+        <PositionActionsMenuButton tone="danger" onClick={() => setOpen(true)} disabled={pending}>
+          <FiTrash2 className="h-4 w-4" aria-hidden />
+          {t('delete.button')}
+        </PositionActionsMenuButton>
+      </PositionActionsMenu>
       <ConfirmationModal
         isOpen={open}
         title={t('delete.title')}
