@@ -60,11 +60,6 @@ export function getSharedGame(localGameId: string): SharedGameRecord | null {
   return read()[localGameId] ?? null;
 }
 
-/** All localStorage game ids this browser has published, for a future "my shared games" view. */
-export function getSharedGameIds(): string[] {
-  return Object.keys(read());
-}
-
 /**
  * Reverse lookup: find this browser's record for a published game id (the id
  * used in the public URL). Lets the detail page tell whether the viewer is the

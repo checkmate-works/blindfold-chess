@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   clearManageToken,
   getSharedGame,
-  getSharedGameIds,
   recordSharedGame,
   removeSharedGame,
 } from './shared-game-store';
@@ -25,12 +24,6 @@ describe('shared-game-store', () => {
 
   it('returns null for an unshared game', () => {
     expect(getSharedGame('missing')).toBeNull();
-  });
-
-  it('accumulates multiple games', () => {
-    recordSharedGame('local-1', 'pub-1');
-    recordSharedGame('local-2', 'pub-2', 'tok-2');
-    expect(getSharedGameIds().sort()).toEqual(['local-1', 'local-2']);
   });
 
   it('removes a mapping', () => {
