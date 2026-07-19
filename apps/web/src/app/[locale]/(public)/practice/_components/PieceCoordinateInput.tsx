@@ -12,9 +12,10 @@ type Props = {
   onRankToggle: (rank: string) => void;
   children?: React.ReactNode;
   /**
-   * On mobile, bleed the file/rank rows past the surrounding panel padding and
-   * use a larger touch-target height. Restored to the default compact sizing
-   * at the `sm:` breakpoint and above.
+   * On mobile, bleed the file/rank rows past this component's own padding so
+   * the buttons gain width. Restored to the padded layout at the `sm:`
+   * breakpoint and above. (Button height needs no opt-in — `CoordinateInput`'s
+   * default is already 44px on mobile.)
    */
   expandOnMobile?: boolean;
 };
@@ -34,7 +35,6 @@ export function PieceCoordinateInput({
   // Cancel this component's own p-4 on mobile so the file/rank rows reach the
   // outer container's edge (e.g. the PagePanel's inner padding boundary).
   const rowExpandClass = expandOnMobile ? '-mx-4 sm:mx-0' : '';
-  const buttonClass = expandOnMobile ? 'h-11 sm:h-9' : undefined;
 
   return (
     <div className="flex flex-col gap-3 p-4">
@@ -61,7 +61,6 @@ export function PieceCoordinateInput({
         onFileToggle={onFileToggle}
         showRanks={false}
         className={rowExpandClass}
-        buttonClassName={buttonClass}
       />
 
       {/* Rank Selection */}
@@ -70,7 +69,6 @@ export function PieceCoordinateInput({
           selectedRanks={selectedRanksSet}
           onRankToggle={onRankToggle}
           showFiles={false}
-          buttonClassName={buttonClass}
         />
       </div>
 

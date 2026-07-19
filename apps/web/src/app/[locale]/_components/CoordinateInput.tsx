@@ -13,7 +13,10 @@ type Props = {
   buttonClassName?: string;
 };
 
-const DEFAULT_BUTTON_CLASS = 'h-9';
+// 44px below the `sm` breakpoint to meet the mobile touch-target guideline,
+// dropping to the desktop-tuned 36px above it. Every consumer wants this
+// unless it overrides `buttonClassName` for its own layout.
+const DEFAULT_BUTTON_CLASS = 'h-11 sm:h-9';
 
 export function CoordinateInput({
   selectedFiles = new Set(),

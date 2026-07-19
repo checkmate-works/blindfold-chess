@@ -110,6 +110,7 @@ export function KnightTourBlindPlaying({
         selectedRank={selectedRank}
         onFileToggle={handleFileToggle}
         onRankToggle={handleRankToggle}
+        expandOnMobile
       >
         {/* Submit Button */}
         <div className="flex pt-4 border-t border-border mt-2">

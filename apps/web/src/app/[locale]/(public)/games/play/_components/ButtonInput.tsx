@@ -155,7 +155,6 @@ export function ButtonInput({
         showRanks={false}
         onFileToggle={(file) => handleAppendChar(file as NotationChar)}
         disabledFile={() => disabled}
-        buttonClassName="h-11 sm:h-9"
       />
 
       {/* Row 3: Ranks */}
@@ -163,7 +162,6 @@ export function ButtonInput({
         showFiles={false}
         onRankToggle={(rank) => handleAppendChar(rank as NotationChar)}
         disabledRank={() => disabled}
-        buttonClassName="h-11 sm:h-9"
       />
 
       {/* Row 4: Annotations + Castling. The inter-group gap tightens on
