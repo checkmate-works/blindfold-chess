@@ -7,10 +7,10 @@ import { eq } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, profiles } from '@/lib/db';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
+import { getClientIp } from '@/lib/security/client-ip';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';
-import { getClientIp } from './getClientIp';
 
 export async function banUser(targetUserId: string, reason: string): Promise<ActionResult> {
   const auth = await requireAdmin();

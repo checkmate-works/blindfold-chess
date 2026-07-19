@@ -13,6 +13,8 @@
  *    Each score requirement includes an inline "Challenge" link to the
  *    corresponding practice page (`/practice/{menuType}`).
  */
+import type { ComponentType } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
@@ -35,6 +37,7 @@ import { DiagonalBoard } from '../_components/DiagonalBoard';
 import { GuideLinkCard } from '../_components/GuideLinkCard';
 import { KingMovementBoard } from '../_components/KingMovementBoard';
 import { PawnBreakthroughBoard } from '../_components/PawnBreakthroughBoard';
+import { RankAchievedBadge } from '../_components/RankAchievedBadge';
 import { RankHeader } from '../_components/RankHeader';
 import { RequirementsList } from '../_components/RequirementsList';
 import { ScatteredPawnsBoard } from '../_components/ScatteredPawnsBoard';
@@ -47,6 +50,73 @@ type Props = {
     slug: string;
   }>;
 };
+
+type TFunc = Awaited<ReturnType<typeof getTranslations>>;
+
+function truncateTeaser(text: string): string {
+  return text.length > 100 ? `${text.slice(0, 100)}…` : text;
+}
+
+/**
+ * Board visual shown in the Tips card, keyed by rank slug. Ranks not listed
+ * here (currently 5kyu, 1dan) fall back to AnchorPointsBoard — kept explicit
+ * rather than folded into a default case so a missing entry reads as "not
+ * yet decided" instead of silently matching.
+ */
+const TIPS_BOARD_BY_SLUG: Partial<Record<RankSlug, ComponentType<{ className?: string }>>> = {
+  mukyu: CoordinateBoard,
+  '4kyu': KingMovementBoard,
+  '3kyu': DiagonalBoard,
+  '2kyu': ScatteredPawnsBoard,
+  '1kyu': PawnBreakthroughBoard,
+};
+
+/** Criteria description section. Grouped in one wrapper so the panel's
+    `space-y-8` treats the whole section as a single child — the heading
+    and its paragraph stay tightly coupled (space-y-2) instead of each
+    getting the panel's full inter-section gap. */
+function CriteriaSection({ description, t }: { description: string; t: TFunc }) {
+  return (
+    <div className="space-y-2">
+      <SectionTitle>{t('detail.criteria')}</SectionTitle>
+      <p className="text-foreground/80">{description}</p>
+    </div>
+  );
+}
+
+/** Tips callout card with a rank-appropriate board visual, linking to the full guide. */
+function TipsCard({
+  slug,
+  teaser,
+  locale,
+  rankName,
+  t,
+}: {
+  slug: RankSlug;
+  teaser: string;
+  locale: Locale;
+  rankName: string;
+  t: TFunc;
+}) {
+  const Board = TIPS_BOARD_BY_SLUG[slug] ?? AnchorPointsBoard;
+
+  return (
+    <div className="space-y-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
+      <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
+      <p className="text-foreground/80">{truncateTeaser(teaser)}</p>
+      <Link
+        href={buildGuidePath(locale, slug, { kind: 'root' })}
+        className="block"
+        aria-label={t('detail.readFullGuide', { rankName })}
+      >
+        <Board className="mx-auto max-w-[10rem]" />
+        <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
+          {t('detail.readFullGuide', { rankName })}
+        </span>
+      </Link>
+    </div>
+  );
+}
 
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) => ALL_RANK_SLUGS.map((slug) => ({ locale, slug })));
@@ -117,45 +187,38 @@ export default async function RankDetailPage({ params }: Props) {
         locale={locale}
         breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
       >
-        <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
+        <RankHeader
+          beltColor={beltColor}
+          trailing={<RankAchievedBadge slug={slug} label={t('detail.achieved')} />}
+        >
+          {t('requirements')}
+        </RankHeader>
 
-        {/* Criteria description */}
-        <SectionTitle>{t('detail.criteria')}</SectionTitle>
-        <p className="mt-2 text-foreground/80">{t(`detail.criteriaDescriptions.${slug}`)}</p>
+        <CriteriaSection description={t(`detail.criteriaDescriptions.${slug}`)} t={t} />
 
-        {/* Tips callout card with CoordinateBoard visual aid */}
         {hasGuide && (
-          <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
-            <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-            <p className="mt-2 text-foreground/80">
-              {firstFlatParagraph.length > 100
-                ? `${firstFlatParagraph.slice(0, 100)}…`
-                : firstFlatParagraph}
-            </p>
-            <Link
-              href={buildGuidePath(locale, slug, { kind: 'root' })}
-              className="mt-3 block"
-              aria-label={t('detail.readFullGuide', { rankName })}
-            >
-              <CoordinateBoard className="mx-auto max-w-[10rem]" />
-              <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-                {t('detail.readFullGuide', { rankName })}
-              </span>
-            </Link>
-          </div>
+          <TipsCard
+            slug={slug}
+            teaser={firstFlatParagraph}
+            locale={locale}
+            rankName={rankName}
+            t={t}
+          />
         )}
 
         {/* Requirements */}
-        <SectionTitle>{t('detail.requirements')}</SectionTitle>
-        <RequirementsList
-          className="mt-4 space-y-3"
-          iconSize="size-5"
-          textSize="text-base"
-          items={mukyuRequirements}
-        />
+        <div className="space-y-4">
+          <SectionTitle>{t('detail.requirements')}</SectionTitle>
+          <RequirementsList
+            className="space-y-3"
+            iconSize="size-5"
+            textSize="text-base"
+            items={mukyuRequirements}
+          />
+        </div>
 
         {/* Related links */}
-        <div className="mt-6 space-y-3">
+        <div className="space-y-3">
           <p className="text-foreground/80">{mukyuRelatedLinks.learnArticle}</p>
           <GuideLinkCard
             items={[
@@ -205,56 +268,52 @@ export default async function RankDetailPage({ params }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
     >
-      <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
+      <RankHeader
+        beltColor={beltColor}
+        trailing={<RankAchievedBadge slug={rankSlug} label={t('detail.achieved')} />}
+      >
+        {t('requirements')}
+      </RankHeader>
 
-      {/* Criteria description (only if available for this slug) */}
       {hasCriteriaDescription && (
-        <>
-          <SectionTitle>{t('detail.criteria')}</SectionTitle>
-          <p className="mt-2 text-foreground/80">{t(`detail.criteriaDescriptions.${rankSlug}`)}</p>
-        </>
+        <CriteriaSection description={t(`detail.criteriaDescriptions.${rankSlug}`)} t={t} />
       )}
 
-      {/* Tips callout card (only if available for this slug) */}
       {hasGuide && (
-        <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
-          <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-          <p className="mt-2 text-foreground/80">
-            {firstDbGuideParagraph.length > 100
-              ? `${firstDbGuideParagraph.slice(0, 100)}…`
-              : firstDbGuideParagraph}
-          </p>
-          <Link
-            href={buildGuidePath(locale, rankSlug, { kind: 'root' })}
-            className="mt-3 block"
-            aria-label={t('detail.readFullGuide', { rankName })}
-          >
-            {rankSlug === '4kyu' ? (
-              <KingMovementBoard className="mx-auto max-w-[10rem]" />
-            ) : rankSlug === '3kyu' ? (
-              <DiagonalBoard className="mx-auto max-w-[10rem]" />
-            ) : rankSlug === '2kyu' ? (
-              <ScatteredPawnsBoard className="mx-auto max-w-[10rem]" />
-            ) : rankSlug === '1kyu' ? (
-              <PawnBreakthroughBoard className="mx-auto max-w-[10rem]" />
-            ) : (
-              <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
-            )}
-            <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-              {t('detail.readFullGuide', { rankName })}
-            </span>
-          </Link>
-        </div>
+        <TipsCard
+          slug={rankSlug}
+          teaser={firstDbGuideParagraph}
+          locale={locale}
+          rankName={rankName}
+          t={t}
+        />
       )}
 
       {/* Score requirements */}
-      <SectionTitle>{t('detail.requirements')}</SectionTitle>
-      <RequirementsList
-        className="mt-4 space-y-3"
-        iconSize="size-5"
-        textSize="text-base"
-        items={buildRequirementItems(requirements, locale, t)}
-      />
+      <div className="space-y-4">
+        <SectionTitle>{t('detail.requirements')}</SectionTitle>
+        <RequirementsList
+          className="space-y-3"
+          iconSize="size-5"
+          textSize="text-base"
+          items={buildRequirementItems(requirements, locale, t)}
+        />
+      </div>
+
+      {/* Benefits — dan-tier only (ad-free entitlement). Placed last so the
+          layout up through Requirements stays identical across every rank
+          page; this is the only section that varies by rank. Hardcoded to
+          1dan rather than driven by rank data: today only 1dan carries a
+          benefit, and `hasDanTierRank` is intentionally derived from
+          `user_ranks`, not materialized — see the User Grants System notes
+          in CLAUDE.md. Add a data-driven benefits list if a second rank
+          ever needs one. */}
+      {rankSlug === '1dan' && (
+        <div className="space-y-2">
+          <SectionTitle>{t('detail.benefits')}</SectionTitle>
+          <p className="text-foreground/80">{t('detail.benefitsAdFree')}</p>
+        </div>
+      )}
 
       <AdSlot slot="content-bottom" />
     </PageLayout>

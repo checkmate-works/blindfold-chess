@@ -40,4 +40,38 @@ describe('RequirementsList', () => {
     const dividerLabel = screen.getByText('or');
     expect(dividerLabel.closest('a')).toBeNull();
   });
+
+  it('renders a note caption under the label when present, inside the link', () => {
+    const items: RequirementItem[] = [
+      {
+        label: 'Keep the board hidden and win',
+        href: '/en/games/new/standard',
+        note: 'Peeking allowed up to 5 times',
+      },
+    ];
+    render(<RequirementsList items={items} />);
+
+    const link = screen.getByRole('link', { name: /Keep the board hidden and win/ });
+    const note = screen.getByText('Peeking allowed up to 5 times');
+    expect(link).toContainElement(note);
+  });
+
+  it('renders a note caption for a non-linked item too', () => {
+    const items: RequirementItem[] = [
+      { label: 'Score 15+ in Square Colors', note: 'A helper note' },
+    ];
+    render(<RequirementsList items={items} />);
+
+    expect(screen.getByText('A helper note')).toBeInTheDocument();
+    expect(screen.getByText('A helper note').closest('a')).toBeNull();
+  });
+
+  it('omits the note element entirely when note is absent', () => {
+    const items: RequirementItem[] = [
+      { label: 'Post a position-memory problem', href: '/en/practice/position-memory/new' },
+    ];
+    const { container } = render(<RequirementsList items={items} />);
+
+    expect(container.querySelector('p')).toBeNull();
+  });
 });

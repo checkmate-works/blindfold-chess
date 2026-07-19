@@ -8,7 +8,7 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions } from '@/lib/db';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { diffFields } from '@/lib/db/diff-fields';
-import { evaluateRanksAfterCreate } from '@/lib/db/rank-evaluation';
+import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
 import type { DbTx } from '@/lib/db/types';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { guardOwnership } from '@/lib/ownership-guard';
@@ -241,7 +241,10 @@ export async function createPositionEntry(params: {
   // inserted `positions` row counts toward `position_submission_count`
   // requirements (e.g. 2kyu). Best-effort by design — see
   // evaluateRanksAfterCreate.
-  const grantedRanks: GrantedRank[] = await evaluateRanksAfterCreate(user.id, 'position create');
+  const grantedRanks: GrantedRank[] = await evaluateRanksAndRefreshEntitlements(
+    user.id,
+    'position create'
+  );
 
   revalidatePath(`/practice/${config.urlSegment}`);
 

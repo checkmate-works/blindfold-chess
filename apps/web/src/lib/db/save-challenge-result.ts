@@ -1,13 +1,13 @@
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
+
+import type { GrantedRank } from '@/lib/db/data/ranks';
 
 import { detectScoreImprovement } from './challenge-best-score';
 import { getUserAllTimeRank } from './challenge-queries';
 import { decideChallengeRankFeedItem } from './challenge-rank-feed';
 import { db } from './index';
-import type { GrantedRank } from './rank-evaluation';
-import { checkAndGrantRanks } from './rank-evaluation';
+import { evaluateRanksAndRefreshEntitlements } from './rank-grant-flow';
 import { grantChallengeExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
 import type { DbTx } from './types';
@@ -207,18 +207,15 @@ export async function saveChallengeResult(
     });
   });
 
-  // 6. Check and grant any newly achievable belt ranks.
-  // Called outside the transaction so challenge_best_scores reflects the latest data.
-  // Uses onConflictDoNothing for idempotency — safe to call on every challenge completion.
-  // Wrapped in try-catch: rank evaluation is supplementary — a failure here must not
-  // break the challenge result flow that has already committed successfully.
-  let grantedRanks: GrantedRank[] = [];
-  try {
-    grantedRanks = await checkAndGrantRanks(userId);
-  } catch (error) {
-    console.error('Failed to check/grant ranks:', error);
-    Sentry.captureException(error);
-  }
+  // 6. Check and grant any newly achievable belt ranks, then refresh the
+  // ad-free cookie if a dan promotion just happened. Called outside the
+  // transaction so challenge_best_scores reflects the latest data.
+  // Best-effort — rank evaluation must not break a challenge result flow
+  // that has already committed successfully.
+  const grantedRanks: GrantedRank[] = await evaluateRanksAndRefreshEntitlements(
+    userId,
+    'challenge completion'
+  );
 
   return { grantedRanks, exp: expInfo, challengeResultId };
 }

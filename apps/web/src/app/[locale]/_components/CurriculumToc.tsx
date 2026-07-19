@@ -29,7 +29,6 @@ type CurriculumTocProps = {
   maxVisibleSlug?: RankSlug | null;
   rankName: (slug: RankSlug) => string;
   sectionTitle: (titleKey: string) => string;
-  emptyLabel: string;
   achievedLabel: string;
   /**
    * Map from rank slug to a guide href. `null` (or missing key) means the
@@ -46,9 +45,11 @@ type CurriculumTocProps = {
  * two-line entry: a small muted rank-name label on top, and the curriculum
  * section title below, with a small belt-colored bullet on the left. Only
  * the section title text is a `<Link>` — the bullet and rank name label
- * remain non-interactive. Ranks whose guide does not yet exist (or whose
- * `sections` list is empty, i.e. coming-soon ranks) render the section
- * title as plain text.
+ * remain non-interactive. Ranks whose guide does not yet exist render the
+ * section title as plain text; ranks with NO curriculum sections at all are
+ * omitted entirely — a rank without study material is not advertised as
+ * "coming soon" anywhere (there is no roadmap value in an empty promise,
+ * and ranks are earnable without it under skip-grants anyway).
  *
  * A vertical dashed line runs down the left side of the list, visually
  * connecting the belt-colored bullet dots (book-spine effect). The line is
@@ -70,25 +71,16 @@ export function CurriculumToc({
   maxVisibleSlug,
   rankName,
   sectionTitle,
-  emptyLabel,
   achievedLabel,
   guideHrefBySlug,
 }: CurriculumTocProps) {
-  type Row =
-    | {
-        kind: 'section';
-        slug: RankSlug;
-        title: string;
-        href: string | null;
-        isAchieved: boolean;
-        isNext: boolean;
-      }
-    | {
-        kind: 'placeholder';
-        slug: RankSlug;
-        isAchieved: boolean;
-        isNext: boolean;
-      };
+  type Row = {
+    slug: RankSlug;
+    title: string;
+    href: string | null;
+    isAchieved: boolean;
+    isNext: boolean;
+  };
 
   // Resolve the maximum visible rank level (inclusive). Undefined means no
   // truncation. We look up positions via ALL_RANK_SLUGS so the component is
@@ -104,18 +96,19 @@ export function CurriculumToc({
       }
     }
 
-    // Mukyu is treated as always achieved — starting state every user holds.
-    const isAchieved = achievedSlugs != null ? slug === 'mukyu' || achievedSlugs.has(slug) : false;
+    // Mukyu's achieved-ness is decided by the caller (mirroring the /ranks
+    // grid rule: achieved only once the user holds a real rank), not
+    // hardcoded here — see `getCurrentUserAchievedRankSlugs.ts`.
+    const isAchieved = achievedSlugs != null && achievedSlugs.has(slug);
     const isNext = nextSlug != null && slug === nextSlug;
     const href = guideHrefBySlug[slug] ?? null;
 
-    if (sections.length === 0) {
-      rows.push({ kind: 'placeholder', slug, isAchieved, isNext });
-      continue;
-    }
+    // A rank with no curriculum sections has nothing to list — omit it
+    // rather than advertising an empty "coming soon" row.
+    if (sections.length === 0) continue;
+
     for (const section of sections) {
       rows.push({
-        kind: 'section',
         slug,
         title: sectionTitle(section.titleKey),
         href,
@@ -182,25 +175,6 @@ export function CurriculumToc({
             data-testid="curriculum-achieved-mark"
           />
         ) : null;
-
-        if (row.kind === 'placeholder') {
-          return (
-            <li
-              key={`${row.slug}-placeholder`}
-              className={`${baseRowClass} text-muted-foreground`}
-              data-rank={row.slug}
-              data-next={row.isNext ? 'true' : undefined}
-              data-disabled="true"
-            >
-              {beltDot}
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-xs text-muted-foreground">{rankName(row.slug)}</span>
-                <span className="text-sm italic">{emptyLabel}</span>
-              </span>
-              {achievedMark}
-            </li>
-          );
-        }
 
         const titleLink = row.href ? (
           <Link href={row.href} className={`text-sm ${TEXT_LINK_CLASSES}`}>

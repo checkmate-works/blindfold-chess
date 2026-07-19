@@ -14,11 +14,15 @@ import {
   buildChallengeNameKey,
   buildPositionSubmissionLabels,
   buildRequirementItems,
+  buildRequirementLabels,
   getBeltColorHex,
   getRankCardState,
   isRankEarnedByPlaying,
   isWhiteBelt,
+  resolveDisplayAchievedSlugs,
+  resolveEffectiveAchievedSlugs,
   resolveNextRank,
+  resolveRecommendedNextSlug,
 } from './helpers';
 
 // ---------------------------------------------------------------------------
@@ -98,6 +102,9 @@ describe('buildRequirementItems', () => {
     if (key === 'submissionCount') return `Submit ${values?.minCount} ${values?.itemName}`;
     if (key.startsWith('submissionItemNames.')) return key.replace('submissionItemNames.', '');
     if (key === 'orDivider') return 'or';
+    if (key === 'gamePublishWin') return `Beat the engine ${values?.minCount}+ times`;
+    if (key === 'gamePublishWinHiddenBoard') return `Keep the board hidden and win`;
+    if (key === 'gamePublishWinHiddenBoardNote') return `Peeking allowed up to ${values?.maxPeeks}`;
     return key;
   };
 
@@ -198,6 +205,47 @@ describe('buildRequirementItems', () => {
       label: 'Submit 1 puzzle',
     });
   });
+
+  it('should generate the game setup URL and a peek-allowance note for game_publish_win_hidden_board', () => {
+    const items = buildRequirementItems(
+      [{ type: 'game_publish_win_hidden_board', minCount: 1, maxPeeks: 5 }],
+      'en',
+      mockT
+    );
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      href: '/en/games/new/standard',
+      label: 'Keep the board hidden and win',
+      note: 'Peeking allowed up to 5',
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildRequirementLabels
+// ---------------------------------------------------------------------------
+
+describe('buildRequirementLabels', () => {
+  const mockT = (key: string, values?: Record<string, string | number | Date>) => {
+    if (key === 'gamePublishWin') return `Beat the engine ${values?.minCount}+ times`;
+    if (key === 'gamePublishWinHiddenBoard') return `Keep the board hidden and win`;
+    return key;
+  };
+
+  it('should return a plain label (no href) for game_publish_win', () => {
+    expect(buildRequirementLabels({ type: 'game_publish_win', minCount: 1 }, mockT)).toEqual([
+      'Beat the engine 1+ times',
+    ]);
+  });
+
+  it('should return a plain label (no href) for game_publish_win_hidden_board', () => {
+    expect(
+      buildRequirementLabels(
+        { type: 'game_publish_win_hidden_board', minCount: 1, maxPeeks: 5 },
+        mockT
+      )
+    ).toEqual(['Keep the board hidden and win']);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -283,15 +331,11 @@ describe('isWhiteBelt', () => {
 describe('getRankCardState', () => {
   // Common arguments helper
   const call = (overrides: {
-    inDb?: boolean;
     requirements?: ChallengeScoreRequirement[];
     isAchieved?: boolean;
-    previousAchieved?: boolean;
-    isLoggedIn?: boolean;
-    isFirstRank?: boolean;
+    isRecommendedNext?: boolean;
   }) => {
     const defaults = {
-      inDb: true,
       requirements: [
         {
           type: 'challenge_score' as const,
@@ -301,114 +345,48 @@ describe('getRankCardState', () => {
         },
       ],
       isAchieved: false,
-      previousAchieved: false,
-      isLoggedIn: true,
-      isFirstRank: false,
+      isRecommendedNext: false,
     };
     const args = { ...defaults, ...overrides };
-    return getRankCardState(
-      args.inDb,
-      args.requirements,
-      args.isAchieved,
-      args.previousAchieved,
-      args.isLoggedIn,
-      args.isFirstRank
-    );
+    return getRankCardState(args.requirements, args.isAchieved, args.isRecommendedNext);
   };
 
   // --- "coming-soon" states ---
 
-  it('should return "coming-soon" when rank is not in DB', () => {
-    expect(call({ inDb: false })).toBe('coming-soon');
-  });
-
-  it('should return "coming-soon" when requirements array is empty', () => {
+  it('should return "coming-soon" when requirements array is empty (not in DB, or conditions not yet defined)', () => {
     expect(call({ requirements: [] })).toBe('coming-soon');
   });
 
-  it('should return "coming-soon" when not in DB even if achieved', () => {
-    expect(call({ inDb: false, isAchieved: true })).toBe('coming-soon');
+  it('"coming-soon" (empty requirements) takes priority over achieved state', () => {
+    expect(call({ requirements: [], isAchieved: true })).toBe('coming-soon');
   });
 
-  // --- Logged-in states ---
+  // --- Achievement / recommendation states ---
 
-  it('should return "achieved" when logged in and rank is achieved', () => {
+  it('should return "achieved" when the rank is achieved', () => {
     expect(call({ isAchieved: true })).toBe('achieved');
   });
 
-  it('should return "next" when logged in, not achieved, and is first rank', () => {
-    expect(call({ isFirstRank: true })).toBe('next');
+  it('should return "next" for the recommended next rank', () => {
+    expect(call({ isRecommendedNext: true })).toBe('next');
   });
 
-  it('should return "next" when logged in, not achieved, and previous rank is achieved', () => {
-    expect(call({ previousAchieved: true })).toBe('next');
+  it('should return "unachieved" (plain, not the recommended next) otherwise — there is NO gate on lower ranks', () => {
+    // Under skip-grants every defined rank is browsable and earnable; the
+    // state only decides styling (recommended glow vs plain card).
+    expect(call({})).toBe('unachieved');
   });
 
-  it('should return "locked" when logged in, not achieved, not first, and previous not achieved', () => {
-    expect(call({})).toBe('locked');
+  it('should prefer "achieved" over the recommendation flag', () => {
+    expect(call({ isAchieved: true, isRecommendedNext: true })).toBe('achieved');
   });
 
-  it('should return "next" when both isFirstRank and previousAchieved are true', () => {
-    expect(call({ isFirstRank: true, previousAchieved: true })).toBe('next');
-  });
-
-  // --- Logged-out states ---
-
-  it('should return "next" when not logged in and is first rank', () => {
-    expect(call({ isLoggedIn: false, isFirstRank: true })).toBe('next');
-  });
-
-  it('should return "locked" when not logged in and is not first rank', () => {
-    expect(call({ isLoggedIn: false })).toBe('locked');
-  });
-
-  it('should return "locked" when not logged in even if previousAchieved is true (impossible but safe)', () => {
-    expect(call({ isLoggedIn: false, previousAchieved: true })).toBe('locked');
-  });
-
-  // --- Priority checks ---
-
-  it('"coming-soon" (not in DB) takes priority over logged-in achieved state', () => {
-    expect(call({ inDb: false, isAchieved: true, isLoggedIn: true })).toBe('coming-soon');
-  });
-
-  it('"coming-soon" (empty requirements) takes priority over logged-in achieved state', () => {
-    expect(call({ requirements: [], isAchieved: true, isLoggedIn: true })).toBe('coming-soon');
-  });
-
-  // --- 4kyu-specific: non-empty requirements should NOT be "coming-soon" ---
-
-  it('should not return "coming-soon" for a rank with legal_moves requirements (4kyu)', () => {
+  it('should not return "coming-soon" for a rank with defined requirements (4kyu)', () => {
     const legalMovesRequirements: ChallengeScoreRequirement[] = [
       { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
       { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
     ];
-    const result = call({ requirements: legalMovesRequirements });
-    expect(result).not.toBe('coming-soon');
-  });
-
-  it('should return "locked" for 4kyu requirements when not first rank and previous not achieved', () => {
-    const legalMovesRequirements: ChallengeScoreRequirement[] = [
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
-    ];
-    expect(call({ requirements: legalMovesRequirements })).toBe('locked');
-  });
-
-  it('should return "next" for 4kyu requirements when previous rank is achieved', () => {
-    const legalMovesRequirements: ChallengeScoreRequirement[] = [
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
-    ];
-    expect(call({ requirements: legalMovesRequirements, previousAchieved: true })).toBe('next');
-  });
-
-  it('should return "achieved" for 4kyu requirements when rank is achieved', () => {
-    const legalMovesRequirements: ChallengeScoreRequirement[] = [
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
-      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
-    ];
-    expect(call({ requirements: legalMovesRequirements, isAchieved: true })).toBe('achieved');
+    expect(call({ requirements: legalMovesRequirements })).not.toBe('coming-soon');
   });
 });
 
@@ -500,21 +478,29 @@ describe('resolveNextRank', () => {
     expect(next?.slug).toBe('5kyu');
   });
 
-  it('with a gap in achievements (3kyu only), still reports current=3kyu and next=2kyu', () => {
-    // A corrupted / partial state where the user somehow has 3kyu without
-    // 5kyu or 4kyu. The implementation walks linearly so `current` becomes
-    // the highest slug present in the set, and `next` is the first gap AFTER
-    // any achievement... but because the linear walk sets `next` on the first
-    // non-achieved slug encountered, 5kyu is assigned to `next` first.
-    //
-    // This test locks in the current documented behavior so that any future
-    // change is a deliberate decision.
+  it('with a gap in achievements (3kyu only, no 5kyu/4kyu), recommends next=2kyu — never a rank below current', () => {
+    // Skip-grants make this a normal state: the user jumped straight to
+    // 3kyu without 5kyu or 4kyu. `next` must be forward-only (the first
+    // unachieved slug ABOVE current), never a lower rank the user could
+    // read as "you regressed".
     const dbRanks = buildFullDbRanks();
     const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['3kyu']));
 
     expect(current?.slug).toBe('3kyu');
-    // First non-achieved slug in progression order = 5kyu.
-    expect(next?.slug).toBe('5kyu');
+    expect(next?.slug).toBe('2kyu');
+  });
+
+  it('with only 1dan achieved (skip-granted, no kyū ranks at all), reports current=1dan and next=null', () => {
+    // Reproduces the reported bug: a rank-less user publishes a
+    // black-belt-grade game and is skip-granted straight to 1dan. The old
+    // "first unachieved overall" walk wrongly recommended 5kyu as next —
+    // a rank strictly below what the user already holds. 1dan is the top
+    // rank, so next must be null (nothing higher to recommend), not 5kyu.
+    const dbRanks = buildFullDbRanks();
+    const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['1dan']));
+
+    expect(current?.slug).toBe('1dan');
+    expect(next).toBeNull();
   });
 
   it('returns both null when dbRanks is empty and nothing achieved', () => {
@@ -580,6 +566,99 @@ describe('resolveNextRank', () => {
 });
 
 // ---------------------------------------------------------------------------
+// resolveRecommendedNextSlug
+// ---------------------------------------------------------------------------
+
+describe('resolveRecommendedNextSlug', () => {
+  it('returns 5kyu when nothing is achieved', () => {
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>())).toBe('5kyu');
+  });
+
+  it('returns the slug directly above the highest achieved rank', () => {
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>(['5kyu', '4kyu', '3kyu']))).toBe('2kyu');
+  });
+
+  it('never recommends a rank below current, even with skip-granted gaps', () => {
+    // 3kyu achieved without 5kyu/4kyu — a lower unachieved rank must not be
+    // recommended; only a forward step counts as "next".
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>(['3kyu']))).toBe('2kyu');
+  });
+
+  it('returns null once the top rank (1dan) is achieved, even with no kyū ranks at all', () => {
+    // Reproduces the reported bug scenario directly.
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>(['1dan']))).toBeNull();
+  });
+
+  it('returns null when every real rank is achieved', () => {
+    const allAchieved = new Set<RankSlug>(
+      ALL_RANK_SLUGS.filter((s): s is RankSlug => s !== 'mukyu')
+    );
+    expect(resolveRecommendedNextSlug(allAchieved)).toBeNull();
+  });
+
+  it('ignores mukyu (UI-only, never a real achieved rank)', () => {
+    expect(resolveRecommendedNextSlug(new Set<RankSlug>(['mukyu']))).toBe('5kyu');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveEffectiveAchievedSlugs
+// ---------------------------------------------------------------------------
+
+describe('resolveEffectiveAchievedSlugs', () => {
+  it('returns the same empty set when nothing is achieved', () => {
+    const achieved = new Set<RankSlug>();
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(new Set<RankSlug>());
+  });
+
+  it('fills in every lower rank when only the top rank (1dan) is achieved — the reported bug', () => {
+    // A 1dan holder with no kyū rows should see every lower rank checked
+    // off on the ranks grid / curriculum, not just 1dan itself.
+    const achieved = new Set<RankSlug>(['1dan']);
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(
+      new Set<RankSlug>(['5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan'])
+    );
+  });
+
+  it('fills gaps below the highest achieved rank even with a skip-granted middle gap', () => {
+    // 3kyu achieved without 5kyu/4kyu — effective achievement still back-fills
+    // 5kyu and 4kyu since they're below the highest achieved level.
+    const achieved = new Set<RankSlug>(['3kyu']);
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(
+      new Set<RankSlug>(['5kyu', '4kyu', '3kyu'])
+    );
+  });
+
+  it('is a no-op when every rank below the highest is already literally achieved', () => {
+    const achieved = new Set<RankSlug>(['5kyu', '4kyu', '3kyu']);
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(achieved);
+  });
+
+  it('leaves the set untouched when only mukyu is present — no real rank to expand from', () => {
+    const achieved = new Set<RankSlug>(['mukyu']);
+    expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(achieved);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveDisplayAchievedSlugs
+// ---------------------------------------------------------------------------
+
+describe('resolveDisplayAchievedSlugs', () => {
+  it('does not include mukyu when nothing is achieved', () => {
+    const achieved = new Set<RankSlug>();
+    expect(resolveDisplayAchievedSlugs(achieved)).toEqual(new Set<RankSlug>());
+  });
+
+  it('includes mukyu plus every backfilled lower rank once a real rank is held', () => {
+    const achieved = new Set<RankSlug>(['1dan']);
+    expect(resolveDisplayAchievedSlugs(achieved)).toEqual(
+      new Set<RankSlug>(['5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan', 'mukyu'])
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
 // isRankEarnedByPlaying
 // ---------------------------------------------------------------------------
 
@@ -600,11 +679,14 @@ describe('isRankEarnedByPlaying', () => {
     expect(isRankEarnedByPlaying(seeded('1kyu'))).toBe(true);
   });
 
-  it('is false for a rank with no requirements yet', () => {
+  it('is true for 1dan — earned at the board, the board-hidden variant', () => {
+    expect(isRankEarnedByPlaying(seeded('1dan'))).toBe(true);
+  });
+
+  it('is false for a rank with no requirements at all', () => {
     // "Coming Soon" ranks have nothing to earn, so they must not claim the
-    // play-a-game CTA. 1dan is seeded this way today.
+    // play-a-game CTA.
     expect(isRankEarnedByPlaying([])).toBe(false);
-    expect(isRankEarnedByPlaying(seeded('1dan'))).toBe(false);
   });
 
   it('is false when a game requirement is mixed with a practice one', () => {
@@ -619,5 +701,14 @@ describe('isRankEarnedByPlaying', () => {
         },
       ])
     ).toBe(false);
+  });
+
+  it('is true when both game-publish variants are present together', () => {
+    expect(
+      isRankEarnedByPlaying([
+        { type: 'game_publish_win', minCount: 1 },
+        { type: 'game_publish_win_hidden_board', minCount: 1, maxPeeks: 5 },
+      ])
+    ).toBe(true);
   });
 });

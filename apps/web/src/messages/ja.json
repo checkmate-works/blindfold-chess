@@ -1940,6 +1940,11 @@
       "inProgress": "進行中",
       "bulkDelete": "一括削除",
       "ranksLink": "🥋 AIに勝つためのカリキュラム",
+      "publishNudge": {
+        "body1dan": "黒帯（初段）の取得条件を満たした未公開の対局があります。公開すると昇格します。",
+        "body1kyu": "1級への昇級条件を満たした未公開の対局があります。公開すると昇級します。",
+        "cta": "ゲームを公開する"
+      },
       "startGuidance": "AIとの目隠しチェス対局は<link>ここ</link>から開始できます。",
       "sortBy": "並び替え",
       "lastPlayedDesc": "最終プレイ ↓",
@@ -2267,6 +2272,18 @@
         "description": "ゲームを公開すると、昇級できます。",
         "publish": "ゲームを公開する",
         "skip": "公開しない"
+      },
+      "dan": {
+        "title": "黒帯（初段）の取得条件を満たしました",
+        "perk": "黒帯は広告表示が免除される特典があります。",
+        "publishBody": "ゲームを公開すると黒帯に昇格します。",
+        "signUpBody": "登録後にゲームを公開することで黒帯に昇格します。"
+      },
+      "guestPromotion": {
+        "title1kyu": "1級への昇級条件を満たしました",
+        "body1kyu": "登録後にゲームを公開することで1級に昇級します。",
+        "signUp": "登録する",
+        "publishAnonymously": "匿名でゲームを投稿する"
       }
     },
     "repertoireCheck": {
@@ -2322,6 +2339,15 @@
       "cancel": "キャンセル",
       "deleteConfirmTitle": "この公開対局を削除しますか？",
       "deleteConfirmBody": "公開一覧から削除されます。この操作は取り消せません。",
+      "claim": {
+        "signedOutTitle": "このゲームを自分の実績にしませんか？",
+        "signedOutBody": "このゲームはアカウントなしで公開されています。アカウント登録して紐づけると、昇級条件を満たしていればすぐに昇級します（黒帯の条件を満たした対局なら黒帯に昇格）。",
+        "signUpCta": "アカウント登録してこのゲームを紐づける",
+        "claimTitle": "このゲームをアカウントに紐づける",
+        "claimBody": "このゲームはログイン前に公開されたものです。アカウントに紐づけると、昇級条件を満たしていればすぐに昇級します。",
+        "claimButton": "自分のアカウントに紐づける",
+        "claiming": "紐づけ中…"
+      },
       "errors": {
         "forbidden": "この操作を行う権限がありません。",
         "generic": "問題が発生しました。もう一度お試しください。"
@@ -3501,12 +3527,14 @@
       "submit": "{amount} コインを交換する",
       "submitting": "交換中…",
       "successMessage": "完了しました — 広告非表示が {days} 日分追加されました。",
+      "danAdFreeNotice": "段位保有者は常に広告が非表示のため、コインを消費する必要はありません。",
       "errors": {
         "invalid_amount": "正の整数を入力してください。",
         "insufficient_balance": "利用可能なコインが不足しています。",
         "signInRequired": "サインインしてから交換してください。",
         "banned": "アカウントが利用制限されています。",
-        "rateLimited": "短時間に交換しすぎました。しばらく経ってから再度お試しください。"
+        "rateLimited": "短時間に交換しすぎました。しばらく経ってから再度お試しください。",
+        "danAdFree": "段位保有者は既に広告が非表示になっています。"
       }
     },
     "history": {
@@ -3654,6 +3682,9 @@
     "pointGrantMessage": {
       "default": "{amount} コインが付与されました"
     },
+    "rankGrantMessage": {
+      "default": "{rankName}が付与されました"
+    },
     "likeCoinGrantMessage": {
       "default": "コンテンツが評価され、{count} コインを獲得しました"
     },
@@ -3693,6 +3724,7 @@
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
     "gamePublished": "公開しました",
+    "gameClaimed": "ゲームをアカウントに紐づけました",
     "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count, plural, other {#個のゲームを削除しました}}",
@@ -5439,6 +5471,8 @@
     "challengeScore": "{challengeName}でスコア{minScore}以上",
     "submissionCount": "{itemName}を{minCount}件以上投稿する",
     "gamePublishWin": "何らかの制約を加えた設定でAIに勝利し、ゲームを公開する",
+    "gamePublishWinHiddenBoard": "Hide the board オプションを維持してAIに勝利し、ゲームを公開する",
+    "gamePublishWinHiddenBoardNote": "※〈ピークを許可〉は{maxPeeks}回まで有効",
     "orDivider": "または",
     "submissionItemNames": {
       "memory": "ポジション記憶の問題",
@@ -5468,13 +5502,17 @@
     "detail": {
       "criteria": "合格基準",
       "requirements": "合格条件",
+      "achieved": "達成済み",
+      "benefits": "特典",
+      "benefitsAdFree": "サービス内の広告が非表示になります。",
       "criteriaDescriptions": {
         "mukyu": "目隠しチェスの簡単なトレーニングを始める準備ができていること。",
         "5kyu": "代数記法（例：e4、Bg7）から、該当するチェスボード上のマスを正しく特定できること。",
         "4kyu": "視覚的な補助がなくても、全ての駒で指定された座標における合法手の判定ができること。",
         "3kyu": "視覚的な補助がなくても、全ての駒でマヌーバリングができること。",
         "2kyu": "複数の駒を意味のある一つのまとまりとして認識ができること。",
-        "1kyu": "目隠しチェスに関する何らかの制約がかかった状態で、AIに勝利できること。"
+        "1kyu": "目隠しチェスに関する何らかの制約がかかった状態で、AIに勝利できること。",
+        "1dan": "目隠しチェスでAIに勝利できること。"
       },
       "tips": "解説",
       "tryChallenge": "条件を達成しよう",
@@ -5493,17 +5531,10 @@
       "message": "黒帯を取得しよう！",
       "description": "段級位の取得には会員登録が必要です",
       "cta": "無料登録"
-    },
-    "lockedModal": {
-      "title": "ロックされた級",
-      "message": "{rankName}を合格したら挑戦できます",
-      "linkLabel": "{rankName}の詳細を見る",
-      "ariaLabel": "ロックされています"
     }
   },
   "rankAchievement": {
-    "title": "昇級おめでとう！",
-    "description": "新しい級位を獲得しました。",
+    "title": "おめでとう！",
     "viewRanks": "段級位を見る",
     "close": "閉じる",
     "rankNames": {
@@ -5563,7 +5594,6 @@
     "viewAllGuides": "ガイドを全て見る",
     "curriculum": {
       "title": "教本",
-      "empty": "近日公開",
       "achieved": "達成済み",
       "sections": {
         "algebraicNotation": "代数記法の理解",

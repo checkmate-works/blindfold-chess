@@ -16,6 +16,7 @@ import { formatDate, formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
+import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -27,6 +28,7 @@ import { StatusBadge } from '../_components/StatusBadge';
 import { UnbanButton } from '../_components/UnbanButton';
 import { getSignupMethod } from '../_lib/queries';
 import { DetailSection } from './_components/DetailSection';
+import { GrantRankButton } from './_components/GrantRankButton';
 import { InfoRow } from './_components/InfoRow';
 import { fetchUserDetail } from './_lib/queries';
 
@@ -90,6 +92,10 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const signupMethod = getSignupMethod(authUser);
 
   const rankName = (slug: string) => t(`stats.rankNames.${slug}`);
+  const achievedSlugs = new Set(ranks.map((r) => r.slug));
+  const availableRanks = ALL_RANK_SLUGS.filter(
+    (slug) => !isMukyuSlug(slug) && !achievedSlugs.has(slug)
+  ).map((slug) => ({ slug, label: rankName(slug) }));
 
   return (
     <div className="space-y-6">
@@ -183,6 +189,11 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                 </li>
               ))}
             </ul>
+          )}
+          {!isDeleted && profile && (
+            <div className="mt-3">
+              <GrantRankButton userId={authUser.id} availableRanks={availableRanks} />
+            </div>
           )}
         </DetailSection>
 

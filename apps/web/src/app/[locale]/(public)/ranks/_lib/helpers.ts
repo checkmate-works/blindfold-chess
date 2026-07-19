@@ -1,6 +1,7 @@
 import {
   ALL_RANK_SLUGS,
   BELT_COLOR_HEX,
+  MUKYU_SLUG,
   RANK_COLORS,
   isMukyuSlug,
   parseRequirements,
@@ -8,6 +9,7 @@ import {
 } from '@/lib/db/data/ranks';
 import type {
   ChallengeScoreRequirement,
+  GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
   PositionSubmissionCountRequirement,
   RankRequirement,
@@ -17,7 +19,7 @@ import type { Rank } from '@/lib/db/schema';
 
 import type { RequirementDivider, RequirementItem } from '../_components/RequirementsList';
 
-export type RankCardState = 'achieved' | 'next' | 'locked' | 'coming-soon';
+export type RankCardState = 'achieved' | 'next' | 'unachieved' | 'coming-soon';
 
 export function buildChallengeNameKey(req: ChallengeScoreRequirement): string {
   if (req.leaderboardKey === 'default') {
@@ -141,6 +143,9 @@ export function buildRequirementLabels(
   if (req.type === 'game_publish_win') {
     return [t('gamePublishWin', { minCount: req.minCount })];
   }
+  if (req.type === 'game_publish_win_hidden_board') {
+    return [t('gamePublishWinHiddenBoard', { minCount: req.minCount })];
+  }
   return buildPositionSubmissionLabels(req, t);
 }
 
@@ -161,6 +166,9 @@ export function buildRequirementItems(
   return requirements.flatMap((req) => {
     if (req.type === 'challenge_score') return [buildChallengeScoreItem(req, locale, t)];
     if (req.type === 'game_publish_win') return [buildGamePublishWinItem(req, locale, t)];
+    if (req.type === 'game_publish_win_hidden_board') {
+      return [buildGamePublishWinHiddenBoardItem(req, locale, t)];
+    }
     return buildPositionSubmissionItems(req, locale, t);
   });
 }
@@ -182,18 +190,51 @@ function buildGamePublishWinItem(
 }
 
 /**
+ * Same shape as {@link buildGamePublishWinItem}, plus a `note` caption
+ * spelling out the peek allowance — the label alone ("keep the board hidden
+ * and win") doesn't convey that a bounded number of peeks is still tolerated.
+ */
+function buildGamePublishWinHiddenBoardItem(
+  req: GamePublishWinHiddenBoardRequirement,
+  locale: string,
+  t: Translator
+): RequirementItem {
+  return {
+    label: t('gamePublishWinHiddenBoard', { minCount: req.minCount }),
+    href: `/${locale}/games/new/standard`,
+    note: t('gamePublishWinHiddenBoardNote', { maxPeeks: req.maxPeeks }),
+  };
+}
+
+/**
+ * Requirement types that are earned at the board rather than in `practice/`.
+ * Both game-publish variants route their CTA to the game setup instead of the
+ * practice index — see {@link isRankEarnedByPlaying}.
+ */
+const GAME_BASED_REQUIREMENT_TYPES: readonly RankRequirement['type'][] = [
+  'game_publish_win',
+  'game_publish_win_hidden_board',
+];
+
+/**
  * Whether a rank is earned at the board rather than in `practice/`.
  *
- * Everything up to 2kyu is drilled in the practice modules; 1kyu is earned by
- * publishing a won game. Callers use this to point their CTA somewhere that can
- * actually satisfy the rank — the practice index is a dead end for 1kyu.
+ * Everything up to 2kyu is drilled in the practice modules; 1kyu and 1dan are
+ * earned by publishing a won game. Callers use this to point their CTA
+ * somewhere that can actually satisfy the rank — the practice index is a dead
+ * end for either of those.
  *
  * Keyed on the requirement types, not the slug, so a rank lands on the right
  * destination by virtue of what it asks for. A rank with no requirements yet
  * ("Coming Soon") is not earned by playing — there is nothing to earn.
  */
 export function isRankEarnedByPlaying(requirements: RankRequirement[]): boolean {
-  return requirements.length > 0 && requirements.every((req) => req.type === 'game_publish_win');
+  return (
+    requirements.length > 0 &&
+    requirements.every((req) =>
+      (GAME_BASED_REQUIREMENT_TYPES as readonly string[]).includes(req.type)
+    )
+  );
 }
 
 export function getBeltColorHex(slug: RankSlug): string {
@@ -212,30 +253,26 @@ export function isWhiteBelt(beltColor: string): boolean {
   return beltColor.toLowerCase() === '#ffffff';
 }
 
+/**
+ * Card state for the ranks grid. Ranks are granted independently
+ * (skip-grants allowed), so there is NO gate on lower ranks: every defined
+ * rank is openly browsable and earnable. `'unachieved'` means simply "not
+ * achieved and not the recommended next", rendered as a plain clickable
+ * card. `'next'` highlights the single recommended rank to pursue (the
+ * first unachieved in progression order — computed by the caller), which
+ * for a signed-out viewer is always the first rank.
+ */
 export function getRankCardState(
-  inDb: boolean,
   requirements: RankRequirement[],
   isAchieved: boolean,
-  previousAchieved: boolean,
-  isLoggedIn: boolean,
-  isFirstRank: boolean
+  isRecommendedNext: boolean
 ): RankCardState {
-  // Not in DB = Coming Soon
-  if (!inDb) return 'coming-soon';
-
-  // Has empty requirements = coming soon (conditions not yet defined)
+  // Empty requirements = coming soon (either not in DB yet, or conditions
+  // not yet defined — callers pass [] for both, so a single check covers it).
   if (requirements.length === 0) return 'coming-soon';
 
-  // Logged in: check achievement
-  if (isLoggedIn) {
-    if (isAchieved) return 'achieved';
-    if (isFirstRank || previousAchieved) return 'next';
-    return 'locked';
-  }
-
-  // Not logged in: first rank is visible, rest are locked
-  if (isFirstRank) return 'next';
-  return 'locked';
+  if (isAchieved) return 'achieved';
+  return isRecommendedNext ? 'next' : 'unachieved';
 }
 
 export type RankTeaserCardProps = {
@@ -243,12 +280,10 @@ export type RankTeaserCardProps = {
   locale: string;
   beltColor: string;
   rankName: string;
-  state: 'locked';
+  state: 'unachieved';
   requirementLabels: string[];
   requirementsHeading: string;
   comingSoonLabel: string;
-  previousRankName?: string;
-  previousSlug?: string;
 };
 
 const TEASER_SLUGS = ['5kyu', '4kyu'] as const;
@@ -263,7 +298,7 @@ export function buildRankTeaserCards(
   locale: string,
   tRanks: (key: string, values?: Record<string, string | number | Date>) => string
 ): RankTeaserCardProps[] {
-  return TEASER_SLUGS.map((slug, index) => {
+  return TEASER_SLUGS.map((slug) => {
     const seed = ranksSeedData.find((r) => r.slug === slug);
     const requirements = seed ? parseRequirements(seed.requirements) : [];
     const beltColor = getBeltColorHex(slug);
@@ -275,19 +310,16 @@ export function buildRankTeaserCards(
         (label): label is string => typeof label === 'string'
       )
     );
-    const previousSlug = index > 0 ? TEASER_SLUGS[index - 1] : undefined;
 
     return {
       slug,
       locale,
       beltColor,
       rankName: tRanks(`rankNames.${slug}`),
-      state: 'locked' as const,
+      state: 'unachieved' as const,
       requirementLabels,
       requirementsHeading: tRanks('requirements'),
       comingSoonLabel: tRanks('comingSoon'),
-      previousRankName: previousSlug ? tRanks(`rankNames.${previousSlug}`) : undefined,
-      previousSlug,
     };
   });
 }
@@ -327,23 +359,81 @@ export type ResolveNextRankResult = {
   next: ResolvedRankView | null;
 };
 
+/** Non-mukyu rank slugs, in ascending progression order. */
+const REAL_RANK_SLUGS = ALL_RANK_SLUGS.filter((slug) => !isMukyuSlug(slug));
+
+/**
+ * The single rank slug to recommend as "next" — the first unachieved slug
+ * with a level HIGHER than the highest currently achieved rank (forward-only
+ * progression), or the first real rank if nothing is achieved yet.
+ *
+ * Skip-grants make achievement gaps a normal state (e.g. a player can hold
+ * 1dan with no kyū ranks at all — a black-belt-grade game grants it
+ * outright). A lower unachieved rank must never be recommended once a higher
+ * one is already held: "next" means "work toward this", and recommending a
+ * rank BELOW what the user already has reads as a regression, not a goal.
+ * Returns `null` once the highest defined rank is achieved — there is
+ * nothing higher to recommend (skipped lower ranks stay freely earnable via
+ * `/ranks`, just not pushed as "next").
+ */
+export function resolveRecommendedNextSlug(achievedSlugs: ReadonlySet<RankSlug>): RankSlug | null {
+  let highestAchievedIndex = -1;
+  for (let i = 0; i < REAL_RANK_SLUGS.length; i++) {
+    if (achievedSlugs.has(REAL_RANK_SLUGS[i])) highestAchievedIndex = i;
+  }
+  for (let i = highestAchievedIndex + 1; i < REAL_RANK_SLUGS.length; i++) {
+    if (!achievedSlugs.has(REAL_RANK_SLUGS[i])) return REAL_RANK_SLUGS[i];
+  }
+  return null;
+}
+
+/**
+ * Expand a literal (DB-row-backed) achieved-slugs set into "effective"
+ * achievement for DISPLAY purposes: every real rank at or below the highest
+ * actually-achieved rank's level counts as achieved too, even without its
+ * own `user_ranks` row.
+ *
+ * Skip-grants make sparse achievement a normal DB state (e.g. a 1dan holder
+ * with no kyū rows at all), but a checkmark UI showing gaps below the
+ * user's actual rank reads as broken, not as a nuance of the grant model —
+ * real-world belt systems don't ask a black belt to separately "prove" 5th
+ * kyū. Use this wherever achievement is rendered as a checkmark (the ranks
+ * grid, the curriculum roadmap). Do NOT use it for grant-adjacent logic —
+ * {@link resolveRecommendedNextSlug} and the grant evaluator must stay keyed
+ * off literal rows; expanding first would be harmless there today (both
+ * only look at the highest level) but conflating "earned" and "implied"
+ * achievement is the wrong default for anything that isn't pure display.
+ */
+export function resolveEffectiveAchievedSlugs(
+  achievedSlugs: ReadonlySet<RankSlug>
+): ReadonlySet<RankSlug> {
+  let highestAchievedIndex = -1;
+  for (let i = 0; i < REAL_RANK_SLUGS.length; i++) {
+    if (achievedSlugs.has(REAL_RANK_SLUGS[i])) highestAchievedIndex = i;
+  }
+  if (highestAchievedIndex === -1) return achievedSlugs;
+  return new Set(REAL_RANK_SLUGS.slice(0, highestAchievedIndex + 1));
+}
+
+/** Display-only: effective expansion + mukyu iff the user holds >=1 real rank. */
+export function resolveDisplayAchievedSlugs(
+  achievedSlugs: ReadonlySet<RankSlug>
+): ReadonlySet<RankSlug> {
+  const effectiveSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
+  if (achievedSlugs.size === 0) return effectiveSlugs;
+  return new Set([...effectiveSlugs, MUKYU_SLUG]);
+}
+
 /**
  * Resolve the highest achieved rank and the next rank to pursue from DB ranks
- * and the set of achieved slugs. Walks `ALL_RANK_SLUGS` in progression order.
+ * and the set of achieved slugs.
  *
  * - `current` = highest achieved slug (or `null` when nothing is achieved).
- * - `next` = first non-achieved slug encountered in the linear walk (or `null`
- *   once everything is achieved).
+ * - `next` = {@link resolveRecommendedNextSlug} resolved to its DB row and
+ *   requirements (or `null` once the highest rank is achieved).
  *
- * @remarks
- * - Linear grant progression is assumed: ranks are granted in order, so in
- *   practice `next` will be the slug immediately after `current`.
- * - If achievement gaps exist (e.g. user somehow has 3kyu without 5kyu), the
- *   linear walk assigns `next` to the first non-achieved slug it encounters,
- *   which may end up being lower than `current` in theory. This behaviour is
- *   intentional and locked in by tests.
- * - Mukyu is UI-only and is always skipped — it is never counted as achieved
- *   or assigned as `current` / `next`.
+ * Mukyu is UI-only and is always skipped — it is never counted as achieved
+ * or assigned as `current` / `next`.
  */
 export function resolveNextRank(
   dbRanks: Rank[],
@@ -358,16 +448,12 @@ export function resolveNextRank(
   };
 
   let current: ResolvedRankView | null = null;
-  let next: ResolvedRankView | null = null;
-
-  for (const slug of ALL_RANK_SLUGS) {
-    if (isMukyuSlug(slug)) continue;
-    if (achievedSlugs.has(slug)) {
-      current = toView(slug);
-    } else if (next === null) {
-      next = toView(slug);
-    }
+  for (const slug of REAL_RANK_SLUGS) {
+    if (achievedSlugs.has(slug)) current = toView(slug);
   }
+
+  const nextSlug = resolveRecommendedNextSlug(achievedSlugs);
+  const next = nextSlug ? toView(nextSlug) : null;
 
   return { current, next };
 }

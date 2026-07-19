@@ -68,6 +68,12 @@ async function handleSuccessfulAuth(
   ]);
 
   if (!profile) {
+    // A new user always goes through username setup and onboarding; any
+    // `next` on the callback URL is deliberately dropped. Threading it
+    // through was tried and abandoned: the email-confirmation hop makes it
+    // unreliable, so funnel tails (e.g. "sign up and publish this game")
+    // are picked up by in-app surfaces instead — the /games publish nudge
+    // and the shared-game claim banner.
     const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
     const response = NextResponse.redirect(setupUrl);
     applyAdsHiddenCookie(response, adsHiddenValue);

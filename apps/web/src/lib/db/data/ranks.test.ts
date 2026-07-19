@@ -5,6 +5,7 @@ import {
   BELT_COLOR_HEX,
   RANK_COLORS,
   isChallengeScoreRequirement,
+  isGamePublishWinHiddenBoardRequirement,
   isGamePublishWinRequirement,
   isMukyuSlug,
   isPositionSubmissionCountRequirement,
@@ -388,6 +389,69 @@ describe('1kyu seed', () => {
 
   it('is no longer a "Coming Soon" rank', () => {
     expect(parseRequirements(entry1kyu!.requirements).length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isGamePublishWinHiddenBoardRequirement / 1dan seed
+// ---------------------------------------------------------------------------
+
+describe('isGamePublishWinHiddenBoardRequirement', () => {
+  it('should return true for a valid GamePublishWinHiddenBoardRequirement', () => {
+    expect(
+      isGamePublishWinHiddenBoardRequirement({
+        type: 'game_publish_win_hidden_board',
+        minCount: 1,
+        maxPeeks: 5,
+      })
+    ).toBe(true);
+  });
+
+  it.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['a string', 'game_publish_win_hidden_board'],
+    ['an empty object', {}],
+    ['a wrong type tag', { type: 'game_publish_win', minCount: 1, maxPeeks: 5 }],
+    ['a missing minCount', { type: 'game_publish_win_hidden_board', maxPeeks: 5 }],
+    [
+      'a non-numeric minCount',
+      { type: 'game_publish_win_hidden_board', minCount: '1', maxPeeks: 5 },
+    ],
+    ['a missing maxPeeks', { type: 'game_publish_win_hidden_board', minCount: 1 }],
+    [
+      'a non-numeric maxPeeks',
+      { type: 'game_publish_win_hidden_board', minCount: 1, maxPeeks: '5' },
+    ],
+  ])('should return false for %s', (_label, value) => {
+    expect(isGamePublishWinHiddenBoardRequirement(value)).toBe(false);
+  });
+});
+
+describe('1dan seed', () => {
+  const entry1dan = ranksSeedData.find((r) => r.slug === '1dan');
+
+  it('requires one published win with the board hidden throughout, peeks capped at 5', () => {
+    expect(entry1dan).toBeDefined();
+    expect(entry1dan!.requirements).toHaveLength(1);
+    const [req] = entry1dan!.requirements;
+    expect(req.type).toBe('game_publish_win_hidden_board');
+    if (req.type !== 'game_publish_win_hidden_board') return;
+    expect(req.minCount).toBe(1);
+    expect(req.maxPeeks).toBe(5);
+  });
+
+  it('parses its seeded requirements back out — the guard and the seed agree', () => {
+    expect(parseRequirements(entry1dan!.requirements)).toEqual(entry1dan!.requirements);
+  });
+
+  it('is no longer a "Coming Soon" rank', () => {
+    expect(parseRequirements(entry1dan!.requirements).length).toBeGreaterThan(0);
+  });
+
+  it('should have level 110 and black color', () => {
+    expect(entry1dan!.level).toBe(110);
+    expect(entry1dan!.color).toBe(RANK_COLORS['1dan']);
   });
 });
 

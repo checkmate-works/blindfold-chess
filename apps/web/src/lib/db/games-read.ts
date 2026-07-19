@@ -302,10 +302,10 @@ export async function countGamesByAuthorId(authorId: string): Promise<number> {
 }
 
 /**
- * Author id of a live game — used for the like notification. `null` for an
- * account-less (anonymous) game; `undefined` if the game is missing or deleted.
+ * Author id of a live (non-deleted) game. `null` for an account-less
+ * (anonymous) game; `undefined` if the game is missing or deleted.
  */
-export async function getGameLikeOwner(gameId: string): Promise<string | null | undefined> {
+export async function getLiveGameAuthorId(gameId: string): Promise<string | null | undefined> {
   const [row] = await db
     .select({ authorId: games.authorId, deletedAt: games.deletedAt })
     .from(games)

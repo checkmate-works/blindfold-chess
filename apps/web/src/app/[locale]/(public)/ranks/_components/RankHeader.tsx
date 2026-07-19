@@ -3,9 +3,16 @@ import { isWhiteBelt } from '../_lib/helpers';
 type RankHeaderProps = {
   beltColor: string;
   children: React.ReactNode;
+  /**
+   * Optional trailing content rendered at the end of the dot+title row
+   * (`ml-auto`). Used by the rank detail page for the achievement
+   * checkmark; omitted everywhere else (e.g. guide chapter headers, which
+   * reuse this same component but have no achievement concept).
+   */
+  trailing?: React.ReactNode;
 };
 
-export function RankHeader({ beltColor, children }: RankHeaderProps) {
+export function RankHeader({ beltColor, children, trailing }: RankHeaderProps) {
   // White belt needs a visible border since #ffffff is invisible on light backgrounds
   const whiteBelt = isWhiteBelt(beltColor);
 
@@ -29,6 +36,7 @@ export function RankHeader({ beltColor, children }: RankHeaderProps) {
           }}
         />
         <h2 className="text-2xl font-bold text-foreground">{children}</h2>
+        {trailing && <span className="ml-auto">{trailing}</span>}
       </div>
     </>
   );

@@ -1940,6 +1940,11 @@
       "inProgress": "In Progress",
       "bulkDelete": "Bulk Delete",
       "ranksLink": "🥋 Curriculum to beat the AI",
+      "publishNudge": {
+        "body1dan": "You have an unpublished game that meets the black belt (1st Dan) conditions. Publish it and you are promoted.",
+        "body1kyu": "You have an unpublished game that meets the 1st Kyū promotion conditions. Publish it and you are promoted.",
+        "cta": "Publish this game"
+      },
       "startGuidance": "You can start a blindfold chess game against AI from <link>here</link>.",
       "sortBy": "Sort by",
       "lastPlayedDesc": "Last played ↓",
@@ -2267,6 +2272,18 @@
         "description": "Publish this game to earn the rank.",
         "publish": "Publish this game",
         "skip": "Don't publish"
+      },
+      "dan": {
+        "title": "You have met the conditions for the black belt (1st Dan)",
+        "perk": "Black belt holders are exempt from ads.",
+        "publishBody": "Publish this game to be promoted to the black belt.",
+        "signUpBody": "Sign up and publish this game to be promoted to the black belt."
+      },
+      "guestPromotion": {
+        "title1kyu": "You have met the promotion conditions for 1st Kyū",
+        "body1kyu": "Sign up and publish this game to be promoted to 1st Kyū.",
+        "signUp": "Sign Up",
+        "publishAnonymously": "Publish anonymously"
       }
     },
     "repertoireCheck": {
@@ -2322,6 +2339,15 @@
       "cancel": "Cancel",
       "deleteConfirmTitle": "Delete this shared game?",
       "deleteConfirmBody": "This removes it from the public catalog and can't be undone.",
+      "claim": {
+        "signedOutTitle": "Make this game part of your record",
+        "signedOutBody": "You published this game without an account. Sign up and link it — if it meets a belt rank's requirements, you are promoted right away (a black-belt-grade game promotes you to the black belt).",
+        "signUpCta": "Sign up and link this game",
+        "claimTitle": "Link this game to your account",
+        "claimBody": "You published this game before signing in. Link it to your account — if it meets a belt rank's requirements, you are promoted right away.",
+        "claimButton": "Link to my account",
+        "claiming": "Linking…"
+      },
       "errors": {
         "forbidden": "You don't have permission to do that.",
         "generic": "Something went wrong. Please try again."
@@ -3501,12 +3527,14 @@
       "submit": "Redeem {amount} coins",
       "submitting": "Redeeming…",
       "successMessage": "Done — {days, plural, one {# day} other {# days}} of ad-free time has been added.",
+      "danAdFreeNotice": "As a dan-rank holder, you always browse ad-free — no need to spend coins on this.",
       "errors": {
         "invalid_amount": "Please enter a positive whole number.",
         "insufficient_balance": "You do not have enough confirmed coins.",
         "signInRequired": "Please sign in to redeem.",
         "banned": "Your account is restricted.",
-        "rateLimited": "Too many redemptions in a short period — try again later."
+        "rateLimited": "Too many redemptions in a short period — try again later.",
+        "danAdFree": "As a dan-rank holder, you already browse ad-free."
       }
     },
     "history": {
@@ -3654,6 +3682,9 @@
     "pointGrantMessage": {
       "default": "You received {amount, plural, one {# coin} other {# coins}}"
     },
+    "rankGrantMessage": {
+      "default": "You were granted the {rankName} rank"
+    },
     "likeCoinGrantMessage": {
       "default": "Your content was liked — you earned {count, plural, one {# coin} other {# coins}}"
     },
@@ -3693,6 +3724,7 @@
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
     "gamePublished": "Game published",
+    "gameClaimed": "The game is now linked to your account",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
@@ -5439,6 +5471,8 @@
     "challengeScore": "Score {minScore}+ in {challengeName}",
     "submissionCount": "Submit at least {minCount} {itemName}",
     "gamePublishWin": "Beat the engine with at least one constraint enabled, and publish the game",
+    "gamePublishWinHiddenBoard": "Beat the engine with the board hidden throughout, and publish the game",
+    "gamePublishWinHiddenBoardNote": "※ The \"Allow peeking\" option may still be used, up to {maxPeeks} times",
     "orDivider": "or",
     "submissionItemNames": {
       "memory": "position-memory problem",
@@ -5468,13 +5502,17 @@
     "detail": {
       "criteria": "Criteria",
       "requirements": "Requirements",
+      "achieved": "Achieved",
+      "benefits": "Benefits",
+      "benefitsAdFree": "Ads across the site are hidden.",
       "criteriaDescriptions": {
         "mukyu": "Ready to begin simple blindfold chess training.",
         "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",
         "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids.",
         "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids.",
         "2kyu": "Able to recognize multiple pieces as a single meaningful chunk.",
-        "1kyu": "Being able to beat the engine under some blindfold constraint."
+        "1kyu": "Being able to beat the engine under some blindfold constraint.",
+        "1dan": "Being able to beat the engine at blindfold chess."
       },
       "tips": "Tips",
       "tryChallenge": "Meet the requirements",
@@ -5493,17 +5531,10 @@
       "message": "Earn your black belt!",
       "description": "Sign up to track your rank progress.",
       "cta": "Sign Up Free"
-    },
-    "lockedModal": {
-      "title": "Locked Rank",
-      "message": "Pass {rankName} to unlock this rank",
-      "linkLabel": "View {rankName} details",
-      "ariaLabel": "Locked"
     }
   },
   "rankAchievement": {
     "title": "Rank Achieved!",
-    "description": "Congratulations! You've earned a new belt rank.",
     "viewRanks": "View Ranks",
     "close": "Close",
     "rankNames": {
@@ -5563,7 +5594,6 @@
     "viewAllGuides": "View all guides",
     "curriculum": {
       "title": "Curriculum",
-      "empty": "Coming soon",
       "achieved": "Achieved",
       "sections": {
         "algebraicNotation": "Algebraic notation",

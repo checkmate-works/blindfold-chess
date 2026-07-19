@@ -17,16 +17,22 @@ const GI_BLACK_BELT_PATH =
 
 /**
  * Dojo "current rank" visual. Renders the same belt icon used by the ranking
- * system (originally `GiBlackBelt` from `react-icons/gi`), colorised per
- * rank. The SVG is inlined and receives an explicit `fill` attribute so the
- * belt color is guaranteed to render regardless of CSS cascade or the
- * `currentColor` inheritance path. White belts (mukyu) get a subtle
- * theme-aware background fill so the icon remains visible on light
- * backgrounds (and looks consistent in dark mode).
+ * system (originally `GiBlackBelt` from `react-icons/gi`) inside a solid
+ * circular badge colorised per rank. The icon's path is thin line art (the
+ * fill only covers the outline strokes, not the belt's body), so coloring
+ * just the icon — the original approach — left almost no colored area on
+ * screen: a 1dan (black) belt read as a near-invisible hollow outline,
+ * indistinguishable from an unranked "white belt". Filling the circular
+ * badge itself with the belt color and rendering the icon in a contrasting
+ * white makes the rank color the dominant, unambiguous visual instead.
+ * White belts (mukyu) keep the original treatment — a subtle theme-aware
+ * background with the icon in the belt's own (invisible) white, so the
+ * badge reads as blank/neutral rather than "colored".
  */
 export function BeltStrip({ slug, rankName }: BeltStripProps) {
   const beltColor = getBeltColorHex(slug);
   const whiteBelt = isWhiteBelt(beltColor);
+  const iconColor = whiteBelt ? beltColor : '#ffffff';
 
   return (
     <div
@@ -41,17 +47,18 @@ export function BeltStrip({ slug, rankName }: BeltStripProps) {
         className={
           whiteBelt
             ? 'flex h-16 w-16 items-center justify-center rounded-full bg-muted sm:h-20 sm:w-20'
-            : 'flex h-16 w-16 items-center justify-center sm:h-20 sm:w-20'
+            : 'flex h-16 w-16 items-center justify-center rounded-full sm:h-20 sm:w-20'
         }
+        style={whiteBelt ? undefined : { backgroundColor: beltColor }}
       >
         <svg
           data-testid="belt-strip-icon"
-          className="h-12 w-12 sm:h-14 sm:w-14"
+          className="h-9 w-9 sm:h-11 sm:w-11"
           viewBox="0 0 512 512"
           xmlns="http://www.w3.org/2000/svg"
-          fill={beltColor}
-          stroke={beltColor}
-          style={{ color: beltColor }}
+          fill={iconColor}
+          stroke={iconColor}
+          style={{ color: iconColor }}
           aria-hidden="true"
         >
           <path d={GI_BLACK_BELT_PATH} />

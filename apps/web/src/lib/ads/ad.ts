@@ -4,10 +4,9 @@ import { headers } from 'next/headers';
 import { IS_LOCAL_DEV } from '@/config';
 import { and, asc, eq } from 'drizzle-orm';
 
-import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { adCreatives, db } from '@/lib/db';
-import { hasActiveGrant } from '@/lib/users/user-grants';
 
+import { hasAdFreeEntitlement } from './ad-free-entitlement';
 import { filterByCountry, getRequestCountry } from './country';
 import type { BannerPayload, NativeCardThumbnail } from './payload';
 import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from './payload';
@@ -20,18 +19,14 @@ export const AD_CREATIVES_CACHE_TAG = 'ad-creatives';
  * Pure decision function: determine whether ads should be shown for a given user.
  *
  * - `null` userId (unauthenticated): always show ads
- * - Authenticated user with active subscription or `ad_free` grant: hide ads
- * - Authenticated user without either: show ads
+ * - Authenticated user with an ad-free entitlement: hide ads
+ *
+ * The entitlement sources themselves (subscription, grant, …) live in
+ * {@link hasAdFreeEntitlement} — the single decision point shared with the
+ * `bfc_ads_hidden` cookie layer.
  */
 export async function shouldShowAdsForUser(userId: string | null): Promise<boolean> {
-  if (!userId) return true;
-
-  const [hasSub, hasGrant] = await Promise.all([
-    hasActiveSubscription(userId),
-    hasActiveGrant(userId, 'ad_free'),
-  ]);
-
-  return !(hasSub || hasGrant);
+  return !(await hasAdFreeEntitlement(userId));
 }
 
 /** Admin read — every creative regardless of active/schedule state. */

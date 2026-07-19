@@ -6,6 +6,7 @@ import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer'
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { redeemPointsForAdFree } from '@/lib/points';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { hasDanTierRank } from '@/lib/users/dan-rank';
 
 export type RedeemAdFreeResult =
   | { ok: true; cost: number; durationDays: number; expiresAtIso: string }
@@ -16,7 +17,8 @@ export type RedeemAdFreeResult =
         | 'insufficient_balance'
         | 'signInRequired'
         | 'banned'
-        | 'rateLimited';
+        | 'rateLimited'
+        | 'danAdFree';
     };
 
 /**
@@ -50,6 +52,14 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
       return { ok: false, error: 'banned' };
     }
     return { ok: false, error: 'signInRequired' };
+  }
+
+  // Dan-tier holders browse ad-free permanently (see hasAdFreeEntitlement),
+  // so redeeming coins for ad_free days would only burn coins for nothing.
+  // The RedeemForm hides the control for them; this is the server-side guard
+  // behind that UI.
+  if (await hasDanTierRank(auth.user.id)) {
+    return { ok: false, error: 'danAdFree' };
   }
 
   const rateLimitResult = await checkRateLimit(auth.user.id, RATE_LIMITS.redeemPoints);

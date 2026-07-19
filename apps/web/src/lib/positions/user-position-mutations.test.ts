@@ -32,6 +32,13 @@ vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
 }));
 
+// Cuts the request-layer cookie chain (next/headers, billing, grants) out of
+// this mutation-focused test; the helper itself is unit-tested in
+// `@/lib/ads/ads-hidden-cookie-writer.test.ts`.
+vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
+  refreshAdsHiddenCookieOnDanPromotion: vi.fn(),
+}));
+
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
 }));

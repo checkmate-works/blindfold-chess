@@ -5,7 +5,8 @@
  * to render a per-rank accordion table of contents. Section titles are
  * resolved via i18n keys under `dojo.curriculum.sections.<titleKey>`.
  *
- * Ranks with empty `sections` are rendered with a "coming soon" indicator.
+ * Ranks with empty sections are omitted from the TOC and guides index
+ * entirely (no placeholder row).
  */
 import type { RankSlug } from './ranks';
 

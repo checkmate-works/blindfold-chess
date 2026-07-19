@@ -1,5 +1,7 @@
 import Image from 'next/image';
 
+import type { IconType } from 'react-icons';
+import { GiBlackBelt } from 'react-icons/gi';
 import { HiGift, HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
 import type { NotificationWithActor } from '../_lib/queries';
@@ -12,6 +14,16 @@ type Props = {
 const ICON_WRAPPER_CLASS =
   'flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0';
 
+/** System notification types that render a fixed icon instead of an actor avatar. */
+const SYSTEM_ICONS: Record<string, IconType> = {
+  achievement_granted: HiTrophy,
+  benefit_grant: HiGift,
+  point_grant: HiGift,
+  like_coin_grant: HiGift,
+  rank_grant: GiBlackBelt,
+  announcement: HiMegaphone,
+};
+
 /**
  * Leading avatar / icon for a notification row. System notifications
  * (achievement / benefit / coin / announcement) render a fixed icon; actor
@@ -20,30 +32,11 @@ const ICON_WRAPPER_CLASS =
 export function NotificationAvatar({ notification, actorName }: Props) {
   const actor = notification.actor;
 
-  if (notification.type === 'achievement_granted') {
+  const SystemIcon = SYSTEM_ICONS[notification.type];
+  if (SystemIcon) {
     return (
       <div className={ICON_WRAPPER_CLASS}>
-        <HiTrophy className="h-5 w-5" />
-      </div>
-    );
-  }
-
-  if (
-    notification.type === 'benefit_grant' ||
-    notification.type === 'point_grant' ||
-    notification.type === 'like_coin_grant'
-  ) {
-    return (
-      <div className={ICON_WRAPPER_CLASS}>
-        <HiGift className="h-5 w-5" />
-      </div>
-    );
-  }
-
-  if (notification.type === 'announcement') {
-    return (
-      <div className={ICON_WRAPPER_CLASS}>
-        <HiMegaphone className="h-5 w-5" />
+        <SystemIcon className="h-5 w-5" />
       </div>
     );
   }

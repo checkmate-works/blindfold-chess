@@ -485,6 +485,17 @@ describe('buildNotificationLink — achievements & non-link cases', () => {
     expect(buildNotificationLink(notif, {})).toBeNull();
   });
 
+  it('links a rank_grant to the granted rank detail page', () => {
+    const notif = makeNotification({
+      type: 'rank_grant',
+      actor: null,
+      targetType: 'user_rank',
+      targetId: 'user-rank-1',
+      metadata: { rankSlug: '1dan', rankLevel: 110, reason: 'Met the requirement pre-launch' },
+    });
+    expect(buildNotificationLink(notif, {})).toBe('/ranks/1dan');
+  });
+
   it('returns null for a like with an unknown target and non-post metadata', () => {
     expect(
       buildNotificationLink(

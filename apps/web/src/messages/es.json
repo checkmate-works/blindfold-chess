@@ -299,6 +299,10 @@
       "title": "Publicación sobre {square}",
       "description": "Una publicación de discusión sobre la casilla {square} en ajedrez"
     },
+    "chunks": {
+      "title": "Chunks",
+      "description": "Catálogo de patrones de coordinación de piezas para el entrenamiento de memoria de posiciones"
+    },
     "games": {
       "title": "Tus Partidas",
       "description": "Consulta y gestiona tus partidas de ajedrez a ciegas"
@@ -1936,6 +1940,11 @@
       "inProgress": "En Progreso",
       "bulkDelete": "Eliminación Masiva",
       "ranksLink": "🥋 Programa para vencer a la IA",
+      "publishNudge": {
+        "body1dan": "Tienes una partida sin publicar que cumple las condiciones del cinturón negro (1.er Dan). Publícala y ascenderás.",
+        "body1kyu": "Tienes una partida sin publicar que cumple las condiciones de ascenso a 1.er Kyū. Publícala y ascenderás.",
+        "cta": "Publicar esta partida"
+      },
       "startGuidance": "Puedes iniciar una partida de ajedrez a ciegas contra la IA desde <link>aquí</link>.",
       "sortBy": "Ordenar por",
       "lastPlayedDesc": "Último jugado ↓",
@@ -2263,6 +2272,18 @@
         "description": "Publica esta partida para conseguir el rango.",
         "publish": "Publicar esta partida",
         "skip": "No publicar"
+      },
+      "dan": {
+        "title": "Has cumplido las condiciones para el cinturón negro (1.er Dan)",
+        "perk": "Los poseedores del cinturón negro están exentos de anuncios.",
+        "publishBody": "Publica esta partida para ascender al cinturón negro.",
+        "signUpBody": "Regístrate y publica esta partida para ascender al cinturón negro."
+      },
+      "guestPromotion": {
+        "title1kyu": "Has cumplido las condiciones de ascenso a 1.er Kyū",
+        "body1kyu": "Regístrate y publica esta partida para ascender a 1.er Kyū.",
+        "signUp": "Registrarme",
+        "publishAnonymously": "Publicar de forma anónima"
       }
     },
     "repertoireCheck": {
@@ -2318,6 +2339,15 @@
       "cancel": "Cancelar",
       "deleteConfirmTitle": "¿Eliminar esta partida compartida?",
       "deleteConfirmBody": "Se quitará del catálogo público y no se puede deshacer.",
+      "claim": {
+        "signedOutTitle": "Haz que esta partida forme parte de tu historial",
+        "signedOutBody": "Publicaste esta partida sin una cuenta. Regístrate y vincúlala — si cumple los requisitos de un rango, asciendes de inmediato (una partida de nivel cinturón negro te asciende al cinturón negro).",
+        "signUpCta": "Registrarme y vincular esta partida",
+        "claimTitle": "Vincular esta partida a tu cuenta",
+        "claimBody": "Publicaste esta partida antes de iniciar sesión. Vincúlala a tu cuenta — si cumple los requisitos de un rango, asciendes de inmediato.",
+        "claimButton": "Vincular a mi cuenta",
+        "claiming": "Vinculando…"
+      },
       "errors": {
         "forbidden": "No tienes permiso para hacer eso.",
         "generic": "Algo salió mal. Inténtalo de nuevo."
@@ -3497,12 +3527,14 @@
       "submit": "Canjear {amount} monedas",
       "submitting": "Canjeando…",
       "successMessage": "Listo — se han añadido {days, plural, one {# día} other {# días}} sin anuncios.",
+      "danAdFreeNotice": "Como poseedor de un rango dan, siempre navegas sin anuncios — no necesitas gastar monedas en esto.",
       "errors": {
         "invalid_amount": "Introduce un número entero positivo.",
         "insufficient_balance": "No tienes suficientes monedas disponibles.",
         "signInRequired": "Inicia sesión para canjear.",
         "banned": "Tu cuenta está restringida.",
-        "rateLimited": "Demasiados canjes en poco tiempo — inténtalo más tarde."
+        "rateLimited": "Demasiados canjes en poco tiempo — inténtalo más tarde.",
+        "danAdFree": "Como poseedor de un rango dan, ya navegas sin anuncios."
       }
     },
     "history": {
@@ -3632,6 +3664,8 @@
     "announcementMessage": "Nuevo anuncio: {title}",
     "newPostMessage": "{actor} compartió una nueva publicación",
     "newCommentOnTopicMessage": "{actor} comentó en tu problema",
+    "chunkEditRequestSubmittedMessage": "{actor} sugirió una edición para tu chunk",
+    "chunkEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de edición",
     "newChunkDraftMessage": "{actor} publicó un borrador de chunk",
     "chunkPublishedMessage": "{actor} publicó un chunk",
     "newGameMessage": "{actor} compartió una partida",
@@ -3647,6 +3681,9 @@
     },
     "pointGrantMessage": {
       "default": "Recibiste {amount, plural, one {# moneda} other {# monedas}}"
+    },
+    "rankGrantMessage": {
+      "default": "Se te otorgó el rango {rankName}"
     },
     "likeCoinGrantMessage": {
       "default": "Le gustó tu contenido: ganaste {count, plural, one {# moneda} other {# monedas}}"
@@ -3687,6 +3724,7 @@
     "profileUpdated": "Perfil actualizado",
     "postCreated": "Publicado correctamente",
     "gamePublished": "Partida publicada",
+    "gameClaimed": "La partida ya está vinculada a tu cuenta",
     "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde.",
     "gameSaved": "Partida guardada correctamente",
     "gamesDeleted": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
@@ -3699,6 +3737,7 @@
     "lineAdded": "Línea añadida",
     "puzzleUpdated": "Cambios guardados",
     "puzzleDeleted": "Puzzle eliminado",
+    "editRequestSubmitted": "Sugerencia de edición enviada",
     "editRequestAccepted": "Sugerencia de edición aceptada",
     "editRequestRejected": "Sugerencia de edición rechazada",
     "editRequestWithdrawn": "Sugerencia de edición retirada"
@@ -4536,6 +4575,10 @@
       "openings": {
         "title": "Aperturas",
         "description": "Explora y aprende sobre aperturas de ajedrez"
+      },
+      "chunks": {
+        "title": "Chunks",
+        "description": "Catálogo de patrones de coordinación de piezas para el entrenamiento de memoria de posiciones"
       }
     },
     "openings": {
@@ -5428,6 +5471,8 @@
     "challengeScore": "Puntuación {minScore}+ en {challengeName}",
     "submissionCount": "Publica al menos {minCount} {itemName}",
     "gamePublishWin": "Gana al motor con al menos una restricción activada y publica la partida",
+    "gamePublishWinHiddenBoard": "Gana al motor manteniendo el tablero oculto todo el tiempo, y publica la partida",
+    "gamePublishWinHiddenBoardNote": "※ La opción «Permitir vistazos» puede usarse hasta {maxPeeks} veces",
     "orDivider": "o",
     "submissionItemNames": {
       "memory": "problema de memoria de posiciones",
@@ -5457,13 +5502,17 @@
     "detail": {
       "criteria": "Criterios",
       "requirements": "Requisitos",
+      "achieved": "Conseguido",
+      "benefits": "Beneficios",
+      "benefitsAdFree": "Los anuncios en todo el sitio quedan ocultos.",
       "criteriaDescriptions": {
         "mukyu": "Listo para comenzar el entrenamiento básico de ajedrez a ciegas.",
         "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",
         "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales.",
         "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales.",
         "2kyu": "Ser capaz de reconocer varias piezas como una sola unidad con significado (un «chunk»).",
-        "1kyu": "Ser capaz de ganar al motor bajo alguna restricción de ajedrez a ciegas."
+        "1kyu": "Ser capaz de ganar al motor bajo alguna restricción de ajedrez a ciegas.",
+        "1dan": "Ser capaz de ganar al motor en ajedrez a ciegas."
       },
       "tips": "Consejos",
       "tryChallenge": "Cumple los requisitos",
@@ -5482,17 +5531,10 @@
       "message": "¡Obtén tu cinturón negro!",
       "description": "Regístrate para seguir tu progreso de rango.",
       "cta": "Registro Gratuito"
-    },
-    "lockedModal": {
-      "title": "Rango Bloqueado",
-      "message": "Supera {rankName} para desbloquear este rango",
-      "linkLabel": "Ver detalles de {rankName}",
-      "ariaLabel": "Bloqueado"
     }
   },
   "rankAchievement": {
     "title": "¡Rango Alcanzado!",
-    "description": "¡Felicitaciones! Has obtenido un nuevo rango de cinturón.",
     "viewRanks": "Ver Rangos",
     "close": "Cerrar",
     "rankNames": {
@@ -5552,7 +5594,6 @@
     "viewAllGuides": "Ver todas las guías",
     "curriculum": {
       "title": "Temario",
-      "empty": "Próximamente",
       "achieved": "Conseguido",
       "sections": {
         "algebraicNotation": "Notación algebraica",

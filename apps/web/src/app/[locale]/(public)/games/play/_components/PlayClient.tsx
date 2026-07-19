@@ -20,6 +20,7 @@ import { useAiGameExpGrant } from '../_hooks/use-ai-game-exp-grant';
 import { useFinishModal } from '../_hooks/use-finish-modal';
 import { useFinishedGameNavigation } from '../_hooks/use-finished-game-navigation';
 import type { GameSession } from '../_hooks/use-game-session';
+import { useGuestPromotion } from '../_hooks/use-guest-promotion';
 import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayBoardViews } from '../_hooks/use-play-board-views';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
@@ -286,6 +287,20 @@ export function PlayClient({
   const promotionRankSlug = usePublishPromotion({
     result: playerResult,
     initialPerGamePrefs,
+    preferenceChangeLog,
+    operationLogs,
+    moveCount: moves.length,
+    enabled: isFinished && !isFinishedView,
+  });
+
+  // The signed-out counterpart: does this game satisfy the 1kyu / 1dan game
+  // requirement? Purely local — a guest has no progression to consult.
+  const guestPromotionRankSlug = useGuestPromotion({
+    result: playerResult,
+    initialPerGamePrefs,
+    preferenceChangeLog,
+    operationLogs,
+    moveCount: moves.length,
     enabled: isFinished && !isFinishedView,
   });
 
@@ -499,6 +514,8 @@ export function PlayClient({
         onRepertoireCheck={openRepertoireCheck}
         published={isShared}
         promotionRankSlug={promotionRankSlug}
+        guestPromotionRankSlug={guestPromotionRankSlug}
+        guestSignUpHref={`/${locale}/sign-up`}
         onShare={handleShare}
       />
     </div>

@@ -51,10 +51,10 @@ export function aggregateRankStats(users: User[], ctx: RankStatsContext): RankSt
   const rankCountMap = new Map<string, number>();
   const rankedUserIds = new Set<string>();
 
-  // Ranks are linear and idempotently granted, so a user who reached e.g. 2級
-  // holds a user_ranks row for every lower rank too (5級, 4級, 3級, 2級).
-  // Count each user only at their highest-level rank so the buckets don't
-  // overlap — otherwise lower ranks double-count everyone above them.
+  // A user's rank set may be sparse — skip-grants are allowed (e.g. a player
+  // can hold 初段 with no kyū ranks at all) — or dense from walking up the
+  // ladder. Either way, count each user only at their highest-level rank so
+  // the buckets don't overlap.
   for (const user of users) {
     const slugs = ctx.userSlugs.get(user.id);
     if (!slugs || slugs.size === 0) continue;

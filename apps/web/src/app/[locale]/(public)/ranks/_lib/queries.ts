@@ -4,6 +4,8 @@ import { db, ranks, userRanks } from '@/lib/db';
 import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
+import { resolveAchievedSlugs } from './helpers';
+
 export async function getAllRanks() {
   return db.select().from(ranks).orderBy(asc(ranks.level));
 }
@@ -19,6 +21,23 @@ export async function getUserAchievedRankIds(userId: string): Promise<Set<string
     .from(userRanks)
     .where(eq(userRanks.userId, userId));
   return new Set(rows.map((r) => r.rankId));
+}
+
+/**
+ * Fetch all ranks + a user's achieved rank ids in parallel and resolve them
+ * to a typed achieved-slugs set. Shared by the two Server Actions that need
+ * a user's LITERAL (non-display) achieved slugs.
+ *
+ * Not used by dojo/page.tsx: dojo also needs `dbRanks` itself for
+ * `resolveNextRank`, so going through this wrapper there would mean fetching
+ * `getAllRanks()` twice.
+ */
+export async function getAchievedSlugsForUser(userId: string): Promise<ReadonlySet<RankSlug>> {
+  const [dbRanks, achievedRankIds] = await Promise.all([
+    getAllRanks(),
+    getUserAchievedRankIds(userId),
+  ]);
+  return resolveAchievedSlugs(dbRanks, achievedRankIds);
 }
 
 export async function getValidatedRank(slug: string) {

@@ -2,11 +2,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
-import type { LocalePageProps } from '@/app/[locale]/_lib/types';
+import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { UsernameForm } from './_components';
-
-type Props = LocalePageProps;
 
 export function generateMetadata({ params }: Props) {
   return createPageMetadata({

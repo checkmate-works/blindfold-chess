@@ -107,6 +107,11 @@ vi.mock('./skeletons', () => ({
 vi.mock('../_hooks/use-publish-promotion', () => ({
   usePublishPromotion: () => null,
 }));
+// Also cuts the AuthContext → getSessionUser → server-only import chain the
+// guest hook would otherwise drag into this client test.
+vi.mock('../_hooks/use-guest-promotion', () => ({
+  useGuestPromotion: () => null,
+}));
 // The game-finished modal is exercised via its two navigating cards.
 vi.mock('./GameFinishModal', () => ({
   GameFinishModal: (props: { isOpen: boolean; onReview: () => void; onRecall: () => void }) =>

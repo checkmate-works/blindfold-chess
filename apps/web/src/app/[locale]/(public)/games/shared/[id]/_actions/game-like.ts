@@ -1,6 +1,6 @@
 'use server';
 
-import { getGameLikeOwner } from '@/lib/db/games-read';
+import { getLiveGameAuthorId } from '@/lib/db/games-read';
 import { performEntityToggleLike } from '@/lib/db/like-actions';
 import type { ToggleLikeResult } from '@/lib/db/like-actions';
 import { GAME_LIKE_TARGET } from '@/lib/db/like-queries';
@@ -24,7 +24,7 @@ export async function toggleGameLikeAction(
       fieldName: 'gameId',
       targetType: GAME_LIKE_TARGET,
       fetchOwner: async (id) => {
-        const authorId = await getGameLikeOwner(id);
+        const authorId = await getLiveGameAuthorId(id);
         // `undefined` = missing/deleted → no owner; `null` = anonymous game
         // (no author to notify, but the toggle still counts).
         return authorId === undefined ? null : { userId: authorId, extra: null };

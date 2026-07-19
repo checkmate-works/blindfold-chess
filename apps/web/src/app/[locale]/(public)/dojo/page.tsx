@@ -18,18 +18,20 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide } from '@/lib/guides';
 import { createClient } from '@/lib/supabase/server';
 
+import { PublishNudgeBanner } from '@/app/[locale]/(public)/games/_components/PublishNudgeBanner';
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import {
   buildRequirementItems,
-  buildRequirementLabels,
   getBeltColorHex,
   isRankEarnedByPlaying,
   resolveAchievedSlugs,
+  resolveDisplayAchievedSlugs,
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
@@ -79,6 +81,13 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const dbRanks = await getAllRanks();
   const achievedRankIds = user ? await getUserAchievedRankIds(user.id) : new Set<string>();
   const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
+  // The curriculum TOC's checkmarks use the DISPLAY set (expanded + mukyu):
+  // a 1dan holder with no kyū rows should still see every lower rank checked
+  // off, not just 1dan itself. `resolveNextRank` below stays on the literal
+  // set — it doesn't matter for its output (current/next are both about the
+  // highest level), but literal is the more honest default for anything
+  // beyond pure display.
+  const displayAchievedSlugs = resolveDisplayAchievedSlugs(achievedSlugs);
 
   const { current, next } = resolveNextRank(dbRanks, achievedSlugs);
 
@@ -88,8 +97,8 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const beltLabel = tRanks(`rankNames.${beltSlug}`);
 
   // RankCard props for the next rank (if any). Requirements are rendered as
-  // standalone links beneath the card (not inside it), so `hideRequirements`
-  // is set to keep the card focused on the rank identity.
+  // standalone links beneath the card (not inside it), so no
+  // requirementLabels are passed — RankCard simply omits the section.
   const nextCardProps = next
     ? {
         slug: next.slug,
@@ -97,10 +106,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
         beltColor: getBeltColorHex(next.slug),
         rankName: tRanks(`rankNames.${next.slug}`),
         state: (next.requirements.length === 0 ? 'coming-soon' : 'next') as 'next' | 'coming-soon',
-        requirementLabels: next.requirements.flatMap((req) => buildRequirementLabels(req, tRanks)),
-        requirementsHeading: tRanks('requirements'),
         comingSoonLabel: tRanks('comingSoon'),
-        hideRequirements: true,
       }
     : null;
 
@@ -113,6 +119,16 @@ export default async function DojoPage({ params }: LocalePageProps) {
   // Send the reader where the next rank is actually earned — the practice index
   // is a dead end for a rank you earn at the board.
   const nextIsEarnedByPlaying = next !== null && isRankEarnedByPlaying(next.requirements);
+
+  // Curriculum truncation cutoff, and whether it actually hides anything:
+  // the "view all guides" link below the TOC is redundant once every rank
+  // with curriculum content is already visible (the guides index would show
+  // the identical list).
+  const maxVisibleSlug = next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1];
+  const maxVisibleIndex = ALL_RANK_SLUGS.indexOf(maxVisibleSlug);
+  const hasHiddenCurriculum = CURRICULUM.some(
+    ({ slug, sections }) => sections.length > 0 && ALL_RANK_SLUGS.indexOf(slug) > maxVisibleIndex
+  );
 
   const helpSteps: HelpStep[] = [
     {
@@ -143,6 +159,12 @@ export default async function DojoPage({ params }: LocalePageProps) {
         <SectionTitle>{t('currentRankTitle')}</SectionTitle>
         <BeltStrip slug={beltSlug} rankName={beltLabel} />
       </section>
+
+      {/* A publishable promotion beats the "next rank to grind toward"
+          section below it: if an unpublished game already satisfies a rank
+          the viewer hasn't earned, say so right after their current rank.
+          Renders nothing otherwise. */}
+      <PublishNudgeBanner locale={locale} className="mt-6" />
 
       {/* Section 2: Next rank */}
       <section
@@ -217,20 +239,25 @@ export default async function DojoPage({ params }: LocalePageProps) {
       <section className="mt-8 space-y-3">
         <SectionTitle>{t('curriculum.title')}</SectionTitle>
         <CurriculumToc
-          achievedSlugs={achievedSlugs}
+          achievedSlugs={displayAchievedSlugs}
           nextSlug={next?.slug ?? null}
-          maxVisibleSlug={next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1]}
+          maxVisibleSlug={maxVisibleSlug}
           rankName={(slug) => tRanks(`rankNames.${slug}`)}
           sectionTitle={(key) => t(`curriculum.sections.${key}`)}
-          emptyLabel={t('curriculum.empty')}
           achievedLabel={t('curriculum.achieved')}
           guideHrefBySlug={guideHrefBySlug}
         />
-        <div className="flex justify-center">
-          <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
-            {t('viewAllGuides')}
-          </Link>
-        </div>
+        {/* "View all guides" only earns its place while the truncation is
+            actually hiding curriculum content — for a player far enough along
+            (e.g. 1kyu holders, next=1dan) the TOC above already IS the full
+            guide list, and the link would open an identical page. */}
+        {hasHiddenCurriculum && (
+          <div className="flex justify-center">
+            <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+              {t('viewAllGuides')}
+            </Link>
+          </div>
+        )}
       </section>
 
       <AdSlot slot="content-bottom" />

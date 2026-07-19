@@ -4,15 +4,18 @@
  * @description
  * Evaluates whether a user qualifies for belt rank promotions after completing
  * challenges. Uses an evaluator pattern: one function per requirement `type`
- * (e.g., `challenge_score`). Ranks are evaluated linearly — stops at the first
- * unmet rank. Grants are idempotent via `onConflictDoNothing`.
+ * (e.g., `challenge_score`). Every unachieved rank is evaluated independently —
+ * an unmet lower rank never blocks a higher one (skip-grants are allowed by
+ * design). Grants are idempotent via `onConflictDoNothing`.
  *
  * @design Evaluator pattern, not per-rank strategy
  *
  * Evaluators are keyed by `requirement.type`, not by rank slug. This means:
  * - Adding a new rank: seed data only, no code changes.
  * - Adding a new requirement type (e.g., `post_count`): add one evaluator to
- *   the `evaluators` record and a type guard branch.
+ *   the `evaluators` record here, and a type guard branch in
+ *   `parseRequirements` (`./data/ranks.ts` — the type guards live there, not
+ *   in this module).
  *
  * @design Called outside the challenge transaction
  *
@@ -21,6 +24,19 @@
  * wrapped in try-catch at the call site — rank evaluation failure must never
  * break the challenge result save flow.
  *
+ * @design Per-pass evaluation context
+ *
+ * `checkAndGrantRanks` evaluates every unachieved rank in ONE pass, so its
+ * evaluators share a `RankEvalContext` for that pass rather than each
+ * querying independently. This matters most for `game_publish_win` and
+ * `game_publish_win_hidden_board`: their WHERE clauses are identical
+ * (author's public, non-deleted, won games — `game_publish_win_hidden_board`
+ * just reads more columns off the same rows), so a new player evaluated for
+ * both 1kyu and 1dan in the same pass would otherwise run that query twice.
+ * `RankEvalContext.getWonPublicGames()` fetches it once (lazily, only if a
+ * game-based evaluator actually runs) and both evaluators filter the shared
+ * result in TS.
+ *
  * @see {@link checkAndGrantRanks} — entry point, called from `saveChallengeResult`
  * @see {@link evaluators} — registry of requirement type evaluators
  */
@@ -28,10 +44,19 @@ import * as Sentry from '@sentry/nextjs';
 import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
-import { isConstrainedPlaySettings } from '@/lib/games/play-settings-constraint';
+import {
+  isConstrainedPlaySettings,
+  maintainedHiddenBoard,
+} from '@/lib/games/play-settings-constraint';
+import type {
+  GamePlaySettings,
+  MoveOperationLog,
+  PlaySettingsChangeEntry,
+} from '@/lib/games/saved-game-types';
 
 import type {
   ChallengeScoreRequirement,
+  GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
   GrantedRank,
   PositionSubmissionCountRequirement,
@@ -47,8 +72,59 @@ import { challengeBestScores, games, positions, ranks, userRanks } from './schem
 
 type BestScoreCache = Map<string, number>;
 
-function bestScoreCacheKey(menuType: string, leaderboardKey: string): string {
+/** Exported for tests building a `RankEvalContext` directly. */
+export function bestScoreCacheKey(menuType: string, leaderboardKey: string): string {
   return `${menuType}:${leaderboardKey}`;
+}
+
+// ---------------------------------------------------------------------------
+// Per-pass evaluation context
+// ---------------------------------------------------------------------------
+
+type WonPublicGameRow = {
+  playSettings: GamePlaySettings | null;
+  playSettingsLog: PlaySettingsChangeEntry[] | null;
+  operationLogs: MoveOperationLog[] | null;
+};
+
+type RankEvalContext = {
+  userId: string;
+  getBestScore(menuType: string, leaderboardKey: string): number | undefined;
+  /** Lazy + memoized: both game evaluators filter this single fetch in TS. */
+  getWonPublicGames(): Promise<WonPublicGameRow[]>;
+};
+
+/**
+ * Build the per-pass context `checkAndGrantRanks` shares across every rank
+ * it evaluates. Exported so tests can exercise `evaluateRankRequirements`
+ * directly without duplicating this wiring.
+ */
+export function createRankEvalContext(userId: string, scoreCache: BestScoreCache): RankEvalContext {
+  let wonPublicGames: Promise<WonPublicGameRow[]> | null = null;
+
+  return {
+    userId,
+    getBestScore: (menuType, leaderboardKey) =>
+      scoreCache.get(bestScoreCacheKey(menuType, leaderboardKey)),
+    getWonPublicGames: () => {
+      wonPublicGames ??= db
+        .select({
+          playSettings: games.playSettings,
+          playSettingsLog: games.playSettingsLog,
+          operationLogs: games.operationLogs,
+        })
+        .from(games)
+        .where(
+          and(
+            eq(games.authorId, userId),
+            eq(games.result, 'win'),
+            eq(games.status, 'public'),
+            isNull(games.deletedAt)
+          )
+        );
+      return wonPublicGames;
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -56,61 +132,62 @@ function bestScoreCacheKey(menuType: string, leaderboardKey: string): string {
 // ---------------------------------------------------------------------------
 
 type RequirementEvaluator<T extends RankRequirement = RankRequirement> = (
-  userId: string,
-  requirement: T,
-  tx?: typeof db,
-  scoreCache?: BestScoreCache
+  ctx: RankEvalContext,
+  requirement: T
 ) => Promise<boolean>;
 
-const evaluators: Record<string, RequirementEvaluator> = {
-  challenge_score: async (_userId, req, _executor, scoreCache) => {
-    const requirement = req as ChallengeScoreRequirement;
+/**
+ * Mapped over `RankRequirement['type']` so adding a new requirement type to
+ * the union without adding an evaluator here is a compile error, not a
+ * silent runtime miss.
+ */
+type EvaluatorRegistry = {
+  [K in RankRequirement['type']]: RequirementEvaluator<Extract<RankRequirement, { type: K }>>;
+};
 
-    // Use pre-fetched scores when available (avoids N+1 queries)
-    if (scoreCache) {
-      const key = bestScoreCacheKey(requirement.menuType, requirement.leaderboardKey);
-      const score = scoreCache.get(key);
-      return score !== undefined && score >= requirement.minScore;
-    }
-
-    // Fallback: query DB directly (for backward compatibility with evaluateRankRequirements)
-    const dbInstance = _executor ?? db;
-    const [best] = await dbInstance
-      .select({ score: challengeBestScores.score })
-      .from(challengeBestScores)
-      .where(
-        and(
-          eq(challengeBestScores.userId, _userId),
-          eq(challengeBestScores.menuType, requirement.menuType),
-          eq(challengeBestScores.leaderboardKey, requirement.leaderboardKey)
-        )
-      );
-    return best !== undefined && best.score >= requirement.minScore;
+const evaluators: EvaluatorRegistry = {
+  challenge_score: async (ctx, requirement: ChallengeScoreRequirement) => {
+    const score = ctx.getBestScore(requirement.menuType, requirement.leaderboardKey);
+    return score !== undefined && score >= requirement.minScore;
   },
-  position_submission_count: async (userId, req, executor) => {
-    const requirement = req as PositionSubmissionCountRequirement;
-    const dbInstance = executor ?? db;
-    const [row] = await dbInstance
+  position_submission_count: async (ctx, requirement: PositionSubmissionCountRequirement) => {
+    const [row] = await db
       .select({ value: count() })
       .from(positions)
-      .where(and(eq(positions.userId, userId), inArray(positions.type, requirement.positionTypes)));
+      .where(
+        and(eq(positions.userId, ctx.userId), inArray(positions.type, requirement.positionTypes))
+      );
     return (row?.value ?? 0) >= requirement.minCount;
   },
-  game_publish_win: async (userId, req, executor) => {
-    const requirement = req as GamePublishWinRequirement;
-    const dbInstance = executor ?? db;
-
-    // The "was it constrained?" test reads a JSONB blob and is product logic
-    // worth keeping honest and unit-tested, so it stays in TS rather than
-    // becoming an un-indexable SQL predicate over `play_settings`. Only the
-    // cheap, indexed half of the filter goes to the database; the row set left
-    // over is one user's won games, which is small.
-    const rows = await dbInstance
-      .select({ playSettings: games.playSettings })
-      .from(games)
-      .where(and(eq(games.authorId, userId), eq(games.result, 'win'), isNull(games.deletedAt)));
-
+  // The "was it constrained?" test reads a JSONB blob and is product logic
+  // worth keeping honest and unit-tested, so it stays in TS rather than
+  // becoming an un-indexable SQL predicate over `play_settings`. Only the
+  // cheap, indexed half of the filter goes to the database (via
+  // `getWonPublicGames`); the row set left over is one user's won games,
+  // which is small.
+  game_publish_win: async (ctx, requirement: GamePublishWinRequirement) => {
+    const rows = await ctx.getWonPublicGames();
     const qualifying = rows.filter((row) => isConstrainedPlaySettings(row.playSettings));
+    return qualifying.length >= requirement.minCount;
+  },
+  game_publish_win_hidden_board: async (ctx, requirement: GamePublishWinHiddenBoardRequirement) => {
+    const rows = await ctx.getWonPublicGames();
+
+    // A game with a malformed operationLogs entry is disqualified rather than
+    // crashing — a crash here would take down checkAndGrantRanks for every
+    // future trigger of this user (the error is swallowed and only reaches
+    // Sentry), permanently blocking promotion. Lenient (treat as 0 peeks)
+    // is deliberately not chosen: don't promote on unverifiable logs.
+    const qualifying = rows.filter((row) => {
+      if (!maintainedHiddenBoard(row.playSettings, row.playSettingsLog)) return false;
+      const logs = row.operationLogs ?? [];
+      let peeks = 0;
+      for (const log of logs) {
+        if (typeof log?.peekCount !== 'number' || Number.isNaN(log.peekCount)) return false;
+        peeks += log.peekCount;
+      }
+      return peeks <= requirement.maxPeeks;
+    });
     return qualifying.length >= requirement.minCount;
   },
 };
@@ -122,18 +199,19 @@ const evaluators: Record<string, RequirementEvaluator> = {
 /**
  * Evaluate whether a user meets ALL requirements for a given rank.
  * Returns true only if every requirement is satisfied (implicit AND).
- * When scoreCache is provided, evaluators use it instead of querying the DB.
  */
 export async function evaluateRankRequirements(
-  userId: string,
-  requirements: RankRequirement[],
-  executor?: typeof db,
-  scoreCache?: BestScoreCache
+  ctx: RankEvalContext,
+  requirements: RankRequirement[]
 ): Promise<boolean> {
   for (const req of requirements) {
-    const evaluate = evaluators[req.type];
+    // Loose lookup (vs. the exhaustively-typed `evaluators` declaration)
+    // because `req` here is a runtime union member, not a specific `K` — an
+    // unrecognised `req.type` (e.g. stale seed data) must fail closed rather
+    // than throw.
+    const evaluate = (evaluators as Record<string, RequirementEvaluator>)[req.type];
     if (!evaluate) return false; // Unknown requirement type = fail
-    const met = await evaluate(userId, req, executor, scoreCache);
+    const met = await evaluate(ctx, req);
     if (!met) return false;
   }
   return true;
@@ -142,19 +220,24 @@ export async function evaluateRankRequirements(
 /**
  * Check and grant any newly achievable ranks for a user.
  *
- * Called after a challenge result is saved. Finds the next rank(s)
- * the user hasn't achieved yet (ordered by level), evaluates their
- * requirements, and grants them if all conditions are met.
+ * Called after every rank-relevant trigger (challenge save, position
+ * create, game publish, game claim). Evaluates every unachieved rank
+ * INDEPENDENTLY, in level order: each rank grants the moment its own
+ * requirements are met, regardless of lower ranks — so a brand-new
+ * player who publishes a black-belt-grade win jumps straight to 1dan
+ * with no kyū ranks at all. Sparse achievement sets are a supported
+ * state everywhere downstream (`resolveNextRank` recommends the first
+ * unachieved slug above the highest achieved rank; the ranks grid and
+ * admin stats key off actual rows).
  *
- * Stops at the first rank whose requirements are NOT met, since
- * progression is linear (can't skip ranks).
+ * This is a deliberate product choice (UGC first): the old linear
+ * "stop at the first unmet rank" gate was removed 2026-07-18 so a
+ * single published game can promote anyone immediately.
  *
  * Note: This function uses its own transaction. It should be called
  * AFTER the challenge result transaction commits, so that
  * challenge_best_scores reflects the latest data.
  */
-export type { GrantedRank } from './data/ranks';
-
 export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]> {
   const granted: GrantedRank[] = [];
 
@@ -178,6 +261,7 @@ export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]>
   const scoreCache: BestScoreCache = new Map(
     allBestScores.map((s) => [bestScoreCacheKey(s.menuType, s.leaderboardKey), s.score])
   );
+  const ctx = createRankEvalContext(userId, scoreCache);
 
   // 2. Filter to unachieved ranks
   const unachievedRanks = allRanks.filter((r) => !achievedRankIds.has(r.id));
@@ -187,8 +271,8 @@ export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]>
     const requirements = parseRequirements(rank.requirements);
     if (requirements.length === 0) continue; // No requirements = skip
 
-    const met = await evaluateRankRequirements(userId, requirements, undefined, scoreCache);
-    if (!met) break; // Linear progression: stop at first unmet rank
+    const met = await evaluateRankRequirements(ctx, requirements);
+    if (!met) continue; // Independent evaluation: an unmet rank never blocks higher ones
 
     // 4. Grant the rank
     await db

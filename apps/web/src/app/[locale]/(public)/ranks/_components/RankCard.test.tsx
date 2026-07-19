@@ -50,16 +50,14 @@ const baseProps = {
 };
 
 describe('RankCard', () => {
-  describe('when state is "locked"', () => {
-    const lockedProps = {
+  describe('when state is "unachieved" (not the recommended next)', () => {
+    const unachievedProps = {
       ...baseProps,
-      state: 'locked' as const,
-      previousRankName: '10級',
-      previousSlug: '10kyu',
+      state: 'unachieved' as const,
     };
 
-    it('should render as a link', () => {
-      render(<RankCard {...lockedProps} />);
+    it('should render as a link — every defined rank is browsable (skip-grants)', () => {
+      render(<RankCard {...unachievedProps} />);
 
       const link = screen.getByRole('link', { name: /9級/ });
       expect(link).toBeInTheDocument();
@@ -67,33 +65,25 @@ describe('RankCard', () => {
     });
 
     it('should not display a smoke overlay', () => {
-      const { container } = render(<RankCard {...lockedProps} />);
+      const { container } = render(<RankCard {...unachievedProps} />);
 
       // Check that no overlay with backdrop-blur or bg-foreground/30 exists
       const overlays = container.querySelectorAll('[class*="backdrop-blur"]');
       expect(overlays.length).toBe(0);
     });
 
-    it('should render the lock icon (via LockedRankIndicator)', () => {
-      render(<RankCard {...lockedProps} />);
+    it('should not render any lock button — ranks are earnable in any order', () => {
+      render(<RankCard {...unachievedProps} />);
 
-      // LockedRankIndicator renders a button with aria-label
-      const lockButton = screen.getByRole('button', { name: 'ariaLabel' });
-      expect(lockButton).toBeInTheDocument();
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('should render a chevron icon', () => {
-      const { container } = render(<RankCard {...lockedProps} />);
+      const { container } = render(<RankCard {...unachievedProps} />);
 
       // HiChevronRight has aria-hidden="true"
       const chevrons = container.querySelectorAll('[aria-hidden="true"]');
       expect(chevrons.length).toBeGreaterThan(0);
-    });
-
-    it('should not render the lock icon when previousRankName is missing', () => {
-      render(<RankCard {...baseProps} state="locked" />);
-
-      expect(screen.queryByRole('button', { name: 'ariaLabel' })).not.toBeInTheDocument();
     });
   });
 
@@ -221,18 +211,12 @@ describe('RankCard', () => {
       expect(screen.queryByText('Requirements')).not.toBeInTheDocument();
     });
 
-    it('should not render requirements section when hideRequirements is true', () => {
-      render(<RankCard {...baseProps} state="next" hideRequirements />);
+    it('should not render requirements section when requirementLabels is unspecified (default)', () => {
+      const { requirementLabels: _requirementLabels, ...propsWithoutLabels } = baseProps;
+      render(<RankCard {...propsWithoutLabels} state="next" />);
 
       expect(screen.queryByText('Requirements')).not.toBeInTheDocument();
       expect(screen.queryByText('Score 80+ in Coordinate Quiz')).not.toBeInTheDocument();
-    });
-
-    it('should render requirements when hideRequirements is explicitly false (default)', () => {
-      render(<RankCard {...baseProps} state="next" hideRequirements={false} />);
-
-      expect(screen.getByText('Requirements')).toBeInTheDocument();
-      expect(screen.getByText('Score 80+ in Coordinate Quiz')).toBeInTheDocument();
     });
   });
 });

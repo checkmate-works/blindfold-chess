@@ -23,6 +23,7 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   profile_updated: { messageKey: 'profileUpdated', type: 'success' },
   post_created: { messageKey: 'postCreated', type: 'success' },
   game_published: { messageKey: 'gamePublished', type: 'success' },
+  game_claimed: { messageKey: 'gameClaimed', type: 'success' },
   rate_limited: { messageKey: 'rateLimited', type: 'info' },
   account_deleted: { messageKey: 'accountDeleted', type: 'success' },
   position_created: { messageKey: 'positionCreated', type: 'success' },

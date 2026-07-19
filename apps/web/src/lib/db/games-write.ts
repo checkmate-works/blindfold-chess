@@ -11,7 +11,7 @@
  * @see {@link @/lib/games/publish-game} for the validation + column derivation
  *      that produces the inputs here.
  */
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { generateManageToken } from '@/lib/games/manage-token';
@@ -101,4 +101,32 @@ export async function updateSharedGameFields(
     .update(games)
     .set({ title: fields.title, description: fields.description })
     .where(eq(games.id, gameId));
+}
+
+/**
+ * Claim an account-less published game for a registered user: set
+ * `author_id` and burn the manage token, per the `game_tokens` design
+ * (PK=FK, token deleted on claim).
+ *
+ * The UPDATE is guarded by `author_id IS NULL`, so a double or concurrent
+ * claim loses atomically at the row level — no read-check-write window.
+ * Returns false when nothing was claimed (already claimed, deleted, or
+ * gone); the caller maps that to its own error code.
+ *
+ * Token verification is NOT done here — the caller must have already
+ * authorized via `authorizeGameMutation` with the manage token.
+ */
+export async function claimSharedGame(gameId: string, userId: string): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const claimed = await tx
+      .update(games)
+      .set({ authorId: userId })
+      .where(and(eq(games.id, gameId), isNull(games.authorId), isNull(games.deletedAt)))
+      .returning({ id: games.id });
+
+    if (claimed.length === 0) return false;
+
+    await tx.delete(gameTokens).where(eq(gameTokens.gameId, gameId));
+    return true;
+  });
 }

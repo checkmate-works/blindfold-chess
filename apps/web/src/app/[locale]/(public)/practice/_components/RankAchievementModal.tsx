@@ -34,7 +34,13 @@ export function RankAchievementModal({ locale }: Props) {
 
   if (!isOpen || grantedRanks.length === 0) return null;
 
-  const rank = grantedRanks[0]; // Show the first (most significant) rank
+  // `grantedRanks` arrives in the level-ascending order checkAndGrantRanks
+  // pushed them in — a single trigger can clear several ranks at once (e.g.
+  // a 1dan-grade game satisfies 1kyu's looser bar too, so both are granted
+  // together). Headline the highest one; skip-grants make multi-rank passes
+  // routine enough that calling out the rest is no longer worth the noise —
+  // /ranks shows the full achieved set.
+  const rank = grantedRanks.reduce((highest, r) => (r.level > highest.level ? r : highest));
   const beltColor = BELT_COLOR_HEX[rank.color ?? ''] ?? '#6b7280';
 
   return (
@@ -60,12 +66,11 @@ export function RankAchievementModal({ locale }: Props) {
           style={{ backgroundColor: beltColor }}
         />
 
-        {/* Rank name */}
-        <p className="mt-3 text-2xl font-bold text-foreground">{t(`rankNames.${rank.slug}`)}</p>
-
-        {/* Description */}
-        <p id={descId} className="mt-2 text-sm text-muted-foreground">
-          {t('description')}
+        {/* Rank name — also the modal's accessible description: the name
+            achieved IS the description, so no separate "you earned a new
+            rank" line is needed. */}
+        <p id={descId} className="mt-3 text-2xl font-bold text-foreground">
+          {t(`rankNames.${rank.slug}`)}
         </p>
 
         {/* CTA: Link to ranks page */}

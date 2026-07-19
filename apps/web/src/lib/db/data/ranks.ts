@@ -11,6 +11,9 @@
  *   meet minCount (OR across types, see {@link PositionSubmissionCountRequirement}).
  * - game_publish_win: user must have published minCount won engine games played
  *   under a blindfold constraint (see {@link GamePublishWinRequirement}).
+ * - game_publish_win_hidden_board: like game_publish_win, but stricter — the
+ *   board must stay hidden for the whole game (not just at the start) and
+ *   peeking is capped (see {@link GamePublishWinHiddenBoardRequirement}).
  *
  * A requirement type the parser does not recognise is DROPPED, not failed — so
  * a rank seeded with only unknown requirements parses to `[]` and reads as
@@ -64,10 +67,35 @@ export type GamePublishWinRequirement = {
   minCount: number;
 };
 
+/**
+ * Requires the user to have published at least `minCount` WON games against
+ * the engine that stayed under a blindfold constraint for the ENTIRE game,
+ * with peeking capped at `maxPeeks`.
+ *
+ * Stricter than {@link GamePublishWinRequirement} in two ways:
+ * - "Hidden" is judged on `boardVisibility` specifically (not the full
+ *   {@link isConstrainedPlaySettings} constraint set), and it must hold at
+ *   the start AND stay that way the whole game — checked against the
+ *   self-reported `games.play_settings_log`, not just the start snapshot.
+ *   See {@link maintainedHiddenBoard}, which owns that predicate.
+ * - The total `peekCount` across the game's self-reported `operationLogs`
+ *   must not exceed `maxPeeks`.
+ *
+ * Like `game_publish_win`, this inherits the app's self-reported posture:
+ * `games.result`, `play_settings_log`, and `operation_logs` are all trusted
+ * as-is (only move legality is verified server-side at publish time).
+ */
+export type GamePublishWinHiddenBoardRequirement = {
+  type: 'game_publish_win_hidden_board';
+  minCount: number;
+  maxPeeks: number;
+};
+
 export type RankRequirement =
   | ChallengeScoreRequirement
   | PositionSubmissionCountRequirement
-  | GamePublishWinRequirement;
+  | GamePublishWinRequirement
+  | GamePublishWinHiddenBoardRequirement;
 
 type RankSeed = {
   slug: string;
@@ -86,6 +114,33 @@ type RankSeed = {
 export const ALL_RANK_SLUGS = ['mukyu', '5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan'] as const;
 
 export type RankSlug = (typeof ALL_RANK_SLUGS)[number];
+
+/**
+ * The `level` at which the dan tier begins (1dan = 110; kyū ranks are ≤50).
+ *
+ * Holding any rank at or above this level carries the dan perk: permanent
+ * ad-free browsing (see `hasDanTierRank` / `hasAdFreeEntitlement`). Defined
+ * as a level threshold rather than a slug list so future dan ranks (2dan,
+ * 3dan, …) inherit the perk without code changes — they will all seed with
+ * `level >= 110` per the numbering scheme above.
+ *
+ * `user_ranks` is INSERT-only (ranks are never revoked), so crossing this
+ * threshold is a one-way, permanent entitlement.
+ */
+export const DAN_TIER_MIN_LEVEL = 110;
+
+/**
+ * Cache tag for per-user rank-derived status (the `hasDanTierRank` check in
+ * `@/lib/users/dan-rank`). Revalidated by the rank-granting flows right
+ * before they refresh the `bfc_ads_hidden` cookie, so a fresh dan promotion
+ * is not served a stale "no dan rank" from that cache. Reads also self-heal
+ * via `revalidate: 60` even if a future granting path forgets the tag.
+ *
+ * Lives in this pure data module (not `dan-rank.ts`) so the ads cookie
+ * writer can import it without pulling the server-only DB module graph into
+ * client-component unit tests.
+ */
+export const RANK_STATUS_CACHE_TAG = 'rank-status';
 
 /** Belt colors for each rank. */
 export const RANK_COLORS: Record<RankSlug, string> = {
@@ -137,11 +192,24 @@ export function isGamePublishWinRequirement(value: unknown): value is GamePublis
   return record.type === 'game_publish_win' && typeof record.minCount === 'number';
 }
 
+export function isGamePublishWinHiddenBoardRequirement(
+  value: unknown
+): value is GamePublishWinHiddenBoardRequirement {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    record.type === 'game_publish_win_hidden_board' &&
+    typeof record.minCount === 'number' &&
+    typeof record.maxPeeks === 'number'
+  );
+}
+
 function isRankRequirement(value: unknown): value is RankRequirement {
   return (
     isChallengeScoreRequirement(value) ||
     isPositionSubmissionCountRequirement(value) ||
-    isGamePublishWinRequirement(value)
+    isGamePublishWinRequirement(value) ||
+    isGamePublishWinHiddenBoardRequirement(value)
   );
 }
 
@@ -306,5 +374,16 @@ export const ranksSeedData: RankSeed[] = [
   },
   // Gap between 1kyu (50) and 1dan (110) is intentionally large to reserve
   // space for future intermediate ranks between kyū and dan tiers.
-  { slug: '1dan', level: 110, color: RANK_COLORS['1dan'], requirements: [] },
+  {
+    slug: '1dan',
+    level: 110,
+    color: RANK_COLORS['1dan'],
+    requirements: [
+      {
+        type: 'game_publish_win_hidden_board',
+        minCount: 1,
+        maxPeeks: 5,
+      },
+    ],
+  },
 ];

@@ -110,7 +110,7 @@ vi.mock('@/lib/points', () => ({
   clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('./getClientIp', () => ({
+vi.mock('@/lib/security/client-ip', () => ({
   getClientIp: () => Promise.resolve('127.0.0.1'),
 }));
 

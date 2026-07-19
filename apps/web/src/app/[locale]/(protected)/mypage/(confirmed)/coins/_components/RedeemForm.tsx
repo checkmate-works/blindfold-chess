@@ -12,6 +12,13 @@ import { type RedeemAdFreeResult, redeemAdFree } from '../_actions/redeemAdFree'
 type Props = {
   balance: number;
   daysPerPoint: number;
+  /**
+   * True when the user holds a dan-tier rank and therefore browses ad-free
+   * permanently. Redeeming coins for ad_free days would burn coins for
+   * nothing, so the redeem controls are replaced with an explanation.
+   * The `redeemAdFree` action guards server-side as well.
+   */
+  danAdFree?: boolean;
 };
 
 /**
@@ -30,7 +37,7 @@ type Props = {
  * does not fire two requests. The server-side conditional debit would
  * still serialize, but we want the UI to feel intentional too.
  */
-export function RedeemForm({ balance, daysPerPoint }: Props) {
+export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) {
   const t = useTranslations('MypagePoints');
   const router = useRouter();
   const [amount, setAmount] = useState<number>(Math.min(1, balance));
@@ -76,6 +83,15 @@ export function RedeemForm({ balance, daysPerPoint }: Props) {
 
   if (balance < 1) {
     return null;
+  }
+
+  if (danAdFree) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-foreground">{t('redeem.title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('redeem.danAdFreeNotice')}</p>
+      </div>
+    );
   }
 
   return (

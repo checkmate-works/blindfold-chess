@@ -184,6 +184,28 @@ export function isPointGrantMetadata(m: unknown): m is PointGrantMetadata {
 }
 
 /**
+ * Metadata persisted with a `rank_grant` notification — emitted only from
+ * the admin /admin/users/[id] → grantRank flow (manual rank remediation;
+ * `checkAndGrantRanks` does not itself notify, see `RankAchievementModal`
+ * for the normal in-flow celebration).
+ */
+export type RankGrantMetadata = {
+  rankSlug: string;
+  rankLevel: number;
+  reason: string | null;
+};
+
+export function isRankGrantMetadata(m: unknown): m is RankGrantMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return (
+    typeof r.rankSlug === 'string' &&
+    typeof r.rankLevel === 'number' &&
+    (r.reason === null || typeof r.reason === 'string')
+  );
+}
+
+/**
  * Metadata persisted with a `like_coin_grant` notification — emitted by the
  * daily like-coin batch (`grantLikeCoins`). `count` is the number of coins
  * minted for the recipient in that single batch run (direct grants and

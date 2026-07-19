@@ -28,25 +28,32 @@ describe('BeltStrip', () => {
     ['2kyu' as RankSlug, '2 kyu'],
     ['1kyu' as RankSlug, '1 kyu'],
     ['1dan' as RankSlug, '1 dan'],
-  ])('applies the belt color for %s via the SVG fill attribute', (slug, label) => {
-    render(<BeltStrip slug={slug} rankName={label} />);
-    const icon = screen.getByTestId('belt-strip-icon');
-    const expected = expectedHex(slug);
+  ])(
+    'fills the badge circle with the belt color for %s, not just the icon outline',
+    (slug, label) => {
+      render(<BeltStrip slug={slug} rankName={label} />);
+      const icon = screen.getByTestId('belt-strip-icon');
+      const expected = expectedHex(slug);
 
-    // `fill` is set as a DOM attribute so the color is guaranteed to render
-    // regardless of CSS cascade or `currentColor` inheritance.
-    expect(icon.getAttribute('fill')).toBe(expected);
-    expect(icon.getAttribute('stroke')).toBe(expected);
-    expect(icon).toHaveStyle({ color: expected });
+      // The icon's path is thin line art — filling only the icon leaves a
+      // near-invisible outline (this is the bug: a 1dan/black belt read as a
+      // blank "white belt"). The circular badge itself must carry the belt
+      // color as a solid background, with the icon rendered in a contrasting
+      // white on top.
+      const wrapper = icon.parentElement;
+      expect(wrapper).toHaveStyle({ backgroundColor: expected });
+      expect(icon.getAttribute('fill')).toBe('#ffffff');
+      expect(icon.getAttribute('stroke')).toBe('#ffffff');
+      expect(icon).toHaveStyle({ color: '#ffffff' });
 
-    const container = screen.getByTestId('belt-strip');
-    expect(container.getAttribute('data-belt-slug')).toBe(slug);
-    expect(container.getAttribute('data-belt-color')).toBe(expected);
+      const container = screen.getByTestId('belt-strip');
+      expect(container.getAttribute('data-belt-slug')).toBe(slug);
+      expect(container.getAttribute('data-belt-color')).toBe(expected);
 
-    // Non-white belts should not have the white-belt-only background fill.
-    const wrapper = screen.getByTestId('belt-strip-icon').parentElement;
-    expect(wrapper?.className ?? '').not.toContain('bg-muted');
-  });
+      // Non-white belts should not have the white-belt-only background fill.
+      expect(wrapper?.className ?? '').not.toContain('bg-muted');
+    }
+  );
 
   it('renders mukyu as a white belt with a filled background container', () => {
     render(<BeltStrip slug="mukyu" rankName="無級" />);

@@ -299,6 +299,10 @@
       "title": "Publicação sobre {square}",
       "description": "Uma publicação de discussão sobre a casa {square} no xadrez"
     },
+    "chunks": {
+      "title": "Chunks",
+      "description": "Catálogo de padrões de coordenação de peças para o treinamento de memória de posições"
+    },
     "games": {
       "title": "Suas Partidas",
       "description": "Consulte e gerencie suas partidas de xadrez às cegas"
@@ -1936,6 +1940,11 @@
       "inProgress": "Em Andamento",
       "bulkDelete": "Exclusão em Massa",
       "ranksLink": "🥋 Programa para vencer a IA",
+      "publishNudge": {
+        "body1dan": "Você tem uma partida não publicada que cumpre as condições da faixa preta (1.º Dan). Publique-a e você será promovido.",
+        "body1kyu": "Você tem uma partida não publicada que cumpre as condições de promoção a 1.º Kyū. Publique-a e você será promovido.",
+        "cta": "Publicar esta partida"
+      },
       "startGuidance": "Você pode iniciar uma partida de xadrez às cegas contra a IA a partir de <link>aqui</link>.",
       "sortBy": "Ordenar por",
       "lastPlayedDesc": "Última jogada ↓",
@@ -2263,6 +2272,18 @@
         "description": "Publique esta partida para conquistar o grau.",
         "publish": "Publicar esta partida",
         "skip": "Não publicar"
+      },
+      "dan": {
+        "title": "Você cumpriu as condições para a faixa preta (1.º Dan)",
+        "perk": "Detentores da faixa preta são isentos de anúncios.",
+        "publishBody": "Publique esta partida para ser promovido à faixa preta.",
+        "signUpBody": "Registre-se e publique esta partida para ser promovido à faixa preta."
+      },
+      "guestPromotion": {
+        "title1kyu": "Você cumpriu as condições de promoção para 1.º Kyū",
+        "body1kyu": "Registre-se e publique esta partida para ser promovido a 1.º Kyū.",
+        "signUp": "Registrar-me",
+        "publishAnonymously": "Publicar anonimamente"
       }
     },
     "repertoireCheck": {
@@ -2318,6 +2339,15 @@
       "cancel": "Cancelar",
       "deleteConfirmTitle": "Excluir esta partida compartilhada?",
       "deleteConfirmBody": "Ela será removida do catálogo público e não pode ser desfeita.",
+      "claim": {
+        "signedOutTitle": "Faça esta partida fazer parte do seu histórico",
+        "signedOutBody": "Você publicou esta partida sem uma conta. Registre-se e vincule-a — se ela cumprir os requisitos de uma graduação, você é promovido na hora (uma partida de nível faixa preta promove você à faixa preta).",
+        "signUpCta": "Registrar-me e vincular esta partida",
+        "claimTitle": "Vincular esta partida à sua conta",
+        "claimBody": "Você publicou esta partida antes de entrar. Vincule-a à sua conta — se ela cumprir os requisitos de uma graduação, você é promovido na hora.",
+        "claimButton": "Vincular à minha conta",
+        "claiming": "Vinculando…"
+      },
       "errors": {
         "forbidden": "Você não tem permissão para fazer isso.",
         "generic": "Algo deu errado. Tente novamente."
@@ -3497,12 +3527,14 @@
       "submit": "Resgatar {amount} moedas",
       "submitting": "Resgatando…",
       "successMessage": "Pronto — {days, plural, one {# dia} other {# dias}} sem anúncios foram adicionados.",
+      "danAdFreeNotice": "Como detentor de uma graduação dan, você sempre navega sem anúncios — não precisa gastar moedas nisso.",
       "errors": {
         "invalid_amount": "Informe um número inteiro positivo.",
         "insufficient_balance": "Você não tem moedas disponíveis suficientes.",
         "signInRequired": "Entre na sua conta para resgatar.",
         "banned": "Sua conta está restrita.",
-        "rateLimited": "Muitos resgates em pouco tempo — tente novamente mais tarde."
+        "rateLimited": "Muitos resgates em pouco tempo — tente novamente mais tarde.",
+        "danAdFree": "Como detentor de uma graduação dan, você já navega sem anúncios."
       }
     },
     "history": {
@@ -3632,6 +3664,8 @@
     "announcementMessage": "Novo anúncio: {title}",
     "newPostMessage": "{actor} compartilhou uma nova publicação",
     "newCommentOnTopicMessage": "{actor} comentou no seu problema",
+    "chunkEditRequestSubmittedMessage": "{actor} sugeriu uma edição para o seu chunk",
+    "chunkEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de edição",
     "newChunkDraftMessage": "{actor} publicou um rascunho de chunk",
     "chunkPublishedMessage": "{actor} publicou um chunk",
     "newGameMessage": "{actor} compartilhou uma partida",
@@ -3647,6 +3681,9 @@
     },
     "pointGrantMessage": {
       "default": "Você recebeu {amount, plural, one {# moeda} other {# moedas}}"
+    },
+    "rankGrantMessage": {
+      "default": "Você recebeu o rank {rankName}"
     },
     "likeCoinGrantMessage": {
       "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
@@ -3687,6 +3724,7 @@
     "profileUpdated": "Perfil atualizado",
     "postCreated": "Publicado com sucesso",
     "gamePublished": "Partida publicada",
+    "gameClaimed": "A partida agora está vinculada à sua conta",
     "rateLimited": "Você só pode publicar uma vez por dia para cada abertura. Por favor, tente mais tarde.",
     "gameSaved": "Partida salva com sucesso",
     "gamesDeleted": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",
@@ -3699,6 +3737,7 @@
     "lineAdded": "Linha adicionada",
     "puzzleUpdated": "Alterações salvas",
     "puzzleDeleted": "Puzzle excluído",
+    "editRequestSubmitted": "Sugestão de edição enviada",
     "editRequestAccepted": "Sugestão de edição aceita",
     "editRequestRejected": "Sugestão de edição rejeitada",
     "editRequestWithdrawn": "Sugestão de edição retirada"
@@ -4536,6 +4575,10 @@
       "openings": {
         "title": "Aberturas",
         "description": "Explore e aprenda sobre aberturas de xadrez"
+      },
+      "chunks": {
+        "title": "Chunks",
+        "description": "Catálogo de padrões de coordenação de peças para o treinamento de memória de posições"
       }
     },
     "openings": {
@@ -5428,6 +5471,8 @@
     "challengeScore": "Pontuação {minScore}+ em {challengeName}",
     "submissionCount": "Publique pelo menos {minCount} {itemName}",
     "gamePublishWin": "Vença o motor com ao menos uma restrição ativada e publique a partida",
+    "gamePublishWinHiddenBoard": "Vença o motor mantendo o tabuleiro oculto o tempo todo, e publique a partida",
+    "gamePublishWinHiddenBoardNote": "※ A opção “Permitir espiar” ainda pode ser usada, até {maxPeeks} vezes",
     "orDivider": "ou",
     "submissionItemNames": {
       "memory": "problema de memória de posições",
@@ -5457,13 +5502,17 @@
     "detail": {
       "criteria": "Critérios",
       "requirements": "Requisitos",
+      "achieved": "Conquistado",
+      "benefits": "Benefícios",
+      "benefitsAdFree": "Os anúncios em todo o site ficam ocultos.",
       "criteriaDescriptions": {
         "mukyu": "Pronto para começar o treinamento básico de xadrez às cegas.",
         "5kyu": "Capacidade de identificar corretamente a casa no tabuleiro de xadrez a partir da notação algébrica (ex., e4, Bg7).",
         "4kyu": "Capacidade de determinar os movimentos legais em uma coordenada específica para todas as peças sem ajudas visuais.",
         "3kyu": "Capacidade de planejar rotas de manobra de peças para todas as peças sem auxílios visuais.",
         "2kyu": "Ser capaz de reconhecer várias peças como uma única unidade com significado (um “chunk”).",
-        "1kyu": "Ser capaz de vencer o motor sob alguma restrição de xadrez às cegas."
+        "1kyu": "Ser capaz de vencer o motor sob alguma restrição de xadrez às cegas.",
+        "1dan": "Ser capaz de vencer o motor no xadrez às cegas."
       },
       "tips": "Dicas",
       "tryChallenge": "Cumprir os requisitos",
@@ -5482,17 +5531,10 @@
       "message": "Conquiste sua faixa preta!",
       "description": "Cadastre-se para acompanhar seu progresso de graduação.",
       "cta": "Cadastro Gratuito"
-    },
-    "lockedModal": {
-      "title": "Graduação Bloqueada",
-      "message": "Passe {rankName} para desbloquear esta graduação",
-      "linkLabel": "Ver detalhes de {rankName}",
-      "ariaLabel": "Bloqueado"
     }
   },
   "rankAchievement": {
     "title": "Graduação Alcançada!",
-    "description": "Parabéns! Você obteve uma nova graduação de faixa.",
     "viewRanks": "Ver Graduações",
     "close": "Fechar",
     "rankNames": {
@@ -5552,7 +5594,6 @@
     "viewAllGuides": "Ver todos os guias",
     "curriculum": {
       "title": "Currículo",
-      "empty": "Em breve",
       "achieved": "Conquistado",
       "sections": {
         "algebraicNotation": "Notação algébrica",

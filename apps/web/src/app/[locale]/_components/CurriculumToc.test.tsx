@@ -58,24 +58,24 @@ function renderToc({
       maxVisibleSlug={maxVisibleSlug}
       rankName={rankName}
       sectionTitle={sectionTitle}
-      emptyLabel="Coming soon"
       achievedLabel="Achieved"
       guideHrefBySlug={guideHrefBySlug}
     />
   );
 }
 
+/** Slugs that actually render: only ranks with at least one curriculum section. */
+const RANKS_WITH_SECTIONS = CURRICULUM.filter(({ sections }) => sections.length > 0);
+
 describe('CurriculumToc', () => {
   it('renders a flat list without <details> elements', () => {
     const { container } = renderToc();
     expect(container.querySelectorAll('details').length).toBe(0);
-    // One <ol> with one <li> per expected row.
+    // One <ol> with one <li> per curriculum section — section-less ranks
+    // are omitted entirely, never shown as placeholders.
     const ol = container.querySelector('ol');
     expect(ol).not.toBeNull();
-    const expectedRows = CURRICULUM.reduce(
-      (sum, { sections }) => sum + Math.max(sections.length, 1),
-      0
-    );
+    const expectedRows = CURRICULUM.reduce((sum, { sections }) => sum + sections.length, 0);
     expect(ol!.querySelectorAll(':scope > li').length).toBe(expectedRows);
   });
 
@@ -96,9 +96,9 @@ describe('CurriculumToc', () => {
     }
   });
 
-  it('renders every rank in CURRICULUM (as a section row or placeholder)', () => {
+  it('renders every rank that has curriculum sections', () => {
     const { container } = renderToc();
-    for (const { slug } of CURRICULUM) {
+    for (const { slug } of RANKS_WITH_SECTIONS) {
       const rows = container.querySelectorAll(`[data-rank="${slug}"]`);
       expect(rows.length).toBeGreaterThanOrEqual(1);
     }
@@ -171,37 +171,62 @@ describe('CurriculumToc', () => {
     }
   });
 
-  it('shows a check mark for achieved ranks (including mukyu)', () => {
+  it('shows a check mark for every slug present in achievedSlugs', () => {
     renderToc({
       achieved: new Set<RankSlug>(['5kyu', '4kyu']),
       nextSlug: '3kyu',
     });
     const checks = screen.getAllByTestId('curriculum-achieved-mark');
-    // mukyu (always achieved) + 5kyu + 4kyu = 3 achieved rows, each with one
-    // section row → 3 checks.
-    expect(checks.length).toBe(3);
+    // 5kyu + 4kyu = 2 achieved rows, each with one section row → 2 checks.
+    // mukyu is intentionally absent from this achievedSlugs set and must NOT
+    // be auto-checked — its achieved-ness is the caller's decision (mirroring
+    // the /ranks grid rule: mukyu counts as achieved only once the user
+    // holds a real rank), not a hardcoded default inside CurriculumToc.
+    expect(checks.length).toBe(2);
   });
 
-  it('renders a coming-soon placeholder row (non-clickable) for ranks with empty sections', () => {
+  it('does not check mukyu when the caller omits it (e.g. a user with zero real ranks)', () => {
+    const { container } = renderToc({ achieved: new Set<RankSlug>(), nextSlug: 'mukyu' });
+    const mukyuRow = container.querySelector('[data-rank="mukyu"]');
+    expect(mukyuRow).not.toBeNull();
+    expect(mukyuRow!.querySelector('[data-testid="curriculum-achieved-mark"]')).toBeNull();
+  });
+
+  it('checks mukyu when the caller includes it (e.g. a user who has earned a real rank)', () => {
+    renderToc({
+      achieved: new Set<RankSlug>(['5kyu', 'mukyu']),
+      nextSlug: '4kyu',
+    });
+    const checks = screen.getAllByTestId('curriculum-achieved-mark');
+    // mukyu + 5kyu = 2 achieved rows, each with one section row → 2 checks.
+    expect(checks.length).toBe(2);
+  });
+
+  it('omits ranks with no curriculum sections — no "coming soon" placeholder anywhere', () => {
+    // A rank without study material (1dan today) must simply be absent: an
+    // achieved 1dan holder's dojo showing 「初段・近日公開」 was the bug.
     const { container } = renderToc();
     for (const slug of ['1dan'] as const) {
-      const row = container.querySelector(`[data-rank="${slug}"]`);
-      expect(row).not.toBeNull();
-      expect(row!.getAttribute('data-disabled')).toBe('true');
-      expect(row!.textContent).toContain('Coming soon');
-      // Non-clickable coming-soon rows must not contain an anchor.
-      expect(row!.querySelector('a')).toBeNull();
+      expect(container.querySelector(`[data-rank="${slug}"]`)).toBeNull();
     }
+    expect(screen.queryByText('Coming soon')).toBeNull();
+    // Ranks with real sections are unaffected.
+    expect(container.querySelector('[data-rank="1kyu"]')).not.toBeNull();
   });
 
-  it('renders 1kyu as a real section row, not a placeholder', () => {
-    // Its curriculum entry sat empty while its guide shipped, so the dojo went
-    // on advertising "Coming soon" for a rank you could already study.
+  it('still omits section-less ranks when they are achieved (user-aware mode)', () => {
+    const { container } = renderToc({
+      achieved: new Set<RankSlug>(['1dan']),
+      nextSlug: '5kyu',
+    });
+    expect(container.querySelector('[data-rank="1dan"]')).toBeNull();
+  });
+
+  it('renders 1kyu as a real section row', () => {
     const { container } = renderToc();
     const row = container.querySelector('[data-rank="1kyu"]');
     expect(row).not.toBeNull();
     expect(row!.getAttribute('data-disabled')).toBeNull();
-    expect(row!.textContent).not.toContain('Coming soon');
     expect(row!.querySelector('a')).not.toBeNull();
   });
 
@@ -227,7 +252,7 @@ describe('CurriculumToc', () => {
 
     it('renders every rank (no truncation)', () => {
       const { container } = renderToc({ userAware: false });
-      for (const { slug } of CURRICULUM) {
+      for (const { slug } of RANKS_WITH_SECTIONS) {
         const rows = container.querySelectorAll(`[data-rank="${slug}"]`);
         expect(rows.length).toBeGreaterThanOrEqual(1);
       }
@@ -258,7 +283,7 @@ describe('CurriculumToc', () => {
         achieved: new Set<RankSlug>(),
         nextSlug: '5kyu',
       });
-      for (const { slug } of CURRICULUM) {
+      for (const { slug } of RANKS_WITH_SECTIONS) {
         expect(container.querySelectorAll(`[data-rank="${slug}"]`).length).toBeGreaterThan(0);
       }
     });

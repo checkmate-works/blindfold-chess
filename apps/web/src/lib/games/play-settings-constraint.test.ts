@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { isConstrainedPlaySettings } from './play-settings-constraint';
-import type { GamePlaySettings } from './saved-game-types';
+import { isConstrainedPlaySettings, maintainedHiddenBoard } from './play-settings-constraint';
+import type { GamePlaySettings, PlaySettingsChangeEntry } from './saved-game-types';
 
 const SIGHTED: GamePlaySettings = {
   boardVisibility: 'always',
@@ -44,5 +44,51 @@ describe('isConstrainedPlaySettings', () => {
     // unknown game must not earn the rank.
     expect(isConstrainedPlaySettings(null)).toBe(false);
     expect(isConstrainedPlaySettings(undefined)).toBe(false);
+  });
+});
+
+describe('maintainedHiddenBoard', () => {
+  it('rejects a game that started fully sighted', () => {
+    expect(maintainedHiddenBoard(SIGHTED, null)).toBe(false);
+  });
+
+  it.each(['peek', 'never'] as const)(
+    'accepts a game that started and stayed on "%s" with no log',
+    (boardVisibility) => {
+      expect(maintainedHiddenBoard({ ...SIGHTED, boardVisibility }, null)).toBe(true);
+    }
+  );
+
+  it('accepts a game whose log only touches unrelated keys', () => {
+    const log: PlaySettingsChangeEntry[] = [{ atMoveIndex: 3, key: 'pieceColors', to: 'normal' }];
+    expect(maintainedHiddenBoard({ ...SIGHTED, boardVisibility: 'never' }, log)).toBe(true);
+  });
+
+  it('accepts a game whose board visibility changed but never back to "always"', () => {
+    const log: PlaySettingsChangeEntry[] = [
+      { atMoveIndex: 2, key: 'boardVisibility', to: 'peek' },
+      { atMoveIndex: 6, key: 'boardVisibility', to: 'never' },
+    ];
+    expect(maintainedHiddenBoard({ ...SIGHTED, boardVisibility: 'peek' }, log)).toBe(true);
+  });
+
+  it('rejects a game that started hidden but was revealed mid-game', () => {
+    const log: PlaySettingsChangeEntry[] = [
+      { atMoveIndex: 5, key: 'boardVisibility', to: 'always' },
+    ];
+    expect(maintainedHiddenBoard({ ...SIGHTED, boardVisibility: 'peek' }, log)).toBe(false);
+  });
+
+  it('rejects a game revealed mid-game even if hidden again afterward', () => {
+    const log: PlaySettingsChangeEntry[] = [
+      { atMoveIndex: 3, key: 'boardVisibility', to: 'always' },
+      { atMoveIndex: 8, key: 'boardVisibility', to: 'never' },
+    ];
+    expect(maintainedHiddenBoard({ ...SIGHTED, boardVisibility: 'peek' }, log)).toBe(false);
+  });
+
+  it('treats missing settings as not eligible', () => {
+    expect(maintainedHiddenBoard(null, null)).toBe(false);
+    expect(maintainedHiddenBoard(undefined, null)).toBe(false);
   });
 });

@@ -60,11 +60,6 @@ export function getSharedGame(localGameId: string): SharedGameRecord | null {
   return read()[localGameId] ?? null;
 }
 
-/** All localStorage game ids this browser has published, for a future "my shared games" view. */
-export function getSharedGameIds(): string[] {
-  return Object.keys(read());
-}
-
 /**
  * Reverse lookup: find this browser's record for a published game id (the id
  * used in the public URL). Lets the detail page tell whether the viewer is the
@@ -79,11 +74,29 @@ export function getSharedGameByPublishedId(
   return null;
 }
 
-/** Forget a mapping (e.g. after the game is claimed by an account or deleted). */
+/** Forget a mapping entirely (e.g. after the published game is deleted). */
 export function removeSharedGame(localGameId: string): void {
   if (typeof window === 'undefined') return;
   const map = read();
   if (!(localGameId in map)) return;
   delete map[localGameId];
+  write(map);
+}
+
+/**
+ * Burn just the manage token after a successful claim, keeping the
+ * `publishedId` mapping alive. The mapping is what the result screen and
+ * play surface use to know "this game is already published" — removing the
+ * whole record (via {@link removeSharedGame}) would make them offer to
+ * publish the game again. After a claim, ownership rides on the session
+ * (`games.author_id`), so the token is dead weight with real risk: anyone
+ * with this browser's localStorage could otherwise still look like an owner.
+ */
+export function clearManageToken(localGameId: string): void {
+  if (typeof window === 'undefined') return;
+  const map = read();
+  const record = map[localGameId];
+  if (!record || record.manageToken === undefined) return;
+  map[localGameId] = { publishedId: record.publishedId };
   write(map);
 }

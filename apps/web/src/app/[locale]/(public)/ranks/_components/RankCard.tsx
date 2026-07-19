@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 import { HiCheckCircle, HiChevronRight } from 'react-icons/hi2';
 
+import { isWhiteBelt } from '../_lib/helpers';
 import type { RankCardState } from '../_lib/helpers';
-import { LockedRankIndicator } from './LockedRankIndicator';
 import { RequirementsList } from './RequirementsList';
 import type { RequirementDivider } from './RequirementsList';
 
@@ -13,18 +13,14 @@ type RankCardProps = {
   beltColor: string;
   rankName: string;
   state: RankCardState;
-  requirementLabels: (string | RequirementDivider)[];
-  requirementsHeading: string;
-  comingSoonLabel: string;
-  previousRankName?: string;
-  previousSlug?: string;
   /**
-   * When `true`, the requirements list section is omitted from the card.
-   * Used by the Dojo page where requirement items are rendered as standalone
-   * links beneath the card instead of inside it. Defaults to `false` so that
-   * existing callers (e.g. `/ranks`) continue rendering requirements.
+   * Omit (or pass `[]`) to render the card with no requirements section —
+   * e.g. the Dojo page, where requirement items are rendered as standalone
+   * links beneath the card instead of inside it.
    */
-  hideRequirements?: boolean;
+  requirementLabels?: (string | RequirementDivider)[];
+  requirementsHeading?: string;
+  comingSoonLabel: string;
 };
 
 export function RankCard({
@@ -33,17 +29,11 @@ export function RankCard({
   beltColor,
   rankName,
   state,
-  requirementLabels,
+  requirementLabels = [],
   requirementsHeading,
   comingSoonLabel,
-  previousRankName,
-  previousSlug,
-  hideRequirements = false,
 }: RankCardProps) {
-  const isClickable = state === 'achieved' || state === 'next' || state === 'locked';
-
-  // White belt needs a visible border since #ffffff is invisible on light backgrounds
-  const isWhiteBelt = beltColor === '#ffffff';
+  const isClickable = state !== 'coming-soon';
 
   const cardContent = (
     <>
@@ -52,7 +42,7 @@ export function RankCard({
         className="h-2"
         style={{
           backgroundColor: beltColor,
-          ...(isWhiteBelt ? { borderBottom: '1px solid #d4d4d4' } : {}),
+          ...(isWhiteBelt(beltColor) ? { borderBottom: '1px solid #d4d4d4' } : {}),
         }}
       />
 
@@ -63,7 +53,7 @@ export function RankCard({
             className="inline-block size-4 shrink-0 rounded-full"
             style={{
               backgroundColor: beltColor,
-              ...(isWhiteBelt ? { border: '1px solid #d4d4d4' } : {}),
+              ...(isWhiteBelt(beltColor) ? { border: '1px solid #d4d4d4' } : {}),
             }}
           />
           <h3 className="text-lg font-bold text-foreground">{rankName}</h3>
@@ -76,29 +66,18 @@ export function RankCard({
               />
             </>
           )}
-          {state === 'next' && (
+          {(state === 'next' || state === 'unachieved') && (
+            // No lock icon on 'unachieved': ranks are earnable in any order
+            // (skip-grants), so an unachieved card is simply browsable, not gated.
             <HiChevronRight
               className="ml-auto size-5 shrink-0 text-muted-foreground"
               aria-hidden="true"
             />
           )}
-          {state === 'locked' && previousRankName && previousSlug && (
-            <>
-              <LockedRankIndicator
-                locale={locale}
-                previousRankName={previousRankName}
-                previousSlug={previousSlug}
-              />
-              <HiChevronRight
-                className="size-5 shrink-0 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </>
-          )}
         </div>
 
         {/* Requirements (only for ranks with defined requirements) */}
-        {!hideRequirements && requirementLabels.length > 0 && (
+        {requirementLabels.length > 0 && (
           <div>
             <h4 className="mb-2 text-sm font-semibold text-muted-foreground">
               {requirementsHeading}

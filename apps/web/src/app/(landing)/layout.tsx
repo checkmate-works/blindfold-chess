@@ -56,7 +56,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
   const nonce = requestHeaders.get('x-nonce') ?? undefined;
 
   // Load the full client-side message dictionary so that Client Components
-  // rendered below (e.g. `LockedRankIndicator` via `RanksSection` →
+  // rendered below (e.g. the rank teaser cards via `RanksSection` →
   // `RankCard`) can resolve translations through `NextIntlClientProvider`.
   // Mirrors the filtering done in `[locale]/layout.tsx` so server-only
   // namespaces are excluded from the client payload.

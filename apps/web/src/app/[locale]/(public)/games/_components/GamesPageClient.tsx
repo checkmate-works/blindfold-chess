@@ -19,6 +19,7 @@ import { GameList } from '../../(home)/_components/GameList';
 import { GameListSkeleton } from '../../(home)/_components/GameListSkeleton';
 import { useGameDelete } from '../../(home)/_hooks/use-game-delete';
 import { useGameList } from '../../(home)/_hooks/use-game-list';
+import { PublishNudgeBanner } from './PublishNudgeBanner';
 import { SortButton } from './SortButton';
 
 const GAMES_PAGE_MAX_COUNT = 20;
@@ -48,6 +49,8 @@ export function GamesPageClient({ locale }: Props) {
 
   return (
     <>
+      <PublishNudgeBanner locale={locale} />
+
       {showLimitWarning && (
         <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-foreground/80 dark:bg-amber-950/20">
           <FaExclamationTriangle
