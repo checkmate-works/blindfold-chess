@@ -539,7 +539,6 @@
     "notifications": {
       "description": "Os tipos desativados deixarão de enviar notificações para você.",
       "types": {
-        "new_post": "Novas publicações",
         "new_position": "Novas posições",
         "new_chunk_draft": "Novos rascunhos de chunk",
         "chunk_published": "Chunk publicado",

@@ -152,14 +152,17 @@ export type NewNotification = typeof notifications.$inferInsert;
  * @design Not every notification `type` is eligible to appear here
  *
  * Only the "social feed" types a user opts into by following someone or
- * posting (new_post, new_position, new_chunk_draft, chunk_published,
- * new_game, new_comment_on_topic) are mutable. `announcement` and other
+ * posting (new_position, new_chunk_draft, chunk_published, new_game,
+ * new_comment_on_topic) are mutable. `announcement` and other
  * transactional/account types (follow, like, reply, *_grant,
  * achievement_granted, *_edit_request_*) are deliberately excluded from the
  * settings UI so a user can never accidentally silence something like a
  * ToS notice. The restriction is enforced by `MUTABLE_NOTIFICATION_TYPES` in
  * `@/lib/notifications/mutable-types.ts`, not by this table — `type` stays a
- * plain varchar so extending the mutable set later is app-code-only.
+ * plain varchar so extending the mutable set later is app-code-only. The
+ * reverse (shrinking the set, e.g. `new_post` removed 2026-07) is also
+ * app-code-only: rows for a no-longer-mutable type may linger here but every
+ * reader filters by the current list, so they are ignored (delivery resumes).
  */
 export const notificationMutes = pgTable(
   'notification_mutes',

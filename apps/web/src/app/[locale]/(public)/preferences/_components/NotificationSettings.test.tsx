@@ -19,7 +19,6 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string) => {
     const labels: Record<string, string> = {
       'notifications.description': 'Turned-off types will no longer send you notifications.',
-      'notifications.types.new_post': 'New posts',
       'notifications.types.new_position': 'New positions',
       'notifications.types.new_chunk_draft': 'New chunk drafts',
       'notifications.types.chunk_published': 'Chunk published',
@@ -41,25 +40,25 @@ describe('NotificationSettings', () => {
     const { container } = render(<NotificationSettings />);
 
     expect(screen.queryAllByRole('switch')).toHaveLength(0);
-    // 6 skeleton rows × 2 shapes (label bar + switch placeholder).
-    expect(container.querySelectorAll('[aria-hidden="true"]')).toHaveLength(12);
+    // 5 skeleton rows × 2 shapes (label bar + switch placeholder).
+    expect(container.querySelectorAll('[aria-hidden="true"]')).toHaveLength(10);
   });
 
   it('renders one switch per mutable type once loaded', async () => {
     mockGetNotificationMutes.mockResolvedValue([]);
     render(<NotificationSettings />);
 
-    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(6));
+    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(5));
   });
 
   it('renders a muted type as off and an unmuted type as on', async () => {
-    mockGetNotificationMutes.mockResolvedValue(['new_post']);
+    mockGetNotificationMutes.mockResolvedValue(['new_position']);
     render(<NotificationSettings />);
 
     await waitFor(() =>
-      expect(screen.getByRole('switch', { name: 'New posts' }).getAttribute('aria-checked')).toBe(
-        'false'
-      )
+      expect(
+        screen.getByRole('switch', { name: 'New positions' }).getAttribute('aria-checked')
+      ).toBe('false')
     );
     expect(screen.getByRole('switch', { name: 'New games' }).getAttribute('aria-checked')).toBe(
       'true'
@@ -69,25 +68,25 @@ describe('NotificationSettings', () => {
   it('calls setNotificationMute(type, true) when toggling an enabled type off', async () => {
     mockGetNotificationMutes.mockResolvedValue([]);
     render(<NotificationSettings />);
-    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(6));
+    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(5));
 
-    fireEvent.click(screen.getByRole('switch', { name: 'New posts' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'New positions' }));
 
-    expect(mockSetNotificationMute).toHaveBeenCalledWith('new_post', true);
-    expect(screen.getByRole('switch', { name: 'New posts' }).getAttribute('aria-checked')).toBe(
+    expect(mockSetNotificationMute).toHaveBeenCalledWith('new_position', true);
+    expect(screen.getByRole('switch', { name: 'New positions' }).getAttribute('aria-checked')).toBe(
       'false'
     );
   });
 
   it('calls setNotificationMute(type, false) when toggling a muted type back on', async () => {
-    mockGetNotificationMutes.mockResolvedValue(['new_post']);
+    mockGetNotificationMutes.mockResolvedValue(['new_position']);
     render(<NotificationSettings />);
-    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(6));
+    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(5));
 
-    fireEvent.click(screen.getByRole('switch', { name: 'New posts' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'New positions' }));
 
-    expect(mockSetNotificationMute).toHaveBeenCalledWith('new_post', false);
-    expect(screen.getByRole('switch', { name: 'New posts' }).getAttribute('aria-checked')).toBe(
+    expect(mockSetNotificationMute).toHaveBeenCalledWith('new_position', false);
+    expect(screen.getByRole('switch', { name: 'New positions' }).getAttribute('aria-checked')).toBe(
       'true'
     );
   });

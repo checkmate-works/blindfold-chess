@@ -16,9 +16,17 @@
  * follow — muting them would mean missing something addressed to them
  * specifically. Only the follower fan-out types below are exposed as mute
  * toggles.
+ *
+ * @design Removing a type from this list is safe with stale mute rows around
+ *
+ * `new_post` (topic posts) was removed in 2026-07: the label was unclear and
+ * posts are too rare to be worth a toggle. Rows for a removed type may still
+ * exist in `notification_mutes`, but every consumer degrades to "notify":
+ * `createNotification` only consults mutes for types in this list, and
+ * `getMutedNotificationTypes` filters by this list — so stale rows are
+ * ignored, never an error.
  */
 export const MUTABLE_NOTIFICATION_TYPES = [
-  'new_post',
   'new_position',
   'new_chunk_draft',
   'chunk_published',
