@@ -13,6 +13,8 @@
  *    Each score requirement includes an inline "Challenge" link to the
  *    corresponding practice page (`/practice/{menuType}`).
  */
+import type { ComponentType } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
@@ -48,6 +50,73 @@ type Props = {
     slug: string;
   }>;
 };
+
+type TFunc = Awaited<ReturnType<typeof getTranslations>>;
+
+function truncateTeaser(text: string): string {
+  return text.length > 100 ? `${text.slice(0, 100)}…` : text;
+}
+
+/**
+ * Board visual shown in the Tips card, keyed by rank slug. Ranks not listed
+ * here (currently 5kyu, 1dan) fall back to AnchorPointsBoard — kept explicit
+ * rather than folded into a default case so a missing entry reads as "not
+ * yet decided" instead of silently matching.
+ */
+const TIPS_BOARD_BY_SLUG: Partial<Record<RankSlug, ComponentType<{ className?: string }>>> = {
+  mukyu: CoordinateBoard,
+  '4kyu': KingMovementBoard,
+  '3kyu': DiagonalBoard,
+  '2kyu': ScatteredPawnsBoard,
+  '1kyu': PawnBreakthroughBoard,
+};
+
+/** Criteria description section. Grouped in one wrapper so the panel's
+    `space-y-8` treats the whole section as a single child — the heading
+    and its paragraph stay tightly coupled (space-y-2) instead of each
+    getting the panel's full inter-section gap. */
+function CriteriaSection({ description, t }: { description: string; t: TFunc }) {
+  return (
+    <div className="space-y-2">
+      <SectionTitle>{t('detail.criteria')}</SectionTitle>
+      <p className="text-foreground/80">{description}</p>
+    </div>
+  );
+}
+
+/** Tips callout card with a rank-appropriate board visual, linking to the full guide. */
+function TipsCard({
+  slug,
+  teaser,
+  locale,
+  rankName,
+  t,
+}: {
+  slug: RankSlug;
+  teaser: string;
+  locale: Locale;
+  rankName: string;
+  t: TFunc;
+}) {
+  const Board = TIPS_BOARD_BY_SLUG[slug] ?? AnchorPointsBoard;
+
+  return (
+    <div className="space-y-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
+      <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
+      <p className="text-foreground/80">{truncateTeaser(teaser)}</p>
+      <Link
+        href={buildGuidePath(locale, slug, { kind: 'root' })}
+        className="block"
+        aria-label={t('detail.readFullGuide', { rankName })}
+      >
+        <Board className="mx-auto max-w-[10rem]" />
+        <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
+          {t('detail.readFullGuide', { rankName })}
+        </span>
+      </Link>
+    </div>
+  );
+}
 
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) => ALL_RANK_SLUGS.map((slug) => ({ locale, slug })));
@@ -125,35 +194,16 @@ export default async function RankDetailPage({ params }: Props) {
           {t('requirements')}
         </RankHeader>
 
-        {/* Criteria description. Grouped in one wrapper so the panel's
-            `space-y-8` treats the whole section as a single child — the
-            heading and its paragraph stay tightly coupled (space-y-2)
-            instead of each getting the panel's full inter-section gap. */}
-        <div className="space-y-2">
-          <SectionTitle>{t('detail.criteria')}</SectionTitle>
-          <p className="text-foreground/80">{t(`detail.criteriaDescriptions.${slug}`)}</p>
-        </div>
+        <CriteriaSection description={t(`detail.criteriaDescriptions.${slug}`)} t={t} />
 
-        {/* Tips callout card with CoordinateBoard visual aid */}
         {hasGuide && (
-          <div className="space-y-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
-            <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-            <p className="text-foreground/80">
-              {firstFlatParagraph.length > 100
-                ? `${firstFlatParagraph.slice(0, 100)}…`
-                : firstFlatParagraph}
-            </p>
-            <Link
-              href={buildGuidePath(locale, slug, { kind: 'root' })}
-              className="block"
-              aria-label={t('detail.readFullGuide', { rankName })}
-            >
-              <CoordinateBoard className="mx-auto max-w-[10rem]" />
-              <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-                {t('detail.readFullGuide', { rankName })}
-              </span>
-            </Link>
-          </div>
+          <TipsCard
+            slug={slug}
+            teaser={firstFlatParagraph}
+            locale={locale}
+            rankName={rankName}
+            t={t}
+          />
         )}
 
         {/* Requirements */}
@@ -225,48 +275,18 @@ export default async function RankDetailPage({ params }: Props) {
         {t('requirements')}
       </RankHeader>
 
-      {/* Criteria description (only if available for this slug). Grouped in
-          one wrapper so the panel's `space-y-8` treats the whole section as
-          a single child — the heading and its paragraph stay tightly
-          coupled (space-y-2) instead of each getting the panel's full
-          inter-section gap. */}
       {hasCriteriaDescription && (
-        <div className="space-y-2">
-          <SectionTitle>{t('detail.criteria')}</SectionTitle>
-          <p className="text-foreground/80">{t(`detail.criteriaDescriptions.${rankSlug}`)}</p>
-        </div>
+        <CriteriaSection description={t(`detail.criteriaDescriptions.${rankSlug}`)} t={t} />
       )}
 
-      {/* Tips callout card (only if available for this slug) */}
       {hasGuide && (
-        <div className="space-y-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
-          <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-          <p className="text-foreground/80">
-            {firstDbGuideParagraph.length > 100
-              ? `${firstDbGuideParagraph.slice(0, 100)}…`
-              : firstDbGuideParagraph}
-          </p>
-          <Link
-            href={buildGuidePath(locale, rankSlug, { kind: 'root' })}
-            className="block"
-            aria-label={t('detail.readFullGuide', { rankName })}
-          >
-            {rankSlug === '4kyu' ? (
-              <KingMovementBoard className="mx-auto max-w-[10rem]" />
-            ) : rankSlug === '3kyu' ? (
-              <DiagonalBoard className="mx-auto max-w-[10rem]" />
-            ) : rankSlug === '2kyu' ? (
-              <ScatteredPawnsBoard className="mx-auto max-w-[10rem]" />
-            ) : rankSlug === '1kyu' ? (
-              <PawnBreakthroughBoard className="mx-auto max-w-[10rem]" />
-            ) : (
-              <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
-            )}
-            <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-              {t('detail.readFullGuide', { rankName })}
-            </span>
-          </Link>
-        </div>
+        <TipsCard
+          slug={rankSlug}
+          teaser={firstDbGuideParagraph}
+          locale={locale}
+          rankName={rankName}
+          t={t}
+        />
       )}
 
       {/* Score requirements */}
