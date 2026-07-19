@@ -5,11 +5,25 @@ const mockAuthorize = vi.fn();
 const mockClaim = vi.fn();
 const mockEvaluateRanks = vi.fn();
 const mockCookieRefresh = vi.fn();
+const mockGameLookup = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
 vi.mock('@/lib/auth', () => ({
   authenticateGuardAndRequireProfile: (...args: unknown[]) => mockGuard(...args),
+}));
+
+vi.mock('@/lib/db', () => ({
+  db: {
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => mockGameLookup(),
+        }),
+      }),
+    }),
+  },
+  games: { id: 'games.id', authorId: 'games.authorId', deletedAt: 'games.deletedAt' },
 }));
 
 vi.mock('@/lib/db/games-auth', () => ({
@@ -51,6 +65,7 @@ describe('claimSharedGameAction', () => {
     mockAuthorize.mockResolvedValue('ok');
     mockClaim.mockResolvedValue(true);
     mockEvaluateRanks.mockResolvedValue([]);
+    mockGameLookup.mockResolvedValue([{ authorId: null }]);
   });
 
   it('rejects a malformed game id without touching auth', async () => {
@@ -84,6 +99,26 @@ describe('claimSharedGameAction', () => {
 
   it('rejects a bad token as forbidden without claiming', async () => {
     mockAuthorize.mockResolvedValue('forbidden');
+
+    const result = await claimSharedGameAction(GAME_ID, TOKEN);
+
+    expect(result).toEqual({ success: false, error: 'forbidden' });
+    expect(mockClaim).not.toHaveBeenCalled();
+  });
+
+  it('maps a cross-device double claim (token row already gone, game has an author) to already_claimed', async () => {
+    mockAuthorize.mockResolvedValue('forbidden');
+    mockGameLookup.mockResolvedValue([{ authorId: 'someone-else' }]);
+
+    const result = await claimSharedGameAction(GAME_ID, TOKEN);
+
+    expect(result).toEqual({ success: false, error: 'already_claimed' });
+    expect(mockClaim).not.toHaveBeenCalled();
+  });
+
+  it('keeps forbidden for a genuinely wrong token on a still-authorless game', async () => {
+    mockAuthorize.mockResolvedValue('forbidden');
+    mockGameLookup.mockResolvedValue([{ authorId: null }]);
 
     const result = await claimSharedGameAction(GAME_ID, TOKEN);
 

@@ -1,7 +1,10 @@
 'use server';
 
+import { and, eq, isNull } from 'drizzle-orm';
+
 import { refreshAdsHiddenCookieOnDanPromotion } from '@/lib/ads/ads-hidden-cookie-writer';
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
+import { db, games } from '@/lib/db';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { authorizeGameMutation } from '@/lib/db/games-auth';
 import { claimSharedGame } from '@/lib/db/games-write';
@@ -51,7 +54,17 @@ export async function claimSharedGameAction(
     }
 
     const auth = await authorizeGameMutation({ gameId, userId: null, token });
-    if (auth !== 'ok') return { success: false, error: auth };
+    if (auth !== 'ok') {
+      if (auth === 'forbidden') {
+        const [row] = await db
+          .select({ authorId: games.authorId })
+          .from(games)
+          .where(and(eq(games.id, gameId), isNull(games.deletedAt)))
+          .limit(1);
+        if (row?.authorId != null) return { success: false, error: 'already_claimed' };
+      }
+      return { success: false, error: auth };
+    }
 
     const claimed = await claimSharedGame(gameId, guardResult.user.id);
     if (!claimed) return { success: false, error: 'already_claimed' };
