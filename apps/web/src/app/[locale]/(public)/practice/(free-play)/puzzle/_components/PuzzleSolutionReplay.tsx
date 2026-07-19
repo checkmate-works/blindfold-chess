@@ -14,7 +14,8 @@ import { useMovePlayback } from '@/app/[locale]/(public)/practice/_hooks/use-mov
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { CircleMarker } from './CircleMarker';
+import { buildSolutionPairs } from '../_lib/solution-pairs';
+import { getFullmoveFromFen } from './AttemptHistoryPanel';
 
 /**
  * Interval between auto-advanced moves in the replay. Matches the value used
@@ -34,9 +35,22 @@ type Props = {
   solutionMoves: PuzzleSolutionMove[];
   /** Show the "Solution Replay" SectionTitle above the board. Default: true. */
   showSectionTitle?: boolean;
+  /**
+   * Show the move-by-move breakdown below the board. Default: true. The
+   * puzzle result screen sets this to `false` once attempts exist, since
+   * `AttemptHistoryPanel` already renders the same moves (plus the user's
+   * wrong attempts) in the same White/Black layout — this list only adds
+   * value when there is no attempt history to show instead.
+   */
+  showMoveList?: boolean;
 };
 
-export function PuzzleSolutionReplay({ fen, solutionMoves, showSectionTitle = true }: Props) {
+export function PuzzleSolutionReplay({
+  fen,
+  solutionMoves,
+  showSectionTitle = true,
+  showMoveList = true,
+}: Props) {
   /**
    * Intentionally borrows from the `practice.puzzle.result` namespace rather
    * than living in `practice.common`. This component was extracted out of
@@ -68,6 +82,10 @@ export function PuzzleSolutionReplay({ fen, solutionMoves, showSectionTitle = tr
   });
 
   const solutionFirstMove = solutionMoves[0]?.san ?? '';
+  const solutionPairs = useMemo(
+    () => buildSolutionPairs(solutionMoves, firstTurn, getFullmoveFromFen(fen)),
+    [solutionMoves, firstTurn, fen]
+  );
 
   return (
     <div className="space-y-6">
@@ -111,7 +129,7 @@ export function PuzzleSolutionReplay({ fen, solutionMoves, showSectionTitle = tr
         )}
       </BoardFrame>
 
-      {solutionMoves.length > 0 && (
+      {showMoveList && solutionMoves.length > 0 && (
         <>
           {solutionMoves.length === 1 ? (
             <p className="text-center text-sm font-medium text-foreground">
@@ -123,24 +141,49 @@ export function PuzzleSolutionReplay({ fen, solutionMoves, showSectionTitle = tr
               )}
             </p>
           ) : (
-            <ol className="mx-auto max-w-md flex flex-col items-start gap-y-2 text-sm">
-              {solutionMoves.map((m, i) => {
-                const isWhiteMove = i % 2 === (firstTurn === 'w' ? 0 : 1);
-                return (
-                  <li key={i} className="flex items-baseline gap-1.5">
-                    <span className="text-muted-foreground">{i + 1}.</span>
-                    <CircleMarker color={isWhiteMove ? 'w' : 'b'} />
-                    <span className="font-mono text-foreground">{m.san}</span>
-                    {m.note && (
-                      <span className="text-muted-foreground">{t('note', { note: m.note })}</span>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
+            <div className="mx-auto max-w-md">
+              <div className="flex items-baseline text-xs font-medium text-muted-foreground">
+                <span className="w-10 shrink-0" />
+                <span className="flex-1 px-2">{tCommon('white')}</span>
+                <span className="flex-1 px-2">{tCommon('black')}</span>
+              </div>
+              <div className="space-y-1 text-sm">
+                {solutionPairs.map((pair) => (
+                  <div key={pair.moveNumber} className="flex items-baseline">
+                    <span className="w-10 shrink-0 text-right pr-2 text-muted-foreground">
+                      {pair.moveNumber}.
+                    </span>
+                    <span className="flex-1 px-2">
+                      <SolutionMoveCell move={pair.white} t={t} />
+                    </span>
+                    <span className="flex-1 px-2">
+                      <SolutionMoveCell move={pair.black} t={t} />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </>
       )}
     </div>
+  );
+}
+
+function SolutionMoveCell({
+  move,
+  t,
+}: {
+  move: PuzzleSolutionMove | null;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  if (!move) return <span className="text-muted-foreground">…</span>;
+  return (
+    <>
+      <span className="font-mono text-foreground">{move.san}</span>
+      {move.note && (
+        <span className="ml-1 text-muted-foreground">{t('note', { note: move.note })}</span>
+      )}
+    </>
   );
 }

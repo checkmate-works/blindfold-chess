@@ -101,7 +101,12 @@ export function PuzzleResultClient({
 
   return (
     <div className="space-y-6">
-      <PuzzleSolutionReplay fen={fen} solutionMoves={lockedMoves} showSectionTitle />
+      <PuzzleSolutionReplay
+        fen={fen}
+        solutionMoves={lockedMoves}
+        showSectionTitle
+        showMoveList={attempts.length === 0}
+      />
 
       {/* (B) Attempt history — laid out in PGN-style W/B rows so the
        *     numbering matches the puzzle's actual move sequence (derived
@@ -112,7 +117,12 @@ export function PuzzleResultClient({
       {attempts.length > 0 && (
         <div className="space-y-3">
           <SectionTitle>{t('historySection')}</SectionTitle>
-          <AttemptHistoryPanel fen={fen} solutionSans={lockedSans} attempts={attempts} />
+          <AttemptHistoryPanel
+            fen={fen}
+            solutionSans={lockedSans}
+            attempts={attempts}
+            notes={lockedMoves.map((m) => m.note)}
+          />
           <div className="flex justify-end">
             <AttemptStatusBadge status={attemptStatus} />
           </div>

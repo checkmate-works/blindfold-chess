@@ -1728,7 +1728,9 @@
     },
     "common": {
       "play": "Play",
-      "replay": "Replay"
+      "replay": "Replay",
+      "white": "White",
+      "black": "Black"
     },
     "quadrantAnchors": {
       "title": "Quadrant Anchors",

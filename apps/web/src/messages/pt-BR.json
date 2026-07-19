@@ -1728,7 +1728,9 @@
     },
     "common": {
       "play": "Reproduzir",
-      "replay": "Repetir"
+      "replay": "Repetir",
+      "white": "Brancas",
+      "black": "Pretas"
     },
     "quadrantAnchors": {
       "title": "Âncoras de Quadrante",

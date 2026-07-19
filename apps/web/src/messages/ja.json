@@ -1728,7 +1728,9 @@
     },
     "common": {
       "play": "再生",
-      "replay": "再生"
+      "replay": "再生",
+      "white": "白",
+      "black": "黒"
     },
     "quadrantAnchors": {
       "title": "4分割アンカー",

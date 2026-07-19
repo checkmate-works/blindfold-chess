@@ -1728,7 +1728,9 @@
     },
     "common": {
       "play": "Reproducir",
-      "replay": "Repetir"
+      "replay": "Repetir",
+      "white": "Blancas",
+      "black": "Negras"
     },
     "quadrantAnchors": {
       "title": "Anclas de Cuadrante",
