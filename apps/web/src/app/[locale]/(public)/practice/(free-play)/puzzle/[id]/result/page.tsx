@@ -8,10 +8,12 @@ import { eq } from 'drizzle-orm';
 
 import { db, puzzleSolutions } from '@/lib/db';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { resolveExpInfoFromGrantParam } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -57,6 +59,7 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
 
   const [row, resolvedSearchParams] = await Promise.all([
     getPositionWithProfileById({ id, type: 'puzzle' }),
@@ -67,7 +70,8 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
     notFound();
   }
 
-  const { position } = row;
+  const { position, profile } = row;
+  const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
   const [solutions, expInfo] = await Promise.all([
     db
@@ -107,6 +111,23 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
           expInfo={expInfo}
         />
       </Suspense>
+
+      {/* Single-line "Created by [avatar] name" attribution — the pre-panel
+          style, restored here only. The SNS-style PositionAuthorHeader panel
+          reserves space on the right for its "⋯" menu, which this screen
+          never has (no edit/fork actions), so the panel reads as unbalanced
+          empty space. This inline row has no such gap. */}
+      <div className="mt-8 flex items-center justify-end gap-2 text-sm text-muted-foreground">
+        <span>{t('detail.createdBy')}</span>
+        <UserAvatar
+          profileHref={profile?.username ? `/u/${profile.username}` : null}
+          avatarUrl={profile?.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          size="xs"
+          layout="inline"
+        />
+      </div>
 
       {/* `ad-slot-wrapper` so the spacer collapses with the ad for ad-free viewers. */}
       {adBannerStandard && <div className="mt-8 ad-slot-wrapper">{adBannerStandard}</div>}
