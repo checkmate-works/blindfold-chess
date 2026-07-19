@@ -3,15 +3,7 @@
   "reference_locale": "en",
   "locales": {
     "es": {
-      "missing": [
-        "MypageNotifications.chunkEditRequestAcceptedMessage",
-        "MypageNotifications.chunkEditRequestSubmittedMessage",
-        "toast.editRequestSubmitted",
-        "metadata.chunks.description",
-        "metadata.chunks.title",
-        "topics.categories.chunks.description",
-        "topics.categories.chunks.title"
-      ],
+      "missing": [],
       "extra": []
     },
     "ja": {
@@ -19,15 +11,7 @@
       "extra": []
     },
     "pt-BR": {
-      "missing": [
-        "MypageNotifications.chunkEditRequestAcceptedMessage",
-        "MypageNotifications.chunkEditRequestSubmittedMessage",
-        "toast.editRequestSubmitted",
-        "metadata.chunks.description",
-        "metadata.chunks.title",
-        "topics.categories.chunks.description",
-        "topics.categories.chunks.title"
-      ],
+      "missing": [],
       "extra": []
     }
   }
