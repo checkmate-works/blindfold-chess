@@ -13,21 +13,12 @@ vi.mock('@/lib/auth', () => ({
   authenticateGuardAndRequireProfile: (...args: unknown[]) => mockGuard(...args),
 }));
 
-vi.mock('@/lib/db', () => ({
-  db: {
-    select: () => ({
-      from: () => ({
-        where: () => ({
-          limit: () => mockGameLookup(),
-        }),
-      }),
-    }),
-  },
-  games: { id: 'games.id', authorId: 'games.authorId', deletedAt: 'games.deletedAt' },
-}));
-
 vi.mock('@/lib/db/games-auth', () => ({
   authorizeGameMutation: (...args: unknown[]) => mockAuthorize(...args),
+}));
+
+vi.mock('@/lib/db/games-read', () => ({
+  getLiveGameAuthorId: (...args: unknown[]) => mockGameLookup(...args),
 }));
 
 vi.mock('@/lib/db/games-write', () => ({
@@ -65,7 +56,7 @@ describe('claimSharedGameAction', () => {
     mockAuthorize.mockResolvedValue('ok');
     mockClaim.mockResolvedValue(true);
     mockEvaluateRanks.mockResolvedValue([]);
-    mockGameLookup.mockResolvedValue([{ authorId: null }]);
+    mockGameLookup.mockResolvedValue(null);
   });
 
   it('rejects a malformed game id without touching auth', async () => {
@@ -108,7 +99,7 @@ describe('claimSharedGameAction', () => {
 
   it('maps a cross-device double claim (token row already gone, game has an author) to already_claimed', async () => {
     mockAuthorize.mockResolvedValue('forbidden');
-    mockGameLookup.mockResolvedValue([{ authorId: 'someone-else' }]);
+    mockGameLookup.mockResolvedValue('someone-else');
 
     const result = await claimSharedGameAction(GAME_ID, TOKEN);
 
@@ -118,7 +109,7 @@ describe('claimSharedGameAction', () => {
 
   it('keeps forbidden for a genuinely wrong token on a still-authorless game', async () => {
     mockAuthorize.mockResolvedValue('forbidden');
-    mockGameLookup.mockResolvedValue([{ authorId: null }]);
+    mockGameLookup.mockResolvedValue(null);
 
     const result = await claimSharedGameAction(GAME_ID, TOKEN);
 

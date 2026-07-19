@@ -1,11 +1,9 @@
 'use server';
 
-import { and, eq, isNull } from 'drizzle-orm';
-
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
-import { db, games } from '@/lib/db';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { authorizeGameMutation } from '@/lib/db/games-auth';
+import { getLiveGameAuthorId } from '@/lib/db/games-read';
 import { claimSharedGame } from '@/lib/db/games-write';
 import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -55,12 +53,11 @@ export async function claimSharedGameAction(
     const auth = await authorizeGameMutation({ gameId, userId: null, token });
     if (auth !== 'ok') {
       if (auth === 'forbidden') {
-        const [row] = await db
-          .select({ authorId: games.authorId })
-          .from(games)
-          .where(and(eq(games.id, gameId), isNull(games.deletedAt)))
-          .limit(1);
-        if (row?.authorId != null) return { success: false, error: 'already_claimed' };
+        // `string` = the game already has an author → already_claimed.
+        // `null` (authorless) / `undefined` (missing or deleted) fall
+        // through to the original `forbidden` error.
+        const authorId = await getLiveGameAuthorId(gameId);
+        if (typeof authorId === 'string') return { success: false, error: 'already_claimed' };
       }
       return { success: false, error: auth };
     }
