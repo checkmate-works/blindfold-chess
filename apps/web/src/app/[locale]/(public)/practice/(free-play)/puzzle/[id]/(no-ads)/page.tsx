@@ -39,9 +39,9 @@ import { PositionAuthorHeader } from '../../../_components/PositionAuthorHeader'
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../../_components/PositionPeekBoard';
 import {
-  PositionEditRequestCallout,
   PositionEditRequestHistoryLink,
-} from '../../../_components/edit-request/PositionEditRequestCallout';
+  PositionEditRequestSuggestLink,
+} from '../../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetail } from '../../../_lib/load-position-detail';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
@@ -188,6 +188,15 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           badgeTheme: tTags('badge.theme'),
           badgeChunk: tTags('badge.chunk'),
         }}
+        action={
+          <PositionEditRequestSuggestLink
+            positionId={position.id}
+            positionType="puzzle"
+            viewerId={currentUser?.id ?? null}
+            ownerId={position.userId}
+            locale={locale}
+          />
+        }
       />
 
       <div className="pt-2">
@@ -221,14 +230,6 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           </Link>
         </div>
       </div>
-
-      <PositionEditRequestCallout
-        positionId={position.id}
-        positionType="puzzle"
-        viewerId={currentUser?.id ?? null}
-        ownerId={position.userId}
-        locale={locale}
-      />
 
       <PositionAuthorHeader
         profile={profile}

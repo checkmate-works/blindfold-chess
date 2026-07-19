@@ -1920,14 +1920,9 @@
       "pageTitle": "Chunk suggestions · {name}",
       "breadcrumb": "Chunk suggestions",
       "callout": {
-        "body": "Spotted a chunk this position should link to? Suggest it — the owner reviews every suggestion.",
-        "ownerBodyWithPending": "{count, plural, one {# pending chunk suggestion waiting for your review.} other {# pending chunk suggestions waiting for your review.}}",
-        "ctaOwner": "Review suggestions",
-        "ctaHasPending": "View / withdraw your suggestion",
-        "ctaCanSuggest": "Suggest linked chunks",
-        "ctaSignedOut": "Sign in to suggest",
         "historyLink": "Edit request history ({count})"
-      }
+      },
+      "suggestCta": "Suggest a pattern"
     }
   },
   "home": {

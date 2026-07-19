@@ -1920,14 +1920,9 @@
       "pageTitle": "Sugestões de chunks · {name}",
       "breadcrumb": "Sugestões de chunks",
       "callout": {
-        "body": "Notou um chunk que esta posição deveria vincular? Sugira — o proprietário revisa cada sugestão.",
-        "ownerBodyWithPending": "{count, plural, one {# sugestão de chunks aguardando sua revisão.} other {# sugestões de chunks aguardando sua revisão.}}",
-        "ctaOwner": "Revisar sugestões",
-        "ctaHasPending": "Ver / retirar sua sugestão",
-        "ctaCanSuggest": "Sugerir chunks vinculados",
-        "ctaSignedOut": "Entrar para sugerir",
         "historyLink": "Histórico de sugestões ({count})"
-      }
+      },
+      "suggestCta": "Sugerir um padrão"
     }
   },
   "home": {

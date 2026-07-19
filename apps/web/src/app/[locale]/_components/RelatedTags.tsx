@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { Link } from '@/i18n/routing';
 
 import type { ThemeOption } from '@/lib/themes/types';
@@ -23,6 +25,13 @@ type Props = {
     badgeTheme: string;
     badgeChunk: string;
   };
+  /**
+   * Optional affordance rendered at the end of the expanded content — e.g.
+   * the "Suggest a pattern" edit-request entry on position detail pages.
+   * When set, the section renders even with zero tags so the entry point
+   * stays discoverable.
+   */
+  action?: ReactNode;
 };
 
 /**
@@ -33,9 +42,9 @@ type Props = {
  * `<details>/<summary>` so the content is SSR-rendered and crawlable
  * while initially hidden to avoid spoiling puzzle answers.
  */
-export function RelatedTags({ themes, chunks, locale, labels }: Props) {
+export function RelatedTags({ themes, chunks, locale, labels, action }: Props) {
   const total = themes.length + chunks.length;
-  if (total === 0) return null;
+  if (total === 0 && !action) return null;
 
   return (
     <details className="group">
@@ -69,6 +78,7 @@ export function RelatedTags({ themes, chunks, locale, labels }: Props) {
             badgeText={labels.badgeChunk}
           />
         ))}
+        {action}
       </div>
     </details>
   );

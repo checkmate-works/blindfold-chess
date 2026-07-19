@@ -34,9 +34,9 @@ import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import {
-  PositionEditRequestCallout,
   PositionEditRequestHistoryLink,
-} from '../../_components/edit-request/PositionEditRequestCallout';
+  PositionEditRequestSuggestLink,
+} from '../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetail } from '../../_lib/load-position-detail';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
 import { loadMorePositionMemoryComments } from './_actions/loadMorePositionMemoryComments';
@@ -184,6 +184,15 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           badgeTheme: tTags('badge.theme'),
           badgeChunk: tTags('badge.chunk'),
         }}
+        action={
+          <PositionEditRequestSuggestLink
+            positionId={position.id}
+            positionType="memory"
+            viewerId={currentUser?.id ?? null}
+            ownerId={position.userId}
+            locale={locale}
+          />
+        }
       />
 
       {/* Memorizing is the primary action here, so it leads; the "or" divider
@@ -210,14 +219,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           </Button>
         </Link>
       </div>
-
-      <PositionEditRequestCallout
-        positionId={position.id}
-        positionType="memory"
-        viewerId={currentUser?.id ?? null}
-        ownerId={position.userId}
-        locale={locale}
-      />
 
       <PositionAuthorHeader
         profile={profile}

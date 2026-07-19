@@ -1920,14 +1920,9 @@
       "pageTitle": "チャンクの提案 · {name}",
       "breadcrumb": "チャンクの提案",
       "callout": {
-        "body": "この局面に紐づくチャンクに気づきましたか？提案できます。作成者がすべての提案を確認します。",
-        "ownerBodyWithPending": "{count, plural, other {確認待ちのチャンク提案が # 件あります。}}",
-        "ctaOwner": "提案を確認",
-        "ctaHasPending": "提案を確認 / 取り下げ",
-        "ctaCanSuggest": "チャンクを提案",
-        "ctaSignedOut": "サインインして提案",
         "historyLink": "編集リクエストの履歴 ({count})"
-      }
+      },
+      "suggestCta": "パターンを提案する"
     }
   },
   "home": {
