@@ -34,6 +34,10 @@ type Props = {
    */
   initialPlaySettings: GamePlaySettings | null;
   preferenceChangeLog: PlaySettingsChangeEntry[];
+  /** The position the game started from — feeds the Change Log's move-number badges. */
+  startingFen?: string;
+  /** Jump the board to a Change Log entry's position (moves[] index, or -2 for the initial board). */
+  onSelectMove: (movesIndex: number) => void;
 };
 
 /**
@@ -49,6 +53,8 @@ export function RecallSummary({
   gameId,
   initialPlaySettings,
   preferenceChangeLog,
+  startingFen,
+  onSelectMove,
 }: Props) {
   const t = useTranslations('recall');
 
@@ -123,6 +129,8 @@ export function RecallSummary({
         <PlaySettingsChangeLog
           playSettings={initialPlaySettings}
           playSettingsLog={preferenceChangeLog}
+          startingFen={startingFen}
+          onSelectMove={onSelectMove}
         />
       )}
 

@@ -199,10 +199,12 @@ describe('OperationLogModal — Change Log section', () => {
 
     fireEvent.click(screen.getByText('play.operationLog.changeLog.title'));
 
-    // atMoveIndex column values
-    expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getByText('12')).toBeInTheDocument();
-    expect(screen.getByText('18')).toBeInTheDocument();
+    // atMoveIndex column values — rendered as the PGN-style move-number
+    // anchor for the move just played (atMoveIndex - 1, 0-based), not the
+    // raw half-moves-played count.
+    expect(screen.getByText('3.')).toBeInTheDocument();
+    expect(screen.getByText('6...')).toBeInTheDocument();
+    expect(screen.getByText('9...')).toBeInTheDocument();
 
     // Setting label routing
     expect(
@@ -226,7 +228,7 @@ describe('OperationLogModal — Change Log section', () => {
 
     // The change cell contains "On → Off" — assert by partial match since the
     // arrow is inline text alongside the two values.
-    const row = screen.getByText('3').closest('tr');
+    const row = screen.getByText('2.').closest('tr');
     expect(row).toBeTruthy();
     expect(row!.textContent).toMatch(/play\.operationLog\.initialSettings\.on/);
     expect(row!.textContent).toMatch(/play\.operationLog\.initialSettings\.off/);
@@ -247,7 +249,7 @@ describe('OperationLogModal — Change Log section', () => {
 
     fireEvent.click(screen.getByText('play.operationLog.changeLog.title'));
 
-    const moveRow = screen.getByText('4').closest('tr')!;
+    const moveRow = screen.getByText('2...').closest('tr')!;
     expect(moveRow.textContent).toMatch(/—/);
     expect(moveRow.textContent).toMatch(/Preferences\.controls\.moveInputModes\.select/);
     expect(moveRow.textContent).not.toMatch(/moveInputModes\.undefined/);
@@ -262,11 +264,11 @@ describe('OperationLogModal — Change Log section', () => {
 
     fireEvent.click(screen.getByText('play.operationLog.changeLog.title'));
 
-    const shapeRow = screen.getByText('7').closest('tr')!;
+    const shapeRow = screen.getByText('4.').closest('tr')!;
     expect(shapeRow.textContent).toMatch(/Preferences\.game\.pieceShapes\.normal/);
     expect(shapeRow.textContent).toMatch(/Preferences\.game\.pieceShapes\.circles-own/);
 
-    const moveInputRow = screen.getByText('14').closest('tr')!;
+    const moveInputRow = screen.getByText('7...').closest('tr')!;
     expect(moveInputRow.textContent).toMatch(/Preferences\.controls\.moveInputModes\.text/);
     expect(moveInputRow.textContent).toMatch(/Preferences\.controls\.moveInputModes\.button/);
   });

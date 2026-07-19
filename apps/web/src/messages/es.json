@@ -2181,6 +2181,7 @@
         "title": "Historial de cambios",
         "noChanges": "No se realizaron cambios de configuración durante la partida.",
         "columnAtMove": "Tras movimiento",
+        "atStart": "Inicio",
         "columnSetting": "Ajuste",
         "columnChange": "Cambio"
       }

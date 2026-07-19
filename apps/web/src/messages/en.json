@@ -2181,6 +2181,7 @@
         "title": "Change Log",
         "noChanges": "No mid-game changes were made to the settings.",
         "columnAtMove": "After move",
+        "atStart": "Start",
         "columnSetting": "Setting",
         "columnChange": "Change"
       }

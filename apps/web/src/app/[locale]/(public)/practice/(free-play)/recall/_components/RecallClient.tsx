@@ -383,6 +383,8 @@ export function RecallClient({
                   gameId={gameId}
                   initialPlaySettings={initialPlaySettings}
                   preferenceChangeLog={preferenceChangeLog}
+                  startingFen={startingFen}
+                  onSelectMove={quickPeek.openAtMove}
                 />
               )}
             </div>

@@ -316,6 +316,7 @@ export function GameReview({
         opening={detectedOpening}
         locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
+        startingFen={startingFen}
         headingAsSection
         // Result screen's win/loss/draw label, shown directly under the
         // "Game Stats" heading. Omitted (undefined) on the shared game.

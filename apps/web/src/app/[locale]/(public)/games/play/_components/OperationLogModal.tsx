@@ -16,6 +16,7 @@ import { Modal } from '@/app/[locale]/_components/Modal';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { useChangeLogFormat } from '../_hooks/use-change-log-format';
+import { formatChangeLogMoveLabel } from '../_lib/format-change-log-move-label';
 
 type Props = {
   isOpen: boolean;
@@ -44,6 +45,12 @@ type Props = {
    * evidence, since localStorage is client-writable.
    */
   preferenceChangeLog?: PreferenceChangeLogEntry[];
+  /**
+   * The position the game started from, needed to convert each change-log
+   * entry's `atMoveIndex` (a half-moves-played count) into the PGN-style
+   * move-number badge ("26...") instead of the raw count.
+   */
+  startingFen?: string;
 };
 
 export function OperationLogModal({
@@ -52,6 +59,7 @@ export function OperationLogModal({
   engineConfig,
   gamePreferences,
   preferenceChangeLog,
+  startingFen,
 }: Props) {
   const t = useTranslations('play');
   const tPrefs = useTranslations('Preferences.game');
@@ -260,7 +268,10 @@ export function OperationLogModal({
                   <tbody>
                     {preferenceChangeLog.map((entry, i) => (
                       <tr key={i} className="border-b border-border/50 hover:bg-muted/50">
-                        <td className="py-2 px-3 text-muted-foreground">{entry.atMoveIndex}</td>
+                        <td className="py-2 px-3 text-muted-foreground">
+                          {formatChangeLogMoveLabel(entry.atMoveIndex, startingFen) ??
+                            t('operationLog.changeLog.atStart')}
+                        </td>
                         <td className="py-2 px-3">{settingLabel(entry.key)}</td>
                         <td className="py-2 px-3">
                           {settingValue(entry, 'from')} → {settingValue(entry, 'to')}
