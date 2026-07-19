@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -8,8 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { classifyGuestPromotionQualification } from '@/lib/games/guest-promotion';
 import { getSharedGame } from '@/lib/games/shared-game-store';
 
-import { getPublishPromotionTarget } from '@/app/[locale]/(public)/ranks/_actions/getPublishPromotionTarget';
-import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
+import { usePromotionTarget } from '@/app/[locale]/(public)/games/_hooks/use-promotion-target';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -31,23 +30,22 @@ type Props = {
  * banner surfaces the best such game with a CTA to its publish form.
  *
  * The promise is validated per-user, not just per-game: the best game's
- * qualification is routed through `getPublishPromotionTarget` (the same
- * promise the finish modal makes), so a player who already holds the rank
- * is never promised it again — the wording downgrades to 1kyu for dan
- * holders and the banner hides entirely when nothing would be granted.
- * That server call also returns null for guests and provisional users,
- * whose pitch lives in the finish modal and the shared-game claim banner.
+ * qualification is routed through `usePromotionTarget` (the same promise
+ * the finish modal makes via `usePublishPromotion`), so a player who
+ * already holds the rank is never promised it again — the wording
+ * downgrades to 1kyu for dan holders and the banner hides entirely when
+ * nothing would be granted. That hook is itself auth-gated (skips the
+ * round-trip and stays null for guests and provisional users), so this
+ * component needs no auth check of its own.
  *
  * Renders nothing when there is nothing to say — pages can mount it
  * unconditionally.
  */
 export function PublishNudgeBanner({ locale, className }: Props) {
   const t = useTranslations('home.gameList');
-  const { user, hasProfile, isLoading: isAuthLoading } = useAuth();
   const { games, isLoading } = useGameList('lastPlayed', 'desc');
 
   const publishNudge = useMemo(() => {
-    if (user == null || !hasProfile) return null;
     let best: { gameId: string; qualification: '1kyu' | '1dan' } | null = null;
     for (const game of games) {
       if (game.status === 'in_progress') continue;
@@ -64,28 +62,11 @@ export function PublishNudgeBanner({ locale, className }: Props) {
       best ??= { gameId: game.id, qualification };
     }
     return best;
-  }, [games, user, hasProfile]);
+  }, [games]);
 
-  const [nudgeRank, setNudgeRank] = useState<'1kyu' | '1dan' | null>(null);
-  useEffect(() => {
-    if (!publishNudge) {
-      setNudgeRank(null);
-      return;
-    }
-    let cancelled = false;
-    getPublishPromotionTarget(publishNudge.qualification)
-      .then((rank) => {
-        if (!cancelled) setNudgeRank(rank === '1kyu' || rank === '1dan' ? rank : null);
-      })
-      .catch(() => {
-        // Non-load-bearing: on failure the nudge simply stays hidden.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [publishNudge]);
+  const nudgeRank = usePromotionTarget(publishNudge?.qualification ?? null);
 
-  if (isLoading || isAuthLoading || publishNudge === null || nudgeRank === null) return null;
+  if (isLoading || publishNudge === null || nudgeRank === null) return null;
 
   return (
     <div

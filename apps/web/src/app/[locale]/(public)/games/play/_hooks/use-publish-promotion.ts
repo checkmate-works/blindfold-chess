@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { classifyGuestPromotionQualification } from '@/lib/games/guest-promotion';
 import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
-import { getPublishPromotionTarget } from '@/app/[locale]/(public)/ranks/_actions/getPublishPromotionTarget';
+import { usePromotionTarget } from '@/app/[locale]/(public)/games/_hooks/use-promotion-target';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Args = {
@@ -36,13 +34,13 @@ type Args = {
  * player is told "you win", sent to a screen where publishing looks optional,
  * and never learns the rank was one click away.
  *
- * Split across the boundary along what each side knows: the client owns the
- * game and classifies which rank requirement it satisfies (the same
- * `classifyGuestPromotionQualification` the guest pitch uses — so the two
- * pitches and the server evaluator cannot drift apart); the server owns the
- * achievement state and answers which of those ranks is still unearned.
- * Ranks are granted independently (skip-grants allowed), so the promise
- * holds for any player, even one with no ranks at all.
+ * Composes two independent halves: `classifyGuestPromotionQualification`
+ * (the same classifier the guest pitch uses — client-side, cheap, and run
+ * first so most finished games, which satisfy no rank's game requirement,
+ * never cost a round-trip) and `usePromotionTarget` (the server-backed half:
+ * which of those ranks the signed-in caller has not earned yet). Ranks are
+ * granted independently (skip-grants allowed), so the promise holds for any
+ * player, even one with no ranks at all.
  *
  * Returns the rank's slug, or null until confirmed — so the UI defaults to
  * promising nothing.
@@ -55,39 +53,15 @@ export function usePublishPromotion({
   moveCount,
   enabled,
 }: Args): RankSlug | null {
-  const [target, setTarget] = useState<RankSlug | null>(null);
-
-  // Cheap local disqualifier first — most finished games satisfy no rank's
-  // game requirement, and those must not cost a round-trip.
-  const qualification = classifyGuestPromotionQualification({
-    result,
-    playSettings: initialPerGamePrefs,
-    changeLog: preferenceChangeLog,
-    operationLogs,
-    moveCount,
-  });
-
-  useEffect(() => {
-    if (!enabled || !qualification) {
-      setTarget(null);
-      return;
-    }
-
-    let cancelled = false;
-    getPublishPromotionTarget(qualification)
-      .then((next) => {
-        if (!cancelled) setTarget(next);
+  const qualification = enabled
+    ? classifyGuestPromotionQualification({
+        result,
+        playSettings: initialPerGamePrefs,
+        changeLog: preferenceChangeLog,
+        operationLogs,
+        moveCount,
       })
-      .catch(() => {
-        // Non-load-bearing: on failure the player just gets the ordinary finish
-        // modal, and publishing still grants the rank. Better a missed nudge
-        // than a broken end-of-game screen.
-      });
+    : null;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [enabled, qualification]);
-
-  return target;
+  return usePromotionTarget(qualification);
 }
