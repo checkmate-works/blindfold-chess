@@ -45,8 +45,10 @@ export function ClaimGameBanner({ gameId, isAuthorless, locale }: Props) {
   const { user, hasProfile, isLoading } = useAuth();
   const searchParams = useSearchParams();
 
-  const [localGameId, setLocalGameId] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  // localGameId and token always come from the same lookup and are only
+  // ever meaningful together — one state avoids a theoretically-mixed
+  // (one set, one still null) state the old two-useState pair allowed.
+  const [claimEntry, setClaimEntry] = useState<{ localGameId: string; token: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,25 +57,24 @@ export function ClaimGameBanner({ gameId, isAuthorless, locale }: Props) {
   useEffect(() => {
     const found = getSharedGameByPublishedId(gameId);
     if (found?.record.manageToken) {
-      setLocalGameId(found.localGameId);
-      setToken(found.record.manageToken);
+      setClaimEntry({ localGameId: found.localGameId, token: found.record.manageToken });
     }
   }, [gameId]);
 
-  const canClaim = isAuthorless && token != null && !isLoading && user != null && hasProfile;
+  const canClaim = isAuthorless && claimEntry != null && !isLoading && user != null && hasProfile;
 
   async function handleClaim() {
-    if (!token || pending) return;
+    if (!claimEntry || pending) return;
     setPending(true);
     setError(null);
 
-    const res = await claimSharedGameAction(gameId, token);
+    const res = await claimSharedGameAction(gameId, claimEntry.token);
     if (!res.success) {
       setPending(false);
       if (res.error === 'already_claimed') {
         // Claimed from another device/session — the token is spent either
         // way, so drop it and get out of the way without an error.
-        if (localGameId) clearManageToken(localGameId);
+        clearManageToken(claimEntry.localGameId);
         setDismissed(true);
         return;
       }
@@ -84,7 +85,7 @@ export function ClaimGameBanner({ gameId, isAuthorless, locale }: Props) {
     }
 
     stashGrantedRanks(res.grantedRanks);
-    if (localGameId) clearManageToken(localGameId);
+    clearManageToken(claimEntry.localGameId);
     window.location.assign(`/${locale}/games/shared/${gameId}?toast=game_claimed`);
   }
 
@@ -99,7 +100,7 @@ export function ClaimGameBanner({ gameId, isAuthorless, locale }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoClaimRequested, canClaim]);
 
-  if (!isAuthorless || token == null || isLoading || dismissed) return null;
+  if (!isAuthorless || claimEntry == null || isLoading || dismissed) return null;
   if (user != null && !hasProfile) return null;
 
   return (
