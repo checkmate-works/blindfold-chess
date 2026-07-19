@@ -548,6 +548,23 @@ deliberate design:
   `Repertoires` i18n namespace name are **stored/wired identifiers** —
   never rename them; map to display labels at the read layer.
 
+## Game Operation Audit Record (公開ゲームの操作ログ・監査)
+
+AI games track player aid usage (peeks / undos / invalid move attempts) in a
+**three-record model**: `operationLogs` (per-move display record; undo deletes
+entries), `operationTotals` (monotonic count ledger — the audit & 1dan-promotion
+source of truth), and `undoneLogs` (archive of what rollbacks erased, incl.
+rejected SAN texts). A rollback moves information between records; it never
+destroys it.
+
+Do NOT rely on this summary for details — the design intentionally documents
+itself in code:
+
+- **Model & pipeline overview**: module TSDoc in `src/lib/games/saved-game-types.ts`
+- **Recording + restore-merge semantics**: TSDoc in `src/app/[locale]/(public)/games/play/_hooks/use-move-operation-tracker.ts`
+- **Executable invariants** (exact counts, SAN conservation, restore-only-grows): `use-move-operation-tracker.invariants.test.ts` next to the tracker
+- **Promotion policy** (incl. fail-closed handling of legacy rows): `src/lib/db/data/ranks.ts` + `src/lib/db/rank-evaluation.ts`
+
 ## Glossary (Japanese ↔ English)
 
 The app was originally designed in Japanese, and the team still thinks about
