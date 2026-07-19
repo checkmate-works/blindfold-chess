@@ -119,24 +119,26 @@ export async function getCommentUserProfile(userId: string): Promise<{
 }
 
 /**
- * A live parent comment's `ply` + `gameId`, used to (a) inherit the ply onto a
- * reply and (b) verify the reply targets the same game. Undefined if the
- * parent is missing or already deleted.
+ * A live parent comment's `ply` + `gameId` + `authorId`, used to (a) inherit
+ * the ply onto a reply, (b) verify the reply targets the same game, and
+ * (c) notify the parent's author of the reply. Undefined if the parent is
+ * missing or already deleted.
  */
 export async function getGameCommentParent(
   parentId: string
-): Promise<{ ply: number | null; gameId: string } | undefined> {
+): Promise<{ ply: number | null; gameId: string; authorId: string | null } | undefined> {
   const [row] = await db
     .select({
       ply: gameComments.ply,
       gameId: gameComments.gameId,
+      authorId: gameComments.authorId,
       deletedAt: gameComments.deletedAt,
     })
     .from(gameComments)
     .where(eq(gameComments.id, parentId))
     .limit(1);
   if (!row || row.deletedAt !== null) return undefined;
-  return { ply: row.ply, gameId: row.gameId };
+  return { ply: row.ply, gameId: row.gameId, authorId: row.authorId };
 }
 
 /** Insert a comment (or reply), returning the row needed to render it. */

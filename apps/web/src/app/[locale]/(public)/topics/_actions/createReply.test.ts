@@ -515,15 +515,18 @@ describe('createReplyBase', () => {
       setupAuthenticatedUser();
     });
 
-    it('should create notification for post author when replying to another user post', async () => {
+    it('should notify the post author with new_comment_on_topic for a direct comment on an authored topic post', async () => {
       setupParentPostExists({ userId: otherUserId });
 
       await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
 
+      // On /topics the root post is authored content, so a direct reply is
+      // "a comment on your post" — the mutable type, not person-to-person
+      // 'reply'.
       expect(createNotification).toHaveBeenCalledWith({
         userId: otherUserId,
         actorId: testUserId,
-        type: 'reply',
+        type: 'new_comment_on_topic',
         targetType: 'topic_post',
         targetId: validPostId,
         metadata: {
@@ -533,6 +536,26 @@ describe('createReplyBase', () => {
           replyId: generatedReplyId,
         },
       });
+    });
+
+    it('should keep type reply for a direct reply on a comment-thread topic (position_memory)', async () => {
+      setupParentPostExists({ userId: otherUserId });
+
+      await expect(
+        createReplyBase({
+          ...baseParams,
+          topicType: 'position_memory',
+          topicKey: validPostId,
+          urlSegment: 'practice/position-memory',
+        })
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      // Here the root topic_post is itself a comment on a position — its
+      // author already got new_comment_on_topic when it was created, so a
+      // reply to it stays the non-mutable 'reply'.
+      expect(createNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: otherUserId, type: 'reply' })
+      );
     });
 
     it('should not create notification when replying to own post', async () => {
@@ -558,7 +581,7 @@ describe('createReplyBase', () => {
       expect(createNotification).toHaveBeenCalledWith({
         userId: otherUserId,
         actorId: testUserId,
-        type: 'reply',
+        type: 'new_comment_on_topic',
         targetType: 'topic_post',
         targetId: validPostId,
         metadata: {
@@ -678,10 +701,21 @@ describe('createReplyBase', () => {
         })
       ).rejects.toThrow('NEXT_REDIRECT');
 
+      // The parent reply's author hears a person-to-person 'reply'; the post
+      // author (thread owner on an authored topic) hears the mutable
+      // "comment on your post" type.
       expect(createNotification).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: targetReplyAuthorId,
           actorId: testUserId,
+          type: 'reply',
+        })
+      );
+      expect(createNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: otherUserId,
+          actorId: testUserId,
+          type: 'new_comment_on_topic',
         })
       );
     });

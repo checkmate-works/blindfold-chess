@@ -13,6 +13,11 @@ export async function createChunkPost(
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
+  // getChunkBySlug is React.cache-wrapped, so this fetch and validateTopic
+  // share one query. userId may be null (orphaned author) — the notification
+  // no-ops in that case.
+  const chunk = await getChunkBySlug(slug);
+
   return createPostBase({
     locale,
     topicIdentifier: slug,
@@ -22,11 +27,12 @@ export async function createChunkPost(
     // sensible value so the deletePost / activity-log paths that derive their
     // URL from `chunk → 'chunks'` stay consistent across the codebase.
     urlSegment: 'chunks',
-    validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
+    validateTopic: () => chunk !== null,
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
+    topicAuthorId: chunk?.userId,
     redirectPath: (postId, { toast }) =>
       `/${locale}/chunks/${slug}${toast ? '?toast=post_created' : ''}#post-${postId}`,
     formData,

@@ -120,6 +120,24 @@ describe('buildNotificationLink — chunk comment deep links', () => {
     expect(link).toBe('/chunks/notification-test?tab=comments#post-post-1');
   });
 
+  it('points a thread-derived new_comment_on_topic at the comment anchor (replyId wins)', () => {
+    // Direct comments on /topics posts are stored as replies but notify as
+    // new_comment_on_topic; the link must land on the concrete comment.
+    const link = buildNotificationLink(
+      makeNotification({
+        type: 'new_comment_on_topic',
+        metadata: {
+          topicType: 'opening',
+          topicKey: 'sicilian-defense',
+          postId: 'post-1',
+          replyId: 'reply-9',
+        },
+      }),
+      {}
+    );
+    expect(link).toBe('/topics/openings/sicilian-defense/posts/post-1#post-reply-9');
+  });
+
   it('points a chunk reply at the reply anchor (replyId wins over postId)', () => {
     const link = buildNotificationLink(
       makeNotification({
@@ -189,6 +207,34 @@ describe('buildNotificationLink — games', () => {
         {}
       )
     ).toBe('/games/shared/game-42?comment=comment-7');
+  });
+
+  it('deep-links a new_comment_on_topic on a game to the new comment', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'new_comment_on_topic',
+          targetType: 'game_comment',
+          targetId: 'comment-7',
+          metadata: { gameId: 'game-42' },
+        }),
+        {}
+      )
+    ).toBe('/games/shared/game-42?comment=comment-7');
+  });
+
+  it('deep-links a reply on a game comment to the reply itself', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'reply',
+          targetType: 'game_comment',
+          targetId: 'reply-8',
+          metadata: { gameId: 'game-42' },
+        }),
+        {}
+      )
+    ).toBe('/games/shared/game-42?comment=reply-8');
   });
 
   it('links a new_game to the shared game page', () => {

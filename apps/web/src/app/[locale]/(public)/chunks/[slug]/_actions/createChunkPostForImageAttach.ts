@@ -19,17 +19,20 @@ export async function createChunkPostForImageAttach(
   slug: string,
   formData: FormData
 ): Promise<ImageAttachResult> {
+  const chunk = await getChunkBySlug(slug);
+
   return createPostForImageAttachBase({
     locale,
     topicIdentifier: slug,
     topicType: 'chunk',
     topicKey: slug,
     urlSegment: 'chunks',
-    validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
+    validateTopic: () => chunk !== null,
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
+    topicAuthorId: chunk?.userId,
     formData,
   });
 }

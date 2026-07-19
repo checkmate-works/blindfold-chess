@@ -142,17 +142,20 @@ export async function createChunkPostWithEmbedAttachment(
   const attributionPlatform: string | null = null;
   const attributionPath: string | null = null;
 
+  const chunk = await getChunkBySlug(slug);
+
   return createPostBase({
     locale,
     topicIdentifier: slug,
     topicType: 'chunk',
     topicKey: slug,
     urlSegment: 'chunks',
-    validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
+    validateTopic: () => chunk !== null,
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
+    topicAuthorId: chunk?.userId,
     redirectPath: (postId, { toast }) =>
       `/${locale}/chunks/${slug}${toast ? '?toast=post_created' : ''}#post-${postId}`,
     afterInsert: async (tx, postId) => {
