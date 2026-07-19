@@ -15,7 +15,7 @@ const mockExecute = vi.fn();
 const mockRevalidateTag = vi.fn();
 
 const mockGetUserAllTimeRank = vi.fn().mockResolvedValue({ rank: 5 });
-const mockCheckAndGrantRanks = vi.fn().mockResolvedValue([]);
+const mockEvaluateRanksAfterCreate = vi.fn().mockResolvedValue([]);
 const mockGrantChallengeExp = vi.fn().mockResolvedValue({
   earnedExp: 10,
   totalExp: 100,
@@ -36,8 +36,11 @@ vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
   refreshAdsHiddenCookieOnDanPromotion: vi.fn(),
 }));
 
+// rank-grant-flow.ts (the actual dependency of save-challenge-result.ts) is
+// left unmocked and calls straight through to this mock, then to the
+// ads-hidden-cookie-writer mock above.
 vi.mock('./rank-evaluation', () => ({
-  checkAndGrantRanks: (...args: unknown[]) => mockCheckAndGrantRanks(...args),
+  evaluateRanksAfterCreate: (...args: unknown[]) => mockEvaluateRanksAfterCreate(...args),
 }));
 
 vi.mock('./challenge-queries', () => ({
@@ -141,9 +144,9 @@ describe('saveChallengeResult', () => {
     expect(mockTransaction).toHaveBeenCalledTimes(1);
   });
 
-  it('should return grantedRanks from checkAndGrantRanks', async () => {
+  it('should return grantedRanks from evaluateRanksAfterCreate', async () => {
     const mockRanks = [{ slug: '5kyu', level: 10, color: 'orange' }];
-    mockCheckAndGrantRanks.mockResolvedValueOnce(mockRanks);
+    mockEvaluateRanksAfterCreate.mockResolvedValueOnce(mockRanks);
 
     const result = await saveChallengeResult(validInput);
 
@@ -151,15 +154,7 @@ describe('saveChallengeResult', () => {
   });
 
   it('should return empty grantedRanks when no ranks are granted', async () => {
-    mockCheckAndGrantRanks.mockResolvedValueOnce([]);
-
-    const result = await saveChallengeResult(validInput);
-
-    expect(result.grantedRanks).toEqual([]);
-  });
-
-  it('should return empty grantedRanks when checkAndGrantRanks throws', async () => {
-    mockCheckAndGrantRanks.mockRejectedValueOnce(new Error('rank check failed'));
+    mockEvaluateRanksAfterCreate.mockResolvedValueOnce([]);
 
     const result = await saveChallengeResult(validInput);
 

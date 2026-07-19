@@ -1,10 +1,9 @@
 'use server';
 
-import { refreshAdsHiddenCookieOnDanPromotion } from '@/lib/ads/ads-hidden-cookie-writer';
 import { userHasProfile } from '@/lib/auth';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { publishGame } from '@/lib/db/games-write';
-import { evaluateRanksAfterCreate } from '@/lib/db/rank-evaluation';
+import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
 import type { EngineConfig } from '@/lib/engines';
 import { deriveGameColumns, validatePublishSnapshot } from '@/lib/games/publish-game';
 import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
@@ -102,8 +101,9 @@ export async function publishGameAction(
     // a real author: an account-less (or provisional) publisher has no user to
     // grant a rank to. Such a game starts counting once its author claims it
     // via the manage token — `claimSharedGameAction` re-evaluates on claim.
-    const grantedRanks = authorId ? await evaluateRanksAfterCreate(authorId, 'game publish') : [];
-    await refreshAdsHiddenCookieOnDanPromotion(grantedRanks);
+    const grantedRanks = authorId
+      ? await evaluateRanksAndRefreshEntitlements(authorId, 'game publish')
+      : [];
 
     return {
       success: true,

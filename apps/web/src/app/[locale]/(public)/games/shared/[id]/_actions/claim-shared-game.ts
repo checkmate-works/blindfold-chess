@@ -2,13 +2,12 @@
 
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { refreshAdsHiddenCookieOnDanPromotion } from '@/lib/ads/ads-hidden-cookie-writer';
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, games } from '@/lib/db';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { authorizeGameMutation } from '@/lib/db/games-auth';
 import { claimSharedGame } from '@/lib/db/games-write';
-import { evaluateRanksAfterCreate } from '@/lib/db/rank-evaluation';
+import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -72,8 +71,10 @@ export async function claimSharedGameAction(
     // Same post-commit tail as publishing with an author: evaluate ranks
     // (best-effort, never fails the claim) and make a dan promotion's
     // ad-free perk visible immediately.
-    const grantedRanks = await evaluateRanksAfterCreate(guardResult.user.id, 'game claim');
-    await refreshAdsHiddenCookieOnDanPromotion(grantedRanks);
+    const grantedRanks = await evaluateRanksAndRefreshEntitlements(
+      guardResult.user.id,
+      'game claim'
+    );
 
     return {
       success: true,
