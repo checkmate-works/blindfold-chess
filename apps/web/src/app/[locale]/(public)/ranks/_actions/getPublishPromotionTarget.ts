@@ -43,6 +43,11 @@ export async function getPublishPromotionTarget(
 
   if (qualification === '1dan') {
     if (!achieved.has('1dan')) return '1dan';
+    // Defensive: 1dan's requirement is a strict superset of 1kyu's, and
+    // checkAndGrantRanks evaluates every rank independently on the same
+    // pass, so a user holding 1dan but not 1kyu should not occur in
+    // practice — this only guards against manual admin grants or a
+    // partial evaluation failure, not a state this flow produces itself.
     if (!achieved.has('1kyu')) return '1kyu';
     return null;
   }
