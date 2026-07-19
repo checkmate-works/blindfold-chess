@@ -299,6 +299,10 @@
       "title": "Publicación sobre {square}",
       "description": "Una publicación de discusión sobre la casilla {square} en ajedrez"
     },
+    "chunks": {
+      "title": "Chunks",
+      "description": "Catálogo de patrones de coordinación de piezas para el entrenamiento de memoria de posiciones"
+    },
     "games": {
       "title": "Tus Partidas",
       "description": "Consulta y gestiona tus partidas de ajedrez a ciegas"
@@ -3660,6 +3664,8 @@
     "announcementMessage": "Nuevo anuncio: {title}",
     "newPostMessage": "{actor} compartió una nueva publicación",
     "newCommentOnTopicMessage": "{actor} comentó en tu problema",
+    "chunkEditRequestSubmittedMessage": "{actor} sugirió una edición para tu chunk",
+    "chunkEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de edición",
     "newChunkDraftMessage": "{actor} publicó un borrador de chunk",
     "chunkPublishedMessage": "{actor} publicó un chunk",
     "newGameMessage": "{actor} compartió una partida",
@@ -3731,6 +3737,7 @@
     "lineAdded": "Línea añadida",
     "puzzleUpdated": "Cambios guardados",
     "puzzleDeleted": "Puzzle eliminado",
+    "editRequestSubmitted": "Sugerencia de edición enviada",
     "editRequestAccepted": "Sugerencia de edición aceptada",
     "editRequestRejected": "Sugerencia de edición rechazada",
     "editRequestWithdrawn": "Sugerencia de edición retirada"
@@ -4568,6 +4575,10 @@
       "openings": {
         "title": "Aperturas",
         "description": "Explora y aprende sobre aperturas de ajedrez"
+      },
+      "chunks": {
+        "title": "Chunks",
+        "description": "Catálogo de patrones de coordinación de piezas para el entrenamiento de memoria de posiciones"
       }
     },
     "openings": {

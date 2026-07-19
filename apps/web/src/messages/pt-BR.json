@@ -299,6 +299,10 @@
       "title": "Publicação sobre {square}",
       "description": "Uma publicação de discussão sobre a casa {square} no xadrez"
     },
+    "chunks": {
+      "title": "Chunks",
+      "description": "Catálogo de padrões de coordenação de peças para o treinamento de memória de posições"
+    },
     "games": {
       "title": "Suas Partidas",
       "description": "Consulte e gerencie suas partidas de xadrez às cegas"
@@ -3660,6 +3664,8 @@
     "announcementMessage": "Novo anúncio: {title}",
     "newPostMessage": "{actor} compartilhou uma nova publicação",
     "newCommentOnTopicMessage": "{actor} comentou no seu problema",
+    "chunkEditRequestSubmittedMessage": "{actor} sugeriu uma edição para o seu chunk",
+    "chunkEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de edição",
     "newChunkDraftMessage": "{actor} publicou um rascunho de chunk",
     "chunkPublishedMessage": "{actor} publicou um chunk",
     "newGameMessage": "{actor} compartilhou uma partida",
@@ -3731,6 +3737,7 @@
     "lineAdded": "Linha adicionada",
     "puzzleUpdated": "Alterações salvas",
     "puzzleDeleted": "Puzzle excluído",
+    "editRequestSubmitted": "Sugestão de edição enviada",
     "editRequestAccepted": "Sugestão de edição aceita",
     "editRequestRejected": "Sugestão de edição rejeitada",
     "editRequestWithdrawn": "Sugestão de edição retirada"
@@ -4568,6 +4575,10 @@
       "openings": {
         "title": "Aberturas",
         "description": "Explore e aprenda sobre aberturas de xadrez"
+      },
+      "chunks": {
+        "title": "Chunks",
+        "description": "Catálogo de padrões de coordenação de peças para o treinamento de memória de posições"
       }
     },
     "openings": {
