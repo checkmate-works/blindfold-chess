@@ -28,7 +28,6 @@ import { PublishNudgeBanner } from '@/app/[locale]/(public)/games/_components/Pu
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import {
   buildRequirementItems,
-  buildRequirementLabels,
   getBeltColorHex,
   isRankEarnedByPlaying,
   resolveAchievedSlugs,
@@ -98,8 +97,8 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const beltLabel = tRanks(`rankNames.${beltSlug}`);
 
   // RankCard props for the next rank (if any). Requirements are rendered as
-  // standalone links beneath the card (not inside it), so `hideRequirements`
-  // is set to keep the card focused on the rank identity.
+  // standalone links beneath the card (not inside it), so no
+  // requirementLabels are passed — RankCard simply omits the section.
   const nextCardProps = next
     ? {
         slug: next.slug,
@@ -107,10 +106,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
         beltColor: getBeltColorHex(next.slug),
         rankName: tRanks(`rankNames.${next.slug}`),
         state: (next.requirements.length === 0 ? 'coming-soon' : 'next') as 'next' | 'coming-soon',
-        requirementLabels: next.requirements.flatMap((req) => buildRequirementLabels(req, tRanks)),
-        requirementsHeading: tRanks('requirements'),
         comingSoonLabel: tRanks('comingSoon'),
-        hideRequirements: true,
       }
     : null;
 

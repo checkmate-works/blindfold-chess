@@ -13,16 +13,14 @@ type RankCardProps = {
   beltColor: string;
   rankName: string;
   state: RankCardState;
-  requirementLabels: (string | RequirementDivider)[];
-  requirementsHeading: string;
-  comingSoonLabel: string;
   /**
-   * When `true`, the requirements list section is omitted from the card.
-   * Used by the Dojo page where requirement items are rendered as standalone
-   * links beneath the card instead of inside it. Defaults to `false` so that
-   * existing callers (e.g. `/ranks`) continue rendering requirements.
+   * Omit (or pass `[]`) to render the card with no requirements section —
+   * e.g. the Dojo page, where requirement items are rendered as standalone
+   * links beneath the card instead of inside it.
    */
-  hideRequirements?: boolean;
+  requirementLabels?: (string | RequirementDivider)[];
+  requirementsHeading?: string;
+  comingSoonLabel: string;
 };
 
 export function RankCard({
@@ -31,10 +29,9 @@ export function RankCard({
   beltColor,
   rankName,
   state,
-  requirementLabels,
+  requirementLabels = [],
   requirementsHeading,
   comingSoonLabel,
-  hideRequirements = false,
 }: RankCardProps) {
   const isClickable = state !== 'coming-soon';
 
@@ -80,7 +77,7 @@ export function RankCard({
         </div>
 
         {/* Requirements (only for ranks with defined requirements) */}
-        {!hideRequirements && requirementLabels.length > 0 && (
+        {requirementLabels.length > 0 && (
           <div>
             <h4 className="mb-2 text-sm font-semibold text-muted-foreground">
               {requirementsHeading}

@@ -211,18 +211,12 @@ describe('RankCard', () => {
       expect(screen.queryByText('Requirements')).not.toBeInTheDocument();
     });
 
-    it('should not render requirements section when hideRequirements is true', () => {
-      render(<RankCard {...baseProps} state="next" hideRequirements />);
+    it('should not render requirements section when requirementLabels is unspecified (default)', () => {
+      const { requirementLabels: _requirementLabels, ...propsWithoutLabels } = baseProps;
+      render(<RankCard {...propsWithoutLabels} state="next" />);
 
       expect(screen.queryByText('Requirements')).not.toBeInTheDocument();
       expect(screen.queryByText('Score 80+ in Coordinate Quiz')).not.toBeInTheDocument();
-    });
-
-    it('should render requirements when hideRequirements is explicitly false (default)', () => {
-      render(<RankCard {...baseProps} state="next" hideRequirements={false} />);
-
-      expect(screen.getByText('Requirements')).toBeInTheDocument();
-      expect(screen.getByText('Score 80+ in Coordinate Quiz')).toBeInTheDocument();
     });
   });
 });
