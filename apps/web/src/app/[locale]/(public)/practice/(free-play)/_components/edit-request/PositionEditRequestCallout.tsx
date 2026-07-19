@@ -90,6 +90,7 @@ export async function PositionEditRequestCallout({
       <div>
         <Link
           href={href as '/practice/position-memory/[id]/edit-requests'}
+          locale={locale}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <FiClock className="h-3 w-3" aria-hidden />
@@ -117,6 +118,7 @@ export async function PositionEditRequestCallout({
       <div className="mt-2">
         <Link
           href={href as '/practice/position-memory/[id]/edit-requests'}
+          locale={locale}
           className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 hover:border-amber-400 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:border-amber-600 dark:hover:bg-amber-900/60 transition-colors"
         >
           <FiGitPullRequest className="h-3 w-3" aria-hidden />
