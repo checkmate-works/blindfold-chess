@@ -13,7 +13,9 @@ import { computeAdsHiddenValueForUser } from './ads-hidden-cookie-compute';
 /**
  * Write-through the `bfc_ads_hidden` cookie based on the given user's ad-free
  * entitlement. Sets the cookie to `'1'` if the user should not see ads
- * (active subscription or `ad_free` grant), or deletes it otherwise.
+ * (active subscription, `ad_free` grant, or dan-tier rank — see the single
+ * decision point in `hasAdFreeEntitlement`/`ad-free-entitlement.ts`), or
+ * deletes it otherwise.
  *
  * Anonymous callers (user === null) always end up with the cookie deleted —
  * this is correct for sign-out flows and for pages visited by unauthenticated

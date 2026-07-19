@@ -327,7 +327,7 @@ A martial arts-inspired progression system (5級 → 初段). Users earn ranks b
 
 1. Define the type in `src/lib/db/data/ranks.ts` (add to `RankRequirement` union)
 2. Add an evaluator function in `src/lib/db/rank-evaluation.ts` (`evaluators` record)
-3. Add type guard logic in `parseRequirements` (both `rank-evaluation.ts` and `ranks/page.tsx`)
+3. Add type guard logic in `parseRequirements` (`src/lib/db/data/ranks.ts` — this is the only place `parseRequirements` and its type guards live)
 4. Add i18n display logic in `ranks/page.tsx` if needed
 5. Update seed data with the new requirement
 

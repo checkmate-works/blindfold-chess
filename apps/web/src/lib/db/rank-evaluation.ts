@@ -13,7 +13,9 @@
  * Evaluators are keyed by `requirement.type`, not by rank slug. This means:
  * - Adding a new rank: seed data only, no code changes.
  * - Adding a new requirement type (e.g., `post_count`): add one evaluator to
- *   the `evaluators` record and a type guard branch.
+ *   the `evaluators` record here, and a type guard branch in
+ *   `parseRequirements` (`./data/ranks.ts` — the type guards live there, not
+ *   in this module).
  *
  * @design Called outside the challenge transaction
  *
