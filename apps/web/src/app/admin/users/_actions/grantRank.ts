@@ -1,12 +1,12 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, ranks, userRanks } from '@/lib/db';
-import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
+import { ALL_RANK_SLUGS, RANK_STATUS_CACHE_TAG, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { createNotification } from '@/lib/notifications/notification';
@@ -95,6 +95,7 @@ export async function grantRank(
   }
 
   revalidatePath(`/admin/users/${targetUserId}`);
+  revalidateTag(RANK_STATUS_CACHE_TAG, { expire: 60 });
 
   // The recipient has no way to notice a manually-granted rank otherwise —
   // it doesn't go through the normal challenge/game-publish flow that shows

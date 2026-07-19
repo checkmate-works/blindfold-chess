@@ -6,6 +6,7 @@ const mockUserRanksInsert = vi.fn();
 const mockUserRanksReturning = vi.fn();
 const mockModerationInsert = vi.fn();
 const mockRevalidatePath = vi.fn();
+const mockRevalidateTag = vi.fn();
 const mockGetClientIp = vi.fn();
 const mockCreateNotification = vi.fn();
 
@@ -59,6 +60,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
+  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 vi.mock('./getClientIp', () => ({
@@ -180,6 +182,13 @@ describe('grantRank', () => {
 
     await grantRank(targetUserId, '1dan', 'reason');
     expect(mockRevalidatePath).toHaveBeenCalledWith(`/admin/users/${targetUserId}`);
+  });
+
+  it('should revalidate the rank-status cache tag on success so ad-hiding reflects the manual grant', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+
+    await grantRank(targetUserId, '1dan', 'reason');
+    expect(mockRevalidateTag).toHaveBeenCalledWith('rank-status', { expire: 60 });
   });
 
   it('should notify the recipient so they have a way to notice the manual grant', async () => {
