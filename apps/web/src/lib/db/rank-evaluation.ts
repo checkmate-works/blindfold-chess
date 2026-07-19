@@ -209,8 +209,6 @@ export async function evaluateRankRequirements(
  * AFTER the challenge result transaction commits, so that
  * challenge_best_scores reflects the latest data.
  */
-export type { GrantedRank } from './data/ranks';
-
 export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]> {
   const granted: GrantedRank[] = [];
 

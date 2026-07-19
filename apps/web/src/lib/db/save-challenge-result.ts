@@ -3,12 +3,12 @@ import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
 
 import { refreshAdsHiddenCookieOnDanPromotion } from '@/lib/ads/ads-hidden-cookie-writer';
+import type { GrantedRank } from '@/lib/db/data/ranks';
 
 import { detectScoreImprovement } from './challenge-best-score';
 import { getUserAllTimeRank } from './challenge-queries';
 import { decideChallengeRankFeedItem } from './challenge-rank-feed';
 import { db } from './index';
-import type { GrantedRank } from './rank-evaluation';
 import { checkAndGrantRanks } from './rank-evaluation';
 import { grantChallengeExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
