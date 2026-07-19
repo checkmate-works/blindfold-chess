@@ -101,6 +101,15 @@ export function useEditableBoardDragDrop({ enabled, boardRef, pieceAt, onDrop }:
       }
       if (!source) return;
 
+      // Touch pointers get *implicit* pointer capture on the element hit by
+      // `pointerdown`, which pins `event.target` to that element for the
+      // rest of the gesture — subsequent `pointermove`/`pointerup` events
+      // report the drag source as their target no matter where the finger
+      // actually is. Releasing capture immediately restores normal
+      // pointer-position-based targeting (as mouse input already has), so
+      // the drop-square lookup below sees the real element under the finger.
+      (e.target as Element).releasePointerCapture?.(e.pointerId);
+
       const size = (boardRef.current?.getBoundingClientRect().width ?? 0) / 8;
       pendingDragRef.current = { source, startX: e.clientX, startY: e.clientY, size };
       dragPosRef.current = { x: e.clientX, y: e.clientY };

@@ -2,7 +2,7 @@
 
 import { type ReactNode, useEffect, useMemo } from 'react';
 
-import { shouldIgnoreKeyEvent } from '@/app/[locale]/(public)/practice/_lib/keyboard-guards';
+import { shouldIgnoreKeyEvent } from '@/lib/keyboard-guards';
 
 import { KeyboardHint } from './KeyboardHint';
 

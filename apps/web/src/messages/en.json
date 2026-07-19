@@ -2065,6 +2065,10 @@
         "title": "Switch input method",
         "description": "Tap this icon to change how you enter moves — typing, picking from a list, or tapping piece buttons.",
         "link": "Manage input methods"
+      },
+      "keyboard": {
+        "title": "Type moves on your keyboard",
+        "description": "With a physical keyboard you can enter moves here directly: uppercase piece letters (N, Q, …), lowercase files (a–h), ranks (1–8), and x + = #. Backspace deletes, Enter submits."
       }
     },
     "loading": "Loading...",

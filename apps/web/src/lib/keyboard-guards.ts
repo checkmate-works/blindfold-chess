@@ -1,11 +1,13 @@
 /**
- * Shared keyboard-event guards for practice input layers.
+ * Shared keyboard-event guards for global (window-level) keyboard input layers.
  *
- * The practice pages have two distinct keyboard handlers — the arrow-key
- * answer wrapper (`ArrowKeyAnswer`) and the algebraic-notation keyboard hook
- * (`useAlgebraicKeyboardInput`) — both of which must bail out in the exact
- * same edge cases (form fields, modals, modifier combos, auto-repeat). These
- * helpers centralize that logic so the two call sites can never drift.
+ * Several screens attach window `keydown` handlers that mirror on-screen
+ * buttons — the practice pages' arrow-key answer wrapper (`ArrowKeyAnswer`)
+ * and algebraic-notation hook (`useAlgebraicKeyboardInput`), and the play
+ * screen's notation keypad (`useNotationKeyboardInput`). All of them must
+ * bail out in the exact same edge cases (form fields, modals, modifier
+ * combos, auto-repeat). These helpers centralize that logic so the call
+ * sites can never drift.
  */
 
 /**
@@ -50,18 +52,29 @@ export function isModalOpen(): boolean {
 }
 
 /**
- * True when the event should be ignored entirely by practice keyboard handlers:
+ * True when the event should be ignored entirely by global keyboard handlers:
  *
- * - modifier combos (Ctrl / Meta / Alt / Shift)
+ * - modifier combos (Ctrl / Meta / Alt, and Shift unless `allowShift`)
  * - auto-repeat (`event.repeat`)
  * - focus inside an editable element
  * - any modal is open
  *
  * The caller still decides what to do with non-ignored events (which key to
  * dispatch on). This helper only answers the early-bail question.
+ *
+ * `allowShift` exists for handlers whose accepted characters *require* Shift
+ * to type — SAN notation entry needs uppercase piece letters (`Shift+n` → N)
+ * and shifted symbols (`+`, `#`). Such callers still get strict filtering:
+ * they match on `event.key` (the produced character), so an unwanted shifted
+ * key simply misses their allow-list. Handlers that only accept unshifted
+ * keys should keep the default so Shift combos fall through untouched.
  */
-export function shouldIgnoreKeyEvent(event: KeyboardEvent): boolean {
-  if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return true;
+export function shouldIgnoreKeyEvent(
+  event: KeyboardEvent,
+  { allowShift = false }: { allowShift?: boolean } = {}
+): boolean {
+  if (event.ctrlKey || event.metaKey || event.altKey) return true;
+  if (event.shiftKey && !allowShift) return true;
   if (event.repeat) return true;
   if (isEditableElement(event.target)) return true;
   if (isModalOpen()) return true;

@@ -2065,6 +2065,10 @@
         "title": "Cambiar el método de entrada",
         "description": "Toca este icono para cambiar cómo introduces las jugadas: escribiendo, eligiendo de una lista o tocando botones de piezas.",
         "link": "Gestionar métodos de entrada"
+      },
+      "keyboard": {
+        "title": "Escribe las jugadas con tu teclado",
+        "description": "Con un teclado físico puedes introducir las jugadas aquí directamente: letras de pieza en mayúscula (N, Q, …), columnas en minúscula (a–h), filas (1–8) y x + = #. Retroceso borra, Enter confirma."
       }
     },
     "loading": "Cargando...",

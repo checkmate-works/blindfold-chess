@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
@@ -11,6 +13,7 @@ import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { useButtonInputLogic } from '../_hooks/use-button-input-logic';
+import { useNotationKeyboardInput } from '../_hooks/use-notation-keyboard-input';
 
 type Props = {
   fen: string;
@@ -45,11 +48,13 @@ const CASTLING_BUTTONS: Array<{ move: CastlingToken; labelKey: CastlingLabelKey 
   { move: 'O-O-O', labelKey: 'queenside' },
 ];
 
+// Buttons are 44px (`w-11`/`h-11`) below the `sm` breakpoint to meet the
+// mobile touch-target guideline, then drop to the desktop-tuned 36px.
 const CELL_BUTTON_CLASS =
-  'w-9 h-9 flex items-center justify-center rounded-md font-bold text-lg transition-colors border bg-background hover:bg-muted border-border disabled:opacity-50 disabled:cursor-not-allowed';
+  'w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-md font-bold text-lg transition-colors border bg-background hover:bg-muted border-border disabled:opacity-50 disabled:cursor-not-allowed';
 
 const CASTLING_BUTTON_CLASS =
-  'px-3 h-9 rounded-md font-bold text-xs transition-colors border bg-background hover:bg-muted border-border disabled:opacity-50 disabled:cursor-not-allowed';
+  'px-3 h-11 sm:h-9 rounded-md font-bold text-xs transition-colors border bg-background hover:bg-muted border-border disabled:opacity-50 disabled:cursor-not-allowed';
 
 const UTILITY_BUTTON_CLASS =
   'w-14 h-14 bg-background hover:bg-muted border border-border rounded-lg text-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed';
@@ -88,13 +93,35 @@ export function ButtonInput({
     clear();
   };
 
+  // Physical-keyboard entry drives the exact same handlers as the buttons, so
+  // error-clearing and state stay in lockstep with clicks.
+  const containerRef = useRef<HTMLDivElement>(null);
+  useNotationKeyboardInput({
+    onChar: handleAppendChar,
+    onBackspace: handleBackspace,
+    onSubmit: () => {
+      if (canSubmit) submit();
+    },
+    containerRef,
+    enabled: !disabled,
+  });
+
   return (
     // translate="no": piece letters, coordinates and SAN move text are notation,
     // not prose. Browser auto-translation wraps these text nodes in <font>
     // elements, desyncing React's DOM refs and crashing commit-phase deletion
     // with "Failed to execute 'removeChild'". See facebook/react#11538.
-    <div translate="no" className="flex flex-col gap-3 p-4 bg-card rounded-lg">
-      {/* Row 1: Pieces + capture */}
+    // data-tour-id anchors the play help tour's keyboard-input step; since the
+    // tour resolves targets from the DOM at click time, the step is
+    // automatically skipped whenever another input mode is active.
+    <div
+      ref={containerRef}
+      translate="no"
+      data-tour-id="play-button-input"
+      className="flex flex-col gap-3 p-2 sm:p-4 bg-card rounded-lg"
+    >
+      {/* Row 1: Pieces + capture. Six 44px buttons overflow a ~320px viewport,
+          so below `sm` they flex-shrink evenly (44px stays the cap). */}
       <div className="flex gap-2 justify-center">
         {PIECE_BUTTONS.map(({ char, type, labelKey }) => (
           <button
@@ -103,7 +130,7 @@ export function ButtonInput({
             onClick={() => handleAppendChar(char)}
             disabled={disabled}
             aria-label={t(`piece.${labelKey}`)}
-            className={CELL_BUTTON_CLASS}
+            className={`${CELL_BUTTON_CLASS} flex-1 min-w-0 max-w-11 sm:flex-none sm:max-w-none`}
           >
             {buttonInputPieceLabel === 'icon' ? (
               <ChessPiece type={type} color={playerColor} size={24} />
@@ -117,7 +144,7 @@ export function ButtonInput({
           onClick={() => handleAppendChar('x')}
           disabled={disabled}
           aria-label={t('symbol.capture')}
-          className={CELL_BUTTON_CLASS}
+          className={`${CELL_BUTTON_CLASS} flex-1 min-w-0 max-w-11 sm:flex-none sm:max-w-none`}
         >
           ×
         </button>
@@ -128,6 +155,7 @@ export function ButtonInput({
         showRanks={false}
         onFileToggle={(file) => handleAppendChar(file as NotationChar)}
         disabledFile={() => disabled}
+        buttonClassName="h-11 sm:h-9"
       />
 
       {/* Row 3: Ranks */}
@@ -135,10 +163,12 @@ export function ButtonInput({
         showFiles={false}
         onRankToggle={(rank) => handleAppendChar(rank as NotationChar)}
         disabledRank={() => disabled}
+        buttonClassName="h-11 sm:h-9"
       />
 
-      {/* Row 4: Annotations + Castling */}
-      <div className="flex gap-6 items-center justify-center">
+      {/* Row 4: Annotations + Castling. The inter-group gap tightens on
+          mobile so the 44px buttons still fit a ~320px viewport. */}
+      <div className="flex gap-4 sm:gap-6 items-center justify-center">
         <div className="flex gap-2">
           {ANNOTATION_BUTTONS.map(({ char, labelKey }) => (
             <button

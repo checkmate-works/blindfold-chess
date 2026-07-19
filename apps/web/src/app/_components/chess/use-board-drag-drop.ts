@@ -103,6 +103,15 @@ export function useBoardDragDrop({
       // obfuscated "tried to grab the wrong piece" counting.
       if (!piece || piece.color !== movableColorChar) return;
 
+      // Touch pointers get *implicit* pointer capture on the element hit by
+      // `pointerdown`, which pins `event.target` to that element for the
+      // rest of the gesture — subsequent `pointermove`/`pointerup` events
+      // report the drag source as their target no matter where the finger
+      // actually is. Releasing capture immediately restores normal
+      // pointer-position-based targeting (as mouse input already has), so
+      // the drop-square lookup below sees the real element under the finger.
+      (e.target as Element).releasePointerCapture?.(e.pointerId);
+
       const size = e.currentTarget.getBoundingClientRect().width / 8;
       pendingDragRef.current = { from: square, startX: e.clientX, startY: e.clientY, size };
       dragPosRef.current = { x: e.clientX, y: e.clientY };
