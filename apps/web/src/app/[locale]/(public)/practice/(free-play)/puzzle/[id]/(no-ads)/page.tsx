@@ -239,17 +239,20 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
               {t('detail.forkAction')}
             </Link>
           )}
-          <time dateTime={position.createdAt.toISOString()}>
-            {position.createdAt.toLocaleDateString(locale, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </time>
-          {position.updatedAt.getTime() - position.createdAt.getTime() > 1000 && (
-            <span className="text-muted-foreground">{t('detail.edited')}</span>
-          )}
         </div>
+      </div>
+
+      <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
+        <time dateTime={position.createdAt.toISOString()}>
+          {position.createdAt.toLocaleDateString(locale, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </time>
+        {position.updatedAt.getTime() - position.createdAt.getTime() > 1000 && (
+          <span className="text-muted-foreground">{t('detail.edited')}</span>
+        )}
       </div>
 
       <SectionTitle id="comments">{tComments('commentsTitle')}</SectionTitle>
