@@ -114,7 +114,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     handleUndoLog,
     truncateLogs,
     setLogsTo,
-    setTotalsTo,
+    restoreTotals,
   } = useMoveOperationTracker();
 
   // Game state hook
@@ -142,7 +142,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setStartingFen,
     setSetupPliesTo: setSetupPlies,
     setOperationLogsTo: setLogsTo,
-    setOperationTotalsTo: setTotalsTo,
+    restoreOperationTotals: restoreTotals,
   });
 
   // Undo / restart-from-position can strip seeded setup moves. Once the move

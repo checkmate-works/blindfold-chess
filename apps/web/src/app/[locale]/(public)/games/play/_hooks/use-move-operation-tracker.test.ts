@@ -508,11 +508,11 @@ describe('useMoveOperationTracker', () => {
       expect(result.current.totals.peeks).toBe(2);
     });
 
-    it('restores via setTotalsTo and keeps accumulating from there', () => {
+    it('restores via restoreTotals and keeps accumulating from there', () => {
       const { result } = renderHook(() => useMoveOperationTracker());
 
       act(() => {
-        result.current.setTotalsTo({ peeks: 4, movePeeks: 2, undos: 3, invalidMoves: 1 });
+        result.current.restoreTotals({ peeks: 4, movePeeks: 2, undos: 3, invalidMoves: 1 });
         result.current.recordPeek();
       });
 
@@ -521,6 +521,30 @@ describe('useMoveOperationTracker', () => {
         movePeeks: 2,
         undos: 3,
         invalidMoves: 1,
+      });
+    });
+
+    it('restoreTotals is a max-merge: a stale snapshot cannot roll back live counters', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      // Live session already recorded 2 invalids and 1 peek…
+      act(() => {
+        result.current.recordInvalid('Rc8');
+        result.current.recordInvalid('Re1');
+        result.current.recordPeek();
+      });
+
+      // …then the mid-session restore fires with the record saved at mount
+      // (all zeros except a counter the live side has not touched).
+      act(() => {
+        result.current.restoreTotals({ peeks: 0, movePeeks: 5, undos: 0, invalidMoves: 0 });
+      });
+
+      expect(result.current.totals).toEqual({
+        peeks: 1,
+        movePeeks: 5,
+        undos: 0,
+        invalidMoves: 2,
       });
     });
   });

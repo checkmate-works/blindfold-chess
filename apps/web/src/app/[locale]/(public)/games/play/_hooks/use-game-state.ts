@@ -33,7 +33,8 @@ type UseGameStateOptions = {
   setStartingFen: (fen: string | undefined) => void;
   setSetupPliesTo?: (setupPlies: number) => void;
   setOperationLogsTo?: (logs: MoveOperationLog[]) => void;
-  setOperationTotalsTo?: (totals: OperationTotals) => void;
+  /** Monotonic max-merge, not overwrite — see the tracker's `restoreTotals`. */
+  restoreOperationTotals?: (totals: OperationTotals) => void;
 };
 
 export function useGameState({
@@ -49,7 +50,7 @@ export function useGameState({
   setStartingFen,
   setSetupPliesTo,
   setOperationLogsTo,
-  setOperationTotalsTo,
+  restoreOperationTotals,
 }: UseGameStateOptions) {
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
@@ -114,11 +115,14 @@ export function useGameState({
       if (loadedGameData.operationLogs && setOperationLogsTo) {
         setOperationLogsTo(loadedGameData.operationLogs);
       }
-      if (setOperationTotalsTo) {
+      if (restoreOperationTotals) {
         // Records saved before operationTotals existed get a lossy baseline
         // (the sum of the surviving per-move counters) so the totals stay
         // monotonic from here on. Anything undo already erased is gone.
-        setOperationTotalsTo(
+        // The restore is a max-merge, so when this effect fires mid-session
+        // with a stale snapshot (new game → initial save → URL gains its
+        // gameId), live counters recorded in the meantime are kept.
+        restoreOperationTotals(
           loadedGameData.operationTotals ?? sumOperationLogs(loadedGameData.operationLogs ?? [])
         );
       }
@@ -130,7 +134,7 @@ export function useGameState({
     setStartingFen,
     setSetupPliesTo,
     setOperationLogsTo,
-    setOperationTotalsTo,
+    restoreOperationTotals,
   ]);
 
   // Initialize on mount with initial moves

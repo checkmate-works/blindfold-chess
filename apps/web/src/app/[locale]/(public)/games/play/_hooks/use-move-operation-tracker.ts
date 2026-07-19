@@ -146,7 +146,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
   /**
    * Replace all logs with the given array and reset counters.
    * Used to restore logs from a loaded game (restore `totals` alongside
-   * via {@link setTotalsTo} — the two are separate state slices).
+   * via {@link restoreTotals} — the two are separate state slices).
    */
   const setLogsTo = useCallback(
     (newLogs: MoveOperationLog[]) => {
@@ -156,9 +156,23 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     [resetCounters]
   );
 
-  /** Restore the lifetime totals from a loaded game. */
-  const setTotalsTo = useCallback((newTotals: OperationTotals) => {
-    setTotals(newTotals);
+  /**
+   * Restore the lifetime totals from a loaded game — as a per-counter MAX
+   * merge, never a plain overwrite. The restore effect can fire mid-session
+   * with a stale snapshot: a brand-new game saves on mount, the URL then
+   * gains its gameId, and the storage record (captured before any play) is
+   * "restored" over live state that may already hold recorded operations.
+   * The counters are monotonic, so whichever side is larger is the truth;
+   * max keeps live progress in that race and still adopts the stored
+   * baseline on a genuine resume (where live state is all zeros).
+   */
+  const restoreTotals = useCallback((restored: OperationTotals) => {
+    setTotals((current) => ({
+      peeks: Math.max(current.peeks, restored.peeks),
+      movePeeks: Math.max(current.movePeeks, restored.movePeeks),
+      undos: Math.max(current.undos, restored.undos),
+      invalidMoves: Math.max(current.invalidMoves, restored.invalidMoves),
+    }));
   }, []);
 
   return {
@@ -172,6 +186,6 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     handleUndoLog,
     truncateLogs,
     setLogsTo,
-    setTotalsTo,
+    restoreTotals,
   };
 }
