@@ -6,7 +6,8 @@ import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import { sumOperationLogs } from '@/lib/games/operation-totals';
+import type { MoveOperationLog, OperationTotals } from '@/lib/games/saved-game-types';
 
 type LoadedGameData = {
   startingFen?: string;
@@ -16,6 +17,7 @@ type LoadedGameData = {
   gameStatus: GameStatus;
   playerResult: 'win' | 'loss' | 'draw' | null;
   operationLogs?: MoveOperationLog[];
+  operationTotals?: OperationTotals;
 };
 
 type UseGameStateOptions = {
@@ -31,6 +33,7 @@ type UseGameStateOptions = {
   setStartingFen: (fen: string | undefined) => void;
   setSetupPliesTo?: (setupPlies: number) => void;
   setOperationLogsTo?: (logs: MoveOperationLog[]) => void;
+  setOperationTotalsTo?: (totals: OperationTotals) => void;
 };
 
 export function useGameState({
@@ -46,6 +49,7 @@ export function useGameState({
   setStartingFen,
   setSetupPliesTo,
   setOperationLogsTo,
+  setOperationTotalsTo,
 }: UseGameStateOptions) {
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
@@ -110,9 +114,24 @@ export function useGameState({
       if (loadedGameData.operationLogs && setOperationLogsTo) {
         setOperationLogsTo(loadedGameData.operationLogs);
       }
+      if (setOperationTotalsTo) {
+        // Records saved before operationTotals existed get a lossy baseline
+        // (the sum of the surviving per-move counters) so the totals stay
+        // monotonic from here on. Anything undo already erased is gone.
+        setOperationTotalsTo(
+          loadedGameData.operationTotals ?? sumOperationLogs(loadedGameData.operationLogs ?? [])
+        );
+      }
       appliedLoadedGameDataRef.current = loadedGameData;
     }
-  }, [loadedGameData, setMovesTo, setStartingFen, setSetupPliesTo, setOperationLogsTo]);
+  }, [
+    loadedGameData,
+    setMovesTo,
+    setStartingFen,
+    setSetupPliesTo,
+    setOperationLogsTo,
+    setOperationTotalsTo,
+  ]);
 
   // Initialize on mount with initial moves
   useEffect(() => {

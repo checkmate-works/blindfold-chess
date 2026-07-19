@@ -3,6 +3,7 @@ import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import { isEngineConfig } from '@/lib/engines';
 import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import { isBoardVisibility } from '@/lib/games/board-visibility';
+import { isOperationTotals } from '@/lib/games/operation-totals';
 import type { StoredGame } from '@/lib/games/saved-game-types';
 
 /**
@@ -122,6 +123,7 @@ export function isValidStoredGame(stored: unknown): stored is StoredGame {
                   (s) => typeof s === 'string'
                 )))
         ))) &&
+    (g.operationTotals === undefined || isOperationTotals(g.operationTotals)) &&
     (g.preferenceChangeLog === undefined ||
       (Array.isArray(g.preferenceChangeLog) &&
         g.preferenceChangeLog.every((entry) => isValidPreferenceChangeEntry(entry))))

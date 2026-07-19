@@ -54,6 +54,7 @@ export function useInitialSave({
             gamePreferences: gameDataRefs.gamePreferences.current,
             preferenceChangeLog: gameDataRefs.preferenceChangeLog.current,
             operationLogs: gameDataRefs.operationLogs.current,
+            operationTotals: gameDataRefs.operationTotals.current,
           };
 
           const savedGameId = await gameRepository.create(gameData);

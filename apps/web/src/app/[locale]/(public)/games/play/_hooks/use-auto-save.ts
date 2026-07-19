@@ -9,6 +9,7 @@ import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository
 import type {
   GameOutcome,
   MoveOperationLog,
+  OperationTotals,
   PreferenceChangeLogEntry,
 } from '@/lib/games/saved-game-types';
 
@@ -41,6 +42,7 @@ export type GameDataRefs = {
   gamePreferences: React.RefObject<PerGamePreferences | undefined>;
   preferenceChangeLog: React.RefObject<PreferenceChangeLogEntry[] | undefined>;
   operationLogs: React.RefObject<MoveOperationLog[] | undefined>;
+  operationTotals: React.RefObject<OperationTotals | undefined>;
 };
 
 /** Options accepted by the {@link useAutoSave} save function. */
@@ -77,6 +79,7 @@ type UseAutoSaveOptions = {
   gamePreferences?: PerGamePreferences;
   preferenceChangeLog?: PreferenceChangeLogEntry[];
   operationLogs?: MoveOperationLog[];
+  operationTotals?: OperationTotals;
   enabled?: boolean;
   saveOnInit?: boolean;
   /**
@@ -108,6 +111,7 @@ export function useAutoSave({
   gamePreferences,
   preferenceChangeLog,
   operationLogs,
+  operationTotals,
   enabled = true,
   saveOnInit = false,
   repository,
@@ -131,6 +135,7 @@ export function useAutoSave({
     gamePreferences,
     preferenceChangeLog,
     operationLogs,
+    operationTotals,
   });
 
   // Mirror the save-gating props so async callbacks read the latest values.
@@ -210,6 +215,7 @@ export function useAutoSave({
           gamePreferences: gameDataRefs.gamePreferences.current,
           preferenceChangeLog: gameDataRefs.preferenceChangeLog.current,
           operationLogs: gameDataRefs.operationLogs.current,
+          operationTotals: gameDataRefs.operationTotals.current,
         };
 
         const gameIdFromRef = currentGameIdRef.current;

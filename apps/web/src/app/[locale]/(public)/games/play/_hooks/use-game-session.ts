@@ -105,6 +105,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // passed to useGameState for synchronized restoration alongside moves.
   const {
     logs: operationLogs,
+    totals: operationTotals,
     recordPeek,
     recordUndo,
     recordMovePeek,
@@ -113,6 +114,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     handleUndoLog,
     truncateLogs,
     setLogsTo,
+    setTotalsTo,
   } = useMoveOperationTracker();
 
   // Game state hook
@@ -140,6 +142,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setStartingFen,
     setSetupPliesTo: setSetupPlies,
     setOperationLogsTo: setLogsTo,
+    setOperationTotalsTo: setTotalsTo,
   });
 
   // Undo / restart-from-position can strip seeded setup moves. Once the move
@@ -177,6 +180,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     gamePreferences: initialPerGamePrefs,
     preferenceChangeLog,
     operationLogs,
+    operationTotals,
     enabled: !isRestoringGameData && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });
@@ -321,6 +325,29 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     [appendPreferenceChange, moves.length, markPendingChange]
   );
 
+  // Aid-usage record events (peek / move-peek / invalid attempt) update the
+  // monotonic `operationTotals` state immediately, but none of them advances
+  // the move count — so without marking a pending change, a peek made right
+  // before leaving the page would never reach storage (`useSaveTrigger` only
+  // watches moves/status). Same pattern as `setPerGamePref` above. Undo and
+  // commit need no wrapper: both coincide with a moves change that already
+  // triggers a save.
+  const recordPeekDurable = useCallback(() => {
+    recordPeek();
+    markPendingChange();
+  }, [recordPeek, markPendingChange]);
+  const recordMovePeekDurable = useCallback(() => {
+    recordMovePeek();
+    markPendingChange();
+  }, [recordMovePeek, markPendingChange]);
+  const recordInvalidDurable = useCallback(
+    (attempt?: string) => {
+      recordInvalid(attempt);
+      markPendingChange();
+    },
+    [recordInvalid, markPendingChange]
+  );
+
   // Clear both the error and the preserved attempted-input in one call.
   // Wired to every child input component's `onErrorClear` so that any user
   // edit reverts the status slot back to "AI played …" / "Play Chess".
@@ -391,12 +418,13 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       handleRestartFromPosition,
       handleNewGameFromPosition,
       commitMoveLog: commitMove,
-      recordPeek,
-      recordMovePeek,
-      recordInvalid,
+      recordPeek: recordPeekDurable,
+      recordMovePeek: recordMovePeekDurable,
+      recordInvalid: recordInvalidDurable,
       setPerGamePref,
     },
     operationLogs,
+    operationTotals,
   };
 }
 
