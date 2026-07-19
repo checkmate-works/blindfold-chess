@@ -1424,7 +1424,7 @@
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",
         "startSolving": "挑戦する",
-        "memorizeOnly": "この局面を記憶するだけ",
+        "memorizeOnly": "ポジションの記憶のみ行う",
         "whitePiecesLabel": "白の駒",
         "blackPiecesLabel": "黒の駒",
         "whiteToMove": "白の手番",
