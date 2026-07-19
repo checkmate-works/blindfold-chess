@@ -21,6 +21,12 @@ import {
 } from '../_lib/helpers';
 import { RankCard } from './RankCard';
 
+/**
+ * Shared with the `/ranks` page's loading skeleton so the two grids don't
+ * drift apart — see the skeleton's own comment in `page.tsx`.
+ */
+export const RANKS_GRID_CLASSES = 'mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3';
+
 type Props = {
   locale: Locale;
   dbRanks: Rank[];
@@ -77,7 +83,7 @@ export function RanksGrid({ locale, dbRanks }: Props) {
   const displayAchievedSlugs = resolveDisplayAchievedSlugs(achievedSlugs);
 
   return (
-    <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className={RANKS_GRID_CLASSES}>
       {ALL_RANK_SLUGS.map((slug) => {
         if (isMukyuSlug(slug)) {
           const beltColor = getBeltColorHex(slug);

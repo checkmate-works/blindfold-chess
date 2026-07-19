@@ -31,6 +31,8 @@ import { getTranslations } from 'next-intl/server';
 
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
+import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
+
 import {
   Divider,
   PageLayout,
@@ -43,7 +45,7 @@ import { SignUpBanner } from '@/app/[locale]/_components/SignUpBanner';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
-import { RanksGrid } from './_components/RanksGrid';
+import { RANKS_GRID_CLASSES, RanksGrid } from './_components/RanksGrid';
 import { getAllRanks } from './_lib/queries';
 
 export const revalidate = 1800; // 30 minutes — ranks are code-seeded; long TTL is fine
@@ -105,9 +107,9 @@ async function RanksSkeleton() {
           <div className="h-9 bg-muted rounded w-32" />
         </div>
 
-        {/* Rank card grid — 7 cards matching ALL_RANK_SLUGS length */}
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 7 }).map((_, i) => (
+        {/* Rank card grid — one placeholder per ALL_RANK_SLUGS entry */}
+        <div className={RANKS_GRID_CLASSES}>
+          {Array.from({ length: ALL_RANK_SLUGS.length }).map((_, i) => (
             <div
               key={i}
               className="relative overflow-hidden rounded-lg border border-border bg-card animate-pulse"
