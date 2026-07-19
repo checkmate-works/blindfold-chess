@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Select, Textarea } from '@/app/admin/_components/forms';
+import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
@@ -30,9 +31,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export function GrantRankButton({ userId, availableRanks }: Props) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmModalAction();
   const [rankSlug, setRankSlug] = useState(availableRanks[0]?.slug ?? '');
   const [reason, setReason] = useState('');
 
@@ -47,34 +46,23 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
       return;
     }
 
-    setIsPending(true);
-    setError(null);
-
-    const result = await grantRank(userId, rankSlug, trimmedReason);
-
-    if ('error' in result) {
-      setError(ERROR_MESSAGES[result.error] ?? result.error);
-      setIsPending(false);
-    } else {
-      setIsOpen(false);
-      setIsPending(false);
-      setReason('');
-      const remaining = availableRanks.filter((r) => r.slug !== rankSlug);
-      setRankSlug(remaining[0]?.slug ?? '');
-      router.refresh();
-    }
-  }
-
-  function handleCancel() {
-    setIsOpen(false);
-    setError(null);
+    await run(
+      () => grantRank(userId, rankSlug, trimmedReason),
+      () => {
+        setReason('');
+        const remaining = availableRanks.filter((r) => r.slug !== rankSlug);
+        setRankSlug(remaining[0]?.slug ?? '');
+        router.refresh();
+      },
+      (code) => ERROR_MESSAGES[code] ?? code
+    );
   }
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={open}
         className="px-3 py-1 text-xs font-medium rounded border border-border bg-card text-foreground hover:bg-secondary transition-colors"
       >
         Grant Rank
@@ -88,7 +76,7 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
         isLoading={isPending}
         error={error}
         onConfirm={handleGrant}
-        onCancel={handleCancel}
+        onCancel={cancel}
       >
         <div className="space-y-4">
           <div>

@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 
 import { Textarea } from '@/app/_components';
+import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
@@ -24,9 +25,7 @@ export function DeletePostAdminButton({
     deleteModalReasonRequired: string;
   };
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmModalAction();
   const reasonRef = useRef<HTMLTextAreaElement>(null);
 
   async function handleDelete() {
@@ -36,30 +35,14 @@ export function DeletePostAdminButton({
       return;
     }
 
-    setIsPending(true);
-    setError(null);
-
-    const result = await deletePostAdmin(postId, reason);
-
-    if ('error' in result) {
-      setError(result.error);
-      setIsPending(false);
-    } else {
-      setIsOpen(false);
-      setIsPending(false);
-    }
-  }
-
-  function handleCancel() {
-    setIsOpen(false);
-    setError(null);
+    await run(() => deletePostAdmin(postId, reason));
   }
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={open}
         className="px-3 py-1 text-xs font-medium rounded bg-destructive text-destructive-foreground hover:opacity-80 transition-opacity"
       >
         {labels.deleteButton}
@@ -74,7 +57,7 @@ export function DeletePostAdminButton({
         isLoading={isPending}
         error={error}
         onConfirm={handleDelete}
-        onCancel={handleCancel}
+        onCancel={cancel}
       >
         <label htmlFor={`delete-reason-${postId}`} className="block text-sm font-medium mb-2">
           {labels.deleteModalReasonLabel}

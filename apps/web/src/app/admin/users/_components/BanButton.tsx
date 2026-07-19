@@ -1,17 +1,16 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 
 import { Textarea } from '@/app/_components';
+import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { banUser } from '../_actions/banUser';
 
 export function BanButton({ userId }: { userId: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmModalAction();
   const reasonRef = useRef<HTMLTextAreaElement>(null);
 
   async function handleBan() {
@@ -21,30 +20,14 @@ export function BanButton({ userId }: { userId: string }) {
       return;
     }
 
-    setIsPending(true);
-    setError(null);
-
-    const result = await banUser(userId, reason);
-
-    if ('error' in result) {
-      setError(result.error);
-      setIsPending(false);
-    } else {
-      setIsOpen(false);
-      setIsPending(false);
-    }
-  }
-
-  function handleCancel() {
-    setIsOpen(false);
-    setError(null);
+    await run(() => banUser(userId, reason));
   }
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={open}
         className="px-3 py-1 text-xs font-medium rounded bg-destructive text-destructive-foreground hover:opacity-80 transition-opacity"
       >
         Ban
@@ -59,7 +42,7 @@ export function BanButton({ userId }: { userId: string }) {
         isLoading={isPending}
         error={error}
         onConfirm={handleBan}
-        onCancel={handleCancel}
+        onCancel={cancel}
       >
         <label htmlFor={`ban-reason-${userId}`} className="block text-sm font-medium mb-2">
           Reason for ban
