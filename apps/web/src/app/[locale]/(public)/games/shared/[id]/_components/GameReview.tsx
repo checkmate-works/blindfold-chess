@@ -178,6 +178,7 @@ export function GameReview({
     effectivePlaySettings,
     boardPreferences,
     hiddenPieceStyle,
+    preferencesAt,
   } = useReplayPreferences({
     preferences,
     playSettings,
@@ -213,6 +214,17 @@ export function GameReview({
     lastMoveAt,
     navigateToPosition,
   });
+
+  // The modal previews its own position independent of the live board (see
+  // useQuickPeekModal), so its "as played" obfuscation must be recomputed for
+  // THAT position — reusing the live board's boardPreferences/hiddenPieceStyle
+  // here would freeze the modal at whatever the live board happened to show
+  // when it was opened, ignoring mid-game reveal/hide changes as the viewer
+  // scrubs inside the modal.
+  const quickPeekPreferences = useMemo(
+    () => preferencesAt(quickPeek.nav.currentPosition),
+    [preferencesAt, quickPeek.nav.currentPosition]
+  );
 
   const lichessAnalysisUrl = fenToLichessUrl(
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
@@ -554,8 +566,8 @@ export function GameReview({
         playerSide={playerColor}
         flipped={effectiveFlipped}
         lastMove={quickPeek.lastMove}
-        preferences={boardPreferences}
-        hiddenPieceStyle={hiddenPieceStyle}
+        preferences={quickPeekPreferences.boardPreferences}
+        hiddenPieceStyle={quickPeekPreferences.hiddenPieceStyle}
         movesLength={notationMoves.length}
         currentPosition={quickPeek.nav.currentPosition}
         formattedPgn={formattedPgn}
