@@ -173,4 +173,138 @@ describe('ButtonInput', () => {
       }
     });
   });
+
+  // Physical-keyboard entry (useNotationKeyboardInput): typing drives the same
+  // state machine as clicking. The window listener receives events bubbled from
+  // wherever focus happens to be, so tests dispatch on `window` for plain
+  // typing and on specific elements to exercise the target-based guards.
+  describe('keyboard input', () => {
+    /** Text currently shown in the SAN preview box. */
+    function previewText(): string {
+      const span = document.querySelector('.font-mono > span');
+      if (!span) throw new Error('preview span not found');
+      return span.textContent ?? '';
+    }
+
+    function typeKeys(...inits: (string | KeyboardEventInit)[]) {
+      for (const init of inits) {
+        fireEvent.keyDown(window, typeof init === 'string' ? { key: init } : init);
+      }
+    }
+
+    it('builds a move in the preview from typed characters', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
+
+      typeKeys({ key: 'N', shiftKey: true }, 'f', '3');
+
+      expect(previewText()).toBe('Nf3');
+    });
+
+    it('ignores characters outside the notation set (e.g. z)', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
+
+      typeKeys('z', 'i', '9', '0', '-');
+
+      expect(previewText()).toBe('');
+    });
+
+    it('accepts Shift-modified symbols (+, #) via allowShift', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
+
+      typeKeys('e', '4', { key: '+', shiftKey: true });
+
+      expect(previewText()).toBe('e4+');
+    });
+
+    it('Backspace removes the last character', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
+
+      typeKeys('e', '4', 'Backspace');
+
+      expect(previewText()).toBe('e');
+    });
+
+    it('Enter (focus on body) submits a completed move', () => {
+      const onSubmit = vi.fn();
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={onSubmit} disabled={false} />);
+
+      typeKeys('e', '4');
+      fireEvent.keyDown(document.body, { key: 'Enter' });
+
+      expect(onSubmit).toHaveBeenCalledExactlyOnceWith('e4');
+    });
+
+    it('Enter does nothing while the input is empty (canSubmit=false)', () => {
+      // `computeIsSubmittable` is simply input.length > 0 — SAN validity is
+      // checked downstream on submit (mirroring the on-screen submit button,
+      // which is likewise enabled for any non-empty input).
+      const onSubmit = vi.fn();
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={onSubmit} disabled={false} />);
+
+      fireEvent.keyDown(document.body, { key: 'Enter' });
+
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('Enter submits when focus is on a button inside the keypad', () => {
+      const onSubmit = vi.fn();
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={onSubmit} disabled={false} />);
+
+      typeKeys('e', '4');
+      fireEvent.keyDown(screen.getByRole('button', { name: 'e' }), { key: 'Enter' });
+
+      expect(onSubmit).toHaveBeenCalledExactlyOnceWith('e4');
+    });
+
+    it('Enter is NOT stolen from a focused element outside the keypad', () => {
+      // A window-level Enter handler must not swallow activation of other
+      // tab-focusable controls on the page (resign button, nav links, …).
+      const onSubmit = vi.fn();
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={onSubmit} disabled={false} />);
+      const external = document.createElement('button');
+      document.body.appendChild(external);
+
+      typeKeys('e', '4');
+      const swallowed = !fireEvent.keyDown(external, { key: 'Enter' });
+
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(swallowed).toBe(false); // preventDefault was not called
+      external.remove();
+    });
+
+    it('ignores Ctrl/Meta-modified keys (browser shortcuts pass through)', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
+
+      typeKeys({ key: 'e', ctrlKey: true }, { key: 'f', metaKey: true });
+
+      expect(previewText()).toBe('');
+    });
+
+    it('ignores auto-repeat events from a held key', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
+
+      typeKeys('e', { key: 'e', repeat: true });
+
+      expect(previewText()).toBe('e');
+    });
+
+    it('ignores keys typed into an editable element', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
+      const input = document.createElement('input');
+      document.body.appendChild(input);
+
+      fireEvent.keyDown(input, { key: 'e' });
+
+      expect(previewText()).toBe('');
+      input.remove();
+    });
+
+    it('does not react at all while disabled', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={true} />);
+
+      typeKeys('e', '4');
+
+      expect(previewText()).toBe('');
+    });
+  });
 });

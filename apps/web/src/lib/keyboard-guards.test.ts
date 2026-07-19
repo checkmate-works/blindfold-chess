@@ -159,6 +159,32 @@ describe('keyboard-guards', () => {
       document.body.appendChild(modal);
       expect(shouldIgnoreKeyEvent(makeKeyEvent())).toBe(true);
     });
+
+    describe('allowShift option', () => {
+      it('lets a Shift-modified event through when allowShift is true', () => {
+        expect(shouldIgnoreKeyEvent(makeKeyEvent({ shiftKey: true }), { allowShift: true })).toBe(
+          false
+        );
+      });
+
+      it('still ignores Ctrl / Meta / Alt combos when allowShift is true', () => {
+        for (const init of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+          expect(shouldIgnoreKeyEvent(makeKeyEvent(init), { allowShift: true })).toBe(true);
+        }
+      });
+
+      it('still ignores auto-repeat when allowShift is true', () => {
+        expect(
+          shouldIgnoreKeyEvent(makeKeyEvent({ shiftKey: true, repeat: true }), { allowShift: true })
+        ).toBe(true);
+      });
+
+      it('ignores Shift combos by default (explicit false matches omission)', () => {
+        expect(shouldIgnoreKeyEvent(makeKeyEvent({ shiftKey: true }), { allowShift: false })).toBe(
+          true
+        );
+      });
+    });
   });
 
   describe('DOM cleanup between tests', () => {

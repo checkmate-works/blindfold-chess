@@ -2065,6 +2065,10 @@
         "title": "Alternar o método de entrada",
         "description": "Toque neste ícone para mudar como você insere as jogadas: digitando, escolhendo de uma lista ou tocando nos botões das peças.",
         "link": "Gerenciar métodos de entrada"
+      },
+      "keyboard": {
+        "title": "Digite as jogadas no seu teclado",
+        "description": "Com um teclado físico você pode inserir as jogadas aqui diretamente: letras de peça em maiúscula (N, Q, …), colunas em minúscula (a–h), fileiras (1–8) e x + = #. Backspace apaga, Enter confirma."
       }
     },
     "loading": "Carregando...",

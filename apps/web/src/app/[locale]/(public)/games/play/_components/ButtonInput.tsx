@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
@@ -11,6 +13,7 @@ import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { useButtonInputLogic } from '../_hooks/use-button-input-logic';
+import { useNotationKeyboardInput } from '../_hooks/use-notation-keyboard-input';
 
 type Props = {
   fen: string;
@@ -90,12 +93,33 @@ export function ButtonInput({
     clear();
   };
 
+  // Physical-keyboard entry drives the exact same handlers as the buttons, so
+  // error-clearing and state stay in lockstep with clicks.
+  const containerRef = useRef<HTMLDivElement>(null);
+  useNotationKeyboardInput({
+    onChar: handleAppendChar,
+    onBackspace: handleBackspace,
+    onSubmit: () => {
+      if (canSubmit) submit();
+    },
+    containerRef,
+    enabled: !disabled,
+  });
+
   return (
     // translate="no": piece letters, coordinates and SAN move text are notation,
     // not prose. Browser auto-translation wraps these text nodes in <font>
     // elements, desyncing React's DOM refs and crashing commit-phase deletion
     // with "Failed to execute 'removeChild'". See facebook/react#11538.
-    <div translate="no" className="flex flex-col gap-3 p-2 sm:p-4 bg-card rounded-lg">
+    // data-tour-id anchors the play help tour's keyboard-input step; since the
+    // tour resolves targets from the DOM at click time, the step is
+    // automatically skipped whenever another input mode is active.
+    <div
+      ref={containerRef}
+      translate="no"
+      data-tour-id="play-button-input"
+      className="flex flex-col gap-3 p-2 sm:p-4 bg-card rounded-lg"
+    >
       {/* Row 1: Pieces + capture. Six 44px buttons overflow a ~320px viewport,
           so below `sm` they flex-shrink evenly (44px stays the cap). */}
       <div className="flex gap-2 justify-center">

@@ -21,9 +21,13 @@ type Props = {
 
 /**
  * "?" help-tour trigger shown next to the play page title. Walks the player
- * through the two on-page controls that are easy to miss: the settings gear and
- * the input-mode switch. Each step is included only when its target is actually
- * on screen; with neither present, {@link HelpTourButton} renders nothing.
+ * through the on-page controls that are easy to miss: the settings gear, the
+ * input-mode switch, and — when the notation keypad is the active input mode —
+ * its physical-keyboard shortcuts. The first two steps are included only when
+ * their target is on screen (prop-gated); the keyboard step is pushed
+ * unconditionally because {@link HelpTourButton} resolves targets from the DOM
+ * at click time and silently skips a step whose `data-tour-id` is absent, so
+ * it disappears by itself whenever another input mode is mounted.
  */
 export function PlayHelpTour({ locale, hasSettingsGear, hasInputModeSwitch }: Props) {
   const t = useTranslations('play');
@@ -52,6 +56,14 @@ export function PlayHelpTour({ locale, hasSettingsGear, hasInputModeSwitch }: Pr
       align: 'end',
     });
   }
+
+  steps.push({
+    targetId: 'play-button-input',
+    title: t('help.keyboard.title'),
+    description: t('help.keyboard.description'),
+    side: 'top',
+    align: 'center',
+  });
 
   return <HelpTourButton steps={steps} label={t('help.label')} />;
 }

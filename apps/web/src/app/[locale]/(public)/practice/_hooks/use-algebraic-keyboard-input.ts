@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import { shouldIgnoreKeyEvent } from '@/app/[locale]/(public)/practice/_lib/keyboard-guards';
+import { shouldIgnoreKeyEvent } from '@/lib/keyboard-guards';
 
 /**
  * Hook that binds keyboard input to a coordinate-entry practice feature using
