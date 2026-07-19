@@ -16,7 +16,7 @@ import {
   getBeltColorHex,
   getRankCardState,
   resolveAchievedSlugs,
-  resolveEffectiveAchievedSlugs,
+  resolveDisplayAchievedSlugs,
   resolveRecommendedNextSlug,
 } from '../_lib/helpers';
 import { RankCard } from './RankCard';
@@ -74,7 +74,7 @@ export function RanksGrid({ locale, dbRanks }: Props) {
 
   // Checkmarks use the EXPANDED set: a 1dan holder with no kyū rows should
   // still see every lower rank checked off, not just 1dan itself.
-  const displayAchievedSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
+  const displayAchievedSlugs = resolveDisplayAchievedSlugs(achievedSlugs);
 
   return (
     <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -84,7 +84,7 @@ export function RanksGrid({ locale, dbRanks }: Props) {
           const mukyuRequirements = t.raw('detail.mukyuRequirements') as string[];
           // Mukyu is the starting state — earning ANY real rank leaves it
           // behind (under skip-grants that need not be 5kyu specifically).
-          const mukyuState = user && achievedSlugs.size > 0 ? 'achieved' : 'next';
+          const mukyuState = displayAchievedSlugs.has('mukyu') ? 'achieved' : 'next';
           return (
             <RankCard
               key={slug}

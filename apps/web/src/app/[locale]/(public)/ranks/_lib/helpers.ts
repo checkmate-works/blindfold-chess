@@ -1,6 +1,7 @@
 import {
   ALL_RANK_SLUGS,
   BELT_COLOR_HEX,
+  MUKYU_SLUG,
   RANK_COLORS,
   isMukyuSlug,
   parseRequirements,
@@ -416,6 +417,15 @@ export function resolveEffectiveAchievedSlugs(
   }
   if (highestAchievedIndex === -1) return achievedSlugs;
   return new Set(REAL_RANK_SLUGS.slice(0, highestAchievedIndex + 1));
+}
+
+/** Display-only: effective expansion + mukyu iff the user holds >=1 real rank. */
+export function resolveDisplayAchievedSlugs(
+  achievedSlugs: ReadonlySet<RankSlug>
+): ReadonlySet<RankSlug> {
+  const effectiveSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
+  if (achievedSlugs.size === 0) return effectiveSlugs;
+  return new Set([...effectiveSlugs, MUKYU_SLUG]);
 }
 
 /**

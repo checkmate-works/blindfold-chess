@@ -19,6 +19,7 @@ import {
   getRankCardState,
   isRankEarnedByPlaying,
   isWhiteBelt,
+  resolveDisplayAchievedSlugs,
   resolveEffectiveAchievedSlugs,
   resolveNextRank,
   resolveRecommendedNextSlug,
@@ -652,6 +653,24 @@ describe('resolveEffectiveAchievedSlugs', () => {
   it('leaves the set untouched when only mukyu is present — no real rank to expand from', () => {
     const achieved = new Set<RankSlug>(['mukyu']);
     expect(resolveEffectiveAchievedSlugs(achieved)).toEqual(achieved);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveDisplayAchievedSlugs
+// ---------------------------------------------------------------------------
+
+describe('resolveDisplayAchievedSlugs', () => {
+  it('does not include mukyu when nothing is achieved', () => {
+    const achieved = new Set<RankSlug>();
+    expect(resolveDisplayAchievedSlugs(achieved)).toEqual(new Set<RankSlug>());
+  });
+
+  it('includes mukyu plus every backfilled lower rank once a real rank is held', () => {
+    const achieved = new Set<RankSlug>(['1dan']);
+    expect(resolveDisplayAchievedSlugs(achieved)).toEqual(
+      new Set<RankSlug>(['5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan', 'mukyu'])
+    );
   });
 });
 

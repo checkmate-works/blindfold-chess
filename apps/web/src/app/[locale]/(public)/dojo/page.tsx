@@ -32,7 +32,7 @@ import {
   getBeltColorHex,
   isRankEarnedByPlaying,
   resolveAchievedSlugs,
-  resolveEffectiveAchievedSlugs,
+  resolveDisplayAchievedSlugs,
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
@@ -82,19 +82,13 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const dbRanks = await getAllRanks();
   const achievedRankIds = user ? await getUserAchievedRankIds(user.id) : new Set<string>();
   const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
-  // The curriculum TOC's checkmarks use the EXPANDED set: a 1dan holder with
-  // no kyū rows should still see every lower rank checked off, not just
-  // 1dan itself. `resolveNextRank` below stays on the literal set — it
-  // doesn't matter for its output (current/next are both about the highest
-  // level), but literal is the more honest default for anything beyond pure
-  // display.
-  const effectiveAchievedSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
-  // Mukyu is never a `user_ranks` row (UI-only starting state), so it never
-  // appears in `effectiveAchievedSlugs`. Mirror the /ranks grid's rule (see
-  // `getCurrentUserAchievedRankSlugs.ts`): mukyu counts as achieved once the
-  // user holds ANY real rank, not for a freshly signed-in user with zero.
-  const displayAchievedSlugs: ReadonlySet<RankSlug> =
-    achievedSlugs.size > 0 ? new Set([...effectiveAchievedSlugs, 'mukyu']) : effectiveAchievedSlugs;
+  // The curriculum TOC's checkmarks use the DISPLAY set (expanded + mukyu):
+  // a 1dan holder with no kyū rows should still see every lower rank checked
+  // off, not just 1dan itself. `resolveNextRank` below stays on the literal
+  // set — it doesn't matter for its output (current/next are both about the
+  // highest level), but literal is the more honest default for anything
+  // beyond pure display.
+  const displayAchievedSlugs = resolveDisplayAchievedSlugs(achievedSlugs);
 
   const { current, next } = resolveNextRank(dbRanks, achievedSlugs);
 
