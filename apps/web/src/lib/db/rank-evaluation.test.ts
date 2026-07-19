@@ -4,7 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-import { checkAndGrantRanks, evaluateRankRequirements } from './rank-evaluation';
+import {
+  bestScoreCacheKey,
+  checkAndGrantRanks,
+  createRankEvalContext,
+  evaluateRankRequirements,
+} from './rank-evaluation';
 import { games } from './schema';
 
 vi.mock('server-only', () => ({}));
@@ -110,6 +115,19 @@ function findEq(expr: unknown, column: unknown): EqNode | undefined {
 
 const userId = 'user-00000000-0000-0000-0000-000000000001';
 
+/**
+ * Build a `RankEvalContext` for direct `evaluateRankRequirements` calls,
+ * pre-loaded with the given challenge_score fixtures. Uses the real
+ * `createRankEvalContext` (not a hand-rolled stub) so `getWonPublicGames`
+ * still exercises the actual (mocked) DB query the game evaluators depend on.
+ */
+function makeCtx(bestScores: { menuType: string; leaderboardKey: string; score: number }[] = []) {
+  const scoreCache = new Map(
+    bestScores.map((s) => [bestScoreCacheKey(s.menuType, s.leaderboardKey), s.score])
+  );
+  return createRankEvalContext(userId, scoreCache);
+}
+
 // ---------------------------------------------------------------------------
 // Tests: evaluateRankRequirements
 // ---------------------------------------------------------------------------
@@ -121,10 +139,10 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return true when all requirements are met', async () => {
-    // Mock: user has score of 25 for this challenge
-    mockSelectResult.mockReturnValue([{ score: 25 }]);
+    // ctx: user has score of 25 for this challenge
+    const ctx = makeCtx([{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -137,10 +155,10 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return false when a requirement is not met', async () => {
-    // Mock: user has score of 15, but needs 20
-    mockSelectResult.mockReturnValue([{ score: 15 }]);
+    // ctx: user has score of 15, but needs 20
+    const ctx = makeCtx([{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 15 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -153,9 +171,9 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return false when user has no score for the challenge', async () => {
-    mockSelectResult.mockReturnValue([]);
+    const ctx = makeCtx([]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -168,9 +186,9 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return true when score exactly equals minScore', async () => {
-    mockSelectResult.mockReturnValue([{ score: 20 }]);
+    const ctx = makeCtx([{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 20 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -183,12 +201,13 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should require ALL requirements to be met (AND logic)', async () => {
-    // First call returns score meeting requirement, second returns score not meeting it
-    mockSelectResult
-      .mockReturnValueOnce([{ score: 25 }]) // meets first requirement
-      .mockReturnValueOnce([{ score: 5 }]); // does NOT meet second requirement
+    // First score meets the first requirement, second does NOT meet the second
+    const ctx = makeCtx([
+      { menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 },
+      { menuType: 'legal_moves', leaderboardKey: 'knight', score: 5 },
+    ]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -202,9 +221,12 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return true when ALL multiple requirements are met', async () => {
-    mockSelectResult.mockReturnValueOnce([{ score: 25 }]).mockReturnValueOnce([{ score: 15 }]);
+    const ctx = makeCtx([
+      { menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 },
+      { menuType: 'legal_moves', leaderboardKey: 'knight', score: 15 },
+    ]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -218,7 +240,7 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return true for empty requirements array', async () => {
-    const result = await evaluateRankRequirements(userId, []);
+    const result = await evaluateRankRequirements(makeCtx([]), []);
 
     expect(result).toBe(true);
   });
@@ -227,7 +249,7 @@ describe('evaluateRankRequirements', () => {
     // count() returns a single row with the value column populated.
     mockSelectResult.mockReturnValue([{ value: 3 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(makeCtx([]), [
       { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
     ]);
 
@@ -237,7 +259,7 @@ describe('evaluateRankRequirements', () => {
   it('should fail position_submission_count when count is below threshold', async () => {
     mockSelectResult.mockReturnValue([{ value: 0 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(makeCtx([]), [
       { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
     ]);
 
@@ -249,7 +271,7 @@ describe('evaluateRankRequirements', () => {
     // evaluator must default to zero rather than crashing on `row.value`.
     mockSelectResult.mockReturnValue([]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(makeCtx([]), [
       { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
     ]);
 
@@ -262,7 +284,7 @@ describe('evaluateRankRequirements', () => {
     // type individually to reach minCount.
     mockSelectResult.mockReturnValue([{ value: 1 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(makeCtx([]), [
       { type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 },
     ]);
 
@@ -270,7 +292,7 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return false for unknown requirement type', async () => {
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(makeCtx([]), [
       {
         type: 'unknown_type' as 'challenge_score',
         menuType: 'x',
@@ -283,9 +305,9 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return false when score is one below minScore (boundary)', async () => {
-    mockSelectResult.mockReturnValue([{ score: 19 }]);
+    const ctx = makeCtx([{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 19 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -298,9 +320,9 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return true when minScore is 0 and user has a score entry', async () => {
-    mockSelectResult.mockReturnValue([{ score: 0 }]);
+    const ctx = makeCtx([{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 0 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -313,9 +335,7 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return false when minScore is 0 but user has no score entry', async () => {
-    mockSelectResult.mockReturnValue([]);
-
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(makeCtx([]), [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -328,9 +348,11 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should handle very large scores without overflow issues', async () => {
-    mockSelectResult.mockReturnValue([{ score: Number.MAX_SAFE_INTEGER }]);
+    const ctx = makeCtx([
+      { menuType: 'coordinate_quiz', leaderboardKey: 'white', score: Number.MAX_SAFE_INTEGER },
+    ]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -343,11 +365,10 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return false when first requirement is met but second has no score (different challenge)', async () => {
-    mockSelectResult
-      .mockReturnValueOnce([{ score: 30 }]) // meets coordinate_quiz requirement
-      .mockReturnValueOnce([]); // no score for square_colors at all
+    // Meets coordinate_quiz; no score entry at all for square_colors.
+    const ctx = makeCtx([{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 30 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'coordinate_quiz',
@@ -366,11 +387,12 @@ describe('evaluateRankRequirements', () => {
   });
 
   it('should return false when user has scores in different challenges than required', async () => {
-    // User has a score for legal_moves, but the requirement is for square_colors
-    // The mock returns empty because the DB query filters by menuType/leaderboardKey
-    mockSelectResult.mockReturnValue([]);
+    // User has a score for legal_moves, but the requirement is for square_colors —
+    // getBestScore looks up by the exact (menuType, leaderboardKey) key, so an
+    // entry under a different key is simply not found.
+    const ctx = makeCtx([{ menuType: 'legal_moves', leaderboardKey: 'knight', score: 50 }]);
 
-    const result = await evaluateRankRequirements(userId, [
+    const result = await evaluateRankRequirements(ctx, [
       {
         type: 'challenge_score',
         menuType: 'square_colors',
@@ -399,7 +421,7 @@ describe('game_publish_win evaluator', () => {
   it('filters the query to public, non-deleted, won games authored by the user', async () => {
     mockSelectResult.mockReturnValue([]);
 
-    await evaluateRankRequirements(userId, [requirement]);
+    await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(findEq(capturedWhere, games.status)?.__eq.value).toBe('public');
     expect(findEq(capturedWhere, games.result)?.__eq.value).toBe('win');
@@ -429,7 +451,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(true);
   });
@@ -443,7 +465,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(false);
   });
@@ -457,7 +479,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(false);
   });
@@ -471,7 +493,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(false);
   });
@@ -485,7 +507,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(true);
   });
@@ -499,7 +521,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(true);
   });
@@ -507,7 +529,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
   it('should fail when no qualifying game rows are returned', async () => {
     mockSelectResult.mockReturnValue([]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(false);
   });
@@ -517,7 +539,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       { playSettings: { boardVisibility: 'peek' }, playSettingsLog: null, operationLogs: [] },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [{ ...requirement, minCount: 2 }]);
+    const result = await evaluateRankRequirements(makeCtx([]), [{ ...requirement, minCount: 2 }]);
 
     expect(result).toBe(false);
   });
@@ -531,7 +553,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(false);
   });
@@ -545,7 +567,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
       },
     ]);
 
-    const result = await evaluateRankRequirements(userId, [requirement]);
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(result).toBe(false);
   });
@@ -553,7 +575,7 @@ describe('game_publish_win_hidden_board evaluator', () => {
   it('filters the query to public, non-deleted, won games authored by the user', async () => {
     mockSelectResult.mockReturnValue([]);
 
-    await evaluateRankRequirements(userId, [requirement]);
+    await evaluateRankRequirements(makeCtx([]), [requirement]);
 
     expect(findEq(capturedWhere, games.status)?.__eq.value).toBe('public');
     expect(findEq(capturedWhere, games.result)?.__eq.value).toBe('win');
