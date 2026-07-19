@@ -1433,6 +1433,7 @@
         "edited": "(editado)",
         "editAction": "Editar",
         "forkAction": "Bifurcar",
+        "moreActions": "Más acciones",
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de un puzzle eliminado",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",

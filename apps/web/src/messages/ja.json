@@ -1433,6 +1433,7 @@
         "edited": "（編集済み）",
         "editAction": "編集",
         "forkAction": "フォーク",
+        "moreActions": "その他の操作",
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",

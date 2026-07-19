@@ -1433,6 +1433,7 @@
         "edited": "(edited)",
         "editAction": "Edit",
         "forkAction": "Fork",
+        "moreActions": "More actions",
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted puzzle",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
