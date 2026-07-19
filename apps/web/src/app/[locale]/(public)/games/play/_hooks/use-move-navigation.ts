@@ -86,7 +86,16 @@ export function useMoveNavigation({
         return;
       }
 
-      if (position === -1) {
+      // The last move's index and -1 ("latest") produce the identical FEN —
+      // collapse onto -1 so every position downstream of navigation
+      // (`canBoardMove`, the Next/End buttons, the last-move highlight) sees
+      // a single, unambiguous "at latest" representation. Without this, a
+      // ‹ then › round trip (or clicking the final move in the move list)
+      // lands on the concrete index instead of -1, leaving the board
+      // visually current but permanently non-interactive: `canBoardMove`
+      // requires `currentPosition === -1` exactly, and Next/End share the
+      // "at end" disabled state, so there is no board-native way back out.
+      if (position === -1 || (moves.length > 0 && position === moves.length - 1)) {
         setCurrentPosition(-1);
         setDisplayFen(null);
       } else {
