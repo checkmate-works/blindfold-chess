@@ -59,6 +59,8 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
       setIsOpen(false);
       setIsPending(false);
       setReason('');
+      const remaining = availableRanks.filter((r) => r.slug !== rankSlug);
+      setRankSlug(remaining[0]?.slug ?? '');
       router.refresh();
     }
   }
