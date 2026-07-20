@@ -1308,7 +1308,7 @@
         "forkedFromDeleted": "Forked from a deleted position",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
         "usefulSection": "Useful patterns for solving ({count})",
-        "createPuzzleFromHere": "Create Puzzle"
+        "createPuzzleFromHere": "Create Puzzle from here"
       },
       "forksList": {
         "title": "Forks",

@@ -1308,7 +1308,7 @@
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
         "usefulSection": "解答に役立つパターン ({count})",
-        "createPuzzleFromHere": "パズルを作成"
+        "createPuzzleFromHere": "この局面からパズルを作る"
       },
       "forksList": {
         "title": "フォーク一覧",

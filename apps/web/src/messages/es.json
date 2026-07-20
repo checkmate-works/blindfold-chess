@@ -1308,7 +1308,7 @@
         "forkedFromDeleted": "Bifurcado de una posición eliminada",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
         "usefulSection": "Patrones útiles para resolver ({count})",
-        "createPuzzleFromHere": "Crear Puzzle"
+        "createPuzzleFromHere": "Crear Puzzle desde aquí"
       },
       "forksList": {
         "title": "Bifurcaciones",
