@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe('PuzzleResultLikeCta', () => {
-  it('renders the CTA when the puzzle is not yet liked', () => {
+  it('renders the CTA when the puzzle was not liked on load', () => {
     useLikeToggleMock.mockReturnValue({
       liked: false,
       isPending: false,
@@ -38,7 +38,7 @@ describe('PuzzleResultLikeCta', () => {
     expect(screen.getByText('likeCta')).toBeTruthy();
   });
 
-  it('renders nothing once the puzzle is liked, so a stale "like it" ask never lingers', () => {
+  it('renders nothing when the puzzle was already liked on load', () => {
     useLikeToggleMock.mockReturnValue({
       liked: true,
       isPending: false,
@@ -54,7 +54,27 @@ describe('PuzzleResultLikeCta', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('calls toggle() when clicked', async () => {
+  it('keeps showing the CTA after the user likes it mid-session, flipped to the liked state', () => {
+    // Visibility is locked to `initialLikedByMe` (false here), not the live
+    // `liked` value — so a puzzle that starts unliked must stay visible
+    // (as a toggle) even once `liked` flips to true from a click.
+    useLikeToggleMock.mockReturnValue({
+      liked: true,
+      isPending: false,
+      toggle: vi.fn(),
+      isModalOpen: false,
+      closeModal: vi.fn(),
+    });
+
+    render(
+      <PuzzleResultLikeCta initialLikeCount={0} initialLikedByMe={false} onToggle={vi.fn()} />
+    );
+
+    expect(screen.getByText('likedCta')).toBeTruthy();
+    expect(screen.queryByText('likeCta')).toBeNull();
+  });
+
+  it('calls toggle() when clicked', () => {
     const toggle = vi.fn();
     useLikeToggleMock.mockReturnValue({
       liked: false,

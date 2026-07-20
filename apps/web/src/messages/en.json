@@ -1475,6 +1475,7 @@
         "solution": "Solution: {move}",
         "note": "— {note}",
         "likeCta": "Like this puzzle",
+        "likedCta": "Liked",
         "attemptCorrect": "Correct",
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",

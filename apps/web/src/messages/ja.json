@@ -1475,6 +1475,7 @@
         "solution": "正解: {move}",
         "note": "— {note}",
         "likeCta": "このパズルにいいね",
+        "likedCta": "いいね済み",
         "attemptCorrect": "正解",
         "attemptIncorrect": "不正解",
         "backToList": "パズル一覧に戻る",
