@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -45,7 +46,8 @@ export default async function LicensesPage({ params }: Props) {
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      <ProseArticle className="space-y-4" lastUpdated={t('lastUpdated')}>
+      <ProseArticle className="space-y-4">
+        <SectionTitle>{t('overviewTitle')}</SectionTitle>
         <p>{t('introduction')}</p>
 
         <SectionTitle>{t('componentsTitle')}</SectionTitle>
@@ -103,7 +105,10 @@ export default async function LicensesPage({ params }: Props) {
             {t('viewFullLicenseGnu')}
           </a>
         </p>
+
+        <p className="text-muted-foreground">{t('lastUpdated')}</p>
       </ProseArticle>
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

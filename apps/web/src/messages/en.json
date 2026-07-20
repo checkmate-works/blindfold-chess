@@ -2909,6 +2909,7 @@
     "title": "Open Source Licenses",
     "description": "Open source software acknowledgements and license information",
     "lastUpdated": "Last Updated: May 13, 2026",
+    "overviewTitle": "Overview",
     "introduction": "Blindfold Chess uses open source chess engines to provide its AI opponent functionality. We are grateful to the authors and communities behind these projects, and we provide attribution and license information below.",
     "componentsTitle": "Bundled Open Source Components",
     "componentsIntro": "The following components are bundled with this application and delivered to your browser when you use related features. Each engine runs as a separate Web Worker process and communicates with the application only through the standard text-based UCI protocol.",
