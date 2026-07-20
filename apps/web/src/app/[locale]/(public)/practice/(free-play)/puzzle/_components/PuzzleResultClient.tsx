@@ -12,6 +12,7 @@ import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -24,6 +25,7 @@ import {
   AttemptStatusBadge,
   computeAttemptStatus,
 } from './AttemptHistoryPanel';
+import { PuzzleResultLikeCta } from './PuzzleResultLikeCta';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 
 type Props = {
@@ -39,6 +41,8 @@ type Props = {
    * event was not found — in which case `<ExpGainDisplay>` renders nothing.
    */
   expInfo: ExpInfo | null;
+  initialLikeCount: number;
+  initialLikedByMe: boolean;
 };
 
 export function PuzzleResultClient({
@@ -48,6 +52,8 @@ export function PuzzleResultClient({
   solutionLines,
   solutionMoveLists,
   expInfo,
+  initialLikeCount,
+  initialLikedByMe,
 }: Props) {
   const t = useTranslations('practice.puzzle.result');
   const [attempts, setAttempts] = useState<Attempt[]>([]);
@@ -150,6 +156,15 @@ export function PuzzleResultClient({
           them away. (EXP and this banner are mutually exclusive: expInfo is
           null for guests.) */}
       <SignUpBanner locale={locale} />
+
+      {/* Like nudge — sits directly above the action buttons, right where
+          the user's attention already is after solving. Hides itself once
+          liked, so it never lingers as a stale ask. */}
+      <PuzzleResultLikeCta
+        initialLikeCount={initialLikeCount}
+        initialLikedByMe={initialLikedByMe}
+        onToggle={() => toggleLike(positionId, locale)}
+      />
 
       {/* (D) Action buttons */}
       <div className="flex flex-col gap-3 pt-4">

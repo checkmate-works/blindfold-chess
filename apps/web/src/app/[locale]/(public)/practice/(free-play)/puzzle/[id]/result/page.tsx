@@ -6,7 +6,9 @@ import { notFound } from 'next/navigation';
 
 import { eq } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, puzzleSolutions } from '@/lib/db';
+import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
@@ -73,12 +75,15 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
   const { position, profile } = row;
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
-  const [solutions, expInfo] = await Promise.all([
+  const currentUser = await getOptionalUser();
+
+  const [solutions, expInfo, likeMeta] = await Promise.all([
     db
       .select({ solutionMoves: puzzleSolutions.solutionMoves })
       .from(puzzleSolutions)
       .where(eq(puzzleSolutions.positionId, position.id)),
     resolveExpInfoFromGrantParam(resolvedSearchParams, 'practice_result'),
+    getPositionLikeMeta(position.id, currentUser?.id),
   ]);
 
   const solutionMoveLists = solutions.map((s) => s.solutionMoves);
@@ -109,6 +114,8 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
           solutionLines={solutionLines}
           solutionMoveLists={solutionMoveLists}
           expInfo={expInfo}
+          initialLikeCount={likeMeta.likeCount}
+          initialLikedByMe={likeMeta.likedByMe}
         />
       </Suspense>
 

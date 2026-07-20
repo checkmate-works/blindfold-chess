@@ -1464,6 +1464,7 @@
         "historySection": "Historial de Intentos",
         "solution": "Solución: {move}",
         "note": "— {note}",
+        "likeCta": "Me gusta este puzzle",
         "attemptCorrect": "Correcto",
         "attemptIncorrect": "Incorrecto",
         "backToList": "Volver a Puzzles",
