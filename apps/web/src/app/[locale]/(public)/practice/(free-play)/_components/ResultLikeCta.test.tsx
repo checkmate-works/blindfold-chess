@@ -1,11 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { PuzzleResultLikeCta } from './PuzzleResultLikeCta';
-
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+import { ResultLikeCta } from './ResultLikeCta';
 
 const useLikeToggleMock = vi.fn();
 vi.mock('@/app/[locale]/_hooks/use-like-toggle', () => ({
@@ -16,13 +12,16 @@ vi.mock('@/app/[locale]/_components/AuthPromptModal', () => ({
   AuthPromptModal: () => <div data-testid="auth-prompt-modal" />,
 }));
 
+const LABEL = 'Like this puzzle';
+const LIKED_LABEL = 'Liked';
+
 afterEach(() => {
   cleanup();
   useLikeToggleMock.mockReset();
 });
 
-describe('PuzzleResultLikeCta', () => {
-  it('renders the CTA when the puzzle was not liked on load', () => {
+describe('ResultLikeCta', () => {
+  it('renders the CTA when the content was not liked on load', () => {
     useLikeToggleMock.mockReturnValue({
       liked: false,
       isPending: false,
@@ -32,13 +31,19 @@ describe('PuzzleResultLikeCta', () => {
     });
 
     render(
-      <PuzzleResultLikeCta initialLikeCount={0} initialLikedByMe={false} onToggle={vi.fn()} />
+      <ResultLikeCta
+        initialLikeCount={0}
+        initialLikedByMe={false}
+        onToggle={vi.fn()}
+        label={LABEL}
+        likedLabel={LIKED_LABEL}
+      />
     );
 
-    expect(screen.getByText('likeCta')).toBeTruthy();
+    expect(screen.getByText(LABEL)).toBeTruthy();
   });
 
-  it('renders nothing when the puzzle was already liked on load', () => {
+  it('renders nothing when the content was already liked on load', () => {
     useLikeToggleMock.mockReturnValue({
       liked: true,
       isPending: false,
@@ -48,7 +53,13 @@ describe('PuzzleResultLikeCta', () => {
     });
 
     const { container } = render(
-      <PuzzleResultLikeCta initialLikeCount={1} initialLikedByMe={true} onToggle={vi.fn()} />
+      <ResultLikeCta
+        initialLikeCount={1}
+        initialLikedByMe={true}
+        onToggle={vi.fn()}
+        label={LABEL}
+        likedLabel={LIKED_LABEL}
+      />
     );
 
     expect(container.firstChild).toBeNull();
@@ -56,7 +67,7 @@ describe('PuzzleResultLikeCta', () => {
 
   it('keeps showing the CTA after the user likes it mid-session, flipped to the liked state', () => {
     // Visibility is locked to `initialLikedByMe` (false here), not the live
-    // `liked` value — so a puzzle that starts unliked must stay visible
+    // `liked` value — so content that starts unliked must stay visible
     // (as a toggle) even once `liked` flips to true from a click.
     useLikeToggleMock.mockReturnValue({
       liked: true,
@@ -67,11 +78,17 @@ describe('PuzzleResultLikeCta', () => {
     });
 
     render(
-      <PuzzleResultLikeCta initialLikeCount={0} initialLikedByMe={false} onToggle={vi.fn()} />
+      <ResultLikeCta
+        initialLikeCount={0}
+        initialLikedByMe={false}
+        onToggle={vi.fn()}
+        label={LABEL}
+        likedLabel={LIKED_LABEL}
+      />
     );
 
-    expect(screen.getByText('likedCta')).toBeTruthy();
-    expect(screen.queryByText('likeCta')).toBeNull();
+    expect(screen.getByText(LIKED_LABEL)).toBeTruthy();
+    expect(screen.queryByText(LABEL)).toBeNull();
   });
 
   it('stays visible when a server refresh re-passes initialLikedByMe=true after the click', () => {
@@ -89,15 +106,27 @@ describe('PuzzleResultLikeCta', () => {
     });
 
     const { rerender } = render(
-      <PuzzleResultLikeCta initialLikeCount={0} initialLikedByMe={false} onToggle={vi.fn()} />
+      <ResultLikeCta
+        initialLikeCount={0}
+        initialLikedByMe={false}
+        onToggle={vi.fn()}
+        label={LABEL}
+        likedLabel={LIKED_LABEL}
+      />
     );
-    expect(screen.getByText('likedCta')).toBeTruthy();
+    expect(screen.getByText(LIKED_LABEL)).toBeTruthy();
 
     rerender(
-      <PuzzleResultLikeCta initialLikeCount={1} initialLikedByMe={true} onToggle={vi.fn()} />
+      <ResultLikeCta
+        initialLikeCount={1}
+        initialLikedByMe={true}
+        onToggle={vi.fn()}
+        label={LABEL}
+        likedLabel={LIKED_LABEL}
+      />
     );
 
-    expect(screen.getByText('likedCta')).toBeTruthy();
+    expect(screen.getByText(LIKED_LABEL)).toBeTruthy();
   });
 
   it('calls toggle() when clicked', () => {
@@ -111,10 +140,16 @@ describe('PuzzleResultLikeCta', () => {
     });
 
     render(
-      <PuzzleResultLikeCta initialLikeCount={0} initialLikedByMe={false} onToggle={vi.fn()} />
+      <ResultLikeCta
+        initialLikeCount={0}
+        initialLikedByMe={false}
+        onToggle={vi.fn()}
+        label={LABEL}
+        likedLabel={LIKED_LABEL}
+      />
     );
 
-    screen.getByText('likeCta').click();
+    screen.getByText(LABEL).click();
     expect(toggle).toHaveBeenCalledTimes(1);
   });
 });

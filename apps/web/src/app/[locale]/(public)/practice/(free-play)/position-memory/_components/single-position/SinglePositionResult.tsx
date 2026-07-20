@@ -11,18 +11,26 @@ import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
+import { ResultLikeCta } from '@/app/[locale]/(public)/practice/(free-play)/_components/ResultLikeCta';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { calculateSquareDifferences } from '../../_lib/preset-problems';
 import { parseResults, parseStats } from '../../_lib/result-serde';
 import type { PositionAccuracy } from '../../_lib/types';
+
+type ProfileLike = {
+  username?: string | null;
+  avatarUrl?: string | null;
+} | null;
 
 type Props = {
   locale: Locale;
@@ -36,6 +44,17 @@ type Props = {
   adBannerStandard?: ReactNode;
   breadcrumb?: ReactNode;
   expInfo?: ExpInfo | null;
+  /**
+   * The saved position's id/author, for the like CTA + Created-by row.
+   * Undefined for runs with no backing DB position (e.g. the token-based
+   * `custom/[token]/result` route), in which case that whole block is
+   * omitted — there's no position to like or attribute.
+   */
+  positionId?: string;
+  profile?: ProfileLike;
+  displayName?: string;
+  initialLikeCount?: number;
+  initialLikedByMe?: boolean;
 };
 
 export function SinglePositionResult({
@@ -44,6 +63,11 @@ export function SinglePositionResult({
   adBannerStandard,
   breadcrumb,
   expInfo,
+  positionId,
+  profile,
+  displayName,
+  initialLikeCount,
+  initialLikedByMe,
 }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
@@ -176,6 +200,36 @@ export function SinglePositionResult({
               back-to-list buttons can carry them away. (EXP and this banner are
               mutually exclusive: expInfo is null for guests.) */}
           <SignUpBanner locale={locale} />
+
+          {/* Like CTA + Created-by attribution — only for a run backed by a
+              saved position (positionId set); the token-based custom-FEN
+              result has no position to like or attribute. Same slot/order as
+              the puzzle result screen: like nudge directly above the action
+              buttons, attribution row right below it. */}
+          {positionId &&
+            typeof initialLikeCount === 'number' &&
+            typeof initialLikedByMe === 'boolean' && (
+              <>
+                <ResultLikeCta
+                  initialLikeCount={initialLikeCount}
+                  initialLikedByMe={initialLikedByMe}
+                  onToggle={() => toggleLike(positionId, locale)}
+                  label={t('likeCta')}
+                  likedLabel={t('likedCta')}
+                />
+                <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+                  <span>{t('detail.createdBy')}</span>
+                  <UserAvatar
+                    profileHref={profile?.username ? `/u/${profile.username}` : null}
+                    avatarUrl={profile?.avatarUrl}
+                    displayName={displayName ?? ''}
+                    locale={locale}
+                    size="xs"
+                    layout="inline"
+                  />
+                </div>
+              </>
+            )}
 
           {/* Action Buttons */}
           <div className="space-y-3">

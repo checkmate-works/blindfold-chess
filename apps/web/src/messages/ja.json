@@ -1150,6 +1150,8 @@
       "incorrect": "誤答",
       "missing": "漏れ",
       "score": "スコア",
+      "likeCta": "この局面にいいね",
+      "likedCta": "いいね済み",
       "recreationProgress": "再現度",
       "extraDescription": "空白のマスに配置された余分な駒",
       "nextProblem": "次の問題",

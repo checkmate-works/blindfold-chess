@@ -1155,6 +1155,8 @@
       "nextProblem": "Next Problem",
       "viewResults": "View Results",
       "analyzeOnLichess": "Analyze on Lichess",
+      "likeCta": "Like this position",
+      "likedCta": "Liked",
       "original": "Original",
       "yourRecreation": "Your Recreation",
       "pieceNames": {

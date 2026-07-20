@@ -19,6 +19,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ResultLikeCta } from '../../_components/ResultLikeCta';
 import type { Attempt } from '../_lib/puzzle-match';
 import { puzzleResultStorageKey } from '../_lib/puzzle-result-storage';
 import {
@@ -26,7 +27,6 @@ import {
   AttemptStatusBadge,
   computeAttemptStatus,
 } from './AttemptHistoryPanel';
-import { PuzzleResultLikeCta } from './PuzzleResultLikeCta';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 
 type ProfileLike = {
@@ -174,10 +174,12 @@ export function PuzzleResultClient({
           the user's attention already is after solving. Only shown for a
           puzzle the viewer hadn't already liked when the page loaded; once
           shown it toggles in place instead of disappearing on click. */}
-      <PuzzleResultLikeCta
+      <ResultLikeCta
         initialLikeCount={initialLikeCount}
         initialLikedByMe={initialLikedByMe}
         onToggle={() => toggleLike(positionId, locale)}
+        label={t('likeCta')}
+        likedLabel={t('likedCta')}
       />
 
       {/* Single-line "Created by [avatar] name" attribution, right below the

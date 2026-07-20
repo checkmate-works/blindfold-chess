@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
@@ -14,6 +12,10 @@ type Props = {
   initialLikeCount: number;
   initialLikedByMe: boolean;
   onToggle: () => Promise<ToggleLikeResult>;
+  /** Label shown while unliked, e.g. translated "Like this puzzle". */
+  label: string;
+  /** Label shown once liked, e.g. translated "Liked". */
+  likedLabel: string;
 };
 
 const BASE_CLASS =
@@ -24,27 +26,34 @@ const LIKED_CLASS =
   'border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-400 dark:hover:bg-rose-950/30';
 
 /**
- * Full-width like nudge on the puzzle result screen — a stronger ask than
- * the small heart icon on the detail page, placed right above the primary
- * action buttons where the user's attention already is right after solving.
+ * Full-width like nudge shared by result screens (puzzle, position-memory,
+ * ...) — a stronger ask than the small heart icon on the detail page, placed
+ * right above the primary action buttons where the user's attention already
+ * is right after finishing.
  *
  * Visibility is locked to the like state at mount time, not the live
  * `initialLikedByMe` prop: once shown, tapping it flips between
  * liked/unliked like a normal toggle instead of vanishing the instant
- * it's pressed (that read as broken). Only a puzzle the viewer had
- * already liked before arriving stays hidden.
+ * it's pressed (that read as broken). Only content the viewer had already
+ * liked before arriving stays hidden.
  *
  * `useState` rather than reading the prop directly matters here — clicking
- * the button invokes a Server Action, and Next.js auto-refreshes this
- * `dynamic = 'force-dynamic'` route's server-rendered data afterward, which
- * re-passes `initialLikedByMe` down as `true` on the next render. Reading
- * the prop live would re-trigger the hide on that refresh, reproducing the
- * exact "disappears right after I click it" bug this component exists to
- * avoid. `useState`'s initializer only runs once, on mount, so it stays
- * pinned to whatever the puzzle's like state was when the page first loaded.
+ * the button invokes a Server Action, and Next.js auto-refreshes the
+ * `dynamic = 'force-dynamic'` result route's server-rendered data
+ * afterward, which re-passes `initialLikedByMe` down as `true` on the next
+ * render. Reading the prop live would re-trigger the hide on that refresh,
+ * reproducing the exact "disappears right after I click it" bug this
+ * component exists to avoid. `useState`'s initializer only runs once, on
+ * mount, so it stays pinned to whatever the like state was when the page
+ * first loaded.
  */
-export function PuzzleResultLikeCta({ initialLikeCount, initialLikedByMe, onToggle }: Props) {
-  const t = useTranslations('practice.puzzle.result');
+export function ResultLikeCta({
+  initialLikeCount,
+  initialLikedByMe,
+  onToggle,
+  label,
+  likedLabel,
+}: Props) {
   const [wasLikedOnLoad] = useState(initialLikedByMe);
   const { liked, isPending, toggle, isModalOpen, closeModal } = useLikeToggle({
     initialLikeCount,
@@ -64,7 +73,7 @@ export function PuzzleResultLikeCta({ initialLikeCount, initialLikedByMe, onTogg
         className={`${BASE_CLASS} ${liked ? LIKED_CLASS : UNLIKED_CLASS}`}
       >
         {liked ? <AiFillHeart className="h-5 w-5" /> : <AiOutlineHeart className="h-5 w-5" />}
-        {liked ? t('likedCta') : t('likeCta')}
+        {liked ? likedLabel : label}
       </button>
       {isModalOpen && <AuthPromptModal isOpen={isModalOpen} onClose={closeModal} />}
     </>

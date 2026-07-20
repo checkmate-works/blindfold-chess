@@ -1150,6 +1150,8 @@
       "incorrect": "Incorrecto",
       "missing": "Faltante",
       "score": "Puntuación",
+      "likeCta": "Me gusta esta posición",
+      "likedCta": "Te gusta",
       "recreationProgress": "Progreso de Recreación",
       "extraDescription": "Piezas extra colocadas en casillas vacías",
       "nextProblem": "Siguiente Problema",
