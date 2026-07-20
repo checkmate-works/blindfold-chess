@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { FaPlusCircle } from 'react-icons/fa';
+import { FaPlusCircle, FaPuzzlePiece } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -240,6 +240,13 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             {tPlay('newGameFromHere')}
           </Button>
         </Link>
+        {canFork && (
+          <Link href={`/practice/puzzle/new?from=${position.id}`}>
+            <Button asChild variant="secondary" size="lg" icon={<FaPuzzlePiece />} fullWidth>
+              {t('detail.createPuzzleFromHere')}
+            </Button>
+          </Link>
+        )}
       </div>
 
       <PositionAuthorHeader

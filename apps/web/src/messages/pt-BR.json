@@ -1391,6 +1391,7 @@
         "clearBoardConfirmCancel": "Cancelar",
         "draftWriteFailed": "Não foi possível salvar o rascunho. Verifique se o seu navegador permite armazenamento e tente novamente.",
         "forkBanner": "Bifurcando de \"{sourceTitle}\"",
+        "createdFromPositionMemoryBanner": "Criando um puzzle a partir da entrada de Memória de Posições \"{sourceTitle}\"",
         "continueToSolution": "Continuar para os lances da solução",
         "solutionPageTitle": "Lances da solução",
         "backToPosition": "Voltar para a posição",

@@ -1391,6 +1391,7 @@
         "clearBoardConfirmCancel": "Cancelar",
         "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo.",
         "forkBanner": "Bifurcando desde «{sourceTitle}»",
+        "createdFromPositionMemoryBanner": "Creando un puzzle desde la entrada de Memoria de Posiciones «{sourceTitle}»",
         "continueToSolution": "Continuar a los movimientos de la solución",
         "solutionPageTitle": "Movimientos de la solución",
         "backToPosition": "Volver a la posición",

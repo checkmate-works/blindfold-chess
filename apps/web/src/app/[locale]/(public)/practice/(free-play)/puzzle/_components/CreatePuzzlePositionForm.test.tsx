@@ -388,6 +388,7 @@ describe('CreatePuzzlePositionForm', () => {
       return {
         sourceId: FORK_SOURCE_ID,
         sourceTitle: 'Source Puzzle',
+        sourceType: 'puzzle' as const,
         fen: VALID_FEN,
         title: 'Source Puzzle',
         description: 'Source description',
@@ -403,6 +404,20 @@ describe('CreatePuzzlePositionForm', () => {
 
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Source Puzzle');
       expect(screen.getByLabelText(/descriptionLabel/)).toHaveValue('Source description');
+    });
+
+    it('shows the plain fork banner when the source is another puzzle', () => {
+      render(<CreatePuzzlePositionForm forkSeed={makeForkSeed()} />);
+
+      expect(screen.getByText('forkBanner')).toBeInTheDocument();
+      expect(screen.queryByText('createdFromPositionMemoryBanner')).not.toBeInTheDocument();
+    });
+
+    it('shows the cross-type banner (not "fork" wording) when the source is a position-memory entry', () => {
+      render(<CreatePuzzlePositionForm forkSeed={{ ...makeForkSeed(), sourceType: 'memory' }} />);
+
+      expect(screen.getByText('createdFromPositionMemoryBanner')).toBeInTheDocument();
+      expect(screen.queryByText('forkBanner')).not.toBeInTheDocument();
     });
 
     it('carries forkedFromId through to the draft on Continue', () => {

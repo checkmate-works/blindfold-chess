@@ -1391,6 +1391,7 @@
         "clearBoardConfirmCancel": "Cancel",
         "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again.",
         "forkBanner": "Forking from \"{sourceTitle}\"",
+        "createdFromPositionMemoryBanner": "Creating a puzzle from Position Memory entry \"{sourceTitle}\"",
         "continueToSolution": "Continue to solution moves",
         "solutionPageTitle": "Solution moves",
         "backToPosition": "Back to position",

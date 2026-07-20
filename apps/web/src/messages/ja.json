@@ -1391,6 +1391,7 @@
         "clearBoardConfirmCancel": "キャンセル",
         "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。",
         "forkBanner": "「{sourceTitle}」からフォーク中",
+        "createdFromPositionMemoryBanner": "ポジション記憶「{sourceTitle}」からパズルを作成中",
         "continueToSolution": "正解手の入力に進む",
         "solutionPageTitle": "正解手",
         "backToPosition": "局面の編集に戻る",

@@ -57,7 +57,10 @@ export type ValidateForkSourceResult =
   // userId may be null when the source position's author was anonymised
   // (account purged). Forking public content is still allowed; only `.id` is
   // consumed downstream.
-  | { ok: true; source: { id: string; userId: string | null; title: string } }
+  | {
+      ok: true;
+      source: { id: string; userId: string | null; title: string; type: PositionType };
+    }
   | {
       ok: false;
       reason: 'invalid_uuid' | 'not_found' | 'forks_disabled';
@@ -81,6 +84,7 @@ export async function validateForkSource(params: {
       id: positions.id,
       userId: positions.userId,
       title: positions.title,
+      type: positions.type,
       forksDisabledAt: positions.forksDisabledAt,
     })
     .from(positions)
@@ -103,7 +107,9 @@ export async function validateForkSource(params: {
 
   return {
     ok: true,
-    source: { id: row.id, userId: row.userId, title: row.title },
+    // Safe cast: the WHERE clause already restricted `type` to `sourceTypes`
+    // (a `PositionType[]`), so the raw varchar is guaranteed to be one of them.
+    source: { id: row.id, userId: row.userId, title: row.title, type: row.type as PositionType },
   };
 }
 
@@ -114,9 +120,16 @@ export async function validateForkSource(params: {
  * as draft hydration. Tags soft-deleted between fork time and seed read
  * silently drop, mirroring the draft path.
  */
-type BaseForkSeed = {
+type BaseForkSeed<T extends PositionType> = {
   sourceId: string;
   sourceTitle: string;
+  /** The source row's own `positions.type` — lets the create form pick
+   * "Forking from" vs. cross-type banner copy (see `PuzzleForkSeedData`'s
+   * `@design Cross-type sourcing` note). Narrowed per caller (see
+   * `loadPuzzleForkSeed` / `loadPositionForkSeed`) rather than left as the
+   * full `PositionType` union, so consumers don't have to handle a
+   * `'sequence'` case that can never actually occur for them. */
+  sourceType: T;
   fen: string;
   title: string;
   description: string;
@@ -124,18 +137,18 @@ type BaseForkSeed = {
   chunkIds: string[];
 };
 
-export type PuzzleForkSeedData = BaseForkSeed & {
+export type PuzzleForkSeedData = BaseForkSeed<(typeof PUZZLE_FORK_SOURCE_TYPES)[number]> & {
   moves: string[];
   notes: string[];
 };
 
-export type PositionForkSeedData = BaseForkSeed;
+export type PositionForkSeedData = BaseForkSeed<(typeof POSITION_FORK_SOURCE_TYPES)[number]>;
 
-async function loadBaseForkRow(params: {
+async function loadBaseForkRow<T extends PositionType>(params: {
   sourceId: string;
   currentUserId: string;
-  sourceTypes: readonly PositionType[];
-}) {
+  sourceTypes: readonly T[];
+}): Promise<BaseForkSeed<T> | null> {
   const check = await validateForkSource({
     forkedFromId: params.sourceId,
     currentUserId: params.currentUserId,
@@ -170,12 +183,15 @@ async function loadBaseForkRow(params: {
   return {
     sourceId: position.id,
     sourceTitle: position.title,
+    // Safe cast: `check.source.type` is one of `params.sourceTypes` (a
+    // `readonly T[]`), enforced by validateForkSource's WHERE clause.
+    sourceType: check.source.type as T,
     fen: position.fen,
     title: position.title,
     description: position.description ?? '',
     themeIds: themeRows.map((r) => r.termId),
     chunkIds: chunkRows.map((r) => r.chunkId),
-  } satisfies BaseForkSeed;
+  } satisfies BaseForkSeed<T>;
 }
 
 export async function loadPuzzleForkSeed(params: {
