@@ -5,19 +5,22 @@ import { revalidatePath } from 'next/cache';
 import { authenticateAndGuard } from '@/lib/auth';
 import { updateRepertoireDetails, updateRepertoireLinesFromPgn } from '@/lib/repertoires/mutations';
 import type { UpdateRepertoireResult } from '@/lib/repertoires/mutations';
+import type { RepertoireSide } from '@/lib/repertoires/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
- * Owner-only: save a repertoire's title + opening links, and — when the edit
- * form's board/PGN editor changed the moves — its whole line set, re-decomposed
- * from the submitted PGN-with-variations as a diff that preserves unchanged
- * lines' identity (see `updateRepertoireLinesFromPgn`). The listing shows the
- * title and thumbnail, so the list is revalidated alongside the detail page.
+ * Owner-only: save a repertoire's title + side + opening links, and — when the
+ * edit form's board/PGN editor changed the moves — its whole line set,
+ * re-decomposed from the submitted PGN-with-variations as a diff that
+ * preserves unchanged lines' identity (see `updateRepertoireLinesFromPgn`).
+ * The listing shows the title, side chip and thumbnail (side flips the
+ * default orientation), so the list is revalidated alongside the detail page.
  */
 export async function updateRepertoire(input: {
   repertoireId: string;
   locale: string;
   name: string;
+  side: RepertoireSide;
   openingIds: string[];
   /** The repertoire's full move tree; omitted when the moves were untouched. */
   pgn?: string;
@@ -29,6 +32,7 @@ export async function updateRepertoire(input: {
     repertoireId: input.repertoireId,
     viewerId: guard.user.id,
     name: input.name,
+    side: input.side,
     openingIds: input.openingIds,
   });
   if (!result.ok) return result;

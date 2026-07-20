@@ -49,12 +49,15 @@ type Props = {
 };
 
 /**
- * Owner-only editor for a repertoire: its title, its opening links, and — with
- * the same Board / PGN switcher as the import form — its whole move tree,
- * including per-move notes and board markup. Saving diffs the tree against the
- * stored lines (unchanged lines keep their row + name; removed ones are
- * soft-deleted; new ones inserted), so editing is not a destructive re-import.
- * Side / phase stay fixed: they define what the repertoire IS.
+ * Owner-only editor for a repertoire: its title, its side, its opening links,
+ * and — with the same Board / PGN switcher as the import form — its whole
+ * move tree, including per-move notes and board markup. Saving diffs the tree
+ * against the stored lines (unchanged lines keep their row + name; removed
+ * ones are soft-deleted; new ones inserted), so editing is not a destructive
+ * re-import. Phase stays fixed (it gates whether opening links even apply,
+ * and only `opening` is authorable anywhere today — see
+ * `RepertoireImportForm`'s `AUTHORABLE_PHASES`); side is plain metadata (see
+ * `updateRepertoireDetails`) and follows the import form's field for field.
  */
 export function EditRepertoireForm({
   locale,
@@ -63,7 +66,7 @@ export function EditRepertoireForm({
   openings,
   initialOpeningIds,
   canLinkOpenings,
-  side,
+  side: initialSide,
   initialPgn,
   initialAnnotations,
   initialShapes,
@@ -73,6 +76,7 @@ export function EditRepertoireForm({
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
+  const [side, setSide] = useState<RepertoireSide>(initialSide);
   const [openingIds, setOpeningIds] = useState<string[]>(initialOpeningIds);
   const [pgn, setPgn] = useState(initialPgn ?? '');
   const [annotations, setAnnotations] = useState<Record<string, string>>(initialAnnotations);
@@ -98,6 +102,7 @@ export function EditRepertoireForm({
   const isDirty =
     !submitted &&
     (name !== initialName ||
+      side !== initialSide ||
       JSON.stringify([...openingIds].sort()) !== JSON.stringify([...initialOpeningIds].sort()) ||
       pgnChanged ||
       changedAnnotations.length > 0 ||
@@ -115,6 +120,7 @@ export function EditRepertoireForm({
       repertoireId,
       locale,
       name,
+      side,
       openingIds: canLinkOpenings ? openingIds : [],
       // Only re-decompose the lines when the moves actually changed.
       pgn: pgnChanged ? pgn : undefined,
@@ -166,6 +172,24 @@ export function EditRepertoireForm({
           className="mt-1 w-full"
         />
       </div>
+
+      <fieldset>
+        <legend className="block text-sm font-medium text-foreground">{tForm('sideLabel')}</legend>
+        <div className="mt-2 flex gap-4">
+          {(['white', 'black'] as const).map((value) => (
+            <label key={value} className="flex items-center gap-2 text-sm text-foreground">
+              <input
+                type="radio"
+                name="side"
+                value={value}
+                checked={side === value}
+                onChange={() => setSide(value)}
+              />
+              {tForm(`side_${value}`)}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       {initialPgn !== null && (
         <div className="space-y-2">

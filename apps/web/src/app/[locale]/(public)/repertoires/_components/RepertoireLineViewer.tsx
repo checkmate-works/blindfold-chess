@@ -9,7 +9,10 @@ import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
+import { FaPlus } from 'react-icons/fa';
 import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
+
+import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
@@ -36,6 +39,8 @@ type Props = {
   /** Repertoire id, for linking each line to its detail (annotations) page. */
   repertoireId: string;
   locale: string;
+  /** Whether the viewer is the owner — gates the empty-state "add a line" CTA. */
+  isOwner: boolean;
 };
 
 /**
@@ -44,8 +49,13 @@ type Props = {
  * horizontally-scrolling move list above the board, the board, and first / prev
  * / next / last controls (and ←/→ keys). Positions/formatting are precomputed
  * server-side, so this stays a thin UI client component.
+ *
+ * For the owner, the line list ends with an "Add a line" row to the
+ * (previously unlinked) lines/new page — always available, not just when the
+ * repertoire has none yet (see the `!line` empty-state branch below, which
+ * offers the same link).
  */
-export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Props) {
+export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwner }: Props) {
   const t = useTranslations('Repertoires');
   const [selectedIndex, setSelectedIndex] = useState(0);
   // The line whose truncated moves are unfolded in the list; accordion-style
@@ -53,11 +63,13 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [ply, setPly] = useState(0);
 
+  // A `building` repertoire is reachable by direct URL (soft-privacy) before
+  // it has any lines — e.g. right after creation, or between deleting the
+  // last line and adding a new one. `line` stays undefined in that case;
+  // everything below the early return assumes at least one line exists.
   const line = lines[selectedIndex] ?? lines[0];
-  const maxPly = line.positions.length - 1;
+  const maxPly = (line?.positions.length ?? 1) - 1;
   const clampedPly = Math.min(ply, maxPly);
-  const current = line.positions[clampedPly];
-  const lastMove = clampedPly > 0 ? current.lastMove : null;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -79,6 +91,24 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
       setPly(0);
     }
   }
+
+  if (!line) {
+    return (
+      <div className="space-y-4 py-8 text-center">
+        <p className="text-muted-foreground">{t('detail.noLines')}</p>
+        {isOwner && (
+          <Link href={`/${locale}/repertoires/${repertoireId}/lines/new`} className="inline-block">
+            <Button asChild variant="primary">
+              {t('line.new.title')}
+            </Button>
+          </Link>
+        )}
+      </div>
+    );
+  }
+
+  const current = line.positions[clampedPly];
+  const lastMove = clampedPly > 0 ? current.lastMove : null;
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -139,7 +169,8 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
           standard link lists (ListLinkContainer / ListLink): a bordered card
           with row separators, row click navigating to the line's detail page.
           The chevron toggle unfolds a truncated preview of the line's moves
-          (and mirrors it on the big board). */}
+          (and mirrors it on the big board) — the preview itself is also a
+          link to the same detail page, so expanding it isn't a dead end. */}
       <ul className="h-fit overflow-hidden rounded-md border border-border bg-card lg:col-span-1">
         {lines.map((l, i) => {
           const isSelected = i === selectedIndex;
@@ -149,9 +180,7 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
           return (
             <li key={l.id} className="border-b border-border last:border-b-0">
               <div
-                className={`flex items-center transition-colors ${
-                  isSelected ? 'bg-link-primary/5' : ''
-                }`}
+                className={`flex items-center transition-colors ${isSelected ? 'bg-muted' : ''}`}
               >
                 <button
                   type="button"
@@ -171,11 +200,10 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
                   className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 transition-colors hover:bg-muted"
                 >
                   <span
-                    className={`truncate text-sm ${
-                      isSelected ? 'font-medium text-link-primary' : 'text-foreground'
-                    }`}
+                    className={`truncate text-sm text-foreground ${isSelected ? 'font-medium' : ''}`}
                   >
-                    {l.name ?? t('detail.lineFallback', { n: i + 1 })}
+                    {l.name ??
+                      lineFallbackTitle(l.formatted, t('detail.lineFallback', { n: i + 1 }))}
                   </span>
                   <HiChevronRight
                     aria-hidden
@@ -185,7 +213,10 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
               </div>
 
               {isExpanded && (
-                <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 px-3 pb-2.5 pl-10 text-sm">
+                <Link
+                  href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
+                  className="flex flex-wrap items-center gap-x-1 gap-y-0.5 p-3 text-sm transition-colors hover:bg-muted"
+                >
                   {previewPairs.map((pair) => (
                     <span key={pair.moveNumber} className="flex items-center gap-0.5">
                       <span className="text-xs text-muted-foreground">{pair.moveNumber}.</span>
@@ -194,11 +225,22 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
                     </span>
                   ))}
                   {truncated && <span className="text-muted-foreground">…</span>}
-                </div>
+                </Link>
               )}
             </li>
           );
         })}
+        {isOwner && (
+          <li className="border-b border-border last:border-b-0">
+            <Link
+              href={`/${locale}/repertoires/${repertoireId}/lines/new`}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm text-link-primary transition-colors hover:bg-muted"
+            >
+              <FaPlus aria-hidden className="size-3.5 flex-shrink-0" />
+              <span className="truncate">{t('line.new.title')}</span>
+            </Link>
+          </li>
+        )}
       </ul>
     </div>
   );

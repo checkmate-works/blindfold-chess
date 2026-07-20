@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, ne } from 'drizzle-orm';
 
 import type { Repertoire, RepertoireLine } from '@/lib/db';
 import {
@@ -148,8 +148,8 @@ export async function listPublicRepertoiresForOpening(
     .where(publicRepertoiresForOpening(openingSlug))
     .orderBy(
       ...(sort === 'popular'
-        ? [desc(likeCount), desc(repertoires.createdAt)]
-        : [desc(repertoires.createdAt)])
+        ? [desc(likeCount), desc(repertoires.publishedAt)]
+        : [desc(repertoires.publishedAt)])
     )
     .limit(limit);
 
@@ -173,13 +173,16 @@ export async function countPublicRepertoiresForOpening(openingSlug: string): Pro
 }
 
 /**
- * Every live public repertoire, newest first — the /repertoires catalog.
+ * Every live public repertoire, newest-published first — the /repertoires
+ * catalog.
  *
  * Repertoires are UGC surfaced to everyone (the feature is concealed only by
  * not being linked from global nav yet, not by being private), so this powers
- * the signed-out-visible catalog. Filters on `status = 'public'` for the same
- * reason `publicRepertoiresForOpening` does: nothing writes `private` today,
- * but a future "make private" toggle must never leak a private course here.
+ * the signed-out-visible catalog. Filters on `status = 'public'` — this
+ * excludes `building` (not yet ready to show) for free, and a future
+ * "make private" toggle must never leak a private course here either. Sorts
+ * on `published_at`, not `created_at`: a course can sit in `building` for a
+ * while before publishing, and should read as new when it finally does.
  */
 export async function listPublicRepertoires(
   limit: number,
@@ -193,7 +196,7 @@ export async function listPublicRepertoires(
       .$dynamic(),
     {
       where: publicRepertoiresOnly(),
-      orderBy: [desc(repertoires.createdAt)],
+      orderBy: [desc(repertoires.publishedAt)],
       limit,
       offset,
     }
@@ -220,9 +223,38 @@ export async function listRepertoiresForUser(userId: string): Promise<Repertoire
 }
 
 /**
+ * A user's own `building` repertoires, newest first — never public (excluded
+ * from every catalog query above), so this is their only listing surface
+ * short of the direct detail URL. Powers the owner-only "in progress" section
+ * on /repertoires.
+ */
+export async function listBuildingRepertoiresForUser(
+  userId: string
+): Promise<RepertoireWithProfile[]> {
+  const rows = await db
+    .select(REPERTOIRE_CARD_COLUMNS)
+    .from(repertoires)
+    .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
+    .where(
+      and(
+        eq(repertoires.userId, userId),
+        eq(repertoires.status, 'building'),
+        isNull(repertoires.deletedAt)
+      )
+    )
+    .orderBy(desc(repertoires.createdAt));
+
+  return toCards(rows);
+}
+
+/**
  * A user's live repertoires for one side, each with its live lines — the kata
  * check's input (a game is only compared against repertoires prepared for the
- * colour the player actually held).
+ * colour the player actually held). Excludes `building` repertoires: a course
+ * still being assembled is too thin to check a game against without
+ * manufacturing false deviations. `private` is included on purpose — see
+ * {@link getRepertoireCheckReport}, this is an owner-scoped lookup, never
+ * another user's repertoires, so visibility is irrelevant here.
  */
 export async function listRepertoiresWithLinesForSide(
   userId: string,
@@ -232,7 +264,12 @@ export async function listRepertoiresWithLinesForSide(
     .select()
     .from(repertoires)
     .where(
-      and(eq(repertoires.userId, userId), eq(repertoires.side, side), isNull(repertoires.deletedAt))
+      and(
+        eq(repertoires.userId, userId),
+        eq(repertoires.side, side),
+        ne(repertoires.status, 'building'),
+        isNull(repertoires.deletedAt)
+      )
     )
     .orderBy(desc(repertoires.createdAt));
   if (reps.length === 0) return [];
@@ -276,11 +313,11 @@ export type RepertoireForViewer = RepertoireWithLines & {
 
 /**
  * A single repertoire with its lines + author profile, for the public-facing
- * detail / line pages. Repertoires follow a soft-privacy model — "private" only
- * hides them from listings / navigation; an undeleted repertoire is viewable by
- * anyone who has the URL. Hence no status / auth gate on viewing here; the
- * returned `isOwner` flag is what gates the owner-only affordances (delete,
- * annotate).
+ * detail / line pages. Repertoires follow a soft-privacy model — no `status`
+ * value (`building`, `private`, or `public`) hides a repertoire from someone
+ * who has its URL, only from listings / navigation. Hence no status / auth
+ * gate on viewing here; the returned `isOwner` flag is what gates the
+ * owner-only affordances (delete, annotate, publish).
  *
  * `viewerId` is null for anonymous visitors.
  */

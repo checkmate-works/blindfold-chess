@@ -75,17 +75,34 @@ export const repertoires = pgTable(
     /** Denormalised root for the card thumbnail. NULL = standard start. */
     startingFen: varchar('starting_fen', { length: 100 }),
     /**
-     * Visibility. Public by default: a repertoire is catalogue content — it is
-     * surfaced on the opening topic pages it is linked to, and viewable by
-     * anyone with the URL regardless. Flipping one back to `private` is planned
-     * as a paid-plan affordance; until that ships nothing writes this column,
-     * so every repertoire is public and the read paths still filter on it
-     * (making the later toggle a UI change, not a query change).
+     * Lifecycle + visibility, one value at a time:
+     *
+     * - `building` — the owner's workshop. Default on create. Never shown on
+     *   any public listing, never matched by the kata check (a course too
+     *   thin to be checked against would just manufacture false deviations),
+     *   but still reachable by the owner's direct URL (soft-privacy, like
+     *   `public`). One-way exit via `publishRepertoireEntry` once it has
+     *   ≥1 line: publishing is the owner asserting "this is done," so there
+     *   is no path back to `building` — see `publishedAt` below.
+     * - `public` — catalogue content, surfaced on the opening topic pages it
+     *   is linked to and viewable by anyone with the URL.
+     * - `private` — planned as a paid-plan affordance (coin-gated) for hiding
+     *   a *finished* course from listings without deleting it; until that
+     *   ships nothing writes this value. Distinct from `building`: private
+     *   content already cleared the completeness bar, it's just deliberately
+     *   withheld.
      */
     status: varchar('status', { length: 20 })
-      .$type<'private' | 'public'>()
+      .$type<'building' | 'private' | 'public'>()
       .notNull()
-      .default('public'),
+      .default('building'),
+    /**
+     * When this course was published (`building` → `public`). NULL while
+     * still `building`. The catalog sorts "newest" on this column, not
+     * `created_at` — otherwise a course drafted for weeks would publish
+     * straight into obscurity instead of appearing as new.
+     */
+    publishedAt: timestamp('published_at', { withTimezone: true }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -95,8 +112,12 @@ export const repertoires = pgTable(
   },
   (table) => [
     index('idx_repertoires_user').on(table.userId, table.createdAt),
+    // Sorted on published_at (not id) so the catalog's "newest" ordering
+    // matches what listPublicRepertoires actually queries — id (UUIDv7) only
+    // tracks creation order, which diverges from publish order once a course
+    // can sit in `building` for a while before publishing.
     index('idx_repertoires_public')
-      .on(table.id.desc())
+      .on(table.publishedAt.desc())
       .where(sql`deleted_at IS NULL AND status = 'public'`),
   ]
 );

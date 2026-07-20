@@ -13,6 +13,12 @@
     "title": "Kata",
     "description": "Kata shared by the community — opening lines, mate patterns, and memorized sequences.",
     "sectionTitle": "Community kata",
+    "status": {
+      "building": "In progress"
+    },
+    "building": {
+      "sectionTitle": "Your kata in progress"
+    },
     "help": {
       "label": "About Kata",
       "catalog": {
@@ -20,11 +26,11 @@
         "description": "A kata is a pre-arranged sequence you rehearse until it feels automatic — the idea comes from martial arts, applied here to chess: opening lines, mate patterns, and sequences worth memorizing. This page lists every kata shared by the community, so you can browse and study what other players have prepared."
       },
       "import": {
-        "title": "Import your own kata",
-        "description": "Have an opening you want to drill? Anyone signed in can import one from this button — paste a PGN with variations (a Lichess study or Chess.com export works as-is) and it becomes a kata you can review and share."
+        "title": "Create your own kata",
+        "description": "Have an opening you want to drill? Anyone signed in can create one from this button — play the moves on a board or paste a PGN with variations (a Lichess study or Chess.com export works as-is) and it becomes a kata you can review and share."
       }
     },
-    "importCta": "Import",
+    "importCta": "Create Kata",
     "empty": "No kata registered yet",
     "summary": "{lines} lines · {moves} moves",
     "like": "Like",
@@ -47,8 +53,8 @@
       "pgnLabel": "PGN",
       "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
-      "submit": "Import line",
-      "submitting": "Importing…",
+      "submit": "Create Kata",
+      "submitting": "Creating…",
       "inputModePgn": "PGN",
       "inputModeBoard": "Board",
       "movesLabel": "Moves",
@@ -66,8 +72,8 @@
       "help": "Play the moves for both sides. Go back to an earlier move and play a different one to add an alternative — each branch becomes its own line on import."
     },
     "new": {
-      "title": "Import a line",
-      "sectionTitle": "Line details"
+      "title": "New Kata",
+      "sectionTitle": "Kata details"
     },
     "edit": {
       "editAction": "Edit",
@@ -82,6 +88,7 @@
         "notFound": "This kata no longer exists.",
         "nameRequired": "Please enter a name.",
         "nameTooLong": "That name is too long.",
+        "invalidSide": "Please choose a side.",
         "pgnRequired": "Please enter the moves.",
         "pgnTooLarge": "The PGN is too large.",
         "invalidPgn": "Could not read these moves. Check the notation.",
@@ -92,6 +99,7 @@
       "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Lines",
+      "noLines": "This kata has no lines yet.",
       "lineCount": "{count} lines",
       "forThisOpening": "Kata for this opening",
       "lineFallback": "Line {n}",
@@ -155,6 +163,19 @@
       "message": "This permanently removes the line. This cannot be undone.",
       "confirm": "Delete",
       "cancel": "Cancel"
+    },
+    "publish": {
+      "bannerTitle": "This kata is still in progress",
+      "bannerDescription": "It's only visible to you until you publish it.",
+      "needsLine": "Add at least one line before you can publish.",
+      "button": "Publish",
+      "confirmTitle": "Publish this kata?",
+      "confirmMessage": "Once published, this kata will be visible to everyone and can be checked against your games. You won't be able to move it back to in progress — you can only make it private afterward.",
+      "confirm": "Publish",
+      "cancel": "Cancel",
+      "errors": {
+        "generic": "Something went wrong. Please try again."
+      }
     },
     "errors": {
       "nameRequired": "Please enter a name.",

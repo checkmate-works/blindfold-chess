@@ -13,6 +13,12 @@
     "title": "型",
     "description": "みんなが公開している型 — オープニング、詰みパターン、覚えておきたい手順。",
     "sectionTitle": "みんなの型",
+    "status": {
+      "building": "作成中"
+    },
+    "building": {
+      "sectionTitle": "作成中の型"
+    },
     "help": {
       "label": "型とは",
       "catalog": {
@@ -20,11 +26,11 @@
         "description": "型とは、体に染み込むまで繰り返す決められた手順のこと。武術の稽古法をチェスに応用したもので、オープニングの手順・詰みのパターン・覚えておきたいシーケンスをまとめます。このページには、みんなが公開している型がすべて並びます。他のプレイヤーが用意した型を眺めて学べます。"
       },
       "import": {
-        "title": "自分の型をインポート",
-        "description": "練習したいオープニングはありますか？ ログインすれば、このボタンから自分の型を追加できます。変化手を含む PGN を貼り付けるだけ（Lichess スタディや Chess.com のエクスポートをそのまま使えます）で、復習・共有できる型になります。"
+        "title": "自分で型を作成",
+        "description": "練習したいオープニングはありますか？ ログインすれば、このボタンから自分の型を作成できます。盤面で手を指すか、変化手を含む PGN を貼り付ける（Lichess スタディや Chess.com のエクスポートをそのまま使えます）だけで、復習・共有できる型になります。"
       }
     },
-    "importCta": "インポート",
+    "importCta": "型を作成",
     "empty": "型はまだありません",
     "summary": "{lines} ライン・{moves} 手",
     "like": "いいね",
@@ -47,8 +53,8 @@
       "pgnLabel": "PGN",
       "pgnHelp": "変化手を含む PGN を貼り付けてください。Lichess スタディや Chess.com のエクスポートをそのまま使えます。",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
-      "submit": "型をインポート",
-      "submitting": "インポート中…",
+      "submit": "型を作成",
+      "submitting": "作成中…",
       "inputModePgn": "PGN",
       "inputModeBoard": "盤面",
       "movesLabel": "手順",
@@ -66,7 +72,7 @@
       "help": "両陣営の手を順に指してください。途中の手に戻って別の手を指すと変化（別の手順）が追加され、インポート時にそれぞれ独立したラインになります。"
     },
     "new": {
-      "title": "型をインポート",
+      "title": "新規作成",
       "sectionTitle": "型の詳細"
     },
     "edit": {
@@ -82,6 +88,7 @@
         "notFound": "この型は存在しません。",
         "nameRequired": "名前を入力してください。",
         "nameTooLong": "名前が長すぎます。",
+        "invalidSide": "手番を選んでください。",
         "pgnRequired": "手順を入力してください。",
         "pgnTooLarge": "PGN が大きすぎます。",
         "invalidPgn": "手順を読み取れませんでした。記譜を確認してください。",
@@ -92,6 +99,7 @@
       "title": "型",
       "pgnHeading": "PGN",
       "linesHeading": "ライン",
+      "noLines": "この型にはまだラインがありません。",
       "lineCount": "{count} ライン",
       "forThisOpening": "このオープニングの型",
       "lineFallback": "ライン {n}",
@@ -155,6 +163,19 @@
       "message": "この型を完全に削除します。元に戻せません。",
       "confirm": "削除",
       "cancel": "キャンセル"
+    },
+    "publish": {
+      "bannerTitle": "この型はまだ作成中です",
+      "bannerDescription": "公開するまでは自分にしか見えません。",
+      "needsLine": "公開するには、ラインを1つ以上追加してください。",
+      "button": "公開する",
+      "confirmTitle": "この型を公開しますか？",
+      "confirmMessage": "公開すると誰でも閲覧でき、対局後の型チェックの対象にもなります。公開後に作成中へ戻すことはできません — 非公開にすることはできます。",
+      "confirm": "公開する",
+      "cancel": "キャンセル",
+      "errors": {
+        "generic": "問題が発生しました。もう一度お試しください。"
+      }
     },
     "errors": {
       "nameRequired": "名前を入力してください。",

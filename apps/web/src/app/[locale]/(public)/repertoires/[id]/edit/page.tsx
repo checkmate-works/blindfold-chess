@@ -1,9 +1,11 @@
 /**
- * Repertoire (型) — edit page (owner only). The title, the opening links, and
- * the whole move tree — the lines recomposed into one PGN-with-variations and
- * edited on the same board the import form uses (with per-move notes and
- * markup). Saving diffs the tree against the stored lines so unchanged lines
- * keep their identity. Side / phase stay fixed: they define the repertoire.
+ * Repertoire (型) — edit page (owner only). The title, the side, the opening
+ * links, and the whole move tree — the lines recomposed into one
+ * PGN-with-variations and edited on the same board the import form uses (with
+ * per-move notes and markup). Saving diffs the tree against the stored lines
+ * so unchanged lines keep their identity. Phase stays fixed — it's not
+ * authorable anywhere yet beyond `opening` (see `AUTHORABLE_PHASES` on the
+ * import form) — but side is plain metadata and editable like the title.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';

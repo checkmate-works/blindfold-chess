@@ -8,10 +8,14 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
+
 import { getOptionalUser } from '@/lib/auth';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
+import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
+import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -47,7 +51,12 @@ export default async function EditRepertoireLinePage({ params }: Props) {
   if (!data || !data.isOwner) notFound();
   const { repertoire, line } = data;
 
-  const lineName = line.name ?? t('detail.lineFallback', { n: lineNo });
+  // Replayed only for the breadcrumb's fallback title when the line is
+  // unnamed — the form itself edits the raw PGN, not this formatted view.
+  const { sans, startsAsBlack, startMoveNumber } = replayRepertoireLine(line);
+  const formatted = formatMovesToPgn(sans, startsAsBlack, startMoveNumber);
+  const lineName =
+    line.name ?? lineFallbackTitle(formatted, t('detail.lineFallback', { n: lineNo }));
 
   // Existing "why this move" notes and board markup — prefill the per-move
   // note editor and the board's drawing surface. Repertoire-wide by design:

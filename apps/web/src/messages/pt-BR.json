@@ -13,6 +13,12 @@
     "title": "Kata",
     "description": "Katas compartilhados pela comunidade — linhas de abertura, padrões de mate e sequências memorizadas.",
     "sectionTitle": "Katas da comunidade",
+    "status": {
+      "building": "Em andamento"
+    },
+    "building": {
+      "sectionTitle": "Seu kata em andamento"
+    },
     "help": {
       "label": "Sobre os katas",
       "catalog": {
@@ -20,11 +26,11 @@
         "description": "Um kata é uma sequência preestabelecida que você repete até virar automático — a ideia vem das artes marciais, aplicada aqui ao xadrez: linhas de abertura, padrões de mate e sequências que valem a pena memorizar. Esta página lista todos os katas compartilhados pela comunidade, para você explorar e estudar o que outros jogadores prepararam."
       },
       "import": {
-        "title": "Importe seu próprio kata",
-        "description": "Tem uma abertura que quer treinar? Qualquer pessoa logada pode importar uma por este botão — cole um PGN com variantes (uma exportação de estudo do Lichess ou do Chess.com funciona como está) e ele vira um kata que você pode revisar e compartilhar."
+        "title": "Crie seu próprio kata",
+        "description": "Tem uma abertura que quer treinar? Qualquer pessoa logada pode criar uma por este botão — jogue os lances em um tabuleiro ou cole um PGN com variantes (uma exportação de estudo do Lichess ou do Chess.com funciona como está) e ele vira um kata que você pode revisar e compartilhar."
       }
     },
-    "importCta": "Importar",
+    "importCta": "Criar kata",
     "empty": "Nenhum kata registrado ainda",
     "summary": "{lines} linhas · {moves} lances",
     "like": "Curtir",
@@ -47,8 +53,8 @@
       "pgnLabel": "PGN",
       "pgnHelp": "Cole um PGN com variantes — exportações de estudos do Lichess ou do Chess.com funcionam como estão.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
-      "submit": "Importar linha",
-      "submitting": "Importando…",
+      "submit": "Criar kata",
+      "submitting": "Criando…",
       "inputModePgn": "PGN",
       "inputModeBoard": "Tabuleiro",
       "movesLabel": "Lances",
@@ -66,8 +72,8 @@
       "help": "Jogue os lances dos dois lados. Volte a um lance anterior e jogue outro diferente para adicionar uma alternativa — cada ramificação vira uma linha própria na importação."
     },
     "new": {
-      "title": "Importar uma linha",
-      "sectionTitle": "Detalhes da linha"
+      "title": "Novo kata",
+      "sectionTitle": "Detalhes do kata"
     },
     "edit": {
       "editAction": "Editar",
@@ -82,6 +88,7 @@
         "notFound": "Este kata não existe mais.",
         "nameRequired": "Digite um nome.",
         "nameTooLong": "Esse nome é muito longo.",
+        "invalidSide": "Escolha um lado.",
         "pgnRequired": "Digite os lances.",
         "pgnTooLarge": "O PGN é muito grande.",
         "invalidPgn": "Não foi possível ler estes lances. Verifique a notação.",
@@ -92,6 +99,7 @@
       "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Linhas",
+      "noLines": "Este kata ainda não tem linhas.",
       "lineCount": "{count} linhas",
       "forThisOpening": "Katas desta abertura",
       "lineFallback": "Linha {n}",
@@ -155,6 +163,19 @@
       "message": "Isso remove a linha permanentemente. Não é possível desfazer.",
       "confirm": "Excluir",
       "cancel": "Cancelar"
+    },
+    "publish": {
+      "bannerTitle": "Este kata ainda está em andamento",
+      "bannerDescription": "Só você pode vê-lo até publicá-lo.",
+      "needsLine": "Adicione pelo menos uma linha antes de publicar.",
+      "button": "Publicar",
+      "confirmTitle": "Publicar este kata?",
+      "confirmMessage": "Depois de publicado, este kata ficará visível para todos e poderá ser comparado com suas partidas. Não será possível voltar para em andamento — depois só será possível torná-lo privado.",
+      "confirm": "Publicar",
+      "cancel": "Cancelar",
+      "errors": {
+        "generic": "Algo deu errado. Tente novamente."
+      }
     },
     "errors": {
       "nameRequired": "Digite um nome.",

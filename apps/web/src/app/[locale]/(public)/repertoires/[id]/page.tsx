@@ -32,6 +32,7 @@ import { RepertoireActionsMenu } from '../_components/RepertoireActionsMenu';
 import { RepertoireChips } from '../_components/RepertoireChips';
 import type { RepertoireViewerLine } from '../_components/RepertoireLineViewer';
 import { RepertoireLineViewer } from '../_components/RepertoireLineViewer';
+import { PublishRepertoireBanner } from './_components/PublishRepertoireBanner';
 import { RepertoireCommentsSection } from './_components/RepertoireCommentsSection';
 
 type Props = {
@@ -90,6 +91,10 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
     >
       <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
 
+      {isOwner && repertoire.status === 'building' && (
+        <PublishRepertoireBanner id={repertoire.id} locale={locale} lineCount={lines.length} />
+      )}
+
       {repertoire.description && (
         <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
       )}
@@ -99,6 +104,7 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         side={repertoire.side}
         repertoireId={repertoire.id}
         locale={locale}
+        isOwner={isOwner}
       />
 
       {/* Below the board: the openings this repertoire covers (each card links
@@ -119,7 +125,12 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       )}
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <RepertoireChips locale={locale} side={repertoire.side} phase={repertoire.phase} />
+        <RepertoireChips
+          locale={locale}
+          side={repertoire.side}
+          phase={repertoire.phase}
+          status={repertoire.status}
+        />
         <span>{t('detail.lineCount', { count: lines.length })}</span>
       </div>
 

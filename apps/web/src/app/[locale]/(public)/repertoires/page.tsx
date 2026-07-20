@@ -16,10 +16,14 @@
  * polymorphic infrastructure (`targetType` / `topicType` = `'repertoire'`).
  *
  * @flow
- * 1. List every public repertoire, newest first, paginated, with like + comment meta.
- * 2. The "Import" CTA (signed-in only) sits at the top and routes to
- *    /repertoires/new to paste a PGN.
- * 3. Each card links to /repertoires/[id].
+ * 1. The "Create Kata" CTA (signed-in only) sits at the top and routes to
+ *    /repertoires/new to play moves on a board or paste a PGN.
+ * 2. A signed-in user with `building` (unpublished) repertoires sees them in
+ *    their own section — the only listing surface they have, since building
+ *    repertoires are excluded from every public/community query below.
+ * 3. List every public repertoire, newest-published first, paginated, with
+ *    like + comment meta.
+ * 4. Each card links to /repertoires/[id].
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -31,7 +35,11 @@ import { FaPlus } from 'react-icons/fa';
 import { getOptionalUser } from '@/lib/auth';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
-import { countPublicRepertoires, listPublicRepertoires } from '@/lib/repertoires/queries';
+import {
+  countPublicRepertoires,
+  listBuildingRepertoiresForUser,
+  listPublicRepertoires,
+} from '@/lib/repertoires/queries';
 
 import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
@@ -73,10 +81,13 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
     DEFAULT_PAGE_SIZE
   );
 
-  const rows = await listPublicRepertoires(limit, offset);
+  const [rows, buildingRows] = await Promise.all([
+    listPublicRepertoires(limit, offset),
+    user ? listBuildingRepertoiresForUser(user.id) : Promise.resolve([]),
+  ]);
 
   const cardMeta = await getRepertoireCardMeta(
-    rows.map((r) => r.repertoire.id),
+    [...buildingRows, ...rows].map((r) => r.repertoire.id),
     user?.id
   );
 
@@ -111,8 +122,6 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('title') }]}
     >
-      <SectionTitle>{t('sectionTitle')}</SectionTitle>
-
       {user && (
         <div className="py-4" data-tour-id={IMPORT_HELP_TARGET}>
           <Link href="/repertoires/new" locale={locale}>
@@ -122,6 +131,24 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
           </Link>
         </div>
       )}
+
+      {buildingRows.length > 0 && (
+        <>
+          <SectionTitle>{t('building.sectionTitle')}</SectionTitle>
+          <div className="space-y-3 pb-4">
+            {buildingRows.map((card) => (
+              <RepertoireListCard
+                key={card.repertoire.id}
+                card={card}
+                meta={cardMeta(card.repertoire.id)}
+                locale={locale}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('empty')}</p>

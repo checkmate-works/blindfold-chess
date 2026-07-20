@@ -17,10 +17,16 @@ import {
   repertoireOpenings,
   repertoires,
 } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
-import type { RepertoireImportInput, RepertoireLineEditError, RepertoirePhase } from './validation';
+import type {
+  RepertoireImportInput,
+  RepertoireLineEditError,
+  RepertoirePhase,
+  RepertoireSide,
+} from './validation';
 import {
   REPERTOIRE_NAME_MAX,
   REPERTOIRE_PGN_MAX_BYTES,
@@ -144,7 +150,10 @@ export async function addRepertoireLine(params: {
 
 export type UpdateRepertoireResult =
   | { ok: true; name: string }
-  | { ok: false; error: 'unauthorized' | 'notFound' | 'nameRequired' | 'nameTooLong' };
+  | {
+      ok: false;
+      error: 'unauthorized' | 'notFound' | 'nameRequired' | 'nameTooLong' | 'invalidSide';
+    };
 
 /** The transaction handle drizzle hands to a `db.transaction` callback. */
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -183,22 +192,30 @@ async function replaceOpeningLinks(tx: Tx, links: OpeningLinks) {
 }
 
 /**
- * Owner-only: update a repertoire's title and its opening links.
+ * Owner-only: update a repertoire's title, side, and opening links.
  *
- * Deliberately narrower than the import form — side / phase / PGN are
- * structural (the lines, and every position-keyed annotation hanging off them,
- * derive from the PGN), so changing those is a re-import, not an edit. The
- * title and the opening links are pure metadata.
+ * Deliberately narrower than the import form — phase / PGN are structural
+ * (the lines, and every position-keyed annotation hanging off them, derive
+ * from the PGN; phase also gates whether opening links apply at all), so
+ * changing those is a re-import, not an edit. `side`, like the title and the
+ * opening links, is pure metadata: it labels which colour the course is
+ * written for but doesn't constrain the PGN tree (the board builder plays
+ * both colours' moves and branches at any ply regardless of `side`), so
+ * relabeling it after the fact can't desync anything else.
  */
 export async function updateRepertoireDetails(params: {
   repertoireId: string;
   viewerId: string;
   name: string;
+  side: RepertoireSide;
   openingIds: string[];
 }): Promise<UpdateRepertoireResult> {
   const name = params.name.trim();
   if (!name) return { ok: false, error: 'nameRequired' };
   if (name.length > REPERTOIRE_NAME_MAX) return { ok: false, error: 'nameTooLong' };
+  if (params.side !== 'white' && params.side !== 'black') {
+    return { ok: false, error: 'invalidSide' };
+  }
 
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
   if (ownerError) return { ok: false, error: ownerError };
@@ -211,7 +228,10 @@ export async function updateRepertoireDetails(params: {
   if (!row) return { ok: false, error: 'notFound' };
 
   await db.transaction(async (tx) => {
-    await tx.update(repertoires).set({ name }).where(eq(repertoires.id, params.repertoireId));
+    await tx
+      .update(repertoires)
+      .set({ name, side: params.side })
+      .where(eq(repertoires.id, params.repertoireId));
     await replaceOpeningLinks(tx, {
       repertoireId: params.repertoireId,
       phase: row.phase,
@@ -414,5 +434,43 @@ export async function deleteRepertoireEntry(id: string): Promise<DeleteRepertoir
     .returning({ id: repertoires.id });
 
   if (deleted.length === 0) return { error: 'notFound' };
+  return { success: true };
+}
+
+export type PublishRepertoireResult = ActionResult;
+
+/**
+ * Owner-only: publish a `building` repertoire (→ `public`), stamping
+ * `publishedAt`. One-way — there is no action that moves a repertoire back to
+ * `building`; see the `status` TSDoc on the schema. Requires at least one
+ * live line, so an emptied-out course can't be published as an empty shell.
+ */
+export async function publishRepertoireEntry(id: string): Promise<PublishRepertoireResult> {
+  const guard = await authenticateAndGuard(RATE_LIMITS.publishRepertoire);
+  if ('error' in guard) return { error: guard.error };
+  const { user } = guard;
+
+  const ownerError = await assertRepertoireOwner(id, user.id);
+  if (ownerError) return { error: ownerError };
+
+  const [repertoire] = await db
+    .select({ status: repertoires.status })
+    .from(repertoires)
+    .where(and(eq(repertoires.id, id), isNull(repertoires.deletedAt)))
+    .limit(1);
+  if (!repertoire) return { error: 'notFound' };
+  if (repertoire.status !== 'building') return { error: 'alreadyPublished' };
+
+  const lineCount = await countRows(
+    repertoireLines,
+    and(eq(repertoireLines.repertoireId, id), isNull(repertoireLines.deletedAt))
+  );
+  if (lineCount < 1) return { error: 'noLines' };
+
+  await db
+    .update(repertoires)
+    .set({ status: 'public', publishedAt: new Date() })
+    .where(eq(repertoires.id, id));
+
   return { success: true };
 }

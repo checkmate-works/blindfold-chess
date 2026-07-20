@@ -17,6 +17,7 @@ import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
+import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 import { buildPositionTopicKey } from '@/lib/repertoires/position-topic-key';
 import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
@@ -70,7 +71,8 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
   const initialPly =
     Number.isInteger(moveParam) && moveParam >= 1 && moveParam <= sans.length ? moveParam : 1;
 
-  const lineName = line.name ?? t('detail.lineFallback', { n: lineNo });
+  const lineName =
+    line.name ?? lineFallbackTitle(formatted, t('detail.lineFallback', { n: lineNo }));
 
   // What a move reference ("1... e4") inside a note or a comment resolves
   // against — this line's own numbering, not the repertoire's.

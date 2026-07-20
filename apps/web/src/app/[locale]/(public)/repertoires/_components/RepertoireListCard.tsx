@@ -64,6 +64,7 @@ export async function RepertoireListCard({
           locale={locale}
           side={repertoire.side}
           phase={showPhase ? repertoire.phase : undefined}
+          status={repertoire.status}
         />
       }
     />

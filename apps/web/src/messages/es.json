@@ -13,6 +13,12 @@
     "title": "Kata",
     "description": "Katas compartidos por la comunidad: líneas de apertura, patrones de mate y secuencias memorizadas.",
     "sectionTitle": "Katas de la comunidad",
+    "status": {
+      "building": "En progreso"
+    },
+    "building": {
+      "sectionTitle": "Tu kata en progreso"
+    },
     "help": {
       "label": "Sobre los katas",
       "catalog": {
@@ -20,11 +26,11 @@
         "description": "Un kata es una secuencia preestablecida que repites hasta que te sale sola: la idea viene de las artes marciales, aplicada aquí al ajedrez: líneas de apertura, patrones de mate y secuencias que vale la pena memorizar. Esta página muestra todos los katas compartidos por la comunidad, para que explores y estudies lo que han preparado otros jugadores."
       },
       "import": {
-        "title": "Importa tu propio kata",
-        "description": "¿Tienes una apertura que quieres practicar? Cualquiera con la sesión iniciada puede importar una desde este botón: pega un PGN con variantes (una exportación de un estudio de Lichess o de Chess.com funciona tal cual) y se convierte en un kata que puedes repasar y compartir."
+        "title": "Crea tu propio kata",
+        "description": "¿Tienes una apertura que quieres practicar? Cualquiera con la sesión iniciada puede crear una desde este botón — juega los movimientos en un tablero o pega un PGN con variantes (una exportación de un estudio de Lichess o de Chess.com funciona tal cual) y se convierte en un kata que puedes repasar y compartir."
       }
     },
-    "importCta": "Importar",
+    "importCta": "Crear kata",
     "empty": "Aún no hay katas registrados",
     "summary": "{lines} líneas · {moves} jugadas",
     "like": "Me gusta",
@@ -47,8 +53,8 @@
       "pgnLabel": "PGN",
       "pgnHelp": "Pega un PGN con variantes: las exportaciones de estudios de Lichess o de Chess.com funcionan tal cual.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
-      "submit": "Importar línea",
-      "submitting": "Importando…",
+      "submit": "Crear kata",
+      "submitting": "Creando…",
       "inputModePgn": "PGN",
       "inputModeBoard": "Tablero",
       "movesLabel": "Jugadas",
@@ -66,8 +72,8 @@
       "help": "Juega las jugadas de ambos bandos. Vuelve a una jugada anterior y juega otra distinta para añadir una alternativa: cada rama se convertirá en su propia línea al importar."
     },
     "new": {
-      "title": "Importar una línea",
-      "sectionTitle": "Detalles de la línea"
+      "title": "Nuevo kata",
+      "sectionTitle": "Detalles del kata"
     },
     "edit": {
       "editAction": "Editar",
@@ -82,6 +88,7 @@
         "notFound": "Este kata ya no existe.",
         "nameRequired": "Introduce un nombre.",
         "nameTooLong": "Ese nombre es demasiado largo.",
+        "invalidSide": "Elige un color.",
         "pgnRequired": "Introduce las jugadas.",
         "pgnTooLarge": "El PGN es demasiado grande.",
         "invalidPgn": "No se pudieron leer estas jugadas. Revisa la notación.",
@@ -92,6 +99,7 @@
       "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Líneas",
+      "noLines": "Este kata todavía no tiene líneas.",
       "lineCount": "{count} líneas",
       "forThisOpening": "Katas de esta apertura",
       "lineFallback": "Línea {n}",
@@ -155,6 +163,19 @@
       "message": "Esto elimina la línea de forma permanente. No se puede deshacer.",
       "confirm": "Eliminar",
       "cancel": "Cancelar"
+    },
+    "publish": {
+      "bannerTitle": "Este kata todavía está en progreso",
+      "bannerDescription": "Solo tú puedes verlo hasta que lo publiques.",
+      "needsLine": "Agrega al menos una línea antes de poder publicarlo.",
+      "button": "Publicar",
+      "confirmTitle": "¿Publicar este kata?",
+      "confirmMessage": "Una vez publicado, este kata será visible para todos y podrá compararse con tus partidas. No podrás volver a marcarlo como en progreso — después solo podrás hacerlo privado.",
+      "confirm": "Publicar",
+      "cancel": "Cancelar",
+      "errors": {
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
     },
     "errors": {
       "nameRequired": "Introduce un nombre.",
