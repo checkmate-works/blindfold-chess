@@ -15,6 +15,7 @@ import { FaBrain, FaPlay, FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
+import { countContentRevisionsForPosition } from '@/lib/positions/content-revision-queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
@@ -39,8 +40,8 @@ import { PositionAuthorHeader } from '../../../_components/PositionAuthorHeader'
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../../_components/PositionPeekBoard';
 import {
-  PositionEditRequestHistoryLink,
   PositionEditRequestSuggestLink,
+  PositionEditRequestSummaryLink,
 } from '../../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetail } from '../../../_lib/load-position-detail';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
@@ -101,24 +102,39 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
   const currentUser = await getOptionalUser();
-  const {
-    likeMeta,
-    relatedChunks,
-    relatedThemes,
-    commentCount,
-    comments,
-    hasMoreComments,
-    forkParent,
-    forkCount,
-    canFork,
-    attachments,
-  } = await loadPositionDetail({
-    position,
-    kind: 'puzzle',
-    currentUserId: currentUser?.id,
-    locale,
-    sortBy,
-  });
+  const [
+    {
+      likeMeta,
+      relatedChunks,
+      relatedThemes,
+      commentCount,
+      comments,
+      hasMoreComments,
+      forkParent,
+      forkCount,
+      canFork,
+      attachments,
+    },
+    revisionCount,
+  ] = await Promise.all([
+    loadPositionDetail({
+      position,
+      kind: 'puzzle',
+      currentUserId: currentUser?.id,
+      locale,
+      sortBy,
+    }),
+    countContentRevisionsForPosition(position.id),
+  ]);
+
+  // Prefer the tracked revision count for both the "edited?" signal and the
+  // link target — it only fires on a genuine content change (unlike the
+  // timestamp heuristic, which also trips on a no-op save). Fall back to the
+  // heuristic (no link) for edits made before this feature shipped, so a
+  // pre-existing edited puzzle doesn't silently lose its "(edited)" marker.
+  const hasTrackedHistory = revisionCount > 0;
+  const editedByLegacyHeuristic =
+    position.updatedAt.getTime() - position.createdAt.getTime() > 1000;
 
   const forkedFromNote = (
     <ForkProvenanceNote
@@ -237,8 +253,11 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         createdByLabel={t('detail.createdBy')}
         locale={locale}
         createdAt={position.createdAt}
-        edited={position.updatedAt.getTime() - position.createdAt.getTime() > 1000}
+        edited={hasTrackedHistory || editedByLegacyHeuristic}
         editedLabel={t('detail.edited')}
+        editedHref={
+          hasTrackedHistory ? `/${locale}/practice/puzzle/${position.id}/history` : undefined
+        }
         menuAriaLabel={t('detail.moreActions')}
         menuItems={menuItems}
       />
@@ -253,7 +272,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           toggleLikeAction={toggleLike}
           i18nNamespace="practice.puzzle"
         />
-        <PositionEditRequestHistoryLink
+        <PositionEditRequestSummaryLink
           positionId={position.id}
           positionType="puzzle"
           viewerId={currentUser?.id ?? null}

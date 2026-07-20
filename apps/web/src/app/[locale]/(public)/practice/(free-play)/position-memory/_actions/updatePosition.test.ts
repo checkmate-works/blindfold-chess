@@ -6,6 +6,7 @@ const mockTxUpdateSet = vi.fn();
 const mockTxUpdateWhere = vi.fn();
 const mockTxDeleteWhere = vi.fn();
 const mockTxInsertValues = vi.fn();
+const mockTxRevisionInsertValues = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -39,8 +40,13 @@ vi.mock('@/lib/db', () => ({
         delete: () => ({
           where: (...args: unknown[]) => mockTxDeleteWhere(...args),
         }),
-        insert: () => ({
-          values: (...args: unknown[]) => mockTxInsertValues(...args),
+        insert: (table: { __tableTag?: string }) => ({
+          values: (...args: unknown[]) => {
+            if (table?.__tableTag === 'position_content_revisions') {
+              return mockTxRevisionInsertValues(...args);
+            }
+            return mockTxInsertValues(...args);
+          },
         }),
       };
       return fn(tx);
@@ -51,9 +57,18 @@ vi.mock('@/lib/db', () => ({
     userId: 'user_id',
     type: 'type',
     deletedAt: 'deleted_at',
+    fen: 'fen',
+    title: 'title',
+    description: 'description',
   },
   positionThemes: { positionId: 'position_id' },
   positionChunks: { positionId: 'position_id' },
+  positionContentRevisions: {
+    __tableTag: 'position_content_revisions',
+    positionId: 'position_id',
+    editorId: 'editor_id',
+    changes: 'changes',
+  },
 }));
 
 vi.mock('@/lib/security/rate-limit', () => ({

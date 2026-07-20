@@ -8,6 +8,7 @@ import { FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
+import { countContentRevisionsForPosition } from '@/lib/positions/content-revision-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
@@ -34,8 +35,8 @@ import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import {
-  PositionEditRequestHistoryLink,
   PositionEditRequestSuggestLink,
+  PositionEditRequestSummaryLink,
 } from '../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetail } from '../../_lib/load-position-detail';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
@@ -96,24 +97,37 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
   const currentUser = await getOptionalUser();
-  const {
-    likeMeta,
-    relatedChunks,
-    relatedThemes,
-    commentCount,
-    comments,
-    hasMoreComments,
-    forkParent,
-    forkCount,
-    canFork,
-    attachments,
-  } = await loadPositionDetail({
-    position,
-    kind: 'memory',
-    currentUserId: currentUser?.id,
-    locale,
-    sortBy,
-  });
+  const [
+    {
+      likeMeta,
+      relatedChunks,
+      relatedThemes,
+      commentCount,
+      comments,
+      hasMoreComments,
+      forkParent,
+      forkCount,
+      canFork,
+      attachments,
+    },
+    revisionCount,
+  ] = await Promise.all([
+    loadPositionDetail({
+      position,
+      kind: 'memory',
+      currentUserId: currentUser?.id,
+      locale,
+      sortBy,
+    }),
+    countContentRevisionsForPosition(position.id),
+  ]);
+
+  // See the puzzle detail page for why the tracked count takes priority
+  // over the timestamp heuristic (only fires on a genuine content change,
+  // and is the only signal that can link to `/history`).
+  const hasTrackedHistory = revisionCount > 0;
+  const editedByLegacyHeuristic =
+    position.updatedAt.getTime() - position.createdAt.getTime() > 1000;
 
   const forkedFromNote = (
     <ForkProvenanceNote
@@ -226,8 +240,13 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         createdByLabel={t('detail.createdBy')}
         locale={locale}
         createdAt={position.createdAt}
-        edited={position.updatedAt.getTime() - position.createdAt.getTime() > 1000}
+        edited={hasTrackedHistory || editedByLegacyHeuristic}
         editedLabel={t('detail.edited')}
+        editedHref={
+          hasTrackedHistory
+            ? `/${locale}/practice/position-memory/${position.id}/history`
+            : undefined
+        }
         menuAriaLabel={t('detail.moreActions')}
         menuItems={menuItems}
       />
@@ -242,7 +261,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           toggleLikeAction={toggleLike}
           i18nNamespace="practice.positionMemory"
         />
-        <PositionEditRequestHistoryLink
+        <PositionEditRequestSummaryLink
           positionId={position.id}
           positionType="memory"
           viewerId={currentUser?.id ?? null}

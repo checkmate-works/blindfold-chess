@@ -47,19 +47,21 @@ function resolvePositionLinkFromMetadata(id: string, metadata: PositionMetadata)
 }
 
 /**
- * Resolve the edit-requests page path for a position notification.
+ * Resolve the chunk-suggestions page path for a position notification.
  *
  * Mirrors `resolvePositionLinkFromMetadata` but points at the position's
- * `/edit-requests` sub-page. Returns `null` when the position type has no
- * detail page (currently `'sequence'`), since it has no edit-requests page
- * either — callers degrade to a non-link button.
+ * `/suggestions` sub-page (renamed from `/edit-requests` — that path name
+ * collided with the unrelated `/history` edit-history page once it shipped).
+ * Returns `null` when the position type has no detail page (currently
+ * `'sequence'`), since it has no suggestions page either — callers degrade
+ * to a non-link button.
  */
 function resolvePositionEditRequestsLinkFromMetadata(
   id: string,
   metadata: PositionMetadata
 ): string | null {
   const detailPath = resolvePositionLinkFromMetadata(id, metadata);
-  return detailPath === null ? null : `${detailPath}/edit-requests`;
+  return detailPath === null ? null : `${detailPath}/suggestions`;
 }
 
 function getTopicSegment(topicType: string): string {
@@ -247,7 +249,7 @@ export function buildNotificationLink(
     notification.type === 'position_edit_request_submitted' &&
     isPositionMetadata(notification.metadata)
   ) {
-    // Route the owner to the position's edit-requests page — the full
+    // Route the owner to the position's suggestions page — the full
     // per-request list with the current position values for comparison,
     // which is the context this notification asks the owner to review
     // (mirrors the chunk edit-request routing above).

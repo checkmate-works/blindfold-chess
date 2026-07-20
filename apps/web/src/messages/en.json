@@ -1928,9 +1928,25 @@
       "pageTitle": "Chunk suggestions · {name}",
       "breadcrumb": "Chunk suggestions",
       "callout": {
-        "historyLink": "Edit request history ({count})"
+        "suggestionsLink": "Suggestions ({count})"
       },
       "suggestCta": "Suggest a pattern"
+    },
+    "positionHistory": {
+      "sectionTitle": "Edit history",
+      "pageTitle": "Edit history · {name}",
+      "breadcrumb": "Edit history",
+      "empty": "No edits recorded yet.",
+      "legacyEditNotice": "This was edited before detailed history tracking began.",
+      "deletedEditor": "(deleted user)",
+      "justNow": "just now",
+      "emptyValue": "(empty)",
+      "fields": {
+        "fen": "Position (FEN)",
+        "title": "Title",
+        "description": "Description",
+        "solutionMoves": "Solution"
+      }
     }
   },
   "home": {

@@ -1928,9 +1928,25 @@
       "pageTitle": "Sugestões de chunks · {name}",
       "breadcrumb": "Sugestões de chunks",
       "callout": {
-        "historyLink": "Histórico de sugestões ({count})"
+        "suggestionsLink": "Sugestões ({count})"
       },
       "suggestCta": "Sugerir um padrão"
+    },
+    "positionHistory": {
+      "sectionTitle": "Histórico de edições",
+      "pageTitle": "Histórico de edições · {name}",
+      "breadcrumb": "Histórico de edições",
+      "empty": "Ainda não há edições registradas.",
+      "legacyEditNotice": "Isso foi editado antes de o registro detalhado do histórico começar.",
+      "deletedEditor": "(usuário excluído)",
+      "justNow": "agora mesmo",
+      "emptyValue": "(vazio)",
+      "fields": {
+        "fen": "Posição (FEN)",
+        "title": "Título",
+        "description": "Descrição",
+        "solutionMoves": "Solução"
+      }
     }
   },
   "home": {

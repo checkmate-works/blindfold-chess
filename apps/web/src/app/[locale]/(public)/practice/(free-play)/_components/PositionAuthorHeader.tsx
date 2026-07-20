@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import Link from 'next/link';
+
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -27,6 +29,14 @@ type Props = {
   /** Renders the translated `editedLabel` next to the date when true. */
   edited?: boolean;
   editedLabel?: string;
+  /**
+   * When set, `editedLabel` links here (the position's `/history` page)
+   * instead of rendering as plain text. Locale-prefixed, like `menuItems`
+   * hrefs (e.g. `/${locale}/practice/puzzle/${id}/history`). Omit for
+   * content types with no edit-history page (repertoires, chunks) — the
+   * label still renders, just without a link.
+   */
+  editedHref?: string;
   /** Accessible label for the "⋯" menu trigger, e.g. translated "More actions". */
   menuAriaLabel?: string;
   /** Owner/viewer link actions (edit, fork). The "⋯" menu is hidden when empty. */
@@ -54,6 +64,7 @@ export function PositionAuthorHeader({
   createdAt,
   edited = false,
   editedLabel,
+  editedHref,
   menuAriaLabel,
   menuItems = [],
   menu,
@@ -78,7 +89,12 @@ export function PositionAuthorHeader({
                 day: 'numeric',
               })}
             </time>
-            {edited && editedLabel && <span>{editedLabel}</span>}
+            {edited && editedLabel && editedHref && (
+              <Link href={editedHref} className="hover:text-foreground hover:underline">
+                {editedLabel}
+              </Link>
+            )}
+            {edited && editedLabel && !editedHref && <span>{editedLabel}</span>}
           </div>
         </UserAvatar>
         {menu ??

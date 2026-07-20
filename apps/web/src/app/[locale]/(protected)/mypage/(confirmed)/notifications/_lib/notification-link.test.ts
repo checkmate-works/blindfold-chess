@@ -365,7 +365,7 @@ describe('buildNotificationLink — positions', () => {
 });
 
 describe('buildNotificationLink — position edit requests', () => {
-  it('routes a submitted notification to the position edit-requests page (memory)', () => {
+  it('routes a submitted notification to the position suggestions page (memory)', () => {
     expect(
       buildNotificationLink(
         makeNotification({
@@ -376,10 +376,10 @@ describe('buildNotificationLink — position edit requests', () => {
         }),
         {}
       )
-    ).toBe('/practice/position-memory/pos-mem/edit-requests');
+    ).toBe('/practice/position-memory/pos-mem/suggestions');
   });
 
-  it('routes a submitted notification to the puzzle edit-requests page', () => {
+  it('routes a submitted notification to the puzzle suggestions page', () => {
     expect(
       buildNotificationLink(
         makeNotification({
@@ -390,10 +390,10 @@ describe('buildNotificationLink — position edit requests', () => {
         }),
         {}
       )
-    ).toBe('/practice/puzzle/pos-puz/edit-requests');
+    ).toBe('/practice/puzzle/pos-puz/suggestions');
   });
 
-  it('falls back to the memory edit-requests page for a submitted notification missing positionType', () => {
+  it('falls back to the memory suggestions page for a submitted notification missing positionType', () => {
     expect(
       buildNotificationLink(
         makeNotification({
@@ -404,7 +404,7 @@ describe('buildNotificationLink — position edit requests', () => {
         }),
         {}
       )
-    ).toBe('/practice/position-memory/pos-legacy/edit-requests');
+    ).toBe('/practice/position-memory/pos-legacy/suggestions');
   });
 
   it('returns null for a submitted notification with no metadata', () => {
@@ -421,7 +421,7 @@ describe('buildNotificationLink — position edit requests', () => {
     ).toBeNull();
   });
 
-  it('routes an accepted notification to the position detail page (not edit-requests)', () => {
+  it('routes an accepted notification to the position detail page (not suggestions)', () => {
     expect(
       buildNotificationLink(
         makeNotification({

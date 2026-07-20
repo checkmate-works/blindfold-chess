@@ -30,6 +30,7 @@ import type { Locale, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 import { toggleLike } from '../_actions/toggleLike';
 import { PositionListCard } from '../_components/PositionListCard';
 import { PositionEditRequestsView } from '../_components/edit-request/PositionEditRequestsView';
+import { PositionHistoryView } from '../_components/history/PositionHistoryView';
 import { loadForksPageData } from './load-forks-page-data';
 
 /**
@@ -37,7 +38,7 @@ import { loadForksPageData } from './load-forks-page-data';
  *
  * The two features are the same UGC "position" resource stored under different
  * `positions.type` discriminators, so their sub-pages (`new`, `[id]/edit`,
- * `[id]/forks`, `[id]/edit-requests`) are mechanical substitutions of each
+ * `[id]/forks`, `[id]/suggestions`) are mechanical substitutions of each
  * other. Each factory below builds the `generateMetadata` + `Page` pair for
  * one sub-page kind, parameterised by {@link PositionRouteKind}; the concrete
  * `page.tsx` files keep their feature TSDoc and route-segment config exports
@@ -104,7 +105,7 @@ export function createPositionEditRequestsPage(route: PositionRouteKind) {
     return {
       ...generateCanonicalMetadata({
         locale,
-        path: `practice/${slug}/${id}/edit-requests`,
+        path: `practice/${slug}/${id}/suggestions`,
         title,
       }),
       title: resolveTitle(title, locale),
@@ -114,6 +115,47 @@ export function createPositionEditRequestsPage(route: PositionRouteKind) {
   async function Page({ params }: IdProps) {
     const { locale, id } = await params;
     return <PositionEditRequestsView positionId={id} positionType={positionType} locale={locale} />;
+  }
+
+  return { generateMetadata, Page };
+}
+
+/**
+ * Build the `generateMetadata` + `Page` pair for a position's edit-history
+ * page. The body is entirely delegated to the shared `PositionHistoryView`;
+ * only the position type and canonical path vary.
+ */
+export function createPositionHistoryPage(route: PositionRouteKind) {
+  const { slug, positionType } = route;
+
+  async function generateMetadata({ params }: IdProps): Promise<Metadata> {
+    const { locale, id } = await params;
+    const t = await getTranslations({ locale, namespace: 'practice.positionHistory' });
+    const row = await getPositionWithProfileById({ id, type: positionType });
+
+    if (!row) {
+      return { title: resolveTitle('Not Found', locale) };
+    }
+
+    const title = t('pageTitle', { name: row.position.title });
+    return {
+      ...generateCanonicalMetadata({
+        locale,
+        path: `practice/${slug}/${id}/history`,
+        title,
+      }),
+      title: resolveTitle(title, locale),
+      // Noindex: a revision row can preserve an overwritten old title/
+      // description verbatim (e.g. the author fixing a typo or removing
+      // something regrettable), so this page shouldn't be a search result
+      // in its own right the way the detail page is.
+      robots: { index: false, follow: true },
+    };
+  }
+
+  async function Page({ params }: IdProps) {
+    const { locale, id } = await params;
+    return <PositionHistoryView positionId={id} positionType={positionType} locale={locale} />;
   }
 
   return { generateMetadata, Page };

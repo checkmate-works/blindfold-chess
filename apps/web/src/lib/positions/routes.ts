@@ -25,3 +25,18 @@ export function getPositionDetailPath(type: PositionType, id: string): string | 
     }
   }
 }
+
+/**
+ * Resolve the edit-history page path for a position (memory / puzzle only —
+ * `updatePositionEntry` is the only writer of `position_content_revisions`,
+ * and `sequence` positions have no detail page to link the history from
+ * either).
+ */
+export function getPositionHistoryPath(
+  type: Extract<PositionType, 'memory' | 'puzzle'>,
+  id: string
+): string {
+  const detailPath =
+    type === 'memory' ? `/practice/position-memory/${id}` : `/practice/puzzle/${id}`;
+  return `${detailPath}/history`;
+}
