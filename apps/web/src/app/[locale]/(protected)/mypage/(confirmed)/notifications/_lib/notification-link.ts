@@ -174,9 +174,18 @@ export function buildNotificationLink(
     }
     return `/practice/position-memory/${notification.targetId}`;
   }
-  if (notification.type === 'puzzle_forked' && notification.targetId) {
-    // The target is always the newly created puzzle (never the fork
-    // source, whose kind may differ) — no positionType branching needed.
+  if (
+    (notification.type === 'puzzle_forked' || notification.type === 'memory_forked') &&
+    notification.targetId
+  ) {
+    // The target is always the newly created entry (never the fork source,
+    // whose kind may differ). Route via the stored `positionType` so
+    // `memory_forked` lands on the memory URL and `puzzle_forked` on the
+    // puzzle URL; legacy `puzzle_forked` rows always carried `positionType:
+    // 'puzzle'`, so the puzzle fallback preserves their prior behavior.
+    if (isPositionMetadata(notification.metadata)) {
+      return resolvePositionLinkFromMetadata(notification.targetId, notification.metadata);
+    }
     return `/practice/puzzle/${notification.targetId}`;
   }
   if (

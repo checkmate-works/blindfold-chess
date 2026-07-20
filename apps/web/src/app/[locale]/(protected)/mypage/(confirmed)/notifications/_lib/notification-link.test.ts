@@ -377,6 +377,20 @@ describe('buildNotificationLink — positions', () => {
     expect(mk('puzzle')).toBe('/practice/puzzle/new-puzzle-1');
     expect(mk('memory')).toBe('/practice/puzzle/new-puzzle-1');
   });
+
+  it('routes memory_forked to the new position-memory entry', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'memory_forked',
+          targetType: 'position',
+          targetId: 'new-memory-1',
+          metadata: { positionId: 'new-memory-1', positionType: 'memory', sourceType: 'memory' },
+        }),
+        {}
+      )
+    ).toBe('/practice/position-memory/new-memory-1');
+  });
 });
 
 describe('buildNotificationLink — position edit requests', () => {

@@ -7,14 +7,15 @@
  * The full set of `type` string literals emitted across the app (see
  * `notification.ts`, `announcement-notification.ts`, and the various
  * `createNotification({ type: '...' })` call sites) also includes
- * `announcement`, `follow`, `like`, `reply`, `puzzle_forked`, `*_grant`,
- * `achievement_granted`, and `*_edit_request_*`. Those are intentionally
- * left out here: `announcement` carries ToS/billing-relevant notices a user
- * must not be able to silence by accident, and the rest are direct
- * consequences of another user's one-to-one action toward this user (being
- * followed, liked, replied to within a thread, having a puzzle forked from
- * your position) rather than "feed noise" from accounts they follow — muting
- * them would mean missing something addressed to them specifically.
+ * `announcement`, `follow`, `like`, `reply`, `puzzle_forked`,
+ * `memory_forked`, `*_grant`, `achievement_granted`, and `*_edit_request_*`.
+ * Those are intentionally left out here: `announcement` carries ToS/billing-
+ * relevant notices a user must not be able to silence by accident, and the
+ * rest are direct consequences of another user's one-to-one action toward
+ * this user (being followed, liked, replied to within a thread, having a
+ * position forked from you) rather than "feed noise" from accounts they
+ * follow — muting them would mean missing something addressed to them
+ * specifically.
  *
  * `new_comment_on_topic` is the one non-fan-out entry: "someone commented on
  * your content". Since 2026-07 it covers every commentable surface uniformly —

@@ -56,7 +56,7 @@ vi.mock('drizzle-orm', () => ({
   inArray: (a: unknown, b: unknown) => [a, b],
 }));
 
-const { notifyFollowersOfNewPost, notifyPositionForkedIntoPuzzle, createNotification } =
+const { notifyFollowersOfNewPost, notifyPositionForked, createNotification } =
   await import('./notification');
 
 describe('notifyFollowersOfNewPost', () => {
@@ -267,17 +267,18 @@ describe('createNotification', () => {
   });
 });
 
-describe('notifyPositionForkedIntoPuzzle', () => {
+describe('notifyPositionForked', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockMutedRows = [];
   });
 
-  it('notifies the owner with sourceType "puzzle" for a same-type fork', async () => {
-    notifyPositionForkedIntoPuzzle({
+  it('notifies the owner with type "puzzle_forked" for a same-type puzzle fork', async () => {
+    notifyPositionForked({
       actorId: 'forker-1',
       ownerId: 'owner-1',
-      newPuzzleId: 'new-puzzle-1',
+      newPositionId: 'new-puzzle-1',
+      outputType: 'puzzle',
       sourceType: 'puzzle',
     });
 
@@ -300,10 +301,11 @@ describe('notifyPositionForkedIntoPuzzle', () => {
   });
 
   it('notifies the owner with sourceType "memory" for the cross-type Create Puzzle action', async () => {
-    notifyPositionForkedIntoPuzzle({
+    notifyPositionForked({
       actorId: 'forker-1',
       ownerId: 'owner-1',
-      newPuzzleId: 'new-puzzle-2',
+      newPositionId: 'new-puzzle-2',
+      outputType: 'puzzle',
       sourceType: 'memory',
     });
 
@@ -316,14 +318,55 @@ describe('notifyPositionForkedIntoPuzzle', () => {
     );
   });
 
+  it('notifies the owner with type "memory_forked" for a same-type position-memory fork', async () => {
+    notifyPositionForked({
+      actorId: 'forker-1',
+      ownerId: 'owner-1',
+      newPositionId: 'new-memory-1',
+      outputType: 'memory',
+      sourceType: 'memory',
+    });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'memory_forked',
+        targetId: 'new-memory-1',
+        metadata: {
+          positionId: 'new-memory-1',
+          positionType: 'memory',
+          sourceType: 'memory',
+        },
+      })
+    );
+  });
+
   it('is not consulted against mutes (puzzle_forked is a non-mutable type)', async () => {
     mockMutedRows = [{ id: 'mute-1' }];
 
-    notifyPositionForkedIntoPuzzle({
+    notifyPositionForked({
       actorId: 'forker-1',
       ownerId: 'owner-1',
-      newPuzzleId: 'new-puzzle-3',
+      newPositionId: 'new-puzzle-3',
+      outputType: 'puzzle',
       sourceType: 'puzzle',
+    });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).toHaveBeenCalledTimes(1);
+  });
+
+  it('is not consulted against mutes (memory_forked is a non-mutable type)', async () => {
+    mockMutedRows = [{ id: 'mute-1' }];
+
+    notifyPositionForked({
+      actorId: 'forker-1',
+      ownerId: 'owner-1',
+      newPositionId: 'new-memory-3',
+      outputType: 'memory',
+      sourceType: 'memory',
     });
 
     await new Promise((r) => setTimeout(r, 0));

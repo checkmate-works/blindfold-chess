@@ -4,9 +4,9 @@ import {
   getPositionTypeFromMetadata,
   isAnnouncementMetadata,
   isChunkEditRequestMetadata,
+  isPositionForkedMetadata,
   isPositionMetadata,
   isPostMetadata,
-  isPuzzleForkedMetadata,
   isReplyMetadata,
 } from './type-guards';
 
@@ -337,27 +337,33 @@ describe('isChunkEditRequestMetadata', () => {
 });
 
 // ---------------------------------------------------------------------------
-// isPuzzleForkedMetadata
+// isPositionForkedMetadata
 // ---------------------------------------------------------------------------
 
-describe('isPuzzleForkedMetadata', () => {
+describe('isPositionForkedMetadata', () => {
   it('returns true with positionId, positionType, and sourceType all present', () => {
     expect(
-      isPuzzleForkedMetadata({ positionId: 'p-1', positionType: 'puzzle', sourceType: 'memory' })
+      isPositionForkedMetadata({ positionId: 'p-1', positionType: 'puzzle', sourceType: 'memory' })
+    ).toBe(true);
+  });
+
+  it('returns true for a same-type memory fork (positionType and sourceType both "memory")', () => {
+    expect(
+      isPositionForkedMetadata({ positionId: 'p-1', positionType: 'memory', sourceType: 'memory' })
     ).toBe(true);
   });
 
   it('returns false when sourceType is missing (falls back to plain PositionMetadata)', () => {
-    expect(isPuzzleForkedMetadata({ positionId: 'p-1', positionType: 'puzzle' })).toBe(false);
+    expect(isPositionForkedMetadata({ positionId: 'p-1', positionType: 'puzzle' })).toBe(false);
   });
 
   it('returns false when positionId is missing', () => {
-    expect(isPuzzleForkedMetadata({ sourceType: 'puzzle' })).toBe(false);
+    expect(isPositionForkedMetadata({ sourceType: 'puzzle' })).toBe(false);
   });
 
   it('returns false for null / undefined / primitives', () => {
-    expect(isPuzzleForkedMetadata(null)).toBe(false);
-    expect(isPuzzleForkedMetadata(undefined)).toBe(false);
-    expect(isPuzzleForkedMetadata('foo')).toBe(false);
+    expect(isPositionForkedMetadata(null)).toBe(false);
+    expect(isPositionForkedMetadata(undefined)).toBe(false);
+    expect(isPositionForkedMetadata('foo')).toBe(false);
   });
 });
