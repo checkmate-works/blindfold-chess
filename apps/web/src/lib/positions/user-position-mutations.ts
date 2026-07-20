@@ -12,7 +12,7 @@ import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
 import type { DbTx } from '@/lib/db/types';
 import {
   notifyFollowersOfNewPosition,
-  notifyPositionForkedIntoPuzzle,
+  notifyPositionForked,
 } from '@/lib/notifications/notification';
 import { guardOwnership } from '@/lib/ownership-guard';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
@@ -255,16 +255,17 @@ export async function createPositionEntry(params: {
     positionType: config.type,
   });
 
-  // Notify the fork source's owner — puzzles only (a same-type puzzle fork
-  // or the cross-type "Create Puzzle" action from a position-memory entry).
+  // Notify the fork source's owner — a same-type fork (puzzle or memory) or
+  // the cross-type "Create Puzzle" action from a position-memory entry.
   // Self-forks are excluded, mirroring the self-like guard in
   // performEntityToggleLike; an anonymised owner (userId null) is a no-op
   // inside createNotification itself.
-  if (config.type === 'puzzle' && forkSource?.ownerId && forkSource.ownerId !== user.id) {
-    notifyPositionForkedIntoPuzzle({
+  if (forkSource?.ownerId && forkSource.ownerId !== user.id) {
+    notifyPositionForked({
       actorId: user.id,
       ownerId: forkSource.ownerId,
-      newPuzzleId: txResult.position.id,
+      newPositionId: txResult.position.id,
+      outputType: config.type,
       sourceType: forkSource.type === 'memory' ? 'memory' : 'puzzle',
     });
   }

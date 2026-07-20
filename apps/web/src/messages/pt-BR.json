@@ -3707,6 +3707,7 @@
     "newPuzzleMessage": "{actor} criou um novo puzzle",
     "puzzleForkedMessage": "{actor} bifurcou seu puzzle",
     "puzzleCreatedFromPositionMessage": "{actor} criou um puzzle a partir da sua posição",
+    "memoryForkedMessage": "{actor} bifurcou sua memória de posição",
     "achievementSingleMessage": "🏆 Você conquistou {name}",
     "achievementMultipleMessage": "🏆 Você conquistou {count} conquistas",
     "benefitGrantMessage": {

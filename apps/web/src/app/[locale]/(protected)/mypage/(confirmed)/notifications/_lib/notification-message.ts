@@ -9,8 +9,8 @@ import {
   isBenefitGrantMetadata,
   isLikeCoinGrantMetadata,
   isPointGrantMetadata,
+  isPositionForkedMetadata,
   isPositionMetadata,
-  isPuzzleForkedMetadata,
   isRankGrantMetadata,
 } from './type-guards';
 
@@ -107,12 +107,17 @@ export function buildNotificationMessage(
       // latter, where "forked your puzzle" matches the existing Fork
       // action's own vocabulary.
       if (
-        isPuzzleForkedMetadata(notification.metadata) &&
+        isPositionForkedMetadata(notification.metadata) &&
         notification.metadata.sourceType === 'memory'
       ) {
         return t('puzzleCreatedFromPositionMessage', { actor: actorName });
       }
       return t('puzzleForkedMessage', { actor: actorName });
+    case 'memory_forked':
+      // Position-memory entries only accept a memory-type fork source
+      // (see `POSITION_FORK_SOURCE_TYPES`), so unlike `puzzle_forked` there
+      // is no cross-type wording to branch on here.
+      return t('memoryForkedMessage', { actor: actorName });
     case 'announcement':
       if (isAnnouncementMetadata(notification.metadata)) {
         return t('announcementMessage', { title: truncateContent(notification.metadata.title) });

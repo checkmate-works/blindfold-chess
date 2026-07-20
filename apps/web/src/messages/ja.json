@@ -3707,6 +3707,7 @@
     "newPuzzleMessage": "{actor} がパズルを作成しました",
     "puzzleForkedMessage": "{actor} があなたのパズルをフォークしました",
     "puzzleCreatedFromPositionMessage": "{actor} があなたのポジションからパズルを作成しました",
+    "memoryForkedMessage": "{actor} があなたのポジション記憶をフォークしました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
     "benefitGrantMessage": {

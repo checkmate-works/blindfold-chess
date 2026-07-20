@@ -162,30 +162,36 @@ export function notifyFollowersOfNewPosition(params: {
 }
 
 /**
- * Notify a position's owner that another user created a puzzle from it —
- * either a same-type fork (`sourceType: 'puzzle'`) or the cross-type
- * "Create Puzzle" action from a position-memory entry
- * (`sourceType: 'memory'`). Direct 1:1 notification to the source's owner,
- * not a follower broadcast (unlike `notifyFollowersOfNewPosition` above).
- * Self-forks are the caller's responsibility to filter out — mirrors the
- * `like` notification's self-like guard in `performEntityToggleLike`; this
- * function does not re-check ownership.
+ * Notify a position's owner that another user forked it into a new entry —
+ * `outputType: 'puzzle'` covers a same-type puzzle fork (`sourceType:
+ * 'puzzle'`) as well as the cross-type "Create Puzzle" action from a
+ * position-memory entry (`sourceType: 'memory'`); `outputType: 'memory'`
+ * covers a same-type position-memory fork. The notification `type` is
+ * derived from `outputType` (`puzzle_forked` / `memory_forked`) rather than
+ * a single shared type, so the two remain distinguishable in the
+ * notifications list and each keeps its own message wording. Direct 1:1
+ * notification to the source's owner, not a follower broadcast (unlike
+ * `notifyFollowersOfNewPosition` above). Self-forks are the caller's
+ * responsibility to filter out — mirrors the `like` notification's
+ * self-like guard in `performEntityToggleLike`; this function does not
+ * re-check ownership.
  */
-export function notifyPositionForkedIntoPuzzle(params: {
+export function notifyPositionForked(params: {
   actorId: string;
   ownerId: string;
-  newPuzzleId: string;
+  newPositionId: string;
+  outputType: 'memory' | 'puzzle';
   sourceType: 'memory' | 'puzzle';
 }): void {
   createNotification({
     userId: params.ownerId,
     actorId: params.actorId,
-    type: 'puzzle_forked',
+    type: params.outputType === 'puzzle' ? 'puzzle_forked' : 'memory_forked',
     targetType: 'position',
-    targetId: params.newPuzzleId,
+    targetId: params.newPositionId,
     metadata: {
-      positionId: params.newPuzzleId,
-      positionType: 'puzzle',
+      positionId: params.newPositionId,
+      positionType: params.outputType,
       sourceType: params.sourceType,
     },
   });
