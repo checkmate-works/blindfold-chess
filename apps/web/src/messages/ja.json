@@ -1307,7 +1307,8 @@
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
-        "usefulSection": "解答に役立つパターン ({count})"
+        "usefulSection": "解答に役立つパターン ({count})",
+        "createPuzzleFromHere": "この局面からパズルを作る"
       },
       "forksList": {
         "title": "フォーク一覧",
@@ -1444,7 +1445,9 @@
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
-        "usefulSection": "解答に役立つパターン ({count})"
+        "usefulSection": "解答に役立つパターン ({count})",
+        "createdFromPositionMemory": "作成元のポジション記憶:",
+        "createdFromDeletedPositionMemory": "作成元のポジションは削除されています"
       },
       "forksList": {
         "title": "フォーク一覧",

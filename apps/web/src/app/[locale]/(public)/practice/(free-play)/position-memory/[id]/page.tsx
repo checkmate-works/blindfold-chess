@@ -140,6 +140,14 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         forkedFrom: t('detail.forkedFrom'),
         forkedFromDeleted: t('detail.forkedFromDeleted'),
         forksSection: (count) => t('detail.forksSection', { count }),
+        // Unreachable here: a position-memory entry's forkedFromId can only
+        // point at another position-memory row (POSITION_FORK_SOURCE_TYPES
+        // is memory-only in @/lib/positions/fork), so forkParent.type never
+        // differs from this page's own kind. Required by the shared prop
+        // type; reuse the same strings since ForkProvenanceNote never
+        // selects them on this page.
+        crossTypeFrom: t('detail.forkedFrom'),
+        crossTypeFromDeleted: t('detail.forkedFromDeleted'),
       }}
     />
   );
