@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
@@ -26,21 +28,31 @@ const LIKED_CLASS =
  * the small heart icon on the detail page, placed right above the primary
  * action buttons where the user's attention already is right after solving.
  *
- * Visibility is locked to the *initial* like state (the server-computed
- * `initialLikedByMe`), not the live toggled state: once shown, tapping it
- * flips between liked/unliked like a normal toggle instead of vanishing the
- * instant it's pressed (that read as broken). Only a puzzle the viewer had
+ * Visibility is locked to the like state at mount time, not the live
+ * `initialLikedByMe` prop: once shown, tapping it flips between
+ * liked/unliked like a normal toggle instead of vanishing the instant
+ * it's pressed (that read as broken). Only a puzzle the viewer had
  * already liked before arriving stays hidden.
+ *
+ * `useState` rather than reading the prop directly matters here — clicking
+ * the button invokes a Server Action, and Next.js auto-refreshes this
+ * `dynamic = 'force-dynamic'` route's server-rendered data afterward, which
+ * re-passes `initialLikedByMe` down as `true` on the next render. Reading
+ * the prop live would re-trigger the hide on that refresh, reproducing the
+ * exact "disappears right after I click it" bug this component exists to
+ * avoid. `useState`'s initializer only runs once, on mount, so it stays
+ * pinned to whatever the puzzle's like state was when the page first loaded.
  */
 export function PuzzleResultLikeCta({ initialLikeCount, initialLikedByMe, onToggle }: Props) {
   const t = useTranslations('practice.puzzle.result');
+  const [wasLikedOnLoad] = useState(initialLikedByMe);
   const { liked, isPending, toggle, isModalOpen, closeModal } = useLikeToggle({
     initialLikeCount,
     initialLikedByMe,
     onToggle,
   });
 
-  if (initialLikedByMe) return null;
+  if (wasLikedOnLoad) return null;
 
   return (
     <>

@@ -74,6 +74,32 @@ describe('PuzzleResultLikeCta', () => {
     expect(screen.queryByText('likeCta')).toBeNull();
   });
 
+  it('stays visible when a server refresh re-passes initialLikedByMe=true after the click', () => {
+    // Reproduces the actual bug: clicking invokes a Server Action, and
+    // Next.js auto-refreshes this `force-dynamic` route afterward, re-
+    // passing `initialLikedByMe` down as `true` on the next render (the DB
+    // write already landed). The component must not re-derive its hidden
+    // state from that live prop — only from its value at first mount.
+    useLikeToggleMock.mockReturnValue({
+      liked: true,
+      isPending: false,
+      toggle: vi.fn(),
+      isModalOpen: false,
+      closeModal: vi.fn(),
+    });
+
+    const { rerender } = render(
+      <PuzzleResultLikeCta initialLikeCount={0} initialLikedByMe={false} onToggle={vi.fn()} />
+    );
+    expect(screen.getByText('likedCta')).toBeTruthy();
+
+    rerender(
+      <PuzzleResultLikeCta initialLikeCount={1} initialLikedByMe={true} onToggle={vi.fn()} />
+    );
+
+    expect(screen.getByText('likedCta')).toBeTruthy();
+  });
+
   it('calls toggle() when clicked', () => {
     const toggle = vi.fn();
     useLikeToggleMock.mockReturnValue({
