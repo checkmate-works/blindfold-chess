@@ -16,6 +16,7 @@ import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_action
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { Attempt } from '../_lib/puzzle-match';
@@ -27,6 +28,11 @@ import {
 } from './AttemptHistoryPanel';
 import { PuzzleResultLikeCta } from './PuzzleResultLikeCta';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
+
+type ProfileLike = {
+  username?: string | null;
+  avatarUrl?: string | null;
+} | null;
 
 type Props = {
   locale: Locale;
@@ -43,6 +49,10 @@ type Props = {
   expInfo: ExpInfo | null;
   initialLikeCount: number;
   initialLikedByMe: boolean;
+  /** Puzzle author's profile. May be null for anonymous / deleted users. */
+  profile: ProfileLike;
+  /** Pre-resolved display name (use `resolveAuthorName(profile, ...)` at the call site). */
+  displayName: string;
 };
 
 export function PuzzleResultClient({
@@ -54,8 +64,11 @@ export function PuzzleResultClient({
   expInfo,
   initialLikeCount,
   initialLikedByMe,
+  profile,
+  displayName,
 }: Props) {
   const t = useTranslations('practice.puzzle.result');
+  const tPuzzle = useTranslations('practice.puzzle');
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
   const [peekCount, setPeekCount] = useState(0);
@@ -158,13 +171,30 @@ export function PuzzleResultClient({
       <SignUpBanner locale={locale} />
 
       {/* Like nudge — sits directly above the action buttons, right where
-          the user's attention already is after solving. Hides itself once
-          liked, so it never lingers as a stale ask. */}
+          the user's attention already is after solving. Only shown for a
+          puzzle the viewer hadn't already liked when the page loaded; once
+          shown it toggles in place instead of disappearing on click. */}
       <PuzzleResultLikeCta
         initialLikeCount={initialLikeCount}
         initialLikedByMe={initialLikedByMe}
         onToggle={() => toggleLike(positionId, locale)}
       />
+
+      {/* Single-line "Created by [avatar] name" attribution, right below the
+          like CTA — the pre-panel inline style, not the SNS-style
+          PositionAuthorHeader panel (that reserves space for a "⋯" menu
+          this screen never has, so it reads as unbalanced empty space). */}
+      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+        <span>{tPuzzle('detail.createdBy')}</span>
+        <UserAvatar
+          profileHref={profile?.username ? `/u/${profile.username}` : null}
+          avatarUrl={profile?.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          size="xs"
+          layout="inline"
+        />
+      </div>
 
       {/* (D) Action buttons */}
       <div className="flex flex-col gap-3 pt-4">
