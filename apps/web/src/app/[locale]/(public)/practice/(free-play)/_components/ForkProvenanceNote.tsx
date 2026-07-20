@@ -1,6 +1,12 @@
 import { Link } from '@/i18n/routing';
 import { FiGitBranch } from 'react-icons/fi';
 
+/** Route segment for a position kind, used to build detail links. */
+const KIND_PATH_PREFIX = {
+  memory: 'practice/position-memory',
+  puzzle: 'practice/puzzle',
+} as const;
+
 /**
  * Two-segment provenance line shown under the position-detail title:
  * `"forked from <parent>" · "<N> forks"`. Each segment is independently
@@ -12,6 +18,16 @@ import { FiGitBranch } from 'react-icons/fi';
  * `forks` page and the parent's detail page both follow
  * `/practice/{kind}/...`). The kind is the only thing the two pages
  * needed to differ on.
+ *
+ * @design Cross-type provenance (a puzzle created from a position-memory
+ * source) The parent's detail link is built from `forkParent.type`, not
+ * from this page's own `pathPrefix` — a puzzle's `forkedFromId` can now
+ * point at a position-memory row (see `@/lib/positions/fork`'s
+ * `PUZZLE_FORK_SOURCE_TYPES`), and routing it through `pathPrefix` would
+ * 404. When the parent's kind differs from the current page's kind, the
+ * `crossType*` labels are used instead of `forkedFrom*` — the product
+ * deliberately avoids the word "fork" for this relationship (it reads as
+ * "created from a Position Memory entry", not "forked").
  */
 export function ForkProvenanceNote({
   positionId,
@@ -23,35 +39,45 @@ export function ForkProvenanceNote({
 }: {
   positionId: string;
   forkedFromId: string | null;
-  forkParent: { id: string; title: string; deletedAt: Date | null } | null;
+  forkParent: {
+    id: string;
+    title: string;
+    type: 'memory' | 'puzzle';
+    deletedAt: Date | null;
+  } | null;
   forkCount: number;
   /**
-   * Route segment for this position kind, used to build the parent's
-   * detail link and the `forks` listing link. Either
-   * `practice/position-memory` or `practice/puzzle`.
+   * Route segment for this position kind, used to build the `forks`
+   * listing link (always same-kind) and the parent's detail link when the
+   * parent's own kind matches (the common case).
    */
   pathPrefix: 'practice/position-memory' | 'practice/puzzle';
   labels: {
     forkedFrom: string;
     forkedFromDeleted: string;
     forksSection: (count: number) => string;
+    /** Used instead of `forkedFrom`/`forkedFromDeleted` when the parent is a different kind. */
+    crossTypeFrom: string;
+    crossTypeFromDeleted: string;
   };
 }) {
+  const isCrossType = forkParent !== null && KIND_PATH_PREFIX[forkParent.type] !== pathPrefix;
+
   const forkedFromSegment = forkedFromId ? (
     <span className="inline-flex items-center gap-1">
       <FiGitBranch className="h-3 w-3" aria-hidden />
       {forkParent && forkParent.deletedAt === null ? (
         <>
-          {labels.forkedFrom}{' '}
+          {isCrossType ? labels.crossTypeFrom : labels.forkedFrom}{' '}
           <Link
-            href={`/${pathPrefix}/${forkParent.id}`}
+            href={`/${KIND_PATH_PREFIX[forkParent.type]}/${forkParent.id}`}
             className="underline hover:text-foreground"
           >
             {forkParent.title}
           </Link>
         </>
       ) : (
-        <span>{labels.forkedFromDeleted}</span>
+        <span>{isCrossType ? labels.crossTypeFromDeleted : labels.forkedFromDeleted}</span>
       )}
     </span>
   ) : null;

@@ -2,6 +2,7 @@ import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { countPositions, getPositionLineageMetaById } from '@/lib/positions/queries';
+import { parsePositionType } from '@/lib/positions/types';
 import { getLinkedThemesForPosition } from '@/lib/themes/queries';
 
 import { COMMENT_TREE_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
@@ -82,7 +83,7 @@ export async function loadPositionDetail({
     relatedThemes,
     commentCount,
     commentsPage,
-    forkParent,
+    forkParentRow,
     forkCount,
   ] = await Promise.all([
     getPositionLikeMeta(position.id, currentUserId),
@@ -102,6 +103,17 @@ export async function loadPositionDetail({
     // page handles the listing (with pagination).
     countPositions({ type: kind, forkedFromId: position.id }),
   ]);
+
+  // Narrow the raw `positions.type` varchar to the union ForkProvenanceNote
+  // needs to route the parent's link. A parent whose type doesn't parse to
+  // 'memory' | 'puzzle' (not expected in practice — 'sequence' has no
+  // detail route yet) is treated the same as "not found": there's no valid
+  // link to build for it.
+  const forkParentType = forkParentRow ? parsePositionType(forkParentRow.type) : null;
+  const forkParent =
+    forkParentRow && (forkParentType === 'memory' || forkParentType === 'puzzle')
+      ? { ...forkParentRow, type: forkParentType }
+      : null;
 
   // Self-forking is allowed (owners can derive a variation of their own work),
   // so ownership no longer gates the fork entry point — only auth state and the

@@ -1307,7 +1307,8 @@
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
-        "usefulSection": "解答に役立つパターン ({count})"
+        "usefulSection": "解答に役立つパターン ({count})",
+        "createPuzzleFromHere": "この局面からパズルを作る"
       },
       "forksList": {
         "title": "フォーク一覧",
@@ -1390,6 +1391,7 @@
         "clearBoardConfirmCancel": "キャンセル",
         "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。",
         "forkBanner": "「{sourceTitle}」からフォーク中",
+        "createdFromPositionMemoryBanner": "ポジション記憶「{sourceTitle}」からパズルを作成中",
         "continueToSolution": "正解手の入力に進む",
         "solutionPageTitle": "正解手",
         "backToPosition": "局面の編集に戻る",
@@ -1444,7 +1446,9 @@
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
-        "usefulSection": "解答に役立つパターン ({count})"
+        "usefulSection": "解答に役立つパターン ({count})",
+        "createdFromPositionMemory": "作成元:",
+        "createdFromDeletedPositionMemory": "作成元のポジションは削除されています"
       },
       "forksList": {
         "title": "フォーク一覧",
@@ -3701,6 +3705,8 @@
     "newGameMessage": "{actor} さんが対局を公開しました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
+    "puzzleForkedMessage": "{actor} があなたのパズルをフォークしました",
+    "puzzleCreatedFromPositionMessage": "{actor} があなたのポジションからパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
     "benefitGrantMessage": {

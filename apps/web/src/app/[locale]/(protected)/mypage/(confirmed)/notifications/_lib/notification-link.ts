@@ -174,6 +174,11 @@ export function buildNotificationLink(
     }
     return `/practice/position-memory/${notification.targetId}`;
   }
+  if (notification.type === 'puzzle_forked' && notification.targetId) {
+    // The target is always the newly created puzzle (never the fork
+    // source, whose kind may differ) — no positionType branching needed.
+    return `/practice/puzzle/${notification.targetId}`;
+  }
   if (
     (notification.type === 'like' ||
       notification.type === 'reply' ||

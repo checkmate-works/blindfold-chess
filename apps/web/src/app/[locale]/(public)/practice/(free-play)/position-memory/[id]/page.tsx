@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { FaPlusCircle } from 'react-icons/fa';
+import { FaPlusCircle, FaPuzzlePiece } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -140,6 +140,14 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         forkedFrom: t('detail.forkedFrom'),
         forkedFromDeleted: t('detail.forkedFromDeleted'),
         forksSection: (count) => t('detail.forksSection', { count }),
+        // Unreachable here: a position-memory entry's forkedFromId can only
+        // point at another position-memory row (POSITION_FORK_SOURCE_TYPES
+        // is memory-only in @/lib/positions/fork), so forkParent.type never
+        // differs from this page's own kind. Required by the shared prop
+        // type; reuse the same strings since ForkProvenanceNote never
+        // selects them on this page.
+        crossTypeFrom: t('detail.forkedFrom'),
+        crossTypeFromDeleted: t('detail.forkedFromDeleted'),
       }}
     />
   );
@@ -162,6 +170,12 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             label: t('detail.forkAction'),
             href: `/${locale}/practice/position-memory/new?from=${position.id}`,
             icon: <FiGitBranch className="h-4 w-4" aria-hidden />,
+          },
+          {
+            key: 'createPuzzle',
+            label: t('detail.createPuzzleFromHere'),
+            href: `/${locale}/practice/puzzle/new?from=${position.id}`,
+            icon: <FaPuzzlePiece className="h-4 w-4" aria-hidden />,
           },
         ]
       : []),

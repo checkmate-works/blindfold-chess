@@ -1307,7 +1307,8 @@
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted position",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
-        "usefulSection": "Useful patterns for solving ({count})"
+        "usefulSection": "Useful patterns for solving ({count})",
+        "createPuzzleFromHere": "Create Puzzle from here"
       },
       "forksList": {
         "title": "Forks",
@@ -1390,6 +1391,7 @@
         "clearBoardConfirmCancel": "Cancel",
         "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again.",
         "forkBanner": "Forking from \"{sourceTitle}\"",
+        "createdFromPositionMemoryBanner": "Creating a puzzle from Position Memory entry \"{sourceTitle}\"",
         "continueToSolution": "Continue to solution moves",
         "solutionPageTitle": "Solution moves",
         "backToPosition": "Back to position",
@@ -1444,7 +1446,9 @@
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted puzzle",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
-        "usefulSection": "Useful patterns for solving ({count})"
+        "usefulSection": "Useful patterns for solving ({count})",
+        "createdFromPositionMemory": "Created from:",
+        "createdFromDeletedPositionMemory": "Created from a deleted position"
       },
       "forksList": {
         "title": "Forks",
@@ -3701,6 +3705,8 @@
     "newGameMessage": "{actor} shared a game",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
+    "puzzleForkedMessage": "{actor} forked your puzzle",
+    "puzzleCreatedFromPositionMessage": "{actor} created a puzzle from your position",
     "achievementSingleMessage": "🏆 You earned {name}",
     "achievementMultipleMessage": "🏆 You earned {count} achievements",
     "benefitGrantMessage": {

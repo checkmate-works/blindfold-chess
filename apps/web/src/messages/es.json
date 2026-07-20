@@ -1307,7 +1307,8 @@
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de una posición eliminada",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
-        "usefulSection": "Patrones útiles para resolver ({count})"
+        "usefulSection": "Patrones útiles para resolver ({count})",
+        "createPuzzleFromHere": "Crear Puzzle desde aquí"
       },
       "forksList": {
         "title": "Bifurcaciones",
@@ -1390,6 +1391,7 @@
         "clearBoardConfirmCancel": "Cancelar",
         "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo.",
         "forkBanner": "Bifurcando desde «{sourceTitle}»",
+        "createdFromPositionMemoryBanner": "Creando un puzzle desde la entrada de Memoria de Posiciones «{sourceTitle}»",
         "continueToSolution": "Continuar a los movimientos de la solución",
         "solutionPageTitle": "Movimientos de la solución",
         "backToPosition": "Volver a la posición",
@@ -1444,7 +1446,9 @@
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de un puzzle eliminado",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
-        "usefulSection": "Patrones útiles para resolver ({count})"
+        "usefulSection": "Patrones útiles para resolver ({count})",
+        "createdFromPositionMemory": "Creado a partir de:",
+        "createdFromDeletedPositionMemory": "Creado a partir de una posición eliminada"
       },
       "forksList": {
         "title": "Bifurcaciones",
@@ -3701,6 +3705,8 @@
     "newGameMessage": "{actor} compartió una partida",
     "newPositionMemoryMessage": "{actor} creó un nuevo problema de memoria de posición",
     "newPuzzleMessage": "{actor} creó un nuevo puzzle",
+    "puzzleForkedMessage": "{actor} bifurcó tu puzzle",
+    "puzzleCreatedFromPositionMessage": "{actor} creó un puzzle a partir de tu posición",
     "achievementSingleMessage": "🏆 Obtuviste {name}",
     "achievementMultipleMessage": "🏆 Obtuviste {count} logros",
     "benefitGrantMessage": {

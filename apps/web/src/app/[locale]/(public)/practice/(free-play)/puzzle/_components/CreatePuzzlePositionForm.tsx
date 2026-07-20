@@ -40,6 +40,10 @@ import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 export type PuzzleForkSeed = {
   sourceId: string;
   sourceTitle: string;
+  /** The source row's own kind — 'memory' when this puzzle was created from
+   * a position-memory entry ("Create puzzle from here"), which the banner
+   * uses to avoid the word "fork" for that relationship. */
+  sourceType: 'puzzle' | 'memory';
   fen: string;
   title: string;
   description: string;
@@ -285,7 +289,11 @@ export function CreatePuzzlePositionForm({
             className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground"
           >
             <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
-            <span>{t('forkBanner', { sourceTitle: forkSeed.sourceTitle })}</span>
+            <span>
+              {forkSeed.sourceType === 'memory'
+                ? t('createdFromPositionMemoryBanner', { sourceTitle: forkSeed.sourceTitle })
+                : t('forkBanner', { sourceTitle: forkSeed.sourceTitle })}
+            </span>
           </div>
         )}
 

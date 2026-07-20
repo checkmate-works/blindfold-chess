@@ -147,6 +147,8 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         forkedFrom: t('detail.forkedFrom'),
         forkedFromDeleted: t('detail.forkedFromDeleted'),
         forksSection: (count) => t('detail.forksSection', { count }),
+        crossTypeFrom: t('detail.createdFromPositionMemory'),
+        crossTypeFromDeleted: t('detail.createdFromDeletedPositionMemory'),
       }}
     />
   );

@@ -1307,7 +1307,8 @@
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de uma posição excluída",
         "forksSection": "{count, plural, one {# bifurcação} other {# bifurcações}}",
-        "usefulSection": "Padrões úteis para resolver ({count})"
+        "usefulSection": "Padrões úteis para resolver ({count})",
+        "createPuzzleFromHere": "Criar Puzzle a partir daqui"
       },
       "forksList": {
         "title": "Bifurcações",
@@ -1390,6 +1391,7 @@
         "clearBoardConfirmCancel": "Cancelar",
         "draftWriteFailed": "Não foi possível salvar o rascunho. Verifique se o seu navegador permite armazenamento e tente novamente.",
         "forkBanner": "Bifurcando de \"{sourceTitle}\"",
+        "createdFromPositionMemoryBanner": "Criando um puzzle a partir da entrada de Memória de Posições \"{sourceTitle}\"",
         "continueToSolution": "Continuar para os lances da solução",
         "solutionPageTitle": "Lances da solução",
         "backToPosition": "Voltar para a posição",
@@ -1444,7 +1446,9 @@
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de um puzzle excluído",
         "forksSection": "{count, plural, one {# bifurcação} other {# bifurcações}}",
-        "usefulSection": "Padrões úteis para resolver ({count})"
+        "usefulSection": "Padrões úteis para resolver ({count})",
+        "createdFromPositionMemory": "Criado a partir de:",
+        "createdFromDeletedPositionMemory": "Criado a partir de uma posição excluída"
       },
       "forksList": {
         "title": "Bifurcações",
@@ -3701,6 +3705,8 @@
     "newGameMessage": "{actor} compartilhou uma partida",
     "newPositionMemoryMessage": "{actor} criou um novo problema de memória de posição",
     "newPuzzleMessage": "{actor} criou um novo puzzle",
+    "puzzleForkedMessage": "{actor} bifurcou seu puzzle",
+    "puzzleCreatedFromPositionMessage": "{actor} criou um puzzle a partir da sua posição",
     "achievementSingleMessage": "🏆 Você conquistou {name}",
     "achievementMultipleMessage": "🏆 Você conquistou {count} conquistas",
     "benefitGrantMessage": {

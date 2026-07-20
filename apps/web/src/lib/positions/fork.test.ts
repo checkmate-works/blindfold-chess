@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { validateForkSource } from './fork';
+import { POSITION_FORK_SOURCE_TYPES, PUZZLE_FORK_SOURCE_TYPES, validateForkSource } from './fork';
 
 const mockLimit = vi.fn();
 
@@ -39,7 +39,7 @@ describe('validateForkSource', () => {
     const result = await validateForkSource({
       forkedFromId: 'not-a-uuid',
       currentUserId: VALID_UUID_A,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({ ok: false, reason: 'invalid_uuid' });
     expect(mockLimit).not.toHaveBeenCalled();
@@ -50,7 +50,7 @@ describe('validateForkSource', () => {
     const result = await validateForkSource({
       forkedFromId: VALID_UUID_A,
       currentUserId: VALID_UUID_B,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({ ok: false, reason: 'not_found' });
   });
@@ -61,17 +61,18 @@ describe('validateForkSource', () => {
         id: VALID_UUID_A,
         userId: VALID_UUID_B,
         title: 'My Puzzle',
+        type: 'puzzle',
         forksDisabledAt: null,
       },
     ]);
     const result = await validateForkSource({
       forkedFromId: VALID_UUID_A,
       currentUserId: VALID_UUID_B,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({
       ok: true,
-      source: { id: VALID_UUID_A, userId: VALID_UUID_B, title: 'My Puzzle' },
+      source: { id: VALID_UUID_A, userId: VALID_UUID_B, title: 'My Puzzle', type: 'puzzle' },
     });
   });
 
@@ -87,7 +88,7 @@ describe('validateForkSource', () => {
     const result = await validateForkSource({
       forkedFromId: VALID_UUID_A,
       currentUserId: VALID_UUID_C,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({ ok: false, reason: 'forks_disabled' });
   });
@@ -98,13 +99,14 @@ describe('validateForkSource', () => {
         id: VALID_UUID_A,
         userId: VALID_UUID_B,
         title: 'Forkable Puzzle',
+        type: 'puzzle',
         forksDisabledAt: null,
       },
     ]);
     const result = await validateForkSource({
       forkedFromId: VALID_UUID_A,
       currentUserId: VALID_UUID_C,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({
       ok: true,
@@ -112,7 +114,36 @@ describe('validateForkSource', () => {
         id: VALID_UUID_A,
         userId: VALID_UUID_B,
         title: 'Forkable Puzzle',
+        type: 'puzzle',
       },
     });
+  });
+
+  it('returns the source type on the result so callers can tell a cross-type source apart', async () => {
+    mockLimit.mockResolvedValueOnce([
+      {
+        id: VALID_UUID_A,
+        userId: VALID_UUID_B,
+        title: 'Memory position used as a puzzle source',
+        type: 'memory',
+        forksDisabledAt: null,
+      },
+    ]);
+    const result = await validateForkSource({
+      forkedFromId: VALID_UUID_A,
+      currentUserId: VALID_UUID_C,
+      sourceTypes: PUZZLE_FORK_SOURCE_TYPES,
+    });
+    expect(result).toMatchObject({ ok: true, source: { type: 'memory' } });
+  });
+});
+
+describe('source-type allowlists', () => {
+  it('lets a puzzle be created from either a puzzle or a position-memory source', () => {
+    expect(PUZZLE_FORK_SOURCE_TYPES).toEqual(['puzzle', 'memory']);
+  });
+
+  it('lets a position-memory entry be created from a position-memory source only (no reverse path)', () => {
+    expect(POSITION_FORK_SOURCE_TYPES).toEqual(['memory']);
   });
 });
