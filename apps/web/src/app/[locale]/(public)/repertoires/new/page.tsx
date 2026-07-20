@@ -1,6 +1,9 @@
 /**
- * Repertoires (型) — import page. Paste a PGN-with-variations to create a new
- * repertoire; it is decomposed into one line per variation.
+ * Repertoires (型) — creation page. Play moves on a board or paste a
+ * PGN-with-variations to create a new repertoire; it is decomposed into one
+ * line per variation. UI copy says "create/new" — "import" is only how PGN
+ * pasted from another platform gets in, not how the feature is framed to
+ * users (see `RepertoireImportForm`, whose internal naming stays as-is).
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';

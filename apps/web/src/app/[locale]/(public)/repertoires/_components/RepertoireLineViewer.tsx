@@ -12,6 +12,8 @@ import type { Side } from '@blindfold-chess/types';
 import { FaPlus } from 'react-icons/fa';
 import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
 
+import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
+
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
@@ -200,7 +202,8 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
                   <span
                     className={`truncate text-sm text-foreground ${isSelected ? 'font-medium' : ''}`}
                   >
-                    {l.name ?? t('detail.lineFallback', { n: i + 1 })}
+                    {l.name ??
+                      lineFallbackTitle(l.formatted, t('detail.lineFallback', { n: i + 1 }))}
                   </span>
                   <HiChevronRight
                     aria-hidden

@@ -26,11 +26,11 @@
         "description": "Um kata é uma sequência preestabelecida que você repete até virar automático — a ideia vem das artes marciais, aplicada aqui ao xadrez: linhas de abertura, padrões de mate e sequências que valem a pena memorizar. Esta página lista todos os katas compartilhados pela comunidade, para você explorar e estudar o que outros jogadores prepararam."
       },
       "import": {
-        "title": "Importe seu próprio kata",
-        "description": "Tem uma abertura que quer treinar? Qualquer pessoa logada pode importar uma por este botão — cole um PGN com variantes (uma exportação de estudo do Lichess ou do Chess.com funciona como está) e ele vira um kata que você pode revisar e compartilhar."
+        "title": "Crie seu próprio kata",
+        "description": "Tem uma abertura que quer treinar? Qualquer pessoa logada pode criar uma por este botão — jogue os lances em um tabuleiro ou cole um PGN com variantes (uma exportação de estudo do Lichess ou do Chess.com funciona como está) e ele vira um kata que você pode revisar e compartilhar."
       }
     },
-    "importCta": "Importar",
+    "importCta": "Criar kata",
     "empty": "Nenhum kata registrado ainda",
     "summary": "{lines} linhas · {moves} lances",
     "like": "Curtir",
@@ -53,8 +53,8 @@
       "pgnLabel": "PGN",
       "pgnHelp": "Cole um PGN com variantes — exportações de estudos do Lichess ou do Chess.com funcionam como estão.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
-      "submit": "Importar linha",
-      "submitting": "Importando…",
+      "submit": "Criar kata",
+      "submitting": "Criando…",
       "inputModePgn": "PGN",
       "inputModeBoard": "Tabuleiro",
       "movesLabel": "Lances",
@@ -72,8 +72,8 @@
       "help": "Jogue os lances dos dois lados. Volte a um lance anterior e jogue outro diferente para adicionar uma alternativa — cada ramificação vira uma linha própria na importação."
     },
     "new": {
-      "title": "Importar uma linha",
-      "sectionTitle": "Detalhes da linha"
+      "title": "Novo kata",
+      "sectionTitle": "Detalhes do kata"
     },
     "edit": {
       "editAction": "Editar",

@@ -16,8 +16,8 @@
  * polymorphic infrastructure (`targetType` / `topicType` = `'repertoire'`).
  *
  * @flow
- * 1. The "Import" CTA (signed-in only) sits at the top and routes to
- *    /repertoires/new to paste a PGN.
+ * 1. The "Create Kata" CTA (signed-in only) sits at the top and routes to
+ *    /repertoires/new to play moves on a board or paste a PGN.
  * 2. A signed-in user with `building` (unpublished) repertoires sees them in
  *    their own section — the only listing surface they have, since building
  *    repertoires are excluded from every public/community query below.

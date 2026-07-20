@@ -26,11 +26,11 @@
         "description": "A kata is a pre-arranged sequence you rehearse until it feels automatic — the idea comes from martial arts, applied here to chess: opening lines, mate patterns, and sequences worth memorizing. This page lists every kata shared by the community, so you can browse and study what other players have prepared."
       },
       "import": {
-        "title": "Import your own kata",
-        "description": "Have an opening you want to drill? Anyone signed in can import one from this button — paste a PGN with variations (a Lichess study or Chess.com export works as-is) and it becomes a kata you can review and share."
+        "title": "Create your own kata",
+        "description": "Have an opening you want to drill? Anyone signed in can create one from this button — play the moves on a board or paste a PGN with variations (a Lichess study or Chess.com export works as-is) and it becomes a kata you can review and share."
       }
     },
-    "importCta": "Import",
+    "importCta": "Create Kata",
     "empty": "No kata registered yet",
     "summary": "{lines} lines · {moves} moves",
     "like": "Like",
@@ -53,8 +53,8 @@
       "pgnLabel": "PGN",
       "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
-      "submit": "Import line",
-      "submitting": "Importing…",
+      "submit": "Create Kata",
+      "submitting": "Creating…",
       "inputModePgn": "PGN",
       "inputModeBoard": "Board",
       "movesLabel": "Moves",
@@ -72,8 +72,8 @@
       "help": "Play the moves for both sides. Go back to an earlier move and play a different one to add an alternative — each branch becomes its own line on import."
     },
     "new": {
-      "title": "Import a line",
-      "sectionTitle": "Line details"
+      "title": "New Kata",
+      "sectionTitle": "Kata details"
     },
     "edit": {
       "editAction": "Edit",
