@@ -1,27 +1,12 @@
-import { and, count, eq, isNull } from 'drizzle-orm';
-
-import { db, profiles, userFollows } from '@/lib/db';
-import { type UserAchievementRow, getUserAchievements } from '@/lib/db/achievement-queries';
-import {
-  type SharedGameListItem,
-  countGamesByAuthorId,
-  listGamesByAuthorId,
-} from '@/lib/db/games-read';
+import { type SharedGameListItem, listGamesByAuthorId } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, type LikeMeta, getLikeMetaMap } from '@/lib/db/like-queries';
-import {
-  type ReplyMeta,
-  getGameCommentMetaMap,
-  getReplyMetaMap,
-} from '@/lib/db/reply-meta-queries';
-import { type PositionLikeMeta, getPositionLikeMetaMap } from '@/lib/positions/like-queries';
-import { countPositions, listPositions } from '@/lib/positions/queries';
+import { type ReplyMeta, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
 
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 
-type ProfileTab = 'topics' | 'problems' | 'games';
+import { type ProfileShellData, loadProfileShellData } from './load-profile-shell-data';
 
-type ListedPosition = Awaited<ReturnType<typeof listPositions>>[number];
+type ProfileTab = 'topics' | 'games';
 
 export type PublicProfilePageData = {
   activeTab: ProfileTab;
@@ -33,34 +18,26 @@ export type PublicProfilePageData = {
   topicsCount: number;
   topicsCurrentPage: number;
   topicsTotalPages: number;
-  problemPositions: ListedPosition[];
   problemsCount: number;
-  problemsCurrentPage: number;
-  problemsTotalPages: number;
-  problemLikeMetaMap: Map<string, PositionLikeMeta>;
-  problemReplyMetaMap: Map<string, ReplyMeta>;
   games: SharedGameListItem[];
   gamesCount: number;
   gamesCurrentPage: number;
   gamesTotalPages: number;
   gameLikeMetaMap: Map<string, LikeMeta>;
   gameReplyMetaMap: Map<string, ReplyMeta>;
-  userAchievementRows: UserAchievementRow[];
+  userAchievementRows: ProfileShellData['userAchievementRows'];
 };
 
 /**
- * Load every server-side input the public profile page needs to render,
- * with the queries for each tab fanned out in parallel.
+ * Load every server-side input the main public profile page needs to render
+ * (topics tab and games tab — the problems tab now lives at
+ * `/u/[username]/problems/{puzzles,position-memory}`, see
+ * `problems/_lib/load-problems-page-data.ts`).
  *
- * Phase 1 fans out: follow checks, follower / following counts, top-level
- * posts (which double as the topics-tab list), achievements, and the
- * problems-tab count. Phase 2 loads the problems-tab slice + its like /
- * reply metadata only when that tab is active, since those queries need
- * the post-pagination math from Phase 1.
- *
- * The follow check / following-count promises short-circuit to empty
- * results when they are not applicable (e.g., anonymous viewer, viewing
- * own profile), keeping a single Promise.all-based shape.
+ * Shell data (follow state, counts, achievements) is shared with the
+ * `/problems/*` pages via `loadProfileShellData`. The games-tab slice is
+ * fetched only when that tab is active, since it needs the post-pagination
+ * math derived from the shell's counts.
  */
 export async function loadPublicProfilePageData({
   profileId,
@@ -75,112 +52,20 @@ export async function loadPublicProfilePageData({
   parsedParams: { page: number; tab: string };
   pageSize: number;
 }): Promise<PublicProfilePageData> {
-  const activeTab: ProfileTab =
-    parsedParams.tab === 'problems'
-      ? 'problems'
-      : parsedParams.tab === 'games'
-        ? 'games'
-        : 'topics';
+  const activeTab: ProfileTab = parsedParams.tab === 'games' ? 'games' : 'topics';
 
-  const followCheckPromise =
-    currentUserId && !isOwnProfile
-      ? db
-          .select({ id: userFollows.id })
-          .from(userFollows)
-          .where(
-            and(eq(userFollows.followerId, currentUserId), eq(userFollows.followingId, profileId))
-          )
-          .limit(1)
-      : Promise.resolve([]);
+  const shell = await loadProfileShellData({ profileId, currentUserId, isOwnProfile });
 
-  const reverseFollowCheckPromise =
-    currentUserId && !isOwnProfile
-      ? db
-          .select({ id: userFollows.id })
-          .from(userFollows)
-          .where(
-            and(eq(userFollows.followerId, profileId), eq(userFollows.followingId, currentUserId))
-          )
-          .limit(1)
-      : Promise.resolve([]);
-
-  const followerCountPromise = db
-    .select({ count: count() })
-    .from(userFollows)
-    .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
-    .where(and(eq(userFollows.followingId, profileId), isNull(profiles.deletedAt)));
-
-  const followingCountPromise = isOwnProfile
-    ? db
-        .select({ count: count() })
-        .from(userFollows)
-        .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
-        .where(and(eq(userFollows.followerId, profileId), isNull(profiles.deletedAt)))
-    : Promise.resolve([{ count: 0 }]);
-
-  const [
-    existingFollowRows,
-    reverseFollowRows,
-    [followerResult],
-    [followingResult],
-    allPosts,
-    userAchievementRows,
-    problemsCount,
-    gamesCount,
-  ] = await Promise.all([
-    followCheckPromise,
-    reverseFollowCheckPromise,
-    followerCountPromise,
-    followingCountPromise,
-    getPostsByUserId(profileId, currentUserId),
-    getUserAchievements(profileId),
-    countPositions({ userId: profileId }),
-    countGamesByAuthorId(profileId),
-  ]);
-
-  const topicsCount = allPosts.length;
+  const topicsCount = shell.allPosts.length;
   const topicsTotalPages = Math.ceil(topicsCount / pageSize);
   const topicsCurrentPage =
     activeTab === 'topics' ? Math.max(1, Math.min(parsedParams.page, topicsTotalPages || 1)) : 1;
-  const posts = allPosts.slice((topicsCurrentPage - 1) * pageSize, topicsCurrentPage * pageSize);
+  const posts = shell.allPosts.slice(
+    (topicsCurrentPage - 1) * pageSize,
+    topicsCurrentPage * pageSize
+  );
 
-  const problemsTotalPages = Math.ceil(problemsCount / pageSize);
-  const problemsCurrentPage =
-    activeTab === 'problems'
-      ? Math.max(1, Math.min(parsedParams.page, problemsTotalPages || 1))
-      : 1;
-
-  let problemPositions: ListedPosition[] = [];
-  let problemLikeMetaMap: Map<string, PositionLikeMeta> = new Map();
-  let problemReplyMetaMap: Map<string, ReplyMeta> = new Map();
-
-  if (activeTab === 'problems') {
-    problemPositions = await listPositions({
-      userId: profileId,
-      limit: pageSize,
-      offset: (problemsCurrentPage - 1) * pageSize,
-    });
-
-    // Reply meta is keyed by `(topicType, topicKey)`. Position IDs are unique
-    // across types, so we can fetch puzzle + memory reply meta in parallel and
-    // merge into a single Map<positionId, ReplyMeta>.
-    const puzzleIds = problemPositions.filter((p) => p.type === 'puzzle').map((p) => p.id);
-    const memoryIds = problemPositions.filter((p) => p.type === 'memory').map((p) => p.id);
-
-    const [likeMetaMap, puzzleReplyMetaMap, memoryReplyMetaMap] = await Promise.all([
-      getPositionLikeMetaMap(
-        problemPositions.map((p) => p.id),
-        currentUserId
-      ),
-      getReplyMetaMap('position_puzzle', puzzleIds),
-      getReplyMetaMap('position_memory', memoryIds),
-    ]);
-
-    problemLikeMetaMap = likeMetaMap;
-    problemReplyMetaMap = new Map([...puzzleReplyMetaMap, ...memoryReplyMetaMap]);
-  }
-
-  const gamesTotalPages = Math.ceil(gamesCount / pageSize);
+  const gamesTotalPages = Math.ceil(shell.gamesCount / pageSize);
   const gamesCurrentPage =
     activeTab === 'games' ? Math.max(1, Math.min(parsedParams.page, gamesTotalPages || 1)) : 1;
 
@@ -203,26 +88,21 @@ export async function loadPublicProfilePageData({
 
   return {
     activeTab,
-    initialFollowing: !!existingFollowRows[0],
-    followedByProfile: !!reverseFollowRows[0],
-    followerCount: followerResult.count,
-    followingCount: followingResult.count,
+    initialFollowing: shell.initialFollowing,
+    followedByProfile: shell.followedByProfile,
+    followerCount: shell.followerCount,
+    followingCount: shell.followingCount,
     posts,
     topicsCount,
     topicsCurrentPage,
     topicsTotalPages,
-    problemPositions,
-    problemsCount,
-    problemsCurrentPage,
-    problemsTotalPages,
-    problemLikeMetaMap,
-    problemReplyMetaMap,
+    problemsCount: shell.problemsCount,
     games,
-    gamesCount,
+    gamesCount: shell.gamesCount,
     gamesCurrentPage,
     gamesTotalPages,
     gameLikeMetaMap,
     gameReplyMetaMap,
-    userAchievementRows,
+    userAchievementRows: shell.userAchievementRows,
   };
 }

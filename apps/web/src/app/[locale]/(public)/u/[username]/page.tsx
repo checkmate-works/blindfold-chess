@@ -20,7 +20,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAchievementCategoryNames } from '@/lib/achievements/display';
@@ -28,18 +27,15 @@ import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 import { createClient } from '@/lib/supabase/server';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { LinkedText, PageLayout } from '@/app/[locale]/_components';
-import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import { PageLayout } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { FollowButton } from './_components/FollowButton';
 import { ProfileAchievements } from './_components/ProfileAchievements';
 import { ProfileGames } from './_components/ProfileGames';
-import { ProfileHeader } from './_components/ProfileHeader';
+import { ProfileIdentitySection } from './_components/ProfileIdentitySection';
 import { ProfilePosts } from './_components/ProfilePosts';
-import { ProfileProblems } from './_components/ProfileProblems';
-import { SocialLinks } from './_components/SocialLinks';
+import { buildTabHref } from './_lib/build-tab-href';
 import { loadPublicProfilePageData } from './_lib/load-page-data';
 import { getProfileByUsername } from './_lib/queries';
 
@@ -95,35 +91,23 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const user = authResult.data.user;
   const isOwnProfile = user?.id === profile.id;
 
-  const [
-    pageData,
-    t,
-    tTopics,
-    tSquares,
-    tOpenings,
-    tPuzzle,
-    tMemory,
-    tPlay,
-    tSharedGames,
-    tOpeningNames,
-  ] = await Promise.all([
-    loadPublicProfilePageData({
-      profileId: profile.id,
-      currentUserId: user?.id,
-      isOwnProfile,
-      parsedParams,
-      pageSize: PAGE_SIZE,
-    }),
-    getTranslations({ locale, namespace: 'publicProfile' }),
-    getTranslations({ locale, namespace: 'topics' }),
-    getTranslations({ locale, namespace: 'topics.squares' }),
-    getTranslations({ locale, namespace: 'topics.openings' }),
-    getTranslations({ locale, namespace: 'practice.puzzle' }),
-    getTranslations({ locale, namespace: 'practice.positionMemory' }),
-    getTranslations({ locale, namespace: 'play' }),
-    getTranslations({ locale, namespace: 'sharedGames' }),
-    getTranslations({ locale, namespace: 'topics.openings.names' }),
-  ]);
+  const [pageData, t, tTopics, tSquares, tOpenings, tPlay, tSharedGames, tOpeningNames] =
+    await Promise.all([
+      loadPublicProfilePageData({
+        profileId: profile.id,
+        currentUserId: user?.id,
+        isOwnProfile,
+        parsedParams,
+        pageSize: PAGE_SIZE,
+      }),
+      getTranslations({ locale, namespace: 'publicProfile' }),
+      getTranslations({ locale, namespace: 'topics' }),
+      getTranslations({ locale, namespace: 'topics.squares' }),
+      getTranslations({ locale, namespace: 'topics.openings' }),
+      getTranslations({ locale, namespace: 'play' }),
+      getTranslations({ locale, namespace: 'sharedGames' }),
+      getTranslations({ locale, namespace: 'topics.openings.names' }),
+    ]);
 
   const {
     activeTab,
@@ -135,12 +119,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     topicsCount,
     topicsCurrentPage,
     topicsTotalPages,
-    problemPositions,
     problemsCount,
-    problemsCurrentPage,
-    problemsTotalPages,
-    problemLikeMetaMap,
-    problemReplyMetaMap,
     games,
     gamesCount,
     gamesCurrentPage,
@@ -158,86 +137,26 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     return `/${locale}/u/${username}${qs ? `?${qs}` : ''}`;
   };
 
-  const buildTabHref = (targetTab: string) => {
-    if (targetTab === 'topics') return `/u/${username}`;
-    return `/u/${username}?tab=${targetTab}`;
-  };
-
   return (
     <PageLayout title={t('pageTitle')} locale={locale}>
       <div className="space-y-6">
-        <ProfileHeader
-          avatarUrl={profile.avatarUrl}
-          username={profile.username}
-          displayName={profile.displayName}
-          flair={profile.flair}
-          country={profile.country}
+        <ProfileIdentitySection
+          profile={profile}
           locale={locale}
-          action={
-            isOwnProfile ? (
-              <Link
-                href="/mypage/profile"
-                locale={locale}
-                className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-              >
-                {t('editProfile')}
-              </Link>
-            ) : (
-              <>
-                {followedByProfile && (
-                  <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
-                    {t('followsYou')}
-                  </span>
-                )}
-                <FollowButton
-                  targetUsername={profile.username}
-                  locale={locale}
-                  initialFollowing={initialFollowing}
-                  isAuthenticated={!!user}
-                />
-              </>
-            )
-          }
+          isOwnProfile={isOwnProfile}
+          isAuthenticated={!!user}
+          initialFollowing={initialFollowing}
+          followedByProfile={followedByProfile}
+          followerCount={followerCount}
+          followingCount={followingCount}
+          labels={{
+            editProfile: t('editProfile'),
+            followsYou: t('followsYou'),
+            followingCount: t('followingCount'),
+            followers: t('followers'),
+            bio: t('bio'),
+          }}
         />
-
-        {/* Stats Row */}
-        <p className="text-sm text-muted-foreground">
-          {isOwnProfile && (
-            <>
-              <Link href="/mypage/following" locale={locale} className={TEXT_LINK_CLASSES}>
-                <span className="font-semibold text-foreground">{followingCount}</span>{' '}
-                {t('followingCount')}
-              </Link>
-              <span className="mx-2" />
-            </>
-          )}
-          <Link href={`/u/${username}/followers`} locale={locale} className={TEXT_LINK_CLASSES}>
-            <span className="font-semibold text-foreground">{followerCount}</span> {t('followers')}
-          </Link>
-        </p>
-
-        {/* External Links */}
-        <SocialLinks
-          fideId={profile.fideId}
-          chesscomUsername={profile.chesscomUsername}
-          lichessUsername={profile.lichessUsername}
-          xUsername={profile.xUsername}
-          instagramUsername={profile.instagramUsername}
-          youtubeHandle={profile.youtubeHandle}
-        />
-
-        {/* Bio */}
-        {profile.bio && (
-          <div className="space-y-3">
-            <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
-              {t('bio')}
-            </h2>
-            <p className="text-foreground whitespace-pre-wrap break-words">
-              <LinkedText text={profile.bio} locale={locale} />
-            </p>
-          </div>
-        )}
-
         {/* Topics / Problems / Games Tabs */}
         <ProfilePosts
           posts={posts}
@@ -249,7 +168,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           totalPages={topicsTotalPages}
           locale={locale}
           buildHref={buildHref}
-          buildTabHref={buildTabHref}
+          buildTabHref={(targetTab) => buildTabHref(username, targetTab)}
           labels={{
             topicsTab: t('topicsTab'),
             problemsTab: t('problemsTab'),
@@ -259,32 +178,6 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             justNow: (topicType) =>
               topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
           }}
-          problemsSlot={
-            <ProfileProblems
-              positions={problemPositions}
-              authorProfile={{
-                username: profile.username,
-                displayName: profile.displayName,
-                avatarUrl: profile.avatarUrl,
-              }}
-              likeMetaMap={problemLikeMetaMap}
-              replyMetaMap={problemReplyMetaMap}
-              emptyReplyMeta={EMPTY_REPLY_META}
-              currentPage={problemsCurrentPage}
-              totalPages={problemsTotalPages}
-              locale={locale}
-              buildHref={buildHref}
-              justNowLabels={{
-                puzzle: tPuzzle('justNow'),
-                memory: tMemory('justNow'),
-              }}
-              labels={{
-                noProblems: t('noProblems'),
-                problemTypeMemory: t('problemTypeMemory'),
-                problemTypePuzzle: t('problemTypePuzzle'),
-              }}
-            />
-          }
           gamesSlot={
             <ProfileGames
               games={games}
