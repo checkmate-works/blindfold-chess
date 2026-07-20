@@ -59,6 +59,8 @@ vi.mock('@/lib/points', () => ({
 
 vi.mock('@/lib/positions/fork', () => ({
   validateForkSource: (...args: unknown[]) => mockValidateForkSource(...args),
+  PUZZLE_FORK_SOURCE_TYPES: ['puzzle', 'memory'],
+  POSITION_FORK_SOURCE_TYPES: ['memory'],
 }));
 
 vi.mock('@/lib/positions/tag-validation', () => ({
@@ -217,11 +219,31 @@ describe('createPositionEntry', () => {
     expect(mockValidateForkSource).toHaveBeenCalledWith({
       forkedFromId: FORK_SOURCE_ID,
       currentUserId: TEST_USER_ID,
-      type: 'memory',
+      sourceTypes: ['memory'],
     });
     expect(mockInsertValues).toHaveBeenCalledWith(
       expect.objectContaining({ forkedFromId: FORK_SOURCE_ID })
     );
+  });
+
+  it('allows a puzzle to be created from a memory-type fork source', async () => {
+    mockValidateForkSource.mockResolvedValue({
+      ok: true,
+      source: { id: FORK_SOURCE_ID, userId: OTHER_USER_ID, title: 'Original memory position' },
+    });
+
+    const { createPositionEntry } = await import('./user-position-mutations');
+    await createPositionEntry({
+      ...baseCreateParams,
+      kind: 'puzzle',
+      data: { ...baseCreateParams.data, forkedFromId: FORK_SOURCE_ID },
+    });
+
+    expect(mockValidateForkSource).toHaveBeenCalledWith({
+      forkedFromId: FORK_SOURCE_ID,
+      currentUserId: TEST_USER_ID,
+      sourceTypes: ['puzzle', 'memory'],
+    });
   });
 
   it('propagates tag validation errors', async () => {

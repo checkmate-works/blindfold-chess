@@ -13,9 +13,14 @@ import type { DbTx } from '@/lib/db/types';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { guardOwnership } from '@/lib/ownership-guard';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
-import { validateForkSource } from '@/lib/positions/fork';
+import {
+  POSITION_FORK_SOURCE_TYPES,
+  PUZZLE_FORK_SOURCE_TYPES,
+  validateForkSource,
+} from '@/lib/positions/fork';
 import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
 import { insertPositionTags, replacePositionTags } from '@/lib/positions/tag-writes';
+import type { PositionType } from '@/lib/positions/types';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 /**
@@ -42,6 +47,13 @@ type PositionKindConfig = {
   /** URL segment under `/practice` used for revalidation. */
   urlSegment: 'position-memory' | 'puzzle';
   /**
+   * `positions.type` values a `forkedFromId` source may have — mirrors
+   * `PUZZLE_FORK_SOURCE_TYPES` / `POSITION_FORK_SOURCE_TYPES` in
+   * `@/lib/positions/fork` (puzzles additionally accept a position-memory
+   * source; see that module's `@design Cross-type sourcing` note).
+   */
+  allowedForkSourceTypes: readonly PositionType[];
+  /**
    * activity-log action verb for the update path. Create and delete are not
    * logged (the positions row — live, or soft-deleted with `deletedAt` — is
    * itself the durable record); only an in-place edit, which overwrites
@@ -55,6 +67,7 @@ const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
     type: 'memory',
     pointType: 'position_memory',
     urlSegment: 'position-memory',
+    allowedForkSourceTypes: POSITION_FORK_SOURCE_TYPES,
     activityActions: {
       update: 'update_position',
     },
@@ -63,6 +76,7 @@ const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
     type: 'puzzle',
     pointType: 'puzzle',
     urlSegment: 'puzzle',
+    allowedForkSourceTypes: PUZZLE_FORK_SOURCE_TYPES,
     activityActions: {
       update: 'update_puzzle',
     },
@@ -178,7 +192,7 @@ export async function createPositionEntry(params: {
     const forkCheck = await validateForkSource({
       forkedFromId: data.forkedFromId,
       currentUserId: user.id,
-      type: config.type,
+      sourceTypes: config.allowedForkSourceTypes,
     });
     if (!forkCheck.ok) {
       return { error: `fork_source_${forkCheck.reason}` };

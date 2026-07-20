@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { validateForkSource } from './fork';
+import { POSITION_FORK_SOURCE_TYPES, PUZZLE_FORK_SOURCE_TYPES, validateForkSource } from './fork';
 
 const mockLimit = vi.fn();
 
@@ -39,7 +39,7 @@ describe('validateForkSource', () => {
     const result = await validateForkSource({
       forkedFromId: 'not-a-uuid',
       currentUserId: VALID_UUID_A,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({ ok: false, reason: 'invalid_uuid' });
     expect(mockLimit).not.toHaveBeenCalled();
@@ -50,7 +50,7 @@ describe('validateForkSource', () => {
     const result = await validateForkSource({
       forkedFromId: VALID_UUID_A,
       currentUserId: VALID_UUID_B,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({ ok: false, reason: 'not_found' });
   });
@@ -67,7 +67,7 @@ describe('validateForkSource', () => {
     const result = await validateForkSource({
       forkedFromId: VALID_UUID_A,
       currentUserId: VALID_UUID_B,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({
       ok: true,
@@ -87,7 +87,7 @@ describe('validateForkSource', () => {
     const result = await validateForkSource({
       forkedFromId: VALID_UUID_A,
       currentUserId: VALID_UUID_C,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({ ok: false, reason: 'forks_disabled' });
   });
@@ -104,7 +104,7 @@ describe('validateForkSource', () => {
     const result = await validateForkSource({
       forkedFromId: VALID_UUID_A,
       currentUserId: VALID_UUID_C,
-      type: 'puzzle',
+      sourceTypes: ['puzzle'],
     });
     expect(result).toEqual({
       ok: true,
@@ -114,5 +114,15 @@ describe('validateForkSource', () => {
         title: 'Forkable Puzzle',
       },
     });
+  });
+});
+
+describe('source-type allowlists', () => {
+  it('lets a puzzle be created from either a puzzle or a position-memory source', () => {
+    expect(PUZZLE_FORK_SOURCE_TYPES).toEqual(['puzzle', 'memory']);
+  });
+
+  it('lets a position-memory entry be created from a position-memory source only (no reverse path)', () => {
+    expect(POSITION_FORK_SOURCE_TYPES).toEqual(['memory']);
   });
 });
