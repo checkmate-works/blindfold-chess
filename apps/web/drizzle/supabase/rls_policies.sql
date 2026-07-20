@@ -526,6 +526,15 @@ CREATE POLICY "position_edit_requests_update" ON "position_edit_requests"
   );
 
 -- =============================================================================
+-- position_content_revisions (append-only edit-history trail; read-only for all, write via the app's own server-side mutation path only)
+-- =============================================================================
+ALTER TABLE "position_content_revisions" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "position_content_revisions_select" ON "position_content_revisions";
+CREATE POLICY "position_content_revisions_select" ON "position_content_revisions"
+  FOR SELECT USING (true);
+
+-- =============================================================================
 -- chunk_feedback_topics (author-flagged "I want feedback on these fields")
 -- =============================================================================
 -- SELECT is open so visitors can see which fields the author is workshopping

@@ -425,6 +425,78 @@ export const positionThemes = pgTable(
 export type PositionTheme = typeof positionThemes.$inferSelect;
 export type NewPositionTheme = typeof positionThemes.$inferInsert;
 
+/**
+ * Position Content Revisions — append-only trail of an owner's own edits to
+ * a position's authored content (title / FEN / description / puzzle
+ * solution moves).
+ *
+ * @description
+ * `positions` (and its sibling `puzzle_solutions`) keep no revision history
+ * of their own — an edit overwrites the row in place. This table is the
+ * durable, user-facing record of what changed: one row per successful edit
+ * that actually changed at least one field, written in the same transaction
+ * as the `positions` UPDATE so it can never drift from what's live.
+ *
+ * @design not the same thing as `user_activity_log`
+ * `user_activity_log` already captures a similar `{field: {from, to}}` shape
+ * for `fen` / `title` / `description`, but it is fire-and-forget (errors are
+ * swallowed — see its own `@design` note, "NOT a trustworthy audit trail"),
+ * admin-only, and never captures `puzzle_solutions` changes. This table is
+ * the opposite on all three counts: written transactionally, public-facing,
+ * and covers solution moves too. The two tables intentionally overlap in
+ * content for edits to `fen`/`title`/`description` — that duplication buys
+ * the admin log its own independent, best-effort-only failure mode without
+ * coupling it to a user-facing feature's reliability requirements.
+ *
+ * @design `changes` shape
+ * `{ [field]: { from, to } }`, reusing the same shape `diffFields()`
+ * produces for the activity log. `field` is one of `fen` / `title` /
+ * `description` (values are `string | null`) or `solutionMoves` (values are
+ * `PuzzleSolutionMove[][]` — one array per alternative-solution row, to
+ * match how `puzzle_solutions` can hold more than one row per position).
+ * Only fields that actually changed are present; a row is only ever
+ * inserted when `changes` is non-empty.
+ *
+ * @design editor_id nullable + ON DELETE SET NULL
+ * Only the position's owner can edit its content today (see
+ * `position_edit_requests` — third parties may only propose chunk-tag
+ * changes), so `editorId` is always the owner at insert time. It is kept as
+ * its own column (rather than assumed-equal to `positions.user_id`) so nothing
+ * here has to change if a future edit-request flow adds a real "apply a
+ * third party's accepted proposal" writer. Nulled on hard-delete, mirroring
+ * `positions.user_id`, so the row (and the fact that *someone* made this
+ * edit) survives.
+ *
+ * @design positionId ON DELETE CASCADE, no updated_at
+ * Revisions are 1:N to a position and have no meaning without it. Append-
+ * only by design (mirrors `user_activity_log` / `moderation_actions`), so
+ * there is nothing for `updated_at` to track.
+ */
+export const positionContentRevisions = pgTable(
+  'position_content_revisions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    positionId: uuid('position_id')
+      .notNull()
+      .references(() => positions.id, { onDelete: 'cascade' }),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
+    editorId: uuid('editor_id'),
+    changes: jsonb('changes').$type<Record<string, { from: unknown; to: unknown }>>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    // "Show this position's edit history, newest first" — the only read
+    // pattern this table serves.
+    index('idx_position_content_revisions_position_created').on(
+      table.positionId,
+      table.createdAt.desc()
+    ),
+  ]
+);
+
+export type PositionContentRevision = typeof positionContentRevisions.$inferSelect;
+export type NewPositionContentRevision = typeof positionContentRevisions.$inferInsert;
+
 // Re-exported so existing imports of `PuzzleSolutionMove` from
 // '@/lib/db/schema/positions' keep working after the puzzles split.
 export type { PuzzleSolutionMove } from './puzzles';

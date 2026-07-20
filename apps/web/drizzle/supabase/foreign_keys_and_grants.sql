@@ -456,6 +456,23 @@ GRANT SELECT, INSERT, UPDATE ON TABLE public.position_edit_requests TO authentic
 GRANT SELECT ON TABLE public.position_edit_requests TO anon;
 
 -- =============================================================================
+-- position_content_revisions
+-- =============================================================================
+
+-- FK constraint: position_content_revisions.editor_id → auth.users(id) ON DELETE SET NULL
+-- Preserves the revision (and the fact that *someone* made this edit) when
+-- the editor's account is later hard-deleted. Mirrors position_edit_requests.
+SELECT public.ensure_auth_users_fk('position_content_revisions', 'position_content_revisions_editor_id_fkey', 'editor_id', 'SET NULL');
+
+-- The FK to positions is managed by Drizzle (ON DELETE CASCADE). Rows are
+-- only ever written by the app's own server-side mutation path (inside the
+-- same transaction as the positions UPDATE) — never directly by a client —
+-- so, like user_ranks / user_achievements, there is no authenticated INSERT
+-- grant; this is read-only public history.
+GRANT SELECT ON TABLE public.position_content_revisions TO authenticated;
+GRANT SELECT ON TABLE public.position_content_revisions TO anon;
+
+-- =============================================================================
 -- chunk_feedback_topics
 -- =============================================================================
 
