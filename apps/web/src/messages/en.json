@@ -3705,6 +3705,8 @@
     "newGameMessage": "{actor} shared a game",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
+    "puzzleForkedMessage": "{actor} forked your puzzle",
+    "puzzleCreatedFromPositionMessage": "{actor} created a puzzle from your position",
     "achievementSingleMessage": "🏆 You earned {name}",
     "achievementMultipleMessage": "🏆 You earned {count} achievements",
     "benefitGrantMessage": {

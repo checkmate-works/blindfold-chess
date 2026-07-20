@@ -23,6 +23,7 @@ const mockReplacePositionTags = vi.fn();
 const mockGrantPointsForPost = vi.fn();
 const mockClawbackPointsForPost = vi.fn();
 const mockNotifyFollowersOfNewPosition = vi.fn();
+const mockNotifyPositionForkedIntoPuzzle = vi.fn();
 const mockEvaluateRanksAfterCreate = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockRevalidatePath = vi.fn();
@@ -50,6 +51,8 @@ vi.mock('@/lib/db/rank-evaluation', () => ({
 
 vi.mock('@/lib/notifications/notification', () => ({
   notifyFollowersOfNewPosition: (...args: unknown[]) => mockNotifyFollowersOfNewPosition(...args),
+  notifyPositionForkedIntoPuzzle: (...args: unknown[]) =>
+    mockNotifyPositionForkedIntoPuzzle(...args),
 }));
 
 vi.mock('@/lib/points', () => ({
@@ -229,7 +232,12 @@ describe('createPositionEntry', () => {
   it('allows a puzzle to be created from a memory-type fork source', async () => {
     mockValidateForkSource.mockResolvedValue({
       ok: true,
-      source: { id: FORK_SOURCE_ID, userId: OTHER_USER_ID, title: 'Original memory position' },
+      source: {
+        id: FORK_SOURCE_ID,
+        userId: OTHER_USER_ID,
+        title: 'Original memory position',
+        type: 'memory',
+      },
     });
 
     const { createPositionEntry } = await import('./user-position-mutations');
@@ -243,6 +251,107 @@ describe('createPositionEntry', () => {
       forkedFromId: FORK_SOURCE_ID,
       currentUserId: TEST_USER_ID,
       sourceTypes: ['puzzle', 'memory'],
+    });
+  });
+
+  describe('notifyPositionForkedIntoPuzzle', () => {
+    it('notifies the fork source owner with sourceType "memory" when a puzzle is created from a position-memory entry', async () => {
+      mockValidateForkSource.mockResolvedValue({
+        ok: true,
+        source: { id: FORK_SOURCE_ID, userId: OTHER_USER_ID, title: 'Original', type: 'memory' },
+      });
+
+      const { createPositionEntry } = await import('./user-position-mutations');
+      await createPositionEntry({
+        ...baseCreateParams,
+        kind: 'puzzle',
+        data: { ...baseCreateParams.data, forkedFromId: FORK_SOURCE_ID },
+      });
+
+      expect(mockNotifyPositionForkedIntoPuzzle).toHaveBeenCalledWith({
+        actorId: TEST_USER_ID,
+        ownerId: OTHER_USER_ID,
+        newPuzzleId: TEST_POSITION_ID,
+        sourceType: 'memory',
+      });
+    });
+
+    it('notifies with sourceType "puzzle" for a same-type puzzle fork', async () => {
+      mockValidateForkSource.mockResolvedValue({
+        ok: true,
+        source: { id: FORK_SOURCE_ID, userId: OTHER_USER_ID, title: 'Original', type: 'puzzle' },
+      });
+
+      const { createPositionEntry } = await import('./user-position-mutations');
+      await createPositionEntry({
+        ...baseCreateParams,
+        kind: 'puzzle',
+        data: { ...baseCreateParams.data, forkedFromId: FORK_SOURCE_ID },
+      });
+
+      expect(mockNotifyPositionForkedIntoPuzzle).toHaveBeenCalledWith(
+        expect.objectContaining({ sourceType: 'puzzle' })
+      );
+    });
+
+    it('does not notify on a self-fork (source owner is the creator)', async () => {
+      mockValidateForkSource.mockResolvedValue({
+        ok: true,
+        source: {
+          id: FORK_SOURCE_ID,
+          userId: TEST_USER_ID,
+          title: 'My own puzzle',
+          type: 'puzzle',
+        },
+      });
+
+      const { createPositionEntry } = await import('./user-position-mutations');
+      await createPositionEntry({
+        ...baseCreateParams,
+        kind: 'puzzle',
+        data: { ...baseCreateParams.data, forkedFromId: FORK_SOURCE_ID },
+      });
+
+      expect(mockNotifyPositionForkedIntoPuzzle).not.toHaveBeenCalled();
+    });
+
+    it('does not notify when the fork source owner was anonymised (userId null)', async () => {
+      mockValidateForkSource.mockResolvedValue({
+        ok: true,
+        source: { id: FORK_SOURCE_ID, userId: null, title: 'Orphaned source', type: 'puzzle' },
+      });
+
+      const { createPositionEntry } = await import('./user-position-mutations');
+      await createPositionEntry({
+        ...baseCreateParams,
+        kind: 'puzzle',
+        data: { ...baseCreateParams.data, forkedFromId: FORK_SOURCE_ID },
+      });
+
+      expect(mockNotifyPositionForkedIntoPuzzle).not.toHaveBeenCalled();
+    });
+
+    it('does not notify when creating a position-memory entry (puzzles only)', async () => {
+      mockValidateForkSource.mockResolvedValue({
+        ok: true,
+        source: { id: FORK_SOURCE_ID, userId: OTHER_USER_ID, title: 'Original', type: 'memory' },
+      });
+
+      const { createPositionEntry } = await import('./user-position-mutations');
+      await createPositionEntry({
+        ...baseCreateParams,
+        kind: 'memory',
+        data: { ...baseCreateParams.data, forkedFromId: FORK_SOURCE_ID },
+      });
+
+      expect(mockNotifyPositionForkedIntoPuzzle).not.toHaveBeenCalled();
+    });
+
+    it('does not notify when the create has no fork source at all', async () => {
+      const { createPositionEntry } = await import('./user-position-mutations');
+      await createPositionEntry({ ...baseCreateParams, kind: 'puzzle' });
+
+      expect(mockNotifyPositionForkedIntoPuzzle).not.toHaveBeenCalled();
     });
   });
 

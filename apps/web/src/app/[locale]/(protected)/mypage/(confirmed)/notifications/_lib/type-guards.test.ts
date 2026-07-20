@@ -6,6 +6,7 @@ import {
   isChunkEditRequestMetadata,
   isPositionMetadata,
   isPostMetadata,
+  isPuzzleForkedMetadata,
   isReplyMetadata,
 } from './type-guards';
 
@@ -332,5 +333,31 @@ describe('isChunkEditRequestMetadata', () => {
     expect(isChunkEditRequestMetadata(undefined)).toBe(false);
     expect(isChunkEditRequestMetadata('foo')).toBe(false);
     expect(isChunkEditRequestMetadata(42)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isPuzzleForkedMetadata
+// ---------------------------------------------------------------------------
+
+describe('isPuzzleForkedMetadata', () => {
+  it('returns true with positionId, positionType, and sourceType all present', () => {
+    expect(
+      isPuzzleForkedMetadata({ positionId: 'p-1', positionType: 'puzzle', sourceType: 'memory' })
+    ).toBe(true);
+  });
+
+  it('returns false when sourceType is missing (falls back to plain PositionMetadata)', () => {
+    expect(isPuzzleForkedMetadata({ positionId: 'p-1', positionType: 'puzzle' })).toBe(false);
+  });
+
+  it('returns false when positionId is missing', () => {
+    expect(isPuzzleForkedMetadata({ sourceType: 'puzzle' })).toBe(false);
+  });
+
+  it('returns false for null / undefined / primitives', () => {
+    expect(isPuzzleForkedMetadata(null)).toBe(false);
+    expect(isPuzzleForkedMetadata(undefined)).toBe(false);
+    expect(isPuzzleForkedMetadata('foo')).toBe(false);
   });
 });

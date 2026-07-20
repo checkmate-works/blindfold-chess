@@ -3705,6 +3705,8 @@
     "newGameMessage": "{actor} さんが対局を公開しました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
+    "puzzleForkedMessage": "{actor} があなたのパズルをフォークしました",
+    "puzzleCreatedFromPositionMessage": "{actor} があなたのポジションからパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
     "benefitGrantMessage": {

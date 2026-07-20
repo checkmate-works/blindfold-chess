@@ -56,7 +56,8 @@ vi.mock('drizzle-orm', () => ({
   inArray: (a: unknown, b: unknown) => [a, b],
 }));
 
-const { notifyFollowersOfNewPost, createNotification } = await import('./notification');
+const { notifyFollowersOfNewPost, notifyPositionForkedIntoPuzzle, createNotification } =
+  await import('./notification');
 
 describe('notifyFollowersOfNewPost', () => {
   beforeEach(() => {
@@ -259,6 +260,71 @@ describe('createNotification', () => {
     mockMutedRows = [{ id: 'mute-1' }];
 
     createNotification({ userId: 'user-1', type: 'follow', actorId: 'actor-1' });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('notifyPositionForkedIntoPuzzle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockMutedRows = [];
+  });
+
+  it('notifies the owner with sourceType "puzzle" for a same-type fork', async () => {
+    notifyPositionForkedIntoPuzzle({
+      actorId: 'forker-1',
+      ownerId: 'owner-1',
+      newPuzzleId: 'new-puzzle-1',
+      sourceType: 'puzzle',
+    });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'owner-1',
+        actorId: 'forker-1',
+        type: 'puzzle_forked',
+        targetType: 'position',
+        targetId: 'new-puzzle-1',
+        metadata: {
+          positionId: 'new-puzzle-1',
+          positionType: 'puzzle',
+          sourceType: 'puzzle',
+        },
+      })
+    );
+  });
+
+  it('notifies the owner with sourceType "memory" for the cross-type Create Puzzle action', async () => {
+    notifyPositionForkedIntoPuzzle({
+      actorId: 'forker-1',
+      ownerId: 'owner-1',
+      newPuzzleId: 'new-puzzle-2',
+      sourceType: 'memory',
+    });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({ sourceType: 'memory' }),
+      })
+    );
+  });
+
+  it('is not consulted against mutes (puzzle_forked is a non-mutable type)', async () => {
+    mockMutedRows = [{ id: 'mute-1' }];
+
+    notifyPositionForkedIntoPuzzle({
+      actorId: 'forker-1',
+      ownerId: 'owner-1',
+      newPuzzleId: 'new-puzzle-3',
+      sourceType: 'puzzle',
+    });
 
     await new Promise((r) => setTimeout(r, 0));
 

@@ -220,3 +220,20 @@ export function isLikeCoinGrantMetadata(m: unknown): m is LikeCoinGrantMetadata 
   const r = m as Record<string, unknown>;
   return typeof r.count === 'number';
 }
+
+/**
+ * Metadata persisted with a `puzzle_forked` notification — sent to a
+ * position's owner when another user creates a puzzle from it, either a
+ * same-type fork (`sourceType: 'puzzle'`) or the cross-type "Create Puzzle"
+ * action from a position-memory entry (`sourceType: 'memory'`). Extends
+ * `PositionMetadata` (`positionId` + `positionType`, always `'puzzle'`
+ * here) so the notification reuses `resolvePositionLinkFromMetadata`;
+ * `sourceType` additionally selects the message wording.
+ */
+export type PuzzleForkedMetadata = PositionMetadata & { sourceType: PositionType };
+
+export function isPuzzleForkedMetadata(m: unknown): m is PuzzleForkedMetadata {
+  if (!isPositionMetadata(m)) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.sourceType === 'string';
+}

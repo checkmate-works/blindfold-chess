@@ -162,6 +162,36 @@ export function notifyFollowersOfNewPosition(params: {
 }
 
 /**
+ * Notify a position's owner that another user created a puzzle from it —
+ * either a same-type fork (`sourceType: 'puzzle'`) or the cross-type
+ * "Create Puzzle" action from a position-memory entry
+ * (`sourceType: 'memory'`). Direct 1:1 notification to the source's owner,
+ * not a follower broadcast (unlike `notifyFollowersOfNewPosition` above).
+ * Self-forks are the caller's responsibility to filter out — mirrors the
+ * `like` notification's self-like guard in `performEntityToggleLike`; this
+ * function does not re-check ownership.
+ */
+export function notifyPositionForkedIntoPuzzle(params: {
+  actorId: string;
+  ownerId: string;
+  newPuzzleId: string;
+  sourceType: 'memory' | 'puzzle';
+}): void {
+  createNotification({
+    userId: params.ownerId,
+    actorId: params.actorId,
+    type: 'puzzle_forked',
+    targetType: 'position',
+    targetId: params.newPuzzleId,
+    metadata: {
+      positionId: params.newPuzzleId,
+      positionType: 'puzzle',
+      sourceType: params.sourceType,
+    },
+  });
+}
+
+/**
  * Notify all followers of a user about a new chunk lifecycle event.
  * `kind` distinguishes the two surface points: `'created'` for a draft
  * submission (calls for edit-request review) and `'published'` for the

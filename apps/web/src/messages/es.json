@@ -3705,6 +3705,8 @@
     "newGameMessage": "{actor} compartió una partida",
     "newPositionMemoryMessage": "{actor} creó un nuevo problema de memoria de posición",
     "newPuzzleMessage": "{actor} creó un nuevo puzzle",
+    "puzzleForkedMessage": "{actor} bifurcó tu puzzle",
+    "puzzleCreatedFromPositionMessage": "{actor} creó un puzzle a partir de tu posición",
     "achievementSingleMessage": "🏆 Obtuviste {name}",
     "achievementMultipleMessage": "🏆 Obtuviste {count} logros",
     "benefitGrantMessage": {

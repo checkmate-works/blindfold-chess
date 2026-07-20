@@ -10,7 +10,10 @@ import type { GrantedRank } from '@/lib/db/data/ranks';
 import { diffFields } from '@/lib/db/diff-fields';
 import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
 import type { DbTx } from '@/lib/db/types';
-import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
+import {
+  notifyFollowersOfNewPosition,
+  notifyPositionForkedIntoPuzzle,
+} from '@/lib/notifications/notification';
 import { guardOwnership } from '@/lib/ownership-guard';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import {
@@ -188,6 +191,9 @@ export async function createPositionEntry(params: {
   }
 
   let resolvedForkedFromId: string | null = null;
+  // Captured so the post-commit notification (puzzles only, see below) knows
+  // who to notify and how to word the message — without a second DB read.
+  let forkSource: { ownerId: string | null; type: PositionType } | null = null;
   if (data.forkedFromId) {
     const forkCheck = await validateForkSource({
       forkedFromId: data.forkedFromId,
@@ -198,6 +204,7 @@ export async function createPositionEntry(params: {
       return { error: `fork_source_${forkCheck.reason}` };
     }
     resolvedForkedFromId = forkCheck.source.id;
+    forkSource = { ownerId: forkCheck.source.userId, type: forkCheck.source.type };
   }
 
   const tagValidation = await validateAndDedupeTagIds({
@@ -247,6 +254,20 @@ export async function createPositionEntry(params: {
     positionId: txResult.position.id,
     positionType: config.type,
   });
+
+  // Notify the fork source's owner — puzzles only (a same-type puzzle fork
+  // or the cross-type "Create Puzzle" action from a position-memory entry).
+  // Self-forks are excluded, mirroring the self-like guard in
+  // performEntityToggleLike; an anonymised owner (userId null) is a no-op
+  // inside createNotification itself.
+  if (config.type === 'puzzle' && forkSource?.ownerId && forkSource.ownerId !== user.id) {
+    notifyPositionForkedIntoPuzzle({
+      actorId: user.id,
+      ownerId: forkSource.ownerId,
+      newPuzzleId: txResult.position.id,
+      sourceType: forkSource.type === 'memory' ? 'memory' : 'puzzle',
+    });
+  }
 
   // No activity-log row: the positions row itself is the durable record of
   // a creation, so logging here would only duplicate it.

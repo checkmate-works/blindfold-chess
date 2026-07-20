@@ -362,6 +362,21 @@ describe('buildNotificationLink — positions', () => {
     expect(mk('p-legacy', { positionId: 'p-legacy' })).toBe('/practice/position-memory/p-legacy');
     expect(mk('p-nometa', {})).toBe('/practice/position-memory/p-nometa');
   });
+
+  it('routes puzzle_forked straight to the new puzzle, regardless of the fork source type', () => {
+    const mk = (sourceType: string) =>
+      buildNotificationLink(
+        makeNotification({
+          type: 'puzzle_forked',
+          targetType: 'position',
+          targetId: 'new-puzzle-1',
+          metadata: { positionId: 'new-puzzle-1', positionType: 'puzzle', sourceType },
+        }),
+        {}
+      );
+    expect(mk('puzzle')).toBe('/practice/puzzle/new-puzzle-1');
+    expect(mk('memory')).toBe('/practice/puzzle/new-puzzle-1');
+  });
 });
 
 describe('buildNotificationLink — position edit requests', () => {

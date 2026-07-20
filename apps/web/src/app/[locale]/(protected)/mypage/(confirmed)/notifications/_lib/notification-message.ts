@@ -10,6 +10,7 @@ import {
   isLikeCoinGrantMetadata,
   isPointGrantMetadata,
   isPositionMetadata,
+  isPuzzleForkedMetadata,
   isRankGrantMetadata,
 } from './type-guards';
 
@@ -99,6 +100,19 @@ export function buildNotificationMessage(
         }
       }
     }
+    case 'puzzle_forked':
+      // Distinguish the cross-type "Create Puzzle from here" action
+      // (source was a position-memory entry) from a same-type puzzle
+      // fork — "created a puzzle from your position" reads oddly for the
+      // latter, where "forked your puzzle" matches the existing Fork
+      // action's own vocabulary.
+      if (
+        isPuzzleForkedMetadata(notification.metadata) &&
+        notification.metadata.sourceType === 'memory'
+      ) {
+        return t('puzzleCreatedFromPositionMessage', { actor: actorName });
+      }
+      return t('puzzleForkedMessage', { actor: actorName });
     case 'announcement':
       if (isAnnouncementMetadata(notification.metadata)) {
         return t('announcementMessage', { title: truncateContent(notification.metadata.title) });
