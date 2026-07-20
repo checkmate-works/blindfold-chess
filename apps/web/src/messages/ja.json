@@ -98,6 +98,7 @@
       "title": "型",
       "pgnHeading": "PGN",
       "linesHeading": "ライン",
+      "noLines": "この型にはまだラインがありません。",
       "lineCount": "{count} ライン",
       "forThisOpening": "このオープニングの型",
       "lineFallback": "ライン {n}",
@@ -164,7 +165,7 @@
     },
     "publish": {
       "bannerTitle": "この型はまだ作成中です",
-      "bannerDescription": "公開するまでは自分にしか見えません。公開は取り消せません — 作成中の状態に戻すことはできません。",
+      "bannerDescription": "公開するまでは自分にしか見えません。",
       "needsLine": "公開するには、ラインを1つ以上追加してください。",
       "button": "公開する",
       "confirmTitle": "この型を公開しますか？",

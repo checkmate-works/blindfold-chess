@@ -36,6 +36,8 @@ type Props = {
   /** Repertoire id, for linking each line to its detail (annotations) page. */
   repertoireId: string;
   locale: string;
+  /** Whether the viewer is the owner — gates the empty-state "add a line" CTA. */
+  isOwner: boolean;
 };
 
 /**
@@ -45,7 +47,7 @@ type Props = {
  * / next / last controls (and ←/→ keys). Positions/formatting are precomputed
  * server-side, so this stays a thin UI client component.
  */
-export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Props) {
+export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwner }: Props) {
   const t = useTranslations('Repertoires');
   const [selectedIndex, setSelectedIndex] = useState(0);
   // The line whose truncated moves are unfolded in the list; accordion-style
@@ -53,11 +55,13 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [ply, setPly] = useState(0);
 
+  // A `building` repertoire is reachable by direct URL (soft-privacy) before
+  // it has any lines — e.g. right after creation, or between deleting the
+  // last line and adding a new one. `line` stays undefined in that case;
+  // everything below the early return assumes at least one line exists.
   const line = lines[selectedIndex] ?? lines[0];
-  const maxPly = line.positions.length - 1;
+  const maxPly = (line?.positions.length ?? 1) - 1;
   const clampedPly = Math.min(ply, maxPly);
-  const current = line.positions[clampedPly];
-  const lastMove = clampedPly > 0 ? current.lastMove : null;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -79,6 +83,24 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
       setPly(0);
     }
   }
+
+  if (!line) {
+    return (
+      <div className="space-y-4 py-8 text-center">
+        <p className="text-muted-foreground">{t('detail.noLines')}</p>
+        {isOwner && (
+          <Link href={`/${locale}/repertoires/${repertoireId}/lines/new`} className="inline-block">
+            <Button asChild variant="primary">
+              {t('line.new.title')}
+            </Button>
+          </Link>
+        )}
+      </div>
+    );
+  }
+
+  const current = line.positions[clampedPly];
+  const lastMove = clampedPly > 0 ? current.lastMove : null;
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">

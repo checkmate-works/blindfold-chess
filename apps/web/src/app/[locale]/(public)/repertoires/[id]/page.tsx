@@ -89,11 +89,11 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: repertoire.name }]}
     >
+      <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
+
       {isOwner && repertoire.status === 'building' && (
         <PublishRepertoireBanner id={repertoire.id} locale={locale} lineCount={lines.length} />
       )}
-
-      <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
 
       {repertoire.description && (
         <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
@@ -104,6 +104,7 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         side={repertoire.side}
         repertoireId={repertoire.id}
         locale={locale}
+        isOwner={isOwner}
       />
 
       {/* Below the board: the openings this repertoire covers (each card links

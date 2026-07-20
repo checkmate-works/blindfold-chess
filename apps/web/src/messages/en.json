@@ -98,6 +98,7 @@
       "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Lines",
+      "noLines": "This kata has no lines yet.",
       "lineCount": "{count} lines",
       "forThisOpening": "Kata for this opening",
       "lineFallback": "Line {n}",
@@ -164,7 +165,7 @@
     },
     "publish": {
       "bannerTitle": "This kata is still in progress",
-      "bannerDescription": "It's only visible to you until you publish it. Publishing is permanent — you won't be able to move it back to in progress.",
+      "bannerDescription": "It's only visible to you until you publish it.",
       "needsLine": "Add at least one line before you can publish.",
       "button": "Publish",
       "confirmTitle": "Publish this kata?",
