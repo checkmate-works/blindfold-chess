@@ -45,6 +45,10 @@ export function PositionListCard({ position, ...rest }: Props) {
       description={position.description}
       createdAt={position.createdAt}
       topicKey={position.id}
+      // Puzzle / position-memory detail pages have an `id="comments"`
+      // section + ScrollToHashOnMount, so the comment icon can scroll
+      // straight to it — see the CatalogListCard `commentHref` TSDoc.
+      commentHref={`${rest.detailHref}#comments`}
       {...rest}
     />
   );

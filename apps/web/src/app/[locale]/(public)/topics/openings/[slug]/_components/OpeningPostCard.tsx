@@ -53,6 +53,7 @@ export function OpeningPostCard({ post, locale, slug, openingName, attachment }:
     <BaseTopicPostCard
       postId={post.id}
       postHref={`/topics/openings/${slug}/posts/${post.id}`}
+      commentHref={`/topics/openings/${slug}/posts/${post.id}#comments`}
       content={post.content}
       createdAt={post.createdAt}
       author={post.author}
