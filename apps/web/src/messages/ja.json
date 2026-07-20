@@ -1933,6 +1933,7 @@
       "suggestCta": "パターンを提案する"
     },
     "positionHistory": {
+      "sectionTitle": "編集履歴",
       "pageTitle": "編集履歴 · {name}",
       "breadcrumb": "編集履歴",
       "empty": "まだ編集はありません。",

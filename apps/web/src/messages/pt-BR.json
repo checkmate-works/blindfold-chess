@@ -1933,6 +1933,7 @@
       "suggestCta": "Sugerir um padrão"
     },
     "positionHistory": {
+      "sectionTitle": "Histórico de edições",
       "pageTitle": "Histórico de edições · {name}",
       "breadcrumb": "Histórico de edições",
       "empty": "Ainda não há edições registradas.",

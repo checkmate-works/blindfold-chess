@@ -5,7 +5,7 @@ import { listContentRevisionsForPosition } from '@/lib/positions/content-revisio
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import type { PositionType } from '@/lib/positions/types';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PositionContentRevisionItem } from './PositionContentRevisionItem';
@@ -68,6 +68,8 @@ export async function PositionHistoryView({ positionId, positionType, locale }: 
         { label: t('breadcrumb') },
       ]}
     >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
+
       {revisions.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           {predatesTracking ? t('legacyEditNotice') : t('empty')}
