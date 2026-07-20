@@ -7,6 +7,10 @@ import { buildGuideEntries } from './_lib/sitemap/guides';
 import { buildInterviewEntries } from './_lib/sitemap/interview';
 import { buildLeaderboardEntries } from './_lib/sitemap/leaderboard';
 import { buildLearnArticleEntries, buildManualSectionEntries } from './_lib/sitemap/learn';
+import {
+  buildPositionMemoryProfileEntries,
+  buildPuzzleProfileEntries,
+} from './_lib/sitemap/problems';
 import { buildRankEntries } from './_lib/sitemap/ranks';
 import { buildRepertoireEntries } from './_lib/sitemap/repertoires';
 import { buildRootEntry, buildStaticPageEntries } from './_lib/sitemap/static-pages';
@@ -29,6 +33,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     await buildOpeningTopicEntries(now),
     await buildSquareTopicEntries(now),
     await buildRepertoireEntries(now),
+    await buildPuzzleProfileEntries(now),
+    await buildPositionMemoryProfileEntries(now),
     buildInterviewEntries(now),
   ];
 
