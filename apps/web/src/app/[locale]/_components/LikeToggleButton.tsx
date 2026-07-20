@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
-import { useAuthGuard } from '../_hooks/use-auth-guard';
+import type { ToggleLikeResult } from '../_hooks/use-like-toggle';
+import { useLikeToggle } from '../_hooks/use-like-toggle';
 import { AuthPromptModal } from './AuthPromptModal';
 import { EngagementCounter, engagementIconClass } from './EngagementCounter';
 import type { EngagementCounterHitArea, EngagementCounterSize } from './EngagementCounter';
 
-export type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
+export type { ToggleLikeResult };
 
 export type LikeToggleButtonSize = EngagementCounterSize;
 
@@ -41,53 +40,16 @@ export function LikeToggleButton({
   hitArea = 'none',
 }: Props) {
   const t = useTranslations(i18nNamespace);
-  const [isPending, startTransition] = useTransition();
-  const { guardAction, isModalOpen, closeModal } = useAuthGuard();
-
-  // Confirmed state: latest value returned by the server, or initial value
-  const [confirmed, setConfirmed] = useState({
-    liked: initialLikedByMe,
-    count: initialLikeCount,
+  const { liked, count, isPending, toggle, isModalOpen, closeModal } = useLikeToggle({
+    initialLikeCount,
+    initialLikedByMe,
+    onToggle,
   });
-
-  // Temporary state used only during optimistic updates
-  const [optimistic, setOptimistic] = useState<{
-    liked: boolean;
-    count: number;
-  } | null>(null);
-
-  // Display value: use optimistic value during updates, otherwise confirmed value
-  const display = optimistic ?? confirmed;
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    guardAction(() => {
-      startTransition(async () => {
-        // Optimistic update: reflect in UI immediately
-        const newLiked = !display.liked;
-        const newCount = display.count + (newLiked ? 1 : -1);
-        setOptimistic({ liked: newLiked, count: newCount });
-
-        try {
-          const result = await onToggle();
-
-          if ('error' in result) {
-            // On error: rollback optimistic update
-            setOptimistic(null);
-            return;
-          }
-
-          // On success: update state with server-confirmed values
-          setConfirmed({ liked: result.liked, count: result.likeCount });
-        } catch {
-          // Network error etc.: rollback
-        } finally {
-          setOptimistic(null);
-        }
-      });
-    });
+    toggle();
   };
 
   return (
@@ -96,18 +58,18 @@ export function LikeToggleButton({
         type="button"
         onClick={handleClick}
         disabled={isPending}
-        aria-label={display.liked ? t('unlike') : t('like')}
+        aria-label={liked ? t('unlike') : t('like')}
         className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
       >
         <EngagementCounter
           icon={
-            display.liked ? (
+            liked ? (
               <AiFillHeart className={`${engagementIconClass(size)} text-red-500`} />
             ) : (
               <AiOutlineHeart className={engagementIconClass(size)} />
             )
           }
-          count={display.count}
+          count={count}
           size={size}
           hitArea={hitArea}
         />

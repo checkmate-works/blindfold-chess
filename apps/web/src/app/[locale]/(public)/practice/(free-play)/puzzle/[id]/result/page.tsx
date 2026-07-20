@@ -6,8 +6,11 @@ import { notFound } from 'next/navigation';
 
 import { eq } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, puzzleSolutions } from '@/lib/db';
+import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { resolveExpInfoFromGrantParam } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
 import { PageLayout } from '@/app/[locale]/_components';
@@ -57,6 +60,7 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
 
   const [row, resolvedSearchParams] = await Promise.all([
     getPositionWithProfileById({ id, type: 'puzzle' }),
@@ -67,14 +71,18 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
     notFound();
   }
 
-  const { position } = row;
+  const { position, profile } = row;
+  const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
-  const [solutions, expInfo] = await Promise.all([
+  const currentUser = await getOptionalUser();
+
+  const [solutions, expInfo, likeMeta] = await Promise.all([
     db
       .select({ solutionMoves: puzzleSolutions.solutionMoves })
       .from(puzzleSolutions)
       .where(eq(puzzleSolutions.positionId, position.id)),
     resolveExpInfoFromGrantParam(resolvedSearchParams, 'practice_result'),
+    getPositionLikeMeta(position.id, currentUser?.id),
   ]);
 
   const solutionMoveLists = solutions.map((s) => s.solutionMoves);
@@ -105,6 +113,10 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
           solutionLines={solutionLines}
           solutionMoveLists={solutionMoveLists}
           expInfo={expInfo}
+          initialLikeCount={likeMeta.likeCount}
+          initialLikedByMe={likeMeta.likedByMe}
+          profile={profile}
+          displayName={displayName}
         />
       </Suspense>
 

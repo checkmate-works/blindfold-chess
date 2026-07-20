@@ -1150,6 +1150,8 @@
       "incorrect": "Incorrecto",
       "missing": "Faltante",
       "score": "Puntuación",
+      "likeCta": "Me gusta esta posición",
+      "likedCta": "Te gusta",
       "recreationProgress": "Progreso de Recreación",
       "extraDescription": "Piezas extra colocadas en casillas vacías",
       "nextProblem": "Siguiente Problema",
@@ -1464,6 +1466,8 @@
         "historySection": "Historial de Intentos",
         "solution": "Solución: {move}",
         "note": "— {note}",
+        "likeCta": "Me gusta este puzzle",
+        "likedCta": "Te gusta",
         "attemptCorrect": "Correcto",
         "attemptIncorrect": "Incorrecto",
         "backToList": "Volver a Puzzles",
@@ -1728,7 +1732,9 @@
     },
     "common": {
       "play": "Reproducir",
-      "replay": "Repetir"
+      "replay": "Repetir",
+      "white": "Blancas",
+      "black": "Negras"
     },
     "quadrantAnchors": {
       "title": "Anclas de Cuadrante",

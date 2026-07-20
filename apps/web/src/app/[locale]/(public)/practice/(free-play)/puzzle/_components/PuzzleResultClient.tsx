@@ -12,11 +12,14 @@ import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ResultLikeCta } from '../../_components/ResultLikeCta';
 import type { Attempt } from '../_lib/puzzle-match';
 import { puzzleResultStorageKey } from '../_lib/puzzle-result-storage';
 import {
@@ -25,6 +28,11 @@ import {
   computeAttemptStatus,
 } from './AttemptHistoryPanel';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
+
+type ProfileLike = {
+  username?: string | null;
+  avatarUrl?: string | null;
+} | null;
 
 type Props = {
   locale: Locale;
@@ -39,6 +47,12 @@ type Props = {
    * event was not found — in which case `<ExpGainDisplay>` renders nothing.
    */
   expInfo: ExpInfo | null;
+  initialLikeCount: number;
+  initialLikedByMe: boolean;
+  /** Puzzle author's profile. May be null for anonymous / deleted users. */
+  profile: ProfileLike;
+  /** Pre-resolved display name (use `resolveAuthorName(profile, ...)` at the call site). */
+  displayName: string;
 };
 
 export function PuzzleResultClient({
@@ -48,8 +62,13 @@ export function PuzzleResultClient({
   solutionLines,
   solutionMoveLists,
   expInfo,
+  initialLikeCount,
+  initialLikedByMe,
+  profile,
+  displayName,
 }: Props) {
   const t = useTranslations('practice.puzzle.result');
+  const tPuzzle = useTranslations('practice.puzzle');
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
   const [peekCount, setPeekCount] = useState(0);
@@ -101,7 +120,12 @@ export function PuzzleResultClient({
 
   return (
     <div className="space-y-6">
-      <PuzzleSolutionReplay fen={fen} solutionMoves={lockedMoves} showSectionTitle />
+      <PuzzleSolutionReplay
+        fen={fen}
+        solutionMoves={lockedMoves}
+        showSectionTitle
+        showMoveList={attempts.length === 0}
+      />
 
       {/* (B) Attempt history — laid out in PGN-style W/B rows so the
        *     numbering matches the puzzle's actual move sequence (derived
@@ -112,7 +136,12 @@ export function PuzzleResultClient({
       {attempts.length > 0 && (
         <div className="space-y-3">
           <SectionTitle>{t('historySection')}</SectionTitle>
-          <AttemptHistoryPanel fen={fen} solutionSans={lockedSans} attempts={attempts} />
+          <AttemptHistoryPanel
+            fen={fen}
+            solutionSans={lockedSans}
+            attempts={attempts}
+            notes={lockedMoves.map((m) => m.note)}
+          />
           <div className="flex justify-end">
             <AttemptStatusBadge status={attemptStatus} />
           </div>
@@ -140,6 +169,34 @@ export function PuzzleResultClient({
           them away. (EXP and this banner are mutually exclusive: expInfo is
           null for guests.) */}
       <SignUpBanner locale={locale} />
+
+      {/* Like nudge — sits directly above the action buttons, right where
+          the user's attention already is after solving. Only shown for a
+          puzzle the viewer hadn't already liked when the page loaded; once
+          shown it toggles in place instead of disappearing on click. */}
+      <ResultLikeCta
+        initialLikeCount={initialLikeCount}
+        initialLikedByMe={initialLikedByMe}
+        onToggle={() => toggleLike(positionId, locale)}
+        label={t('likeCta')}
+        likedLabel={t('likedCta')}
+      />
+
+      {/* Single-line "Created by [avatar] name" attribution, right below the
+          like CTA — the pre-panel inline style, not the SNS-style
+          PositionAuthorHeader panel (that reserves space for a "⋯" menu
+          this screen never has, so it reads as unbalanced empty space). */}
+      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+        <span>{tPuzzle('detail.createdBy')}</span>
+        <UserAvatar
+          profileHref={profile?.username ? `/u/${profile.username}` : null}
+          avatarUrl={profile?.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          size="xs"
+          layout="inline"
+        />
+      </div>
 
       {/* (D) Action buttons */}
       <div className="flex flex-col gap-3 pt-4">

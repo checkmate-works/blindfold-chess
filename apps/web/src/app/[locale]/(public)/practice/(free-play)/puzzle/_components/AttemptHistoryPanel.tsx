@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
+import { CircleMarker } from './CircleMarker';
+
 type Attempt = { move: string; isCorrect: boolean };
 
 export type PlayerStep = {
@@ -20,10 +22,20 @@ export type PlayerStep = {
   correctMove: string | null;
 };
 
-type SolvedCell = { kind: 'solved'; wrongMoves: string[]; correctMove: string };
-type RevealedCell = { kind: 'revealed'; wrongMoves: string[]; expectedMove: string };
-type SkippedCell = { kind: 'skipped'; expectedMove: string };
-type OpponentCell = { kind: 'opponent'; san: string };
+type SolvedCell = {
+  kind: 'solved';
+  wrongMoves: string[];
+  correctMove: string;
+  note?: string | null;
+};
+type RevealedCell = {
+  kind: 'revealed';
+  wrongMoves: string[];
+  expectedMove: string;
+  note?: string | null;
+};
+type SkippedCell = { kind: 'skipped'; expectedMove: string; note?: string | null };
+type OpponentCell = { kind: 'opponent'; san: string; note?: string | null };
 type EmptyCell = { kind: 'empty' };
 type Cell = SolvedCell | RevealedCell | SkippedCell | OpponentCell | EmptyCell;
 
@@ -49,6 +61,8 @@ type Props = {
   fen: string;
   solutionSans: string[];
   attempts: Attempt[];
+  /** Parallel array to `solutionSans` — per-move commentary from the puzzle's solution data. */
+  notes?: (string | null)[];
 };
 
 /**
@@ -129,31 +143,42 @@ export function computeAttemptStatus(attempts: Attempt[], solutionSans: string[]
  *   - `skipped`: the user never reached this step — render only the
  *                muted answer-reveal chip.
  * Opponent turns are auto-played and rendered as plain SAN.
+ *
+ * `notes` is a parallel array to `solutionSans` (per-move commentary from
+ * the puzzle's solution data). Optional and defaults to empty so existing
+ * callers that only care about attempt grading are unaffected.
  */
-export function buildCells(solutionSans: string[], groups: PlayerStep[]): Cell[] {
+export function buildCells(
+  solutionSans: string[],
+  groups: PlayerStep[],
+  notes: (string | null)[] = []
+): Cell[] {
   const cells: Cell[] = [];
   for (let i = 0; i < solutionSans.length; i++) {
     const isPlayerTurn = i % 2 === 0;
     const san = solutionSans[i]!;
+    const note = notes[i] ?? undefined;
     if (!isPlayerTurn) {
-      cells.push({ kind: 'opponent', san });
+      cells.push({ kind: 'opponent', san, note });
       continue;
     }
     const playerStepIdx = i / 2;
     const group = groups[playerStepIdx];
     if (!group) {
-      cells.push({ kind: 'skipped', expectedMove: san });
+      cells.push({ kind: 'skipped', expectedMove: san, note });
     } else if (group.correctMove !== null) {
       cells.push({
         kind: 'solved',
         wrongMoves: group.wrongMoves,
         correctMove: group.correctMove,
+        note,
       });
     } else {
       cells.push({
         kind: 'revealed',
         wrongMoves: group.wrongMoves,
         expectedMove: san,
+        note,
       });
     }
   }
@@ -206,37 +231,58 @@ const CORRECT_CHIP =
 const REVEALED_CHIP =
   'inline-flex items-baseline rounded px-1.5 py-0.5 italic text-muted-foreground border border-dashed border-border';
 
-function CellContent({ cell }: { cell: Cell }) {
+function CellContent({ cell, formatNote }: { cell: Cell; formatNote: (note: string) => string }) {
   if (cell.kind === 'empty') {
     return <span className="text-muted-foreground">…</span>;
   }
+
+  const noteNode = cell.note ? (
+    <span className="ml-1 text-muted-foreground">{formatNote(cell.note)}</span>
+  ) : null;
+
   if (cell.kind === 'opponent') {
-    return <span className="text-muted-foreground">{cell.san}</span>;
+    return (
+      <>
+        <span className="text-muted-foreground">{cell.san}</span>
+        {noteNode}
+      </>
+    );
   }
   if (cell.kind === 'skipped') {
-    return <span className={REVEALED_CHIP}>{cell.expectedMove}</span>;
+    return (
+      <>
+        <span className={REVEALED_CHIP}>{cell.expectedMove}</span>
+        {noteNode}
+      </>
+    );
   }
   if (cell.kind === 'revealed') {
     return (
+      <>
+        <span className="inline-flex flex-wrap items-baseline gap-1.5">
+          {cell.wrongMoves.map((m, i) => (
+            <span key={`w-${i}`} className={WRONG_CHIP}>
+              {m}
+            </span>
+          ))}
+          <span className={REVEALED_CHIP}>{cell.expectedMove}</span>
+        </span>
+        {noteNode}
+      </>
+    );
+  }
+  return (
+    <>
       <span className="inline-flex flex-wrap items-baseline gap-1.5">
         {cell.wrongMoves.map((m, i) => (
           <span key={`w-${i}`} className={WRONG_CHIP}>
             {m}
           </span>
         ))}
-        <span className={REVEALED_CHIP}>{cell.expectedMove}</span>
+        <span className={CORRECT_CHIP}>{cell.correctMove}</span>
       </span>
-    );
-  }
-  return (
-    <span className="inline-flex flex-wrap items-baseline gap-1.5">
-      {cell.wrongMoves.map((m, i) => (
-        <span key={`w-${i}`} className={WRONG_CHIP}>
-          {m}
-        </span>
-      ))}
-      <span className={CORRECT_CHIP}>{cell.correctMove}</span>
-    </span>
+      {noteNode}
+    </>
   );
 }
 
@@ -263,18 +309,34 @@ export function AttemptStatusBadge({ status }: { status: AttemptStatus }) {
   return <span className={`${BADGE_BASE} ${BADGE_VARIANTS[status.state]}`}>{label}</span>;
 }
 
-export function AttemptHistoryPanel({ fen, solutionSans, attempts }: Props) {
+export function AttemptHistoryPanel({ fen, solutionSans, attempts, notes = [] }: Props) {
+  const t = useTranslations('practice.puzzle.result');
+  const tCommon = useTranslations('practice.common');
+
   const rows = useMemo(() => {
     const groups = groupAttemptsByPlayerStep(attempts);
-    const cells = buildCells(solutionSans, groups);
+    const cells = buildCells(solutionSans, groups, notes);
     const firstTurn: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
     return buildRows(cells, firstTurn, getFullmoveFromFen(fen));
-  }, [fen, solutionSans, attempts]);
+  }, [fen, solutionSans, attempts, notes]);
 
   if (rows.length === 0) return null;
 
+  const formatNote = (note: string) => t('note', { note });
+
   return (
     <div className="border border-border rounded-lg">
+      <div className="flex items-center px-4 pt-3 text-xs font-medium text-muted-foreground">
+        <span className="w-10 shrink-0" />
+        <span className="flex-1 px-2 flex items-center gap-1.5">
+          <CircleMarker color="w" />
+          {tCommon('white')}
+        </span>
+        <span className="flex-1 px-2 flex items-center gap-1.5">
+          <CircleMarker color="b" />
+          {tCommon('black')}
+        </span>
+      </div>
       <div className="p-4 font-mono space-y-1">
         {rows.map((row) => (
           <div key={row.moveNumber} className="flex items-baseline text-sm">
@@ -282,10 +344,10 @@ export function AttemptHistoryPanel({ fen, solutionSans, attempts }: Props) {
               {row.moveNumber}.
             </span>
             <span className="flex-1 px-2">
-              <CellContent cell={row.white} />
+              <CellContent cell={row.white} formatNote={formatNote} />
             </span>
             <span className="flex-1 px-2">
-              <CellContent cell={row.black} />
+              <CellContent cell={row.black} formatNote={formatNote} />
             </span>
           </div>
         ))}

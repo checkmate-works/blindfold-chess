@@ -1150,6 +1150,8 @@
       "incorrect": "Incorreto",
       "missing": "Ausente",
       "score": "Pontuação",
+      "likeCta": "Curtir esta posição",
+      "likedCta": "Curtido",
       "recreationProgress": "Progresso de Recriação",
       "extraDescription": "Peças extras colocadas em casas vazias",
       "nextProblem": "Próximo Problema",
@@ -1464,6 +1466,8 @@
         "historySection": "Histórico de Tentativas",
         "solution": "Solução: {move}",
         "note": "— {note}",
+        "likeCta": "Curtir este puzzle",
+        "likedCta": "Curtido",
         "attemptCorrect": "Correto",
         "attemptIncorrect": "Incorreto",
         "backToList": "Voltar para Puzzles",
@@ -1728,7 +1732,9 @@
     },
     "common": {
       "play": "Reproduzir",
-      "replay": "Repetir"
+      "replay": "Repetir",
+      "white": "Brancas",
+      "black": "Pretas"
     },
     "quadrantAnchors": {
       "title": "Âncoras de Quadrante",

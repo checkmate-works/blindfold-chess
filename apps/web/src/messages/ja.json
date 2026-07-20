@@ -1150,6 +1150,8 @@
       "incorrect": "誤答",
       "missing": "漏れ",
       "score": "スコア",
+      "likeCta": "この局面にいいね",
+      "likedCta": "いいね済み",
       "recreationProgress": "再現度",
       "extraDescription": "空白のマスに配置された余分な駒",
       "nextProblem": "次の問題",
@@ -1474,6 +1476,8 @@
         "historySection": "回答履歴",
         "solution": "正解: {move}",
         "note": "— {note}",
+        "likeCta": "このパズルにいいね",
+        "likedCta": "いいね済み",
         "attemptCorrect": "正解",
         "attemptIncorrect": "不正解",
         "backToList": "パズル一覧に戻る",
@@ -1728,7 +1732,9 @@
     },
     "common": {
       "play": "再生",
-      "replay": "再生"
+      "replay": "再生",
+      "white": "白",
+      "black": "黒"
     },
     "quadrantAnchors": {
       "title": "4分割アンカー",

@@ -4,9 +4,12 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getOptionalUser } from '@/lib/auth';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
-import { getPositionById } from '@/lib/positions/queries';
+import { getPositionLikeMeta } from '@/lib/positions/like-queries';
+import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { createClient } from '@/lib/supabase/server';
+import { resolveAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -48,6 +51,7 @@ export default async function PositionResultPage({ params, searchParams }: Props
 
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
 
   const sp = await searchParams;
   const grantRaw = sp.grant;
@@ -67,7 +71,18 @@ export default async function PositionResultPage({ params, searchParams }: Props
     }
   }
 
-  const position = await getPositionById({ id, type: 'memory' });
+  // Tolerant of a missing/soft-deleted position (unlike the puzzle result
+  // page, which 404s) — the breadcrumb and result panel already render
+  // without it; the like CTA / attribution row below simply stays hidden
+  // in that case too.
+  const row = await getPositionWithProfileById({ id, type: 'memory' });
+  const position = row?.position;
+  const displayName = row
+    ? resolveAuthorName(row.profile, { fallback: tCommon('deletedUser') })
+    : undefined;
+
+  const currentUser = await getOptionalUser();
+  const likeMeta = position ? await getPositionLikeMeta(position.id, currentUser?.id) : undefined;
 
   const adBannerStandard = <AdSlot slot="content-bottom" />;
 
@@ -96,6 +111,11 @@ export default async function PositionResultPage({ params, searchParams }: Props
         adBannerStandard={adBannerStandard}
         breadcrumb={breadcrumb}
         expInfo={expInfo}
+        positionId={position?.id}
+        profile={row?.profile}
+        displayName={displayName}
+        initialLikeCount={likeMeta?.likeCount}
+        initialLikedByMe={likeMeta?.likedByMe}
       />
     </Suspense>
   );

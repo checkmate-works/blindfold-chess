@@ -1155,6 +1155,8 @@
       "nextProblem": "Next Problem",
       "viewResults": "View Results",
       "analyzeOnLichess": "Analyze on Lichess",
+      "likeCta": "Like this position",
+      "likedCta": "Liked",
       "original": "Original",
       "yourRecreation": "Your Recreation",
       "pieceNames": {
@@ -1474,6 +1476,8 @@
         "historySection": "Attempt History",
         "solution": "Solution: {move}",
         "note": "— {note}",
+        "likeCta": "Like this puzzle",
+        "likedCta": "Liked",
         "attemptCorrect": "Correct",
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
@@ -1728,7 +1732,9 @@
     },
     "common": {
       "play": "Play",
-      "replay": "Replay"
+      "replay": "Replay",
+      "white": "White",
+      "black": "Black"
     },
     "quadrantAnchors": {
       "title": "Quadrant Anchors",
