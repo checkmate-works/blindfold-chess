@@ -31,7 +31,7 @@ export type GrantLikeCoinsResult = {
   initialized: boolean;
   /** Watermark this run started from (ISO). */
   watermark: string;
-  /** Upper bound of the scan window / candidate next watermark (ISO). */
+  /** Wall-clock time this run started (ISO) — the scan's actual upper bound trails this by LIKE_GRANT_SCAN_SAFETY_MARGIN_MS. */
   scanStartedAt: string;
   likesScanned: number;
   directIntents: number;
