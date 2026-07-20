@@ -167,7 +167,8 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
           standard link lists (ListLinkContainer / ListLink): a bordered card
           with row separators, row click navigating to the line's detail page.
           The chevron toggle unfolds a truncated preview of the line's moves
-          (and mirrors it on the big board). */}
+          (and mirrors it on the big board) — the preview itself is also a
+          link to the same detail page, so expanding it isn't a dead end. */}
       <ul className="h-fit overflow-hidden rounded-md border border-border bg-card lg:col-span-1">
         {lines.map((l, i) => {
           const isSelected = i === selectedIndex;
@@ -177,9 +178,7 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
           return (
             <li key={l.id} className="border-b border-border last:border-b-0">
               <div
-                className={`flex items-center transition-colors ${
-                  isSelected ? 'bg-link-primary/5' : ''
-                }`}
+                className={`flex items-center transition-colors ${isSelected ? 'bg-muted' : ''}`}
               >
                 <button
                   type="button"
@@ -199,9 +198,7 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
                   className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 transition-colors hover:bg-muted"
                 >
                   <span
-                    className={`truncate text-sm ${
-                      isSelected ? 'font-medium text-link-primary' : 'text-foreground'
-                    }`}
+                    className={`truncate text-sm text-foreground ${isSelected ? 'font-medium' : ''}`}
                   >
                     {l.name ?? t('detail.lineFallback', { n: i + 1 })}
                   </span>
@@ -213,7 +210,10 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
               </div>
 
               {isExpanded && (
-                <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 px-3 pb-2.5 pl-10 text-sm">
+                <Link
+                  href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
+                  className="flex flex-wrap items-center gap-x-1 gap-y-0.5 p-3 text-sm transition-colors hover:bg-muted"
+                >
                   {previewPairs.map((pair) => (
                     <span key={pair.moveNumber} className="flex items-center gap-0.5">
                       <span className="text-xs text-muted-foreground">{pair.moveNumber}.</span>
@@ -222,7 +222,7 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
                     </span>
                   ))}
                   {truncated && <span className="text-muted-foreground">…</span>}
-                </div>
+                </Link>
               )}
             </li>
           );
