@@ -16,6 +16,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 
 import { buildSolutionPairs } from '../_lib/solution-pairs';
 import { getFullmoveFromFen } from './AttemptHistoryPanel';
+import { CircleMarker } from './CircleMarker';
 
 /**
  * Interval between auto-advanced moves in the replay. Matches the value used
@@ -142,10 +143,16 @@ export function PuzzleSolutionReplay({
             </p>
           ) : (
             <div className="mx-auto max-w-md">
-              <div className="flex items-baseline text-xs font-medium text-muted-foreground">
+              <div className="flex items-center text-xs font-medium text-muted-foreground">
                 <span className="w-10 shrink-0" />
-                <span className="flex-1 px-2">{tCommon('white')}</span>
-                <span className="flex-1 px-2">{tCommon('black')}</span>
+                <span className="flex-1 px-2 flex items-center gap-1.5">
+                  <CircleMarker color="w" />
+                  {tCommon('white')}
+                </span>
+                <span className="flex-1 px-2 flex items-center gap-1.5">
+                  <CircleMarker color="b" />
+                  {tCommon('black')}
+                </span>
               </div>
               <div className="space-y-1 text-sm">
                 {solutionPairs.map((pair) => (

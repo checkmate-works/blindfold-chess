@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
+import { CircleMarker } from './CircleMarker';
+
 type Attempt = { move: string; isCorrect: boolean };
 
 export type PlayerStep = {
@@ -324,10 +326,16 @@ export function AttemptHistoryPanel({ fen, solutionSans, attempts, notes = [] }:
 
   return (
     <div className="border border-border rounded-lg">
-      <div className="flex items-baseline px-4 pt-3 text-xs font-medium text-muted-foreground">
+      <div className="flex items-center px-4 pt-3 text-xs font-medium text-muted-foreground">
         <span className="w-10 shrink-0" />
-        <span className="flex-1 px-2">{tCommon('white')}</span>
-        <span className="flex-1 px-2">{tCommon('black')}</span>
+        <span className="flex-1 px-2 flex items-center gap-1.5">
+          <CircleMarker color="w" />
+          {tCommon('white')}
+        </span>
+        <span className="flex-1 px-2 flex items-center gap-1.5">
+          <CircleMarker color="b" />
+          {tCommon('black')}
+        </span>
       </div>
       <div className="p-4 font-mono space-y-1">
         {rows.map((row) => (
