@@ -442,6 +442,13 @@
       "when": 1784517012465,
       "tag": "20260720031012_create_position_content_revisions",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1784539953327,
+      "tag": "20260720093233_add_building_status_to_repertoires",
+      "breakpoints": true
     }
   ]
 }
