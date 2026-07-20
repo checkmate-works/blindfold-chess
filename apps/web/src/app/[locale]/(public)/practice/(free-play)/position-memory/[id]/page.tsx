@@ -171,6 +171,12 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             href: `/${locale}/practice/position-memory/new?from=${position.id}`,
             icon: <FiGitBranch className="h-4 w-4" aria-hidden />,
           },
+          {
+            key: 'createPuzzle',
+            label: t('detail.createPuzzleFromHere'),
+            href: `/${locale}/practice/puzzle/new?from=${position.id}`,
+            icon: <FaPuzzlePiece className="h-4 w-4" aria-hidden />,
+          },
         ]
       : []),
   ];
@@ -240,13 +246,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             {tPlay('newGameFromHere')}
           </Button>
         </Link>
-        {canFork && (
-          <Link href={`/practice/puzzle/new?from=${position.id}`}>
-            <Button asChild variant="secondary" size="lg" icon={<FaPuzzlePiece />} fullWidth>
-              {t('detail.createPuzzleFromHere')}
-            </Button>
-          </Link>
-        )}
       </div>
 
       <PositionAuthorHeader

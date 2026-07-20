@@ -1308,7 +1308,7 @@
         "forkedFromDeleted": "Bifurcado de una posición eliminada",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
         "usefulSection": "Patrones útiles para resolver ({count})",
-        "createPuzzleFromHere": "Crear puzzle desde aquí"
+        "createPuzzleFromHere": "Crear Puzzle"
       },
       "forksList": {
         "title": "Bifurcaciones",
@@ -1447,7 +1447,7 @@
         "forkedFromDeleted": "Bifurcado de un puzzle eliminado",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
         "usefulSection": "Patrones útiles para resolver ({count})",
-        "createdFromPositionMemory": "Creado a partir de Memoria de Posiciones:",
+        "createdFromPositionMemory": "Creado a partir de:",
         "createdFromDeletedPositionMemory": "Creado a partir de una posición eliminada"
       },
       "forksList": {

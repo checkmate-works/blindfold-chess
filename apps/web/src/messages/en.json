@@ -1308,7 +1308,7 @@
         "forkedFromDeleted": "Forked from a deleted position",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
         "usefulSection": "Useful patterns for solving ({count})",
-        "createPuzzleFromHere": "Create puzzle from here"
+        "createPuzzleFromHere": "Create Puzzle"
       },
       "forksList": {
         "title": "Forks",
@@ -1447,7 +1447,7 @@
         "forkedFromDeleted": "Forked from a deleted puzzle",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
         "usefulSection": "Useful patterns for solving ({count})",
-        "createdFromPositionMemory": "Created from Position Memory:",
+        "createdFromPositionMemory": "Created from:",
         "createdFromDeletedPositionMemory": "Created from a deleted position"
       },
       "forksList": {
