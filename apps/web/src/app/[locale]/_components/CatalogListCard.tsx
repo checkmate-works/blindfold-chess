@@ -157,7 +157,11 @@ export function CatalogListCard({
             replyMeta={replyMeta}
             toggleLikeAction={toggleLikeAction}
             i18nNamespace={i18nNamespace}
-            postHref={detailHref}
+            // Comment icon additionally scrolls to the Comments section
+            // (`id="comments"` on the destination page's SectionTitle, where
+            // present); the rest of the card keeps linking to the plain
+            // detail page. Mirrors PositionFeedCard's home-feed behavior.
+            postHref={`${detailHref}#comments`}
           />
           {actions && <div className="flex items-center gap-2 mt-2">{actions}</div>}
         </>
