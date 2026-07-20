@@ -15,6 +15,7 @@ const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockTxUpdateWhere = vi.fn();
 const mockTxFeedInsertValues = vi.fn();
+const mockTxRevisionInsertValues = vi.fn();
 const mockValidateForkSource = vi.fn();
 const mockValidateAndDedupeTagIds = vi.fn();
 const mockInsertPositionTags = vi.fn();
@@ -93,6 +94,10 @@ vi.mock('@/lib/db', () => ({
               mockTxFeedInsertValues(values);
               return Promise.resolve();
             }
+            if (table?.__tableTag === 'position_content_revisions') {
+              mockTxRevisionInsertValues(values);
+              return Promise.resolve();
+            }
             mockInsertValues(values);
             return { returning: () => mockInsertReturning() };
           },
@@ -122,6 +127,12 @@ vi.mock('@/lib/db', () => ({
     entityId: 'entity_id',
     actorId: 'actor_id',
     metadata: 'metadata',
+  },
+  positionContentRevisions: {
+    __tableTag: 'position_content_revisions',
+    positionId: 'position_id',
+    editorId: 'editor_id',
+    changes: 'changes',
   },
 }));
 
@@ -468,6 +479,9 @@ describe('updatePositionEntry', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith(
       `/practice/position-memory/${TEST_POSITION_ID}`
     );
+    expect(mockRevalidatePath).toHaveBeenCalledWith(
+      `/practice/position-memory/${TEST_POSITION_ID}/history`
+    );
   });
 
   it('logs an update activity event with old → new changes', async () => {
@@ -490,7 +504,31 @@ describe('updatePositionEntry', () => {
     });
   });
 
-  it('skips the activity log when nothing changed (no-op edit)', async () => {
+  it('inserts a position_content_revisions row (inside the transaction) with the same changes plus any extra diff', async () => {
+    const applyExtraWrites = vi.fn().mockResolvedValue({
+      solutionMoves: { from: [[{ san: 'Nf3', note: null }]], to: [[{ san: 'Bg5', note: null }]] },
+    });
+
+    const { updatePositionEntry } = await import('./user-position-mutations');
+    const result = await updatePositionEntry({ ...baseUpdateParams, applyExtraWrites });
+
+    expect(result).toEqual({ success: true });
+    expect(mockTxRevisionInsertValues).toHaveBeenCalledWith({
+      positionId: TEST_POSITION_ID,
+      editorId: TEST_USER_ID,
+      changes: {
+        fen: { from: 'old-fen', to: VALID_FEN },
+        title: { from: 'Old title', to: 'Updated title' },
+        description: { from: 'Old description', to: null },
+        solutionMoves: {
+          from: [[{ san: 'Nf3', note: null }]],
+          to: [[{ san: 'Bg5', note: null }]],
+        },
+      },
+    });
+  });
+
+  it('skips the activity log and the revision row when nothing changed (no-op edit)', async () => {
     mockSelectLimit.mockResolvedValue([
       { ...ownedRow, fen: VALID_FEN, title: 'Updated title', description: null },
     ]);
@@ -500,6 +538,7 @@ describe('updatePositionEntry', () => {
 
     expect(result).toEqual({ success: true });
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
+    expect(mockTxRevisionInsertValues).not.toHaveBeenCalled();
   });
 
   it('uses the puzzle activity verb for puzzle updates', async () => {

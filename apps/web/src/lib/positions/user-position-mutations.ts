@@ -5,7 +5,7 @@ import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, feedItems, positions } from '@/lib/db';
+import { db, feedItems, positionContentRevisions, positions } from '@/lib/db';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { diffFields } from '@/lib/db/diff-fields';
 import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
@@ -263,11 +263,18 @@ export async function createPositionEntry(params: {
   };
 }
 
+/** Old → new pairs for any field an update's `applyExtraWrites` diffed on its own (e.g. puzzle solution moves). */
+export type ExtraRevisionChanges = Record<string, { from: unknown; to: unknown }>;
+
 /**
  * Update a `positions` row of the given kind in place: validate, assert
  * existence + ownership + not soft-deleted, then in one transaction write
  * the new fields, run `applyExtraWrites` (puzzles replace their
- * `puzzle_solutions` row) and replace the theme / chunk tags.
+ * `puzzle_solutions` row and diff the old vs. new solution moves), replace
+ * the theme / chunk tags, and — when anything actually changed — insert a
+ * `position_content_revisions` row. The revision insert lives in the same
+ * transaction as the rest so the user-facing edit history can never record
+ * an edit that didn't actually commit, or vice versa.
  */
 export async function updatePositionEntry(params: {
   kind: PositionKind;
@@ -282,8 +289,13 @@ export async function updatePositionEntry(params: {
   };
   /** Returns an error key, or `null` when the input is valid. */
   validate: (userId: string) => string | null;
-  /** Extra in-transaction writes keyed by the position id. */
-  applyExtraWrites?: (tx: DbTx, positionId: string) => Promise<void>;
+  /**
+   * Extra in-transaction writes keyed by the position id. May return the
+   * old → new changes it diffed on its own (fields outside `fen` / `title` /
+   * `description`, e.g. puzzle solution moves) so they're folded into the
+   * same revision row as the rest of the edit.
+   */
+  applyExtraWrites?: (tx: DbTx, positionId: string) => Promise<ExtraRevisionChanges | void>;
 }): Promise<UpdatePositionEntryResult> {
   const config = POSITION_KINDS[params.kind];
   const { data } = params;
@@ -320,6 +332,11 @@ export async function updatePositionEntry(params: {
     description: data.description?.trim() || null,
   };
 
+  // Preserve the overwritten values for the activity log and the revision
+  // row (a position row has no revision history of its own). Nothing
+  // changed → nothing worth recording.
+  const scalarChanges = diffFields(position, nextValues, ['fen', 'title', 'description']);
+
   await db.transaction(async (tx) => {
     await tx
       .update(positions)
@@ -328,27 +345,33 @@ export async function updatePositionEntry(params: {
         and(eq(positions.id, data.id), eq(positions.userId, user.id), isNull(positions.deletedAt))
       );
 
-    await params.applyExtraWrites?.(tx, data.id);
+    const extraChanges = (await params.applyExtraWrites?.(tx, data.id)) ?? {};
 
     await replacePositionTags(tx, data.id, user.id, dedupedThemeIds, dedupedChunkIds);
+
+    const changes: ExtraRevisionChanges = { ...scalarChanges, ...extraChanges };
+    if (Object.keys(changes).length > 0) {
+      await tx.insert(positionContentRevisions).values({
+        positionId: data.id,
+        editorId: user.id,
+        changes,
+      });
+    }
   });
 
-  // Preserve the overwritten values for the activity log (a position row
-  // has no revision history). Nothing changed → nothing worth logging.
-  const changes = diffFields(position, nextValues, ['fen', 'title', 'description']);
-
-  if (Object.keys(changes).length > 0) {
+  if (Object.keys(scalarChanges).length > 0) {
     logActivityEvent({
       userId: user.id,
       action: config.activityActions.update,
       targetType: 'position',
       targetId: data.id,
-      metadata: { type: config.type, changes },
+      metadata: { type: config.type, changes: scalarChanges },
     });
   }
 
   revalidatePath(`/practice/${config.urlSegment}`);
   revalidatePath(`/practice/${config.urlSegment}/${data.id}`);
+  revalidatePath(`/practice/${config.urlSegment}/${data.id}/history`);
 
   return { success: true };
 }
