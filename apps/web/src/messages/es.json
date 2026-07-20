@@ -2909,6 +2909,7 @@
     "title": "Licencias de código abierto",
     "description": "Reconocimientos e información de licencias del software de código abierto utilizado",
     "lastUpdated": "Última actualización: 13 de mayo de 2026",
+    "overviewTitle": "Resumen",
     "introduction": "Blindfold Chess utiliza motores de ajedrez de código abierto para proporcionar su funcionalidad de oponente de IA. Agradecemos a los autores y comunidades detrás de estos proyectos, y proporcionamos información de atribución y licencias a continuación.",
     "componentsTitle": "Componentes de código abierto incluidos",
     "componentsIntro": "Los siguientes componentes están incluidos con esta aplicación y se entregan a su navegador cuando utiliza las funciones relacionadas. Cada motor se ejecuta como un proceso Web Worker separado y se comunica con la aplicación únicamente a través del protocolo estándar de texto UCI.",

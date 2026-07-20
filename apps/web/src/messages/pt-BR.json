@@ -2909,6 +2909,7 @@
     "title": "Licenças de Código Aberto",
     "description": "Atribuições e informações de licenças do software de código aberto utilizado",
     "lastUpdated": "Última atualização: 13 de maio de 2026",
+    "overviewTitle": "Visão Geral",
     "introduction": "O Xadrez às Cegas utiliza motores de xadrez de código aberto para fornecer sua funcionalidade de oponente de IA. Somos gratos aos autores e comunidades por trás desses projetos e fornecemos informações de atribuição e licenças abaixo.",
     "componentsTitle": "Componentes de Código Aberto Incluídos",
     "componentsIntro": "Os componentes a seguir são incluídos com este aplicativo e entregues ao seu navegador quando você usa os recursos relacionados. Cada motor é executado como um processo Web Worker separado e se comunica com o aplicativo apenas através do protocolo de texto padrão UCI.",
