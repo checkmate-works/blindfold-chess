@@ -17,6 +17,7 @@ import {
   repertoireOpenings,
   repertoires,
 } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
@@ -414,5 +415,43 @@ export async function deleteRepertoireEntry(id: string): Promise<DeleteRepertoir
     .returning({ id: repertoires.id });
 
   if (deleted.length === 0) return { error: 'notFound' };
+  return { success: true };
+}
+
+export type PublishRepertoireResult = ActionResult;
+
+/**
+ * Owner-only: publish a `building` repertoire (→ `public`), stamping
+ * `publishedAt`. One-way — there is no action that moves a repertoire back to
+ * `building`; see the `status` TSDoc on the schema. Requires at least one
+ * live line, so an emptied-out course can't be published as an empty shell.
+ */
+export async function publishRepertoireEntry(id: string): Promise<PublishRepertoireResult> {
+  const guard = await authenticateAndGuard(RATE_LIMITS.publishRepertoire);
+  if ('error' in guard) return { error: guard.error };
+  const { user } = guard;
+
+  const ownerError = await assertRepertoireOwner(id, user.id);
+  if (ownerError) return { error: ownerError };
+
+  const [repertoire] = await db
+    .select({ status: repertoires.status })
+    .from(repertoires)
+    .where(and(eq(repertoires.id, id), isNull(repertoires.deletedAt)))
+    .limit(1);
+  if (!repertoire) return { error: 'notFound' };
+  if (repertoire.status !== 'building') return { error: 'alreadyPublished' };
+
+  const lineCount = await countRows(
+    repertoireLines,
+    and(eq(repertoireLines.repertoireId, id), isNull(repertoireLines.deletedAt))
+  );
+  if (lineCount < 1) return { error: 'noLines' };
+
+  await db
+    .update(repertoires)
+    .set({ status: 'public', publishedAt: new Date() })
+    .where(eq(repertoires.id, id));
+
   return { success: true };
 }
