@@ -13,6 +13,12 @@
     "title": "Kata",
     "description": "Katas compartidos por la comunidad: líneas de apertura, patrones de mate y secuencias memorizadas.",
     "sectionTitle": "Katas de la comunidad",
+    "status": {
+      "building": "En progreso"
+    },
+    "building": {
+      "sectionTitle": "Tu kata en progreso"
+    },
     "help": {
       "label": "Sobre los katas",
       "catalog": {
@@ -155,6 +161,19 @@
       "message": "Esto elimina la línea de forma permanente. No se puede deshacer.",
       "confirm": "Eliminar",
       "cancel": "Cancelar"
+    },
+    "publish": {
+      "bannerTitle": "Este kata todavía está en progreso",
+      "bannerDescription": "Solo tú puedes verlo hasta que lo publiques. Publicar es permanente — no podrás volver a marcarlo como en progreso.",
+      "needsLine": "Agrega al menos una línea antes de poder publicarlo.",
+      "button": "Publicar",
+      "confirmTitle": "¿Publicar este kata?",
+      "confirmMessage": "Una vez publicado, este kata será visible para todos y podrá compararse con tus partidas. No podrás volver a marcarlo como en progreso — después solo podrás hacerlo privado.",
+      "confirm": "Publicar",
+      "cancel": "Cancelar",
+      "errors": {
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
     },
     "errors": {
       "nameRequired": "Introduce un nombre.",

@@ -13,6 +13,12 @@
     "title": "Kata",
     "description": "Kata shared by the community — opening lines, mate patterns, and memorized sequences.",
     "sectionTitle": "Community kata",
+    "status": {
+      "building": "In progress"
+    },
+    "building": {
+      "sectionTitle": "Your kata in progress"
+    },
     "help": {
       "label": "About Kata",
       "catalog": {
@@ -155,6 +161,19 @@
       "message": "This permanently removes the line. This cannot be undone.",
       "confirm": "Delete",
       "cancel": "Cancel"
+    },
+    "publish": {
+      "bannerTitle": "This kata is still in progress",
+      "bannerDescription": "It's only visible to you until you publish it. Publishing is permanent — you won't be able to move it back to in progress.",
+      "needsLine": "Add at least one line before you can publish.",
+      "button": "Publish",
+      "confirmTitle": "Publish this kata?",
+      "confirmMessage": "Once published, this kata will be visible to everyone and can be checked against your games. You won't be able to move it back to in progress — you can only make it private afterward.",
+      "confirm": "Publish",
+      "cancel": "Cancel",
+      "errors": {
+        "generic": "Something went wrong. Please try again."
+      }
     },
     "errors": {
       "nameRequired": "Please enter a name.",

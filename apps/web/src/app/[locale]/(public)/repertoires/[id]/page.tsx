@@ -32,6 +32,7 @@ import { RepertoireActionsMenu } from '../_components/RepertoireActionsMenu';
 import { RepertoireChips } from '../_components/RepertoireChips';
 import type { RepertoireViewerLine } from '../_components/RepertoireLineViewer';
 import { RepertoireLineViewer } from '../_components/RepertoireLineViewer';
+import { PublishRepertoireBanner } from './_components/PublishRepertoireBanner';
 import { RepertoireCommentsSection } from './_components/RepertoireCommentsSection';
 
 type Props = {
@@ -88,6 +89,10 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: repertoire.name }]}
     >
+      {isOwner && repertoire.status === 'building' && (
+        <PublishRepertoireBanner id={repertoire.id} locale={locale} lineCount={lines.length} />
+      )}
+
       <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
 
       {repertoire.description && (
@@ -119,7 +124,12 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       )}
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <RepertoireChips locale={locale} side={repertoire.side} phase={repertoire.phase} />
+        <RepertoireChips
+          locale={locale}
+          side={repertoire.side}
+          phase={repertoire.phase}
+          status={repertoire.status}
+        />
         <span>{t('detail.lineCount', { count: lines.length })}</span>
       </div>
 

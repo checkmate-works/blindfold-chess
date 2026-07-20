@@ -13,6 +13,12 @@
     "title": "型",
     "description": "みんなが公開している型 — オープニング、詰みパターン、覚えておきたい手順。",
     "sectionTitle": "みんなの型",
+    "status": {
+      "building": "作成中"
+    },
+    "building": {
+      "sectionTitle": "作成中の型"
+    },
     "help": {
       "label": "型とは",
       "catalog": {
@@ -155,6 +161,19 @@
       "message": "この型を完全に削除します。元に戻せません。",
       "confirm": "削除",
       "cancel": "キャンセル"
+    },
+    "publish": {
+      "bannerTitle": "この型はまだ作成中です",
+      "bannerDescription": "公開するまでは自分にしか見えません。公開は取り消せません — 作成中の状態に戻すことはできません。",
+      "needsLine": "公開するには、ラインを1つ以上追加してください。",
+      "button": "公開する",
+      "confirmTitle": "この型を公開しますか？",
+      "confirmMessage": "公開すると誰でも閲覧でき、対局後の型チェックの対象にもなります。公開後に作成中へ戻すことはできません — 非公開にすることはできます。",
+      "confirm": "公開する",
+      "cancel": "キャンセル",
+      "errors": {
+        "generic": "問題が発生しました。もう一度お試しください。"
+      }
     },
     "errors": {
       "nameRequired": "名前を入力してください。",
