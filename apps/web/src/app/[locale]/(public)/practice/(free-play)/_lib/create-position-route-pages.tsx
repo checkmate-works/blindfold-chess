@@ -439,7 +439,6 @@ export function createPositionCreatePage<TSeed>(
       user,
       from,
       locale,
-      segment: slug,
       loadForkSeed,
     });
 

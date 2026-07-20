@@ -63,20 +63,24 @@ export function forkGrantKey(targetType: string, targetId: string, likerId: stri
  * Turn a window of `likes` rows into the coin payouts they earn.
  *
  * Rules (see issue #87):
- * - Each like grants **1 coin to the liked content's owner** — self-likes
- *   included (capped externally by how much content one person owns).
+ * - Each like grants **1 coin to the liked content's owner** — except a
+ *   self-like (liker owns the liked content), which is withheld entirely.
+ *   Unlike UGC-creation grants, which are capped by `DAILY_CREATION_POINT_CAP`,
+ *   like-coin grants are uncapped, so "own content count" is not a real
+ *   ceiling — a scripted account can keep creating content and liking its
+ *   own posts to mint coins without limit. Withholding the self-like grant
+ *   closes that faucet.
  * - A like on a forked `position` *also* grants 1 coin to the fork
  *   **parent's** owner — but only one level up, and only when the parent
  *   still exists and is not soft-deleted.
  * - Soft-deleted / missing liked content yields no intent at all.
  *
- * The fork grant is withheld in two cases — each a self-farm hole:
+ * The fork grant is withheld in two further cases — each a self-farm hole:
  * - **Fork parent owner == fork owner.** A user forking their own problem
  *   would otherwise collect 2 coins from a single like.
  * - **Fork parent owner == liker.** Otherwise an author could mint coins by
- *   liking forks of their own work; unlike a direct self-like (bounded by
- *   the author's own content count), this farm is amplified by the number
- *   of forks *other people* create, so it is unbounded and must be cut.
+ *   liking forks of their own work — amplified by the number of forks
+ *   *other people* create, so it must be cut same as the direct self-like.
  */
 export function buildGrantIntents(input: {
   likeRows: readonly LikeRow[];
@@ -100,15 +104,19 @@ export function buildGrantIntents(input: {
     // been purged, so there is nobody to pay the direct grant to.
     if (!content || content.deletedAt !== null || content.ownerId === null) continue;
 
-    // Direct grant to the liked content's owner (self-likes allowed).
-    intents.push({
-      recipientId: content.ownerId,
-      idempotencyKey: directGrantKey(like.targetType, like.targetId, like.likerId),
-      targetType: like.targetType,
-      targetId: like.targetId,
-      likerId: like.likerId,
-      via: 'direct',
-    });
+    // Direct grant to the liked content's owner — withheld on a self-like,
+    // since unlike UGC-creation grants this payout is not capped by any
+    // daily ceiling (see the rule doc above).
+    if (content.ownerId !== like.likerId) {
+      intents.push({
+        recipientId: content.ownerId,
+        idempotencyKey: directGrantKey(like.targetType, like.targetId, like.likerId),
+        targetType: like.targetType,
+        targetId: like.targetId,
+        likerId: like.likerId,
+        via: 'direct',
+      });
+    }
 
     // Fork propagation — positions only, one level up.
     if (like.targetType !== 'position') continue;

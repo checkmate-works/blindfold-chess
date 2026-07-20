@@ -72,13 +72,12 @@ describe('buildGrantIntents — direct grants', () => {
     expect(intents[0]).toMatchObject({ recipientId: OWNER, via: 'direct' });
   });
 
-  it('includes self-likes (liker is the owner)', () => {
+  it('withholds the direct grant on a self-like (liker is the owner)', () => {
     const intents = run({
       likeRows: [topicPostLike('post-1', OWNER)],
       topicPostById: new Map([['post-1', content(OWNER)]]),
     });
-    expect(intents).toHaveLength(1);
-    expect(intents[0].recipientId).toBe(OWNER);
+    expect(intents).toEqual([]);
   });
 
   it('skips soft-deleted content', () => {
@@ -181,6 +180,18 @@ describe('buildGrantIntents — fork propagation', () => {
     });
     expect(intents).toHaveLength(1);
     expect(intents[0].via).toBe('direct');
+  });
+
+  it('still propagates the fork coin when the direct grant was withheld as a self-like', () => {
+    // The forker likes their own fork: no direct coin to themselves, but the
+    // fork-propagation coin to the (different) parent owner still fires.
+    const intents = run({
+      likeRows: [positionLike('fork-1', OWNER)],
+      positionById: new Map([['fork-1', position(OWNER, 'parent-1')]]),
+      forkParentById: new Map([['parent-1', content(PARENT_OWNER)]]),
+    });
+    expect(intents).toHaveLength(1);
+    expect(intents[0]).toMatchObject({ via: 'fork', recipientId: PARENT_OWNER });
   });
 
   it('does not propagate past one level (fork-of-a-fork like only pays its own parent)', () => {

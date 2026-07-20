@@ -1,9 +1,7 @@
-import { redirect } from 'next/navigation';
-
 import type { User } from '@supabase/supabase-js';
 import { eq } from 'drizzle-orm';
 
-import { db, positions, profiles } from '@/lib/db';
+import { db, profiles } from '@/lib/db';
 import { loadAvailableTags } from '@/lib/positions/tag-loader';
 import type { PositionTagBundle } from '@/lib/positions/tag-loader';
 import { resolveAuthorName } from '@/lib/users/display-name';
@@ -20,23 +18,20 @@ type ForkLoader<TSeed> = (params: {
  * Shared SSR data-loading for the puzzle / position-memory "new" pages.
  *
  * Resolves the author display name, the optional fork seed (`?from=<id>`),
- * and the available tag bundle. Self-fork attempts are bounced to the
- * source's detail page (its Edit affordance) — the segment determines that
- * redirect target and the seed loader is the per-feature one. Guests see
- * the un-seeded form; after they sign in, the SSR re-runs and the seed
- * loads naturally.
+ * and the available tag bundle. Self-forking is intentionally allowed (see
+ * `fork.ts`), so the seed loader runs for any authenticated user regardless
+ * of ownership. Guests see the un-seeded form; after they sign in, the SSR
+ * re-runs and the seed loads naturally.
  */
 export async function loadPositionCreateContext<TSeed>({
   user,
   from,
   locale,
-  segment,
   loadForkSeed,
 }: {
   user: User | null;
   from: string | string[] | undefined;
   locale: Locale;
-  segment: 'puzzle' | 'position-memory';
   loadForkSeed: ForkLoader<TSeed>;
 }): Promise<{
   displayName: string;
@@ -56,14 +51,6 @@ export async function loadPositionCreateContext<TSeed>({
   const sourceId = typeof from === 'string' ? from : undefined;
   let forkSeed: TSeed | undefined = undefined;
   if (sourceId && user && UUID_RE.test(sourceId)) {
-    const [ownerRow] = await db
-      .select({ userId: positions.userId })
-      .from(positions)
-      .where(eq(positions.id, sourceId))
-      .limit(1);
-    if (ownerRow?.userId === user.id) {
-      redirect(`/${locale}/practice/${segment}/${sourceId}`);
-    }
     const loaded = await loadForkSeed({ sourceId, currentUserId: user.id });
     if (loaded) forkSeed = loaded;
   }

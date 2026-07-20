@@ -230,6 +230,25 @@ export const LIKE_COIN_AMOUNT = 1;
 export const LIKE_GRANT_BATCH_TYPE = 'like_grant';
 
 /**
+ * How far behind "now" the like-coin batch's scan upper bound trails.
+ *
+ * @design Why a trailing margin
+ *
+ * The batch bounds its `likes` scan with the app server's clock
+ * (`scanStartedAt`), while `likes.created_at` is stamped by the DB's clock
+ * at insert-transaction time. A like whose INSERT is in flight — committed
+ * a moment after `scanStartedAt` was read, or simply invisible to this
+ * run's snapshot — can carry a `created_at` at or before `scanStartedAt`
+ * without this run ever seeing it. Once the watermark advances past that
+ * timestamp, the like falls before the next run's lower bound and is
+ * silently skipped forever; there is no error to signal it. Trailing the
+ * upper bound by a margin comfortably larger than any plausible commit
+ * latency or clock skew guarantees every run still has the previous
+ * margin-window to pick up such a like before the watermark passes it.
+ */
+export const LIKE_GRANT_SCAN_SAFETY_MARGIN_MS = 5 * 60 * 1000;
+
+/**
  * `likes.target_type` values eligible for like-coin grants. Scoped to UGC
  * only — `article` (operator-authored) likes are intentionally absent so
  * the operator account is never paid.
