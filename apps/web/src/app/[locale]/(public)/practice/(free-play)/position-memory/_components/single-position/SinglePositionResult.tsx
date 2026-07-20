@@ -21,6 +21,7 @@ import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignU
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { calculateSquareDifferences } from '../../_lib/preset-problems';
@@ -228,6 +229,21 @@ export function SinglePositionResult({
                     layout="inline"
                   />
                 </div>
+
+                {/* Same-author discovery link, right below the attribution —
+                    points at this author's position-memory-only list (not
+                    the mixed profile view), so solvers who liked this
+                    position can find more like it. */}
+                {profile?.username && (
+                  <div className="text-right text-sm">
+                    <Link
+                      href={`/${locale}/u/${profile.username}/problems/position-memory`}
+                      className={TEXT_LINK_MUTED_CLASSES}
+                    >
+                      {t('detail.viewOtherPositions')}
+                    </Link>
+                  </div>
+                )}
               </>
             )}
 

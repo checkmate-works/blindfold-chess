@@ -17,6 +17,7 @@ import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/Exp
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultLikeCta } from '../../_components/ResultLikeCta';
@@ -197,6 +198,21 @@ export function PuzzleResultClient({
           layout="inline"
         />
       </div>
+
+      {/* Same-author discovery link, right below the attribution — points
+          at this author's puzzle-only list (not the mixed profile view),
+          so solvers who liked this puzzle can find more like it. */}
+      {profile?.username && (
+        <div className="text-right text-sm">
+          <Link
+            href={`/u/${profile.username}/problems/puzzles`}
+            locale={locale}
+            className={TEXT_LINK_MUTED_CLASSES}
+          >
+            {tPuzzle('detail.viewOtherPuzzles')}
+          </Link>
+        </div>
+      )}
 
       {/* (D) Action buttons */}
       <div className="flex flex-col gap-3 pt-4">
