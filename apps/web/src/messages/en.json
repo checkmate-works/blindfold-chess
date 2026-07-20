@@ -1931,6 +1931,21 @@
         "historyLink": "Edit request history ({count})"
       },
       "suggestCta": "Suggest a pattern"
+    },
+    "positionHistory": {
+      "pageTitle": "Edit history · {name}",
+      "breadcrumb": "Edit history",
+      "empty": "No edits recorded yet.",
+      "legacyEditNotice": "This was edited before detailed history tracking began.",
+      "deletedEditor": "(deleted user)",
+      "justNow": "just now",
+      "emptyValue": "(empty)",
+      "fields": {
+        "fen": "Position (FEN)",
+        "title": "Title",
+        "description": "Description",
+        "solutionMoves": "Solution"
+      }
     }
   },
   "home": {

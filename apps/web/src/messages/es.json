@@ -1931,6 +1931,21 @@
         "historyLink": "Historial de sugerencias ({count})"
       },
       "suggestCta": "Sugerir un patrón"
+    },
+    "positionHistory": {
+      "pageTitle": "Historial de ediciones · {name}",
+      "breadcrumb": "Historial de ediciones",
+      "empty": "Aún no hay ediciones registradas.",
+      "legacyEditNotice": "Esto se editó antes de que comenzara el seguimiento detallado del historial.",
+      "deletedEditor": "(usuario eliminado)",
+      "justNow": "ahora mismo",
+      "emptyValue": "(vacío)",
+      "fields": {
+        "fen": "Posición (FEN)",
+        "title": "Título",
+        "description": "Descripción",
+        "solutionMoves": "Solución"
+      }
     }
   },
   "home": {

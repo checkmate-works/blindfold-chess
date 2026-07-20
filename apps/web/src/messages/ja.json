@@ -1931,6 +1931,21 @@
         "historyLink": "編集リクエストの履歴 ({count})"
       },
       "suggestCta": "パターンを提案する"
+    },
+    "positionHistory": {
+      "pageTitle": "編集履歴 · {name}",
+      "breadcrumb": "編集履歴",
+      "empty": "まだ編集はありません。",
+      "legacyEditNotice": "詳細な編集履歴の記録が始まる前に編集されました。",
+      "deletedEditor": "(退会したユーザー)",
+      "justNow": "たった今",
+      "emptyValue": "(空)",
+      "fields": {
+        "fen": "局面(FEN)",
+        "title": "タイトル",
+        "description": "説明",
+        "solutionMoves": "解答"
+      }
     }
   },
   "home": {
