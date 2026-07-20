@@ -21,7 +21,12 @@ import { countRows } from '@/lib/db/list-query';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
-import type { RepertoireImportInput, RepertoireLineEditError, RepertoirePhase } from './validation';
+import type {
+  RepertoireImportInput,
+  RepertoireLineEditError,
+  RepertoirePhase,
+  RepertoireSide,
+} from './validation';
 import {
   REPERTOIRE_NAME_MAX,
   REPERTOIRE_PGN_MAX_BYTES,
@@ -145,7 +150,10 @@ export async function addRepertoireLine(params: {
 
 export type UpdateRepertoireResult =
   | { ok: true; name: string }
-  | { ok: false; error: 'unauthorized' | 'notFound' | 'nameRequired' | 'nameTooLong' };
+  | {
+      ok: false;
+      error: 'unauthorized' | 'notFound' | 'nameRequired' | 'nameTooLong' | 'invalidSide';
+    };
 
 /** The transaction handle drizzle hands to a `db.transaction` callback. */
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -184,22 +192,30 @@ async function replaceOpeningLinks(tx: Tx, links: OpeningLinks) {
 }
 
 /**
- * Owner-only: update a repertoire's title and its opening links.
+ * Owner-only: update a repertoire's title, side, and opening links.
  *
- * Deliberately narrower than the import form — side / phase / PGN are
- * structural (the lines, and every position-keyed annotation hanging off them,
- * derive from the PGN), so changing those is a re-import, not an edit. The
- * title and the opening links are pure metadata.
+ * Deliberately narrower than the import form — phase / PGN are structural
+ * (the lines, and every position-keyed annotation hanging off them, derive
+ * from the PGN; phase also gates whether opening links apply at all), so
+ * changing those is a re-import, not an edit. `side`, like the title and the
+ * opening links, is pure metadata: it labels which colour the course is
+ * written for but doesn't constrain the PGN tree (the board builder plays
+ * both colours' moves and branches at any ply regardless of `side`), so
+ * relabeling it after the fact can't desync anything else.
  */
 export async function updateRepertoireDetails(params: {
   repertoireId: string;
   viewerId: string;
   name: string;
+  side: RepertoireSide;
   openingIds: string[];
 }): Promise<UpdateRepertoireResult> {
   const name = params.name.trim();
   if (!name) return { ok: false, error: 'nameRequired' };
   if (name.length > REPERTOIRE_NAME_MAX) return { ok: false, error: 'nameTooLong' };
+  if (params.side !== 'white' && params.side !== 'black') {
+    return { ok: false, error: 'invalidSide' };
+  }
 
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
   if (ownerError) return { ok: false, error: ownerError };
@@ -212,7 +228,10 @@ export async function updateRepertoireDetails(params: {
   if (!row) return { ok: false, error: 'notFound' };
 
   await db.transaction(async (tx) => {
-    await tx.update(repertoires).set({ name }).where(eq(repertoires.id, params.repertoireId));
+    await tx
+      .update(repertoires)
+      .set({ name, side: params.side })
+      .where(eq(repertoires.id, params.repertoireId));
     await replaceOpeningLinks(tx, {
       repertoireId: params.repertoireId,
       phase: row.phase,

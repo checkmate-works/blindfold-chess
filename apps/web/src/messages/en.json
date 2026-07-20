@@ -88,6 +88,7 @@
         "notFound": "This kata no longer exists.",
         "nameRequired": "Please enter a name.",
         "nameTooLong": "That name is too long.",
+        "invalidSide": "Please choose a side.",
         "pgnRequired": "Please enter the moves.",
         "pgnTooLarge": "The PGN is too large.",
         "invalidPgn": "Could not read these moves. Check the notation.",
