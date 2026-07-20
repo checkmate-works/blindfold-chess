@@ -4,7 +4,12 @@ import 'server-only';
 
 import { db, notifications, pointBatchWatermarks } from '@/lib/db';
 
-import { LIKE_COIN_AMOUNT, LIKE_GRANT_BATCH_TYPE, LIKE_GRANT_SOURCE } from './constants';
+import {
+  LIKE_COIN_AMOUNT,
+  LIKE_GRANT_BATCH_TYPE,
+  LIKE_GRANT_SCAN_SAFETY_MARGIN_MS,
+  LIKE_GRANT_SOURCE,
+} from './constants';
 import { buildGrantIntents } from './grant-like-coins-intents';
 import {
   filterLiveIntents,
@@ -53,11 +58,20 @@ export type GrantLikeCoinsResult = {
  * `(targetType, targetId, likerId)` pair, so a rerun re-emits identical
  * keys and the UNIQUE constraint absorbs the duplicates as no-ops.
  *
- * The watermark is advanced to `scanStartedAt` **only when every recipient
+ * The watermark is advanced to `scanUpperBound` **only when every recipient
  * transaction succeeded**. A partial failure leaves it untouched, so the
  * next run reprocesses the whole window — already-paid recipients simply
  * idempotent-skip (and, with zero newly-minted coins, send no notification,
  * so no double-notify).
+ *
+ * `scanUpperBound` trails the actual `scanStartedAt` clock read by
+ * `LIKE_GRANT_SCAN_SAFETY_MARGIN_MS` (see its TSDoc) — this is the one gap
+ * the idempotency key cannot cover, because a like whose row is not yet
+ * visible to this run's scan never gets a payout intent generated for it
+ * at all, so there is no key for a later run to reconcile against. Once
+ * the watermark passes such a like's `created_at`, it is skipped forever.
+ * The margin keeps the advertised watermark behind the point in time where
+ * every committed like is guaranteed visible.
  *
  * @design Coin grant + notification share one transaction per recipient
  *
@@ -102,8 +116,14 @@ export async function grantLikeCoins(): Promise<GrantLikeCoinsResult> {
 
   const watermark = watermarkRow.watermark;
 
-  // (2) Scan likes in `(watermark, scanStartedAt]`.
-  const likeRows = await loadLikesForBatch(watermark, scanStartedAt);
+  // Trail the actual clock read so likes not yet visible to this run's scan
+  // (in-flight commit, clock skew) get another run's margin-window to
+  // appear before the watermark passes their `created_at` — see the
+  // function's `@design` note and LIKE_GRANT_SCAN_SAFETY_MARGIN_MS's TSDoc.
+  const scanUpperBound = new Date(scanStartedAt.getTime() - LIKE_GRANT_SCAN_SAFETY_MARGIN_MS);
+
+  // (2) Scan likes in `(watermark, scanUpperBound]`.
+  const likeRows = await loadLikesForBatch(watermark, scanUpperBound);
 
   // (3) + (4) Resolve liked content + fork parents.
   const { positionById, topicPostById, forkParentById } = await resolveGrantTargets(likeRows);
@@ -179,12 +199,17 @@ export async function grantLikeCoins(): Promise<GrantLikeCoinsResult> {
     }
   }
 
-  // (8) Advance the watermark only on a fully clean run.
-  const watermarkAdvanced = recipientsFailed === 0;
+  // (8) Advance the watermark only on a fully clean run, and only if the
+  // margined upper bound is actually ahead of the current watermark — a
+  // run invoked more often than the safety margin would otherwise push the
+  // watermark backward (harmless but pointless: the next run rescans the
+  // same already-idempotent range for nothing).
+  const watermarkAdvanced =
+    recipientsFailed === 0 && scanUpperBound.getTime() > watermark.getTime();
   if (watermarkAdvanced) {
     await db
       .update(pointBatchWatermarks)
-      .set({ watermark: scanStartedAt, completedAt: new Date() })
+      .set({ watermark: scanUpperBound, completedAt: new Date() })
       .where(eq(pointBatchWatermarks.batchType, LIKE_GRANT_BATCH_TYPE));
   }
 
