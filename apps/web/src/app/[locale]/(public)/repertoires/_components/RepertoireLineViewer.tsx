@@ -9,6 +9,7 @@ import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
+import { FaPlus } from 'react-icons/fa';
 import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
@@ -46,6 +47,11 @@ type Props = {
  * horizontally-scrolling move list above the board, the board, and first / prev
  * / next / last controls (and ←/→ keys). Positions/formatting are precomputed
  * server-side, so this stays a thin UI client component.
+ *
+ * For the owner, the line list ends with an "Add a line" row to the
+ * (previously unlinked) lines/new page — always available, not just when the
+ * repertoire has none yet (see the `!line` empty-state branch below, which
+ * offers the same link).
  */
 export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwner }: Props) {
   const t = useTranslations('Repertoires');
@@ -221,6 +227,17 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
             </li>
           );
         })}
+        {isOwner && (
+          <li className="border-b border-border last:border-b-0">
+            <Link
+              href={`/${locale}/repertoires/${repertoireId}/lines/new`}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm text-link-primary transition-colors hover:bg-muted"
+            >
+              <FaPlus aria-hidden className="size-3.5 flex-shrink-0" />
+              <span className="truncate">{t('line.new.title')}</span>
+            </Link>
+          </li>
+        )}
       </ul>
     </div>
   );
