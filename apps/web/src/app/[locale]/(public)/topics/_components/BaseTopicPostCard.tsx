@@ -20,6 +20,14 @@ import { PostFooter } from './PostFooter';
 type Props = {
   postId: string;
   postHref: string;
+  /**
+   * Href for the comment-icon link in `PostFooter`. Defaults to `postHref`.
+   * Pass a `#comments`-suffixed variant when the destination page has a
+   * matching `id="comments"` target + `ScrollToHashOnMount`, so tapping the
+   * comment icon lands scrolled to the Comments section instead of the top
+   * of the page — mirrors `CatalogListCard`'s `commentHref`.
+   */
+  commentHref?: string;
   content: string;
   createdAt: Date;
   author: {
@@ -61,6 +69,7 @@ type Props = {
 export function BaseTopicPostCard({
   postId,
   postHref,
+  commentHref = postHref,
   content,
   createdAt,
   author,
@@ -169,7 +178,7 @@ export function BaseTopicPostCard({
           replyMeta={replyMeta}
           toggleLikeAction={toggleLikeAction}
           i18nNamespace={i18nNamespace}
-          postHref={postHref}
+          postHref={commentHref}
         />
       }
     >

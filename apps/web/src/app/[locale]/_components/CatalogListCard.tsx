@@ -48,6 +48,18 @@ type Props = {
    */
   detailHref: string;
   /**
+   * Href for the comment-icon link in `PostFooter`. Defaults to `detailHref`
+   * (no scroll adjustment). Pass a hash-suffixed variant matching the
+   * destination page's actual comments anchor when it supports one — e.g.
+   * `${detailHref}#comments` for puzzle/position-memory detail pages,
+   * `${detailHref}#game-overview` for shared-game pages, or
+   * `${detailHref}?tab=comments#chunk-tabs` for chunk pages — so tapping the
+   * comment icon lands scrolled to that section instead of the page top.
+   * The hash/target is caller-specific because `CatalogListCard` is reused
+   * across several entity families with different destination layouts.
+   */
+  commentHref?: string;
+  /**
    * `i18n` namespace passed through to PostFooter. Must contain
    * `like` / `unlike` / `newReply` / `justNow` keys.
    */
@@ -109,6 +121,7 @@ export function CatalogListCard({
   likeMeta,
   replyMeta,
   detailHref,
+  commentHref = detailHref,
   i18nNamespace,
   toggleLikeAction,
   justNowLabel,
@@ -157,11 +170,7 @@ export function CatalogListCard({
             replyMeta={replyMeta}
             toggleLikeAction={toggleLikeAction}
             i18nNamespace={i18nNamespace}
-            // Comment icon additionally scrolls to the Comments section
-            // (`id="comments"` on the destination page's SectionTitle, where
-            // present); the rest of the card keeps linking to the plain
-            // detail page. Mirrors PositionFeedCard's home-feed behavior.
-            postHref={`${detailHref}#comments`}
+            postHref={commentHref}
           />
           {actions && <div className="flex items-center gap-2 mt-2">{actions}</div>}
         </>

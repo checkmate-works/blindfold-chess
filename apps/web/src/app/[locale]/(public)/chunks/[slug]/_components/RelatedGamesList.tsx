@@ -83,6 +83,9 @@ export function RelatedGamesList({
           likeMeta={likeMetaMap.get(g.id) ?? EMPTY_LIKE_META}
           replyMeta={replyMetaMap.get(g.id) ?? emptyReplyMeta}
           detailHref={`/games/shared/${g.id}`}
+          // GameReview's own hash handler scrolls to #game-overview, not the
+          // generic #comments id — see GameFeedCard's home-feed equivalent.
+          commentHref={`/games/shared/${g.id}#game-overview`}
           i18nNamespace="sharedGames.detail"
           toggleLikeAction={toggleGameLikeAction}
           justNowLabel={justNowLabel}

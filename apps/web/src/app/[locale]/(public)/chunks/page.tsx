@@ -217,6 +217,10 @@ async function ChunksListContent({ params, searchParams }: Props) {
                 likeMeta={likeMetaMap.get(chunk.id) ?? { likeCount: 0, likedByMe: false }}
                 replyMeta={replyMetaMap.get(chunk.slug) ?? EMPTY_REPLY_META}
                 detailHref={`/chunks/${chunk.slug}`}
+                // Chunk detail pages scroll to the tab bar via
+                // id="chunk-tabs" + a ?tab=comments query param, not a plain
+                // #comments id — see ChunkFeedCard's home-feed equivalent.
+                commentHref={`/chunks/${chunk.slug}?tab=comments#chunk-tabs`}
                 i18nNamespace="topics.chunks"
                 toggleLikeAction={toggleLike}
                 justNowLabel={justNowLabel}

@@ -104,6 +104,10 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
               likeMeta={likeMetaMap.get(g.id) ?? { likeCount: 0, likedByMe: false }}
               replyMeta={commentMetaMap.get(g.id) ?? EMPTY_REPLY_META}
               detailHref={`/games/shared/${g.id}`}
+              // GameReview's own hash handler scrolls to #game-overview,
+              // not the generic #comments id — see GameFeedCard's home-feed
+              // equivalent.
+              commentHref={`/games/shared/${g.id}#game-overview`}
               i18nNamespace="sharedGames.detail"
               toggleLikeAction={toggleGameLikeAction}
               justNowLabel={justNowLabel}

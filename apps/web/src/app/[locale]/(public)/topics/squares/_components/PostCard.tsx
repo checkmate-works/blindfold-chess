@@ -31,6 +31,7 @@ export function PostCard({ post, locale, square, showSquareBadge = false, attach
     <BaseTopicPostCard
       postId={post.id}
       postHref={`/topics/squares/${square}/posts/${post.id}`}
+      commentHref={`/topics/squares/${square}/posts/${post.id}#comments`}
       content={post.content}
       createdAt={post.createdAt}
       author={post.author}
