@@ -39,8 +39,8 @@ import { PositionAuthorHeader } from '../../../_components/PositionAuthorHeader'
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../../_components/PositionPeekBoard';
 import {
-  PositionEditRequestHistoryLink,
   PositionEditRequestSuggestLink,
+  PositionEditRequestSummaryLink,
 } from '../../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetail } from '../../../_lib/load-position-detail';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
@@ -253,7 +253,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           toggleLikeAction={toggleLike}
           i18nNamespace="practice.puzzle"
         />
-        <PositionEditRequestHistoryLink
+        <PositionEditRequestSummaryLink
           positionId={position.id}
           positionType="puzzle"
           viewerId={currentUser?.id ?? null}

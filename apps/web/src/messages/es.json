@@ -1928,7 +1928,7 @@
       "pageTitle": "Sugerencias de chunks · {name}",
       "breadcrumb": "Sugerencias de chunks",
       "callout": {
-        "historyLink": "Historial de sugerencias ({count})"
+        "suggestionsLink": "Sugerencias ({count})"
       },
       "suggestCta": "Sugerir un patrón"
     },

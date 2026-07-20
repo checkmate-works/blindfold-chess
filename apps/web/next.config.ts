@@ -150,6 +150,24 @@ const nextConfig: NextConfig = {
         destination: '/:locale/mypage/coins',
         permanent: true,
       },
+      // Puzzle / position-memory suggestions URL migration (added 2026-07-20).
+      // The sub-page was renamed from /edit-requests to /suggestions: it only
+      // ever handled chunk-tag suggestions from other users, and the old name
+      // read as "this puzzle's own edit history" once a genuine content
+      // edit-history page shipped at /history. `chunks/[slug]/edit-requests`
+      // is unaffected — chunk edit requests propose real title/description
+      // edits, so that name still describes what it does.
+      // Safe to remove after 6 months if Search Console shows no traffic.
+      {
+        source: '/:locale/practice/puzzle/:id/edit-requests',
+        destination: '/:locale/practice/puzzle/:id/suggestions',
+        permanent: true,
+      },
+      {
+        source: '/:locale/practice/position-memory/:id/edit-requests',
+        destination: '/:locale/practice/position-memory/:id/suggestions',
+        permanent: true,
+      },
     ];
   },
 

@@ -1928,7 +1928,7 @@
       "pageTitle": "チャンクの提案 · {name}",
       "breadcrumb": "チャンクの提案",
       "callout": {
-        "historyLink": "編集リクエストの履歴 ({count})"
+        "suggestionsLink": "提案 ({count})"
       },
       "suggestCta": "パターンを提案する"
     },

@@ -1928,7 +1928,7 @@
       "pageTitle": "Chunk suggestions · {name}",
       "breadcrumb": "Chunk suggestions",
       "callout": {
-        "historyLink": "Edit request history ({count})"
+        "suggestionsLink": "Suggestions ({count})"
       },
       "suggestCta": "Suggest a pattern"
     },

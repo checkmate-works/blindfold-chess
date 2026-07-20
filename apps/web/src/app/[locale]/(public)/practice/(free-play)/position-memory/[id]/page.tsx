@@ -34,8 +34,8 @@ import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import {
-  PositionEditRequestHistoryLink,
   PositionEditRequestSuggestLink,
+  PositionEditRequestSummaryLink,
 } from '../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetail } from '../../_lib/load-position-detail';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
@@ -242,7 +242,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           toggleLikeAction={toggleLike}
           i18nNamespace="practice.positionMemory"
         />
-        <PositionEditRequestHistoryLink
+        <PositionEditRequestSummaryLink
           positionId={position.id}
           positionType="memory"
           viewerId={currentUser?.id ?? null}

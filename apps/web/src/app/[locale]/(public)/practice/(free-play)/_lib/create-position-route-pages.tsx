@@ -38,7 +38,7 @@ import { loadForksPageData } from './load-forks-page-data';
  *
  * The two features are the same UGC "position" resource stored under different
  * `positions.type` discriminators, so their sub-pages (`new`, `[id]/edit`,
- * `[id]/forks`, `[id]/edit-requests`) are mechanical substitutions of each
+ * `[id]/forks`, `[id]/suggestions`) are mechanical substitutions of each
  * other. Each factory below builds the `generateMetadata` + `Page` pair for
  * one sub-page kind, parameterised by {@link PositionRouteKind}; the concrete
  * `page.tsx` files keep their feature TSDoc and route-segment config exports
@@ -105,7 +105,7 @@ export function createPositionEditRequestsPage(route: PositionRouteKind) {
     return {
       ...generateCanonicalMetadata({
         locale,
-        path: `practice/${slug}/${id}/edit-requests`,
+        path: `practice/${slug}/${id}/suggestions`,
         title,
       }),
       title: resolveTitle(title, locale),
