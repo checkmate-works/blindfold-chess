@@ -384,20 +384,20 @@
     },
     "guides": {
       "top": {
-        "title": "ガイド",
-        "description": "段級位別に整理された、目隠しチェス訓練のテキストブック形式ガイド。"
+        "title": "教本",
+        "description": "段級位別に整理された、目隠しチェス訓練のテキストブック形式教本。"
       },
       "rank": {
-        "title": "{rankName} ガイド",
-        "description": "{rankName} の目隠しチェス教本(ガイド)。盤上の座標認識、ダイアゴナル計算、駒の合法手、駒運び(マヌーバリング)を、視覚教材とインラインリンクつきで段階的に解説し、帯システムで到達度を確認しながら学べる学習ガイドです。",
-        "pageTitle": "{rankName} ガイド - {page}ページ目",
-        "descriptionWithPage": "{rankName} の目隠しチェス教本(ガイド)、{page}/{total}ページ。視覚教材やインラインリンクを使いながら、{rankName} 取得に必要な盤上認識・座標感覚・駒運びを段階的に身につけていくページです。"
+        "title": "{rankName} 教本",
+        "description": "{rankName} の目隠しチェス教本。盤上の座標認識、ダイアゴナル計算、駒の合法手、駒運び(マヌーバリング)を、視覚教材とインラインリンクつきで段階的に解説し、帯システムで到達度を確認しながら学べる教本です。",
+        "pageTitle": "{rankName} 教本 - {page}ページ目",
+        "descriptionWithPage": "{rankName} の目隠しチェス教本、{page}/{total}ページ。視覚教材やインラインリンクを使いながら、{rankName} 取得に必要な盤上認識・座標感覚・駒運びを段階的に身につけていくページです。"
       },
       "chapter": {
-        "title": "{rankName} ガイド - {chapterName}",
-        "description": "{rankName} ガイドの {chapterName} 章。視覚教材を使った段階的な解説で、目隠しチェスで {chapterName} を扱うのに必要な感覚と計算を、{rankName} 取得に向けて体系的に身につけられる学習コンテンツです。",
-        "pageTitle": "{rankName} ガイド - {chapterName} - {page}ページ目",
-        "descriptionWithPage": "{rankName} ガイドの {chapterName} 章、{page}/{total}ページ。視覚教材やインラインリンクで、{chapterName} を少しずつ身につける手順と、目隠しチェスに必要な感覚・計算を具体的に解説します。"
+        "title": "{rankName} 教本 - {chapterName}",
+        "description": "{rankName} 教本の {chapterName} 章。視覚教材を使った段階的な解説で、目隠しチェスで {chapterName} を扱うのに必要な感覚と計算を、{rankName} 取得に向けて体系的に身につけられる学習コンテンツです。",
+        "pageTitle": "{rankName} 教本 - {chapterName} - {page}ページ目",
+        "descriptionWithPage": "{rankName} 教本の {chapterName} 章、{page}/{total}ページ。視覚教材やインラインリンクで、{chapterName} を少しずつ身につける手順と、目隠しチェスに必要な感覚・計算を具体的に解説します。"
       }
     }
   },
@@ -5584,7 +5584,7 @@
         "learnArticleLabel": "代数記法について学ぶ",
         "practiceLabel": "代数記法の練習"
       },
-      "readFullGuide": "{rankName} ガイドを読む"
+      "readFullGuide": "{rankName} 教本を読む"
     },
     "signUpBanner": {
       "message": "黒帯を取得しよう！",
@@ -5650,7 +5650,7 @@
     "viewAllRanks": "段級位一覧を見る",
     "viewAllPractices": "練習一覧を見る",
     "startAiGame": "AI対局を始める",
-    "viewAllGuides": "ガイドを全て見る",
+    "viewAllGuides": "教本を全て見る",
     "curriculum": {
       "title": "教本",
       "achieved": "達成済み",
@@ -5671,17 +5671,17 @@
       },
       "viewAllRanks": {
         "title": "段級位一覧",
-        "description": "各ランクの合格条件やガイドなどはここから確認できます。"
+        "description": "各ランクの合格条件や教本などはここから確認できます。"
       }
     }
   },
   "guides": {
     "top": {
-      "title": "ガイド",
+      "title": "教本",
       "sections": {
         "rankGuides": {
-          "title": "段級位別ガイド",
-          "description": "段級位ごとに整理された、目隠しチェス訓練のテキストブック形式のガイドです。"
+          "title": "段級位別教本",
+          "description": "段級位ごとに整理された、目隠しチェス訓練のテキストブック形式の教本です。"
         }
       }
     },
@@ -5692,7 +5692,7 @@
     "breadcrumb": {
       "home": "ホーム",
       "dojo": "道場",
-      "guides": "ガイド"
+      "guides": "教本"
     },
     "pages": {
       "mukyu": {
@@ -6003,7 +6003,7 @@
         "coordinateQuizLabel": "座標クイズ",
         "coordinateConfusionLabel": "座標の混乱について",
         "quadrantsLabel": "4分割トレーニング",
-        "5kyuGuideLabel": "5級のガイドを見る"
+        "5kyuGuideLabel": "5級の教本を見る"
       }
     },
     "visualAids": {
@@ -6018,8 +6018,8 @@
       }
     },
     "navigation": {
-      "prevRank": "前の段級位: {rankName} ガイド",
-      "nextRank": "次の段級位: {rankName} ガイド"
+      "prevRank": "前の段級位: {rankName} 教本",
+      "nextRank": "次の段級位: {rankName} 教本"
     }
   },
   "attachment": {
