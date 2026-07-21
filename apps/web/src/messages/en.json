@@ -5584,7 +5584,9 @@
         "learnArticleLabel": "Learn about algebraic notation",
         "practiceLabel": "Practice algebraic notation"
       },
-      "readFullGuide": "Read the {rankName} guide"
+      "readFullGuide": "Read the {rankName} guide",
+      "prevRank": "Previous rank: {rankName}",
+      "nextRank": "Next rank: {rankName}"
     },
     "signUpBanner": {
       "message": "Earn your black belt!",

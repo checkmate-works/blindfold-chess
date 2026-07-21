@@ -5584,7 +5584,9 @@
         "learnArticleLabel": "Aprenda sobre notação algébrica",
         "practiceLabel": "Pratique notação algébrica"
       },
-      "readFullGuide": "Leia o guia de {rankName}"
+      "readFullGuide": "Leia o guia de {rankName}",
+      "prevRank": "Graduação anterior: {rankName}",
+      "nextRank": "Próxima graduação: {rankName}"
     },
     "signUpBanner": {
       "message": "Conquiste sua faixa preta!",

@@ -5584,7 +5584,9 @@
         "learnArticleLabel": "代数記法について学ぶ",
         "practiceLabel": "代数記法の練習"
       },
-      "readFullGuide": "{rankName} 教本を読む"
+      "readFullGuide": "{rankName} 教本を読む",
+      "prevRank": "前の段級位: {rankName}",
+      "nextRank": "次の段級位: {rankName}"
     },
     "signUpBanner": {
       "message": "黒帯を取得しよう！",

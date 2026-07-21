@@ -39,6 +39,7 @@ import { KingMovementBoard } from '../_components/KingMovementBoard';
 import { PawnBreakthroughBoard } from '../_components/PawnBreakthroughBoard';
 import { RankAchievedBadge } from '../_components/RankAchievedBadge';
 import { RankHeader } from '../_components/RankHeader';
+import { RankNavigation } from '../_components/RankNavigation';
 import { RequirementsList } from '../_components/RequirementsList';
 import { ScatteredPawnsBoard } from '../_components/ScatteredPawnsBoard';
 import { buildRequirementItems, getBeltColorHex } from '../_lib/helpers';
@@ -244,6 +245,8 @@ export default async function RankDetailPage({ params }: Props) {
           />
         </div>
 
+        <RankNavigation locale={locale} slug={slug} t={t} />
+
         <AdSlot slot="content-bottom" />
       </PageLayout>
     );
@@ -323,6 +326,8 @@ export default async function RankDetailPage({ params }: Props) {
           <p className="text-emerald-600 dark:text-emerald-400">{t('detail.benefitsAdFree')}</p>
         </div>
       )}
+
+      <RankNavigation locale={locale} slug={rankSlug} t={t} />
 
       <AdSlot slot="content-bottom" />
     </PageLayout>

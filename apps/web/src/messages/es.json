@@ -5584,7 +5584,9 @@
         "learnArticleLabel": "Aprende sobre notación algebraica",
         "practiceLabel": "Practica notación algebraica"
       },
-      "readFullGuide": "Leer la guía de {rankName}"
+      "readFullGuide": "Leer la guía de {rankName}",
+      "prevRank": "Rango anterior: {rankName}",
+      "nextRank": "Siguiente rango: {rankName}"
     },
     "signUpBanner": {
       "message": "¡Obtén tu cinturón negro!",
