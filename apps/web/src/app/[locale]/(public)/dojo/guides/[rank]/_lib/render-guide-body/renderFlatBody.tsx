@@ -14,6 +14,7 @@ import { RequirementsList } from '@/app/[locale]/(public)/dojo/ranks/_components
 import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 import { Divider, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildFlatBodyBreadcrumbs, buildFlatBodyLearningResourceSchema } from '../guide-metadata';
@@ -65,11 +66,25 @@ export async function renderFlatBody(
     totalPages: pages.length,
   });
 
+  // Rank-linked guide heading, e.g. "Guide for 5th Kyū" with the rank name
+  // itself linking to the rank detail page. Every rank reaching this
+  // renderer has guide content, and every guide-content rank (including
+  // mukyu) has a corresponding `/dojo/ranks/[slug]` page, so this needs no
+  // per-rank gating.
+  const guideHeaderLabel = tGuides.rich('ranks.indexTitleWithRank', {
+    rankName,
+    link: (chunks) => (
+      <a href={`/${locale}/dojo/ranks/${rankSlug}`} className={TEXT_LINK_CLASSES}>
+        {chunks}
+      </a>
+    ),
+  });
+
   return (
     <>
       <JsonLd data={learningResourceSchema} nonce={nonce} />
       <PageLayout title={rankName} locale={locale}>
-        <RankHeader beltColor={beltColor}>{tGuides('ranks.indexTitle')}</RankHeader>
+        <RankHeader beltColor={beltColor}>{guideHeaderLabel}</RankHeader>
 
         {renderPageParagraphs({ rankSlug, pageNumber, page: currentPage, tGuides, locale })}
 
@@ -99,6 +114,21 @@ export async function renderFlatBody(
         )}
 
         {isLastPage && <RankNavigation ctx={ctx} />}
+
+        {/* Reciprocal link over to the rank detail page — ranks/[slug]
+            already links back via TipsCard's "read full guide" button; this
+            is the other direction. 1dan has no guide content, so it never
+            reaches this renderer and needs no special-casing here. */}
+        {isLastPage && (
+          <div className="flex justify-center">
+            <a
+              href={`/${locale}/dojo/ranks/${rankSlug}`}
+              className={`text-sm ${TEXT_LINK_CLASSES}`}
+            >
+              {tGuides('viewRankPage', { rankName })}
+            </a>
+          </div>
+        )}
 
         <GuidePageFooter locale={locale} items={breadcrumbItems} />
       </PageLayout>

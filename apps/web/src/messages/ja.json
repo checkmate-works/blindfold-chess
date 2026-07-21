@@ -5690,7 +5690,8 @@
     },
     "ranks": {
       "indexTitle": "解説",
-      "chapterListHeading": "章"
+      "chapterListHeading": "章",
+      "indexTitleWithRank": "<link>{rankName}</link>の解説"
     },
     "breadcrumb": {
       "home": "ホーム",
@@ -6023,7 +6024,8 @@
     "navigation": {
       "prevRank": "前の段級位: {rankName} 教本",
       "nextRank": "次の段級位: {rankName} 教本"
-    }
+    },
+    "viewRankPage": "{rankName} のランクページを見る"
   },
   "attachment": {
     "input": {
