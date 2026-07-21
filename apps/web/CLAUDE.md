@@ -27,6 +27,8 @@ Route segment names use **singular or plural form depending on the nature of the
 - Ask: "Is the user browsing a list of items?" → **plural** (e.g., `/posts`, `/games`)
 - Ask: "Is the user performing an activity or viewing a singular concept?" → **singular** (e.g., `/learn`, `/practice`)
 
+**Section namespaces:** a singular section may contain plural resource collections when the containment is real in the domain, not just organizational — e.g. `/mypage/coins` (personal section → wallet) and `/dojo/ranks` / `/dojo/guides` (belt-progression section → credentials / curriculum; migrated from top-level `/ranks` and `/guides/ranks/[rank]` in 2026-07 with 301s in `next.config.ts`). Inside such a namespace, drop scoping segments the namespace already provides (`/dojo/guides/5kyu`, not `/dojo/guides/ranks/5kyu`).
+
 ### Static Generation
 
 - **`generateStaticParams` must return all dynamic segments** — For routes under `[locale]/`, always include `locale` in the returned params using `SUPPORTED_LOCALES` from `@/config`. Omitting `locale` causes "Page changed from static to dynamic at runtime" errors in production (the error does not surface in `next dev`).
@@ -308,8 +310,8 @@ A martial arts-inspired progression system (5級 → 初段). Users earn ranks b
 | **Evaluation**        | `src/lib/db/rank-evaluation.ts`                                                   | `checkAndGrantRanks(userId)` — called after every challenge completion. Evaluator pattern: one function per requirement `type` (currently `challenge_score`). Returns `GrantedRank[]`                   |
 | **Integration**       | `src/lib/db/save-challenge-result.ts`                                             | Calls `checkAndGrantRanks` in try-catch after the challenge transaction commits. Failure does not break the challenge save flow                                                                         |
 | **Server Action**     | `src/app/[locale]/(public)/practice/(challenge)/_actions/save-practice-result.ts` | `SaveResultResponse` includes `grantedRanks?` field, propagated from `saveChallengeResult`                                                                                                              |
-| **Achievement Modal** | `src/app/[locale]/(public)/practice/_components/RankAchievementModal.tsx`         | Client component. Reads `blindfold_chess_granted_ranks` from sessionStorage on mount, shows celebration modal with CTA to `/ranks`                                                                      |
-| **Ranks Page**        | `src/app/[locale]/(public)/ranks/page.tsx`                                        | Public SSR page showing all ranks with 4 states: achieved ✓, next (requirements visible), locked 🔒, coming soon                                                                                        |
+| **Achievement Modal** | `src/app/[locale]/(public)/practice/_components/RankAchievementModal.tsx`         | Client component. Reads `blindfold_chess_granted_ranks` from sessionStorage on mount, shows celebration modal with CTA to `/dojo/ranks`                                                                 |
+| **Ranks Page**        | `src/app/[locale]/(public)/dojo/ranks/page.tsx`                                   | Public SSR page showing all ranks with 4 states: achieved ✓, next (requirements visible), locked 🔒, coming soon                                                                                        |
 | **RLS**               | `drizzle/supabase/rls_policies.sql`                                               | Both tables: SELECT only for authenticated/anon. No INSERT/UPDATE/DELETE policies — writes via service role only                                                                                        |
 
 ### Key Design Decisions
@@ -579,7 +581,7 @@ files when a user refers to a concept in Japanese.
 | 感想戦                        | recall                                   | `src/app/[locale]/(public)/practice/(free-play)/recall/`                                                                             |
 | 型 / Kata                     | repertoire (code) / Kata (UI brand)      | See "Kata / Repertoire (型)" above: `src/lib/repertoires/`, `src/app/[locale]/(public)/repertoires/`, `.../games/play/repertoire/`   |
 | 目隠しチェス / 心眼チェス     | blindfold chess / Shingan Chess (brand)  | See "Title Suffix Rule" in this file; strings in `src/messages/*.json`                                                               |
-| 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/ranks/`                 |
+| 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/dojo/ranks/`            |
 | 無級                          | Mukyu — "no rank" (default)              | `MUKYU_SLUG` in `src/lib/db/data/ranks.ts`                                                                                           |
 | 道場                          | Dojo — training hall                     | `src/app/[locale]/(public)/dojo/`                                                                                                    |
 | 約束組手                      | Yakusoku Kumite — move-sequence practice | `src/app/[locale]/(public)/practice/(free-play)/move-sequence/`                                                                      |
