@@ -6,7 +6,7 @@ import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
-import { getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 
 import { CurriculumToc } from './CurriculumToc';
 
@@ -26,7 +26,7 @@ function buildGuideHrefs(
 ): Partial<Record<RankSlug, string | null>> {
   const map: Partial<Record<RankSlug, string | null>> = {};
   for (const slug of ALL_RANK_SLUGS) {
-    map[slug] = `/en/guides/ranks/${slug}`;
+    map[slug] = `/en/dojo/guides/${slug}`;
   }
   return { ...map, ...overrides };
 }
@@ -111,7 +111,7 @@ describe('CurriculumToc', () => {
     const anchors = row.querySelectorAll('a');
     expect(anchors.length).toBe(1);
     const link = anchors[0];
-    expect(link.getAttribute('href')).toBe('/en/guides/ranks/5kyu');
+    expect(link.getAttribute('href')).toBe('/en/dojo/guides/5kyu');
     // The link wraps the section title text only — not the rank label.
     expect(link.textContent).toBe('section:anchorPoints');
     expect(link.textContent).not.toContain('name:5kyu');

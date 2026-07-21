@@ -5584,7 +5584,9 @@
         "learnArticleLabel": "Aprenda sobre notação algébrica",
         "practiceLabel": "Pratique notação algébrica"
       },
-      "readFullGuide": "Leia o guia de {rankName}"
+      "readFullGuide": "Leia o guia de {rankName}",
+      "prevRank": "Graduação anterior: {rankName}",
+      "nextRank": "Próxima graduação: {rankName}"
     },
     "signUpBanner": {
       "message": "Conquiste sua faixa preta!",
@@ -5673,7 +5675,8 @@
         "title": "Todas as graduações",
         "description": "Aqui você pode conferir os requisitos e os guias de cada graduação."
       }
-    }
+    },
+    "backToDojo": "Voltar ao Dojo"
   },
   "guides": {
     "top": {
@@ -5691,6 +5694,7 @@
     },
     "breadcrumb": {
       "home": "Início",
+      "dojo": "Dojo",
       "guides": "Guias"
     },
     "pages": {

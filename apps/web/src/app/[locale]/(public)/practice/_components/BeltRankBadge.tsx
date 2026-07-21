@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { RANK_COLORS, type RankSlug } from '@/lib/db/data/ranks';
 
-import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 
 /**
  * Belt colors light enough to need dark text for contrast.
@@ -37,7 +37,7 @@ export function BeltRankBadge({ slug, label, locale }: Props) {
 
   return (
     <Link
-      href={`/${locale}/ranks/${slug}`}
+      href={`/${locale}/dojo/ranks/${slug}`}
       className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold leading-none shadow-sm transition-opacity hover:opacity-80 ${
         useDarkText ? 'text-foreground' : 'text-white'
       } ${isWhiteBelt(beltColor) ? 'border border-border' : ''}`}

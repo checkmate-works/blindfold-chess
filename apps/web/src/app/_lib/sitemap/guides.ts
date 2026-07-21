@@ -37,7 +37,7 @@ export function buildGuideEntries(now: Date): MetadataRoute.Sitemap {
 
   const guideRoutes = enumerateGuideRoutes(enMessages.guides.pages as Record<string, unknown>);
   for (const route of guideRoutes) {
-    const routePath = `/guides/ranks/${guideRouteToSegments(route).join('/')}`;
+    const routePath = `/dojo/guides/${guideRouteToSegments(route).join('/')}`;
     for (const locale of SUPPORTED_LOCALES) {
       entries.push({
         url: `${BASE_URL}/${locale}${routePath}`,

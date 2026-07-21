@@ -37,9 +37,9 @@ const STATIC_PAGES = [
   // leaderboard URLs (`/leaderboard/score/...` and `/leaderboard/exp/...`)
   // are emitted by the leaderboard entry builder so crawlers index only
   // non-redirect, 200-returning canonical endpoints.
-  '/ranks',
+  '/dojo/ranks',
   '/dojo',
-  '/guides',
+  '/dojo/guides',
   '/pricing',
   '/affiliate-disclosure',
   '/licenses',

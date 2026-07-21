@@ -3,8 +3,8 @@ import Link from 'next/link';
 
 import { GiBlackBelt } from 'react-icons/gi';
 
-import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
-import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -33,7 +33,7 @@ export function RanksSection({ locale, t, tRanks }: Props) {
 
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-8">
           <Link
-            href={`/${locale}/ranks`}
+            href={`/${locale}/dojo/ranks`}
             className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             {t('ranks.cta')}

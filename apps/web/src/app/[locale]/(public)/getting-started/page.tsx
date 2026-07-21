@@ -5,8 +5,8 @@ import { Button, ChessBoard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaChess, FaComments, FaDumbbell } from 'react-icons/fa';
 
-import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
-import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 import { PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -154,7 +154,7 @@ export default async function GettingStartedPage({ params }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{teaserCards}</div>
 
         <div className="text-center">
-          <Link href="/ranks">
+          <Link href="/dojo/ranks">
             <Button asChild variant="primary" size="lg">
               {t('ranks.viewAll')}
             </Button>

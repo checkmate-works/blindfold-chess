@@ -24,8 +24,7 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide } from '@/lib/guides';
 import { createClient } from '@/lib/supabase/server';
 
-import { PublishNudgeBanner } from '@/app/[locale]/(public)/games/_components/PublishNudgeBanner';
-import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
+import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
 import {
   buildRequirementItems,
   getBeltColorHex,
@@ -33,8 +32,12 @@ import {
   resolveAchievedSlugs,
   resolveDisplayAchievedSlugs,
   resolveNextRank,
-} from '@/app/[locale]/(public)/ranks/_lib/helpers';
-import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
+} from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import {
+  getAllRanks,
+  getUserAchievedRankIds,
+} from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
+import { PublishNudgeBanner } from '@/app/[locale]/(public)/games/_components/PublishNudgeBanner';
 import {
   CurriculumToc,
   HelpTourButton,
@@ -185,7 +188,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
 
             {/* Centered "View all ranks" link directly below the card */}
             <div className="flex justify-center">
-              <Link href={`/${locale}/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+              <Link href={`/${locale}/dojo/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
                 {t('viewAllRanks')}
               </Link>
             </div>
@@ -193,7 +196,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
             {/* Requirement items — rendered as a Zenn-style flat list
                   (same visual treatment as the curriculum TOC below) so
                   rows are tightly grouped under a single bordered card.
-                  Intentionally differs from `/ranks/[slug]`, which keeps
+                  Intentionally differs from `/dojo/ranks/[slug]`, which keeps
                   the spaced `RequirementsList` look. */}
             <div className="mt-4 space-y-3">
               {nextRequirementItems.length > 0 ? (
@@ -222,7 +225,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
               <p className="text-foreground">{t('allAchieved')}</p>
             </div>
             <div className="flex justify-center">
-              <Link href={`/${locale}/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+              <Link href={`/${locale}/dojo/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
                 {t('viewAllRanks')}
               </Link>
             </div>
@@ -253,7 +256,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
             guide list, and the link would open an identical page. */}
         {hasHiddenCurriculum && (
           <div className="flex justify-center">
-            <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+            <Link href={`/${locale}/dojo/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
               {t('viewAllGuides')}
             </Link>
           </div>

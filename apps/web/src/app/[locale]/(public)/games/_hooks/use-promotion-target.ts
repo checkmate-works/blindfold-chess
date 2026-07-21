@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import type { GuestPromotionQualification } from '@/lib/games/guest-promotion';
 
-import { getPublishPromotionTarget } from '@/app/[locale]/(public)/ranks/_actions/getPublishPromotionTarget';
+import { getPublishPromotionTarget } from '@/app/[locale]/(public)/dojo/ranks/_actions/getPublishPromotionTarget';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 /**

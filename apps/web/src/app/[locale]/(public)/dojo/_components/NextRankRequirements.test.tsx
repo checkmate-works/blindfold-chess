@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type {
   RequirementDivider,
   RequirementItem,
-} from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
+} from '@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList';
 
 import { NextRankRequirements } from './NextRankRequirements';
 

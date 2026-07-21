@@ -608,7 +608,7 @@ describe('JSON-LD Schema Generators', () => {
     const baseParams: LearningResourceData = {
       name: '5th Kyū Guide',
       description: 'The complete 5th Kyū blindfold chess guide.',
-      url: 'https://www.blindfold-chess.online/en/guides/ranks/5kyu',
+      url: 'https://www.blindfold-chess.online/en/dojo/guides/5kyu',
       inLanguage: 'en',
       educationalLevel: '5th Kyū',
       learningResourceType: 'Guide',
@@ -621,7 +621,7 @@ describe('JSON-LD Schema Generators', () => {
       expect(schema['@type']).toBe('LearningResource');
       expect(schema.name).toBe('5th Kyū Guide');
       expect(schema.description).toBe('The complete 5th Kyū blindfold chess guide.');
-      expect(schema.url).toBe('https://www.blindfold-chess.online/en/guides/ranks/5kyu');
+      expect(schema.url).toBe('https://www.blindfold-chess.online/en/dojo/guides/5kyu');
       expect(schema.educationalLevel).toBe('5th Kyū');
       expect(schema.learningResourceType).toBe('Guide');
     });

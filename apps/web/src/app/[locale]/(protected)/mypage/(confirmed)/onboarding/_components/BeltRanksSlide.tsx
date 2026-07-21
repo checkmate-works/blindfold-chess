@@ -3,8 +3,8 @@ import { getTranslations } from 'next-intl/server';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
-import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
-import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 
 type Props = {
   locale: string;
@@ -37,7 +37,7 @@ export async function BeltRanksSlide({ locale }: Props) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{teaserCards}</div>
 
       <div className="text-center">
-        <Link href="/ranks">
+        <Link href="/dojo/ranks">
           <Button asChild variant="primary" size="lg">
             {t('ranks.viewAll')}
           </Button>

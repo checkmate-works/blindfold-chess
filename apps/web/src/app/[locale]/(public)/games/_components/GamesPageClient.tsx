@@ -149,7 +149,7 @@ export function GamesPageClient({ locale }: Props) {
           </div>
           <div className="mt-4 rounded-lg bg-amber-50 p-3 text-center dark:bg-amber-950/20">
             <Link
-              href="/ranks"
+              href="/dojo/ranks"
               locale={locale}
               className="text-sm text-foreground/80 hover:text-foreground underline"
             >

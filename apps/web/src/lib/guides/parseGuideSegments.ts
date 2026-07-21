@@ -1,5 +1,5 @@
 /**
- * Parse the catch-all segments that follow `/guides/ranks/[rank]/`.
+ * Parse the catch-all segments that follow `/dojo/guides/[rank]/`.
  *
  * The first segment decides between flat pagination and chaptered layout:
  * - Numeric first segment → flat rank, page 2..N.

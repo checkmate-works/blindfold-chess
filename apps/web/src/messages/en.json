@@ -5584,7 +5584,9 @@
         "learnArticleLabel": "Learn about algebraic notation",
         "practiceLabel": "Practice algebraic notation"
       },
-      "readFullGuide": "Read the {rankName} guide"
+      "readFullGuide": "Read the {rankName} guide",
+      "prevRank": "Previous rank: {rankName}",
+      "nextRank": "Next rank: {rankName}"
     },
     "signUpBanner": {
       "message": "Earn your black belt!",
@@ -5673,7 +5675,8 @@
         "title": "All ranks",
         "description": "Check each rank's requirements and guides from here."
       }
-    }
+    },
+    "backToDojo": "Back to Dojo"
   },
   "guides": {
     "top": {
@@ -5691,6 +5694,7 @@
     },
     "breadcrumb": {
       "home": "Home",
+      "dojo": "Dojo",
       "guides": "Guides"
     },
     "pages": {

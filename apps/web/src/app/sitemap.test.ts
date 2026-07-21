@@ -59,15 +59,15 @@ describe('sitemap — guides block', () => {
 
   it('emits the /guides hub top for every supported locale', () => {
     for (const locale of SUPPORTED_LOCALES) {
-      expect(urls()).toContain(`${SITE_URL}/${locale}/guides`);
+      expect(urls()).toContain(`${SITE_URL}/${locale}/dojo/guides`);
     }
   });
 
-  it('emits /guides/ranks/[rank] for every rank with guide content in every locale', () => {
+  it('emits /dojo/guides/[rank] for every rank with guide content in every locale', () => {
     const rankSlugsWithGuides = Object.keys(enMessages.guides.pages);
     for (const locale of SUPPORTED_LOCALES) {
       for (const slug of rankSlugsWithGuides) {
-        expect(urls()).toContain(`${SITE_URL}/${locale}/guides/ranks/${slug}`);
+        expect(urls()).toContain(`${SITE_URL}/${locale}/dojo/guides/${slug}`);
       }
     }
   });
@@ -76,7 +76,7 @@ describe('sitemap — guides block', () => {
     const ranksWithoutGuides = ['1dan'];
     for (const locale of SUPPORTED_LOCALES) {
       for (const slug of ranksWithoutGuides) {
-        expect(urls()).not.toContain(`${SITE_URL}/${locale}/guides/ranks/${slug}`);
+        expect(urls()).not.toContain(`${SITE_URL}/${locale}/dojo/guides/${slug}`);
       }
     }
   });
@@ -90,12 +90,12 @@ describe('sitemap — guides block', () => {
       if (guide.format !== 'flat' || !guide.pages) continue;
       for (let page = 2; page <= guide.pages.length; page++) {
         for (const locale of SUPPORTED_LOCALES) {
-          expect(urls()).toContain(`${SITE_URL}/${locale}/guides/ranks/${slug}/${page}`);
+          expect(urls()).toContain(`${SITE_URL}/${locale}/dojo/guides/${slug}/${page}`);
         }
       }
       // Sanity: page 1 should NOT appear as a separate entry (it's the rank root)
       for (const locale of SUPPORTED_LOCALES) {
-        expect(urls()).not.toContain(`${SITE_URL}/${locale}/guides/ranks/${slug}/1`);
+        expect(urls()).not.toContain(`${SITE_URL}/${locale}/dojo/guides/${slug}/1`);
       }
     }
   });
@@ -120,7 +120,7 @@ describe('sitemap — guides block', () => {
   });
 
   it('each guide entry has a url and lastModified', () => {
-    const guideEntries = entries.filter((e) => e.url.includes('/guides/ranks/'));
+    const guideEntries = entries.filter((e) => e.url.includes('/dojo/guides/'));
     for (const entry of guideEntries) {
       expect(typeof entry.url).toBe('string');
       expect(entry.url.length).toBeGreaterThan(0);

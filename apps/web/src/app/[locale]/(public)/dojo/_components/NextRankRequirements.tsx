@@ -3,8 +3,8 @@ import Link from 'next/link';
 import type {
   RequirementDivider,
   RequirementItem,
-} from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
-import { isWhiteBelt } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+} from '@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList';
+import { isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 import { FOCUS_RING_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 function isRequirementDivider(
