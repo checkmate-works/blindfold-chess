@@ -5637,9 +5637,9 @@
   },
   "MobileTabBar": {
     "games": "Partidas",
-    "dojo": "Dojo",
+    "practice": "Prática",
     "topics": "Tópicos",
-    "mypage": "Minha Página"
+    "coin": "Moedas"
   },
   "dojo": {
     "pageTitle": "Dojo",

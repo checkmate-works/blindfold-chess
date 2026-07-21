@@ -5637,9 +5637,9 @@
   },
   "MobileTabBar": {
     "games": "ゲーム一覧",
-    "dojo": "道場",
+    "practice": "練習",
     "topics": "トピック",
-    "mypage": "マイページ"
+    "coin": "コイン"
   },
   "dojo": {
     "pageTitle": "道場",

@@ -5637,9 +5637,9 @@
   },
   "MobileTabBar": {
     "games": "Games",
-    "dojo": "Dojo",
+    "practice": "Practice",
     "topics": "Topics",
-    "mypage": "My Page"
+    "coin": "Coins"
   },
   "dojo": {
     "pageTitle": "Dojo",

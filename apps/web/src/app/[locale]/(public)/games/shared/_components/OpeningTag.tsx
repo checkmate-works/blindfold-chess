@@ -36,7 +36,9 @@ export function OpeningTag({ slug, displayName, ecoCode, locale, compact }: Prop
       }
     >
       <span className="font-mono text-muted-foreground">{ecoCode}</span>
-      <span className={compact ? 'max-w-[10rem] truncate' : 'font-medium'}>{displayName}</span>
+      <span className={compact ? 'min-w-0 max-w-[10rem] truncate' : 'font-medium'}>
+        {displayName}
+      </span>
     </Link>
   );
 }
