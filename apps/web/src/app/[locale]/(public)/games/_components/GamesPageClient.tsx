@@ -10,6 +10,7 @@ import { FaExclamationTriangle, FaPlus } from 'react-icons/fa';
 
 import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
+import { BeltRankBadge } from '@/app/[locale]/(public)/practice/_components/BeltRankBadge';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { TEXT_LINK_CLASSES, TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -30,6 +31,7 @@ type Props = {
 
 export function GamesPageClient({ locale }: Props) {
   const t = useTranslations('home.gameList');
+  const tRanks = useTranslations('ranks');
   const [sortBy, setSortBy] = useState<GameSortOption>('lastPlayed');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const { handleDeleteGame, confirmationModalProps } = useGameDelete();
@@ -75,7 +77,7 @@ export function GamesPageClient({ locale }: Props) {
         </div>
       )}
 
-      <div data-tour-id="games-new-button">
+      <div data-tour-id="games-new-button" className="!mb-5">
         {isAtLimit ? (
           <Button
             variant="primary"
@@ -98,6 +100,11 @@ export function GamesPageClient({ locale }: Props) {
             </Button>
           </Link>
         )}
+      </div>
+
+      <div className="flex justify-end gap-2 !mt-5">
+        <BeltRankBadge slug="1kyu" label={tRanks('rankNames.1kyu')} locale={locale} />
+        <BeltRankBadge slug="1dan" label={tRanks('rankNames.1dan')} locale={locale} />
       </div>
 
       {!isLoading && games.length > 0 && (
