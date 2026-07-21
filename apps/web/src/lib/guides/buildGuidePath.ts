@@ -2,7 +2,7 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 
 /**
  * Discriminated union describing any reachable page under
- * `/[locale]/guides/ranks/[rank]`. This is the **single source of truth** for
+ * `/[locale]/dojo/guides/[rank]`. This is the **single source of truth** for
  * the shape; `GuideRoutePath` in `enumerateGuideRoutes.ts` is derived from it.
  *
  * | kind            | meaning                                               |
@@ -25,7 +25,7 @@ export type GuidePathTarget =
   | { kind: 'chapter-page'; chapterSlug: string; page: number };
 
 /**
- * Shared core: build the locale-relative path suffix after `/guides/ranks/`.
+ * Shared core: build the locale-relative path suffix after `/dojo/guides/`.
  * Returned value always starts with the rank slug (no leading slash).
  */
 function guideSuffix(slug: RankSlug, target: GuidePathTarget): string {
@@ -43,18 +43,18 @@ function guideSuffix(slug: RankSlug, target: GuidePathTarget): string {
 
 /**
  * Build an absolute URL path (including `/[locale]/` prefix) for any page
- * under `/[locale]/guides/ranks/[rank]`.
+ * under `/[locale]/dojo/guides/[rank]`.
  *
  * Use this for `<Link href={...}>` on server components, redirects
  * (`redirect(...)`), and any place where you need a full URL path.
  */
 export function buildGuidePath(locale: string, slug: RankSlug, target: GuidePathTarget): string {
-  return `/${locale}/guides/ranks/${guideSuffix(slug, target)}`;
+  return `/${locale}/dojo/guides/${guideSuffix(slug, target)}`;
 }
 
 /**
  * Build a **locale-relative** URL path for any page under
- * `/guides/ranks/[rank]`. The returned value starts with `/guides/` and has
+ * `/dojo/guides/[rank]`. The returned value starts with `/dojo/guides/` and has
  * NO `/[locale]/` prefix.
  *
  * Use this for:
@@ -70,16 +70,16 @@ export function buildGuidePath(locale: string, slug: RankSlug, target: GuidePath
  * {@link buildGuidePath}.
  */
 export function buildGuidePathRelative(slug: RankSlug, target: GuidePathTarget): string {
-  return `/guides/ranks/${guideSuffix(slug, target)}`;
+  return `/dojo/guides/${guideSuffix(slug, target)}`;
 }
 
 /**
- * Path suffix WITHOUT any leading `/` or `/guides/ranks/` prefix. Suitable
+ * Path suffix WITHOUT any leading `/` or `/dojo/guides/` prefix. Suitable
  * for `generateCanonicalMetadata({ path })`, which internally prepends
- * `/<locale>/`. Returned value looks like e.g. `guides/ranks/5kyu/3`.
+ * `/<locale>/`. Returned value looks like e.g. `dojo/guides/5kyu/3`.
  */
 export function buildGuideCanonicalPath(slug: RankSlug, target: GuidePathTarget): string {
-  return `guides/ranks/${guideSuffix(slug, target)}`;
+  return `dojo/guides/${guideSuffix(slug, target)}`;
 }
 
 /**

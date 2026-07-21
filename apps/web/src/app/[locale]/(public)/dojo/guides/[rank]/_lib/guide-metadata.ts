@@ -11,7 +11,7 @@ import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**
- * Metadata builders (JSON-LD schemas + breadcrumbs) for the guides/ranks/[rank]
+ * Metadata builders (JSON-LD schemas + breadcrumbs) for the dojo/guides/[rank]
  * page family. These are pure (modulo i18n I/O) and deliberately live outside
  * the body renderer so a future page-level caller can reuse them without
  * paying the full render cost.
@@ -27,7 +27,7 @@ export function buildChapterListBreadcrumbs(
   tGuides: Translator,
   rankName: string
 ): BreadcrumbItem[] {
-  return [{ label: tGuides('breadcrumb.guides'), href: '/guides' }, { label: rankName }];
+  return [{ label: tGuides('breadcrumb.guides'), href: '/dojo/guides' }, { label: rankName }];
 }
 
 export function buildFlatBodyBreadcrumbs(
@@ -39,7 +39,7 @@ export function buildFlatBodyBreadcrumbs(
   totalPages: number
 ): BreadcrumbItem[] {
   return [
-    { label: tGuides('breadcrumb.guides'), href: '/guides' },
+    { label: tGuides('breadcrumb.guides'), href: '/dojo/guides' },
     { label: rankName, href: buildGuidePathRelative(rankSlug, { kind: 'root' }) },
     ...(pageNumber > 1
       ? [{ label: tRanks('detail.pageOf', { current: pageNumber, total: totalPages }) }]
@@ -58,7 +58,7 @@ export function buildChapterBodyBreadcrumbs(
   totalPages: number
 ): BreadcrumbItem[] {
   return [
-    { label: tGuides('breadcrumb.guides'), href: '/guides' },
+    { label: tGuides('breadcrumb.guides'), href: '/dojo/guides' },
     { label: rankName, href: buildGuidePathRelative(rankSlug, { kind: 'root' }) },
     {
       label: chapterTitle,

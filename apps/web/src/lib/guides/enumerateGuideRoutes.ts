@@ -5,7 +5,7 @@ import type { GuidePathTarget } from './buildGuidePath';
 import { getRankGuide } from './guideData';
 
 /**
- * One reachable URL under `/[locale]/guides/ranks/...`, described in
+ * One reachable URL under `/[locale]/dojo/guides/...`, described in
  * locale-agnostic terms. Derived from {@link GuidePathTarget} plus a `slug`
  * field — so any change to the set of valid `kind` values automatically
  * propagates to the enumerator (TypeScript catches missing cases in
@@ -14,7 +14,7 @@ import { getRankGuide } from './guideData';
 export type GuideRoutePath = GuidePathTarget & { slug: RankSlug };
 
 /**
- * Enumerate every distinct route under `/guides/ranks/...` that exists for
+ * Enumerate every distinct route under `/dojo/guides/...` that exists for
  * the given `guides.pages` data. Locale-agnostic: callers layer
  * `SUPPORTED_LOCALES` on top for `generateStaticParams` or sitemap generation.
  *
@@ -56,7 +56,7 @@ export function enumerateGuideRoutes(guidesPages: Record<string, unknown>): Guid
 
 /**
  * Convert a {@link GuideRoutePath} to URL path segments relative to
- * `/[locale]/guides/ranks`. The returned segments are:
+ * `/[locale]/dojo/guides`. The returned segments are:
  *
  * - `root`         → `[slug]`
  * - `flat-page`    → `[slug, page]`

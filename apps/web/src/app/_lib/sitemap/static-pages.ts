@@ -39,7 +39,7 @@ const STATIC_PAGES = [
   // non-redirect, 200-returning canonical endpoints.
   '/dojo/ranks',
   '/dojo',
-  '/guides',
+  '/dojo/guides',
   '/pricing',
   '/affiliate-disclosure',
   '/licenses',

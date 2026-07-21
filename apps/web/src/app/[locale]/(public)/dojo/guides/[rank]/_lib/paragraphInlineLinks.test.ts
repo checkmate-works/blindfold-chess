@@ -98,7 +98,7 @@ describe('getGuideInlineLink', () => {
     // throw from `makeTranslator`.
     const info = getGuideInlineLink('mukyu', 3, 2, 'en', tEn);
     expect(info?.label).toBe(enMessages.guides.inlineLinks.mukyu['5kyuGuideLabel']);
-    expect(info?.href).toBe('/en/guides/ranks/5kyu');
+    expect(info?.href).toBe('/en/dojo/guides/5kyu');
   });
 
   describe('all hard-coded i18n keys resolve in every locale', () => {

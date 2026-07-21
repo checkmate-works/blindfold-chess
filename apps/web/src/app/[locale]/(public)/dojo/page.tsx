@@ -256,7 +256,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
             guide list, and the link would open an identical page. */}
         {hasHiddenCurriculum && (
           <div className="flex justify-center">
-            <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+            <Link href={`/${locale}/dojo/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
               {t('viewAllGuides')}
             </Link>
           </div>

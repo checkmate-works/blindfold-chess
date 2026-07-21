@@ -110,14 +110,14 @@ describe('RankGuideDeepPage', () => {
     enMessages.guides.pages as Record<string, { format: string; pages: unknown[] }>
   )['5kyu']!.pages.length;
 
-  it('redirects /guides/ranks/5kyu/1 to the canonical root', async () => {
+  it('redirects /dojo/guides/5kyu/1 to the canonical root', async () => {
     await expect(
       RankGuideDeepPage({
         params: mkParams({ locale: 'en', rank: '5kyu', rest: ['1'] }),
       } as never)
     ).rejects.toMatchObject({
       name: 'RedirectError',
-      url: '/en/guides/ranks/5kyu',
+      url: '/en/dojo/guides/5kyu',
     });
     expect(renderSpy).not.toHaveBeenCalled();
   });

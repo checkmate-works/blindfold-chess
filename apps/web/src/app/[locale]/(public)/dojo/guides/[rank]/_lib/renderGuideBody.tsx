@@ -40,7 +40,7 @@ type ChapterBodyProps = BaseProps & {
 export type GuideBodyProps = FlatBodyProps | ChapterListProps | ChapterBodyProps;
 
 /**
- * Shared renderer for all `/guides/ranks/[rank]/...` layers.
+ * Shared renderer for all `/dojo/guides/[rank]/...` layers.
  *
  * The route layer is responsible for rank-slug validation; this function
  * trusts `props.slug` to be a real `RankSlug`. After resolving the shared

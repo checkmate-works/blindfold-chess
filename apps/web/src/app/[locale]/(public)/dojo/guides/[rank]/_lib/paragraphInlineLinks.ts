@@ -103,7 +103,7 @@ const GUIDE_LINK_MAP: Partial<Record<GuideLinkKey, GuideLinkEntry>> = {
   'mukyu:3:2': {
     inlineLinkKey: 'mukyu',
     labelKey: '5kyuGuideLabel',
-    href: 'guides/ranks/5kyu',
+    href: 'dojo/guides/5kyu',
   },
   // 2kyu guide - Position memory tutorial (page 1, paragraph 1)
   '2kyu:1:1': {

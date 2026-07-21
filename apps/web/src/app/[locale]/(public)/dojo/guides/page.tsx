@@ -33,7 +33,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
-  return createPageMetadata({ params, namespace: 'metadata.guides.top', path: 'guides' });
+  return createPageMetadata({ params, namespace: 'metadata.guides.top', path: 'dojo/guides' });
 }
 
 const sections = [{ id: 'rankGuides', Component: RankGuidesSection }] as const;
