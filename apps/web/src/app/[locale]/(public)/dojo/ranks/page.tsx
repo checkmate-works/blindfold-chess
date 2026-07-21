@@ -51,7 +51,7 @@ import { getAllRanks } from './_lib/queries';
 export const revalidate = 1800; // 30 minutes — ranks are code-seeded; long TTL is fine
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
-  return createPageMetadata({ params, namespace: 'metadata.ranks', path: 'ranks' });
+  return createPageMetadata({ params, namespace: 'metadata.ranks', path: 'dojo/ranks' });
 }
 
 async function RanksContent({ params }: LocalePageProps) {

@@ -13,7 +13,7 @@
  */
 import type { RankSlug } from '@/lib/db/data/ranks';
 
-import { TWO_PAWNS_VS_ONE_FEN } from '@/app/[locale]/(public)/ranks/_components/two-pawns-vs-one-fen';
+import { TWO_PAWNS_VS_ONE_FEN } from '@/app/[locale]/(public)/dojo/ranks/_components/two-pawns-vs-one-fen';
 
 type GuideLinkKey = `${RankSlug}:${number}:${number}`;
 

@@ -10,7 +10,7 @@ export function buildRankEntries(now: Date): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
 
   for (const slug of ALL_RANK_SLUGS) {
-    const path = `/ranks/${slug}`;
+    const path = `/dojo/ranks/${slug}`;
     for (const locale of SUPPORTED_LOCALES) {
       entries.push({
         url: `${BASE_URL}/${locale}${path}`,

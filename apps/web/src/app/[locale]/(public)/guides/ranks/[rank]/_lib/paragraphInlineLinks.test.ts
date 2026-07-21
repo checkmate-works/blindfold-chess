@@ -4,9 +4,9 @@ import jaMessages from '@/messages/ja.json';
 import ptBRMessages from '@/messages/pt-BR.json';
 import { describe, expect, it } from 'vitest';
 
+import { CASTLED_KINGSIDE_FEN } from '@/app/[locale]/(public)/dojo/ranks/_components/castled-kingside-fen';
+import { SCATTERED_PAWNS_FEN } from '@/app/[locale]/(public)/dojo/ranks/_components/scattered-pawns-fen';
 import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
-import { CASTLED_KINGSIDE_FEN } from '@/app/[locale]/(public)/ranks/_components/castled-kingside-fen';
-import { SCATTERED_PAWNS_FEN } from '@/app/[locale]/(public)/ranks/_components/scattered-pawns-fen';
 
 import { getGuideInlineLink } from './paragraphInlineLinks';
 

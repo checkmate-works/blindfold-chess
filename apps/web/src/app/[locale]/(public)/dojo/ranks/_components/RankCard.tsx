@@ -99,7 +99,7 @@ export function RankCard({
       {/* Rank card */}
       {isClickable ? (
         <Link
-          href={`/${locale}/ranks/${slug}`}
+          href={`/${locale}/dojo/ranks/${slug}`}
           className={[
             'block relative overflow-hidden rounded-lg border bg-card transition-all',
             isNext ? 'scale-[1.02]' : 'border-border hover:border-foreground/20',

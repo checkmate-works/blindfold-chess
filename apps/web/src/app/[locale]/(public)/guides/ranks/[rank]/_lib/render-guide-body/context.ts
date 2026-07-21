@@ -7,8 +7,8 @@ import { getRankGuide } from '@/lib/guides';
 import type { RankGuide } from '@/lib/guides';
 import { resolveCspNonce } from '@/lib/security/nonce';
 
-import { getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
-import { getRankBySlug } from '@/app/[locale]/(public)/ranks/_lib/queries';
+import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { getRankBySlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**

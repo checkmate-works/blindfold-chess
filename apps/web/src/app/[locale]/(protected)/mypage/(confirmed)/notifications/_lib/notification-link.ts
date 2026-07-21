@@ -300,7 +300,7 @@ export function buildNotificationLink(
     return '/mypage/benefits';
   }
   if (notification.type === 'rank_grant' && isRankGrantMetadata(notification.metadata)) {
-    return `/ranks/${notification.metadata.rankSlug}`;
+    return `/dojo/ranks/${notification.metadata.rankSlug}`;
   }
   if (notification.type === 'point_grant' || notification.type === 'like_coin_grant') {
     return '/mypage/coins';

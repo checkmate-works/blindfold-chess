@@ -6,7 +6,7 @@ import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
-import { getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 
 import { CurriculumToc } from './CurriculumToc';
 

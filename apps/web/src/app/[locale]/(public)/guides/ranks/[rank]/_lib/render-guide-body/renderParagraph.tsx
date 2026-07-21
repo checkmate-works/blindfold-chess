@@ -5,7 +5,7 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 import { isGuideListParagraph } from '@/lib/guides';
 import type { GuidePage, GuideParagraph } from '@/lib/guides';
 
-import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
+import { GuideLinkCard } from '@/app/[locale]/(public)/dojo/ranks/_components/GuideLinkCard';
 
 import { getGuideInlineLink } from '../paragraphInlineLinks';
 import { getVisualAid } from '../paragraphVisualAids';

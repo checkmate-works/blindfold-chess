@@ -136,7 +136,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = t('description', { rankName });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `ranks/${slug}`, title, description }),
+    ...generateCanonicalMetadata({ locale, path: `dojo/ranks/${slug}`, title, description }),
     title: resolveTitle(title, locale),
     description,
   };

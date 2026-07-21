@@ -61,7 +61,7 @@ describe('RankCard', () => {
 
       const link = screen.getByRole('link', { name: /9級/ });
       expect(link).toBeInTheDocument();
-      expect(link).toHaveAttribute('href', '/en/ranks/9kyu');
+      expect(link).toHaveAttribute('href', '/en/dojo/ranks/9kyu');
     });
 
     it('should not display a smoke overlay', () => {
@@ -98,7 +98,7 @@ describe('RankCard', () => {
 
       const link = screen.getByRole('link', { name: /9級/ });
       expect(link).toBeInTheDocument();
-      expect(link).toHaveAttribute('href', '/en/ranks/9kyu');
+      expect(link).toHaveAttribute('href', '/en/dojo/ranks/9kyu');
     });
 
     it('should render the check circle icon', () => {

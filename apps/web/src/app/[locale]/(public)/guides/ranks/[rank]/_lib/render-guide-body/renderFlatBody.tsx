@@ -8,10 +8,10 @@ import { buildFlatHref } from '@/lib/guides';
 import type { FlatGuide } from '@/lib/guides';
 import { JsonLd } from '@/lib/seo/jsonld';
 
+import { RankHeader } from '@/app/[locale]/(public)/dojo/ranks/_components/RankHeader';
+import { RequirementsList } from '@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList';
+import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
-import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
-import { RequirementsList } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
-import { buildRequirementItems } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { Divider, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';

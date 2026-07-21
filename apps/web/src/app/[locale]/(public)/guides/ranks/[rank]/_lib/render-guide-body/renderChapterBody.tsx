@@ -7,8 +7,8 @@ import { buildChapterHref, findChapter } from '@/lib/guides';
 import type { ChapteredGuide } from '@/lib/guides';
 import { JsonLd } from '@/lib/seo/jsonld';
 
+import { RankHeader } from '@/app/[locale]/(public)/dojo/ranks/_components/RankHeader';
 import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
-import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
 import { Divider, PageLayout } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';

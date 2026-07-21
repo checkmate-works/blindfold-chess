@@ -4,9 +4,9 @@ import { buildChapterHref } from '@/lib/guides';
 import type { ChapteredGuide } from '@/lib/guides';
 import { JsonLd } from '@/lib/seo/jsonld';
 
+import { GuideLinkCard } from '@/app/[locale]/(public)/dojo/ranks/_components/GuideLinkCard';
+import { RankHeader } from '@/app/[locale]/(public)/dojo/ranks/_components/RankHeader';
 import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
-import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
-import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 
 import { buildChapterListBreadcrumbs, buildChapterListItemListSchema } from '../guide-metadata';

@@ -9,54 +9,54 @@
  *
  * Adding a new visual aid: pick the `(rank, page, paragraph)` coordinates,
  * add an entry to `VISUAL_AID_MAP`, and import the board component from
- * `@/app/[locale]/(public)/ranks/_components/`. Board components must be
+ * `@/app/[locale]/(public)/dojo/ranks/_components/`. Board components must be
  * client components so they can read `useGamePreferences` for theme.
  */
 import type { ReactNode } from 'react';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
 
-import { AllAnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/AllAnchorPointsBoard';
-import { AnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/AnchorPointsBoard';
-import { AntiDiagAFileArrowsBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagAFileArrowsBoard';
-import { AntiDiagEndHFileBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagEndHFileBoard';
-import { AntiDiagEndRank1Board } from '@/app/[locale]/(public)/ranks/_components/AntiDiagEndRank1Board';
-import { AntiDiagRank8ArrowsBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagRank8ArrowsBoard';
-import { AntiDiagStartAFileBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagStartAFileBoard';
-import { AntiDiagStartRank8Board } from '@/app/[locale]/(public)/ranks/_components/AntiDiagStartRank8Board';
-import { AntiDiagonalBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagonalBoard';
-import { BishopFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/BishopFormulaBlock';
-import { BishopMovementBoard } from '@/app/[locale]/(public)/ranks/_components/BishopMovementBoard';
-import { CoordinateBoard } from '@/app/[locale]/(public)/ranks/_components/CoordinateBoard';
-import { DiagonalAFileArrowsBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalAFileArrowsBoard';
-import { DiagonalBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalBoard';
-import { DiagonalEndHFileBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalEndHFileBoard';
-import { DiagonalEndRank8Board } from '@/app/[locale]/(public)/ranks/_components/DiagonalEndRank8Board';
+import { AllAnchorPointsBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/AllAnchorPointsBoard';
+import { AnchorPointsBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/AnchorPointsBoard';
+import { AntiDiagAFileArrowsBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/AntiDiagAFileArrowsBoard';
+import { AntiDiagEndHFileBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/AntiDiagEndHFileBoard';
+import { AntiDiagEndRank1Board } from '@/app/[locale]/(public)/dojo/ranks/_components/AntiDiagEndRank1Board';
+import { AntiDiagRank8ArrowsBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/AntiDiagRank8ArrowsBoard';
+import { AntiDiagStartAFileBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/AntiDiagStartAFileBoard';
+import { AntiDiagStartRank8Board } from '@/app/[locale]/(public)/dojo/ranks/_components/AntiDiagStartRank8Board';
+import { AntiDiagonalBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/AntiDiagonalBoard';
+import { BishopFormulaBlock } from '@/app/[locale]/(public)/dojo/ranks/_components/BishopFormulaBlock';
+import { BishopMovementBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/BishopMovementBoard';
+import { CoordinateBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/CoordinateBoard';
+import { DiagonalAFileArrowsBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/DiagonalAFileArrowsBoard';
+import { DiagonalBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/DiagonalBoard';
+import { DiagonalEndHFileBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/DiagonalEndHFileBoard';
+import { DiagonalEndRank8Board } from '@/app/[locale]/(public)/dojo/ranks/_components/DiagonalEndRank8Board';
 import {
   AntiDiagAFileTable,
   AntiDiagRank8Table,
   DiagonalAFileTable,
   DiagonalRank1Table,
-} from '@/app/[locale]/(public)/ranks/_components/DiagonalPatternTables';
-import { DiagonalRank1ArrowsBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalRank1ArrowsBoard';
-import { DiagonalStartAFileBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalStartAFileBoard';
-import { DiagonalStartRank1Board } from '@/app/[locale]/(public)/ranks/_components/DiagonalStartRank1Board';
-import { HighlightQuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/HighlightQuadrantBoard';
-import { KingFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/KingFormulaBlock';
-import { KingMovementBoard } from '@/app/[locale]/(public)/ranks/_components/KingMovementBoard';
-import { KingsideCastledBoard } from '@/app/[locale]/(public)/ranks/_components/KingsideCastledBoard';
-import { KnightFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/KnightFormulaBlock';
-import { KnightMovementBoard } from '@/app/[locale]/(public)/ranks/_components/KnightMovementBoard';
-import { MiniBoard } from '@/app/[locale]/(public)/ranks/_components/MiniBoard';
-import { PawnBreakthroughBoard } from '@/app/[locale]/(public)/ranks/_components/PawnBreakthroughBoard';
-import { PawnBreakthroughLine } from '@/app/[locale]/(public)/ranks/_components/PawnBreakthroughLine';
-import { QuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/QuadrantBoard';
-import { QueenMovementBoard } from '@/app/[locale]/(public)/ranks/_components/QueenMovementBoard';
-import { RookMovementBoard } from '@/app/[locale]/(public)/ranks/_components/RookMovementBoard';
-import { ScatteredPawnsBoard } from '@/app/[locale]/(public)/ranks/_components/ScatteredPawnsBoard';
-import { Step3Board } from '@/app/[locale]/(public)/ranks/_components/Step3Board';
-import { SymmetryBoard } from '@/app/[locale]/(public)/ranks/_components/SymmetryBoard';
-import { TwoPawnsVsOneBoard } from '@/app/[locale]/(public)/ranks/_components/TwoPawnsVsOneBoard';
+} from '@/app/[locale]/(public)/dojo/ranks/_components/DiagonalPatternTables';
+import { DiagonalRank1ArrowsBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/DiagonalRank1ArrowsBoard';
+import { DiagonalStartAFileBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/DiagonalStartAFileBoard';
+import { DiagonalStartRank1Board } from '@/app/[locale]/(public)/dojo/ranks/_components/DiagonalStartRank1Board';
+import { HighlightQuadrantBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/HighlightQuadrantBoard';
+import { KingFormulaBlock } from '@/app/[locale]/(public)/dojo/ranks/_components/KingFormulaBlock';
+import { KingMovementBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/KingMovementBoard';
+import { KingsideCastledBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/KingsideCastledBoard';
+import { KnightFormulaBlock } from '@/app/[locale]/(public)/dojo/ranks/_components/KnightFormulaBlock';
+import { KnightMovementBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/KnightMovementBoard';
+import { MiniBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/MiniBoard';
+import { PawnBreakthroughBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/PawnBreakthroughBoard';
+import { PawnBreakthroughLine } from '@/app/[locale]/(public)/dojo/ranks/_components/PawnBreakthroughLine';
+import { QuadrantBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/QuadrantBoard';
+import { QueenMovementBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/QueenMovementBoard';
+import { RookMovementBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/RookMovementBoard';
+import { ScatteredPawnsBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/ScatteredPawnsBoard';
+import { Step3Board } from '@/app/[locale]/(public)/dojo/ranks/_components/Step3Board';
+import { SymmetryBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/SymmetryBoard';
+import { TwoPawnsVsOneBoard } from '@/app/[locale]/(public)/dojo/ranks/_components/TwoPawnsVsOneBoard';
 
 type VisualAidKey = `${RankSlug}:${number}:${number}`;
 

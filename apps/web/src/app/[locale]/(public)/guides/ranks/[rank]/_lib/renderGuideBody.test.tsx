@@ -94,7 +94,7 @@ vi.mock('@/lib/seo/jsonld', async (importOriginal) => {
 });
 
 // Stub board visuals so we don't pull the whole ranks/_components tree.
-vi.mock('@/app/[locale]/(public)/ranks/_components/GuideLinkCard', () => ({
+vi.mock('@/app/[locale]/(public)/dojo/ranks/_components/GuideLinkCard', () => ({
   GuideLinkCard: ({ items }: { items: Array<{ label: string; href: string }> }) => (
     <div data-testid="guide-link-card">
       {items.map((i) => (
@@ -105,12 +105,12 @@ vi.mock('@/app/[locale]/(public)/ranks/_components/GuideLinkCard', () => ({
     </div>
   ),
 }));
-vi.mock('@/app/[locale]/(public)/ranks/_components/RankHeader', () => ({
+vi.mock('@/app/[locale]/(public)/dojo/ranks/_components/RankHeader', () => ({
   RankHeader: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="rank-header">{children}</div>
   ),
 }));
-vi.mock('@/app/[locale]/(public)/ranks/_components/RequirementsList', () => ({
+vi.mock('@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList', () => ({
   RequirementsList: ({ items }: { items: Array<{ label: string }> }) => (
     <ul data-testid="requirements-list">
       {items.map((i, idx) => (
@@ -120,14 +120,14 @@ vi.mock('@/app/[locale]/(public)/ranks/_components/RequirementsList', () => ({
   ),
 }));
 
-vi.mock('@/app/[locale]/(public)/ranks/_lib/helpers', () => ({
+vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/helpers', () => ({
   buildRequirementItems: (reqs: Array<{ minScore: number; menuType: string }>) =>
     reqs.map((r) => ({ label: `score>=${r.minScore} ${r.menuType}`, href: '/x' })),
   getBeltColorHex: () => '#abcdef',
 }));
 
 const getRankBySlugMock = vi.fn();
-vi.mock('@/app/[locale]/(public)/ranks/_lib/queries', () => ({
+vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/queries', () => ({
   getRankBySlug: (...args: unknown[]) => getRankBySlugMock(...args),
 }));
 

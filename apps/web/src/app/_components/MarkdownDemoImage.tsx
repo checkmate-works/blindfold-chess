@@ -9,7 +9,7 @@
 // you add new demo types, keep them here — do NOT re-inline this dispatch
 // back into `MarkdownRenderer`, which would force the renderer back to
 // `'use client'` and restore ~120–150 KB gzip to every markdown route.
-import { CoordinateBoard } from '@/app/[locale]/(public)/ranks/_components';
+import { CoordinateBoard } from '@/app/[locale]/(public)/dojo/ranks/_components';
 import { ChessBoardDemo } from '@/app/[locale]/_components/ChessBoardDemo';
 
 type Props = {

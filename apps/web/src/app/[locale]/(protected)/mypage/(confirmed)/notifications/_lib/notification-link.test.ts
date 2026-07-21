@@ -568,7 +568,7 @@ describe('buildNotificationLink — achievements & non-link cases', () => {
       targetId: 'user-rank-1',
       metadata: { rankSlug: '1dan', rankLevel: 110, reason: 'Met the requirement pre-launch' },
     });
-    expect(buildNotificationLink(notif, {})).toBe('/ranks/1dan');
+    expect(buildNotificationLink(notif, {})).toBe('/dojo/ranks/1dan');
   });
 
   it('returns null for a like with an unknown target and non-post metadata', () => {

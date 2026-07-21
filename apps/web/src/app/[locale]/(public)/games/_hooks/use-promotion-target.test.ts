@@ -9,7 +9,7 @@ vi.mock('@/app/[locale]/_contexts/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-vi.mock('@/app/[locale]/(public)/ranks/_actions/getPublishPromotionTarget', () => ({
+vi.mock('@/app/[locale]/(public)/dojo/ranks/_actions/getPublishPromotionTarget', () => ({
   getPublishPromotionTarget: (...args: unknown[]) => mockGetPublishPromotionTarget(...args),
 }));
 

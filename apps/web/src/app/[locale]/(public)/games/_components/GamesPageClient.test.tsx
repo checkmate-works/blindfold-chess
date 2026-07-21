@@ -32,7 +32,7 @@ vi.mock('@/app/[locale]/_contexts/AuthContext', () => ({
 // server echoes the qualification back. Tests override to simulate an
 // already-promoted user (null) or the dan-holder fallback ('1kyu').
 const mockGetPublishPromotionTarget = vi.fn();
-vi.mock('@/app/[locale]/(public)/ranks/_actions/getPublishPromotionTarget', () => ({
+vi.mock('@/app/[locale]/(public)/dojo/ranks/_actions/getPublishPromotionTarget', () => ({
   getPublishPromotionTarget: (...args: unknown[]) => mockGetPublishPromotionTarget(...args),
 }));
 
