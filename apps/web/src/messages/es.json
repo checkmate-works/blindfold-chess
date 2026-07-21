@@ -5673,7 +5673,8 @@
         "title": "Todos los rangos",
         "description": "Aquí puedes consultar los requisitos y las guías de cada rango."
       }
-    }
+    },
+    "backToDojo": "Volver al Dojo"
   },
   "guides": {
     "top": {

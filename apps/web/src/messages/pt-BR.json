@@ -5673,7 +5673,8 @@
         "title": "Todas as graduações",
         "description": "Aqui você pode conferir os requisitos e os guias de cada graduação."
       }
-    }
+    },
+    "backToDojo": "Voltar ao Dojo"
   },
   "guides": {
     "top": {

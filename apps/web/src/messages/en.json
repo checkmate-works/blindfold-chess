@@ -5673,7 +5673,8 @@
         "title": "All ranks",
         "description": "Check each rank's requirements and guides from here."
       }
-    }
+    },
+    "backToDojo": "Back to Dojo"
   },
   "guides": {
     "top": {

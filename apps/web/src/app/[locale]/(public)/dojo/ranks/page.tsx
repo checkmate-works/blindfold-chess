@@ -28,6 +28,7 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
@@ -42,6 +43,7 @@ import {
 } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { SignUpBanner } from '@/app/[locale]/_components/SignUpBanner';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -80,6 +82,14 @@ async function RanksContent({ params }: LocalePageProps) {
       </Suspense>
 
       <RanksGrid locale={locale} dbRanks={dbRanks} />
+
+      {/* Reciprocal link back to the Dojo hub — beyond the breadcrumb above,
+          this gives a visible way back for readers who scrolled past it. */}
+      <div className="flex justify-center">
+        <Link href={`/${locale}/dojo`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+          {tDojo('backToDojo')}
+        </Link>
+      </div>
 
       <AdSlot slot="content-bottom" />
     </PageLayout>

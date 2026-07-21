@@ -13,6 +13,7 @@
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import enMessages from '@/messages/en.json';
@@ -22,6 +23,7 @@ import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -42,6 +44,7 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'guides' });
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
+  const tDojo = await getTranslations({ locale, namespace: 'dojo' });
 
   // Build an ItemList of rank roots from the canonical i18n source so the
   // JSON-LD stays in sync with whatever the `RankGuidesSection` grid renders.
@@ -64,6 +67,15 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
           {sections.map(({ id, Component }) => (
             <Component key={id} locale={locale} />
           ))}
+        </div>
+
+        {/* Reciprocal link back to the Dojo hub — beyond the breadcrumb in
+            GuidePageFooter below, this gives a visible way back for readers
+            who scrolled past it. */}
+        <div className="flex justify-center">
+          <Link href={`/${locale}/dojo`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+            {tDojo('backToDojo')}
+          </Link>
         </div>
 
         <GuidePageFooter
