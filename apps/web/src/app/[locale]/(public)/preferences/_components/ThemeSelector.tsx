@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 
-import { useTheme } from 'next-themes';
-
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+
+import { useTheme } from '@/lib/theme/ThemeProvider';
 
 import { PreferenceOption } from './PreferenceOption';
 

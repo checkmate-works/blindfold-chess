@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useTheme } from 'next-themes';
 import dynamic from 'next/dynamic';
 
 import { useDropdownClose } from '@/_hooks/use-dropdown-close';
+
+import { useTheme } from '@/lib/theme/ThemeProvider';
 
 type EmojiMartData = Record<string, unknown>;
 
