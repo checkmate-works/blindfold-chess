@@ -311,7 +311,7 @@ export default async function RankDetailPage({ params }: Props) {
       {rankSlug === '1dan' && (
         <div className="space-y-2">
           <SectionTitle>{t('detail.benefits')}</SectionTitle>
-          <p className="text-foreground/80">{t('detail.benefitsAdFree')}</p>
+          <p className="text-emerald-600 dark:text-emerald-400">{t('detail.benefitsAdFree')}</p>
         </div>
       )}
 
