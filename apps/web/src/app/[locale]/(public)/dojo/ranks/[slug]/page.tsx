@@ -20,7 +20,9 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { Button } from '@/app/_components';
 import { SUPPORTED_LOCALES } from '@/config';
+import { HiArrowRight } from 'react-icons/hi2';
 
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
@@ -111,9 +113,11 @@ function TipsCard({
         aria-label={t('detail.readFullGuide', { rankName })}
       >
         <Board className="mx-auto max-w-[10rem]" />
-        <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-          {t('detail.readFullGuide', { rankName })}
-        </span>
+        <div className="mt-3 flex justify-center">
+          <Button asChild variant="primary" size="sm" icon={<HiArrowRight aria-hidden="true" />}>
+            {t('detail.readFullGuide', { rankName })}
+          </Button>
+        </div>
       </Link>
     </div>
   );
