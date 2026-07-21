@@ -4,11 +4,12 @@ import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 
 import { NextIntlClientProvider } from 'next-intl';
-import { ThemeProvider } from 'next-themes';
 
 import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
 import { getMessageFallback, handleIntlError } from '@/i18n/error-handling';
+
+import { ThemeProvider } from '@/lib/theme/ThemeProvider';
 
 import { ToastContainer } from '@/app/[locale]/_components/ToastContainer';
 import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -31,12 +32,7 @@ export function Providers({ children, locale, messages }: Props) {
         getMessageFallback={getMessageFallback}
       >
         <IntlAvailableContext.Provider value={true}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+          <ThemeProvider disableTransitionOnChange>
             {/*
               The landing route (`/`) is its own root layout, so it needs its
               own toast plumbing — toasts deferred via sessionStorage when
