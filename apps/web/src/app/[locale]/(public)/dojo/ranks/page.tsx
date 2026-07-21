@@ -57,11 +57,16 @@ export async function generateMetadata({ params }: LocalePageProps): Promise<Met
 async function RanksContent({ params }: LocalePageProps) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'ranks' });
+  const tDojo = await getTranslations({ locale, namespace: 'dojo' });
 
   const dbRanks = await getAllRanks();
 
   return (
-    <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
+    <PageLayout
+      title={t('pageTitle')}
+      locale={locale}
+      breadcrumb={[{ label: tDojo('pageTitle'), href: '/dojo' }, { label: t('pageTitle') }]}
+    >
       <SectionTitle>{t('pageTitle')}</SectionTitle>
       <p className="text-muted-foreground">{t('pageSubtitle')}</p>
 
@@ -91,6 +96,7 @@ async function RanksContent({ params }: LocalePageProps) {
 async function RanksSkeleton() {
   const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'ranks' });
+  const tDojo = await getTranslations({ locale, namespace: 'dojo' });
 
   return (
     <div className="space-y-8">
@@ -137,12 +143,16 @@ async function RanksSkeleton() {
 
         <Divider />
 
-        {/* Breadcrumb: [Home logo] / Ranks. Single static crumb mirrors
-            `ranks/page.tsx`'s `<Breadcrumb items={[{ label: t('pageTitle') }]} />`. */}
+        {/* Breadcrumb: [Home logo] / Dojo / Ranks. Static crumbs mirror
+            `ranks/page.tsx`'s PageLayout breadcrumb. */}
         <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
           <ol className="flex flex-wrap items-center gap-x-1 text-sm">
             <li>
               <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+            </li>
+            <li className="flex items-center">
+              <span className="mx-1 text-muted-foreground">/</span>
+              <span className="text-muted-foreground">{tDojo('pageTitle')}</span>
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>
@@ -157,7 +167,7 @@ async function RanksSkeleton() {
 
 /**
  * Deliberately NOT a segment-level `loading.tsx`. A `loading.tsx` file here
- * would wrap this whole subtree (including `/ranks/[slug]`) in a
+ * would wrap this whole subtree (including `/dojo/ranks/[slug]`) in a
  * `<Suspense>` boundary, so navigating straight into a specific rank (e.g.
  * via `BeltRankBadge` on the practice page) would flash this 7-card grid
  * skeleton before the detail page's own skeleton mounted. Scoping the

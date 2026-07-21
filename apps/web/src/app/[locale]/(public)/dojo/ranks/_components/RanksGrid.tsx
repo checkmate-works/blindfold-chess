@@ -22,7 +22,7 @@ import {
 import { RankCard } from './RankCard';
 
 /**
- * Shared with the `/ranks` page's loading skeleton so the two grids don't
+ * Shared with the `/dojo/ranks` page's loading skeleton so the two grids don't
  * drift apart — see the skeleton's own comment in `page.tsx`.
  */
 export const RANKS_GRID_CLASSES = 'mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3';

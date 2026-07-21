@@ -10,7 +10,7 @@ type GuidePageFooterProps = {
 };
 
 /**
- * Shared footer block for every `/guides/...` Server Component.
+ * Shared footer block for every `/dojo/guides/...` Server Component.
  *
  * Renders (in order):
  * 1. The `content-bottom` AdSense slot (gated by env + local-dev flag)
@@ -18,7 +18,7 @@ type GuidePageFooterProps = {
  * 3. A breadcrumb with the supplied items
  *
  * Extracted so that `renderGuideBody`'s three layout branches and the
- * `/guides` hub top page do not duplicate the same AdSense + Divider +
+ * `/dojo/guides` hub top page do not duplicate the same AdSense + Divider +
  * Breadcrumb triple — only the breadcrumb items differ between call sites.
  *
  * The divider + breadcrumb pair is wrapped in `!mt-4 space-y-4` to match

@@ -146,6 +146,7 @@ export default async function RankDetailPage({ params }: Props) {
   const { locale, slug } = await params;
 
   const t = await getTranslations({ locale, namespace: 'ranks' });
+  const tDojo = await getTranslations({ locale, namespace: 'dojo' });
 
   const tGuides = await getTranslations({ locale, namespace: 'guides' });
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
@@ -185,7 +186,11 @@ export default async function RankDetailPage({ params }: Props) {
       <PageLayout
         title={rankName}
         locale={locale}
-        breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
+        breadcrumb={[
+          { label: tDojo('pageTitle'), href: '/dojo' },
+          { label: t('pageTitle'), href: '/dojo/ranks' },
+          { label: rankName },
+        ]}
       >
         <RankHeader
           beltColor={beltColor}
@@ -266,7 +271,11 @@ export default async function RankDetailPage({ params }: Props) {
     <PageLayout
       title={rankName}
       locale={locale}
-      breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
+      breadcrumb={[
+        { label: tDojo('pageTitle'), href: '/dojo' },
+        { label: t('pageTitle'), href: '/dojo/ranks' },
+        { label: rankName },
+      ]}
     >
       <RankHeader
         beltColor={beltColor}

@@ -66,7 +66,13 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
           ))}
         </div>
 
-        <GuidePageFooter items={[{ label: t('breadcrumb.guides') }]} locale={locale} />
+        <GuidePageFooter
+          items={[
+            { label: t('breadcrumb.dojo'), href: '/dojo' },
+            { label: t('breadcrumb.guides') },
+          ]}
+          locale={locale}
+        />
       </PageLayout>
     </>
   );

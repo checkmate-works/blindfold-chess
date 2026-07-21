@@ -16,7 +16,7 @@ type Props = {
 };
 
 /**
- * Achievement checkmark for the rank detail page (`/ranks/[slug]`).
+ * Achievement checkmark for the rank detail page (`/dojo/ranks/[slug]`).
  *
  * Client-fetched, same pattern as `RanksGrid`: the detail page itself stays
  * statically generated (`generateStaticParams`), and per-user achievement

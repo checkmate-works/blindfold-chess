@@ -196,7 +196,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
             {/* Requirement items — rendered as a Zenn-style flat list
                   (same visual treatment as the curriculum TOC below) so
                   rows are tightly grouped under a single bordered card.
-                  Intentionally differs from `/ranks/[slug]`, which keeps
+                  Intentionally differs from `/dojo/ranks/[slug]`, which keeps
                   the spaced `RequirementsList` look. */}
             <div className="mt-4 space-y-3">
               {nextRequirementItems.length > 0 ? (

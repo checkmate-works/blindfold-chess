@@ -374,7 +374,7 @@ const REAL_RANK_SLUGS = ALL_RANK_SLUGS.filter((slug) => !isMukyuSlug(slug));
  * rank BELOW what the user already has reads as a regression, not a goal.
  * Returns `null` once the highest defined rank is achieved — there is
  * nothing higher to recommend (skipped lower ranks stay freely earnable via
- * `/ranks`, just not pushed as "next").
+ * `/dojo/ranks`, just not pushed as "next").
  */
 export function resolveRecommendedNextSlug(achievedSlugs: ReadonlySet<RankSlug>): RankSlug | null {
   let highestAchievedIndex = -1;

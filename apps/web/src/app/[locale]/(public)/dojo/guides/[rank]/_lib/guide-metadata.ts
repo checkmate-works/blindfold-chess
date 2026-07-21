@@ -27,7 +27,11 @@ export function buildChapterListBreadcrumbs(
   tGuides: Translator,
   rankName: string
 ): BreadcrumbItem[] {
-  return [{ label: tGuides('breadcrumb.guides'), href: '/dojo/guides' }, { label: rankName }];
+  return [
+    { label: tGuides('breadcrumb.dojo'), href: '/dojo' },
+    { label: tGuides('breadcrumb.guides'), href: '/dojo/guides' },
+    { label: rankName },
+  ];
 }
 
 export function buildFlatBodyBreadcrumbs(
@@ -39,6 +43,7 @@ export function buildFlatBodyBreadcrumbs(
   totalPages: number
 ): BreadcrumbItem[] {
   return [
+    { label: tGuides('breadcrumb.dojo'), href: '/dojo' },
     { label: tGuides('breadcrumb.guides'), href: '/dojo/guides' },
     { label: rankName, href: buildGuidePathRelative(rankSlug, { kind: 'root' }) },
     ...(pageNumber > 1
@@ -58,6 +63,7 @@ export function buildChapterBodyBreadcrumbs(
   totalPages: number
 ): BreadcrumbItem[] {
   return [
+    { label: tGuides('breadcrumb.dojo'), href: '/dojo' },
     { label: tGuides('breadcrumb.guides'), href: '/dojo/guides' },
     { label: rankName, href: buildGuidePathRelative(rankSlug, { kind: 'root' }) },
     {

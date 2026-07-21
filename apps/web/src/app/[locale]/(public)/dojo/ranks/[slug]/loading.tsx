@@ -15,12 +15,13 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
  *
  * The rank name is unknown at loading time (no access to `params`), so the
  * page title and breadcrumb tail render as bar placeholders. Static section
- * titles (`Criteria`, `Score Requirements`) and the `Ranks` parent crumb
- * resolve from the `ranks` namespace and stay textual.
+ * titles (`Criteria`, `Score Requirements`) and the `Dojo` / `Ranks` parent
+ * crumbs resolve from i18n and stay textual.
  */
 export default async function RankDetailLoading() {
   const locale = await getLocaleFromPathnameHeader();
   const t = await getTranslations({ locale, namespace: 'ranks' });
+  const tDojo = await getTranslations({ locale, namespace: 'dojo' });
 
   return (
     <div className="space-y-8">
@@ -83,14 +84,18 @@ export default async function RankDetailLoading() {
         </div>
 
         {/* Breadcrumb (compact) — mirrors PageLayout's trailing breadcrumb block.
-            Home logo and the rank-name tail are placeholders; the `Ranks` middle
-            crumb is static and resolves from i18n. */}
+            Home logo and the rank-name tail are placeholders; the `Dojo` and
+            `Ranks` middle crumbs are static and resolve from i18n. */}
         <div className="!mt-4 space-y-4">
           <Divider />
           <nav aria-label="Breadcrumb" className="flex min-h-6 items-center">
             <ol className="flex flex-wrap items-center gap-x-1 text-sm">
               <li>
                 <div className="size-6 rounded-sm bg-muted animate-pulse" />
+              </li>
+              <li className="flex items-center">
+                <span className="mx-1 text-muted-foreground">/</span>
+                <span className="text-muted-foreground">{tDojo('pageTitle')}</span>
               </li>
               <li className="flex items-center">
                 <span className="mx-1 text-muted-foreground">/</span>
