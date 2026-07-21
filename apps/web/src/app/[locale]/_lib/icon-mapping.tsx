@@ -3,6 +3,7 @@ import {
   FaBookOpen,
   FaBullhorn,
   FaCog,
+  FaCoins,
   FaCompass,
   FaDumbbell,
   FaEnvelope,
@@ -56,5 +57,7 @@ export const getIcon = (iconName: NavigationIconName) => {
       return <FaBookOpen className="h-5 w-5" />;
     case 'dojo':
       return <GiBlackBelt className="h-5 w-5" />;
+    case 'coin':
+      return <FaCoins className="h-5 w-5" />;
   }
 };

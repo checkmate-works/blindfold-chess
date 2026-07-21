@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 
 import type { NavigationIconName } from '@/app/[locale]/_lib/types';
 
+import { useAuth } from '../_contexts/AuthContext';
 import { getIcon } from '../_lib/icon-mapping';
 
 const TAB_ITEMS: ReadonlyArray<{
@@ -18,9 +19,9 @@ const TAB_ITEMS: ReadonlyArray<{
   { labelKey: 'games', path: '/games/shared', iconName: 'games' },
   { labelKey: 'practice', path: '/practice', iconName: 'practice' },
   { labelKey: 'topics', path: '/topics', iconName: 'topics' },
-  // /mypage is a protected route. Unauthenticated users will be redirected
-  // to sign-in by the (protected) layout's auth guard — this is intentional.
-  { labelKey: 'mypage', path: '/mypage', iconName: 'home' },
+  // Signed-in users go straight to their coin balance; signed-out visitors
+  // get the public Coin FAQ instead (see the `user` override below).
+  { labelKey: 'coin', path: '/coin', iconName: 'coin' },
 ] as const;
 
 const SCROLL_DEAD_ZONE = 10;
@@ -29,6 +30,7 @@ export function MobileTabBar() {
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations('MobileTabBar');
+  const { user, isLoading } = useAuth();
 
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
@@ -65,7 +67,8 @@ export function MobileTabBar() {
     >
       <ul className="flex items-center justify-around px-2 py-1">
         {TAB_ITEMS.map((item) => {
-          const href = `/${locale}${item.path}`;
+          const path = item.labelKey === 'coin' && !isLoading && user ? '/mypage/coins' : item.path;
+          const href = `/${locale}${path}`;
           const isActive = pathname.startsWith(href);
           return (
             <li key={item.labelKey}>

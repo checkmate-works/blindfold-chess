@@ -28,7 +28,8 @@ export type NavigationIconName =
   | 'settings'
   | 'ranks'
   | 'guides'
-  | 'dojo';
+  | 'dojo'
+  | 'coin';
 
 export interface NavigationItem {
   id: string;
