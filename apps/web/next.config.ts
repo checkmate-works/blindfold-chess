@@ -125,18 +125,45 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       // Rank guide URL migration (added 2026-04-11).
-      // Moved textbook-like guide content from /ranks/:slug/guide to the
-      // independent /guides/ranks/:rank hub for namespace isolation and
-      // future expansion (columns, tactics, etc.).
+      // Moved textbook-like guide content from /ranks/:slug/guide to an
+      // independent guides hub. Destinations were updated in place when the
+      // hub itself moved under /dojo (see the dojo namespace migration below)
+      // so old links resolve in a single hop instead of chaining redirects.
+      // These rules MUST stay ABOVE the generic /:locale/ranks/:path* rule:
+      // redirects are first-match, and the generic rule would otherwise send
+      // /ranks/5kyu/guide to the nonexistent /dojo/ranks/5kyu/guide.
       // Safe to remove after 6 months if Search Console shows no traffic.
       {
         source: '/:locale/ranks/:slug/guide',
-        destination: '/:locale/guides/ranks/:slug',
+        destination: '/:locale/dojo/guides/:slug',
         permanent: true,
       },
       {
         source: '/:locale/ranks/:slug/guide/:page(\\d+)',
-        destination: '/:locale/guides/ranks/:slug/:page',
+        destination: '/:locale/dojo/guides/:slug/:page',
+        permanent: true,
+      },
+      // Dojo namespace migration (added 2026-07-21).
+      // /ranks and /guides moved under /dojo: they are both facets of the
+      // belt-progression section (credentials vs curriculum), and nesting
+      // them makes the dojo hub structurally discoverable via breadcrumbs.
+      // The guides hub also dropped its middle `ranks` segment
+      // (/guides/ranks/5kyu -> /dojo/guides/5kyu) — inside the dojo
+      // namespace, guides are the rank curriculum by definition.
+      // Safe to remove after 6 months if Search Console shows no traffic.
+      {
+        source: '/:locale/guides/ranks/:path*',
+        destination: '/:locale/dojo/guides/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:locale/guides',
+        destination: '/:locale/dojo/guides',
+        permanent: true,
+      },
+      {
+        source: '/:locale/ranks/:path*',
+        destination: '/:locale/dojo/ranks/:path*',
         permanent: true,
       },
       // Coin page URL migration (added 2026-05-30).
