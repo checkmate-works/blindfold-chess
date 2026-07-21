@@ -124,7 +124,7 @@ export function PostFooter({
             )}
           </div>
           {replyMeta.latestReplyAt && (
-            <span className="text-xs text-muted-foreground">
+            <span className="hidden sm:inline text-xs text-muted-foreground">
               {t('newReply', {
                 time: formatRelativeTime(replyMeta.latestReplyAt, locale, t('justNow')),
               })}
