@@ -15,7 +15,7 @@ const TAB_ITEMS: ReadonlyArray<{
   path: string;
   iconName: NavigationIconName;
 }> = [
-  { labelKey: 'games', path: '/games', iconName: 'games' },
+  { labelKey: 'games', path: '/games/shared', iconName: 'games' },
   { labelKey: 'dojo', path: '/dojo', iconName: 'dojo' },
   { labelKey: 'topics', path: '/topics', iconName: 'topics' },
   // /mypage is a protected route. Unauthenticated users will be redirected
