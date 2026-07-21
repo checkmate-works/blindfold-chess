@@ -85,6 +85,45 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
 
   return (
     <div className="space-y-3">
+      {/* Move List */}
+      {movePairs.length > 0 && (
+        <div className="overflow-x-auto">
+          <div className="flex items-center gap-1 text-sm whitespace-nowrap justify-center flex-wrap">
+            {movePairs.map((pair) => (
+              <div key={pair.moveNumber} className="flex items-center gap-0.5">
+                <span className="text-muted-foreground text-xs">{pair.moveNumber}.</span>
+                <button
+                  type="button"
+                  className={`px-1.5 py-0.5 rounded transition-colors ${
+                    currentMoveIndex === pair.whiteMoveIndex
+                      ? 'bg-foreground/15 font-semibold'
+                      : 'hover:bg-muted/40'
+                  }`}
+                  onClick={() => setCurrentMoveIndex(pair.whiteMoveIndex)}
+                >
+                  {pair.whiteMove}
+                </button>
+                {pair.blackMove && (
+                  <button
+                    type="button"
+                    className={`px-1.5 py-0.5 rounded transition-colors ${
+                      pair.blackMoveIndex !== undefined && currentMoveIndex === pair.blackMoveIndex
+                        ? 'bg-foreground/15 font-semibold'
+                        : 'hover:bg-muted/40'
+                    }`}
+                    onClick={() =>
+                      pair.blackMoveIndex !== undefined && setCurrentMoveIndex(pair.blackMoveIndex)
+                    }
+                  >
+                    {pair.blackMove}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <BoardFrame expandOnMobile>
         <MiniBoard fen={currentFen} responsive flipped={isBlackOpening(fen)} />
       </BoardFrame>
@@ -128,45 +167,6 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
           &raquo;
         </button>
       </div>
-
-      {/* Move List */}
-      {movePairs.length > 0 && (
-        <div className="overflow-x-auto">
-          <div className="flex items-center gap-1 text-sm whitespace-nowrap justify-center flex-wrap">
-            {movePairs.map((pair) => (
-              <div key={pair.moveNumber} className="flex items-center gap-0.5">
-                <span className="text-muted-foreground text-xs">{pair.moveNumber}.</span>
-                <button
-                  type="button"
-                  className={`px-1.5 py-0.5 rounded transition-colors ${
-                    currentMoveIndex === pair.whiteMoveIndex
-                      ? 'bg-foreground/15 font-semibold'
-                      : 'hover:bg-muted/40'
-                  }`}
-                  onClick={() => setCurrentMoveIndex(pair.whiteMoveIndex)}
-                >
-                  {pair.whiteMove}
-                </button>
-                {pair.blackMove && (
-                  <button
-                    type="button"
-                    className={`px-1.5 py-0.5 rounded transition-colors ${
-                      pair.blackMoveIndex !== undefined && currentMoveIndex === pair.blackMoveIndex
-                        ? 'bg-foreground/15 font-semibold'
-                        : 'hover:bg-muted/40'
-                    }`}
-                    onClick={() =>
-                      pair.blackMoveIndex !== undefined && setCurrentMoveIndex(pair.blackMoveIndex)
-                    }
-                  >
-                    {pair.blackMove}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* New game from here button — always rendered to prevent CLS, disabled at starting position */}
       <div className="flex justify-center">
