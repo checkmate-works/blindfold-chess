@@ -12,10 +12,12 @@ import { getRankBySlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**
- * Translator object returned by `next-intl/server`'s `getTranslations`.
- * Narrowed just enough for what the renderers use (label lookup + ICU args).
+ * Translator object returned by `next-intl/server`'s `getTranslations`. Kept
+ * as the full type (rather than a narrowed call signature) so callers can
+ * use `.rich()` for messages with embedded links (e.g. the rank-linked
+ * guide heading), not just plain string lookups.
  */
-export type Translator = (key: string, values?: Record<string, string | number | Date>) => string;
+export type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
 type RankNavigationNeighbour = {
   slug: RankSlug;

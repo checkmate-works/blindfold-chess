@@ -5690,7 +5690,8 @@
     },
     "ranks": {
       "indexTitle": "Guía",
-      "chapterListHeading": "Capítulos"
+      "chapterListHeading": "Capítulos",
+      "indexTitleWithRank": "Guía de <link>{rankName}</link>"
     },
     "breadcrumb": {
       "home": "Inicio",
@@ -6023,7 +6024,8 @@
     "navigation": {
       "prevRank": "Rango anterior: guía de {rankName}",
       "nextRank": "Siguiente rango: guía de {rankName}"
-    }
+    },
+    "viewRankPage": "Ver la página de rango {rankName}"
   },
   "attachment": {
     "input": {

@@ -60,6 +60,19 @@ vi.mock('next-intl/server', () => ({
         }
         return undefined;
       },
+      // Minimal stand-in for the ICU `<link>` rich-text messages used by
+      // the 5kyu-scoped rank-linked guide heading. Only the one key the
+      // renderer actually calls `.rich()` on needs a real implementation.
+      rich: (
+        key: string,
+        values?: Record<string, unknown> & { link?: (chunks: React.ReactNode) => React.ReactNode }
+      ) => {
+        if (namespace === 'guides' && key === 'ranks.indexTitleWithRank') {
+          const rankName = String(values?.rankName ?? '');
+          return <>Guide for {values?.link?.(rankName)}</>;
+        }
+        return key;
+      },
     });
   },
 }));
