@@ -255,7 +255,7 @@
       "description": "自分の投稿の一覧を表示します"
     },
     "mypageProblems": {
-      "title": "マイ問題",
+      "title": "作成した問題",
       "description": "作成したポジション記憶の問題"
     },
     "mypagePuzzles": {
@@ -3641,11 +3641,11 @@
     "sectionTitle": "トピック"
   },
   "MypageProblems": {
-    "title": "マイ問題",
+    "title": "ポジション記憶の問題",
     "sectionTitle": "作成した問題",
     "empty": "まだ問題を作成していません。",
     "breadcrumbMypage": "マイページ",
-    "breadcrumbProblems": "マイ問題",
+    "breadcrumbProblems": "作成した問題",
     "editAction": "編集"
   },
   "MypagePuzzles": {
@@ -3653,11 +3653,11 @@
     "sectionTitle": "作成したパズル",
     "empty": "まだパズルを作成していません。",
     "breadcrumbMypage": "マイページ",
-    "breadcrumbProblems": "マイ問題",
+    "breadcrumbProblems": "作成した問題",
     "editAction": "編集"
   },
   "MypageProblemsIndex": {
-    "title": "マイ問題",
+    "title": "作成した問題",
     "description": "作成した問題の管理",
     "positionMemory": "ポジションの記憶",
     "puzzles": "パズル",
@@ -3750,8 +3750,8 @@
     "likeCoinGrantMessage": {
       "default": "コンテンツが評価され、{count} コインを獲得しました"
     },
-    "positionEditRequestSubmittedMessage": "{actor}さんがあなたの局面にチャンクを提案しました",
-    "positionEditRequestAcceptedMessage": "{actor}さんがあなたのチャンク提案を承認しました",
+    "positionEditRequestSubmittedMessage": "{actor}さんがあなたの問題にパターンを提案しました",
+    "positionEditRequestAcceptedMessage": "{actor}さんがあなたのパターン提案を承認しました",
     "settingsLink": "通知設定",
     "muteButtonLabel": "「{type}」の通知をミュート",
     "unmuteButtonLabel": "「{type}」の通知のミュートを解除",

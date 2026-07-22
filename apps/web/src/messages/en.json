@@ -3750,8 +3750,8 @@
     "likeCoinGrantMessage": {
       "default": "Your content was liked — you earned {count, plural, one {# coin} other {# coins}}"
     },
-    "positionEditRequestSubmittedMessage": "{actor} suggested chunks for your position",
-    "positionEditRequestAcceptedMessage": "{actor} accepted your chunk suggestion",
+    "positionEditRequestSubmittedMessage": "{actor} suggested patterns for your problem",
+    "positionEditRequestAcceptedMessage": "{actor} accepted your pattern suggestion",
     "settingsLink": "Notification settings",
     "muteButtonLabel": "Mute {type} notifications",
     "unmuteButtonLabel": "Unmute {type} notifications",

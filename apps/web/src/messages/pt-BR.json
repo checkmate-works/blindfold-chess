@@ -3750,8 +3750,8 @@
     "likeCoinGrantMessage": {
       "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
     },
-    "positionEditRequestSubmittedMessage": "{actor} sugeriu chunks para a sua posição",
-    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de chunks",
+    "positionEditRequestSubmittedMessage": "{actor} sugeriu padrões para o seu problema",
+    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de padrões",
     "settingsLink": "Configurações de notificação",
     "muteButtonLabel": "Silenciar notificações de {type}",
     "unmuteButtonLabel": "Reativar notificações de {type}",
