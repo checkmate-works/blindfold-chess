@@ -12,13 +12,20 @@ import type { PositionType } from '@/lib/positions/types';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-type Props = {
+type SuggestLinkProps = {
   positionId: string;
   positionType: PositionType;
   /** Authenticated viewer's id; null when signed out. */
   viewerId: string | null;
   /** Position owner's id (positions.user_id is NOT NULL). */
   ownerId: string | null;
+  locale: Locale;
+};
+
+/** The summary link is role-independent, so it needs no viewer / owner id. */
+type SummaryLinkProps = {
+  positionId: string;
+  positionType: PositionType;
   locale: Locale;
 };
 
@@ -56,7 +63,7 @@ export async function PositionEditRequestSuggestLink({
   viewerId,
   ownerId,
   locale,
-}: Props) {
+}: SuggestLinkProps) {
   const href = suggestionsPath(positionType, positionId);
   if (!href) return null;
 
@@ -79,12 +86,21 @@ export async function PositionEditRequestSuggestLink({
 }
 
 /**
- * Quiet "Suggestions (n)" link for the position owner, slotted into the
- * like row (right-aligned). This is the owner's only on-page entry into the
- * review queue (the former amber review banner is gone), so it renders even
- * at zero — otherwise an owner with nothing pending has no way to reach the
- * page at all, and no way to discover that the feature exists. The amber
- * pending badge still appears only when there is something to review.
+ * Quiet "Suggestions (n)" link into the review queue, slotted into the like
+ * row (right-aligned). Shown to every viewer, at any count:
+ *
+ * - For the owner it is the only on-page route to the queue (the former
+ *   amber review banner is gone), including at zero, where nothing else
+ *   would hint that the feature exists.
+ * - For everyone else it is the only route to the *list*: the sibling
+ *   `PositionEditRequestSuggestLink` goes straight to the submission form,
+ *   and it lives inside the collapsed `RelatedTags` section, so without
+ *   this link a visitor could neither read what others have already
+ *   suggested nor see that suggestions exist at all.
+ *
+ * The amber pending badge stays owner-oriented in spirit but is count-driven,
+ * so it simply appears whenever something is awaiting review.
+ *
  * `ml-auto` keeps it pinned to the right even when a narrow viewport wraps
  * it onto its own line.
  *
@@ -99,15 +115,10 @@ export async function PositionEditRequestSuggestLink({
 export async function PositionEditRequestSummaryLink({
   positionId,
   positionType,
-  viewerId,
-  ownerId,
   locale,
-}: Props) {
+}: SummaryLinkProps) {
   const href = suggestionsPath(positionType, positionId);
   if (!href) return null;
-
-  const isOwner = !!viewerId && viewerId === ownerId;
-  if (!isOwner) return null;
 
   const [pendingCount, totalCount, t] = await Promise.all([
     countPendingEditRequestsForPosition(positionId),

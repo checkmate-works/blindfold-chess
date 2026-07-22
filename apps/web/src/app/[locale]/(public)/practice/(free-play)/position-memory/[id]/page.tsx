@@ -278,8 +278,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         <PositionEditRequestSummaryLink
           positionId={position.id}
           positionType="memory"
-          viewerId={currentUser?.id ?? null}
-          ownerId={position.userId}
           locale={locale}
         />
       </div>
