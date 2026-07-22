@@ -12,6 +12,7 @@ import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';
 
 import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
+import { SectionTitle } from '@/app/[locale]/_components';
 import { OwnerActionButton } from '@/app/[locale]/_components/OwnerActionChip';
 
 import { deleteAnnotation } from '../_actions/deleteAnnotation';
@@ -105,10 +106,14 @@ export function AnnotationPanel({
     setIsEditing(false);
   }
 
+  // The same section heading the comment thread below uses (SectionTitle), so
+  // the note reads as a peer of the discussion — "Why this move · 1. Nf3" over
+  // "Comments" — rather than a differently-styled sidebar label. The move it
+  // names is de-emphasised so the "why this move" label stays the header.
   const heading = (
-    <h3 className="text-xs font-semibold text-muted-foreground">
-      {t('title')} · <span className="text-foreground">{moveLabel}</span>
-    </h3>
+    <SectionTitle>
+      {t('title')} <span className="font-normal text-muted-foreground">· {moveLabel}</span>
+    </SectionTitle>
   );
 
   // Read view — for the owner too, until they open the editor. A note is shown
@@ -118,7 +123,7 @@ export function AnnotationPanel({
   if (!isEditing) {
     if (!text && !isOwner) return null;
     return (
-      <section className="space-y-2">
+      <section className="space-y-3">
         {heading}
         {text && (
           <p className="whitespace-pre-wrap text-foreground">
