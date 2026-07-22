@@ -119,10 +119,10 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         </section>
       )}
 
-      {/* Metadata about the kata: the side / phase / line-count chips, then the
-          openings it covers as compact tag links (the same pill the game cards
-          use) rather than full board cards — they're a cross-reference, not
-          worth the vertical space a card grid took. */}
+      {/* Metadata about the kata: the side / phase chips, then the openings it
+          covers as compact tag links (the same pill the game cards use) rather
+          than full board cards — they're a cross-reference, not worth the
+          vertical space a card grid took. */}
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <RepertoireChips
@@ -131,7 +131,6 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
             phase={repertoire.phase}
             status={repertoire.status}
           />
-          <span>{t('detail.lineCount', { count: lines.length })}</span>
         </div>
         {linkedOpenings.length > 0 && (
           <div className="flex flex-wrap gap-2">

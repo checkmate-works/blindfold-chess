@@ -111,7 +111,12 @@
       "openLine": "Open this line →",
       "createdBy": "Created by",
       "edited": "(edited)",
-      "moreActions": "More actions"
+      "moreActions": "More actions",
+      "filterBySide": "Show {side} kata"
+    },
+    "filter": {
+      "all": "All",
+      "label": "Filter by side"
     },
     "line": {
       "new": {

@@ -111,7 +111,12 @@
       "openLine": "Abrir esta linha →",
       "createdBy": "Criado por",
       "edited": "(editado)",
-      "moreActions": "Mais ações"
+      "moreActions": "Mais ações",
+      "filterBySide": "Mostrar katás de {side}"
+    },
+    "filter": {
+      "all": "Todos",
+      "label": "Filtrar por lado"
     },
     "line": {
       "new": {

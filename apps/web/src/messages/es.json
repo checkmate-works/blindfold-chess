@@ -111,7 +111,12 @@
       "openLine": "Abrir esta línea →",
       "createdBy": "Creado por",
       "edited": "(editado)",
-      "moreActions": "Más acciones"
+      "moreActions": "Más acciones",
+      "filterBySide": "Mostrar katas de {side}"
+    },
+    "filter": {
+      "all": "Todos",
+      "label": "Filtrar por bando"
     },
     "line": {
       "new": {

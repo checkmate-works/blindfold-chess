@@ -111,7 +111,12 @@
       "openLine": "このラインを開く →",
       "createdBy": "作成者",
       "edited": "（編集済み）",
-      "moreActions": "その他の操作"
+      "moreActions": "その他の操作",
+      "filterBySide": "{side}の型を表示"
+    },
+    "filter": {
+      "all": "すべて",
+      "label": "手番で絞り込む"
     },
     "line": {
       "new": {

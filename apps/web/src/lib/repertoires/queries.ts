@@ -117,6 +117,11 @@ function publicRepertoiresOnly() {
   return and(eq(repertoires.status, 'public'), isNull(repertoires.deletedAt));
 }
 
+/** {@link publicRepertoiresOnly}, optionally narrowed to one side (catalog filter). */
+function publicRepertoiresForSide(side?: 'white' | 'black') {
+  return side ? and(eq(repertoires.side, side), publicRepertoiresOnly()) : publicRepertoiresOnly();
+}
+
 /** {@link publicRepertoiresOnly} narrowed to repertoires linked to one opening. */
 function publicRepertoiresForOpening(openingSlug: string) {
   return and(eq(chessOpenings.slug, openingSlug), publicRepertoiresOnly());
@@ -186,7 +191,8 @@ export async function countPublicRepertoiresForOpening(openingSlug: string): Pro
  */
 export async function listPublicRepertoires(
   limit: number,
-  offset: number
+  offset: number,
+  side?: 'white' | 'black'
 ): Promise<RepertoireWithProfile[]> {
   const rows = await runPaginatedSelect(
     db
@@ -195,7 +201,7 @@ export async function listPublicRepertoires(
       .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
       .$dynamic(),
     {
-      where: publicRepertoiresOnly(),
+      where: publicRepertoiresForSide(side),
       orderBy: [desc(repertoires.publishedAt)],
       limit,
       offset,
@@ -205,9 +211,9 @@ export async function listPublicRepertoires(
   return toCards(rows);
 }
 
-/** Total live public repertoires — the catalog's pagination denominator. */
-export async function countPublicRepertoires(): Promise<number> {
-  return countRows(repertoires, publicRepertoiresOnly());
+/** Total live public repertoires (optionally for one side) — pagination denominator. */
+export async function countPublicRepertoires(side?: 'white' | 'black'): Promise<number> {
+  return countRows(repertoires, publicRepertoiresForSide(side));
 }
 
 /** A user's own live (non-deleted) repertoires, newest first, with author. */
