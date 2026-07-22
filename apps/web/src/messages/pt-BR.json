@@ -127,12 +127,16 @@
         "saving": "Salvando...",
         "placeholder": "Explique por que este lance é jogado…",
         "saved": "Salvo",
-        "autosaveHelp": "As notas são salvas automaticamente e compartilhadas por todas as linhas deste kata que alcançam esta posição.",
         "error": "Algo deu errado. Tente novamente.",
         "empty": "Digite uma nota.",
         "tooLong": "Esta nota é muito longa.",
         "unauthorized": "Apenas o proprietário pode editar anotações.",
-        "notFound": "Este kata não existe mais."
+        "notFound": "Este kata não existe mais.",
+        "editAction": "Editar",
+        "addAction": "Adicionar uma nota",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "sharedHelp": "Esta nota é compartilhada por todas as linhas deste kata que alcançam esta posição."
       },
       "edit": {
         "editAction": "Editar",

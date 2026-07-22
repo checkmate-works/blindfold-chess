@@ -9,7 +9,6 @@ import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
-import { FaPlus } from 'react-icons/fa';
 import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
 
 import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
@@ -17,6 +16,8 @@ import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
+
+import { LineListPanel } from './LineListPanel';
 
 /** One line, pre-replayed + pre-formatted on the server (no chess.js client-side). */
 export type RepertoireViewerLine = {
@@ -165,83 +166,82 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
         </Link>
       </div>
 
-      {/* The line list sits in the right column, styled like the app's
-          standard link lists (ListLinkContainer / ListLink): a bordered card
-          with row separators, row click navigating to the line's detail page.
-          The chevron toggle unfolds a truncated preview of the line's moves
-          (and mirrors it on the big board) — the preview itself is also a
-          link to the same detail page, so expanding it isn't a dead end. */}
-      <ul className="h-fit overflow-hidden rounded-md border border-border bg-card lg:col-span-1">
-        {lines.map((l, i) => {
-          const isSelected = i === selectedIndex;
-          const isExpanded = i === expandedIndex;
-          const previewPairs = l.formatted.slice(0, PREVIEW_PAIRS);
-          const truncated = l.formatted.length > PREVIEW_PAIRS;
-          return (
-            <li key={l.id} className="border-b border-border last:border-b-0">
-              <div
-                className={`flex items-center transition-colors ${isSelected ? 'bg-muted' : ''}`}
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleExpand(i)}
-                  aria-expanded={isExpanded}
-                  aria-label={t('detail.previewToggle')}
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      {/* The line list sits in the right column, in the same labelled card the
+          line detail page's switcher uses (LineListPanel): row separators, row
+          click navigating to the line's detail page. The chevron toggle unfolds
+          a truncated preview of the line's moves (and mirrors it on the big
+          board) — the preview itself is also a link to the same detail page, so
+          expanding it isn't a dead end. */}
+      <div className="lg:col-span-1">
+        <LineListPanel
+          heading={t('detail.linesHeading')}
+          addLineHref={`/${locale}/repertoires/${repertoireId}/lines/new`}
+          addLineLabel={isOwner ? t('line.new.title') : undefined}
+        >
+          {lines.map((l, i) => {
+            const isSelected = i === selectedIndex;
+            const isExpanded = i === expandedIndex;
+            const previewPairs = l.formatted.slice(0, PREVIEW_PAIRS);
+            const truncated = l.formatted.length > PREVIEW_PAIRS;
+            return (
+              <li key={l.id} className="border-b border-border last:border-b-0">
+                <div
+                  className={`flex items-center transition-colors ${isSelected ? 'bg-muted' : ''}`}
                 >
-                  {isExpanded ? (
-                    <HiChevronUp aria-hidden className="size-4" />
-                  ) : (
-                    <HiChevronDown aria-hidden className="size-4" />
-                  )}
-                </button>
-                <Link
-                  href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
-                  className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 transition-colors hover:bg-muted"
-                >
-                  <span
-                    className={`truncate text-sm text-foreground ${isSelected ? 'font-medium' : ''}`}
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(i)}
+                    aria-expanded={isExpanded}
+                    aria-label={t('detail.previewToggle')}
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
-                    {l.name ??
-                      lineFallbackTitle(l.formatted, t('detail.lineFallback', { n: i + 1 }))}
-                  </span>
-                  <HiChevronRight
-                    aria-hidden
-                    className="ml-auto size-4 flex-shrink-0 text-foreground/40"
-                  />
-                </Link>
-              </div>
-
-              {isExpanded && (
-                <Link
-                  href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
-                  className="flex flex-wrap items-center gap-x-1 gap-y-0.5 p-3 text-sm transition-colors hover:bg-muted"
-                >
-                  {previewPairs.map((pair) => (
-                    <span key={pair.moveNumber} className="flex items-center gap-0.5">
-                      <span className="text-xs text-muted-foreground">{pair.moveNumber}.</span>
-                      {pair.whiteMove && <span className="text-foreground">{pair.whiteMove}</span>}
-                      {pair.blackMove && <span className="text-foreground">{pair.blackMove}</span>}
+                    {isExpanded ? (
+                      <HiChevronUp aria-hidden className="size-4" />
+                    ) : (
+                      <HiChevronDown aria-hidden className="size-4" />
+                    )}
+                  </button>
+                  <Link
+                    href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
+                    className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 transition-colors hover:bg-muted"
+                  >
+                    <span
+                      className={`truncate text-sm text-foreground ${isSelected ? 'font-medium' : ''}`}
+                    >
+                      {l.name ??
+                        lineFallbackTitle(l.formatted, t('detail.lineFallback', { n: i + 1 }))}
                     </span>
-                  ))}
-                  {truncated && <span className="text-muted-foreground">…</span>}
-                </Link>
-              )}
-            </li>
-          );
-        })}
-        {isOwner && (
-          <li className="border-b border-border last:border-b-0">
-            <Link
-              href={`/${locale}/repertoires/${repertoireId}/lines/new`}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm text-link-primary transition-colors hover:bg-muted"
-            >
-              <FaPlus aria-hidden className="size-3.5 flex-shrink-0" />
-              <span className="truncate">{t('line.new.title')}</span>
-            </Link>
-          </li>
-        )}
-      </ul>
+                    <HiChevronRight
+                      aria-hidden
+                      className="ml-auto size-4 flex-shrink-0 text-foreground/40"
+                    />
+                  </Link>
+                </div>
+
+                {isExpanded && (
+                  <Link
+                    href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
+                    className="flex flex-wrap items-center gap-x-1 gap-y-0.5 p-3 text-sm transition-colors hover:bg-muted"
+                  >
+                    {previewPairs.map((pair) => (
+                      <span key={pair.moveNumber} className="flex items-center gap-0.5">
+                        <span className="text-xs text-muted-foreground">{pair.moveNumber}.</span>
+                        {pair.whiteMove && (
+                          <span className="text-foreground">{pair.whiteMove}</span>
+                        )}
+                        {pair.blackMove && (
+                          <span className="text-foreground">{pair.blackMove}</span>
+                        )}
+                      </span>
+                    ))}
+                    {truncated && <span className="text-muted-foreground">…</span>}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </LineListPanel>
+      </div>
     </div>
   );
 }

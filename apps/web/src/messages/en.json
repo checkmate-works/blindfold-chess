@@ -127,12 +127,16 @@
         "saving": "Saving...",
         "placeholder": "Explain why this move is played…",
         "saved": "Saved",
-        "autosaveHelp": "Notes save automatically and are shared by every line in this kata that reaches this position.",
         "error": "Something went wrong. Please try again.",
         "empty": "Please enter a note.",
         "tooLong": "This note is too long.",
         "unauthorized": "Only the owner can edit annotations.",
-        "notFound": "This kata no longer exists."
+        "notFound": "This kata no longer exists.",
+        "editAction": "Edit",
+        "addAction": "Add a note",
+        "save": "Save",
+        "cancel": "Cancel",
+        "sharedHelp": "This note is shared by every line in this kata that reaches this position."
       },
       "edit": {
         "editAction": "Edit",
