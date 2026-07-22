@@ -12,13 +12,20 @@ import type { PositionType } from '@/lib/positions/types';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-type Props = {
+type SuggestLinkProps = {
   positionId: string;
   positionType: PositionType;
   /** Authenticated viewer's id; null when signed out. */
   viewerId: string | null;
   /** Position owner's id (positions.user_id is NOT NULL). */
   ownerId: string | null;
+  locale: Locale;
+};
+
+/** The summary link is role-independent, so it needs no viewer / owner id. */
+type SummaryLinkProps = {
+  positionId: string;
+  positionType: PositionType;
   locale: Locale;
 };
 
@@ -47,8 +54,8 @@ function suggestionsPath(positionType: PositionType, id: string): string | null 
  * of shouting from its own box. Styled as a centered text link (with an
  * emoji for presence) rather than a button, so it never competes with the
  * primary "Start solving" CTA directly below the section. Hidden for the
- * owner (they edit directly); signed-out visitors land on the suggestions
- * page, which handles the sign-in prompt.
+ * owner (they edit directly); signed-out visitors land on the dedicated
+ * submission-form page, which handles the sign-in prompt.
  */
 export async function PositionEditRequestSuggestLink({
   positionId,
@@ -56,7 +63,7 @@ export async function PositionEditRequestSuggestLink({
   viewerId,
   ownerId,
   locale,
-}: Props) {
+}: SuggestLinkProps) {
   const href = suggestionsPath(positionType, positionId);
   if (!href) return null;
 
@@ -68,7 +75,7 @@ export async function PositionEditRequestSuggestLink({
   return (
     <div className="text-center">
       <Link
-        href={href as '/practice/position-memory/[id]/suggestions'}
+        href={`${href}/new` as '/practice/position-memory/[id]/suggestions/new'}
         locale={locale}
         className={`text-sm ${TEXT_LINK_CLASSES}`}
       >
@@ -79,16 +86,27 @@ export async function PositionEditRequestSuggestLink({
 }
 
 /**
- * Quiet "Suggestions (n)" link for the position owner, slotted into the
- * like row (right-aligned). Shown whenever the position has any chunk-tag
- * suggestions — including pending ones, which is now the owner's on-page
- * entry into reviewing them (the former amber review banner is gone).
+ * Quiet "Suggestions (n)" link into the review queue, slotted into the like
+ * row (right-aligned). Shown to every viewer, at any count:
+ *
+ * - For the owner it is the only on-page route to the queue (the former
+ *   amber review banner is gone), including at zero, where nothing else
+ *   would hint that the feature exists.
+ * - For everyone else it is the only route to the *list*: the sibling
+ *   `PositionEditRequestSuggestLink` goes straight to the submission form,
+ *   and it lives inside the collapsed `RelatedTags` section, so without
+ *   this link a visitor could neither read what others have already
+ *   suggested nor see that suggestions exist at all.
+ *
+ * The amber pending badge stays owner-oriented in spirit but is count-driven,
+ * so it simply appears whenever something is awaiting review.
+ *
  * `ml-auto` keeps it pinned to the right even when a narrow viewport wraps
  * it onto its own line.
  *
  * Named `Summary`, not `History` — the position's own content-edit history
  * lives at a separate `/history` page (`PositionContentHistoryLink`); this
- * component only counts chunk-tag suggestions from other users, a distinct
+ * component only counts tag suggestions from other users, a distinct
  * moderation queue.
  *
  * All counts are `cache()`-wrapped, so sharing queries with the sibling
@@ -97,22 +115,16 @@ export async function PositionEditRequestSuggestLink({
 export async function PositionEditRequestSummaryLink({
   positionId,
   positionType,
-  viewerId,
-  ownerId,
   locale,
-}: Props) {
+}: SummaryLinkProps) {
   const href = suggestionsPath(positionType, positionId);
   if (!href) return null;
-
-  const isOwner = !!viewerId && viewerId === ownerId;
-  if (!isOwner) return null;
 
   const [pendingCount, totalCount, t] = await Promise.all([
     countPendingEditRequestsForPosition(positionId),
     countEditRequestsForPosition(positionId),
     getTranslations({ locale, namespace: 'practice.positionEditRequests' }),
   ]);
-  if (totalCount === 0) return null;
 
   return (
     <Link

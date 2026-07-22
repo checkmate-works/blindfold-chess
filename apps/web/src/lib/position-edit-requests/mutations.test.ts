@@ -10,6 +10,7 @@ const mockRevalidatePath = vi.fn();
 const mockGetRequestById = vi.fn();
 const mockGetViewerPending = vi.fn();
 const mockGetLinkedChunkIds = vi.fn();
+const mockGetLinkedThemeIds = vi.fn();
 const mockIsUniqueViolation = vi.fn();
 const mockValidateAndDedupeTagIds = vi.fn();
 const mockApplyAcceptedProposal = vi.fn();
@@ -37,6 +38,7 @@ vi.mock('./queries', () => ({
   getViewerPendingEditRequestForPosition: (positionId: string, viewerId: string | null) =>
     mockGetViewerPending(positionId, viewerId),
   getLinkedChunkIdsForPosition: (positionId: string) => mockGetLinkedChunkIds(positionId),
+  getLinkedThemeIdsForPosition: (positionId: string) => mockGetLinkedThemeIds(positionId),
 }));
 
 vi.mock('./apply-position-edit-proposal', () => ({
@@ -65,6 +67,7 @@ vi.mock('next/cache', () => ({
 const POSITION_EDIT_REQUESTS_TABLE = { __table: 'position_edit_requests' };
 const POSITIONS_TABLE = { __table: 'positions' };
 const POSITION_CHUNKS_TABLE = { positionId: 'pc.position_id', chunkId: 'pc.chunk_id' };
+const POSITION_THEMES_TABLE = { positionId: 'pt.position_id', termId: 'pt.term_id' };
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -83,8 +86,8 @@ vi.mock('@/lib/db', () => ({
     }),
     transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
       const tx = {
-        // The resolve path snapshots the live linked-chunk set before the
-        // update; the mock returns an empty set (no current links).
+        // The resolve path snapshots the live linked theme + chunk sets
+        // before the update; the mock returns empty sets (no current links).
         select: () => ({ from: () => ({ where: () => Promise.resolve([]) }) }),
         update: (table: unknown) => ({
           set: (values: unknown) => ({
@@ -103,6 +106,7 @@ vi.mock('@/lib/db', () => ({
   positionEditRequests: POSITION_EDIT_REQUESTS_TABLE,
   positions: POSITIONS_TABLE,
   positionChunks: POSITION_CHUNKS_TABLE,
+  positionThemes: POSITION_THEMES_TABLE,
 }));
 
 const PROPOSER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -112,6 +116,7 @@ const POSITION_ID = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const REQUEST_ID = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
 const CHUNK_A = '11111111-1111-4111-8111-111111111111';
 const CHUNK_B = '22222222-2222-4222-8222-222222222222';
+const THEME_A = '44444444-4444-4444-8444-444444444444';
 
 function mockPosition(overrides: Partial<Record<string, unknown>> = {}) {
   mockSelectLimit.mockResolvedValue([
@@ -126,8 +131,12 @@ describe('submitPositionEditRequestEntry', () => {
     mockInsertReturning.mockResolvedValue([{ id: REQUEST_ID }]);
     mockGetViewerPending.mockResolvedValue(null);
     mockGetLinkedChunkIds.mockResolvedValue([]); // empty current links
+    mockGetLinkedThemeIds.mockResolvedValue([]);
     mockIsUniqueViolation.mockReturnValue(false);
-    mockValidateAndDedupeTagIds.mockResolvedValue({ ok: true, deduped: { chunkIds: [CHUNK_A] } });
+    mockValidateAndDedupeTagIds.mockResolvedValue({
+      ok: true,
+      deduped: { themeIds: [], chunkIds: [CHUNK_A] },
+    });
   });
 
   it('propagates signInRequired from the guard', async () => {
@@ -135,7 +144,7 @@ describe('submitPositionEditRequestEntry', () => {
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
-      payload: { proposedChunkIds: [CHUNK_A] },
+      payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
     });
     expect(result).toEqual({ error: 'signInRequired' });
     expect(mockInsertValues).not.toHaveBeenCalled();
@@ -145,7 +154,7 @@ describe('submitPositionEditRequestEntry', () => {
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: 'nope',
-      payload: { proposedChunkIds: [CHUNK_A] },
+      payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
     });
     expect(result).toEqual({ error: 'notFound' });
   });
@@ -155,7 +164,7 @@ describe('submitPositionEditRequestEntry', () => {
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
-      payload: { proposedChunkIds: [CHUNK_A] },
+      payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
     });
     expect(result).toEqual({ error: 'notFound' });
     expect(mockInsertValues).not.toHaveBeenCalled();
@@ -167,7 +176,7 @@ describe('submitPositionEditRequestEntry', () => {
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
-      payload: { proposedChunkIds: [CHUNK_A] },
+      payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
     });
     expect(result).toEqual({ error: 'ownerCannotPropose' });
   });
@@ -178,21 +187,22 @@ describe('submitPositionEditRequestEntry', () => {
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
-      payload: { proposedChunkIds: [CHUNK_A] },
+      payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
     });
     expect(result).toEqual({ error: 'alreadyHasPending' });
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
-  it('returns identicalChunkSet when the proposed set equals the current links', async () => {
+  it('returns nothingToAdd when every proposed tag is already linked', async () => {
     mockPosition();
     mockGetLinkedChunkIds.mockResolvedValue([CHUNK_A]);
+    mockGetLinkedThemeIds.mockResolvedValue([THEME_A]);
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
-      payload: { proposedChunkIds: [CHUNK_A] },
+      payload: { proposedThemeIds: [THEME_A], proposedChunkIds: [CHUNK_A] },
     });
-    expect(result).toEqual({ error: 'identicalChunkSet' });
+    expect(result).toEqual({ error: 'nothingToAdd' });
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
@@ -202,10 +212,48 @@ describe('submitPositionEditRequestEntry', () => {
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
-      payload: { proposedChunkIds: [CHUNK_A] },
+      payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
     });
     expect(result).toEqual({ error: 'invalidChunk' });
     expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('propagates invalidTheme when a proposed theme is not theme-eligible', async () => {
+    mockPosition();
+    mockValidateAndDedupeTagIds.mockResolvedValue({ ok: false, error: 'invalidTheme' });
+    const { submitPositionEditRequestEntry } = await import('./mutations');
+    const result = await submitPositionEditRequestEntry({
+      positionId: POSITION_ID,
+      payload: { proposedThemeIds: [THEME_A], proposedChunkIds: [] },
+    });
+    expect(result).toEqual({ error: 'invalidTheme' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('re-asserts both tag kinds against the live catalogs before inserting', async () => {
+    mockPosition();
+    const { submitPositionEditRequestEntry } = await import('./mutations');
+    await submitPositionEditRequestEntry({
+      positionId: POSITION_ID,
+      payload: { proposedThemeIds: [THEME_A], proposedChunkIds: [CHUNK_A] },
+    });
+    expect(mockValidateAndDedupeTagIds).toHaveBeenCalledWith(
+      { themeIds: [THEME_A], chunkIds: [CHUNK_A] },
+      { requirePublishedChunks: true }
+    );
+  });
+
+  it('inserts a theme-only proposal', async () => {
+    mockPosition();
+    const { submitPositionEditRequestEntry } = await import('./mutations');
+    const result = await submitPositionEditRequestEntry({
+      positionId: POSITION_ID,
+      payload: { proposedThemeIds: [THEME_A], proposedChunkIds: [] },
+    });
+    expect(result).toEqual({ success: true, id: REQUEST_ID });
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ proposedThemeIds: [THEME_A], proposedChunkIds: [] })
+    );
   });
 
   it('translates a 23505 unique violation on INSERT to alreadyHasPending', async () => {
@@ -215,22 +263,27 @@ describe('submitPositionEditRequestEntry', () => {
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
-      payload: { proposedChunkIds: [CHUNK_A] },
+      payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
     });
     expect(result).toEqual({ error: 'alreadyHasPending' });
   });
 
-  it('inserts the proposed set and notifies the owner with positionType metadata', async () => {
+  it('inserts the proposed tags and notifies the owner with positionType metadata', async () => {
     mockPosition();
     const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
-      payload: { proposedChunkIds: [CHUNK_A], comment: 'add the battery' },
+      payload: {
+        proposedThemeIds: [THEME_A],
+        proposedChunkIds: [CHUNK_A],
+        comment: 'add the battery',
+      },
     });
     expect(result).toEqual({ success: true, id: REQUEST_ID });
     expect(mockInsertValues).toHaveBeenCalledWith({
       positionId: POSITION_ID,
       proposerId: PROPOSER_ID,
+      proposedThemeIds: [THEME_A],
       proposedChunkIds: [CHUNK_A],
       comment: 'add the battery',
     });
@@ -282,11 +335,12 @@ describe('acceptPositionEditRequestEntry', () => {
     expect(mockTxUpdate).not.toHaveBeenCalled();
   });
 
-  it('marks accepted, applies the proposed set, and notifies the proposer', async () => {
+  it('marks accepted, applies the proposed tags, and notifies the proposer', async () => {
     mockGetRequestById.mockResolvedValue({
       id: REQUEST_ID,
       positionId: POSITION_ID,
       proposerId: PROPOSER_ID,
+      proposedThemeIds: [THEME_A],
       proposedChunkIds: [CHUNK_A, CHUNK_B],
       status: 'pending',
     });
@@ -299,11 +353,21 @@ describe('acceptPositionEditRequestEntry', () => {
     expect(reqUpdate.values).toMatchObject({
       status: 'accepted',
       resolverId: OWNER_ID,
-      // The live linked set is snapshotted onto the row at resolution time
+      // The live linked sets are snapshotted onto the row at resolution time
       // (empty here per the tx.select mock).
+      resolvedBaseThemeIds: [],
       resolvedBaseChunkIds: [],
     });
     expect(mockApplyAcceptedProposal).toHaveBeenCalledTimes(1);
+    // The same snapshot is handed to the apply helper as its
+    // "already linked" filter rather than being re-queried.
+    expect(mockApplyAcceptedProposal).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ proposedThemeIds: [THEME_A] }),
+      { baseThemeIds: [], baseChunkIds: [] },
+      POSITION_ID,
+      OWNER_ID
+    );
     expect(mockCreateNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: PROPOSER_ID,

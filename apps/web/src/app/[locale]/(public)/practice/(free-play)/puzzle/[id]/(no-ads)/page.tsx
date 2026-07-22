@@ -277,8 +277,6 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         <PositionEditRequestSummaryLink
           positionId={position.id}
           positionType="puzzle"
-          viewerId={currentUser?.id ?? null}
-          ownerId={position.userId}
           locale={locale}
         />
       </div>

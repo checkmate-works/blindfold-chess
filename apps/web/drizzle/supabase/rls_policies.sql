@@ -477,13 +477,14 @@ CREATE POLICY "chunk_edit_requests_update" ON "chunk_edit_requests"
   );
 
 -- =============================================================================
--- position_edit_requests (Qiita-style chunk-link suggestions on a position)
+-- position_edit_requests (Qiita-style tag-link suggestions on a position)
 -- =============================================================================
 -- SELECT is open so anyone can see what's already been proposed. INSERT is
 -- restricted to the proposer (non-owner, against a non-deleted position) and
 -- additionally gated at the application layer (rate limit, one-pending check,
--- and validation that the proposed chunk set is published / non-deleted —
--- which cannot be expressed in a CHECK over a jsonb array). UPDATE is granted
+-- and validation that the proposed themes are is_theme = true and the proposed
+-- chunks are published / non-deleted — neither of which can be expressed in a
+-- CHECK over a jsonb array). UPDATE is granted
 -- to either the proposer (withdraw) or the position owner (accept / reject);
 -- the application layer enforces the per-transition preconditions. Unlike
 -- chunk_edit_requests there is no `status = 'draft'` gate (positions have no

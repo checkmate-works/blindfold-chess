@@ -232,38 +232,38 @@ export type PositionChunk = typeof positionChunks.$inferSelect;
 export type NewPositionChunk = typeof positionChunks.$inferInsert;
 
 /**
- * Position Edit Requests — Qiita-style suggestions for which chunks a
- * position (memory / puzzle) should link to, from users other than the
- * position's owner.
+ * Position Edit Requests — Qiita-style suggestions for which tags (themes
+ * and chunks) a position (memory / puzzle) should link to, from users other
+ * than the position's owner.
  *
  * @description
- * A position's set of linked chunks (`position_chunks`) is curated by the
- * owner, but other players often spot a pattern the owner missed ("this
- * board also contains a fianchetto"). This table lets a non-owner propose
- * a new *set* of linked chunks; the owner reviews it and either accepts it
- * (the proposed set replaces the position's links via `replacePositionTags`
- * in the same transaction) or rejects it. Proposers can withdraw their own
- * pending requests.
+ * A position's tags — curated glossary themes (`position_themes`) and UGC
+ * chunks (`position_chunks`) — are maintained by the owner, but other
+ * players often spot a pattern the owner missed ("this board also contains
+ * a fianchetto"). This table lets a non-owner propose *additional* tags of
+ * either kind; the owner reviews and either accepts (the new tags are
+ * inserted via `insertPositionTags` in the same transaction) or rejects.
+ * Proposers can withdraw their own pending requests.
  *
- * @design scope = chunk links only
+ * @design scope = tag links only
  * Unlike `chunk_edit_requests` (which proposes scalar title / description
- * edits), the only thing a position edit request carries is the proposed
- * set of chunk IDs (`proposed_chunk_ids`). Title / description / FEN /
- * puzzle solution are intentionally out of scope for v1.
+ * edits), a position edit request carries only proposed tag IDs
+ * (`proposed_theme_ids`, `proposed_chunk_ids`). Title / description / FEN /
+ * puzzle solution are intentionally out of scope.
  *
- * @design proposed_chunk_ids jsonb snapshot
- * The proposal stores an *absolute* set of chunk IDs (not a delta),
- * following the jsonb-set idiom used by `chunks.annotations` and
- * `puzzle_solutions.solution_moves`. On accept the set fully replaces the
- * position's links (DELETE all + INSERT proposed). Because it is an
- * absolute snapshot, accepting is last-writer-wins: if the owner changes
- * the links between propose and accept, accepting overwrites that change.
- * The review UI mitigates this by computing the added / removed diff
- * against the *live* link set at render time, so the owner always sees the
- * true effect of accepting right now. Chunk-set validity (existence,
- * published, non-deleted) cannot live in a CHECK constraint over a jsonb
- * array, so it is re-asserted at the application layer both at submit time
- * and again immediately before the accept-time replace.
+ * @design proposed_*_ids are additive, not an absolute snapshot
+ * Each array holds only the IDs the proposer wants to **add**; a proposal
+ * can never remove an existing link. Accepting therefore inserts the
+ * proposed IDs that aren't already linked and touches nothing else, so an
+ * accept can never revert an owner edit made after the proposal was
+ * submitted (the failure mode of the absolute-snapshot design this
+ * replaced), and an empty array is a safe no-op rather than "unlink
+ * everything". Not inserting over existing rows also preserves each
+ * junction row's original `attached_by_user_id` instead of re-attributing
+ * it to the accepting owner. Tag validity (theme `is_theme = true`; chunk
+ * existence, published, non-deleted) cannot live in a CHECK constraint over
+ * a jsonb array, so it is re-asserted at the application layer both at
+ * submit time and again immediately before the accept-time insert.
  *
  * @design no draft gating
  * Positions have no draft / published lifecycle, so — unlike the chunk
@@ -290,14 +290,22 @@ export const positionEditRequests = pgTable(
     // following the same pattern as `chunk_edit_requests.proposer_id`.
     proposerId: uuid('proposer_id'),
     /**
-     * The proposed set of linked chunk IDs (absolute snapshot, not a
-     * delta). Validated at the application layer against published,
-     * non-deleted chunks. An empty array is a legitimate proposal
-     * ("remove all chunk links").
+     * Glossary-term IDs the proposer wants to ADD to the position (see the
+     * additive-semantics `@design` note above). Validated at the
+     * application layer against `glossary_terms.is_theme = true`. Empty
+     * means "propose no themes"; legacy rows predating this column read as
+     * empty, which is the correct no-op.
+     */
+    proposedThemeIds: jsonb('proposed_theme_ids').$type<string[]>().notNull().default([]),
+    /**
+     * Chunk IDs the proposer wants to ADD to the position (see the
+     * additive-semantics `@design` note above). Validated at the
+     * application layer against published, non-deleted chunks. Empty means
+     * "propose no chunks".
      */
     proposedChunkIds: jsonb('proposed_chunk_ids').$type<string[]>().notNull().default([]),
     /**
-     * Optional rationale from the proposer (why these chunks belong on
+     * Optional rationale from the proposer (why these tags belong on
      * this position). Capped at 2,000 chars by the application layer.
      */
     comment: text('comment'),
@@ -310,22 +318,24 @@ export const positionEditRequests = pgTable(
     /** Set when the request leaves `pending`. */
     resolvedAt: timestamp('resolved_at', { withTimezone: true }),
     /**
-     * Snapshot of the position's linked-chunk set at the moment the
-     * request was resolved (captured pre-apply on accept). NULL while
-     * pending.
+     * Snapshot of the position's linked theme / chunk sets at the moment
+     * the request was resolved (captured pre-apply on accept). NULL while
+     * pending; `resolved_base_theme_ids` is also NULL on rows resolved
+     * before themes were proposable.
      *
-     * @design why snapshot the base set
-     * The review UI computes a pending request's added / removed diff
-     * against the *live* link set so the owner sees the true effect of
-     * accepting right now. But once a request is accepted that live set
-     * becomes the proposed set, so a live-computed diff for a resolved
-     * row would collapse to "no change" and the history would not show
-     * what the acceptance actually added / removed. Storing the base set
-     * at resolution time lets the history render a stable
-     * `proposed vs base` diff for resolved rows. Rejected / withdrawn
-     * rows capture the base too, so their history shows what they would
-     * have changed at the time they were closed.
+     * @design why snapshot the base sets
+     * The review UI computes a pending request's "will add" list against
+     * the *live* link set so the owner sees the true effect of accepting
+     * right now. But once a request is accepted the live set already
+     * contains the proposed IDs, so a live-computed diff for a resolved
+     * row would collapse to "nothing" and the history would not show what
+     * the acceptance actually added. Storing the base sets at resolution
+     * time lets the history render a stable `proposed − base` list for
+     * resolved rows. Rejected / withdrawn rows capture the base too, so
+     * their history shows what they would have added at the time they
+     * were closed.
      */
+    resolvedBaseThemeIds: jsonb('resolved_base_theme_ids').$type<string[]>(),
     resolvedBaseChunkIds: jsonb('resolved_base_chunk_ids').$type<string[]>(),
     /**
      * The user who moved the request out of `pending`. For accept /

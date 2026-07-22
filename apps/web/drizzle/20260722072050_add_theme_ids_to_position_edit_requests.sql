@@ -1,0 +1,2 @@
+ALTER TABLE "position_edit_requests" ADD COLUMN "proposed_theme_ids" jsonb DEFAULT '[]'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "position_edit_requests" ADD COLUMN "resolved_base_theme_ids" jsonb;

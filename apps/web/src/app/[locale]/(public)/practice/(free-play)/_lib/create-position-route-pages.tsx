@@ -29,6 +29,7 @@ import type { Locale, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
 import { PositionListCard } from '../_components/PositionListCard';
+import { PositionEditRequestNewView } from '../_components/edit-request/PositionEditRequestNewView';
 import { PositionEditRequestsView } from '../_components/edit-request/PositionEditRequestsView';
 import { PositionHistoryView } from '../_components/history/PositionHistoryView';
 import { loadForksPageData } from './load-forks-page-data';
@@ -115,6 +116,47 @@ export function createPositionEditRequestsPage(route: PositionRouteKind) {
   async function Page({ params }: IdProps) {
     const { locale, id } = await params;
     return <PositionEditRequestsView positionId={id} positionType={positionType} locale={locale} />;
+  }
+
+  return { generateMetadata, Page };
+}
+
+/**
+ * Build the `generateMetadata` + `Page` pair for a position's "propose a
+ * suggestion" form page (`/practice/<slug>/[id]/suggestions/new`). The body
+ * is entirely delegated to the shared `PositionEditRequestNewView`; only the
+ * position type and canonical path vary. Sibling of
+ * `createPositionEditRequestsPage`, which owns the list/review page this
+ * one links back to.
+ */
+export function createPositionEditRequestNewPage(route: PositionRouteKind) {
+  const { slug, positionType } = route;
+
+  async function generateMetadata({ params }: IdProps): Promise<Metadata> {
+    const { locale, id } = await params;
+    const t = await getTranslations({ locale, namespace: 'practice.positionEditRequests' });
+    const row = await getPositionWithProfileById({ id, type: positionType });
+
+    if (!row) {
+      return { title: resolveTitle('Not Found', locale) };
+    }
+
+    const title = t('newPageTitle', { name: row.position.title });
+    return {
+      ...generateCanonicalMetadata({
+        locale,
+        path: `practice/${slug}/${id}/suggestions/new`,
+        title,
+      }),
+      title: resolveTitle(title, locale),
+    };
+  }
+
+  async function Page({ params }: IdProps) {
+    const { locale, id } = await params;
+    return (
+      <PositionEditRequestNewView positionId={id} positionType={positionType} locale={locale} />
+    );
   }
 
   return { generateMetadata, Page };

@@ -3,16 +3,20 @@ import { UUID_RE } from '@/lib/validations/uuid';
 
 export type SubmitPositionEditRequestPayload = {
   /**
-   * The proposed set of linked chunk IDs (absolute snapshot). Order does
-   * not matter; duplicates are removed. An empty array is legitimate
-   * ("remove all chunk links").
+   * Glossary-term IDs the proposer wants to ADD (additive, not an absolute
+   * set — see the `position_edit_requests` schema TSDoc). Order does not
+   * matter; duplicates are removed.
    */
+  proposedThemeIds: string[];
+  /** Chunk IDs the proposer wants to ADD. Same semantics as themes. */
   proposedChunkIds: string[];
   /** Optional rationale from the proposer. Length-capped only. */
   comment?: string | null;
 };
 
 export type ValidatedPositionEditRequest = {
+  /** Deduped theme ID set, ready for the `is_theme` DB check. */
+  proposedThemeIds: string[];
   /** Deduped chunk ID set, ready for the existence/published DB check. */
   proposedChunkIds: string[];
   comment: string | null;
@@ -24,48 +28,51 @@ export type ValidatedPositionEditRequest = {
  * than surfaced as English sentences, matching how the guard / mutation
  * layer returns codes (`signInRequired`, `notFound`, …).
  */
-export type PositionEditRequestValidationError =
-  | 'invalidChunkId'
-  | 'identicalChunkSet'
-  | 'commentTooLong';
+export type PositionEditRequestValidationError = 'invalidTagId' | 'nothingToAdd' | 'commentTooLong';
 
-/**
- * Compare two chunk-ID sets for order-independent equality.
- */
-function sameChunkSet(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false;
-  const setB = new Set(b);
-  return a.every((id) => setB.has(id));
+/** Dedupe while rejecting anything that isn't a well-formed UUID. */
+function dedupeIds(raw: unknown): string[] | null {
+  const list = Array.isArray(raw) ? raw : [];
+  const deduped = Array.from(new Set(list));
+  for (const id of deduped) {
+    if (typeof id !== 'string' || !UUID_RE.test(id)) return null;
+  }
+  return deduped;
 }
 
 /**
  * Validate a submit-time position edit-request payload against the
- * position's current linked-chunk set. This is the pure / synchronous
- * shape check: it dedupes and UUID-validates the proposed IDs, rejects a
- * no-op proposal (set identical to the current links), and length-caps the
- * comment. The existence / published check against the DB lives in the
- * mutation layer (via `validateAndDedupeTagIds(..., { requirePublishedChunks })`)
- * so this function stays free of DB access.
+ * position's current linked-tag sets. This is the pure / synchronous shape
+ * check: it dedupes and UUID-validates the proposed IDs, rejects a proposal
+ * that adds nothing new, and length-caps the comment. The existence /
+ * published / `is_theme` checks against the DB live in the mutation layer
+ * (via `validateAndDedupeTagIds`) so this function stays free of DB access.
+ *
+ * Proposals are additive: an ID already linked to the position is not an
+ * error (the proposer may simply not have noticed), it just doesn't count
+ * toward "something new". A proposal whose every ID is already linked —
+ * including the empty proposal — is a no-op and rejected, since it would
+ * only clutter the owner's review queue.
  *
  * @returns A `ValidatedPositionEditRequest` on success, or an error code.
  */
 export function validateSubmitPositionEditRequest(
   payload: SubmitPositionEditRequestPayload,
-  current: { currentChunkIds: string[] }
+  current: { currentThemeIds: string[]; currentChunkIds: string[] }
 ): ValidatedPositionEditRequest | PositionEditRequestValidationError {
-  const raw = Array.isArray(payload.proposedChunkIds) ? payload.proposedChunkIds : [];
-  const proposedChunkIds = Array.from(new Set(raw));
-
-  for (const id of proposedChunkIds) {
-    if (typeof id !== 'string' || !UUID_RE.test(id)) {
-      return 'invalidChunkId';
-    }
+  const proposedThemeIds = dedupeIds(payload.proposedThemeIds);
+  const proposedChunkIds = dedupeIds(payload.proposedChunkIds);
+  if (proposedThemeIds === null || proposedChunkIds === null) {
+    return 'invalidTagId';
   }
 
-  // No-op guard: a proposal identical to the current set would just
-  // clutter the owner's review queue.
-  if (sameChunkSet(proposedChunkIds, Array.from(new Set(current.currentChunkIds)))) {
-    return 'identicalChunkSet';
+  const currentThemes = new Set(current.currentThemeIds);
+  const currentChunks = new Set(current.currentChunkIds);
+  const addsSomething =
+    proposedThemeIds.some((id) => !currentThemes.has(id)) ||
+    proposedChunkIds.some((id) => !currentChunks.has(id));
+  if (!addsSomething) {
+    return 'nothingToAdd';
   }
 
   const trimmedComment = typeof payload.comment === 'string' ? payload.comment.trim() : '';
@@ -74,6 +81,7 @@ export function validateSubmitPositionEditRequest(
   }
 
   return {
+    proposedThemeIds,
     proposedChunkIds,
     comment: trimmedComment.length === 0 ? null : trimmedComment,
   };

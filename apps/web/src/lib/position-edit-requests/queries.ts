@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { eq } from 'drizzle-orm';
 
-import { db, positionChunks, positionEditRequests } from '@/lib/db';
+import { db, positionChunks, positionEditRequests, positionThemes } from '@/lib/db';
 import { makeEditRequestQueries } from '@/lib/edit-requests/queries-factory';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -30,4 +30,20 @@ export const getLinkedChunkIdsForPosition = cache(async (positionId: string): Pr
     .from(positionChunks)
     .where(eq(positionChunks.positionId, positionId));
   return rows.map((row) => row.chunkId);
+});
+
+/**
+ * The current set of glossary-term (theme) IDs linked to a position.
+ * Theme counterpart of {@link getLinkedChunkIdsForPosition}; used for the
+ * same submit-time no-op check. IDs only — the label-bearing variant is
+ * `getLinkedThemesForPosition` in `@/lib/themes/queries`, which also joins
+ * translations and example positions.
+ */
+export const getLinkedThemeIdsForPosition = cache(async (positionId: string): Promise<string[]> => {
+  if (!UUID_RE.test(positionId)) return [];
+  const rows = await db
+    .select({ termId: positionThemes.termId })
+    .from(positionThemes)
+    .where(eq(positionThemes.positionId, positionId));
+  return rows.map((row) => row.termId);
 });

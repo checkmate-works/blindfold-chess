@@ -1895,11 +1895,11 @@
       }
     },
     "positionEditRequests": {
-      "sectionTitle": "Sugestões de chunks",
-      "sectionHint": "Outros jogadores podem sugerir quais chunks são vinculados a esta posição. O proprietário revisa cada sugestão.",
+      "sectionTitle": "Sugestões de padrões",
+      "sectionHint": "Outros jogadores podem sugerir temas e chunks para adicionar a esta posição. O proprietário revisa cada sugestão.",
       "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
       "alreadyHasPendingNotice": "Sua sugestão anterior ainda está pendente abaixo. Retire-a primeiro se quiser propor algo diferente.",
-      "signInToSuggest": "Faça login para sugerir chunks vinculados.",
+      "signInToSuggest": "Entre para sugerir temas e chunks.",
       "empty": "Ainda não há sugestões.",
       "help": {
         "label": "Ajuda"
@@ -1915,9 +1915,8 @@
         "withdrawn": "Retirada"
       },
       "diff": {
-        "added": "Chunks para adicionar",
-        "removed": "Chunks para remover",
-        "noChange": "Sem alterações nos chunks vinculados."
+        "tagsToAdd": "Tags para adicionar",
+        "nothingToAdd": "Todas as tags sugeridas já estão vinculadas."
       },
       "fields": {
         "comment": "Por que esta mudança? (opcional)",
@@ -1930,7 +1929,7 @@
         "reject": "Rejeitar",
         "withdraw": "Retirar",
         "acceptConfirmTitle": "Aceitar esta sugestão?",
-        "acceptConfirmMessage": "Os chunks propostos substituirão imediatamente os vínculos atuais desta posição.",
+        "acceptConfirmMessage": "As tags sugeridas serão adicionadas a esta posição imediatamente.",
         "rejectConfirmTitle": "Rejeitar esta sugestão?",
         "rejectConfirmMessage": "O proponente não será notificado. Ele verá o status de rejeição se voltar a esta página.",
         "withdrawConfirmTitle": "Retirar sua sugestão?",
@@ -1946,16 +1945,20 @@
         "ownerCannotPropose": "Você não pode sugerir alterações na sua própria posição — edite-a diretamente.",
         "alreadyHasPending": "Você já tem uma sugestão pendente para esta posição. Retire-a primeiro se quiser propor algo diferente.",
         "invalidChunk": "Um ou mais chunks selecionados estão indisponíveis. Atualize e tente novamente.",
-        "invalidChunkId": "Um ou mais chunks selecionados são inválidos.",
-        "identicalChunkSet": "Sua seleção corresponde aos chunks vinculados atuais. Altere antes de enviar.",
-        "commentTooLong": "Seu comentário é muito longo."
+        "commentTooLong": "Seu comentário é muito longo.",
+        "invalidTheme": "Um ou mais temas selecionados estão indisponíveis. Atualize e tente novamente.",
+        "invalidTagId": "Uma ou mais tags selecionadas são inválidas.",
+        "nothingToAdd": "Escolha ao menos um tema ou chunk que ainda não esteja vinculado."
       },
-      "pageTitle": "Sugestões de chunks · {name}",
-      "breadcrumb": "Sugestões de chunks",
+      "pageTitle": "Sugestões de padrões · {name}",
+      "breadcrumb": "Sugestões de padrões",
       "callout": {
         "suggestionsLink": "Sugestões ({count})"
       },
-      "suggestCta": "Sugerir um padrão"
+      "suggestCta": "Sugerir um padrão",
+      "newPageTitle": "Sugerir um padrão · {name}",
+      "newBreadcrumb": "Sugerir um padrão",
+      "deletedTheme": "(tema removido)"
     },
     "positionHistory": {
       "sectionTitle": "Histórico de edições",
@@ -3747,8 +3750,8 @@
     "likeCoinGrantMessage": {
       "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
     },
-    "positionEditRequestSubmittedMessage": "{actor} sugeriu chunks para a sua posição",
-    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de chunks",
+    "positionEditRequestSubmittedMessage": "{actor} sugeriu padrões para o seu problema",
+    "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de padrões",
     "settingsLink": "Configurações de notificação",
     "muteButtonLabel": "Silenciar notificações de {type}",
     "unmuteButtonLabel": "Reativar notificações de {type}",
