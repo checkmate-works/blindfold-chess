@@ -23,8 +23,7 @@ type Props = {
   headerNote?: ReactNode;
   /**
    * Optional bottom AdSense slot. Rendered between the content area and
-   * the divider. The puzzle detail page lives under a `(no-ads)` route
-   * group, so it omits this slot entirely.
+   * the divider.
    */
   bottomAdSense?: ReactNode;
 };

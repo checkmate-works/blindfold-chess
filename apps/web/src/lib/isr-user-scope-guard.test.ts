@@ -208,12 +208,12 @@ describe('puzzle detail page (ISR) must not import user-scoped auth helpers', ()
   // Targeted smoke test — redundant with the broad scan below, but surfaces a
   // puzzle-specific regression (e.g. someone inlines `getOptionalUser()` on
   // the detail page to gate a Like button) with an obvious failure message.
-  it('puzzle/[id]/(no-ads)/page.tsx is clean', async () => {
+  it('puzzle/[id]/page.tsx is clean', async () => {
     const files = await listPublicPageFiles();
-    const detailPage = files.find(({ rel }) => rel.endsWith('puzzle/[id]/(no-ads)/page.tsx'));
+    const detailPage = files.find(({ rel }) => rel.endsWith('puzzle/[id]/page.tsx'));
     if (!detailPage) {
       throw new Error(
-        `Expected to find puzzle/[id]/(no-ads)/page.tsx under (public)/. If the page ` +
+        `Expected to find puzzle/[id]/page.tsx under (public)/. If the page ` +
           `was moved or renamed, update this smoke test to point at its new path.`
       );
     }

@@ -1,10 +1,3 @@
-/**
- * This page relies on its sibling `(no-ads)/layout.tsx` to suppress ads:
- * the layout calls `markNoAdsScope()`, and every `<AdSlot>` rendered here
- * checks `isNoAdsScope()` first and renders nothing.
- *
- * Moving this page out of the `(no-ads)/` route group will re-enable ads.
- */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -30,21 +23,22 @@ import {
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ForkProvenanceNote } from '../../../_components/ForkProvenanceNote';
-import type { PositionActionsMenuItem } from '../../../_components/PositionActionsMenu';
-import { PositionAuthorHeader } from '../../../_components/PositionAuthorHeader';
-import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
-import { PositionPeekBoard } from '../../../_components/PositionPeekBoard';
+import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
+import type { PositionActionsMenuItem } from '../../_components/PositionActionsMenu';
+import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
+import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
+import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import {
   PositionEditRequestSuggestLink,
   PositionEditRequestSummaryLink,
-} from '../../../_components/edit-request/PositionEditRequestLinks';
-import { loadPositionDetail } from '../../../_lib/load-position-detail';
-import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
+} from '../../_components/edit-request/PositionEditRequestLinks';
+import { loadPositionDetail } from '../../_lib/load-position-detail';
+import { loadPuzzleWithSolutions } from '../_lib/load-puzzle';
 import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
 import { NewPostForm } from './_components/NewPostForm';
 import { PuzzleCommentTreeBatch } from './_components/PuzzleCommentTreeBatch';
@@ -186,6 +180,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         { label: t('list.title'), href: '/practice/puzzle' },
         { label: position.title },
       ]}
+      bottomAdSense={<AdSlot slot="content-bottom" />}
     >
       <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
 
