@@ -22,7 +22,7 @@ import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-pla
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -89,9 +89,13 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: repertoire.name }]}
     >
-      {/* No "Lines" section title here: the list panel inside the viewer now
-          carries that heading, and repeating it above the board would label the
-          board — not the list — with it. */}
+      {/* The kata's name as the panel's opening section heading (mirroring the
+          line detail page), with the description sitting under it as the
+          overview. No "Lines" title here: the list panel inside the viewer
+          carries that heading, and repeating it above the board would label
+          the board — not the list — with it. */}
+      <SectionTitle>{repertoire.name}</SectionTitle>
+
       {isOwner && repertoire.status === 'building' && (
         <PublishRepertoireBanner id={repertoire.id} locale={locale} lineCount={lines.length} />
       )}
