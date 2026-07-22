@@ -102,6 +102,8 @@
       "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Lines",
+      "descriptionHeading": "Description",
+      "openingsHeading": "Related openings",
       "noLines": "This kata has no lines yet.",
       "lineCount": "{count} lines",
       "forThisOpening": "Kata for this opening",

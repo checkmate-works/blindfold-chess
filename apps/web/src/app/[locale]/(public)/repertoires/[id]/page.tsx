@@ -89,19 +89,21 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: repertoire.name }]}
     >
-      {/* The kata's name as the panel's opening section heading (mirroring the
-          line detail page), with the description sitting under it as the
-          overview. No "Lines" title here: the list panel inside the viewer
-          carries that heading, and repeating it above the board would label
-          the board — not the list — with it. */}
-      <SectionTitle>{repertoire.name}</SectionTitle>
-
       {isOwner && repertoire.status === 'building' && (
         <PublishRepertoireBanner id={repertoire.id} locale={locale} lineCount={lines.length} />
       )}
 
+      {/* The description opens the panel under its own "Description" heading
+          (the page title already shows the name, so the heading names the
+          section, not the kata). Omitted entirely when there's no description
+          rather than leaving a bare heading. No "Lines" title here: the list
+          panel inside the viewer carries that heading, and repeating it above
+          the board would label the board — not the list — with it. */}
       {repertoire.description && (
-        <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
+        <section className="space-y-2">
+          <SectionTitle>{t('detail.descriptionHeading')}</SectionTitle>
+          <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
+        </section>
       )}
 
       <RepertoireLineViewer
@@ -115,18 +117,23 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       {/* Below the board: the openings this repertoire covers (each card links
           to its topic page), then the side / phase / line-count summary. Both
           are context ABOUT the repertoire — the board is what the reader came
-          for, so neither is worth pushing it down the page. */}
+          for, so neither is worth pushing it down the page. The cards get their
+          own heading so they don't appear abruptly after the "Open this line"
+          button. */}
       {linkedOpenings.length > 0 && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {linkedOpenings.map((opening) => (
-            <OpeningCard
-              key={opening.id}
-              opening={opening}
-              displayName={getOpeningDisplayName(tOpeningNames, opening.slug, opening.name)}
-              locale={locale}
-            />
-          ))}
-        </div>
+        <section className="space-y-3">
+          <SectionTitle>{t('detail.openingsHeading')}</SectionTitle>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {linkedOpenings.map((opening) => (
+              <OpeningCard
+                key={opening.id}
+                opening={opening}
+                displayName={getOpeningDisplayName(tOpeningNames, opening.slug, opening.name)}
+                locale={locale}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
