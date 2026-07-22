@@ -13,7 +13,12 @@ const BUILDING_CHIP =
 type Props = {
   locale: string;
   side: Repertoire['side'];
-  /** Omit on a list that is already scoped to one phase. */
+  /**
+   * Omit on a list already scoped to one phase. `'opening'` is never shown
+   * even when passed — it's currently the only authorable phase (see the
+   * import form's `AUTHORABLE_PHASES`), so the chip would be a constant with
+   * no information. A future middlegame / endgame kata would show its chip.
+   */
   phase?: Repertoire['phase'];
   /**
    * Show the "in progress" chip when `'building'`. Omit (or pass `'public'` /
@@ -48,7 +53,7 @@ export async function RepertoireChips({ locale, side, phase, status }: Props) {
       >
         {t(`form.side_${side}`)}
       </Link>
-      {phase && <span className={CHIP}>{t(`form.phase_${phase}`)}</span>}
+      {phase && phase !== 'opening' && <span className={CHIP}>{t(`form.phase_${phase}`)}</span>}
     </span>
   );
 }
