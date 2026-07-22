@@ -1920,6 +1920,8 @@
         "noChange": "Sem alterações nos chunks vinculados."
       },
       "fields": {
+        "chunksLabel": "Chunks",
+        "chunksPlaceholder": "Pesquisar para adicionar um chunk…",
         "comment": "Por que esta mudança? (opcional)",
         "commentPlaceholder": "Uma breve explicação ajuda o proprietário a decidir."
       },

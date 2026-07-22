@@ -121,10 +121,17 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
         disabled={pending}
         onChange={handlePickerChange}
         // The proposer picks chunks only (empty theme catalog), so the
-        // shared "Themes vs. chunks" help line would be misleading here —
-        // drop it. It still shows on the position create / edit forms,
-        // where themes are selectable.
-        labels={{ ...pickerLabels, help: undefined }}
+        // shared "Themes & chunks" section label, its placeholder, and its
+        // "Themes vs. chunks" help line would all be misleading here —
+        // override the section label and placeholder to chunk-only wording
+        // and drop the help line. All three still show as-is on the
+        // position create / edit forms, where themes are selectable.
+        labels={{
+          ...pickerLabels,
+          section: t('fields.chunksLabel'),
+          placeholder: t('fields.chunksPlaceholder'),
+          help: undefined,
+        }}
       />
 
       <div>

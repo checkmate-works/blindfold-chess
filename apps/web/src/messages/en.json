@@ -1920,6 +1920,8 @@
         "noChange": "No net change to the linked chunks."
       },
       "fields": {
+        "chunksLabel": "Chunks",
+        "chunksPlaceholder": "Search to add a chunk…",
         "comment": "Why this change? (optional)",
         "commentPlaceholder": "A short explanation helps the owner decide."
       },

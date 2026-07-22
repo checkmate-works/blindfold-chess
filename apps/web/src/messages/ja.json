@@ -1920,6 +1920,8 @@
         "noChange": "紐づけるチャンクに変更はありません。"
       },
       "fields": {
+        "chunksLabel": "チャンク",
+        "chunksPlaceholder": "チャンクを検索して追加…",
         "comment": "変更の理由（任意）",
         "commentPlaceholder": "簡単な説明があると作成者が判断しやすくなります。"
       },
