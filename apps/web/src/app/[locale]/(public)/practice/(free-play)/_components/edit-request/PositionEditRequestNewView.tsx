@@ -10,7 +10,7 @@ import { getViewerPendingEditRequestForPosition } from '@/lib/position-edit-requ
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import type { PositionType } from '@/lib/positions/types';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PositionEditRequestForm } from './PositionEditRequestForm';
@@ -89,6 +89,8 @@ export async function PositionEditRequestNewView({ positionId, positionType, loc
       locale={locale}
       breadcrumb={breadcrumb}
     >
+      <SectionTitle>{t('suggestCta')}</SectionTitle>
+
       {user ? (
         <PositionEditRequestForm
           positionId={positionId}
