@@ -28,6 +28,7 @@ import type {
   RepertoireSide,
 } from './validation';
 import {
+  REPERTOIRE_DESCRIPTION_MAX,
   REPERTOIRE_NAME_MAX,
   REPERTOIRE_PGN_MAX_BYTES,
   validateRepertoireImport,
@@ -152,7 +153,13 @@ export type UpdateRepertoireResult =
   | { ok: true; name: string }
   | {
       ok: false;
-      error: 'unauthorized' | 'notFound' | 'nameRequired' | 'nameTooLong' | 'invalidSide';
+      error:
+        | 'unauthorized'
+        | 'notFound'
+        | 'nameRequired'
+        | 'nameTooLong'
+        | 'descriptionTooLong'
+        | 'invalidSide';
     };
 
 /** The transaction handle drizzle hands to a `db.transaction` callback. */
@@ -208,6 +215,8 @@ export async function updateRepertoireDetails(params: {
   viewerId: string;
   name: string;
   side: RepertoireSide;
+  /** Course-level blurb; trimmed to null when blank. */
+  description: string | null;
   openingIds: string[];
 }): Promise<UpdateRepertoireResult> {
   const name = params.name.trim();
@@ -215,6 +224,10 @@ export async function updateRepertoireDetails(params: {
   if (name.length > REPERTOIRE_NAME_MAX) return { ok: false, error: 'nameTooLong' };
   if (params.side !== 'white' && params.side !== 'black') {
     return { ok: false, error: 'invalidSide' };
+  }
+  const description = params.description?.trim() || null;
+  if (description && description.length > REPERTOIRE_DESCRIPTION_MAX) {
+    return { ok: false, error: 'descriptionTooLong' };
   }
 
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
@@ -230,7 +243,7 @@ export async function updateRepertoireDetails(params: {
   await db.transaction(async (tx) => {
     await tx
       .update(repertoires)
-      .set({ name, side: params.side })
+      .set({ name, side: params.side, description })
       .where(eq(repertoires.id, params.repertoireId));
     await replaceOpeningLinks(tx, {
       repertoireId: params.repertoireId,

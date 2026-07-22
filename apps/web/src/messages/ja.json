@@ -80,6 +80,8 @@
       "title": "型を編集",
       "breadcrumb": "編集",
       "nameLabel": "名前",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "この型の説明 — 何を扱うか、誰向けか…",
       "save": "保存",
       "saving": "保存中...",
       "cancel": "キャンセル",
@@ -92,7 +94,8 @@
         "pgnRequired": "手順を入力してください。",
         "pgnTooLarge": "PGN が大きすぎます。",
         "invalidPgn": "手順を読み取れませんでした。記譜を確認してください。",
-        "generic": "エラーが発生しました。もう一度お試しください。"
+        "generic": "エラーが発生しました。もう一度お試しください。",
+        "descriptionTooLong": "説明が長すぎます。"
       }
     },
     "detail": {

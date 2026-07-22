@@ -13,7 +13,7 @@ import { flushSync } from 'react-dom';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
-import { REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
+import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 import { deleteAnnotation } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/deleteAnnotation';
@@ -29,6 +29,8 @@ type Props = {
   locale: string;
   repertoireId: string;
   initialName: string;
+  /** The course-level description blurb (empty string when unset). */
+  initialDescription: string;
   /** The opening master; empty for a non-opening repertoire (picker hidden). */
   openings: OpeningOption[];
   initialOpeningIds: string[];
@@ -63,6 +65,7 @@ export function EditRepertoireForm({
   locale,
   repertoireId,
   initialName,
+  initialDescription,
   openings,
   initialOpeningIds,
   canLinkOpenings,
@@ -76,6 +79,7 @@ export function EditRepertoireForm({
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
+  const [description, setDescription] = useState(initialDescription);
   const [side, setSide] = useState<RepertoireSide>(initialSide);
   const [openingIds, setOpeningIds] = useState<string[]>(initialOpeningIds);
   const [pgn, setPgn] = useState(initialPgn ?? '');
@@ -102,6 +106,7 @@ export function EditRepertoireForm({
   const isDirty =
     !submitted &&
     (name !== initialName ||
+      description !== initialDescription ||
       side !== initialSide ||
       JSON.stringify([...openingIds].sort()) !== JSON.stringify([...initialOpeningIds].sort()) ||
       pgnChanged ||
@@ -120,6 +125,7 @@ export function EditRepertoireForm({
       repertoireId,
       locale,
       name,
+      description,
       side,
       openingIds: canLinkOpenings ? openingIds : [],
       // Only re-decompose the lines when the moves actually changed.
@@ -169,6 +175,24 @@ export function EditRepertoireForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={REPERTOIRE_NAME_MAX}
+          className="mt-1 w-full"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="repertoire-description"
+          className="block text-sm font-medium text-foreground"
+        >
+          {t('descriptionLabel')}
+        </label>
+        <Textarea
+          id="repertoire-description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          maxLength={REPERTOIRE_DESCRIPTION_MAX}
+          placeholder={t('descriptionPlaceholder')}
           className="mt-1 w-full"
         />
       </div>

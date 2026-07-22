@@ -21,6 +21,8 @@ export async function updateRepertoire(input: {
   locale: string;
   name: string;
   side: RepertoireSide;
+  /** Course-level blurb; trimmed to null server-side when blank. */
+  description: string | null;
   openingIds: string[];
   /** The repertoire's full move tree; omitted when the moves were untouched. */
   pgn?: string;
@@ -33,6 +35,7 @@ export async function updateRepertoire(input: {
     viewerId: guard.user.id,
     name: input.name,
     side: input.side,
+    description: input.description,
     openingIds: input.openingIds,
   });
   if (!result.ok) return result;

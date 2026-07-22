@@ -80,6 +80,8 @@
       "title": "Editar kata",
       "breadcrumb": "Editar",
       "nameLabel": "Nome",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder": "Descreva este kata — o que cobre, para quem é…",
       "save": "Salvar",
       "saving": "Salvando...",
       "cancel": "Cancelar",
@@ -92,7 +94,8 @@
         "pgnRequired": "Digite os lances.",
         "pgnTooLarge": "O PGN é muito grande.",
         "invalidPgn": "Não foi possível ler estes lances. Verifique a notação.",
-        "generic": "Algo deu errado. Tente novamente."
+        "generic": "Algo deu errado. Tente novamente.",
+        "descriptionTooLong": "Esta descrição é muito longa."
       }
     },
     "detail": {

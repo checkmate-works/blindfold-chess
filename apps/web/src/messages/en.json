@@ -80,6 +80,8 @@
       "title": "Edit kata",
       "breadcrumb": "Edit",
       "nameLabel": "Name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe this kata — what it covers, who it is for…",
       "save": "Save",
       "saving": "Saving...",
       "cancel": "Cancel",
@@ -92,7 +94,8 @@
         "pgnRequired": "Please enter the moves.",
         "pgnTooLarge": "The PGN is too large.",
         "invalidPgn": "Could not read these moves. Check the notation.",
-        "generic": "Something went wrong. Please try again."
+        "generic": "Something went wrong. Please try again.",
+        "descriptionTooLong": "This description is too long."
       }
     },
     "detail": {

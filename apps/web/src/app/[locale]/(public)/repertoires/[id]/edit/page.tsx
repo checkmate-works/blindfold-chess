@@ -85,6 +85,7 @@ export default async function EditRepertoirePage({ params }: Props) {
         locale={locale}
         repertoireId={id}
         initialName={repertoire.name}
+        initialDescription={repertoire.description ?? ''}
         openings={openings}
         initialOpeningIds={initialOpeningIds}
         canLinkOpenings={canLinkOpenings}

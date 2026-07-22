@@ -80,6 +80,8 @@
       "title": "Editar kata",
       "breadcrumb": "Editar",
       "nameLabel": "Nombre",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Describe este kata — qué cubre, para quién es…",
       "save": "Guardar",
       "saving": "Guardando...",
       "cancel": "Cancelar",
@@ -92,7 +94,8 @@
         "pgnRequired": "Introduce las jugadas.",
         "pgnTooLarge": "El PGN es demasiado grande.",
         "invalidPgn": "No se pudieron leer estas jugadas. Revisa la notación.",
-        "generic": "Algo salió mal. Inténtalo de nuevo."
+        "generic": "Algo salió mal. Inténtalo de nuevo.",
+        "descriptionTooLong": "Esta descripción es demasiado larga."
       }
     },
     "detail": {
