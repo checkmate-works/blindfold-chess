@@ -103,7 +103,6 @@
       "pgnHeading": "PGN",
       "linesHeading": "ライン",
       "descriptionHeading": "説明",
-      "openingsHeading": "関連オープニング",
       "noLines": "この型にはまだラインがありません。",
       "lineCount": "{count} ライン",
       "forThisOpening": "このオープニングの型",
