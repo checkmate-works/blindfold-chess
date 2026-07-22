@@ -141,7 +141,14 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
         />
       </div>
 
-      <Button type="submit" variant="primary" disabled={pending} loading={pending}>
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        fullWidth
+        disabled={pending}
+        loading={pending}
+      >
         {t('actions.submit')}
       </Button>
     </form>

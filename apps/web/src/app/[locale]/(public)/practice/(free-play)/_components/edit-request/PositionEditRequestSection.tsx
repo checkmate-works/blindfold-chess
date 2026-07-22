@@ -196,7 +196,7 @@ export async function PositionEditRequestSection({
             href={newSuggestionHref as '/practice/position-memory/[id]/suggestions/new'}
             locale={locale}
           >
-            <Button asChild variant="primary" icon={<FaPlus />} fullWidth>
+            <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
               {t('suggestCta')}
             </Button>
           </Link>
