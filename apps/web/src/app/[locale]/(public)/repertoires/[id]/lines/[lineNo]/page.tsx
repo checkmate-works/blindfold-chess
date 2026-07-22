@@ -30,6 +30,7 @@ import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LineDetailBoard } from './_components/LineDetailBoard';
+import { LineNavList } from './_components/LineNavList';
 import { MoveCommentsSection } from './_components/MoveCommentsSection';
 import { buildLineMoves } from './_lib/line-moves';
 
@@ -58,7 +59,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
 
   const data = await getRepertoireLineForViewer(id, lineNo, currentUser?.id ?? null);
   if (!data) notFound();
-  const { repertoire, line, isOwner } = data;
+  const { repertoire, line, lines, isOwner } = data;
 
   // Replay + format the line server-side (no chess.js in the client bundle).
   const { sans, positions, startsAsBlack, startMoveNumber } = replayRepertoireLine(line);
@@ -73,6 +74,26 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
 
   const lineName =
     line.name ?? lineFallbackTitle(formatted, t('detail.lineFallback', { n: lineNo }));
+
+  // Sibling lines for the switching list — the same labels (and the same
+  // moves-derived fallback) the repertoire page's sidebar shows, so a line
+  // reads identically on both pages. Replayed here because the fallback title
+  // is built from the line's opening moves.
+  const navItems = lines.map((l) => {
+    const replayed = replayRepertoireLine(l);
+    const label =
+      l.name ??
+      lineFallbackTitle(
+        formatMovesToPgn(replayed.sans, replayed.startsAsBlack, replayed.startMoveNumber),
+        t('detail.lineFallback', { n: l.seq + 1 })
+      );
+    return { id: l.id, lineNo: l.seq + 1, label };
+  });
+  const navProps = {
+    navItems,
+    navHeading: t('detail.linesHeading'),
+    navAddLineLabel: isOwner ? t('line.new.title') : undefined,
+  };
 
   // What a move reference ("1... e4") inside a note or a comment resolves
   // against — this line's own numbering, not the repertoire's.
@@ -97,7 +118,17 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
       <SectionTitle>{lineName}</SectionTitle>
 
       {sans.length === 0 ? (
-        <p className="text-muted-foreground">{t('line.empty')}</p>
+        <div className="space-y-4">
+          <p className="text-muted-foreground">{t('line.empty')}</p>
+          <LineNavList
+            items={navItems}
+            currentLineNo={lineNo}
+            repertoireId={id}
+            locale={locale}
+            heading={t('detail.linesHeading')}
+            addLineLabel={isOwner ? t('line.new.title') : undefined}
+          />
+        </div>
       ) : (
         <LineDetailBoard
           side={repertoire.side}
@@ -110,6 +141,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           locale={locale}
           initialPly={initialPly}
           moveNotation={moveNotation}
+          {...navProps}
         />
       )}
 

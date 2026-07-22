@@ -355,17 +355,27 @@ export async function getRepertoireForViewer(
  * (seq + 1). Wraps `getRepertoireForViewer` + the seq lookup the line detail and
  * edit pages both did inline. Returns null when the repertoire isn't visible or
  * the line doesn't exist.
+ *
+ * `lines` carries the repertoire's full (seq-ordered) line set alongside the
+ * addressed one, so the line detail page can render the same line-switching
+ * list the repertoire page has without a second round-trip — the underlying
+ * query already fetched them.
  */
 export async function getRepertoireLineForViewer(
   id: string,
   lineNo: number,
   viewerId: string | null
-): Promise<{ repertoire: Repertoire; line: RepertoireLine; isOwner: boolean } | null> {
+): Promise<{
+  repertoire: Repertoire;
+  line: RepertoireLine;
+  lines: RepertoireLine[];
+  isOwner: boolean;
+} | null> {
   const data = await getRepertoireForViewer(id, viewerId);
   if (!data) return null;
   const line = data.lines.find((l) => l.seq === lineNo - 1);
   if (!line) return null;
-  return { repertoire: data.repertoire, line, isOwner: data.isOwner };
+  return { repertoire: data.repertoire, line, lines: data.lines, isOwner: data.isOwner };
 }
 
 /**

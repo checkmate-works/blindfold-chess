@@ -20,7 +20,8 @@ import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-
 import type { LineMove } from '../_lib/line-moves';
 import { useShapeAutosave } from '../_lib/use-shape-autosave';
 import { AnnotationPanel } from './AnnotationPanel';
-import { LineMovesPanel } from './LineMovesPanel';
+import type { LineNavItem } from './LineNavList';
+import { LineNavList } from './LineNavList';
 
 type Props = {
   side: Side;
@@ -37,12 +38,20 @@ type Props = {
   initialPly: number;
   /** The line's moves + root, for move references written inside a note. */
   moveNotation: MoveNotationLine;
+  /** Sibling lines of the repertoire, for the line-switching list. */
+  navItems: LineNavItem[];
+  /** Heading + owner-only add-line label for that list, resolved server-side. */
+  navHeading: string;
+  navAddLineLabel?: string;
 };
 
 /**
  * A single line rendered with the in-game board layout: on desktop the board
- * sits in a 2/3 column with the collapsible "Moves" panel in a 1/3 column on
- * the right (stacking on mobile) — the same grid the game / replay screens use.
+ * sits in a 2/3 column with the repertoire's line list in a 1/3 column on the
+ * right (stacking on mobile) — the same grid the game / replay screens use.
+ * The game's collapsible "Moves" panel is deliberately absent: the strip above
+ * the board already navigates this line's moves, so a second move list only
+ * competes with the line switcher for that column.
  * The board is always visible (first/prev/next/last controls + ←/→ keys). The
  * owner-authored annotation for the move in focus sits under the board; the
  * focused ply drives which move's note is shown and navigating swaps it.
@@ -58,6 +67,9 @@ export function LineDetailBoard({
   locale,
   initialPly,
   moveNotation,
+  navItems,
+  navHeading,
+  navAddLineLabel,
 }: Props) {
   const t = useTranslations('Repertoires.line.shapes');
   const router = useRouter();
@@ -178,11 +190,14 @@ export function LineDetailBoard({
         )}
       </div>
 
-      <div className="lg:col-span-1">
-        <LineMovesPanel
-          formatted={formatted}
-          currentPosition={clampedPly - 1}
-          onNavigateToPosition={(index) => setPly(index + 1)}
+      <div className="space-y-4 lg:col-span-1">
+        <LineNavList
+          items={navItems}
+          currentLineNo={lineNo}
+          repertoireId={repertoireId}
+          locale={locale}
+          heading={navHeading}
+          addLineLabel={navAddLineLabel}
         />
       </div>
     </div>
