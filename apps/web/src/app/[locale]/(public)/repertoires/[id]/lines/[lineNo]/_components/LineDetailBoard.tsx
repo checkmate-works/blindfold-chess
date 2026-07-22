@@ -122,84 +122,90 @@ export function LineDetailBoard({
     isOwner && focusedKey ? (next: BoardAnnotations) => draw(focusedKey, next) : undefined;
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-      <div className="space-y-4 lg:col-span-2">
-        <div className={INLINE_BOARD_CARD_CHROME}>
-          <div className="relative">
-            {formatted.length > 0 && (
-              <div className="overflow-x-auto px-2 py-1.5">
-                <HorizontalMoveList
-                  formattedPgn={formatted}
-                  currentPosition={clampedPly - 1}
-                  onNavigateToPosition={(position) => setPly(position + 1)}
+    // The note sits full-width BELOW the board+list grid (not inside the 2/3
+    // board column), so its SectionTitle underline spans the page and lines up
+    // with the "Comments" heading right after it — the two read as stacked
+    // sections rather than a sidebar label over a full-width one.
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          <div className={INLINE_BOARD_CARD_CHROME}>
+            <div className="relative">
+              {formatted.length > 0 && (
+                <div className="overflow-x-auto px-2 py-1.5">
+                  <HorizontalMoveList
+                    formattedPgn={formatted}
+                    currentPosition={clampedPly - 1}
+                    onNavigateToPosition={(position) => setPly(position + 1)}
+                  />
+                </div>
+              )}
+
+              <ChessBoard
+                fen={current.fen}
+                flipped={side === 'black'}
+                playerSide={side}
+                lastMove={lastMove}
+                showCoordinates
+                showOwnPieces
+                showOpponentPieces
+                boardTheme="lichess"
+                rounded={false}
+                annotations={focusedShapes}
+                onAnnotationsChange={onAnnotationsChange}
+              />
+
+              <div
+                className="relative flex items-center justify-center"
+                style={{ aspectRatio: '8 / 1' }}
+              >
+                <MoveNavigationControls
+                  onNavigateToStart={() => setPly(0)}
+                  onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}
+                  onNavigateNext={() => setPly(Math.min(maxPly, clampedPly + 1))}
+                  onNavigateToEnd={() => setPly(maxPly)}
+                  isPreviousDisabled={clampedPly === 0}
+                  isNextDisabled={clampedPly === maxPly}
                 />
               </div>
-            )}
-
-            <ChessBoard
-              fen={current.fen}
-              flipped={side === 'black'}
-              playerSide={side}
-              lastMove={lastMove}
-              showCoordinates
-              showOwnPieces
-              showOpponentPieces
-              boardTheme="lichess"
-              rounded={false}
-              annotations={focusedShapes}
-              onAnnotationsChange={onAnnotationsChange}
-            />
-
-            <div
-              className="relative flex items-center justify-center"
-              style={{ aspectRatio: '8 / 1' }}
-            >
-              <MoveNavigationControls
-                onNavigateToStart={() => setPly(0)}
-                onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}
-                onNavigateNext={() => setPly(Math.min(maxPly, clampedPly + 1))}
-                onNavigateToEnd={() => setPly(maxPly)}
-                isPreviousDisabled={clampedPly === 0}
-                isNextDisabled={clampedPly === maxPly}
-              />
             </div>
           </div>
+
+          {isOwner && focusedKey && (
+            <p
+              className={`text-xs ${saveFailed ? 'text-destructive' : 'text-muted-foreground'}`}
+              role={saveFailed ? 'alert' : undefined}
+            >
+              {saveFailed ? t('saveFailed') : t('hint')}
+            </p>
+          )}
         </div>
 
-        {isOwner && focusedKey && (
-          <p
-            className={`text-xs ${saveFailed ? 'text-destructive' : 'text-muted-foreground'}`}
-            role={saveFailed ? 'alert' : undefined}
-          >
-            {saveFailed ? t('saveFailed') : t('hint')}
-          </p>
-        )}
-
-        {focusedMove && (
-          <AnnotationPanel
-            key={focusedMove.positionKey}
+        <div className="space-y-4 lg:col-span-1">
+          <LineNavList
+            items={navItems}
+            currentLineNo={lineNo}
             repertoireId={repertoireId}
-            lineNo={lineNo}
             locale={locale}
-            positionKey={focusedMove.positionKey}
-            moveLabel={focusedMove.label}
-            initialText={focusedMove.annotation}
-            moveNotation={moveNotation}
-            isOwner={isOwner}
+            heading={navHeading}
+            addLineLabel={navAddLineLabel}
           />
-        )}
+        </div>
       </div>
 
-      <div className="space-y-4 lg:col-span-1">
-        <LineNavList
-          items={navItems}
-          currentLineNo={lineNo}
+      {focusedMove && (
+        <AnnotationPanel
+          key={focusedMove.positionKey}
           repertoireId={repertoireId}
+          lineNo={lineNo}
           locale={locale}
-          heading={navHeading}
-          addLineLabel={navAddLineLabel}
+          positionKey={focusedMove.positionKey}
+          moveLabel={focusedMove.label}
+          initialText={focusedMove.annotation}
+          moveNotation={moveNotation}
+          isOwner={isOwner}
         />
-      </div>
+      )}
     </div>
   );
 }
