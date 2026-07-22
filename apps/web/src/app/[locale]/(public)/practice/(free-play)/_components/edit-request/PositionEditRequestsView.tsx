@@ -24,11 +24,13 @@ const TYPE_CONFIG = {
 } as const;
 
 /**
- * Shared body for the dedicated "Chunk suggestions" page on a position
- * (memory / puzzle). Mirrors `chunks/[slug]/edit-requests/page.tsx`: the
- * form + review list live here on their own page, reached via the
- * `PositionEditRequestCallout` CTA on the detail page — not inlined on the
- * detail page itself.
+ * Shared body for the dedicated "Chunk suggestions" review-list page on a
+ * position (memory / puzzle), reached via the `PositionEditRequestSummaryLink`
+ * (owner) or `PositionEditRequestSuggestLink` (proposer) CTAs on the detail
+ * page — not inlined on the detail page itself. The submission form lives on
+ * its own sibling page (`PositionEditRequestNewView`, at `/suggestions/new`)
+ * rather than here, unlike `chunks/[slug]/edit-requests/page.tsx`, which
+ * still combines both.
  */
 export async function PositionEditRequestsView({ positionId, positionType, locale }: Props) {
   const row = await getPositionWithProfileById({ id: positionId, type: positionType });
@@ -76,6 +78,7 @@ export async function PositionEditRequestsView({ positionId, positionType, local
       <PositionEditRequestSection
         positionId={position.id}
         detailHref={detailPath}
+        newSuggestionHref={`${detailPath}/suggestions/new`}
         viewerId={user?.id ?? null}
         ownerId={position.userId}
         locale={locale}

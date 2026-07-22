@@ -1955,7 +1955,9 @@
       "callout": {
         "suggestionsLink": "提案 ({count})"
       },
-      "suggestCta": "パターンを提案する"
+      "suggestCta": "パターンを提案する",
+      "newPageTitle": "パターンを提案する · {name}",
+      "newBreadcrumb": "パターンを提案する"
     },
     "positionHistory": {
       "sectionTitle": "編集履歴",

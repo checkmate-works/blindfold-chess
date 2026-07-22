@@ -1955,7 +1955,9 @@
       "callout": {
         "suggestionsLink": "Suggestions ({count})"
       },
-      "suggestCta": "Suggest a pattern"
+      "suggestCta": "Suggest a pattern",
+      "newPageTitle": "Suggest a pattern · {name}",
+      "newBreadcrumb": "Suggest a pattern"
     },
     "positionHistory": {
       "sectionTitle": "Edit history",

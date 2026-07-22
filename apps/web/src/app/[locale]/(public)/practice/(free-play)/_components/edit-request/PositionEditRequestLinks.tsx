@@ -47,8 +47,8 @@ function suggestionsPath(positionType: PositionType, id: string): string | null 
  * of shouting from its own box. Styled as a centered text link (with an
  * emoji for presence) rather than a button, so it never competes with the
  * primary "Start solving" CTA directly below the section. Hidden for the
- * owner (they edit directly); signed-out visitors land on the suggestions
- * page, which handles the sign-in prompt.
+ * owner (they edit directly); signed-out visitors land on the dedicated
+ * submission-form page, which handles the sign-in prompt.
  */
 export async function PositionEditRequestSuggestLink({
   positionId,
@@ -68,7 +68,7 @@ export async function PositionEditRequestSuggestLink({
   return (
     <div className="text-center">
       <Link
-        href={href as '/practice/position-memory/[id]/suggestions'}
+        href={`${href}/new` as '/practice/position-memory/[id]/suggestions/new'}
         locale={locale}
         className={`text-sm ${TEXT_LINK_CLASSES}`}
       >

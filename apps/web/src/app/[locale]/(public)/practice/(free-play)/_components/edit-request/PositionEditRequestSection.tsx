@@ -2,6 +2,10 @@ import type { ReactNode } from 'react';
 
 import { getTranslations } from 'next-intl/server';
 
+import { Button } from '@/app/_components';
+import { Link } from '@/i18n/routing';
+import { FaPlus } from 'react-icons/fa';
+
 import {
   getAllAvailableChunkOptions,
   getChunkOptionsByIds,
@@ -20,7 +24,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ChunkDiffCard } from './ChunkDiffCard';
 import type { ChunkDiffEntry } from './ChunkDiffCard';
-import { PositionEditRequestForm } from './PositionEditRequestForm';
 import { PositionEditRequestItem } from './PositionEditRequestItem';
 
 type Props = {
@@ -28,6 +31,10 @@ type Props = {
   /** Detail-page path (no locale prefix), e.g. `/practice/puzzle/<id>`. The
    * accept / reject flow redirects here with a `?toast=` confirmation. */
   detailHref: string;
+  /** Path to the dedicated submission-form page, e.g.
+   * `/practice/puzzle/<id>/suggestions/new`. Surfaced as a CTA button for
+   * eligible viewers instead of an inline form. */
+  newSuggestionHref: string;
   /** Authenticated viewer's id; null when signed out. */
   viewerId: string | null;
   /** Position owner's id (positions.user_id is NOT NULL). */
@@ -36,11 +43,12 @@ type Props = {
 };
 
 /**
- * Server-rendered "Edit suggestions" panel on a position detail page
- * (memory / puzzle). Surfaces the chunk-link suggestion queue + form for
- * non-owners, with role-aware controls threaded down to each client
- * `PositionEditRequestItem`. Always rendered for non-deleted positions
- * (positions have no draft / published lifecycle).
+ * Server-rendered "Edit suggestions" review-list panel on a position detail
+ * page (memory / puzzle). Surfaces the chunk-link suggestion queue, plus a
+ * CTA into the dedicated submission-form page for eligible non-owners, with
+ * role-aware controls threaded down to each client `PositionEditRequestItem`.
+ * Always rendered for non-deleted positions (positions have no draft /
+ * published lifecycle).
  *
  * The added / removed diff for each request is computed here against the
  * position's *live* linked-chunk set, so the owner always sees the true
@@ -50,6 +58,7 @@ type Props = {
 export async function PositionEditRequestSection({
   positionId,
   detailHref,
+  newSuggestionHref,
   viewerId,
   ownerId,
   locale,
@@ -183,11 +192,14 @@ export async function PositionEditRequestSection({
             {t('alreadyHasPendingNotice')}
           </div>
         ) : (
-          <PositionEditRequestForm
-            positionId={positionId}
-            currentChunks={currentChunks}
-            availableChunks={availableChunks}
-          />
+          <Link
+            href={newSuggestionHref as '/practice/position-memory/[id]/suggestions/new'}
+            locale={locale}
+          >
+            <Button asChild variant="primary" icon={<FaPlus />} fullWidth>
+              {t('suggestCta')}
+            </Button>
+          </Link>
         )
       ) : (
         !viewerIsOwner && <p className="text-sm text-muted-foreground">{t('signInToSuggest')}</p>

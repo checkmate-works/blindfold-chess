@@ -1955,7 +1955,9 @@
       "callout": {
         "suggestionsLink": "Sugerencias ({count})"
       },
-      "suggestCta": "Sugerir un patrón"
+      "suggestCta": "Sugerir un patrón",
+      "newPageTitle": "Sugerir un patrón · {name}",
+      "newBreadcrumb": "Sugerir un patrón"
     },
     "positionHistory": {
       "sectionTitle": "Historial de ediciones",
