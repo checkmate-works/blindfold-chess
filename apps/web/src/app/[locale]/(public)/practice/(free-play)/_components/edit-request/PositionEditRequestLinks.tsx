@@ -80,15 +80,17 @@ export async function PositionEditRequestSuggestLink({
 
 /**
  * Quiet "Suggestions (n)" link for the position owner, slotted into the
- * like row (right-aligned). Shown whenever the position has any chunk-tag
- * suggestions — including pending ones, which is now the owner's on-page
- * entry into reviewing them (the former amber review banner is gone).
+ * like row (right-aligned). This is the owner's only on-page entry into the
+ * review queue (the former amber review banner is gone), so it renders even
+ * at zero — otherwise an owner with nothing pending has no way to reach the
+ * page at all, and no way to discover that the feature exists. The amber
+ * pending badge still appears only when there is something to review.
  * `ml-auto` keeps it pinned to the right even when a narrow viewport wraps
  * it onto its own line.
  *
  * Named `Summary`, not `History` — the position's own content-edit history
  * lives at a separate `/history` page (`PositionContentHistoryLink`); this
- * component only counts chunk-tag suggestions from other users, a distinct
+ * component only counts tag suggestions from other users, a distinct
  * moderation queue.
  *
  * All counts are `cache()`-wrapped, so sharing queries with the sibling
@@ -112,7 +114,6 @@ export async function PositionEditRequestSummaryLink({
     countEditRequestsForPosition(positionId),
     getTranslations({ locale, namespace: 'practice.positionEditRequests' }),
   ]);
-  if (totalCount === 0) return null;
 
   return (
     <Link
