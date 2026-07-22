@@ -8,6 +8,7 @@ import { Button } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
 import type { ChunkOption } from '@/lib/chunks/types';
+import type { PositionTagBundle } from '@/lib/positions/tag-loader';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
@@ -19,12 +20,11 @@ import { localizePositionEditRequestError } from './localize-error';
 
 type Props = {
   positionId: string;
-  /** The position's current linked chunks. Always kept in the submitted
-   * proposal — not user-removable here — and excluded from the picker's
-   * suggestions (they're already linked). */
-  currentChunks: ChunkOption[];
-  /** Published catalog of chunks the proposer may attach. */
-  availableChunks: ChunkOption[];
+  /** Themes + chunks already linked to the position. Excluded from the
+   * picker's catalog (they're already there) and never re-submitted. */
+  current: PositionTagBundle;
+  /** Full picker catalog: theme-eligible glossary terms + published chunks. */
+  available: PositionTagBundle;
 };
 
 const WELL_KNOWN_ERRORS = new Set([
@@ -34,43 +34,49 @@ const WELL_KNOWN_ERRORS = new Set([
   'notFound',
   'ownerCannotPropose',
   'alreadyHasPending',
+  'invalidTheme',
   'invalidChunk',
-  'invalidChunkId',
-  'identicalChunkSet',
+  'invalidTagId',
+  'nothingToAdd',
   'commentTooLong',
 ]);
 
 /**
- * Submitter-side form for the "Suggest linked chunks" flow on a position
- * detail page. Rendered inline for any signed-in non-owner without a
- * pending request. Add-only: the picker tracks chunks the proposer wants to
- * attach, on top of (never instead of) the position's current links —
- * proposing removal of an already-linked chunk isn't supported here (that's
- * the owner's own edit form, not this suggestion flow). The submitted
- * proposal always merges `currentChunks` back in; the mutation core rejects
- * a no-op (set identical to the current links, i.e. nothing new picked).
+ * Submitter-side form for the "Suggest tags for this position" flow,
+ * covering both tag kinds the position detail page shows together in its
+ * "useful patterns" section: curated glossary themes and UGC chunks.
  *
- * The `TagPicker` is reused with an empty theme catalog so only chunks are
- * selectable — themes are out of scope for position edit requests.
+ * Add-only: the picker starts empty and tracks what the proposer wants to
+ * ADD, with already-linked tags filtered out of the catalog so they can be
+ * neither re-proposed nor un-proposed. That matches the additive storage
+ * (see the `position_edit_requests` schema TSDoc) — accepting inserts these
+ * IDs and never removes anything the owner has since added.
+ *
+ * The `TagPicker` is used with its stock labels, exactly as the owner's
+ * position create / edit forms use it.
  */
-export function PositionEditRequestForm({ positionId, currentChunks, availableChunks }: Props) {
+export function PositionEditRequestForm({ positionId, current, available }: Props) {
   const t = useTranslations('practice.positionEditRequests');
   const tToast = useTranslations('toast');
   const pickerLabels = useTagPickerLabels();
   const router = useRouter();
   const { showToast } = useToast();
 
+  const [addedThemes, setAddedThemes] = useState<ThemeOption[]>([]);
   const [addedChunks, setAddedChunks] = useState<ChunkOption[]>([]);
   const [comment, setComment] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const currentChunkIds = new Set(currentChunks.map((c) => c.id));
-  const pickableChunks = availableChunks.filter((c) => !currentChunkIds.has(c.id));
+  const linkedThemeIds = new Set(current.themes.map((theme) => theme.id));
+  const linkedChunkIds = new Set(current.chunks.map((chunk) => chunk.id));
+  const pickableThemes = available.themes.filter((theme) => !linkedThemeIds.has(theme.id));
+  const pickableChunks = available.chunks.filter((chunk) => !linkedChunkIds.has(chunk.id));
 
-  // The picker is a theme+chunk control; we ignore the theme channel and
-  // only track chunk selection.
-  function handlePickerChange(_themes: ThemeOption[], chunks: ChunkOption[]) {
+  const nothingSelected = addedThemes.length === 0 && addedChunks.length === 0;
+
+  function handlePickerChange(themes: ThemeOption[], chunks: ChunkOption[]) {
+    setAddedThemes(themes);
     setAddedChunks(chunks);
   }
 
@@ -81,7 +87,8 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
 
     const result = await submitPositionEditRequest({
       positionId,
-      proposedChunkIds: [...currentChunks, ...addedChunks].map((c) => c.id),
+      proposedThemeIds: addedThemes.map((theme) => theme.id),
+      proposedChunkIds: addedChunks.map((chunk) => chunk.id),
       comment: comment.trim().length > 0 ? comment : null,
     });
     setPending(false);
@@ -97,6 +104,7 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
     // appears. The view doesn't navigate itself, so surface the confirmation
     // via a direct toast rather than a `?toast=` redirect param.
     setComment('');
+    setAddedThemes([]);
     setAddedChunks([]);
     showToast(tToast('editRequestSubmitted'), 'success');
     router.refresh();
@@ -114,24 +122,13 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
       )}
 
       <TagPicker
-        selectedThemes={[]}
+        selectedThemes={addedThemes}
         selectedChunks={addedChunks}
-        availableThemes={[]}
+        availableThemes={pickableThemes}
         availableChunks={pickableChunks}
         disabled={pending}
         onChange={handlePickerChange}
-        // The proposer picks chunks only (empty theme catalog), so the
-        // shared "Themes & chunks" section label, its placeholder, and its
-        // "Themes vs. chunks" help line would all be misleading here —
-        // override the section label and placeholder to chunk-only wording
-        // and drop the help line. All three still show as-is on the
-        // position create / edit forms, where themes are selectable.
-        labels={{
-          ...pickerLabels,
-          section: t('fields.chunksLabel'),
-          placeholder: t('fields.chunksPlaceholder'),
-          help: undefined,
-        }}
+        labels={pickerLabels}
       />
 
       <div>
@@ -153,7 +150,7 @@ export function PositionEditRequestForm({ positionId, currentChunks, availableCh
         variant="primary"
         size="lg"
         fullWidth
-        disabled={pending}
+        disabled={pending || nothingSelected}
         loading={pending}
       >
         {t('actions.submit')}

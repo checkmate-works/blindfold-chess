@@ -8,71 +8,105 @@ import { validateSubmitPositionEditRequest } from './validation';
 const A = '11111111-1111-4111-8111-111111111111';
 const B = '22222222-2222-4222-8222-222222222222';
 const C = '33333333-3333-4333-8333-333333333333';
+const T1 = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const T2 = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
+/** Payload/current builders so each test states only what it exercises. */
+const payload = (over: Partial<Parameters<typeof validateSubmitPositionEditRequest>[0]> = {}) => ({
+  proposedThemeIds: [],
+  proposedChunkIds: [],
+  ...over,
+});
+const current = (over: Partial<Parameters<typeof validateSubmitPositionEditRequest>[1]> = {}) => ({
+  currentThemeIds: [],
+  currentChunkIds: [],
+  ...over,
+});
 
 describe('validateSubmitPositionEditRequest', () => {
   it('rejects a malformed (non-UUID) chunk id', () => {
     const result = validateSubmitPositionEditRequest(
-      { proposedChunkIds: ['not-a-uuid'] },
-      { currentChunkIds: [] }
+      payload({ proposedChunkIds: ['not-a-uuid'] }),
+      current()
     );
-    expect(result).toBe('invalidChunkId');
+    expect(result).toBe('invalidTagId');
   });
 
-  it('rejects a no-op proposal identical to the current set (order-independent)', () => {
+  it('rejects a malformed (non-UUID) theme id', () => {
     const result = validateSubmitPositionEditRequest(
-      { proposedChunkIds: [B, A] },
-      { currentChunkIds: [A, B] }
+      payload({ proposedThemeIds: ['not-a-uuid'] }),
+      current()
     );
-    expect(result).toBe('identicalChunkSet');
+    expect(result).toBe('invalidTagId');
   });
 
-  it('treats duplicate ids as the same set (dedupe) when comparing to current', () => {
+  it('rejects a proposal whose tags are all already linked (order-independent)', () => {
     const result = validateSubmitPositionEditRequest(
-      { proposedChunkIds: [A, A, B] },
-      { currentChunkIds: [A, B] }
+      payload({ proposedThemeIds: [T2, T1], proposedChunkIds: [B, A] }),
+      current({ currentThemeIds: [T1, T2], currentChunkIds: [A, B] })
     );
-    expect(result).toBe('identicalChunkSet');
+    expect(result).toBe('nothingToAdd');
   });
 
-  it('allows an empty proposed set (remove all links) when current is non-empty', () => {
-    const result = validateSubmitPositionEditRequest(
-      { proposedChunkIds: [] },
-      { currentChunkIds: [A] }
+  it('rejects a fully empty proposal', () => {
+    expect(validateSubmitPositionEditRequest(payload(), current())).toBe('nothingToAdd');
+    expect(validateSubmitPositionEditRequest(payload(), current({ currentChunkIds: [A] }))).toBe(
+      'nothingToAdd'
     );
-    expect(result).toEqual({ proposedChunkIds: [], comment: null });
   });
 
-  it('rejects an empty proposed set when current is already empty (no-op)', () => {
+  it('treats duplicate ids as one when deciding whether anything is added', () => {
     const result = validateSubmitPositionEditRequest(
-      { proposedChunkIds: [] },
-      { currentChunkIds: [] }
+      payload({ proposedChunkIds: [A, A] }),
+      current({ currentChunkIds: [A] })
     );
-    expect(result).toBe('identicalChunkSet');
+    expect(result).toBe('nothingToAdd');
   });
 
-  it('accepts a changed set and dedupes the output', () => {
+  it('accepts a chunk-only proposal and dedupes the output', () => {
     const result = validateSubmitPositionEditRequest(
-      { proposedChunkIds: [A, B, B, C], comment: '  add a battery  ' },
-      { currentChunkIds: [A] }
+      payload({ proposedChunkIds: [A, B, B, C], comment: '  add a battery  ' }),
+      current({ currentChunkIds: [A] })
     );
-    expect(result).toEqual({ proposedChunkIds: [A, B, C], comment: 'add a battery' });
+    expect(result).toEqual({
+      proposedThemeIds: [],
+      proposedChunkIds: [A, B, C],
+      comment: 'add a battery',
+    });
+  });
+
+  it('accepts a theme-only proposal', () => {
+    const result = validateSubmitPositionEditRequest(
+      payload({ proposedThemeIds: [T1] }),
+      current({ currentThemeIds: [T2] })
+    );
+    expect(result).toEqual({ proposedThemeIds: [T1], proposedChunkIds: [], comment: null });
+  });
+
+  it('accepts a mixed proposal when only one kind adds something new', () => {
+    // Chunks are all already linked; the new theme alone carries the proposal.
+    const result = validateSubmitPositionEditRequest(
+      payload({ proposedThemeIds: [T1], proposedChunkIds: [A] }),
+      current({ currentChunkIds: [A] })
+    );
+    expect(result).toEqual({ proposedThemeIds: [T1], proposedChunkIds: [A], comment: null });
   });
 
   it('normalizes a whitespace-only comment to null', () => {
     const result = validateSubmitPositionEditRequest(
-      { proposedChunkIds: [B], comment: '   ' },
-      { currentChunkIds: [A] }
+      payload({ proposedChunkIds: [B], comment: '   ' }),
+      current({ currentChunkIds: [A] })
     );
-    expect(result).toEqual({ proposedChunkIds: [B], comment: null });
+    expect(result).toEqual({ proposedThemeIds: [], proposedChunkIds: [B], comment: null });
   });
 
-  it('rejects an over-length comment even when the set is valid', () => {
+  it('rejects an over-length comment even when the proposal adds something', () => {
     const result = validateSubmitPositionEditRequest(
-      {
+      payload({
         proposedChunkIds: [B],
         comment: 'x'.repeat(EDIT_REQUEST_COMMENT_MAX_LENGTH + 1),
-      },
-      { currentChunkIds: [A] }
+      }),
+      current({ currentChunkIds: [A] })
     );
     expect(result).toBe('commentTooLong');
   });

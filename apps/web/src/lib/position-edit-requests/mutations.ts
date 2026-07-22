@@ -5,7 +5,7 @@ import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, positionChunks, positionEditRequests, positions } from '@/lib/db';
+import { db, positionChunks, positionEditRequests, positionThemes, positions } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { EDIT_REQUEST_TERMINAL_STATUS, type EditRequestAction } from '@/lib/edit-requests/shared';
 import { createNotification } from '@/lib/notifications/notification';
@@ -18,6 +18,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
 import { applyAcceptedPositionProposal } from './apply-position-edit-proposal';
 import {
   getLinkedChunkIdsForPosition,
+  getLinkedThemeIdsForPosition,
   getPositionEditRequestById,
   getViewerPendingEditRequestForPosition,
 } from './queries';
@@ -25,10 +26,10 @@ import type { SubmitPositionEditRequestPayload } from './validation';
 import { validateSubmitPositionEditRequest } from './validation';
 
 /**
- * Server-side core for the Qiita-style "suggest which chunks link here"
- * flow on a position. Each public Server Action under the practice detail
- * pages' `_actions/` is a thin async wrapper around one of the four
- * transitions below.
+ * Server-side core for the Qiita-style "suggest which tags link here"
+ * flow on a position (curated glossary themes + UGC chunks). Each public
+ * Server Action under the practice detail pages' `_actions/` is a thin
+ * async wrapper around one of the four transitions below.
  *
  * @design no draft gating
  * Positions have no draft / published lifecycle, so — unlike the chunk
@@ -93,21 +94,28 @@ export async function submitPositionEditRequestEntry(params: {
     return { error: 'alreadyHasPending' };
   }
 
-  const currentChunkIds = await getLinkedChunkIdsForPosition(position.id);
-  const validated = validateSubmitPositionEditRequest(params.payload, { currentChunkIds });
+  const [currentThemeIds, currentChunkIds] = await Promise.all([
+    getLinkedThemeIdsForPosition(position.id),
+    getLinkedChunkIdsForPosition(position.id),
+  ]);
+  const validated = validateSubmitPositionEditRequest(params.payload, {
+    currentThemeIds,
+    currentChunkIds,
+  });
   if (typeof validated === 'string') {
     return { error: validated };
   }
 
-  // Re-assert the proposed set against the live published / non-deleted
-  // chunk catalog (the picker is published-only). The pure validator above
-  // only checks shape; this is the DB-backed existence gate.
+  // Re-assert the proposed IDs against the live catalogs: themes must be
+  // `is_theme = true`, chunks must be published / non-deleted (the picker
+  // is published-only). The pure validator above only checks shape; this is
+  // the DB-backed existence gate.
   const tagCheck = await validateAndDedupeTagIds(
-    { chunkIds: validated.proposedChunkIds },
+    { themeIds: validated.proposedThemeIds, chunkIds: validated.proposedChunkIds },
     { requirePublishedChunks: true }
   );
   if (!tagCheck.ok) {
-    return { error: 'invalidChunk' };
+    return { error: tagCheck.error };
   }
 
   let inserted: { id: string };
@@ -117,6 +125,7 @@ export async function submitPositionEditRequestEntry(params: {
       .values({
         positionId: position.id,
         proposerId: user.id,
+        proposedThemeIds: validated.proposedThemeIds,
         proposedChunkIds: validated.proposedChunkIds,
         comment: validated.comment,
       })
@@ -198,15 +207,24 @@ async function resolvePositionEditRequest(
     // position row first (mirrors the chunk_edit_requests accept path).
     await tx.execute(sql`SELECT 1 FROM positions WHERE id = ${position.id} FOR UPDATE`);
 
-    // Snapshot the live linked-chunk set at resolution time, before any
-    // apply, so the history can render a stable proposed-vs-base diff for
-    // this now-resolved row (a live diff would collapse to "no change"
-    // once an accept makes the live set equal the proposed set).
-    const baseRows = await tx
-      .select({ chunkId: positionChunks.chunkId })
-      .from(positionChunks)
-      .where(eq(positionChunks.positionId, position.id));
-    const resolvedBaseChunkIds = baseRows.map((row) => row.chunkId);
+    // Snapshot the live linked-tag sets at resolution time, before any
+    // apply, so the history can render a stable proposed-minus-base list
+    // for this now-resolved row (a live diff would collapse to "nothing"
+    // once an accept makes the live set contain the proposed IDs). The
+    // same sets are handed to the apply helper as its "already linked"
+    // filter, so this read serves both purposes.
+    const [themeRows, chunkRows] = await Promise.all([
+      tx
+        .select({ termId: positionThemes.termId })
+        .from(positionThemes)
+        .where(eq(positionThemes.positionId, position.id)),
+      tx
+        .select({ chunkId: positionChunks.chunkId })
+        .from(positionChunks)
+        .where(eq(positionChunks.positionId, position.id)),
+    ]);
+    const resolvedBaseThemeIds = themeRows.map((row) => row.termId);
+    const resolvedBaseChunkIds = chunkRows.map((row) => row.chunkId);
 
     await tx
       .update(positionEditRequests)
@@ -214,6 +232,7 @@ async function resolvePositionEditRequest(
         status: terminal,
         resolvedAt: now,
         resolverId: user.id,
+        resolvedBaseThemeIds,
         resolvedBaseChunkIds,
       })
       .where(
@@ -221,7 +240,13 @@ async function resolvePositionEditRequest(
       );
 
     if (params.action === 'accept') {
-      await applyAcceptedPositionProposal(tx, request, position.id, user.id);
+      await applyAcceptedPositionProposal(
+        tx,
+        request,
+        { baseThemeIds: resolvedBaseThemeIds, baseChunkIds: resolvedBaseChunkIds },
+        position.id,
+        user.id
+      );
     }
   });
 

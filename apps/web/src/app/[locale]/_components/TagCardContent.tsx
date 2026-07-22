@@ -27,7 +27,7 @@ type Props = {
  *
  * This is the single source of truth for the thumbnail fallback rule —
  * board-less tags ALWAYS render {@link NoImagePlaceholder}, on every screen.
- * Wrappers ({@link RelatedTagCard}, `SelectedTagCard`, `ChunkDiffCard`,
+ * Wrappers ({@link RelatedTagCard}, `SelectedTagCard`, `TagDiffCard`,
  * `ChunkRefLink`) only decide the interactive shell (link / button / static)
  * and must not reimplement this markup, so the surfaces can't drift apart.
  *

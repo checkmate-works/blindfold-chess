@@ -1895,11 +1895,11 @@
       }
     },
     "positionEditRequests": {
-      "sectionTitle": "Sugerencias de chunks",
-      "sectionHint": "Otros jugadores pueden sugerir qué chunks se vinculan a esta posición. El propietario revisa cada sugerencia.",
+      "sectionTitle": "Sugerencias de patrones",
+      "sectionHint": "Otros jugadores pueden sugerir temas y chunks para añadir a esta posición. El propietario revisa cada sugerencia.",
       "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
       "alreadyHasPendingNotice": "Tu sugerencia anterior sigue pendiente abajo. Retírala primero si quieres proponer algo diferente.",
-      "signInToSuggest": "Inicia sesión para sugerir chunks vinculados.",
+      "signInToSuggest": "Inicia sesión para sugerir temas y chunks.",
       "empty": "Aún no hay sugerencias.",
       "help": {
         "label": "Ayuda"
@@ -1915,13 +1915,10 @@
         "withdrawn": "Retirada"
       },
       "diff": {
-        "added": "Chunks para añadir",
-        "removed": "Chunks para quitar",
-        "noChange": "Sin cambios en los chunks vinculados."
+        "tagsToAdd": "Etiquetas para añadir",
+        "nothingToAdd": "Todas las etiquetas sugeridas ya están vinculadas."
       },
       "fields": {
-        "chunksLabel": "Chunks",
-        "chunksPlaceholder": "Buscar para añadir un chunk…",
         "comment": "¿Por qué este cambio? (opcional)",
         "commentPlaceholder": "Una breve explicación ayuda al propietario a decidir."
       },
@@ -1932,7 +1929,7 @@
         "reject": "Rechazar",
         "withdraw": "Retirar",
         "acceptConfirmTitle": "¿Aceptar esta sugerencia?",
-        "acceptConfirmMessage": "Los chunks propuestos reemplazarán de inmediato los vínculos actuales de esta posición.",
+        "acceptConfirmMessage": "Las etiquetas sugeridas se añadirán a esta posición de inmediato.",
         "rejectConfirmTitle": "¿Rechazar esta sugerencia?",
         "rejectConfirmMessage": "No se notificará al proponente. Verá el estado de rechazo si vuelve a esta página.",
         "withdrawConfirmTitle": "¿Retirar tu sugerencia?",
@@ -1948,18 +1945,20 @@
         "ownerCannotPropose": "No puedes sugerir cambios en tu propia posición; edítala directamente.",
         "alreadyHasPending": "Ya tienes una sugerencia pendiente para esta posición. Retírala primero si quieres proponer algo diferente.",
         "invalidChunk": "Uno o más chunks seleccionados no están disponibles. Actualiza e inténtalo de nuevo.",
-        "invalidChunkId": "Uno o más chunks seleccionados no son válidos.",
-        "identicalChunkSet": "Tu selección coincide con los chunks vinculados actuales. Cámbiala antes de enviar.",
-        "commentTooLong": "Tu comentario es demasiado largo."
+        "commentTooLong": "Tu comentario es demasiado largo.",
+        "invalidTheme": "Uno o más temas seleccionados no están disponibles. Actualiza e inténtalo de nuevo.",
+        "invalidTagId": "Una o más etiquetas seleccionadas no son válidas.",
+        "nothingToAdd": "Elige al menos un tema o chunk que aún no esté vinculado."
       },
-      "pageTitle": "Sugerencias de chunks · {name}",
-      "breadcrumb": "Sugerencias de chunks",
+      "pageTitle": "Sugerencias de patrones · {name}",
+      "breadcrumb": "Sugerencias de patrones",
       "callout": {
         "suggestionsLink": "Sugerencias ({count})"
       },
       "suggestCta": "Sugerir un patrón",
       "newPageTitle": "Sugerir un patrón · {name}",
-      "newBreadcrumb": "Sugerir un patrón"
+      "newBreadcrumb": "Sugerir un patrón",
+      "deletedTheme": "(tema eliminado)"
     },
     "positionHistory": {
       "sectionTitle": "Historial de ediciones",

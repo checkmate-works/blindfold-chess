@@ -1895,11 +1895,11 @@
       }
     },
     "positionEditRequests": {
-      "sectionTitle": "Chunk suggestions",
-      "sectionHint": "Other players can suggest which chunks this position links to. The owner reviews each suggestion.",
+      "sectionTitle": "Pattern suggestions",
+      "sectionHint": "Other players can suggest themes and chunks to add to this position. The owner reviews each suggestion.",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
       "alreadyHasPendingNotice": "Your earlier suggestion is still pending below. Withdraw it first if you want to propose something different.",
-      "signInToSuggest": "Sign in to suggest linked chunks.",
+      "signInToSuggest": "Sign in to suggest themes and chunks.",
       "empty": "No suggestions yet.",
       "help": {
         "label": "Help"
@@ -1915,13 +1915,10 @@
         "withdrawn": "Withdrawn"
       },
       "diff": {
-        "added": "Chunks to add",
-        "removed": "Chunks to remove",
-        "noChange": "No net change to the linked chunks."
+        "tagsToAdd": "Tags to add",
+        "nothingToAdd": "Every suggested tag is already linked."
       },
       "fields": {
-        "chunksLabel": "Chunks",
-        "chunksPlaceholder": "Search to add a chunk…",
         "comment": "Why this change? (optional)",
         "commentPlaceholder": "A short explanation helps the owner decide."
       },
@@ -1932,7 +1929,7 @@
         "reject": "Reject",
         "withdraw": "Withdraw",
         "acceptConfirmTitle": "Accept this suggestion?",
-        "acceptConfirmMessage": "The proposed chunk links will replace this position's current links immediately.",
+        "acceptConfirmMessage": "The suggested tags will be added to this position immediately.",
         "rejectConfirmTitle": "Reject this suggestion?",
         "rejectConfirmMessage": "The proposer will not be notified. They will see the rejected status if they revisit this page.",
         "withdrawConfirmTitle": "Withdraw your suggestion?",
@@ -1948,18 +1945,20 @@
         "ownerCannotPropose": "You can't suggest edits to your own position — edit it directly instead.",
         "alreadyHasPending": "You already have a pending suggestion for this position. Withdraw it first if you want to propose something different.",
         "invalidChunk": "One or more selected chunks are unavailable. Refresh and try again.",
-        "invalidChunkId": "One or more selected chunks are invalid.",
-        "identicalChunkSet": "Your selection matches the current linked chunks. Change it before submitting.",
-        "commentTooLong": "Your comment is too long."
+        "commentTooLong": "Your comment is too long.",
+        "invalidTheme": "One or more selected themes are unavailable. Refresh and try again.",
+        "invalidTagId": "One or more selected tags are invalid.",
+        "nothingToAdd": "Pick at least one theme or chunk that isn't linked yet."
       },
-      "pageTitle": "Chunk suggestions · {name}",
-      "breadcrumb": "Chunk suggestions",
+      "pageTitle": "Pattern suggestions · {name}",
+      "breadcrumb": "Pattern suggestions",
       "callout": {
         "suggestionsLink": "Suggestions ({count})"
       },
       "suggestCta": "Suggest a pattern",
       "newPageTitle": "Suggest a pattern · {name}",
-      "newBreadcrumb": "Suggest a pattern"
+      "newBreadcrumb": "Suggest a pattern",
+      "deletedTheme": "(removed theme)"
     },
     "positionHistory": {
       "sectionTitle": "Edit history",

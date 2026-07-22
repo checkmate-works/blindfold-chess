@@ -2,12 +2,9 @@ import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
-import {
-  getAllAvailableChunkOptions,
-  getLinkedChunkOptionsForPosition,
-} from '@/lib/chunks/queries';
 import { getViewerPendingEditRequestForPosition } from '@/lib/position-edit-requests/queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
+import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
 import type { PositionType } from '@/lib/positions/types';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -68,11 +65,12 @@ export async function PositionEditRequestNewView({ positionId, positionType, loc
     redirect(`/${locale}${suggestionsPath}`);
   }
 
-  // Loaded unconditionally (cheap, same calls the list page already makes)
-  // rather than branching on `user` — keeps this a plain top-level await.
-  const [currentChunks, availableChunks] = await Promise.all([
-    getLinkedChunkOptionsForPosition(positionId),
-    getAllAvailableChunkOptions(),
+  // The same `cache()`-wrapped bundles the owner's position edit page uses.
+  // Loaded unconditionally (cheap, and shared with the review page) rather
+  // than branching on `user` — keeps this a plain top-level await.
+  const [current, available] = await Promise.all([
+    loadPositionTags(positionId, locale),
+    loadAvailableTags(locale),
   ]);
 
   const breadcrumb = [
@@ -92,11 +90,7 @@ export async function PositionEditRequestNewView({ positionId, positionType, loc
       <SectionTitle>{t('suggestCta')}</SectionTitle>
 
       {user ? (
-        <PositionEditRequestForm
-          positionId={positionId}
-          currentChunks={currentChunks}
-          availableChunks={availableChunks}
-        />
+        <PositionEditRequestForm positionId={positionId} current={current} available={available} />
       ) : (
         <p className="text-sm text-muted-foreground">{t('signInToSuggest')}</p>
       )}

@@ -6,25 +6,21 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
-import {
-  getAllAvailableChunkOptions,
-  getChunkOptionsByIds,
-  getLinkedChunkOptionsForPosition,
-} from '@/lib/chunks/queries';
-import type { ChunkOption } from '@/lib/chunks/types';
+import { getChunkOptionsByIds } from '@/lib/chunks/queries';
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
 import { isEditRequestStatus } from '@/lib/edit-requests/shared';
 import {
   getViewerPendingEditRequestForPosition,
   listEditRequestsForPosition,
 } from '@/lib/position-edit-requests/queries';
+import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ChunkDiffCard } from './ChunkDiffCard';
-import type { ChunkDiffEntry } from './ChunkDiffCard';
 import { PositionEditRequestItem } from './PositionEditRequestItem';
+import { TagDiffCard } from './TagDiffCard';
+import type { TagDiffEntry } from './TagDiffCard';
 
 type Props = {
   positionId: string;
@@ -43,17 +39,19 @@ type Props = {
 };
 
 /**
- * Server-rendered "Edit suggestions" review-list panel on a position detail
- * page (memory / puzzle). Surfaces the chunk-link suggestion queue, plus a
- * CTA into the dedicated submission-form page for eligible non-owners, with
- * role-aware controls threaded down to each client `PositionEditRequestItem`.
- * Always rendered for non-deleted positions (positions have no draft /
- * published lifecycle).
+ * Server-rendered "Tag suggestions" review-list panel on a position detail
+ * page (memory / puzzle). Surfaces the suggestion queue, plus a CTA into the
+ * dedicated submission-form page for eligible non-owners, with role-aware
+ * controls threaded down to each client `PositionEditRequestItem`. Always
+ * rendered for non-deleted positions (positions have no draft / published
+ * lifecycle).
  *
- * The added / removed diff for each request is computed here against the
- * position's *live* linked-chunk set, so the owner always sees the true
- * effect of accepting right now even if the links changed since the
- * proposal was submitted.
+ * Proposals are additive, so each row renders a single "will add" list
+ * rather than an added / removed diff. A pending row is compared against
+ * the position's *live* tag set, so the owner always sees the true effect
+ * of accepting right now; a resolved row is compared against the snapshot
+ * captured at resolution time, so the history keeps showing what that
+ * resolution actually added.
  */
 export async function PositionEditRequestSection({
   positionId,
@@ -63,14 +61,14 @@ export async function PositionEditRequestSection({
   ownerId,
   locale,
 }: Props) {
-  const [rows, currentChunks, availableChunks, t, tTags] = await Promise.all([
+  const [rows, current, available, t, tTags] = await Promise.all([
     listEditRequestsForPosition(positionId),
-    getLinkedChunkOptionsForPosition(positionId),
-    getAllAvailableChunkOptions(),
+    loadPositionTags(positionId, locale),
+    loadAvailableTags(locale),
     getTranslations({ locale, namespace: 'practice.positionEditRequests' }),
     getTranslations({ locale, namespace: 'practice.tags' }),
   ]);
-  const chunkBadgeLabel = tTags('badge.chunk');
+  const badgeLabels = { theme: tTags('badge.theme'), chunk: tTags('badge.chunk') };
 
   const viewerIsOwner = !!viewerId && viewerId === ownerId;
   const viewerIsSignedIn = !!viewerId;
@@ -79,97 +77,108 @@ export async function PositionEditRequestSection({
   const viewerHasPending =
     viewerCanPropose && !!(await getViewerPendingEditRequestForPosition(positionId, viewerId));
 
-  // Build the chunk-id → label map from the catalog + the current links,
-  // then backfill any proposal-referenced ids that aren't in either set
-  // (e.g. a chunk that was unlinked or unpublished since the proposal).
-  const labelMap = new Map<string, ChunkOption>();
-  for (const chunk of [...availableChunks, ...currentChunks]) {
-    labelMap.set(chunk.id, chunk);
-  }
-  const missingIds = new Set<string>();
-  for (const { request } of rows) {
-    for (const id of [...request.proposedChunkIds, ...(request.resolvedBaseChunkIds ?? [])]) {
-      if (!labelMap.has(id)) missingIds.add(id);
-    }
-  }
-  if (missingIds.size > 0) {
-    const backfill = await getChunkOptionsByIds([...missingIds]);
-    for (const [id, chunk] of backfill) {
-      labelMap.set(id, chunk);
-    }
-  }
-
-  function resolveDiff(ids: string[]): ChunkDiffEntry[] {
-    return ids.map((id) => {
-      const chunk = labelMap.get(id);
-      return {
-        id,
-        slug: chunk?.slug ?? null,
-        label: chunk?.label ?? t('deletedChunk'),
-        representativeFen: chunk?.representativeFen ?? null,
-        description: chunk?.description ?? null,
-      };
+  // Theme catalog is bounded master data and `loadAvailableTags` returns all
+  // of it, so themes need no id-backfill query: anything a proposal
+  // references but the catalog lacks has since lost `is_theme` and renders
+  // via the fallback label below.
+  const themeMap = new Map<string, TagDiffEntry>();
+  for (const theme of [...available.themes, ...current.themes]) {
+    themeMap.set(theme.id, {
+      kind: 'theme',
+      id: theme.id,
+      slug: theme.slug,
+      label: theme.label,
+      previewFen: theme.previewFen,
+      description: theme.definition,
     });
   }
 
+  // Chunks do need a backfill: the catalog is published-only, so a proposal
+  // may reference a chunk that has since been unpublished or soft-deleted.
+  const chunkMap = new Map<string, TagDiffEntry>();
+  const addChunk = (chunk: {
+    id: string;
+    slug: string;
+    label: string;
+    representativeFen: string;
+    description: string | null;
+  }) =>
+    chunkMap.set(chunk.id, {
+      kind: 'chunk',
+      id: chunk.id,
+      slug: chunk.slug,
+      label: chunk.label,
+      previewFen: chunk.representativeFen,
+      description: chunk.description,
+    });
+  for (const chunk of [...available.chunks, ...current.chunks]) {
+    addChunk(chunk);
+  }
+  const missingChunkIds = new Set<string>();
+  for (const { request } of rows) {
+    for (const id of [...request.proposedChunkIds, ...(request.resolvedBaseChunkIds ?? [])]) {
+      if (!chunkMap.has(id)) missingChunkIds.add(id);
+    }
+  }
+  if (missingChunkIds.size > 0) {
+    for (const [, chunk] of await getChunkOptionsByIds([...missingChunkIds])) {
+      addChunk(chunk);
+    }
+  }
+
+  function resolveTags(kind: 'theme' | 'chunk', ids: string[]): TagDiffEntry[] {
+    const map = kind === 'theme' ? themeMap : chunkMap;
+    const fallbackLabel = kind === 'theme' ? t('deletedTheme') : t('deletedChunk');
+    return ids.map(
+      (id) =>
+        map.get(id) ?? {
+          kind,
+          id,
+          slug: null,
+          label: fallbackLabel,
+          previewFen: null,
+          description: null,
+        }
+    );
+  }
+
   /**
-   * Render the added / removed chunk diff for one request. Uses the
-   * shared `ChunkDiffCard` (same visual as the position detail page's
-   * `RelatedTags`). Both lists empty → a "no net change" note.
+   * Render one request's "will add" list. Themes lead, then chunks —
+   * the same order the position detail page's `RelatedTags` uses. An empty
+   * list means every proposed tag is already linked (the owner attached it
+   * in the meantime, or the row predates the additive model).
    */
-  function renderDiff(added: ChunkDiffEntry[], removed: ChunkDiffEntry[]): ReactNode {
-    if (added.length === 0 && removed.length === 0) {
-      return <p className="text-sm text-muted-foreground">{t('diff.noChange')}</p>;
+  function renderAdded(entries: TagDiffEntry[]): ReactNode {
+    if (entries.length === 0) {
+      return <p className="text-sm text-muted-foreground">{t('diff.nothingToAdd')}</p>;
     }
     return (
-      <div className="space-y-3">
-        {added.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-              {t('diff.added')}
-            </p>
-            <div className="space-y-2">
-              {added.map((entry) => (
-                <ChunkDiffCard
-                  key={entry.id}
-                  entry={entry}
-                  tone="added"
-                  badgeLabel={chunkBadgeLabel}
-                  locale={locale}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-        {removed.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-rose-700 dark:text-rose-400">
-              {t('diff.removed')}
-            </p>
-            <div className="space-y-2">
-              {removed.map((entry) => (
-                <ChunkDiffCard
-                  key={entry.id}
-                  entry={entry}
-                  tone="removed"
-                  badgeLabel={chunkBadgeLabel}
-                  locale={locale}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+          {t('diff.tagsToAdd')}
+        </p>
+        <div className="space-y-2">
+          {entries.map((entry) => (
+            <TagDiffCard
+              key={`${entry.kind}-${entry.id}`}
+              entry={entry}
+              badgeLabel={badgeLabels[entry.kind]}
+              locale={locale}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
-  const currentChunkIds = new Set(currentChunks.map((c) => c.id));
+  const currentThemeIds = new Set(current.themes.map((theme) => theme.id));
+  const currentChunkIds = new Set(current.chunks.map((chunk) => chunk.id));
   const pendingCount = rows.filter((row) => row.request.status === 'pending').length;
 
   return (
     <section className="space-y-4">
       {/* `data-tour-id` anchors the page-title HelpTourButton step, which
-          explains the suggest-a-chunk concept (see PositionEditRequestsView). */}
+          explains the suggest-a-tag concept (see PositionEditRequestsView). */}
       <div data-tour-id="position-edit-requests-intro">
         <SectionTitle>
           <span className="flex flex-wrap items-center justify-between gap-2">
@@ -213,18 +222,31 @@ export async function PositionEditRequestSection({
             const status: EditRequestStatus = isEditRequestStatus(request.status)
               ? request.status
               : 'pending';
-            // Pending rows diff against the live link set (true "accept now"
-            // effect for the reviewing owner). Resolved rows diff against the
-            // snapshot captured at resolution time, so the history shows what
-            // the resolution actually changed. Legacy resolved rows without a
-            // snapshot fall back to the live set.
-            const baseIds =
-              status !== 'pending' && request.resolvedBaseChunkIds
+            // Pending rows compare against the live tag set (true "accept
+            // now" effect for the reviewing owner). Resolved rows compare
+            // against the snapshot captured at resolution time, so the
+            // history shows what the resolution actually added. Rows
+            // resolved before a given snapshot column existed fall back to
+            // the live set.
+            const isResolved = status !== 'pending';
+            const baseThemeIds =
+              isResolved && request.resolvedBaseThemeIds
+                ? new Set(request.resolvedBaseThemeIds)
+                : currentThemeIds;
+            const baseChunkIds =
+              isResolved && request.resolvedBaseChunkIds
                 ? new Set(request.resolvedBaseChunkIds)
                 : currentChunkIds;
-            const proposedSet = new Set(request.proposedChunkIds);
-            const added = request.proposedChunkIds.filter((id) => !baseIds.has(id));
-            const removed = [...baseIds].filter((id) => !proposedSet.has(id));
+            const added = [
+              ...resolveTags(
+                'theme',
+                request.proposedThemeIds.filter((id) => !baseThemeIds.has(id))
+              ),
+              ...resolveTags(
+                'chunk',
+                request.proposedChunkIds.filter((id) => !baseChunkIds.has(id))
+              ),
+            ];
             return (
               <li key={request.id}>
                 <PositionEditRequestItem
@@ -234,7 +256,7 @@ export async function PositionEditRequestSection({
                   proposer={proposer ?? null}
                   proposerId={request.proposerId}
                   detailHref={detailHref}
-                  diff={renderDiff(resolveDiff(added), resolveDiff(removed))}
+                  diff={renderAdded(added)}
                   comment={request.comment}
                   viewerIsOwner={viewerIsOwner}
                   viewerIsProposer={!!viewerId && request.proposerId === viewerId}
