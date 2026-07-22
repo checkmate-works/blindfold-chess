@@ -21,11 +21,12 @@ import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 import { buildPositionTopicKey } from '@/lib/repertoires/position-topic-key';
 import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
+import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { OwnerActionLink } from '@/app/[locale]/_components/OwnerActionChip';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -52,6 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function RepertoireLineDetailPage({ params, searchParams }: Props) {
   const { locale, id, lineNo: lineNoParam } = await params;
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
   const currentUser = await getOptionalUser();
 
   const lineNo = Number(lineNoParam);
@@ -59,7 +61,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
 
   const data = await getRepertoireLineForViewer(id, lineNo, currentUser?.id ?? null);
   if (!data) notFound();
-  const { repertoire, line, lines, isOwner } = data;
+  const { repertoire, line, lines, profile, isOwner } = data;
 
   // Replay + format the line server-side (no chess.js in the client bundle).
   const { sans, positions, startsAsBlack, startMoveNumber } = replayRepertoireLine(line);
@@ -145,14 +147,32 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
         />
       )}
 
-      {isOwner && (
-        <div className="flex items-center justify-end gap-4">
-          <OwnerActionLink href={`/repertoires/${id}/lines/${lineNo}/edit`} size="xs">
-            <FiEdit2 aria-hidden />
-            {t('line.edit.editAction')}
-          </OwnerActionLink>
-        </div>
-      )}
+      {/* Same author attribution the repertoire (型) detail page shows —
+          "Created by" + the owner's avatar/name — with whole-line editing
+          moved into the "⋯" overflow menu (owner only), matching the puzzle /
+          shared-game detail pages. Attributed to the line's own timestamps. */}
+      <PositionAuthorHeader
+        profile={profile}
+        displayName={resolveAuthorName(profile, { fallback: tCommon('deletedUser') })}
+        createdByLabel={t('detail.createdBy')}
+        locale={locale}
+        createdAt={line.createdAt}
+        edited={line.updatedAt.getTime() - line.createdAt.getTime() > 1000}
+        editedLabel={t('detail.edited')}
+        menuAriaLabel={t('detail.moreActions')}
+        menuItems={
+          isOwner
+            ? [
+                {
+                  key: 'edit',
+                  label: t('line.edit.editAction'),
+                  href: `/${locale}/repertoires/${id}/lines/${lineNo}/edit`,
+                  icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
+                },
+              ]
+            : []
+        }
+      />
 
       {sans.length > 0 && (
         <MoveCommentsSection

@@ -369,13 +369,22 @@ export async function getRepertoireLineForViewer(
   repertoire: Repertoire;
   line: RepertoireLine;
   lines: RepertoireLine[];
+  /** The repertoire author's live profile (null for anon/deleted), so the line
+   *  page can show the same "Created by" attribution the detail page does. */
+  profile: RepertoireAuthorProfile | null;
   isOwner: boolean;
 } | null> {
   const data = await getRepertoireForViewer(id, viewerId);
   if (!data) return null;
   const line = data.lines.find((l) => l.seq === lineNo - 1);
   if (!line) return null;
-  return { repertoire: data.repertoire, line, lines: data.lines, isOwner: data.isOwner };
+  return {
+    repertoire: data.repertoire,
+    line,
+    lines: data.lines,
+    profile: data.profile,
+    isOwner: data.isOwner,
+  };
 }
 
 /**
