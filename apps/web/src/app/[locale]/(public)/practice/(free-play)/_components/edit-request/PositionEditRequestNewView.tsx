@@ -92,7 +92,7 @@ export async function PositionEditRequestNewView({ positionId, positionType, loc
       {user ? (
         <PositionEditRequestForm positionId={positionId} current={current} available={available} />
       ) : (
-        <p className="text-sm text-muted-foreground">{t('signInToSuggest')}</p>
+        <p className="text-muted-foreground text-center py-8">{t('signInToSuggest')}</p>
       )}
     </PageLayout>
   );

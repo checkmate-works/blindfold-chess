@@ -192,30 +192,19 @@ export async function PositionEditRequestSection({
         </SectionTitle>
       </div>
 
-      {viewerCanPropose ? (
-        viewerHasPending ? (
-          <div
-            className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100"
-            role="status"
-          >
-            {t('alreadyHasPendingNotice')}
-          </div>
-        ) : (
-          <Link
-            href={newSuggestionHref as '/practice/position-memory/[id]/suggestions/new'}
-            locale={locale}
-          >
-            <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
-              {t('suggestCta')}
-            </Button>
-          </Link>
-        )
-      ) : (
-        !viewerIsOwner && <p className="text-sm text-muted-foreground">{t('signInToSuggest')}</p>
+      {/* Status about a row further down ("still pending below"), not an
+          action — so it stays above the queue while the CTA moves under it. */}
+      {viewerCanPropose && viewerHasPending && (
+        <div
+          className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100"
+          role="status"
+        >
+          {t('alreadyHasPendingNotice')}
+        </div>
       )}
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('empty')}</p>
+        <p className="text-muted-foreground text-center pt-8 pb-2">{t('empty')}</p>
       ) : (
         <ul className="space-y-3">
           {rows.map(({ request, proposer }) => {
@@ -267,6 +256,24 @@ export async function PositionEditRequestSection({
           })}
         </ul>
       )}
+
+      {/* The propose action trails the queue, so a visitor reads what has
+          already been suggested before adding their own (fewer duplicates)
+          and the empty state reads as "nothing yet → be the first". */}
+      {viewerCanPropose
+        ? !viewerHasPending && (
+            <Link
+              href={newSuggestionHref as '/practice/position-memory/[id]/suggestions/new'}
+              locale={locale}
+            >
+              <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
+                {t('suggestCta')}
+              </Button>
+            </Link>
+          )
+        : !viewerIsOwner && (
+            <p className="text-muted-foreground text-center">{t('signInToSuggest')}</p>
+          )}
     </section>
   );
 }
