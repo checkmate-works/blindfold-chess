@@ -127,6 +127,7 @@
       "title": "Linha",
       "breadcrumb": "Linha {n}",
       "empty": "Esta linha não tem lances.",
+      "branchFromHere": "Adicionar uma variante a partir daqui",
       "shapes": {
         "hint": "Clique com o botão direito e arraste no tabuleiro para desenhar uma seta; clique com o botão direito em uma casa para circulá-la. Shift / Alt / Ctrl mudam a cor. Salvo automaticamente.",
         "saveFailed": "Não foi possível salvar suas marcações no tabuleiro. Tente novamente."

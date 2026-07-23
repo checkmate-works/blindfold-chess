@@ -127,6 +127,7 @@
       "title": "Line",
       "breadcrumb": "Line {n}",
       "empty": "This line has no moves.",
+      "branchFromHere": "Add a branch from here",
       "shapes": {
         "hint": "Right-click and drag on the board to draw an arrow; right-click a square to circle it. Shift / Alt / Ctrl change the colour. Saved automatically.",
         "saveFailed": "Couldn't save your board markup. Please try again."
