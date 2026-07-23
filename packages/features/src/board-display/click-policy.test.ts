@@ -40,7 +40,10 @@ describe("classifyBoardClick — no selection", () => {
     ).toEqual({ type: "select", square: "e2" });
   });
 
-  it("counts a first tap on a non-movable piece only when obfuscated", () => {
+  it("never counts a first tap on a non-movable piece — even obfuscated", () => {
+    // A first tap on the opponent's piece names no move (there is no source →
+    // destination yet) and is indistinguishable from a misclick, so it is a
+    // no-op in both modes rather than a counted illegal attempt.
     const base = {
       square: "e7",
       selectedSquare: null,
@@ -49,7 +52,7 @@ describe("classifyBoardClick — no selection", () => {
       findCandidates: never,
     };
     expect(classifyBoardClick({ ...base, obfuscated: true })).toEqual({
-      type: "illegal",
+      type: "noop",
     });
     expect(classifyBoardClick({ ...base, obfuscated: false })).toEqual({
       type: "noop",

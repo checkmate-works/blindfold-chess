@@ -427,7 +427,7 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
   // on e1 by the black rook on e8 — moving it sideways is illegal.
   const PIN_FEN = '4r2k/8/8/8/8/8/4B3/4K3 w - - 0 1';
 
-  it('counts a first click onto the opponent piece (believed to be own)', () => {
+  it('does NOT count a first click onto the opponent piece (mis-grab names no move)', () => {
     const onMove = vi.fn();
     const onIllegalMove = vi.fn();
     const { container } = render(
@@ -442,7 +442,9 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
 
     fireEvent.click(squareEl(container, 'e7')); // opponent pawn, nothing selected yet
 
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    // A first tap with no selection names no source → destination, so it is a
+    // no-op — indistinguishable from a misclick and not a counted attempt.
+    expect(onIllegalMove).not.toHaveBeenCalled();
     expect(onMove).not.toHaveBeenCalled();
   });
 

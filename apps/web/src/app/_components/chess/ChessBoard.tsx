@@ -147,23 +147,24 @@ type Props = {
    * single-color / hidden pieces) — see {@link obfuscated}:
    *
    * - Obfuscated: the player can't tell pieces apart, so counting is
-   *   aggressive. A first click / drag onto the *opponent's* piece (believed
-   *   to be one's own) counts; once a piece is selected, ANY non-legal target
-   *   counts — illegal square, capturing one's own piece, an uncapturable
-   *   opponent, or an (absolutely-pinned) piece the engine rejects. There is
-   *   no reselect idiom. An empty-square *first* click is NOT counted (it is
-   *   indistinguishable from a misclick / deselect).
+   *   aggressive once a piece is selected — ANY non-legal target counts:
+   *   illegal square, capturing one's own piece, an uncapturable opponent, or
+   *   an (absolutely-pinned) piece the engine rejects. There is no reselect
+   *   idiom.
    * - Normal display: the lichess / chess.com idiom holds — clicking another
    *   own piece reselects (not counted); only an illegal empty / opponent
    *   destination after a selection counts.
    *
-   * Drag-and-drop always counts a drop onto a non-legal square in either mode.
+   * A *first* tap (nothing selected yet) is never counted in either mode — a
+   * mis-grabbed opponent piece or an empty square is indistinguishable from a
+   * misclick and names no move. Only a completed source → destination attempt
+   * counts: a drag-drop always does (it can only start on a movable piece),
+   * and a click-to-move after a selection does.
    *
-   * When the attempt has a real source + destination (a drag-drop, or a
-   * click-to-move after a selection), the rejected move is passed as a
-   * SAN-like string (`Nf3`, `exd5`) so callers can record *which* move was
-   * illegal, matching the text-input path. The payload-less first-tap mis-grab
-   * fires with no argument (there is no destination to name).
+   * That attempt is passed as a SAN-like string (`Nf3`, `exd5`) so callers can
+   * record *which* move was illegal, matching the text-input path. (The
+   * argument is optional only for forward compatibility; every current call
+   * site supplies it.)
    */
   onIllegalMove?: (attempt?: string) => void;
   /**
@@ -316,9 +317,6 @@ export const ChessBoard = memo(function ChessBoard({
           return;
         case 'deselect':
           setSelectedSquare(null);
-          return;
-        case 'illegal':
-          onIllegalMove?.();
           return;
         case 'illegal-clear': {
           // A real from→to attempt (drag-drop, or click-to-move after a

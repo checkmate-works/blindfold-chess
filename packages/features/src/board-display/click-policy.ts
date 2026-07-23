@@ -9,8 +9,6 @@ import type { PieceColor } from "./types";
  * - `select` — (re)select `square` as the move source. A normal-display
  *   reselect of another movable piece is NOT a mistake (lichess idiom).
  * - `deselect` — clear the current selection (click on the selected square).
- * - `illegal` — count one illegal-move attempt; selection is unchanged
- *   (the obfuscated "mis-grab an opponent piece as the first tap" case).
  * - `illegal-clear` — count one illegal-move attempt and clear the selection.
  *   Carries the attempted `from`/`to` squares so the caller can record *which*
  *   move was rejected (there is a real source + destination here, unlike the
@@ -23,7 +21,6 @@ export type BoardClickAction<M> =
   | { type: "noop" }
   | { type: "select"; square: string }
   | { type: "deselect" }
-  | { type: "illegal" }
   | { type: "illegal-clear"; from: string; to: string }
   | { type: "move"; move: M }
   | { type: "promotion"; from: string; to: string; candidates: M[] };
@@ -51,16 +48,18 @@ export function classifyMoveAttempt<M>(
  *
  * What counts as a mistake depends on whether obfuscation is active:
  *
- * - Obfuscated: the player can't tell pieces apart, so counting is
- *   aggressive. A first click onto a non-movable piece (believed to be one's
- *   own) counts; once a piece is selected, ANY non-legal target counts —
- *   illegal square, capturing one's own piece, an uncapturable opponent, or
- *   an (absolutely-pinned) piece the engine rejects. There is no reselect
- *   idiom. An empty-square *first* click is NOT counted (indistinguishable
- *   from a misclick / deselect).
+ * - Obfuscated: the player can't tell pieces apart, so counting is aggressive
+ *   once a piece is selected — ANY non-legal target counts: illegal square,
+ *   capturing one's own piece, an uncapturable opponent, or an
+ *   (absolutely-pinned) piece the engine rejects. There is no reselect idiom.
  * - Normal display: the lichess / chess.com idiom holds — clicking another
  *   movable piece reselects (not counted); only an illegal empty / opponent
  *   destination after a selection counts.
+ *
+ * A *first* tap (nothing selected yet) is never counted in either mode: an
+ * empty square or a mis-grabbed opponent piece is indistinguishable from a
+ * misclick, and — unlike a completed from→to attempt — names no move to
+ * record. Only a real source + destination becomes an illegal-move attempt.
  *
  * `findCandidates` is invoked lazily, only when a selection exists and the
  * click might complete a move.
@@ -78,11 +77,13 @@ export function classifyBoardClick<M>(params: {
   const { square, selectedSquare, pieceColor, movableColor, obfuscated } =
     params;
   const clickedMovable = pieceColor !== null && pieceColor === movableColor;
-  const clickedNonMovable = pieceColor !== null && pieceColor !== movableColor;
 
   if (selectedSquare === null) {
+    // A first tap only ever selects (own movable piece) or does nothing. A
+    // mis-grabbed opponent piece is NOT counted — it names no move and is
+    // indistinguishable from a misclick; only a completed from→to attempt
+    // below counts.
     if (clickedMovable) return { type: "select", square };
-    if (obfuscated && clickedNonMovable) return { type: "illegal" };
     return { type: "noop" };
   }
 
