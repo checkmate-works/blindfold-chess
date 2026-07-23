@@ -10,6 +10,8 @@ describe("classifyMoveAttempt", () => {
   it("maps candidate count to illegal-clear / move / promotion", () => {
     expect(classifyMoveAttempt("e2", "e5", [])).toEqual({
       type: "illegal-clear",
+      from: "e2",
+      to: "e5",
     });
     expect(classifyMoveAttempt("e2", "e4", ["e4"])).toEqual({
       type: "move",
@@ -119,7 +121,7 @@ describe("classifyBoardClick — with selection", () => {
         obfuscated: true,
         findCandidates: () => [],
       }),
-    ).toEqual({ type: "illegal-clear" });
+    ).toEqual({ type: "illegal-clear", from: "e2", to: "d2" });
   });
 
   it("normal: another movable piece reselects silently", () => {
@@ -146,7 +148,7 @@ describe("classifyBoardClick — with selection", () => {
           obfuscated: false,
           findCandidates: () => [],
         }),
-      ).toEqual({ type: "illegal-clear" });
+      ).toEqual({ type: "illegal-clear", from: "e2", to: "e5" });
     }
   });
 });

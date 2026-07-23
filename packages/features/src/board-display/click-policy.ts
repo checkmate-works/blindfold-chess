@@ -12,6 +12,9 @@ import type { PieceColor } from "./types";
  * - `illegal` — count one illegal-move attempt; selection is unchanged
  *   (the obfuscated "mis-grab an opponent piece as the first tap" case).
  * - `illegal-clear` — count one illegal-move attempt and clear the selection.
+ *   Carries the attempted `from`/`to` squares so the caller can record *which*
+ *   move was rejected (there is a real source + destination here, unlike the
+ *   payload-less first-tap `illegal`).
  * - `move` — exactly one legal candidate; emit it.
  * - `promotion` — several candidates for the same (from, to) pair (one per
  *   promotion piece); surface the promotion picker and defer the emit.
@@ -21,7 +24,7 @@ export type BoardClickAction<M> =
   | { type: "select"; square: string }
   | { type: "deselect" }
   | { type: "illegal" }
-  | { type: "illegal-clear" }
+  | { type: "illegal-clear"; from: string; to: string }
   | { type: "move"; move: M }
   | { type: "promotion"; from: string; to: string; candidates: M[] };
 
@@ -37,7 +40,7 @@ export function classifyMoveAttempt<M>(
   to: string,
   candidates: M[],
 ): BoardClickAction<M> {
-  if (candidates.length === 0) return { type: "illegal-clear" };
+  if (candidates.length === 0) return { type: "illegal-clear", from, to };
   if (candidates.length === 1) return { type: "move", move: candidates[0] };
   return { type: "promotion", from, to, candidates };
 }
@@ -90,10 +93,11 @@ export function classifyBoardClick<M>(params: {
     return classifyMoveAttempt(selectedSquare, square, candidates);
   }
 
-  if (obfuscated) return { type: "illegal-clear" };
+  if (obfuscated)
+    return { type: "illegal-clear", from: selectedSquare, to: square };
 
   // Normal display: reselect another movable piece silently; anything else
   // is a genuine illegal attempt.
   if (clickedMovable) return { type: "select", square };
-  return { type: "illegal-clear" };
+  return { type: "illegal-clear", from: selectedSquare, to: square };
 }
