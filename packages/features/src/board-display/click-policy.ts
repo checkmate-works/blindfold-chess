@@ -43,23 +43,28 @@ export function classifyMoveAttempt<M>(
 }
 
 /**
- * The click-to-move state machine, including the blindfold illegal-attempt
- * counting policy.
+ * The click-to-move state machine, including the illegal-attempt counting
+ * policy. Independent of whether the board is obfuscated (discs / single-colour
+ * / hidden pieces): tapping a piece is a *selection*, and selection intent does
+ * not change with how the piece is drawn.
  *
- * What counts as a mistake depends on whether obfuscation is active:
+ * What counts as an illegal attempt (the lichess / chess.com idiom, applied in
+ * every display mode):
  *
- * - Obfuscated: the player can't tell pieces apart, so counting is aggressive
- *   once a piece is selected — ANY non-legal target counts: illegal square,
- *   capturing one's own piece, an uncapturable opponent, or an
- *   (absolutely-pinned) piece the engine rejects. There is no reselect idiom.
- * - Normal display: the lichess / chess.com idiom holds — clicking another
- *   movable piece reselects (not counted); only an illegal empty / opponent
- *   destination after a selection counts.
+ * - A tap on another own movable piece is a (re)selection — changing WHICH
+ *   piece to move — never a mistake. This covers "I picked up the d-pawn, then
+ *   changed my mind and tapped my knight": a change of intent, not an illegal
+ *   move onto one's own piece.
+ * - Only a tap on a real destination (an empty square or an opponent piece)
+ *   that no legal move reaches counts as one illegal attempt.
  *
- * A *first* tap (nothing selected yet) is never counted in either mode: an
- * empty square or a mis-grabbed opponent piece is indistinguishable from a
- * misclick, and — unlike a completed from→to attempt — names no move to
- * record. Only a real source + destination becomes an illegal-move attempt.
+ * A *first* tap (nothing selected yet) is never counted: an empty square or a
+ * mis-grabbed opponent piece is indistinguishable from a misclick and names no
+ * move. Only a completed source → destination attempt counts.
+ *
+ * Drag-and-drop is classified separately by {@link classifyMoveAttempt}: a drag
+ * is a committed from→to gesture, so dropping onto one's own piece IS a counted
+ * illegal attempt there — there is no reselect semantics mid-drag.
  *
  * `findCandidates` is invoked lazily, only when a selection exists and the
  * click might complete a move.
@@ -71,11 +76,9 @@ export function classifyBoardClick<M>(params: {
   pieceColor: PieceColor | null;
   /** The color the user is allowed to pick up (own color, or side to move). */
   movableColor: PieceColor;
-  obfuscated: boolean;
   findCandidates: (from: string, to: string) => M[];
 }): BoardClickAction<M> {
-  const { square, selectedSquare, pieceColor, movableColor, obfuscated } =
-    params;
+  const { square, selectedSquare, pieceColor, movableColor } = params;
   const clickedMovable = pieceColor !== null && pieceColor === movableColor;
 
   if (selectedSquare === null) {
@@ -94,11 +97,9 @@ export function classifyBoardClick<M>(params: {
     return classifyMoveAttempt(selectedSquare, square, candidates);
   }
 
-  if (obfuscated)
-    return { type: "illegal-clear", from: selectedSquare, to: square };
-
-  // Normal display: reselect another movable piece silently; anything else
-  // is a genuine illegal attempt.
+  // Reselect another own movable piece silently — a change of which piece to
+  // move, not a move attempt. Anything else (empty square / opponent piece) is
+  // a real destination that no legal move reached: a genuine illegal attempt.
   if (clickedMovable) return { type: "select", square };
   return { type: "illegal-clear", from: selectedSquare, to: square };
 }

@@ -34,29 +34,24 @@ describe("classifyBoardClick — no selection", () => {
         selectedSquare: null,
         pieceColor: "w",
         movableColor: "w",
-        obfuscated: false,
         findCandidates: never,
       }),
     ).toEqual({ type: "select", square: "e2" });
   });
 
-  it("never counts a first tap on a non-movable piece — even obfuscated", () => {
+  it("never counts a first tap on a non-movable (opponent) piece", () => {
     // A first tap on the opponent's piece names no move (there is no source →
     // destination yet) and is indistinguishable from a misclick, so it is a
-    // no-op in both modes rather than a counted illegal attempt.
-    const base = {
-      square: "e7",
-      selectedSquare: null,
-      pieceColor: "b" as const,
-      movableColor: "w" as const,
-      findCandidates: never,
-    };
-    expect(classifyBoardClick({ ...base, obfuscated: true })).toEqual({
-      type: "noop",
-    });
-    expect(classifyBoardClick({ ...base, obfuscated: false })).toEqual({
-      type: "noop",
-    });
+    // no-op rather than a counted illegal attempt.
+    expect(
+      classifyBoardClick({
+        square: "e7",
+        selectedSquare: null,
+        pieceColor: "b",
+        movableColor: "w",
+        findCandidates: never,
+      }),
+    ).toEqual({ type: "noop" });
   });
 
   it("never counts a first tap on an empty square", () => {
@@ -66,7 +61,6 @@ describe("classifyBoardClick — no selection", () => {
         selectedSquare: null,
         pieceColor: null,
         movableColor: "w",
-        obfuscated: true,
         findCandidates: never,
       }),
     ).toEqual({ type: "noop" });
@@ -81,7 +75,6 @@ describe("classifyBoardClick — with selection", () => {
         selectedSquare: "e2",
         pieceColor: "w",
         movableColor: "w",
-        obfuscated: false,
         findCandidates: never,
       }),
     ).toEqual({ type: "deselect" });
@@ -94,7 +87,6 @@ describe("classifyBoardClick — with selection", () => {
         selectedSquare: "e2",
         pieceColor: null,
         movableColor: "w",
-        obfuscated: true,
         findCandidates: () => ["e4"],
       }),
     ).toEqual({ type: "move", move: "e4" });
@@ -107,40 +99,27 @@ describe("classifyBoardClick — with selection", () => {
         selectedSquare: "e7",
         pieceColor: null,
         movableColor: "w",
-        obfuscated: false,
         findCandidates: () => ["e8=Q", "e8=R"],
       }),
     ).toMatchObject({ type: "promotion", from: "e7", to: "e8" });
   });
 
-  it("obfuscated: ANY non-legal target counts and clears — no reselect idiom", () => {
-    // Even a click on another own piece counts while obfuscated.
+  it("reselects another own movable piece silently — a change of intent, never counted", () => {
+    // Tapping the d-pawn then tapping one's own knight is a change of which
+    // piece to move, not an illegal move onto one's own piece. Holds in every
+    // display mode — obfuscation does not turn a reselection into a mistake.
     expect(
       classifyBoardClick({
         square: "d2",
         selectedSquare: "e2",
         pieceColor: "w",
         movableColor: "w",
-        obfuscated: true,
-        findCandidates: () => [],
-      }),
-    ).toEqual({ type: "illegal-clear", from: "e2", to: "d2" });
-  });
-
-  it("normal: another movable piece reselects silently", () => {
-    expect(
-      classifyBoardClick({
-        square: "d2",
-        selectedSquare: "e2",
-        pieceColor: "w",
-        movableColor: "w",
-        obfuscated: false,
         findCandidates: () => [],
       }),
     ).toEqual({ type: "select", square: "d2" });
   });
 
-  it("normal: an illegal empty / opponent destination counts and clears", () => {
+  it("counts an illegal empty / opponent destination and clears", () => {
     for (const pieceColor of [null, "b" as const]) {
       expect(
         classifyBoardClick({
@@ -148,7 +127,6 @@ describe("classifyBoardClick — with selection", () => {
           selectedSquare: "e2",
           pieceColor,
           movableColor: "w",
-          obfuscated: false,
           findCandidates: () => [],
         }),
       ).toEqual({ type: "illegal-clear", from: "e2", to: "e5" });

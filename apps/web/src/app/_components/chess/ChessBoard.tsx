@@ -9,7 +9,6 @@ import {
   classifyBoardClick,
   classifyMoveAttempt,
   describeIllegalAttempt,
-  isBoardObfuscated,
   resolvePieceDisplay,
   resolveSquareHighlight,
   squareToBoardIndices,
@@ -143,23 +142,20 @@ type Props = {
    * the board only ever emits *legal* moves (via `onMove`), so illegal board
    * attempts go entirely unrecorded; wiring it lets always-visible games
    * count blindfold mistakes the same way the text / select / button input
-   * paths do. What counts depends on whether obfuscation is active (discs /
-   * single-color / hidden pieces) — see {@link obfuscated}:
+   * paths do. What counts is the lichess / chess.com idiom, applied in every
+   * display mode (obfuscation — discs / single-color / hidden pieces — does not
+   * change it; tapping a piece is a selection regardless of how it's drawn):
    *
-   * - Obfuscated: the player can't tell pieces apart, so counting is
-   *   aggressive once a piece is selected — ANY non-legal target counts:
-   *   illegal square, capturing one's own piece, an uncapturable opponent, or
-   *   an (absolutely-pinned) piece the engine rejects. There is no reselect
-   *   idiom.
-   * - Normal display: the lichess / chess.com idiom holds — clicking another
-   *   own piece reselects (not counted); only an illegal empty / opponent
-   *   destination after a selection counts.
+   * - Clicking another own piece after a selection reselects it (a change of
+   *   which piece to move) — never counted, even when obfuscated.
+   * - Only an illegal empty / opponent destination after a selection counts.
    *
-   * A *first* tap (nothing selected yet) is never counted in either mode — a
-   * mis-grabbed opponent piece or an empty square is indistinguishable from a
-   * misclick and names no move. Only a completed source → destination attempt
-   * counts: a drag-drop always does (it can only start on a movable piece),
-   * and a click-to-move after a selection does.
+   * A *first* tap (nothing selected yet) is never counted — a mis-grabbed
+   * opponent piece or an empty square is indistinguishable from a misclick and
+   * names no move. Only a completed source → destination attempt counts: a
+   * drag-drop always does (it can only start on a movable piece, and a drop
+   * onto one's own piece is a committed — if illegal — gesture), and a
+   * click-to-move onto an illegal empty / opponent destination does.
    *
    * That attempt is passed as a SAN-like string (`Nf3`, `exd5`) so callers can
    * record *which* move was illegal, matching the text-input path. (The
@@ -255,7 +251,6 @@ export const ChessBoard = memo(function ChessBoard({
       hiddenPieceStyle,
     ]
   );
-  const obfuscated = isBoardObfuscated(displaySettings);
   const destinationsObscured = areDestinationsObscured(displaySettings);
 
   const board = useMemo(() => {
@@ -484,12 +479,11 @@ export const ChessBoard = memo(function ChessBoard({
           selectedSquare,
           pieceColor: pieceAt(square)?.color ?? null,
           movableColor: movableColorChar,
-          obfuscated,
           findCandidates: (from, to) => findLegalMovesByCoords(fen, from, to),
         })
       );
     },
-    [onMove, fen, movableColorChar, pieceAt, selectedSquare, obfuscated, applyClickAction]
+    [onMove, fen, movableColorChar, pieceAt, selectedSquare, applyClickAction]
   );
 
   const handleBoardClick = useCallback(

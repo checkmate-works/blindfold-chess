@@ -422,7 +422,7 @@ describe('ChessBoard interactive mode — illegal-move reporting (onIllegalMove)
   });
 });
 
-describe('ChessBoard interactive mode — obfuscated counting (single-color / discs)', () => {
+describe('ChessBoard interactive mode — obfuscation does not change click counting (single-color / discs)', () => {
   // A position where White's d-bishop on e2 is absolutely pinned to the king
   // on e1 by the black rook on e8 — moving it sideways is illegal.
   const PIN_FEN = '4r2k/8/8/8/8/8/4B3/4K3 w - - 0 1';
@@ -465,7 +465,10 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
     expect(onIllegalMove).not.toHaveBeenCalled();
   });
 
-  it('counts trying to capture one own piece after a selection (no reselect in blindfold)', () => {
+  it('reselects another own piece after a selection instead of counting it (change of intent)', () => {
+    // Regression: playing White, tap the d-pawn (intending d4), then change
+    // your mind to the Réti and tap the g1 knight. Tapping one's own piece is a
+    // reselection, NOT an illegal "dxg1" — even while obfuscated (white-only).
     const onMove = vi.fn();
     const onIllegalMove = vi.fn();
     const { container } = render(
@@ -478,12 +481,14 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
       />
     );
 
-    fireEvent.click(squareEl(container, 'e2')); // select own pawn
-    fireEvent.click(squareEl(container, 'd2')); // another own piece — illegal "capture"
+    fireEvent.click(squareEl(container, 'd2')); // select own d-pawn
+    fireEvent.click(squareEl(container, 'g1')); // changed mind → tap own knight
 
-    // Diagonal pawn attempt onto an occupied square → pawn-capture SAN-like.
-    expect(onIllegalMove).toHaveBeenCalledExactlyOnceWith('exd2');
-    expect(onMove).not.toHaveBeenCalled();
+    expect(onIllegalMove).not.toHaveBeenCalled();
+
+    // The knight is now the selection: playing Nf3 goes straight through.
+    fireEvent.click(squareEl(container, 'f3'));
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('Nf3');
   });
 
   it('counts trying to move an absolutely-pinned piece', () => {
