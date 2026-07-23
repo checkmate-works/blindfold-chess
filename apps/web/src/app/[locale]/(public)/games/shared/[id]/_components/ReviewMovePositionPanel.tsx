@@ -1,6 +1,5 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -8,8 +7,7 @@ import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
-import { OpsRowsList } from '@/app/[locale]/(public)/games/play/_components/OpsRowsList';
-import { buildOpsRows, hasOps } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
+import { MoveOpsDetail } from '@/app/[locale]/(public)/games/play/_components/MoveOpsDetail';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -63,29 +61,15 @@ export function ReviewMovePositionPanel({
    */
   moveOperationLog: MoveOperationLog | null;
 }) {
-  const t = useTranslations('play');
-  const opsRows =
-    moveOperationLog && hasOps(moveOperationLog)
-      ? buildOpsRows(moveOperationLog, {
-          peek: t('operationLog.columnPeek'),
-          undo: t('operationLog.columnUndo'),
-          hints: t('operationLog.columnMovePeek'),
-          invalid: t('operationLog.columnInvalid'),
-        })
-      : [];
-
   return (
     <div className="space-y-4">
       <SectionTitle>{title}</SectionTitle>
 
       {/* This move's aid-usage stats — most notably what SAN the player
           actually tried when an illegal-move attempt was rejected here.
-          Omitted when the move has nothing notable (the common case). */}
-      {opsRows.length > 0 && (
-        <div className="rounded-md border border-border bg-card overflow-hidden text-sm">
-          <OpsRowsList rows={opsRows} />
-        </div>
-      )}
+          Self-hiding when the move has nothing notable (the common case).
+          Shared verbatim with the local result screen (see MoveOpsDetail). */}
+      <MoveOpsDetail moveOperationLog={moveOperationLog} />
 
       {/* Author something from the position currently on the board —
           chunk / position-memory / puzzle. Signed-in only, mirroring the
