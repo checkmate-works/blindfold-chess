@@ -24,6 +24,7 @@ import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
+import { MoveOpsDetail } from '@/app/[locale]/(public)/games/play/_components/MoveOpsDetail';
 import { MovesPanel } from '@/app/[locale]/(public)/games/play/_components/MovesPanel';
 import {
   useBoardFlip,
@@ -497,6 +498,18 @@ export function GameReview({
       {social.mode === 'local' ? (
         <div className="space-y-4">
           {children}
+
+          {/* This move's aid-usage detail — the SAME block the shared game shows
+              in its per-move panel — so a rejected (illegal) board move surfaces
+              *which* move was tried here too, before the game is published, not
+              only its count. Self-hiding on moves with nothing notable, so the
+              overview layout below is unchanged in the common case. */}
+          {currentPly != null && (
+            <MoveOpsDetail
+              title={moveLabel ?? t('comments.title')}
+              moveOperationLog={currentMoveOperationLog}
+            />
+          )}
 
           <ReviewOverviewTabs
             active={overview.overviewView}
