@@ -134,7 +134,17 @@ export default async function CoinsPage({ params }: Props) {
                           {dateFmt(row.createdAt)}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-foreground">{t(`history.kind.${row.kind}`)}</span>
+                          {row.href ? (
+                            <Link
+                              href={row.href}
+                              locale={locale}
+                              className="text-foreground underline underline-offset-2 hover:opacity-80"
+                            >
+                              {t(`history.kind.${row.kind}`)}
+                            </Link>
+                          ) : (
+                            <span className="text-foreground">{t(`history.kind.${row.kind}`)}</span>
+                          )}
                         </td>
                         <td
                           className={`px-4 py-3 text-right font-mono ${
