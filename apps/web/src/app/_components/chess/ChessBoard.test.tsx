@@ -327,7 +327,8 @@ describe('ChessBoard interactive mode — illegal-move reporting (onIllegalMove)
     fireEvent.click(squareEl(container, 'e5')); // illegal (two squares too far)
 
     expect(onMove).not.toHaveBeenCalled();
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    // Same-file pawn push → bare-destination SAN-like label.
+    expect(onIllegalMove).toHaveBeenCalledExactlyOnceWith('e5');
   });
 
   it('does not fire onIllegalMove when reselecting another own piece', () => {
@@ -400,7 +401,7 @@ describe('ChessBoard interactive mode — illegal-move reporting (onIllegalMove)
     dragPiece(container, 'e2', 'e5'); // illegal advance
 
     expect(onMove).not.toHaveBeenCalled();
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    expect(onIllegalMove).toHaveBeenCalledExactlyOnceWith('e5');
   });
 
   it('does not fire onIllegalMove when a drag is dropped back on its origin', () => {
@@ -478,7 +479,8 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
     fireEvent.click(squareEl(container, 'e2')); // select own pawn
     fireEvent.click(squareEl(container, 'd2')); // another own piece — illegal "capture"
 
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    // Diagonal pawn attempt onto an occupied square → pawn-capture SAN-like.
+    expect(onIllegalMove).toHaveBeenCalledExactlyOnceWith('exd2');
     expect(onMove).not.toHaveBeenCalled();
   });
 
@@ -498,7 +500,8 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
     fireEvent.click(squareEl(container, 'e2')); // select the pinned bishop
     fireEvent.click(squareEl(container, 'd3')); // would be legal if not pinned
 
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    // Bishop to an empty square → piece SAN-like, no capture mark.
+    expect(onIllegalMove).toHaveBeenCalledExactlyOnceWith('Bd3');
     expect(onMove).not.toHaveBeenCalled();
   });
 

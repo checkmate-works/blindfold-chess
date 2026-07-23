@@ -8,6 +8,7 @@ import {
   areDestinationsObscured,
   classifyBoardClick,
   classifyMoveAttempt,
+  describeIllegalAttempt,
   isBoardObfuscated,
   resolvePieceDisplay,
   resolveSquareHighlight,
@@ -157,8 +158,14 @@ type Props = {
    *   destination after a selection counts.
    *
    * Drag-and-drop always counts a drop onto a non-legal square in either mode.
+   *
+   * When the attempt has a real source + destination (a drag-drop, or a
+   * click-to-move after a selection), the rejected move is passed as a
+   * SAN-like string (`Nf3`, `exd5`) so callers can record *which* move was
+   * illegal, matching the text-input path. The payload-less first-tap mis-grab
+   * fires with no argument (there is no destination to name).
    */
-  onIllegalMove?: () => void;
+  onIllegalMove?: (attempt?: string) => void;
   /**
    * Which pieces the user may pick up in interactive mode (drag / tap / click
    * selection):
@@ -313,10 +320,22 @@ export const ChessBoard = memo(function ChessBoard({
         case 'illegal':
           onIllegalMove?.();
           return;
-        case 'illegal-clear':
-          onIllegalMove?.();
+        case 'illegal-clear': {
+          // A real from→to attempt (drag-drop, or click-to-move after a
+          // selection): render it as a SAN-like label so the recorder logs
+          // which move was rejected, not just a bare count.
+          const mover = pieceAt(action.from);
+          onIllegalMove?.(
+            describeIllegalAttempt({
+              from: action.from,
+              to: action.to,
+              moverType: mover?.type ?? null,
+              targetOccupied: pieceAt(action.to) !== null,
+            })
+          );
           setSelectedSquare(null);
           return;
+        }
         case 'move':
           onMove?.(action.move.san);
           setSelectedSquare(null);
@@ -331,7 +350,7 @@ export const ChessBoard = memo(function ChessBoard({
           return;
       }
     },
-    [onMove, onIllegalMove]
+    [onMove, onIllegalMove, pieceAt]
   );
 
   // Attempt to complete a move from `from` to `to` (the drag-drop path).
