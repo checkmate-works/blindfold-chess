@@ -23,6 +23,7 @@ import {
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
+import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -30,7 +31,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../../_actions/toggleLike';
 import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
-import type { PositionActionsMenuItem } from '../../_components/PositionActionsMenu';
 import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
@@ -152,7 +152,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     />
   );
 
-  const menuItems: PositionActionsMenuItem[] = [
+  const menuItems: ActionsMenuItem[] = [
     ...(currentUser?.id === position.userId
       ? [
           {

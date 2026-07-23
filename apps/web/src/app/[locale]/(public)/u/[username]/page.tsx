@@ -155,6 +155,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             followingCount: t('followingCount'),
             followers: t('followers'),
             bio: t('bio'),
+            moreActions: t('moreActions'),
+            block: t('block'),
           }}
         />
         {/* Topics / Problems / Games Tabs */}

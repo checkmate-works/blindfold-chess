@@ -9,10 +9,7 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 import { getSharedGameByPublishedId, removeSharedGame } from '@/lib/games/shared-game-store';
 
-import {
-  PositionActionsMenu,
-  PositionActionsMenuButton,
-} from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
+import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deleteSharedGameAction } from '../_actions/manage-shared-game';
@@ -77,7 +74,7 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
 
   return (
     <>
-      <PositionActionsMenu
+      <ActionsMenu
         ariaLabel={t('detail.moreActions')}
         items={[
           {
@@ -88,7 +85,7 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
           },
         ]}
       >
-        <PositionActionsMenuButton
+        <ActionsMenuButton
           tone="danger"
           onClick={() => {
             setError(null);
@@ -98,8 +95,8 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
         >
           <FiTrash2 className="h-4 w-4" aria-hidden />
           {pending ? t('detail.deleting') : t('detail.delete')}
-        </PositionActionsMenuButton>
-      </PositionActionsMenu>
+        </ActionsMenuButton>
+      </ActionsMenu>
 
       <ConfirmationModal
         isOpen={confirmOpen}

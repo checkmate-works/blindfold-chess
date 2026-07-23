@@ -1,6 +1,8 @@
 import { Link } from '@/i18n/routing';
+import { FiEdit2, FiSlash } from 'react-icons/fi';
 
 import { LinkedText } from '@/app/[locale]/_components';
+import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -38,6 +40,8 @@ type Props = {
     followingCount: string;
     followers: string;
     bio: string;
+    moreActions: string;
+    block: string;
   };
 };
 
@@ -68,13 +72,17 @@ export function ProfileIdentitySection({
         locale={locale}
         action={
           isOwnProfile ? (
-            <Link
-              href="/mypage/profile"
-              locale={locale}
-              className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-            >
-              {labels.editProfile}
-            </Link>
+            <ActionsMenu
+              ariaLabel={labels.moreActions}
+              items={[
+                {
+                  key: 'edit',
+                  label: labels.editProfile,
+                  href: `/${locale}/mypage/profile`,
+                  icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
+                },
+              ]}
+            />
           ) : (
             <>
               {followedByProfile && (
@@ -88,6 +96,19 @@ export function ProfileIdentitySection({
                 initialFollowing={initialFollowing}
                 isAuthenticated={isAuthenticated}
               />
+              {isAuthenticated && (
+                <ActionsMenu
+                  ariaLabel={labels.moreActions}
+                  items={[
+                    {
+                      key: 'block',
+                      label: labels.block,
+                      href: `/${locale}/u/${profile.username}/block`,
+                      icon: <FiSlash className="h-4 w-4" aria-hidden />,
+                    },
+                  ]}
+                />
+              )}
             </>
           )
         }

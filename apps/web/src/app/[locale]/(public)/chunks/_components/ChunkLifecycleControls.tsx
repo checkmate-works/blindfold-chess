@@ -9,7 +9,7 @@ import { FiSend } from 'react-icons/fi';
 
 import type { ChunkStatus } from '@/lib/chunks/validation';
 
-import { PositionActionsMenuButton } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
+import { ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { publishChunk } from '../_actions/publishChunk';
@@ -45,7 +45,7 @@ type Props = {
 
 /**
  * Owner-side Publish entry for the chunk detail page's "⋯" overflow menu
- * (`PositionActionsMenu`).
+ * (`ActionsMenu`).
  *
  * Renders only when the chunk is still in draft. Publish is a one-way
  * transition; the only way out of `published` afterwards is soft
@@ -90,13 +90,13 @@ export function ChunkLifecycleControls({ chunkId, chunkSlug, status, hasDescript
 
   return (
     <>
-      <PositionActionsMenuButton
+      <ActionsMenuButton
         onClick={() => setModal(hasDescription ? 'publish' : 'needsDescription')}
         disabled={pending}
       >
         <FiSend className="h-4 w-4" aria-hidden />
         {pending ? t('actions.publishPending') : t('actions.publish')}
-      </PositionActionsMenuButton>
+      </ActionsMenuButton>
 
       <ConfirmationModal
         isOpen={modal === 'publish'}

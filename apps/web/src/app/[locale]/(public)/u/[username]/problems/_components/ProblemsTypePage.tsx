@@ -121,6 +121,8 @@ export async function ProblemsTypePage({
             followingCount: t('followingCount'),
             followers: t('followers'),
             bio: t('bio'),
+            moreActions: t('moreActions'),
+            block: t('block'),
           }}
         />
 
