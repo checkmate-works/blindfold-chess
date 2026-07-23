@@ -40,6 +40,8 @@
     "form": {
       "nameLabel": "名前",
       "namePlaceholder": "例：ナイドルフ（黒）",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "この型の説明 — 何を扱うか、誰向けか…",
       "sideLabel": "自分の手番",
       "side_white": "白",
       "side_black": "黒",

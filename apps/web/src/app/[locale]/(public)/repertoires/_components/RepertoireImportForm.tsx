@@ -16,7 +16,7 @@ import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
-import { REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
+import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 
@@ -70,6 +70,7 @@ export function RepertoireImportForm({
   const router = useRouter();
 
   const [name, setName] = useState(initialName ?? '');
+  const [description, setDescription] = useState('');
   const [side, setSide] = useState<RepertoireSide>(initialSide ?? 'white');
   const [phase, setPhase] = useState<RepertoirePhase>('opening');
   const [openingIds, setOpeningIds] = useState<string[]>([]);
@@ -98,7 +99,10 @@ export function RepertoireImportForm({
     Object.values(shapes).some((s) => !isEmptyBoardAnnotations(s));
   const isDirty =
     !submitted &&
-    (name !== (initialName ?? '') || pgn !== (initialPgn ?? '') || hasAnnotationDrafts);
+    (name !== (initialName ?? '') ||
+      description !== '' ||
+      pgn !== (initialPgn ?? '') ||
+      hasAnnotationDrafts);
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   // Once the author picks or removes an opening by hand, the PGN stops driving
@@ -133,6 +137,7 @@ export function RepertoireImportForm({
 
     const result = await createRepertoire({
       name,
+      description,
       side,
       phase,
       pgn,
@@ -168,6 +173,24 @@ export function RepertoireImportForm({
           placeholder={t('form.namePlaceholder')}
           maxLength={REPERTOIRE_NAME_MAX}
           className="mt-1"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="repertoire-description"
+          className="block text-sm font-medium text-foreground"
+        >
+          {t('form.descriptionLabel')}
+        </label>
+        <Textarea
+          id="repertoire-description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          maxLength={REPERTOIRE_DESCRIPTION_MAX}
+          placeholder={t('form.descriptionPlaceholder')}
+          className="mt-1 w-full"
         />
       </div>
 

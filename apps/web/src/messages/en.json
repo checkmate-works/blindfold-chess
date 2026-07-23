@@ -40,6 +40,8 @@
     "form": {
       "nameLabel": "Name",
       "namePlaceholder": "e.g. Najdorf (Black)",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe this kata — what it covers, who it is for…",
       "sideLabel": "Your side",
       "side_white": "White",
       "side_black": "Black",

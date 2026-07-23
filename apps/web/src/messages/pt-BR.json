@@ -40,6 +40,8 @@
     "form": {
       "nameLabel": "Nome",
       "namePlaceholder": "ex.: Najdorf (Pretas)",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder": "Descreva este kata — o que cobre, para quem é…",
       "sideLabel": "Seu lado",
       "side_white": "Brancas",
       "side_black": "Pretas",
