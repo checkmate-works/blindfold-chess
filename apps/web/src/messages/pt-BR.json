@@ -4559,6 +4559,8 @@
     "block": "Bloquear",
     "unblock": "Desbloquear",
     "blockedBadge": "Bloqueado",
+    "blockedNoticeByYou": "Você bloqueou este usuário. As publicações e partidas ficam ocultas enquanto o bloqueio estiver ativo.",
+    "blockedNoticeByThem": "Este conteúdo não está disponível.",
     "blockPageTitle": "Bloquear {displayName}",
     "blockSectionTitle": "Confirmação",
     "blockDescription": "Você está prestes a bloquear {displayName}. Essa pessoa não poderá seguir você nem enviar notificações.",

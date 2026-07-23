@@ -14,6 +14,8 @@ export type ProfileShellData = {
   followedByProfile: boolean;
   /** Whether the current viewer has blocked this profile. */
   viewerHasBlocked: boolean;
+  /** Whether this profile has blocked the current viewer. */
+  blockedByProfile: boolean;
   followerCount: number;
   followingCount: number;
   /**
@@ -68,6 +70,9 @@ export async function loadProfileShellData({
   const viewerHasBlockedPromise =
     currentUserId && !isOwnProfile ? hasBlocked(currentUserId, profileId) : Promise.resolve(false);
 
+  const blockedByProfilePromise =
+    currentUserId && !isOwnProfile ? hasBlocked(profileId, currentUserId) : Promise.resolve(false);
+
   const followerCountPromise = db
     .select({ count: count() })
     .from(userFollows)
@@ -86,6 +91,7 @@ export async function loadProfileShellData({
     existingFollowRows,
     reverseFollowRows,
     viewerHasBlocked,
+    blockedByProfile,
     [followerResult],
     [followingResult],
     allPosts,
@@ -96,6 +102,7 @@ export async function loadProfileShellData({
     followCheckPromise,
     reverseFollowCheckPromise,
     viewerHasBlockedPromise,
+    blockedByProfilePromise,
     followerCountPromise,
     followingCountPromise,
     getPostsByUserId(profileId, currentUserId),
@@ -108,6 +115,7 @@ export async function loadProfileShellData({
     initialFollowing: !!existingFollowRows[0],
     followedByProfile: !!reverseFollowRows[0],
     viewerHasBlocked,
+    blockedByProfile,
     followerCount: followerResult.count,
     followingCount: followingResult.count,
     allPosts,

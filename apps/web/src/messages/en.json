@@ -4559,6 +4559,8 @@
     "block": "Block",
     "unblock": "Unblock",
     "blockedBadge": "Blocked",
+    "blockedNoticeByYou": "You've blocked this user. Their posts and games are hidden while the block is active.",
+    "blockedNoticeByThem": "This content isn't available.",
     "blockPageTitle": "Block {displayName}",
     "blockSectionTitle": "Confirmation",
     "blockDescription": "You're about to block {displayName}. They won't be able to follow you or send you notifications.",

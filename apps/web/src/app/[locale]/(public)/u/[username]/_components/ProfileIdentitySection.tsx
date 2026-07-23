@@ -33,6 +33,12 @@ type Props = {
   initialFollowing: boolean;
   followedByProfile: boolean;
   viewerHasBlocked: boolean;
+  /**
+   * A block exists in either direction. Collapses the profile to a bare
+   * identity header (no follow control, stats, social links, or bio) — the
+   * page renders a "content hidden" notice in place of the tabs.
+   */
+  restricted?: boolean;
   followerCount: number;
   followingCount: number;
   labels: {
@@ -61,6 +67,7 @@ export function ProfileIdentitySection({
   initialFollowing,
   followedByProfile,
   viewerHasBlocked,
+  restricted = false,
   followerCount,
   followingCount,
   labels,
@@ -94,13 +101,13 @@ export function ProfileIdentitySection({
                   {labels.blockedBadge}
                 </span>
               )}
-              {!viewerHasBlocked && followedByProfile && (
+              {!restricted && followedByProfile && (
                 <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
                   {labels.followsYou}
                 </span>
               )}
-              {/* Blocking severs the follow graph, so Follow is hidden while blocked. */}
-              {!viewerHasBlocked && (
+              {/* A block (either direction) severs the follow graph, so Follow is hidden. */}
+              {!restricted && (
                 <FollowButton
                   targetUsername={profile.username}
                   locale={locale}
@@ -126,43 +133,48 @@ export function ProfileIdentitySection({
         }
       />
 
-      <p className="text-sm text-muted-foreground">
-        {isOwnProfile && (
-          <>
-            <Link href="/mypage/following" locale={locale} className={TEXT_LINK_CLASSES}>
-              <span className="font-semibold text-foreground">{followingCount}</span>{' '}
-              {labels.followingCount}
+      {!restricted && (
+        <>
+          <p className="text-sm text-muted-foreground">
+            {isOwnProfile && (
+              <>
+                <Link href="/mypage/following" locale={locale} className={TEXT_LINK_CLASSES}>
+                  <span className="font-semibold text-foreground">{followingCount}</span>{' '}
+                  {labels.followingCount}
+                </Link>
+                <span className="mx-2" />
+              </>
+            )}
+            <Link
+              href={`/u/${profile.username}/followers`}
+              locale={locale}
+              className={TEXT_LINK_CLASSES}
+            >
+              <span className="font-semibold text-foreground">{followerCount}</span>{' '}
+              {labels.followers}
             </Link>
-            <span className="mx-2" />
-          </>
-        )}
-        <Link
-          href={`/u/${profile.username}/followers`}
-          locale={locale}
-          className={TEXT_LINK_CLASSES}
-        >
-          <span className="font-semibold text-foreground">{followerCount}</span> {labels.followers}
-        </Link>
-      </p>
-
-      <SocialLinks
-        fideId={profile.fideId}
-        chesscomUsername={profile.chesscomUsername}
-        lichessUsername={profile.lichessUsername}
-        xUsername={profile.xUsername}
-        instagramUsername={profile.instagramUsername}
-        youtubeHandle={profile.youtubeHandle}
-      />
-
-      {profile.bio && (
-        <div className="space-y-3">
-          <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
-            {labels.bio}
-          </h2>
-          <p className="text-foreground whitespace-pre-wrap break-words">
-            <LinkedText text={profile.bio} locale={locale} />
           </p>
-        </div>
+
+          <SocialLinks
+            fideId={profile.fideId}
+            chesscomUsername={profile.chesscomUsername}
+            lichessUsername={profile.lichessUsername}
+            xUsername={profile.xUsername}
+            instagramUsername={profile.instagramUsername}
+            youtubeHandle={profile.youtubeHandle}
+          />
+
+          {profile.bio && (
+            <div className="space-y-3">
+              <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
+                {labels.bio}
+              </h2>
+              <p className="text-foreground whitespace-pre-wrap break-words">
+                <LinkedText text={profile.bio} locale={locale} />
+              </p>
+            </div>
+          )}
+        </>
       )}
     </>
   );
