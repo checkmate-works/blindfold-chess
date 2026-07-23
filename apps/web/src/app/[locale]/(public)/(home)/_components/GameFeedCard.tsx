@@ -46,6 +46,7 @@ export const GameFeedCard = memo(function GameFeedCard({
           fen={data.fen}
           className="w-full h-full"
           boardTheme={preferences.boardTheme}
+          displaySettings={data.thumbnailDisplay}
         />
       }
       author={

@@ -274,6 +274,7 @@ describe('FeedCard', () => {
         id: 'game-1',
         title: 'Stockfish Lv 5 — Win',
         fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        thumbnailDisplay: null,
         result: 'win',
         createdAt: '2025-01-15T10:00:00.000Z',
         author: {

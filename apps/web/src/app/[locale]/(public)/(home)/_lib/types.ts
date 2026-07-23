@@ -19,6 +19,8 @@
  * `true` when the user's first-ever score for a leaderboard key is recorded;
  * `false` when an existing best score is surpassed.
  */
+import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
+
 import type { PositionType } from '@/lib/positions/types';
 
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
@@ -151,6 +153,12 @@ export type GameFeedData = {
   id: string;
   title: string;
   fen: string;
+  /**
+   * Blindfold "as played" treatment for the thumbnail, folded from the game's
+   * start-of-game play-settings snapshot; null for legacy / fully-sighted games
+   * (plain thumbnail). See {@link playSettingsToThumbnailDisplay}.
+   */
+  thumbnailDisplay: BlindfoldDisplaySettings | null;
   result: 'win' | 'loss' | 'draw';
   createdAt: string; // ISO 8601
   author: {

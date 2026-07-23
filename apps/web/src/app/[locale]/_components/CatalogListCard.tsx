@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
+import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
@@ -24,6 +25,13 @@ type Props = {
   id: string;
   /** FEN rendered as the thumbnail. */
   fen: string;
+  /**
+   * Optional blindfold "as played" treatment for the thumbnail — passed
+   * through to {@link ThemedBoardThumbnail}. Game cards build it from the
+   * game's play settings so the preview reflects how it was played (ghosts /
+   * stones / single colour); non-game cards (positions, chunks, kata) omit it.
+   */
+  thumbnailDisplaySettings?: BlindfoldDisplaySettings | null;
   /** Card title. */
   title: string;
   /** Optional body text. Truncated for the card excerpt. */
@@ -114,6 +122,7 @@ type Props = {
 export function CatalogListCard({
   id,
   fen,
+  thumbnailDisplaySettings = null,
   title,
   description,
   createdAt,
@@ -139,7 +148,13 @@ export function CatalogListCard({
       variant="card"
       href={detailHref}
       locale={locale}
-      thumbnail={<ThemedBoardThumbnail fen={fen} className="w-full h-full" />}
+      thumbnail={
+        <ThemedBoardThumbnail
+          fen={fen}
+          className="w-full h-full"
+          displaySettings={thumbnailDisplaySettings}
+        />
+      }
       author={
         <UserAvatar
           profileHref={profile?.username ? `/u/${profile.username}` : null}

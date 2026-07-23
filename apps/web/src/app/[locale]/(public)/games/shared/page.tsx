@@ -97,6 +97,7 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
               key={g.id}
               id={g.id}
               fen={g.startingFen ?? getStartingFen()}
+              thumbnailDisplaySettings={g.thumbnailDisplay}
               title={g.title}
               description={g.description}
               createdAt={g.createdAt}
