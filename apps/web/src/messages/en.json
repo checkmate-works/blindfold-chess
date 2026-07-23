@@ -3813,6 +3813,7 @@
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
     "coinsEarned": "{count, plural, one {# Coin earned!} other {# Coins earned!}}",
+    "coinsDailyCap": "You've reached today's coin earning limit. It resets at 00:00 UTC.",
     "gamePublished": "Game published",
     "gameClaimed": "The game is now linked to your account",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",

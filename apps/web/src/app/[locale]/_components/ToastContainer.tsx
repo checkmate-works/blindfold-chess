@@ -58,15 +58,17 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
   const processingToastRef = useRef(false);
 
   // Handle toast query parameters (from server-side redirects / post-create
-  // navigations). Two shapes are supported:
+  // navigations). Three shapes are supported:
   //   ?toast=<key>        — fixed message keyed by TOAST_PARAM_CONFIG
   //   ?coinsEarned=<n>    — UGC-reward toast rendered with the brand CoinIcon
-  // Both are consumed and stripped from the URL in a single history-neutral
+  //   ?coinsCapped=1      — daily-cap warning ("today's coin limit reached")
+  // All are consumed and stripped from the URL in a single history-neutral
   // replace so the reward isn't re-shown on refresh or back-navigation.
   useEffect(() => {
     const toastParam = searchParams.get('toast');
     const coinsParam = searchParams.get('coinsEarned');
-    if (!toastParam && !coinsParam) return;
+    const cappedParam = searchParams.get('coinsCapped');
+    if (!toastParam && !coinsParam && !cappedParam) return;
 
     let handled = false;
 
@@ -86,12 +88,18 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
       }
     }
 
+    if (cappedParam === '1') {
+      showToast(tToast('coinsDailyCap'), 'warning');
+      handled = true;
+    }
+
     if (!handled) return;
 
     // Strip the consumed params from the URL without adding a history entry.
     const url = new URL(window.location.href);
     url.searchParams.delete('toast');
     url.searchParams.delete('coinsEarned');
+    url.searchParams.delete('coinsCapped');
     router.replace(url.pathname + url.search, { scroll: false });
   }, [searchParams, showToast, tToast, router]);
 

@@ -3813,6 +3813,7 @@
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
     "coinsEarned": "{count} コイン獲得！",
+    "coinsDailyCap": "本日のコイン獲得上限に達しました。上限はUTC0時にリセットされます。",
     "gamePublished": "公開しました",
     "gameClaimed": "ゲームをアカウントに紐づけました",
     "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",

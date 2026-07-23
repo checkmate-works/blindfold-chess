@@ -90,6 +90,12 @@ export type CreateChunkResult =
       id: string;
       slug: string;
       pointGrant?: { pointEventId: string; amount: number };
+      /**
+       * True when the daily creation cap limited the reward — either trimmed
+       * it to a partial amount (also has `pointGrant`) or blocked it entirely
+       * (no `pointGrant`, earned 0 today). Callers append `?coinsCapped=1`.
+       */
+      coinCapped?: boolean;
     }
   | { error: string };
 
@@ -161,12 +167,12 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
         metadata: { kind: initialFeedKind, slug: chunk.slug },
       });
 
-      const pointGrant = await grantPointsForPost(tx, user.id, {
+      const grant = await grantPointsForPost(tx, user.id, {
         type: 'chunk',
         id: chunk.id,
       });
 
-      return { chunk, pointGrant };
+      return { chunk, grant };
     });
 
     dispatchChunkEvent({
@@ -177,18 +183,23 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
       initialStatus: initialFeedKind === 'published' ? 'published' : 'draft',
     });
 
+    const grant = txResult.grant;
+    const coinCapped =
+      grant.status === 'capped' || (grant.status === 'granted' && grant.cappedDaily);
+
     return {
       success: true,
       id: txResult.chunk.id,
       slug: txResult.chunk.slug,
-      ...(txResult.pointGrant
+      ...(grant.status === 'granted'
         ? {
             pointGrant: {
-              pointEventId: txResult.pointGrant.pointEventId,
-              amount: txResult.pointGrant.amount,
+              pointEventId: grant.pointEventId,
+              amount: grant.amount,
             },
           }
         : {}),
+      ...(coinCapped ? { coinCapped: true } : {}),
     };
   } catch (err) {
     // Race-window backstop: another writer claimed the slug between the

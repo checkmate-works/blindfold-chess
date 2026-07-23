@@ -167,7 +167,7 @@ describe('createPositionEntry', () => {
       deduped: { themeIds: undefined, chunkIds: undefined },
     });
     mockInsertReturning.mockResolvedValue([{ id: TEST_POSITION_ID }]);
-    mockGrantPointsForPost.mockResolvedValue(null);
+    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
     mockEvaluateRanksAfterCreate.mockResolvedValue([]);
   });
 
@@ -431,8 +431,13 @@ describe('createPositionEntry', () => {
     });
   });
 
-  it('returns the point grant when granted and omits it when capped out (null)', async () => {
-    mockGrantPointsForPost.mockResolvedValue({ pointEventId: 'pe-1', amount: 3 });
+  it('returns the point grant when fully granted (no cap flag)', async () => {
+    mockGrantPointsForPost.mockResolvedValue({
+      status: 'granted',
+      pointEventId: 'pe-1',
+      amount: 3,
+      cappedDaily: false,
+    });
 
     const { createPositionEntry } = await import('./user-position-mutations');
     const granted = await createPositionEntry(baseCreateParams);
@@ -440,14 +445,44 @@ describe('createPositionEntry', () => {
       success: true,
       pointGrant: { pointEventId: 'pe-1', amount: 3 },
     });
+    expect(granted).not.toHaveProperty('coinCapped');
     expect(mockGrantPointsForPost).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
       type: 'position_memory',
       id: TEST_POSITION_ID,
     });
+  });
 
-    mockGrantPointsForPost.mockResolvedValue(null);
+  it('flags coinCapped alongside a partial grant (cappedDaily)', async () => {
+    mockGrantPointsForPost.mockResolvedValue({
+      status: 'granted',
+      pointEventId: 'pe-1',
+      amount: 1,
+      cappedDaily: true,
+    });
+
+    const { createPositionEntry } = await import('./user-position-mutations');
+    const result = await createPositionEntry(baseCreateParams);
+    expect(result).toMatchObject({
+      success: true,
+      pointGrant: { pointEventId: 'pe-1', amount: 1 },
+      coinCapped: true,
+    });
+  });
+
+  it('flags coinCapped with no grant when fully capped out', async () => {
+    mockGrantPointsForPost.mockResolvedValue({ status: 'capped' });
+
+    const { createPositionEntry } = await import('./user-position-mutations');
     const capped = await createPositionEntry(baseCreateParams);
-    expect(capped).toEqual({ success: true, id: TEST_POSITION_ID });
+    expect(capped).toEqual({ success: true, id: TEST_POSITION_ID, coinCapped: true });
+  });
+
+  it('omits both pointGrant and coinCapped when the grant is skipped', async () => {
+    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
+
+    const { createPositionEntry } = await import('./user-position-mutations');
+    const skipped = await createPositionEntry(baseCreateParams);
+    expect(skipped).toEqual({ success: true, id: TEST_POSITION_ID });
   });
 
   it('surfaces granted belt ranks from the post-commit evaluation', async () => {

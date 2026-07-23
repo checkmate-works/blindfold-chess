@@ -99,12 +99,16 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
       flushSync(() => setSubmitted(true));
       // Land straight on the created puzzle so the author can verify it.
       // A point grant surfaces the coin reward as a toast on arrival
-      // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast.
+      // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast; a
+      // daily-cap hit adds a `?coinsCapped=1` warning toast either way.
+      const toastParams = new URLSearchParams();
       if (result.pointGrant) {
-        router.push(`/practice/puzzle/${result.id}?coinsEarned=${result.pointGrant.amount}`);
+        toastParams.set('coinsEarned', String(result.pointGrant.amount));
       } else {
-        router.push(`/practice/puzzle/${result.id}?toast=position_created`);
+        toastParams.set('toast', 'position_created');
       }
+      if (result.coinCapped) toastParams.set('coinsCapped', '1');
+      router.push(`/practice/puzzle/${result.id}?${toastParams.toString()}`);
     } catch {
       setError(t('createError'));
     } finally {

@@ -194,14 +194,16 @@ export function CreatePositionForm({
       flushSync(() => setSubmitted(true));
       // Land straight on the created position so the author can verify it.
       // A point grant surfaces the coin reward as a toast on arrival
-      // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast.
+      // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast; a
+      // daily-cap hit adds a `?coinsCapped=1` warning toast either way.
+      const toastParams = new URLSearchParams();
       if (result.pointGrant) {
-        router.push(
-          `/practice/position-memory/${result.id}?coinsEarned=${result.pointGrant.amount}`
-        );
+        toastParams.set('coinsEarned', String(result.pointGrant.amount));
       } else {
-        router.push(`/practice/position-memory/${result.id}?toast=position_created`);
+        toastParams.set('toast', 'position_created');
       }
+      if (result.coinCapped) toastParams.set('coinsCapped', '1');
+      router.push(`/practice/position-memory/${result.id}?${toastParams.toString()}`);
     } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {

@@ -100,14 +100,13 @@ export function ChunkPreviewClient() {
 
       // Land straight on the created chunk so the author can verify it.
       // A point grant surfaces the coin reward as a toast on arrival
-      // (`?coinsEarned=N`); no-grant flows navigate silently.
-      if (result.pointGrant) {
-        router.push(
-          `/chunks/${result.slug}?coinsEarned=${result.pointGrant.amount}` as '/chunks/[slug]'
-        );
-      } else {
-        router.push(`/chunks/${result.slug}` as '/chunks/[slug]');
-      }
+      // (`?coinsEarned=N`) and a daily-cap hit adds a `?coinsCapped=1` warning;
+      // an uncapped no-grant create navigates silently as before.
+      const toastParams = new URLSearchParams();
+      if (result.pointGrant) toastParams.set('coinsEarned', String(result.pointGrant.amount));
+      if (result.coinCapped) toastParams.set('coinsCapped', '1');
+      const toastQs = toastParams.toString();
+      router.push(`/chunks/${result.slug}${toastQs ? `?${toastQs}` : ''}` as '/chunks/[slug]');
     } catch {
       setError(t('createError'));
     } finally {

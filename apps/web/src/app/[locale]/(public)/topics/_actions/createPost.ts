@@ -12,6 +12,7 @@ import {
   notifyFollowersOfNewPost,
   notifyTopicAuthorOfNewComment,
 } from '@/lib/notifications/notification';
+import type { PointGrantOutcome } from '@/lib/points';
 import { grantPointsForPost, isPointEligibleTopicType } from '@/lib/points';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -79,11 +80,14 @@ type CreatePostParams = {
  * share one body. This keeps feed-item emission, point grants and
  * notifications from drifting between the two paths.
  */
-async function insertPost(
-  params: CreatePostParams
-): Promise<
+async function insertPost(params: CreatePostParams): Promise<
   | { error: string }
-  | { ok: true; postId: string; pointGrant: { pointEventId: string; amount: number } | null }
+  | {
+      ok: true;
+      postId: string;
+      pointGrant: { pointEventId: string; amount: number } | null;
+      coinCapped: boolean;
+    }
 > {
   const {
     locale,
@@ -146,8 +150,8 @@ async function insertPost(
     return { error: rateLimitResult.error };
   }
 
-  let pointGrantResult: { pointEventId: string; amount: number } | null = null;
-  const inserted = await db.transaction(async (tx) => {
+  const { post: inserted, grantOutcome } = await db.transaction(async (tx) => {
+    let outcome: PointGrantOutcome = { status: 'skipped' };
     const [post] = await tx
       .insert(topicPosts)
       .values({
@@ -177,13 +181,13 @@ async function insertPost(
     // immediately spendable. Gate is `isPointEligibleTopicType` (square /
     // opening) plus a non-empty body — rating-only and empty posts excluded.
     if (isPointEligibleTopicType(topicType) && contentResult.content.trim() !== '') {
-      pointGrantResult = await grantPointsForPost(tx, user.id, {
+      outcome = await grantPointsForPost(tx, user.id, {
         type: 'topic_post',
         id: post.id,
       });
     }
 
-    return post;
+    return { post, grantOutcome: outcome };
   });
 
   notifyFollowersOfNewPost({
@@ -207,7 +211,15 @@ async function insertPost(
     });
   }
 
-  return { ok: true, postId: inserted.id, pointGrant: pointGrantResult };
+  const pointGrant =
+    grantOutcome.status === 'granted'
+      ? { pointEventId: grantOutcome.pointEventId, amount: grantOutcome.amount }
+      : null;
+  const coinCapped =
+    grantOutcome.status === 'capped' ||
+    (grantOutcome.status === 'granted' && grantOutcome.cappedDaily);
+
+  return { ok: true, postId: inserted.id, pointGrant, coinCapped };
 }
 
 export async function createPostBase(params: CreatePostParams): Promise<CreatePostState> {
@@ -229,9 +241,16 @@ export async function createPostBase(params: CreatePostParams): Promise<CreatePo
         !grantApplied ? '?toast=post_created' : ''
       }`;
 
-  if (result.pointGrant) {
+  // Append the coin-reward (`coinsEarned`) and/or daily-cap (`coinsCapped`)
+  // toast params to whatever destination was resolved above. A fully capped
+  // post keeps its `?toast=post_created` confirmation and adds the cap warning.
+  const extra = new URLSearchParams();
+  if (result.pointGrant) extra.set('coinsEarned', String(result.pointGrant.amount));
+  if (result.coinCapped) extra.set('coinsCapped', '1');
+  const extraQs = extra.toString();
+  if (extraQs) {
     const sep = finalUrl.includes('?') ? '&' : '?';
-    redirect(`${finalUrl}${sep}coinsEarned=${result.pointGrant.amount}`);
+    redirect(`${finalUrl}${sep}${extraQs}`);
   }
   redirect(finalUrl);
 }

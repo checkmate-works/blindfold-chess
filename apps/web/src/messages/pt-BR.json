@@ -3813,6 +3813,7 @@
     "profileUpdated": "Perfil atualizado",
     "postCreated": "Publicado com sucesso",
     "coinsEarned": "{count, plural, one {# Moeda ganha!} other {# Moedas ganhas!}}",
+    "coinsDailyCap": "Você atingiu o limite de moedas de hoje. Ele reinicia às 00:00 UTC.",
     "gamePublished": "Partida publicada",
     "gameClaimed": "A partida agora está vinculada à sua conta",
     "rateLimited": "Você só pode publicar uma vez por dia para cada abertura. Por favor, tente mais tarde.",

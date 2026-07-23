@@ -38,7 +38,7 @@ export type { AdminGrantResult } from './grant-admin';
 export { countPointEvents, listPointEvents, POINT_EVENT_SOURCE_OPTIONS } from './list-events';
 export type { PointEventFilters, PointEventRow } from './list-events';
 export { clawbackPointsForPost, grantPointsForPost } from './grant-points';
-export type { PointGrantResult } from './grant-points';
+export type { PointGrantOutcome } from './grant-points';
 export {
   AD_FREE_DAYS_PER_POINT,
   AD_FREE_PRODUCT_CODE,
