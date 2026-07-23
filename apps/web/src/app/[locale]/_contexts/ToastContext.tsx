@@ -13,15 +13,28 @@ import React, {
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
+/**
+ * Optional decorative icon overriding the type-based glyph. Currently only
+ * `'coin'`, used by the UGC-reward toast to render the brand `CoinIcon`
+ * instead of the generic success checkmark. Kept as a serializable string
+ * enum (not a `ReactNode`) so the toast object stays plain data.
+ */
+export type ToastIcon = 'coin';
+
+export type ToastOptions = {
+  icon?: ToastIcon;
+};
+
 export type Toast = {
   id: string;
   message: string;
   type: ToastType;
+  icon?: ToastIcon;
 };
 
 type ToastContextValue = {
   toasts: Toast[];
-  showToast: (message: string, type?: ToastType) => void;
+  showToast: (message: string, type?: ToastType, options?: ToastOptions) => void;
   hideToast: (id: string) => void;
 };
 
@@ -42,22 +55,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = Date.now().toString();
-    const newToast: Toast = { id, message, type };
+  const showToast = useCallback(
+    (message: string, type: ToastType = 'info', options?: ToastOptions) => {
+      const id = Date.now().toString();
+      const newToast: Toast = { id, message, type, icon: options?.icon };
 
-    setToasts((prev) => {
-      const updated = [...prev, newToast];
-      return updated;
-    });
+      setToasts((prev) => {
+        const updated = [...prev, newToast];
+        return updated;
+      });
 
-    // Auto-hide after 3 seconds
-    const timerId = setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
-      timerIdsRef.current.delete(id);
-    }, 3000);
-    timerIdsRef.current.set(id, timerId);
-  }, []);
+      // Auto-hide after 3 seconds
+      const timerId = setTimeout(() => {
+        setToasts((prev) => prev.filter((toast) => toast.id !== id));
+        timerIdsRef.current.delete(id);
+      }, 3000);
+      timerIdsRef.current.set(id, timerId);
+    },
+    []
+  );
 
   const hideToast = useCallback((id: string) => {
     const timerId = timerIdsRef.current.get(id);

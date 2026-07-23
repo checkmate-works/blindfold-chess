@@ -2,12 +2,15 @@
 
 import { useEffect } from 'react';
 
-import type { ToastType } from '@/app/[locale]/_contexts/ToastContext';
+import { CoinIcon } from '@blindfold-chess/icons';
+
+import type { ToastIcon, ToastType } from '@/app/[locale]/_contexts/ToastContext';
 
 type ToastData = {
   id: string;
   message: string;
   type: ToastType;
+  icon?: ToastIcon;
 };
 
 type Props = {
@@ -54,7 +57,11 @@ export function ToastItem({ toast, onClose, duration }: Props) {
       onClick={onClose}
     >
       <div className="flex items-center gap-3">
-        <span className="text-lg">{getIcon()}</span>
+        {toast.icon === 'coin' ? (
+          <CoinIcon size={20} aria-hidden="true" />
+        ) : (
+          <span className="text-lg">{getIcon()}</span>
+        )}
         <p className="flex-1 text-sm font-medium">{toast.message}</p>
       </div>
     </div>

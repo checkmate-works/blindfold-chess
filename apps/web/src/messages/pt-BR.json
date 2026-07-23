@@ -3812,6 +3812,7 @@
     "signInRequired": "Por favor, faça login para continuar",
     "profileUpdated": "Perfil atualizado",
     "postCreated": "Publicado com sucesso",
+    "coinsEarned": "{count, plural, one {# Moeda ganha!} other {# Moedas ganhas!}}",
     "gamePublished": "Partida publicada",
     "gameClaimed": "A partida agora está vinculada à sua conta",
     "rateLimited": "Você só pode publicar uma vez por dia para cada abertura. Por favor, tente mais tarde.",

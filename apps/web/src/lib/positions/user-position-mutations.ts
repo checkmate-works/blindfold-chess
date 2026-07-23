@@ -91,9 +91,9 @@ export type CreatePositionEntryResult =
       success: true;
       id: string;
       /**
-       * Present when the create awarded points. Callers route the user
-       * through `/thanks?pointEventId=...&returnUrl=...` so the Thanks
-       * page can show how many points were earned.
+       * Present when the create awarded points. Callers navigate the user
+       * straight to the created content with `?coinsEarned=<amount>` so the
+       * coin-reward toast can announce how many coins were earned.
        */
       pointGrant?: { pointEventId: string; amount: number };
       /**

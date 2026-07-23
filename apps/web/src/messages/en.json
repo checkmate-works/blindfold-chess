@@ -3812,6 +3812,7 @@
     "signInRequired": "Please sign in to continue",
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
+    "coinsEarned": "{count, plural, one {# Coin earned!} other {# Coins earned!}}",
     "gamePublished": "Game published",
     "gameClaimed": "The game is now linked to your account",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",

@@ -57,19 +57,41 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
   const locale = localeProp ?? (params.locale as Locale);
   const processingToastRef = useRef(false);
 
-  // Handle toast query parameter (from server-side redirects)
+  // Handle toast query parameters (from server-side redirects / post-create
+  // navigations). Two shapes are supported:
+  //   ?toast=<key>        — fixed message keyed by TOAST_PARAM_CONFIG
+  //   ?coinsEarned=<n>    — UGC-reward toast rendered with the brand CoinIcon
+  // Both are consumed and stripped from the URL in a single history-neutral
+  // replace so the reward isn't re-shown on refresh or back-navigation.
   useEffect(() => {
     const toastParam = searchParams.get('toast');
-    if (!toastParam) return;
+    const coinsParam = searchParams.get('coinsEarned');
+    if (!toastParam && !coinsParam) return;
 
-    const config = TOAST_PARAM_CONFIG[toastParam];
-    if (!config) return;
+    let handled = false;
 
-    showToast(tToast(config.messageKey), config.type);
+    if (toastParam) {
+      const config = TOAST_PARAM_CONFIG[toastParam];
+      if (config) {
+        showToast(tToast(config.messageKey), config.type);
+        handled = true;
+      }
+    }
 
-    // Clean up the toast query parameter from the URL without adding a history entry
+    if (coinsParam) {
+      const count = Number.parseInt(coinsParam, 10);
+      if (Number.isFinite(count) && count > 0) {
+        showToast(tToast('coinsEarned', { count }), 'success', { icon: 'coin' });
+        handled = true;
+      }
+    }
+
+    if (!handled) return;
+
+    // Strip the consumed params from the URL without adding a history entry.
     const url = new URL(window.location.href);
     url.searchParams.delete('toast');
+    url.searchParams.delete('coinsEarned');
     router.replace(url.pathname + url.search, { scroll: false });
   }, [searchParams, showToast, tToast, router]);
 

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, UnsavedChangesDialog } from '@/app/_components';
@@ -99,7 +99,6 @@ export function CreatePositionForm({
   injectedChunkIds,
 }: Props = {}) {
   const router = useRouter();
-  const locale = useLocale();
   const t = useTranslations('practice.positionMemory.create');
   const tUnsaved = useTranslations('unsavedChanges');
 
@@ -193,14 +192,12 @@ export function CreatePositionForm({
       // flushSync ensures the re-render (isDirty → false) completes
       // before router.push triggers the navigation guard check.
       flushSync(() => setSubmitted(true));
-      // Point grant fired → route via /thanks so the user lands on the
-      // award screen, then continues to the position detail (toast
-      // suppressed because the /thanks page already celebrates the create).
-      // No-grant flows keep the legacy in-place toast UX.
+      // Land straight on the created position so the author can verify it.
+      // A point grant surfaces the coin reward as a toast on arrival
+      // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast.
       if (result.pointGrant) {
-        const returnUrl = `/${locale}/practice/position-memory/${result.id}`;
         router.push(
-          `/thanks?pointEventId=${result.pointGrant.pointEventId}&returnUrl=${encodeURIComponent(returnUrl)}`
+          `/practice/position-memory/${result.id}?coinsEarned=${result.pointGrant.amount}`
         );
       } else {
         router.push(`/practice/position-memory/${result.id}?toast=position_created`);
