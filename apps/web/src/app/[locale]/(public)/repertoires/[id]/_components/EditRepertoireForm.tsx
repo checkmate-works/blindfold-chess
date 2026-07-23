@@ -10,19 +10,11 @@ import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
-import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
-import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
-import { deleteAnnotation } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/deleteAnnotation';
-import { saveAnnotation } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/saveAnnotation';
-import { saveShapes } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/saveShapes';
-
-import { MoveAnnotationField } from '../../_components/MoveAnnotationField';
 import { OpeningLinksField } from '../../_components/OpeningLinksField';
-import { RepertoireBoardBuilder } from '../../_components/RepertoireBoardBuilder';
 import { updateRepertoire } from '../_actions/updateRepertoire';
 
 type Props = {
@@ -36,30 +28,19 @@ type Props = {
   initialOpeningIds: string[];
   /** Opening links only exist for an `opening`-phase repertoire. */
   canLinkOpenings: boolean;
-  /** The repertoire's side — orients the board in board mode. */
+  /** The repertoire's side — plain metadata, editable like the title. */
   side: RepertoireSide;
-  /**
-   * The whole move tree as one PGN-with-variations (the lines recomposed via
-   * `mergeLinePgns`). `null` when recomposition failed — the moves editor is
-   * then hidden and the form falls back to metadata-only editing.
-   */
-  initialPgn: string | null;
-  /** Existing "why this move" notes, keyed by position key. */
-  initialAnnotations: Record<string, string>;
-  /** Existing board markup (arrows / circles), keyed by position key. */
-  initialShapes: Record<string, BoardAnnotations>;
 };
 
 /**
- * Owner-only editor for a repertoire: its title, its side, its opening links,
- * and — with the same Board / PGN switcher as the import form — its whole
- * move tree, including per-move notes and board markup. Saving diffs the tree
- * against the stored lines (unchanged lines keep their row + name; removed
- * ones are soft-deleted; new ones inserted), so editing is not a destructive
- * re-import. Phase stays fixed (it gates whether opening links even apply,
- * and only `opening` is authorable anywhere today — see
- * `RepertoireImportForm`'s `AUTHORABLE_PHASES`); side is plain metadata (see
- * `updateRepertoireDetails`) and follows the import form's field for field.
+ * Owner-only editor for a repertoire's METADATA: its title, description, side,
+ * and opening links. The move tree is deliberately NOT edited here — lines are
+ * authored one at a time on each line's own page (edit / delete / branch), so a
+ * whole-kata edit can't silently lose a line's identity or orphan its notes the
+ * way a diff-the-whole-PGN save did. Phase stays fixed (it gates whether
+ * opening links apply, and only `opening` is authorable anywhere today); side
+ * is pure metadata (see `updateRepertoireDetails`) and doesn't constrain the
+ * PGN, so relabeling it can't desync anything.
  */
 export function EditRepertoireForm({
   locale,
@@ -70,9 +51,6 @@ export function EditRepertoireForm({
   initialOpeningIds,
   canLinkOpenings,
   side: initialSide,
-  initialPgn,
-  initialAnnotations,
-  initialShapes,
 }: Props) {
   const t = useTranslations('Repertoires.edit');
   const tForm = useTranslations('Repertoires.form');
@@ -82,24 +60,9 @@ export function EditRepertoireForm({
   const [description, setDescription] = useState(initialDescription);
   const [side, setSide] = useState<RepertoireSide>(initialSide);
   const [openingIds, setOpeningIds] = useState<string[]>(initialOpeningIds);
-  const [pgn, setPgn] = useState(initialPgn ?? '');
-  const [annotations, setAnnotations] = useState<Record<string, string>>(initialAnnotations);
-  const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>(initialShapes);
-  const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
-  // Editing an existing repertoire starts on the board — the tree is already
-  // there to step through; the PGN tab remains for raw editing.
-  const [inputMode, setInputMode] = useState<'pgn' | 'board'>('board');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
-
-  const changedAnnotations = Object.entries(annotations).filter(
-    ([key, text]) => text.trim() !== (initialAnnotations[key] ?? '').trim()
-  );
-  const changedShapes = Object.entries(shapes).filter(
-    ([key, value]) => JSON.stringify(value) !== JSON.stringify(initialShapes[key] ?? null)
-  );
-  const pgnChanged = initialPgn !== null && pgn !== initialPgn;
 
   // Same leave-guard pieces as the import / line edit / chunk forms.
   const tUnsaved = useTranslations('unsavedChanges');
@@ -108,10 +71,7 @@ export function EditRepertoireForm({
     (name !== initialName ||
       description !== initialDescription ||
       side !== initialSide ||
-      JSON.stringify([...openingIds].sort()) !== JSON.stringify([...initialOpeningIds].sort()) ||
-      pgnChanged ||
-      changedAnnotations.length > 0 ||
-      changedShapes.length > 0);
+      JSON.stringify([...openingIds].sort()) !== JSON.stringify([...initialOpeningIds].sort()));
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   const detailHref = `/repertoires/${repertoireId}`;
@@ -128,33 +88,11 @@ export function EditRepertoireForm({
       description,
       side,
       openingIds: canLinkOpenings ? openingIds : [],
-      // Only re-decompose the lines when the moves actually changed.
-      pgn: pgnChanged ? pgn : undefined,
     });
     if (!result.ok) {
       setPending(false);
       const key = `errors.${result.error}`;
       setError(t.has(key) ? t(key) : t('errors.generic'));
-      return;
-    }
-
-    // Persist the changed per-move notes and board markup. Position-keyed
-    // writes are independent; a partial failure leaves the successful ones in
-    // place and keeps the page (still dirty) so a retry re-sends the rest.
-    // `lineNo: 1` only picks the line page these actions revalidate.
-    const noteResults = await Promise.all([
-      ...changedAnnotations.map(([positionKey, text]) =>
-        text.trim()
-          ? saveAnnotation({ repertoireId, lineNo: 1, locale, positionKey, text: text.trim() })
-          : deleteAnnotation({ repertoireId, lineNo: 1, locale, positionKey })
-      ),
-      ...changedShapes.map(([positionKey, value]) =>
-        saveShapes({ repertoireId, positionKey, shapes: value })
-      ),
-    ]);
-    if (noteResults.some((r) => !r.ok)) {
-      setPending(false);
-      setError(t('errors.generic'));
       return;
     }
 
@@ -214,59 +152,6 @@ export function EditRepertoireForm({
           ))}
         </div>
       </fieldset>
-
-      {initialPgn !== null && (
-        <div className="space-y-2">
-          <span className="block text-sm font-medium text-foreground">
-            {tForm('movesLabel')} <span className="text-destructive">*</span>
-          </span>
-          <BoardFenTabs
-            activeTab={inputMode === 'board' ? 'board' : 'fen'}
-            onTabChange={(tab) => setInputMode(tab === 'board' ? 'board' : 'pgn')}
-            boardLabel={tForm('inputModeBoard')}
-            fenLabel={tForm('inputModePgn')}
-          />
-          {inputMode === 'pgn' ? (
-            <>
-              <p className="text-xs text-muted-foreground">{tForm('pgnHelp')}</p>
-              <Textarea
-                id="repertoire-pgn"
-                value={pgn}
-                onChange={(e) => setPgn(e.target.value)}
-                rows={10}
-                inputSize="sm"
-                className="font-mono"
-                aria-label={tForm('pgnLabel')}
-              />
-            </>
-          ) : (
-            /* Remounts on each switch, re-importing whatever the pgn state
-               holds — so board → PGN shows the serialized tree and PGN →
-               board replays the edited text. */
-            <>
-              <RepertoireBoardBuilder
-                side={side}
-                initialPgn={pgn}
-                onPgnChange={setPgn}
-                onCursorChange={setCursor}
-                shapes={shapes}
-                onShapesChange={(positionKey, next) =>
-                  setShapes((prev) => ({ ...prev, [positionKey]: next }))
-                }
-              />
-              {cursor && (
-                <MoveAnnotationField
-                  moveLabel={cursor.label}
-                  value={annotations[cursor.positionKey] ?? ''}
-                  onChange={(next) =>
-                    setAnnotations((prev) => ({ ...prev, [cursor.positionKey]: next }))
-                  }
-                />
-              )}
-            </>
-          )}
-        </div>
-      )}
 
       {canLinkOpenings && (
         <OpeningLinksField openings={openings} selectedIds={openingIds} onChange={setOpeningIds} />
