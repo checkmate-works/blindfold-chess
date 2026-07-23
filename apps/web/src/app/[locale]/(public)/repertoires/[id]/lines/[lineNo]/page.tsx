@@ -13,7 +13,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
-import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
@@ -33,6 +32,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { LineDetailBoard } from './_components/LineDetailBoard';
 import { LineNavList } from './_components/LineNavList';
 import { MoveCommentsSection } from './_components/MoveCommentsSection';
+import { RepertoireLineActionsMenu } from './_components/RepertoireLineActionsMenu';
 import { buildLineMoves } from './_lib/line-moves';
 
 type Props = {
@@ -159,18 +159,10 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
         createdAt={line.createdAt}
         edited={line.updatedAt.getTime() - line.createdAt.getTime() > 1000}
         editedLabel={t('detail.edited')}
-        menuAriaLabel={t('detail.moreActions')}
-        menuItems={
-          isOwner
-            ? [
-                {
-                  key: 'edit',
-                  label: t('line.edit.editAction'),
-                  href: `/${locale}/repertoires/${id}/lines/${lineNo}/edit`,
-                  icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
-                },
-              ]
-            : []
+        menu={
+          isOwner ? (
+            <RepertoireLineActionsMenu repertoireId={id} lineNo={lineNo} locale={locale} />
+          ) : undefined
         }
       />
 

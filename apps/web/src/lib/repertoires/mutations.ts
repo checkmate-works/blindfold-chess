@@ -6,7 +6,7 @@ import {
   toPositionKey,
 } from '@blindfold-chess/features/chess-core';
 import type { PgnTree } from '@blindfold-chess/features/chess-core';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
@@ -138,6 +138,68 @@ export async function updateRepertoireLine(params: {
       .update(repertoireLines)
       .set({ name: validated.data.name, pgn: validated.data.pgn })
       .where(eq(repertoireLines.id, line.id));
+    await pruneOrphanAnnotations(tx, params.repertoireId);
+  });
+
+  return { ok: true };
+}
+
+export type DeleteLineResult = { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' };
+
+/**
+ * Owner-only: soft-delete a single line, addressed by its 1-based number
+ * (seq + 1). The surviving lines are repacked to a dense `0..n-1` `seq` so line
+ * numbers stay contiguous (the same invariant the import / whole-tree paths
+ * keep), and any note left attached to no remaining line is pruned — all in one
+ * transaction (see {@link pruneOrphanAnnotations}). Deleting the last line
+ * leaves an empty (still `building`-publishable-once-refilled) repertoire, the
+ * same reachable-by-URL empty state the viewer already handles.
+ */
+export async function deleteRepertoireLine(params: {
+  repertoireId: string;
+  lineNo: number;
+  viewerId: string;
+}): Promise<DeleteLineResult> {
+  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
+  if (ownerError) return { ok: false, error: ownerError };
+
+  const [line] = await db
+    .select({ id: repertoireLines.id })
+    .from(repertoireLines)
+    .where(
+      and(
+        eq(repertoireLines.repertoireId, params.repertoireId),
+        eq(repertoireLines.seq, params.lineNo - 1),
+        isNull(repertoireLines.deletedAt)
+      )
+    )
+    .limit(1);
+  if (!line) return { ok: false, error: 'notFound' };
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(repertoireLines)
+      .set({ deletedAt: new Date() })
+      .where(eq(repertoireLines.id, line.id));
+
+    // Repack the survivors to a gapless seq so "Line N" labels / URLs stay
+    // contiguous after the hole this delete left.
+    const remaining = await tx
+      .select({ id: repertoireLines.id, seq: repertoireLines.seq })
+      .from(repertoireLines)
+      .where(
+        and(
+          eq(repertoireLines.repertoireId, params.repertoireId),
+          isNull(repertoireLines.deletedAt)
+        )
+      )
+      .orderBy(asc(repertoireLines.seq));
+    for (const [index, row] of remaining.entries()) {
+      if (row.seq !== index) {
+        await tx.update(repertoireLines).set({ seq: index }).where(eq(repertoireLines.id, row.id));
+      }
+    }
+
     await pruneOrphanAnnotations(tx, params.repertoireId);
   });
 

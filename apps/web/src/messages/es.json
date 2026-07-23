@@ -147,6 +147,13 @@
         "cancel": "Cancelar",
         "sharedHelp": "Esta nota se comparte entre todas las líneas de este kata que alcanzan esta posición."
       },
+      "delete": {
+        "button": "Eliminar",
+        "title": "¿Eliminar esta línea?",
+        "message": "Se elimina la línea y las notas ligadas solo a posiciones que alcanzaba. Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar"
+      },
       "edit": {
         "editAction": "Editar",
         "title": "Editar línea",

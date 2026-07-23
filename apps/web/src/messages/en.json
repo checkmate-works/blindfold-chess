@@ -147,6 +147,13 @@
         "cancel": "Cancel",
         "sharedHelp": "This note is shared by every line in this kata that reaches this position."
       },
+      "delete": {
+        "button": "Delete",
+        "title": "Delete this line?",
+        "message": "This removes the line, and any notes tied only to positions it reached. This cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
       "edit": {
         "editAction": "Edit",
         "title": "Edit line",
