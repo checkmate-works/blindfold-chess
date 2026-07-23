@@ -8,7 +8,7 @@ import { db, profiles } from '@/lib/db';
 import { hasBlocked } from '@/lib/moderation/block';
 import { createClient } from '@/lib/supabase/server';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -81,18 +81,21 @@ export default async function BlockUserPage({ params }: Props) {
       locale={locale}
       breadcrumb={[{ label: displayName, href: `/u/${username}` }, { label: t('block') }]}
     >
-      <BlockActions
-        targetUsername={username}
-        locale={locale}
-        initialBlocked={initialBlocked}
-        labels={{
-          block: t('block'),
-          unblock: t('unblock'),
-          blockDescription: t('blockDescription', { displayName: `@${username}` }),
-          blockedState: t('blockedState', { displayName: `@${username}` }),
-          error: t('blockError'),
-        }}
-      />
+      <div className="space-y-6">
+        <SectionTitle>{t('blockSectionTitle')}</SectionTitle>
+        <BlockActions
+          targetUsername={username}
+          locale={locale}
+          initialBlocked={initialBlocked}
+          labels={{
+            block: t('block'),
+            unblock: t('unblock'),
+            blockDescription: t('blockDescription', { displayName: `@${username}` }),
+            blockedState: t('blockedState', { displayName: `@${username}` }),
+            error: t('blockError'),
+          }}
+        />
+      </div>
     </PageLayout>
   );
 }

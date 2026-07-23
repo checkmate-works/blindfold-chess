@@ -4556,6 +4556,7 @@
     "block": "Block",
     "unblock": "Unblock",
     "blockPageTitle": "Block {displayName}",
+    "blockSectionTitle": "Confirmation",
     "blockDescription": "You're about to block {displayName}. They won't be able to follow you or send you notifications.",
     "blockedState": "You've blocked {displayName}. They can't follow you or send you notifications.",
     "blockError": "Something went wrong. Please try again.",

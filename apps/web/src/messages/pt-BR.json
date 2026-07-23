@@ -4556,6 +4556,7 @@
     "block": "Bloquear",
     "unblock": "Desbloquear",
     "blockPageTitle": "Bloquear {displayName}",
+    "blockSectionTitle": "Confirmação",
     "blockDescription": "Você está prestes a bloquear {displayName}. Essa pessoa não poderá seguir você nem enviar notificações.",
     "blockedState": "Você bloqueou {displayName}. Essa pessoa não pode seguir você nem enviar notificações.",
     "blockError": "Algo deu errado. Tente novamente.",

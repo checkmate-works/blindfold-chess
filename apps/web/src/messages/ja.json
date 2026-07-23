@@ -4556,6 +4556,7 @@
     "block": "ブロック",
     "unblock": "ブロック解除",
     "blockPageTitle": "{displayName}をブロック",
+    "blockSectionTitle": "確認",
     "blockDescription": "{displayName}をブロックしようとしています。相手はあなたをフォローしたり通知を送ったりできなくなります。",
     "blockedState": "{displayName}をブロックしています。相手はあなたをフォローしたり通知を送ったりできません。",
     "blockError": "エラーが発生しました。もう一度お試しください。",
