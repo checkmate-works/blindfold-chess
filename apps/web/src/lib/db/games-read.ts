@@ -5,9 +5,11 @@
  */
 import { cache } from 'react';
 
+import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import { type SQL, and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
+import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
 
 import { db } from './index';
@@ -88,6 +90,15 @@ export type SharedGameListItem = {
   result: 'win' | 'loss' | 'draw';
   /** Side the author played — shown with a colour icon on the card. */
   playerColor: 'white' | 'black';
+  /**
+   * Blindfold "as played" treatment for the card thumbnail, folded from the
+   * game's start-of-game play-settings snapshot, or null for a legacy /
+   * fully-sighted game (plain thumbnail). Lets the gallery / profile / related
+   * cards preview how the game was played (ghosts / stones / single colour)
+   * instead of an identical opening position. See
+   * {@link playSettingsToThumbnailDisplay}.
+   */
+  thumbnailDisplay: BlindfoldDisplaySettings | null;
   moveCount: number;
   cleanRate: number | null;
   /** Author profile for the card avatar; null for an account-less author. */
@@ -126,6 +137,7 @@ function gameListQuery() {
       engineElo: games.engineElo,
       result: games.result,
       playerColor: games.playerColor,
+      playSettings: games.playSettings,
       moveCount: games.moveCount,
       cleanRate: games.cleanRate,
       moves: games.moves,
@@ -157,6 +169,7 @@ function mapGameRowsToListItems(rows: GameListRow[]): Promise<SharedGameListItem
       engineElo: r.engineElo,
       result: r.result,
       playerColor: r.playerColor,
+      thumbnailDisplay: playSettingsToThumbnailDisplay(r.playSettings, r.playerColor),
       moveCount: r.moveCount,
       cleanRate: r.cleanRate,
       author: r.authorUsername

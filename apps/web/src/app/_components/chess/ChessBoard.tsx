@@ -28,6 +28,7 @@ import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import { getEvaluationIcon } from '@/lib/games/evaluation';
+import { goStoneStyle } from '@/lib/games/go-stone-style';
 
 import type { SquareRenderInfo } from './BoardLayout';
 import { BoardLayout } from './BoardLayout';
@@ -433,24 +434,11 @@ export const ChessBoard = memo(function ChessBoard({
       const fadeClass = !floating && square === dragFrom ? 'opacity-30' : '';
 
       if (display.kind === 'circle') {
-        // Show as Go stone-like circle with subtle gradient and shadow
-        const stoneStyle =
-          display.color === 'w'
-            ? {
-                background:
-                  'radial-gradient(ellipse at 30% 30%, #ffffff 0%, #e8e8e8 50%, #d0d0d0 100%)',
-                boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(0, 0, 0, 0.1)',
-              }
-            : {
-                background:
-                  'radial-gradient(ellipse at 30% 30%, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
-                boxShadow:
-                  '2px 2px 4px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.1)',
-              };
+        // Show as Go stone-like circle with subtle gradient and shadow.
         return (
           <div
             className={`w-[60%] h-[60%] rounded-full ${grabClass} ${fadeClass}`}
-            style={stoneStyle}
+            style={goStoneStyle(display.color)}
           />
         );
       }

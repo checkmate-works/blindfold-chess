@@ -4,6 +4,7 @@ import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { AUTHOR_PROFILE_COLUMNS, db, games, liveProfileJoinOn, profiles } from '@/lib/db';
 import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
+import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 
 import type { GameFeedData } from '../types';
 
@@ -11,7 +12,10 @@ import type { GameFeedData } from '../types';
  * Bulk-load the `game` entities referenced by a slice of feed rows, plus their
  * per-viewer like meta (`target_type = 'game'`) and comment meta (`game_comments`
  * keyed by `game_id`). The thumbnail FEN is the opening position (`startingFen`,
- * or the standard start). Only `public`, non-deleted games are returned — a game
+ * or the standard start), with the game's start-of-game blindfold settings folded
+ * into `thumbnailDisplay` so the card previews how it was played (ghosts / stones
+ * / single colour) rather than an identical opening board. Only `public`,
+ * non-deleted games are returned — a game
  * the author later set private (planned) or soft-deleted silently drops out of
  * the feed, matching the deleted-entity handling the other loaders use.
  */
@@ -27,6 +31,8 @@ export async function loadGamesForFeed(
       id: games.id,
       title: games.title,
       startingFen: games.startingFen,
+      playSettings: games.playSettings,
+      playerColor: games.playerColor,
       result: games.result,
       createdAt: games.createdAt,
       author: {
@@ -50,6 +56,7 @@ export async function loadGamesForFeed(
       id: row.id,
       title: row.title,
       fen: row.startingFen ?? getStartingFen(),
+      thumbnailDisplay: playSettingsToThumbnailDisplay(row.playSettings, row.playerColor),
       result: row.result,
       createdAt: row.createdAt.toISOString(),
       author: row.author?.username

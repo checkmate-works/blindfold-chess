@@ -1,5 +1,7 @@
 'use client';
 
+import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
+
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -10,6 +12,8 @@ type Props = {
   fen: string;
   className?: string;
   annotations?: BoardAnnotations | null;
+  /** Blindfold "as played" treatment — see {@link BoardThumbnail}'s prop. */
+  displaySettings?: BlindfoldDisplaySettings | null;
 };
 
 /**
@@ -20,7 +24,12 @@ type Props = {
  * For admin pages or contexts without the GamePreferencesContext provider,
  * use {@link BoardThumbnail} directly.
  */
-export function ThemedBoardThumbnail({ fen, className, annotations = null }: Props) {
+export function ThemedBoardThumbnail({
+  fen,
+  className,
+  annotations = null,
+  displaySettings = null,
+}: Props) {
   const { preferences } = useGamePreferences();
 
   return (
@@ -29,6 +38,7 @@ export function ThemedBoardThumbnail({ fen, className, annotations = null }: Pro
       className={className}
       boardTheme={preferences.boardTheme}
       annotations={annotations}
+      displaySettings={displaySettings}
     />
   );
 }
