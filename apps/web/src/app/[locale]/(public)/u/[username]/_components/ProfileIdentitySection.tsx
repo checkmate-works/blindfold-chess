@@ -44,6 +44,7 @@ type Props = {
     moreActions: string;
     block: string;
     unblock: string;
+    blockedBadge: string;
   };
 };
 
@@ -88,6 +89,11 @@ export function ProfileIdentitySection({
             />
           ) : (
             <>
+              {viewerHasBlocked && (
+                <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
+                  {labels.blockedBadge}
+                </span>
+              )}
               {!viewerHasBlocked && followedByProfile && (
                 <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
                   {labels.followsYou}

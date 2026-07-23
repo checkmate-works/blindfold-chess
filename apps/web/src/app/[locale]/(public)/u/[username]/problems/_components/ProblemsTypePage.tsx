@@ -125,6 +125,7 @@ export async function ProblemsTypePage({
             moreActions: t('moreActions'),
             block: t('block'),
             unblock: t('unblock'),
+            blockedBadge: t('blockedBadge'),
           }}
         />
 

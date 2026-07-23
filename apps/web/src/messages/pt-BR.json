@@ -4555,6 +4555,7 @@
     "moreActions": "Mais ações",
     "block": "Bloquear",
     "unblock": "Desbloquear",
+    "blockedBadge": "Bloqueado",
     "blockPageTitle": "Bloquear {displayName}",
     "blockSectionTitle": "Confirmação",
     "blockDescription": "Você está prestes a bloquear {displayName}. Essa pessoa não poderá seguir você nem enviar notificações.",

@@ -4555,6 +4555,7 @@
     "moreActions": "その他の操作",
     "block": "ブロック",
     "unblock": "ブロック解除",
+    "blockedBadge": "ブロック中",
     "blockPageTitle": "{displayName}をブロック",
     "blockSectionTitle": "確認",
     "blockDescription": "{displayName}をブロックしようとしています。相手はあなたをフォローしたり通知を送ったりできなくなります。",

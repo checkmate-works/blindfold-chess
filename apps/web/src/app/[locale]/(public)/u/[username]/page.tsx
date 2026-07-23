@@ -160,6 +160,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             moreActions: t('moreActions'),
             block: t('block'),
             unblock: t('unblock'),
+            blockedBadge: t('blockedBadge'),
           }}
         />
         {/* Topics / Problems / Games Tabs */}

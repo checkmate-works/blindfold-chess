@@ -4555,6 +4555,7 @@
     "moreActions": "More actions",
     "block": "Block",
     "unblock": "Unblock",
+    "blockedBadge": "Blocked",
     "blockPageTitle": "Block {displayName}",
     "blockSectionTitle": "Confirmation",
     "blockDescription": "You're about to block {displayName}. They won't be able to follow you or send you notifications.",
