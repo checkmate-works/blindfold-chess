@@ -180,8 +180,8 @@
     },
     "delete": {
       "button": "Delete",
-      "title": "Delete this line?",
-      "message": "This permanently removes the line. This cannot be undone.",
+      "title": "Delete this kata?",
+      "message": "This permanently removes the kata. This cannot be undone.",
       "confirm": "Delete",
       "cancel": "Cancel"
     },

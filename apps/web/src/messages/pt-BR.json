@@ -180,8 +180,8 @@
     },
     "delete": {
       "button": "Excluir",
-      "title": "Excluir esta linha?",
-      "message": "Isso remove a linha permanentemente. Não é possível desfazer.",
+      "title": "Excluir este kata?",
+      "message": "Isso remove o kata permanentemente. Não é possível desfazer.",
       "confirm": "Excluir",
       "cancel": "Cancelar"
     },
