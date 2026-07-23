@@ -6,10 +6,11 @@ let mockMutedRows: { id: string }[] = [];
 const mockDbInsertValues = vi.fn();
 
 /**
- * The DB mock needs to handle three distinct query patterns:
+ * The DB mock needs to handle these distinct query patterns:
  * 1. notifyFollowersOfNewPost: db.select().from(userFollows).where() -> returns followers
- * 2. createNotification (mute check): db.select().from(notificationMutes).where().limit() -> returns mockMutedRows
- * 3. createNotification (dedup check): db.select().from(notifications).where().limit() -> returns []
+ * 2. createNotification (block check): db.select().from(userBlocks).where().limit() -> returns [] (not blocked)
+ * 3. createNotification (mute check): db.select().from(notificationMutes).where().limit() -> returns mockMutedRows
+ * 4. createNotification (dedup check): db.select().from(notifications).where().limit() -> returns []
  *
  * We track which table is queried via the from() argument.
  */
@@ -27,7 +28,8 @@ vi.mock('@/lib/db', () => ({
             if (table === 'notificationMutes_table') {
               return { limit: () => Promise.resolve(mockMutedRows) };
             }
-            // Otherwise (notifications dedup check), return { limit: () => [] }
+            // userBlocks (block check) and notifications (dedup check) both
+            // return an empty result via { limit: () => [] }.
             return {
               limit: () => Promise.resolve([]),
             };
@@ -44,6 +46,7 @@ vi.mock('@/lib/db', () => ({
   },
   notifications: 'notifications_table',
   userFollows: 'userFollows_table',
+  userBlocks: 'userBlocks_table',
   notificationMutes: 'notificationMutes_table',
 }));
 
@@ -51,6 +54,7 @@ vi.mock('server-only', () => ({}));
 
 vi.mock('drizzle-orm', () => ({
   and: (...args: unknown[]) => args,
+  or: (...args: unknown[]) => args,
   eq: (a: unknown, b: unknown) => [a, b],
   gte: (a: unknown, b: unknown) => [a, b],
   inArray: (a: unknown, b: unknown) => [a, b],

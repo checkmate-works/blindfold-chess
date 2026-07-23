@@ -47,6 +47,7 @@ export const RATE_LIMITS = {
   createReply: { action: 'create_reply', maxAttempts: 20, windowMs: 3_600_000 },
   toggleLike: { action: 'toggle_like', maxAttempts: 50, windowMs: 86_400_000 },
   toggleFollow: { action: 'toggle_follow', maxAttempts: 100, windowMs: 86_400_000 },
+  toggleBlock: { action: 'toggle_block', maxAttempts: 100, windowMs: 86_400_000 },
   deletePost: { action: 'delete_post', maxAttempts: 10, windowMs: 3_600_000 },
   editPost: { action: 'edit_post', maxAttempts: 30, windowMs: 3_600_000 },
   /**

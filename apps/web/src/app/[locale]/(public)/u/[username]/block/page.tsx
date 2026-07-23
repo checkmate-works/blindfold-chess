@@ -5,11 +5,14 @@ import { notFound } from 'next/navigation';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
+import { hasBlocked } from '@/lib/moderation/block';
 import { createClient } from '@/lib/supabase/server';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { BlockActions } from './_components/BlockActions';
 
 // Per-user, per-locale URL — render dynamically like the rest of /u/[username].
 export const dynamic = 'force-dynamic';
@@ -59,13 +62,17 @@ export default async function BlockUserPage({ params }: Props) {
     notFound();
   }
 
-  // Blocking yourself is nonsensical; hide the page for the profile owner.
+  // Blocking requires being signed in, and blocking yourself is nonsensical —
+  // hide the page for anonymous viewers and for the profile owner.
   const user = authResult.data.user;
-  if (user?.id === profile.id) {
+  if (!user || user.id === profile.id) {
     notFound();
   }
 
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
+  const [t, initialBlocked] = await Promise.all([
+    getTranslations({ locale, namespace: 'publicProfile' }),
+    hasBlocked(user.id, profile.id),
+  ]);
   const displayName = profile.displayName ?? username;
 
   return (
@@ -74,12 +81,18 @@ export default async function BlockUserPage({ params }: Props) {
       locale={locale}
       breadcrumb={[{ label: displayName, href: `/u/${username}` }, { label: t('block') }]}
     >
-      <div className="space-y-4">
-        <p className="text-foreground">{t('blockDescription', { displayName: `@${username}` })}</p>
-        <p className="rounded-md border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
-          {t('blockComingSoon')}
-        </p>
-      </div>
+      <BlockActions
+        targetUsername={username}
+        locale={locale}
+        initialBlocked={initialBlocked}
+        labels={{
+          block: t('block'),
+          unblock: t('unblock'),
+          blockDescription: t('blockDescription', { displayName: `@${username}` }),
+          blockedState: t('blockedState', { displayName: `@${username}` }),
+          error: t('blockError'),
+        }}
+      />
     </PageLayout>
   );
 }

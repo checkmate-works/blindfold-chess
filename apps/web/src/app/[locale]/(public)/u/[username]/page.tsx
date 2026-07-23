@@ -113,6 +113,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     activeTab,
     initialFollowing,
     followedByProfile,
+    viewerHasBlocked,
     followerCount,
     followingCount,
     posts,
@@ -147,6 +148,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           isAuthenticated={!!user}
           initialFollowing={initialFollowing}
           followedByProfile={followedByProfile}
+          viewerHasBlocked={viewerHasBlocked}
           followerCount={followerCount}
           followingCount={followingCount}
           labels={{
@@ -157,6 +159,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             bio: t('bio'),
             moreActions: t('moreActions'),
             block: t('block'),
+            unblock: t('unblock'),
           }}
         />
         {/* Topics / Problems / Games Tabs */}

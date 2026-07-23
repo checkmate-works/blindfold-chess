@@ -2,6 +2,7 @@ import { and, eq, gte } from 'drizzle-orm';
 import 'server-only';
 
 import { db, notifications, userFollows } from '../db';
+import { isBlockedBetween } from '../moderation/block';
 import { isMutableNotificationType } from './mutable-types';
 import { isNotificationTypeMuted } from './mutes';
 
@@ -39,6 +40,13 @@ export function createNotification(event: NotificationEvent): void {
   if (!userId) return;
 
   (async () => {
+    // Suppress every actor→recipient notification once either side has blocked
+    // the other. This is the single DRY choke point — follow, like, comment,
+    // reply, fork and fan-out events all funnel through here.
+    if (event.actorId && (await isBlockedBetween(userId, event.actorId))) {
+      return;
+    }
+
     // Recipient opted out of this notification type. Only mutable types are
     // checked — this also keeps the extra query off every notification the
     // recipient can't mute in the first place.

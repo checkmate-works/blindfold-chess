@@ -113,6 +113,7 @@ export async function ProblemsTypePage({
           isAuthenticated={!!user}
           initialFollowing={shell.initialFollowing}
           followedByProfile={shell.followedByProfile}
+          viewerHasBlocked={shell.viewerHasBlocked}
           followerCount={shell.followerCount}
           followingCount={shell.followingCount}
           labels={{
@@ -123,6 +124,7 @@ export async function ProblemsTypePage({
             bio: t('bio'),
             moreActions: t('moreActions'),
             block: t('block'),
+            unblock: t('unblock'),
           }}
         />
 

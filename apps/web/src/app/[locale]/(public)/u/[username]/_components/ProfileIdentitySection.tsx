@@ -32,6 +32,7 @@ type Props = {
   isAuthenticated: boolean;
   initialFollowing: boolean;
   followedByProfile: boolean;
+  viewerHasBlocked: boolean;
   followerCount: number;
   followingCount: number;
   labels: {
@@ -42,6 +43,7 @@ type Props = {
     bio: string;
     moreActions: string;
     block: string;
+    unblock: string;
   };
 };
 
@@ -57,6 +59,7 @@ export function ProfileIdentitySection({
   isAuthenticated,
   initialFollowing,
   followedByProfile,
+  viewerHasBlocked,
   followerCount,
   followingCount,
   labels,
@@ -85,24 +88,27 @@ export function ProfileIdentitySection({
             />
           ) : (
             <>
-              {followedByProfile && (
+              {!viewerHasBlocked && followedByProfile && (
                 <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
                   {labels.followsYou}
                 </span>
               )}
-              <FollowButton
-                targetUsername={profile.username}
-                locale={locale}
-                initialFollowing={initialFollowing}
-                isAuthenticated={isAuthenticated}
-              />
+              {/* Blocking severs the follow graph, so Follow is hidden while blocked. */}
+              {!viewerHasBlocked && (
+                <FollowButton
+                  targetUsername={profile.username}
+                  locale={locale}
+                  initialFollowing={initialFollowing}
+                  isAuthenticated={isAuthenticated}
+                />
+              )}
               {isAuthenticated && (
                 <ActionsMenu
                   ariaLabel={labels.moreActions}
                   items={[
                     {
                       key: 'block',
-                      label: labels.block,
+                      label: viewerHasBlocked ? labels.unblock : labels.block,
                       href: `/${locale}/u/${profile.username}/block`,
                       icon: <FiSlash className="h-4 w-4" aria-hidden />,
                     },
