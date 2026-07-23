@@ -16,8 +16,8 @@ afterEach(() => {
   cleanup();
 });
 
-function renderInfo(fen: string) {
-  const ui: ReactNode = <PiecesInfo fen={fen} />;
+function renderInfo(fen: string, showSideToMove?: boolean) {
+  const ui: ReactNode = <PiecesInfo fen={fen} showSideToMove={showSideToMove} />;
   return render(
     <NextIntlClientProvider
       locale="en"
@@ -54,6 +54,15 @@ describe('PiecesInfo', () => {
 
       expect(screen.getByText('Black to move')).toBeInTheDocument();
       expect(screen.queryByText('White to move')).not.toBeInTheDocument();
+    });
+
+    it('omits the side-to-move line when showSideToMove is false', () => {
+      renderInfo('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', false);
+
+      expect(screen.queryByText('White to move')).not.toBeInTheDocument();
+      expect(screen.queryByText('Black to move')).not.toBeInTheDocument();
+      // The piece lists still render.
+      expect(findRowByLabel('White Pieces').textContent).toContain('Ke1');
     });
   });
 

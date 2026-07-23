@@ -88,7 +88,7 @@ export function PositionMemoryMemorize({
             edge-to-edge on phones; the text list keeps the panel gutter. */}
         <BoardFrame className="relative" expandOnMobile={displayMode !== 'text'}>
           {displayMode === 'text' ? (
-            <PiecesInfo fen={position.fen} />
+            <PiecesInfo fen={position.fen} showSideToMove={false} />
           ) : (
             <AnimatedChessBoard
               initialFen={position.fen}
