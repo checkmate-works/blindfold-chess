@@ -3,6 +3,7 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 import { db, profiles, userFollows } from '@/lib/db';
 import { type UserAchievementRow, getUserAchievements } from '@/lib/db/achievement-queries';
 import { countGamesByAuthorId } from '@/lib/db/games-read';
+import { hasBlocked } from '@/lib/moderation/block';
 import { countPositions } from '@/lib/positions/queries';
 
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
@@ -11,6 +12,10 @@ import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-
 export type ProfileShellData = {
   initialFollowing: boolean;
   followedByProfile: boolean;
+  /** Whether the current viewer has blocked this profile. */
+  viewerHasBlocked: boolean;
+  /** Whether this profile has blocked the current viewer. */
+  blockedByProfile: boolean;
   followerCount: number;
   followingCount: number;
   /**
@@ -62,6 +67,12 @@ export async function loadProfileShellData({
           .limit(1)
       : Promise.resolve([]);
 
+  const viewerHasBlockedPromise =
+    currentUserId && !isOwnProfile ? hasBlocked(currentUserId, profileId) : Promise.resolve(false);
+
+  const blockedByProfilePromise =
+    currentUserId && !isOwnProfile ? hasBlocked(profileId, currentUserId) : Promise.resolve(false);
+
   const followerCountPromise = db
     .select({ count: count() })
     .from(userFollows)
@@ -79,6 +90,8 @@ export async function loadProfileShellData({
   const [
     existingFollowRows,
     reverseFollowRows,
+    viewerHasBlocked,
+    blockedByProfile,
     [followerResult],
     [followingResult],
     allPosts,
@@ -88,6 +101,8 @@ export async function loadProfileShellData({
   ] = await Promise.all([
     followCheckPromise,
     reverseFollowCheckPromise,
+    viewerHasBlockedPromise,
+    blockedByProfilePromise,
     followerCountPromise,
     followingCountPromise,
     getPostsByUserId(profileId, currentUserId),
@@ -99,6 +114,8 @@ export async function loadProfileShellData({
   return {
     initialFollowing: !!existingFollowRows[0],
     followedByProfile: !!reverseFollowRows[0],
+    viewerHasBlocked,
+    blockedByProfile,
     followerCount: followerResult.count,
     followingCount: followingResult.count,
     allPosts,

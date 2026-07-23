@@ -12,6 +12,11 @@ const mockSelectPostAuthor = vi.fn();
 const mockSelectProfile = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 
+vi.mock('@/lib/moderation/block', () => ({
+  isBlockedBetween: () => Promise.resolve(false),
+  hasBlocked: () => Promise.resolve(false),
+}));
+
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));

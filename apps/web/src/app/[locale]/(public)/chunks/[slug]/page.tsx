@@ -11,7 +11,6 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
-import { PositionActionsMenu } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
@@ -22,6 +21,7 @@ import {
   ScrollToHashOnMount,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -272,7 +272,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         editedLabel={tChunks('detail.edited')}
         menu={
           isOwner ? (
-            <PositionActionsMenu
+            <ActionsMenu
               ariaLabel={tChunks('detail.moreActions')}
               items={
                 isDraft
@@ -294,7 +294,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
                 hasDescription={!!chunk.description && chunk.description.trim().length > 0}
               />
               <ChunkDeleteButton chunkId={chunk.id} />
-            </PositionActionsMenu>
+            </ActionsMenu>
           ) : undefined
         }
       />

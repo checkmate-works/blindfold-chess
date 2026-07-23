@@ -13,6 +13,8 @@ import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { redirectIfBlockedFromProfile } from '../_lib/redirect-if-blocked';
+
 // Per-user, per-locale URLs explode the on-demand ISR cache (one entry per
 // (locale, username, ?page=N)), and the 5-min revalidate cycle previously
 // triggered ISR Writes on every bot/user revisit. Render dynamically instead —
@@ -66,6 +68,8 @@ export default async function FollowersPage({ params, searchParams }: Props) {
   if (!profile) {
     notFound();
   }
+
+  await redirectIfBlockedFromProfile({ locale, username, profileId: profile.id });
 
   const { page } = await searchParamsCache.parse(searchParams);
 

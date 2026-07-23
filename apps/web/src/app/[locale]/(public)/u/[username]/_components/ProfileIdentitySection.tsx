@@ -1,6 +1,8 @@
 import { Link } from '@/i18n/routing';
+import { FiEdit2, FiSlash } from 'react-icons/fi';
 
 import { LinkedText } from '@/app/[locale]/_components';
+import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -30,6 +32,13 @@ type Props = {
   isAuthenticated: boolean;
   initialFollowing: boolean;
   followedByProfile: boolean;
+  viewerHasBlocked: boolean;
+  /**
+   * A block exists in either direction. Collapses the profile to a bare
+   * identity header (no follow control, stats, social links, or bio) — the
+   * page renders a "content hidden" notice in place of the tabs.
+   */
+  restricted?: boolean;
   followerCount: number;
   followingCount: number;
   labels: {
@@ -38,6 +47,10 @@ type Props = {
     followingCount: string;
     followers: string;
     bio: string;
+    moreActions: string;
+    block: string;
+    unblock: string;
+    blockedBadge: string;
   };
 };
 
@@ -53,6 +66,8 @@ export function ProfileIdentitySection({
   isAuthenticated,
   initialFollowing,
   followedByProfile,
+  viewerHasBlocked,
+  restricted = false,
   followerCount,
   followingCount,
   labels,
@@ -68,68 +83,98 @@ export function ProfileIdentitySection({
         locale={locale}
         action={
           isOwnProfile ? (
-            <Link
-              href="/mypage/profile"
-              locale={locale}
-              className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-            >
-              {labels.editProfile}
-            </Link>
+            <ActionsMenu
+              ariaLabel={labels.moreActions}
+              items={[
+                {
+                  key: 'edit',
+                  label: labels.editProfile,
+                  href: `/${locale}/mypage/profile`,
+                  icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
+                },
+              ]}
+            />
           ) : (
             <>
-              {followedByProfile && (
+              {viewerHasBlocked && (
+                <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
+                  {labels.blockedBadge}
+                </span>
+              )}
+              {!restricted && followedByProfile && (
                 <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
                   {labels.followsYou}
                 </span>
               )}
-              <FollowButton
-                targetUsername={profile.username}
-                locale={locale}
-                initialFollowing={initialFollowing}
-                isAuthenticated={isAuthenticated}
-              />
+              {/* A block (either direction) severs the follow graph, so Follow is hidden. */}
+              {!restricted && (
+                <FollowButton
+                  targetUsername={profile.username}
+                  locale={locale}
+                  initialFollowing={initialFollowing}
+                  isAuthenticated={isAuthenticated}
+                />
+              )}
+              {isAuthenticated && (
+                <ActionsMenu
+                  ariaLabel={labels.moreActions}
+                  items={[
+                    {
+                      key: 'block',
+                      label: viewerHasBlocked ? labels.unblock : labels.block,
+                      href: `/${locale}/u/${profile.username}/block`,
+                      icon: <FiSlash className="h-4 w-4" aria-hidden />,
+                    },
+                  ]}
+                />
+              )}
             </>
           )
         }
       />
 
-      <p className="text-sm text-muted-foreground">
-        {isOwnProfile && (
-          <>
-            <Link href="/mypage/following" locale={locale} className={TEXT_LINK_CLASSES}>
-              <span className="font-semibold text-foreground">{followingCount}</span>{' '}
-              {labels.followingCount}
+      {!restricted && (
+        <>
+          <p className="text-sm text-muted-foreground">
+            {isOwnProfile && (
+              <>
+                <Link href="/mypage/following" locale={locale} className={TEXT_LINK_CLASSES}>
+                  <span className="font-semibold text-foreground">{followingCount}</span>{' '}
+                  {labels.followingCount}
+                </Link>
+                <span className="mx-2" />
+              </>
+            )}
+            <Link
+              href={`/u/${profile.username}/followers`}
+              locale={locale}
+              className={TEXT_LINK_CLASSES}
+            >
+              <span className="font-semibold text-foreground">{followerCount}</span>{' '}
+              {labels.followers}
             </Link>
-            <span className="mx-2" />
-          </>
-        )}
-        <Link
-          href={`/u/${profile.username}/followers`}
-          locale={locale}
-          className={TEXT_LINK_CLASSES}
-        >
-          <span className="font-semibold text-foreground">{followerCount}</span> {labels.followers}
-        </Link>
-      </p>
-
-      <SocialLinks
-        fideId={profile.fideId}
-        chesscomUsername={profile.chesscomUsername}
-        lichessUsername={profile.lichessUsername}
-        xUsername={profile.xUsername}
-        instagramUsername={profile.instagramUsername}
-        youtubeHandle={profile.youtubeHandle}
-      />
-
-      {profile.bio && (
-        <div className="space-y-3">
-          <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
-            {labels.bio}
-          </h2>
-          <p className="text-foreground whitespace-pre-wrap break-words">
-            <LinkedText text={profile.bio} locale={locale} />
           </p>
-        </div>
+
+          <SocialLinks
+            fideId={profile.fideId}
+            chesscomUsername={profile.chesscomUsername}
+            lichessUsername={profile.lichessUsername}
+            xUsername={profile.xUsername}
+            instagramUsername={profile.instagramUsername}
+            youtubeHandle={profile.youtubeHandle}
+          />
+
+          {profile.bio && (
+            <div className="space-y-3">
+              <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
+                {labels.bio}
+              </h2>
+              <p className="text-foreground whitespace-pre-wrap break-words">
+                <LinkedText text={profile.bio} locale={locale} />
+              </p>
+            </div>
+          )}
+        </>
       )}
     </>
   );

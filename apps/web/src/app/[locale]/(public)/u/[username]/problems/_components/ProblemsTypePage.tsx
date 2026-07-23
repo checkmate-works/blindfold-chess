@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
@@ -98,6 +98,12 @@ export async function ProblemsTypePage({
     }),
   ]);
 
+  // A block in either direction hides the owner's content; this page has no
+  // restricted view, so send the blocked viewer to the main profile notice.
+  if (!isOwnProfile && (shell.viewerHasBlocked || shell.blockedByProfile)) {
+    redirect(`/${locale}/u/${username}`);
+  }
+
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
     return `/${locale}/u/${username}/problems/${TYPE_ROUTE_SEGMENT[type]}${qs}`;
@@ -113,6 +119,7 @@ export async function ProblemsTypePage({
           isAuthenticated={!!user}
           initialFollowing={shell.initialFollowing}
           followedByProfile={shell.followedByProfile}
+          viewerHasBlocked={shell.viewerHasBlocked}
           followerCount={shell.followerCount}
           followingCount={shell.followingCount}
           labels={{
@@ -121,6 +128,10 @@ export async function ProblemsTypePage({
             followingCount: t('followingCount'),
             followers: t('followers'),
             bio: t('bio'),
+            moreActions: t('moreActions'),
+            block: t('block'),
+            unblock: t('unblock'),
+            blockedBadge: t('blockedBadge'),
           }}
         />
 

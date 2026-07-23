@@ -1972,7 +1972,8 @@
         "commentTooLong": "Your comment is too long.",
         "invalidTheme": "One or more selected themes are unavailable. Refresh and try again.",
         "invalidTagId": "One or more selected tags are invalid.",
-        "nothingToAdd": "Pick at least one theme or chunk that isn't linked yet."
+        "nothingToAdd": "Pick at least one theme or chunk that isn't linked yet.",
+        "blocked": "You can't suggest edits to this user's content."
       },
       "pageTitle": "Pattern suggestions · {name}",
       "breadcrumb": "Pattern suggestions",
@@ -2521,7 +2522,8 @@
         "rateLimited": "Too many comments. Please try again later.",
         "forbidden": "You don't have permission to do that.",
         "notFound": "This comment no longer exists.",
-        "generic": "Could not post your comment. Please try again."
+        "generic": "Could not post your comment. Please try again.",
+        "blocked": "You can't interact with this user."
       }
     },
     "create": {
@@ -3435,7 +3437,8 @@
         "alreadyResolved": "This suggestion has already been resolved.",
         "ownerCannotPropose": "You can't suggest edits to your own chunk — edit it directly instead.",
         "chunkNotDraft": "This chunk is published and is not accepting suggestions right now.",
-        "alreadyHasPending": "You already have a pending suggestion for this chunk. Withdraw it first if you want to propose something different."
+        "alreadyHasPending": "You already have a pending suggestion for this chunk. Withdraw it first if you want to propose something different.",
+        "blocked": "You can't suggest edits to this user's content."
       }
     }
   },
@@ -4551,7 +4554,18 @@
     "followersPageTitle": "Followers",
     "noFollowers": "No followers yet.",
     "followsYou": "Follows you",
-    "editProfile": "Edit profile",
+    "editProfile": "Edit",
+    "moreActions": "More actions",
+    "block": "Block",
+    "unblock": "Unblock",
+    "blockedBadge": "Blocked",
+    "blockedNoticeByYou": "You've blocked this user. Their posts and games are hidden while the block is active.",
+    "blockedNoticeByThem": "This content isn't available.",
+    "blockPageTitle": "Block {displayName}",
+    "blockSectionTitle": "Confirmation",
+    "blockDescription": "You're about to block {displayName}. They won't be able to follow you or send you notifications.",
+    "blockedState": "You've blocked {displayName}. They can't follow you or send you notifications.",
+    "blockError": "Something went wrong. Please try again.",
     "topicsTab": "Topics",
     "noTopicPosts": "No posts yet.",
     "problemsTab": "Problems",
@@ -6191,5 +6205,8 @@
       "clear": "Clear",
       "submit": "Submit"
     }
+  },
+  "moderation": {
+    "blocked": "You can't interact with this user."
   }
 }

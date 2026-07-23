@@ -7,10 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
-import {
-  PositionActionsMenu,
-  PositionActionsMenuButton,
-} from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
+import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deleteLine } from '../_actions/deleteLine';
@@ -52,7 +49,7 @@ export function RepertoireLineActionsMenu({ repertoireId, lineNo, locale }: Prop
 
   return (
     <>
-      <PositionActionsMenu
+      <ActionsMenu
         ariaLabel={t('detail.moreActions')}
         items={[
           {
@@ -63,11 +60,11 @@ export function RepertoireLineActionsMenu({ repertoireId, lineNo, locale }: Prop
           },
         ]}
       >
-        <PositionActionsMenuButton tone="danger" onClick={() => setOpen(true)} disabled={pending}>
+        <ActionsMenuButton tone="danger" onClick={() => setOpen(true)} disabled={pending}>
           <FiTrash2 className="h-4 w-4" aria-hidden />
           {t('line.delete.button')}
-        </PositionActionsMenuButton>
-      </PositionActionsMenu>
+        </ActionsMenuButton>
+      </ActionsMenu>
       <ConfirmationModal
         isOpen={open}
         title={t('line.delete.title')}

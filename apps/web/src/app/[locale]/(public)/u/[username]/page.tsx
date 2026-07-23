@@ -32,6 +32,7 @@ import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileAchievements } from './_components/ProfileAchievements';
+import { ProfileBlockedNotice } from './_components/ProfileBlockedNotice';
 import { ProfileGames } from './_components/ProfileGames';
 import { ProfileIdentitySection } from './_components/ProfileIdentitySection';
 import { ProfilePosts } from './_components/ProfilePosts';
@@ -113,6 +114,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     activeTab,
     initialFollowing,
     followedByProfile,
+    viewerHasBlocked,
+    blockedByProfile,
     followerCount,
     followingCount,
     posts,
@@ -137,6 +140,11 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     return `/${locale}/u/${username}${qs ? `?${qs}` : ''}`;
   };
 
+  // A block in either direction collapses the profile to its identity header
+  // plus a notice — posts, games and achievements are hidden from the blocked
+  // viewer's in-app view. (Direct URLs / SEO pages stay public by design.)
+  const restricted = !isOwnProfile && (viewerHasBlocked || blockedByProfile);
+
   return (
     <PageLayout title={t('pageTitle')} locale={locale}>
       <div className="space-y-6">
@@ -147,6 +155,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           isAuthenticated={!!user}
           initialFollowing={initialFollowing}
           followedByProfile={followedByProfile}
+          viewerHasBlocked={viewerHasBlocked}
+          restricted={restricted}
           followerCount={followerCount}
           followingCount={followingCount}
           labels={{
@@ -155,69 +165,81 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             followingCount: t('followingCount'),
             followers: t('followers'),
             bio: t('bio'),
+            moreActions: t('moreActions'),
+            block: t('block'),
+            unblock: t('unblock'),
+            blockedBadge: t('blockedBadge'),
           }}
         />
-        {/* Topics / Problems / Games Tabs */}
-        <ProfilePosts
-          posts={posts}
-          totalCount={topicsCount}
-          problemsCount={problemsCount}
-          gamesCount={gamesCount}
-          activeTab={activeTab}
-          currentPage={topicsCurrentPage}
-          totalPages={topicsTotalPages}
-          locale={locale}
-          buildHref={buildHref}
-          buildTabHref={(targetTab) => buildTabHref(username, targetTab)}
-          labels={{
-            topicsTab: t('topicsTab'),
-            problemsTab: t('problemsTab'),
-            gamesTab: t('gamesTab'),
-            noTopicPosts: t('noTopicPosts'),
-            showMore: tTopics('showMore'),
-            justNow: (topicType) =>
-              topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
-          }}
-          gamesSlot={
-            <ProfileGames
-              games={games}
-              likeMetaMap={gameLikeMetaMap}
-              replyMetaMap={gameReplyMetaMap}
-              emptyReplyMeta={EMPTY_REPLY_META}
-              currentPage={gamesCurrentPage}
-              totalPages={gamesTotalPages}
+        {restricted ? (
+          <ProfileBlockedNotice
+            message={viewerHasBlocked ? t('blockedNoticeByYou') : t('blockedNoticeByThem')}
+          />
+        ) : (
+          <>
+            {/* Topics / Problems / Games Tabs */}
+            <ProfilePosts
+              posts={posts}
+              totalCount={topicsCount}
+              problemsCount={problemsCount}
+              gamesCount={gamesCount}
+              activeTab={activeTab}
+              currentPage={topicsCurrentPage}
+              totalPages={topicsTotalPages}
               locale={locale}
               buildHref={buildHref}
-              justNowLabel={tSharedGames('detail.justNow')}
-              colorLabels={{
-                white: tPlay('playerColor.white'),
-                black: tPlay('playerColor.black'),
-              }}
-              resolveOpeningName={(slug, fallbackName) =>
-                getOpeningDisplayName(tOpeningNames, slug, fallbackName)
-              }
+              buildTabHref={(targetTab) => buildTabHref(username, targetTab)}
               labels={{
-                noGames: t('noGames'),
+                topicsTab: t('topicsTab'),
+                problemsTab: t('problemsTab'),
+                gamesTab: t('gamesTab'),
+                noTopicPosts: t('noTopicPosts'),
+                showMore: tTopics('showMore'),
+                justNow: (topicType) =>
+                  topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
               }}
+              gamesSlot={
+                <ProfileGames
+                  games={games}
+                  likeMetaMap={gameLikeMetaMap}
+                  replyMetaMap={gameReplyMetaMap}
+                  emptyReplyMeta={EMPTY_REPLY_META}
+                  currentPage={gamesCurrentPage}
+                  totalPages={gamesTotalPages}
+                  locale={locale}
+                  buildHref={buildHref}
+                  justNowLabel={tSharedGames('detail.justNow')}
+                  colorLabels={{
+                    white: tPlay('playerColor.white'),
+                    black: tPlay('playerColor.black'),
+                  }}
+                  resolveOpeningName={(slug, fallbackName) =>
+                    getOpeningDisplayName(tOpeningNames, slug, fallbackName)
+                  }
+                  labels={{
+                    noGames: t('noGames'),
+                  }}
+                />
+              }
             />
-          }
-        />
 
-        {/* Achievements */}
-        {userAchievementRows.length > 0 && (
-          <ProfileAchievements
-            achievements={userAchievementRows}
-            locale={locale}
-            limit={4}
-            totalCount={userAchievementRows.length}
-            username={username}
-            labels={{
-              sectionTitle: t('achievementsSection'),
-              noAchievements: t('noAchievements'),
-              viewAll: t('viewAllAchievements'),
-              categoryNames: getAchievementCategoryNames(t),
-            }}
-          />
+            {/* Achievements */}
+            {userAchievementRows.length > 0 && (
+              <ProfileAchievements
+                achievements={userAchievementRows}
+                locale={locale}
+                limit={4}
+                totalCount={userAchievementRows.length}
+                username={username}
+                labels={{
+                  sectionTitle: t('achievementsSection'),
+                  noAchievements: t('noAchievements'),
+                  viewAll: t('viewAllAchievements'),
+                  categoryNames: getAchievementCategoryNames(t),
+                }}
+              />
+            )}
+          </>
         )}
       </div>
     </PageLayout>

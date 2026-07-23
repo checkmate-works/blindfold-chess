@@ -12,6 +12,8 @@ export type PublicProfilePageData = {
   activeTab: ProfileTab;
   initialFollowing: boolean;
   followedByProfile: boolean;
+  viewerHasBlocked: boolean;
+  blockedByProfile: boolean;
   followerCount: number;
   followingCount: number;
   posts: ProfilePostWithReplyMeta[];
@@ -90,6 +92,8 @@ export async function loadPublicProfilePageData({
     activeTab,
     initialFollowing: shell.initialFollowing,
     followedByProfile: shell.followedByProfile,
+    viewerHasBlocked: shell.viewerHasBlocked,
+    blockedByProfile: shell.blockedByProfile,
     followerCount: shell.followerCount,
     followingCount: shell.followingCount,
     posts,

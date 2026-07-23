@@ -17,6 +17,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileAchievements } from '../_components/ProfileAchievements';
 import { getProfileByUsername } from '../_lib/queries';
+import { redirectIfBlockedFromProfile } from '../_lib/redirect-if-blocked';
 
 // Per-user, per-locale URLs explode the on-demand ISR cache (one entry per
 // (locale, username, ?page=N)), and the 5-min revalidate cycle previously
@@ -63,6 +64,8 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
   if (!profile) {
     notFound();
   }
+
+  await redirectIfBlockedFromProfile({ locale, username, profileId: profile.id });
 
   const { page } = await searchParamsCache.parse(searchParams);
 

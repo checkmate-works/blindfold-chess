@@ -2,11 +2,10 @@ import type { ReactNode } from 'react';
 
 import Link from 'next/link';
 
+import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
+import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import type { PositionActionsMenuItem } from './PositionActionsMenu';
-import { PositionActionsMenu } from './PositionActionsMenu';
 
 type ProfileLike = {
   username?: string | null;
@@ -40,12 +39,12 @@ type Props = {
   /** Accessible label for the "⋯" menu trigger, e.g. translated "More actions". */
   menuAriaLabel?: string;
   /** Owner/viewer link actions (edit, fork). The "⋯" menu is hidden when empty. */
-  menuItems?: PositionActionsMenuItem[];
+  menuItems?: ActionsMenuItem[];
   /**
    * Fully custom "⋯" menu node — takes precedence over `menuItems`. Use when
    * menu visibility or entries depend on client-side state (e.g. the shared
    * game's token-based ownership) by passing a client component that renders
-   * `PositionActionsMenu` itself (or nothing).
+   * `ActionsMenu` itself (or nothing).
    */
   menu?: ReactNode;
 };
@@ -99,7 +98,7 @@ export function PositionAuthorHeader({
         </UserAvatar>
         {menu ??
           (menuItems.length > 0 && menuAriaLabel && (
-            <PositionActionsMenu ariaLabel={menuAriaLabel} items={menuItems} />
+            <ActionsMenu ariaLabel={menuAriaLabel} items={menuItems} />
           ))}
       </div>
     </div>

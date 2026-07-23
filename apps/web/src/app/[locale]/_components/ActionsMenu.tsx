@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 import { FiMoreHorizontal } from 'react-icons/fi';
 
-export type PositionActionsMenuItem = {
+export type ActionsMenuItem = {
   key: string;
   label: string;
   href: string;
@@ -18,25 +18,25 @@ type Props = {
   /** Accessible label for the trigger button, e.g. translated "More actions". */
   ariaLabel: string;
   /** Plain-link entries — serializable, so server components can pass them. */
-  items?: PositionActionsMenuItem[];
+  items?: ActionsMenuItem[];
   /**
    * Custom entries rendered after `items` — e.g. action buttons that own a
-   * confirmation modal. Style them with `PositionActionsMenuButton`. The
-   * popup is hidden with CSS rather than unmounted so their state (and any
-   * portaled modal) survives the popup closing.
+   * confirmation modal. Style them with `ActionsMenuButton`. The popup is
+   * hidden with CSS rather than unmounted so their state (and any portaled
+   * modal) survives the popup closing.
    */
   children?: ReactNode;
 };
 
 /**
  * SNS-style "⋯" overflow menu for owner/viewer actions (edit, fork, publish,
- * delete) on content detail pages. Follows the established dropdown pattern
- * from `CreateFromPositionMenu`: outside-click / Escape to close, plain links
- * as menu items so every destination stays crawlable. Any click inside the
- * popup closes it (menu semantics) — modals opened by custom items live in a
- * portal, so they are unaffected.
+ * delete, block) on content detail pages and user profiles. Follows the
+ * established dropdown pattern from `CreateFromPositionMenu`: outside-click /
+ * Escape to close, plain links as menu items so every destination stays
+ * crawlable. Any click inside the popup closes it (menu semantics) — modals
+ * opened by custom items live in a portal, so they are unaffected.
  */
-export function PositionActionsMenu({ ariaLabel, items = [], children }: Props) {
+export function ActionsMenu({ ariaLabel, items = [], children }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -101,10 +101,10 @@ type MenuButtonProps = {
 };
 
 /**
- * Button-shaped menu item for `PositionActionsMenu` children — same look as
- * the link items. Use for actions that open a modal instead of navigating.
+ * Button-shaped menu item for `ActionsMenu` children — same look as the link
+ * items. Use for actions that open a modal instead of navigating.
  */
-export function PositionActionsMenuButton({
+export function ActionsMenuButton({
   onClick,
   disabled,
   tone = 'default',

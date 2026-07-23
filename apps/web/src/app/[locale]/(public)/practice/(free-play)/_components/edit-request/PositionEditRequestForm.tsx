@@ -33,6 +33,7 @@ const WELL_KNOWN_ERRORS = new Set([
   'rateLimited',
   'notFound',
   'ownerCannotPropose',
+  'blocked',
   'alreadyHasPending',
   'invalidTheme',
   'invalidChunk',

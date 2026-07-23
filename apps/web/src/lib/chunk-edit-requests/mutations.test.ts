@@ -13,6 +13,11 @@ const mockGetEditRequestById = vi.fn();
 const mockGetViewerPendingEditRequestForChunk = vi.fn();
 const mockIsUniqueViolation = vi.fn();
 
+vi.mock('@/lib/moderation/block', () => ({
+  isBlockedBetween: () => Promise.resolve(false),
+  hasBlocked: () => Promise.resolve(false),
+}));
+
 vi.mock('server-only', () => ({}));
 
 vi.mock('@/lib/auth', () => ({

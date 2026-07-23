@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { FiTrash2 } from 'react-icons/fi';
 
-import { PositionActionsMenuButton } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionActionsMenu';
+import { ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deleteChunk } from '../_actions/deleteChunk';
@@ -26,7 +26,7 @@ type Props = {
 
 /**
  * Owner-side soft-delete entry for the chunk detail page's "⋯" overflow
- * menu (`PositionActionsMenu`).
+ * menu (`ActionsMenu`).
  *
  * Lives outside `ChunkLifecycleControls` because that component is
  * hidden on published chunks (its sole action only applies to drafts).
@@ -62,14 +62,10 @@ export function ChunkDeleteButton({ chunkId }: Props) {
 
   return (
     <>
-      <PositionActionsMenuButton
-        tone="danger"
-        onClick={() => setConfirmOpen(true)}
-        disabled={pending}
-      >
+      <ActionsMenuButton tone="danger" onClick={() => setConfirmOpen(true)} disabled={pending}>
         <FiTrash2 className="h-4 w-4" aria-hidden />
         {pending ? t('form.actions.deleting') : t('form.actions.delete')}
-      </PositionActionsMenuButton>
+      </ActionsMenuButton>
 
       <ConfirmationModal
         isOpen={confirmOpen}
