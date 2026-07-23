@@ -71,18 +71,18 @@ describe('buildOpsRows', () => {
     const rows = buildOpsRows(log({ peekCount: 2, invalidCount: 1 }), LABELS);
     expect(rows).toEqual([
       { label: 'Peek', value: 2 },
-      { label: 'Illegal', value: 1, detail: undefined },
+      { label: 'Illegal', value: 1, attempts: undefined },
     ]);
   });
 
-  it('attaches the rejected SAN texts as the invalid row detail', () => {
+  it('attaches the rejected SAN texts as the invalid row attempts array (not pre-joined)', () => {
     const rows = buildOpsRows(log({ invalidCount: 2, invalidAttempts: ['Nf3', 'Bb4'] }), LABELS);
-    expect(rows).toEqual([{ label: 'Illegal', value: 2, detail: 'Nf3, Bb4' }]);
+    expect(rows).toEqual([{ label: 'Illegal', value: 2, attempts: ['Nf3', 'Bb4'] }]);
   });
 
-  it('omits the detail when invalidCount is set but no attempt texts were captured', () => {
+  it('omits attempts when invalidCount is set but no attempt texts were captured', () => {
     // Board mis-grabs bump the count but carry no SAN — invalidAttempts stays undefined.
     const rows = buildOpsRows(log({ invalidCount: 1 }), LABELS);
-    expect(rows).toEqual([{ label: 'Illegal', value: 1, detail: undefined }]);
+    expect(rows).toEqual([{ label: 'Illegal', value: 1, attempts: undefined }]);
   });
 });

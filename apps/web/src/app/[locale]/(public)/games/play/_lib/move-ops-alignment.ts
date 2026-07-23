@@ -60,16 +60,17 @@ export function logForMovesIndex(
   return logs[logIndex];
 }
 
-export type OpsRow = { label: string; value: number; detail?: string };
+export type OpsRow = { label: string; value: number; attempts?: string[] };
 
 /**
  * A single move's non-zero op counters as display rows, in a fixed order
- * (peek, undo, hints, invalid). `detail` on the invalid row carries the
- * rejected move texts (e.g. "Nf3, Bb4") when captured, so a review can show
- * *what* was tried, not just how many attempts — see
- * {@link MoveOperationLog.invalidAttempts}. Shared by `OpsPopover` (the live
- * play move list) and the shared-game per-move position panel so both render
- * identically from the same log entry.
+ * (peek, undo, hints, invalid). `attempts` on the invalid row carries the
+ * rejected move texts (e.g. ["Nf3", "Bb4"]) when captured, so a review can
+ * show *what* was tried, not just how many attempts — see
+ * {@link MoveOperationLog.invalidAttempts}. Kept as an array (not pre-joined)
+ * so the renderer can lay each one out as its own chip. Shared by `OpsPopover`
+ * (the live play move list) and the shared-game per-move position panel so both
+ * render identically from the same log entry.
  */
 export function buildOpsRows(
   log: MoveOperationLog,
@@ -85,7 +86,7 @@ export function buildOpsRows(
     rows.push({
       label: labels.invalid,
       value: log.invalidCount as number,
-      detail: attempts.length > 0 ? attempts.join(', ') : undefined,
+      attempts: attempts.length > 0 ? attempts : undefined,
     });
   }
   return rows;
