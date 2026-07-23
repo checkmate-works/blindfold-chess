@@ -3,6 +3,7 @@ import {
   generatePgn,
   getStartingFen,
   parsePgnTree,
+  toPositionKey,
 } from '@blindfold-chess/features/chess-core';
 import type { PgnTree } from '@blindfold-chess/features/chess-core';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
@@ -21,6 +22,7 @@ import { countRows } from '@/lib/db/list-query';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
+import { replayRepertoireLine } from './replay-line';
 import type {
   RepertoireImportInput,
   RepertoireLineEditError,
@@ -43,10 +45,63 @@ export type UpdateLineResult =
   | { ok: false; error: 'unauthorized' | 'notFound' | RepertoireLineEditError };
 
 /**
+ * Delete every annotation of a repertoire whose position no longer appears in
+ * ANY of its live lines — the "collect unused notes" step run after a
+ * structural line change (a line edit that shortens/rewrites moves, or a line
+ * delete).
+ *
+ * Reachability is a REPERTOIRE-WIDE question, not a per-line one: annotations
+ * are keyed by `(repertoire, positionKey)` and shared across transposing lines
+ * (see `upsertAnnotation`), so a position dropped from the edited line may still
+ * be reached by a sibling line. We therefore replay every live line, union
+ * their position keys, and prune only annotations outside that set.
+ *
+ * Conservative on unparseable input: if a live line's PGN fails to replay we
+ * can't account for the positions it "owns", so we skip pruning entirely rather
+ * than risk deleting a note that line still reaches. (Live lines always carry
+ * movetext — an empty replay for a non-empty PGN means a parse failure.)
+ *
+ * Runs inside the caller's transaction so the reachable set reflects the same
+ * post-mutation line state the prune deletes against.
+ */
+async function pruneOrphanAnnotations(tx: Tx, repertoireId: string): Promise<void> {
+  const lines = await tx
+    .select({ pgn: repertoireLines.pgn, startingFen: repertoireLines.startingFen })
+    .from(repertoireLines)
+    .where(and(eq(repertoireLines.repertoireId, repertoireId), isNull(repertoireLines.deletedAt)));
+
+  const reachable = new Set<string>();
+  for (const line of lines) {
+    const { sans, positions } = replayRepertoireLine(line);
+    const hasMovetext = line.pgn.replace(/\[[^\]]*\]/g, '').trim().length > 0;
+    if (sans.length === 0 && hasMovetext) return; // parse failure — bail, don't prune
+    for (const pos of positions) reachable.add(toPositionKey(pos.fen));
+  }
+
+  const existing = await tx
+    .select({ positionKey: repertoireAnnotations.positionKey })
+    .from(repertoireAnnotations)
+    .where(eq(repertoireAnnotations.repertoireId, repertoireId));
+  const orphanKeys = existing.map((row) => row.positionKey).filter((key) => !reachable.has(key));
+  if (orphanKeys.length > 0) {
+    await tx
+      .delete(repertoireAnnotations)
+      .where(
+        and(
+          eq(repertoireAnnotations.repertoireId, repertoireId),
+          inArray(repertoireAnnotations.positionKey, orphanKeys)
+        )
+      );
+  }
+}
+
+/**
  * Owner-only: replace a single line's name + moves. The line is addressed by
  * its 1-based number (seq + 1); its root position is fixed (editing changes the
- * moves only). Position-keyed annotations / comments are not touched — they
- * follow the surviving positions automatically.
+ * moves only). Position-keyed annotations / comments follow the surviving
+ * positions automatically — and any note left attached to no line at all (a
+ * position this edit removed and no sibling line reaches) is pruned in the same
+ * transaction (see {@link pruneOrphanAnnotations}).
  */
 export async function updateRepertoireLine(params: {
   repertoireId: string;
@@ -78,10 +133,13 @@ export async function updateRepertoireLine(params: {
   });
   if (!validated.ok) return { ok: false, error: validated.error };
 
-  await db
-    .update(repertoireLines)
-    .set({ name: validated.data.name, pgn: validated.data.pgn })
-    .where(eq(repertoireLines.id, line.id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(repertoireLines)
+      .set({ name: validated.data.name, pgn: validated.data.pgn })
+      .where(eq(repertoireLines.id, line.id));
+    await pruneOrphanAnnotations(tx, params.repertoireId);
+  });
 
   return { ok: true };
 }
