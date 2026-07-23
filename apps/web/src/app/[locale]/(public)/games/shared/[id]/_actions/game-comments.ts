@@ -13,6 +13,7 @@ import {
 import { getLiveGameAuthorId } from '@/lib/db/games-read';
 import { performEntityToggleLike } from '@/lib/db/like-actions';
 import type { ToggleLikeResult } from '@/lib/db/like-actions';
+import { isBlockedBetween } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
@@ -93,6 +94,19 @@ export async function addGameCommentAction(
       parentAuthorId = parent.authorId;
     }
 
+    // Resolve the block target before writing: the parent-comment author for a
+    // reply, otherwise the game owner (`undefined` for an account-less game).
+    // Hoisted so the top-level notification below can reuse it.
+    const ownerId = parentId === null ? await getLiveGameAuthorId(input.gameId) : undefined;
+    const blockTarget = parentId === null ? ownerId : parentAuthorId;
+    if (
+      blockTarget != null &&
+      blockTarget !== user.id &&
+      (await isBlockedBetween(user.id, blockTarget))
+    ) {
+      return { success: false, error: 'moderation.blocked' };
+    }
+
     const { id, createdAt, updatedAt } = await insertGameComment({
       gameId: input.gameId,
       ply,
@@ -108,7 +122,6 @@ export async function addGameCommentAction(
     // same as position/chunk comment threads. Both recipients may be null
     // (account-less game / anonymised author); createNotification no-ops.
     if (parentId === null) {
-      const ownerId = await getLiveGameAuthorId(input.gameId);
       if (ownerId !== undefined && ownerId !== user.id) {
         createNotification({
           userId: ownerId,

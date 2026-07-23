@@ -21,6 +21,8 @@ export async function createChunkPostWithAttachment(
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
+  const chunk = await getChunkBySlug(slug);
+
   return createPostWithAttachmentBase({
     locale,
     topicIdentifier: slug,
@@ -32,6 +34,7 @@ export async function createChunkPostWithAttachment(
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
+    topicAuthorId: chunk?.userId,
     redirectPath: (postId, { toast }) =>
       `/${locale}/chunks/${slug}${toast ? '?toast=post_created' : ''}#post-${postId}`,
     formData,

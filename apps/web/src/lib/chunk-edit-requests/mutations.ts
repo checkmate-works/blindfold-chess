@@ -8,6 +8,7 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { chunkEditRequests, chunks, db } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { EDIT_REQUEST_TERMINAL_STATUS, type EditRequestAction } from '@/lib/edit-requests/shared';
+import { isBlockedBetween } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
@@ -77,6 +78,11 @@ export async function submitEditRequestEntry(params: {
   }
   if (chunk.userId === user.id) {
     return { error: 'ownerCannotPropose' };
+  }
+  // Once either party has blocked the other, the proposer may not submit an
+  // edit request against the owner's chunk.
+  if (chunk.userId && (await isBlockedBetween(user.id, chunk.userId))) {
+    return { error: 'blocked' };
   }
   if (chunk.status !== 'draft') {
     // The owner has already locked the chunk; suggestions are

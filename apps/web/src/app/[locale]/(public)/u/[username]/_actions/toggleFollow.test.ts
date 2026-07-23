@@ -10,6 +10,12 @@ const mockSelectFromWhere = vi.fn();
 const mockSelectProfile = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
+const mockIsBlockedBetween = vi.fn();
+
+vi.mock('@/lib/moderation/block', () => ({
+  isBlockedBetween: (...args: unknown[]) => mockIsBlockedBetween(...args),
+  hasBlocked: () => Promise.resolve(false),
+}));
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
@@ -83,6 +89,7 @@ describe('toggleFollow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
+    mockIsBlockedBetween.mockResolvedValue(false);
   });
 
   describe('authentication', () => {
@@ -195,6 +202,24 @@ describe('toggleFollow', () => {
       mockInsertValues.mockRejectedValue(new Error('Connection failed'));
 
       await expect(toggleFollow('validuser', 'en')).rejects.toThrow('Connection failed');
+    });
+  });
+
+  describe('block enforcement', () => {
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockSelectFromWhere.mockResolvedValue([{ id: targetProfileId }]);
+    });
+
+    it('rejects the follow with "blocked" when a block exists in either direction', async () => {
+      mockIsBlockedBetween.mockResolvedValue(true);
+
+      const result = await toggleFollow('validuser', 'en');
+      expect(result).toEqual({ error: 'blocked' });
+      expect(mockIsBlockedBetween).toHaveBeenCalledWith(testUserId, targetProfileId);
+      expect(mockInsertValues).not.toHaveBeenCalled();
+      expect(mockDeleteWhere).not.toHaveBeenCalled();
     });
   });
 

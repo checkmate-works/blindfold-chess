@@ -11,6 +11,11 @@ const mockInsertReturning = vi.fn();
 const mockVideoInsertValues = vi.fn();
 const mockSelectProfile = vi.fn();
 
+vi.mock('@/lib/moderation/block', () => ({
+  isBlockedBetween: () => Promise.resolve(false),
+  hasBlocked: () => Promise.resolve(false),
+}));
+
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
   captureMessage: vi.fn(),

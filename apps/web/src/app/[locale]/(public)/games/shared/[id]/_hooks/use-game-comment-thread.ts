@@ -44,6 +44,7 @@ export function useGameCommentThread({
     if (code === 'rateLimited') return t('errors.rateLimited');
     if (code === 'forbidden') return t('errors.forbidden');
     if (code === 'not_found') return t('errors.notFound');
+    if (code === 'moderation.blocked') return t('errors.blocked');
     return t('errors.generic');
   };
 

@@ -7,6 +7,7 @@ import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { authenticateCheckBanAndRequireProfile } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
+import { isBlockedBetween } from '@/lib/moderation/block';
 import {
   notifyFollowersOfNewPost,
   notifyTopicAuthorOfNewComment,
@@ -112,6 +113,16 @@ async function insertPost(
     return { error: guardResult.error };
   }
   const { user } = guardResult;
+
+  // Commenting on someone's content (topicAuthorId set) is a user→user write;
+  // once either party has blocked the other, reject it.
+  if (
+    topicAuthorId &&
+    topicAuthorId !== user.id &&
+    (await isBlockedBetween(user.id, topicAuthorId))
+  ) {
+    return { error: 'moderation.blocked' };
+  }
 
   const contentResult = validateContent(formData);
   if ('error' in contentResult) {

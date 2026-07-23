@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { and, count, eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
+import { isBlockedBetween } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -107,13 +108,25 @@ export async function performEntityToggleLike<TExtra>(params: {
   if ('error' in guardResult) return { error: guardResult.error };
   const { user } = guardResult;
 
+  // Look up the owner BEFORE toggling so a block can reject the like outright:
+  // once either party has blocked the other, neither may like the other's
+  // content. (The target row isn't deleted by liking, so fetching the owner
+  // before vs after the toggle is equivalent.)
+  const owner = await fetchOwner(id);
+
+  if (
+    owner?.userId &&
+    owner.userId !== user.id &&
+    (await isBlockedBetween(user.id, owner.userId))
+  ) {
+    return { error: 'moderation.blocked' };
+  }
+
   const { liked, likeCount } = await toggleLikeForTarget({
     userId: user.id,
     targetType,
     targetId: id,
   });
-
-  const owner = await fetchOwner(id);
 
   // (createNotification no-ops when owner.userId is null — anonymised owner.)
   if (liked && owner && owner.userId !== user.id) {

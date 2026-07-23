@@ -13,6 +13,11 @@ const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 const mockGetPositionById = vi.fn();
 
+vi.mock('@/lib/moderation/block', () => ({
+  isBlockedBetween: () => Promise.resolve(false),
+  hasBlocked: () => Promise.resolve(false),
+}));
+
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));

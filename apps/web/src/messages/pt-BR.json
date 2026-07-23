@@ -1972,7 +1972,8 @@
         "commentTooLong": "Seu comentário é muito longo.",
         "invalidTheme": "Um ou mais temas selecionados estão indisponíveis. Atualize e tente novamente.",
         "invalidTagId": "Uma ou mais tags selecionadas são inválidas.",
-        "nothingToAdd": "Escolha ao menos um tema ou chunk que ainda não esteja vinculado."
+        "nothingToAdd": "Escolha ao menos um tema ou chunk que ainda não esteja vinculado.",
+        "blocked": "Você não pode sugerir edições ao conteúdo deste usuário."
       },
       "pageTitle": "Sugestões de padrões · {name}",
       "breadcrumb": "Sugestões de padrões",
@@ -2521,7 +2522,8 @@
         "rateLimited": "Muitos comentários. Tente novamente mais tarde.",
         "forbidden": "Você não tem permissão para fazer isso.",
         "notFound": "Este comentário não existe mais.",
-        "generic": "Não foi possível publicar seu comentário. Tente novamente."
+        "generic": "Não foi possível publicar seu comentário. Tente novamente.",
+        "blocked": "Você não pode interagir com este usuário."
       }
     },
     "create": {
@@ -3435,7 +3437,8 @@
         "alreadyResolved": "Esta sugestão já foi resolvida.",
         "ownerCannotPropose": "Você não pode sugerir edições no seu próprio chunk — edite-o diretamente.",
         "chunkNotDraft": "Este chunk está publicado e não está aceitando sugestões no momento.",
-        "alreadyHasPending": "Você já tem uma sugestão pendente para este chunk. Retire-a primeiro se quiser propor algo diferente."
+        "alreadyHasPending": "Você já tem uma sugestão pendente para este chunk. Retire-a primeiro se quiser propor algo diferente.",
+        "blocked": "Você não pode sugerir edições ao conteúdo deste usuário."
       }
     }
   },
@@ -6200,5 +6203,8 @@
       "clear": "Limpar",
       "submit": "Enviar"
     }
+  },
+  "moderation": {
+    "blocked": "Você não pode interagir com este usuário."
   }
 }

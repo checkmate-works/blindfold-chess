@@ -9,6 +9,11 @@ import { togglePositionLike as toggleLike } from './like-actions';
 // Spy on drizzle-orm's `eq`/`and` so tests can assert that SELECT/DELETE filter
 // by `likes.targetType = 'position'`. This is the positions-side safety net
 // matching the one in topics/_actions/toggleLike.test.ts.
+vi.mock('@/lib/moderation/block', () => ({
+  isBlockedBetween: () => Promise.resolve(false),
+  hasBlocked: () => Promise.resolve(false),
+}));
+
 vi.mock('drizzle-orm', async (importOriginal) => {
   const actual = await importOriginal<typeof import('drizzle-orm')>();
   return {

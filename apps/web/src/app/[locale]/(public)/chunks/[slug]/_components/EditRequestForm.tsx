@@ -49,6 +49,7 @@ const WELL_KNOWN_ERRORS = new Set([
   'rateLimited',
   'notFound',
   'ownerCannotPropose',
+  'blocked',
   'chunkNotDraft',
   'alreadyHasPending',
 ]);

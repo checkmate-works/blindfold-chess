@@ -13,6 +13,11 @@ import { toggleLikeBase } from './toggleLike';
 // Note: vi.mock is hoisted to the top of the file by Vitest, so it applies
 // before the `eq` import above is resolved — the imported `eq` is the spied
 // version returned from this mock factory.
+vi.mock('@/lib/moderation/block', () => ({
+  isBlockedBetween: () => Promise.resolve(false),
+  hasBlocked: () => Promise.resolve(false),
+}));
+
 vi.mock('drizzle-orm', async (importOriginal) => {
   const actual = await importOriginal<typeof import('drizzle-orm')>();
   return {

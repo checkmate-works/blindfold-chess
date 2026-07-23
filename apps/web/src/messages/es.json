@@ -1972,7 +1972,8 @@
         "commentTooLong": "Tu comentario es demasiado largo.",
         "invalidTheme": "Uno o más temas seleccionados no están disponibles. Actualiza e inténtalo de nuevo.",
         "invalidTagId": "Una o más etiquetas seleccionadas no son válidas.",
-        "nothingToAdd": "Elige al menos un tema o chunk que aún no esté vinculado."
+        "nothingToAdd": "Elige al menos un tema o chunk que aún no esté vinculado.",
+        "blocked": "No puedes sugerir ediciones al contenido de este usuario."
       },
       "pageTitle": "Sugerencias de patrones · {name}",
       "breadcrumb": "Sugerencias de patrones",
@@ -2521,7 +2522,8 @@
         "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde.",
         "forbidden": "No tienes permiso para hacer eso.",
         "notFound": "Este comentario ya no existe.",
-        "generic": "No se pudo publicar tu comentario. Inténtalo de nuevo."
+        "generic": "No se pudo publicar tu comentario. Inténtalo de nuevo.",
+        "blocked": "No puedes interactuar con este usuario."
       }
     },
     "create": {
@@ -3435,7 +3437,8 @@
         "alreadyResolved": "Esta sugerencia ya se ha resuelto.",
         "ownerCannotPropose": "No puedes sugerir ediciones a tu propio chunk; edítalo directamente.",
         "chunkNotDraft": "Este chunk está publicado y no acepta sugerencias en este momento.",
-        "alreadyHasPending": "Ya tienes una sugerencia pendiente para este chunk. Retírala primero si quieres proponer algo diferente."
+        "alreadyHasPending": "Ya tienes una sugerencia pendiente para este chunk. Retírala primero si quieres proponer algo diferente.",
+        "blocked": "No puedes sugerir ediciones al contenido de este usuario."
       }
     }
   },
@@ -6200,5 +6203,8 @@
       "clear": "Borrar",
       "submit": "Enviar"
     }
+  },
+  "moderation": {
+    "blocked": "No puedes interactuar con este usuario."
   }
 }

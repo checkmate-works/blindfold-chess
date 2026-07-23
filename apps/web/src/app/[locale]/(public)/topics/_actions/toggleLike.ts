@@ -8,6 +8,7 @@ import { eq } from 'drizzle-orm';
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, topicPosts } from '@/lib/db';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
+import { isBlockedBetween } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { validateUUID } from '@/lib/validations/uuid';
@@ -48,30 +49,33 @@ export async function toggleLikeBase(params: {
   }
   const { user } = guardResult;
 
+  // Look up the author before toggling so a block can reject the like outright.
+  const [post] = await db
+    .select({ userId: topicPosts.userId })
+    .from(topicPosts)
+    .where(eq(topicPosts.id, postId))
+    .limit(1);
+
+  if (post?.userId && post.userId !== user.id && (await isBlockedBetween(user.id, post.userId))) {
+    return { error: 'moderation.blocked' };
+  }
+
   const { liked, likeCount } = await toggleLikeForTarget({
     userId: user.id,
     targetType: 'topic_post',
     targetId: postId,
   });
 
-  if (liked) {
-    const [post] = await db
-      .select({ userId: topicPosts.userId })
-      .from(topicPosts)
-      .where(eq(topicPosts.id, postId))
-      .limit(1);
-
-    // (createNotification no-ops when post.userId is null — anonymised author.)
-    if (post && post.userId !== user.id) {
-      createNotification({
-        userId: post.userId,
-        actorId: user.id,
-        type: 'like',
-        targetType: 'topic_post',
-        targetId: postId,
-        metadata: { topicType, topicKey: topicIdentifier, postId },
-      });
-    }
+  // (createNotification no-ops when post.userId is null — anonymised author.)
+  if (liked && post && post.userId !== user.id) {
+    createNotification({
+      userId: post.userId,
+      actorId: user.id,
+      type: 'like',
+      targetType: 'topic_post',
+      targetId: postId,
+      metadata: { topicType, topicKey: topicIdentifier, postId },
+    });
   }
 
   const pathsToRevalidate = revalidate
