@@ -57,19 +57,54 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
   const locale = localeProp ?? (params.locale as Locale);
   const processingToastRef = useRef(false);
 
-  // Handle toast query parameter (from server-side redirects)
+  // Handle toast query parameters (from server-side redirects / post-create
+  // navigations). Three shapes are supported:
+  //   ?toast=<key>        — fixed message keyed by TOAST_PARAM_CONFIG
+  //   ?coinsEarned=<n>    — UGC-reward toast rendered with the brand CoinIcon
+  //   ?coinsCapped=1      — daily-cap warning ("today's coin limit reached")
+  // All are consumed and stripped from the URL in a single history-neutral
+  // replace so the reward isn't re-shown on refresh or back-navigation.
   useEffect(() => {
     const toastParam = searchParams.get('toast');
-    if (!toastParam) return;
+    const coinsParam = searchParams.get('coinsEarned');
+    const cappedParam = searchParams.get('coinsCapped');
+    if (!toastParam && !coinsParam && !cappedParam) return;
 
-    const config = TOAST_PARAM_CONFIG[toastParam];
-    if (!config) return;
+    let handled = false;
 
-    showToast(tToast(config.messageKey), config.type);
+    if (toastParam) {
+      const config = TOAST_PARAM_CONFIG[toastParam];
+      if (config) {
+        showToast(tToast(config.messageKey), config.type);
+        handled = true;
+      }
+    }
 
-    // Clean up the toast query parameter from the URL without adding a history entry
+    if (coinsParam) {
+      const count = Number.parseInt(coinsParam, 10);
+      if (Number.isFinite(count) && count > 0) {
+        // Tapping the reward toast sends the author to their coin balance — a
+        // one-time discovery nudge to where earned coins live.
+        showToast(tToast('coinsEarned', { count }), 'success', {
+          icon: 'coin',
+          href: '/mypage/coins',
+        });
+        handled = true;
+      }
+    }
+
+    if (cappedParam === '1') {
+      showToast(tToast('coinsDailyCap'), 'warning');
+      handled = true;
+    }
+
+    if (!handled) return;
+
+    // Strip the consumed params from the URL without adding a history entry.
     const url = new URL(window.location.href);
     url.searchParams.delete('toast');
+    url.searchParams.delete('coinsEarned');
+    url.searchParams.delete('coinsCapped');
     router.replace(url.pathname + url.search, { scroll: false });
   }, [searchParams, showToast, tToast, router]);
 

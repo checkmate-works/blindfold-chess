@@ -16,10 +16,20 @@ import {
   recordPointMovement,
 } from './internal-ledger';
 
-export type PointGrantResult = {
-  pointEventId: string;
-  amount: number;
-};
+/**
+ * Outcome of a creation grant attempt.
+ *
+ * - `granted` — coins were credited. `cappedDaily` is true when the daily
+ *   cap trimmed the award to a partial (but still positive) amount.
+ * - `capped` — the daily cap is already exhausted, so nothing was credited
+ *   (the user earned 0 today). Kept distinct from `skipped` so callers can
+ *   tell the author the CAP — not ineligibility — is why they earned nothing.
+ * - `skipped` — no grant for a non-cap reason (an idempotent retry).
+ */
+export type PointGrantOutcome =
+  | { status: 'granted'; pointEventId: string; amount: number; cappedDaily: boolean }
+  | { status: 'capped' }
+  | { status: 'skipped' };
 
 /**
  * Grant points for a newly created UGC post — immediately spendable.
@@ -34,9 +44,10 @@ export type PointGrantResult = {
  * headroom for the current UTC day (`cappedCreationGrantAmount`). A
  * normal contributor earns the full `POST_CREATION_POINTS`; once the cap
  * is reached the grant shrinks to a partial amount and finally to `0`,
- * at which point this returns `null` (no ledger row, no `/thanks`
- * detour). When the award is partial, the ledger row is stamped
- * `metadata.cappedDaily` so `/thanks` can explain the smaller number.
+ * at which point this returns `{ status: 'capped' }` (no ledger row). When
+ * the award is partial, the ledger row is stamped `metadata.cappedDaily`
+ * and `cappedDaily: true` is returned so the caller can warn the author the
+ * cap trimmed their reward.
  *
  * The cap read is not locked, so two creates racing at the cap boundary
  * may together exceed it by at most one `POST_CREATION_POINTS`. That is
@@ -52,11 +63,12 @@ export async function grantPointsForPost(
   tx: DbTx,
   userId: string,
   entity: PointPostEntity
-): Promise<PointGrantResult | null> {
+): Promise<PointGrantOutcome> {
   const earnedToday = await creationEarnedToday(tx, userId);
   const amount = cappedCreationGrantAmount(earnedToday);
-  if (amount <= 0) return null;
+  if (amount <= 0) return { status: 'capped' };
 
+  const cappedDaily = amount < POST_CREATION_POINTS;
   const result = await recordPointMovement(
     tx,
     {
@@ -68,14 +80,14 @@ export async function grantPointsForPost(
       idempotencyKey: buildIdempotencyKey('post_grant', entity),
       metadata: {
         entityType: entity.type,
-        ...(amount < POST_CREATION_POINTS ? { cappedDaily: true } : {}),
+        ...(cappedDaily ? { cappedDaily: true } : {}),
       },
     },
     { idempotent: true }
   );
 
-  if (!result) return null;
-  return { pointEventId: result.pointEventId, amount };
+  if (!result) return { status: 'skipped' };
+  return { status: 'granted', pointEventId: result.pointEventId, amount, cappedDaily };
 }
 
 /**

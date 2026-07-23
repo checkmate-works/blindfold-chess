@@ -613,9 +613,15 @@
     },
     "earn": {
       "heading": "Cómo ganar Monedas",
-      "puzzleTitle": "Envía un puzzle",
-      "positionMemoryTitle": "Envía un problema de memoria de posición",
-      "topicTitle": "Publica en un tema",
+      "perContribution": "por cada publicación · hasta {cap} al día",
+      "chips": {
+        "puzzle": "Puzzle",
+        "positionMemory": "Memoria de posición",
+        "topic": "Tema",
+        "chunk": "Chunk",
+        "repertoire": "Kata",
+        "game": "Partida"
+      },
       "likeNote1": "Cada Me gusta que recibe tu contenido te da una Moneda (no es inmediato: se otorga una vez al día en lote).",
       "likeNote2": "Publica un tema o crea un problema una vez, y seguirá generando Monedas."
     },
@@ -691,15 +697,7 @@
       "adFreeBenefits": {
         "question": "¿Cómo se obtienen las monedas y cómo se convierten en tiempo sin anuncios?",
         "answer": "Cada contribución elegible otorga monedas, utilizables de inmediato. 1 moneda canjea 1 día sin anuncios (el canje estará disponible próximamente).",
-        "tableTitle": "Formas de obtener monedas",
-        "headerAction": "Acción",
-        "headerPoints": "Monedas",
-        "actions": {
-          "topic_post": "Publicar en un tema (casilla / apertura)",
-          "position_creation": "Publicar un problema de posición (memorización / puzzle)"
-        },
-        "pointsAmount": "{amount} monedas",
-        "dailyCapNote": "Las monedas obtenidas por crear contenido tienen un límite de {cap} por día. El límite se reinicia a las 00:00 UTC; los Me gusta y las concesiones del personal no cuentan para él."
+        "earnSummary": "Publicar contenido válido (problemas, temas, chunks, Kata y partidas) otorga {amount, plural, one {# Moneda} other {# Monedas}} por cada uno, hasta {cap} al día. Los Me gusta y las concesiones del personal no cuentan para ese límite (que se reinicia a las 00:00 UTC)."
       }
     }
   },
@@ -3812,6 +3810,8 @@
     "signInRequired": "Por favor, inicia sesión para continuar",
     "profileUpdated": "Perfil actualizado",
     "postCreated": "Publicado correctamente",
+    "coinsEarned": "{count, plural, one {¡# Moneda obtenida!} other {¡# Monedas obtenidas!}}",
+    "coinsDailyCap": "Has alcanzado el límite de monedas de hoy. Se reinicia a las 00:00 UTC.",
     "gamePublished": "Partida publicada",
     "gameClaimed": "La partida ya está vinculada a tu cuenta",
     "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde.",

@@ -613,9 +613,15 @@
     },
     "earn": {
       "heading": "コインの貯め方",
-      "puzzleTitle": "パズルを投稿する",
-      "positionMemoryTitle": "ポジション記憶問題を投稿する",
-      "topicTitle": "トピックに投稿する",
+      "perContribution": "投稿・公開1件ごと（1日 {cap} コインまで）",
+      "chips": {
+        "puzzle": "パズル",
+        "positionMemory": "ポジション記憶",
+        "topic": "トピック",
+        "chunk": "チャンク",
+        "repertoire": "型",
+        "game": "対局"
+      },
       "likeNote1": "いいねを獲得するとその分コインを付与（即時ではなく、1日1回まとめて反映）。",
       "likeNote2": "一度トピックや問題を作れば継続的にコインが得られます。"
     },
@@ -691,15 +697,7 @@
       "adFreeBenefits": {
         "question": "コインの獲得方法と広告非表示との交換について教えてください",
         "answer": "対象アクションを行うとコインが付与され、投稿直後からすぐに利用できます。1 コインで広告非表示 1 日と交換できます（交換機能は近日公開予定です）。",
-        "tableTitle": "コインを獲得する方法",
-        "headerAction": "アクション",
-        "headerPoints": "獲得コイン",
-        "actions": {
-          "topic_post": "トピック（マス / オープニング）を投稿する",
-          "position_creation": "問題（ポジションの記憶 / パズル）を投稿する"
-        },
-        "pointsAmount": "{amount} コイン",
-        "dailyCapNote": "コンテンツ作成で獲得できるコインは1日{cap}コインが上限です。上限はUTC0時にリセットされ、いいねやスタッフ付与は上限に含まれません。"
+        "earnSummary": "対象コンテンツ（問題・トピック・チャンク・型・対局）を投稿・公開すると、1件につき {amount} コイン。1日 {cap} コインまでで、いいねやスタッフ付与は上限に含まれません。"
       }
     }
   },
@@ -3812,6 +3810,8 @@
     "signInRequired": "ログインしてください",
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
+    "coinsEarned": "{count} コイン獲得！",
+    "coinsDailyCap": "本日のコイン獲得上限に達しました。上限はUTC0時にリセットされます。",
     "gamePublished": "公開しました",
     "gameClaimed": "ゲームをアカウントに紐づけました",
     "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",

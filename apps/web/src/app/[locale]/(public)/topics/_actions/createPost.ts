@@ -12,6 +12,7 @@ import {
   notifyFollowersOfNewPost,
   notifyTopicAuthorOfNewComment,
 } from '@/lib/notifications/notification';
+import type { PointGrantOutcome } from '@/lib/points';
 import { grantPointsForPost, isPointEligibleTopicType } from '@/lib/points';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -46,8 +47,9 @@ type CreatePostParams = {
    * post ID and a `toast` flag and must return the absolute path to redirect
    * to. The flag is `true` when the post does NOT trigger an automated grant
    * (legacy "post created" toast) and `false` when a grant was applied (the
-   * toast is suppressed because the user is sent through `/thanks` instead —
-   * see the redirect logic below). When `redirectPath` is omitted, the
+   * "created" toast is suppressed because a `?coinsEarned=N` coin-reward toast
+   * is appended instead — see the redirect logic below). When `redirectPath`
+   * is omitted, the
    * legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`
    * URL is used (with `?toast=post_created` appended when `toast` is true).
    */
@@ -72,17 +74,20 @@ type CreatePostParams = {
  * Shared insert/notify/grant core for every create-post path.
  *
  * Returns the new post id (plus the point-grant result, which the
- * redirecting entry point needs to route through `/thanks`) instead of
- * redirecting, so both the legacy redirecting wrapper (`createPostBase`)
+ * redirecting entry point uses to append the `?coinsEarned=N` reward toast)
+ * instead of redirecting, so both the legacy redirecting wrapper (`createPostBase`)
  * and the 2-step image-attach wrapper (`createPostForImageAttachBase`)
  * share one body. This keeps feed-item emission, point grants and
  * notifications from drifting between the two paths.
  */
-async function insertPost(
-  params: CreatePostParams
-): Promise<
+async function insertPost(params: CreatePostParams): Promise<
   | { error: string }
-  | { ok: true; postId: string; pointGrant: { pointEventId: string; amount: number } | null }
+  | {
+      ok: true;
+      postId: string;
+      pointGrant: { pointEventId: string; amount: number } | null;
+      coinCapped: boolean;
+    }
 > {
   const {
     locale,
@@ -145,8 +150,8 @@ async function insertPost(
     return { error: rateLimitResult.error };
   }
 
-  let pointGrantResult: { pointEventId: string; amount: number } | null = null;
-  const inserted = await db.transaction(async (tx) => {
+  const { post: inserted, grantOutcome } = await db.transaction(async (tx) => {
+    let outcome: PointGrantOutcome = { status: 'skipped' };
     const [post] = await tx
       .insert(topicPosts)
       .values({
@@ -176,13 +181,13 @@ async function insertPost(
     // immediately spendable. Gate is `isPointEligibleTopicType` (square /
     // opening) plus a non-empty body — rating-only and empty posts excluded.
     if (isPointEligibleTopicType(topicType) && contentResult.content.trim() !== '') {
-      pointGrantResult = await grantPointsForPost(tx, user.id, {
+      outcome = await grantPointsForPost(tx, user.id, {
         type: 'topic_post',
         id: post.id,
       });
     }
 
-    return post;
+    return { post, grantOutcome: outcome };
   });
 
   notifyFollowersOfNewPost({
@@ -206,7 +211,15 @@ async function insertPost(
     });
   }
 
-  return { ok: true, postId: inserted.id, pointGrant: pointGrantResult };
+  const pointGrant =
+    grantOutcome.status === 'granted'
+      ? { pointEventId: grantOutcome.pointEventId, amount: grantOutcome.amount }
+      : null;
+  const coinCapped =
+    grantOutcome.status === 'capped' ||
+    (grantOutcome.status === 'granted' && grantOutcome.cappedDaily);
+
+  return { ok: true, postId: inserted.id, pointGrant, coinCapped };
 }
 
 export async function createPostBase(params: CreatePostParams): Promise<CreatePostState> {
@@ -215,12 +228,12 @@ export async function createPostBase(params: CreatePostParams): Promise<CreatePo
     return { error: result.error };
   }
 
-  // When a point grant fires we route through the generic /thanks page
-  // (with the original destination preserved as `returnUrl`) so the user sees
-  // how many points were earned. The post-created
-  // toast is suppressed in that path — the thanks page is the celebration
-  // moment. No-grant posts (chunks, rating-only opening posts, etc.) keep
-  // the legacy in-place toast UX.
+  // The author always lands directly on their post so they can verify it.
+  // When a point grant fires, the coin reward surfaces as a toast on arrival
+  // (`?coinsEarned=N`, rendered with the brand CoinIcon) instead of the old
+  // /thanks interstitial; the "created" toast is suppressed in that case since
+  // the coin toast already confirms the create. No-grant posts (chunks,
+  // rating-only opening posts, etc.) keep the legacy in-place toast UX.
   const grantApplied = result.pointGrant !== null;
   const finalUrl = params.redirectPath
     ? params.redirectPath(result.postId, { toast: !grantApplied })
@@ -228,11 +241,16 @@ export async function createPostBase(params: CreatePostParams): Promise<CreatePo
         !grantApplied ? '?toast=post_created' : ''
       }`;
 
-  if (result.pointGrant) {
-    const info = result.pointGrant;
-    redirect(
-      `/${params.locale}/thanks?pointEventId=${info.pointEventId}&returnUrl=${encodeURIComponent(finalUrl)}`
-    );
+  // Append the coin-reward (`coinsEarned`) and/or daily-cap (`coinsCapped`)
+  // toast params to whatever destination was resolved above. A fully capped
+  // post keeps its `?toast=post_created` confirmation and adds the cap warning.
+  const extra = new URLSearchParams();
+  if (result.pointGrant) extra.set('coinsEarned', String(result.pointGrant.amount));
+  if (result.coinCapped) extra.set('coinsCapped', '1');
+  const extraQs = extra.toString();
+  if (extraQs) {
+    const sep = finalUrl.includes('?') ? '&' : '?';
+    redirect(`${finalUrl}${sep}${extraQs}`);
   }
   redirect(finalUrl);
 }
@@ -245,7 +263,7 @@ export async function createPostBase(params: CreatePostParams): Promise<CreatePo
  * but returns the new post id instead of redirecting, so the client can
  * POST each selected image to `/api/posts/[id]/images` after the post
  * exists. Any earned points are still granted inside the transaction;
- * the image flow simply skips the `/thanks` celebration redirect and
+ * the image flow simply skips the `?coinsEarned=N` reward toast and
  * lets the client refresh the thread in place once uploads finish.
  */
 export async function createPostForImageAttachBase(

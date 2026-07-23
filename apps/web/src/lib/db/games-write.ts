@@ -16,6 +16,7 @@ import 'server-only';
 
 import { generateManageToken } from '@/lib/games/manage-token';
 import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
+import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 
 import { db } from './index';
 import { feedItems, gameTokens, games } from './schema';
@@ -79,6 +80,13 @@ export async function publishGame(params: {
         actorId: authorId,
         metadata: { result: game.result },
       });
+
+      // Reward the registered author's public contribution — immediately
+      // spendable, clamped to the shared daily creation cap, idempotent per
+      // (game_published, id). Account-less publishers have no ledger to credit
+      // (and a later claim does NOT retroactively grant, by product decision),
+      // so the grant lives only in this author-owned branch.
+      await grantPointsForPost(tx, authorId, { type: 'game', id: row.id });
     }
 
     return { id: row.id, manageToken };
@@ -91,7 +99,19 @@ export async function publishGame(params: {
  * lifecycle axes stay orthogonal. RLS / reads filter on `deleted_at IS NULL`.
  */
 export async function softDeleteSharedGame(gameId: string): Promise<void> {
-  await db.update(games).set({ deletedAt: new Date() }).where(eq(games.id, gameId));
+  await db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(games)
+      .set({ deletedAt: new Date() })
+      .where(eq(games.id, gameId))
+      .returning({ authorId: games.authorId });
+
+    // Reverse the publish reward on removal. `author_id` is null for an
+    // account-less game (or a missing row) — clawbackPointsForPost no-ops on a
+    // null user — and only a registered author's publish ever earned a grant.
+    // Idempotent (`post_clawback:game:<id>`), so a re-delete is a safe no-op.
+    if (row) await clawbackPointsForPost(tx, row.authorId, { type: 'game', id: gameId });
+  });
 }
 
 /** Update an owner-editable field set (title / description). */

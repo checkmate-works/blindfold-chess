@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { BoardFrame, Button, UnsavedChangesDialog } from '@/app/_components';
@@ -37,9 +37,9 @@ const PREVIEW_ERROR_CODES = new Set([
  *    bounce back to `/chunks/new`.
  * 2. Render the title, description, board (with annotations), and
  *    slug for the author to verify.
- * 3. "Create" → `createChunk`; on success clear the draft and route
- *    through `/thanks` when a point grant fired, otherwise straight to
- *    `/chunks/<slug>`.
+ * 3. "Create" → `createChunk`; on success clear the draft and navigate
+ *    straight to `/chunks/<slug>`, appending `?coinsEarned=N` to surface
+ *    the coin-reward toast when a point grant fired.
  * 4. "Back to edit" → keep the draft, navigate to `/chunks/new`. The
  *    form rehydrates from sessionStorage so the author lands back on
  *    their state without re-entering anything.
@@ -49,7 +49,6 @@ export function ChunkPreviewClient() {
   const tForm = useTranslations('chunks.form');
   const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
-  const locale = useLocale();
 
   const [draft, setDraft] = useState<ChunkDraftV1 | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -99,17 +98,15 @@ export function ChunkPreviewClient() {
       clearChunkDraft();
       flushSync(() => setSubmitted(true));
 
-      // Point grant fired → route via /thanks so the user lands on the
-      // award screen, then continues to the chunk detail. No-grant flows
-      // skip the celebration step.
-      if (result.pointGrant) {
-        const returnUrl = `/${locale}/chunks/${result.slug}`;
-        router.push(
-          `/thanks?pointEventId=${result.pointGrant.pointEventId}&returnUrl=${encodeURIComponent(returnUrl)}`
-        );
-      } else {
-        router.push(`/chunks/${result.slug}` as '/chunks/[slug]');
-      }
+      // Land straight on the created chunk so the author can verify it.
+      // A point grant surfaces the coin reward as a toast on arrival
+      // (`?coinsEarned=N`) and a daily-cap hit adds a `?coinsCapped=1` warning;
+      // an uncapped no-grant create navigates silently as before.
+      const toastParams = new URLSearchParams();
+      if (result.pointGrant) toastParams.set('coinsEarned', String(result.pointGrant.amount));
+      if (result.coinCapped) toastParams.set('coinsCapped', '1');
+      const toastQs = toastParams.toString();
+      router.push(`/chunks/${result.slug}${toastQs ? `?${toastQs}` : ''}` as '/chunks/[slug]');
     } catch {
       setError(t('createError'));
     } finally {

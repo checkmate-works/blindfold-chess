@@ -12,6 +12,7 @@ import {
   repertoires,
 } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
+import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
@@ -434,13 +435,23 @@ export async function deleteRepertoireEntry(id: string): Promise<DeleteRepertoir
   if ('error' in guard) return { error: guard.error };
   const { user } = guard;
 
-  const deleted = await db
-    .update(repertoires)
-    .set({ deletedAt: new Date() })
-    .where(
-      and(eq(repertoires.id, id), eq(repertoires.userId, user.id), isNull(repertoires.deletedAt))
-    )
-    .returning({ id: repertoires.id });
+  const deleted = await db.transaction(async (tx) => {
+    const rows = await tx
+      .update(repertoires)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(eq(repertoires.id, id), eq(repertoires.userId, user.id), isNull(repertoires.deletedAt))
+      )
+      .returning({ id: repertoires.id });
+
+    if (rows.length === 0) return rows;
+
+    // Reverse the publish reward when the course is removed — a no-op for a
+    // never-published (`building`) repertoire, since no grant row exists, and
+    // capped at the author's live `earned` balance (already-spent coins stay).
+    await clawbackPointsForPost(tx, user.id, { type: 'repertoire', id });
+    return rows;
+  });
 
   if (deleted.length === 0) return { error: 'notFound' };
   return { success: true };
@@ -476,10 +487,18 @@ export async function publishRepertoireEntry(id: string): Promise<PublishReperto
   );
   if (lineCount < 1) return { error: 'noLines' };
 
-  await db
-    .update(repertoires)
-    .set({ status: 'public', publishedAt: new Date() })
-    .where(eq(repertoires.id, id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(repertoires)
+      .set({ status: 'public', publishedAt: new Date() })
+      .where(eq(repertoires.id, id));
+
+    // Reward the public contribution — immediately spendable, clamped to the
+    // shared daily creation cap. Idempotent per (source, id): the `building`
+    // guard above already blocks a second publish, and the ledger's UNIQUE
+    // idempotency key is the hard backstop.
+    await grantPointsForPost(tx, user.id, { type: 'repertoire', id });
+  });
 
   return { success: true };
 }

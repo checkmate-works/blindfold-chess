@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button } from '@/app/_components';
@@ -36,7 +36,6 @@ type Props = {
 export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props) {
   const t = useTranslations('practice.puzzle.preview');
   const router = useRouter();
-  const locale = useLocale();
 
   const [draft, setDraft] = useState<PuzzleDraftV1 | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -98,18 +97,18 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
       }
       clearDraft();
       flushSync(() => setSubmitted(true));
-      // Point grant fired → route via /thanks so the user lands on the
-      // award screen, then continues to the puzzle detail (toast suppressed
-      // because the /thanks page already celebrates the create). No-grant
-      // flows keep the legacy in-place toast UX.
+      // Land straight on the created puzzle so the author can verify it.
+      // A point grant surfaces the coin reward as a toast on arrival
+      // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast; a
+      // daily-cap hit adds a `?coinsCapped=1` warning toast either way.
+      const toastParams = new URLSearchParams();
       if (result.pointGrant) {
-        const returnUrl = `/${locale}/practice/puzzle/${result.id}`;
-        router.push(
-          `/thanks?pointEventId=${result.pointGrant.pointEventId}&returnUrl=${encodeURIComponent(returnUrl)}`
-        );
+        toastParams.set('coinsEarned', String(result.pointGrant.amount));
       } else {
-        router.push(`/practice/puzzle/${result.id}?toast=position_created`);
+        toastParams.set('toast', 'position_created');
       }
+      if (result.coinCapped) toastParams.set('coinsCapped', '1');
+      router.push(`/practice/puzzle/${result.id}?${toastParams.toString()}`);
     } catch {
       setError(t('createError'));
     } finally {

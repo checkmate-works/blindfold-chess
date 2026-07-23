@@ -613,9 +613,15 @@
     },
     "earn": {
       "heading": "Como ganhar Moedas",
-      "puzzleTitle": "Envie um puzzle",
-      "positionMemoryTitle": "Envie um problema de memória de posição",
-      "topicTitle": "Publique em um tópico",
+      "perContribution": "por publicação · até {cap} por dia",
+      "chips": {
+        "puzzle": "Puzzle",
+        "positionMemory": "Memória de posição",
+        "topic": "Tópico",
+        "chunk": "Chunk",
+        "repertoire": "Kata",
+        "game": "Partida"
+      },
       "likeNote1": "Cada curtida que seu conteúdo recebe rende uma Moeda (não é imediato: concedido uma vez por dia em lote).",
       "likeNote2": "Publique um tópico ou crie um problema uma vez, e ele continuará rendendo Moedas."
     },
@@ -691,15 +697,7 @@
       "adFreeBenefits": {
         "question": "Como ganho moedas e como elas viram tempo sem anúncios?",
         "answer": "Cada contribuição elegível concede moedas, utilizáveis imediatamente. 1 moeda resgata 1 dia sem anúncios (o resgate será liberado em breve).",
-        "tableTitle": "Formas de ganhar moedas",
-        "headerAction": "Ação",
-        "headerPoints": "Moedas",
-        "actions": {
-          "topic_post": "Publicar em um tópico (casa / abertura)",
-          "position_creation": "Publicar um problema de posição (memorização / puzzle)"
-        },
-        "pointsAmount": "{amount} moedas",
-        "dailyCapNote": "As moedas ganhas ao criar conteúdo têm limite de {cap} por dia. O limite reinicia às 00:00 UTC; curtidas e concessões da equipe não contam para ele."
+        "earnSummary": "Publicar conteúdo elegível (problemas, tópicos, chunks, Kata e partidas) rende {amount, plural, one {# Moeda} other {# Moedas}} cada, até {cap} por dia. Curtidas e concessões da equipe não contam para esse limite (que reinicia às 00:00 UTC)."
       }
     }
   },
@@ -3812,6 +3810,8 @@
     "signInRequired": "Por favor, faça login para continuar",
     "profileUpdated": "Perfil atualizado",
     "postCreated": "Publicado com sucesso",
+    "coinsEarned": "{count, plural, one {# Moeda ganha!} other {# Moedas ganhas!}}",
+    "coinsDailyCap": "Você atingiu o limite de moedas de hoje. Ele reinicia às 00:00 UTC.",
     "gamePublished": "Partida publicada",
     "gameClaimed": "A partida agora está vinculada à sua conta",
     "rateLimited": "Você só pode publicar uma vez por dia para cada abertura. Por favor, tente mais tarde.",
