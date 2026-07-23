@@ -199,7 +199,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
       )}
 
-      <PiecesInfo fen={position.fen} />
+      <PiecesInfo fen={position.fen} showSideToMove={false} />
 
       <PositionPeekBoard fen={position.fen} />
 

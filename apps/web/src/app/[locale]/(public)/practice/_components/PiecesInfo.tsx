@@ -5,6 +5,12 @@ import { fenToPieceList, isBlackToMoveFromFen } from '@blindfold-chess/features/
 
 type Props = {
   fen: string;
+  /**
+   * Whether to show the "White/Black to move" line. Meaningful for puzzles
+   * (you solve as the side to move) but noise for position-memory, where the
+   * task is only to recall the position. Defaults to `true`.
+   */
+  showSideToMove?: boolean;
 };
 
 /**
@@ -15,7 +21,7 @@ type Props = {
  * Translation keys live under `practice.puzzle.detail` for historical
  * reasons — they are semantically piece-label strings, not puzzle-specific.
  */
-export function PiecesInfo({ fen }: Props) {
+export function PiecesInfo({ fen, showSideToMove = true }: Props) {
   const t = useTranslations('practice.puzzle.detail');
 
   const isBlackToMove = isBlackToMoveFromFen(fen);
@@ -23,9 +29,11 @@ export function PiecesInfo({ fen }: Props) {
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 space-y-2">
-      <p className="text-sm font-medium text-foreground">
-        {isBlackToMove ? t('blackToMove') : t('whiteToMove')}
-      </p>
+      {showSideToMove && (
+        <p className="text-sm font-medium text-foreground">
+          {isBlackToMove ? t('blackToMove') : t('whiteToMove')}
+        </p>
+      )}
       <p className="text-sm text-foreground">
         <span className="font-medium">{t('whitePiecesLabel')}:</span>{' '}
         {pieceList.white.length > 0 ? pieceList.white.join(' ') : t('noPieces')}

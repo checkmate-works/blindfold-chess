@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
-import { Button } from '@/app/_components';
+import { Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -45,6 +45,12 @@ export function PositionMemoryRecreate({
 }: Props) {
   const t = useTranslations('practice.positionMemory');
 
+  // Board orientation is a local view preference during recreation — it does
+  // not change the answer, only how the solver looks at the board. Seed it from
+  // the original position's stored orientation so the board opens the way the
+  // position was authored, then let the solver flip freely.
+  const [flipped, setFlipped] = useState(originalPosition.isBlackToMove);
+
   const editableBoardLabels = useMemo(
     () => ({
       whitePieces: t('whitePieces'),
@@ -62,7 +68,10 @@ export function PositionMemoryRecreate({
         {problemCount > 1 && <ProgressBar current={currentProblemIndex + 1} total={problemCount} />}
 
         {/* Instruction */}
-        <p className="text-lg text-muted-foreground">{t('recreatePosition')}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-lg text-muted-foreground">{t('recreatePosition')}</p>
+          <FlipBoardButton onClick={() => setFlipped((prev) => !prev)} title={t('flipBoard')} />
+        </div>
 
         {/* Chess Board */}
         <EditableChessBoard
@@ -70,7 +79,7 @@ export function PositionMemoryRecreate({
           fen={recreatedPosition}
           onFenChange={onPositionChange}
           labels={editableBoardLabels}
-          flipped={originalPosition.isBlackToMove}
+          flipped={flipped}
           editable={true}
           preserveTurnInfo={true}
           originalPosition={originalPosition.fen}

@@ -77,7 +77,7 @@ export default async function CustomPositionStartPage({ params }: Props) {
     >
       <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
 
-      <PiecesInfo fen={problem.fen} />
+      <PiecesInfo fen={problem.fen} showSideToMove={false} />
 
       <PositionPeekBoard fen={problem.fen} />
 

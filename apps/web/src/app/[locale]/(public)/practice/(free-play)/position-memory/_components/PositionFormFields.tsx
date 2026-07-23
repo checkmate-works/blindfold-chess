@@ -68,7 +68,18 @@ export function PositionFormFields({
     [tBoard]
   );
 
-  const handleFlip = useCallback(() => board.setFlipped((prev) => !prev), [board]);
+  // Position-memory has no separate "side to move" control — the FEN's active
+  // color IS the persisted board orientation (isBlackToMoveFromFen drives the
+  // flip on every downstream surface: the detail peek board, the memorize
+  // screen, and the recreate screen). So the flip button must rewrite the
+  // FEN's side-to-move, not merely toggle the visual orientation; otherwise the
+  // chosen viewpoint is discarded on save and the session always renders
+  // white-at-bottom.
+  const handleFlip = useCallback(() => {
+    const nextFlipped = !board.flipped;
+    board.handleSideToMoveChange(nextFlipped ? 'b' : 'w');
+    board.setFlipped(nextFlipped);
+  }, [board]);
 
   return (
     <>
