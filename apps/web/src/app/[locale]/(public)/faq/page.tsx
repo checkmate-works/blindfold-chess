@@ -172,36 +172,13 @@ export default async function FAQPage({ params }: Props) {
       id: 'ad-free-benefits',
       question: t('items.adFreeBenefits.question'),
       answer: (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <p>{t('items.adFreeBenefits.answer')}</p>
-
-          <h3 className="font-medium text-foreground">{t('items.adFreeBenefits.tableTitle')}</h3>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
-                  {t('items.adFreeBenefits.headerAction')}
-                </th>
-                <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
-                  {t('items.adFreeBenefits.headerPoints')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {(['topic_post', 'position_creation'] as const).map((action) => (
-                <tr key={action} className="border-b border-border">
-                  <td className="py-1.5 px-2">{t(`items.adFreeBenefits.actions.${action}`)}</td>
-                  <td className="py-1.5 px-2">
-                    {t('items.adFreeBenefits.pointsAmount', {
-                      amount: POST_CREATION_POINTS,
-                    })}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
           <p className="text-sm text-muted-foreground">
-            {t('items.adFreeBenefits.dailyCapNote', { cap: DAILY_CREATION_POINT_CAP })}
+            {t('items.adFreeBenefits.earnSummary', {
+              amount: POST_CREATION_POINTS,
+              cap: DAILY_CREATION_POINT_CAP,
+            })}
           </p>
         </div>
       ),

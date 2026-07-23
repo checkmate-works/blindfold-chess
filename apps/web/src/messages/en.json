@@ -613,9 +613,15 @@
     },
     "earn": {
       "heading": "How to earn Coins",
-      "puzzleTitle": "Submit a puzzle",
-      "positionMemoryTitle": "Submit a position-memory problem",
-      "topicTitle": "Post in a topic",
+      "perContribution": "for each post or publish · up to {cap} a day",
+      "chips": {
+        "puzzle": "Puzzle",
+        "positionMemory": "Position memory",
+        "topic": "Topic",
+        "chunk": "Chunk",
+        "repertoire": "Kata",
+        "game": "Game"
+      },
       "likeNote1": "Every like your content receives earns a Coin (not instant — granted once a day in a batch).",
       "likeNote2": "Post a topic or create a problem once, and it keeps earning Coins."
     },
@@ -691,15 +697,7 @@
       "adFreeBenefits": {
         "question": "How do I earn coins, and how do they become ad-free time?",
         "answer": "Each eligible contribution awards coins, usable immediately. 1 coin redeems 1 day of ad-free browsing (redemption flow coming soon).",
-        "tableTitle": "Ways to earn coins",
-        "headerAction": "Action",
-        "headerPoints": "Coins",
-        "actions": {
-          "topic_post": "Submit a topic post (square / opening)",
-          "position_creation": "Submit a position problem (memory / puzzle)"
-        },
-        "pointsAmount": "{amount} coins",
-        "dailyCapNote": "Coins earned from creating content are capped at {cap} per day. The cap resets at 00:00 UTC; likes and staff grants do not count toward it."
+        "earnSummary": "Publishing eligible content — problems, topics, chunks, Kata, and games — earns {amount, plural, one {# Coin} other {# Coins}} each, up to {cap} a day. Likes and staff grants don't count toward that cap (which resets at 00:00 UTC)."
       }
     }
   },

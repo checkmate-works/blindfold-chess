@@ -7,17 +7,7 @@ import Image from 'next/image';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { CoinIcon } from '@blindfold-chess/icons';
-import {
-  FaArrowDown,
-  FaBan,
-  FaBolt,
-  FaCheck,
-  FaChessBoard,
-  FaChevronRight,
-  FaGift,
-  FaPuzzlePiece,
-  FaRegComments,
-} from 'react-icons/fa';
+import { FaArrowDown, FaBan, FaBolt, FaCheck, FaGift, FaPuzzlePiece } from 'react-icons/fa';
 
 import {
   AD_FREE_DAYS_PER_POINT,
@@ -30,7 +20,7 @@ import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale, LocalePageProps as Props } from '@/app/[locale]/_lib/types';
+import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 /**
  * Coin guide (コイン)
@@ -88,44 +78,20 @@ function LoopStep({ icon, title, body }: { icon: ReactNode; title: string; body:
   );
 }
 
-function EarnCard({
-  href,
-  locale,
-  icon,
-  title,
-  amount,
-  unit,
-}: {
-  href: string;
-  locale: Locale;
-  icon: ReactNode;
-  title: string;
-  amount: number;
-  unit: string;
-}) {
-  return (
-    <Link
-      href={href}
-      locale={locale}
-      className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-sm"
-    >
-      <div className="flex items-center justify-between">
-        <IconBadge size="sm">{icon}</IconBadge>
-        <FaChevronRight
-          aria-hidden="true"
-          className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-        />
-      </div>
-      <p className="font-semibold text-foreground underline-offset-2 group-hover:underline">
-        {title}
-      </p>
-      <span className="mt-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-foreground/10 px-3 py-1 text-sm font-bold text-foreground">
-        <CoinIcon size={18} aria-hidden="true" />+{amount}
-        <span className="font-medium text-muted-foreground">{unit}</span>
-      </span>
-    </Link>
-  );
-}
+/**
+ * Every coin-earning surface, rendered as a linked chip in the "ways to earn"
+ * panel. All award the same {@link POST_CREATION_POINTS} and share one daily
+ * cap, so the amount is stated once on the panel — a new surface adds a chip
+ * here, not another card. `key` maps to the `coin.earn.chips.*` i18n label.
+ */
+const EARN_CHIPS = [
+  { key: 'puzzle', href: '/practice/puzzle/new' },
+  { key: 'positionMemory', href: '/practice/position-memory/new' },
+  { key: 'topic', href: '/topics' },
+  { key: 'chunk', href: '/chunks/new' },
+  { key: 'repertoire', href: '/repertoires/new' },
+  { key: 'game', href: '/games/new' },
+] as const;
 
 function SpendCard({
   icon,
@@ -166,8 +132,6 @@ export default async function CoinPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'coin' });
 
-  const unit = t('unit');
-
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
       <div className="space-y-8">
@@ -202,33 +166,32 @@ export default async function CoinPage({ params }: Props) {
           />
         </div>
 
-        {/* Ways to earn */}
+        {/* Ways to earn — one panel: the uniform rate stated once, then every
+            eligible surface as a linked chip (add a chip, not a card, when a
+            new earning surface ships). */}
         <div className="space-y-3">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <EarnCard
-              href="/practice/puzzle/new"
-              locale={locale}
-              icon={<FaPuzzlePiece className="h-6 w-6" />}
-              title={t('earn.puzzleTitle')}
-              amount={POST_CREATION_POINTS}
-              unit={unit}
-            />
-            <EarnCard
-              href="/practice/position-memory/new"
-              locale={locale}
-              icon={<FaChessBoard className="h-6 w-6" />}
-              title={t('earn.positionMemoryTitle')}
-              amount={POST_CREATION_POINTS}
-              unit={unit}
-            />
-            <EarnCard
-              href="/topics"
-              locale={locale}
-              icon={<FaRegComments className="h-6 w-6" />}
-              title={t('earn.topicTitle')}
-              amount={POST_CREATION_POINTS}
-              unit={unit}
-            />
+          <div className="space-y-4 rounded-xl border border-border bg-card p-5">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-foreground/10 px-3 py-1 text-lg font-bold text-foreground">
+                <CoinIcon size={20} aria-hidden="true" />+{POST_CREATION_POINTS}
+              </span>
+              <p className="text-sm text-muted-foreground">
+                {t('earn.perContribution', { cap: DAILY_CREATION_POINT_CAP })}
+              </p>
+            </div>
+            <ul className="flex flex-wrap gap-2">
+              {EARN_CHIPS.map((chip) => (
+                <li key={chip.key}>
+                  <Link
+                    href={chip.href}
+                    locale={locale}
+                    className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-foreground/5"
+                  >
+                    {t(`earn.chips.${chip.key}`)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
           <p className="text-center text-sm text-muted-foreground">
             <span aria-hidden="true">❤️</span> {t('earn.likeNote1')}
