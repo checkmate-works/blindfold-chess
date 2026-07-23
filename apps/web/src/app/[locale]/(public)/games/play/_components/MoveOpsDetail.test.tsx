@@ -43,11 +43,12 @@ describe('MoveOpsDetail', () => {
     );
 
     expect(screen.getByText('operationLog.columnInvalid')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
     // One chip per attempt (no longer a single comma-joined run).
     expect(screen.getByText('e5')).toBeInTheDocument();
     expect(screen.getByText('Bxb5')).toBeInTheDocument();
     expect(screen.queryByText('e5, Bxb5')).not.toBeInTheDocument();
+    // The numeric count is dropped when chips convey it.
+    expect(screen.queryByText('2')).not.toBeInTheDocument();
   });
 
   it('renders a heading only when a title is given', () => {
