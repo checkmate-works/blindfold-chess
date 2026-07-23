@@ -68,11 +68,14 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const sp = await searchParams;
   const page = Number(sp.page) || 1;
+  // Catalog side filter — only the two valid colours pass; anything else (or
+  // absent) is "all".
+  const side = sp.side === 'white' || sp.side === 'black' ? sp.side : undefined;
 
   const [t, user, totalCount] = await Promise.all([
     getTranslations({ locale, namespace: 'Repertoires' }),
     getOptionalUser(),
-    countPublicRepertoires(),
+    countPublicRepertoires(side),
   ]);
 
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
@@ -82,9 +85,28 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
   );
 
   const [rows, buildingRows] = await Promise.all([
-    listPublicRepertoires(limit, offset),
+    listPublicRepertoires(limit, offset, side),
     user ? listBuildingRepertoiresForUser(user.id) : Promise.resolve([]),
   ]);
+
+  // Side filter tabs — a query-param change, so each is a plain link (page
+  // resets to 1). The public list + its pagination carry `side`; the owner's
+  // "in progress" section above is intentionally unfiltered.
+  const sideFilters = [
+    { key: 'all', href: '/repertoires', label: t('filter.all'), active: side === undefined },
+    {
+      key: 'white',
+      href: '/repertoires?side=white',
+      label: t('form.side_white'),
+      active: side === 'white',
+    },
+    {
+      key: 'black',
+      href: '/repertoires?side=black',
+      label: t('form.side_black'),
+      active: side === 'black',
+    },
+  ];
 
   const cardMeta = await getRepertoireCardMeta(
     [...buildingRows, ...rows].map((r) => r.repertoire.id),
@@ -122,16 +144,10 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('title') }]}
     >
-      {user && (
-        <div className="py-4" data-tour-id={IMPORT_HELP_TARGET}>
-          <Link href="/repertoires/new" locale={locale}>
-            <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
-              {t('importCta')}
-            </Button>
-          </Link>
-        </div>
-      )}
-
+      {/* Owner's own in-progress drafts lead (their only listing surface), each
+          section under its own heading — the same SectionTitle-first layout the
+          puzzle / position-memory catalogs use, so the Create CTA sits under a
+          heading rather than floating above the whole page. */}
       {buildingRows.length > 0 && (
         <>
           <SectionTitle>{t('building.sectionTitle')}</SectionTitle>
@@ -149,6 +165,34 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
       )}
 
       <SectionTitle>{t('sectionTitle')}</SectionTitle>
+
+      {user && (
+        <div data-tour-id={IMPORT_HELP_TARGET}>
+          <Link href="/repertoires/new" locale={locale}>
+            <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
+              {t('importCta')}
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      <nav className="flex flex-wrap gap-2" aria-label={t('filter.label')}>
+        {sideFilters.map((f) => (
+          <Link
+            key={f.key}
+            href={f.href}
+            locale={locale}
+            aria-current={f.active ? 'page' : undefined}
+            className={`rounded-full px-3 py-1 text-sm transition-colors ${
+              f.active
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {f.label}
+          </Link>
+        ))}
+      </nav>
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
@@ -169,7 +213,7 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
         <PaginationNav
           currentPage={currentPage}
           totalPages={totalPages}
-          buildHref={(p) => `/${locale}/repertoires?page=${p}`}
+          buildHref={(p) => `/${locale}/repertoires?page=${p}${side ? `&side=${side}` : ''}`}
           locale={locale}
         />
       )}

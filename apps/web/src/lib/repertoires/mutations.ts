@@ -1,11 +1,5 @@
-import {
-  enumerateLines,
-  generatePgn,
-  getStartingFen,
-  parsePgnTree,
-} from '@blindfold-chess/features/chess-core';
-import type { PgnTree } from '@blindfold-chess/features/chess-core';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { toPositionKey } from '@blindfold-chess/features/chess-core';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
@@ -21,6 +15,7 @@ import { countRows } from '@/lib/db/list-query';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { assertRepertoireOwner } from './queries';
+import { replayRepertoireLine } from './replay-line';
 import type {
   RepertoireImportInput,
   RepertoireLineEditError,
@@ -28,8 +23,8 @@ import type {
   RepertoireSide,
 } from './validation';
 import {
+  REPERTOIRE_DESCRIPTION_MAX,
   REPERTOIRE_NAME_MAX,
-  REPERTOIRE_PGN_MAX_BYTES,
   validateRepertoireImport,
   validateRepertoireLineEdit,
 } from './validation';
@@ -42,10 +37,63 @@ export type UpdateLineResult =
   | { ok: false; error: 'unauthorized' | 'notFound' | RepertoireLineEditError };
 
 /**
+ * Delete every annotation of a repertoire whose position no longer appears in
+ * ANY of its live lines — the "collect unused notes" step run after a
+ * structural line change (a line edit that shortens/rewrites moves, or a line
+ * delete).
+ *
+ * Reachability is a REPERTOIRE-WIDE question, not a per-line one: annotations
+ * are keyed by `(repertoire, positionKey)` and shared across transposing lines
+ * (see `upsertAnnotation`), so a position dropped from the edited line may still
+ * be reached by a sibling line. We therefore replay every live line, union
+ * their position keys, and prune only annotations outside that set.
+ *
+ * Conservative on unparseable input: if a live line's PGN fails to replay we
+ * can't account for the positions it "owns", so we skip pruning entirely rather
+ * than risk deleting a note that line still reaches. (Live lines always carry
+ * movetext — an empty replay for a non-empty PGN means a parse failure.)
+ *
+ * Runs inside the caller's transaction so the reachable set reflects the same
+ * post-mutation line state the prune deletes against.
+ */
+async function pruneOrphanAnnotations(tx: Tx, repertoireId: string): Promise<void> {
+  const lines = await tx
+    .select({ pgn: repertoireLines.pgn, startingFen: repertoireLines.startingFen })
+    .from(repertoireLines)
+    .where(and(eq(repertoireLines.repertoireId, repertoireId), isNull(repertoireLines.deletedAt)));
+
+  const reachable = new Set<string>();
+  for (const line of lines) {
+    const { sans, positions } = replayRepertoireLine(line);
+    const hasMovetext = line.pgn.replace(/\[[^\]]*\]/g, '').trim().length > 0;
+    if (sans.length === 0 && hasMovetext) return; // parse failure — bail, don't prune
+    for (const pos of positions) reachable.add(toPositionKey(pos.fen));
+  }
+
+  const existing = await tx
+    .select({ positionKey: repertoireAnnotations.positionKey })
+    .from(repertoireAnnotations)
+    .where(eq(repertoireAnnotations.repertoireId, repertoireId));
+  const orphanKeys = existing.map((row) => row.positionKey).filter((key) => !reachable.has(key));
+  if (orphanKeys.length > 0) {
+    await tx
+      .delete(repertoireAnnotations)
+      .where(
+        and(
+          eq(repertoireAnnotations.repertoireId, repertoireId),
+          inArray(repertoireAnnotations.positionKey, orphanKeys)
+        )
+      );
+  }
+}
+
+/**
  * Owner-only: replace a single line's name + moves. The line is addressed by
  * its 1-based number (seq + 1); its root position is fixed (editing changes the
- * moves only). Position-keyed annotations / comments are not touched — they
- * follow the surviving positions automatically.
+ * moves only). Position-keyed annotations / comments follow the surviving
+ * positions automatically — and any note left attached to no line at all (a
+ * position this edit removed and no sibling line reaches) is pruned in the same
+ * transaction (see {@link pruneOrphanAnnotations}).
  */
 export async function updateRepertoireLine(params: {
   repertoireId: string;
@@ -77,10 +125,75 @@ export async function updateRepertoireLine(params: {
   });
   if (!validated.ok) return { ok: false, error: validated.error };
 
-  await db
-    .update(repertoireLines)
-    .set({ name: validated.data.name, pgn: validated.data.pgn })
-    .where(eq(repertoireLines.id, line.id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(repertoireLines)
+      .set({ name: validated.data.name, pgn: validated.data.pgn })
+      .where(eq(repertoireLines.id, line.id));
+    await pruneOrphanAnnotations(tx, params.repertoireId);
+  });
+
+  return { ok: true };
+}
+
+export type DeleteLineResult = { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' };
+
+/**
+ * Owner-only: soft-delete a single line, addressed by its 1-based number
+ * (seq + 1). The surviving lines are repacked to a dense `0..n-1` `seq` so line
+ * numbers stay contiguous (the same invariant the import / whole-tree paths
+ * keep), and any note left attached to no remaining line is pruned — all in one
+ * transaction (see {@link pruneOrphanAnnotations}). Deleting the last line
+ * leaves an empty (still `building`-publishable-once-refilled) repertoire, the
+ * same reachable-by-URL empty state the viewer already handles.
+ */
+export async function deleteRepertoireLine(params: {
+  repertoireId: string;
+  lineNo: number;
+  viewerId: string;
+}): Promise<DeleteLineResult> {
+  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
+  if (ownerError) return { ok: false, error: ownerError };
+
+  const [line] = await db
+    .select({ id: repertoireLines.id })
+    .from(repertoireLines)
+    .where(
+      and(
+        eq(repertoireLines.repertoireId, params.repertoireId),
+        eq(repertoireLines.seq, params.lineNo - 1),
+        isNull(repertoireLines.deletedAt)
+      )
+    )
+    .limit(1);
+  if (!line) return { ok: false, error: 'notFound' };
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(repertoireLines)
+      .set({ deletedAt: new Date() })
+      .where(eq(repertoireLines.id, line.id));
+
+    // Repack the survivors to a gapless seq so "Line N" labels / URLs stay
+    // contiguous after the hole this delete left.
+    const remaining = await tx
+      .select({ id: repertoireLines.id, seq: repertoireLines.seq })
+      .from(repertoireLines)
+      .where(
+        and(
+          eq(repertoireLines.repertoireId, params.repertoireId),
+          isNull(repertoireLines.deletedAt)
+        )
+      )
+      .orderBy(asc(repertoireLines.seq));
+    for (const [index, row] of remaining.entries()) {
+      if (row.seq !== index) {
+        await tx.update(repertoireLines).set({ seq: index }).where(eq(repertoireLines.id, row.id));
+      }
+    }
+
+    await pruneOrphanAnnotations(tx, params.repertoireId);
+  });
 
   return { ok: true };
 }
@@ -152,7 +265,13 @@ export type UpdateRepertoireResult =
   | { ok: true; name: string }
   | {
       ok: false;
-      error: 'unauthorized' | 'notFound' | 'nameRequired' | 'nameTooLong' | 'invalidSide';
+      error:
+        | 'unauthorized'
+        | 'notFound'
+        | 'nameRequired'
+        | 'nameTooLong'
+        | 'descriptionTooLong'
+        | 'invalidSide';
     };
 
 /** The transaction handle drizzle hands to a `db.transaction` callback. */
@@ -208,6 +327,8 @@ export async function updateRepertoireDetails(params: {
   viewerId: string;
   name: string;
   side: RepertoireSide;
+  /** Course-level blurb; trimmed to null when blank. */
+  description: string | null;
   openingIds: string[];
 }): Promise<UpdateRepertoireResult> {
   const name = params.name.trim();
@@ -215,6 +336,10 @@ export async function updateRepertoireDetails(params: {
   if (name.length > REPERTOIRE_NAME_MAX) return { ok: false, error: 'nameTooLong' };
   if (params.side !== 'white' && params.side !== 'black') {
     return { ok: false, error: 'invalidSide' };
+  }
+  const description = params.description?.trim() || null;
+  if (description && description.length > REPERTOIRE_DESCRIPTION_MAX) {
+    return { ok: false, error: 'descriptionTooLong' };
   }
 
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
@@ -230,7 +355,7 @@ export async function updateRepertoireDetails(params: {
   await db.transaction(async (tx) => {
     await tx
       .update(repertoires)
-      .set({ name, side: params.side })
+      .set({ name, side: params.side, description })
       .where(eq(repertoires.id, params.repertoireId));
     await replaceOpeningLinks(tx, {
       repertoireId: params.repertoireId,
@@ -240,122 +365,6 @@ export async function updateRepertoireDetails(params: {
   });
 
   return { ok: true, name };
-}
-
-export type UpdateRepertoireMovesResult =
-  | { ok: true }
-  | {
-      ok: false;
-      error: 'unauthorized' | 'notFound' | 'pgnRequired' | 'pgnTooLarge' | 'invalidPgn';
-    };
-
-/**
- * Owner-only: replace a repertoire's whole move tree from one
- * PGN-with-variations (the edit form's board serializes to it), re-decomposing
- * into lines like the import does — but as a DIFF against the existing rows,
- * so line identity survives editing:
- *
- * - a line whose move sequence is unchanged keeps its row (id + name),
- *   only its `seq` moving to the new enumeration order;
- * - a line no longer produced is soft-deleted;
- * - a new line is inserted at its enumeration position.
- *
- * The root is fixed (`repertoires.starting_fen`) — a differently-rooted PGN is
- * rejected, mirroring `addRepertoireLine`. Position-keyed annotations and
- * comments need no migration: they follow the surviving positions.
- */
-export async function updateRepertoireLinesFromPgn(params: {
-  repertoireId: string;
-  viewerId: string;
-  pgn: string;
-}): Promise<UpdateRepertoireMovesResult> {
-  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
-  if (ownerError) return { ok: false, error: ownerError };
-
-  const [repertoire] = await db
-    .select({ startingFen: repertoires.startingFen })
-    .from(repertoires)
-    .where(eq(repertoires.id, params.repertoireId))
-    .limit(1);
-  if (!repertoire) return { ok: false, error: 'notFound' };
-
-  const pgn = params.pgn.trim();
-  if (!pgn) return { ok: false, error: 'pgnRequired' };
-  if (new TextEncoder().encode(pgn).length > REPERTOIRE_PGN_MAX_BYTES) {
-    return { ok: false, error: 'pgnTooLarge' };
-  }
-
-  let tree: PgnTree;
-  try {
-    tree = parsePgnTree(pgn);
-  } catch {
-    return { ok: false, error: 'invalidPgn' };
-  }
-  if (tree.startingFen !== (repertoire.startingFen ?? getStartingFen())) {
-    return { ok: false, error: 'invalidPgn' };
-  }
-
-  const nextPgns = enumerateLines(tree).map((moves) =>
-    generatePgn(moves, repertoire.startingFen ?? undefined)
-  );
-
-  await db.transaction(async (tx) => {
-    const existing = await tx
-      .select({ id: repertoireLines.id, pgn: repertoireLines.pgn, seq: repertoireLines.seq })
-      .from(repertoireLines)
-      .where(
-        and(
-          eq(repertoireLines.repertoireId, params.repertoireId),
-          isNull(repertoireLines.deletedAt)
-        )
-      );
-
-    // Both sides are generatePgn output, so string equality IS line equality.
-    // Grouped into queues so duplicate lines (possible in a hand-built tree)
-    // match one-to-one instead of all claiming the same row.
-    const pool = new Map<string, { id: string; seq: number }[]>();
-    for (const row of existing) {
-      const queue = pool.get(row.pgn) ?? [];
-      queue.push({ id: row.id, seq: row.seq });
-      pool.set(row.pgn, queue);
-    }
-
-    const matched = new Set<string>();
-    for (const [index, linePgn] of nextPgns.entries()) {
-      const row = pool.get(linePgn)?.shift();
-      if (row) {
-        matched.add(row.id);
-        if (row.seq !== index) {
-          await tx
-            .update(repertoireLines)
-            .set({ seq: index })
-            .where(eq(repertoireLines.id, row.id));
-        }
-      } else {
-        await tx.insert(repertoireLines).values({
-          repertoireId: params.repertoireId,
-          pgn: linePgn,
-          startingFen: repertoire.startingFen,
-          seq: index,
-        });
-      }
-    }
-
-    const removed = existing.filter((row) => !matched.has(row.id));
-    if (removed.length > 0) {
-      await tx
-        .update(repertoireLines)
-        .set({ deletedAt: new Date() })
-        .where(
-          inArray(
-            repertoireLines.id,
-            removed.map((row) => row.id)
-          )
-        );
-    }
-  });
-
-  return { ok: true };
 }
 
 /**

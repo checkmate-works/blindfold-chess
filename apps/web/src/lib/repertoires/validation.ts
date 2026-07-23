@@ -19,6 +19,8 @@ export type RepertoireSide = 'white' | 'black';
 export type RepertoirePhase = 'opening' | 'middlegame' | 'endgame';
 
 export const REPERTOIRE_NAME_MAX = 120;
+/** Max length of the course-level description blurb. */
+export const REPERTOIRE_DESCRIPTION_MAX = 2000;
 /** Mirrors the PGN attachment cap (100 KiB). */
 export const REPERTOIRE_PGN_MAX_BYTES = 100 * 1024;
 /** Max length of an owner's per-move "why" annotation. */

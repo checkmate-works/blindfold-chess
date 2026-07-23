@@ -18,11 +18,11 @@ import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
+import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/OpeningTag';
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -64,8 +64,8 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
   const { repertoire, lines, profile, isOwner } = data;
 
   // The openings this repertoire is linked to (n:n; empty for a non-opening
-  // phase). Rendered as the same cards the topics pages use, linking out to
-  // each opening's topic page.
+  // phase). Rendered as compact tag links (the game-card pill) out to each
+  // opening's topic page.
   const linkedOpenings = await getLinkedOpenings(repertoire.id);
   const tOpeningNames = await getTranslations({ locale, namespace: 'topics.openings.names' });
 
@@ -89,15 +89,15 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: repertoire.name }]}
     >
-      {/* No "Lines" section title here: the list panel inside the viewer now
-          carries that heading, and repeating it above the board would label the
-          board — not the list — with it. */}
+      {/* Opening section heading, mirroring the line detail page (which opens
+          with its line name as a SectionTitle). The list panel inside the
+          viewer repeats "Lines" as its own card label, but the page still wants
+          a top-level heading — a panel that opens straight into the board reads
+          as unlabelled. */}
+      <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
+
       {isOwner && repertoire.status === 'building' && (
         <PublishRepertoireBanner id={repertoire.id} locale={locale} lineCount={lines.length} />
-      )}
-
-      {repertoire.description && (
-        <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
       )}
 
       <RepertoireLineViewer
@@ -108,31 +108,44 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         isOwner={isOwner}
       />
 
-      {/* Below the board: the openings this repertoire covers (each card links
-          to its topic page), then the side / phase / line-count summary. Both
-          are context ABOUT the repertoire — the board is what the reader came
-          for, so neither is worth pushing it down the page. */}
-      {linkedOpenings.length > 0 && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {linkedOpenings.map((opening) => (
-            <OpeningCard
-              key={opening.id}
-              opening={opening}
-              displayName={getOpeningDisplayName(tOpeningNames, opening.slug, opening.name)}
-              locale={locale}
-            />
-          ))}
-        </div>
+      {/* Description sits below the board (where the line page puts its note),
+          under its own heading — the page title already shows the name, so the
+          heading names the section, not the kata. Omitted entirely (heading and
+          all) when there's no description. */}
+      {repertoire.description && (
+        <section className="space-y-2">
+          <SectionTitle>{t('detail.descriptionHeading')}</SectionTitle>
+          <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
+        </section>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <RepertoireChips
-          locale={locale}
-          side={repertoire.side}
-          phase={repertoire.phase}
-          status={repertoire.status}
-        />
-        <span>{t('detail.lineCount', { count: lines.length })}</span>
+      {/* Metadata about the kata: the side / phase chips, then the openings it
+          covers as compact tag links (the same pill the game cards use) rather
+          than full board cards — they're a cross-reference, not worth the
+          vertical space a card grid took. */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <RepertoireChips
+            locale={locale}
+            side={repertoire.side}
+            phase={repertoire.phase}
+            status={repertoire.status}
+          />
+        </div>
+        {linkedOpenings.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {linkedOpenings.map((opening) => (
+              <OpeningTag
+                key={opening.id}
+                slug={opening.slug}
+                displayName={getOpeningDisplayName(tOpeningNames, opening.slug, opening.name)}
+                ecoCode={opening.ecoCode}
+                locale={locale}
+                compact
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <PositionAuthorHeader

@@ -12,8 +12,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
-import { FiEdit2 } from 'react-icons/fi';
+import { formatMovesToPgn, generatePgn } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
@@ -33,6 +32,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { LineDetailBoard } from './_components/LineDetailBoard';
 import { LineNavList } from './_components/LineNavList';
 import { MoveCommentsSection } from './_components/MoveCommentsSection';
+import { RepertoireLineActionsMenu } from './_components/RepertoireLineActionsMenu';
 import { buildLineMoves } from './_lib/line-moves';
 
 type Props = {
@@ -69,6 +69,15 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
 
   const annotations = await getAnnotationsForRepertoire(id);
   const moves = buildLineMoves({ sans, positions, startsAsBlack, startMoveNumber, annotations });
+
+  // Per-ply prefix PGNs for the owner's "branch from this position" affordance:
+  // `branchPgns[p - 1]` is this line's moves through ply p, which seeds a new
+  // line (`lines/new?pgn=`) that shares the prefix and diverges after it —
+  // in-place variation authoring without retyping the shared moves. Only the
+  // owner can add lines, so this is computed for them alone.
+  const branchPgns = isOwner
+    ? sans.map((_, idx) => generatePgn(sans.slice(0, idx + 1), line.startingFen ?? undefined))
+    : [];
 
   const moveParam = Number((await searchParams).move);
   const initialPly =
@@ -143,6 +152,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           locale={locale}
           initialPly={initialPly}
           moveNotation={moveNotation}
+          branchPgns={branchPgns}
           {...navProps}
         />
       )}
@@ -159,18 +169,10 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
         createdAt={line.createdAt}
         edited={line.updatedAt.getTime() - line.createdAt.getTime() > 1000}
         editedLabel={t('detail.edited')}
-        menuAriaLabel={t('detail.moreActions')}
-        menuItems={
-          isOwner
-            ? [
-                {
-                  key: 'edit',
-                  label: t('line.edit.editAction'),
-                  href: `/${locale}/repertoires/${id}/lines/${lineNo}/edit`,
-                  icon: <FiEdit2 className="h-4 w-4" aria-hidden />,
-                },
-              ]
-            : []
+        menu={
+          isOwner ? (
+            <RepertoireLineActionsMenu repertoireId={id} lineNo={lineNo} locale={locale} />
+          ) : undefined
         }
       />
 

@@ -40,6 +40,8 @@
     "form": {
       "nameLabel": "Name",
       "namePlaceholder": "e.g. Najdorf (Black)",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe this kata — what it covers, who it is for…",
       "sideLabel": "Your side",
       "side_white": "White",
       "side_black": "Black",
@@ -80,6 +82,8 @@
       "title": "Edit kata",
       "breadcrumb": "Edit",
       "nameLabel": "Name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe this kata — what it covers, who it is for…",
       "save": "Save",
       "saving": "Saving...",
       "cancel": "Cancel",
@@ -92,13 +96,15 @@
         "pgnRequired": "Please enter the moves.",
         "pgnTooLarge": "The PGN is too large.",
         "invalidPgn": "Could not read these moves. Check the notation.",
-        "generic": "Something went wrong. Please try again."
+        "generic": "Something went wrong. Please try again.",
+        "descriptionTooLong": "This description is too long."
       }
     },
     "detail": {
       "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Lines",
+      "descriptionHeading": "Description",
       "noLines": "This kata has no lines yet.",
       "lineCount": "{count} lines",
       "forThisOpening": "Kata for this opening",
@@ -107,7 +113,12 @@
       "openLine": "Open this line →",
       "createdBy": "Created by",
       "edited": "(edited)",
-      "moreActions": "More actions"
+      "moreActions": "More actions",
+      "filterBySide": "Show {side} kata"
+    },
+    "filter": {
+      "all": "All",
+      "label": "Filter by side"
     },
     "line": {
       "new": {
@@ -118,6 +129,7 @@
       "title": "Line",
       "breadcrumb": "Line {n}",
       "empty": "This line has no moves.",
+      "branchFromHere": "Add a branch from here",
       "shapes": {
         "hint": "Right-click and drag on the board to draw an arrow; right-click a square to circle it. Shift / Alt / Ctrl change the colour. Saved automatically.",
         "saveFailed": "Couldn't save your board markup. Please try again."
@@ -137,6 +149,13 @@
         "save": "Save",
         "cancel": "Cancel",
         "sharedHelp": "This note is shared by every line in this kata that reaches this position."
+      },
+      "delete": {
+        "button": "Delete",
+        "title": "Delete this line?",
+        "message": "This removes the line, and any notes tied only to positions it reached. This cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
       },
       "edit": {
         "editAction": "Edit",
@@ -163,8 +182,8 @@
     },
     "delete": {
       "button": "Delete",
-      "title": "Delete this line?",
-      "message": "This permanently removes the line. This cannot be undone.",
+      "title": "Delete this kata?",
+      "message": "This permanently removes the kata. This cannot be undone.",
       "confirm": "Delete",
       "cancel": "Cancel"
     },
@@ -2361,7 +2380,7 @@
       "noRepertoires": "You haven't registered any kata for {side} yet.",
       "noneApplicable": "None of your registered kata cover this game's opening.",
       "registerCta": "Register a kata",
-      "viewRepertoires": "Your kata list",
+      "viewRepertoires": "Browse community kata",
       "selectHeading": "Choose the kata to check against",
       "play": "Play",
       "replay": "Replay",

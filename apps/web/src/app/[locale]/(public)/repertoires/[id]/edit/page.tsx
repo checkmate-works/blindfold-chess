@@ -1,20 +1,17 @@
 /**
- * Repertoire (型) — edit page (owner only). The title, the side, the opening
- * links, and the whole move tree — the lines recomposed into one
- * PGN-with-variations and edited on the same board the import form uses (with
- * per-move notes and markup). Saving diffs the tree against the stored lines
- * so unchanged lines keep their identity. Phase stays fixed — it's not
- * authorable anywhere yet beyond `opening` (see `AUTHORABLE_PHASES` on the
- * import form) — but side is plain metadata and editable like the title.
+ * Repertoire (型) — edit page (owner only). METADATA only: the title, the
+ * description, the side, and the opening links. The move tree is edited per
+ * line on each line's own page (edit / delete / branch), not as one recomposed
+ * PGN here — a whole-kata diff-and-save was where line identity got lost and
+ * notes were silently orphaned. Phase stays fixed — it's not authorable
+ * anywhere yet beyond `opening` (see `AUTHORABLE_PHASES` on the import form) —
+ * but side is plain metadata and editable like the title.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
-import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
-import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
-import { mergeLinePgns } from '@/lib/repertoires/board-builder-tree';
 import { getLinkedOpeningIds, getOpeningOptions } from '@/lib/repertoires/opening-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 
@@ -47,21 +44,7 @@ export default async function EditRepertoirePage({ params }: Props) {
   const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
   // Editing is owner-only — don't even reveal the page to others.
   if (!data || !data.isOwner) notFound();
-  const { repertoire, lines } = data;
-
-  // The whole tree as one editable PGN (defensive null: a stored line that no
-  // longer parses hides the moves editor rather than breaking the page), plus
-  // the existing notes / markup for the board editor.
-  const initialPgn = mergeLinePgns(lines.map((line) => line.pgn));
-  const annotationViews = await getAnnotationsForRepertoire(id);
-  const initialAnnotations = Object.fromEntries(
-    [...annotationViews].filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
-  );
-  const initialShapes = Object.fromEntries(
-    [...annotationViews]
-      .filter(([, v]) => !isEmptyBoardAnnotations(v.shapes))
-      .map(([key, v]) => [key, v.shapes])
-  );
+  const { repertoire } = data;
 
   // Opening links only exist for an opening-phase repertoire; skip both queries
   // (the whole master + the link rows) for the other phases.
@@ -85,13 +68,11 @@ export default async function EditRepertoirePage({ params }: Props) {
         locale={locale}
         repertoireId={id}
         initialName={repertoire.name}
+        initialDescription={repertoire.description ?? ''}
         openings={openings}
         initialOpeningIds={initialOpeningIds}
         canLinkOpenings={canLinkOpenings}
         side={repertoire.side}
-        initialPgn={initialPgn}
-        initialAnnotations={initialAnnotations}
-        initialShapes={initialShapes}
       />
     </PageLayout>
   );

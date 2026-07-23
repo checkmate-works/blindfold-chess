@@ -40,6 +40,8 @@
     "form": {
       "nameLabel": "Nome",
       "namePlaceholder": "ex.: Najdorf (Pretas)",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder": "Descreva este kata — o que cobre, para quem é…",
       "sideLabel": "Seu lado",
       "side_white": "Brancas",
       "side_black": "Pretas",
@@ -80,6 +82,8 @@
       "title": "Editar kata",
       "breadcrumb": "Editar",
       "nameLabel": "Nome",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder": "Descreva este kata — o que cobre, para quem é…",
       "save": "Salvar",
       "saving": "Salvando...",
       "cancel": "Cancelar",
@@ -92,13 +96,15 @@
         "pgnRequired": "Digite os lances.",
         "pgnTooLarge": "O PGN é muito grande.",
         "invalidPgn": "Não foi possível ler estes lances. Verifique a notação.",
-        "generic": "Algo deu errado. Tente novamente."
+        "generic": "Algo deu errado. Tente novamente.",
+        "descriptionTooLong": "Esta descrição é muito longa."
       }
     },
     "detail": {
       "title": "Kata",
       "pgnHeading": "PGN",
       "linesHeading": "Linhas",
+      "descriptionHeading": "Descrição",
       "noLines": "Este kata ainda não tem linhas.",
       "lineCount": "{count} linhas",
       "forThisOpening": "Katas desta abertura",
@@ -107,7 +113,12 @@
       "openLine": "Abrir esta linha →",
       "createdBy": "Criado por",
       "edited": "(editado)",
-      "moreActions": "Mais ações"
+      "moreActions": "Mais ações",
+      "filterBySide": "Mostrar katás de {side}"
+    },
+    "filter": {
+      "all": "Todos",
+      "label": "Filtrar por lado"
     },
     "line": {
       "new": {
@@ -118,6 +129,7 @@
       "title": "Linha",
       "breadcrumb": "Linha {n}",
       "empty": "Esta linha não tem lances.",
+      "branchFromHere": "Adicionar uma variante a partir daqui",
       "shapes": {
         "hint": "Clique com o botão direito e arraste no tabuleiro para desenhar uma seta; clique com o botão direito em uma casa para circulá-la. Shift / Alt / Ctrl mudam a cor. Salvo automaticamente.",
         "saveFailed": "Não foi possível salvar suas marcações no tabuleiro. Tente novamente."
@@ -137,6 +149,13 @@
         "save": "Salvar",
         "cancel": "Cancelar",
         "sharedHelp": "Esta nota é compartilhada por todas as linhas deste kata que alcançam esta posição."
+      },
+      "delete": {
+        "button": "Excluir",
+        "title": "Excluir esta linha?",
+        "message": "Isso remove a linha e as notas ligadas apenas a posições que ela alcançava. Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar"
       },
       "edit": {
         "editAction": "Editar",
@@ -163,8 +182,8 @@
     },
     "delete": {
       "button": "Excluir",
-      "title": "Excluir esta linha?",
-      "message": "Isso remove a linha permanentemente. Não é possível desfazer.",
+      "title": "Excluir este kata?",
+      "message": "Isso remove o kata permanentemente. Não é possível desfazer.",
       "confirm": "Excluir",
       "cancel": "Cancelar"
     },
@@ -2361,7 +2380,7 @@
       "noRepertoires": "Você ainda não registrou nenhum kata de {side}.",
       "noneApplicable": "Nenhum dos seus katas cobre a abertura desta partida.",
       "registerCta": "Registrar um kata",
-      "viewRepertoires": "Sua lista de katas",
+      "viewRepertoires": "Ver katás da comunidade",
       "selectHeading": "Escolha o kata para comparar",
       "play": "Reproduzir",
       "replay": "Reproduzir novamente",

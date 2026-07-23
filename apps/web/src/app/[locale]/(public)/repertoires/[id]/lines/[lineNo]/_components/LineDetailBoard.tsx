@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
@@ -43,6 +45,12 @@ type Props = {
   /** Heading + owner-only add-line label for that list, resolved server-side. */
   navHeading: string;
   navAddLineLabel?: string;
+  /**
+   * Owner-only: per-ply prefix PGNs (`branchPgns[ply - 1]` = this line through
+   * ply). Seeds the "branch from this position" link so a new line reuses the
+   * shared prefix and diverges after it. Empty for non-owners.
+   */
+  branchPgns: string[];
 };
 
 /**
@@ -70,8 +78,10 @@ export function LineDetailBoard({
   navItems,
   navHeading,
   navAddLineLabel,
+  branchPgns,
 }: Props) {
   const t = useTranslations('Repertoires.line.shapes');
+  const tLine = useTranslations('Repertoires.line');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -178,6 +188,24 @@ export function LineDetailBoard({
             >
               {saveFailed ? t('saveFailed') : t('hint')}
             </p>
+          )}
+
+          {/* Owner-only: start a new line that shares this line's moves up to the
+              position in focus, then diverges — the per-line replacement for
+              adding a variation in the (removed) whole-kata board editor. Hidden
+              at the start position (ply 0), where "add a line" already covers a
+              blank line from the root. */}
+          {isOwner && clampedPly >= 1 && branchPgns[clampedPly - 1] && (
+            <Link
+              href={`/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(
+                branchPgns[clampedPly - 1]
+              )}`}
+              className="block"
+            >
+              <Button asChild variant="outline" fullWidth>
+                {tLine('branchFromHere')}
+              </Button>
+            </Link>
           )}
         </div>
 

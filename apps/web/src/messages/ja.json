@@ -40,6 +40,8 @@
     "form": {
       "nameLabel": "名前",
       "namePlaceholder": "例：ナイドルフ（黒）",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "この型の説明 — 何を扱うか、誰向けか…",
       "sideLabel": "自分の手番",
       "side_white": "白",
       "side_black": "黒",
@@ -80,6 +82,8 @@
       "title": "型を編集",
       "breadcrumb": "編集",
       "nameLabel": "名前",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "この型の説明 — 何を扱うか、誰向けか…",
       "save": "保存",
       "saving": "保存中...",
       "cancel": "キャンセル",
@@ -92,13 +96,15 @@
         "pgnRequired": "手順を入力してください。",
         "pgnTooLarge": "PGN が大きすぎます。",
         "invalidPgn": "手順を読み取れませんでした。記譜を確認してください。",
-        "generic": "エラーが発生しました。もう一度お試しください。"
+        "generic": "エラーが発生しました。もう一度お試しください。",
+        "descriptionTooLong": "説明が長すぎます。"
       }
     },
     "detail": {
       "title": "型",
       "pgnHeading": "PGN",
       "linesHeading": "ライン",
+      "descriptionHeading": "説明",
       "noLines": "この型にはまだラインがありません。",
       "lineCount": "{count} ライン",
       "forThisOpening": "このオープニングの型",
@@ -107,7 +113,12 @@
       "openLine": "このラインを開く →",
       "createdBy": "作成者",
       "edited": "（編集済み）",
-      "moreActions": "その他の操作"
+      "moreActions": "その他の操作",
+      "filterBySide": "{side}の型を表示"
+    },
+    "filter": {
+      "all": "すべて",
+      "label": "手番で絞り込む"
     },
     "line": {
       "new": {
@@ -118,6 +129,7 @@
       "title": "ライン",
       "breadcrumb": "ライン {n}",
       "empty": "このラインには手がありません。",
+      "branchFromHere": "この局面から分岐を追加",
       "shapes": {
         "hint": "盤上を右クリックしてドラッグすると矢印、右クリックだけでマスに丸を描けます。Shift / Alt / Ctrl で色が変わります。自動保存されます。",
         "saveFailed": "盤面の書き込みを保存できませんでした。もう一度お試しください。"
@@ -137,6 +149,13 @@
         "save": "保存",
         "cancel": "キャンセル",
         "sharedHelp": "このメモは、同じ局面を通るこの型のすべてのラインで共有されます。"
+      },
+      "delete": {
+        "button": "削除",
+        "title": "このラインを削除しますか？",
+        "message": "このラインと、このラインでしか到達しない局面に付いたメモが削除されます。この操作は取り消せません。",
+        "confirm": "削除",
+        "cancel": "キャンセル"
       },
       "edit": {
         "editAction": "編集",
@@ -2361,7 +2380,7 @@
       "noRepertoires": "{side}の型はまだ登録されていません。",
       "noneApplicable": "この対局のオープニングに該当する型はありませんでした。",
       "registerCta": "型を登録する",
-      "viewRepertoires": "自分の型一覧",
+      "viewRepertoires": "みんなの型を見る",
       "selectHeading": "チェックに使う型を選んでください",
       "play": "再生",
       "replay": "もう一度再生",
