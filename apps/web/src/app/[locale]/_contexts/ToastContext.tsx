@@ -23,6 +23,12 @@ export type ToastIcon = 'coin';
 
 export type ToastOptions = {
   icon?: ToastIcon;
+  /**
+   * Locale-relative path. When set, the toast becomes tappable and navigates
+   * here on click (then dismisses) — used by the coin-reward toast to send the
+   * author to `/mypage/coins`. A one-time discovery nudge, not a durable nav.
+   */
+  href?: string;
 };
 
 export type Toast = {
@@ -30,6 +36,7 @@ export type Toast = {
   message: string;
   type: ToastType;
   icon?: ToastIcon;
+  href?: string;
 };
 
 type ToastContextValue = {
@@ -58,7 +65,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const showToast = useCallback(
     (message: string, type: ToastType = 'info', options?: ToastOptions) => {
       const id = Date.now().toString();
-      const newToast: Toast = { id, message, type, icon: options?.icon };
+      const newToast: Toast = {
+        id,
+        message,
+        type,
+        icon: options?.icon,
+        href: options?.href,
+      };
 
       setToasts((prev) => {
         const updated = [...prev, newToast];

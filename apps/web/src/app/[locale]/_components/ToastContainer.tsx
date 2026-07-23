@@ -83,7 +83,12 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
     if (coinsParam) {
       const count = Number.parseInt(coinsParam, 10);
       if (Number.isFinite(count) && count > 0) {
-        showToast(tToast('coinsEarned', { count }), 'success', { icon: 'coin' });
+        // Tapping the reward toast sends the author to their coin balance — a
+        // one-time discovery nudge to where earned coins live.
+        showToast(tToast('coinsEarned', { count }), 'success', {
+          icon: 'coin',
+          href: '/mypage/coins',
+        });
         handled = true;
       }
     }
