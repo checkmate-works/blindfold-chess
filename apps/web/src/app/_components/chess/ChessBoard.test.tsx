@@ -327,7 +327,8 @@ describe('ChessBoard interactive mode — illegal-move reporting (onIllegalMove)
     fireEvent.click(squareEl(container, 'e5')); // illegal (two squares too far)
 
     expect(onMove).not.toHaveBeenCalled();
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    // Same-file pawn push → bare-destination SAN-like label.
+    expect(onIllegalMove).toHaveBeenCalledExactlyOnceWith('e5');
   });
 
   it('does not fire onIllegalMove when reselecting another own piece', () => {
@@ -400,7 +401,7 @@ describe('ChessBoard interactive mode — illegal-move reporting (onIllegalMove)
     dragPiece(container, 'e2', 'e5'); // illegal advance
 
     expect(onMove).not.toHaveBeenCalled();
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    expect(onIllegalMove).toHaveBeenCalledExactlyOnceWith('e5');
   });
 
   it('does not fire onIllegalMove when a drag is dropped back on its origin', () => {
@@ -421,12 +422,12 @@ describe('ChessBoard interactive mode — illegal-move reporting (onIllegalMove)
   });
 });
 
-describe('ChessBoard interactive mode — obfuscated counting (single-color / discs)', () => {
+describe('ChessBoard interactive mode — obfuscation does not change click counting (single-color / discs)', () => {
   // A position where White's d-bishop on e2 is absolutely pinned to the king
   // on e1 by the black rook on e8 — moving it sideways is illegal.
   const PIN_FEN = '4r2k/8/8/8/8/8/4B3/4K3 w - - 0 1';
 
-  it('counts a first click onto the opponent piece (believed to be own)', () => {
+  it('does NOT count a first click onto the opponent piece (mis-grab names no move)', () => {
     const onMove = vi.fn();
     const onIllegalMove = vi.fn();
     const { container } = render(
@@ -441,7 +442,9 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
 
     fireEvent.click(squareEl(container, 'e7')); // opponent pawn, nothing selected yet
 
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    // A first tap with no selection names no source → destination, so it is a
+    // no-op — indistinguishable from a misclick and not a counted attempt.
+    expect(onIllegalMove).not.toHaveBeenCalled();
     expect(onMove).not.toHaveBeenCalled();
   });
 
@@ -462,7 +465,10 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
     expect(onIllegalMove).not.toHaveBeenCalled();
   });
 
-  it('counts trying to capture one own piece after a selection (no reselect in blindfold)', () => {
+  it('reselects another own piece after a selection instead of counting it (change of intent)', () => {
+    // Regression: playing White, tap the d-pawn (intending d4), then change
+    // your mind to the Réti and tap the g1 knight. Tapping one's own piece is a
+    // reselection, NOT an illegal "dxg1" — even while obfuscated (white-only).
     const onMove = vi.fn();
     const onIllegalMove = vi.fn();
     const { container } = render(
@@ -475,11 +481,14 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
       />
     );
 
-    fireEvent.click(squareEl(container, 'e2')); // select own pawn
-    fireEvent.click(squareEl(container, 'd2')); // another own piece — illegal "capture"
+    fireEvent.click(squareEl(container, 'd2')); // select own d-pawn
+    fireEvent.click(squareEl(container, 'g1')); // changed mind → tap own knight
 
-    expect(onIllegalMove).toHaveBeenCalledOnce();
-    expect(onMove).not.toHaveBeenCalled();
+    expect(onIllegalMove).not.toHaveBeenCalled();
+
+    // The knight is now the selection: playing Nf3 goes straight through.
+    fireEvent.click(squareEl(container, 'f3'));
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('Nf3');
   });
 
   it('counts trying to move an absolutely-pinned piece', () => {
@@ -498,7 +507,8 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
     fireEvent.click(squareEl(container, 'e2')); // select the pinned bishop
     fireEvent.click(squareEl(container, 'd3')); // would be legal if not pinned
 
-    expect(onIllegalMove).toHaveBeenCalledOnce();
+    // Bishop to an empty square → piece SAN-like, no capture mark.
+    expect(onIllegalMove).toHaveBeenCalledExactlyOnceWith('Bd3');
     expect(onMove).not.toHaveBeenCalled();
   });
 

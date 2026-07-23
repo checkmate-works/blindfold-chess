@@ -17,6 +17,7 @@ export {
 } from "./piece-display";
 export type { BoardClickAction } from "./click-policy";
 export { classifyBoardClick, classifyMoveAttempt } from "./click-policy";
+export { describeIllegalAttempt } from "./describe-illegal-attempt";
 export type { SquareHighlightType } from "./highlight";
 export { resolveSquareHighlight } from "./highlight";
 export { squareToBoardIndices } from "./coords";

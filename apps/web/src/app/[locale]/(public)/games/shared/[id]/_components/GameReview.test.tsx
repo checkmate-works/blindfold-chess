@@ -83,6 +83,12 @@ vi.mock('@/app/[locale]/(public)/games/play/_components/MovesPanel', () => ({
   MovesPanel: () => <div data-testid="moves-panel" />,
 }));
 
+vi.mock('@/app/[locale]/(public)/games/play/_components/MoveOpsDetail', () => ({
+  MoveOpsDetail: (props: { title?: string }) => (
+    <div data-testid="move-ops-detail" data-title={props.title} />
+  ),
+}));
+
 vi.mock('@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview', () => ({
   GameStatsOverview: () => <div data-testid="stats-overview" />,
 }));
@@ -111,6 +117,7 @@ vi.mock('./PlaySettingsIndicator', () => ({
 
 type ReplayProps = Parameters<typeof GameReview>[0];
 type LiveSocial = Extract<ReplayProps['social'], { mode: 'live' }>;
+type LocalSocial = Extract<ReplayProps['social'], { mode: 'local' }>;
 
 function liveSocial(overrides: Partial<LiveSocial> = {}): LiveSocial {
   return {
@@ -122,6 +129,15 @@ function liveSocial(overrides: Partial<LiveSocial> = {}): LiveSocial {
     availableChunks: [],
     currentUser: null,
     isGameOwner: false,
+    ...overrides,
+  };
+}
+
+function localSocial(overrides: Partial<LocalSocial> = {}): LocalSocial {
+  return {
+    mode: 'local',
+    isAuthenticated: true,
+    discussionContent: <div data-testid="local-discussion" />,
     ...overrides,
   };
 }
@@ -284,6 +300,25 @@ describe('GameReview — stats overview gating', () => {
     );
     expect(screen.queryByTestId('auth-gate')).not.toBeInTheDocument();
     expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
+  });
+});
+
+describe('GameReview — local (result) mode per-move ops detail', () => {
+  it('renders the shared MoveOpsDetail on a move position, so a rejected board move shows here too', () => {
+    mockNav = { ...mockNav, currentPosition: 0 }; // a move (ply 0), not the overview board
+    render(<GameReview {...baseProps({ social: localSocial() })} />);
+
+    const ops = screen.getByTestId('move-ops-detail');
+    expect(ops).toBeInTheDocument();
+    // Given a move title so it can stand alone (no surrounding move chrome locally).
+    expect(ops).toHaveAttribute('data-title');
+  });
+
+  it('does not render the per-move ops detail on the overview (initial) board', () => {
+    mockNav = { ...mockNav, currentPosition: -2 }; // overview board → no current ply
+    render(<GameReview {...baseProps({ social: localSocial() })} />);
+
+    expect(screen.queryByTestId('move-ops-detail')).not.toBeInTheDocument();
   });
 });
 
