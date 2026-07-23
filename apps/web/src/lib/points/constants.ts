@@ -28,14 +28,28 @@ export const POINT_SOURCES = [
   'position_memory_created',
   'topic_post_created',
   'chunk_created',
+  // Repertoire (Kata) and shared game rewards fire on *publish*, not create:
+  // a `building` repertoire is a private draft, and a game's public row is
+  // written at publish time. They still live in this array so they count
+  // toward the shared daily cap and classify as `post_grant` in history.
+  'repertoire_published',
+  'game_published',
 ] as const;
 export type PointSource = (typeof POINT_SOURCES)[number];
 
 /**
- * Post entity types that earn points on creation. Map 1:1 with the
- * trigger `applyAutomatedGrant` was previously wired into.
+ * Entity types that earn points. Puzzle / position-memory / topic-post /
+ * chunk earn on creation; `repertoire` earns when a building course is
+ * published (→ public), and `game` earns when a shared game is published
+ * (its public row is inserted). Map 1:1 with a `PointSource`.
  */
-export type PointPostEntityType = 'puzzle' | 'position_memory' | 'topic_post' | 'chunk';
+export type PointPostEntityType =
+  | 'puzzle'
+  | 'position_memory'
+  | 'topic_post'
+  | 'chunk'
+  | 'repertoire'
+  | 'game';
 
 export type PointPostEntity = {
   type: PointPostEntityType;
@@ -47,6 +61,8 @@ const ENTITY_TYPE_TO_SOURCE: Record<PointPostEntityType, PointSource> = {
   position_memory: 'position_memory_created',
   topic_post: 'topic_post_created',
   chunk: 'chunk_created',
+  repertoire: 'repertoire_published',
+  game: 'game_published',
 };
 
 /**
@@ -82,22 +98,27 @@ export function buildIdempotencyKey(stage: PointLifecycleStage, entity: PointPos
 }
 
 /**
- * Points awarded per UGC post. Replaces the prior 5-day ad_free grant.
- * Redemption is intentionally 1 pt → 1 day of ad_free (set in the
- * redemption flow), so a single post is worth less than the legacy 5-day
- * grant but stacks across the user's whole submission history.
+ * Points awarded per UGC contribution (create for problems/posts/chunks,
+ * publish for repertoires/games). Redemption is 1 pt → 1 day of ad_free
+ * (set in the redemption flow); the reward stacks across the user's whole
+ * submission history.
+ *
+ * Lives in code, not the DB: every `point_events` row carries its concrete
+ * `delta`, so lowering this only affects future grants — coins already
+ * awarded at a prior rate (and their `/mypage/coins` history) are untouched.
  */
-export const POST_CREATION_POINTS = 3;
+export const POST_CREATION_POINTS = 1;
 
 /**
- * Per-day ceiling on points a single user can earn from UGC *creation*
- * (the `POINT_SOURCES` triggers — puzzle / position-memory / topic post).
+ * Per-day ceiling on points a single user can earn from UGC contribution
+ * (every `POINT_SOURCES` trigger — problem / post / chunk creation plus
+ * repertoire / game publish), shared across all of them.
  *
  * @design Why a daily cap
  *
- * UGC creation is rate-limited per action, but the limits are generous
+ * UGC contribution is rate-limited per action, but the limits are generous
  * enough that a scripted account could still mint dozens of points an
- * hour across the three creation surfaces. Since every point converts
+ * hour across the contribution surfaces. Since every point converts
  * 1:1 into an ad-free day, an uncapped create-faucet directly erodes ad
  * revenue. The cap holds the worst case to a fixed daily figure no
  * matter how the per-action rate limits are tuned; a genuine

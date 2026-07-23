@@ -17,10 +17,16 @@ describe('cappedCreationGrantAmount', () => {
     );
   });
 
-  it('awards a partial amount when the cap is nearly reached', () => {
-    // 1 point of headroom left → only 1 is granted, not the full 3.
-    expect(cappedCreationGrantAmount(DAILY_CREATION_POINT_CAP - 1)).toBe(1);
-    expect(cappedCreationGrantAmount(DAILY_CREATION_POINT_CAP - 2)).toBe(2);
+  it('clamps the award to the remaining daily headroom', () => {
+    // A grant never exceeds the day's remaining headroom. At the current
+    // POST_CREATION_POINTS === 1 there is no partial tier (the award is 1 or
+    // 0), but the clamp property holds at every headroom and re-tightens
+    // automatically if the per-grant rate is ever raised again.
+    for (let headroom = 0; headroom <= POST_CREATION_POINTS + 2; headroom++) {
+      expect(cappedCreationGrantAmount(DAILY_CREATION_POINT_CAP - headroom)).toBe(
+        Math.max(0, Math.min(POST_CREATION_POINTS, headroom))
+      );
+    }
   });
 
   it('awards 0 once the cap is exactly reached', () => {
