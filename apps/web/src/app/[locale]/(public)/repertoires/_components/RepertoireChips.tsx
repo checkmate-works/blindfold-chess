@@ -21,9 +21,11 @@ type Props = {
    */
   phase?: Repertoire['phase'];
   /**
-   * Show the "in progress" chip when `'building'`. Omit (or pass `'public'` /
-   * `'private'`) elsewhere — every existing caller only ever renders
-   * already-public repertoires, so this defaults to invisible for them.
+   * The visibility/lifecycle chip. `'building'` shows "in progress";
+   * `'followers_only'` / `'private'` show their tier so the owner (and, on a
+   * followers-only course, its viewers) can see it isn't public at a glance.
+   * `'public'` shows no chip — public is the unremarkable default. Omit on
+   * lists already scoped to public.
    */
   status?: Repertoire['status'];
 };
@@ -45,6 +47,8 @@ export async function RepertoireChips({ locale, side, phase, status }: Props) {
   return (
     <span className="flex flex-wrap gap-1">
       {status === 'building' && <span className={BUILDING_CHIP}>{t('status.building')}</span>}
+      {status === 'followers_only' && <span className={CHIP}>{t('status.followersOnly')}</span>}
+      {status === 'private' && <span className={CHIP}>{t('status.private')}</span>}
       <Link
         href={`/repertoires?side=${side}`}
         locale={locale}

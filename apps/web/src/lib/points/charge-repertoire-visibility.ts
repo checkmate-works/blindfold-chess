@@ -1,8 +1,8 @@
 import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
-import { pointEvents } from '@/lib/db';
-import type { DbTx } from '@/lib/db/types';
+import { db, pointEvents } from '@/lib/db';
+import type { DbTx, DbTxOrDb } from '@/lib/db/types';
 
 import { REPERTOIRE_VISIBILITY_SOURCE } from './constants';
 import { debitSpendable } from './internal-ledger';
@@ -24,7 +24,11 @@ export type ChargeRepertoireVisibilityResult =
  * to that max. Read under the caller's transaction so it reflects the same
  * locked state the debit writes against.
  */
-async function readVisibilityPaid(tx: DbTx, userId: string, repertoireId: string): Promise<number> {
+async function readVisibilityPaid(
+  tx: DbTxOrDb,
+  userId: string,
+  repertoireId: string
+): Promise<number> {
   const [agg] = await tx
     .select({
       // deltas are negative debits; negate the sum to get coins spent.
@@ -81,4 +85,15 @@ export async function chargeRepertoireVisibility(
     return { ok: false, error: 'insufficient_balance' };
   }
   return { ok: true, charged: amount };
+}
+
+/**
+ * Coins the user has already spent unlocking `repertoireId`'s visibility (its
+ * highest tier price reached) — for the owner-facing "change visibility" UI to
+ * show the true incremental cost of each tier (`repertoireVisibilityCharge`).
+ * Reads on the app `db` connection (no surrounding transaction needed for a
+ * read the UI only displays).
+ */
+export function getRepertoireVisibilityPaid(userId: string, repertoireId: string): Promise<number> {
+  return readVisibilityPaid(db, userId, repertoireId);
 }

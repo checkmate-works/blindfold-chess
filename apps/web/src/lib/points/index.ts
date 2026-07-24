@@ -25,7 +25,10 @@ export {
   repertoireVisibilityCharge,
 } from './spend-catalog';
 export type { RepertoireVisibility } from './spend-catalog';
-export { chargeRepertoireVisibility } from './charge-repertoire-visibility';
+export {
+  chargeRepertoireVisibility,
+  getRepertoireVisibilityPaid,
+} from './charge-repertoire-visibility';
 export type { ChargeRepertoireVisibilityResult } from './charge-repertoire-visibility';
 export { consumeMaiaGamePoint, hasMaiaGameCharge } from './consume-maia-game-point';
 export type { ConsumeMaiaGamePointResult } from './consume-maia-game-point';
