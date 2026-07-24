@@ -14,6 +14,7 @@ import {
 import { repertoireLines } from '@/lib/db';
 import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { guardOwnership } from '@/lib/ownership-guard';
+import { isFollowing } from '@/lib/social/follows';
 
 /** Author subset joined onto a repertoire for catalog cards. */
 export type RepertoireAuthorProfile = {
@@ -318,12 +319,42 @@ export type RepertoireForViewer = RepertoireWithLines & {
 };
 
 /**
+ * The read-path visibility gate (see {@link getRepertoireForViewer}). `public`
+ * is open to everyone; `followers_only` additionally admits a viewer who
+ * follows the (live) author; `private` and `building` are owner-only. The owner
+ * always sees their own course regardless of tier.
+ */
+async function canViewRepertoire(
+  repertoire: Repertoire,
+  viewerId: string | null,
+  isOwner: boolean
+): Promise<boolean> {
+  if (isOwner) return true;
+  if (repertoire.status === 'public') return true;
+  if (repertoire.status === 'followers_only') {
+    // A SET-NULL author (deleted account) leaves nobody to follow → hidden.
+    return repertoire.userId != null && (await isFollowing(viewerId, repertoire.userId));
+  }
+  // 'private' | 'building' — owner only, and isOwner was already false here.
+  return false;
+}
+
+/**
  * A single repertoire with its lines + author profile, for the public-facing
- * detail / line pages. Repertoires follow a soft-privacy model — no `status`
- * value (`building`, `private`, or `public`) hides a repertoire from someone
- * who has its URL, only from listings / navigation. Hence no status / auth
- * gate on viewing here; the returned `isOwner` flag is what gates the
- * owner-only affordances (delete, annotate, publish).
+ * detail / line pages.
+ *
+ * @design Visibility is a HARD gate (coin-gated privacy)
+ *
+ * `public` is viewable by anyone; the coin-gated tiers are enforced here, not
+ * merely hidden from listings:
+ *   - `followers_only` → owner, or a viewer who follows the author
+ *   - `private` / `building` → owner only
+ * A viewer who fails the gate gets `null` (→ 404), same as a missing/deleted
+ * repertoire — the content and its lines never leave the server. This is a
+ * deliberate departure from the repertoire's original soft-privacy model: once
+ * a user pays coins to make a course followers-only or private, URL knowledge
+ * alone must not defeat it. The `isOwner` flag still gates owner-only
+ * affordances (delete, annotate, publish, change visibility).
  *
  * `viewerId` is null for anonymous visitors.
  */
@@ -343,6 +374,8 @@ export async function getRepertoireForViewer(
   const { repertoire } = row;
 
   const isOwner = viewerId != null && repertoire.userId === viewerId;
+
+  if (!(await canViewRepertoire(repertoire, viewerId, isOwner))) return null;
 
   const lines = await db
     .select()
