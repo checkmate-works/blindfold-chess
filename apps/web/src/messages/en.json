@@ -14,7 +14,9 @@
     "description": "Kata shared by the community — opening lines, mate patterns, and memorized sequences.",
     "sectionTitle": "Community kata",
     "status": {
-      "building": "In progress"
+      "building": "In progress",
+      "followersOnly": "Followers only",
+      "private": "Private"
     },
     "building": {
       "sectionTitle": "Your kata in progress"
@@ -211,7 +213,31 @@
       "signInRequired": "Please sign in.",
       "banned": "Your account is restricted.",
       "rateLimited": "Too many attempts. Please try again later.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "insufficient_balance": "You don't have enough coins."
+    },
+    "visibility": {
+      "legend": "Who can see this Kata",
+      "public": "Public",
+      "publicHelp": "Anyone can find and view it. Free.",
+      "followersOnly": "Followers only",
+      "followersOnlyHelp": "Only people who follow you can view it.",
+      "private": "Private",
+      "privateHelp": "Only you can view it.",
+      "costFree": "Free",
+      "costCoins": "{cost, plural, one {# coin} other {# coins}}",
+      "balance": "Balance: {balance, plural, one {# coin} other {# coins}}",
+      "confirmTitle": "Spend coins?",
+      "confirmBody": "Publishing this Kata as “{tier}” will spend {cost, plural, one {# coin} other {# coins}}.",
+      "confirmInsufficient": "This needs {cost, plural, one {# coin} other {# coins}}, but your balance is {balance}.",
+      "confirm": "Spend & publish",
+      "cancel": "Cancel",
+      "change": "Change who can see this",
+      "changeTitle": "Change visibility",
+      "changeBody": "Change this Kata to “{tier}”? This will spend {cost, plural, one {# coin} other {# coins}}.",
+      "changeBodyFree": "Change this Kata to “{tier}”? You’ve already unlocked this tier — no coins needed.",
+      "changeConfirm": "Change",
+      "current": "Currently: {tier}"
     }
   },
   "metadata": {

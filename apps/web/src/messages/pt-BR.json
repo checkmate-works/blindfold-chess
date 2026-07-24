@@ -14,7 +14,9 @@
     "description": "Katas compartilhados pela comunidade — linhas de abertura, padrões de mate e sequências memorizadas.",
     "sectionTitle": "Katas da comunidade",
     "status": {
-      "building": "Em andamento"
+      "building": "Em andamento",
+      "followersOnly": "Somente seguidores",
+      "private": "Privado"
     },
     "building": {
       "sectionTitle": "Seu kata em andamento"
@@ -211,7 +213,31 @@
       "signInRequired": "Faça login.",
       "banned": "Sua conta está restrita.",
       "rateLimited": "Muitas tentativas. Tente novamente mais tarde.",
-      "generic": "Algo deu errado. Tente novamente."
+      "generic": "Algo deu errado. Tente novamente.",
+      "insufficient_balance": "Você não tem moedas suficientes."
+    },
+    "visibility": {
+      "legend": "Quem pode ver este Kata",
+      "public": "Público",
+      "publicHelp": "Qualquer um pode encontrar e ver. Grátis.",
+      "followersOnly": "Somente seguidores",
+      "followersOnlyHelp": "Só quem segue você pode ver.",
+      "private": "Privado",
+      "privateHelp": "Só você pode ver.",
+      "costFree": "Grátis",
+      "costCoins": "{cost, plural, one {# moeda} other {# moedas}}",
+      "balance": "Saldo: {balance, plural, one {# moeda} other {# moedas}}",
+      "confirmTitle": "Gastar moedas?",
+      "confirmBody": "Publicar este Kata como “{tier}” vai gastar {cost, plural, one {# moeda} other {# moedas}}.",
+      "confirmInsufficient": "Isto precisa de {cost, plural, one {# moeda} other {# moedas}}, mas seu saldo é {balance}.",
+      "confirm": "Gastar e publicar",
+      "cancel": "Cancelar",
+      "change": "Alterar quem pode ver",
+      "changeTitle": "Alterar visibilidade",
+      "changeBody": "Alterar este Kata para “{tier}”? Isto vai gastar {cost, plural, one {# moeda} other {# moedas}}.",
+      "changeBodyFree": "Alterar este Kata para “{tier}”? Você já desbloqueou este nível — sem moedas.",
+      "changeConfirm": "Alterar",
+      "current": "Atual: {tier}"
     }
   },
   "metadata": {
