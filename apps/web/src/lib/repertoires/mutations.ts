@@ -374,8 +374,22 @@ export async function updateRepertoireDetails(params: {
 
 /**
  * Create a repertoire (型) for the authenticated user, decomposing the imported
- * PGN into one `repertoire_lines` row per line. Repertoire + lines are inserted
- * in a single transaction; `userId` comes from the session.
+ * PGN into one `repertoire_lines` row per line, and publish it at the chosen
+ * visibility in the same transaction — the /new flow is create-and-publish, not
+ * the old two-step draft-then-publish. `userId` comes from the session.
+ *
+ * @design Visibility + coins on create
+ *
+ * The row is inserted directly at `input.visibility` (default `public`), not
+ * `building`: a fresh import already has ≥1 line, so there is nothing to draft.
+ *   - `public` (free): stamp `publishedAt`, grant the UGC coin (idempotent,
+ *     daily-capped) — identical to the old `publishRepertoireEntry` reward.
+ *   - `followers_only` / `private`: charge the tier price via
+ *     `chargeRepertoireVisibility` (first unlock, so the full price). If the
+ *     wallet can't cover it the whole transaction rolls back — no orphaned
+ *     course, no partial charge — and the action returns `insufficient_balance`.
+ *     No publish reward: a non-public course is not a public contribution, and
+ *     `publishedAt` stays null until it ever becomes public.
  */
 export async function createRepertoireEntry(
   input: RepertoireImportInput
@@ -386,47 +400,72 @@ export async function createRepertoireEntry(
 
   const validated = validateRepertoireImport(input);
   if (!validated.ok) return { error: validated.error };
-  const { name, side, phase, description, startingFen, lines, annotations } = validated.data;
+  const { name, side, phase, description, visibility, startingFen, lines, annotations } =
+    validated.data;
 
-  const id = await db.transaction(async (tx) => {
-    const [repertoire] = await tx
-      .insert(repertoires)
-      .values({ userId: user.id, name, side, phase, description, startingFen })
-      .returning({ id: repertoires.id });
+  const result = await db.transaction(
+    async (tx): Promise<{ ok: true; id: string } | { ok: false }> => {
+      const [repertoire] = await tx
+        .insert(repertoires)
+        .values({
+          userId: user.id,
+          name,
+          side,
+          phase,
+          description,
+          startingFen,
+          status: visibility,
+          publishedAt: visibility === 'public' ? new Date() : null,
+        })
+        .returning({ id: repertoires.id });
 
-    await tx.insert(repertoireLines).values(
-      lines.map((line, index) => ({
-        repertoireId: repertoire.id,
-        pgn: line.pgn,
-        startingFen: line.startingFen,
-        seq: index,
-      }))
-    );
-
-    // Board-authored "why this move" notes and arrow/circle markup land with
-    // the kata, under the same position keys the detail page writes to later.
-    // An absent half keeps its column default (empty note / no markup).
-    if (annotations.length > 0) {
-      await tx.insert(repertoireAnnotations).values(
-        annotations.map(({ positionKey, text, shapes }) => ({
+      await tx.insert(repertoireLines).values(
+        lines.map((line, index) => ({
           repertoireId: repertoire.id,
-          positionKey,
-          ...(text !== undefined ? { text } : {}),
-          ...(shapes !== undefined ? { shapes } : {}),
+          pgn: line.pgn,
+          startingFen: line.startingFen,
+          seq: index,
         }))
       );
+
+      // Board-authored "why this move" notes and arrow/circle markup land with
+      // the kata, under the same position keys the detail page writes to later.
+      // An absent half keeps its column default (empty note / no markup).
+      if (annotations.length > 0) {
+        await tx.insert(repertoireAnnotations).values(
+          annotations.map(({ positionKey, text, shapes }) => ({
+            repertoireId: repertoire.id,
+            positionKey,
+            ...(text !== undefined ? { text } : {}),
+            ...(shapes !== undefined ? { shapes } : {}),
+          }))
+        );
+      }
+
+      await insertOpeningLinks(tx, {
+        repertoireId: repertoire.id,
+        phase,
+        openingIds: input.openingIds ?? [],
+      });
+
+      if (visibility === 'public') {
+        // Same reward the old building→public publish gave.
+        await grantPointsForPost(tx, user.id, { type: 'repertoire', id: repertoire.id });
+      } else {
+        const charge = await chargeRepertoireVisibility(tx, {
+          userId: user.id,
+          repertoireId: repertoire.id,
+          target: visibility,
+        });
+        if (!charge.ok) return { ok: false };
+      }
+
+      return { ok: true, id: repertoire.id };
     }
+  );
 
-    await insertOpeningLinks(tx, {
-      repertoireId: repertoire.id,
-      phase,
-      openingIds: input.openingIds ?? [],
-    });
-
-    return repertoire.id;
-  });
-
-  return { success: true, id };
+  if (!result.ok) return { error: 'insufficient_balance' };
+  return { success: true, id: result.id };
 }
 
 /**
