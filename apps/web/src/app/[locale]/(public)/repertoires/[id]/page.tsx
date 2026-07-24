@@ -23,7 +23,7 @@ import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/Ope
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { LinkedText, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -128,7 +128,9 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
       {repertoire.description && (
         <section className="space-y-2">
           <SectionTitle>{t('detail.descriptionHeading')}</SectionTitle>
-          <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
+          <p className="whitespace-pre-wrap text-foreground">
+            <LinkedText text={repertoire.description} locale={locale} />
+          </p>
         </section>
       )}
 

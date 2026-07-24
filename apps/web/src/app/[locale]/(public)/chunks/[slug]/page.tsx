@@ -17,6 +17,7 @@ import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   HelpTourButton,
   LinkTabs,
+  LinkedText,
   PageLayout,
   ScrollToHashOnMount,
   SectionTitle,
@@ -239,7 +240,9 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
        */}
       <SectionTitle>{tChunks('detail.descriptionSection')}</SectionTitle>
       {chunk.description ? (
-        <p className="text-foreground whitespace-pre-wrap">{chunk.description}</p>
+        <p className="text-foreground whitespace-pre-wrap">
+          <LinkedText text={chunk.description} locale={locale} />
+        </p>
       ) : (
         <p className="text-muted-foreground italic">{tChunks('detail.noDescription')}</p>
       )}

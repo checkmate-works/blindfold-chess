@@ -13,7 +13,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
 
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { LinkedText, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -119,7 +119,9 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           {game.description && (
             <div className="space-y-2">
               <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
-              <p className="whitespace-pre-wrap text-foreground">{game.description}</p>
+              <p className="whitespace-pre-wrap text-foreground">
+                <LinkedText text={game.description} locale={locale} />
+              </p>
             </div>
           )}
         </GameReview>
