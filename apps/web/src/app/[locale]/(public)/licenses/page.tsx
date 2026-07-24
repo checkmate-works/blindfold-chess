@@ -19,6 +19,7 @@ type ComponentEntry = {
   name: string;
   description: string;
   sourceUrl: string;
+  license: string;
 };
 
 export default async function LicensesPage({ params }: Props) {
@@ -31,16 +32,25 @@ export default async function LicensesPage({ params }: Props) {
       name: t('stockfishName'),
       description: t('stockfishDescription'),
       sourceUrl: 'https://github.com/official-stockfish/Stockfish',
+      license: t('licenseValue'),
     },
     {
       name: t('lc0Name'),
       description: t('lc0Description'),
       sourceUrl: 'https://github.com/LeelaChessZero/lc0',
+      license: t('licenseValue'),
     },
     {
       name: t('maiaName'),
       description: t('maiaDescription'),
       sourceUrl: 'https://github.com/CSSLab/maia-chess',
+      license: t('licenseValue'),
+    },
+    {
+      name: t('libheifName'),
+      description: t('libheifDescription'),
+      sourceUrl: 'https://github.com/strukturag/libheif',
+      license: t('lgplLicenseValue'),
     },
   ];
 
@@ -77,7 +87,7 @@ export default async function LicensesPage({ params }: Props) {
                 </div>
                 <div className="flex flex-wrap gap-x-2">
                   <dt className="text-muted-foreground">{t('licenseLabel')}</dt>
-                  <dd>{t('licenseValue')}</dd>
+                  <dd>{c.license}</dd>
                 </div>
               </dl>
             </li>
@@ -86,6 +96,7 @@ export default async function LicensesPage({ params }: Props) {
 
         <SectionTitle>{t('complianceTitle')}</SectionTitle>
         <p>{t('complianceIntro')}</p>
+        <p>{t('lgplComplianceNote')}</p>
         <p>
           <a
             href="/licenses/gpl-3.0.txt"
