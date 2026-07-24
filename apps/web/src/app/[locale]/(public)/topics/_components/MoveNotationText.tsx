@@ -18,8 +18,10 @@ type Props = {
 };
 
 /**
- * Move-notation-aware replacement for `LinkedText` on comment bodies anchored
- * to a single position (chunks). In addition to URL linkification (still
+ * Move-notation-aware replacement for `LinkedText` on any text anchored to a
+ * single base position — comment bodies AND entity descriptions (chunk,
+ * puzzle, position-memory, repertoire, shared-game), all of which describe a
+ * line branching from one position. In addition to URL linkification (still
  * delegated to `LinkedText` for each plain-text slice), a legal SAN run like
  * "Bxa7" or "Bxa7 b6" written against `fen` becomes a button that opens a
  * board preview modal for that branch. Reuses the games feature's
@@ -27,7 +29,7 @@ type Props = {
  * its step labels derive their move numbers straight from the FEN's own
  * side-to-move + fullmove fields.
  */
-export function CommentMoveBody({ text, locale, fen }: Props) {
+export function MoveNotationText({ text, locale, fen }: Props) {
   const [openRef, setOpenRef] = useState<Extract<FenMoveSegment, { type: 'moveRef' }> | null>(null);
 
   // Parsing validates candidate runs with chess.js, so gate it behind a memo —

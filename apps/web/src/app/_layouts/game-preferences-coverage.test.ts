@@ -18,7 +18,7 @@ const HOOK_TOKEN = 'useGamePreferences';
 const INDIRECT_CONSUMER_TOKENS = [
   'MoveReferencePreviewModal',
   'GameCommentBody',
-  'CommentMoveBody',
+  'MoveNotationText',
 ];
 
 function walk(dir: string, out: string[] = []): string[] {

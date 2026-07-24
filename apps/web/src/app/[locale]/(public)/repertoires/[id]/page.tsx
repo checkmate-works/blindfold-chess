@@ -9,7 +9,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
+import { formatMovesToPgn, getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getPointBalanceSummary, getRepertoireVisibilityPaid } from '@/lib/points';
@@ -22,8 +22,9 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/OpeningTag';
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { LinkedText, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -129,7 +130,14 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         <section className="space-y-2">
           <SectionTitle>{t('detail.descriptionHeading')}</SectionTitle>
           <p className="whitespace-pre-wrap text-foreground">
-            <LinkedText text={repertoire.description} locale={locale} />
+            {/* A kata's lines run from its root — repertoire.startingFen, NULL
+                meaning the standard start (the same denormalised root the card
+                thumbnail uses). Move runs in the description branch from there. */}
+            <MoveNotationText
+              text={repertoire.description}
+              locale={locale}
+              fen={repertoire.startingFen ?? getStartingFen()}
+            />
           </p>
         </section>
       )}
