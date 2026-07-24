@@ -15,11 +15,11 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
+import { resolveOptionsByIds } from '../../_lib/resolve-options';
 import { updatePuzzle } from '../_actions/updatePuzzle';
 import { draftToSolutionMoves } from '../_lib/draft-to-solution-moves';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { clearEditDraft, readEditDraft } from '../_lib/edit-draft-storage';
-import { resolveOptionsByIds } from '../_lib/resolve-options';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePreviewTags } from './PuzzlePreviewTags';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';

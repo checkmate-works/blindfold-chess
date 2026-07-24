@@ -1344,7 +1344,18 @@
         "clearBoardConfirmMessage": "This will remove all placed pieces. This action cannot be undone.",
         "clearBoardConfirmConfirm": "Clear",
         "clearBoardConfirmCancel": "Cancel",
-        "forkBanner": "Forking from \"{sourceTitle}\""
+        "forkBanner": "Forking from \"{sourceTitle}\"",
+        "stepPosition": "Position",
+        "stepPreview": "Preview",
+        "stepIndicatorLabel": "Steps",
+        "continueToPreview": "Preview",
+        "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again."
+      },
+      "preview": {
+        "title": "Preview Problem",
+        "createCta": "Create",
+        "backToEditCta": "Back to edit",
+        "createError": "An unexpected error occurred. Please try again."
       },
       "edit": {
         "title": "Edit Problem",
