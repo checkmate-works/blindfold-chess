@@ -11,7 +11,15 @@
  * persisted by the time this runs, so a failure degrades gracefully to
  * a text-only comment plus whatever images uploaded before the error —
  * the caller surfaces the error key but does not roll back the post.
+ *
+ * Failures are reported to Sentry with the HTTP status, the server's raw
+ * error code, and the file's metadata (type / size — never the bytes), so a
+ * production "could not attach" can be diagnosed to its exact cause (wrong
+ * format reaching the server, oversized file, network error, …) without
+ * relying on the user relaying an on-screen message.
  */
+import * as Sentry from '@sentry/nextjs';
+
 export type UploadPostImagesResult = { ok: true } | { ok: false; error: string };
 
 export async function uploadPostImages(
@@ -19,6 +27,7 @@ export async function uploadPostImages(
   files: readonly File[]
 ): Promise<UploadPostImagesResult> {
   for (const file of files) {
+    const fileMeta = { name: file.name, type: file.type, size: file.size };
     const fd = new FormData();
     fd.set('file', file);
     let res: Response;
@@ -28,11 +37,20 @@ export async function uploadPostImages(
         body: fd,
         credentials: 'same-origin',
       });
-    } catch {
+    } catch (err) {
+      Sentry.captureException(err, {
+        tags: { feature: 'post-image-upload', phase: 'network' },
+        extra: { postId, file: fileMeta },
+      });
       return { ok: false, error: 'attachment.image.error.uploadFailed' };
     }
     if (!res.ok) {
       const body = (await res.json().catch(() => ({}))) as { error?: string };
+      Sentry.captureMessage('post-image-upload-rejected', {
+        level: 'error',
+        tags: { feature: 'post-image-upload', phase: 'server', status: String(res.status) },
+        extra: { postId, status: res.status, serverError: body.error ?? null, file: fileMeta },
+      });
       return { ok: false, error: body.error ?? 'attachment.image.error.uploadFailed' };
     }
   }

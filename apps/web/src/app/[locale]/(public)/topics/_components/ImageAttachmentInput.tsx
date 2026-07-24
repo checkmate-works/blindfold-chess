@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import * as Sentry from '@sentry/nextjs';
 import { FaImage, FaTimes } from 'react-icons/fa';
 
 import { prepareImageForUpload } from '@/lib/client-images/prepare-image-for-upload';
@@ -110,8 +111,12 @@ export function ImageAttachmentInput({ onChange, onModeChange, onValidationStatu
       for (const file of picked) {
         try {
           prepared.push(await prepareImageForUpload(file));
-        } catch {
+        } catch (err) {
           anyFailed = true;
+          Sentry.captureException(err, {
+            tags: { feature: 'comment-image-upload', phase: 'prepare' },
+            extra: { name: file.name, type: file.type, size: file.size },
+          });
         }
       }
       if (anyFailed) setConversionFailed(true);

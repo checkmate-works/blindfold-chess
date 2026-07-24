@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import * as Sentry from '@sentry/nextjs';
 
 import { prepareImageForUpload } from '@/lib/client-images/prepare-image-for-upload';
 
@@ -44,7 +45,11 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
     let file: File;
     try {
       file = await prepareImageForUpload(original);
-    } catch {
+    } catch (err) {
+      Sentry.captureException(err, {
+        tags: { feature: 'avatar-upload', phase: 'prepare' },
+        extra: { name: original.name, type: original.type, size: original.size },
+      });
       setError(t('avatarConversionFailed'));
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;

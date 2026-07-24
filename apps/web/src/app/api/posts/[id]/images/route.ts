@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import * as Sentry from '@sentry/nextjs';
 import { randomUUID } from 'crypto';
 import 'server-only';
 
@@ -126,6 +127,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (err instanceof AnimatedImageNotSupportedError) {
       return NextResponse.json({ error: 'animated_image_not_supported' }, { status: 400 });
     }
+    // Sharp could not decode the uploaded bytes. Capture the real exception so
+    // a client-converted image that the server can't read is diagnosable.
+    Sentry.captureException(err, {
+      tags: { feature: 'post-image-upload', phase: 'probe' },
+      extra: { postId, contentType: file.type, fileSize: file.size },
+    });
     return NextResponse.json({ error: 'invalid_image' }, { status: 400 });
   }
   if (!isWithinMegapixelCap(probe)) {
@@ -147,6 +154,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       contentType: file.type,
       fileSize: file.size,
       error: err,
+    });
+    Sentry.captureException(err, {
+      tags: { feature: 'post-image-upload', phase: 'process' },
+      extra: { postId, contentType: file.type, fileSize: file.size },
     });
     return NextResponse.json({ error: 'image_processing_failed' }, { status: 500 });
   }
