@@ -41,6 +41,105 @@ export async function upsertBalance(
     });
 }
 
+export type DebitSpendableInput = {
+  userId: string;
+  /** Total coins to consume. Must be a positive integer; the caller checks that. */
+  amount: number;
+  source: string;
+  sourceId: string | null;
+  metadata?: Record<string, unknown>;
+  /**
+   * Build the `idempotency_key` for a given debited bucket. For a spend fully
+   * covered by ONE category (e.g. cost 1) the returned key may ignore
+   * `category` — the function is called exactly once. For a spend that spans
+   * several buckets the key MUST vary by category, or the per-bucket rows
+   * collide on the UNIQUE `idempotency_key` index.
+   */
+  idempotencyKey: (category: PointCategory) => string;
+  /**
+   * Route each per-bucket insert through the idempotency-aware path (a UNIQUE
+   * conflict is swallowed and does not re-debit). Set for retry-safe spends
+   * (Maia per-game charge, repertoire visibility). Leave false for spends
+   * whose caller asserts a fresh key (ad_free redemption keys off a freshly
+   * inserted redemption row id).
+   */
+  idempotent?: boolean;
+};
+
+export type DebitSpendableResult =
+  | {
+      ok: true;
+      /** The requested `amount` (echoed for convenience). */
+      charged: number;
+      /** Ledger rows actually written this call (empty when every bucket no-oped). */
+      pointEventIds: string[];
+      /**
+       * True when `idempotent` was set and EVERY bucket insert hit an existing
+       * key (nothing was written / debited). Callers use it to report an
+       * idempotent replay — e.g. Maia's `alreadyCharged`.
+       */
+      noop: boolean;
+    }
+  | { ok: false; error: 'insufficient_balance' };
+
+/**
+ * Consume `amount` spendable coins for one `userId`, walking
+ * `SPENDABLE_CONSUME_ORDER` (`earned` → `promotional` → `purchased`) and
+ * debiting each bucket in turn until the amount is covered, writing one
+ * `point_events` row per bucket drawn from.
+ *
+ * The single shared "lock → confirm → walk-and-debit" mechanic behind every
+ * consumption path — `redeemPointsForAdFree`, `consumeMaiaGamePoint`, and the
+ * repertoire-visibility charge all differ only in the idempotency key they
+ * build and how they interpret the result, not in how coins leave the wallet.
+ *
+ * MUST be called inside a `db.transaction()`: it takes `SELECT ... FOR UPDATE`
+ * on the spendable balance rows (via {@link lockSpendableBalances}) so a
+ * concurrent spend against the same user is serialized and no over-debit is
+ * possible. The lock releases only when the caller's transaction commits.
+ */
+export async function debitSpendable(
+  tx: DbTx,
+  input: DebitSpendableInput
+): Promise<DebitSpendableResult> {
+  const { byCategory, totalAvailable } = await lockSpendableBalances(tx, input.userId);
+  if (totalAvailable < input.amount) {
+    return { ok: false, error: 'insufficient_balance' };
+  }
+
+  let remaining = input.amount;
+  const pointEventIds: string[] = [];
+  let anyInserted = false;
+
+  for (const category of SPENDABLE_CONSUME_ORDER) {
+    if (remaining === 0) break;
+    const available = byCategory.get(category) ?? 0;
+    if (available <= 0) continue;
+    const take = Math.min(remaining, available);
+
+    const movement = {
+      userId: input.userId,
+      delta: -take,
+      category,
+      source: input.source,
+      sourceId: input.sourceId,
+      idempotencyKey: input.idempotencyKey(category),
+      metadata: input.metadata,
+    };
+    const result = input.idempotent
+      ? await recordPointMovement(tx, movement, { idempotent: true })
+      : await recordPointMovement(tx, movement);
+
+    if (result) {
+      pointEventIds.push(result.pointEventId);
+      anyInserted = true;
+    }
+    remaining -= take;
+  }
+
+  return { ok: true, charged: input.amount, pointEventIds, noop: !anyInserted };
+}
+
 export type RecordPointMovementInput = {
   userId: string;
   delta: number;

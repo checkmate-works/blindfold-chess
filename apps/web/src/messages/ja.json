@@ -14,7 +14,9 @@
     "description": "みんなが公開している型 — オープニング、詰みパターン、覚えておきたい手順。",
     "sectionTitle": "みんなの型",
     "status": {
-      "building": "作成中"
+      "building": "作成中",
+      "followersOnly": "フォロワー限定",
+      "private": "非公開"
     },
     "building": {
       "sectionTitle": "作成中の型"
@@ -211,7 +213,31 @@
       "signInRequired": "ログインしてください。",
       "banned": "アカウントが制限されています。",
       "rateLimited": "試行回数が多すぎます。しばらくしてからお試しください。",
-      "generic": "問題が発生しました。もう一度お試しください。"
+      "generic": "問題が発生しました。もう一度お試しください。",
+      "insufficient_balance": "コインが不足しています。"
+    },
+    "visibility": {
+      "legend": "この型を見られる人",
+      "public": "公開",
+      "publicHelp": "誰でも見つけて閲覧できます。無料。",
+      "followersOnly": "フォロワーにのみ公開",
+      "followersOnlyHelp": "あなたをフォローしている人だけが閲覧できます。",
+      "private": "非公開",
+      "privateHelp": "あなただけが閲覧できます。",
+      "costFree": "無料",
+      "costCoins": "{cost}コイン",
+      "balance": "残高：{balance}コイン",
+      "confirmTitle": "コインを消費しますか？",
+      "confirmBody": "この型を「{tier}」で公開すると{cost}コイン消費します。",
+      "confirmInsufficient": "{cost}コイン必要ですが、残高は{balance}コインです。",
+      "confirm": "消費して公開",
+      "cancel": "キャンセル",
+      "change": "公開範囲を変更",
+      "changeTitle": "公開範囲の変更",
+      "changeBody": "この型を「{tier}」に変更しますか？{cost}コイン消費します。",
+      "changeBodyFree": "この型を「{tier}」に変更しますか？すでに解放済みのためコインは不要です。",
+      "changeConfirm": "変更する",
+      "current": "現在：{tier}"
     }
   },
   "metadata": {

@@ -44,12 +44,7 @@ export type PointSource = (typeof POINT_SOURCES)[number];
  * (its public row is inserted). Map 1:1 with a `PointSource`.
  */
 export type PointPostEntityType =
-  | 'puzzle'
-  | 'position_memory'
-  | 'topic_post'
-  | 'chunk'
-  | 'repertoire'
-  | 'game';
+  'puzzle' | 'position_memory' | 'topic_post' | 'chunk' | 'repertoire' | 'game';
 
 export type PointPostEntity = {
   type: PointPostEntityType;
@@ -224,6 +219,18 @@ export const MAIA_GAME_SOURCE = 'maia_game';
 export const REDEMPTION_SOURCE = 'redemption';
 export const ADMIN_GRANT_SOURCE = 'admin_grant';
 export const PURCHASE_SOURCE = 'purchase';
+
+/**
+ * `point_events.source` value for a coin spend that unlocks a Kata
+ * (repertoire) visibility tier (followers-only / private). Like
+ * `MAIA_GAME_SOURCE`, a consumption source deliberately NOT in
+ * `POINT_SOURCES` (the UGC creation grant surface). `source_id` holds the
+ * repertoire id; the idempotency key is
+ * `repertoire_visibility:<repertoireId>:<tierPrice>:<category>` so reaching a
+ * tier already paid for (public → private → public → private) never
+ * re-charges. See `chargeRepertoireVisibility` and the spend catalog.
+ */
+export const REPERTOIRE_VISIBILITY_SOURCE = 'repertoire_visibility';
 
 /**
  * `point_events.source` value for a like-derived coin grant. Like

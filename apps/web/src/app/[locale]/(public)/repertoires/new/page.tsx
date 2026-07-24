@@ -12,6 +12,7 @@ import { eq } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
+import { getPointBalanceSummary } from '@/lib/points';
 import { getOpeningOptions } from '@/lib/repertoires/opening-queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -36,6 +37,7 @@ export default async function NewLinePage({ params, searchParams }: Props) {
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
   const user = await getAuthenticatedUser();
   const openings = await getOpeningOptions(locale);
+  const balance = await getPointBalanceSummary(user.id);
 
   // Prefill the required name so a quick import never stalls on it. A
   // provisional user (no profile row yet) gets no prefill — there is no
@@ -64,6 +66,7 @@ export default async function NewLinePage({ params, searchParams }: Props) {
       <RepertoireImportForm
         locale={locale}
         openings={openings}
+        spendableBalance={balance.total}
         initialPgn={initialPgn}
         initialSide={initialSide}
         initialName={initialName}

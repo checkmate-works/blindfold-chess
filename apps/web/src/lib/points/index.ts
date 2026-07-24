@@ -10,6 +10,7 @@ export {
   POST_CREATION_POINTS,
   PURCHASE_SOURCE,
   REDEMPTION_SOURCE,
+  REPERTOIRE_VISIBILITY_SOURCE,
   SPENDABLE_CONSUME_ORDER,
   buildIdempotencyKey,
   cappedCreationGrantAmount,
@@ -17,6 +18,18 @@ export {
   isPointEligibleTopicType,
   sourceForEntity,
 } from './constants';
+export {
+  REPERTOIRE_VISIBILITIES,
+  REPERTOIRE_VISIBILITY_COST,
+  isRepertoireVisibility,
+  repertoireVisibilityCharge,
+} from './spend-catalog';
+export type { RepertoireVisibility } from './spend-catalog';
+export {
+  chargeRepertoireVisibility,
+  getRepertoireVisibilityPaid,
+} from './charge-repertoire-visibility';
+export type { ChargeRepertoireVisibilityResult } from './charge-repertoire-visibility';
 export { consumeMaiaGamePoint, hasMaiaGameCharge } from './consume-maia-game-point';
 export type { ConsumeMaiaGamePointResult } from './consume-maia-game-point';
 export { getDailyCreationCapStatus } from './daily-cap';

@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation';
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
+import { getPointBalanceSummary, getRepertoireVisibilityPaid } from '@/lib/points';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getLinkedOpenings } from '@/lib/repertoires/opening-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
@@ -32,6 +33,7 @@ import { RepertoireActionsMenu } from '../_components/RepertoireActionsMenu';
 import { RepertoireChips } from '../_components/RepertoireChips';
 import type { RepertoireViewerLine } from '../_components/RepertoireLineViewer';
 import { RepertoireLineViewer } from '../_components/RepertoireLineViewer';
+import { RepertoireVisibilityControl } from '../_components/RepertoireVisibilityControl';
 import { PublishRepertoireBanner } from './_components/PublishRepertoireBanner';
 import { RepertoireCommentsSection } from './_components/RepertoireCommentsSection';
 
@@ -62,6 +64,17 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
   const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
   if (!data) notFound();
   const { repertoire, lines, profile, isOwner } = data;
+
+  // Owner-only visibility control needs the coins already paid on this course
+  // (to preview each tier's incremental cost) and the owner's balance. Only for
+  // a published tier — a `building` draft uses the publish banner instead.
+  const visibilityInfo =
+    isOwner && currentUser && repertoire.status !== 'building'
+      ? {
+          paid: await getRepertoireVisibilityPaid(currentUser.id, repertoire.id),
+          balance: (await getPointBalanceSummary(currentUser.id)).total,
+        }
+      : null;
 
   // The openings this repertoire is linked to (n:n; empty for a non-opening
   // phase). Rendered as compact tag links (the game-card pill) out to each
@@ -131,6 +144,15 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
             phase={repertoire.phase}
             status={repertoire.status}
           />
+          {visibilityInfo && repertoire.status !== 'building' && (
+            <RepertoireVisibilityControl
+              id={repertoire.id}
+              locale={locale}
+              current={repertoire.status}
+              visibilityPaid={visibilityInfo.paid}
+              spendableBalance={visibilityInfo.balance}
+            />
+          )}
         </div>
         {linkedOpenings.length > 0 && (
           <div className="flex flex-wrap gap-2">

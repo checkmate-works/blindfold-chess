@@ -4,6 +4,11 @@ import { enumerateLines, generatePgn, parsePgnTree } from '@blindfold-chess/feat
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
+// Deep import (not the '@/lib/points' barrel): spend-catalog is pure, whereas
+// the barrel pulls in `server-only` consume/redeem modules that must not reach
+// this validator's client-reachable bundle.
+import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
+import { isRepertoireVisibility } from '@/lib/points/spend-catalog';
 
 /**
  * Validation + decomposition for an imported repertoire (型 / course).
@@ -35,6 +40,12 @@ export type RepertoireImportInput = {
   phase: RepertoirePhase;
   description?: string | null;
   pgn: string;
+  /**
+   * The visibility to create-and-publish at (coin-gated). Absent → `public`
+   * (free, the default). `followers_only` / `private` charge coins in the
+   * create transaction.
+   */
+  visibility?: RepertoireVisibility;
   /** Opening ids to link (only honoured when phase === 'opening'). */
   openingIds?: string[];
   /**
@@ -64,6 +75,8 @@ export type ValidatedRepertoireImport = {
   side: RepertoireSide;
   phase: RepertoirePhase;
   description: string | null;
+  /** Visibility to publish at (defaults to `public`). */
+  visibility: RepertoireVisibility;
   /** Root position shared by every line. NULL = standard start. */
   startingFen: string | null;
   lines: ImportedLine[];
@@ -82,11 +95,11 @@ export type RepertoireValidationError =
   | 'pgnRequired'
   | 'pgnTooLarge'
   | 'invalidPgn'
-  | 'invalidAnnotations';
+  | 'invalidAnnotations'
+  | 'invalidVisibility';
 
 export type ValidateRepertoireResult =
-  | { ok: true; data: ValidatedRepertoireImport }
-  | { ok: false; error: RepertoireValidationError };
+  { ok: true; data: ValidatedRepertoireImport } | { ok: false; error: RepertoireValidationError };
 
 function byteLength(text: string): number {
   return new TextEncoder().encode(text).length;
@@ -101,11 +114,7 @@ export type RepertoireLineEditInput = {
 };
 
 export type RepertoireLineEditError =
-  | 'nameTooLong'
-  | 'pgnRequired'
-  | 'pgnTooLarge'
-  | 'invalidPgn'
-  | 'noMoves';
+  'nameTooLong' | 'pgnRequired' | 'pgnTooLarge' | 'invalidPgn' | 'noMoves';
 
 export type ValidateLineEditResult =
   | { ok: true; data: { name: string | null; pgn: string } }
@@ -162,6 +171,12 @@ export function validateRepertoireImport(input: RepertoireImportInput): Validate
   }
   if (!REPERTOIRE_PHASES.includes(input.phase)) {
     return { ok: false, error: 'invalidPhase' };
+  }
+
+  // Absent → public (free). A present value must be a real tier.
+  const visibility: RepertoireVisibility = input.visibility ?? 'public';
+  if (!isRepertoireVisibility(visibility)) {
+    return { ok: false, error: 'invalidVisibility' };
   }
 
   const pgn = input.pgn?.trim() ?? '';
@@ -236,6 +251,7 @@ export function validateRepertoireImport(input: RepertoireImportInput): Validate
       side: input.side,
       phase: input.phase,
       description,
+      visibility,
       startingFen,
       lines,
       annotations,

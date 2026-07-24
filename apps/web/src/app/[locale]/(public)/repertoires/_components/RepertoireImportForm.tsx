@@ -13,12 +13,16 @@ import { FaPlus } from 'react-icons/fa';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
+// Pure catalog leaf (not the '@/lib/points' barrel) — client-safe, no server-only.
+import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
+import { REPERTOIRE_VISIBILITIES, REPERTOIRE_VISIBILITY_COST } from '@/lib/points/spend-catalog';
 import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
 import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { createRepertoire } from '../_actions/createRepertoire';
 import { MoveAnnotationField } from './MoveAnnotationField';
@@ -37,9 +41,18 @@ const PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
  */
 const AUTHORABLE_PHASES: readonly RepertoirePhase[] = ['opening'];
 
+/** RepertoireVisibility (snake) → its `Repertoires.visibility.*` i18n key (camel). */
+const VISIBILITY_I18N_KEY: Record<RepertoireVisibility, string> = {
+  public: 'public',
+  followers_only: 'followersOnly',
+  private: 'private',
+};
+
 type Props = {
   locale: string;
   openings: OpeningOption[];
+  /** The author's spendable coin balance — shown next to the paid tiers. */
+  spendableBalance: number;
   /** Prefills the PGN textarea — e.g. a finished game handed in by another feature. */
   initialPgn?: string;
   /** Prefills the side radio to match {@link initialPgn}'s player colour. */
@@ -62,6 +75,7 @@ type Props = {
 export function RepertoireImportForm({
   locale,
   openings,
+  spendableBalance,
   initialPgn,
   initialSide,
   initialName,
@@ -73,6 +87,10 @@ export function RepertoireImportForm({
   const [description, setDescription] = useState('');
   const [side, setSide] = useState<RepertoireSide>(initialSide ?? 'white');
   const [phase, setPhase] = useState<RepertoirePhase>('opening');
+  // Visibility to create-and-publish at. `public` is free; the paid tiers open
+  // a coin-confirm modal before submitting.
+  const [visibility, setVisibility] = useState<RepertoireVisibility>('public');
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [openingIds, setOpeningIds] = useState<string[]>([]);
   const [pgn, setPgn] = useState(initialPgn ?? '');
   // How the moves are entered: pasting a PGN or playing them on a board. Both
@@ -130,8 +148,10 @@ export function RepertoireImportForm({
     setOpeningIds(ids);
   }
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  const visibilityCost = REPERTOIRE_VISIBILITY_COST[visibility];
+
+  async function submit() {
+    setConfirmOpen(false);
     setPending(true);
     setError(null);
 
@@ -141,6 +161,7 @@ export function RepertoireImportForm({
       side,
       phase,
       pgn,
+      visibility,
       openingIds: phase === 'opening' ? openingIds : [],
       annotations,
       shapes,
@@ -158,6 +179,16 @@ export function RepertoireImportForm({
     // router.push triggers the navigation guard (same as ChunkForm).
     flushSync(() => setSubmitted(true));
     router.push(`/repertoires/${result.id}`);
+  }
+
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    // A paid tier confirms the coin charge first; public publishes straight away.
+    if (visibilityCost > 0) {
+      setConfirmOpen(true);
+      return;
+    }
+    void submit();
   }
 
   return (
@@ -308,7 +339,64 @@ export function RepertoireImportForm({
         />
       )}
 
+      <fieldset>
+        <legend className="block text-sm font-medium text-foreground">
+          {t('visibility.legend')}
+        </legend>
+        <div className="mt-2 space-y-2">
+          {REPERTOIRE_VISIBILITIES.map((value) => {
+            const cost = REPERTOIRE_VISIBILITY_COST[value];
+            const key = VISIBILITY_I18N_KEY[value];
+            return (
+              <label key={value} className="flex items-start gap-2 text-sm text-foreground">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value={value}
+                  checked={visibility === value}
+                  onChange={() => setVisibility(value)}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="font-medium">{t(`visibility.${key}`)}</span>
+                  <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    {cost === 0 ? t('visibility.costFree') : t('visibility.costCoins', { cost })}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {t(`visibility.${key}Help`)}
+                  </span>
+                </span>
+              </label>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {t('visibility.balance', { balance: spendableBalance })}
+        </p>
+      </fieldset>
+
       <FormErrorBanner message={error} />
+
+      <ConfirmationModal
+        isOpen={confirmOpen}
+        title={t('visibility.confirmTitle')}
+        message={
+          spendableBalance >= visibilityCost
+            ? t('visibility.confirmBody', {
+                tier: t(`visibility.${VISIBILITY_I18N_KEY[visibility]}`),
+                cost: visibilityCost,
+              })
+            : t('visibility.confirmInsufficient', {
+                cost: visibilityCost,
+                balance: spendableBalance,
+              })
+        }
+        confirmText={t('visibility.confirm')}
+        cancelText={t('visibility.cancel')}
+        isLoading={pending}
+        onConfirm={() => void submit()}
+        onCancel={() => setConfirmOpen(false)}
+      />
 
       <UnsavedChangesDialog
         open={isBlocking}

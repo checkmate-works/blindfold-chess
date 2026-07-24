@@ -14,7 +14,9 @@
     "description": "Katas compartidos por la comunidad: líneas de apertura, patrones de mate y secuencias memorizadas.",
     "sectionTitle": "Katas de la comunidad",
     "status": {
-      "building": "En progreso"
+      "building": "En progreso",
+      "followersOnly": "Solo seguidores",
+      "private": "Privado"
     },
     "building": {
       "sectionTitle": "Tu kata en progreso"
@@ -211,7 +213,31 @@
       "signInRequired": "Inicia sesión.",
       "banned": "Tu cuenta está restringida.",
       "rateLimited": "Demasiados intentos. Inténtalo más tarde.",
-      "generic": "Algo salió mal. Inténtalo de nuevo."
+      "generic": "Algo salió mal. Inténtalo de nuevo.",
+      "insufficient_balance": "No tienes monedas suficientes."
+    },
+    "visibility": {
+      "legend": "Quién puede ver este Kata",
+      "public": "Público",
+      "publicHelp": "Cualquiera puede encontrarlo y verlo. Gratis.",
+      "followersOnly": "Solo seguidores",
+      "followersOnlyHelp": "Solo quienes te siguen pueden verlo.",
+      "private": "Privado",
+      "privateHelp": "Solo tú puedes verlo.",
+      "costFree": "Gratis",
+      "costCoins": "{cost, plural, one {# moneda} other {# monedas}}",
+      "balance": "Saldo: {balance, plural, one {# moneda} other {# monedas}}",
+      "confirmTitle": "¿Gastar monedas?",
+      "confirmBody": "Publicar este Kata como «{tier}» gastará {cost, plural, one {# moneda} other {# monedas}}.",
+      "confirmInsufficient": "Esto necesita {cost, plural, one {# moneda} other {# monedas}}, pero tu saldo es {balance}.",
+      "confirm": "Gastar y publicar",
+      "cancel": "Cancelar",
+      "change": "Cambiar quién puede verlo",
+      "changeTitle": "Cambiar visibilidad",
+      "changeBody": "¿Cambiar este Kata a «{tier}»? Esto gastará {cost, plural, one {# moneda} other {# monedas}}.",
+      "changeBodyFree": "¿Cambiar este Kata a «{tier}»? Ya has desbloqueado este nivel: no se necesitan monedas.",
+      "changeConfirm": "Cambiar",
+      "current": "Actual: {tier}"
     }
   },
   "metadata": {

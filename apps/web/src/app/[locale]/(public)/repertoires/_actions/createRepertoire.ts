@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import type { CreateRepertoireResult } from '@/lib/repertoires/mutations';
 import { createRepertoireEntry } from '@/lib/repertoires/mutations';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
@@ -16,6 +17,8 @@ export async function createRepertoire(input: {
   phase: RepertoirePhase;
   description?: string | null;
   pgn: string;
+  /** Visibility to create-and-publish at (coin-gated). Absent → public (free). */
+  visibility?: RepertoireVisibility;
   openingIds?: string[];
   /** Position-keyed "why this move" notes authored in board mode. */
   annotations?: Record<string, string>;
@@ -29,6 +32,7 @@ export async function createRepertoire(input: {
     phase: input.phase,
     description: input.description,
     pgn: input.pgn,
+    visibility: input.visibility,
     openingIds: input.openingIds,
     annotations: input.annotations,
     shapes: input.shapes,

@@ -4,8 +4,8 @@ import 'server-only';
 
 import { db, pointRedemptions, userGrants } from '@/lib/db';
 
-import { REDEMPTION_SOURCE, SPENDABLE_CONSUME_ORDER } from './constants';
-import { lockSpendableBalances, recordPointMovement } from './internal-ledger';
+import { REDEMPTION_SOURCE } from './constants';
+import { debitSpendable } from './internal-ledger';
 
 /**
  * Exchange rate set by product: each spendable point buys one day of
@@ -100,42 +100,24 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
         })
         .returning({ id: pointRedemptions.id });
 
-      // (2) Lock and read the spendable balances.
-      const { byCategory, totalAvailable } = await lockSpendableBalances(tx, userId);
-      if (totalAvailable < cost) {
+      // (2+3) Lock the spendable balances and, if they cover `cost`, walk
+      // SPENDABLE_CONSUME_ORDER debiting each bucket in turn (one ledger row
+      // per bucket, key suffixed by category so multi-row redemptions don't
+      // collide). The lock + walk is the shared `debitSpendable` mechanic;
+      // an uncovered balance rolls the whole transaction back (the pending
+      // redemption row vanishes) via InsufficientBalanceError.
+      const debit = await debitSpendable(tx, {
+        userId,
+        amount: cost,
+        source: REDEMPTION_SOURCE,
+        sourceId: redemptionRow.id,
+        metadata: { productCode: AD_FREE_PRODUCT_CODE, durationDays },
+        idempotencyKey: (category) => `${REDEMPTION_SOURCE}:${redemptionRow.id}:${category}`,
+      });
+      if (!debit.ok) {
         throw new InsufficientBalanceError();
       }
-
-      // (3) Walk SPENDABLE_CONSUME_ORDER, debit each bucket and append a row.
-      //
-      // `recordPointMovement`'s INSERT + upsertBalance produces the same end
-      // state as a hand-rolled UPDATE + INSERT pair: the balance row was
-      // locked by the SELECT FOR UPDATE above so the upsert path always
-      // takes the ON CONFLICT UPDATE branch, applying `balance + delta`
-      // (delta < 0 here) to the existing row. Keeping the ledger writes
-      // routed through the shared primitive avoids drifting copies of the
-      // "insert + balance" pattern across the package.
-      let remaining = cost;
-      const pointEventIds: string[] = [];
-      for (const category of SPENDABLE_CONSUME_ORDER) {
-        if (remaining === 0) break;
-        const available = byCategory.get(category) ?? 0;
-        if (available <= 0) continue;
-        const take = Math.min(remaining, available);
-
-        const { pointEventId } = await recordPointMovement(tx, {
-          userId,
-          delta: -take,
-          category,
-          source: REDEMPTION_SOURCE,
-          sourceId: redemptionRow.id,
-          idempotencyKey: `${REDEMPTION_SOURCE}:${redemptionRow.id}:${category}`,
-          metadata: { productCode: AD_FREE_PRODUCT_CODE, durationDays },
-        });
-
-        pointEventIds.push(pointEventId);
-        remaining -= take;
-      }
+      const pointEventIds = debit.pointEventIds;
 
       // (4) Stack the new grant on top of the latest active ad_free.
       const [latest] = await tx
