@@ -5571,7 +5571,7 @@
     "challengeScore": "Pontuação {minScore}+ em {challengeName}",
     "submissionCount": "Publique pelo menos {minCount} {itemName}",
     "gamePublishWin": "Vença o motor com ao menos uma restrição ativada e publique a partida",
-    "gamePublishWinHiddenBoard": "Vença o motor mantendo o tabuleiro oculto o tempo todo, e publique a partida",
+    "gamePublishWinHiddenBoard": "Partindo da posição inicial padrão, vença o motor mantendo o tabuleiro oculto o tempo todo, e publique a partida",
     "gamePublishWinHiddenBoardNote": "※ A opção “Permitir espiar” ainda pode ser usada, até {maxPeeks} vezes",
     "orDivider": "ou",
     "submissionItemNames": {

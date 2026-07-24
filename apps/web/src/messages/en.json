@@ -5571,7 +5571,7 @@
     "challengeScore": "Score {minScore}+ in {challengeName}",
     "submissionCount": "Submit at least {minCount} {itemName}",
     "gamePublishWin": "Beat the engine with at least one constraint enabled, and publish the game",
-    "gamePublishWinHiddenBoard": "Beat the engine with the board hidden throughout, and publish the game",
+    "gamePublishWinHiddenBoard": "Starting from the standard initial position, beat the engine with the board hidden throughout, and publish the game",
     "gamePublishWinHiddenBoardNote": "※ The \"Allow peeking\" option may still be used, up to {maxPeeks} times",
     "orDivider": "or",
     "submissionItemNames": {

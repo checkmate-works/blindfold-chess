@@ -540,6 +540,58 @@ describe('game_publish_win_hidden_board evaluator', () => {
     expect(result).toBe(false);
   });
 
+  // --- Standard-start guard: 1dan requires a game played from the initial
+  //     position, so a near-mate custom FEN / pre-played prefix cannot qualify.
+  it('should fail when the game started from a custom (non-standard) FEN', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'never' },
+        playSettingsLog: null,
+        operationLogs: null,
+        // A position one move from mate, not the standard start.
+        startingFen: '6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',
+        setupPlies: null,
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('should fail when leading moves were pre-played at setup (setupPlies > 0)', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'never' },
+        playSettingsLog: null,
+        operationLogs: null,
+        // Standard start FEN, but a seeded opening line / pasted PGN prefix.
+        startingFen: null,
+        setupPlies: 6,
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
+
+    expect(result).toBe(false);
+  });
+
+  it('should pass when the standard start FEN is stored explicitly and no prefix was pre-played', async () => {
+    mockSelectResult.mockReturnValue([
+      {
+        playSettings: { boardVisibility: 'never' },
+        playSettingsLog: null,
+        operationLogs: null,
+        startingFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        setupPlies: 0,
+      },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [requirement]);
+
+    expect(result).toBe(true);
+  });
+
   it('should require minCount qualifying games', async () => {
     mockSelectResult.mockReturnValue([
       { playSettings: { boardVisibility: 'peek' }, playSettingsLog: null, operationLogs: [] },

@@ -5571,7 +5571,7 @@
     "challengeScore": "Puntuación {minScore}+ en {challengeName}",
     "submissionCount": "Publica al menos {minCount} {itemName}",
     "gamePublishWin": "Gana al motor con al menos una restricción activada y publica la partida",
-    "gamePublishWinHiddenBoard": "Gana al motor manteniendo el tablero oculto todo el tiempo, y publica la partida",
+    "gamePublishWinHiddenBoard": "Partiendo de la posición inicial estándar, gana al motor manteniendo el tablero oculto todo el tiempo, y publica la partida",
     "gamePublishWinHiddenBoardNote": "※ La opción «Permitir vistazos» puede usarse hasta {maxPeeks} veces",
     "orDivider": "o",
     "submissionItemNames": {
