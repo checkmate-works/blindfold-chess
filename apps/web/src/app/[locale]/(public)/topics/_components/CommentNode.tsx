@@ -12,12 +12,12 @@ import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
 import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
 import { CommentActions } from './CommentActions';
-import { CommentMoveBody } from './CommentMoveBody';
 import { CommentSpoilerOverlay } from './CommentSpoilerOverlay';
 import { useCommentTreeContext } from './CommentTreeContext';
 import { EditPostForm } from './EditPostForm';
 import { EditableAttachments } from './EditableAttachments';
 import { EditedIndicator } from './EditedIndicator';
+import { MoveNotationText } from './MoveNotationText';
 import { ReplyForm } from './ReplyForm';
 
 type Props = {
@@ -258,7 +258,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
                     playerColor={moveNotationLine.playerColor}
                   />
                 ) : moveNotationFen ? (
-                  <CommentMoveBody text={localContent} locale={locale} fen={moveNotationFen} />
+                  <MoveNotationText text={localContent} locale={locale} fen={moveNotationFen} />
                 ) : (
                   <LinkedText text={localContent} locale={locale} />
                 )}
