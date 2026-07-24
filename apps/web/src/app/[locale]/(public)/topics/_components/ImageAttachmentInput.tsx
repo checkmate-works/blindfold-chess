@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaImage, FaTimes } from 'react-icons/fa';
 
+import { prepareImageForUpload } from '@/lib/client-images/prepare-image-for-upload';
 import { MAX_IMAGES_PER_POST, POST_IMAGES_MAX_FILE_SIZE } from '@/lib/post-images/validation';
 
 /**
@@ -58,7 +60,15 @@ function isSameFile(a: File, b: File): boolean {
 }
 
 export function ImageAttachmentInput({ onChange, onModeChange, onValidationStatusChange }: Props) {
+  const t = useTranslations('attachment');
   const [imageFiles, setImageFiles] = useState<readonly File[]>([]);
+  // True while a picked file is being converted/downscaled in the browser
+  // (HEIC decode can take a beat) — disables the picker and shows a hint.
+  const [isProcessing, setIsProcessing] = useState(false);
+  // Set when at least one picked file could not be converted (e.g. a HEIC we
+  // failed to decode). Cleared on the next pick. The successfully-prepared
+  // files in the same batch are still added.
+  const [conversionFailed, setConversionFailed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -81,18 +91,43 @@ export function ImageAttachmentInput({ onChange, onModeChange, onValidationStatu
   );
   useEffect(() => () => previews.forEach((p) => revokePreviewUrl(p.url)), [previews]);
 
-  const handleFilesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilesChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = e.target.files ? Array.from(e.target.files) : [];
-    setImageFiles((prev) => {
-      const merged = [...prev];
-      for (const file of picked) {
-        if (merged.length >= MAX_IMAGES_PER_POST) break;
-        if (!merged.some((m) => isSameFile(m, file))) merged.push(file);
-      }
-      return merged;
-    });
-    // Reset so re-picking a just-removed file fires `change` again.
+    // Reset so re-picking a just-removed file fires `change` again. Read the
+    // list first (above) — clearing the input discards `e.target.files`.
     e.target.value = '';
+    if (picked.length === 0) return;
+
+    // Normalize each pick before it enters the selection: convert HEIC
+    // (iPhone default) to JPEG and downscale/compress oversized images so the
+    // preview renders and the file passes the server's format/size gate. A
+    // file already web-safe and within limits is returned untouched.
+    setConversionFailed(false);
+    setIsProcessing(true);
+    try {
+      const prepared: File[] = [];
+      let anyFailed = false;
+      for (const file of picked) {
+        try {
+          prepared.push(await prepareImageForUpload(file));
+        } catch {
+          anyFailed = true;
+        }
+      }
+      if (anyFailed) setConversionFailed(true);
+      if (prepared.length > 0) {
+        setImageFiles((prev) => {
+          const merged = [...prev];
+          for (const file of prepared) {
+            if (merged.length >= MAX_IMAGES_PER_POST) break;
+            if (!merged.some((m) => isSameFile(m, file))) merged.push(file);
+          }
+          return merged;
+        });
+      }
+    } finally {
+      setIsProcessing(false);
+    }
   }, []);
 
   const removeAt = useCallback(
@@ -113,7 +148,7 @@ export function ImageAttachmentInput({ onChange, onModeChange, onValidationStatu
         id="attachmentImageFiles"
         name="attachmentImageFiles"
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
         multiple
         onChange={handleFilesChange}
         className="sr-only"
@@ -123,7 +158,7 @@ export function ImageAttachmentInput({ onChange, onModeChange, onValidationStatu
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          disabled={atMax}
+          disabled={atMax || isProcessing}
           className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
         >
           <FaImage aria-hidden="true" className="h-4 w-4" />
@@ -136,9 +171,20 @@ export function ImageAttachmentInput({ onChange, onModeChange, onValidationStatu
       </div>
 
       <p className="text-xs text-muted-foreground">
-        {/* TODO(i18n): attachment.image.limitHint */}
-        JPEG, PNG, or WebP. Up to {MAX_IMAGES_PER_POST} per post, {maxFileSizeMb} MB each.
+        {t('image.limitHint', { max: MAX_IMAGES_PER_POST, size: maxFileSizeMb })}
       </p>
+
+      {isProcessing && (
+        <p className="text-xs text-muted-foreground" role="status">
+          {t('image.processing')}
+        </p>
+      )}
+
+      {conversionFailed && (
+        <p className="text-sm text-destructive" role="alert">
+          {t('image.error.conversionFailed')}
+        </p>
+      )}
 
       {previews.length > 0 && (
         <ul className="grid grid-cols-3 gap-2">

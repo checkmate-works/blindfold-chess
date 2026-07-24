@@ -6153,9 +6153,10 @@
       "uploadButton": "Add image",
       "altLabel": "Image description (alt text)",
       "altPlaceholder": "Describe the image for screen readers",
-      "limitHint": "JPEG, PNG, or WebP. Up to {max} per post, 2 MB each.",
+      "limitHint": "JPEG, PNG, WebP, or HEIC. Up to {max} per post, {size} MB each.",
       "removeButton": "Remove image",
       "uploading": "Uploading…",
+      "processing": "Preparing image…",
       "deletionDisclosure": "Images attached to a deleted post may remain accessible on storage for up to 7 days.",
       "error": {
         "fileRequired": "Choose an image file to upload.",
@@ -6165,6 +6166,7 @@
         "animatedImageNotSupported": "Animated images are not supported. Please upload a still image.",
         "tooManyImages": "You have reached the {max}-image limit for this post.",
         "uploadFailed": "Upload failed. Please try again.",
+        "conversionFailed": "This image couldn't be prepared for upload. Try a different photo or format.",
         "rateLimited": "Too many uploads. Please wait a few minutes and try again."
       }
     }

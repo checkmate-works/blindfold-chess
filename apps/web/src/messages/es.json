@@ -6153,9 +6153,10 @@
       "uploadButton": "Añadir imagen",
       "altLabel": "Descripción de la imagen (texto alternativo)",
       "altPlaceholder": "Describe la imagen para lectores de pantalla",
-      "limitHint": "JPEG, PNG o WebP. Hasta {max} por publicación, 2 MB cada una.",
+      "limitHint": "JPEG, PNG, WebP o HEIC. Hasta {max} por publicación, {size} MB cada una.",
       "removeButton": "Eliminar imagen",
       "uploading": "Subiendo…",
+      "processing": "Preparando la imagen…",
       "deletionDisclosure": "Las imágenes adjuntas a una publicación eliminada pueden seguir siendo accesibles en el almacenamiento hasta 7 días.",
       "error": {
         "fileRequired": "Selecciona un archivo de imagen para subir.",
@@ -6165,6 +6166,7 @@
         "animatedImageNotSupported": "Las imágenes animadas no son compatibles. Sube una imagen estática.",
         "tooManyImages": "Has alcanzado el límite de {max} imágenes para esta publicación.",
         "uploadFailed": "Error al subir. Inténtalo de nuevo.",
+        "conversionFailed": "No se pudo preparar esta imagen para subirla. Prueba con otra foto u otro formato.",
         "rateLimited": "Demasiadas subidas. Espera unos minutos e inténtalo de nuevo."
       }
     }
