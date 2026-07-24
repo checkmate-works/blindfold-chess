@@ -5,26 +5,24 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button } from '@/app/_components';
+import { Button, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { flushSync } from 'react-dom';
 
 import type { ChunkOption } from '@/lib/chunks/types';
-import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import type { ThemeOption } from '@/lib/themes/types';
 
+import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { resolveOptionsByIds } from '../../_lib/resolve-options';
-import { createPuzzle } from '../_actions/createPuzzle';
+import { PuzzlePreviewTags } from '../../puzzle/_components/PuzzlePreviewTags';
+import { createPosition } from '../_actions/createPosition';
 import { clearDraft, readDraft } from '../_lib/draft-storage';
-import type { PuzzleDraftV1 } from '../_lib/draft-storage';
-import { draftToSolutionMoves } from '../_lib/draft-to-solution-moves';
-import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
-import { PuzzlePreviewTags } from './PuzzlePreviewTags';
-import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
-import { PuzzleStepIndicator } from './PuzzleStepIndicator';
-import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
+import type { PositionMemoryDraftV1 } from '../_lib/draft-storage';
+import { PositionMemoryStepIndicator } from './PositionMemoryStepIndicator';
+import { PositionDetailBoard } from './single-position/PositionDetailBoard';
 
 type Props = {
   /** Tag catalog used to resolve the draft's persisted theme/chunk IDs into
@@ -33,33 +31,37 @@ type Props = {
   availableChunks: ChunkOption[];
 };
 
-export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props) {
-  const t = useTranslations('practice.puzzle.preview');
+/**
+ * Read-only preview of a position-memory draft (title, description, board,
+ * tags) shown between the authoring form and the publish. Mirrors the puzzle
+ * flow's `PuzzlePreviewClient`, minus the solution replay — a position-memory
+ * entry has no solution moves, so the board is rendered statically. The board
+ * orientation is derived from the FEN's active color, exactly as every
+ * downstream surface (detail peek, memorize, recreate) renders it.
+ */
+export function PositionMemoryPreviewClient({ availableThemes, availableChunks }: Props) {
+  const t = useTranslations('practice.positionMemory.preview');
+  const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
 
-  const [draft, setDraft] = useState<PuzzleDraftV1 | null>(null);
+  const [draft, setDraft] = useState<PositionMemoryDraftV1 | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // `submitted` flips true in the intentional router.push after a successful
-  // create, letting the `isDirty` guard relax before the navigation fires so
-  // we don't trip UnsavedChangesDialog on our own push.
+  // create (and on "Back to edit"), letting the `isDirty` guard relax before
+  // the navigation fires so we don't trip UnsavedChangesDialog on our own push.
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const d = readDraft();
     if (!d) {
-      router.replace('/practice/puzzle/new');
+      router.replace('/practice/position-memory/new');
       return;
     }
     setDraft(d);
     setHydrated(true);
   }, [router]);
-
-  const solutionMoves = useMemo<PuzzleSolutionMove[]>(
-    () => (draft ? draftToSolutionMoves(draft) : []),
-    [draft]
-  );
 
   const selectedThemes = useMemo(
     () => resolveOptionsByIds(draft?.themeIds ?? [], availableThemes),
@@ -70,10 +72,6 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
     [draft?.chunkIds, availableChunks]
   );
 
-  // Treat the draft as unsaved work for as long as we haven't submitted it;
-  // both "Back to edit" (router.push) and "Create" (after success + clearDraft)
-  // set `submitted` before navigating so the guard doesn't fire on our own
-  // intentional pushes.
   const isDirty = hydrated && !submitted;
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
@@ -82,11 +80,10 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
     setPending(true);
     setError(null);
     try {
-      const result = await createPuzzle({
+      const result = await createPosition({
         fen: draft.fen,
         title: draft.title,
         description: draft.description || null,
-        solutionMoves,
         themeIds: draft.themeIds,
         chunkIds: draft.chunkIds,
         forkedFromId: draft.forkedFromId ?? null,
@@ -95,9 +92,12 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
         setError(result.error);
         return;
       }
+      // Stash any belt-rank grants triggered by this submission so the
+      // RankAchievementModal on the destination page can pick them up.
+      stashGrantedRanks(result.grantedRanks);
       clearDraft();
       flushSync(() => setSubmitted(true));
-      // Land straight on the created puzzle so the author can verify it.
+      // Land straight on the created position so the author can verify it.
       // A point grant surfaces the coin reward as a toast on arrival
       // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast; a
       // daily-cap hit adds a `?coinsCapped=1` warning toast either way.
@@ -108,7 +108,7 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
         toastParams.set('toast', 'position_created');
       }
       if (result.coinCapped) toastParams.set('coinsCapped', '1');
-      router.push(`/practice/puzzle/${result.id}?${toastParams.toString()}`);
+      router.push(`/practice/position-memory/${result.id}?${toastParams.toString()}`);
     } catch {
       setError(t('createError'));
     } finally {
@@ -117,23 +117,18 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
   }
 
   function handleBackToEdit() {
-    // Draft stays in sessionStorage so `/new/solution` can rehydrate it —
-    // that's the immediately-prior step in the position → solution →
-    // preview flow. Flip `submitted` so the isDirty guard doesn't intercept
-    // our own navigation.
+    // Draft stays in sessionStorage so `/new` silently rehydrates the form.
+    // Flip `submitted` so the isDirty guard doesn't intercept our own push.
     flushSync(() => setSubmitted(true));
-    router.push('/practice/puzzle/new/solution');
+    router.push('/practice/position-memory/new');
   }
 
-  const stepIndicator = <PuzzleStepIndicator flow="create" current="preview" />;
+  const stepIndicator = <PositionMemoryStepIndicator current="preview" />;
 
   if (!hydrated || !draft) {
-    // Show a skeleton during SSR and the brief window before hydration reads
-    // sessionStorage. A lazy `useState(() => readDraft())` would remove this
-    // window entirely, but it produces a hydration mismatch: SSR always
-    // returns `null` (readDraft's `typeof window === 'undefined'` guard),
-    // while the first client render would return the decoded draft, and
-    // React's initial state is required to match across SSR / hydration.
+    // Skeleton during SSR and the brief window before hydration reads
+    // sessionStorage. SSR always returns `null` (readDraft's window guard), so
+    // a lazy initial state would produce a hydration mismatch.
     return (
       <div className="space-y-6">
         {stepIndicator}
@@ -153,19 +148,15 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
           <p className="text-foreground whitespace-pre-wrap">{draft.description}</p>
         )}
 
-        <p className="text-sm text-muted-foreground">
-          {t('moveCount', { count: draft.moves.length })}
-        </p>
-
-        <PuzzleSolutionReplay
-          fen={draft.fen}
-          solutionMoves={solutionMoves}
-          showSectionTitle={false}
-        />
+        <PositionDetailBoard fen={draft.fen} flipped={isBlackToMoveFromFen(draft.fen)} />
 
         <PuzzlePreviewTags themes={selectedThemes} chunks={selectedChunks} />
 
-        <PuzzleFormErrorBanner message={error} />
+        {error && (
+          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
+            {error}
+          </div>
+        )}
 
         <div className="flex flex-col gap-3 pt-2">
           <Button
@@ -192,7 +183,15 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
         </div>
       </div>
 
-      <PuzzleUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirm}
+        onCancel={cancel}
+        title={tUnsaved('title')}
+        message={tUnsaved('message')}
+        confirmLabel={tUnsaved('confirm')}
+        cancelLabel={tUnsaved('cancel')}
+      />
     </>
   );
 }

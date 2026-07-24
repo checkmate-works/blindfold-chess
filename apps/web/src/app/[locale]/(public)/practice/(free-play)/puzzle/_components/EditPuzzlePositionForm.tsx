@@ -11,11 +11,11 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagSelection } from '../../_hooks/use-tag-selection';
+import { resolveOptionsByIds } from '../../_lib/resolve-options';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import { usePuzzlePositionStep } from '../_hooks/use-puzzle-position-step';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { readEditDraft, writeEditDraft } from '../_lib/edit-draft-storage';
-import { resolveOptionsByIds } from '../_lib/resolve-options';
 import { stringArraysEqual } from '../_lib/string-arrays-equal';
 import { PositionChangedModal } from './PositionChangedModal';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';

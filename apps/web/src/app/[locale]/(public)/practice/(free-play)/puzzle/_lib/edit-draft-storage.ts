@@ -4,7 +4,7 @@ import {
   isStringArray,
   readSessionDraft,
   writeSessionDraft,
-} from './session-draft-store';
+} from '../../_lib/session-draft-store';
 
 /**
  * sessionStorage key for the in-progress edit draft of a single puzzle,

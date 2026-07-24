@@ -1,14 +1,14 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { flushSync } from 'react-dom';
-import { FaPlay } from 'react-icons/fa';
 import { FiInfo } from 'react-icons/fi';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -18,10 +18,11 @@ import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/
 import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 import { EMPTY_BOARD_FEN } from '@/app/[locale]/(public)/practice/(free-play)/_lib/board-editor-constants';
 import { buildDefaultPracticeTitle } from '@/app/[locale]/(public)/practice/(free-play)/_lib/default-title';
-import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
+import { resolveOptionsByIds } from '@/app/[locale]/(public)/practice/(free-play)/_lib/resolve-options';
 
-import { createPosition } from '../_actions/createPosition';
+import { readDraft, writeDraft } from '../_lib/draft-storage';
 import { PositionFormFields } from './PositionFormFields';
+import { PositionMemoryStepIndicator } from './PositionMemoryStepIndicator';
 
 /**
  * Seed payload when the form is opened via `?from=<id>` on the new page.
@@ -71,8 +72,10 @@ type Props = {
   /**
    * Fork-source data when the form is opened via `?from=<id>`. When
    * present, every field is seeded from the source row and the default
-   * title generator is bypassed. `sourceId` rides through to
-   * `createPosition` as `forkedFromId` and is re-validated server-side.
+   * title generator is bypassed. `sourceId` rides through to the preview's
+   * `createPosition` call as `forkedFromId` and is re-validated server-side.
+   * Draft hydration is skipped so an unrelated leftover draft never silently
+   * overwrites the fork's initial state.
    */
   forkSeed?: PositionForkSeed;
   /**
@@ -105,17 +108,13 @@ export function CreatePositionForm({
   // Resolve fork seed tag IDs into option objects using the loaded catalog.
   // Computed once via useRef so option lookups don't repeat each render.
   const seededThemes = useRef<ThemeOption[]>(
-    forkSeed
-      ? forkSeed.themeIds
-          .map((id) => availableThemes.find((t) => t.id === id))
-          .filter((t): t is ThemeOption => t !== undefined)
-      : []
+    forkSeed ? resolveOptionsByIds(forkSeed.themeIds, availableThemes) : []
   ).current;
   const seededChunks = useRef<ChunkOption[]>(
-    (() => {
-      const ids = new Set([...(forkSeed?.chunkIds ?? []), ...(injectedChunkIds ?? [])]);
-      return availableChunks.filter((c) => ids.has(c.id));
-    })()
+    resolveOptionsByIds(
+      [...(forkSeed?.chunkIds ?? []), ...(injectedChunkIds ?? [])],
+      availableChunks
+    )
   ).current;
 
   // A fork seeds the whole row; an injected `?fen=` seeds only the position.
@@ -141,9 +140,48 @@ export function CreatePositionForm({
 
   const [title, setTitle] = useState(defaultTitleRef.current);
   const [description, setDescription] = useState(defaultDescriptionRef.current);
+  // forkedFromId lives in React state (not just the prop) so the lineage
+  // survives a `/new?from=X` → preview → "Back to edit" round trip: later
+  // visits to `/new` arrive WITHOUT `?from=`, so `forkSeed` is undefined and
+  // only the draft remembers the source.
+  const [forkedFromId, setForkedFromId] = useState<string | undefined>(forkSeed?.sourceId);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  // Once-on-mount draft hydration — silent by design. The draft only exists to
+  // carry the form's fields across the `/new → /new/preview` hop, so restoring
+  // it on a "Back to edit" return is the expected, unremarkable behavior; no
+  // banner is shown. `didHydrate` guards against remounts (e.g. Fast Refresh)
+  // clobbering user edits. Skipped when the form is seeded from a
+  // fork/injection — the seed owns initial state and an unrelated leftover
+  // draft would silently overwrite it. The draft is NOT cleared here — it is
+  // cleared only on a successful create (see the preview step).
+  const didHydrate = useRef(false);
+  useEffect(() => {
+    if (forkSeed || injectedFen) return;
+    if (didHydrate.current) return;
+    didHydrate.current = true;
+    const draft = readDraft();
+    if (!draft) return;
+    board.setFenInput(draft.fen);
+    board.setBoardFen(draft.fen);
+    board.setSideToMove(isBlackToMoveFromFen(draft.fen) ? 'b' : 'w');
+    board.setActiveTab(draft.activeTab);
+    board.setFlipped(draft.flipped);
+    setTitle(draft.title);
+    setDescription(draft.description);
+    if (draft.themeIds && draft.themeIds.length > 0) {
+      tags.setSelectedThemes(resolveOptionsByIds(draft.themeIds, availableThemes));
+    }
+    if (draft.chunkIds && draft.chunkIds.length > 0) {
+      tags.setSelectedChunks(resolveOptionsByIds(draft.chunkIds, availableChunks));
+    }
+    if (draft.forkedFromId) {
+      setForkedFromId(draft.forkedFromId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isDirty =
     !submitted &&
@@ -157,8 +195,7 @@ export function CreatePositionForm({
     isDirty: disableUnsavedGuard ? false : isDirty,
   });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleContinue() {
     setError(null);
     board.setPositionError(false);
 
@@ -169,51 +206,35 @@ export function CreatePositionForm({
 
     setPending(true);
 
-    try {
-      const result = await createPosition({
-        fen: board.trimmedFen,
-        title,
-        description: description || null,
-        themeIds: tags.selectedThemes.map((th) => th.id),
-        chunkIds: tags.selectedChunks.map((c) => c.id),
-        ...(forkSeed ? { forkedFromId: forkSeed.sourceId } : {}),
-      });
-
-      if ('error' in result) {
-        setError(result.error);
-        return;
-      }
-
-      // Stash any belt-rank grants triggered by this submission so the
-      // RankAchievementModal mounted on the destination page can pick them
-      // up. Mirrors the challenge-completion flow.
-      stashGrantedRanks(result.grantedRanks);
-
-      // flushSync ensures the re-render (isDirty → false) completes
-      // before router.push triggers the navigation guard check.
-      flushSync(() => setSubmitted(true));
-      // Land straight on the created position so the author can verify it.
-      // A point grant surfaces the coin reward as a toast on arrival
-      // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast; a
-      // daily-cap hit adds a `?coinsCapped=1` warning toast either way.
-      const toastParams = new URLSearchParams();
-      if (result.pointGrant) {
-        toastParams.set('coinsEarned', String(result.pointGrant.amount));
-      } else {
-        toastParams.set('toast', 'position_created');
-      }
-      if (result.coinCapped) toastParams.set('coinsCapped', '1');
-      router.push(`/practice/position-memory/${result.id}?${toastParams.toString()}`);
-    } catch {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
+    const ok = writeDraft({
+      version: 1,
+      fen: board.trimmedFen,
+      title,
+      description,
+      activeTab: board.activeTab,
+      flipped: board.flipped,
+      themeIds: tags.selectedThemes.map((th) => th.id),
+      chunkIds: tags.selectedChunks.map((c) => c.id),
+      ...(forkedFromId ? { forkedFromId } : {}),
+    });
+    if (!ok) {
+      setError(t('draftWriteFailed'));
       setPending(false);
+      return;
     }
+
+    // flushSync ensures the re-render (isDirty → false) completes before
+    // router.push triggers the navigation guard check — otherwise the
+    // intentional push would fire the UnsavedChangesDialog.
+    flushSync(() => setSubmitted(true));
+    router.push('/practice/position-memory/new/preview');
   }
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
+        <PositionMemoryStepIndicator current="position" />
+
         {error && (
           <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
             {error}
@@ -244,16 +265,16 @@ export function CreatePositionForm({
         />
 
         <Button
-          type="submit"
+          type="button"
           variant="primary"
           size="lg"
-          icon={<FaPlay />}
           fullWidth
           disabled={pending || !board.isFenValid || title.trim() === ''}
+          onClick={handleContinue}
         >
-          {pending ? t('submitting') : t('submit')}
+          {t('continueToPreview')}
         </Button>
-      </form>
+      </div>
 
       <UnsavedChangesDialog
         open={isBlocking}

@@ -1344,7 +1344,18 @@
         "clearBoardConfirmMessage": "Isso removerá todas as peças colocadas. Esta ação não pode ser desfeita.",
         "clearBoardConfirmConfirm": "Limpar",
         "clearBoardConfirmCancel": "Cancelar",
-        "forkBanner": "Bifurcando de \"{sourceTitle}\""
+        "forkBanner": "Bifurcando de \"{sourceTitle}\"",
+        "stepPosition": "Posição",
+        "stepPreview": "Pré-visualização",
+        "stepIndicatorLabel": "Etapas",
+        "continueToPreview": "Pré-visualizar",
+        "draftWriteFailed": "Não foi possível salvar o rascunho. Verifique se o seu navegador permite armazenamento e tente novamente."
+      },
+      "preview": {
+        "title": "Pré-visualizar Problema",
+        "createCta": "Criar",
+        "backToEditCta": "Voltar para editar",
+        "createError": "Ocorreu um erro inesperado. Tente novamente."
       },
       "edit": {
         "title": "Editar Problema",

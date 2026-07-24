@@ -1344,7 +1344,18 @@
         "clearBoardConfirmMessage": "配置されたすべての駒が削除されます。この操作は取り消せません。",
         "clearBoardConfirmConfirm": "クリア",
         "clearBoardConfirmCancel": "キャンセル",
-        "forkBanner": "「{sourceTitle}」からフォーク中"
+        "forkBanner": "「{sourceTitle}」からフォーク中",
+        "stepPosition": "局面",
+        "stepPreview": "プレビュー",
+        "stepIndicatorLabel": "ステップ",
+        "continueToPreview": "プレビュー",
+        "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。"
+      },
+      "preview": {
+        "title": "問題をプレビュー",
+        "createCta": "作成",
+        "backToEditCta": "編集に戻る",
+        "createError": "予期しないエラーが発生しました。もう一度お試しください。"
       },
       "edit": {
         "title": "問題を編集",
