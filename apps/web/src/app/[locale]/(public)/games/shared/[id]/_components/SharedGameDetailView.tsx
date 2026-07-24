@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getStartingFen } from '@blindfold-chess/features/chess-core';
+
 import { getAllAvailableChunkOptions } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
@@ -13,7 +15,8 @@ import { UUID_RE } from '@/lib/validations/uuid';
 
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { LinkedText, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -120,7 +123,14 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
             <div className="space-y-2">
               <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
               <p className="whitespace-pre-wrap text-foreground">
-                <LinkedText text={game.description} locale={locale} />
+                {/* A description's line runs from the game's own start
+                    (game.startingFen, NULL = standard start), the same root
+                    detectGameOpening replays against. */}
+                <MoveNotationText
+                  text={game.description}
+                  locale={locale}
+                  fen={game.startingFen ?? getStartingFen()}
+                />
               </p>
             </div>
           )}
