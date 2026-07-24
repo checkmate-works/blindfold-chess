@@ -185,7 +185,13 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number)
 /**
  * Draw a source bitmap onto a downscaled canvas and encode it, walking the
  * quality ladder (lossy formats only) until the result fits `TARGET_MAX_BYTES`.
- * PNG is lossless so `quality` is ignored and the best we can do is downscale.
+ *
+ * PNG is lossless, so when a PNG still exceeds the byte target after the
+ * downscale (canvas PNG re-encode can even INFLATE a well-optimized source —
+ * observed in production with a 2.45 MB iPhone screenshot), transparency is
+ * flattened onto white and encoding falls through to the JPEG ladder. The
+ * returned Blob's `type` is authoritative — callers must derive the final
+ * MIME/extension from it, not from the requested mime.
  */
 async function encodeFromBitmap(
   bitmap: ImageBitmap,
@@ -201,13 +207,21 @@ async function encodeFromBitmap(
   if (!ctx) throw new ImageConversionError('2d context unavailable');
   ctx.drawImage(bitmap, 0, 0, dw, dh);
 
-  if (outputMime === 'image/png') {
-    return canvasToBlob(canvas, outputMime);
+  let mime = outputMime;
+  if (mime === 'image/png') {
+    const png = await canvasToBlob(canvas, mime);
+    if (png.size <= TARGET_MAX_BYTES) return png;
+    // Paint white BEHIND the existing pixels so transparency doesn't turn
+    // black in the JPEG, then fall through to the lossy ladder.
+    ctx.globalCompositeOperation = 'destination-over';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, dw, dh);
+    mime = 'image/jpeg';
   }
 
   let last: Blob | null = null;
   for (const quality of QUALITY_LADDER) {
-    const blob = await canvasToBlob(canvas, outputMime, quality);
+    const blob = await canvasToBlob(canvas, mime, quality);
     last = blob;
     if (blob.size <= TARGET_MAX_BYTES) return blob;
   }
@@ -274,8 +288,11 @@ async function maybeResizeWebSafe(file: File, kind: 'jpeg' | 'png' | 'webp'): Pr
     }
     const outputMime = `image/${kind === 'jpeg' ? 'jpeg' : kind}`;
     const blob = await encodeFromBitmap(bitmap, outputMime, bitmap.width, bitmap.height);
-    const ext = MIME_TO_EXT[outputMime] ?? kind;
-    return new File([blob], renameExtension(file.name, ext), { type: outputMime });
+    // encodeFromBitmap may fall back to JPEG (oversized PNG); its Blob type
+    // is authoritative for the final MIME/extension.
+    const finalMime = blob.type || outputMime;
+    const ext = MIME_TO_EXT[finalMime] ?? 'jpg';
+    return new File([blob], renameExtension(file.name, ext), { type: finalMime });
   } catch {
     // Resize failed on a file that is otherwise valid — better to attempt the
     // original upload than to block the user outright.
