@@ -136,7 +136,21 @@ export class ImageConversionError extends Error {
 
 async function readLeadingBytes(file: File, count: number): Promise<Uint8Array> {
   const slice = file.slice(0, count);
-  return new Uint8Array(await slice.arrayBuffer());
+  // `Blob.prototype.arrayBuffer` is the fast path but is absent in older Safari
+  // and in jsdom; fall back to FileReader so byte-sniffing works everywhere.
+  if (typeof slice.arrayBuffer === 'function') {
+    return new Uint8Array(await slice.arrayBuffer());
+  }
+  return new Uint8Array(await blobToArrayBuffer(slice));
+}
+
+function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
+    reader.onerror = () => reject(reader.error ?? new Error('FileReader failed'));
+    reader.readAsArrayBuffer(blob);
+  });
 }
 
 /** Swap a filename's extension so it matches the produced MIME type. */

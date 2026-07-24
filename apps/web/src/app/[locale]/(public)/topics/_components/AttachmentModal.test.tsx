@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AttachmentModal } from './AttachmentModal';
@@ -6,6 +6,14 @@ import type { AggregatedAttachmentMode } from './AttachmentModal';
 
 vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
+}));
+
+// Image normalization has its own unit tests; here we only exercise the
+// tab/apply flow, so stub it to an identity pass-through. This also keeps the
+// async file-selection deterministic (a plain resolved Promise, no FileReader
+// timing) regardless of test-suite ordering.
+vi.mock('@/lib/client-images/prepare-image-for-upload', () => ({
+  prepareImageForUpload: vi.fn((file: File) => Promise.resolve(file)),
 }));
 
 afterEach(() => {
@@ -76,7 +84,9 @@ describe('AttachmentModal — rendering and aria roles', () => {
     const fileInput = document.querySelector('#attachmentImageFiles') as HTMLInputElement;
     expect(fileInput).not.toBeNull();
     expect(fileInput.getAttribute('type')).toBe('file');
-    expect(fileInput.getAttribute('accept')).toBe('image/jpeg,image/png,image/webp');
+    expect(fileInput.getAttribute('accept')).toBe(
+      'image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'
+    );
     // Video sub-mode is gone.
     expect(document.querySelector('#attachmentVideoUrl')).toBeNull();
   });
@@ -187,7 +197,12 @@ describe('AttachmentModal — apply per tab', () => {
 
     const fileInput = document.querySelector('#attachmentImageFiles') as HTMLInputElement;
     const file = new File(['x'], 'photo.png', { type: 'image/png' });
-    fireEvent.change(fileInput, { target: { files: [file] } });
+    // File selection is async now (the pick is normalized/converted before it
+    // enters the selection). Wrap the change in `act` so the awaited handler
+    // and its state updates flush before we apply.
+    await act(async () => {
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    });
 
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
       (b) => b.textContent === 'Apply'
