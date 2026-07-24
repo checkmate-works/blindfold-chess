@@ -17,12 +17,13 @@ import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_componen
 import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import {
   COMMENT_TREE_PAGE_SIZE,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { Divider, LinkedText, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
@@ -197,7 +198,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
 
       {position.description && (
         <p className="text-foreground whitespace-pre-wrap">
-          <LinkedText text={position.description} locale={locale} />
+          <MoveNotationText text={position.description} locale={locale} fen={position.fen} />
         </p>
       )}
 
