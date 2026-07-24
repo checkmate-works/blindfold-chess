@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
@@ -95,6 +95,20 @@ const OTHER_USER_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const TEST_POSITION_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 
 describe('updatePosition', () => {
+  // Warm the heavy server-action module graph once, before any test's
+  // `beforeEach` runs. Each test dynamically `await import('./updatePosition')`,
+  // and the first cold import pulls in the whole `user-position-mutations`
+  // dependency tree (notifications, points, rank-grant-flow, tag writes, …).
+  // Under full-suite parallel load that cold import can exceed the default 5s
+  // test timeout: the first test is marked timed-out while its async body keeps
+  // running, then — after the next test's `beforeEach` reset the auth mock back
+  // to a signed-in user — falls through to the `db.select()` spy, polluting the
+  // following test's `not.toHaveBeenCalled()` assertion. Warming here keeps the
+  // per-test imports cache hits so no individual test pays that cost.
+  beforeAll(async () => {
+    await import('./updatePosition');
+  }, 30000);
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
