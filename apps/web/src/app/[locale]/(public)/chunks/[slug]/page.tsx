@@ -13,11 +13,11 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   HelpTourButton,
   LinkTabs,
-  LinkedText,
   PageLayout,
   ScrollToHashOnMount,
   SectionTitle,
@@ -241,7 +241,11 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       <SectionTitle>{tChunks('detail.descriptionSection')}</SectionTitle>
       {chunk.description ? (
         <p className="text-foreground whitespace-pre-wrap">
-          <LinkedText text={chunk.description} locale={locale} />
+          <MoveNotationText
+            text={chunk.description}
+            locale={locale}
+            fen={chunk.representativeFen}
+          />
         </p>
       ) : (
         <p className="text-muted-foreground italic">{tChunks('detail.noDescription')}</p>
