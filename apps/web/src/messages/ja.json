@@ -5571,7 +5571,7 @@
     "challengeScore": "{challengeName}でスコア{minScore}以上",
     "submissionCount": "{itemName}を{minCount}件以上投稿する",
     "gamePublishWin": "何らかの制約を加えた設定でAIに勝利し、ゲームを公開する",
-    "gamePublishWinHiddenBoard": "Hide the board オプションを維持してAIに勝利し、ゲームを公開する",
+    "gamePublishWinHiddenBoard": "初期配置から、Hide the board オプションを維持してAIに勝利し、ゲームを公開する",
     "gamePublishWinHiddenBoardNote": "※〈ピークを許可〉は{maxPeeks}回まで有効",
     "orDivider": "または",
     "submissionItemNames": {

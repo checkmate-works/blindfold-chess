@@ -40,6 +40,7 @@
  * @see {@link checkAndGrantRanks} — entry point, called from `saveChallengeResult`
  * @see {@link evaluators} — registry of requirement type evaluators
  */
+import { getStartingFen, toPositionKey } from '@blindfold-chess/features/chess-core';
 import * as Sentry from '@sentry/nextjs';
 import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
@@ -88,6 +89,11 @@ type WonPublicGameRow = {
   playSettingsLog: PlaySettingsChangeEntry[] | null;
   operationLogs: MoveOperationLog[] | null;
   operationTotals: OperationTotals | null;
+  // Together these reconstruct the position the game actually started from —
+  // read by the 1dan evaluator, which requires a standard start (see
+  // `startedFromStandardPosition`). `game_publish_win` (1kyu) ignores them.
+  startingFen: string | null;
+  setupPlies: number | null;
 };
 
 type RankEvalContext = {
@@ -116,6 +122,8 @@ export function createRankEvalContext(userId: string, scoreCache: BestScoreCache
           playSettingsLog: games.playSettingsLog,
           operationLogs: games.operationLogs,
           operationTotals: games.operationTotals,
+          startingFen: games.startingFen,
+          setupPlies: games.setupPlies,
         })
         .from(games)
         .where(
@@ -134,6 +142,39 @@ export function createRankEvalContext(userId: string, scoreCache: BestScoreCache
 // ---------------------------------------------------------------------------
 // Evaluators — one per requirement type
 // ---------------------------------------------------------------------------
+
+/** Position-identity key of the standard chess starting position. */
+const STANDARD_START_KEY = toPositionKey(getStartingFen());
+
+/**
+ * Whether a game was played from the standard starting position, start to
+ * finish — the extra bar the 1dan (`game_publish_win_hidden_board`) feat
+ * demands over 1kyu.
+ *
+ * Without this, a player could set up a position one move from mate (a custom
+ * `startingFen`) — or paste a PGN / seed an opening line that reaches a won
+ * position (`setupPlies > 0`) — then play the single hidden-board mating move
+ * and claim the black belt. Both cases mean the game was NOT genuinely played
+ * blindfolded from move 1, so both disqualify:
+ *
+ * - `startingFen` present and not the standard start → custom position.
+ * - `setupPlies > 0` → leading moves were pre-played at setup, not by the
+ *   author during the hidden-board session.
+ *
+ * `null`/absent on either field is the plain standard-start case (legacy rows
+ * and ordinary games store no `startingFen`/`setupPlies`) and passes. Both
+ * fields are needed because an opening/PGN start keeps the standard
+ * `startingFen` and seeds `moves` instead — see the `setupPlies` TSDoc on the
+ * `games` table.
+ */
+function startedFromStandardPosition(
+  startingFen: string | null,
+  setupPlies: number | null
+): boolean {
+  if (startingFen != null && toPositionKey(startingFen) !== STANDARD_START_KEY) return false;
+  if (setupPlies != null && setupPlies > 0) return false;
+  return true;
+}
 
 type RequirementEvaluator<T extends RankRequirement = RankRequirement> = (
   ctx: RankEvalContext,
@@ -183,6 +224,11 @@ const evaluators: EvaluatorRegistry = {
     // reaches Sentry), permanently blocking promotion, and leniency would
     // promote on unverifiable logs.
     const qualifying = rows.filter((row) => {
+      // 1dan is a black-belt-grade feat: the game must be played from the
+      // standard initial position, or the "board hidden throughout" win is
+      // meaningless (start one move from mate and play it). See
+      // `startedFromStandardPosition`.
+      if (!startedFromStandardPosition(row.startingFen, row.setupPlies)) return false;
       if (!maintainedHiddenBoard(row.playSettings, row.playSettingsLog)) return false;
 
       // Preferred source: the monotonic lifetime totals, which undo cannot
