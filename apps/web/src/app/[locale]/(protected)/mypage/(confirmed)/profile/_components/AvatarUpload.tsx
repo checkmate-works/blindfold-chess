@@ -7,6 +7,8 @@ import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { prepareImageForUpload } from '@/lib/client-images/prepare-image-for-upload';
+
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 type Props = {
@@ -30,18 +32,33 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
   };
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const original = e.target.files?.[0];
+    if (!original) return;
 
     setError(null);
 
+    // Normalize before validating: convert HEIC (iPhone default) to JPEG and
+    // downscale/compress oversized images in the browser, so the client checks
+    // and the server gate below see a web-safe file within limits. A file
+    // already web-safe and within limits is returned untouched.
+    let file: File;
+    try {
+      file = await prepareImageForUpload(original);
+    } catch {
+      setError(t('avatarConversionFailed'));
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     if (!ALLOWED_TYPES.includes(file.type)) {
       setError(t('avatarInvalidType'));
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
     if (file.size > MAX_SIZE) {
       setError(t('avatarTooLarge'));
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
@@ -135,7 +152,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
         onChange={handleChange}
         className="hidden"
         aria-label={t('avatarUploadLabel')}

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NewPostForm } from './NewPostForm';
@@ -32,6 +32,14 @@ vi.mock('next/navigation', () => ({
 // Stub MiniBoard so the FEN preview does not pull in the chess-piece icon stack.
 vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
+}));
+
+// Image normalization has its own unit tests; here we only exercise the
+// 2-step upload routing, so stub it to an identity pass-through. This also
+// keeps the async file-selection deterministic (a plain resolved Promise, no
+// FileReader timing) regardless of test-suite ordering.
+vi.mock('@/lib/client-images/prepare-image-for-upload', () => ({
+  prepareImageForUpload: vi.fn((file: File) => Promise.resolve(file)),
 }));
 
 // Pass-through translator: returns the key verbatim. `has()` reports
@@ -353,7 +361,12 @@ describe('NewPostForm — Images tab 2-step upload routing', () => {
     fireEvent.click(getTab(2));
     const fileInput = document.querySelector('#attachmentImageFiles') as HTMLInputElement;
     const file = new File(['x'], 'photo.png', { type: 'image/png' });
-    fireEvent.change(fileInput, { target: { files: [file] } });
+    // File selection is async now (the pick is normalized/converted before it
+    // enters the selection). Wrap the change in `act` so the awaited handler
+    // and its state updates flush before we apply.
+    await act(async () => {
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    });
     clickApply();
 
     const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
