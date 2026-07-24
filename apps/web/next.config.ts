@@ -265,19 +265,34 @@ const nextConfig: NextConfig = {
     '/api/engines/maia/[file]': ['./engines/maia/**/*'],
     // sharp's native binaries (@img/sharp-linux-x64 + @img/sharp-libvips-*)
     // are loaded via dlopen at runtime, and the Turbopack production build
-    // fails to trace them into the Vercel Function artifact — every image
-    // route then 500s at module load with `ERR_DLOPEN_FAILED:
+    // fails to trace them into the Vercel Function artifact — the image
+    // routes then 500 at module load with `ERR_DLOPEN_FAILED:
     // libvips-cpp.so...` (observed in production 2026-07-24; broke comment
     // images, avatars, and both admin image uploads). pnpm DOES install the
     // Linux binaries on the Vercel build machine (they are sharp's own
     // platform-matched optionalDependencies); the store globs below force
-    // them into every /api function artifact. Wildcard versions so a sharp
-    // bump cannot silently un-fix this; the globs match nothing on
-    // non-Linux dev machines, which is harmless.
-    '/api/**': [
-      '../../node_modules/.pnpm/@img+sharp-linux-x64@*/**/*',
-      '../../node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/**/*',
-    ],
+    // them into the function artifacts.
+    //
+    // Scope this to EXACTLY the four routes that import sharp — NOT `/api/**`.
+    // The libvips binary is tens of MB; duplicating it into all 18 API
+    // functions inflated the build output enough that Vercel's post-build
+    // packaging failed ("An unexpected error occurred when running this
+    // build"). Wildcard versions so a sharp bump cannot silently un-fix this;
+    // the globs match nothing on non-Linux dev machines, which is harmless.
+    ...Object.fromEntries(
+      [
+        '/api/posts/[id]/images',
+        '/api/profile/avatar',
+        '/api/admin/articles/[id]/images',
+        '/api/admin/ads/[id]/image',
+      ].map((route) => [
+        route,
+        [
+          '../../node_modules/.pnpm/@img+sharp-linux-x64@*/**/*',
+          '../../node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/**/*',
+        ],
+      ])
+    ),
   },
 };
 
