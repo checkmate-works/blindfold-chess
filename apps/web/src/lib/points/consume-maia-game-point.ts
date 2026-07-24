@@ -3,12 +3,11 @@ import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
 
-import { MAIA_GAME_POINT_COST, MAIA_GAME_SOURCE, SPENDABLE_CONSUME_ORDER } from './constants';
-import { lockSpendableBalances, recordPointMovement } from './internal-ledger';
+import { MAIA_GAME_POINT_COST, MAIA_GAME_SOURCE } from './constants';
+import { debitSpendable } from './internal-ledger';
 
 export type ConsumeMaiaGamePointResult =
-  | { ok: true; alreadyCharged: boolean }
-  | { ok: false; error: 'insufficient_balance' };
+  { ok: true; alreadyCharged: boolean } | { ok: false; error: 'insufficient_balance' };
 
 /**
  * Charge `MAIA_GAME_POINT_COST` confirmed points for one Maia game
@@ -62,38 +61,25 @@ export async function consumeMaiaGamePoint(
       return { ok: true, alreadyCharged: true };
     }
 
-    // (2) Lock the spendable balance rows and confirm the user can cover it.
-    const { byCategory, totalAvailable } = await lockSpendableBalances(tx, userId);
-    if (totalAvailable < MAIA_GAME_POINT_COST) {
+    // (2+3) Lock the spendable balance rows, confirm they cover the cost, and
+    //     debit the first non-empty bucket in priority order. Cost is 1, so a
+    //     single bucket / ledger row covers it and the idempotency key needs
+    //     no category suffix (the `(category) =>` builder ignores its arg).
+    //     The idempotent insert closes the concurrent same-clientGameId race:
+    //     the loser sees the UNIQUE conflict swallowed → `noop` → alreadyCharged.
+    const debit = await debitSpendable(tx, {
+      userId,
+      amount: MAIA_GAME_POINT_COST,
+      source: MAIA_GAME_SOURCE,
+      sourceId: clientGameId,
+      metadata: { reason: 'maia_game' },
+      idempotencyKey: () => idempotencyKey,
+      idempotent: true,
+    });
+    if (!debit.ok) {
       return { ok: false, error: 'insufficient_balance' };
     }
-
-    // (3) Debit the first non-empty bucket in priority order. Cost is 1, so
-    //     a single ledger row covers it.
-    const category = SPENDABLE_CONSUME_ORDER.find((cat) => (byCategory.get(cat) ?? 0) > 0);
-    if (!category) {
-      // Unreachable given the totalAvailable check above, but keeps the
-      // type narrow without a non-null assertion.
-      return { ok: false, error: 'insufficient_balance' };
-    }
-
-    const result = await recordPointMovement(
-      tx,
-      {
-        userId,
-        delta: -MAIA_GAME_POINT_COST,
-        category,
-        source: MAIA_GAME_SOURCE,
-        sourceId: clientGameId,
-        idempotencyKey,
-        metadata: { reason: 'maia_game' },
-      },
-      { idempotent: true }
-    );
-
-    // `null` means a concurrent request with the same clientGameId won the
-    // race and already charged — treat as an idempotent success.
-    return { ok: true, alreadyCharged: result === null };
+    return { ok: true, alreadyCharged: debit.noop };
   });
 }
 
