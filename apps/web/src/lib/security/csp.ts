@@ -159,6 +159,14 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
   const directives: string[] = [
     "default-src 'self'",
     `script-src ${scriptSrc.join(' ')}`,
+    // Web Workers spawned from a `blob:` URL. The client-side HEIC→JPEG
+    // converter (`heic-to`, used before comment-image / avatar upload) runs
+    // libheif in a Worker it builds via `new Worker(URL.createObjectURL(blob))`.
+    // Under `'strict-dynamic'` the scheme/host fallbacks in `script-src` are
+    // ignored for worker sourcing, and without an explicit `worker-src` the
+    // blob worker falls through to `default-src 'self'` and is blocked — so it
+    // must be named here. `'self'` also covers any same-origin worker scripts.
+    "worker-src 'self' blob:",
     // `'unsafe-inline'` on styles is out of scope to remove (CSS-in-JS).
     // `fonts.googleapis.com` serves the @font-face stylesheet for the Google
     // Sans fonts that Google's AdSense / consent UI injects.

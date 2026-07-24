@@ -6171,6 +6171,7 @@
         "animatedImageNotSupported": "Imagens animadas não são suportadas. Envie uma imagem estática.",
         "tooManyImages": "Você atingiu o limite de {max} imagens para esta postagem.",
         "uploadFailed": "Falha ao enviar. Tente novamente.",
+        "invalidImage": "Não foi possível processar esta imagem. Tente outro arquivo.",
         "conversionFailed": "Não foi possível preparar esta imagem para envio. Tente outra foto ou outro formato.",
         "rateLimited": "Muitos envios. Aguarde alguns minutos e tente novamente."
       }

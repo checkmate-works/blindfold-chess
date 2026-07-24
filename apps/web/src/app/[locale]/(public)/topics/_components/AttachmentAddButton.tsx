@@ -15,6 +15,25 @@ import { uploadPostImages } from '../_lib/upload-post-images';
 import type { AggregatedAttachmentMode } from './AttachmentModal';
 import { AttachmentModal } from './AttachmentModal';
 
+// Raw server error codes returned by `/api/posts/[id]/images` mapped to the
+// `attachment.image.error.*` message keys, so an image upload failure surfaces
+// its actual reason (wrong format, too large, …) instead of the generic
+// "Could not attach". Unknown / non-image-content codes fall through to the
+// add-attachment namespace so post-state errors (deleted, not found, …) keep
+// their existing messages.
+const IMAGE_ERROR_KEY: Record<string, string> = {
+  file_required: 'fileRequired',
+  invalid_file_type: 'invalidFileType',
+  file_too_large: 'fileTooLarge',
+  image_too_large: 'imageTooLarge',
+  animated_image_not_supported: 'animatedImageNotSupported',
+  too_many_images: 'tooManyImages',
+  invalid_image: 'invalidImage',
+  image_processing_failed: 'invalidImage',
+  upload_failed: 'uploadFailed',
+  insert_failed: 'uploadFailed',
+};
+
 /**
  * The "Add attachment" affordance for a post that currently has none:
  * opens `AttachmentModal` and routes the selected kind to the matching
@@ -37,6 +56,7 @@ export function AttachmentAddButton({
   attachFenAction?: AttachAction;
 }) {
   const tAdd = useTranslations('topics.addAttachment');
+  const tImgErr = useTranslations('attachment.image.error');
   const router = useRouter();
   const pathname = usePathname();
 
@@ -51,7 +71,14 @@ export function AttachmentAddButton({
     const upload = await uploadPostImages(postId, files);
     if (!upload.ok) {
       setIsAttaching(false);
-      setAttachError(tAdd.has(upload.error) ? tAdd(upload.error) : tAdd('error'));
+      // Prefer the specific image-upload reason; fall back to the
+      // add-attachment namespace for post-state codes, then the generic error.
+      const imageKey = IMAGE_ERROR_KEY[upload.error];
+      if (imageKey) {
+        setAttachError(tImgErr(imageKey));
+      } else {
+        setAttachError(tAdd.has(upload.error) ? tAdd(upload.error) : tAdd('error'));
+      }
       return;
     }
     // The upload API does not revalidate; bust the Full Route Cache for

@@ -68,6 +68,11 @@ describe('buildCspHeader', () => {
     expect(header).toContain("form-action 'self'");
   });
 
+  it('allows blob: workers so the client-side HEIC converter (heic-to) can run', () => {
+    const header = buildCspHeader('n', { isDevelopment: false });
+    expect(header).toContain("worker-src 'self' blob:");
+  });
+
   it('allow-lists the confirmed third-party hosts (Google Fonts)', () => {
     const header = buildCspHeader('n', { isDevelopment: false });
 

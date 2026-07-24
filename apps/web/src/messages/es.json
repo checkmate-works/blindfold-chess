@@ -6171,6 +6171,7 @@
         "animatedImageNotSupported": "Las imágenes animadas no son compatibles. Sube una imagen estática.",
         "tooManyImages": "Has alcanzado el límite de {max} imágenes para esta publicación.",
         "uploadFailed": "Error al subir. Inténtalo de nuevo.",
+        "invalidImage": "No se pudo procesar esta imagen. Prueba con otro archivo.",
         "conversionFailed": "No se pudo preparar esta imagen para subirla. Prueba con otra foto u otro formato.",
         "rateLimited": "Demasiadas subidas. Espera unos minutos e inténtalo de nuevo."
       }
