@@ -22,7 +22,7 @@ import {
   COMMENT_TREE_PAGE_SIZE,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { Divider, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, LinkedText, SectionTitle } from '@/app/[locale]/_components';
 import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
@@ -185,7 +185,9 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
       <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
 
       {position.description && (
-        <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
+        <p className="text-foreground whitespace-pre-wrap">
+          <LinkedText text={position.description} locale={locale} />
+        </p>
       )}
 
       <PiecesInfo fen={position.fen} />
