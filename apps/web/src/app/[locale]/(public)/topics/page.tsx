@@ -12,6 +12,8 @@ import { createClient } from '@/lib/supabase/server';
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
 import { TOPICS_FEED_ENTITY_TYPES, getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
 import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { CATALOG_MIN_CARDS_FOR_MID_AD } from '@/app/[locale]/_components/AdSense/mid-ad-threshold';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -65,6 +67,8 @@ async function TopicsContent({ params }: Props) {
         <TopicTabs active="recent" locale={locale} />
       </div>
 
+      {initialFeed.items.length >= CATALOG_MIN_CARDS_FOR_MID_AD && <AdSlot slot="content-middle" />}
+
       {initialFeed.items.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('noRecentPosts')}</p>
       ) : (
@@ -80,6 +84,8 @@ async function TopicsContent({ params }: Props) {
           variant="card"
         />
       )}
+
+      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

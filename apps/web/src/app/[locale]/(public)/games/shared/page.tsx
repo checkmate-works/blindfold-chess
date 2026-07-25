@@ -28,6 +28,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GamesTabs } from '../_components/GamesTabs';
+import { MIN_GAMES_FOR_MID_AD } from '../_lib/mid-ad';
 import { toggleGameLikeAction } from './[id]/_actions/game-like';
 import { GameColorOpeningRow } from './_components/GameColorOpeningRow';
 import { PublishExistingGameButton } from './_components/PublishExistingGameButton';
@@ -84,6 +85,15 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
         <GamesTabs active="shared" locale={locale} />
       </div>
       <PublishExistingGameButton locale={locale} />
+
+      {/*
+       * Mid-page ad above the sort control, before the list. Only once the
+       * catalog is long enough (>= MIN_GAMES_FOR_MID_AD): a short list keeps
+       * content-bottom near the fold, so a second ad would only crowd it.
+       * `totalCount` is already loaded, no query.
+       */}
+      {totalCount >= MIN_GAMES_FOR_MID_AD && <AdSlot slot="content-middle" />}
+
       <div className="mt-3 mb-4 flex justify-end">
         <SharedGamesSort currentSort={sort} />
       </div>

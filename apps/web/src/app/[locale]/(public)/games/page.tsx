@@ -78,7 +78,13 @@ export default async function GamesPage({ params }: Props) {
       <div className="mb-6">
         <GamesTabs active="mine" locale={locale} />
       </div>
-      <GamesPageClient locale={locale} />
+      {/*
+       * The mine tab's game count lives in localStorage, so the "show only
+       * when non-empty" decision has to happen client-side. Hand the ad down
+       * as a node and let GamesPageClient place it above the sort control,
+       * gated on the same `games.length > 0` condition as the sort button.
+       */}
+      <GamesPageClient locale={locale} middleAd={<AdSlot slot="content-middle" />} />
 
       <AdSlot slot="content-bottom" />
     </PageLayout>

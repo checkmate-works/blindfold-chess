@@ -293,6 +293,14 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         />
       </div>
 
+      {/*
+       * Mid-page ad above the comment thread. Only when there are comments:
+       * with zero comments the page ends just below here, so `content-bottom`
+       * is already near the fold and a second ad would only crowd it.
+       * `commentCount` is already loaded, so this adds no query.
+       */}
+      {commentCount > 0 && <AdSlot slot="content-middle" />}
+
       <SectionTitle id="comments">{tComments('commentsTitle')}</SectionTitle>
 
       {currentUser && commentCount === 0 ? (
