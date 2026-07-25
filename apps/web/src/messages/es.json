@@ -765,7 +765,10 @@
     "aliases": "También conocido como",
     "relatedTerms": "Términos relacionados",
     "alphabeticalIndexTitle": "Alfabético",
-    "noTerms": "Aún no se han registrado términos."
+    "noTerms": "Aún no se han registrado términos.",
+    "termModal": {
+      "viewDetails": "Ver definición completa"
+    }
   },
   "pgnInput": {
     "placeholder": "Pega tu notación PGN aquí...\n\nEjemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",

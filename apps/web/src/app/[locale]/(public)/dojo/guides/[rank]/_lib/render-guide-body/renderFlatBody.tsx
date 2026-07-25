@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { isMukyuSlug } from '@/lib/db/data/ranks';
@@ -14,13 +15,15 @@ import { RequirementsList } from '@/app/[locale]/(public)/dojo/ranks/_components
 import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
 import { Divider, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
+import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildFlatBodyBreadcrumbs, buildFlatBodyLearningResourceSchema } from '../guide-metadata';
 import { RankNavigation } from './RankNavigation';
 import type { GuideContext } from './context';
-import { renderPageParagraphs } from './renderParagraph';
+import { collectPageTermSlugs, renderPageParagraphs } from './renderParagraph';
+import { resolveTermPreviews } from './termPreviews';
 
 type FlatBodyProps = {
   kind: 'flat';
@@ -43,6 +46,26 @@ export async function renderFlatBody(
 
   const currentPage = pages[pageNumber - 1];
   const isLastPage = pageNumber === pages.length;
+
+  // Resolve any `[[slug|label]]` glossary term links on this page. Only slugs
+  // that resolve to a real term become clickable; their lightweight preview
+  // data is embedded into the SSR HTML so the modal opens with no client
+  // fetch. Pages with no term markup skip the DB read entirely.
+  const termPreviews = await resolveTermPreviews(collectPageTermSlugs(currentPage), locale);
+  const validSlugs = new Set(Object.keys(termPreviews));
+  const hasTermLinks = validSlugs.size > 0;
+  const viewDetailsLabel = hasTermLinks
+    ? (await getTranslations({ locale, namespace: 'glossary' }))('termModal.viewDetails')
+    : '';
+
+  const paragraphsNode = renderPageParagraphs({
+    rankSlug,
+    pageNumber,
+    page: currentPage,
+    tGuides,
+    locale,
+    validSlugs,
+  });
   // Suppress the CTA when there are no requirements to surface — happens for
   // mukyu (UI-only) and for ranks whose gating conditions are still in draft
   // (`requirements: []` in seed data). The guide itself stays reachable.
@@ -86,7 +109,13 @@ export async function renderFlatBody(
       <PageLayout title={rankName} locale={locale}>
         <RankHeader beltColor={beltColor}>{guideHeaderLabel}</RankHeader>
 
-        {renderPageParagraphs({ rankSlug, pageNumber, page: currentPage, tGuides, locale })}
+        {hasTermLinks ? (
+          <GlossaryTermModalProvider terms={termPreviews} viewDetailsLabel={viewDetailsLabel}>
+            {paragraphsNode}
+          </GlossaryTermModalProvider>
+        ) : (
+          paragraphsNode
+        )}
 
         {showChallengeCta && (
           <>
