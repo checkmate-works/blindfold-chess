@@ -3441,6 +3441,7 @@
         }
       },
       "sectionTitle": "編集リクエスト",
+      "submittedTitle": "提案一覧",
       "sectionHint": "下書き状態のチャンクには、他のプレイヤーからより適切なタイトルや説明の提案を受け取れます。オーナーが各提案を確認します。",
       "formWantedLabel": "意見募集中",
       "otherFieldsToggle": "他の項目についても提案する",

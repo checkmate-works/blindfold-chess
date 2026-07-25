@@ -3441,6 +3441,7 @@
         }
       },
       "sectionTitle": "Edit suggestions",
+      "submittedTitle": "Submitted suggestions",
       "sectionHint": "Other players can suggest a sharper title or description while this chunk is in draft. The owner reviews each suggestion.",
       "formWantedLabel": "Wanted",
       "otherFieldsToggle": "Also suggest changes to other fields",

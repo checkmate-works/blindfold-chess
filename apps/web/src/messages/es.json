@@ -3441,6 +3441,7 @@
         }
       },
       "sectionTitle": "Sugerencias de edición",
+      "submittedTitle": "Sugerencias enviadas",
       "sectionHint": "Otros jugadores pueden sugerir un título o una descripción más precisos mientras este chunk esté en borrador. El propietario revisa cada sugerencia.",
       "formWantedLabel": "Solicitado",
       "otherFieldsToggle": "Sugerir también cambios en otros campos",
