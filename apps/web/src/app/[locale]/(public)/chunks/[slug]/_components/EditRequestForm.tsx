@@ -259,9 +259,33 @@ export function EditRequestForm({
         />
       </div>
 
-      <Button type="submit" variant="primary" disabled={pending} loading={pending}>
-        {t('actions.submit')}
-      </Button>
+      {/*
+       * Full-width primary submit with a quiet cancel text-link stacked
+       * below — the app's shared form-footer convention (EditLineForm,
+       * EditPositionForm, ChunkForm…). Cancel returns to the chunk detail
+       * page via router.push (not <Link>/back) to stay locale-aware and
+       * consistent with those siblings.
+       */}
+      <div className="space-y-4">
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          disabled={pending}
+          loading={pending}
+        >
+          {t('actions.submit')}
+        </Button>
+        <button
+          type="button"
+          onClick={() => router.push(`/chunks/${chunkSlug}` as '/chunks/[slug]')}
+          disabled={pending}
+          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+        >
+          {t('actions.cancel')}
+        </button>
+      </div>
     </form>
   );
 }
