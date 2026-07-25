@@ -1,12 +1,12 @@
 'use server';
 
-import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
-
 import { postFenAttachments } from '@/lib/db';
-import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import type { DbTx } from '@/lib/db/types';
-import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
-import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
+import {
+  buildFenAttachmentValues,
+  fenAttachmentErrorKey,
+  fenAttachmentPgErrorKind,
+} from '@/lib/post-fens/build-fen-attachment-values';
 
 import type { TopicType } from '@/app/[locale]/(public)/topics/_lib/constants';
 
@@ -17,13 +17,12 @@ import { createReplyBase } from './createReply';
  * @design Shared FEN-attachment-aware reply Server Action body (#84 phase D)
  *
  * Mirrors `createPostWithFenAttachmentBase` for the reply (comment)
- * surface. See that file for the trim-canonicalization and SQLSTATE
- * mapping rationale — the contract is byte-for-byte identical, only
- * the underlying base call (`createReplyBase` vs `createPostBase`)
- * differs.
+ * surface — the validation contract is identical, only the underlying
+ * base call (`createReplyBase` vs `createPostBase`) differs. Both share
+ * the FEN validation pipeline and INSERT-time SQLSTATE mapping via
+ * `buildFenAttachmentValues` / `fenAttachmentErrorKey` /
+ * `fenAttachmentPgErrorKind`.
  */
-
-const CAPTION_MAX_LENGTH = 200;
 
 type ExtraAfterInsert = (tx: DbTx, replyId: string) => Promise<void>;
 
@@ -44,44 +43,14 @@ export async function createReplyWithFenAttachmentBase(args: {
 }): Promise<CreateReplyState> {
   const { formData, extraAfterInsert, ...replySpec } = args;
 
-  const rawFenInput = formData.get('attachmentFen');
-  const rawCaptionInput = formData.get('attachmentFenCaption');
-
-  // Single canonical trim (Lessons §10).
-  const fen = typeof rawFenInput === 'string' ? rawFenInput.trim() : '';
-
-  if (fen.length === 0) {
-    return { error: 'postFenAttachment.error.fenRequired' };
+  const built = buildFenAttachmentValues(
+    formData.get('attachmentFen'),
+    formData.get('attachmentFenCaption')
+  );
+  if (!built.ok) {
+    return { error: fenAttachmentErrorKey(built.error) };
   }
-  if (fen.length > FEN_MAX_LENGTH) {
-    return { error: 'postFenAttachment.error.fenTooLong' };
-  }
-
-  const fenResult = validateFenSemantic(fen);
-  if (!fenResult.ok) {
-    switch (fenResult.reason) {
-      case 'structure':
-        return { error: 'postFenAttachment.error.invalidFenStructure' };
-      case 'kings':
-      case 'pawn_placement':
-      case 'piece_count':
-      case 'castling_rights':
-      case 'en_passant':
-      case 'illegal_position':
-        return { error: 'postFenAttachment.error.invalidFenSemantic' };
-      default: {
-        const _exhaustive: never = fenResult.reason;
-        void _exhaustive;
-        return { error: 'postFenAttachment.error.invalidFenSemantic' };
-      }
-    }
-  }
-
-  const rawCaption = typeof rawCaptionInput === 'string' ? rawCaptionInput : null;
-  if (typeof rawCaption === 'string' && rawCaption.length > CAPTION_MAX_LENGTH) {
-    return { error: 'postFenAttachment.error.captionTooLong' };
-  }
-  const caption = sanitizeFenCaption(rawCaption);
+  const { fen, caption } = built.values;
 
   try {
     return await createReplyBase({
@@ -99,15 +68,9 @@ export async function createReplyWithFenAttachmentBase(args: {
       formData,
     });
   } catch (err) {
-    const code = extractPgErrorCode(err);
-    if (code === '23505') {
-      return { error: 'postFenAttachment.error.alreadyAttached' };
-    }
-    if (code === '23514') {
-      return { error: 'postFenAttachment.error.invalidFenStructure' };
-    }
-    if (code === '22001') {
-      return { error: 'postFenAttachment.error.fenTooLong' };
+    const kind = fenAttachmentPgErrorKind(err);
+    if (kind) {
+      return { error: fenAttachmentErrorKey(kind) };
     }
     throw err;
   }

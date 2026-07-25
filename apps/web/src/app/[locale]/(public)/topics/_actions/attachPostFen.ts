@@ -2,27 +2,18 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
-
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postFenAttachments } from '@/lib/db';
-import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
-import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
-import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
+import {
+  buildFenAttachmentValues,
+  fenAttachmentErrorKey,
+  fenAttachmentPgErrorKind,
+} from '@/lib/post-fens/build-fen-attachment-values';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { loadAuthoredPost } from '@/lib/topic-posts';
 
 import { buildTopicDetailPath } from '../_lib/topic-paths';
-
-/**
- * Maximum length of a stored caption. Aligned with
- * `post_fen_attachments.caption` column width and `sanitizeFenCaption`'s cap.
- * The sanitizer already slices to this length; this constant is the
- * pre-sanitize gate so we surface a structured error instead of silently
- * truncating.
- */
-const CAPTION_MAX_LENGTH = 200;
 
 /**
  * Edit-flow adapter: same auth + validation pipeline as `attachPostFen`,
@@ -102,20 +93,15 @@ export async function attachPostFen(input: {
 > {
   const { postId, fen: rawFenInput, caption: rawCaption = null, locale } = input;
 
-  // Canonicalize FEN by trimming once at the top. `validateFenSemantic`
-  // also calls `.trim()` internally, but the DB CHECK regex is anchored
-  // (`^...$`) and does NOT trim — so passing the untrimmed value through
-  // would let whitespace-padded FENs pass validation and then trip the
-  // CHECK constraint, leaking a confusing 23514 error to the user.
-  // Trimming here keeps the validator's contract honest end-to-end.
-  const rawFen = typeof rawFenInput === 'string' ? rawFenInput.trim() : '';
-
-  if (rawFen.length === 0) {
-    return { error: 'postFenAttachment.error.fenRequired' };
+  // Trim + structural + semantic FEN validation and caption sanitization in
+  // one shared call (identical to the create-flow bases). Runs before auth so
+  // obviously-bad input is rejected without a DB round-trip; `buildFenAttachmentValues`
+  // is pure and synchronous, so this ordering has no rate-limit / DoS impact.
+  const built = buildFenAttachmentValues(rawFenInput, rawCaption);
+  if (!built.ok) {
+    return { error: fenAttachmentErrorKey(built.error) };
   }
-  if (rawFen.length > FEN_MAX_LENGTH) {
-    return { error: 'postFenAttachment.error.fenTooLong' };
-  }
+  const { fen, caption } = built.values;
 
   const guardResult = await authenticateAndGuard(RATE_LIMITS.attachPostFen);
   if ('error' in guardResult) {
@@ -137,43 +123,7 @@ export async function attachPostFen(input: {
   }
   const { post } = lookup;
 
-  // 1 + 2: structural + semantic FEN validation in one call.
-  const fenResult = validateFenSemantic(rawFen);
-  if (!fenResult.ok) {
-    // `FenSemanticResult` is a discriminated union, so `reason` is
-    // guaranteed to be present on the `ok: false` branch — narrow and
-    // dispatch directly.
-    switch (fenResult.reason) {
-      case 'structure':
-        return { error: 'postFenAttachment.error.invalidFenStructure' };
-      case 'kings':
-      case 'pawn_placement':
-      case 'piece_count':
-      case 'castling_rights':
-      case 'en_passant':
-      case 'illegal_position':
-        return { error: 'postFenAttachment.error.invalidFenSemantic' };
-      default: {
-        // Compile-time exhaustiveness guard. If `FenSemanticReason`
-        // gains a new variant without a matching case above, this
-        // assignment fails at build time and forces explicit handling.
-        // Pattern matches `createChunkPostWithAttachment.ts`.
-        const _exhaustive: never = fenResult.reason;
-        void _exhaustive;
-        return { error: 'postFenAttachment.error.invalidFenSemantic' };
-      }
-    }
-  }
-
-  // 3: caption length pre-check.
-  if (typeof rawCaption === 'string' && rawCaption.length > CAPTION_MAX_LENGTH) {
-    return { error: 'postFenAttachment.error.captionTooLong' };
-  }
-
-  // 4: caption sanitization (returns null for empty / whitespace / all-invisible).
-  const caption = sanitizeFenCaption(rawCaption ?? null);
-
-  // 5: INSERT. The 1:0..1 invariant is enforced by UNIQUE(post_id); a
+  // INSERT. The 1:0..1 invariant is enforced by UNIQUE(post_id); a
   // duplicate insert surfaces as a Postgres unique-violation that is mapped
   // to the dedicated error key.
   try {
@@ -181,7 +131,7 @@ export async function attachPostFen(input: {
       .insert(postFenAttachments)
       .values({
         postId: post.id,
-        fen: rawFen,
+        fen,
         caption,
       })
       .returning({
@@ -205,35 +155,19 @@ export async function attachPostFen(input: {
       },
     };
   } catch (err) {
-    const code = extractPgErrorCode(err);
-    if (code === '23505') {
-      return { error: 'postFenAttachment.error.alreadyAttached' };
-    }
-    if (code === '23514') {
-      // CHECK violation — defense-in-depth. The structural regex and
-      // `validateFenSemantic` above catch every condition the DB CHECK
-      // could fail on, so this branch is practically unreachable from
-      // the action layer; it exists in case the CHECK ever drifts ahead
-      // of the app-side regex. If this branch ever fires, triage by
-      // comparing the upstream guards against the DB CHECK:
-      //   - structural FEN regex (JS pin):
-      //       apps/web/src/lib/post-fens/fen-check-regex.test.ts
-      //   - DB CHECK source (constraint
-      //       `post_fen_attachments_chk_fen_format`):
-      //       apps/web/drizzle/20260504070000_create_post_fen_attachments.sql
-      //       apps/web/src/lib/db/schema/tables.ts (postFenAttachments)
-      //   - semantic validator:
-      //       packages/features/src/chess-core/validate-fen-semantic.ts
-      return { error: 'postFenAttachment.error.invalidFenStructure' };
-    }
-    if (code === '22001') {
-      // string_data_right_truncation — value exceeded the column's
-      // varchar width. The pre-checks for FEN length and caption length
-      // already guard against this from the user's perspective, so this
-      // branch is also defense-in-depth. Map to `fenTooLong` as the
-      // FEN is the more user-visible field; the caption pre-check fires
-      // before we reach the INSERT for caption-driven cases.
-      return { error: 'postFenAttachment.error.fenTooLong' };
+    // Shared INSERT-time SQLSTATE mapping (23505 → alreadyAttached, and the
+    // defense-in-depth 23514 / 22001 branches, all practically unreachable
+    // because `buildFenAttachmentValues` above catches every condition the DB
+    // CHECK / varchar width could fail on). If a defensive branch ever fires,
+    // triage by comparing the upstream guards against the DB CHECK constraint
+    // `post_fen_attachments_chk_fen_format`:
+    //   - structural FEN regex (JS pin): apps/web/src/lib/post-fens/fen-check-regex.test.ts
+    //   - DB CHECK source: apps/web/drizzle/20260504070000_create_post_fen_attachments.sql
+    //     + apps/web/src/lib/db/schema/tables.ts (postFenAttachments)
+    //   - semantic validator: packages/features/src/chess-core/validate-fen-semantic.ts
+    const kind = fenAttachmentPgErrorKind(err);
+    if (kind) {
+      return { error: fenAttachmentErrorKey(kind) };
     }
     throw err;
   }

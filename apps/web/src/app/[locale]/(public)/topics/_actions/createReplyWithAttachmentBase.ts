@@ -1,13 +1,12 @@
 'use server';
 
-import { validateAttachedPgn } from '@blindfold-chess/features/chess-core';
-
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { postGamePgnAttachments } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
-import { resolveLichessAttachmentPgn } from '@/lib/games/resolve-lichess-attachment';
-import { sanitizePgnHeader } from '@/lib/games/sanitize-pgn-header';
-import { detectAttachmentInput } from '@/lib/games/validation';
+import {
+  buildPgnAttachmentValues,
+  pgnAttachmentErrorKey,
+} from '@/lib/games/build-pgn-attachment-values';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 
 import type { TopicType } from '@/app/[locale]/(public)/topics/_lib/constants';
@@ -23,56 +22,11 @@ import { createReplyBase } from './createReply';
  * not distinguish top-level posts from replies, so the attachment row
  * for a reply lands in the same table — only the `parent_id` /
  * `root_post_id` columns on `topic_posts` distinguish the two. The PGN
- * parsing / Lichess auto-fetch / chess-core validation logic is byte-
- * for-byte identical, so the per-topic reply wrappers only describe
- * topic spec + optional redirect / revalidate overrides.
+ * parsing / Lichess auto-fetch / chess-core validation logic is shared
+ * with the post surface via `buildPgnAttachmentValues`, so the per-topic
+ * reply wrappers only describe topic spec + optional redirect / revalidate
+ * overrides.
  */
-
-function attachmentErrorKey(
-  err:
-    | 'empty'
-    | 'too_large'
-    | 'invalid_pgn'
-    | 'no_moves'
-    | 'invalid_id'
-    | 'not_found'
-    | 'rate_limited'
-    | 'fetch_failed'
-    | 'lichess_unsupported'
-    | 'chesscom_invalid_url'
-    | 'chesscom_invalid_pgn'
-    | 'chesscom_pgn_required'
-    | 'unknown'
-): string {
-  switch (err) {
-    case 'empty':
-      return 'attachment.error.empty';
-    case 'too_large':
-      return 'attachment.error.tooLarge';
-    case 'invalid_pgn':
-      return 'attachment.error.invalidPgn';
-    case 'no_moves':
-      return 'attachment.error.noMoves';
-    case 'invalid_id':
-    case 'not_found':
-      return 'attachment.error.lichessNotFound';
-    case 'rate_limited':
-      return 'attachment.error.lichessRateLimited';
-    case 'fetch_failed':
-      return 'attachment.error.lichessFetchFailed';
-    case 'lichess_unsupported':
-      return 'attachment.error.lichessStudyUnsupported';
-    case 'chesscom_invalid_url':
-      return 'attachment.error.chesscomInvalidUrl';
-    case 'chesscom_invalid_pgn':
-      return 'attachment.error.chesscomInvalidPgn';
-    case 'chesscom_pgn_required':
-      return 'attachment.error.chesscomPgnRequired';
-    case 'unknown':
-    default:
-      return 'attachment.error.invalidPgn';
-  }
-}
 
 type ExtraAfterInsert = (tx: DbTx, replyId: string) => Promise<void>;
 
@@ -125,65 +79,9 @@ export async function createReplyWithAttachmentBase(args: {
     return { error: 'attachment.error.rateLimitedPostWithAttachment' };
   }
 
-  const detected = detectAttachmentInput(attachmentRaw);
-
-  let pgnText: string;
-  let sourceKind: 'pgn' | 'lichess';
-  let canonicalUrl: string | null = null;
-  let lichessGameId: string | null = null;
-  let attributionPlatform: string | null = null;
-  let attributionPath: string | null = null;
-
-  switch (detected.kind) {
-    case 'lichess':
-    case 'lichess_embed': {
-      const lichessId = detected.kind === 'lichess' ? detected.gameId : detected.embedId;
-      const resolved = await resolveLichessAttachmentPgn(lichessId);
-      if (!resolved.ok) {
-        return { error: attachmentErrorKey(resolved.error) };
-      }
-      pgnText = resolved.pgn;
-      sourceKind = 'lichess';
-      canonicalUrl = resolved.canonicalUrl;
-      lichessGameId = lichessId;
-      break;
-    }
-    case 'pgn': {
-      pgnText = detected.text;
-      sourceKind = 'pgn';
-      break;
-    }
-    case 'chesscom_attribution': {
-      if (!detected.pgn) {
-        return { error: attachmentErrorKey('chesscom_pgn_required') };
-      }
-      pgnText = detected.pgn;
-      sourceKind = 'pgn';
-      canonicalUrl = detected.sourceUrl;
-      attributionPlatform = detected.attribution.attributionPlatform;
-      attributionPath = detected.attribution.attributionPath;
-      break;
-    }
-    case 'empty':
-    case 'lichess_unsupported':
-    case 'chesscom_invalid_url':
-    case 'chesscom_invalid_pgn':
-    case 'unknown':
-      return { error: attachmentErrorKey(detected.kind) };
-    case 'chesscom_embed':
-    case 'chesscom_embed_invalid_url':
-    case 'lichess_embed_invalid_url':
-      return { error: attachmentErrorKey('unknown') };
-    default: {
-      const _exhaustive: never = detected;
-      void _exhaustive;
-      return { error: attachmentErrorKey('unknown') };
-    }
-  }
-
-  const validated = validateAttachedPgn(pgnText, { anonymize });
-  if (!validated.ok) {
-    return { error: attachmentErrorKey(validated.error) };
+  const built = await buildPgnAttachmentValues(attachmentRaw, { anonymize });
+  if (!built.ok) {
+    return { error: pgnAttachmentErrorKey(built.error) };
   }
 
   return createReplyBase({
@@ -191,22 +89,7 @@ export async function createReplyWithAttachmentBase(args: {
     afterInsert: async (tx, replyId) => {
       await tx.insert(postGamePgnAttachments).values({
         postId: replyId,
-        source: sourceKind,
-        sourceUrl: canonicalUrl,
-        sourceGameId: lichessGameId,
-        pgn: validated.normalized,
-        pgnByteLength: validated.byteLength,
-        startingFen: validated.startingFen,
-        moveCount: validated.moveCount,
-        headerWhite: sanitizePgnHeader(validated.headers.white),
-        headerBlack: sanitizePgnHeader(validated.headers.black),
-        headerResult: sanitizePgnHeader(validated.headers.result),
-        headerEvent: sanitizePgnHeader(validated.headers.event),
-        headerSite: sanitizePgnHeader(validated.headers.site),
-        headerDate: sanitizePgnHeader(validated.headers.date),
-        anonymized: anonymize,
-        attributionPlatform,
-        attributionPath,
+        ...built.values,
       });
       if (extraAfterInsert) {
         await extraAfterInsert(tx, replyId);
