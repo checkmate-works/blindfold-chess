@@ -12,5 +12,6 @@ export { generateFAQPageSchema, type FAQItemData } from './faq';
 export { generateArticleSchema, type ArticleData } from './article';
 export { generateBlogPostingSchema, type BlogPostData } from './blog-posting';
 export { generateDefinedTermSetSchema } from './defined-term-set';
+export { generateDefinedTermSchema } from './defined-term';
 export { generateItemListSchema, type ItemListItemData } from './item-list';
 export { generateLearningResourceSchema, type LearningResourceData } from './learning-resource';

@@ -21,6 +21,13 @@ export const CATEGORY_COLORS: Record<GlossaryCategory, string> = {
 } as const;
 
 export interface ChessTerm {
+  /**
+   * URL-safe slug (`glossary_terms.slug`). Populated by the DB query path
+   * (`mergeTermRows`); optional here because the code-side seed data files
+   * construct `ChessTerm` objects without it — the slug is derived from
+   * `term` at seed time via {@link slugifyTerm}.
+   */
+  slug?: string;
   term: string;
   termJa?: string;
   reading?: string;

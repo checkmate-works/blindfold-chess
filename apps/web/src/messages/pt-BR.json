@@ -150,7 +150,14 @@
         "addAction": "Adicionar uma nota",
         "save": "Salvar",
         "cancel": "Cancelar",
-        "sharedHelp": "Esta nota é compartilhada por todas as linhas deste kata que alcançam esta posição."
+        "sharedHelp": "Esta nota é compartilhada por todas as linhas deste kata que alcançam esta posição.",
+        "moreActions": "Mais ações",
+        "deleteAction": "Excluir",
+        "deleteConfirmTitle": "Excluir esta nota?",
+        "deleteConfirmMessage": "Isso remove a nota de todas as linhas deste kata que alcançam esta posição. Esta ação não pode ser desfeita."
+      },
+      "annotationIndex": {
+        "title": "Notas desta linha"
       },
       "delete": {
         "button": "Excluir",
@@ -758,7 +765,15 @@
     "aliases": "Também conhecido como",
     "relatedTerms": "Termos relacionados",
     "alphabeticalIndexTitle": "Alfabético",
-    "noTerms": "Ainda não foram registrados termos."
+    "noTerms": "Ainda não foram registrados termos.",
+    "termModal": {
+      "viewDetails": "Ver definição completa"
+    },
+    "descriptionHeading": "Descrição",
+    "related": {
+      "tabsLabel": "Conteúdo relacionado",
+      "problems": "Problemas relacionados"
+    }
   },
   "pgnInput": {
     "placeholder": "Cole sua notação PGN aqui...\n\nExemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",

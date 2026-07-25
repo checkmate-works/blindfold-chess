@@ -22,6 +22,7 @@ import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-
 import type { LineMove } from '../_lib/line-moves';
 import { useShapeAutosave } from '../_lib/use-shape-autosave';
 import { AnnotationPanel } from './AnnotationPanel';
+import { LineAnnotationIndex } from './LineAnnotationIndex';
 import type { LineNavItem } from './LineNavList';
 import { LineNavList } from './LineNavList';
 
@@ -221,7 +222,7 @@ export function LineDetailBoard({
         </div>
       </div>
 
-      {focusedMove && (
+      {focusedMove ? (
         <AnnotationPanel
           key={focusedMove.positionKey}
           repertoireId={repertoireId}
@@ -232,6 +233,16 @@ export function LineDetailBoard({
           initialText={focusedMove.annotation}
           moveNotation={moveNotation}
           isOwner={isOwner}
+        />
+      ) : (
+        // At the start position (ply 0) no single move is in focus, so instead
+        // of the per-move note we surface a Discussion-style index of every move
+        // in this line that carries a note — each jumps the board there.
+        <LineAnnotationIndex
+          moves={moves}
+          onJumpToPly={(nextPly) => setPly(nextPly)}
+          moveNotation={moveNotation}
+          locale={locale}
         />
       )}
     </div>

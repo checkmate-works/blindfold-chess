@@ -6,14 +6,15 @@ import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, Textarea, UnsavedChangesDialog } from '@/app/_components';
-import { FiEdit2, FiPlus } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';
 
 import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { OwnerActionButton } from '@/app/[locale]/_components/OwnerActionChip';
+import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deleteAnnotation } from '../_actions/deleteAnnotation';
 import { saveAnnotation } from '../_actions/saveAnnotation';
@@ -71,6 +72,10 @@ export function AnnotationPanel({
   const [isEditing, setIsEditing] = useState(false);
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
+  // Delete flow (kebab → confirmation), kept separate from the editor's state.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Guards both ways out of an editor holding unsaved edits: the Cancel button
   // (requestDiscard) and leaving the page (navigation guard) share one dialog.
@@ -106,15 +111,30 @@ export function AnnotationPanel({
     setIsEditing(false);
   }
 
+  async function handleDelete() {
+    setDeleting(true);
+    setDeleteError(null);
+    const result = await deleteAnnotation({ repertoireId, lineNo, locale, positionKey });
+    setDeleting(false);
+    if (!result.ok) {
+      setDeleteError(t('error'));
+      return;
+    }
+    // Emptying the note drops the read view back to the "Add a note" CTA.
+    setText('');
+    setConfirmingDelete(false);
+  }
+
   // The same section heading the comment thread below uses (SectionTitle), so
   // the note reads as a peer of the discussion — "Why this move · 1. Nf3" over
   // "Comments" — rather than a differently-styled sidebar label. The move it
   // names is de-emphasised so the "why this move" label stays the header.
-  const heading = (
-    <SectionTitle>
+  const headingContent = (
+    <>
       {t('title')} <span className="font-normal text-muted-foreground">· {moveLabel}</span>
-    </SectionTitle>
+    </>
   );
+  const heading = <SectionTitle>{headingContent}</SectionTitle>;
 
   // Read view — for the owner too, until they open the editor. A note is shown
   // as plain prose, except that a move cited by number ("1... e4") becomes a
@@ -124,7 +144,31 @@ export function AnnotationPanel({
     if (!text && !isOwner) return null;
     return (
       <section className="space-y-3">
-        {heading}
+        {text && isOwner ? (
+          // Edit / Delete live behind the same "⋯" kebab the comment threads
+          // use. The menu is overlaid (absolute) on top of a full-width heading
+          // rather than sitting in a flex row beside it, so the SectionTitle's
+          // underline runs unbroken across the whole width instead of stopping
+          // at the menu. `pr-10` keeps the title text clear of the button.
+          <div className="relative">
+            <SectionTitle className="pr-10">{headingContent}</SectionTitle>
+            <div className="absolute right-0 top-0">
+              <ActionsMenu ariaLabel={t('moreActions')}>
+                <ActionsMenuButton onClick={openEditor}>
+                  <FiEdit2 className="h-4 w-4" aria-hidden />
+                  {t('editAction')}
+                </ActionsMenuButton>
+                <ActionsMenuButton tone="danger" onClick={() => setConfirmingDelete(true)}>
+                  <FiTrash2 className="h-4 w-4" aria-hidden />
+                  {t('deleteAction')}
+                </ActionsMenuButton>
+              </ActionsMenu>
+            </div>
+          </div>
+        ) : (
+          heading
+        )}
+
         {text && (
           <p className="whitespace-pre-wrap text-foreground">
             <GameCommentBody
@@ -136,12 +180,36 @@ export function AnnotationPanel({
             />
           </p>
         )}
-        {isOwner && (
-          <OwnerActionButton size="xs" onClick={openEditor}>
-            {text ? <FiEdit2 aria-hidden /> : <FiPlus aria-hidden />}
-            {text ? t('editAction') : t('addAction')}
-          </OwnerActionButton>
+
+        {isOwner && !text && (
+          // The empty state is a full-width CTA, matching the comment thread's
+          // "Join the conversation" button below it, so authoring the first
+          // note reads as a peer invitation rather than a tiny afterthought.
+          <button
+            type="button"
+            onClick={openEditor}
+            className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+          >
+            <FiPlus aria-hidden className="text-muted-foreground" />
+            <span>{t('addAction')}</span>
+          </button>
         )}
+
+        <ConfirmationModal
+          isOpen={confirmingDelete}
+          title={t('deleteConfirmTitle')}
+          message={t('deleteConfirmMessage')}
+          confirmText={t('deleteAction')}
+          cancelText={t('cancel')}
+          confirmVariant="danger"
+          isLoading={deleting}
+          error={deleteError}
+          onConfirm={handleDelete}
+          onCancel={() => {
+            setConfirmingDelete(false);
+            setDeleteError(null);
+          }}
+        />
       </section>
     );
   }
