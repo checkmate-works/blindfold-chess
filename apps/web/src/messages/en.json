@@ -3328,7 +3328,8 @@
         "delete": "Delete",
         "deleting": "Deleting…",
         "generateFromTitle": "Generate from title",
-        "continueToPreview": "Continue to preview"
+        "continueToPreview": "Continue to preview",
+        "cancel": "Cancel"
       },
       "errors": {
         "invalidFen": "FEN is not a valid chess board layout.",

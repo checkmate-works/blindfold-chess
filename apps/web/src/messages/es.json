@@ -3328,7 +3328,8 @@
         "delete": "Eliminar",
         "deleting": "Eliminando…",
         "generateFromTitle": "Generar a partir del título",
-        "continueToPreview": "Continuar a la vista previa"
+        "continueToPreview": "Continuar a la vista previa",
+        "cancel": "Cancelar"
       },
       "errors": {
         "invalidFen": "El FEN no es una disposición de tablero válida.",

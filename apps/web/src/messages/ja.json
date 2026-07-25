@@ -3328,7 +3328,8 @@
         "delete": "削除",
         "deleting": "削除中…",
         "generateFromTitle": "タイトルから生成",
-        "continueToPreview": "プレビューへ進む"
+        "continueToPreview": "プレビューへ進む",
+        "cancel": "キャンセル"
       },
       "errors": {
         "invalidFen": "FEN として正しく解釈できません。",

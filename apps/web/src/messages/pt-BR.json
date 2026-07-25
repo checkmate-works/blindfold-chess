@@ -3328,7 +3328,8 @@
         "delete": "Excluir",
         "deleting": "Excluindo…",
         "generateFromTitle": "Gerar a partir do título",
-        "continueToPreview": "Continuar para a pré-visualização"
+        "continueToPreview": "Continuar para a pré-visualização",
+        "cancel": "Cancelar"
       },
       "errors": {
         "invalidFen": "O FEN não é um layout de tabuleiro válido.",

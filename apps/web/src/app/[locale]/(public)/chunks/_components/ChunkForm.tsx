@@ -262,9 +262,25 @@ export function ChunkForm(props: Props) {
           pending={false}
         />
 
-        <Button type="submit" variant="primary" size="lg" fullWidth disabled={submitDisabled}>
-          {t('actions.continueToPreview')}
-        </Button>
+        <div className="space-y-3">
+          <Button type="submit" variant="primary" size="lg" fullWidth disabled={submitDisabled}>
+            {t('actions.continueToPreview')}
+          </Button>
+
+          {mode === 'edit' && (
+            // Abandon editing and return to the detail page. A plain
+            // `router.push` (not a <Link>) so the unsaved-changes guard
+            // still intercepts when there are pending edits. Mirrors the
+            // repertoire / line edit forms' cancel affordance.
+            <button
+              type="button"
+              onClick={() => router.push(`/chunks/${props.initial.slug}` as '/chunks/[slug]')}
+              className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+            >
+              {t('actions.cancel')}
+            </button>
+          )}
+        </div>
       </form>
 
       <ConfirmationModal
