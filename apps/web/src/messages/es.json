@@ -3445,7 +3445,6 @@
       "sectionHint": "Otros jugadores pueden sugerir un título o una descripción más precisos mientras este chunk esté en borrador. El propietario revisa cada sugerencia.",
       "formWantedLabel": "Solicitado",
       "otherFieldsToggle": "Sugerir también cambios en otros campos",
-      "alreadyHasPendingNotice": "Tu sugerencia anterior sigue pendiente más abajo. Retírala primero si quieres proponer algo diferente.",
       "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
       "empty": "Todavía no hay sugerencias.",
       "suggestCta": "Sugerir una edición",

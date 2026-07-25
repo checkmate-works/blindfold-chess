@@ -73,41 +73,36 @@ export async function EditRequestSection({
 
   const pendingCount = rows.filter((row) => row.request.status === 'pending').length;
 
+  // The submit card only earns its space when it has something actionable:
+  // the form (a proposer with no open request) or the sign-in prompt (a
+  // signed-out visitor). A proposer who already has a pending request, or
+  // the owner, would otherwise see an empty heading or a redundant "you
+  // already have one, withdraw it below" notice — their pending row and its
+  // Withdraw button already live in the Submitted-suggestions card, so hide
+  // the whole submit card instead.
+  const showForm = viewerCanPropose && !viewerHasPending;
+  const showSignInPrompt = !viewerIsSignedIn && !viewerIsOwner;
+  const showSubmitCard = showForm || showSignInPrompt;
+
   return (
     <>
       {/*
        * Two peer cards, mirroring the "Current values" panel above: the
        * first is the submit affordance ("Edit suggestions"), the second
        * lists what's already been submitted ("Submitted suggestions").
-       * Keeping them separate avoids the odd "the list of everyone's
-       * submissions lives inside the submit-your-own box" nesting. The
-       * "other players can suggest…" hint moved to the HelpTourButton
-       * beside the page title (`data-tour-id` below is its spotlight
-       * target).
+       * The submit card renders only when it has something actionable
+       * (`showSubmitCard`) — a proposer who already has a pending request,
+       * or the owner, just sees the Submitted-suggestions card (their
+       * pending row + Withdraw button already live there). The "other
+       * players can suggest…" hint lives in the HelpTourButton beside the
+       * page title; its spotlight target (`data-tour-id`) sits on the
+       * always-present list card below so the tour works in every state.
        */}
-      <section
-        data-tour-id="chunk-edit-suggestions"
-        className="rounded-md border border-border bg-card p-4 space-y-4"
-      >
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
+      {showSubmitCard && (
+        <section className="rounded-md border border-border bg-card p-4 space-y-4">
+          <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
-        {viewerCanPropose ? (
-          viewerHasPending ? (
-            /*
-             * The viewer already has a pending row in the list below;
-             * one-pending-per-(chunk, proposer) is an application-layer
-             * invariant, so the form is hidden and we point them at the
-             * Withdraw button on their existing row instead. This keeps
-             * a fresh proposal one-click away (after withdraw) without
-             * letting the page round-trip to `alreadyHasPending`.
-             */
-            <div
-              className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100"
-              role="status"
-            >
-              {t('alreadyHasPendingNotice')}
-            </div>
-          ) : (
+          {showForm ? (
             <EditRequestForm
               chunkId={chunkId}
               chunkSlug={chunkSlug}
@@ -117,13 +112,16 @@ export async function EditRequestSection({
               wantedLabel={t('formWantedLabel')}
               focusTopic={focusTopic}
             />
-          )
-        ) : (
-          !viewerIsOwner && <p className="text-sm text-muted-foreground">{t('signInToSuggest')}</p>
-        )}
-      </section>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t('signInToSuggest')}</p>
+          )}
+        </section>
+      )}
 
-      <section className="rounded-md border border-border bg-card p-4 space-y-4">
+      <section
+        data-tour-id="chunk-edit-suggestions"
+        className="rounded-md border border-border bg-card p-4 space-y-4"
+      >
         {/*
          * The pending-count badge lives INSIDE the SectionTitle children so
          * the h2 stays block-level — its `border-b` then spans the panel
