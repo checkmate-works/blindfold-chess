@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { listEditRequestsForChunk } from '@/lib/chunk-edit-requests/queries';
 import { getFeedbackTopicsForChunk } from '@/lib/chunks/queries';
-import type { ChunkStatus } from '@/lib/chunks/validation';
+import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
 import { isEditRequestStatus } from '@/lib/edit-requests/shared';
 
@@ -30,6 +30,12 @@ type Props = {
    * to an `alreadyHasPending` round-trip.
    */
   viewerHasPending: boolean;
+  /**
+   * Field to focus on load, from the `?topic=` deep link on the detail
+   * page's callout pills. Forwarded to the form; ignored by the review
+   * list.
+   */
+  focusTopic?: ChunkFeedbackTopic;
   locale: string;
 };
 
@@ -50,6 +56,7 @@ export async function EditRequestSection({
   viewerId,
   ownerId,
   viewerHasPending,
+  focusTopic,
   locale,
 }: Props) {
   if (chunkStatus !== 'draft') return null;
@@ -112,6 +119,7 @@ export async function EditRequestSection({
             currentDescription={currentDescription}
             requestedFeedbackTopics={requestedFeedbackTopics}
             wantedLabel={t('formWantedLabel')}
+            focusTopic={focusTopic}
           />
         )
       ) : (

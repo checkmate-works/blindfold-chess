@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -33,6 +33,13 @@ type Props = {
   requestedFeedbackTopics?: readonly ChunkFeedbackTopic[];
   /** Localized label for the inline "wanted" badge (e.g. "Wanted"). */
   wantedLabel?: string;
+  /**
+   * Field the proposer arrived to edit, from the `?topic=` deep link on
+   * the detail-page callout pills. On mount the matching field is focused
+   * and scrolled into view; if it's a field the author didn't flag (so it
+   * lives in the disclosure) the disclosure opens too.
+   */
+  focusTopic?: ChunkFeedbackTopic;
 };
 
 function WantedBadge({ label }: { label: string }) {
@@ -74,6 +81,7 @@ export function EditRequestForm({
   currentDescription,
   requestedFeedbackTopics,
   wantedLabel,
+  focusTopic,
 }: Props) {
   const t = useTranslations('chunks.editRequests');
   const router = useRouter();
@@ -95,11 +103,30 @@ export function EditRequestForm({
   const titlePrimary = !someTopicsFlagged || titleWanted;
   const descriptionPrimary = !someTopicsFlagged || descriptionWanted;
 
+  // A deep-linked field that the author did NOT flag lives in the
+  // disclosure — open it so the focus target is visible on arrival.
+  const focusIsSecondary =
+    (focusTopic === 'title' && !titlePrimary) ||
+    (focusTopic === 'description' && !descriptionPrimary);
+
+  const titleRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+
   const [proposedTitle, setProposedTitle] = useState(currentTitle);
   const [proposedDescription, setProposedDescription] = useState(currentDescription ?? '');
   const [comment, setComment] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [otherOpen, setOtherOpen] = useState(focusIsSecondary);
+
+  // Focus + scroll the deep-linked field into view on arrival so the
+  // proposer lands directly on what the callout pill promised.
+  useEffect(() => {
+    if (!focusTopic) return;
+    const el = focusTopic === 'title' ? titleRef.current : descriptionRef.current;
+    el?.focus();
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [focusTopic]);
 
   function resetToPrefill() {
     setProposedTitle(currentTitle);
@@ -148,6 +175,7 @@ export function EditRequestForm({
         {titleWanted && badgeLabel && <WantedBadge label={badgeLabel} />}
       </label>
       <input
+        ref={titleRef}
         id="edit-req-title"
         type="text"
         value={proposedTitle}
@@ -166,6 +194,7 @@ export function EditRequestForm({
         {descriptionWanted && badgeLabel && <WantedBadge label={badgeLabel} />}
       </label>
       <textarea
+        ref={descriptionRef}
         id="edit-req-description"
         value={proposedDescription}
         onChange={(e) => setProposedDescription(e.target.value)}
@@ -201,7 +230,11 @@ export function EditRequestForm({
        * as "no change".
        */}
       {(!titlePrimary || !descriptionPrimary) && (
-        <details className="rounded border border-border bg-muted/30 px-3 py-2">
+        <details
+          open={otherOpen}
+          onToggle={(e) => setOtherOpen(e.currentTarget.open)}
+          className="rounded border border-border bg-muted/30 px-3 py-2"
+        >
           <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground">
             {t('otherFieldsToggle')}
           </summary>

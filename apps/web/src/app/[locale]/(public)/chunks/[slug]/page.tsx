@@ -238,9 +238,10 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
             signedOut: tEditRequests('callout.ctaSignedOut'),
           }}
           viewerState={calloutViewerState}
-          requestedTopicLabels={requestedFeedbackTopics.map((topic) =>
-            tEditRequests(`callout.topicLabels.${topic}` as 'callout.topicLabels.title')
-          )}
+          requestedTopics={requestedFeedbackTopics.map((topic) => ({
+            topic,
+            label: tEditRequests(`callout.topicLabels.${topic}` as 'callout.topicLabels.title'),
+          }))}
           topicLeadIn={tEditRequests('callout.topicLeadIn')}
         />
       )}
