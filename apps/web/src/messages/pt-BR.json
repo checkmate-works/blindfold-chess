@@ -3328,7 +3328,8 @@
         "delete": "Excluir",
         "deleting": "Excluindo…",
         "generateFromTitle": "Gerar a partir do título",
-        "continueToPreview": "Continuar para a pré-visualização"
+        "continueToPreview": "Continuar para a pré-visualização",
+        "cancel": "Cancelar"
       },
       "errors": {
         "invalidFen": "O FEN não é um layout de tabuleiro válido.",
@@ -3386,9 +3387,11 @@
     "preview": {
       "title": "Pré-visualizar chunk",
       "createDraftCta": "Salvar como rascunho",
-      "createPublishedCta": "Publicar chunk",
+      "createPublishedCta": "Publicar",
       "backToEditCta": "Voltar para edição",
       "createError": "Algo deu errado ao criar o chunk. Tente novamente.",
+      "saveCta": "Salvar alterações",
+      "saveError": "Algo deu errado ao salvar o chunk. Tente novamente.",
       "statusLabel": "Status",
       "statusDraft": "Rascunho",
       "statusPublished": "Publicado"
@@ -3867,6 +3870,8 @@
     "lineAdded": "Linha adicionada",
     "puzzleUpdated": "Alterações salvas",
     "puzzleDeleted": "Puzzle excluído",
+    "chunkUpdated": "Alterações salvas",
+    "chunkPublished": "Chunk publicado",
     "editRequestSubmitted": "Sugestão de edição enviada",
     "editRequestAccepted": "Sugestão de edição aceita",
     "editRequestRejected": "Sugestão de edição rejeitada",

@@ -43,7 +43,7 @@ export default async function ChunkPreviewPage({ params }: Props) {
         { label: tPreview('title') },
       ]}
     >
-      <ChunkPreviewClient />
+      <ChunkPreviewClient mode="create" />
     </PageLayout>
   );
 }

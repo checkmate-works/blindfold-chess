@@ -3328,7 +3328,8 @@
         "delete": "Delete",
         "deleting": "Deleting…",
         "generateFromTitle": "Generate from title",
-        "continueToPreview": "Continue to preview"
+        "continueToPreview": "Continue to preview",
+        "cancel": "Cancel"
       },
       "errors": {
         "invalidFen": "FEN is not a valid chess board layout.",
@@ -3386,9 +3387,11 @@
     "preview": {
       "title": "Preview chunk",
       "createDraftCta": "Save as draft",
-      "createPublishedCta": "Publish chunk",
+      "createPublishedCta": "Publish",
       "backToEditCta": "Back to edit",
       "createError": "Something went wrong creating the chunk. Please try again.",
+      "saveCta": "Save changes",
+      "saveError": "Something went wrong saving the chunk. Please try again.",
       "statusLabel": "Status",
       "statusDraft": "Draft",
       "statusPublished": "Published"
@@ -3867,6 +3870,8 @@
     "lineAdded": "Line added",
     "puzzleUpdated": "Changes saved",
     "puzzleDeleted": "Puzzle deleted",
+    "chunkUpdated": "Changes saved",
+    "chunkPublished": "Chunk published",
     "editRequestSubmitted": "Edit suggestion submitted",
     "editRequestAccepted": "Edit suggestion accepted",
     "editRequestRejected": "Edit suggestion rejected",

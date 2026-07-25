@@ -51,6 +51,18 @@ export type ChunkDraftV1 = {
    * the mutation layer ignores the field outside the draft path.
    */
   feedbackTopics: ChunkFeedbackTopic[];
+  /**
+   * Present when the draft is an *edit* of an existing chunk rather than
+   * a fresh create. Carries the row id and the slug the edit started
+   * from so the preview can call `updateChunk` and resolve the
+   * post-save target slug (draft chunks allow slug renames). Absent for
+   * create drafts. Kept optional so create-side readers and older
+   * bundles ignore it transparently.
+   */
+  edit?: {
+    chunkId: string;
+    initialSlug: string;
+  };
   /** Tracks which editor tab was last active so re-entering /new restores it. */
   activeTab: 'board' | 'fen';
   /** White / black to move — encoded redundantly with the FEN for cheap reads. */
@@ -84,6 +96,15 @@ function isChunkDraftV1(value: unknown): value is ChunkDraftV1 {
   if (v.feedbackTopics !== undefined) {
     if (!Array.isArray(v.feedbackTopics)) return false;
     if (!v.feedbackTopics.every(isChunkFeedbackTopic)) return false;
+  }
+  // `edit` was added after the initial v1 schema shipped and is absent
+  // on create drafts, so tolerate its absence; validate the shape when
+  // present.
+  if (v.edit !== undefined) {
+    if (v.edit === null || typeof v.edit !== 'object') return false;
+    const e = v.edit as Record<string, unknown>;
+    if (typeof e.chunkId !== 'string') return false;
+    if (typeof e.initialSlug !== 'string') return false;
   }
   if (v.activeTab !== 'board' && v.activeTab !== 'fen') return false;
   if (v.sideToMove !== 'w' && v.sideToMove !== 'b') return false;

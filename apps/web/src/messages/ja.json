@@ -3328,7 +3328,8 @@
         "delete": "削除",
         "deleting": "削除中…",
         "generateFromTitle": "タイトルから生成",
-        "continueToPreview": "プレビューへ進む"
+        "continueToPreview": "プレビューへ進む",
+        "cancel": "キャンセル"
       },
       "errors": {
         "invalidFen": "FEN として正しく解釈できません。",
@@ -3386,9 +3387,11 @@
     "preview": {
       "title": "チャンクのプレビュー",
       "createDraftCta": "下書きとして保存",
-      "createPublishedCta": "チャンクを公開",
+      "createPublishedCta": "公開する",
       "backToEditCta": "編集に戻る",
       "createError": "チャンクの作成中にエラーが発生しました。もう一度お試しください。",
+      "saveCta": "変更を保存",
+      "saveError": "チャンクの保存中にエラーが発生しました。もう一度お試しください。",
       "statusLabel": "ステータス",
       "statusDraft": "下書き",
       "statusPublished": "公開済み"
@@ -3867,6 +3870,8 @@
     "lineAdded": "ラインを追加しました",
     "puzzleUpdated": "変更を保存しました",
     "puzzleDeleted": "パズルを削除しました",
+    "chunkUpdated": "変更を保存しました",
+    "chunkPublished": "チャンクを公開しました",
     "editRequestSubmitted": "編集リクエストを送信しました",
     "editRequestAccepted": "編集リクエストを承認しました",
     "editRequestRejected": "編集リクエストを却下しました",

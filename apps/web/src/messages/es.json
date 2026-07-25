@@ -3328,7 +3328,8 @@
         "delete": "Eliminar",
         "deleting": "Eliminando…",
         "generateFromTitle": "Generar a partir del título",
-        "continueToPreview": "Continuar a la vista previa"
+        "continueToPreview": "Continuar a la vista previa",
+        "cancel": "Cancelar"
       },
       "errors": {
         "invalidFen": "El FEN no es una disposición de tablero válida.",
@@ -3386,9 +3387,11 @@
     "preview": {
       "title": "Vista previa del chunk",
       "createDraftCta": "Guardar como borrador",
-      "createPublishedCta": "Publicar chunk",
+      "createPublishedCta": "Publicar",
       "backToEditCta": "Volver a editar",
       "createError": "Algo salió mal al crear el chunk. Inténtalo de nuevo.",
+      "saveCta": "Guardar cambios",
+      "saveError": "Algo salió mal al guardar el chunk. Inténtalo de nuevo.",
       "statusLabel": "Estado",
       "statusDraft": "Borrador",
       "statusPublished": "Publicado"
@@ -3867,6 +3870,8 @@
     "lineAdded": "Línea añadida",
     "puzzleUpdated": "Cambios guardados",
     "puzzleDeleted": "Puzzle eliminado",
+    "chunkUpdated": "Cambios guardados",
+    "chunkPublished": "Chunk publicado",
     "editRequestSubmitted": "Sugerencia de edición enviada",
     "editRequestAccepted": "Sugerencia de edición aceptada",
     "editRequestRejected": "Sugerencia de edición rechazada",

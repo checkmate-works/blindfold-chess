@@ -3,12 +3,20 @@ import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ChunkForm } from './ChunkForm';
 
+// Mutable search string so individual tests can simulate the
+// `?resumed=1` preview round-trip marker.
+const nav = vi.hoisted(() => ({ search: '' }));
+
 // Echo translation keys so the "draft restored" banner is assertable by key.
 vi.mock('next-intl', () => ({
   useTranslations: () => Object.assign((key: string) => key, { has: () => true }),
 }));
 
-vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(nav.search),
+}));
+
+vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 
 vi.mock('@/_hooks/useUnsavedChanges', () => ({
   useUnsavedChanges: () => ({ isBlocking: false, confirm: vi.fn(), cancel: vi.fn() }),
@@ -44,11 +52,6 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-edito
 
 vi.mock('./ChunkFormFields', () => ({ ChunkFormFields: () => <div data-testid="fields" /> }));
 vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({ ConfirmationModal: () => null }));
-vi.mock('../_lib/chunk-form-actions', () => ({
-  saveChunkEdit: vi.fn(),
-  submitChunkDelete: vi.fn(),
-  submitChunkPublish: vi.fn(),
-}));
 
 const readChunkDraft = vi.fn();
 vi.mock('../_lib/draft-storage', () => ({
@@ -75,6 +78,7 @@ const STORED_DRAFT = {
 describe('ChunkForm — injectedFen vs. stored draft', () => {
   beforeEach(() => {
     (readChunkDraft as Mock).mockReset();
+    nav.search = '';
   });
 
   it('recovers a stored draft when no position is injected', () => {
@@ -86,6 +90,15 @@ describe('ChunkForm — injectedFen vs. stored draft', () => {
   it('skips draft recovery when a position is injected via ?fen=', () => {
     readChunkDraft.mockReturnValue(STORED_DRAFT);
     render(<ChunkForm mode="create" injectedFen="8/8/8/8/4P3/8/8/8 w - - 0 1" />);
+    expect(screen.queryByText('draftRestoredBanner')).toBeNull();
+  });
+
+  it('suppresses the restored banner on a preview round-trip (?resumed=1)', () => {
+    // Returning from the preview restores the draft but the banner would
+    // be redundant noise — the author just came from reviewing it.
+    nav.search = 'resumed=1';
+    readChunkDraft.mockReturnValue(STORED_DRAFT);
+    render(<ChunkForm mode="create" />);
     expect(screen.queryByText('draftRestoredBanner')).toBeNull();
   });
 });
