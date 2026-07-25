@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components';
+import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { Button, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
+import { flushSync } from 'react-dom';
 
 import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
 
@@ -84,6 +86,7 @@ export function EditRequestForm({
   focusTopic,
 }: Props) {
   const t = useTranslations('chunks.editRequests');
+  const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
 
   const titleWanted = !!requestedFeedbackTopics?.includes('title');
@@ -118,6 +121,21 @@ export function EditRequestForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otherOpen, setOtherOpen] = useState(focusIsSecondary);
+  const [submitted, setSubmitted] = useState(false);
+
+  // Any real edit away from the prefill (or a typed comment) makes the
+  // form dirty. `!submitted` drops the guard once we navigate away on a
+  // successful submit. Mirrors the sibling edit forms (EditPositionForm).
+  const isDirty =
+    !submitted &&
+    (proposedTitle.trim() !== currentTitle.trim() ||
+      proposedDescription.trim() !== (currentDescription ?? '').trim() ||
+      comment.trim().length > 0);
+
+  // Cancel is a plain router.push below; when the form is dirty the
+  // navigation guard intercepts it and raises UnsavedChangesDialog
+  // instead of discarding the draft silently.
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   // Focus + scroll the deep-linked field into view on arrival so the
   // proposer lands directly on what the callout pill promised.
@@ -165,6 +183,9 @@ export function EditRequestForm({
     // `?toast=` param triggers the global ToastContainer to show a
     // success confirmation once the new page is hydrated.
     resetToPrefill();
+    // Disable the unsaved-changes guard synchronously before navigating,
+    // otherwise the successful redirect itself would trip the dialog.
+    flushSync(() => setSubmitted(true));
     router.push(`/chunks/${chunkSlug}?toast=edit_request_submitted` as '/chunks/[slug]');
   }
 
@@ -207,85 +228,97 @@ export function EditRequestForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-xs text-muted-foreground">{t('formHint')}</p>
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <p className="text-xs text-muted-foreground">{t('formHint')}</p>
 
-      {error && (
-        <div
-          role="alert"
-          className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm"
-        >
-          {error}
-        </div>
-      )}
-
-      {titlePrimary && titleField}
-      {descriptionPrimary && descriptionField}
-
-      {/*
-       * Secondary fields — the ones the author did NOT flag. Kept mounted
-       * inside a <details> (not conditionally unmounted) so a proposer who
-       * opens it, types, then collapses it doesn't lose their edit. They
-       * stay at prefill until touched, so a never-opened field is submitted
-       * as "no change".
-       */}
-      {(!titlePrimary || !descriptionPrimary) && (
-        <details
-          open={otherOpen}
-          onToggle={(e) => setOtherOpen(e.currentTarget.open)}
-          className="rounded border border-border bg-muted/30 px-3 py-2"
-        >
-          <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground">
-            {t('otherFieldsToggle')}
-          </summary>
-          <div className="mt-3 space-y-4">
-            {!titlePrimary && titleField}
-            {!descriptionPrimary && descriptionField}
+        {error && (
+          <div
+            role="alert"
+            className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm"
+          >
+            {error}
           </div>
-        </details>
-      )}
+        )}
 
-      <div>
-        <label htmlFor="edit-req-comment" className="block text-sm font-medium mb-1">
-          {t('fields.comment')}
-        </label>
-        <textarea
-          id="edit-req-comment"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          rows={3}
-          placeholder={t('fields.commentPlaceholder')}
-          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-        />
-      </div>
+        {titlePrimary && titleField}
+        {descriptionPrimary && descriptionField}
 
-      {/*
-       * Full-width primary submit with a quiet cancel text-link stacked
-       * below — the app's shared form-footer convention (EditLineForm,
-       * EditPositionForm, ChunkForm…). Cancel returns to the chunk detail
-       * page via router.push (not <Link>/back) to stay locale-aware and
-       * consistent with those siblings.
-       */}
-      <div className="space-y-4">
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          disabled={pending}
-          loading={pending}
-        >
-          {t('actions.submit')}
-        </Button>
-        <button
-          type="button"
-          onClick={() => router.push(`/chunks/${chunkSlug}` as '/chunks/[slug]')}
-          disabled={pending}
-          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-        >
-          {t('actions.cancel')}
-        </button>
-      </div>
-    </form>
+        {/*
+         * Secondary fields — the ones the author did NOT flag. Kept mounted
+         * inside a <details> (not conditionally unmounted) so a proposer who
+         * opens it, types, then collapses it doesn't lose their edit. They
+         * stay at prefill until touched, so a never-opened field is submitted
+         * as "no change".
+         */}
+        {(!titlePrimary || !descriptionPrimary) && (
+          <details
+            open={otherOpen}
+            onToggle={(e) => setOtherOpen(e.currentTarget.open)}
+            className="rounded border border-border bg-muted/30 px-3 py-2"
+          >
+            <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground">
+              {t('otherFieldsToggle')}
+            </summary>
+            <div className="mt-3 space-y-4">
+              {!titlePrimary && titleField}
+              {!descriptionPrimary && descriptionField}
+            </div>
+          </details>
+        )}
+
+        <div>
+          <label htmlFor="edit-req-comment" className="block text-sm font-medium mb-1">
+            {t('fields.comment')}
+          </label>
+          <textarea
+            id="edit-req-comment"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={3}
+            placeholder={t('fields.commentPlaceholder')}
+            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          />
+        </div>
+
+        {/*
+         * Full-width primary submit with a quiet cancel text-link stacked
+         * below — the app's shared form-footer convention (EditLineForm,
+         * EditPositionForm, ChunkForm…). Cancel returns to the chunk detail
+         * page via router.push (not <Link>/back) to stay locale-aware and
+         * consistent with those siblings.
+         */}
+        <div className="space-y-4">
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={pending}
+            loading={pending}
+          >
+            {t('actions.submit')}
+          </Button>
+          <button
+            type="button"
+            onClick={() => router.push(`/chunks/${chunkSlug}` as '/chunks/[slug]')}
+            disabled={pending}
+            className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          >
+            {t('actions.cancel')}
+          </button>
+        </div>
+      </form>
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirm}
+        onCancel={cancel}
+        title={tUnsaved('title')}
+        message={tUnsaved('message')}
+        confirmLabel={tUnsaved('confirm')}
+        cancelLabel={tUnsaved('cancel')}
+      />
+    </>
   );
 }
