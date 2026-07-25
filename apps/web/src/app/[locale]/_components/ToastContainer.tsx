@@ -34,6 +34,7 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   puzzle_updated: { messageKey: 'puzzleUpdated', type: 'success' },
   puzzle_deleted: { messageKey: 'puzzleDeleted', type: 'success' },
   chunk_updated: { messageKey: 'chunkUpdated', type: 'success' },
+  chunk_published: { messageKey: 'chunkPublished', type: 'success' },
   edit_request_submitted: { messageKey: 'editRequestSubmitted', type: 'success' },
   edit_request_accepted: { messageKey: 'editRequestAccepted', type: 'success' },
   edit_request_rejected: { messageKey: 'editRequestRejected', type: 'success' },

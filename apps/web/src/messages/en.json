@@ -3870,6 +3870,7 @@
     "puzzleUpdated": "Changes saved",
     "puzzleDeleted": "Puzzle deleted",
     "chunkUpdated": "Changes saved",
+    "chunkPublished": "Chunk published",
     "editRequestSubmitted": "Edit suggestion submitted",
     "editRequestAccepted": "Edit suggestion accepted",
     "editRequestRejected": "Edit suggestion rejected",

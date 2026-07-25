@@ -44,12 +44,12 @@ export function useChunkFormState({
   const [annotations, setAnnotations] = useState<BoardAnnotations>(
     mode === 'edit' && initial ? initial.annotations : EMPTY_BOARD_ANNOTATIONS
   );
-  // The lifecycle toggle is only meaningful in create mode, where it
-  // defaults to 'published' (the draft checkbox is unchecked by default).
-  // Edit mode can only run against an already-draft row (the page guard
-  // blocks published chunks from reaching this form) and never surfaces
-  // the toggle, so this value is unused there.
-  const [status, setStatus] = useState<ChunkStatus>('published');
+  // The "Save as draft" toggle drives this. Create defaults to 'published'
+  // (checkbox unchecked). Edit can only run against an already-draft row
+  // (the page guard blocks published chunks from reaching this form), so it
+  // seeds 'draft' — the checkbox starts checked, and unchecking it routes
+  // the preview to Publish, matching the create flow.
+  const [status, setStatus] = useState<ChunkStatus>(mode === 'edit' ? 'draft' : 'published');
   const [feedbackTopics, setFeedbackTopics] = useState<ChunkFeedbackTopic[]>(
     mode === 'edit' && initial ? [...initial.feedbackTopics] : []
   );
@@ -90,7 +90,10 @@ export function useChunkFormState({
       trimmedFen !== initial.representativeFen ||
       title !== initial.title ||
       slug !== initial.slug ||
-      description !== (initial.description ?? '')
+      description !== (initial.description ?? '') ||
+      // Unchecking "Save as draft" (intent to publish) is a pending change
+      // too — the edit row is always seeded 'draft'.
+      status !== 'draft'
     );
   }
 

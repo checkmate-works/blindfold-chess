@@ -32,20 +32,18 @@ type Props = {
   annotations: BoardAnnotations;
   onAnnotationsChange: (next: BoardAnnotations) => void;
   /**
-   * Intended status on the next submit. The "Save as draft" toggle only
-   * renders on `mode='create'` — edit reaches into the existing row's
-   * lifecycle via the dedicated Publish / Unpublish actions on the
-   * detail page.
+   * Intended status on the next submit, driven by the "Save as draft"
+   * toggle (shown in both modes). Checked → draft; unchecked → the
+   * preview's confirm becomes Publish. Edit seeds 'draft' (the only
+   * status that reaches this form), so its checkbox starts checked.
    */
   status: ChunkStatus;
   onStatusChange: (next: ChunkStatus) => void;
   /**
    * Fields the author has ticked to request targeted feedback on.
-   * Only meaningful when the resulting chunk is in draft state — the
-   * checkbox group is hidden in create mode when the draft toggle is
-   * off (the rows wouldn't be persisted by the server anyway, see
-   * `createChunkEntry`). Edit mode always shows it because reaching
-   * the edit form already implies the chunk is in draft.
+   * Only meaningful in draft state — the checkbox group is hidden
+   * whenever the draft toggle is off (the rows wouldn't be persisted by
+   * the server anyway, see `createChunkEntry` / `publishChunkEntry`).
    */
   feedbackTopics: readonly ChunkFeedbackTopic[];
   onFeedbackTopicsChange: (next: ChunkFeedbackTopic[]) => void;
@@ -248,33 +246,30 @@ export function ChunkFormFields({
         </p>
       </div>
 
-      {mode === 'create' && (
-        <div className="rounded border border-border bg-card p-3">
-          <label className="flex cursor-pointer items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={status === 'draft'}
-              onChange={(e) => onStatusChange(e.target.checked ? 'draft' : 'published')}
-              disabled={pending}
-              className="mt-0.5"
-            />
-            <span className="space-y-1">
-              <span className="block font-medium">{t('draft.toggleLabel')}</span>
-              <span className="block text-xs text-muted-foreground">{t('draft.toggleHint')}</span>
-            </span>
-          </label>
-        </div>
-      )}
+      <div className="rounded border border-border bg-card p-3">
+        <label className="flex cursor-pointer items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={status === 'draft'}
+            onChange={(e) => onStatusChange(e.target.checked ? 'draft' : 'published')}
+            disabled={pending}
+            className="mt-0.5"
+          />
+          <span className="space-y-1">
+            <span className="block font-medium">{t('draft.toggleLabel')}</span>
+            <span className="block text-xs text-muted-foreground">{t('draft.toggleHint')}</span>
+          </span>
+        </label>
+      </div>
 
       {/*
-       * Feedback-topic checkboxes are draft-only: in create mode they
-       * appear after the user opts into Save-as-draft (the server-side
-       * mutation also ignores topics when status !== 'draft'); in edit
-       * mode the chunk is already guaranteed to be a draft (the page
-       * guards published from reaching this form) so the panel always
-       * renders.
+       * Feedback-topic checkboxes are draft-only in both modes: they appear
+       * only while "Save as draft" is on (the server-side mutation also
+       * ignores topics when status !== 'draft'). Unchecking the toggle to
+       * publish hides them, since a published chunk carries no draft-only
+       * feedback signals.
        */}
-      {(mode === 'edit' || (mode === 'create' && status === 'draft')) && (
+      {status === 'draft' && (
         <fieldset className="space-y-2 rounded border border-border bg-card p-3">
           <legend className="px-1 text-sm font-medium">{t('feedbackTopics.legend')}</legend>
           <p className="text-xs text-muted-foreground">{t('feedbackTopics.hint')}</p>

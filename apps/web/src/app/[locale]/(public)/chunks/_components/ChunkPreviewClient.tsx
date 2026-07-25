@@ -14,7 +14,7 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { createChunk } from '../_actions/createChunk';
-import { saveChunkEdit } from '../_lib/chunk-form-actions';
+import { saveChunkEdit, submitChunkPublish } from '../_lib/chunk-form-actions';
 import { type ChunkDraftV1, clearChunkDraft, readChunkDraft } from '../_lib/draft-storage';
 import { localizeChunkError } from '../_lib/localize-error';
 
@@ -49,9 +49,10 @@ type Props =
  *      - create: `createChunk`; on success clear the draft and navigate to
  *        `/chunks/<slug>`, appending `?coinsEarned=N` to surface the
  *        coin-reward toast when a point grant fired.
- *      - edit: `updateChunk` (via `saveChunkEdit`); on success clear the
- *        draft and navigate to the (possibly renamed) `/chunks/<slug>`
- *        with `?toast=chunk_updated` so the "changes saved" toast shows.
+ *      - edit: `updateChunk` (via `saveChunkEdit`), then `publishChunk`
+ *        when the "Save as draft" toggle was off (`draft.status`); on
+ *        success clear the draft and navigate to the (possibly renamed)
+ *        `/chunks/<slug>` with `?toast=chunk_updated` (or `chunk_published`).
  * 4. "Back to edit" → keep the draft, navigate back to the form with a
  *    `?resumed=1` marker so create suppresses the "draft restored" banner
  *    and edit rehydrates the draft instead of the untouched server row.
@@ -96,6 +97,9 @@ export function ChunkPreviewClient(props: Props) {
     try {
       if (mode === 'edit') {
         if (!draft.edit) return;
+        // Save the edited fields first — always. Publishing then reads the
+        // now-current description from the row (`publishChunkEntry` requires
+        // a non-empty one), so the save must land before the publish call.
         const result = await saveChunkEdit({
           initialId: draft.edit.chunkId,
           initialSlug: draft.edit.initialSlug,
@@ -113,11 +117,22 @@ export function ChunkPreviewClient(props: Props) {
           setError(result.error);
           return;
         }
+
+        // Draft toggle off → publish the just-saved draft (one-way).
+        if (draft.status === 'published') {
+          const publishResult = await submitChunkPublish({ chunkId: draft.edit.chunkId, t: tForm });
+          if (!publishResult.ok) {
+            setError(publishResult.error);
+            return;
+          }
+        }
+
         clearChunkDraft();
         flushSync(() => setSubmitted(true));
-        // Land on the (possibly renamed) detail URL with the "changes
-        // saved" toast flag — mirrors the puzzle_updated pattern.
-        router.push(`/chunks/${result.targetSlug}?toast=chunk_updated` as '/chunks/[slug]');
+        // Land on the (possibly renamed) detail URL with a toast reflecting
+        // what happened — publish vs. a plain save.
+        const toast = draft.status === 'published' ? 'chunk_published' : 'chunk_updated';
+        router.push(`/chunks/${result.targetSlug}?toast=${toast}` as '/chunks/[slug]');
         return;
       }
 
@@ -173,12 +188,14 @@ export function ChunkPreviewClient(props: Props) {
     return <div className="h-32 animate-pulse rounded bg-muted/30" />;
   }
 
+  // Publishing (draft toggle off) reads the same CTA in both modes. When
+  // staying a draft, create offers "Save as draft" and edit "Save changes".
   const confirmLabel =
-    mode === 'edit'
-      ? t('saveCta')
-      : draft.status === 'draft'
-        ? t('createDraftCta')
-        : t('createPublishedCta');
+    draft.status === 'published'
+      ? t('createPublishedCta')
+      : mode === 'edit'
+        ? t('saveCta')
+        : t('createDraftCta');
 
   return (
     <>

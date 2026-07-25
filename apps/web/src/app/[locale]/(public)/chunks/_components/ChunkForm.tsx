@@ -18,8 +18,7 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
 import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
 import { useChunkLifecycleActions } from '../_hooks/use-chunk-lifecycle-actions';
-import { saveChunkEdit } from '../_lib/chunk-form-actions';
-import { validateChunkCreateForm } from '../_lib/chunk-form-validation';
+import { validateChunkForm } from '../_lib/chunk-form-validation';
 import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
 import { ChunkFormFields } from './ChunkFormFields';
 
@@ -67,11 +66,11 @@ const validateFenForChunks = (fen: string) => validateFenStructure(fen).ok;
  * - **Create**: navigates to `/chunks/new/preview`; the preview calls
  *   `createChunk`.
  * - **Edit**: navigates to `/chunks/<slug>/edit/preview`; the preview
- *   calls `updateChunk`. The draft carries the row id + starting slug
- *   (`draft.edit`) so the preview can resolve the post-save target slug
- *   (draft chunks allow slug renames). The Publish / Delete escalations
- *   below still act directly (each with its own confirm modal), only the
- *   field-save Save flow routes through the preview.
+ *   calls `updateChunk` — and Publish when the "Save as draft" toggle is
+ *   off, exactly like create. The draft carries the row id + starting
+ *   slug (`draft.edit`) so the preview can resolve the post-save target
+ *   slug (draft chunks allow slug renames). Delete is the only escalation
+ *   that still acts directly from this form (with its own confirm modal).
  *
  * Annotations are NOT user-editable from this form yet. Newly-created
  * chunks store the empty shape (the DB default); edits leave whatever
@@ -129,7 +128,6 @@ export function ChunkForm(props: Props) {
   } = form;
 
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
 
@@ -164,73 +162,37 @@ export function ChunkForm(props: Props) {
     router.push(path as '/chunks/[slug]');
   }
 
-  // Wraps `saveChunkEdit` with the form's pending lifecycle and error
-  // display. The pure action lives in `_lib/chunk-form-actions` so the
-  // payload shape — including the "send slug only when changed"
-  // optimisation and the empty-array-wipes contract for feedbackTopics —
-  // stays single-sourced. Returns the slug to navigate to on success
-  // so callers don't have to recompute `slugChanged` themselves.
-  async function runSaveEdit(
-    initial: ChunkFormInitial
-  ): Promise<{ ok: true; targetSlug: string } | { ok: false }> {
-    setPending(true);
-    const result = await saveChunkEdit({
-      initialId: initial.id,
-      initialSlug: initial.slug,
-      payload: {
-        representativeFen: board.trimmedFen,
-        title,
-        slug,
-        description,
-        annotations,
-        feedbackTopics,
-      },
-      t,
-    });
-    setPending(false);
-
-    if (!result.ok) {
-      setError(result.error);
-      return { ok: false };
-    }
-    return { ok: true, targetSlug: result.targetSlug };
-  }
-
   const lifecycle = useChunkLifecycleActions({
     chunk: mode === 'edit' ? { id: props.initial.id, slug: props.initial.slug } : null,
-    isDirty,
-    description,
-    saveEdit: () => (mode === 'edit' ? runSaveEdit(props.initial) : Promise.resolve({ ok: false })),
     onError: setError,
     navigateAfterSubmit,
     t,
   });
-  const { tChunks, publishPending, deletePending } = lifecycle;
+  const { deletePending } = lifecycle;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (mode === 'create') {
-      const errorKey = validateChunkCreateForm({
-        isFenValid: board.isFenValid,
-        title,
-        slug,
-        status,
-        description,
-      });
-      if (errorKey) {
-        setError(t(errorKey));
-        return;
-      }
+    const errorKey = validateChunkForm({
+      isFenValid: board.isFenValid,
+      title,
+      slug,
+      status,
+      description,
+    });
+    if (errorKey) {
+      setError(t(errorKey));
+      return;
     }
 
     // Both modes hand off to a confirmation page: create persists via
     // `/chunks/new/preview`, edit via `/chunks/<slug>/edit/preview`. The
     // draft is the handoff channel for both — the preview reads it,
-    // renders it for review, and only then calls the mutation. Edit
-    // drafts carry the row id + starting slug so the preview can call
-    // `updateChunk` and resolve the (possibly renamed) target slug.
+    // renders it for review, and only then calls the mutation (and, when
+    // the draft toggle is off, Publish). Edit drafts carry the row id +
+    // starting slug so the preview can call `updateChunk` and resolve the
+    // (possibly renamed) target slug.
     const draft: ChunkDraftV1 = {
       version: 1,
       representativeFen: board.trimmedFen,
@@ -238,9 +200,7 @@ export function ChunkForm(props: Props) {
       slug,
       description,
       annotations,
-      // Edit runs only against draft rows (the page guards published),
-      // so pin the badge to 'draft' rather than the create-only toggle.
-      status: mode === 'edit' ? 'draft' : status,
+      status,
       feedbackTopics,
       ...(mode === 'edit'
         ? { edit: { chunkId: props.initial.id, initialSlug: props.initial.slug } }
@@ -263,12 +223,7 @@ export function ChunkForm(props: Props) {
   }
 
   const submitDisabled =
-    pending ||
-    deletePending ||
-    publishPending ||
-    !board.isFenValid ||
-    title.trim() === '' ||
-    (mode === 'create' && slug.trim() === '');
+    deletePending || !board.isFenValid || title.trim() === '' || slug.trim() === '';
 
   return (
     <>
@@ -314,50 +269,22 @@ export function ChunkForm(props: Props) {
           feedbackTopics={feedbackTopics}
           onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
-          pending={pending || deletePending || publishPending}
+          pending={deletePending}
         />
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          disabled={submitDisabled}
-          loading={pending}
-        >
+        <Button type="submit" variant="primary" size="lg" fullWidth disabled={submitDisabled}>
           {t('actions.continueToPreview')}
         </Button>
 
         {mode === 'edit' && (
-          <>
-            {/*
-             * Publish-from-edit affordance. Saves the form first (when
-             * dirty) so the published content is current, then opens
-             * the same publish-confirmation modal the detail page
-             * uses. Kept below Save so "Save" stays the lowest-
-             * commitment action — readers scan top-down and the
-             * one-way publish step is the deliberate next escalation.
-             */}
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              fullWidth
-              disabled={submitDisabled}
-              loading={publishPending}
-              onClick={lifecycle.handlePublish}
-            >
-              {publishPending ? tChunks('actions.publishPending') : tChunks('actions.publish')}
-            </Button>
-            <button
-              type="button"
-              onClick={() => lifecycle.setDeleteConfirmOpen(true)}
-              disabled={pending || deletePending || publishPending}
-              className="w-full px-6 py-3 rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
-            >
-              {deletePending ? t('actions.deleting') : t('actions.delete')}
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={() => lifecycle.setDeleteConfirmOpen(true)}
+            disabled={deletePending}
+            className="w-full px-6 py-3 rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+          >
+            {deletePending ? t('actions.deleting') : t('actions.delete')}
+          </button>
         )}
       </form>
 
@@ -381,17 +308,6 @@ export function ChunkForm(props: Props) {
         confirmVariant="danger"
         onConfirm={handleStartOver}
         onCancel={() => setStartOverOpen(false)}
-      />
-
-      <ConfirmationModal
-        isOpen={lifecycle.publishConfirmOpen}
-        title={tChunks('actions.publishConfirmTitle')}
-        message={tChunks('actions.publishConfirmMessage')}
-        confirmText={tChunks('actions.publishConfirmCta')}
-        cancelText={tChunks('actions.publishConfirmCancel')}
-        confirmVariant="primary"
-        onConfirm={lifecycle.handlePublishConfirm}
-        onCancel={() => lifecycle.setPublishConfirmOpen(false)}
       />
 
       <UnsavedChangesDialog open={isBlocking} onCancel={cancel} onConfirm={confirm} />
