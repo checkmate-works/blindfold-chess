@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { LastUpdated } from '@/app/[locale]/_components/LastUpdated';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -9,6 +10,9 @@ import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 export const generateStaticParams = generateLocaleStaticParams;
+
+/** Date this policy was last revised (single source of truth, not per-locale). */
+const LAST_UPDATED = '2026-03-13';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'privacy', path: 'privacy' });
@@ -21,7 +25,8 @@ export default async function PrivacyPage({ params }: Props) {
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      <ProseArticle className="space-y-4" lastUpdated={t('lastUpdated')}>
+      <ProseArticle className="space-y-4">
+        <SectionTitle>{t('title')}</SectionTitle>
         <p>{t('introduction')}</p>
 
         <SectionTitle>{t('cookiesTitle')}</SectionTitle>
@@ -122,6 +127,10 @@ export default async function PrivacyPage({ params }: Props) {
 
         <SectionTitle>{t('changesTitle')}</SectionTitle>
         <p>{t('changesDescription')}</p>
+
+        <div className="text-right">
+          <LastUpdated locale={locale} date={LAST_UPDATED} />
+        </div>
       </ProseArticle>
     </PageLayout>
   );

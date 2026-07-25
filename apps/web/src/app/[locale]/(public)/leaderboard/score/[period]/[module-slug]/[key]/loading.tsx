@@ -35,14 +35,13 @@ export default function ScoreLeaderboardDetailLoading() {
         </div>
       </div>
 
-      {/* ChallengeLink — full-width pill, wrapper matches pt-4 from the real component */}
-      <div className="pt-4">
-        <div className="h-11 w-full rounded-md bg-primary/30" />
-      </div>
-
-      {/* Back link — centered, mt-4 matches the real component */}
-      <div className="mt-4 text-center">
-        <div className="mx-auto h-4 w-24 rounded bg-muted" />
+      {/* CTA + back link grouped with space-y-4, mirroring the real page.
+          h-12 matches the shared Button size="lg" height (py-3 + text-base). */}
+      <div className="space-y-4">
+        <div className="h-12 w-full rounded-md bg-primary/30" />
+        <div className="text-center">
+          <div className="mx-auto h-4 w-24 rounded bg-muted" />
+        </div>
       </div>
     </PagePanel>
   );

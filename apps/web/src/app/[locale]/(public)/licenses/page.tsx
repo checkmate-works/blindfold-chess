@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { LastUpdated } from '@/app/[locale]/_components/LastUpdated';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -10,6 +11,9 @@ import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 export const generateStaticParams = generateLocaleStaticParams;
+
+/** Date this page was last revised (single source of truth, not per-locale). */
+const LAST_UPDATED = '2026-05-13';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'licenses', path: 'licenses' });
@@ -117,7 +121,9 @@ export default async function LicensesPage({ params }: Props) {
           </a>
         </p>
 
-        <p className="text-muted-foreground">{t('lastUpdated')}</p>
+        <div className="text-right">
+          <LastUpdated locale={locale} date={LAST_UPDATED} />
+        </div>
       </ProseArticle>
       <AdSlot slot="content-bottom" />
     </PageLayout>

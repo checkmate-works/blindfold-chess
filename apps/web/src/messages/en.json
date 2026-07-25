@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(deleted user)",
+    "lastUpdated": "Last Updated: {date}",
     "pagination": {
       "navLabel": "Pagination",
       "previous": "Previous",
@@ -2889,7 +2890,6 @@
   "privacy": {
     "title": "Privacy Policy",
     "description": "Our privacy policy and how we handle your personal information",
-    "lastUpdated": "Last Updated: March 13, 2026",
     "introduction": "Blindfold Chess (\"the Site\") respects user privacy and is committed to protecting personal information. This Privacy Policy explains how the Site collects, uses, and protects information.",
     "cookiesTitle": "Use of Cookies",
     "cookiesDescription": "The Site uses cookies to improve service quality and deliver advertisements. Cookies are small text files stored on your device by websites. While you can disable cookies, some features may not function properly.",
@@ -2944,7 +2944,6 @@
   "affiliateDisclosure": {
     "title": "Affiliate Disclosure",
     "description": "Information about affiliate links on Blindfold Chess",
-    "lastUpdated": "Last Updated: March 11, 2025",
     "amazonDisclosureTitle": "Amazon Associate Program Disclosure",
     "amazonDisclosureDescription": "As an Amazon Associate I earn from qualifying purchases. blindfold-chess.online is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com.",
     "footerText": "As an Amazon Associate I earn from qualifying purchases."
@@ -2952,7 +2951,6 @@
   "terms": {
     "title": "Terms of Service",
     "description": "Terms of Service for Blindfold Chess",
-    "lastUpdated": "Last Updated: June 19, 2026",
     "acceptanceTitle": "Acceptance of Terms",
     "acceptanceDescription": "By using this Service, you agree to be bound by these Terms of Service. If you do not agree to these Terms, please do not use the Service.",
     "serviceDescriptionTitle": "Service Description",
@@ -3007,7 +3005,6 @@
   "licenses": {
     "title": "Open Source Licenses",
     "description": "Open source software acknowledgements and license information",
-    "lastUpdated": "Last Updated: May 13, 2026",
     "overviewTitle": "Overview",
     "introduction": "Blindfold Chess uses open source chess engines to provide its AI opponent functionality. We are grateful to the authors and communities behind these projects, and we provide attribution and license information below.",
     "componentsTitle": "Bundled Open Source Components",

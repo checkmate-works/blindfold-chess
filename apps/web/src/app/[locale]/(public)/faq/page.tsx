@@ -8,7 +8,7 @@ import { DAILY_CREATION_POINT_CAP, POST_CREATION_POINTS } from '@/lib/points';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -191,6 +191,7 @@ export default async function FAQPage({ params }: Props) {
           Keeping schema for semantic markup purposes, but no rich result expected. */}
       <JsonLd data={generateFAQPageSchema(faqSchemaItems)} nonce={nonce} />
       <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+        <SectionTitle>{t('title')}</SectionTitle>
         <FAQClient items={faqItems} />
 
         <AdSlot slot="content-bottom" />

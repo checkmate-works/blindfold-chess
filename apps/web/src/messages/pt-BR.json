@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(usuário excluído)",
+    "lastUpdated": "Última atualização: {date}",
     "pagination": {
       "navLabel": "Paginação",
       "previous": "Anterior",
@@ -2889,7 +2890,6 @@
   "privacy": {
     "title": "Política de Privacidade",
     "description": "Nossa política de privacidade e como tratamos suas informações pessoais",
-    "lastUpdated": "Última Atualização: 13 de março de 2026",
     "introduction": "Xadrez às Cegas (\"o Site\") respeita a privacidade dos usuários e está comprometido em proteger as informações pessoais. Esta Política de Privacidade explica como o Site coleta, usa e protege as informações.",
     "cookiesTitle": "Uso de Cookies",
     "cookiesDescription": "O Site utiliza cookies para melhorar a qualidade do serviço e exibir anúncios. Os cookies são pequenos arquivos de texto armazenados em seu dispositivo pelos sites. Embora você possa desativar os cookies, alguns recursos podem não funcionar corretamente.",
@@ -2944,7 +2944,6 @@
   "affiliateDisclosure": {
     "title": "Divulgação de Afiliados",
     "description": "Informações sobre links de afiliados no Xadrez às Cegas",
-    "lastUpdated": "Última Atualização: 11 de março de 2025",
     "amazonDisclosureTitle": "Divulgação do Programa de Associados da Amazon",
     "amazonDisclosureDescription": "Como Associado da Amazon, ganho com compras qualificadas. blindfold-chess.online participa do Programa de Associados da Amazon Services LLC, um programa de publicidade de afiliados projetado para fornecer um meio para que os sites ganhem taxas de publicidade através de publicidade e links para Amazon.com.",
     "footerText": "Como Associado da Amazon, ganho com compras qualificadas."
@@ -2952,7 +2951,6 @@
   "terms": {
     "title": "Termos de Serviço",
     "description": "Termos de Serviço do Xadrez às Cegas",
-    "lastUpdated": "Última Atualização: 19 de junho de 2026",
     "acceptanceTitle": "Aceitação dos Termos",
     "acceptanceDescription": "Ao usar este Serviço, você concorda em estar vinculado a estes Termos de Serviço. Se você não concordar com estes Termos, por favor não use o Serviço.",
     "serviceDescriptionTitle": "Descrição do Serviço",
@@ -3007,7 +3005,6 @@
   "licenses": {
     "title": "Licenças de Código Aberto",
     "description": "Atribuições e informações de licenças do software de código aberto utilizado",
-    "lastUpdated": "Última atualização: 13 de maio de 2026",
     "overviewTitle": "Visão Geral",
     "introduction": "O Xadrez às Cegas utiliza motores de xadrez de código aberto para fornecer sua funcionalidade de oponente de IA. Somos gratos aos autores e comunidades por trás desses projetos e fornecemos informações de atribuição e licenças abaixo.",
     "componentsTitle": "Componentes de Código Aberto Incluídos",
