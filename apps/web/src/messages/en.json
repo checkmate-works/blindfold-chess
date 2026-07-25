@@ -4702,6 +4702,7 @@
     "collapseAriaLabel": "Collapse thread",
     "expandAriaLabel": "Expand thread",
     "replyButton": "Reply",
+    "moreActions": "More actions",
     "sortByLabel": "Sort by",
     "joinConversation": "Join the conversation",
     "loadMoreComments": {

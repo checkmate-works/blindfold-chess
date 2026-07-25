@@ -3,9 +3,11 @@
 import { type ReactNode, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FiEdit2 } from 'react-icons/fi';
 
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
+import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
@@ -116,6 +118,7 @@ export function OpCard({
   deleteI18nNamespace,
 }: Props) {
   const tEdit = useTranslations('topics.edit');
+  const tTopics = useTranslations('topics');
   const tCommon = useTranslations('Common');
 
   const [isEditing, setIsEditing] = useState(false);
@@ -197,23 +200,23 @@ export function OpCard({
               toggleLikeAction={toggleLikeAction}
               i18nNamespace={likeI18nNamespace}
             />
-            {canEdit && (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              >
-                {tEdit('button')}
-              </button>
-            )}
             {isOwnPost && (
-              <DeletePostButton
-                postId={postId}
-                locale={locale}
-                redirectPath={redirectPath}
-                deletePostAction={deletePostAction}
-                i18nNamespace={deleteI18nNamespace}
-              />
+              <ActionsMenu ariaLabel={tTopics('moreActions')}>
+                {canEdit && (
+                  <ActionsMenuButton onClick={() => setIsEditing(true)}>
+                    <FiEdit2 className="h-4 w-4" aria-hidden />
+                    {tEdit('button')}
+                  </ActionsMenuButton>
+                )}
+                <DeletePostButton
+                  postId={postId}
+                  locale={locale}
+                  redirectPath={redirectPath}
+                  deletePostAction={deletePostAction}
+                  i18nNamespace={deleteI18nNamespace}
+                  variant="menuItem"
+                />
+              </ActionsMenu>
             )}
           </div>
         </>
