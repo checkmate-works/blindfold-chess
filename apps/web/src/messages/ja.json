@@ -1360,6 +1360,7 @@
       "edit": {
         "title": "問題を編集",
         "submit": "変更を保存",
+        "cancel": "キャンセル",
         "submitting": "保存中...",
         "saveError": "予期しないエラーが発生しました。もう一度お試しください。",
         "notFound": "この問題は見つかりませんでした。",
@@ -1473,6 +1474,7 @@
         "forkBanner": "「{sourceTitle}」からフォーク中",
         "createdFromPositionMemoryBanner": "ポジション記憶「{sourceTitle}」からパズルを作成中",
         "continueToSolution": "正解手の入力に進む",
+        "cancel": "キャンセル",
         "solutionPageTitle": "正解手",
         "backToPosition": "局面の編集に戻る",
         "stepIndicatorLabel": "ステップ",

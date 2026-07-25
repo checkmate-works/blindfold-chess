@@ -1360,6 +1360,7 @@
       "edit": {
         "title": "Edit Problem",
         "submit": "Save changes",
+        "cancel": "Cancel",
         "submitting": "Saving...",
         "saveError": "An unexpected error occurred. Please try again.",
         "notFound": "This problem could not be found.",
@@ -1473,6 +1474,7 @@
         "forkBanner": "Forking from \"{sourceTitle}\"",
         "createdFromPositionMemoryBanner": "Creating a puzzle from Position Memory entry \"{sourceTitle}\"",
         "continueToSolution": "Continue to solution moves",
+        "cancel": "Cancel",
         "solutionPageTitle": "Solution moves",
         "backToPosition": "Back to position",
         "stepIndicatorLabel": "Steps",

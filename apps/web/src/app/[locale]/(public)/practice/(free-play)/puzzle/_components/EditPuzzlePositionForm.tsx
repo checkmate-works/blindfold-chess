@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { useRouter } from '@/i18n/routing';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -40,6 +41,7 @@ type Props = {
 };
 
 export function EditPuzzlePositionForm({ positionId, initial, available }: Props) {
+  const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
 
   const initialMovesRef = useRef(initial.solutionMoves.map((m) => m.san));
@@ -141,6 +143,8 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
           availableChunks={available.chunks}
           onContinue={step.handleContinue}
           continueLabel={t('continueToSolution')}
+          onCancel={() => router.push(`/practice/puzzle/${positionId}`)}
+          cancelLabel={t('cancel')}
         />
       </div>
 

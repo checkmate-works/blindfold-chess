@@ -1360,6 +1360,7 @@
       "edit": {
         "title": "Editar Problema",
         "submit": "Guardar cambios",
+        "cancel": "Cancelar",
         "submitting": "Guardando...",
         "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
         "notFound": "No se pudo encontrar este problema.",
@@ -1473,6 +1474,7 @@
         "forkBanner": "Bifurcando desde «{sourceTitle}»",
         "createdFromPositionMemoryBanner": "Creando un puzzle desde la entrada de Memoria de Posiciones «{sourceTitle}»",
         "continueToSolution": "Continuar a los movimientos de la solución",
+        "cancel": "Cancelar",
         "solutionPageTitle": "Movimientos de la solución",
         "backToPosition": "Volver a la posición",
         "stepIndicatorLabel": "Pasos",
