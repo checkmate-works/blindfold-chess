@@ -57,6 +57,7 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
       thumbnail={
         <BoardThumbnail
           fen={data.representativeFen}
+          annotations={data.annotations}
           className="w-full h-full"
           boardTheme={preferences.boardTheme}
         />

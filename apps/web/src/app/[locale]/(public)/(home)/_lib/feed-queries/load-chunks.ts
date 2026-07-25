@@ -1,5 +1,6 @@
 import { and, inArray, isNull } from 'drizzle-orm';
 
+import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkLikeMetaMap } from '@/lib/chunks/like-queries';
 import { AUTHOR_PROFILE_COLUMNS, chunks, db, liveProfileJoinOn, profiles } from '@/lib/db';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
@@ -33,6 +34,7 @@ export async function loadChunksForFeed(
       title: chunks.title,
       description: chunks.description,
       representativeFen: chunks.representativeFen,
+      annotations: chunks.annotations,
       createdAt: chunks.createdAt,
       author: {
         ...AUTHOR_PROFILE_COLUMNS,
@@ -60,6 +62,9 @@ export async function loadChunksForFeed(
       title: row.title,
       description: row.description,
       representativeFen: row.representativeFen,
+      // Normalise the JSONB defensively (legacy rows) — matches the detail
+      // page, and returns the shared empty singleton when absent.
+      annotations: parseBoardAnnotations(row.annotations),
       kind: 'created',
       createdAt: row.createdAt.toISOString(),
       author: row.author

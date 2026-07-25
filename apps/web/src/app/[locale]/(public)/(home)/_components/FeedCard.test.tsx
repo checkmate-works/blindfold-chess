@@ -241,6 +241,7 @@ describe('FeedCard', () => {
         title: 'Rook Battery',
         description: 'Doubled rooks on an open file',
         representativeFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        annotations: { arrows: [], circles: [] },
         kind: 'created',
         createdAt: '2025-01-15T10:00:00.000Z',
         author: {

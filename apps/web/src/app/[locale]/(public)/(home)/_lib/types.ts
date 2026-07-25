@@ -21,6 +21,7 @@
  */
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { PositionType } from '@/lib/positions/types';
 
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
@@ -114,6 +115,12 @@ export type ChunkFeedData = {
   title: string;
   description: string | null;
   representativeFen: string;
+  /**
+   * Display-only arrows + circles overlaid on the thumbnail board, so the
+   * feed shows the same annotated position as the detail page. Always
+   * present (the DB column is non-null, defaulting to the empty shape).
+   */
+  annotations: BoardAnnotations;
   /** Snapshot of the lifecycle event that produced this feed item. */
   kind: 'created' | 'published';
   createdAt: string; // ISO 8601
@@ -187,11 +194,7 @@ export type GameFeedItem = FeedItemBase & {
 
 // Discriminated union — extend with new entity types here
 export type FeedItem =
-  | TopicPostFeedItem
-  | ChallengeRankUpdateFeedItem
-  | PositionFeedItem
-  | ChunkFeedItem
-  | GameFeedItem;
+  TopicPostFeedItem | ChallengeRankUpdateFeedItem | PositionFeedItem | ChunkFeedItem | GameFeedItem;
 
 export type FeedResponse = {
   items: FeedItem[];
