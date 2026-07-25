@@ -769,7 +769,10 @@
     "termModal": {
       "viewDetails": "Ver definição completa"
     },
-    "descriptionHeading": "Descrição"
+    "descriptionHeading": "Descrição",
+    "problems": {
+      "tab": "Problemas"
+    }
   },
   "pgnInput": {
     "placeholder": "Cole sua notação PGN aqui...\n\nExemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",

@@ -769,7 +769,10 @@
     "termModal": {
       "viewDetails": "詳しく見る"
     },
-    "descriptionHeading": "説明"
+    "descriptionHeading": "説明",
+    "problems": {
+      "tab": "問題"
+    }
   },
   "pgnInput": {
     "placeholder": "PGN記法を貼り付けてください...\n\n例:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",

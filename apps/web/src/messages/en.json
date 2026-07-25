@@ -769,7 +769,10 @@
     "termModal": {
       "viewDetails": "View full definition"
     },
-    "descriptionHeading": "Description"
+    "descriptionHeading": "Description",
+    "problems": {
+      "tab": "Problems"
+    }
   },
   "pgnInput": {
     "placeholder": "Paste your PGN notation here...\n\nExample:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",

@@ -8,6 +8,7 @@ import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
 import { chessTerms } from '@/lib/db/data/chess-terms';
 import { slugifyTerm } from '@/lib/glossary/slug';
+import { getPositionsForTerm } from '@/lib/glossary/term-positions';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateDefinedTermSchema } from '@/lib/seo/jsonld';
 
@@ -16,6 +17,8 @@ import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { GlossaryTermTabs } from '../_components/GlossaryTermTabs';
+import { TermProblemList } from '../_components/TermProblemList';
 import { getGlossaryTermBySlug } from '../_lib/queries';
 import type { ChessTerm } from '../_lib/types';
 import { CATEGORY_COLORS } from '../_lib/types';
@@ -107,6 +110,42 @@ export default async function GlossaryTermPage({ params }: Props) {
     { label: name },
   ];
 
+  // Practice problems tagged with this term (only theme terms have any).
+  const problems = await getPositionsForTerm(slug);
+
+  const descriptionPanel = (
+    <div className="space-y-8">
+      <div className="space-y-3">
+        <SectionTitle>{t('descriptionHeading')}</SectionTitle>
+        <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{description}</p>
+      </div>
+
+      {term.positions && term.positions.length > 0 && (
+        <GlossaryPositionBoard positions={term.positions} />
+      )}
+
+      {(term.category || (term.aliases && term.aliases.length > 0)) && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          {term.category && (
+            <Link
+              href={`/${locale}/glossary/category/${term.category}`}
+              className={`inline-block rounded-full px-3 py-1 text-sm font-medium transition-opacity hover:opacity-80 ${
+                CATEGORY_COLORS[term.category] || CATEGORY_COLORS.general
+              }`}
+            >
+              {t(`categories.${term.category}`)}
+            </Link>
+          )}
+          {term.aliases && term.aliases.length > 0 && (
+            <span className="text-sm text-muted-foreground">
+              {t('aliases')}: {term.aliases.join(', ')}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <>
       <JsonLd
@@ -121,33 +160,15 @@ export default async function GlossaryTermPage({ params }: Props) {
         nonce={nonce}
       />
       <PageLayout title={name} headerNote={headerNote} locale={locale} breadcrumb={breadcrumb}>
-        <div className="space-y-3">
-          <SectionTitle>{t('descriptionHeading')}</SectionTitle>
-          <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{description}</p>
-        </div>
-
-        {term.positions && term.positions.length > 0 && (
-          <GlossaryPositionBoard positions={term.positions} />
-        )}
-
-        {(term.category || (term.aliases && term.aliases.length > 0)) && (
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            {term.category && (
-              <Link
-                href={`/${locale}/glossary/category/${term.category}`}
-                className={`inline-block rounded-full px-3 py-1 text-sm font-medium transition-opacity hover:opacity-80 ${
-                  CATEGORY_COLORS[term.category] || CATEGORY_COLORS.general
-                }`}
-              >
-                {t(`categories.${term.category}`)}
-              </Link>
-            )}
-            {term.aliases && term.aliases.length > 0 && (
-              <span className="text-sm text-muted-foreground">
-                {t('aliases')}: {term.aliases.join(', ')}
-              </span>
-            )}
-          </div>
+        {problems.length > 0 ? (
+          <GlossaryTermTabs
+            descriptionLabel={t('descriptionHeading')}
+            problemsLabel={`${t('problems.tab')} (${problems.length})`}
+            description={descriptionPanel}
+            problems={<TermProblemList problems={problems} locale={locale} />}
+          />
+        ) : (
+          descriptionPanel
         )}
 
         <AdSlot slot="content-bottom" />
