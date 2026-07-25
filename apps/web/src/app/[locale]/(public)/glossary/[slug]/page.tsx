@@ -91,6 +91,22 @@ export default async function GlossaryTermPage({ params }: Props) {
   ].filter((part): part is string => Boolean(part));
   const headerNote = subtitleParts.length > 0 ? subtitleParts.join(' ・ ') : undefined;
 
+  // Insert the letter-index page (e.g. `/glossary/letter/t`) as an
+  // intermediate breadcrumb, matching how terms are grouped in the glossary.
+  // The letter derives from the English term's first char (same as
+  // `getTermsByLetter`, which keys on `upper(left(term_en, 1))`). Letter
+  // pages exist for A–Z only (`dynamicParams = false`), so terms that start
+  // with a non-letter skip the crumb rather than link to a 404.
+  const firstChar = term.term.charAt(0).toUpperCase();
+  const hasLetterCrumb = firstChar >= 'A' && firstChar <= 'Z';
+  const breadcrumb = [
+    { label: t('title'), href: '/glossary' },
+    ...(hasLetterCrumb
+      ? [{ label: firstChar, href: `/glossary/letter/${firstChar.toLowerCase()}` }]
+      : []),
+    { label: name },
+  ];
+
   return (
     <>
       <JsonLd
@@ -104,12 +120,7 @@ export default async function GlossaryTermPage({ params }: Props) {
         })}
         nonce={nonce}
       />
-      <PageLayout
-        title={name}
-        headerNote={headerNote}
-        locale={locale}
-        breadcrumb={[{ label: t('title'), href: '/glossary' }, { label: name }]}
-      >
+      <PageLayout title={name} headerNote={headerNote} locale={locale} breadcrumb={breadcrumb}>
         <div className="space-y-3">
           <SectionTitle>{t('descriptionHeading')}</SectionTitle>
           <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{description}</p>
