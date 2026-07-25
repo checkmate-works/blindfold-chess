@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 
+import { slugifyTerm } from '@/lib/glossary/slug';
+
 import type { ChessTerm } from '../_lib/types';
 import { CATEGORY_COLORS } from '../_lib/types';
 
@@ -39,13 +41,18 @@ export async function GlossaryTermList({ terms, locale }: Props) {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-4 mb-3">
             <div>
               <h3 className="text-xl font-bold text-foreground">
-                {term.term}
-                {locale === 'ja' && term.termJa && (
-                  <span className="ml-2 text-lg text-muted-foreground">
-                    ({term.termJa}
-                    {term.reading && <span className="text-sm ml-1">{term.reading}</span>})
-                  </span>
-                )}
+                <Link
+                  href={`/${locale}/glossary/${term.slug ?? slugifyTerm(term.term)}`}
+                  className="hover:text-link-primary hover:underline"
+                >
+                  {term.term}
+                  {locale === 'ja' && term.termJa && (
+                    <span className="ml-2 text-lg text-muted-foreground">
+                      ({term.termJa}
+                      {term.reading && <span className="text-sm ml-1">{term.reading}</span>})
+                    </span>
+                  )}
+                </Link>
               </h3>
               {term.aliases && term.aliases.length > 0 && (
                 <div className="mt-1 text-sm text-muted-foreground">
