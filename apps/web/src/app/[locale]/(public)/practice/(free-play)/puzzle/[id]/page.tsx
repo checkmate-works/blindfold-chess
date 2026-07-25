@@ -24,7 +24,7 @@ import {
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
-import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
+import { ActionsMenu, type ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -39,6 +39,7 @@ import {
   PositionEditRequestSummaryLink,
 } from '../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetail } from '../../_lib/load-position-detail';
+import { DeletePuzzleButton } from '../_components/DeletePuzzleButton';
 import { loadPuzzleWithSolutions } from '../_lib/load-puzzle';
 import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
 import { NewPostForm } from './_components/NewPostForm';
@@ -148,8 +149,10 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
     />
   );
 
+  const isOwner = currentUser?.id === position.userId;
+
   const menuItems: ActionsMenuItem[] = [
-    ...(currentUser?.id === position.userId
+    ...(isOwner
       ? [
           {
             key: 'edit',
@@ -258,8 +261,13 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         editedHref={
           hasTrackedHistory ? `/${locale}/practice/puzzle/${position.id}/history` : undefined
         }
-        menuAriaLabel={t('detail.moreActions')}
-        menuItems={menuItems}
+        menu={
+          isOwner || menuItems.length > 0 ? (
+            <ActionsMenu ariaLabel={t('detail.moreActions')} items={menuItems}>
+              {isOwner && <DeletePuzzleButton puzzleId={position.id} locale={locale} />}
+            </ActionsMenu>
+          ) : undefined
+        }
       />
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">

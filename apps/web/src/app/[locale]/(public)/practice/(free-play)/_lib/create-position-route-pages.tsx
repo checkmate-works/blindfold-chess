@@ -326,8 +326,6 @@ export interface PositionEditPageOptions<TData extends { position: EditablePosit
     attachedTags: Awaited<ReturnType<typeof loadPositionTags>>;
     availableTags: PositionTagBundle;
   }) => ReactNode;
-  /** Render the feature's delete button inside the shared danger zone. */
-  renderDeleteButton: (args: { positionId: string; locale: Locale }) => ReactNode;
 }
 
 /**
@@ -342,7 +340,7 @@ export function createPositionEditPage<TData extends { position: EditablePositio
   options: PositionEditPageOptions<TData>
 ) {
   const { slug, namespace } = route;
-  const { loadEditData, renderForm, renderDeleteButton } = options;
+  const { loadEditData, renderForm } = options;
 
   async function generateMetadata({ params }: IdProps): Promise<Metadata> {
     const { locale, id } = await params;
@@ -396,17 +394,6 @@ export function createPositionEditPage<TData extends { position: EditablePositio
       >
         <SectionTitle>{t('edit.title')}</SectionTitle>
         {renderForm({ data, attachedTags, availableTags })}
-
-        <section
-          aria-labelledby="danger-zone-heading"
-          className="mt-12 rounded-md border border-destructive/40 p-4 space-y-3"
-        >
-          <h2 id="danger-zone-heading" className="text-sm font-semibold text-destructive">
-            {t('delete.sectionTitle')}
-          </h2>
-          <p className="text-sm text-muted-foreground">{t('delete.sectionDescription')}</p>
-          {renderDeleteButton({ positionId: position.id, locale })}
-        </section>
       </PageLayout>
     );
   }

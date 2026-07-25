@@ -1399,13 +1399,11 @@
         "empty": "まだフォークはありません。"
       },
       "delete": {
-        "button": "問題を削除",
+        "button": "削除",
         "confirmTitle": "問題を削除",
         "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
         "confirm": "削除",
-        "cancel": "キャンセル",
-        "sectionTitle": "危険な操作",
-        "sectionDescription": "問題を削除すると元に戻せません。紐付いているコメントやいいねも一緒に失われ、復旧はできません。"
+        "cancel": "キャンセル"
       }
     },
     "puzzle": {
@@ -1540,13 +1538,11 @@
         "empty": "まだフォークはありません。"
       },
       "delete": {
-        "button": "パズルを削除",
+        "button": "削除",
         "confirmTitle": "パズルを削除",
         "confirmMessage": "このパズルを削除しますか？コメントや解答データも一緒に失われ、復旧はできません。この操作は取り消せません。",
         "confirm": "削除",
-        "cancel": "キャンセル",
-        "sectionTitle": "危険な操作",
-        "sectionDescription": "パズルを削除すると元に戻せません。紐付いているコメントは文脈を失い、復旧できなくなります。"
+        "cancel": "キャンセル"
       },
       "session": {
         "title": "挑戦",

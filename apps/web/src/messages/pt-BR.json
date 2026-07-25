@@ -1399,13 +1399,11 @@
         "empty": "Ainda não há bifurcações."
       },
       "delete": {
-        "button": "Excluir Problema",
+        "button": "Excluir",
         "confirmTitle": "Excluir Problema",
         "confirmMessage": "Tem certeza de que deseja excluir este problema? Esta ação não pode ser desfeita.",
         "confirm": "Excluir",
-        "cancel": "Cancelar",
-        "sectionTitle": "Zona de perigo",
-        "sectionDescription": "A exclusão deste problema é permanente. Os comentários e curtidas vinculados serão removidos e não poderão ser recuperados."
+        "cancel": "Cancelar"
       }
     },
     "puzzle": {
@@ -1540,13 +1538,11 @@
         "empty": "Ainda não há bifurcações."
       },
       "delete": {
-        "button": "Excluir Puzzle",
+        "button": "Excluir",
         "confirmTitle": "Excluir Puzzle",
         "confirmMessage": "Tem certeza de que deseja excluir este puzzle? Os comentários e os dados da solução também serão removidos. Esta ação não pode ser desfeita.",
         "confirm": "Excluir",
-        "cancel": "Cancelar",
-        "sectionTitle": "Zona de perigo",
-        "sectionDescription": "A exclusão deste puzzle é permanente — os comentários vinculados perderão o contexto e não poderão ser recuperados."
+        "cancel": "Cancelar"
       },
       "result": {
         "title": "Resultado do Puzzle",
