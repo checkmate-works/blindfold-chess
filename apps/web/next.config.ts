@@ -2,6 +2,22 @@ import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 import { withSentryConfig } from '@sentry/nextjs';
+import os from 'node:os';
+
+// In development only, allow HMR / dev-resource requests from this machine's
+// LAN IPv4 addresses so the dev server can be opened from other devices on the
+// same network (e.g. a phone at http://192.168.x.x:3000). Computed at startup
+// from `os.networkInterfaces()` rather than hardcoded, so a DHCP-reassigned IP
+// produces no git diff and needs no config edit — just restart `next dev`.
+// Returns [] outside development, so it is a no-op (and adds no overhead) in
+// production builds.
+function devLanOrigins(): string[] {
+  if (process.env.NODE_ENV !== 'development') return [];
+  return Object.values(os.networkInterfaces())
+    .flat()
+    .filter((net) => net != null && net.family === 'IPv4' && !net.internal)
+    .map((net) => net!.address);
+}
 
 // NOTE: Content-Security-Policy is intentionally NOT defined here.
 //
@@ -19,6 +35,10 @@ import { withSentryConfig } from '@sentry/nextjs';
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
+
+  // Allow cross-origin dev-resource (HMR) requests from LAN devices. See
+  // `devLanOrigins()` above — dev-only, auto-detected, no-op in production.
+  allowedDevOrigins: devLanOrigins(),
 
   // Increase timeout for SSG pages with heavy DB queries (e.g., glossary category pages)
   staticPageGenerationTimeout: 120,
