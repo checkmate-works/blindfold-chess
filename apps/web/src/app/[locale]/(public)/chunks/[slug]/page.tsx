@@ -146,6 +146,12 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           comments: commentCount,
         });
 
+  // When every tab is empty the page is short enough that `content-bottom`
+  // sits just below the fold, so a mid-page ad above the (all-zero) tab bar
+  // would only crowd the layout. Show it only when at least one tab has
+  // content — the counts are already loaded, so this adds no query.
+  const hasTabContent = linkedPositions.length > 0 || relatedGames.length > 0 || commentCount > 0;
+
   const [t, tChunks, tEditRequests] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
     getTranslations({ locale, namespace: 'chunks' }),
@@ -343,6 +349,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
        * the top of the page — the tabs sit well below the description/board/
        * metadata block above.
        */}
+      {hasTabContent && <AdSlot slot="content-middle" />}
+
       <div id="chunk-tabs" className="scroll-mt-20">
         <LinkTabs
           variant="underline"
