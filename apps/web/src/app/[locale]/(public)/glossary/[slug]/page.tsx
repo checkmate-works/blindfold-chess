@@ -18,6 +18,7 @@ import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { AlphabeticalIndex } from '../_components/AlphabeticalIndex';
 import { TermProblemList } from '../_components/TermProblemList';
 import { getGlossaryTermBySlug } from '../_lib/queries';
 import type { ChessTerm } from '../_lib/types';
@@ -193,6 +194,14 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
             {activeTab === 'problems' && <TermProblemList problems={problems} locale={locale} />}
           </div>
         )}
+
+        <div className="space-y-3">
+          <SectionTitle>{t('alphabeticalIndexTitle')}</SectionTitle>
+          <AlphabeticalIndex
+            locale={locale}
+            currentLetter={hasLetterCrumb ? firstChar.toLowerCase() : undefined}
+          />
+        </div>
 
         <AdSlot slot="content-bottom" />
       </PageLayout>
