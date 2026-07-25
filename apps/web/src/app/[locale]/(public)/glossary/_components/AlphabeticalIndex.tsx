@@ -24,12 +24,12 @@ export async function AlphabeticalIndex({ currentLetter, locale }: Props) {
           <Link
             key={letter}
             href={`/${locale}/glossary/letter/${letter.toLowerCase()}`}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-colors ${
+            className={`flex flex-col items-center justify-center rounded-lg border p-2 transition-colors ${
               isActive ? 'bg-muted border-foreground/20' : 'bg-card hover:bg-muted/50 border-border'
             }`}
           >
-            <span className="text-2xl font-bold">{letter}</span>
-            <span className="text-sm mt-1 opacity-70">{count}</span>
+            <span className="text-lg font-bold leading-none">{letter}</span>
+            <span className="mt-0.5 text-xs leading-none opacity-70">{count}</span>
           </Link>
         );
       })}
