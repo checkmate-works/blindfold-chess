@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -21,35 +21,29 @@ export default async function CompanyPage({ params }: LocalePageProps) {
   return (
     <PageLayout title={t('title')} locale={locale}>
       {/* Company Information */}
-      <section>
-        <dl className="space-y-4">
-          <div className="border-b border-border pb-4">
-            <dt className="text-sm font-semibold text-muted-foreground mb-1">{t('companyName')}</dt>
-            <dd className="text-base text-foreground">{t('companyNameValue')}</dd>
-          </div>
+      <div className="space-y-2">
+        <SectionTitle>{t('companyName')}</SectionTitle>
+        <p className="text-base text-foreground">{t('companyNameValue')}</p>
+      </div>
 
-          <div className="border-b border-border pb-4">
-            <dt className="text-sm font-semibold text-muted-foreground mb-1">{t('location')}</dt>
-            <dd className="text-base text-foreground">
-              {t('postalCode')}
-              <br />
-              {t('address')}
-            </dd>
-          </div>
+      <div className="space-y-2">
+        <SectionTitle>{t('location')}</SectionTitle>
+        <p className="text-base text-foreground">
+          {t('postalCode')}
+          <br />
+          {t('address')}
+        </p>
+      </div>
 
-          <div className="border-b border-border pb-4">
-            <dt className="text-sm font-semibold text-muted-foreground mb-1">{t('business')}</dt>
-            <dd className="text-base text-foreground">
-              <ul className="list-disc list-inside space-y-1">
-                <li>{t('businessItem1')}</li>
-                <li>{t('businessItem2')}</li>
-                <li>{t('businessItem3')}</li>
-                <li>{t('businessItem4')}</li>
-              </ul>
-            </dd>
-          </div>
-        </dl>
-      </section>
+      <div className="space-y-2">
+        <SectionTitle>{t('business')}</SectionTitle>
+        <ul className="list-disc list-inside space-y-1 text-base text-foreground">
+          <li>{t('businessItem1')}</li>
+          <li>{t('businessItem2')}</li>
+          <li>{t('businessItem3')}</li>
+          <li>{t('businessItem4')}</li>
+        </ul>
+      </div>
 
       {/* Corporate Website Link */}
       <section className="bg-muted/30 rounded-md p-4">

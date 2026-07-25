@@ -21,7 +21,8 @@ export default async function PrivacyPage({ params }: Props) {
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      <ProseArticle className="space-y-4" lastUpdated={t('lastUpdated')}>
+      <ProseArticle className="space-y-4">
+        <SectionTitle>{t('title')}</SectionTitle>
         <p>{t('introduction')}</p>
 
         <SectionTitle>{t('cookiesTitle')}</SectionTitle>
@@ -122,6 +123,8 @@ export default async function PrivacyPage({ params }: Props) {
 
         <SectionTitle>{t('changesTitle')}</SectionTitle>
         <p>{t('changesDescription')}</p>
+
+        <p className="text-muted-foreground">{t('lastUpdated')}</p>
       </ProseArticle>
     </PageLayout>
   );

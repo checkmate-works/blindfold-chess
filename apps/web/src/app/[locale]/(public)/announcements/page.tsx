@@ -66,11 +66,11 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
 
   return (
     <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
+      <SectionTitle>{t('announcementsListTitle')}</SectionTitle>
       {announcements.length === 0 ? (
         <p className="text-muted-foreground">{t('noAnnouncements')}</p>
       ) : (
         <>
-          <SectionTitle>{t('announcementsListTitle')}</SectionTitle>
           <ListLinkContainer>
             {announcements.map((announcement) => {
               const publishedDate = announcement.publishedAt
