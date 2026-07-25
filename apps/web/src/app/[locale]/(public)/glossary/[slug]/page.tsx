@@ -110,6 +110,15 @@ export default async function GlossaryTermPage({ params }: Props) {
         locale={locale}
         breadcrumb={[{ label: t('title'), href: '/glossary' }, { label: name }]}
       >
+        <div className="space-y-3">
+          <SectionTitle>{t('descriptionHeading')}</SectionTitle>
+          <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{description}</p>
+        </div>
+
+        {term.positions && term.positions.length > 0 && (
+          <GlossaryPositionBoard positions={term.positions} />
+        )}
+
         {(term.category || (term.aliases && term.aliases.length > 0)) && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             {term.category && (
@@ -128,15 +137,6 @@ export default async function GlossaryTermPage({ params }: Props) {
               </span>
             )}
           </div>
-        )}
-
-        <div className="space-y-3">
-          <SectionTitle>{t('descriptionHeading')}</SectionTitle>
-          <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{description}</p>
-        </div>
-
-        {term.positions && term.positions.length > 0 && (
-          <GlossaryPositionBoard positions={term.positions} />
         )}
 
         <AdSlot slot="content-bottom" />
