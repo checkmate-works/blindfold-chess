@@ -4702,6 +4702,7 @@
     "collapseAriaLabel": "スレッドを折りたたむ",
     "expandAriaLabel": "スレッドを展開",
     "replyButton": "返信",
+    "moreActions": "その他の操作",
     "sortByLabel": "並び替え",
     "joinConversation": "コメントする",
     "loadMoreComments": {

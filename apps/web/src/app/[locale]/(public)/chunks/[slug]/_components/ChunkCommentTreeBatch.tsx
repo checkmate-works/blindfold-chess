@@ -2,7 +2,11 @@ import { getTranslations } from 'next-intl/server';
 
 import type { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
+import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
+import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
+import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
@@ -72,6 +76,12 @@ export async function ChunkCommentTreeBatch({
         fen: createChunkReplyWithFenAttachment,
       }}
       deletePostAction={deletePost}
+      editPostAction={editPost}
+      removeAttachmentAction={removePostAttachment}
+      attachPgnAction={attachPostPgn}
+      attachFenAction={attachPostFenFromForm}
+      attachmentsByPostId={attachments}
+      attachmentFallbackVideoTitle={tVideo('fallbackTitle')}
       extraContentByPostId={extraContentByPostId}
       moveNotationFen={representativeFen}
       i18n={{

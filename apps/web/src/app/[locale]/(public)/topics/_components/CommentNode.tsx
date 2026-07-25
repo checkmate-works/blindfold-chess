@@ -12,6 +12,7 @@ import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
 import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
 import { CommentActions } from './CommentActions';
+import { CommentOwnerMenu } from './CommentOwnerMenu';
 import { CommentSpoilerOverlay } from './CommentSpoilerOverlay';
 import { useCommentTreeContext } from './CommentTreeContext';
 import { EditPostForm } from './EditPostForm';
@@ -137,14 +138,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
       actions={
         !isCollapsed &&
         !isDeleted &&
-        !isEditing && (
-          <CommentActions
-            node={node}
-            isOwnComment={isOwnComment}
-            onReply={() => setIsReplyOpen((prev) => !prev)}
-            onEdit={() => setIsEditing(true)}
-          />
-        )
+        !isEditing && <CommentActions node={node} onReply={() => setIsReplyOpen((prev) => !prev)} />
       }
       replyForm={
         !isCollapsed &&
@@ -176,29 +170,40 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
           </time>
         </div>
       ) : (
-        <UserAvatar
-          profileHref={profileHref}
-          avatarUrl={node.author?.avatarUrl}
-          displayName={displayName}
-          locale={locale}
-          flair={node.author?.flair}
-          country={node.author?.country}
-        >
-          {/*
-            Wrap the timestamp in a block-level <div> so it lands below the
-            displayName instead of running inline next to it. UserAvatar
-            renders the displayName in a `inline-flex` <span>, so a bare
-            <time> child would flow on the same line — matching that to
-            `BaseTopicPostCard`, which wraps its timestamp in a <div> for
-            the same reason.
-          */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <time dateTime={node.createdAt.toISOString()}>
-              {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
-            </time>
-            {wasEdited && <EditedIndicator updatedAt={localUpdatedAt} locale={locale} />}
+        // Author row: avatar + name/timestamp on the left, the owner-only "⋯"
+        // menu pinned top-right (the SNS / detail-page placement). `flex-1
+        // min-w-0` lets a long display name wrap without shoving the menu off
+        // the row.
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <UserAvatar
+              profileHref={profileHref}
+              avatarUrl={node.author?.avatarUrl}
+              displayName={displayName}
+              locale={locale}
+              flair={node.author?.flair}
+              country={node.author?.country}
+            >
+              {/*
+                Wrap the timestamp in a block-level <div> so it lands below the
+                displayName instead of running inline next to it. UserAvatar
+                renders the displayName in a `inline-flex` <span>, so a bare
+                <time> child would flow on the same line — matching that to
+                `BaseTopicPostCard`, which wraps its timestamp in a <div> for
+                the same reason.
+              */}
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <time dateTime={node.createdAt.toISOString()}>
+                  {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
+                </time>
+                {wasEdited && <EditedIndicator updatedAt={localUpdatedAt} locale={locale} />}
+              </div>
+            </UserAvatar>
           </div>
-        </UserAvatar>
+          {isOwnComment && !isCollapsed && !isEditing && (
+            <CommentOwnerMenu node={node} onEdit={() => setIsEditing(true)} />
+          )}
+        </div>
       )}
 
       {isCollapsed

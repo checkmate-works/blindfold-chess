@@ -5,7 +5,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FiTrash2 } from 'react-icons/fi';
 
+import { ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import type { DeletePostAction } from '../_lib/action-types';
@@ -30,6 +32,15 @@ type Props = {
    * `false` so removing the root still returns to the listing.
    */
   stayOnPage?: boolean;
+  /**
+   * Presentation of the trigger:
+   *   - `'inline'` (default) — a bare text button, for standalone rows
+   *     (e.g. the interview answer card).
+   *   - `'menuItem'` — an {@link ActionsMenuButton} styled as a red menu
+   *     row, for use inside an `ActionsMenu` kebab (comment / OP actions).
+   * Either way the confirmation modal and delete logic are identical.
+   */
+  variant?: 'inline' | 'menuItem';
 };
 
 export function DeletePostButton({
@@ -39,6 +50,7 @@ export function DeletePostButton({
   deletePostAction,
   i18nNamespace,
   stayOnPage = false,
+  variant = 'inline',
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -83,13 +95,20 @@ export function DeletePostButton({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="text-xs text-muted-foreground hover:text-destructive transition-colors"
-      >
-        {t('button')}
-      </button>
+      {variant === 'menuItem' ? (
+        <ActionsMenuButton tone="danger" onClick={() => setIsOpen(true)} disabled={isPending}>
+          <FiTrash2 className="h-4 w-4" aria-hidden />
+          {t('button')}
+        </ActionsMenuButton>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+        >
+          {t('button')}
+        </button>
+      )}
 
       <ConfirmationModal
         isOpen={isOpen}
