@@ -7,7 +7,8 @@ import { getViewerPendingEditRequestForChunk } from '@/lib/chunk-edit-requests/q
 import { getChunkBySlug } from '@/lib/chunks/queries';
 import { isChunkFeedbackTopic, isChunkStatus } from '@/lib/chunks/validation';
 
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -76,9 +77,23 @@ export default async function ChunkEditRequestsPage({ params, searchParams }: Pr
     user?.id ?? null
   );
 
+  // The former inline "other players can suggest…" hint now lives in a
+  // help tour beside the page title; its single step spotlights the
+  // boxed Edit-suggestions panel (`data-tour-id="chunk-edit-suggestions"`).
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'chunk-edit-suggestions',
+      title: t('sectionTitle'),
+      description: t('sectionHint'),
+      side: 'bottom',
+      align: 'center',
+    },
+  ];
+
   return (
     <PageLayout
       title={t('pageTitle', { name: chunk.title })}
+      titleAction={<HelpTourButton steps={helpSteps} label={t('help.label')} />}
       locale={locale}
       breadcrumb={[
         { label: tChunks('listTitle'), href: '/chunks' },

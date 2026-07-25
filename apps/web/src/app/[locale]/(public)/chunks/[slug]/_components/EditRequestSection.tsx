@@ -74,7 +74,18 @@ export async function EditRequestSection({
   const pendingCount = rows.filter((row) => row.request.status === 'pending').length;
 
   return (
-    <section className="space-y-4">
+    /*
+     * Boxed to mirror the "Current values" panel above — both read as
+     * peer cards on the page. The explanatory "other players can
+     * suggest…" hint that used to sit here moved to the HelpTourButton
+     * beside the page title (`data-tour-id` below is its spotlight
+     * target), so the box opens straight on its heading with no
+     * structural gap between the two cards.
+     */
+    <section
+      data-tour-id="chunk-edit-suggestions"
+      className="rounded-md border border-border bg-card p-4 space-y-4"
+    >
       {/*
        * The pending-count badge lives INSIDE the SectionTitle children so
        * the h2 stays block-level — its `border-b` then spans the panel
@@ -92,8 +103,6 @@ export async function EditRequestSection({
           )}
         </span>
       </SectionTitle>
-
-      <p className="text-sm text-muted-foreground">{t('sectionHint')}</p>
 
       {viewerCanPropose ? (
         viewerHasPending ? (
