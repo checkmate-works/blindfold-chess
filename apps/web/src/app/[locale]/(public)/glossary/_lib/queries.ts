@@ -17,6 +17,7 @@ import type { ChessTerm, GlossaryCategory } from './types';
 
 export type TermWithAliasRow = {
   termId: string;
+  slug: string;
   termEn: string;
   category: string;
   translatedTerm: string | null;
@@ -27,6 +28,7 @@ export type TermWithAliasRow = {
 
 export type TermWithPositionRow = {
   termId: string;
+  slug: string;
   termEn: string;
   category: string;
   translatedTerm: string | null;
@@ -47,6 +49,7 @@ export type TermWithPositionRow = {
 
 const termBaseFields = {
   termId: glossaryTerms.id,
+  slug: glossaryTerms.slug,
   termEn: glossaryTerms.termEn,
   category: glossaryTerms.category,
   translatedTerm: glossaryTermTranslations.term,
@@ -97,6 +100,7 @@ export function mergeTermRows(
   const termMap = new Map<
     string,
     {
+      slug: string;
       termEn: string;
       category: string;
       translatedTerm: string | null;
@@ -114,6 +118,7 @@ export function mergeTermRows(
     let entry = termMap.get(row.termId);
     if (!entry) {
       entry = {
+        slug: row.slug,
         termEn: row.termEn,
         category: row.category,
         translatedTerm: row.translatedTerm,
@@ -134,6 +139,7 @@ export function mergeTermRows(
     let entry = termMap.get(row.termId);
     if (!entry) {
       entry = {
+        slug: row.slug,
         termEn: row.termEn,
         category: row.category,
         translatedTerm: row.translatedTerm,
@@ -165,6 +171,7 @@ export function mergeTermRows(
     const positions = [...entry.positions.values()].sort((a, b) => a.sortOrder - b.sortOrder);
 
     results.push({
+      slug: entry.slug,
       term: entry.termEn,
       termJa: entry.translatedTerm ?? undefined,
       reading: entry.reading ?? undefined,
@@ -189,6 +196,29 @@ export const getGlossaryTerms = unstable_cache(
     return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms'],
+  { tags: ['glossary'], revalidate: 3600 }
+);
+
+/**
+ * Fetch a single term by its slug, or `null` if no such term exists.
+ *
+ * Backs the `/glossary/[slug]` single-term page and the guide term-link
+ * modal preview. Shares the same alias/position join + merge path as
+ * {@link getGlossaryTerms}, so the returned `ChessTerm` is shape-identical.
+ */
+export const getGlossaryTermBySlug = unstable_cache(
+  async (slug: string, locale: string): Promise<ChessTerm | null> => {
+    const whereClause = eq(glossaryTerms.slug, slug);
+
+    const [aliasRows, positionRows] = await Promise.all([
+      buildAliasQuery(locale).where(whereClause),
+      buildPositionQuery(locale).where(whereClause),
+    ]);
+
+    const [term] = mergeTermRows(aliasRows, positionRows);
+    return term ?? null;
+  },
+  ['glossary-term-by-slug'],
   { tags: ['glossary'], revalidate: 3600 }
 );
 

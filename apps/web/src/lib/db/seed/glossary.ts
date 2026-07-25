@@ -1,6 +1,7 @@
 import { not, sql } from 'drizzle-orm';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import { slugifyTerm } from '@/lib/glossary/slug';
 
 import { chessTerms } from '../data/chess-terms';
 import {
@@ -10,13 +11,6 @@ import {
   glossaryTermTranslations,
   glossaryTerms,
 } from '../index';
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '');
-}
 
 // ---------------------------------------------------------------------------
 // Master data: Glossary (code is source of truth, upserted on every deploy)
@@ -30,7 +24,7 @@ export async function seedGlossaryTerms() {
   const validPositions: { termId: string; fen: string }[] = [];
 
   for (const chessTerm of chessTerms) {
-    const slug = slugify(chessTerm.term);
+    const slug = slugifyTerm(chessTerm.term);
     const category = chessTerm.category || 'general';
     const isTheme = chessTerm.isTheme ?? false;
 

@@ -92,10 +92,12 @@ export const termsRZ: ChessTerm[] = [
   {
     term: 'Tabiya',
     termJa: 'タビヤ',
+    reading: 'タビヤ',
     definition:
       'アラビア語由来の言葉で、配置、陣形、布陣という意味。序盤で定跡通りに手を進めた結果、頻繁に現れる典型的な局面のこと。そこからプレイヤーが独自の計画を考え始める分岐点となる局面',
     definitionEn:
       'An Arabic-derived word meaning arrangement, formation, or deployment. A typical position that frequently appears after following book moves in the opening. A branching point where players begin to devise their own plans',
+    aliases: ['Tabia'],
     category: 'opening',
   },
   {

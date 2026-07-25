@@ -89,6 +89,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Fork',
         category: 'tactics',
         translatedTerm: 'フォーク',
@@ -98,6 +99,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Fork',
         category: 'tactics',
         translatedTerm: 'フォーク',
@@ -110,6 +112,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Fork',
         category: 'tactics',
         translatedTerm: 'フォーク',
@@ -121,6 +124,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Fork',
         category: 'tactics',
         translatedTerm: 'フォーク',
@@ -147,6 +151,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Castling',
         category: 'general',
         translatedTerm: 'キャスリング',
@@ -156,6 +161,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Castling',
         category: 'general',
         translatedTerm: 'キャスリング',
@@ -165,6 +171,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Castling',
         category: 'general',
         translatedTerm: 'キャスリング',
@@ -177,6 +184,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Castling',
         category: 'general',
         translatedTerm: 'キャスリング',
@@ -188,6 +196,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Castling',
         category: 'general',
         translatedTerm: 'キャスリング',
@@ -213,6 +222,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Pin',
         category: 'tactics',
         translatedTerm: 'ピン',
@@ -225,6 +235,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Pin',
         category: 'tactics',
         translatedTerm: 'ピン',
@@ -236,6 +247,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Pin',
         category: 'tactics',
         translatedTerm: 'ピン',
@@ -266,6 +278,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Tempo',
         category: 'general',
         translatedTerm: 'テンポ',
@@ -278,6 +291,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Tempo',
         category: 'general',
         translatedTerm: 'テンポ',
@@ -299,6 +313,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Tempo',
         category: 'general',
         translatedTerm: 'テンポ',
@@ -311,6 +326,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Tempo',
         category: 'general',
         translatedTerm: 'テンポ',
@@ -333,6 +349,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Zugzwang',
         category: 'strategy',
         translatedTerm: null,
@@ -345,6 +362,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Zugzwang',
         category: 'strategy',
         translatedTerm: null,
@@ -360,6 +378,7 @@ describe('mergeTermRows', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual<ChessTerm>({
+      slug: 'id-1',
       term: 'Zugzwang',
       termJa: undefined,
       reading: undefined,
@@ -375,6 +394,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Discovery',
         category: 'tactics',
         translatedTerm: null,
@@ -387,6 +407,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Discovery',
         category: 'tactics',
         translatedTerm: null,
@@ -398,6 +419,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Discovery',
         category: 'tactics',
         translatedTerm: null,
@@ -409,6 +431,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Discovery',
         category: 'tactics',
         translatedTerm: null,
@@ -433,6 +456,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Battery',
         category: 'tactics',
         translatedTerm: null,
@@ -445,6 +469,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Battery',
         category: 'tactics',
         translatedTerm: null,
@@ -472,6 +497,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Bishop',
         category: 'general',
         translatedTerm: 'ビショップ',
@@ -481,6 +507,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-2',
+        slug: 'id-2',
         termEn: 'Knight',
         category: 'general',
         translatedTerm: 'ナイト',
@@ -490,6 +517,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-2',
+        slug: 'id-2',
         termEn: 'Knight',
         category: 'general',
         translatedTerm: 'ナイト',
@@ -502,6 +530,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Bishop',
         category: 'general',
         translatedTerm: 'ビショップ',
@@ -513,6 +542,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-2',
+        slug: 'id-2',
         termEn: 'Knight',
         category: 'general',
         translatedTerm: 'ナイト',
@@ -547,6 +577,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Check',
         category: 'tactics',
         translatedTerm: 'チェック',
@@ -566,6 +597,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Zugzwang',
         category: 'strategy',
         translatedTerm: 'ツークツヴァンク',
@@ -585,6 +617,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Pin',
         category: 'tactics',
         translatedTerm: null,
@@ -605,6 +638,7 @@ describe('mergeTermRows', () => {
     const positionRows: TermWithPositionRow[] = [
       {
         termId: 'id-1',
+        slug: 'id-1',
         termEn: 'Pin',
         category: 'tactics',
         translatedTerm: null,
@@ -625,6 +659,7 @@ describe('mergeTermRows', () => {
     const aliasRows: TermWithAliasRow[] = [
       {
         termId: 'id-a',
+        slug: 'id-a',
         termEn: 'Alpha',
         category: 'general',
         translatedTerm: null,
@@ -634,6 +669,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-b',
+        slug: 'id-b',
         termEn: 'Beta',
         category: 'general',
         translatedTerm: null,
@@ -643,6 +679,7 @@ describe('mergeTermRows', () => {
       },
       {
         termId: 'id-c',
+        slug: 'id-c',
         termEn: 'Charlie',
         category: 'general',
         translatedTerm: null,
@@ -671,6 +708,7 @@ describe('queries (integration with DB mock)', () => {
       const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Checkmate',
           category: 'tactics',
           translatedTerm: 'チェックメイト',
@@ -680,6 +718,7 @@ describe('queries (integration with DB mock)', () => {
         },
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Checkmate',
           category: 'tactics',
           translatedTerm: 'チェックメイト',
@@ -689,6 +728,7 @@ describe('queries (integration with DB mock)', () => {
         },
         {
           termId: 'id-2',
+          slug: 'id-2',
           termEn: 'Castling',
           category: 'general',
           translatedTerm: 'キャスリング',
@@ -701,6 +741,7 @@ describe('queries (integration with DB mock)', () => {
       const positionRows: TermWithPositionRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Checkmate',
           category: 'tactics',
           translatedTerm: 'チェックメイト',
@@ -712,6 +753,7 @@ describe('queries (integration with DB mock)', () => {
         },
         {
           termId: 'id-2',
+          slug: 'id-2',
           termEn: 'Castling',
           category: 'general',
           translatedTerm: 'キャスリング',
@@ -730,6 +772,7 @@ describe('queries (integration with DB mock)', () => {
       expect(result).toHaveLength(2);
 
       expect(result[0]).toEqual<ChessTerm>({
+        slug: 'id-1',
         term: 'Checkmate',
         termJa: 'チェックメイト',
         reading: 'ちぇっくめいと',
@@ -741,6 +784,7 @@ describe('queries (integration with DB mock)', () => {
       });
 
       expect(result[1]).toEqual<ChessTerm>({
+        slug: 'id-2',
         term: 'Castling',
         termJa: 'キャスリング',
         reading: 'きゃすりんぐ',
@@ -756,6 +800,7 @@ describe('queries (integration with DB mock)', () => {
       const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Zugzwang',
           category: 'strategy',
           translatedTerm: 'ツークツヴァンク',
@@ -768,6 +813,7 @@ describe('queries (integration with DB mock)', () => {
       const positionRows: TermWithPositionRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Zugzwang',
           category: 'strategy',
           translatedTerm: 'ツークツヴァンク',
@@ -802,6 +848,7 @@ describe('queries (integration with DB mock)', () => {
       const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'En Passant',
           category: 'tactics',
           translatedTerm: null,
@@ -814,6 +861,7 @@ describe('queries (integration with DB mock)', () => {
       const positionRows: TermWithPositionRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'En Passant',
           category: 'tactics',
           translatedTerm: null,
@@ -838,6 +886,7 @@ describe('queries (integration with DB mock)', () => {
       const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Fork',
           category: 'tactics',
           translatedTerm: 'フォーク',
@@ -850,6 +899,7 @@ describe('queries (integration with DB mock)', () => {
       const positionRows: TermWithPositionRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Fork',
           category: 'tactics',
           translatedTerm: 'フォーク',
@@ -874,6 +924,7 @@ describe('queries (integration with DB mock)', () => {
       const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Check',
           category: 'tactics',
           translatedTerm: 'チェック',
@@ -886,6 +937,7 @@ describe('queries (integration with DB mock)', () => {
       const positionRows: TermWithPositionRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Check',
           category: 'tactics',
           translatedTerm: 'チェック',
@@ -925,6 +977,7 @@ describe('queries (integration with DB mock)', () => {
       const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Fork',
           category: 'tactics',
           translatedTerm: 'フォーク',
@@ -937,6 +990,7 @@ describe('queries (integration with DB mock)', () => {
       const positionRows: TermWithPositionRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Fork',
           category: 'tactics',
           translatedTerm: 'フォーク',
@@ -968,6 +1022,7 @@ describe('queries (integration with DB mock)', () => {
       const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Pin',
           category: 'tactics',
           translatedTerm: 'ピン',
@@ -977,6 +1032,7 @@ describe('queries (integration with DB mock)', () => {
         },
         {
           termId: 'id-2',
+          slug: 'id-2',
           termEn: 'Skewer',
           category: 'tactics',
           translatedTerm: 'スキュアー',
@@ -989,6 +1045,7 @@ describe('queries (integration with DB mock)', () => {
       const positionRows: TermWithPositionRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Pin',
           category: 'tactics',
           translatedTerm: 'ピン',
@@ -1000,6 +1057,7 @@ describe('queries (integration with DB mock)', () => {
         },
         {
           termId: 'id-2',
+          slug: 'id-2',
           termEn: 'Skewer',
           category: 'tactics',
           translatedTerm: 'スキュアー',
@@ -1033,6 +1091,7 @@ describe('queries (integration with DB mock)', () => {
       const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Pin',
           category: 'tactics',
           translatedTerm: 'ピン',
@@ -1045,6 +1104,7 @@ describe('queries (integration with DB mock)', () => {
       const positionRows: TermWithPositionRow[] = [
         {
           termId: 'id-1',
+          slug: 'id-1',
           termEn: 'Pin',
           category: 'tactics',
           translatedTerm: 'ピン',
