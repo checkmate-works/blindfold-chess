@@ -170,22 +170,28 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
         }
       />
 
-      <ChallengeLink locale={locale} module={validated.module} settingKey={validated.key} />
-
       {/*
-        Back link targets the middle hub (the module-filtered grid), so the
-        user lands back on the module they were looking at rather than the
-        unfiltered score top. Spacing mirrors `PracticeSetupActions` — `mt-4
-        text-center` wrapper directly after the full-width primary button.
+        Group the CTA and its back link so their mutual gap is `space-y-4`
+        (16px), matching the button-then-link pattern used elsewhere. Left as
+        two separate panel children, the panel's `space-y-8` would win over the
+        back link's own margin and blow the gap out to 32px.
+
+        Back link targets the middle hub (the module-filtered grid), so the user
+        lands back on the module they were looking at rather than the unfiltered
+        score top.
       */}
-      <div className="mt-4 text-center">
-        <Link
-          href={`/leaderboard/score/${validated.period}/${validated.moduleSlug}`}
-          locale={locale}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {t('backToList')}
-        </Link>
+      <div className="space-y-4">
+        <ChallengeLink locale={locale} module={validated.module} settingKey={validated.key} />
+
+        <div className="text-center">
+          <Link
+            href={`/leaderboard/score/${validated.period}/${validated.moduleSlug}`}
+            locale={locale}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t('backToList')}
+          </Link>
+        </div>
       </div>
 
       <AdSlot slot="content-bottom" />
