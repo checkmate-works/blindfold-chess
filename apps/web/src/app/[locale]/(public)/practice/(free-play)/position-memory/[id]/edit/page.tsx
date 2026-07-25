@@ -5,7 +5,6 @@ import {
   createPositionEditPage,
 } from '@/app/[locale]/(public)/practice/(free-play)/_lib/create-position-route-pages';
 
-import { DeletePositionButton } from '../../_components/DeletePositionButton';
 import { EditPositionForm } from '../../_components/EditPositionForm';
 
 const { generateMetadata, Page } = createPositionEditPage(POSITION_MEMORY_ROUTE, {
@@ -25,9 +24,6 @@ const { generateMetadata, Page } = createPositionEditPage(POSITION_MEMORY_ROUTE,
       }}
       available={{ themes: availableTags.themes, chunks: availableTags.chunks }}
     />
-  ),
-  renderDeleteButton: ({ positionId, locale }) => (
-    <DeletePositionButton positionId={positionId} locale={locale} />
   ),
 });
 

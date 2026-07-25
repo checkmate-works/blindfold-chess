@@ -230,7 +230,7 @@ export function EditLineForm({
         cancelLabel={tUnsaved('cancel')}
       />
 
-      <div className="space-y-2">
+      <div className="space-y-4">
         <Button
           type="submit"
           variant="primary"

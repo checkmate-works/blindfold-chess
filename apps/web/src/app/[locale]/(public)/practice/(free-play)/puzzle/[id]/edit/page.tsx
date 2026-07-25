@@ -3,7 +3,6 @@ import {
   createPositionEditPage,
 } from '@/app/[locale]/(public)/practice/(free-play)/_lib/create-position-route-pages';
 
-import { DeletePuzzleButton } from '../../_components/DeletePuzzleButton';
 import { EditPuzzlePositionForm } from '../../_components/EditPuzzlePositionForm';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 
@@ -29,9 +28,6 @@ const { generateMetadata, Page } = createPositionEditPage(PUZZLE_ROUTE, {
       />
     );
   },
-  renderDeleteButton: ({ positionId, locale }) => (
-    <DeletePuzzleButton puzzleId={positionId} locale={locale} />
-  ),
 });
 
 export { generateMetadata };

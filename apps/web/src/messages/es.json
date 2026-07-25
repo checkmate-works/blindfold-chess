@@ -1360,6 +1360,7 @@
       "edit": {
         "title": "Editar Problema",
         "submit": "Guardar cambios",
+        "cancel": "Cancelar",
         "submitting": "Guardando...",
         "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
         "notFound": "No se pudo encontrar este problema.",
@@ -1398,13 +1399,11 @@
         "empty": "Aún no hay bifurcaciones."
       },
       "delete": {
-        "button": "Eliminar Problema",
+        "button": "Eliminar",
         "confirmTitle": "Eliminar Problema",
         "confirmMessage": "¿Estás seguro de que deseas eliminar este problema? Esta acción no se puede deshacer.",
         "confirm": "Eliminar",
-        "cancel": "Cancelar",
-        "sectionTitle": "Zona de peligro",
-        "sectionDescription": "Eliminar este problema es permanente. Los comentarios y los me gusta asociados se eliminarán y no se podrán recuperar."
+        "cancel": "Cancelar"
       }
     },
     "puzzle": {
@@ -1473,6 +1472,7 @@
         "forkBanner": "Bifurcando desde «{sourceTitle}»",
         "createdFromPositionMemoryBanner": "Creando un puzzle desde la entrada de Memoria de Posiciones «{sourceTitle}»",
         "continueToSolution": "Continuar a los movimientos de la solución",
+        "cancel": "Cancelar",
         "solutionPageTitle": "Movimientos de la solución",
         "backToPosition": "Volver a la posición",
         "stepIndicatorLabel": "Pasos",
@@ -1538,13 +1538,11 @@
         "empty": "Aún no hay bifurcaciones."
       },
       "delete": {
-        "button": "Eliminar Puzzle",
+        "button": "Eliminar",
         "confirmTitle": "Eliminar Puzzle",
         "confirmMessage": "¿Estás seguro de que deseas eliminar este puzzle? Los comentarios y los datos de la solución se eliminarán también. Esta acción no se puede deshacer.",
         "confirm": "Eliminar",
-        "cancel": "Cancelar",
-        "sectionTitle": "Zona de peligro",
-        "sectionDescription": "Eliminar este puzzle es permanente — los comentarios vinculados perderán su contexto y no podrán recuperarse."
+        "cancel": "Cancelar"
       },
       "result": {
         "title": "Resultado del Puzzle",

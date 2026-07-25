@@ -34,6 +34,13 @@ type Props = {
   availableChunks: ChunkOption[];
   onContinue: () => void;
   continueLabel: string;
+  /**
+   * Optional quiet "cancel" text link rendered below the continue button —
+   * used by the edit flow to abandon editing and return to the detail page.
+   * Omitted by the create flow, which has no detail page to return to.
+   */
+  onCancel?: () => void;
+  cancelLabel?: string;
 };
 
 /**
@@ -59,6 +66,8 @@ export function PuzzlePositionFields({
   availableChunks,
   onContinue,
   continueLabel,
+  onCancel,
+  cancelLabel,
 }: Props) {
   const t = useTranslations('practice.puzzle.create');
   const tagPickerLabels = useTagPickerLabels();
@@ -205,16 +214,28 @@ export function PuzzlePositionFields({
         labels={tagPickerLabels}
       />
 
-      <Button
-        type="button"
-        variant="primary"
-        size="lg"
-        fullWidth
-        disabled={pending || !board.isFenValid || title.trim() === ''}
-        onClick={onContinue}
-      >
-        {continueLabel}
-      </Button>
+      <div className="space-y-4">
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          fullWidth
+          disabled={pending || !board.isFenValid || title.trim() === ''}
+          onClick={onContinue}
+        >
+          {continueLabel}
+        </Button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={pending}
+            className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          >
+            {cancelLabel}
+          </button>
+        )}
+      </div>
 
       <ConfirmationModal
         isOpen={clearBoardOpen}

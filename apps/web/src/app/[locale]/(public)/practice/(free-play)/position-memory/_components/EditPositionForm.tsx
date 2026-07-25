@@ -128,15 +128,29 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
           availableChunks={available.chunks}
         />
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          disabled={pending || !board.isFenValid || title.trim() === '' || !isDirty}
-        >
-          {pending ? t('submitting') : t('submit')}
-        </Button>
+        <div className="space-y-4">
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={pending || !board.isFenValid || title.trim() === '' || !isDirty}
+          >
+            {pending ? t('submitting') : t('submit')}
+          </Button>
+          {/* Abandon editing and return to the detail page. A plain
+              `router.push` (not a <Link>) so the unsaved-changes navigation
+              guard still intercepts when there are pending edits. Mirrors the
+              chunk / repertoire / line edit forms' cancel affordance. */}
+          <button
+            type="button"
+            onClick={() => router.push(`/practice/position-memory/${positionId}`)}
+            disabled={pending}
+            className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          >
+            {t('cancel')}
+          </button>
+        </div>
       </form>
 
       <UnsavedChangesDialog

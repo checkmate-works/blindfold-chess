@@ -207,6 +207,15 @@ describe('EditPuzzlePositionForm', () => {
     expect(parsed.fen).toBe(VALID_FEN);
   });
 
+  it('Cancel returns to the puzzle detail page without writing a draft', () => {
+    render(<EditPuzzlePositionForm {...baseProps()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+
+    expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}`);
+    expect(sessionStorage.getItem(editDraftStorageKey(POSITION_ID))).toBeNull();
+  });
+
   it('regression: changing the position prompts before clearing the carried-through moves', () => {
     render(<EditPuzzlePositionForm {...baseProps()} />);
 

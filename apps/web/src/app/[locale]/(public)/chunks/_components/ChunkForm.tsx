@@ -262,7 +262,7 @@ export function ChunkForm(props: Props) {
           pending={false}
         />
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           <Button type="submit" variant="primary" size="lg" fullWidth disabled={submitDisabled}>
             {t('actions.continueToPreview')}
           </Button>
