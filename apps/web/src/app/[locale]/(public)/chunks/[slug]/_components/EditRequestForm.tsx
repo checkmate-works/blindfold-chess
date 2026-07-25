@@ -207,8 +207,8 @@ export function EditRequestForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded border border-border bg-card p-4">
-      <p className="text-sm text-muted-foreground">{t('formHint')}</p>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <p className="text-xs text-muted-foreground">{t('formHint')}</p>
 
       {error && (
         <div
