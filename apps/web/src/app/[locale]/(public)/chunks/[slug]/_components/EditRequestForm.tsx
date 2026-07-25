@@ -82,6 +82,19 @@ export function EditRequestForm({
   const descriptionWanted = !!requestedFeedbackTopics?.includes('description');
   const badgeLabel = wantedLabel ?? '';
 
+  // When the author narrowed their feedback to a subset of fields, keep
+  // only the flagged field(s) up front and tuck the rest behind a
+  // disclosure — so a proposer who was told "I only want input on the
+  // Title" isn't confronted with the full description textarea as if the
+  // whole record were up for editing. The row model already stores a
+  // per-field proposal (untouched fields go in as NULL), so the collapsed
+  // field simply stays at its prefill and is submitted as "no change".
+  // When the author flagged nothing (or everything), there's no scope to
+  // apply — show both fields as before.
+  const someTopicsFlagged = titleWanted || descriptionWanted;
+  const titlePrimary = !someTopicsFlagged || titleWanted;
+  const descriptionPrimary = !someTopicsFlagged || descriptionWanted;
+
   const [proposedTitle, setProposedTitle] = useState(currentTitle);
   const [proposedDescription, setProposedDescription] = useState(currentDescription ?? '');
   const [comment, setComment] = useState('');
@@ -128,6 +141,42 @@ export function EditRequestForm({
     router.push(`/chunks/${chunkSlug}?toast=edit_request_submitted` as '/chunks/[slug]');
   }
 
+  const titleField = (
+    <div>
+      <label htmlFor="edit-req-title" className="block text-sm font-medium mb-1">
+        {t('fields.title')}
+        {titleWanted && badgeLabel && <WantedBadge label={badgeLabel} />}
+      </label>
+      <input
+        id="edit-req-title"
+        type="text"
+        value={proposedTitle}
+        onChange={(e) => setProposedTitle(e.target.value)}
+        className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
+          titleWanted ? 'border-amber-400 dark:border-amber-600' : 'border-border'
+        }`}
+      />
+    </div>
+  );
+
+  const descriptionField = (
+    <div>
+      <label htmlFor="edit-req-description" className="block text-sm font-medium mb-1">
+        {t('fields.description')}
+        {descriptionWanted && badgeLabel && <WantedBadge label={badgeLabel} />}
+      </label>
+      <textarea
+        id="edit-req-description"
+        value={proposedDescription}
+        onChange={(e) => setProposedDescription(e.target.value)}
+        rows={4}
+        className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
+          descriptionWanted ? 'border-amber-400 dark:border-amber-600' : 'border-border'
+        }`}
+      />
+    </div>
+  );
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded border border-border bg-card p-4">
       <p className="text-sm text-muted-foreground">{t('formHint')}</p>
@@ -141,37 +190,27 @@ export function EditRequestForm({
         </div>
       )}
 
-      <div>
-        <label htmlFor="edit-req-title" className="block text-sm font-medium mb-1">
-          {t('fields.title')}
-          {titleWanted && badgeLabel && <WantedBadge label={badgeLabel} />}
-        </label>
-        <input
-          id="edit-req-title"
-          type="text"
-          value={proposedTitle}
-          onChange={(e) => setProposedTitle(e.target.value)}
-          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
-            titleWanted ? 'border-amber-400 dark:border-amber-600' : 'border-border'
-          }`}
-        />
-      </div>
+      {titlePrimary && titleField}
+      {descriptionPrimary && descriptionField}
 
-      <div>
-        <label htmlFor="edit-req-description" className="block text-sm font-medium mb-1">
-          {t('fields.description')}
-          {descriptionWanted && badgeLabel && <WantedBadge label={badgeLabel} />}
-        </label>
-        <textarea
-          id="edit-req-description"
-          value={proposedDescription}
-          onChange={(e) => setProposedDescription(e.target.value)}
-          rows={4}
-          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
-            descriptionWanted ? 'border-amber-400 dark:border-amber-600' : 'border-border'
-          }`}
-        />
-      </div>
+      {/*
+       * Secondary fields — the ones the author did NOT flag. Kept mounted
+       * inside a <details> (not conditionally unmounted) so a proposer who
+       * opens it, types, then collapses it doesn't lose their edit. They
+       * stay at prefill until touched, so a never-opened field is submitted
+       * as "no change".
+       */}
+      {(!titlePrimary || !descriptionPrimary) && (
+        <details className="rounded border border-border bg-muted/30 px-3 py-2">
+          <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground">
+            {t('otherFieldsToggle')}
+          </summary>
+          <div className="mt-3 space-y-4">
+            {!titlePrimary && titleField}
+            {!descriptionPrimary && descriptionField}
+          </div>
+        </details>
+      )}
 
       <div>
         <label htmlFor="edit-req-comment" className="block text-sm font-medium mb-1">
