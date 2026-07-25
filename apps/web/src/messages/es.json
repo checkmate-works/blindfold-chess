@@ -1997,6 +1997,7 @@
       "actions": {
         "submit": "Enviar sugerencia",
         "cancel": "Cancelar",
+        "backToDetail": "Volver a la posición",
         "accept": "Aceptar",
         "reject": "Rechazar",
         "withdraw": "Retirar",

@@ -1997,6 +1997,7 @@
       "actions": {
         "submit": "提案を送信",
         "cancel": "キャンセル",
+        "backToDetail": "局面に戻る",
         "accept": "承認",
         "reject": "却下",
         "withdraw": "取り下げ",
