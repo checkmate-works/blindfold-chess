@@ -52,11 +52,6 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-edito
 
 vi.mock('./ChunkFormFields', () => ({ ChunkFormFields: () => <div data-testid="fields" /> }));
 vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({ ConfirmationModal: () => null }));
-vi.mock('../_lib/chunk-form-actions', () => ({
-  saveChunkEdit: vi.fn(),
-  submitChunkDelete: vi.fn(),
-  submitChunkPublish: vi.fn(),
-}));
 
 const readChunkDraft = vi.fn();
 vi.mock('../_lib/draft-storage', () => ({

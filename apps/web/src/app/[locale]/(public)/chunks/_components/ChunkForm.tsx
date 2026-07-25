@@ -17,7 +17,6 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 
 import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
 import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
-import { useChunkLifecycleActions } from '../_hooks/use-chunk-lifecycle-actions';
 import { validateChunkForm } from '../_lib/chunk-form-validation';
 import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
 import { ChunkFormFields } from './ChunkFormFields';
@@ -54,9 +53,8 @@ const validateFenForChunks = (fen: string) => validateFenStructure(fen).ok;
 /**
  * Form shell for chunk authoring. The pieces live in focused modules:
  * field state + dirty check in `useChunkFormState`, sessionStorage draft
- * recovery in `useChunkDraftRecovery`, the create-mode validation gate in
- * `validateChunkCreateForm`, and the publish / delete flows in
- * `useChunkLifecycleActions`. This component wires them to the markup.
+ * recovery in `useChunkDraftRecovery`, and the submit validation gate in
+ * `validateChunkForm`. This component wires them to the markup.
  *
  * Both modes hand off through the same confirmation page: submit writes
  * a `ChunkDraftV1` to sessionStorage and navigates to a preview, where
@@ -69,8 +67,9 @@ const validateFenForChunks = (fen: string) => validateFenStructure(fen).ok;
  *   calls `updateChunk` — and Publish when the "Save as draft" toggle is
  *   off, exactly like create. The draft carries the row id + starting
  *   slug (`draft.edit`) so the preview can resolve the post-save target
- *   slug (draft chunks allow slug renames). Delete is the only escalation
- *   that still acts directly from this form (with its own confirm modal).
+ *   slug (draft chunks allow slug renames). Delete is NOT offered here —
+ *   it lives on the detail page's "⋯" owner menu (`ChunkDeleteButton`),
+ *   the one surface that also covers published chunks (which 404 here).
  *
  * Annotations are NOT user-editable from this form yet. Newly-created
  * chunks store the empty shape (the DB default); edits leave whatever
@@ -162,14 +161,6 @@ export function ChunkForm(props: Props) {
     router.push(path as '/chunks/[slug]');
   }
 
-  const lifecycle = useChunkLifecycleActions({
-    chunk: mode === 'edit' ? { id: props.initial.id, slug: props.initial.slug } : null,
-    onError: setError,
-    navigateAfterSubmit,
-    t,
-  });
-  const { deletePending } = lifecycle;
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -222,8 +213,7 @@ export function ChunkForm(props: Props) {
     );
   }
 
-  const submitDisabled =
-    deletePending || !board.isFenValid || title.trim() === '' || slug.trim() === '';
+  const submitDisabled = !board.isFenValid || title.trim() === '' || slug.trim() === '';
 
   return (
     <>
@@ -269,35 +259,13 @@ export function ChunkForm(props: Props) {
           feedbackTopics={feedbackTopics}
           onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
-          pending={deletePending}
+          pending={false}
         />
 
         <Button type="submit" variant="primary" size="lg" fullWidth disabled={submitDisabled}>
           {t('actions.continueToPreview')}
         </Button>
-
-        {mode === 'edit' && (
-          <button
-            type="button"
-            onClick={() => lifecycle.setDeleteConfirmOpen(true)}
-            disabled={deletePending}
-            className="w-full px-6 py-3 rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
-          >
-            {deletePending ? t('actions.deleting') : t('actions.delete')}
-          </button>
-        )}
       </form>
-
-      <ConfirmationModal
-        isOpen={lifecycle.deleteConfirmOpen}
-        title={t('delete.confirmTitle')}
-        message={t('delete.confirmBody')}
-        confirmText={t('delete.confirm')}
-        cancelText={t('delete.cancel')}
-        confirmVariant="danger"
-        onConfirm={lifecycle.handleDelete}
-        onCancel={() => lifecycle.setDeleteConfirmOpen(false)}
-      />
 
       <ConfirmationModal
         isOpen={startOverOpen}

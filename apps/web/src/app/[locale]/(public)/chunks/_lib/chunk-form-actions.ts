@@ -3,7 +3,6 @@ import type { useTranslations } from 'next-intl';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
 
-import { deleteChunk } from '../_actions/deleteChunk';
 import { publishChunk } from '../_actions/publishChunk';
 import { updateChunk } from '../_actions/updateChunk';
 import { localizeChunkError } from './localize-error';
@@ -50,8 +49,7 @@ export type ChunkFormPayload = {
  * directly without re-running the translator.
  */
 export type ChunkActionResult<TOk extends object> =
-  | ({ ok: true } & TOk)
-  | { ok: false; error: string };
+  ({ ok: true } & TOk) | { ok: false; error: string };
 
 /**
  * Persist the current edit-form state through `updateChunk`. Shared by
@@ -103,21 +101,6 @@ export async function submitChunkPublish({
   t: ChunkFormTranslator;
 }): Promise<VoidResult> {
   const result = await publishChunk(chunkId);
-  if ('error' in result) {
-    return { ok: false, error: localizeChunkError(result.error, t, CHUNK_FORM_ERROR_CODES) };
-  }
-  return { ok: true };
-}
-
-/** Server-side delete call + uniform error translation. */
-export async function submitChunkDelete({
-  chunkId,
-  t,
-}: {
-  chunkId: string;
-  t: ChunkFormTranslator;
-}): Promise<VoidResult> {
-  const result = await deleteChunk(chunkId);
   if ('error' in result) {
     return { ok: false, error: localizeChunkError(result.error, t, CHUNK_FORM_ERROR_CODES) };
   }
