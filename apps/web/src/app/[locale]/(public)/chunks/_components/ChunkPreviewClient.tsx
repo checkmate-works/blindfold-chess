@@ -14,7 +14,13 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { createChunk } from '../_actions/createChunk';
-import { type ChunkDraftV1, clearChunkDraft, readChunkDraft } from '../_lib/draft-storage';
+import { saveChunkEdit } from '../_lib/chunk-form-actions';
+import {
+  type ChunkDraftV1,
+  clearChunkDraft,
+  markChunkEditResume,
+  readChunkDraft,
+} from '../_lib/draft-storage';
 import { localizeChunkError } from '../_lib/localize-error';
 
 const PREVIEW_ERROR_CODES = new Set([
@@ -27,24 +33,39 @@ const PREVIEW_ERROR_CODES = new Set([
   'alreadyDeleted',
   'invalidFeedbackTopic',
   'descriptionRequired',
+  'cannotEditPublished',
 ]);
 
+type Props =
+  | { mode: 'create' }
+  /** `editHref` is the edit form to return to (e.g. `/chunks/foo/edit`). */
+  | { mode: 'edit'; editHref: string };
+
 /**
- * Read the chunk draft and present it for confirmation before calling
- * `createChunk`. Mirrors `PuzzlePreviewClient` step-for-step:
+ * Read the chunk draft and present it for confirmation before persisting.
+ * Shared by both authoring flows — create (`/chunks/new/preview`) and edit
+ * (`/chunks/<slug>/edit/preview`) — so the review step looks identical:
  *
- * 1. On mount, read the draft. If absent (deep link or stale tab),
- *    bounce back to `/chunks/new`.
- * 2. Render the title, description, board (with annotations), and
- *    slug for the author to verify.
- * 3. "Create" → `createChunk`; on success clear the draft and navigate
- *    straight to `/chunks/<slug>`, appending `?coinsEarned=N` to surface
- *    the coin-reward toast when a point grant fired.
- * 4. "Back to edit" → keep the draft, navigate to `/chunks/new`. The
- *    form rehydrates from sessionStorage so the author lands back on
- *    their state without re-entering anything.
+ * 1. On mount, read the draft. If absent (deep link or stale tab), bounce
+ *    back to the form (`/chunks/new` for create, `editHref` for edit).
+ * 2. Render the title, description, board (with annotations), and slug for
+ *    the author to verify.
+ * 3. Confirm →
+ *      - create: `createChunk`; on success clear the draft and navigate to
+ *        `/chunks/<slug>`, appending `?coinsEarned=N` to surface the
+ *        coin-reward toast when a point grant fired.
+ *      - edit: `updateChunk` (via `saveChunkEdit`); on success clear the
+ *        draft and navigate to the (possibly renamed) `/chunks/<slug>`
+ *        with `?toast=chunk_updated` so the "changes saved" toast shows.
+ * 4. "Back to edit" → keep the draft, navigate back to the form. Create
+ *    rehydrates from sessionStorage unconditionally; edit sets a resume
+ *    flag (`markChunkEditResume`) so the edit form restores the draft
+ *    instead of the untouched server row.
  */
-export function ChunkPreviewClient() {
+export function ChunkPreviewClient(props: Props) {
+  const { mode } = props;
+  const backHref = mode === 'edit' ? props.editHref : '/chunks/new';
+
   const t = useTranslations('chunks.preview');
   const tForm = useTranslations('chunks.form');
   const tUnsaved = useTranslations('unsavedChanges');
@@ -54,28 +75,58 @@ export function ChunkPreviewClient() {
   const [hydrated, setHydrated] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Flips true on intentional pushes (create-success or back-to-edit) so
+  // Flips true on intentional pushes (save-success or back-to-edit) so
   // the dirty guard doesn't intercept our own navigation.
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const d = readChunkDraft();
-    if (!d) {
-      router.replace('/chunks/new');
+    // Edit previews require an edit draft; a missing or create-shaped
+    // draft in the shared slot means the author deep-linked or the tab
+    // is stale — bounce them back to the form.
+    if (!d || (mode === 'edit' && !d.edit)) {
+      router.replace(backHref);
       return;
     }
     setDraft(d);
     setHydrated(true);
-  }, [router]);
+  }, [router, mode, backHref]);
 
   const isDirty = hydrated && !submitted;
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
-  async function handleCreate() {
+  async function handleConfirm() {
     if (!draft) return;
     setPending(true);
     setError(null);
     try {
+      if (mode === 'edit') {
+        if (!draft.edit) return;
+        const result = await saveChunkEdit({
+          initialId: draft.edit.chunkId,
+          initialSlug: draft.edit.initialSlug,
+          payload: {
+            representativeFen: draft.representativeFen,
+            title: draft.title,
+            slug: draft.slug,
+            description: draft.description,
+            annotations: draft.annotations,
+            feedbackTopics: draft.feedbackTopics,
+          },
+          t: tForm,
+        });
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        clearChunkDraft();
+        flushSync(() => setSubmitted(true));
+        // Land on the (possibly renamed) detail URL with the "changes
+        // saved" toast flag — mirrors the puzzle_updated pattern.
+        router.push(`/chunks/${result.targetSlug}?toast=chunk_updated` as '/chunks/[slug]');
+        return;
+      }
+
       const result = await createChunk({
         representativeFen: draft.representativeFen,
         title: draft.title,
@@ -108,22 +159,34 @@ export function ChunkPreviewClient() {
       const toastQs = toastParams.toString();
       router.push(`/chunks/${result.slug}${toastQs ? `?${toastQs}` : ''}` as '/chunks/[slug]');
     } catch {
-      setError(t('createError'));
+      setError(mode === 'edit' ? t('saveError') : t('createError'));
     } finally {
       setPending(false);
     }
   }
 
   function handleBackToEdit() {
-    // Draft stays in sessionStorage so /new rehydrates. Flip `submitted`
-    // so isDirty drops before our intentional push.
+    // Draft stays in sessionStorage so the form rehydrates. Flip
+    // `submitted` so isDirty drops before our intentional push.
     flushSync(() => setSubmitted(true));
-    router.push('/chunks/new');
+    // Signal the edit form that this return is intentional so it
+    // restores the draft rather than the untouched server row.
+    if (mode === 'edit' && draft?.edit) {
+      markChunkEditResume(draft.edit.chunkId);
+    }
+    router.push(backHref as '/chunks/[slug]');
   }
 
   if (!hydrated || !draft) {
     return <div className="h-32 animate-pulse rounded bg-muted/30" />;
   }
+
+  const confirmLabel =
+    mode === 'edit'
+      ? t('saveCta')
+      : draft.status === 'draft'
+        ? t('createDraftCta')
+        : t('createPublishedCta');
 
   return (
     <>
@@ -175,9 +238,9 @@ export function ChunkPreviewClient() {
             fullWidth
             disabled={pending}
             loading={pending}
-            onClick={handleCreate}
+            onClick={handleConfirm}
           >
-            {draft.status === 'draft' ? t('createDraftCta') : t('createPublishedCta')}
+            {confirmLabel}
           </Button>
           <Button
             type="button"

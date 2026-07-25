@@ -3389,6 +3389,8 @@
       "createPublishedCta": "Publish chunk",
       "backToEditCta": "Back to edit",
       "createError": "Something went wrong creating the chunk. Please try again.",
+      "saveCta": "Save changes",
+      "saveError": "Something went wrong saving the chunk. Please try again.",
       "statusLabel": "Status",
       "statusDraft": "Draft",
       "statusPublished": "Published"
@@ -3867,6 +3869,7 @@
     "lineAdded": "Line added",
     "puzzleUpdated": "Changes saved",
     "puzzleDeleted": "Puzzle deleted",
+    "chunkUpdated": "Changes saved",
     "editRequestSubmitted": "Edit suggestion submitted",
     "editRequestAccepted": "Edit suggestion accepted",
     "editRequestRejected": "Edit suggestion rejected",

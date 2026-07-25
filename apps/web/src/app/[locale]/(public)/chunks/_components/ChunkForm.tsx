@@ -58,13 +58,19 @@ const validateFenForChunks = (fen: string) => validateFenStructure(fen).ok;
  * `validateChunkCreateForm`, and the publish / delete flows in
  * `useChunkLifecycleActions`. This component wires them to the markup.
  *
- * - **Create**: validates the in-form state, writes a `ChunkDraftV1` to
- *   sessionStorage, and navigates to `/chunks/new/preview` — the
- *   `Server Action` that actually persists the row lives on that page,
- *   matching the puzzle authoring flow exactly.
- * - **Edit**: calls `updateChunk` directly (no preview step — same as
- *   `EditPuzzleForm`). The slug field is read-only here; the
- *   server-side mutation layer also drops the slug on update.
+ * Both modes hand off through the same confirmation page: submit writes
+ * a `ChunkDraftV1` to sessionStorage and navigates to a preview, where
+ * the `Server Action` that actually persists lives (the sessionStorage
+ * handoff can't be read on the server).
+ *
+ * - **Create**: navigates to `/chunks/new/preview`; the preview calls
+ *   `createChunk`.
+ * - **Edit**: navigates to `/chunks/<slug>/edit/preview`; the preview
+ *   calls `updateChunk`. The draft carries the row id + starting slug
+ *   (`draft.edit`) so the preview can resolve the post-save target slug
+ *   (draft chunks allow slug renames). The Publish / Delete escalations
+ *   below still act directly (each with its own confirm modal), only the
+ *   field-save Save flow routes through the preview.
  *
  * Annotations are NOT user-editable from this form yet. Newly-created
  * chunks store the empty shape (the DB default); edits leave whatever
@@ -110,6 +116,7 @@ export function ChunkForm(props: Props) {
   const { hydratedFromDraft, setHydratedFromDraft } = useChunkDraftRecovery({
     mode,
     injectedFen,
+    editChunkId: mode === 'edit' ? props.initial.id : undefined,
     board,
     form,
   });
@@ -195,38 +202,43 @@ export function ChunkForm(props: Props) {
         setError(t(errorKey));
         return;
       }
+    }
 
-      const draft: ChunkDraftV1 = {
-        version: 1,
-        representativeFen: board.trimmedFen,
-        title,
-        slug,
-        description,
-        annotations,
-        status,
-        feedbackTopics,
-        activeTab: board.activeTab,
-        sideToMove: board.sideToMove,
-        flipped: board.flipped,
-        userFlipped: board.userFlipped,
-      };
+    // Both modes hand off to a confirmation page: create persists via
+    // `/chunks/new/preview`, edit via `/chunks/<slug>/edit/preview`. The
+    // draft is the handoff channel for both — the preview reads it,
+    // renders it for review, and only then calls the mutation. Edit
+    // drafts carry the row id + starting slug so the preview can call
+    // `updateChunk` and resolve the (possibly renamed) target slug.
+    const draft: ChunkDraftV1 = {
+      version: 1,
+      representativeFen: board.trimmedFen,
+      title,
+      slug,
+      description,
+      annotations,
+      // Edit runs only against draft rows (the page guards published),
+      // so pin the badge to 'draft' rather than the create-only toggle.
+      status: mode === 'edit' ? 'draft' : status,
+      feedbackTopics,
+      ...(mode === 'edit'
+        ? { edit: { chunkId: props.initial.id, initialSlug: props.initial.slug } }
+        : {}),
+      activeTab: board.activeTab,
+      sideToMove: board.sideToMove,
+      flipped: board.flipped,
+      userFlipped: board.userFlipped,
+    };
 
-      const ok = writeChunkDraft(draft);
-      if (!ok) {
-        setError(t('errors.draftWriteFailed'));
-        return;
-      }
-
-      navigateAfterSubmit('/chunks/new/preview');
+    const ok = writeChunkDraft(draft);
+    if (!ok) {
+      setError(t('errors.draftWriteFailed'));
       return;
     }
 
-    const result = await runSaveEdit(props.initial);
-    if (!result.ok) return;
-
-    // Land on the freshly-renamed URL when the slug changed —
-    // otherwise the old detail URL 404s after revalidation.
-    navigateAfterSubmit(`/chunks/${result.targetSlug}`);
+    navigateAfterSubmit(
+      mode === 'create' ? '/chunks/new/preview' : `/chunks/${props.initial.slug}/edit/preview`
+    );
   }
 
   const submitDisabled =
@@ -292,7 +304,7 @@ export function ChunkForm(props: Props) {
           disabled={submitDisabled}
           loading={pending}
         >
-          {mode === 'create' ? t('actions.continueToPreview') : t('actions.save')}
+          {t('actions.continueToPreview')}
         </Button>
 
         {mode === 'edit' && (

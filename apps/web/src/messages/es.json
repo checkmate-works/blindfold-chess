@@ -3389,6 +3389,8 @@
       "createPublishedCta": "Publicar chunk",
       "backToEditCta": "Volver a editar",
       "createError": "Algo salió mal al crear el chunk. Inténtalo de nuevo.",
+      "saveCta": "Guardar cambios",
+      "saveError": "Algo salió mal al guardar el chunk. Inténtalo de nuevo.",
       "statusLabel": "Estado",
       "statusDraft": "Borrador",
       "statusPublished": "Publicado"
@@ -3867,6 +3869,7 @@
     "lineAdded": "Línea añadida",
     "puzzleUpdated": "Cambios guardados",
     "puzzleDeleted": "Puzzle eliminado",
+    "chunkUpdated": "Cambios guardados",
     "editRequestSubmitted": "Sugerencia de edición enviada",
     "editRequestAccepted": "Sugerencia de edición aceptada",
     "editRequestRejected": "Sugerencia de edición rechazada",

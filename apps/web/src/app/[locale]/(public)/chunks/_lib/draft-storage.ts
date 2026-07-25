@@ -18,6 +18,18 @@ import {
 export const CHUNK_DRAFT_STORAGE_KEY = 'blindfold_chess_chunk_draft';
 
 /**
+ * Transient sessionStorage flag set when the preview's "Back to edit"
+ * button sends the author back to `/chunks/<slug>/edit`. It stores the
+ * chunk id being resumed so the edit form knows the round-trip is
+ * intentional and rehydrates from the draft; a *fresh* entry to the
+ * edit form (from the detail page) leaves the flag unset and loads the
+ * server row instead. Consumed once (read-and-remove) so a later fresh
+ * entry never resurrects a stale draft. Create mode has no analogue —
+ * `/chunks/new` rehydrates unconditionally with a discard banner.
+ */
+export const CHUNK_EDIT_RESUME_STORAGE_KEY = 'blindfold_chess_chunk_edit_resume';
+
+/**
  * Schema-versioned draft payload. `version: 1` is the only currently
  * recognized schema; `readChunkDraft` rejects any other version as
  * corrupt and clears the slot. Bumping the version is a deliberate
@@ -51,6 +63,18 @@ export type ChunkDraftV1 = {
    * the mutation layer ignores the field outside the draft path.
    */
   feedbackTopics: ChunkFeedbackTopic[];
+  /**
+   * Present when the draft is an *edit* of an existing chunk rather than
+   * a fresh create. Carries the row id and the slug the edit started
+   * from so the preview can call `updateChunk` and resolve the
+   * post-save target slug (draft chunks allow slug renames). Absent for
+   * create drafts. Kept optional so create-side readers and older
+   * bundles ignore it transparently.
+   */
+  edit?: {
+    chunkId: string;
+    initialSlug: string;
+  };
   /** Tracks which editor tab was last active so re-entering /new restores it. */
   activeTab: 'board' | 'fen';
   /** White / black to move — encoded redundantly with the FEN for cheap reads. */
@@ -84,6 +108,15 @@ function isChunkDraftV1(value: unknown): value is ChunkDraftV1 {
   if (v.feedbackTopics !== undefined) {
     if (!Array.isArray(v.feedbackTopics)) return false;
     if (!v.feedbackTopics.every(isChunkFeedbackTopic)) return false;
+  }
+  // `edit` was added after the initial v1 schema shipped and is absent
+  // on create drafts, so tolerate its absence; validate the shape when
+  // present.
+  if (v.edit !== undefined) {
+    if (v.edit === null || typeof v.edit !== 'object') return false;
+    const e = v.edit as Record<string, unknown>;
+    if (typeof e.chunkId !== 'string') return false;
+    if (typeof e.initialSlug !== 'string') return false;
   }
   if (v.activeTab !== 'board' && v.activeTab !== 'fen') return false;
   if (v.sideToMove !== 'w' && v.sideToMove !== 'b') return false;
@@ -172,6 +205,40 @@ export function clearChunkDraft(): void {
     sessionStorage.removeItem(CHUNK_DRAFT_STORAGE_KEY);
   } catch {
     // ignore
+  }
+}
+
+/**
+ * Mark that the author is intentionally returning from the edit preview
+ * to `/chunks/<slug>/edit` (the "Back to edit" round-trip). Stores the
+ * chunk id so the edit form only rehydrates the matching draft.
+ */
+export function markChunkEditResume(chunkId: string): void {
+  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+    return;
+  }
+  try {
+    sessionStorage.setItem(CHUNK_EDIT_RESUME_STORAGE_KEY, chunkId);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Read-and-clear the edit-resume flag. Returns the chunk id the author
+ * is resuming, or `null` when the edit form was entered fresh. Always
+ * clears the slot so a stale flag can never trigger a later rehydrate.
+ */
+export function takeChunkEditResume(): string | null {
+  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+    return null;
+  }
+  try {
+    const value = sessionStorage.getItem(CHUNK_EDIT_RESUME_STORAGE_KEY);
+    sessionStorage.removeItem(CHUNK_EDIT_RESUME_STORAGE_KEY);
+    return value;
+  } catch {
+    return null;
   }
 }
 
