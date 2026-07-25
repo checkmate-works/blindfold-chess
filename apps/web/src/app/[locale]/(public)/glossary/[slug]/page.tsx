@@ -12,7 +12,8 @@ import { getPositionsForTerm } from '@/lib/glossary/term-positions';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateDefinedTermSchema } from '@/lib/seo/jsonld';
 
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { LinkTabItem } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -30,7 +31,17 @@ export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ locale: Locale; slug: string }>;
+  searchParams: Promise<{ tab?: string }>;
 };
+
+/**
+ * Resolve which related-content tab is active from the `?tab=` param, falling
+ * back to the first available tab when it's absent or unrecognized.
+ */
+function resolveActiveTab(param: string | undefined, tabs: LinkTabItem[]): string {
+  const match = tabs.find((tab) => tab.value === param);
+  return match?.value ?? tabs[0].value;
+}
 
 /**
  * Pre-render every (locale × term) at build time. Slugs are derived from the
@@ -70,7 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function GlossaryTermPage({ params }: Props) {
+export default async function GlossaryTermPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
@@ -109,8 +120,22 @@ export default async function GlossaryTermPage({ params }: Props) {
     { label: name },
   ];
 
-  // Practice problems tagged with this term (only theme terms have any).
+  // Related-content tabs (chunk-detail style, URL-driven via `?tab=`). Only
+  // "problems" today; future collections (e.g. related games) append here.
   const problems = await getPositionsForTerm(slug);
+  const relatedTabs: LinkTabItem[] = [];
+  if (problems.length > 0) {
+    relatedTabs.push({
+      value: 'problems',
+      label: `${t('related.problems')} (${problems.length})`,
+      href: `/glossary/${slug}?tab=problems`,
+    });
+  }
+  const hasRelated = relatedTabs.length > 0;
+  // Reading `searchParams` opts a page into dynamic rendering, so only touch it
+  // for terms that actually have related tabs — plain (non-theme) term pages
+  // stay statically generated.
+  const activeTab = hasRelated ? resolveActiveTab((await searchParams).tab, relatedTabs) : null;
 
   return (
     <>
@@ -135,13 +160,6 @@ export default async function GlossaryTermPage({ params }: Props) {
           <GlossaryPositionBoard positions={term.positions} />
         )}
 
-        {problems.length > 0 && (
-          <div className="space-y-3">
-            <SectionTitle>{`${t('problems.tab')} (${problems.length})`}</SectionTitle>
-            <TermProblemList problems={problems} locale={locale} />
-          </div>
-        )}
-
         {(term.category || (term.aliases && term.aliases.length > 0)) && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             {term.category && (
@@ -159,6 +177,20 @@ export default async function GlossaryTermPage({ params }: Props) {
                 {t('aliases')}: {term.aliases.join(', ')}
               </span>
             )}
+          </div>
+        )}
+
+        {hasRelated && activeTab && (
+          <div className="space-y-6">
+            <LinkTabs
+              variant="underline"
+              locale={locale}
+              activeValue={activeTab}
+              scroll={false}
+              aria-label={t('related.tabsLabel')}
+              items={relatedTabs}
+            />
+            {activeTab === 'problems' && <TermProblemList problems={problems} locale={locale} />}
           </div>
         )}
 

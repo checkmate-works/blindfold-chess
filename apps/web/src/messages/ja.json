@@ -770,8 +770,9 @@
       "viewDetails": "詳しく見る"
     },
     "descriptionHeading": "説明",
-    "problems": {
-      "tab": "問題"
+    "related": {
+      "tabsLabel": "関連コンテンツ",
+      "problems": "関連する問題"
     }
   },
   "pgnInput": {

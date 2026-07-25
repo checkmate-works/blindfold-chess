@@ -770,8 +770,9 @@
       "viewDetails": "Ver definición completa"
     },
     "descriptionHeading": "Descripción",
-    "problems": {
-      "tab": "Problemas"
+    "related": {
+      "tabsLabel": "Contenido relacionado",
+      "problems": "Problemas relacionados"
     }
   },
   "pgnInput": {
