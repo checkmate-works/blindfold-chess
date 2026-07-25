@@ -12,6 +12,7 @@ import type { EditRequestStatus } from '@/lib/edit-requests/shared';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { localizeChunkError } from '../../_lib/localize-error';
 import { acceptEditRequest } from '../_actions/acceptEditRequest';
@@ -97,7 +98,9 @@ function ChangedFieldDiff({
 
 export function EditRequestItem(props: Props) {
   const t = useTranslations('chunks.editRequests');
+  const tToast = useTranslations('toast');
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [pending, setPending] = useState<null | 'accept' | 'reject' | 'withdraw'>(null);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +119,13 @@ export function EditRequestItem(props: Props) {
     if ('error' in result) {
       setError(localizeChunkError(result.error, t, WELL_KNOWN_ERRORS));
       return;
+    }
+
+    // Withdraw keeps the proposer on the list (so they can submit a fresh
+    // one), so there's no navigation to carry a `?toast=` param — fire the
+    // confirmation toast directly. Accept / reject stay a silent refresh.
+    if (kind === 'withdraw') {
+      showToast(tToast('editRequestWithdrawn'), 'success');
     }
     router.refresh();
   }

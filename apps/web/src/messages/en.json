@@ -3441,9 +3441,10 @@
         }
       },
       "sectionTitle": "Edit suggestions",
+      "submittedTitle": "Submitted suggestions",
       "sectionHint": "Other players can suggest a sharper title or description while this chunk is in draft. The owner reviews each suggestion.",
       "formWantedLabel": "Wanted",
-      "alreadyHasPendingNotice": "Your earlier suggestion is still pending below. Withdraw it first if you want to propose something different.",
+      "otherFieldsToggle": "Also suggest changes to other fields",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
       "empty": "No suggestions yet.",
       "suggestCta": "Suggest an edit",

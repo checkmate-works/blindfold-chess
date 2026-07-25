@@ -3441,9 +3441,10 @@
         }
       },
       "sectionTitle": "Sugestões de edição",
+      "submittedTitle": "Sugestões enviadas",
       "sectionHint": "Outros jogadores podem sugerir um título ou descrição mais precisos enquanto este chunk estiver em rascunho. O proprietário revisa cada sugestão.",
       "formWantedLabel": "Solicitado",
-      "alreadyHasPendingNotice": "Sua sugestão anterior ainda está pendente abaixo. Retire-a primeiro se quiser propor algo diferente.",
+      "otherFieldsToggle": "Sugerir também alterações em outros campos",
       "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
       "empty": "Ainda não há sugestões.",
       "suggestCta": "Sugerir uma edição",
