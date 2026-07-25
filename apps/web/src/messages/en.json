@@ -3386,7 +3386,7 @@
     "preview": {
       "title": "Preview chunk",
       "createDraftCta": "Save as draft",
-      "createPublishedCta": "Publish chunk",
+      "createPublishedCta": "Publish",
       "backToEditCta": "Back to edit",
       "createError": "Something went wrong creating the chunk. Please try again.",
       "saveCta": "Save changes",

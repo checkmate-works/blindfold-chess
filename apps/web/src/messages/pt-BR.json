@@ -3386,7 +3386,7 @@
     "preview": {
       "title": "Pré-visualizar chunk",
       "createDraftCta": "Salvar como rascunho",
-      "createPublishedCta": "Publicar chunk",
+      "createPublishedCta": "Publicar",
       "backToEditCta": "Voltar para edição",
       "createError": "Algo deu errado ao criar o chunk. Tente novamente.",
       "saveCta": "Salvar alterações",
