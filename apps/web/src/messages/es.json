@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(usuario eliminado)",
+    "lastUpdated": "Última actualización: {date}",
     "pagination": {
       "navLabel": "Paginación",
       "previous": "Anterior",
@@ -2889,7 +2890,6 @@
   "privacy": {
     "title": "Política de Privacidad",
     "description": "Nuestra política de privacidad y cómo tratamos tu información personal",
-    "lastUpdated": "Última Actualización: 13 de marzo de 2026",
     "introduction": "Ajedrez a Ciegas (\"el Sitio\") respeta la privacidad de los usuarios y se compromete a proteger la información personal. Esta Política de Privacidad explica cómo el Sitio recopila, usa y protege la información.",
     "cookiesTitle": "Uso de Cookies",
     "cookiesDescription": "El Sitio utiliza cookies para mejorar la calidad del servicio y mostrar anuncios. Las cookies son pequeños archivos de texto almacenados en tu dispositivo por los sitios web. Aunque puedes desactivar las cookies, algunas funciones podrían no funcionar correctamente.",
@@ -2944,7 +2944,6 @@
   "affiliateDisclosure": {
     "title": "Divulgación de Afiliados",
     "description": "Información sobre enlaces de afiliados en Ajedrez a Ciegas",
-    "lastUpdated": "Última Actualización: 11 de marzo de 2025",
     "amazonDisclosureTitle": "Divulgación del Programa de Asociados de Amazon",
     "amazonDisclosureDescription": "Como Asociado de Amazon, obtengo ingresos por compras que califican. blindfold-chess.online participa en el Programa de Asociados de Amazon Services LLC, un programa de publicidad de afiliados diseñado para proporcionar un medio para que los sitios ganen tarifas de publicidad mediante publicidad y enlaces a Amazon.com.",
     "footerText": "Como Asociado de Amazon, obtengo ingresos por compras que califican."
@@ -2952,7 +2951,6 @@
   "terms": {
     "title": "Términos de Servicio",
     "description": "Términos de Servicio de Ajedrez a Ciegas",
-    "lastUpdated": "Última Actualización: 19 de junio de 2026",
     "acceptanceTitle": "Aceptación de los Términos",
     "acceptanceDescription": "Al usar este Servicio, aceptas estar sujeto a estos Términos de Servicio. Si no estás de acuerdo con estos Términos, por favor no uses el Servicio.",
     "serviceDescriptionTitle": "Descripción del Servicio",
@@ -3007,7 +3005,6 @@
   "licenses": {
     "title": "Licencias de código abierto",
     "description": "Reconocimientos e información de licencias del software de código abierto utilizado",
-    "lastUpdated": "Última actualización: 13 de mayo de 2026",
     "overviewTitle": "Resumen",
     "introduction": "Blindfold Chess utiliza motores de ajedrez de código abierto para proporcionar su funcionalidad de oponente de IA. Agradecemos a los autores y comunidades detrás de estos proyectos, y proporcionamos información de atribución y licencias a continuación.",
     "componentsTitle": "Componentes de código abierto incluidos",

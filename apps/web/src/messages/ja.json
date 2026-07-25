@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(退会したユーザー)",
+    "lastUpdated": "最終更新日: {date}",
     "pagination": {
       "navLabel": "ページ送り",
       "previous": "前へ",
@@ -2889,7 +2890,6 @@
   "privacy": {
     "title": "プライバシーポリシー",
     "description": "当サイトのプライバシーポリシーと個人情報の取り扱いについて",
-    "lastUpdated": "最終更新日: 2026年3月13日",
     "introduction": "Blindfold Chess(「当サイト」)は、ユーザーのプライバシーを尊重し、個人情報の保護に努めています。本プライバシーポリシーでは、当サイトがどのように情報を収集、使用、保護するかについて説明します。",
     "cookiesTitle": "Cookieの使用について",
     "cookiesDescription": "当サイトでは、サービスの品質向上および広告配信のためにCookieを使用しています。Cookieとは、ウェブサイトがお使いのデバイスに保存する小さなテキストファイルです。Cookieを無効にすることも可能ですが、その場合、一部の機能が正常に動作しない可能性があります。",
@@ -2944,7 +2944,6 @@
   "affiliateDisclosure": {
     "title": "アフィリエイト・ポリシー",
     "description": "アフィリエイトプログラムに関する開示事項",
-    "lastUpdated": "最終更新日: 2025年3月11日",
     "amazonDisclosureTitle": "Amazonアソシエイト・プログラムに関する開示",
     "amazonDisclosureDescription": "Amazonのアソシエイトとして、blindfold-chess.onlineは適格販売により収入を得ています。当サイトは、Amazon.co.jpを宣伝しリンクすることによってサイトが紹介料を獲得できる手段を提供することを目的に設定されたアフィリエイトプログラムである、Amazonアソシエイト・プログラムの参加者です。",
     "footerText": "As an Amazon Associate I earn from qualifying purchases."
@@ -2952,7 +2951,6 @@
   "terms": {
     "title": "利用規約",
     "description": "Blindfold Chessの利用規約",
-    "lastUpdated": "最終更新日: 2026年6月19日",
     "acceptanceTitle": "規約の承諾",
     "acceptanceDescription": "本サービスをご利用いただくことで、本利用規約に同意したものとみなされます。本規約に同意いただけない場合は、本サービスのご利用をお控えください。",
     "serviceDescriptionTitle": "サービスの説明",
@@ -3007,7 +3005,6 @@
   "licenses": {
     "title": "オープンソースライセンス",
     "description": "本サービスで利用しているオープンソースソフトウェアのライセンス情報",
-    "lastUpdated": "最終更新日: 2026年5月13日",
     "overviewTitle": "概要",
     "introduction": "Blindfold Chess は AI 対局機能の提供にあたり、複数のオープンソースのチェスエンジンを利用しています。これらのプロジェクトの作者およびコミュニティに感謝するとともに、本ページで帰属表示およびライセンス情報を明示いたします。",
     "componentsTitle": "同梱しているオープンソースコンポーネント",
