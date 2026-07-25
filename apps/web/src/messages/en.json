@@ -150,7 +150,11 @@
         "addAction": "Add a note",
         "save": "Save",
         "cancel": "Cancel",
-        "sharedHelp": "This note is shared by every line in this kata that reaches this position."
+        "sharedHelp": "This note is shared by every line in this kata that reaches this position.",
+        "moreActions": "More actions",
+        "deleteAction": "Delete",
+        "deleteConfirmTitle": "Delete this note?",
+        "deleteConfirmMessage": "This removes the note from every line in this kata that reaches this position. It can’t be undone."
       },
       "annotationIndex": {
         "title": "Notes in this line"

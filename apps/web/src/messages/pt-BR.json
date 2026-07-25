@@ -150,7 +150,11 @@
         "addAction": "Adicionar uma nota",
         "save": "Salvar",
         "cancel": "Cancelar",
-        "sharedHelp": "Esta nota é compartilhada por todas as linhas deste kata que alcançam esta posição."
+        "sharedHelp": "Esta nota é compartilhada por todas as linhas deste kata que alcançam esta posição.",
+        "moreActions": "Mais ações",
+        "deleteAction": "Excluir",
+        "deleteConfirmTitle": "Excluir esta nota?",
+        "deleteConfirmMessage": "Isso remove a nota de todas as linhas deste kata que alcançam esta posição. Esta ação não pode ser desfeita."
       },
       "annotationIndex": {
         "title": "Notas desta linha"

@@ -150,7 +150,11 @@
         "addAction": "メモを追加",
         "save": "保存",
         "cancel": "キャンセル",
-        "sharedHelp": "このメモは、同じ局面を通るこの型のすべてのラインで共有されます。"
+        "sharedHelp": "このメモは、同じ局面を通るこの型のすべてのラインで共有されます。",
+        "moreActions": "その他の操作",
+        "deleteAction": "削除",
+        "deleteConfirmTitle": "このメモを削除しますか？",
+        "deleteConfirmMessage": "このメモは、同じ局面を通るこの型のすべてのラインから削除されます。この操作は取り消せません。"
       },
       "annotationIndex": {
         "title": "このラインのメモ"
