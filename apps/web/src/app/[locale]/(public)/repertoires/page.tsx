@@ -44,6 +44,7 @@ import {
 import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { CATALOG_MIN_CARDS_FOR_MID_AD } from '@/app/[locale]/_components/AdSense/mid-ad-threshold';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -193,6 +194,8 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
           </Link>
         ))}
       </nav>
+
+      {rows.length >= CATALOG_MIN_CARDS_FOR_MID_AD && <AdSlot slot="content-middle" />}
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
