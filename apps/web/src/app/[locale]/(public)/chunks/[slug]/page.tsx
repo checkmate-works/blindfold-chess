@@ -201,14 +201,22 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     >
       <ScrollToHashOnMount />
       {/*
+       * Render the Description section unconditionally — drafts can
+       * legitimately ship without a description while their title is
+       * still being workshopped, but the section title gives a visible
+       * anchor (and an obvious "missing" placeholder) so the page
+       * structure stays consistent with other detail surfaces.
+       */}
+      <SectionTitle>{tChunks('detail.descriptionSection')}</SectionTitle>
+
+      {/*
        * Edit-suggestion callout — only meaningful while the chunk is in
-       * draft. Hoisted to the very top of the content area so the
-       * "this is a workshop state, suggestions welcome" framing is the
-       * first thing visitors see before they scroll into the catalog
-       * content. The layout-uniformity cost (a non-SectionTitle element
-       * preceding the first SectionTitle) is bounded because the
-       * callout only renders in the draft state; mirrors the
-       * articles `/[slug]` fallback-locale notice pattern.
+       * draft. Placed directly under the Description SectionTitle (above
+       * the description body) rather than hoisted to the very top of the
+       * content area, so it reads as part of the Description section
+       * without out-shouting the page's own heading. Only renders in the
+       * draft state; mirrors the articles `/[slug]` fallback-locale notice
+       * pattern.
        */}
       {showEditRequestCallout && (
         <EditRequestCallout
@@ -237,14 +245,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         />
       )}
 
-      {/*
-       * Render the Description section unconditionally — drafts can
-       * legitimately ship without a description while their title is
-       * still being workshopped, but the section title gives a visible
-       * anchor (and an obvious "missing" placeholder) so the page
-       * structure stays consistent with other detail surfaces.
-       */}
-      <SectionTitle>{tChunks('detail.descriptionSection')}</SectionTitle>
       {chunk.description ? (
         <p className="text-foreground whitespace-pre-wrap">
           <MoveNotationText

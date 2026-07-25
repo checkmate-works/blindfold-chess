@@ -78,12 +78,14 @@ export function EditRequestCallout({
   const cta = ctaByState[viewerState];
 
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+    <div className="rounded-lg border border-amber-200/60 bg-amber-50/60 px-4 py-3 text-sm text-amber-900/90 dark:border-amber-800/50 dark:bg-amber-950/20 dark:text-amber-100/90">
       {isOwner ? (
         <p>{ownerBody}</p>
       ) : hasRequestedTopics ? (
         <div className="space-y-1">
-          {topicLeadIn && <p>{topicLeadIn}</p>}
+          {topicLeadIn && (
+            <p className="text-xs text-amber-700/90 dark:text-amber-300/80">{topicLeadIn}</p>
+          )}
           <ul className="flex flex-wrap gap-1.5">
             {requestedTopicLabels!.map((label) => (
               <li
@@ -102,7 +104,7 @@ export function EditRequestCallout({
         <Link
           href={`/${locale}/chunks/${slug}/edit-requests`}
           data-tour-id="chunk-edit-requests-link"
-          className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 hover:border-amber-400 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:border-amber-600 dark:hover:bg-amber-900/60 transition-colors"
+          className="flex w-full items-center justify-center gap-1 rounded-md border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 hover:border-amber-400 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:border-amber-600 dark:hover:bg-amber-900/60 transition-colors"
         >
           <FiGitPullRequest className="h-3 w-3" aria-hidden />
           {cta}
