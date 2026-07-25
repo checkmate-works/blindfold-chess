@@ -90,7 +90,12 @@ export async function PositionEditRequestNewView({ positionId, positionType, loc
       <SectionTitle>{t('suggestCta')}</SectionTitle>
 
       {user ? (
-        <PositionEditRequestForm positionId={positionId} current={current} available={available} />
+        <PositionEditRequestForm
+          positionId={positionId}
+          current={current}
+          available={available}
+          cancelHref={suggestionsPath}
+        />
       ) : (
         <p className="text-muted-foreground text-center py-8">{t('signInToSuggest')}</p>
       )}

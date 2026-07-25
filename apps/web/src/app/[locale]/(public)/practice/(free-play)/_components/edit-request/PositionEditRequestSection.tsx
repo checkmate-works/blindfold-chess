@@ -265,6 +265,7 @@ export async function PositionEditRequestSection({
             <Link
               href={newSuggestionHref as '/practice/position-memory/[id]/suggestions/new'}
               locale={locale}
+              className="block w-full"
             >
               <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
                 {t('suggestCta')}
@@ -274,6 +275,18 @@ export async function PositionEditRequestSection({
         : !viewerIsOwner && (
             <p className="text-muted-foreground text-center">{t('signInToSuggest')}</p>
           )}
+
+      {/* Quiet "back to the position" text-link under the primary CTA — this
+          review page has no other way out to the detail page, and it renders
+          for every viewer (owner / proposer / signed-out alike), unlike the
+          conditional propose button above. */}
+      <Link
+        href={detailHref as '/practice/position-memory/[id]'}
+        locale={locale}
+        className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {t('actions.backToDetail')}
+      </Link>
     </section>
   );
 }
