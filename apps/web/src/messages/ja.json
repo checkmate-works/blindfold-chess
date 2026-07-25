@@ -3420,7 +3420,7 @@
         "ownerBodyWithPending": "{count, plural, other {未対応の編集リクエストが # 件届いています。}}",
         "ownerBodyEmpty": "まだ編集リクエストは届いていません。",
         "ctaOwner": "編集リクエストを見る",
-        "ctaHasPending": "自分の編集リクエストを確認・取り下げ",
+        "ctaHasPending": "編集リクエストを確認",
         "ctaCanSuggest": "編集リクエストを送る",
         "ctaSignedOut": "サインインして編集リクエストを送る",
         "topicLeadIn": "投稿者は特に以下の項目への意見を歓迎しています：",
