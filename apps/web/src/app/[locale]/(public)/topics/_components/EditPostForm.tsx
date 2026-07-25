@@ -125,7 +125,7 @@ export function EditPostForm({
       {/* Save mirrors the full-width primary submit used by the new-comment /
           reply forms (BasePostForm); cancel is a quiet text link below so it
           reads as clearly secondary without crowding the primary action. */}
-      <div className="space-y-2">
+      <div className="space-y-4">
         <Button
           type="submit"
           variant="primary"

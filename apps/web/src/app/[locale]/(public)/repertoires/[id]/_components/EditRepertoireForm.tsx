@@ -169,7 +169,7 @@ export function EditRepertoireForm({
         cancelLabel={tUnsaved('cancel')}
       />
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <Button
           type="submit"
           variant="primary"
