@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { GAME_LIMIT_WARNING_THRESHOLD, MAX_GAMES } from '@/config';
@@ -20,6 +20,7 @@ import { GameList } from '../../(home)/_components/GameList';
 import { GameListSkeleton } from '../../(home)/_components/GameListSkeleton';
 import { useGameDelete } from '../../(home)/_hooks/use-game-delete';
 import { useGameList } from '../../(home)/_hooks/use-game-list';
+import { MIN_GAMES_FOR_MID_AD } from '../_lib/mid-ad';
 import { PublishNudgeBanner } from './PublishNudgeBanner';
 import { SortButton } from './SortButton';
 
@@ -27,9 +28,15 @@ const GAMES_PAGE_MAX_COUNT = 20;
 
 type Props = {
   locale: Locale;
+  /**
+   * Mid-page ad node, rendered above the sort control when the list is
+   * non-empty. Passed from the server page because AdSlot is a Server
+   * Component; this client only decides placement/visibility.
+   */
+  middleAd?: ReactNode;
 };
 
-export function GamesPageClient({ locale }: Props) {
+export function GamesPageClient({ locale, middleAd }: Props) {
   const t = useTranslations('home.gameList');
   const tRanks = useTranslations('ranks');
   const [sortBy, setSortBy] = useState<GameSortOption>('lastPlayed');
@@ -108,13 +115,16 @@ export function GamesPageClient({ locale }: Props) {
       </div>
 
       {!isLoading && games.length > 0 && (
-        <div className="flex justify-end">
-          <SortButton
-            sortBy={sortBy}
-            sortDirection={sortDirection}
-            onSortChange={handleSortChange}
-          />
-        </div>
+        <>
+          {games.length >= MIN_GAMES_FOR_MID_AD && middleAd}
+          <div className="flex justify-end">
+            <SortButton
+              sortBy={sortBy}
+              sortDirection={sortDirection}
+              onSortChange={handleSortChange}
+            />
+          </div>
+        </>
       )}
 
       {isLoading ? (
