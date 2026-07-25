@@ -129,11 +129,12 @@ export function AnnotationPanel({
   // the note reads as a peer of the discussion — "Why this move · 1. Nf3" over
   // "Comments" — rather than a differently-styled sidebar label. The move it
   // names is de-emphasised so the "why this move" label stays the header.
-  const heading = (
-    <SectionTitle>
+  const headingContent = (
+    <>
       {t('title')} <span className="font-normal text-muted-foreground">· {moveLabel}</span>
-    </SectionTitle>
+    </>
   );
+  const heading = <SectionTitle>{headingContent}</SectionTitle>;
 
   // Read view — for the owner too, until they open the editor. A note is shown
   // as plain prose, except that a move cited by number ("1... e4") becomes a
@@ -145,20 +146,24 @@ export function AnnotationPanel({
       <section className="space-y-3">
         {text && isOwner ? (
           // Edit / Delete live behind the same "⋯" kebab the comment threads
-          // use (author row: heading left, menu pinned right), so owning a note
-          // reads and behaves like owning a comment.
-          <div className="flex items-start gap-2">
-            <div className="min-w-0 flex-1">{heading}</div>
-            <ActionsMenu ariaLabel={t('moreActions')}>
-              <ActionsMenuButton onClick={openEditor}>
-                <FiEdit2 className="h-4 w-4" aria-hidden />
-                {t('editAction')}
-              </ActionsMenuButton>
-              <ActionsMenuButton tone="danger" onClick={() => setConfirmingDelete(true)}>
-                <FiTrash2 className="h-4 w-4" aria-hidden />
-                {t('deleteAction')}
-              </ActionsMenuButton>
-            </ActionsMenu>
+          // use. The menu is overlaid (absolute) on top of a full-width heading
+          // rather than sitting in a flex row beside it, so the SectionTitle's
+          // underline runs unbroken across the whole width instead of stopping
+          // at the menu. `pr-10` keeps the title text clear of the button.
+          <div className="relative">
+            <SectionTitle className="pr-10">{headingContent}</SectionTitle>
+            <div className="absolute right-0 top-0">
+              <ActionsMenu ariaLabel={t('moreActions')}>
+                <ActionsMenuButton onClick={openEditor}>
+                  <FiEdit2 className="h-4 w-4" aria-hidden />
+                  {t('editAction')}
+                </ActionsMenuButton>
+                <ActionsMenuButton tone="danger" onClick={() => setConfirmingDelete(true)}>
+                  <FiTrash2 className="h-4 w-4" aria-hidden />
+                  {t('deleteAction')}
+                </ActionsMenuButton>
+              </ActionsMenu>
+            </div>
           </div>
         ) : (
           heading
