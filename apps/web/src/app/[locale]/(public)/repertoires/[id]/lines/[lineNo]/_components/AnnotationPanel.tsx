@@ -136,12 +136,28 @@ export function AnnotationPanel({
             />
           </p>
         )}
-        {isOwner && (
-          <OwnerActionButton size="xs" onClick={openEditor}>
-            {text ? <FiEdit2 aria-hidden /> : <FiPlus aria-hidden />}
-            {text ? t('editAction') : t('addAction')}
-          </OwnerActionButton>
-        )}
+        {isOwner &&
+          (text ? (
+            // Editing an existing note stays a compact chip, sitting after the
+            // prose it amends — the same treatment as every other inline owner
+            // action in the app.
+            <OwnerActionButton size="xs" onClick={openEditor}>
+              <FiEdit2 aria-hidden />
+              {t('editAction')}
+            </OwnerActionButton>
+          ) : (
+            // The empty state is a full-width CTA, matching the comment thread's
+            // "Join the conversation" button below it, so authoring the first
+            // note reads as a peer invitation rather than a tiny afterthought.
+            <button
+              type="button"
+              onClick={openEditor}
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            >
+              <FiPlus aria-hidden className="text-muted-foreground" />
+              <span>{t('addAction')}</span>
+            </button>
+          ))}
       </section>
     );
   }

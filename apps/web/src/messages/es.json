@@ -152,6 +152,9 @@
         "cancel": "Cancelar",
         "sharedHelp": "Esta nota se comparte entre todas las líneas de este kata que alcanzan esta posición."
       },
+      "annotationIndex": {
+        "title": "Notas de esta línea"
+      },
       "delete": {
         "button": "Eliminar",
         "title": "¿Eliminar esta línea?",

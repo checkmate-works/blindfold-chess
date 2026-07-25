@@ -152,6 +152,9 @@
         "cancel": "キャンセル",
         "sharedHelp": "このメモは、同じ局面を通るこの型のすべてのラインで共有されます。"
       },
+      "annotationIndex": {
+        "title": "このラインのメモ"
+      },
       "delete": {
         "button": "削除",
         "title": "このラインを削除しますか？",
