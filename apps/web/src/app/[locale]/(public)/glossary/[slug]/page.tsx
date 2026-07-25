@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
@@ -9,14 +11,18 @@ import { slugifyTerm } from '@/lib/glossary/slug';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateDefinedTermSchema } from '@/lib/seo/jsonld';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { GlossaryTermList } from '../_components/GlossaryTermList';
 import { getGlossaryTermBySlug } from '../_lib/queries';
 import type { ChessTerm } from '../_lib/types';
+import { CATEGORY_COLORS } from '../_lib/types';
+
+const GlossaryPositionBoard = dynamic(() =>
+  import('../_components/GlossaryPositionBoard').then((mod) => mod.GlossaryPositionBoard)
+);
 
 export const revalidate = 3600;
 
@@ -77,6 +83,14 @@ export default async function GlossaryTermPage({ params }: Props) {
   const termUrl = `${SITE_URL}/${locale}/glossary/${slug}`;
   const glossaryUrl = `${SITE_URL}/${locale}/glossary`;
 
+  // Secondary names shown under the H1: for ja the H1 is the Japanese name,
+  // so surface the canonical English term (and reading, when it adds info).
+  const subtitleParts = [
+    locale === 'ja' && term.term !== name ? term.term : null,
+    term.reading && term.reading !== name ? term.reading : null,
+  ].filter((part): part is string => Boolean(part));
+  const headerNote = subtitleParts.length > 0 ? subtitleParts.join(' ・ ') : undefined;
+
   return (
     <>
       <JsonLd
@@ -92,10 +106,39 @@ export default async function GlossaryTermPage({ params }: Props) {
       />
       <PageLayout
         title={name}
+        headerNote={headerNote}
         locale={locale}
         breadcrumb={[{ label: t('title'), href: '/glossary' }, { label: name }]}
       >
-        <GlossaryTermList terms={[term]} locale={locale} />
+        {(term.category || (term.aliases && term.aliases.length > 0)) && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            {term.category && (
+              <Link
+                href={`/${locale}/glossary/category/${term.category}`}
+                className={`inline-block rounded-full px-3 py-1 text-sm font-medium transition-opacity hover:opacity-80 ${
+                  CATEGORY_COLORS[term.category] || CATEGORY_COLORS.general
+                }`}
+              >
+                {t(`categories.${term.category}`)}
+              </Link>
+            )}
+            {term.aliases && term.aliases.length > 0 && (
+              <span className="text-sm text-muted-foreground">
+                {t('aliases')}: {term.aliases.join(', ')}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <SectionTitle>{t('descriptionHeading')}</SectionTitle>
+          <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{description}</p>
+        </div>
+
+        {term.positions && term.positions.length > 0 && (
+          <GlossaryPositionBoard positions={term.positions} />
+        )}
+
         <AdSlot slot="content-bottom" />
       </PageLayout>
     </>

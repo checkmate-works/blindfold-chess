@@ -768,7 +768,8 @@
     "noTerms": "Aún no se han registrado términos.",
     "termModal": {
       "viewDetails": "Ver definición completa"
-    }
+    },
+    "descriptionHeading": "Descripción"
   },
   "pgnInput": {
     "placeholder": "Pega tu notación PGN aquí...\n\nEjemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
