@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, UnsavedChangesDialog } from '@/app/_components';
@@ -80,7 +81,26 @@ const validateFenForChunks = (fen: string) => validateFenStructure(fen).ok;
 export function ChunkForm(props: Props) {
   const { mode, disableUnsavedGuard = false } = props;
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations('chunks.form');
+
+  // Latched at mount: `true` when the author arrived from the preview's
+  // "Back to edit" (`?resumed=1`) rather than a cold visit. Distinguishes
+  // an intentional round-trip — where the draft restore is expected and
+  // the banner would be noise — from a genuine fresh restore. Latched via
+  // ref so stripping the marker below doesn't flip it and reveal the
+  // banner. Mirrors the puzzle authoring flow.
+  const resumedRef = useRef(searchParams.get('resumed') === '1');
+  const resumed = resumedRef.current;
+
+  // Strip the marker so it isn't bookmarked or re-read on refresh.
+  useEffect(() => {
+    if (!resumed) return;
+    const base =
+      mode === 'edit' ? `/chunks/${(props as EditProps).initial.slug}/edit` : '/chunks/new';
+    router.replace(base as '/chunks/[slug]');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // A position injected via `?fen=` (create mode only) seeds the board and
   // takes precedence over any stored draft (handled in the recovery hook).
@@ -117,6 +137,7 @@ export function ChunkForm(props: Props) {
     mode,
     injectedFen,
     editChunkId: mode === 'edit' ? props.initial.id : undefined,
+    resumed,
     board,
     form,
   });
@@ -258,7 +279,7 @@ export function ChunkForm(props: Props) {
           </div>
         )}
 
-        {hydratedFromDraft && mode === 'create' && (
+        {hydratedFromDraft && mode === 'create' && !resumed && (
           <div
             role="status"
             aria-live="polite"

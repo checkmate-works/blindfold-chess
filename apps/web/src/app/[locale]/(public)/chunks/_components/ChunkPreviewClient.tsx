@@ -15,12 +15,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 
 import { createChunk } from '../_actions/createChunk';
 import { saveChunkEdit } from '../_lib/chunk-form-actions';
-import {
-  type ChunkDraftV1,
-  clearChunkDraft,
-  markChunkEditResume,
-  readChunkDraft,
-} from '../_lib/draft-storage';
+import { type ChunkDraftV1, clearChunkDraft, readChunkDraft } from '../_lib/draft-storage';
 import { localizeChunkError } from '../_lib/localize-error';
 
 const PREVIEW_ERROR_CODES = new Set([
@@ -57,10 +52,9 @@ type Props =
  *      - edit: `updateChunk` (via `saveChunkEdit`); on success clear the
  *        draft and navigate to the (possibly renamed) `/chunks/<slug>`
  *        with `?toast=chunk_updated` so the "changes saved" toast shows.
- * 4. "Back to edit" → keep the draft, navigate back to the form. Create
- *    rehydrates from sessionStorage unconditionally; edit sets a resume
- *    flag (`markChunkEditResume`) so the edit form restores the draft
- *    instead of the untouched server row.
+ * 4. "Back to edit" → keep the draft, navigate back to the form with a
+ *    `?resumed=1` marker so create suppresses the "draft restored" banner
+ *    and edit rehydrates the draft instead of the untouched server row.
  */
 export function ChunkPreviewClient(props: Props) {
   const { mode } = props;
@@ -169,12 +163,10 @@ export function ChunkPreviewClient(props: Props) {
     // Draft stays in sessionStorage so the form rehydrates. Flip
     // `submitted` so isDirty drops before our intentional push.
     flushSync(() => setSubmitted(true));
-    // Signal the edit form that this return is intentional so it
-    // restores the draft rather than the untouched server row.
-    if (mode === 'edit' && draft?.edit) {
-      markChunkEditResume(draft.edit.chunkId);
-    }
-    router.push(backHref as '/chunks/[slug]');
+    // `?resumed=1` tells the form this return is intentional: create
+    // suppresses the "draft restored" banner, edit rehydrates the draft
+    // instead of the untouched server row. The form strips the marker.
+    router.push(`${backHref}?resumed=1` as '/chunks/[slug]');
   }
 
   if (!hydrated || !draft) {
