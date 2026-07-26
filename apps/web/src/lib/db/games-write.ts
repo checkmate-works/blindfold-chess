@@ -17,6 +17,7 @@ import 'server-only';
 import { generateManageToken } from '@/lib/games/manage-token';
 import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 import { db } from './index';
 import { feedItems, gameTokens, games } from './schema';
@@ -93,6 +94,27 @@ export async function publishGame(params: {
   });
 }
 
+const GAME_GIFS_BUCKET = 'game-gifs';
+
+/**
+ * Best-effort removal of any cached replay GIFs for a deleted game
+ * (`gifs/${gameId}/*.gif` — see `generateGameGif`). Failures are swallowed:
+ * an orphaned GIF just wastes a little Storage space, which isn't worth
+ * blocking or failing the deletion over (SPEC2 explicitly accepts this —
+ * no cron sweep either, unlike the post-images reaper).
+ */
+async function cleanupGameGifs(gameId: string): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const prefix = `gifs/${gameId}`;
+    const { data: files } = await admin.storage.from(GAME_GIFS_BUCKET).list(prefix);
+    if (!files || files.length === 0) return;
+    await admin.storage.from(GAME_GIFS_BUCKET).remove(files.map((f) => `${prefix}/${f.name}`));
+  } catch (error) {
+    console.warn('softDeleteSharedGame: failed to clean up cached GIFs', gameId, error);
+  }
+}
+
 /**
  * Soft-delete a shared game (owner or moderation). Stamps `deleted_at` only —
  * `status` (the visibility tier) is intentionally left untouched so the two
@@ -112,6 +134,8 @@ export async function softDeleteSharedGame(gameId: string): Promise<void> {
     // Idempotent (`post_clawback:game:<id>`), so a re-delete is a safe no-op.
     if (row) await clawbackPointsForPost(tx, row.authorId, { type: 'game', id: gameId });
   });
+
+  await cleanupGameGifs(gameId);
 }
 
 /** Update an owner-editable field set (title / description). */

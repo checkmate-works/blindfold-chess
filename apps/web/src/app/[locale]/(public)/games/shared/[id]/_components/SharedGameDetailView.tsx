@@ -8,6 +8,7 @@ import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
 import { getGameById } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
+import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
@@ -26,6 +27,7 @@ import { GameHelpTour } from './GameHelpTour';
 import { GameOutcomeLabel } from './GameOutcomeLabel';
 import { GameReview } from './GameReview';
 import { OwnerActions } from './OwnerActions';
+import { ShareMenu } from './ShareMenu';
 
 type Props = {
   locale: Locale;
@@ -73,11 +75,24 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     getAllAvailableChunkOptions(),
   ]);
 
+  const hasPlayedVariant =
+    playSettingsToThumbnailDisplay(game.playSettings, game.playerColor) != null;
+
   return (
     <PageLayout
       title={game.title}
       locale={locale}
-      titleAction={<GameHelpTour />}
+      titleAction={
+        <div className="flex items-center gap-1">
+          <ShareMenu
+            gameId={game.id}
+            title={game.title}
+            locale={locale}
+            hasPlayedVariant={hasPlayedVariant}
+          />
+          <GameHelpTour />
+        </div>
+      }
       breadcrumb={[{ label: t('list.title'), href: '/games/shared' }, { label: game.title }]}
     >
       <div className="space-y-6">
