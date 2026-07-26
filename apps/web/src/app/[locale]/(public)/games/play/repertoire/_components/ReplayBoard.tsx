@@ -9,7 +9,10 @@ import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import { FaPlay } from 'react-icons/fa';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import {
+  MOVE_NAV_ROW_CLASS,
+  MoveNavigationControls,
+} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 
 import { useReplayPlayback } from '../_hooks/use-replay-playback';
@@ -116,10 +119,7 @@ export function ReplayBoard({
             )}
           </div>
 
-          <div
-            className="relative flex items-center justify-center"
-            style={{ aspectRatio: '8 / 1' }}
-          >
+          <div className={`relative flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
             <MoveNavigationControls
               onNavigateToStart={() => goTo(0)}
               onNavigatePrevious={() => goTo(ply - 1)}

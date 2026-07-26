@@ -14,7 +14,10 @@ import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
 import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import {
+  MOVE_NAV_ROW_CLASS,
+  MoveNavigationControls,
+} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 
 import { LineListPanel } from './LineListPanel';
@@ -140,10 +143,7 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
               rounded={false}
             />
 
-            <div
-              className="relative flex items-center justify-center"
-              style={{ aspectRatio: '8 / 1' }}
-            >
+            <div className={`relative flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
               <MoveNavigationControls
                 onNavigateToStart={() => setPly(0)}
                 onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}

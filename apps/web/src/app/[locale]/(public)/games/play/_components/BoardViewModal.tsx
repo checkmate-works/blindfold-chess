@@ -13,7 +13,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
 
 import { HorizontalMoveList } from './HorizontalMoveList';
-import { MoveNavigationControls } from './MoveNavigationControls';
+import { MOVE_NAV_ROW_CLASS, MoveNavigationControls } from './MoveNavigationControls';
 
 type Props = {
   isOpen: boolean;
@@ -129,8 +129,7 @@ export function BoardViewModal({
           {/* Navigation Controls & Flip Button */}
           {(movesLength > 0 || onFlipBoard) && (
             <div
-              className="bg-card flex items-center justify-center relative"
-              style={{ aspectRatio: '8/1' }}
+              className={`bg-card flex items-center justify-center relative pr-11 sm:pr-0 ${MOVE_NAV_ROW_CLASS}`}
               onClick={(e) => e.stopPropagation()}
             >
               {movesLength > 0 &&
