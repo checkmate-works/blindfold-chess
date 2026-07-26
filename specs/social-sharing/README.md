@@ -66,6 +66,6 @@ X は og:image に GIF を渡しても1フレーム目の静止画しか出さ�
 
 ## 状況（更新すること）
 
-- [ ] Phase 1 (SPEC1) 実装
+- [x] Phase 1 (SPEC1) 実装 — branch `feat/social-sharing-og-image`, merged into `feat/social-sharing`
 - [ ] Phase 2 (SPEC2) 実装
 - [ ] Phase 3 (SPEC3) 実装
