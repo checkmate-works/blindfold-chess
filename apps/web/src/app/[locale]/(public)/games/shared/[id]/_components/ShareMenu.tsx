@@ -30,7 +30,12 @@ function Spinner() {
 /**
  * Viewer-facing share menu for a public game (link copy / X / GIF download),
  * distinct from `OwnerActions` (edit/delete) — visible to everyone, not just
- * the owner. GIF download goes through `fetch` + a synthetic `<a download>`
+ * the owner. It sits in the engagement row next to the like button (the SNS
+ * convention, and the row this app already reserves for post-level actions on
+ * every UGC detail page) rather than beside the page title, which is the help
+ * tour's slot everywhere else.
+ *
+ * GIF download goes through `fetch` + a synthetic `<a download>`
  * rather than a plain anchor so a loading spinner can cover the first-request
  * generation latency (SPEC2 §4); the API route streams the bytes from the
  * same origin with `Content-Disposition: attachment`, so this still saves
@@ -84,7 +89,9 @@ export function ShareMenu({ gameId, title, locale, hasPlayedVariant }: Props) {
   return (
     <ActionsMenu
       ariaLabel={t('detail.share.menuLabel')}
+      label={t('detail.share.menuLabel')}
       icon={<FiShare2 className="h-5 w-5" aria-hidden />}
+      align="left"
     >
       <ActionsMenuButton onClick={handleCopyLink}>
         <FiLink className="h-4 w-4" aria-hidden />
