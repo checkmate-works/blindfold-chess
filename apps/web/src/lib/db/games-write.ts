@@ -100,8 +100,10 @@ const GAME_GIFS_BUCKET = 'game-gifs';
  * Best-effort removal of any cached replay GIFs for a deleted game
  * (`gifs/${gameId}/*.gif` — see `generateGameGif`). Failures are swallowed:
  * an orphaned GIF just wastes a little Storage space, which isn't worth
- * blocking or failing the deletion over (SPEC2 explicitly accepts this —
- * no cron sweep either, unlike the post-images reaper).
+ * blocking or failing the deletion over. Deliberately no cron sweep to catch
+ * what this misses either (unlike the post-images reaper): soft-deleting a
+ * published game is rare and GIF storage is cheap, so a scheduled job would
+ * cost more to own than the bytes it reclaims.
  */
 async function cleanupGameGifs(gameId: string): Promise<void> {
   try {
