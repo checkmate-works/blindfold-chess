@@ -41,18 +41,24 @@ const PREFERENCES: GamePreferences = {
   aiReplyDuration: 5000,
 };
 
+// Hidden explicitly via showOwnPieces/showOpponentPieces (NOT derived from
+// `boardVisibility: 'peek'` — a peek reveals the real per-piece settings, so
+// `useReplayPreferences` no longer folds `'peek'` into hide-both; see
+// `boardHidden` in `use-replay-preferences.ts`).
 const PLAY_SETTINGS: GamePlaySettings = {
   boardVisibility: 'peek',
-  showOwnPieces: true,
-  showOpponentPieces: true,
+  showOwnPieces: false,
+  showOpponentPieces: false,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   pawnHideMode: 'none',
 };
 
-// Board hidden (peek) until half-move 4 (atMoveIndex=4), then revealed.
+// Hidden until half-move 4 (atMoveIndex=4), then revealed.
 const REVEAL_AT_4: PlaySettingsChangeEntry[] = [
   { atMoveIndex: 4, key: 'boardVisibility', to: 'always' },
+  { atMoveIndex: 4, key: 'showOwnPieces', to: true },
+  { atMoveIndex: 4, key: 'showOpponentPieces', to: true },
 ];
 
 describe('useReplayPreferences preferencesAt', () => {
@@ -114,6 +120,34 @@ describe('useReplayPreferences preferencesAt', () => {
     expect(modal.effectivePlaySettings?.boardVisibility).toBe('peek');
     expect(modal.boardPreferences.showOwnPieces).toBe(false);
     expect(modal.boardPreferences.showOpponentPieces).toBe(false);
+  });
+
+  it('passes through pieceShapeMode on a peek board instead of folding to hide-both (regression)', () => {
+    // Reported bug: an "as played" reproduction of a peek-mode game with one
+    // side shown as Go stones rendered EVERY piece as a translucent ghost,
+    // because `boardVisibility: 'peek'` used to force showOwnPieces/
+    // showOpponentPieces to false regardless of pieceShapeMode.
+    const { result } = renderHook(() =>
+      useReplayPreferences({
+        preferences: PREFERENCES,
+        playSettings: {
+          boardVisibility: 'peek',
+          showOwnPieces: true,
+          showOpponentPieces: false,
+          pieceShapeMode: 'circles-own',
+          pieceColors: 'normal',
+          pawnHideMode: 'none',
+        },
+        playSettingsLog: null,
+        currentPosition: 3,
+        notationMovesLength: 10,
+      })
+    );
+
+    expect(result.current.effectivePlaySettings?.boardVisibility).toBe('peek');
+    expect(result.current.boardPreferences.showOwnPieces).toBe(true);
+    expect(result.current.boardPreferences.showOpponentPieces).toBe(false);
+    expect(result.current.boardPreferences.pieceShapeMode).toBe('circles-own');
   });
 
   it('reveals everything for both the live board and the modal when reproduceView is off', () => {

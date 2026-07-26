@@ -47,4 +47,28 @@ describe('generateGameGif', () => {
     const meta = await sharp(buf, { animated: true }).metadata();
     expect(meta.pages).toBe(game.moves.length + 1);
   });
+
+  // Regression: a 'played' GIF for a peek-mode game with an asymmetric
+  // pieceShapeMode (one side shown as Go stones) used to render every piece
+  // as a translucent ghost, because `playSettingsToThumbnailDisplay` folded
+  // `boardVisibility: 'peek'` into hide-both-sides regardless of
+  // `pieceShapeMode`. This only asserts the GIF still renders without error
+  // for this combination — the settings-folding behavior itself is covered
+  // by `play-settings-thumbnail.test.ts`.
+  it('renders a "played" GIF for a peek-mode game with an asymmetric piece shape', async () => {
+    const game = buildGame({
+      playSettings: {
+        boardVisibility: 'peek',
+        showOwnPieces: true,
+        showOpponentPieces: false,
+        pieceShapeMode: 'circles-own',
+        pieceColors: 'normal',
+        pawnHideMode: 'none',
+      },
+    });
+    const buf = await generateGameGif(game, 'played');
+    expect(buf.subarray(0, 6).toString('ascii')).toBe('GIF89a');
+    const meta = await sharp(buf, { animated: true }).metadata();
+    expect(meta.pages).toBe(game.moves.length + 1);
+  });
 });
