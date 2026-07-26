@@ -263,7 +263,7 @@ describe('CreatePuzzleSolutionForm', () => {
 
     const tipFen = screen.getByTestId('chess-board').getAttribute('data-fen');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Previous move' }));
+    fireEvent.click(screen.getByRole('button', { name: 'previousMove' }));
 
     const board = screen.getByTestId('chess-board');
     expect(board.getAttribute('data-fen')).not.toBe(tipFen);
@@ -271,10 +271,10 @@ describe('CreatePuzzleSolutionForm', () => {
     expect(screen.getByText('viewingHistory')).toBeInTheDocument();
     expect(screen.queryByTestId('move-input-panel')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Go to start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'goToStart' }));
     expect(screen.getByTestId('chess-board').getAttribute('data-fen')).toBe(VALID_FEN);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Go to end' }));
+    fireEvent.click(screen.getByRole('button', { name: 'goToEnd' }));
     expect(screen.getByTestId('chess-board').getAttribute('data-fen')).toBe(tipFen);
     expect(screen.getByTestId('chess-board')).toHaveAttribute('data-interactive', 'true');
     expect(screen.getByTestId('move-input-panel')).toBeInTheDocument();

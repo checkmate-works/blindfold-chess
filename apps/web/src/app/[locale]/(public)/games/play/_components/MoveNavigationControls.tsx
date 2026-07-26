@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 type Props = {
   onNavigateToStart: () => void;
   onNavigatePrevious: () => void;
@@ -37,13 +41,15 @@ export function MoveNavigationControls({
   isPreviousDisabled,
   isNextDisabled,
 }: Props) {
+  const t = useTranslations('Common.moveNavigation');
+
   return (
     <div className="w-full flex justify-center gap-1.5 sm:w-auto sm:gap-1">
       <button
         type="button"
         onClick={onNavigateToStart}
         className={BUTTON_CLASS}
-        aria-label="Go to start"
+        aria-label={t('goToStart')}
         disabled={isPreviousDisabled}
       >
         «
@@ -52,7 +58,7 @@ export function MoveNavigationControls({
         type="button"
         onClick={onNavigatePrevious}
         className={BUTTON_CLASS}
-        aria-label="Previous move"
+        aria-label={t('previousMove')}
         disabled={isPreviousDisabled}
       >
         ‹
@@ -61,7 +67,7 @@ export function MoveNavigationControls({
         type="button"
         onClick={onNavigateNext}
         className={BUTTON_CLASS}
-        aria-label="Next move"
+        aria-label={t('nextMove')}
         disabled={isNextDisabled}
       >
         ›
@@ -70,7 +76,7 @@ export function MoveNavigationControls({
         type="button"
         onClick={onNavigateToEnd}
         className={BUTTON_CLASS}
-        aria-label="Go to end"
+        aria-label={t('goToEnd')}
         disabled={isNextDisabled}
       >
         »

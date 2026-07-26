@@ -8,6 +8,12 @@
       "next": "Next",
       "previousPage": "Previous page",
       "nextPage": "Next page"
+    },
+    "moveNavigation": {
+      "goToStart": "Go to start",
+      "previousMove": "Previous move",
+      "nextMove": "Next move",
+      "goToEnd": "Go to end"
     }
   },
   "Repertoires": {
@@ -6215,6 +6221,11 @@
         "conversionFailed": "This image couldn't be prepared for upload. Try a different photo or format.",
         "rateLimited": "Too many uploads. Please wait a few minutes and try again."
       }
+    },
+    "boardReview": {
+      "dialogLabel": "Board review",
+      "flipBoard": "Flip board",
+      "close": "Close"
     }
   },
   "postFenAttachment": {

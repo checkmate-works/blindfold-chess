@@ -2,8 +2,11 @@
 
 import { useEffect } from 'react';
 
+import { useTranslations } from 'next-intl';
+
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
+import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
 
 /**
@@ -33,7 +36,27 @@ import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
  * and omit the `moves` prop entirely so the navigation UI vanishes.
  * Keeping the modal chess.js-free means `AttachedFenCard` does not
  * need a dynamic import and the replay path stays bundle-split.
+ *
+ * @design Why the stepper IS shared even though the modal is not
+ *
+ * The « ‹ › » row is `MoveNavigationControls` — the same component every
+ * other board in the app steps with. What keeps `BoardViewModal` out of
+ * here is its `GamePreferences` coupling; the stepper has none of it (four
+ * callbacks and two disabled flags), so duplicating it only bought a
+ * second set of touch targets to forget about. It was in fact forgotten:
+ * these buttons stayed at 36px when the shared ones were sized up for
+ * thumbs. Flip and close sit beside it as `shrink-0` siblings, since the
+ * stepper is full-width below `sm`.
  */
+
+/**
+ * Flip / close. They keep the stepper's 56px touch height on mobile so the
+ * bottom row reads as one control strip rather than a tall stepper with two
+ * small buttons stuck to it; from `sm` up they stay the compact 36px squares
+ * that secondary actions use elsewhere.
+ */
+const SIDE_BUTTON_CLASS =
+  'w-11 h-14 shrink-0 flex items-center justify-center hover:bg-muted active:bg-muted rounded transition-colors text-foreground sm:w-9 sm:h-9';
 
 export type BoardReviewMovePair = {
   moveNumber: number;
@@ -78,6 +101,8 @@ export function BoardReviewModal({
   onNavigateToEnd,
   onNavigateToIndex,
 }: Props) {
+  const t = useTranslations('attachment.boardReview');
+
   useScrollLock(isOpen);
 
   useEffect(() => {
@@ -109,8 +134,7 @@ export function BoardReviewModal({
       className="fixed inset-0 z-50 flex items-center justify-center"
       role="dialog"
       aria-modal="true"
-      // TODO(i18n): attachment.boardReview.dialogLabel
-      aria-label="Board review"
+      aria-label={t('dialogLabel')}
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/70" />
@@ -166,64 +190,30 @@ export function BoardReviewModal({
           <div className="flex items-center justify-center gap-1 px-2 py-2 border-t border-border">
             {showNavigation && (
               <>
-                <button
-                  type="button"
-                  onClick={onNavigateToStart}
-                  disabled={isAtStart}
-                  className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-lg text-foreground"
-                  // TODO(i18n): attachment.boardReview.navStart
-                  aria-label="Go to start"
-                >
-                  &laquo;
-                </button>
-                <button
-                  type="button"
-                  onClick={onNavigatePrevious}
-                  disabled={isAtStart}
-                  className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-lg text-foreground"
-                  // TODO(i18n): attachment.boardReview.navPrevious
-                  aria-label="Previous move"
-                >
-                  &lsaquo;
-                </button>
-                <button
-                  type="button"
-                  onClick={onNavigateNext}
-                  disabled={isAtEnd}
-                  className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-lg text-foreground"
-                  // TODO(i18n): attachment.boardReview.navNext
-                  aria-label="Next move"
-                >
-                  &rsaquo;
-                </button>
-                <button
-                  type="button"
-                  onClick={onNavigateToEnd}
-                  disabled={isAtEnd}
-                  className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-lg text-foreground"
-                  // TODO(i18n): attachment.boardReview.navEnd
-                  aria-label="Go to end"
-                >
-                  &raquo;
-                </button>
-                <span aria-hidden="true" className="mx-1 h-6 w-px bg-border" />
+                <MoveNavigationControls
+                  onNavigateToStart={onNavigateToStart}
+                  onNavigatePrevious={onNavigatePrevious}
+                  onNavigateNext={onNavigateNext}
+                  onNavigateToEnd={onNavigateToEnd}
+                  isPreviousDisabled={isAtStart}
+                  isNextDisabled={isAtEnd}
+                />
+                <span aria-hidden="true" className="mx-1 h-6 w-px shrink-0 bg-border" />
               </>
             )}
             <button
               type="button"
               onClick={onFlip}
-              className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors text-foreground"
-              // TODO(i18n): attachment.boardReview.flipBoard
-              aria-label="Flip board"
+              className={SIDE_BUTTON_CLASS}
+              aria-label={t('flipBoard')}
             >
               &#x21C5;
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors text-foreground"
-              // TODO(i18n): attachment.boardReview.close
-              aria-label="Close"
+              className={SIDE_BUTTON_CLASS}
+              aria-label={t('close')}
             >
               &times;
             </button>
