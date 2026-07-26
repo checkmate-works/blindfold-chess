@@ -7,6 +7,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaXTwitter } from 'react-icons/fa6';
 import { FiDownload, FiLink, FiShare2 } from 'react-icons/fi';
 
+import { encodeGameShortId } from '@/lib/games/short-id';
+
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -46,12 +48,18 @@ export function ShareMenu({ gameId, title, locale, hasPlayedVariant }: Props) {
   const { showToast } = useToast();
   const [downloading, setDownloading] = useState<GifVariant | null>(null);
 
-  const shareUrl = `${SITE_URL}/${locale}/games/shared/${gameId}`;
-  const xIntentUrl = `https://x.com/intent/post?text=${encodeURIComponent(title)}&url=${encodeURIComponent(shareUrl)}`;
+  // Copying hands the URL to a human, who may paste it somewhere that shows it
+  // verbatim (LINE, Discord, a QR code, a slide), so it gets the short form.
+  const shortUrl = `${SITE_URL}/g/${encodeGameShortId(gameId)}`;
+  // X rewrites every link to a 23-character t.co URL, so the short form buys
+  // nothing there and would only add a redirect hop for the card crawler to
+  // follow. Hand X the canonical page directly.
+  const canonicalUrl = `${SITE_URL}/${locale}/games/shared/${gameId}`;
+  const xIntentUrl = `https://x.com/intent/post?text=${encodeURIComponent(title)}&url=${encodeURIComponent(canonicalUrl)}`;
 
   async function handleCopyLink() {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(shortUrl);
       showToast(t('detail.share.copied'), 'success');
     } catch {
       // Clipboard permission denied / unavailable in this browser context —
