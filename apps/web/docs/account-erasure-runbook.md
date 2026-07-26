@@ -8,7 +8,8 @@ access.
 
 ## Default policy (what happens without an erasure request)
 
-The normal account-deletion lifecycle (`specs/account-deletion/`) is:
+The normal account-deletion lifecycle (documented in
+`apps/web/src/lib/users/delete-account.ts`) is:
 
 1. **退会 (soft delete)** — PII on `profiles` is anonymised, the avatar file is
    removed, Stripe is canceled, and likes the user _received_ are deleted. The
@@ -72,8 +73,9 @@ JOIN public.topic_posts tp ON tp.id = pia.post_id
 WHERE tp.user_id = :uid;
 ```
 
-The avatar file (`avatars/${uid}/...`) was already removed at退会 (SPEC1); no
-action needed unless verifying.
+The avatar file (`avatars/${uid}/...`) was already removed at退会 by
+`deleteAccount` (`apps/web/src/lib/users/delete-account.ts`); no action needed
+unless verifying.
 
 ### 3. Delete the content rows
 

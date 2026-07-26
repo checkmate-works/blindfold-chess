@@ -18,9 +18,12 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
  * Account deletion (退会) — the single source of truth for what happens when a
- * user deletes their account. This is the canonical "discovery point" for the
- * whole account-deletion SPEC series (`specs/account-deletion/`); read this
- * TSDoc before changing any deletion behaviour.
+ * user deletes their account, and the canonical "discovery point" for the whole
+ * lifecycle: read this TSDoc before changing any deletion behaviour. The other
+ * half of the lifecycle (the retention-delayed physical purge) documents itself
+ * in {@link import('./purge-deleted-accounts').purgeDeletedAccounts}, and the
+ * manual right-to-erasure procedure lives in
+ * `apps/web/docs/account-erasure-runbook.md`.
  *
  * ## Soft delete, not physical delete
  *
@@ -28,8 +31,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
  * stamps `auth.users.deleted_at`; the row is NOT physically removed. As a
  * consequence, **FK `ON DELETE CASCADE` / `SET NULL` do not fire at deletion
  * time** — every UGC row keyed by `user_id` stays in place. The actual physical
- * purge (which fires those FK actions) happens after a retention period and is
- * implemented separately in SPEC5. So this function must explicitly perform any
+ * purge (which fires those FK actions) happens after a retention period, in
+ * {@link import('./purge-deleted-accounts').purgeDeletedAccounts}. So this
+ * function must explicitly perform any
  * cleanup that is desired *immediately* on deletion (PII anonymisation, avatar
  * file removal); it cannot rely on cascade.
  *
@@ -43,13 +47,13 @@ import { createAdminClient } from '@/lib/supabase/admin';
  * | Physical delete  | likes *received* on the user's own content              | Deleted immediately (this function)      |
  * | Soft delete      | the user's *draft* (unpublished) chunks                 | Retired immediately (this function)      |
  * | Keep (anonymise) | likes the user *gave* to others' content                | Kept; `user_id → NULL` on purge (FK)     |
- * | Keep public UGC  | games, comments, *published* chunks, posts, positions…  | Retained, author anonymised (other SPEC) |
+ * | Keep public UGC  | games, comments, *published* chunks, posts, positions…  | Retained; author anonymised on purge     |
  *
  * ### Likes — given vs. received (the two halves are split by mechanism)
  * The product rule is: a like the user *gave* survives (anonymised), and a like
  * the user *received* on their own content is erased. The FK
  * `likes.user_id → auth.users ON DELETE SET NULL` covers the *given* half on
- * physical purge (SPEC5). The *received* half has no FK to ride — `likes` is
+ * physical purge. The *received* half has no FK to ride — `likes` is
  * polymorphic over `(target_type, target_id)` with no constraint on the target —
  * so it is deleted explicitly here, synchronously at deletion time, by
  * {@link deleteReceivedLikes}. (Coins already paid for those likes are NOT
@@ -79,7 +83,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
  *    and "already canceled" are not failures (handled idempotently in
  *    {@link cancelAllActiveSubscriptions}); subscription-less users (the vast
  *    majority) pass straight through. This step is deliberately NOT written to
- *    `activity_log` — see `specs/account-deletion/OVERVIEW.md`.
+ *    `activity_log`, for the same reason the deletion itself is not (above):
+ *    the cancellation is derivable from the `subscriptions` row it updates.
  * 2. **Auth soft-delete** runs next; profile cleanup runs only if it succeeds.
  *    That way a failed auth delete leaves profile data intact, and a failed
  *    profile cleanup leaves a user that can no longer log in with leftover data
@@ -184,7 +189,8 @@ const LIKEABLE_OWNED_CONTENT = [
  * content kind: drop `likes` rows whose `(target_type, target_id)` points at a
  * row the user owns. Runs synchronously at deletion time; soft-deleted content
  * still counts as owned, so its received likes go too. The content rows
- * themselves are untouched (they are kept + anonymised by other SPECs).
+ * themselves are untouched — they are kept, and their author is anonymised
+ * later by the purge's `ON DELETE SET NULL`.
  */
 async function deleteReceivedLikes(userId: string): Promise<void> {
   for (const { targetType, table, ownerColumn } of LIKEABLE_OWNED_CONTENT) {
