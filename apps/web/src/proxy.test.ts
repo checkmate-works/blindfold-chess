@@ -10,9 +10,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  *   1. A per-request CSP nonce is generated and attached to the forwarded
  *      request via the `x-nonce` header, so downstream Server Components
  *      can read it through `headers()` and stamp it onto inline scripts.
- *   2. The response carries an enforcing `Content-Security-Policy` header
- *      (NOT `Content-Security-Policy-Report-Only`) whose `script-src`
- *      contains the same nonce as `x-nonce`.
+ *   2. The response carries a `Content-Security-Policy-Report-Only` header
+ *      (and NOT an enforcing `Content-Security-Policy` — sending both would
+ *      make the browser honour the enforcing one) whose `script-src`
+ *      contains the same nonce as `x-nonce`. The policy was downgraded to
+ *      Report-Only in c6805b993; see the comment on `applyCspHeaders` in
+ *      proxy.ts and GitHub issue #89 for the path back to enforcing.
  *   3. The response carries a `Report-To` header pointing at the
  *      `/api/csp-report` collector.
  *
