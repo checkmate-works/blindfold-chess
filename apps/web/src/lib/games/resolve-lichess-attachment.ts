@@ -11,7 +11,7 @@ import { fetchLichessGamePgn } from './lichess';
  * this many days, the stored PGN is reused instead of re-fetching.
  *
  * Trade-off: shorter values catch upstream deletions sooner, longer
- * values reduce outbound load. 30 days balances both per SPEC1 §6-1.
+ * values reduce outbound load. 30 days is the chosen balance.
  */
 const REUSE_WINDOW_DAYS = 30;
 

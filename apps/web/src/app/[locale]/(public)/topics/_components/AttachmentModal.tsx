@@ -18,8 +18,7 @@ import { Modal } from '@/app/[locale]/_components/Modal';
 /**
  * @design Single-kind constraint
  *
- * SPEC2 D3 case (iii): a post may carry attachments from at most one
- * family. Each tab owns one sub-kind (Game = pgn, Position = fen,
+ * A post may carry attachments from at most one family. Each tab owns one sub-kind (Game = pgn, Position = fen,
  * Images = image). The user picks the active tab and only that tab's
  * mode is forwarded to the parent at submit time. Tab state persists
  * across switches so a user can compare drafts without losing work, but

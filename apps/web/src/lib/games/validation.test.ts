@@ -198,7 +198,7 @@ describe('detectAttachmentInput', () => {
     expect(r.kind).toBe('lichess');
   });
 
-  // ─── SPEC2 Phase B: embed URL smoke tests ───
+  // ─── embed URL smoke tests ───
   // Exhaustive parser coverage lives in `parse-embed-url.test.ts`. The
   // tests below only confirm that `detectAttachmentInput` routes embed
   // URLs to the right kind in the right order.

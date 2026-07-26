@@ -320,7 +320,6 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // edits (no move made) need this hook boundary because
   // `useSaveTrigger` only watches moves/status — without it the change
   // would be lost on Save&Exit / navigation / page hide.
-  // See SPEC1 blocker 2.
   const setPerGamePref = useCallback(
     <K extends keyof PerGamePreferences>(key: K, value: PerGamePreferences[K]) => {
       const appended = appendPreferenceChange(key, value, moves.length);

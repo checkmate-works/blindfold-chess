@@ -78,9 +78,10 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(board.getAttribute('data-fen')).toBe(STARTING_FEN);
   });
 
-  it('routes a [Site] PGN URL through the cushion redirect page (#84 update of SPEC1 §7-4)', () => {
-    // The cushion redirect (`/[locale]/redirect?url=...`) was added
-    // after SPEC1 §7-4 was written. It surfaces the destination URL
+  it('routes a [Site] PGN URL through the cushion redirect page (#84)', () => {
+    // The Site header was originally rendered as plain text over phishing
+    // concerns. The cushion redirect (`/[locale]/redirect?url=...`) added
+    // later by #84 surfaces the destination URL
     // before navigation, mitigating the original phishing concern,
     // so external Site URLs are now rendered as cushion-routed
     // anchors instead of plain text.

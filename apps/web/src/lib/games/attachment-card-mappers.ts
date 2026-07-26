@@ -26,8 +26,8 @@ export type PgnAttachmentRow = Omit<AttachedGameCardData, 'finalFen'>;
  * Compute the final-position FEN server-side. The summary card only needs a
  * static FEN string for its thumbnail, so doing the PGN parse + chess.js
  * replay here keeps chess-core off the client bundle of every page that
- * lists attached games. See SPEC1 §5-1 ("初期はサムネイルのみ + 詳細展開時のみ
- * リプレイ UI を lazy ロード").
+ * lists attached games — the card shows a thumbnail only, and the replay UI
+ * is lazy-loaded on expand (see `GameReplayModal`).
  */
 export function pgnRowToCard(row: PgnAttachmentRow): AttachedGameCardData {
   let finalFen: string;

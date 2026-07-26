@@ -21,8 +21,8 @@ import { MAX_IMAGES_PER_POST, POST_IMAGES_MAX_FILE_SIZE } from '@/lib/post-image
  * is intentionally NOT offered — only still images are supported.
  *
  * The parent form composes the inputs into the AttachmentModal tabs and
- * enforces single-kind submission via the reported `mode` (SPEC2 D3
- * case (iii)).
+ * enforces single-kind submission via the reported `mode` — see the
+ * single-kind constraint on `AttachmentModal`.
  */
 export type ImageAttachmentMode = { kind: 'empty' } | { kind: 'image'; files: readonly File[] };
 

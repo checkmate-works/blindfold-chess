@@ -3,7 +3,7 @@
  * persisted on `post_game_embed_attachments`.
  *
  * @description
- * SPEC2 / Phase B accepts two embed URL shapes:
+ * Two embed URL shapes are accepted:
  *   - chess.com emboard: `https://www.chess.com/emboard?id={diagramId}`
  *   - Lichess embed:    `https://lichess.org/embed/{gameId}` or
  *                       `https://lichess.org/embed/game/{gameId}`
@@ -95,8 +95,7 @@ const LICHESS_EMBED_ID_RE = /^[A-Za-z0-9]{8}$/;
 const MAX_INPUT_LENGTH = 512;
 
 type EmbedAttachment =
-  | { provider: 'chesscom'; embedId: string }
-  | { provider: 'lichess'; embedId: string };
+  { provider: 'chesscom'; embedId: string } | { provider: 'lichess'; embedId: string };
 
 export type ParseEmbedUrlResult =
   | { ok: true; value: EmbedAttachment }

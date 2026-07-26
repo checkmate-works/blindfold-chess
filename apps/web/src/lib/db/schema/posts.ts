@@ -191,7 +191,8 @@ export type NewTopicPost = typeof topicPosts.$inferInsert;
  *
  * @design user_id nullable + ON DELETE SET NULL — a *given* like survives its
  *   author's deletion (anonymised), it is not erased. When a former member is
- *   physically purged (SPEC5), the FK sets `user_id = NULL` instead of cascading
+ *   physically purged (`purgeDeletedAccounts`), the FK sets `user_id = NULL`
+ *   instead of cascading
  *   the row away, so the like still counts toward the liked content's total. The
  *   complementary half of the policy — physically deleting likes a withdrawing
  *   user *received* on their own content — is done in the app layer at deletion
@@ -290,10 +291,22 @@ export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
  * rendering always works from PGN, even for Lichess-sourced games.
  *
  * This table is `post_game_pgn_attachments` — the `pgn` infix disambiguates
- * it from the sibling table `post_game_embed_attachments` (scaffold added in
- * Phase A, SPEC1) which stores iframe embed attachments. The two tables are
- * independent members of the `post_game_<kind>_attachments` family (Pattern 5
- * per-kind tables; see `docs/design/SPEC1-embed-data-model-ADR.md`).
+ * it from the sibling table `post_game_embed_attachments`, which stores
+ * iframe embed attachments. Both are independent members of the per-kind
+ * attachment family described below.
+ *
+ * @design Per-kind attachment tables, not one polymorphic `attachments` table
+ *
+ * This is the canonical statement of the decision the whole
+ * `post_*_attachments` family follows (pgn / embed / image / fen / video —
+ * each of those TSDocs points back here). Every kind has its own column
+ * shape (PGN body / embed id / storage path + blob metadata / FEN string /
+ * provider + video id), its own CHECK constraints, and its own index needs.
+ * Collapsing them into one table would either bloat every row with NULL
+ * columns belonging to other kinds, or push the per-kind validation up to
+ * the app layer where the DB can no longer enforce it. Per-kind tables keep
+ * each attachment self-describing at the schema level; the cost is one extra
+ * table per kind, which is cheap next to a shared table nothing can validate.
  *
  * @design 1:0..1 instead of 1:N (UNIQUE on post_id)
  *
@@ -489,16 +502,16 @@ export type NewPostGamePgnAttachment = typeof postGamePgnAttachments.$inferInser
  * Embed Game Attachments — iframe embed chess game attached to a topic post.
  *
  * @description
- * Phase A scaffold only. No application code reads or writes this table in
- * Phase A. Phase B (SPEC2) will add the iframe embed feature implementation:
- * chess.com `<iframe src="https://www.chess.com/emboard?id={embed_id}">` and
- * Lichess `<iframe src="https://lichess.org/embed/{embed_id}">`.
+ * Schema scaffold only: no application code reads or writes this table yet.
+ * The iframe embed feature that will use it renders chess.com
+ * `<iframe src="https://www.chess.com/emboard?id={embed_id}">` and Lichess
+ * `<iframe src="https://lichess.org/embed/{embed_id}">`.
  *
- * See `docs/design/SPEC1-embed-data-model-ADR.md` for the full design
- * rationale, including the decision to keep this as a separate table from
- * `post_game_pgn_attachments` (Pattern 5 per-kind tables). The `pgn` sibling
- * stores PGN-text games; this table stores embed-only games that have no PGN
- * body — they carry only an embed identifier and provider discriminator.
+ * Why this is a separate table from `post_game_pgn_attachments` rather than a
+ * source variant of it: see the per-kind design note on that table. The `pgn`
+ * sibling stores PGN-text games; this table stores embed-only games that have
+ * no PGN body — they carry only an embed identifier and provider
+ * discriminator.
  *
  * @design 1:0..1 invariant (UNIQUE on post_id)
  *
@@ -510,8 +523,9 @@ export type NewPostGamePgnAttachment = typeof postGamePgnAttachments.$inferInser
  * emboard URL (numeric diagram ID). Lichess: the 8-character game ID (same
  * namespace as `post_game_pgn_attachments.source_game_id` for Lichess games).
  * The CHECK `^[A-Za-z0-9_-]{1,64}$` intentionally excludes `/` so Lichess
- * study chapter IDs (`{studyId}/{chapterId}`) cannot be stored — those are
- * out of scope for SPEC2 (ADR §4.1).
+ * study chapter IDs (`{studyId}/{chapterId}`) cannot be stored — studies are
+ * deliberately out of scope for the embed feature, and widening the CHECK is
+ * the decision point if that changes.
  *
  * @design attribution columns mirror post_game_pgn_attachments
  *
@@ -583,7 +597,8 @@ export type NewPostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferI
  *
  * @description
  * Sibling of `post_game_pgn_attachments` and `post_game_embed_attachments`
- * (Pattern 5 per-kind tables; see `docs/design/SPEC1-embed-data-model-ADR.md`).
+ * (per-kind attachment tables — see `postGamePgnAttachments` for why the
+ * family is split this way).
  * Stores up to 3 images per post; the cap is enforced race-free by a
  * BEFORE INSERT trigger on this table that takes a row lock on the parent
  * `topic_posts` row (`SELECT ... FOR UPDATE`) and consults
@@ -592,14 +607,10 @@ export type NewPostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferI
  * migration that does `CREATE OR REPLACE FUNCTION
  * public.enforce_post_image_count_limit()` with the new constant.
  *
- * @design Why a separate sibling table (Pattern 5)
+ * @design Why a separate sibling table
  *
- * Same rationale as the sibling `post_game_*_attachments` tables: each
- * attachment kind has its own column shape (PGN body / embed id / image
- * blob metadata), index needs, and validation surface, so collapsing them
- * into one polymorphic `attachments` table would either bloat every row
- * with NULLs or push validation to the app layer. Per-kind tables keep
- * each attachment kind self-describing at the DB level.
+ * Same rationale as the sibling `post_game_*_attachments` tables — stated in
+ * full on `postGamePgnAttachments`.
  *
  * @design No `public_url` column (rebuild from `storage_path` at read time)
  *
@@ -721,8 +732,9 @@ export type NewPostImageAttachment = typeof postImageAttachments.$inferInsert;
  *
  * @description
  * Sibling of `post_game_pgn_attachments`, `post_game_embed_attachments`, and
- * `post_image_attachments` (Pattern 5 per-kind tables; see
- * `docs/design/SPEC1-embed-data-model-ADR.md`). Stores a single FEN string
+ * `post_image_attachments` (per-kind attachment tables — see
+ * `postGamePgnAttachments` for why the family is split this way).
+ * Stores a single FEN string
  * representing a static chess position attached to a topic post — used to
  * render a mini-board next to the post (renderer is deferred to a follow-up
  * issue; this table only carries the data).
@@ -811,8 +823,9 @@ export type NewPostFenAttachment = typeof postFenAttachments.$inferInsert;
  *
  * @description
  * Sibling of `post_game_pgn_attachments`, `post_game_embed_attachments`,
- * `post_image_attachments`, and `post_fen_attachments` (Pattern 5 per-kind
- * tables; see `docs/design/SPEC1-embed-data-model-ADR.md`). Stores a single
+ * `post_image_attachments`, and `post_fen_attachments` (per-kind attachment
+ * tables — see `postGamePgnAttachments` for why the family is split this
+ * way). Stores a single
  * embeddable video reference attached to a topic post. MVP supports only
  * the `'youtube'` provider; the schema is shaped so adding `'vimeo'` /
  * `'twitch'` is a CHECK widen + parser branch + renderer mapping change.

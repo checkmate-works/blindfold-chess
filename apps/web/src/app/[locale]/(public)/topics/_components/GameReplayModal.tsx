@@ -17,7 +17,7 @@ import type { BoardReviewMovePair } from './BoardReviewModal';
  * `parsePgnWithFen` + `getFenAfterMoves` helpers from chess-core so
  * the modal can step through every position in the PGN.
  *
- * @design Bundle split (SPEC1 §5-1)
+ * @design Bundle split
  *
  * `AttachedGameCard` only imports this module via `next/dynamic({
  * ssr: false })`, so the chess.js dependency stays out of the chunk

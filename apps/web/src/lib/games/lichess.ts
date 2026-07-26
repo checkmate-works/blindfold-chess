@@ -109,8 +109,8 @@ const defaultThrottle = createLichessThrottle({
  *
  * @param gameId — MUST be a canonical 8-character Lichess game ID
  *   (`/^[a-zA-Z0-9]{8}$/`). 12-character player URLs must be truncated
- *   by the URL parsing layer (see SPEC1 §2-1) before reaching this
- *   function.
+ *   by the URL parsing layer (`detectAttachmentInput`, which always
+ *   normalizes to the canonical 8 chars) before reaching this function.
  *
  * Reuse semantics:
  *   Callers (typically `resolveLichessAttachmentPgn`) should first look

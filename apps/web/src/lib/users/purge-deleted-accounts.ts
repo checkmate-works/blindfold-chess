@@ -8,7 +8,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
  * Physical purge of soft-deleted accounts after the retention period — the
- * final stage of the account-deletion lifecycle (`specs/account-deletion/`).
+ * final stage of the account-deletion lifecycle, whose first stage (and
+ * canonical entry point) is
+ * {@link import('./delete-account').deleteAccount}.
  *
  * ## Where this sits in the lifecycle
  *
@@ -40,15 +42,18 @@ import { createAdminClient } from '@/lib/supabase/admin';
  * path passes `true` for a soft delete). The `profiles.id → auth.users` FK is
  * `ON DELETE CASCADE` **specifically so this purge works**: a hard delete
  * removes the auth row, cascade-removes the profile (releasing the
- * username/bannedAt hold), and lets every other user-data FK fire. (It was
- * RESTRICT before SPEC5, which would have blocked the hard delete entirely.)
+ * username/bannedAt hold), and lets every other user-data FK fire. (That FK was
+ * RESTRICT until this purge was introduced, which would have blocked the hard
+ * delete entirely — do not restore it.)
  *
- * ## Ordering & prerequisites (do not enable early)
+ * ## Prerequisite this purge depends on (do not undo)
  *
- * This purge must only run once the likes / topic_posts / positions FKs are
- * SET NULL in production (SPEC3 + SPEC4). If they were still CASCADE, the hard
- * delete would wrongly destroy the user's *given* likes and their public posts
- * / positions instead of anonymising them.
+ * The `likes` / `topic_posts` / `positions` user FKs must stay `SET NULL` —
+ * see `ensure_auth_users_fk` in
+ * `apps/web/drizzle/supabase/foreign_keys_and_grants.sql`. Were any of them
+ * switched back to CASCADE, this hard delete would silently destroy the user's
+ * *given* likes and their public posts / positions instead of anonymising
+ * them, turning "keep the content, drop the identity" into a content wipe.
  *
  * @design Best-effort, idempotent, retry-safe
  *

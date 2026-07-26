@@ -8,7 +8,8 @@ import { db, subscriptions } from '@/lib/db';
 /**
  * Immediately cancel every active Stripe subscription a user holds, used as
  * part of account deletion (退会). See {@link import('@/lib/users/delete-account').deleteAccount}
- * for the overall deletion flow and `specs/account-deletion/` for the policy.
+ * for the overall deletion flow and the policy behind it — including why this
+ * runs first, before anything irreversible.
  *
  * ## Why immediate (not period-end) cancellation
  * The product decision is to cancel **immediately** (`stripe.subscriptions.cancel`),
