@@ -8,6 +8,12 @@
       "next": "次へ",
       "previousPage": "前のページ",
       "nextPage": "次のページ"
+    },
+    "moveNavigation": {
+      "goToStart": "最初へ",
+      "previousMove": "前の手",
+      "nextMove": "次の手",
+      "goToEnd": "最後へ"
     }
   },
   "Repertoires": {
@@ -6215,6 +6221,11 @@
         "conversionFailed": "この画像をアップロード用に変換できませんでした。別の写真または形式でお試しください。",
         "rateLimited": "アップロードが多すぎます。しばらく待ってから再度お試しください。"
       }
+    },
+    "boardReview": {
+      "dialogLabel": "盤面の確認",
+      "flipBoard": "ボードを反転",
+      "close": "閉じる"
     }
   },
   "postFenAttachment": {

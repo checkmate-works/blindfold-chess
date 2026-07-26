@@ -8,6 +8,12 @@
       "next": "Próxima",
       "previousPage": "Página anterior",
       "nextPage": "Próxima página"
+    },
+    "moveNavigation": {
+      "goToStart": "Ir para o início",
+      "previousMove": "Movimento anterior",
+      "nextMove": "Próximo movimento",
+      "goToEnd": "Ir para o fim"
     }
   },
   "Repertoires": {
@@ -6215,6 +6221,11 @@
         "conversionFailed": "Não foi possível preparar esta imagem para envio. Tente outra foto ou outro formato.",
         "rateLimited": "Muitos envios. Aguarde alguns minutos e tente novamente."
       }
+    },
+    "boardReview": {
+      "dialogLabel": "Revisão do tabuleiro",
+      "flipBoard": "Inverter tabuleiro",
+      "close": "Fechar"
     }
   },
   "postFenAttachment": {

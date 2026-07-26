@@ -8,6 +8,12 @@ afterEach(() => {
   cleanup();
 });
 
+// `BoardReviewModal` (rendered by the card) reads its labels through
+// next-intl, which needs a provider this test has no use for. Echo the key.
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 // MiniBoard pulls in chess-pieces / icons / GamePreferencesContext, none of
 // which are relevant here. Stub it to a marker div so we can assert the FEN
 // is forwarded without exercising the chessboard rendering stack.
