@@ -2470,6 +2470,8 @@
       "cancel": "Cancelar",
       "deleteConfirmTitle": "Excluir esta partida compartilhada?",
       "deleteConfirmBody": "Ela será removida do catálogo público e não pode ser desfeita.",
+      "ogDescription": "{engine} · {moves} lances · {result}",
+      "ogBlindfoldBadge": "Modo às cegas",
       "claim": {
         "signedOutTitle": "Faça esta partida fazer parte do seu histórico",
         "signedOutBody": "Você publicou esta partida sem uma conta. Registre-se e vincule-a — se ela cumprir os requisitos de uma graduação, você é promovido na hora (uma partida de nível faixa preta promove você à faixa preta).",

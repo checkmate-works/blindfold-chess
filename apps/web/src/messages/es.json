@@ -2470,6 +2470,8 @@
       "cancel": "Cancelar",
       "deleteConfirmTitle": "¿Eliminar esta partida compartida?",
       "deleteConfirmBody": "Se quitará del catálogo público y no se puede deshacer.",
+      "ogDescription": "{engine} · {moves} jugadas · {result}",
+      "ogBlindfoldBadge": "Modo a ciegas",
       "claim": {
         "signedOutTitle": "Haz que esta partida forme parte de tu historial",
         "signedOutBody": "Publicaste esta partida sin una cuenta. Regístrate y vincúlala — si cumple los requisitos de un rango, asciendes de inmediato (una partida de nivel cinturón negro te asciende al cinturón negro).",

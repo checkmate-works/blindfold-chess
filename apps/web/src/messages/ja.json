@@ -2470,6 +2470,8 @@
       "cancel": "キャンセル",
       "deleteConfirmTitle": "この公開対局を削除しますか？",
       "deleteConfirmBody": "公開一覧から削除されます。この操作は取り消せません。",
+      "ogDescription": "{engine}戦 ・ {moves}手 ・ {result}",
+      "ogBlindfoldBadge": "目隠しプレイ",
       "claim": {
         "signedOutTitle": "このゲームを自分の実績にしませんか？",
         "signedOutBody": "このゲームはアカウントなしで公開されています。アカウント登録して紐づけると、昇級条件を満たしていればすぐに昇級します（黒帯の条件を満たした対局なら黒帯に昇格）。",
