@@ -171,9 +171,12 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     // `fonts.googleapis.com` serves the @font-face stylesheet for the Google
     // Sans fonts that Google's AdSense / consent UI injects.
     "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+    // `ep1.adtrafficquality.google`: the Ad Traffic Quality endpoint is not
+    // only an XHR beacon target (see `connect-src` below) — it is also fetched
+    // as a tracking pixel via `<img>`, so it must be named in BOTH directives.
     "img-src 'self' data: blob: *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
-      ' pagead2.googlesyndication.com *.doubleclick.net',
+      ' pagead2.googlesyndication.com *.doubleclick.net ep1.adtrafficquality.google',
     // `fonts.gstatic.com`: woff2 files for the Google Sans font that AdSense's
     // in-page UI pulls in (the app's own Inter is self-hosted via next/font).
     "font-src 'self' data: fonts.gstatic.com",
@@ -181,6 +184,16 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     // beacons here via fetch/XHR (the iframe counterpart `ep2.adtrafficquality.google`
     // lives in `frame-src` below). Without it production logs a flood of
     // connect-src violations.
+    //
+    // `fundingchoicesmessages.google.com`: Google's Privacy & messaging (Funding
+    // Choices) CMP. Plain AdSense publishers get no separate CMP tag — the
+    // consent message is delivered by `adsbygoogle.js` itself, which then
+    // fetches / beacons this host via XHR on every page load. The host was
+    // dropped from `script-src` when the standalone CMP tag was removed
+    // (a91d72fc5); under `'strict-dynamic'` the injected script needs no
+    // script-src entry, but `connect-src` has no such escape hatch, so this
+    // entry is required. Missing it produced a steady stream of connect-src
+    // violation reports in production.
     //
     // `*.google-analytics.com` (not the literal `www.google-analytics.com`):
     // gtag.js sends measurement hits to region-prefixed hosts such as
@@ -191,7 +204,8 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     "connect-src 'self' *.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
-      ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google',
+      ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google' +
+      ' fundingchoicesmessages.google.com',
     // `pagead2.googlesyndication.com`: AdSense also renders some ad iframes from
     // this host (in addition to googleads.g.doubleclick.net / tpc.googlesyndication.com).
     'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
