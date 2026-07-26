@@ -2472,6 +2472,15 @@
       "deleteConfirmBody": "Ela será removida do catálogo público e não pode ser desfeita.",
       "ogDescription": "{engine} · {moves} lances · {result}",
       "ogBlindfoldBadge": "Modo às cegas",
+      "share": {
+        "menuLabel": "Compartilhar",
+        "copyLink": "Copiar link",
+        "copied": "Link copiado!",
+        "shareOnX": "Compartilhar no X",
+        "downloadGif": "Baixar GIF",
+        "downloadGifAsPlayed": "Baixar GIF (como foi jogado)",
+        "gifHint": "Anexe o GIF ao postar no X — GIFs em links não animam lá."
+      },
       "claim": {
         "signedOutTitle": "Faça esta partida fazer parte do seu histórico",
         "signedOutBody": "Você publicou esta partida sem uma conta. Registre-se e vincule-a — se ela cumprir os requisitos de uma graduação, você é promovido na hora (uma partida de nível faixa preta promove você à faixa preta).",

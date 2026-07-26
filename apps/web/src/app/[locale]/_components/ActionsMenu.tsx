@@ -26,6 +26,8 @@ type Props = {
    * modal) survives the popup closing.
    */
   children?: ReactNode;
+  /** Trigger icon override — defaults to the "⋯" overflow glyph. */
+  icon?: ReactNode;
 };
 
 /**
@@ -36,7 +38,7 @@ type Props = {
  * crawlable. Any click inside the popup closes it (menu semantics) — modals
  * opened by custom items live in a portal, so they are unaffected.
  */
-export function ActionsMenu({ ariaLabel, items = [], children }: Props) {
+export function ActionsMenu({ ariaLabel, items = [], children, icon }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +69,7 @@ export function ActionsMenu({ ariaLabel, items = [], children }: Props) {
         onClick={() => setOpen((v) => !v)}
         className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
-        <FiMoreHorizontal className="h-5 w-5" aria-hidden />
+        {icon ?? <FiMoreHorizontal className="h-5 w-5" aria-hidden />}
       </button>
 
       <div

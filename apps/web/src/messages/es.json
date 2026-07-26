@@ -2472,6 +2472,15 @@
       "deleteConfirmBody": "Se quitará del catálogo público y no se puede deshacer.",
       "ogDescription": "{engine} · {moves} jugadas · {result}",
       "ogBlindfoldBadge": "Modo a ciegas",
+      "share": {
+        "menuLabel": "Compartir",
+        "copyLink": "Copiar enlace",
+        "copied": "¡Enlace copiado!",
+        "shareOnX": "Compartir en X",
+        "downloadGif": "Descargar GIF",
+        "downloadGifAsPlayed": "Descargar GIF (tal como se jugó)",
+        "gifHint": "Adjunta el GIF al publicar en X — los GIF enlazados no se animan allí."
+      },
       "claim": {
         "signedOutTitle": "Haz que esta partida forme parte de tu historial",
         "signedOutBody": "Publicaste esta partida sin una cuenta. Regístrate y vincúlala — si cumple los requisitos de un rango, asciendes de inmediato (una partida de nivel cinturón negro te asciende al cinturón negro).",
