@@ -11,8 +11,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
  * parent topic_post is non-soft-deleted. The visibility rule is enforced
  * by (a) the RLS SELECT policy on `post_game_embed_attachments`, (b) the
  * application-layer query that filters `topic_posts.deleted_at IS NULL`,
- * and (c) this contract — three layers of defense, mirroring the PGN
- * card's posture (SPEC1 §5-1).
+ * and (c) this contract — three layers of defense, mirroring
+ * `AttachedGameCard`'s posture.
  *
  * @design iframe src reconstruction
  *

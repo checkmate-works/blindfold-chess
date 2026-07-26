@@ -105,7 +105,7 @@ describe('foldPreferences', () => {
     expect(initial).toEqual(snapshot);
   });
 
-  // Pairs with blocker 1 in SPEC1.md: folding a change log over a normalised
+  // Regression guard: folding a change log over a normalised
   // legacy snapshot (one that originally lacked `moveInputMode`) must yield a
   // complete object — otherwise a downstream renderer would see `undefined` for
   // a key that the type system says is always present.

@@ -29,7 +29,7 @@ function makeAttachment(overrides: Partial<AttachedEmbedCardData> = {}): Attache
  *
  * These tests pin the SecurityEngineer Phase 1 baseline (D1) for the iframe
  * `sandbox` attribute, the `referrerpolicy` / `loading` defaults (D2),
- * the renderer-rebuilt `src` invariant (D7 / SPEC1 §5-1), and the
+ * the renderer-rebuilt `src` invariant (D7), and the
  * static-string `title` attribute used for a11y (D8 #47).
  *
  * Phase 13 (#83) narrowed `post_game_embed_attachments.embed_provider`

@@ -53,7 +53,8 @@ import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPo
  *
  * The persisted `source_url` is audit-only. The renderer (`AttachedVideoCard`)
  * rebuilds the iframe `src` from `(provider, providerVideoId)` via the
- * `youtube-nocookie.com` host — see SPEC2 Lessons §17.
+ * `youtube-nocookie.com` host, so a persisted URL can never decide what
+ * gets framed.
  */
 export async function createChunkPostWithVideoAttachment(
   locale: string,

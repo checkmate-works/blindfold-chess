@@ -7,7 +7,7 @@ afterEach(() => {
   cleanup();
 });
 
-describe('Modal — default behavior (regression baseline for SPEC2 Invariant 18)', () => {
+describe('Modal — default behavior (focus-trap opt-in baseline)', () => {
   it('omitting trapFocus does NOT trap Tab — outside elements remain reachable', () => {
     const onClose = vi.fn();
     const outside = document.createElement('button');

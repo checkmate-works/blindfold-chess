@@ -27,10 +27,10 @@ import {
 } from './attachment-card-mappers';
 
 /**
- * Per-post attachment payload. SPEC2 UI integration widens the union
- * from `'pgn' | 'embed'` to the full 5-kind family of attachments.
+ * Per-post attachment payload, covering the full 5-kind family of
+ * attachments.
  *
- * @design Application-layer single-kind invariant (SPEC2 D3 case (iii))
+ * @design Application-layer single-kind invariant
  *
  * Each attachment table is independently RLS-gated and write-once. The
  * Server Actions only expose one attach-path per kind, so a given
@@ -45,7 +45,7 @@ import {
  * The `Map<postId, PostAttachment>` shape is preserved so callers
  * (PostCard, post detail page) can keep using `map.get(id) ?? null`.
  *
- * @design image cardinality (SPEC2 D4 γ-1)
+ * @design image cardinality
  *
  * `kind: 'image'` carries `data: readonly AttachedImageCardData[]`
  * because per-post image cardinality is 1:N (up to 3 enforced by a

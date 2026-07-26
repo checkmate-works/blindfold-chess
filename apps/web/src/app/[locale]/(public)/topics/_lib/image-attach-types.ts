@@ -1,7 +1,7 @@
 /**
  * Result of an image-attachment create/reply Server Action.
  *
- * The image attachment flow is 2-step (SPEC2 D1 case B): the Server
+ * The image attachment flow is 2-step: the Server
  * Action creates the post/reply WITHOUT redirecting and returns the new
  * post id so the client can drive the per-file upload to
  * `/api/posts/[id]/images`. This shared discriminated union lets the

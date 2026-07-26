@@ -19,7 +19,8 @@ vi.mock('next/headers', () => ({
 const FILTER_FRAGMENT = 'Encountered a script tag while rendering';
 
 /**
- * Regression guard for the SPEC1 saga (commit `0f1d2dd8`, reverted).
+ * Regression guard for the hydration-mismatch saga (commit `0f1d2dd8`,
+ * reverted).
  *
  * These tests guard against re-introducing the `'use client'` +
  * `typeof window === 'undefined'` pattern that was introduced and reverted

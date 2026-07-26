@@ -317,7 +317,7 @@ export function useAutoSave({
   // (preference changes that do not advance the move count). Without this,
   // `useSaveTrigger` would not fire (it only watches moves/status) and the
   // page-hide / unload listeners in `useAutoSaveEvents` would treat the
-  // session as having nothing to save. See SPEC1 blocker 2.
+  // session as having nothing to save.
   const markPendingChange = useCallback(() => {
     hasPlayerInteracted.current = true;
     hasPendingChanges.current = true;

@@ -25,7 +25,7 @@ const GameReplayModal = dynamic(() => import('./GameReplayModal').then((m) => m.
  * parent topic_post is non-soft-deleted. The visibility rule is enforced
  * by (a) the RLS SELECT policy on `post_game_pgn_attachments`, (b) the
  * application-layer query that filters `topic_posts.deleted_at IS NULL`,
- * and (c) this contract — three layers of defense per SPEC1 §5-1.
+ * and (c) this contract — three independent layers of defense.
  *
  * @design Bundle split
  *
@@ -34,8 +34,7 @@ const GameReplayModal = dynamic(() => import('./GameReplayModal').then((m) => m.
  * `chess.js` into the chunk-page first-paint client bundle. The
  * chess.js-bearing replay modal lives in `GameReplayModal` and is
  * loaded lazily via `next/dynamic({ ssr: false })` only when the
- * user taps the thumbnail to open the board review modal. See
- * SPEC1 §5-1.
+ * user taps the thumbnail to open the board review modal.
  */
 export type AttachedGameCardData = {
   id: string;
@@ -77,7 +76,7 @@ type Props = {
  * `[Site "Internet"]`. The result tells the caller whether to render
  * a link (cushion-routed for external) or fall back to inert text.
  *
- * @design SPEC1 §7-4 superseded by #84
+ * @design Site header links, revised by #84
  *
  * Phase A.2 originally rendered the Site header as plain text on the
  * grounds that user-supplied URLs could phish. The cushion redirect
@@ -155,8 +154,8 @@ export function AttachedGameCard({ attachment }: Props) {
 
   // For PGN-mode attachments, classify the [Site] header so external
   // URLs become cushion-routed links and free-text values render
-  // inert. See `classifySiteHeader` for the full rationale (SPEC1
-  // §7-4 superseded by #84 once the cushion redirect page existed).
+  // inert. See `classifySiteHeader` for the full rationale (plain text
+  // originally, revised by #84 once the cushion redirect page existed).
   const pgnSite = attachment.source === 'pgn' ? classifySiteHeader(attachment.headerSite) : null;
 
   return (

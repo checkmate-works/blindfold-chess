@@ -1099,7 +1099,7 @@ describe("validateAttachedPgn", () => {
     }
   });
 
-  // ─── Boundary value tests for SPEC1 attachment limit (100 KiB) ───
+  // ─── Boundary value tests for the 100 KiB PGN attachment limit ───
   describe("byte-length boundary at 100 KiB", () => {
     const KIB_100 = 100 * 1024;
 

@@ -394,7 +394,7 @@ describe('useAutoSave', () => {
   });
 
   it('exposes markPendingChange that causes a save on beforeunload after a settings-only edit', async () => {
-    // Reproduces SPEC1 blocker 2: a mid-game preference edit (no move made)
+    // Regression guard: a mid-game preference edit (no move made)
     // must still be persisted on Save&Exit / navigation / page hide. With
     // markPendingChange wired in, hasPlayerInteracted + hasPendingChanges
     // both flip, and the beforeunload handler in useAutoSaveEvents fires a

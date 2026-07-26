@@ -12,7 +12,7 @@
  * `detectAttachmentInput` returns one of:
  *   - { kind: 'empty' } — nothing pasted, treat as "no attachment"
  *   - { kind: 'lichess', gameId } — Lichess URL (ID always normalized
- *       to canonical 8 chars; see SPEC1 §2-1)
+ *       to canonical 8 chars — `lichess.ts` relies on this)
  *   - { kind: 'lichess_unsupported' } — Lichess URL, but a /study/ link
  *       (multi-chapter; v1 does not handle them)
  *   - { kind: 'chesscom_attribution', attribution } — chess.com URL.
