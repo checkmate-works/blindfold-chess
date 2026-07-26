@@ -92,6 +92,23 @@ describe('buildCspHeader', () => {
     expect(connectSrc).toContain('ep1.adtrafficquality.google');
   });
 
+  it('allow-lists the Ad Traffic Quality pixel host in img-src (ep1)', () => {
+    // ep1.adtrafficquality.google is fetched as an <img> pixel as well as an
+    // XHR beacon, so connect-src alone is not enough.
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const imgSrc = header.split('; ').find((d) => d.startsWith('img-src '));
+    expect(imgSrc).toContain('ep1.adtrafficquality.google');
+  });
+
+  it('allow-lists the Funding Choices CMP host in connect-src', () => {
+    // Google's Privacy & messaging consent UI is delivered by adsbygoogle.js and
+    // beacons fundingchoicesmessages.google.com over XHR. `'strict-dynamic'`
+    // covers the injected script but not connect-src, so the host must be named.
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toContain('fundingchoicesmessages.google.com');
+  });
+
   it('allow-lists the AdSense iframe host in frame-src (pagead2)', () => {
     // Some AdSense ad iframes are served from pagead2.googlesyndication.com.
     const header = buildCspHeader('n', { isDevelopment: false });

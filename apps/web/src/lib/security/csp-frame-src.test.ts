@@ -96,8 +96,10 @@ describe('CSP frame-src — Phase B Tester #43 / #44', () => {
     expect(tokens).not.toContain('youtube.com');
   });
 
-  // #43b — directive is wired into an enforcing Content-Security-Policy
-  //        header (not just defined-but-unused). Cheap regression guard.
+  // #43b — directive is wired into the CSP header actually sent on the
+  //        response (not just defined-but-unused). Cheap regression guard.
+  //        The header is `Content-Security-Policy-Report-Only` today; see
+  //        proxy.ts / issue #89.
   it('#43b the CSP directives array is consumed by the response header', async () => {
     const source = await readNextConfigSource();
     // csp.ts exports buildCspHeader which is stamped onto the response by proxy.ts.

@@ -21,6 +21,7 @@ import * as Sentry from '@sentry/nextjs';
  *   - Reports with no directive are dropped. A well-formed CSP report always
  *     names a directive; payloads without one are empty Safari reports or junk
  *     POSTed by bots, carry no actionable data, and were ~half the volume.
+ *   - Reports from crawlers are dropped (see `isCrawlerUserAgent`).
  *   - The remainder is probabilistically sampled (see `cspReportSampleRate`)
  *     so the forwarded volume is bounded regardless of report content or abuse.
  *
@@ -45,8 +46,35 @@ function cspReportSampleRate(): number {
   return process.env.NODE_ENV === 'production' ? 0.1 : 1;
 }
 
+/**
+ * User-Agent substrings that identify a crawler / automated fetcher rather
+ * than a real user's browser.
+ *
+ * Crawler-sourced reports are dropped because they say nothing about what our
+ * users experience: a crawler's engine may enforce CSP without honoring
+ * nonces, or re-parse the HTML in a way that loses the `nonce` attribute, and
+ * then reports a violation for markup that is provably correct. Observed
+ * 2026-07-25 as a `script-src-elem` / `blocked-uri: inline` report from
+ * `meta-externalagent` against `/ja/u/<name>`, where every `<script>` in the
+ * served document carries a nonce matching the response header.
+ *
+ * `headless` is deliberately NOT in the list: HeadlessChrome covers Lighthouse
+ * / PageSpeed and our own Playwright runs, which drive a real Chrome and can
+ * surface real violations worth seeing.
+ */
+const CRAWLER_UA_PATTERN =
+  /bot\b|bot\/|crawler|spider|externalhit|externalagent|slurp|scrapy|python-requests|curl\/|wget\//i;
+
+function isCrawlerUserAgent(userAgent: string | null): boolean {
+  return userAgent !== null && CRAWLER_UA_PATTERN.test(userAgent);
+}
+
 export async function POST(request: Request): Promise<NextResponse> {
   const contentType = request.headers.get('content-type') ?? '';
+
+  if (isCrawlerUserAgent(request.headers.get('user-agent'))) {
+    return new NextResponse(null, { status: 204 });
+  }
 
   try {
     const raw = await request.text();

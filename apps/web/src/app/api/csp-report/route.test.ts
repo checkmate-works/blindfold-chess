@@ -10,13 +10,21 @@ vi.mock('@sentry/nextjs', () => ({
 
 const { POST } = await import('./route');
 
-function makeRequest(body: string, contentType: string): Request {
+function makeRequest(body: string, contentType: string, userAgent = 'vitest'): Request {
   return new Request('https://example.test/api/csp-report', {
     method: 'POST',
-    headers: { 'content-type': contentType, 'user-agent': 'vitest' },
+    headers: { 'content-type': contentType, 'user-agent': userAgent },
     body,
   });
 }
+
+const VALID_REPORT = JSON.stringify({
+  'csp-report': {
+    'violated-directive': 'script-src-elem',
+    'effective-directive': 'script-src-elem',
+    'blocked-uri': 'inline',
+  },
+});
 
 describe('POST /api/csp-report', () => {
   beforeEach(() => {
@@ -105,6 +113,33 @@ describe('POST /api/csp-report', () => {
         blocked_host: 'fonts.gstatic.com',
       }),
     });
+  });
+
+  it.each([
+    // The exact UA observed reporting a bogus inline violation in production.
+    'meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)',
+    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+    'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
+    'facebookexternalhit/1.1',
+    'curl/8.7.1',
+  ])('drops reports from crawlers (%s)', async (userAgent) => {
+    const res = await POST(makeRequest(VALID_REPORT, 'application/csp-report', userAgent));
+
+    expect(res.status).toBe(204);
+    expect(captureMessage).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    // Real browsers whose UA must NOT be mistaken for a crawler.
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1',
+    // HeadlessChrome is intentionally kept (Lighthouse / Playwright).
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36',
+  ])('still forwards reports from real browsers (%s)', async (userAgent) => {
+    await POST(makeRequest(VALID_REPORT, 'application/csp-report', userAgent));
+
+    expect(captureMessage).toHaveBeenCalledTimes(1);
   });
 
   it('forwards nothing when CSP_REPORT_SAMPLE_RATE is 0', async () => {
