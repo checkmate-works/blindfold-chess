@@ -59,6 +59,15 @@ export async function buildGameOgDescription({
  * Metadata for the shared-game detail. The canonical points at the bare
  * permalink so the `?color=` orientation and `#move` URL variants de-duplicate
  * to one URL.
+ *
+ * The card image is NOT set here, and must not be. Next.js merges metadata
+ * per top-level key, not deeply: the `openGraph` object `generateCanonicalMetadata`
+ * emits (url / title / description, no images) replaces the root layout's
+ * `openGraph` wholesale — its `logo.png` images included. Before the board
+ * card existed, that left every shared-game link with no image at all. The
+ * fix for that is not an `images` key here but the file-convention
+ * `opengraph-image.tsx` / `twitter-image.tsx` siblings, which Next resolves
+ * independently of this object.
  */
 export async function buildSharedGameMetadata({
   locale,

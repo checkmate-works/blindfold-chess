@@ -37,11 +37,18 @@ function Spinner() {
  * every UGC detail page) rather than beside the page title, which is the help
  * tour's slot everywhere else.
  *
- * GIF download goes through `fetch` + a synthetic `<a download>`
- * rather than a plain anchor so a loading spinner can cover the first-request
- * generation latency (SPEC2 §4); the API route streams the bytes from the
- * same origin with `Content-Disposition: attachment`, so this still saves
- * to disk rather than navigating.
+ * Why the replay GIF is a *download* and not something the share itself
+ * carries: X renders only the first frame of a GIF supplied as `og:image`, so
+ * an animated card is not achievable through metadata on any of the target
+ * platforms. Handing the file to the author to attach by hand is the only
+ * route to an animated post — the same one lichess takes. `gifHint` in the
+ * menu says as much to the user.
+ *
+ * The download goes through `fetch` + a synthetic `<a download>` rather than a
+ * plain anchor so a loading spinner can cover the first-request generation
+ * latency; the API route streams the bytes from the same origin with
+ * `Content-Disposition: attachment`, so this still saves to disk rather than
+ * navigating.
  */
 export function ShareMenu({ gameId, title, locale, hasPlayedVariant }: Props) {
   const t = useTranslations('sharedGames');
