@@ -2470,6 +2470,17 @@
       "cancel": "Cancel",
       "deleteConfirmTitle": "Delete this shared game?",
       "deleteConfirmBody": "This removes it from the public catalog and can't be undone.",
+      "ogDescription": "{engine} · {moves} moves · {result}",
+      "ogBlindfoldBadge": "Blindfold play",
+      "share": {
+        "menuLabel": "Share",
+        "copyLink": "Copy link",
+        "copied": "Link copied!",
+        "shareOnX": "Share on X",
+        "downloadGif": "Download GIF",
+        "downloadGifAsPlayed": "Download GIF (as played)",
+        "gifHint": "Attach the GIF yourself when posting on X — linked GIFs don't animate there."
+      },
       "claim": {
         "signedOutTitle": "Make this game part of your record",
         "signedOutBody": "You published this game without an account. Sign up and link it — if it meets a belt rank's requirements, you are promoted right away (a black-belt-grade game promotes you to the black belt).",

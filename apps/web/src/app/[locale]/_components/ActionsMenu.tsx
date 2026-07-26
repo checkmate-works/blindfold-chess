@@ -26,6 +26,22 @@ type Props = {
    * modal) survives the popup closing.
    */
   children?: ReactNode;
+  /** Trigger icon override — defaults to the "⋯" overflow glyph. */
+  icon?: ReactNode;
+  /**
+   * Visible text next to the icon. When set, the trigger renders as an inline
+   * icon+label row sized like `EngagementCounter` (for the like/share
+   * engagement row) instead of the round icon-only button. Pass the same
+   * string as `ariaLabel` so the accessible name contains the visible text.
+   */
+  label?: string;
+  /**
+   * Which edge the popup is anchored to. Defaults to `right` (the trigger sits
+   * at the right end of a header/card row); use `left` when the trigger is at
+   * the left edge of the page, where a right-anchored popup would grow off
+   * screen.
+   */
+  align?: 'left' | 'right';
 };
 
 /**
@@ -36,7 +52,14 @@ type Props = {
  * crawlable. Any click inside the popup closes it (menu semantics) — modals
  * opened by custom items live in a portal, so they are unaffected.
  */
-export function ActionsMenu({ ariaLabel, items = [], children }: Props) {
+export function ActionsMenu({
+  ariaLabel,
+  items = [],
+  children,
+  icon,
+  label,
+  align = 'right',
+}: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -65,15 +88,20 @@ export function ActionsMenu({ ariaLabel, items = [], children }: Props) {
         aria-expanded={open}
         aria-label={ariaLabel}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className={
+          label
+            ? 'inline-flex cursor-pointer items-center gap-1 text-base text-muted-foreground transition-colors hover:text-foreground'
+            : 'inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+        }
       >
-        <FiMoreHorizontal className="h-5 w-5" aria-hidden />
+        {icon ?? <FiMoreHorizontal className="h-5 w-5" aria-hidden />}
+        {label}
       </button>
 
       <div
         role="menu"
         onClick={() => setOpen(false)}
-        className={`absolute right-0 z-10 mt-1 overflow-hidden rounded-md border border-border bg-background shadow-md ${open ? '' : 'hidden'}`}
+        className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} z-10 mt-1 overflow-hidden rounded-md border border-border bg-background shadow-md ${open ? '' : 'hidden'}`}
       >
         {items.map((item) => (
           <Link

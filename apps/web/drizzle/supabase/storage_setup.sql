@@ -252,3 +252,27 @@ CREATE POLICY "ad_creatives_delete_admin" ON storage.objects
     bucket_id = 'ad-creatives'
     AND (auth.jwt() ->> 'user_role') = 'admin'
   );
+
+-- =============================================================================
+-- Game GIFs Storage Bucket Setup
+-- =============================================================================
+-- Public bucket for generated "game replay" GIFs, cached at
+-- gifs/${gameId}/${variant}.gif (variant: 'plain' | 'played'). Written only by
+-- the /api/games/[id]/gif route handler via the service-role client (which
+-- bypasses RLS entirely) — there is deliberately no INSERT/UPDATE/DELETE
+-- policy for `authenticated`/`anon` here, unlike avatars/post-images.
+-- file_size_limit: 15MB (X's own attachment cap; real output is ~1-3MB).
+-- allowed_mime_types: GIF only.
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('game-gifs', 'game-gifs', true, 15728640, ARRAY['image/gif'])
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+-- Allow anyone to read game GIFs (public bucket)
+DROP POLICY IF EXISTS "game_gifs_select_public" ON storage.objects;
+CREATE POLICY "game_gifs_select_public" ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'game-gifs');

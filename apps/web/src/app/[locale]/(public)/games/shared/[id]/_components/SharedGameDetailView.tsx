@@ -8,6 +8,7 @@ import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
 import { getGameById } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
+import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
@@ -26,6 +27,7 @@ import { GameHelpTour } from './GameHelpTour';
 import { GameOutcomeLabel } from './GameOutcomeLabel';
 import { GameReview } from './GameReview';
 import { OwnerActions } from './OwnerActions';
+import { ShareMenu } from './ShareMenu';
 
 type Props = {
   locale: Locale;
@@ -72,6 +74,9 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     listGameChunks(game.id),
     getAllAvailableChunkOptions(),
   ]);
+
+  const hasPlayedVariant =
+    playSettingsToThumbnailDisplay(game.playSettings, game.playerColor) != null;
 
   return (
     <PageLayout
@@ -153,7 +158,12 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           }
         />
 
-        <div className="flex items-center text-xs text-muted-foreground">
+        {/* Engagement row — the app-wide slot for post-level actions on a UGC
+            detail page. Sharing lives here next to the like (SNS convention),
+            i.e. at the end of the content the viewer just read, rather than
+            beside the page title, which every other page reserves for the help
+            tour. */}
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <LikeButton
             postId={game.id}
             locale={locale}
@@ -162,6 +172,12 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
             initialLikedByMe={likeMeta.likedByMe}
             toggleLikeAction={toggleGameLikeAction}
             i18nNamespace="sharedGames.detail"
+          />
+          <ShareMenu
+            gameId={game.id}
+            title={game.title}
+            locale={locale}
+            hasPlayedVariant={hasPlayedVariant}
           />
         </div>
       </div>

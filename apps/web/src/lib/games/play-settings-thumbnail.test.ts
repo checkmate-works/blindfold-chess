@@ -48,10 +48,23 @@ describe('playSettingsToThumbnailDisplay', () => {
     });
   });
 
-  it('treats a peek board the same as never (player saw no pieces at the opening)', () => {
-    const result = playSettingsToThumbnailDisplay({ ...SIGHTED, boardVisibility: 'peek' }, 'white');
-    expect(result?.showOwnPieces).toBe(false);
-    expect(result?.showOpponentPieces).toBe(false);
+  it('passes through per-piece settings for a peek board (a peek reveals the real board)', () => {
+    const result = playSettingsToThumbnailDisplay(
+      {
+        ...SIGHTED,
+        boardVisibility: 'peek',
+        showOwnPieces: true,
+        showOpponentPieces: false,
+        pieceShapeMode: 'circles-own',
+      },
+      'white'
+    );
+    expect(result).toMatchObject({
+      showOwnPieces: true,
+      showOpponentPieces: false,
+      pieceShapeMode: 'circles-own',
+      hiddenPieceStyle: 'ghost',
+    });
   });
 
   it('passes through per-piece obfuscation on an always-visible board', () => {

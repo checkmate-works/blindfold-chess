@@ -215,6 +215,16 @@ This keeps documentation close to the code and avoids bloating this global file.
 
 Avoid documenting information that is self-evident from the code (routes, components, query params with meaningful names).
 
+### Specs are scaffolding, not artifacts
+
+A `specs/<feature>/` directory is a thinking aid for building something, not a record of it. **Delete it in the same branch that finishes the feature**, after doing three things:
+
+1. Move the parts that cannot be re-derived from the code — external platform behaviour, and choices deliberately _not_ taken — into TSDoc next to the code they constrain.
+2. Move any still-unimplemented phase into a GitHub issue, verbatim, so the issue stands on its own.
+3. Leave no comment pointing at `specs/...`. `SPEC*.md` is in `.gitignore`, so those files exist only on their author's machine — a reference to one is already broken for every other reader.
+
+Delete the build steps, deliverable lists, acceptance checklists, progress checkboxes, and "where the existing parts live" tables outright: the code, its tests, and git history are the source of truth, and a table of file paths rots silently. Keep only the _why_, and keep it beside the code rather than in a file of its own — otherwise documentation grows linearly with every feature.
+
 ## Local Development Setup
 
 ### Supabase Local
