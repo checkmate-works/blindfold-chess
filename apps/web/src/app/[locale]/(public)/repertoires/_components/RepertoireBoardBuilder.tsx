@@ -13,7 +13,10 @@ import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 
-import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import {
+  MOVE_NAV_ROW_CLASS,
+  MoveNavigationControls,
+} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 
 import { useRepertoireBoardBuilder } from './use-repertoire-board-builder';
 
@@ -155,9 +158,12 @@ export function RepertoireBoardBuilder({
           }
         />
 
-        <div className="flex items-center justify-between" style={{ aspectRatio: '8 / 1' }}>
-          {/* Spacer mirroring the delete button so the nav cluster stays centered. */}
-          <div className="w-10" aria-hidden />
+        <div className={`flex items-center justify-between ${MOVE_NAV_ROW_CLASS}`}>
+          {/* Spacer mirroring the delete button so the nav cluster stays centered.
+              Both it and the button opt out of shrinking: the nav controls are
+              `w-full` on mobile, so without this the row's overflow would be
+              split with them and the delete target would end up under 40px. */}
+          <div className="w-10 shrink-0" aria-hidden />
           <MoveNavigationControls
             onNavigateToStart={builder.goToStart}
             onNavigatePrevious={builder.goBack}
@@ -172,7 +178,7 @@ export function RepertoireBoardBuilder({
             disabled={builder.isAtStart}
             title={t('boardBuilder.deleteFromHere')}
             aria-label={t('boardBuilder.deleteFromHere')}
-            className="flex h-10 w-10 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-destructive disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-destructive disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
           >
             <FaTrash size={14} />
           </button>

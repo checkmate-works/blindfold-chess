@@ -16,7 +16,7 @@ import {
   STATUS_PILL_CLASSES,
 } from '../_lib/skeleton-layout-classes';
 import { HorizontalMoveList } from './HorizontalMoveList';
-import { MoveNavigationControls } from './MoveNavigationControls';
+import { MOVE_NAV_ROW_CLASS, MoveNavigationControls } from './MoveNavigationControls';
 
 type Props = {
   fen: string;
@@ -293,8 +293,7 @@ export function InlineBoardView({
             {/* Navigation Controls & Flip Button */}
             {(movesLength > 0 || onFlipBoard) && (
               <div
-                className="flex items-center justify-center relative"
-                style={{ aspectRatio: '8/1' }}
+                className={`flex items-center justify-center relative pr-11 sm:pr-0 ${MOVE_NAV_ROW_CLASS}`}
               >
                 {movesLength > 0 &&
                   onNavigateToStart &&

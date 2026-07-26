@@ -15,7 +15,10 @@ import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import {
+  MOVE_NAV_ROW_CLASS,
+  MoveNavigationControls,
+} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 
@@ -166,10 +169,7 @@ export function LineDetailBoard({
                 onAnnotationsChange={onAnnotationsChange}
               />
 
-              <div
-                className="relative flex items-center justify-center"
-                style={{ aspectRatio: '8 / 1' }}
-              >
+              <div className={`relative flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
                 <MoveNavigationControls
                   onNavigateToStart={() => setPly(0)}
                   onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}

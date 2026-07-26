@@ -7,7 +7,10 @@ import { formatMovesToPgn, getLastMoveDetails } from '@blindfold-chess/features/
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import {
+  MOVE_NAV_ROW_CLASS,
+  MoveNavigationControls,
+} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
@@ -40,7 +43,8 @@ type Props = {
  * state resets between references for free.
  *
  * Chrome and move list are the house board+moves stack — `HorizontalMoveList`
- * above the board, `MoveNavigationControls` in an 8:1 row below it — so this
+ * above the board, `MoveNavigationControls` in a `MOVE_NAV_ROW_CLASS` row
+ * below it — so this
  * reads the same as the quick-peek modal and the inline board rather than
  * inventing a third arrangement.
  */
@@ -109,7 +113,7 @@ export function MoveReferencePreviewModal({
           rounded={false}
         />
 
-        <div className="bg-card flex items-center justify-center" style={{ aspectRatio: '8 / 1' }}>
+        <div className={`bg-card flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
           <MoveNavigationControls
             onNavigateToStart={nav.navigateToStart}
             onNavigatePrevious={nav.navigatePrevious}

@@ -8,7 +8,10 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import {
+  MOVE_NAV_ROW_CLASS,
+  MoveNavigationControls,
+} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -115,7 +118,7 @@ export function PuzzleSolutionFields({
           }
         />
         {solution.moves.length > 0 && (
-          <div className="flex items-center justify-center" style={{ aspectRatio: '8 / 1' }}>
+          <div className={`flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
             <MoveNavigationControls
               onNavigateToStart={() => solution.goToPly(0)}
               onNavigatePrevious={() => solution.goToPly(solution.viewedPly - 1)}
