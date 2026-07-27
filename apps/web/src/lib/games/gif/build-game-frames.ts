@@ -30,6 +30,8 @@ const DELAY_PEEK_MS = 800;
 const DELAY_ILLEGAL_MS = 500;
 /** "Snap back to the real position" frame after an illegal-attempt marker. */
 const DELAY_REVERT_MS = 250;
+/** Undo-badge frame — a beat shorter than the peek flash, it has no board change to read. */
+const DELAY_UNDO_BADGE_MS = 600;
 /**
  * Cap on invalid attempts drawn per move slot. `invalidAttempts` can hold up
  * to 20 entries (see {@link MoveOperationLog.invalidAttempts}); drawing all of
@@ -126,9 +128,11 @@ function peekDisplaySettings(
 }
 
 /**
- * Annotation frames for one player-move slot, in slot-grammar order (peek →
- * illegal attempts → the real move itself, the last of which the caller
- * appends separately).
+ * Annotation frames for one player-move slot, in slot-grammar order
+ * (undo → peek → illegal attempts → the real move itself, the last of which
+ * the caller appends separately). Undo comes first because it is the
+ * earliest event of the slot: the player had already committed and undone a
+ * move before deciding (and possibly peeking or mis-typing) this one.
  *
  * `beforePosition`/`beforeHalfMove` is `positions[m]` — the position the
  * player was looking at while deciding this move, which every annotation in
@@ -142,6 +146,26 @@ function buildSlotAnnotations(
 ): GifFrame[] {
   const frames: GifFrame[] = [];
 
+  // The player was looking at (and typing into) the hidden-as-usual board —
+  // unlike the peek flash, the undo badge and an illegal attempt must NOT
+  // reveal it.
+  const asPlayedDisplay = playSettingsDisplayAtHalfMove(
+    game.playSettings,
+    game.playSettingsLog,
+    game.playerColor,
+    beforeHalfMove
+  );
+
+  if (log.undoCount > 0) {
+    frames.push({
+      fen: beforePosition.fen,
+      lastMove: beforePosition.lastMove ?? null,
+      displaySettings: asPlayedDisplay,
+      overlay: { kind: 'undo' },
+      delayMs: DELAY_UNDO_BADGE_MS,
+    });
+  }
+
   if (log.peekCount > 0) {
     frames.push({
       fen: beforePosition.fen,
@@ -152,14 +176,6 @@ function buildSlotAnnotations(
     });
   }
 
-  // The player was looking at (and typing into) the hidden-as-usual board —
-  // unlike the peek flash, an illegal attempt must NOT reveal it.
-  const asPlayedDisplay = playSettingsDisplayAtHalfMove(
-    game.playSettings,
-    game.playSettingsLog,
-    game.playerColor,
-    beforeHalfMove
-  );
   const illegalSquares = (log.invalidAttempts ?? [])
     .map((attempt) => parseAttemptSquares(attempt, game.playerColor))
     .filter((squares): squares is { from?: string; to?: string } => squares !== null)

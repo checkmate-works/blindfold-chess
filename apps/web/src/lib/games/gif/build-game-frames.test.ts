@@ -277,6 +277,61 @@ describe('buildGameFrames', () => {
     });
   });
 
+  describe('played — undo badge', () => {
+    it('inserts a single undo-badge frame at the pre-move position, keeping the as-played hide', () => {
+      const game = buildGame({
+        playSettings: {
+          boardVisibility: 'never',
+          showOwnPieces: false,
+          showOpponentPieces: false,
+          pieceShapeMode: 'normal',
+          pieceColors: 'normal',
+          pawnHideMode: 'none',
+        },
+        operationLogs: [{ inputMethod: 'board', peekCount: 0, undoCount: 1, movePeekCount: 0 }],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const allPositions = replayMoves(game.moves);
+
+      expect(frames).toHaveLength(game.moves.length + 1 + 1);
+      expect(frames[1].overlay).toEqual({ kind: 'undo' });
+      expect(frames[1].fen).toBe(allPositions[0].fen);
+      expect(frames[1].delayMs).toBe(600);
+      expect(frames[1].displaySettings).toMatchObject({
+        showOwnPieces: false,
+        showOpponentPieces: false,
+      });
+    });
+
+    it('rounds any undo count to a single frame', () => {
+      const game = buildGame({
+        moves: ['e4'],
+        operationLogs: [{ inputMethod: 'board', peekCount: 0, undoCount: 2, movePeekCount: 0 }],
+      });
+      const frames = buildGameFrames(game, 'played');
+      expect(frames.filter((f) => f.overlay?.kind === 'undo')).toHaveLength(1);
+    });
+
+    it('orders undo before peek and illegal attempts within the same slot', () => {
+      const game = buildGame({
+        operationLogs: [
+          {
+            inputMethod: 'text',
+            peekCount: 1,
+            undoCount: 1,
+            movePeekCount: 0,
+            invalidCount: 1,
+            invalidAttempts: ['Nf3'],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const kinds = frames.map((f) => f.overlay?.kind ?? 'real');
+      // [real(initial), undo, peek, illegal, real(revert), real(after e4), ...]
+      expect(kinds.slice(0, 5)).toEqual(['real', 'undo', 'peek', 'illegal', 'real']);
+    });
+  });
+
   describe('frame budget', () => {
     it('never truncates real positions to make room for annotations, and drops only the later slots', () => {
       const moveCount = 200;
