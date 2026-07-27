@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaXTwitter } from 'react-icons/fa6';
 import { FiDownload, FiLink, FiShare2 } from 'react-icons/fi';
 
+import { PLAYED_GIF_RENDER_VERSION } from '@/lib/games/gif/constants';
 import { encodeGameShortId } from '@/lib/games/short-id';
 
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
@@ -82,7 +83,9 @@ export function ShareMenu({ gameId, title, locale, hasPlayedVariant }: Props) {
     if (downloading) return;
     setDownloading(variant);
     try {
-      const query = variant === 'played' ? '?view=played' : '';
+      // `v` is a browser/CDN cache buster only — the route derives the
+      // Storage key from PLAYED_GIF_RENDER_VERSION itself and never reads it.
+      const query = variant === 'played' ? `?view=played&v=${PLAYED_GIF_RENDER_VERSION}` : '';
       const res = await fetch(`/api/games/${gameId}/gif${query}`);
       if (!res.ok) throw new Error('gif_fetch_failed');
       const blob = await res.blob();
