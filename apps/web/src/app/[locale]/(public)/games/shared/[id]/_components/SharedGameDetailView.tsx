@@ -8,7 +8,8 @@ import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
 import { getGameById } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
-import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
+import { hasAnnotatableOps } from '@/lib/games/gif/build-game-frames';
+import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
@@ -75,8 +76,14 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     getAllAvailableChunkOptions(),
   ]);
 
+  // A "played" GIF can differ from "plain" even for a fully-sighted game: a
+  // typo (invalid attempt) or a board peek still shows up as an annotation,
+  // and a game whose visibility changed mid-game isn't captured by the
+  // start-of-game snapshot alone.
   const hasPlayedVariant =
-    playSettingsToThumbnailDisplay(game.playSettings, game.playerColor) != null;
+    (game.playSettings != null &&
+      gameUsedNotablePlaySettings(game.playSettings, game.playSettingsLog)) ||
+    hasAnnotatableOps(game.operationLogs);
 
   return (
     <PageLayout

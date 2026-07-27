@@ -72,4 +72,56 @@ describe('renderBoardSvg', () => {
     const svg = renderBoardSvg({ fen: INITIAL_FEN });
     expect(svg).not.toContain('<text');
   });
+
+  describe('overlay', () => {
+    it('draws a peek badge as a filled circle with an eye glyph', () => {
+      const svg = renderBoardSvg({ fen: INITIAL_FEN, overlay: { badge: 'peek' } });
+      expect(svg).toContain('rgba(14,165,233,0.92)');
+      expect(svg).not.toContain('<text');
+    });
+
+    it('draws an undo badge as a filled circle with the undo stroke glyph', () => {
+      const svg = renderBoardSvg({ fen: INITIAL_FEN, overlay: { badge: 'undo' } });
+      expect(svg).toContain('rgba(245,158,11,0.92)');
+      expect(svg).not.toContain('<text');
+    });
+
+    it('draws a red fill + cross on the illegal destination square', () => {
+      const svg = renderBoardSvg({ fen: INITIAL_FEN, overlay: { illegalTo: 'e4' } });
+      expect(svg).toContain('rgba(220,38,38,0.42)');
+      const crossPaths = svg.match(/stroke="#dc2626"/g) ?? [];
+      expect(crossPaths.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('draws a red outline on the illegal origin square, distinct from the destination fill', () => {
+      const svg = renderBoardSvg({
+        fen: INITIAL_FEN,
+        overlay: { illegalTo: 'e4', illegalFrom: 'e2' },
+      });
+      expect(svg).toContain('fill="none" stroke="#dc2626"');
+      expect(svg).toContain('rgba(220,38,38,0.42)');
+    });
+
+    it('draws the illegal-destination marker after the piece layer so it stays visible over an occupied square', () => {
+      const svg = renderBoardSvg({ fen: INITIAL_FEN, overlay: { illegalTo: 'a8' } });
+      const illegalIdx = svg.indexOf('rgba(220,38,38,0.42)');
+      const lastPieceIdx = svg.lastIndexOf('transform="translate');
+      expect(illegalIdx).toBeGreaterThan(lastPieceIdx);
+    });
+
+    it('renders no overlay markup when omitted', () => {
+      const withOverlay = renderBoardSvg({ fen: INITIAL_FEN, overlay: { badge: 'peek' } });
+      const without = renderBoardSvg({ fen: INITIAL_FEN });
+      expect(without).not.toContain('rgba(14,165,233,0.92)');
+      expect(withOverlay).not.toBe(without);
+    });
+
+    it('still never emits a <text> element with every overlay kind combined', () => {
+      const svg = renderBoardSvg({
+        fen: INITIAL_FEN,
+        overlay: { badge: 'undo', illegalTo: 'e4', illegalFrom: 'e2' },
+      });
+      expect(svg).not.toContain('<text');
+    });
+  });
 });
