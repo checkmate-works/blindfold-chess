@@ -38,24 +38,28 @@ export default async function NewGamePage({ params }: Props) {
         <div className="grid grid-cols-1 gap-4">
           <CardLink
             href="/games/new/standard"
+            locale={locale}
             icon="♟"
             title={t('newGame.standardTitle')}
             description={t('newGame.standardDescription')}
           />
           <CardLink
             href="/games/new/position"
+            locale={locale}
             icon="♜"
             title={t('newGame.positionPageTitle')}
             description={t('newGame.positionPageDescription')}
           />
           <CardLink
             href="/games/new/opening"
+            locale={locale}
             icon="📖"
             title={t('newGame.openingPageTitle')}
             description={t('newGame.openingPageDescription')}
           />
           <CardLink
             href="/games/new/pgn"
+            locale={locale}
             icon="📋"
             title={t('newGame.pgnPageTitle')}
             description={t('newGame.pgnPageDescription')}
