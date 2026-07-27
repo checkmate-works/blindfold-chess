@@ -14,7 +14,8 @@
       "previousMove": "前の手",
       "nextMove": "次の手",
       "goToEnd": "最後へ"
-    }
+    },
+    "close": "閉じる"
   },
   "Repertoires": {
     "title": "型",
@@ -2455,7 +2456,8 @@
         "cta": "このラインを型に追加する"
       },
       "backToResult": "振り返りに戻る"
-    }
+    },
+    "boardModalTitle": "盤面"
   },
   "sharedGames": {
     "detail": {
@@ -6161,6 +6163,10 @@
       "loading": "プレビュー生成中…"
     },
     "card": {
+      "gameLabel": "添付された棋譜",
+      "positionLabel": "添付された局面",
+      "openReplay": "棋譜を再生する",
+      "enlargePosition": "局面を拡大する",
       "replayButton": "リプレイを開く",
       "collapseButton": "リプレイを閉じる",
       "movesCount": "{count} 手",
@@ -6223,9 +6229,7 @@
       }
     },
     "boardReview": {
-      "dialogLabel": "盤面の確認",
-      "flipBoard": "ボードを反転",
-      "close": "閉じる"
+      "flipBoard": "ボードを反転"
     }
   },
   "postFenAttachment": {

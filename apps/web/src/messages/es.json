@@ -14,7 +14,8 @@
       "previousMove": "Movimiento anterior",
       "nextMove": "Movimiento siguiente",
       "goToEnd": "Ir al final"
-    }
+    },
+    "close": "Cerrar"
   },
   "Repertoires": {
     "title": "Kata",
@@ -2455,7 +2456,8 @@
         "cta": "Añadir esta línea a tu kata"
       },
       "backToResult": "Volver a la revisión de la partida"
-    }
+    },
+    "boardModalTitle": "Tablero"
   },
   "sharedGames": {
     "detail": {
@@ -6161,6 +6163,10 @@
       "loading": "Generando vista previa…"
     },
     "card": {
+      "gameLabel": "Partida adjunta",
+      "positionLabel": "Posición adjunta",
+      "openReplay": "Abrir la repetición de la partida",
+      "enlargePosition": "Ampliar la posición",
       "replayButton": "Abrir reproducción",
       "collapseButton": "Ocultar reproducción",
       "movesCount": "{count, plural, one {# jugada} other {# jugadas}}",
@@ -6223,9 +6229,7 @@
       }
     },
     "boardReview": {
-      "dialogLabel": "Revisión del tablero",
-      "flipBoard": "Voltear tablero",
-      "close": "Cerrar"
+      "flipBoard": "Voltear tablero"
     }
   },
   "postFenAttachment": {

@@ -1,18 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
-
 import { useTranslations } from 'next-intl';
 
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
-import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
-import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
+import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
+import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
+import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
+import { BoardModal } from '@/app/[locale]/_components/BoardModal';
+import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 /**
  * Modal that enlarges an attachment's chess board with optional move
  * navigation. Used by `AttachedGameCard` (PGN — full move navigation)
- * and `AttachedFenCard` (single position — flip + close only).
+ * and `AttachedFenCard` (single position — flip only).
+ *
+ * Chrome (full-bleed mobile layout, titled header, close button) comes
+ * from `BoardModal`, shared with the other board modals; what is left
+ * here is the attachment-specific body.
  *
  * @design Why a separate component from games/play's BoardViewModal
  *
@@ -37,46 +42,35 @@ import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
  * Keeping the modal chess.js-free means `AttachedFenCard` does not
  * need a dynamic import and the replay path stays bundle-split.
  *
- * @design Why the stepper IS shared even though the modal is not
+ * @design Why the controls ARE shared even though the modal is not
  *
- * The « ‹ › » row is `MoveNavigationControls` — the same component every
- * other board in the app steps with. What keeps `BoardViewModal` out of
- * here is its `GamePreferences` coupling; the stepper has none of it (four
- * callbacks and two disabled flags), so duplicating it only bought a
- * second set of touch targets to forget about. It was in fact forgotten:
- * these buttons stayed at 36px when the shared ones were sized up for
- * thumbs. Flip and close sit beside it as `shrink-0` siblings, since the
- * stepper is full-width below `sm`.
+ * The strip below the board is `MoveNavigationRow` and the move list above
+ * it is `HorizontalMoveList` — the same components every other board in the
+ * app uses. What keeps `BoardViewModal` out of here is its
+ * `GamePreferences` coupling; neither of those has any (callbacks, a
+ * cursor, and a formatted move array), so duplicating them only bought
+ * details to forget about. Both were in fact forgotten: the stepper stayed
+ * at 36px when the shared one was sized up for thumbs, and the move list
+ * wrapped onto several centred lines instead of scrolling horizontally,
+ * which moved the board down the screen as a game got longer.
  */
-
-/**
- * Flip / close. They keep the stepper's 56px touch height on mobile so the
- * bottom row reads as one control strip rather than a tall stepper with two
- * small buttons stuck to it; from `sm` up they stay the compact 36px squares
- * that secondary actions use elsewhere.
- */
-const SIDE_BUTTON_CLASS =
-  'w-11 h-14 shrink-0 flex items-center justify-center hover:bg-muted active:bg-muted rounded transition-colors text-foreground sm:w-9 sm:h-9';
-
-export type BoardReviewMovePair = {
-  moveNumber: number;
-  whiteMove: string;
-  whiteIndex: number;
-  blackMove?: string;
-  blackIndex?: number;
-};
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  /** Header text — "Attached game" / "Attached position", matching the card. */
+  title: string;
   /** FEN to render. PGN callers update this on every navigation. */
   fen: string;
+  /** Squares of the move that produced `fen`; PGN callers update it in step.
+   *  Honouring the highlight preference is handled here, not by the caller. */
+  lastMove?: { from: string; to: string } | null;
   flipped: boolean;
   onFlip: () => void;
   // PGN-mode props. All four navigation handlers + currentMoveIndex
-  // + movePairs must be passed together; omitting them all puts the
+  // + formattedPgn must be passed together; omitting them all puts the
   // modal in static (FEN-only) mode and the navigation row collapses.
-  movePairs?: readonly BoardReviewMovePair[];
+  formattedPgn?: FormattedPgnMove[];
   currentMoveIndex?: number;
   totalMoves?: number;
   onNavigateToStart?: () => void;
@@ -89,10 +83,12 @@ type Props = {
 export function BoardReviewModal({
   isOpen,
   onClose,
+  title,
   fen,
+  lastMove,
   flipped,
   onFlip,
-  movePairs,
+  formattedPgn,
   currentMoveIndex,
   totalMoves,
   onNavigateToStart,
@@ -102,22 +98,12 @@ export function BoardReviewModal({
   onNavigateToIndex,
 }: Props) {
   const t = useTranslations('attachment.boardReview');
-
-  useScrollLock(isOpen);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+  const display = useBoardDisplay(lastMove);
 
   if (!isOpen) return null;
 
   const showNavigation =
-    movePairs !== undefined &&
+    formattedPgn !== undefined &&
     currentMoveIndex !== undefined &&
     totalMoves !== undefined &&
     onNavigateToStart !== undefined &&
@@ -130,96 +116,37 @@ export function BoardReviewModal({
   const isAtEnd = showNavigation && currentMoveIndex === totalMoves - 1;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('dialogLabel')}
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-black/70" />
-
-      {/* Full-bleed + square corners on mobile (small screens need the whole
-          width to read the board); bounded + rounded card at >=sm. Mirrors
-          games/play's BoardViewModal. */}
-      <div
-        className="relative z-10 w-full max-w-md px-0 sm:px-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="rounded-none sm:rounded-md overflow-hidden bg-card">
-          {showNavigation && movePairs.length > 0 && (
-            <div className="px-2 py-2 overflow-x-auto border-b border-border">
-              <div className="flex items-center gap-1 text-xs whitespace-nowrap flex-wrap justify-center">
-                {movePairs.map((pair) => (
-                  <div key={pair.moveNumber} className="flex items-center gap-0.5">
-                    <span className="text-muted-foreground">{pair.moveNumber}.</span>
-                    <button
-                      type="button"
-                      className={`px-1 py-0.5 rounded transition-colors ${
-                        currentMoveIndex === pair.whiteIndex
-                          ? 'bg-foreground/15 font-semibold'
-                          : 'hover:bg-muted/40'
-                      }`}
-                      onClick={() => onNavigateToIndex(pair.whiteIndex)}
-                    >
-                      {pair.whiteMove}
-                    </button>
-                    {pair.blackMove && pair.blackIndex !== undefined && (
-                      <button
-                        type="button"
-                        className={`px-1 py-0.5 rounded transition-colors ${
-                          currentMoveIndex === pair.blackIndex
-                            ? 'bg-foreground/15 font-semibold'
-                            : 'hover:bg-muted/40'
-                        }`}
-                        onClick={() =>
-                          pair.blackIndex !== undefined && onNavigateToIndex(pair.blackIndex)
-                        }
-                      >
-                        {pair.blackMove}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <MiniBoard fen={fen} flipped={flipped} responsive />
-
-          <div className="flex items-center justify-center gap-1 px-2 py-2 border-t border-border">
-            {showNavigation && (
-              <>
-                <MoveNavigationControls
-                  onNavigateToStart={onNavigateToStart}
-                  onNavigatePrevious={onNavigatePrevious}
-                  onNavigateNext={onNavigateNext}
-                  onNavigateToEnd={onNavigateToEnd}
-                  isPreviousDisabled={isAtStart}
-                  isNextDisabled={isAtEnd}
-                />
-                <span aria-hidden="true" className="mx-1 h-6 w-px shrink-0 bg-border" />
-              </>
-            )}
-            <button
-              type="button"
-              onClick={onFlip}
-              className={SIDE_BUTTON_CLASS}
-              aria-label={t('flipBoard')}
-            >
-              &#x21C5;
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className={SIDE_BUTTON_CLASS}
-              aria-label={t('close')}
-            >
-              &times;
-            </button>
+    <BoardModal isOpen={isOpen} title={title} onClose={onClose} maxWidth="max-w-md">
+      <>
+        {showNavigation && formattedPgn.length > 0 && (
+          <div className="px-2 py-1.5 overflow-x-auto border-b border-border">
+            <HorizontalMoveList
+              formattedPgn={formattedPgn}
+              currentPosition={currentMoveIndex}
+              onNavigateToPosition={onNavigateToIndex}
+            />
           </div>
-        </div>
-      </div>
-    </div>
+        )}
+
+        <MiniBoard
+          fen={fen}
+          flipped={flipped}
+          responsive
+          lastMove={display.lastMove}
+          showCoordinates={display.showCoordinates}
+        />
+
+        <MoveNavigationRow
+          className="border-t border-border"
+          onNavigateToStart={showNavigation ? onNavigateToStart : undefined}
+          onNavigatePrevious={showNavigation ? onNavigatePrevious : undefined}
+          onNavigateNext={showNavigation ? onNavigateNext : undefined}
+          onNavigateToEnd={showNavigation ? onNavigateToEnd : undefined}
+          isPreviousDisabled={isAtStart}
+          isNextDisabled={isAtEnd}
+          flip={{ onClick: onFlip, label: t('flipBoard') }}
+        />
+      </>
+    </BoardModal>
   );
 }

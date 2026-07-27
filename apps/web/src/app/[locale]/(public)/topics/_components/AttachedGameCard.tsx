@@ -161,17 +161,16 @@ export function AttachedGameCard({ attachment }: Props) {
   return (
     <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
       <div className="p-3 space-y-2">
-        {/* TODO(i18n): attachment.game.cardTitle — paired with
-            `Attached position` in AttachedFenCard so both attachment
-            kinds wear the same "this is an attached X" label. */}
-        <p className="text-sm font-medium text-foreground">Attached game</p>
+        {/* Paired with `card.positionLabel` in AttachedFenCard so both
+            attachment kinds wear the same "this is an attached X" label —
+            and so does the header of the modal each one opens. */}
+        <p className="text-sm font-medium text-foreground">{t('card.gameLabel')}</p>
         <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3 gap-2">
           <button
             type="button"
             onClick={() => setModalOpen(true)}
             className="w-32 shrink-0 mx-auto sm:mx-0 cursor-pointer block focus:outline-none focus-visible:ring-2 focus-visible:ring-link-primary rounded-sm"
-            // TODO(i18n): attachment.game.openReplayLabel
-            aria-label="Open game replay"
+            aria-label={t('card.openReplay')}
           >
             <MiniBoard fen={attachment.finalFen} responsive />
           </button>

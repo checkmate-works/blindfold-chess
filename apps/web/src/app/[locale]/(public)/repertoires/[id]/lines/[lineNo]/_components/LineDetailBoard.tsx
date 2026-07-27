@@ -15,12 +15,10 @@ import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import {
-  MOVE_NAV_ROW_CLASS,
-  MoveNavigationControls,
-} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
+import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import type { LineMove } from '../_lib/line-moves';
 import { useShapeAutosave } from '../_lib/use-shape-autosave';
@@ -126,6 +124,7 @@ export function LineDetailBoard({
   }, [syncPly, moveParam, pathname, router, searchParams]);
   const current = positions[clampedPly];
   const lastMove = clampedPly > 0 ? current.lastMove : null;
+  const display = useBoardDisplay(lastMove);
   const focusedMove = clampedPly > 0 ? moves[clampedPly - 1] : null;
 
   // Markup is keyed by the position a move reaches, so the start position (ply
@@ -159,26 +158,22 @@ export function LineDetailBoard({
                 fen={current.fen}
                 flipped={side === 'black'}
                 playerSide={side}
-                lastMove={lastMove}
-                showCoordinates
                 showOwnPieces
                 showOpponentPieces
-                boardTheme="lichess"
+                {...display}
                 rounded={false}
                 annotations={focusedShapes}
                 onAnnotationsChange={onAnnotationsChange}
               />
 
-              <div className={`relative flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
-                <MoveNavigationControls
-                  onNavigateToStart={() => setPly(0)}
-                  onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}
-                  onNavigateNext={() => setPly(Math.min(maxPly, clampedPly + 1))}
-                  onNavigateToEnd={() => setPly(maxPly)}
-                  isPreviousDisabled={clampedPly === 0}
-                  isNextDisabled={clampedPly === maxPly}
-                />
-              </div>
+              <MoveNavigationRow
+                onNavigateToStart={() => setPly(0)}
+                onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}
+                onNavigateNext={() => setPly(Math.min(maxPly, clampedPly + 1))}
+                onNavigateToEnd={() => setPly(maxPly)}
+                isPreviousDisabled={clampedPly === 0}
+                isNextDisabled={clampedPly === maxPly}
+              />
             </div>
           </div>
 

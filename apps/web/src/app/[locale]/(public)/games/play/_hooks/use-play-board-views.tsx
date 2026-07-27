@@ -90,7 +90,7 @@ export function usePlayBoardViews({
     fen: displayFen || currentFen,
     playerSide,
     flipped: effectiveFlipped,
-    lastMove: preferences.highlightLastMove && currentPosition === -1 ? lastMove : null,
+    lastMove: currentPosition === -1 ? lastMove : null,
     preferences,
     movesLength,
     currentPosition,

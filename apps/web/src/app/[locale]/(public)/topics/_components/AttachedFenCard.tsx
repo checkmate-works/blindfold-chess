@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
 import { BoardReviewModal } from './BoardReviewModal';
@@ -37,21 +39,20 @@ type Props = {
 };
 
 export function AttachedFenCard({ attachment }: Props) {
+  const t = useTranslations('attachment');
   const [modalOpen, setModalOpen] = useState(false);
   const [flipped, setFlipped] = useState(false);
 
   return (
     <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
       <div className="p-3 space-y-2">
-        {/* TODO(i18n): attachment.fen.cardTitle */}
-        <p className="text-sm font-medium text-foreground">Attached position</p>
+        <p className="text-sm font-medium text-foreground">{t('card.positionLabel')}</p>
         <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3 gap-2">
           <button
             type="button"
             onClick={() => setModalOpen(true)}
             className="w-32 shrink-0 mx-auto sm:mx-0 cursor-pointer block focus:outline-none focus-visible:ring-2 focus-visible:ring-link-primary rounded-sm"
-            // TODO(i18n): attachment.fen.openModalLabel
-            aria-label="Enlarge position"
+            aria-label={t('card.enlargePosition')}
           >
             <MiniBoard fen={attachment.fen} responsive />
           </button>
@@ -66,6 +67,7 @@ export function AttachedFenCard({ attachment }: Props) {
       <BoardReviewModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
+        title={t('card.positionLabel')}
         fen={attachment.fen}
         flipped={flipped}
         onFlip={() => setFlipped((f) => !f)}

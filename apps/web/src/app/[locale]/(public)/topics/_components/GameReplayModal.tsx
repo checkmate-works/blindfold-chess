@@ -2,14 +2,19 @@
 
 import { useMemo, useState } from 'react';
 
+import { useTranslations } from 'next-intl';
+
 import {
+  formatMovesToPgn,
   getFenAfterMoves,
+  getLastMoveDetails,
   getStartingFen,
   parsePgnWithFen,
 } from '@blindfold-chess/features/chess-core';
 
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+
 import { BoardReviewModal } from './BoardReviewModal';
-import type { BoardReviewMovePair } from './BoardReviewModal';
 
 /**
  * Modal wrapper that owns chess.js move-state for an attached PGN
@@ -44,6 +49,7 @@ type Props = {
 };
 
 export function GameReplayModal({ pgn, fallbackFen, isOpen, onClose }: Props) {
+  const t = useTranslations('attachment');
   const parsed = useMemo(() => {
     try {
       return parsePgnWithFen(pgn);
@@ -71,19 +77,22 @@ export function GameReplayModal({ pgn, fallbackFen, isOpen, onClose }: Props) {
     return getFenAfterMoves(startingFen, parsed.moves.slice(0, moveIndex + 1));
   }, [moveIndex, parsed.moves, startingFen, fallbackFen, totalMoves]);
 
-  const movePairs = useMemo<BoardReviewMovePair[]>(() => {
-    const pairs: BoardReviewMovePair[] = [];
-    for (let i = 0; i < parsed.moves.length; i += 2) {
-      pairs.push({
-        moveNumber: Math.floor(i / 2) + 1,
-        whiteMove: parsed.moves[i],
-        whiteIndex: i,
-        blackMove: parsed.moves[i + 1],
-        blackIndex: i + 1 < parsed.moves.length ? i + 1 : undefined,
-      });
-    }
-    return pairs;
-  }, [parsed.moves]);
+  // Squares of the move that produced `currentFen`, so the enlarged board can
+  // ring them like every other board does. Null before the first move.
+  const lastMove = useMemo(
+    () =>
+      moveIndex === -1
+        ? null
+        : getLastMoveDetails(parsed.moves.slice(0, moveIndex + 1), startingFen),
+    [moveIndex, parsed.moves, startingFen]
+  );
+
+  // Numbering follows the PGN's own starting position: a game set up from a
+  // FEN where Black is to move opens at "12...Kh8", not "1. Kh8".
+  const formattedPgn = useMemo(() => {
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
+    return formatMovesToPgn(parsed.moves, startsAsBlack, startMoveNumber);
+  }, [parsed.moves, startingFen]);
 
   const showNavigation = totalMoves > 0;
 
@@ -91,10 +100,12 @@ export function GameReplayModal({ pgn, fallbackFen, isOpen, onClose }: Props) {
     <BoardReviewModal
       isOpen={isOpen}
       onClose={onClose}
+      title={t('card.gameLabel')}
       fen={currentFen}
+      lastMove={lastMove}
       flipped={flipped}
       onFlip={() => setFlipped((f) => !f)}
-      movePairs={showNavigation ? movePairs : undefined}
+      formattedPgn={showNavigation ? formattedPgn : undefined}
       currentMoveIndex={showNavigation ? moveIndex : undefined}
       totalMoves={showNavigation ? totalMoves : undefined}
       onNavigateToStart={showNavigation ? () => setMoveIndex(-1) : undefined}

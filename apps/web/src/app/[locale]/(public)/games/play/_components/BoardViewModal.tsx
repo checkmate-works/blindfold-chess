@@ -1,23 +1,27 @@
 'use client';
 
-import { type ReactNode, useEffect } from 'react';
+import type { ReactNode } from 'react';
 
-import { ChessBoard, FlipBoardButton } from '@/app/_components';
+import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 
 import type { EvaluationMark } from '@/lib/games/evaluation';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
+import { BoardModal } from '@/app/[locale]/_components/BoardModal';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
+import { resolveBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import { HorizontalMoveList } from './HorizontalMoveList';
-import { MOVE_NAV_ROW_CLASS, MoveNavigationControls } from './MoveNavigationControls';
+import { MoveNavigationRow } from './MoveNavigationRow';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  /** Header text. Defaults to the generic "Board" — pass something specific
+   * when the surface knows what the board is (a preview, a recalled game …). */
+  title?: string;
   fen: string;
   playerSide: Side;
   flipped?: boolean;
@@ -47,6 +51,7 @@ type Props = {
 export function BoardViewModal({
   isOpen,
   onClose,
+  title,
   fen,
   playerSide,
   flipped,
@@ -66,114 +71,57 @@ export function BoardViewModal({
   footer,
 }: Props) {
   const t = useTranslations('play');
-  useScrollLock(isOpen);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70" />
+    <BoardModal isOpen={isOpen} title={title ?? t('boardModalTitle')} onClose={onClose}>
+      <>
+        {/* Horizontal Move List */}
+        {formattedPgn.length > 0 && onNavigateToPosition && (
+          <div className="bg-card px-2 py-1.5 overflow-x-auto">
+            <HorizontalMoveList
+              formattedPgn={formattedPgn}
+              currentPosition={currentPosition}
+              onNavigateToPosition={onNavigateToPosition}
+            />
+          </div>
+        )}
 
-      {/* Content. Full-bleed + square corners on mobile (matches the inline
-          board and coordinate-quiz); bounded + rounded card at >=sm. */}
-      <div className="relative z-10 w-full max-w-lg px-0 sm:px-4">
-        <div className="rounded-none sm:rounded-md overflow-hidden">
-          {/* Horizontal Move List */}
-          {formattedPgn.length > 0 && onNavigateToPosition && (
-            <div
-              className="bg-card px-2 py-1.5 overflow-x-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <HorizontalMoveList
-                formattedPgn={formattedPgn}
-                currentPosition={currentPosition}
-                onNavigateToPosition={onNavigateToPosition}
-              />
-            </div>
-          )}
+        <ChessBoard
+          fen={fen}
+          flipped={flipped ?? playerSide === 'black'}
+          playerSide={playerSide}
+          showOwnPieces={preferences.showOwnPieces}
+          showOpponentPieces={preferences.showOpponentPieces}
+          pieceShapeMode={preferences.pieceShapeMode}
+          pieceColors={preferences.pieceColors}
+          pawnHideMode={preferences.pawnHideMode}
+          hiddenPieceStyle={hiddenPieceStyle}
+          {...resolveBoardDisplay(preferences, lastMove)}
+          rounded={false}
+          evaluationMark={evaluationMark}
+        />
 
-          <ChessBoard
-            fen={fen}
-            flipped={flipped ?? playerSide === 'black'}
-            playerSide={playerSide}
-            lastMove={lastMove}
-            showCoordinates={preferences.showCoordinates}
-            showOwnPieces={preferences.showOwnPieces}
-            showOpponentPieces={preferences.showOpponentPieces}
-            pieceShapeMode={preferences.pieceShapeMode}
-            pieceColors={preferences.pieceColors}
-            pawnHideMode={preferences.pawnHideMode}
-            hiddenPieceStyle={hiddenPieceStyle}
-            boardTheme={preferences.boardTheme}
-            rounded={false}
-            evaluationMark={evaluationMark}
+        {/* Navigation Controls & Flip Button */}
+        {(movesLength > 0 || onFlipBoard) && (
+          <MoveNavigationRow
+            className="bg-card"
+            onNavigateToStart={movesLength > 0 ? onNavigateToStart : undefined}
+            onNavigatePrevious={movesLength > 0 ? onNavigatePrevious : undefined}
+            onNavigateNext={movesLength > 0 ? onNavigateNext : undefined}
+            onNavigateToEnd={movesLength > 0 ? onNavigateToEnd : undefined}
+            isPreviousDisabled={
+              currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
+            }
+            isNextDisabled={
+              currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
+            }
+            flip={onFlipBoard ? { onClick: onFlipBoard, label: t('flipBoard') } : undefined}
           />
+        )}
 
-          {/* Navigation Controls & Flip Button */}
-          {(movesLength > 0 || onFlipBoard) && (
-            <div
-              className={`bg-card flex items-center justify-center relative pr-11 sm:pr-0 ${MOVE_NAV_ROW_CLASS}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {movesLength > 0 &&
-                onNavigateToStart &&
-                onNavigatePrevious &&
-                onNavigateNext &&
-                onNavigateToEnd && (
-                  <MoveNavigationControls
-                    onNavigateToStart={onNavigateToStart}
-                    onNavigatePrevious={onNavigatePrevious}
-                    onNavigateNext={onNavigateNext}
-                    onNavigateToEnd={onNavigateToEnd}
-                    isPreviousDisabled={
-                      currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
-                    }
-                    isNextDisabled={
-                      currentPosition === -1 ||
-                      (movesLength > 0 && currentPosition === movesLength - 1)
-                    }
-                  />
-                )}
-              {onFlipBoard && (
-                <FlipBoardButton
-                  onClick={onFlipBoard}
-                  title={t('flipBoard')}
-                  className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                />
-              )}
-            </div>
-          )}
-
-          {/* Optional CTA bar (e.g. shared replay's "open this position" link).
-              Stop propagation so a tap here doesn't fall through to the backdrop
-              close handler. */}
-          {footer && (
-            <div
-              className="bg-card border-t border-border px-3 py-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {footer}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+        {/* Optional CTA bar (e.g. shared replay's "open this position" link). */}
+        {footer && <div className="bg-card border-t border-border px-3 py-2">{footer}</div>}
+      </>
+    </BoardModal>
   );
 }

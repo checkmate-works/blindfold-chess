@@ -8,12 +8,10 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import {
-  MOVE_NAV_ROW_CLASS,
-  MoveNavigationControls,
-} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import type { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
 import { MAX_SOLUTION_MOVES } from '../_hooks/use-puzzle-solution-moves';
@@ -78,6 +76,7 @@ export function PuzzleSolutionFields({
   // "remove last") recomputes solution.currentFen away from checkmate and
   // this flips back automatically.
   const inputLocked = reachedMaxMoves || solution.isCheckmate;
+  const display = useBoardDisplay(solution.viewedLastMove);
 
   return (
     <>
@@ -100,9 +99,7 @@ export function PuzzleSolutionFields({
         <ChessBoard
           fen={solution.viewedFen}
           flipped={flipped}
-          lastMove={preferences.highlightLastMove ? solution.viewedLastMove : null}
-          showCoordinates={true}
-          boardTheme={preferences.boardTheme}
+          {...display}
           showOwnPieces={true}
           showOpponentPieces={true}
           pieceShapeMode="normal"
@@ -118,16 +115,14 @@ export function PuzzleSolutionFields({
           }
         />
         {solution.moves.length > 0 && (
-          <div className={`flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
-            <MoveNavigationControls
-              onNavigateToStart={() => solution.goToPly(0)}
-              onNavigatePrevious={() => solution.goToPly(solution.viewedPly - 1)}
-              onNavigateNext={() => solution.goToPly(solution.viewedPly + 1)}
-              onNavigateToEnd={() => solution.goToPly(solution.moves.length)}
-              isPreviousDisabled={solution.viewedPly === 0}
-              isNextDisabled={!solution.isViewingHistory}
-            />
-          </div>
+          <MoveNavigationRow
+            onNavigateToStart={() => solution.goToPly(0)}
+            onNavigatePrevious={() => solution.goToPly(solution.viewedPly - 1)}
+            onNavigateNext={() => solution.goToPly(solution.viewedPly + 1)}
+            onNavigateToEnd={() => solution.goToPly(solution.moves.length)}
+            isPreviousDisabled={solution.viewedPly === 0}
+            isNextDisabled={!solution.isViewingHistory}
+          />
         )}
       </BoardFrame>
 

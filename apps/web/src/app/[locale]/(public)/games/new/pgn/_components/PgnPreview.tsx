@@ -90,7 +90,7 @@ export function PgnPreview({ pgnMoves, startingFen, color }: Props) {
         fen={displayFen}
         playerSide={color}
         flipped={effectiveFlipped}
-        lastMove={preferences.highlightLastMove && currentPosition !== -2 ? lastMove : null}
+        lastMove={currentPosition !== -2 ? lastMove : null}
         preferences={preferences}
         movesLength={pgnMoves.length}
         currentPosition={currentPosition}

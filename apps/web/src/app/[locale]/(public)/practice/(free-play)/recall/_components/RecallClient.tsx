@@ -217,9 +217,7 @@ export function RecallClient({
     <InlineBoardView
       fen={boardFen}
       playerSide={playerColor}
-      lastMove={
-        preferences.highlightLastMove && navigation.currentPosition === -1 ? currentLastMove : null
-      }
+      lastMove={navigation.currentPosition === -1 ? currentLastMove : null}
       preferences={preferences}
       movesLength={originalMoves.length}
       currentPosition={navigation.currentPosition}
