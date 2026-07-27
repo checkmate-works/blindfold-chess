@@ -1,7 +1,7 @@
 import { Skeleton } from '@/app/[locale]/_components';
 
 import { INLINE_BOARD_CARD_CHROME } from '../../_lib/skeleton-layout-classes';
-import { MOVE_NAV_ROW_CLASS } from '../MoveNavigationControls';
+import { MOVE_NAV_ROW_CLASS } from '../MoveNavigationRow';
 
 /**
  * Skeleton for the always-visible board layout (boardVisibility === 'always').

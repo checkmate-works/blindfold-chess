@@ -21,6 +21,13 @@ vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
 }));
 
+// `BoardReviewModal` resolves the viewer's board-display preferences (coordinates,
+// last-move highlight) through this hook. The card's markup is what's under test,
+// so hand it a fixed answer rather than standing up a preferences provider.
+vi.mock('@/app/[locale]/_hooks/use-board-display', () => ({
+  useBoardDisplay: () => ({ showCoordinates: true, boardTheme: 'monotone', lastMove: null }),
+}));
+
 const fixture = (overrides: Partial<AttachedFenCardData> = {}): AttachedFenCardData => ({
   id: 'fen-id-1',
   fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
@@ -117,7 +124,7 @@ describe('AttachedFenCard', () => {
 
   it('renders the card title even when caption is missing', () => {
     const { container } = render(<AttachedFenCard attachment={fixture({ caption: null })} />);
-    expect(container.textContent).toContain('Attached position');
+    expect(container.textContent).toContain('attachment.card.positionLabel');
   });
 
   it('renders both caption and FEN string when caption is present (independent paragraphs)', () => {

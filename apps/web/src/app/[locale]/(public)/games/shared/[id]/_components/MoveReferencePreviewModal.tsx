@@ -7,15 +7,12 @@ import { formatMovesToPgn, getLastMoveDetails } from '@blindfold-chess/features/
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import {
-  MOVE_NAV_ROW_CLASS,
-  MoveNavigationControls,
-} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
-import { Modal } from '@/app/[locale]/_components/Modal';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { BoardModal } from '@/app/[locale]/_components/BoardModal';
+import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 type Props = {
   onClose: () => void;
@@ -42,11 +39,10 @@ type Props = {
  * Mounted only while open (the caller conditionally renders it), so navigation
  * state resets between references for free.
  *
- * Chrome and move list are the house board+moves stack — `HorizontalMoveList`
- * above the board, `MoveNavigationControls` in a `MOVE_NAV_ROW_CLASS` row
- * below it — so this
- * reads the same as the quick-peek modal and the inline board rather than
- * inventing a third arrangement.
+ * Chrome and move list are the house board+moves stack — `BoardModal` around
+ * it, `HorizontalMoveList` above the board, `MoveNavigationRow` below it — so
+ * this reads the same as the quick-peek modal and the inline board rather
+ * than inventing a third arrangement.
  */
 export function MoveReferencePreviewModal({
   onClose,
@@ -57,7 +53,6 @@ export function MoveReferencePreviewModal({
   startingFen,
   playerColor,
 }: Props) {
-  const { preferences } = useGamePreferences();
   const nav = useMoveNavigation({
     moves: sans as AlgebraicNotation[],
     startingFen: baseFen,
@@ -91,12 +86,14 @@ export function MoveReferencePreviewModal({
           baseFen
         );
 
+  const display = useBoardDisplay(lastMove);
+
   return (
-    <Modal isOpen onClose={onClose} title={raw} maxWidth="max-w-lg">
+    <BoardModal onClose={onClose} title={raw} maxWidth="max-w-lg">
       {/* Move strip above the board, then board, then the 8:1 nav row — the
           same stack every other board+moves surface uses (InlineBoardView,
           BoardViewModal, the repertoire viewers). */}
-      <div className="rounded-md overflow-hidden">
+      <div>
         <div className="bg-card px-2 py-1.5 overflow-x-auto">
           <HorizontalMoveList
             formattedPgn={formattedPgn}
@@ -105,28 +102,21 @@ export function MoveReferencePreviewModal({
           />
         </div>
 
-        <ChessBoard
-          fen={fen}
-          flipped={playerColor === 'black'}
-          lastMove={lastMove}
-          boardTheme={preferences.boardTheme}
-          rounded={false}
-        />
+        <ChessBoard fen={fen} flipped={playerColor === 'black'} rounded={false} {...display} />
 
-        <div className={`bg-card flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
-          <MoveNavigationControls
-            onNavigateToStart={nav.navigateToStart}
-            onNavigatePrevious={nav.navigatePrevious}
-            onNavigateNext={nav.navigateNext}
-            onNavigateToEnd={nav.navigateToEnd}
-            isPreviousDisabled={nav.currentPosition === -2}
-            isNextDisabled={
-              nav.currentPosition === -1 ||
-              (sans.length > 0 && nav.currentPosition === sans.length - 1)
-            }
-          />
-        </div>
+        <MoveNavigationRow
+          onNavigateToStart={nav.navigateToStart}
+          onNavigatePrevious={nav.navigatePrevious}
+          onNavigateNext={nav.navigateNext}
+          onNavigateToEnd={nav.navigateToEnd}
+          isPreviousDisabled={nav.currentPosition === -2}
+          isNextDisabled={
+            nav.currentPosition === -1 ||
+            (sans.length > 0 && nav.currentPosition === sans.length - 1)
+          }
+          className="bg-card"
+        />
       </div>
-    </Modal>
+    </BoardModal>
   );
 }

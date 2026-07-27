@@ -308,9 +308,9 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(container.querySelector('[data-testid="mini-board"]')).not.toBeNull();
   });
 
-  it('renders the "Attached game" label so the layout matches AttachedFenCard (#84)', () => {
+  it('renders the attached-game label so the layout matches AttachedFenCard (#84)', () => {
     const { container } = render(<AttachedGameCard attachment={makeAttachment()} />);
-    expect(container.textContent ?? '').toContain('Attached game');
+    expect(container.textContent ?? '').toContain('card.gameLabel');
   });
 
   it('always renders a Date row, falling back to ????.??.?? when headerDate is null (#84)', () => {

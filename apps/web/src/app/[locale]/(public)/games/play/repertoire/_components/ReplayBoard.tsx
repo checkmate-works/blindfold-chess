@@ -9,11 +9,9 @@ import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import { FaPlay } from 'react-icons/fa';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import {
-  MOVE_NAV_ROW_CLASS,
-  MoveNavigationControls,
-} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
+import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import { useReplayPlayback } from '../_hooks/use-replay-playback';
 import type { MatchVerdict } from '../_lib/build-replay';
@@ -63,6 +61,7 @@ export function ReplayBoard({
 
   const current = positions[ply];
   const lastMove = ply > 0 ? current.lastMove : null;
+  const display = useBoardDisplay(lastMove);
 
   const detail =
     verdict.status === 'in-book'
@@ -97,11 +96,9 @@ export function ReplayBoard({
               fen={current.fen}
               flipped={side === 'black'}
               playerSide={side}
-              lastMove={lastMove}
-              showCoordinates
               showOwnPieces
               showOpponentPieces
-              boardTheme="lichess"
+              {...display}
               rounded={false}
             />
 
@@ -119,16 +116,14 @@ export function ReplayBoard({
             )}
           </div>
 
-          <div className={`relative flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
-            <MoveNavigationControls
-              onNavigateToStart={() => goTo(0)}
-              onNavigatePrevious={() => goTo(ply - 1)}
-              onNavigateNext={() => goTo(ply + 1)}
-              onNavigateToEnd={() => goTo(maxPly)}
-              isPreviousDisabled={ply === 0}
-              isNextDisabled={ply === maxPly}
-            />
-          </div>
+          <MoveNavigationRow
+            onNavigateToStart={() => goTo(0)}
+            onNavigatePrevious={() => goTo(ply - 1)}
+            onNavigateNext={() => goTo(ply + 1)}
+            onNavigateToEnd={() => goTo(maxPly)}
+            isPreviousDisabled={ply === 0}
+            isNextDisabled={ply === maxPly}
+          />
         </div>
       </div>
 

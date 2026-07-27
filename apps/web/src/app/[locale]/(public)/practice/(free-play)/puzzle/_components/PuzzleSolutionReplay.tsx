@@ -12,7 +12,7 @@ import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
 import { useMovePlayback } from '@/app/[locale]/(public)/practice/_hooks/use-move-playback';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import { buildSolutionPairs } from '../_lib/solution-pairs';
 import { getFullmoveFromFen } from './AttemptHistoryPanel';
@@ -63,7 +63,6 @@ export function PuzzleSolutionReplay({
    */
   const t = useTranslations('practice.puzzle.result');
   const tCommon = useTranslations('practice.common');
-  const { preferences } = useGamePreferences();
 
   const isBlackToMove = isBlackToMoveFromFen(fen);
   const firstTurn: 'w' | 'b' = isBlackToMove ? 'b' : 'w';
@@ -82,6 +81,8 @@ export function PuzzleSolutionReplay({
     autoPlayDelayMs: PLAY_INITIAL_DELAY_MS,
   });
 
+  const display = useBoardDisplay(lastMove);
+
   const solutionFirstMove = solutionMoves[0]?.san ?? '';
   const solutionPairs = useMemo(
     () => buildSolutionPairs(solutionMoves, firstTurn, getFullmoveFromFen(fen)),
@@ -93,13 +94,7 @@ export function PuzzleSolutionReplay({
       {showSectionTitle && <SectionTitle>{t('replaySection')}</SectionTitle>}
       <BoardFrame>
         <div className="relative">
-          <ChessBoard
-            fen={replayFen}
-            flipped={isBlackToMove}
-            showCoordinates={preferences.showCoordinates}
-            boardTheme={preferences.boardTheme}
-            lastMove={preferences.highlightLastMove ? lastMove : null}
-          />
+          <ChessBoard fen={replayFen} flipped={isBlackToMove} {...display} />
 
           {!isPlaying && !hasPlayed && solutionMoves.length > 0 && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">

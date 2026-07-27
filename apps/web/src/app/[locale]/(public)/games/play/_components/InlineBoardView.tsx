@@ -2,13 +2,14 @@
 
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
-import { ChessBoard, FlipBoardButton } from '@/app/_components';
+import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { resolveBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import {
   INLINE_BOARD_CARD_CHROME,
@@ -16,7 +17,7 @@ import {
   STATUS_PILL_CLASSES,
 } from '../_lib/skeleton-layout-classes';
 import { HorizontalMoveList } from './HorizontalMoveList';
-import { MOVE_NAV_ROW_CLASS, MoveNavigationControls } from './MoveNavigationControls';
+import { MoveNavigationRow } from './MoveNavigationRow';
 
 type Props = {
   fen: string;
@@ -272,8 +273,6 @@ export function InlineBoardView({
               fen={fen}
               flipped={flipped ?? playerSide === 'black'}
               playerSide={playerSide}
-              lastMove={lastMove}
-              showCoordinates={preferences.showCoordinates}
               showOwnPieces={preferences.showOwnPieces}
               showOpponentPieces={preferences.showOpponentPieces}
               showPieceDestinations={preferences.showPieceDestinations}
@@ -281,7 +280,7 @@ export function InlineBoardView({
               pieceColors={preferences.pieceColors}
               pawnHideMode={preferences.pawnHideMode}
               hiddenPieceStyle={hiddenPieceStyle}
-              boardTheme={preferences.boardTheme}
+              {...resolveBoardDisplay(preferences, lastMove)}
               rounded={false}
               // A masked board is non-interactive: the overlay sits on top and
               // intercepts pointer events, but null these defensively too so a
@@ -292,36 +291,19 @@ export function InlineBoardView({
             />
             {/* Navigation Controls & Flip Button */}
             {(movesLength > 0 || onFlipBoard) && (
-              <div
-                className={`flex items-center justify-center relative pr-11 sm:pr-0 ${MOVE_NAV_ROW_CLASS}`}
-              >
-                {movesLength > 0 &&
-                  onNavigateToStart &&
-                  onNavigatePrevious &&
-                  onNavigateNext &&
-                  onNavigateToEnd && (
-                    <MoveNavigationControls
-                      onNavigateToStart={onNavigateToStart}
-                      onNavigatePrevious={onNavigatePrevious}
-                      onNavigateNext={onNavigateNext}
-                      onNavigateToEnd={onNavigateToEnd}
-                      isPreviousDisabled={
-                        currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
-                      }
-                      isNextDisabled={
-                        currentPosition === -1 ||
-                        (movesLength > 0 && currentPosition === movesLength - 1)
-                      }
-                    />
-                  )}
-                {onFlipBoard && (
-                  <FlipBoardButton
-                    onClick={onFlipBoard}
-                    title={t('flipBoard')}
-                    className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  />
-                )}
-              </div>
+              <MoveNavigationRow
+                onNavigateToStart={movesLength > 0 ? onNavigateToStart : undefined}
+                onNavigatePrevious={movesLength > 0 ? onNavigatePrevious : undefined}
+                onNavigateNext={movesLength > 0 ? onNavigateNext : undefined}
+                onNavigateToEnd={movesLength > 0 ? onNavigateToEnd : undefined}
+                isPreviousDisabled={
+                  currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
+                }
+                isNextDisabled={
+                  currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
+                }
+                flip={onFlipBoard ? { onClick: onFlipBoard, label: t('flipBoard') } : undefined}
+              />
             )}
 
             {/* Blindfold peek mask: a frosted overlay over the whole board

@@ -1,6 +1,10 @@
 'use client';
 
+import { useMemo } from 'react';
+
+import { BoardLayout } from '@/app/_components/chess/BoardLayout';
 import type { Color } from '@blindfold-chess/features/chess-core';
+import { FILES } from '@blindfold-chess/features/common';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceType } from '@blindfold-chess/types';
 
@@ -18,19 +22,26 @@ function parseFenChar(ch: string): { type: PieceType; color: Color } | null {
   return null;
 }
 
-function parseFenPlacement(fen: string): (string | null)[][] {
-  const placement = fen.split(' ')[0];
-  return placement.split('/').map((rank) => {
-    const row: (string | null)[] = [];
-    for (const ch of rank) {
-      if (ch >= '1' && ch <= '8') {
-        row.push(...Array<null>(Number(ch)).fill(null));
-      } else {
-        row.push(ch);
+/** FEN placement → square-keyed pieces ("e4" → white pawn). */
+function parseFenPlacement(fen: string): Map<string, { type: PieceType; color: Color }> {
+  const pieces = new Map<string, { type: PieceType; color: Color }>();
+  fen
+    .split(' ')[0]
+    .split('/')
+    .forEach((row, rowIndex) => {
+      const rank = 8 - rowIndex;
+      let fileIndex = 0;
+      for (const ch of row) {
+        if (ch >= '1' && ch <= '8') {
+          fileIndex += Number(ch);
+          continue;
+        }
+        const piece = parseFenChar(ch);
+        if (piece && fileIndex < FILES.length) pieces.set(`${FILES[fileIndex]}${rank}`, piece);
+        fileIndex += 1;
       }
-    }
-    return row;
-  });
+    });
+  return pieces;
 }
 
 type Props = {
@@ -38,72 +49,71 @@ type Props = {
   size?: number;
   responsive?: boolean;
   flipped?: boolean;
+  /**
+   * Squares to ring as the last move. Pass it already resolved against the
+   * `highlightLastMove` preference — `useBoardDisplay` does that.
+   */
+  lastMove?: { from: string; to: string } | null;
+  /**
+   * Off by default: the thumbnail sizes this renders at (120px) have no room
+   * for legible file/rank labels. Enlarged views pass the viewer's preference.
+   */
+  showCoordinates?: boolean;
 };
 
-export function MiniBoard({ fen, size = 120, responsive = false, flipped = false }: Props) {
+/**
+ * Static board for a FEN — thumbnails on cards and feeds, and the enlarged
+ * board inside an attachment's review modal.
+ *
+ * @design Why this exists next to ChessBoard
+ *
+ * `ChessBoard` imports chess-core (legal-move generation for its interactive
+ * mode), and through it chess.js. Attachment cards render on the feed and in
+ * every comment thread, so they must not drag that into the first-paint
+ * bundle for a picture of a position nobody has clicked yet.
+ *
+ * What it does NOT do is re-implement the board: squares, coordinates, the
+ * last-move ring and the theme colours all come from `BoardLayout` — the same
+ * layer `ChessBoard` renders through, which is free of chess-core. So the two
+ * boards can only differ in what they are given, not in how they draw it.
+ */
+export function MiniBoard({
+  fen,
+  size = 120,
+  responsive = false,
+  flipped = false,
+  lastMove = null,
+  showCoordinates = false,
+}: Props) {
   const { preferences } = useGamePreferences();
-  const themeColors = getBoardThemeColors(preferences.boardTheme);
-  const board = flipped
-    ? parseFenPlacement(fen)
-        .reverse()
-        .map((rank) => [...rank].reverse())
-    : parseFenPlacement(fen);
+  const pieces = useMemo(() => parseFenPlacement(fen), [fen]);
+
+  const board = (
+    <BoardLayout
+      flipped={flipped}
+      showCoordinates={showCoordinates}
+      themeColors={getBoardThemeColors(preferences.boardTheme)}
+      rounded={false}
+      squareProps={({ square }) => ({
+        highlightType:
+          lastMove && (square === lastMove.from || square === lastMove.to) ? 'last-move' : 'none',
+      })}
+      renderSquare={({ square }) => {
+        const piece = pieces.get(square);
+        return piece ? (
+          <ChessPieceIcon type={piece.type} color={piece.color} className="w-[80%] h-[80%]" />
+        ) : null;
+      }}
+    />
+  );
 
   if (responsive) {
-    return (
-      <div className="grid grid-cols-8 rounded-sm overflow-hidden aspect-square w-full">
-        {board.map((rank, rankIdx) =>
-          rank.map((fenChar, fileIdx) => {
-            const isLight = (rankIdx + fileIdx) % 2 === 0;
-            const piece = fenChar ? parseFenChar(fenChar) : null;
-            return (
-              <div
-                key={`${rankIdx}-${fileIdx}`}
-                className={`flex items-center justify-center aspect-square ${isLight ? themeColors.light : themeColors.dark}`}
-              >
-                {piece ? (
-                  <ChessPieceIcon
-                    type={piece.type}
-                    color={piece.color}
-                    className="w-[80%] h-[80%]"
-                  />
-                ) : null}
-              </div>
-            );
-          })
-        )}
-      </div>
-    );
+    return <div className="w-full overflow-hidden rounded-sm">{board}</div>;
   }
 
-  const squareSize = size / 8;
-  const pieceSize = Math.round(squareSize * 0.8);
-
   return (
-    <div
-      className="grid grid-cols-8 rounded-sm overflow-hidden shrink-0"
-      style={{ width: size, height: size }}
-    >
-      {board.map((rank, rankIdx) =>
-        rank.map((fenChar, fileIdx) => {
-          const isLight = (rankIdx + fileIdx) % 2 === 0;
-          const piece = fenChar ? parseFenChar(fenChar) : null;
-          return (
-            <div
-              key={`${rankIdx}-${fileIdx}`}
-              className={`flex items-center justify-center ${isLight ? themeColors.light : themeColors.dark}`}
-              style={{
-                width: squareSize,
-                height: squareSize,
-              }}
-            >
-              {piece ? (
-                <ChessPieceIcon type={piece.type} color={piece.color} size={pieceSize} />
-              ) : null}
-            </div>
-          );
-        })
-      )}
+    <div className="shrink-0 overflow-hidden rounded-sm" style={{ width: size }}>
+      {board}
     </div>
   );
 }

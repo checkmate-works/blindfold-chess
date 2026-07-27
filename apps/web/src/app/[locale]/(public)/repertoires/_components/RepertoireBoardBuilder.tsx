@@ -14,9 +14,10 @@ import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 
 import {
-  MOVE_NAV_ROW_CLASS,
-  MoveNavigationControls,
-} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+  MOVE_NAV_SIDE_BUTTON_CLASS,
+  MoveNavigationRow,
+} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
+import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import { useRepertoireBoardBuilder } from './use-repertoire-board-builder';
 
@@ -97,6 +98,8 @@ export function RepertoireBoardBuilder({
   const drawingKey =
     shapes && onShapesChange && builder.currentMove ? builder.currentMove.positionKey : null;
 
+  const display = useBoardDisplay(builder.lastMove);
+
   return (
     <div className="space-y-2">
       <BoardFrame>
@@ -147,42 +150,35 @@ export function RepertoireBoardBuilder({
           fen={builder.currentFen}
           flipped={flipped}
           playerSide={side}
-          lastMove={builder.lastMove}
           onMove={builder.handleMove}
           movablePieces="side-to-move"
-          showCoordinates
-          boardTheme="lichess"
+          {...display}
           annotations={drawingKey ? (shapes?.[drawingKey] ?? EMPTY_BOARD_ANNOTATIONS) : null}
           onAnnotationsChange={
             drawingKey ? (next) => onShapesChange?.(drawingKey, next) : undefined
           }
         />
 
-        <div className={`flex items-center justify-between ${MOVE_NAV_ROW_CLASS}`}>
-          {/* Spacer mirroring the delete button so the nav cluster stays centered.
-              Both it and the button opt out of shrinking: the nav controls are
-              `w-full` on mobile, so without this the row's overflow would be
-              split with them and the delete target would end up under 40px. */}
-          <div className="w-10 shrink-0" aria-hidden />
-          <MoveNavigationControls
-            onNavigateToStart={builder.goToStart}
-            onNavigatePrevious={builder.goBack}
-            onNavigateNext={builder.goForward}
-            onNavigateToEnd={builder.goToEnd}
-            isPreviousDisabled={builder.isAtStart}
-            isNextDisabled={!builder.hasNext}
-          />
-          <button
-            type="button"
-            onClick={builder.deleteCurrent}
-            disabled={builder.isAtStart}
-            title={t('boardBuilder.deleteFromHere')}
-            aria-label={t('boardBuilder.deleteFromHere')}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-destructive disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
-          >
-            <FaTrash size={14} />
-          </button>
-        </div>
+        <MoveNavigationRow
+          onNavigateToStart={builder.goToStart}
+          onNavigatePrevious={builder.goBack}
+          onNavigateNext={builder.goForward}
+          onNavigateToEnd={builder.goToEnd}
+          isPreviousDisabled={builder.isAtStart}
+          isNextDisabled={!builder.hasNext}
+          trailingAction={
+            <button
+              type="button"
+              onClick={builder.deleteCurrent}
+              disabled={builder.isAtStart}
+              title={t('boardBuilder.deleteFromHere')}
+              aria-label={t('boardBuilder.deleteFromHere')}
+              className={`${MOVE_NAV_SIDE_BUTTON_CLASS} hover:text-destructive`}
+            >
+              <FaTrash size={14} />
+            </button>
+          }
+        />
       </BoardFrame>
 
       <p className="text-xs text-muted-foreground">

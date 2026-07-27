@@ -14,11 +14,9 @@ import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
 import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import {
-  MOVE_NAV_ROW_CLASS,
-  MoveNavigationControls,
-} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
+import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import { LineListPanel } from './LineListPanel';
 
@@ -96,6 +94,11 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
     }
   }
 
+  // Resolved before the empty-state guard below: hooks cannot run conditionally.
+  const display = useBoardDisplay(
+    line ? (clampedPly > 0 ? line.positions[clampedPly].lastMove : null) : null
+  );
+
   if (!line) {
     return (
       <div className="space-y-4 py-8 text-center">
@@ -112,7 +115,6 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
   }
 
   const current = line.positions[clampedPly];
-  const lastMove = clampedPly > 0 ? current.lastMove : null;
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -135,24 +137,20 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
               fen={current.fen}
               flipped={side === 'black'}
               playerSide={side}
-              lastMove={lastMove}
-              showCoordinates
               showOwnPieces
               showOpponentPieces
-              boardTheme="lichess"
+              {...display}
               rounded={false}
             />
 
-            <div className={`relative flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
-              <MoveNavigationControls
-                onNavigateToStart={() => setPly(0)}
-                onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}
-                onNavigateNext={() => setPly(Math.min(maxPly, clampedPly + 1))}
-                onNavigateToEnd={() => setPly(maxPly)}
-                isPreviousDisabled={clampedPly === 0}
-                isNextDisabled={clampedPly === maxPly}
-              />
-            </div>
+            <MoveNavigationRow
+              onNavigateToStart={() => setPly(0)}
+              onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}
+              onNavigateNext={() => setPly(Math.min(maxPly, clampedPly + 1))}
+              onNavigateToEnd={() => setPly(maxPly)}
+              isPreviousDisabled={clampedPly === 0}
+              isNextDisabled={clampedPly === maxPly}
+            />
           </div>
         </div>
 
