@@ -35,6 +35,18 @@ const STATUS_RANK: Record<LineMatchStatus, number> = {
   'not-applicable': 0,
 };
 
+/**
+ * Only merges same-parent siblings by position key, not arbitrary nodes
+ * across the tree — so a transposition that diverges and later reconverges
+ * (two lines reaching the same position via different move orders) stays as
+ * two separate subtrees. A game that transposes in from one line's move
+ * order and plays the other's continuation reports as a `deviation` here,
+ * with `expected` naming only the branch it walked in from. Deliberately not
+ * fixed: absorbing that needs a position-key-based merge across the whole
+ * tree (a graph, with cycle handling — UGC input can reach the same position
+ * via a null-effect move pair), which is a bigger, separately-decided change
+ * (checkmate-works/blindfold-chess#100).
+ */
 function mergeChildren(target: MoveTreeNode[], source: MoveTreeNode[]): void {
   for (const node of source) {
     const existing = target.find((t) => toPositionKey(t.fen) === toPositionKey(node.fen));

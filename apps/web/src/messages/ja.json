@@ -140,6 +140,9 @@
       "breadcrumb": "ライン {n}",
       "empty": "このラインには手がありません。",
       "branchFromHere": "この局面から分岐を追加",
+      "transposition": {
+        "continuesIn": "この局面の続きが<link>{lineLabel}</link>にあります（+{count}手）"
+      },
       "shapes": {
         "hint": "盤上を右クリックしてドラッグすると矢印、右クリックだけでマスに丸を描けます。Shift / Alt / Ctrl で色が変わります。自動保存されます。",
         "saveFailed": "盤面の書き込みを保存できませんでした。もう一度お試しください。"
