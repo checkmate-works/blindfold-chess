@@ -13,14 +13,20 @@ type Props = {
   icon: string;
   title: string;
   description: string;
-  locale?: string;
+  /**
+   * Required: without it the emitted `href` stays locale-less, `[locale]` binds
+   * to the first path segment (e.g. `games`), and `dynamicParams = false` in
+   * `[locale]/layout.tsx` turns the link into a 404. Shipped that way once —
+   * `/games/new` linked to a bare `/games/new/standard`.
+   */
+  locale: string;
   className?: string;
 };
 
 export function CardLink({ href, icon, title, description, locale, className }: Props) {
   return (
     <Link
-      href={locale ? `/${locale}${href}` : href}
+      href={`/${locale}${href}`}
       className={`group block p-4 bg-card rounded-md border border-border transition-all hover:border-foreground/20 ${className || ''}`}
     >
       <div className="flex items-start gap-3">
