@@ -332,6 +332,99 @@ describe('buildGameFrames', () => {
     });
   });
 
+  describe('played — undo reenactment', () => {
+    const minimalLog = {
+      inputMethod: 'board' as const,
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+    };
+
+    it('reenacts a retracted move whose SAN survived, then snaps back with the undo badge', () => {
+      const game = buildGame({
+        moves: ['e4', 'e5'],
+        operationLogs: [{ inputMethod: 'board', peekCount: 0, undoCount: 1, movePeekCount: 0 }],
+        undoneLogs: [{ index: 0, log: minimalLog, sans: ['Nf3', 'Nc6'] }],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const allPositions = replayMoves(game.moves);
+
+      // [initial, reenact-Nf3, revert(undo badge), after-e4, after-e5]
+      expect(frames).toHaveLength(game.moves.length + 1 + 2);
+      expect(frames[1].overlay).toBeUndefined();
+      expect(frames[1].lastMove).toEqual({ from: 'g1', to: 'f3' });
+      expect(frames[1].delayMs).toBe(700);
+      expect(frames[2].overlay).toEqual({ kind: 'undo' });
+      expect(frames[2].fen).toBe(allPositions[0].fen);
+      expect(frames[2].delayMs).toBe(600);
+    });
+
+    it('never reenacts the AI reply (sans[1]) — only the retracted player move', () => {
+      const game = buildGame({
+        moves: ['e4', 'e5'],
+        operationLogs: [{ inputMethod: 'board', peekCount: 0, undoCount: 1, movePeekCount: 0 }],
+        undoneLogs: [{ index: 0, log: minimalLog, sans: ['Nf3', 'Nc6'] }],
+      });
+      const frames = buildGameFrames(game, 'played');
+      expect(frames.filter((f) => f.delayMs === 700)).toHaveLength(1);
+    });
+
+    it('falls back to a plain badge for a legacy entry with no sans', () => {
+      const game = buildGame({
+        moves: ['e4'],
+        operationLogs: [{ inputMethod: 'board', peekCount: 0, undoCount: 1, movePeekCount: 0 }],
+        undoneLogs: [{ index: 0, log: minimalLog }],
+      });
+      const frames = buildGameFrames(game, 'played');
+      expect(frames.some((f) => f.delayMs === 700)).toBe(false);
+      expect(frames.filter((f) => f.overlay?.kind === 'undo')).toHaveLength(1);
+    });
+
+    it('falls back to a plain badge when the retracted SAN is illegal against the pre-move position', () => {
+      const game = buildGame({
+        moves: ['e4'],
+        operationLogs: [{ inputMethod: 'board', peekCount: 0, undoCount: 1, movePeekCount: 0 }],
+        // Qxh8 is not a legal move from the starting position.
+        undoneLogs: [{ index: 0, log: minimalLog, sans: ['Qxh8'] }],
+      });
+      const frames = buildGameFrames(game, 'played');
+      expect(frames.some((f) => f.delayMs === 700)).toBe(false);
+      expect(frames.filter((f) => f.overlay?.kind === 'undo')).toHaveLength(1);
+    });
+
+    it('reenacts every archived undo for the same slot, up to 2', () => {
+      const game = buildGame({
+        moves: ['e4'],
+        operationLogs: [{ inputMethod: 'board', peekCount: 0, undoCount: 2, movePeekCount: 0 }],
+        undoneLogs: [
+          { index: 0, log: minimalLog, sans: ['Nf3', 'Nc6'] },
+          { index: 0, log: minimalLog, sans: ['Nc3', 'Nc6'] },
+          { index: 0, log: minimalLog, sans: ['Nh3', 'Nc6'] }, // 3rd — beyond the cap
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      expect(frames.filter((f) => f.delayMs === 700)).toHaveLength(2);
+      expect(frames.filter((f) => f.overlay?.kind === 'undo')).toHaveLength(2);
+    });
+
+    it('matches archived entries by logIndex, not by slot order — a mismatched entry falls back to a badge', () => {
+      const game = buildGame({
+        moves: ['e4', 'e5', 'Nf3', 'Nc6'],
+        operationLogs: [
+          // Both slots recorded an undo, but only logIndex 1 has an archived SAN.
+          { inputMethod: 'board', peekCount: 0, undoCount: 1, movePeekCount: 0 },
+          { inputMethod: 'board', peekCount: 0, undoCount: 1, movePeekCount: 0 },
+        ],
+        undoneLogs: [{ index: 1, log: minimalLog, sans: ['Nc3', 'Nf6'] }],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const undoBadges = frames.filter((f) => f.overlay?.kind === 'undo');
+      const reenacts = frames.filter((f) => f.delayMs === 700);
+      expect(undoBadges).toHaveLength(2); // both slots visualize the undo...
+      expect(reenacts).toHaveLength(1); // ...but only logIndex 1 reenacts.
+    });
+  });
+
   describe('frame budget', () => {
     it('never truncates real positions to make room for annotations, and drops only the later slots', () => {
       const moveCount = 200;

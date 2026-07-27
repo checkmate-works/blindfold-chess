@@ -42,5 +42,6 @@ export function isUndoneMoveLog(value: unknown): value is UndoneMoveLog {
   if (v.pendingInvalidAttempts !== undefined && !isStringArray(v.pendingInvalidAttempts)) {
     return false;
   }
+  if (v.sans !== undefined && !isStringArray(v.sans)) return false;
   return true;
 }

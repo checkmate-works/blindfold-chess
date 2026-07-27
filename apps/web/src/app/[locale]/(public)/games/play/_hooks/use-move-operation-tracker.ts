@@ -147,27 +147,39 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
    * counted there (issue #95 — undo must not launder aid usage). What the
    * discarded entry/attempts CONTAINED is archived into `undoneLogs`
    * before removal, so the rollback erases nothing from the audit record.
+   *
+   * `retractedSans` — the SAN(s) the caller is about to remove from
+   * `moves[]` (board order: `[player's move, AI's reply]`) — is archived
+   * onto the same entry when non-empty, so a later replay can re-enact the
+   * retracted move rather than only badge it. Omitted for
+   * restart-from-position (`truncateLogs`, below), which never records
+   * `sans`: with potentially many discarded entries and no simple
+   * one-to-one move mapping, the value is low relative to the complexity.
    */
-  const handleUndoLog = useCallback(() => {
-    const current = logsRef.current;
-    const removed = current.length > 0 ? current[current.length - 1] : undefined;
-    const pending = invalidAttemptsRef.current;
-    if (removed !== undefined || pending.length > 0) {
-      archiveDiscarded([
-        {
-          index: removed !== undefined ? current.length - 1 : current.length,
-          ...(removed !== undefined ? { log: removed } : {}),
-          ...(pending.length > 0 ? { pendingInvalidAttempts: [...pending] } : {}),
-        },
-      ]);
-    }
-    logsRef.current = current.slice(0, -1);
-    setLogs(logsRef.current);
-    peekCountRef.current = 0;
-    movePeekCountRef.current = 0;
-    invalidCountRef.current = 0;
-    invalidAttemptsRef.current = [];
-  }, [archiveDiscarded]);
+  const handleUndoLog = useCallback(
+    (retractedSans?: string[]) => {
+      const current = logsRef.current;
+      const removed = current.length > 0 ? current[current.length - 1] : undefined;
+      const pending = invalidAttemptsRef.current;
+      if (removed !== undefined || pending.length > 0) {
+        archiveDiscarded([
+          {
+            index: removed !== undefined ? current.length - 1 : current.length,
+            ...(removed !== undefined ? { log: removed } : {}),
+            ...(pending.length > 0 ? { pendingInvalidAttempts: [...pending] } : {}),
+            ...(retractedSans && retractedSans.length > 0 ? { sans: retractedSans } : {}),
+          },
+        ]);
+      }
+      logsRef.current = current.slice(0, -1);
+      setLogs(logsRef.current);
+      peekCountRef.current = 0;
+      movePeekCountRef.current = 0;
+      invalidCountRef.current = 0;
+      invalidAttemptsRef.current = [];
+    },
+    [archiveDiscarded]
+  );
 
   /**
    * Truncate logs to the specified count and reset current counters.

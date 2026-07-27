@@ -211,6 +211,42 @@ describe('validatePublishSnapshot', () => {
     expect(undone[1].pendingInvalidAttempts!.every((s) => s.length <= 12)).toBe(true);
   });
 
+  it("bounds an undone entry's retracted sans to 2 entries of 10 chars each", () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        undoneLogs: [
+          {
+            index: 0,
+            log: log(),
+            sans: ['Nf3', 'e5', 'x'.repeat(50)], // 3rd entry over the 2-entry cap
+          },
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const undone = res.game.undoneLogs!;
+    expect(undone[0].sans).toEqual(['Nf3', 'e5']);
+  });
+
+  it('truncates an over-long retracted san to 10 chars', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        undoneLogs: [{ index: 0, log: log(), sans: ['x'.repeat(50)] }],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.undoneLogs![0].sans).toEqual(['x'.repeat(10)]);
+  });
+
+  it('leaves sans absent for a legacy (pre-Phase-4) undone entry', () => {
+    const res = validatePublishSnapshot(validInput({ undoneLogs: [{ index: 0, log: log() }] }));
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.undoneLogs![0].sans).toBeUndefined();
+  });
+
   it('caps undoneLogs at 50 entries', () => {
     const res = validatePublishSnapshot(
       validInput({
@@ -232,6 +268,7 @@ describe('validatePublishSnapshot', () => {
       [{ index: 0 }], // carries nothing
       [{ index: 0, log: { inputMethod: 'telepathy', peekCount: 0, undoCount: 0 } }],
       [{ index: 0, pendingInvalidAttempts: [42] }],
+      [{ index: 0, log: log(), sans: [42] }],
       'nope',
     ]) {
       const res = validatePublishSnapshot(validInput({ undoneLogs: bad }));

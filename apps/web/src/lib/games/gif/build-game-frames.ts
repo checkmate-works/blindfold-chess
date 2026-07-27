@@ -1,5 +1,5 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
-import { replayMoves } from '@blindfold-chess/features/chess-core';
+import { executeMove, replayMoves } from '@blindfold-chess/features/chess-core';
 
 import type { GameRecord } from '@/lib/db/schema';
 import type { GameGifVariant } from '@/lib/games/gif/constants';
@@ -9,7 +9,11 @@ import {
   foldPlaySettingsToDisplay,
   playSettingsDisplayAtHalfMove,
 } from '@/lib/games/play-settings-thumbnail';
-import type { GamePlaySettings, MoveOperationLog } from '@/lib/games/saved-game-types';
+import type {
+  GamePlaySettings,
+  MoveOperationLog,
+  UndoneMoveLog,
+} from '@/lib/games/saved-game-types';
 
 import { getPlayerMoveIndices } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 
@@ -32,6 +36,8 @@ const DELAY_ILLEGAL_MS = 500;
 const DELAY_REVERT_MS = 250;
 /** Undo-badge frame — a beat shorter than the peek flash, it has no board change to read. */
 const DELAY_UNDO_BADGE_MS = 600;
+/** Reenacted retracted-move frame — as long as a real move. */
+const DELAY_REENACT_MS = 700;
 /**
  * Cap on invalid attempts drawn per move slot. `invalidAttempts` can hold up
  * to 20 entries (see {@link MoveOperationLog.invalidAttempts}); drawing all of
@@ -39,6 +45,12 @@ const DELAY_UNDO_BADGE_MS = 600;
  * the first few (in attempt order) get a frame.
  */
 const MAX_ILLEGAL_ATTEMPTS_DRAWN = 3;
+/**
+ * Cap on undos reenacted per move slot (multiple undos can archive against
+ * the same slot). The AI's reply (`sans[1]`) is never reenacted — replaying
+ * just the retracted player move is enough to read as "played, then undone."
+ */
+const MAX_REENACTED_UNDOS_PER_SLOT = 2;
 
 /**
  * One annotation drawn on the board between two real positions — "what the
@@ -128,6 +140,65 @@ function peekDisplaySettings(
 }
 
 /**
+ * Undo frames for one player-move slot: reenacts each retracted move whose
+ * SAN survived (see {@link UndoneMoveLog.sans}) by replaying it from
+ * `beforePosition`, then snapping back to the real position with the undo
+ * badge — one reenact+revert pair per qualifying entry, up to
+ * {@link MAX_REENACTED_UNDOS_PER_SLOT}. Falls back to a single plain badge
+ * frame when nothing could be reenacted (legacy entries with no `sans`, or a
+ * SAN that turns out illegal against `beforePosition` — see the caller of
+ * {@link executeMove} below): every undo is visualized one way or the other,
+ * never silently dropped.
+ *
+ * A retracted SAN can be illegal here even though it was legal when first
+ * played: after a multi-undo sequence, `beforePosition` may no longer be the
+ * exact position the move was originally made from. This is an approximate
+ * replay, not a ledger — when it can't honestly reenact, it says so by
+ * falling back to the badge rather than asserting a wrong position.
+ */
+function buildUndoFrames(
+  beforePosition: ReplayPosition,
+  asPlayedDisplay: BlindfoldDisplaySettings | null,
+  undoneLogs: readonly UndoneMoveLog[] | null | undefined,
+  logIndex: number
+): GifFrame[] {
+  const candidates = (undoneLogs ?? [])
+    .filter((entry) => entry.index === logIndex && (entry.sans?.length ?? 0) > 0)
+    .slice(0, MAX_REENACTED_UNDOS_PER_SLOT);
+
+  const frames: GifFrame[] = [];
+  for (const entry of candidates) {
+    const replayed = executeMove(beforePosition.fen, entry.sans![0]);
+    if (!replayed) continue;
+    frames.push({
+      fen: replayed.fen,
+      lastMove: { from: replayed.moveResult.from, to: replayed.moveResult.to },
+      displaySettings: asPlayedDisplay,
+      delayMs: DELAY_REENACT_MS,
+    });
+    frames.push({
+      fen: beforePosition.fen,
+      lastMove: beforePosition.lastMove ?? null,
+      displaySettings: asPlayedDisplay,
+      overlay: { kind: 'undo' },
+      delayMs: DELAY_UNDO_BADGE_MS,
+    });
+  }
+
+  if (frames.length === 0) {
+    frames.push({
+      fen: beforePosition.fen,
+      lastMove: beforePosition.lastMove ?? null,
+      displaySettings: asPlayedDisplay,
+      overlay: { kind: 'undo' },
+      delayMs: DELAY_UNDO_BADGE_MS,
+    });
+  }
+
+  return frames;
+}
+
+/**
  * Annotation frames for one player-move slot, in slot-grammar order
  * (undo → peek → illegal attempts → the real move itself, the last of which
  * the caller appends separately). Undo comes first because it is the
@@ -136,18 +207,21 @@ function peekDisplaySettings(
  *
  * `beforePosition`/`beforeHalfMove` is `positions[m]` — the position the
  * player was looking at while deciding this move, which every annotation in
- * the slot renders against.
+ * the slot renders against. `logIndex` is this slot's position in
+ * `operationLogs`/`playerMoveIndices` — the same value {@link UndoneMoveLog.index}
+ * anchors to — used to find this slot's archived undo(s).
  */
 function buildSlotAnnotations(
   game: GameFrameSource,
   beforePosition: ReplayPosition,
   beforeHalfMove: number,
-  log: MoveOperationLog
+  log: MoveOperationLog,
+  logIndex: number
 ): GifFrame[] {
   const frames: GifFrame[] = [];
 
   // The player was looking at (and typing into) the hidden-as-usual board —
-  // unlike the peek flash, the undo badge and an illegal attempt must NOT
+  // unlike the peek flash, the undo frames and an illegal attempt must NOT
   // reveal it.
   const asPlayedDisplay = playSettingsDisplayAtHalfMove(
     game.playSettings,
@@ -157,13 +231,7 @@ function buildSlotAnnotations(
   );
 
   if (log.undoCount > 0) {
-    frames.push({
-      fen: beforePosition.fen,
-      lastMove: beforePosition.lastMove ?? null,
-      displaySettings: asPlayedDisplay,
-      overlay: { kind: 'undo' },
-      delayMs: DELAY_UNDO_BADGE_MS,
-    });
+    frames.push(...buildUndoFrames(beforePosition, asPlayedDisplay, game.undoneLogs, logIndex));
   }
 
   if (log.peekCount > 0) {
@@ -243,10 +311,10 @@ export function buildGameFrames(game: GameFrameSource, variant: GameGifVariant):
     game.playerColor,
     game.setupPlies ?? 0
   );
-  const logByMovesIndex = new Map<number, MoveOperationLog>();
+  const logByMovesIndex = new Map<number, { log: MoveOperationLog; logIndex: number }>();
   playerMoveIndices.forEach((movesIndex, i) => {
     const log = game.operationLogs?.[i];
-    if (log) logByMovesIndex.set(movesIndex, log);
+    if (log) logByMovesIndex.set(movesIndex, { log, logIndex: i });
   });
 
   const frames: GifFrame[] = [];
@@ -255,14 +323,15 @@ export function buildGameFrames(game: GameFrameSource, variant: GameGifVariant):
   realFrames.forEach(({ position, halfMoveIndex }, idx) => {
     const slotMovesIndex = halfMoveIndex - 1;
     const slotIsAdjacent = idx > 0 && realFrames[idx - 1].halfMoveIndex === slotMovesIndex;
-    const log = slotIsAdjacent ? logByMovesIndex.get(slotMovesIndex) : undefined;
+    const slot = slotIsAdjacent ? logByMovesIndex.get(slotMovesIndex) : undefined;
 
-    if (log && !budgetExhausted) {
+    if (slot && !budgetExhausted) {
       const annotations = buildSlotAnnotations(
         game,
         realFrames[idx - 1].position,
         slotMovesIndex,
-        log
+        slot.log,
+        slot.logIndex
       );
       const remainingRealFrames = realFrames.length - idx;
       const remainingBudget = MAX_FRAMES - frames.length - remainingRealFrames;
