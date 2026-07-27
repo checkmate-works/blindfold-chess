@@ -148,6 +148,17 @@ export type UndoneMoveLog = {
   index: number;
   log?: MoveOperationLog;
   pendingInvalidAttempts?: string[];
+  /**
+   * The SAN(s) this undo retracted from `moves[]`, in board order (the
+   * player's move, then the AI's reply). Only the Undo button records this
+   * (restart-from-position does not — see {@link handleUndoLog}), and only
+   * once `moves[]` was still in scope to slice, so it is absent on records
+   * from before this field existed and whenever the retraction wasn't via
+   * Undo. Lets a "played" GIF re-enact the retracted move instead of only
+   * badging it (falls back to a badge when absent, or when the SAN turns
+   * out to be illegal against the position it would replay from).
+   */
+  sans?: string[];
 };
 
 /**

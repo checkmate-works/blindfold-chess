@@ -75,8 +75,7 @@ export type GameColumns = {
 };
 
 export type ValidatePublishResult =
-  | { ok: true; game: ValidatedGame }
-  | { ok: false; error: string };
+  { ok: true; game: ValidatedGame } | { ok: false; error: string };
 
 const OUTCOMES: readonly GameOutcome[] = ['win', 'loss', 'draw'];
 const COLORS: readonly PlayerColor[] = ['white', 'black'];
@@ -90,6 +89,13 @@ const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
 // sized length (the longest real SAN, e.g. "exd8=Q+", is well under this).
 const MAX_INVALID_ATTEMPTS = 20;
 const MAX_INVALID_ATTEMPT_LEN = 12;
+
+// Bounds for an archived undo's retracted SAN(s): only the player's move and
+// the AI's reply are ever recorded (see UndoneMoveLog.sans), and real SAN
+// tops out around "exd8=Q#" (7 chars) — 10 leaves headroom without inviting
+// abuse.
+const MAX_SANS_PER_UNDO = 2;
+const MAX_SAN_LEN = 10;
 
 /**
  * Normalize the self-reported play settings into the validated display subset,
@@ -249,6 +255,9 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       }
       const pending = boundAttempts(entry.pendingInvalidAttempts);
       if (pending) out.pendingInvalidAttempts = pending;
+      if (entry.sans && entry.sans.length > 0) {
+        out.sans = entry.sans.slice(0, MAX_SANS_PER_UNDO).map((s) => s.slice(0, MAX_SAN_LEN));
+      }
       return out;
     });
     undoneLogs = bounded.length > 0 ? bounded : null;
