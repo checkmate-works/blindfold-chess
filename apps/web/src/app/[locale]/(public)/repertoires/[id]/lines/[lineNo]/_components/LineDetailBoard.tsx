@@ -20,6 +20,7 @@ import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_li
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
+import type { ContinuationLink } from '../_lib/line-continuations';
 import type { LineMove } from '../_lib/line-moves';
 import { useShapeAutosave } from '../_lib/use-shape-autosave';
 import { AnnotationPanel } from './AnnotationPanel';
@@ -53,7 +54,12 @@ type Props = {
    * shared prefix and diverges after it. Empty for non-owners.
    */
   branchPgns: string[];
+  /** Where this line's final position continues in a sibling line (transposition). */
+  continuations: ContinuationLink[];
 };
+
+/** How many continuation links to show before the list gets noisy. */
+const MAX_CONTINUATION_LINKS = 3;
 
 /**
  * A single line rendered with the in-game board layout: on desktop the board
@@ -81,9 +87,11 @@ export function LineDetailBoard({
   navHeading,
   navAddLineLabel,
   branchPgns,
+  continuations,
 }: Props) {
   const t = useTranslations('Repertoires.line.shapes');
   const tLine = useTranslations('Repertoires.line');
+  const tTransposition = useTranslations('Repertoires.line.transposition');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -184,6 +192,30 @@ export function LineDetailBoard({
             >
               {saveFailed ? t('saveFailed') : t('hint')}
             </p>
+          )}
+
+          {/* Only meaningful at the line's final position — a mid-line shared
+              run is Phase 2's indicator, not this one. Plain text links (not
+              buttons) so it doesn't compete with "branch from here" below. */}
+          {clampedPly === maxPly && maxPly >= 1 && continuations.length > 0 && (
+            <div className="space-y-1 text-sm text-muted-foreground">
+              {continuations.slice(0, MAX_CONTINUATION_LINKS).map((c) => (
+                <p key={`${c.lineNo}-${c.ply}`}>
+                  {tTransposition.rich('continuesIn', {
+                    count: c.remainingPlies,
+                    lineLabel: c.label,
+                    link: (chunks) => (
+                      <Link
+                        href={`/${locale}/repertoires/${repertoireId}/lines/${c.lineNo}?move=${c.ply}`}
+                        className="font-medium text-foreground underline-offset-2 hover:underline"
+                      >
+                        {chunks}
+                      </Link>
+                    ),
+                  })}
+                </p>
+              ))}
+            </div>
           )}
 
           {/* Owner-only: start a new line that shares this line's moves up to the

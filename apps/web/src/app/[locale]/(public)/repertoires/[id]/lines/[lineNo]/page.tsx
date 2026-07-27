@@ -33,6 +33,7 @@ import { LineDetailBoard } from './_components/LineDetailBoard';
 import { LineNavList } from './_components/LineNavList';
 import { MoveCommentsSection } from './_components/MoveCommentsSection';
 import { RepertoireLineActionsMenu } from './_components/RepertoireLineActionsMenu';
+import { buildContinuationLinks } from './_lib/line-continuations';
 import { buildLineMoves } from './_lib/line-moves';
 
 type Props = {
@@ -63,8 +64,12 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
   if (!data) notFound();
   const { repertoire, line, lines, profile, isOwner } = data;
 
-  // Replay + format the line server-side (no chess.js in the client bundle).
-  const { sans, positions, startsAsBlack, startMoveNumber } = replayRepertoireLine(line);
+  // Replay every sibling line once — the sidebar's fallback titles and the
+  // transposition detection below both need it, and replay isn't free.
+  const replayedLines = lines.map((l) => ({ line: l, replayed: replayRepertoireLine(l) }));
+  const { sans, positions, startsAsBlack, startMoveNumber } = replayedLines.find(
+    (rl) => rl.line.id === line.id
+  )!.replayed;
   const formatted = formatMovesToPgn(sans, startsAsBlack, startMoveNumber);
 
   const annotations = await getAnnotationsForRepertoire(id);
@@ -88,10 +93,8 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
 
   // Sibling lines for the switching list — the same labels (and the same
   // moves-derived fallback) the repertoire page's sidebar shows, so a line
-  // reads identically on both pages. Replayed here because the fallback title
-  // is built from the line's opening moves.
-  const navItems = lines.map((l) => {
-    const replayed = replayRepertoireLine(l);
+  // reads identically on both pages.
+  const navItems = replayedLines.map(({ line: l, replayed }) => {
     const label =
       l.name ??
       lineFallbackTitle(
@@ -105,6 +108,22 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
     navHeading: t('detail.linesHeading'),
     navAddLineLabel: isOwner ? t('line.new.title') : undefined,
   };
+
+  // Transposition continuations: where this line's final position keeps
+  // going in a sibling line, reached by a different move order. Detection
+  // reuses the replay above rather than re-parsing PGN; label/lineNo for the
+  // target come from `navItems` (id-keyed) so they read identically to the
+  // sidebar entry a reader would otherwise click.
+  const navLabelById = new Map(
+    navItems.map((item) => [item.id, { lineNo: item.lineNo, label: item.label }])
+  );
+  const continuations = buildContinuationLinks(
+    { id: line.id, seq: line.seq, positions },
+    replayedLines
+      .filter((rl) => rl.line.id !== line.id)
+      .map((rl) => ({ id: rl.line.id, seq: rl.line.seq, positions: rl.replayed.positions })),
+    (lineId) => navLabelById.get(lineId)!
+  );
 
   // What a move reference ("1... e4") inside a note or a comment resolves
   // against — this line's own numbering, not the repertoire's.
@@ -153,6 +172,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           initialPly={initialPly}
           moveNotation={moveNotation}
           branchPgns={branchPgns}
+          continuations={continuations}
           {...navProps}
         />
       )}

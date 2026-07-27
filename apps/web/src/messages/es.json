@@ -140,6 +140,9 @@
       "breadcrumb": "Línea {n}",
       "empty": "Esta línea no tiene jugadas.",
       "branchFromHere": "Añadir una variante desde aquí",
+      "transposition": {
+        "continuesIn": "Esta posición continúa en <link>{lineLabel}</link> (+{count, plural, one {# jugada} other {# jugadas}} más)"
+      },
       "shapes": {
         "hint": "Haz clic derecho y arrastra en el tablero para dibujar una flecha; haz clic derecho en una casilla para rodearla. Shift / Alt / Ctrl cambian el color. Se guarda automáticamente.",
         "saveFailed": "No se pudieron guardar tus marcas en el tablero. Inténtalo de nuevo."
