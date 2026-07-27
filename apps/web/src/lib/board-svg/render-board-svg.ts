@@ -5,10 +5,24 @@ import type {
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import type { SvgElement } from '@blindfold-chess/icons/data';
-import { getPieceData } from '@blindfold-chess/icons/data';
+import { getPieceData, undoData } from '@blindfold-chess/icons/data';
 import type { BoardTheme } from '@blindfold-chess/types';
 import type { PieceType } from '@blindfold-chess/types';
 import { boardThemeColors } from '@blindfold-chess/ui';
+
+/**
+ * A GIF-replay annotation drawn on top of the board — a fixed-position badge
+ * (blindfold peek / undo), and/or a rejected move marked on its square(s).
+ * Purely graphical (rect / path / circle), like the rest of this module: no
+ * `<text>`, since the render target has no fonts installed.
+ */
+export type RenderBoardSvgOverlay = {
+  badge?: 'peek' | 'undo';
+  /** The rejected move's destination square (algebraic). Red fill + a cross. */
+  illegalTo?: string;
+  /** The rejected move's origin square, when recoverable. Red outline only. */
+  illegalFrom?: string;
+};
 
 export type RenderBoardSvgOptions = {
   fen: string;
@@ -21,6 +35,8 @@ export type RenderBoardSvgOptions = {
   displaySettings?: BlindfoldDisplaySettings | null;
   /** 直前の手のハイライト（from/to マス）。null で無し */
   lastMove?: { from: string; to: string } | null;
+  /** GIF replay annotation (peek/undo badge, rejected-move marker). null/省略で無し */
+  overlay?: RenderBoardSvgOverlay | null;
 };
 
 const DEFAULT_SIZE = 512;
@@ -123,6 +139,73 @@ function stoneGradientDef(color: Color): string {
   );
 }
 
+/** rgba red used for every illegal-attempt marker — the "rejected" register. */
+const ILLEGAL_RED = '#dc2626';
+
+/**
+ * The rejected move's destination square: a translucent red fill (drawn
+ * after the piece layer, so a self-capture / occupied-square attempt still
+ * shows the ✗ on top of the piece) plus a red ✗ built from two `<path>`
+ * strokes rather than `<text>`.
+ */
+function illegalToMarkup(square: string, flipped: boolean, squareSize: number): string {
+  const { col, row } = squareToColRow(square, flipped);
+  const x = col * squareSize;
+  const y = row * squareSize;
+  const inset = squareSize * 0.22;
+  const cx = x + squareSize / 2;
+  const cy = y + squareSize / 2;
+  const r = squareSize / 2 - inset;
+  const strokeWidth = squareSize * 0.11;
+  return (
+    `<rect x="${x}" y="${y}" width="${squareSize}" height="${squareSize}" fill="rgba(220,38,38,0.42)"/>` +
+    `<path d="M${cx - r} ${cy - r} L${cx + r} ${cy + r}" stroke="${ILLEGAL_RED}" stroke-width="${strokeWidth}" stroke-linecap="round"/>` +
+    `<path d="M${cx + r} ${cy - r} L${cx - r} ${cy + r}" stroke="${ILLEGAL_RED}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`
+  );
+}
+
+/** The rejected move's origin square, when recoverable: a red outline only. */
+function illegalFromMarkup(square: string, flipped: boolean, squareSize: number): string {
+  const { col, row } = squareToColRow(square, flipped);
+  const strokeWidth = squareSize * 0.08;
+  const x = col * squareSize + strokeWidth / 2;
+  const y = row * squareSize + strokeWidth / 2;
+  const side = squareSize - strokeWidth;
+  return `<rect x="${x}" y="${y}" width="${side}" height="${side}" fill="none" stroke="${ILLEGAL_RED}" stroke-width="${strokeWidth}"/>`;
+}
+
+/**
+ * Fixed-position badge (top-right corner, independent of orientation) for
+ * "a peek happened here" / "this move was undone and redone". A filled
+ * circle plus a purely graphical glyph — an eye outline for peek, the shared
+ * `undoData` stroke path for undo — never `<text>`.
+ */
+function badgeMarkup(kind: 'peek' | 'undo', size: number): string {
+  const scale = size / 512;
+  const cx = size - 40 * scale;
+  const cy = 40 * scale;
+  const r = 26 * scale;
+  const fill = kind === 'peek' ? 'rgba(14,165,233,0.92)' : 'rgba(245,158,11,0.92)';
+  const circle = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+
+  if (kind === 'peek') {
+    const s = r / 17;
+    const glyph =
+      `<g transform="translate(${cx},${cy}) scale(${s})">` +
+      `<path d="M-14 0 Q0 -11 14 0 Q0 11 -14 0 Z" fill="#ffffff"/>` +
+      `<circle cx="0" cy="0" r="4.6" fill="${fill}"/>` +
+      `</g>`;
+    return circle + glyph;
+  }
+
+  const s = r / 13;
+  const glyph =
+    `<g transform="translate(${cx - 12 * s},${cy - 12 * s}) scale(${s})">` +
+    `<path d="${undoData.paths[0]}" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `</g>`;
+  return circle + glyph;
+}
+
 /**
  * Render a FEN position to a raw SVG string. React-free, DOM-free, chess.js-
  * free pure function — safe to feed directly into `next/og`'s `ImageResponse`
@@ -137,6 +220,7 @@ export function renderBoardSvg({
   boardTheme = DEFAULT_THEME,
   displaySettings = null,
   lastMove = null,
+  overlay = null,
 }: RenderBoardSvgOptions): string {
   const squareSize = size / 8;
   const theme = boardThemeColors[boardTheme];
@@ -203,12 +287,22 @@ export function renderBoardSvg({
         }</defs>`
       : '';
 
+  // Drawn after the piece layer: illegalTo's ✗ must stay visible over a piece
+  // on the target square (self-capture / occupied-square attempts), and the
+  // badge is a fixed-position overlay independent of board content either way.
+  let overlayMarkup = '';
+  if (overlay?.illegalTo) overlayMarkup += illegalToMarkup(overlay.illegalTo, flipped, squareSize);
+  if (overlay?.illegalFrom)
+    overlayMarkup += illegalFromMarkup(overlay.illegalFrom, flipped, squareSize);
+  if (overlay?.badge) overlayMarkup += badgeMarkup(overlay.badge, size);
+
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">` +
     defsMarkup +
     `<g>${squaresMarkup}</g>` +
     `<g>${highlightMarkup}</g>` +
     `<g>${piecesMarkup}</g>` +
+    `<g>${overlayMarkup}</g>` +
     `</svg>`
   );
 }

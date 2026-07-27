@@ -39,16 +39,30 @@ export function playSettingsToThumbnailDisplay(
   playerColor: Side
 ): BlindfoldDisplaySettings | null {
   if (!playSettings || !playSettingsAreNotable(playSettings)) return null;
+  return foldPlaySettingsToDisplay(playSettings, playerColor);
+}
 
-  const boardHidden = playSettings.boardVisibility === 'never';
+/**
+ * The core snapshot → {@link BlindfoldDisplaySettings} fold shared by
+ * {@link playSettingsToThumbnailDisplay} and {@link playSettingsDisplayAtHalfMove}
+ * (and, for a forced board reveal, the GIF frame builder's peek-flash frames)
+ * — every caller that has already resolved a concrete {@link GamePlaySettings}
+ * and just needs it translated to the renderer-agnostic shape. Never
+ * null-gated itself; callers decide when there is "nothing to reflect".
+ */
+export function foldPlaySettingsToDisplay(
+  settings: GamePlaySettings,
+  playerColor: Side
+): BlindfoldDisplaySettings {
+  const boardHidden = settings.boardVisibility === 'never';
 
   return {
     ownColor: playerColor === 'white' ? 'w' : 'b',
-    showOwnPieces: boardHidden ? false : playSettings.showOwnPieces,
-    showOpponentPieces: boardHidden ? false : playSettings.showOpponentPieces,
-    pieceShapeMode: playSettings.pieceShapeMode,
-    pieceColors: playSettings.pieceColors,
-    pawnHideMode: playSettings.pawnHideMode,
+    showOwnPieces: boardHidden ? false : settings.showOwnPieces,
+    showOpponentPieces: boardHidden ? false : settings.showOpponentPieces,
+    pieceShapeMode: settings.pieceShapeMode,
+    pieceColors: settings.pieceColors,
+    pawnHideMode: settings.pawnHideMode,
     hiddenPieceStyle: 'ghost',
   };
 }
@@ -76,15 +90,5 @@ export function playSettingsDisplayAtHalfMove(
   if (!playSettings || !gameUsedNotablePlaySettings(playSettings, playSettingsLog)) return null;
 
   const at = playSettingsAtHalfMove(playSettings, playSettingsLog, halfMovesShown);
-  const boardHidden = at.boardVisibility === 'never';
-
-  return {
-    ownColor: playerColor === 'white' ? 'w' : 'b',
-    showOwnPieces: boardHidden ? false : at.showOwnPieces,
-    showOpponentPieces: boardHidden ? false : at.showOpponentPieces,
-    pieceShapeMode: at.pieceShapeMode,
-    pieceColors: at.pieceColors,
-    pawnHideMode: at.pawnHideMode,
-    hiddenPieceStyle: 'ghost',
-  };
+  return foldPlaySettingsToDisplay(at, playerColor);
 }
