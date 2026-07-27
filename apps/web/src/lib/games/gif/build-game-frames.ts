@@ -3,6 +3,7 @@ import { replayMoves } from '@blindfold-chess/features/chess-core';
 
 import type { GameRecord } from '@/lib/db/schema';
 import type { GameGifVariant } from '@/lib/games/gif/constants';
+import { parseAttemptSquares } from '@/lib/games/gif/parse-attempt-squares';
 import { playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
 import {
   foldPlaySettingsToDisplay,
@@ -25,14 +26,25 @@ const DELAY_MOVE_MS = 800;
 const DELAY_LAST_MS = 4000;
 /** Peek reveal frame: as long as a real move, since it's the whole point. */
 const DELAY_PEEK_MS = 800;
+/** Illegal-attempt marker frame — brief, there are up to 3 per slot. */
+const DELAY_ILLEGAL_MS = 500;
+/** "Snap back to the real position" frame after an illegal-attempt marker. */
+const DELAY_REVERT_MS = 250;
+/**
+ * Cap on invalid attempts drawn per move slot. `invalidAttempts` can hold up
+ * to 20 entries (see {@link MoveOperationLog.invalidAttempts}); drawing all of
+ * them would make a single indecisive move dominate the whole GIF, so only
+ * the first few (in attempt order) get a frame.
+ */
+const MAX_ILLEGAL_ATTEMPTS_DRAWN = 3;
 
 /**
  * One annotation drawn on the board between two real positions — "what the
- * player did while deciding this move" (peek / illegal attempt / undo,
- * layered in by Phases 1–3). Distinct from {@link RenderBoardSvgOverlay}: this
- * is the frame-builder's semantic vocabulary (`kind`), translated to the
- * renderer's drawing vocabulary (`badge` / `illegalTo` / `illegalFrom`) at the
- * rasterization boundary in `generate-game-gif.ts`.
+ * player did while deciding this move" (peek / illegal attempt / undo).
+ * Distinct from {@link RenderBoardSvgOverlay}: this is the frame-builder's
+ * semantic vocabulary (`kind`), translated to the renderer's drawing
+ * vocabulary (`badge` / `illegalTo` / `illegalFrom`) at the rasterization
+ * boundary in `generate-game-gif.ts`.
  */
 export type GifOverlay =
   { kind: 'peek' } | { kind: 'undo' } | { kind: 'illegal'; to?: string; from?: string };
@@ -114,10 +126,9 @@ function peekDisplaySettings(
 }
 
 /**
- * Annotation frames for one player-move slot, in slot-grammar order
- * (undo → peek → illegal attempts → the real move itself, the last of which
- * the caller appends separately). Only peek is implemented so far; Phases 2
- * and 3 extend this with illegal-attempt and undo frames.
+ * Annotation frames for one player-move slot, in slot-grammar order (peek →
+ * illegal attempts → the real move itself, the last of which the caller
+ * appends separately).
  *
  * `beforePosition`/`beforeHalfMove` is `positions[m]` — the position the
  * player was looking at while deciding this move, which every annotation in
@@ -138,6 +149,38 @@ function buildSlotAnnotations(
       displaySettings: peekDisplaySettings(game, beforeHalfMove),
       overlay: { kind: 'peek' },
       delayMs: DELAY_PEEK_MS,
+    });
+  }
+
+  // The player was looking at (and typing into) the hidden-as-usual board —
+  // unlike the peek flash, an illegal attempt must NOT reveal it.
+  const asPlayedDisplay = playSettingsDisplayAtHalfMove(
+    game.playSettings,
+    game.playSettingsLog,
+    game.playerColor,
+    beforeHalfMove
+  );
+  const illegalSquares = (log.invalidAttempts ?? [])
+    .map((attempt) => parseAttemptSquares(attempt, game.playerColor))
+    .filter((squares): squares is { from?: string; to?: string } => squares !== null)
+    .slice(0, MAX_ILLEGAL_ATTEMPTS_DRAWN);
+
+  for (const squares of illegalSquares) {
+    frames.push({
+      fen: beforePosition.fen,
+      lastMove: beforePosition.lastMove ?? null,
+      displaySettings: asPlayedDisplay,
+      overlay: { kind: 'illegal', to: squares.to, from: squares.from },
+      delayMs: DELAY_ILLEGAL_MS,
+    });
+    // "Snap back" — reinforces that the illegal attempt never happened, and
+    // keeps the frame right before the real move from reading as "the red
+    // move was the one actually played."
+    frames.push({
+      fen: beforePosition.fen,
+      lastMove: beforePosition.lastMove ?? null,
+      displaySettings: asPlayedDisplay,
+      delayMs: DELAY_REVERT_MS,
     });
   }
 

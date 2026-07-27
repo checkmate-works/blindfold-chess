@@ -147,6 +147,136 @@ describe('buildGameFrames', () => {
     });
   });
 
+  describe('played — illegal-attempt red frames', () => {
+    it('inserts an illegal + revert frame pair per recoverable attempt, keeping the as-played hide (no reveal)', () => {
+      const game = buildGame({
+        playSettings: {
+          boardVisibility: 'never',
+          showOwnPieces: false,
+          showOpponentPieces: false,
+          pieceShapeMode: 'normal',
+          pieceColors: 'normal',
+          pawnHideMode: 'none',
+        },
+        operationLogs: [
+          {
+            inputMethod: 'text',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 1,
+            invalidAttempts: ['Nf3'],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const allPositions = replayMoves(game.moves);
+
+      // [initial, illegal, revert, after-e4, ...]
+      expect(frames).toHaveLength(game.moves.length + 1 + 2);
+      expect(frames[1].overlay).toEqual({ kind: 'illegal', to: 'f3', from: undefined });
+      expect(frames[1].fen).toBe(allPositions[0].fen);
+      expect(frames[1].delayMs).toBe(500);
+      expect(frames[1].displaySettings).toMatchObject({
+        showOwnPieces: false,
+        showOpponentPieces: false,
+      });
+      expect(frames[2].overlay).toBeUndefined();
+      expect(frames[2].fen).toBe(allPositions[0].fen);
+      expect(frames[2].delayMs).toBe(250);
+      expect(frames[2].displaySettings).toMatchObject({
+        showOwnPieces: false,
+        showOpponentPieces: false,
+      });
+    });
+
+    it('recovers the origin square for a board coordinate-long-form attempt', () => {
+      const game = buildGame({
+        operationLogs: [
+          {
+            inputMethod: 'board',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 1,
+            invalidAttempts: ['e2-e4'],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const illegal = frames.find((f) => f.overlay?.kind === 'illegal');
+      expect(illegal?.overlay).toEqual({ kind: 'illegal', to: 'e4', from: 'e2' });
+    });
+
+    it('draws only the first 3 recoverable attempts, front to back', () => {
+      const game = buildGame({
+        operationLogs: [
+          {
+            inputMethod: 'text',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 4,
+            invalidAttempts: ['Nf3', 'Nc3', 'Bb5', 'Qh5'],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const illegalTargets = frames
+        .filter((f) => f.overlay?.kind === 'illegal')
+        .map((f) => (f.overlay as { to?: string }).to);
+      expect(illegalTargets).toEqual(['f3', 'c3', 'b5']);
+    });
+
+    it('silently skips attempts that cannot be parsed into a square', () => {
+      const game = buildGame({
+        operationLogs: [
+          {
+            inputMethod: 'text',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 1,
+            invalidAttempts: ['not a move'],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      expect(frames.some((f) => f.overlay?.kind === 'illegal')).toBe(false);
+      expect(frames).toHaveLength(game.moves.length + 1);
+    });
+
+    it('draws nothing for legacy invalidCount-only entries with no attempts text', () => {
+      const game = buildGame({
+        operationLogs: [
+          { inputMethod: 'board', peekCount: 0, undoCount: 0, movePeekCount: 0, invalidCount: 2 },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      expect(frames.some((f) => f.overlay?.kind === 'illegal')).toBe(false);
+      expect(frames).toHaveLength(game.moves.length + 1);
+    });
+
+    it('orders peek before illegal attempts within the same slot', () => {
+      const game = buildGame({
+        operationLogs: [
+          {
+            inputMethod: 'text',
+            peekCount: 1,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 1,
+            invalidAttempts: ['Nf3'],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const kinds = frames.map((f) => f.overlay?.kind ?? 'real');
+      // [real(initial), peek, illegal, real(no overlay, the revert frame), real(after e4), ...]
+      expect(kinds.slice(0, 4)).toEqual(['real', 'peek', 'illegal', 'real']);
+    });
+  });
+
   describe('frame budget', () => {
     it('never truncates real positions to make room for annotations, and drops only the later slots', () => {
       const moveCount = 200;
