@@ -244,8 +244,16 @@ function buildSlotAnnotations(
     });
   }
 
+  // Prefer the exact squares captured at record time (board attempts only —
+  // see MoveOperationLog.invalidAttemptSquares) over re-parsing the display
+  // text, which is lossy by design (no disambiguation for an illegal move).
+  // Falls back to parseAttemptSquares for MoveInputPanel attempts (no
+  // recorded squares) and for legacy entries predating this field.
   const illegalSquares = (log.invalidAttempts ?? [])
-    .map((attempt) => parseAttemptSquares(attempt, game.playerColor))
+    .map(
+      (attempt, i) =>
+        log.invalidAttemptSquares?.[i] ?? parseAttemptSquares(attempt, game.playerColor)
+    )
     .filter((squares): squares is { from?: string; to?: string } => squares !== null)
     .slice(0, MAX_ILLEGAL_ATTEMPTS_DRAWN);
 

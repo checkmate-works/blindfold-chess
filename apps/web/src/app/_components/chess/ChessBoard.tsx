@@ -160,9 +160,11 @@ type Props = {
    * That attempt is passed as a SAN-like string (`Nf3`, `exd5`) so callers can
    * record *which* move was illegal, matching the text-input path. (The
    * argument is optional only for forward compatibility; every current call
-   * site supplies it.)
+   * site supplies it.) The exact origin/destination squares are passed
+   * alongside it — the board always knows both at rejection time, unlike the
+   * synthesized label, which deliberately drops disambiguation.
    */
-  onIllegalMove?: (attempt?: string) => void;
+  onIllegalMove?: (attempt?: string, squares?: { from: string; to: string }) => void;
   /**
    * Which pieces the user may pick up in interactive mode (drag / tap / click
    * selection):
@@ -316,7 +318,9 @@ export const ChessBoard = memo(function ChessBoard({
         case 'illegal-clear': {
           // A real from→to attempt (drag-drop, or click-to-move after a
           // selection): render it as a SAN-like label so the recorder logs
-          // which move was rejected, not just a bare count.
+          // which move was rejected, not just a bare count — and pass the
+          // exact squares too, since the label alone can't be reversed back
+          // into them (no disambiguation for an illegal move).
           const mover = pieceAt(action.from);
           onIllegalMove?.(
             describeIllegalAttempt({
@@ -324,7 +328,8 @@ export const ChessBoard = memo(function ChessBoard({
               to: action.to,
               moverType: mover?.type ?? null,
               targetOccupied: pieceAt(action.to) !== null,
-            })
+            }),
+            { from: action.from, to: action.to }
           );
           setSelectedSquare(null);
           return;

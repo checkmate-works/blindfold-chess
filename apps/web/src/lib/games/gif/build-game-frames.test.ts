@@ -208,6 +208,70 @@ describe('buildGameFrames', () => {
       expect(illegal?.overlay).toEqual({ kind: 'illegal', to: 'e4', from: 'e2' });
     });
 
+    it('prefers the recorded invalidAttemptSquares over re-parsing the SAN-like text, recovering from for a piece move', () => {
+      // "Nc3" alone can't be reversed into a from-square (disambiguation is
+      // dropped by design), but a board attempt records it structurally.
+      const game = buildGame({
+        operationLogs: [
+          {
+            inputMethod: 'board',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 1,
+            invalidAttempts: ['Nc3'],
+            invalidAttemptSquares: [{ from: 'b1', to: 'c3' }],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const illegal = frames.find((f) => f.overlay?.kind === 'illegal');
+      expect(illegal?.overlay).toEqual({ kind: 'illegal', to: 'c3', from: 'b1' });
+    });
+
+    it('falls back to text-parsing when invalidAttemptSquares has a null slot (a MoveInputPanel attempt)', () => {
+      const game = buildGame({
+        operationLogs: [
+          {
+            inputMethod: 'board',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 2,
+            invalidAttempts: ['Nc3', 'e2-e4'],
+            invalidAttemptSquares: [{ from: 'b1', to: 'c3' }, null],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const illegalOverlays = frames
+        .filter((f) => f.overlay?.kind === 'illegal')
+        .map((f) => f.overlay);
+      expect(illegalOverlays).toEqual([
+        { kind: 'illegal', to: 'c3', from: 'b1' },
+        { kind: 'illegal', to: 'e4', from: 'e2' }, // recovered by parseAttemptSquares
+      ]);
+    });
+
+    it('falls back to text-parsing for a legacy entry with no invalidAttemptSquares field at all', () => {
+      const game = buildGame({
+        operationLogs: [
+          {
+            inputMethod: 'board',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 1,
+            invalidAttempts: ['Nc3'],
+          },
+        ],
+      });
+      const frames = buildGameFrames(game, 'played');
+      const illegal = frames.find((f) => f.overlay?.kind === 'illegal');
+      // No structured from recoverable from "Nc3" alone — only `to` survives.
+      expect(illegal?.overlay).toEqual({ kind: 'illegal', to: 'c3', from: undefined });
+    });
+
     it('draws only the first 3 recoverable attempts, front to back', () => {
       const game = buildGame({
         operationLogs: [

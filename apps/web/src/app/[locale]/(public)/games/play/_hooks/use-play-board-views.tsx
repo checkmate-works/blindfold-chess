@@ -69,7 +69,7 @@ export function usePlayBoardViews({
   isPlayerTurn: boolean;
   isLoading: boolean;
   onBoardMove: (san: string) => void;
-  onIllegalMove: (attempt?: string) => void;
+  onIllegalMove: (attempt?: string, squares?: { from: string; to: string }) => void;
   aiReply: { active: boolean; thinking: boolean };
   aiMoveNotation: string | null;
   isAiThinking: boolean;

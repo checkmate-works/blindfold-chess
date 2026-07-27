@@ -40,4 +40,22 @@ describe('isUndoneMoveLog', () => {
     expect(isUndoneMoveLog({ index: 0, log: VALID_LOG, sans: [42] })).toBe(false);
     expect(isUndoneMoveLog({ index: 0, log: VALID_LOG, sans: 'Nf3' })).toBe(false);
   });
+
+  it('accepts a log whose invalidAttemptSquares mixes {from,to} objects and null slots', () => {
+    const withSquares: MoveOperationLog = {
+      ...VALID_LOG,
+      invalidAttempts: ['Nf3', 'e4'],
+      invalidAttemptSquares: [{ from: 'g1', to: 'f3' }, null],
+    };
+    expect(isUndoneMoveLog({ index: 0, log: withSquares })).toBe(true);
+  });
+
+  it('accepts a legacy log with no invalidAttemptSquares field at all', () => {
+    expect(isUndoneMoveLog({ index: 0, log: VALID_LOG })).toBe(true);
+  });
+
+  it('rejects a log with a malformed invalidAttemptSquares slot', () => {
+    const malformed = { ...VALID_LOG, invalidAttemptSquares: [{ from: 'g1' }] };
+    expect(isUndoneMoveLog({ index: 0, log: malformed })).toBe(false);
+  });
 });

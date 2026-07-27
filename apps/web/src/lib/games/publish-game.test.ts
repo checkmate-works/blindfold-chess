@@ -161,6 +161,85 @@ describe('validatePublishSnapshot', () => {
     expect(logs[1].invalidAttempts).toBeUndefined(); // empty → undefined
   });
 
+  it('keeps well-formed invalidAttemptSquares, aligned with invalidAttempts', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        operationLogs: [
+          log({
+            invalidCount: 2,
+            invalidAttempts: ['Nf3', 'Qd5'],
+            invalidAttemptSquares: [{ from: 'g1', to: 'f3' }, null],
+          }),
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.operationLogs![0].invalidAttemptSquares).toEqual([
+      { from: 'g1', to: 'f3' },
+      null,
+    ]);
+  });
+
+  it('nulls out a malformed invalidAttemptSquares slot instead of rejecting the publish', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        operationLogs: [
+          log({
+            invalidCount: 3,
+            invalidAttempts: ['Nf3', 'Qd5', 'Bb4'],
+            invalidAttemptSquares: [
+              { from: 'g1', to: 'f3' },
+              { from: 'not-a-square', to: 'd5' }, // malformed shape
+              'nope', // wrong type entirely
+            ] as unknown as ({ from: string; to: string } | null)[],
+          }),
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.operationLogs![0].invalidAttemptSquares).toEqual([
+      { from: 'g1', to: 'f3' },
+      null,
+      null,
+    ]);
+  });
+
+  it('drops invalidAttemptSquares to undefined when every slot is null', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        operationLogs: [
+          log({
+            invalidCount: 1,
+            invalidAttempts: ['Qd5'],
+            invalidAttemptSquares: [null],
+          }),
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.operationLogs![0].invalidAttemptSquares).toBeUndefined();
+  });
+
+  it('caps invalidAttemptSquares at 20 entries', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        operationLogs: [
+          log({
+            invalidCount: 25,
+            invalidAttempts: Array(25).fill('e4'),
+            invalidAttemptSquares: Array.from({ length: 25 }, () => ({ from: 'e2', to: 'e4' })),
+          }),
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.operationLogs![0].invalidAttemptSquares).toHaveLength(20);
+  });
+
   it('keeps well-formed operationTotals, whitelisting the known counters', () => {
     const res = validatePublishSnapshot(
       validInput({
@@ -209,6 +288,26 @@ describe('validatePublishSnapshot', () => {
     expect('extra' in undone[0]).toBe(false); // whitelist copy
     expect(undone[1].pendingInvalidAttempts).toHaveLength(20); // capped
     expect(undone[1].pendingInvalidAttempts!.every((s) => s.length <= 12)).toBe(true);
+  });
+
+  it("bounds an undone entry's embedded log.invalidAttemptSquares to 20 entries", () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        undoneLogs: [
+          {
+            index: 0,
+            log: log({
+              invalidCount: 25,
+              invalidAttempts: Array(25).fill('e4'),
+              invalidAttemptSquares: Array.from({ length: 25 }, () => ({ from: 'e2', to: 'e4' })),
+            }),
+          },
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.undoneLogs![0].log!.invalidAttemptSquares).toHaveLength(20);
   });
 
   it("bounds an undone entry's retracted sans to 2 entries of 10 chars each", () => {

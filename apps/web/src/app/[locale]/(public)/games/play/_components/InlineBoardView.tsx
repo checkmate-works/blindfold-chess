@@ -80,7 +80,7 @@ type Props = {
    * attempt (illegal drop / destination click) so always-visible games can
    * count board-driven blindfold mistakes. See `ChessBoard`'s prop doc.
    */
-  onIllegalMove?: (attempt?: string) => void;
+  onIllegalMove?: (attempt?: string, squares?: { from: string; to: string }) => void;
   /**
    * Relayed to the inner ChessBoard. Defaults to `'own'` (real-game rule:
    * only the player's pieces respond). Recall passes `'side-to-move'` so

@@ -53,10 +53,14 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
   const undoCountRef = useRef(0);
   const movePeekCountRef = useRef(0);
   const invalidCountRef = useRef(0);
-  // The rejected move texts behind `invalidCountRef` (text/select/button paths
-  // only). Capped so one pathological turn can't bloat the persisted entry; the
-  // count still increments past the cap.
+  // The rejected move texts behind `invalidCountRef`. Capped so one
+  // pathological turn can't bloat the persisted entry; the count still
+  // increments past the cap.
   const invalidAttemptsRef = useRef<string[]>([]);
+  // The exact squares behind each entry in `invalidAttemptsRef`, same
+  // indexing — `null` for MoveInputPanel attempts, which have no board
+  // interaction to derive squares from. See `MoveOperationLog.invalidAttemptSquares`.
+  const invalidAttemptSquaresRef = useRef<({ from: string; to: string } | null)[]>([]);
 
   // Reset every counter that accumulates during a single move. Called from
   // commit / undo / truncate so the ref state stays in sync with the
@@ -68,6 +72,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     movePeekCountRef.current = 0;
     invalidCountRef.current = 0;
     invalidAttemptsRef.current = [];
+    invalidAttemptSquaresRef.current = [];
   }, []);
 
   /** Increment peek counter for the current move (and the lifetime total). */
@@ -90,16 +95,19 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
 
   /**
    * Record an invalid-move attempt for the current move. Always bumps the
-   * count; when the attempted move text is known (text / select / button
-   * submissions — the SAN is in scope at rejection), it is also appended to
-   * `invalidAttemptsRef` (board mis-grabs pass none → count only). Capped at 20
-   * texts per move to keep the persisted entry small.
+   * count; when the attempted move text is known, it is also appended to
+   * `invalidAttemptsRef` (capped at 20 texts per move to keep the persisted
+   * entry small). `squares` — the exact origin/destination, when the caller
+   * already knows them (board attempts only; see
+   * `MoveOperationLog.invalidAttemptSquares`) — is recorded in lockstep so
+   * indices stay aligned; omitted (`null`) for a MoveInputPanel attempt.
    */
-  const recordInvalid = useCallback((attempt?: string) => {
+  const recordInvalid = useCallback((attempt?: string, squares?: { from: string; to: string }) => {
     invalidCountRef.current += 1;
     setTotals((t) => ({ ...t, invalidMoves: t.invalidMoves + 1 }));
     if (attempt && invalidAttemptsRef.current.length < 20) {
       invalidAttemptsRef.current.push(attempt);
+      invalidAttemptSquaresRef.current.push(squares ?? null);
     }
   }, []);
 
@@ -109,6 +117,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
    */
   const commitMove = useCallback(
     (inputMethod: MoveInputMethod) => {
+      const hasAttempts = invalidAttemptsRef.current.length > 0;
       const entry: MoveOperationLog = {
         inputMethod,
         peekCount: peekCountRef.current,
@@ -117,8 +126,14 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
         invalidCount: invalidCountRef.current,
         // Only persist the texts when some were captured; otherwise leave the
         // field off so legacy-shaped (count-only) entries stay clean.
-        invalidAttempts:
-          invalidAttemptsRef.current.length > 0 ? [...invalidAttemptsRef.current] : undefined,
+        invalidAttempts: hasAttempts ? [...invalidAttemptsRef.current] : undefined,
+        // Likewise, only persist squares when at least one attempt actually
+        // knew them — an all-MoveInputPanel turn would otherwise carry a
+        // meaningless all-null array.
+        invalidAttemptSquares:
+          hasAttempts && invalidAttemptSquaresRef.current.some((s) => s !== null)
+            ? [...invalidAttemptSquaresRef.current]
+            : undefined,
       };
       logsRef.current = [...logsRef.current, entry];
       setLogs(logsRef.current);
@@ -177,6 +192,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
       movePeekCountRef.current = 0;
       invalidCountRef.current = 0;
       invalidAttemptsRef.current = [];
+      invalidAttemptSquaresRef.current = [];
     },
     [archiveDiscarded]
   );
