@@ -1,13 +1,13 @@
-import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import { replayMoves } from '@blindfold-chess/features/chess-core';
 import 'server-only';
 import sharp from 'sharp';
 
 import { renderBoardSvg } from '@/lib/board-svg/render-board-svg';
 import type { GameRecord } from '@/lib/db/schema';
-import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
+import type { GameGifVariant } from '@/lib/games/gif/constants';
+import { playSettingsDisplayAtHalfMove } from '@/lib/games/play-settings-thumbnail';
 
-export type GameGifVariant = 'plain' | 'played';
+export type { GameGifVariant } from '@/lib/games/gif/constants';
 
 const BOARD_SIZE = 512;
 /**
@@ -27,9 +27,20 @@ const DELAY_LAST_MS = 4000;
 
 type ReplayPosition = ReturnType<typeof replayMoves>[number];
 
-function selectFrames(positions: ReplayPosition[]): ReplayPosition[] {
-  if (positions.length <= MAX_FRAMES) return positions;
-  return [...positions.slice(0, MAX_FRAMES - 1), positions[positions.length - 1]];
+/**
+ * A replayed position paired with its half-move index (moves already played
+ * at that position — 0 for the opening board). Preserved through truncation
+ * so `'played'` can fold blindfold display settings at the right point in
+ * `playSettingsLog` even for the true final position of a truncated game,
+ * which does not sit at its "natural" array offset once the middle is
+ * skipped.
+ */
+type IndexedPosition = { position: ReplayPosition; halfMoveIndex: number };
+
+function selectFrames(positions: ReplayPosition[]): IndexedPosition[] {
+  const indexed = positions.map((position, halfMoveIndex) => ({ position, halfMoveIndex }));
+  if (indexed.length <= MAX_FRAMES) return indexed;
+  return [...indexed.slice(0, MAX_FRAMES - 1), indexed[indexed.length - 1]];
 }
 
 function delaysFor(frameCount: number): number[] {
@@ -41,20 +52,29 @@ function delaysFor(frameCount: number): number[] {
 }
 
 async function renderFramesToPng(
-  positions: ReplayPosition[],
-  opts: { flipped: boolean; displaySettings: BlindfoldDisplaySettings | null }
+  frames: IndexedPosition[],
+  opts: { flipped: boolean; game: GameRecord; variant: GameGifVariant }
 ): Promise<Buffer[]> {
-  const buffers: Buffer[] = new Array(positions.length);
-  for (let i = 0; i < positions.length; i += FRAME_RENDER_CONCURRENCY) {
-    const chunk = positions.slice(i, i + FRAME_RENDER_CONCURRENCY);
+  const buffers: Buffer[] = new Array(frames.length);
+  for (let i = 0; i < frames.length; i += FRAME_RENDER_CONCURRENCY) {
+    const chunk = frames.slice(i, i + FRAME_RENDER_CONCURRENCY);
     const rendered = await Promise.all(
-      chunk.map((position) => {
+      chunk.map(({ position, halfMoveIndex }) => {
+        const displaySettings =
+          opts.variant === 'played'
+            ? playSettingsDisplayAtHalfMove(
+                opts.game.playSettings,
+                opts.game.playSettingsLog,
+                opts.game.playerColor,
+                halfMoveIndex
+              )
+            : null;
         const svg = renderBoardSvg({
           fen: position.fen,
           size: BOARD_SIZE,
           flipped: opts.flipped,
           lastMove: position.lastMove ?? null,
-          displaySettings: opts.displaySettings,
+          displaySettings,
         });
         return sharp(Buffer.from(svg)).png().toBuffer();
       })
@@ -70,20 +90,19 @@ async function renderFramesToPng(
  * Render a published game's replay as an animated GIF — the frame source
  * shared with {@link renderBoardSvg} (Phase 1's OG image). `'played'` renders
  * the blindfold "as played" board (ghosts / Go stones) via
- * {@link playSettingsToThumbnailDisplay}; games with no notable play settings
- * render identically for both variants.
+ * {@link playSettingsDisplayAtHalfMove}, folded independently per frame so a
+ * game whose visibility changed mid-game (revealed or hidden partway through)
+ * shows what the player actually saw at each position, not just the
+ * start-of-game snapshot; games with no notable play settings render
+ * identically for both variants.
  */
 export async function generateGameGif(game: GameRecord, variant: GameGifVariant): Promise<Buffer> {
   const allPositions = replayMoves(game.moves, game.startingFen ?? undefined);
-  const positions = selectFrames(allPositions);
+  const frames = selectFrames(allPositions);
 
-  const displaySettings =
-    variant === 'played'
-      ? playSettingsToThumbnailDisplay(game.playSettings, game.playerColor)
-      : null;
   const flipped = game.playerColor === 'black';
 
-  const pngBuffers = await renderFramesToPng(positions, { flipped, displaySettings });
+  const pngBuffers = await renderFramesToPng(frames, { flipped, game, variant });
   const delays = delaysFor(pngBuffers.length);
 
   return sharp(pngBuffers, { join: { animated: true } })

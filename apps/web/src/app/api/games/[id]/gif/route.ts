@@ -1,4 +1,5 @@
 import { getGameById } from '@/lib/db/games-read';
+import { PLAYED_GIF_RENDER_VERSION } from '@/lib/games/gif/constants';
 import { generateGameGif } from '@/lib/games/gif/generate-game-gif';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -10,7 +11,12 @@ export const maxDuration = 60;
 const GIFS_BUCKET = 'game-gifs';
 
 function gifStorageKey(id: string, variant: 'plain' | 'played'): string {
-  return `gifs/${id}/${variant}.gif`;
+  // 'played' output changes whenever PLAYED_GIF_RENDER_VERSION bumps, so its
+  // Storage key carries the version — an old render never shadows a new one.
+  // 'plain' output never changes, so its key stays unversioned.
+  return variant === 'played'
+    ? `gifs/${id}/played-v${PLAYED_GIF_RENDER_VERSION}.gif`
+    : `gifs/${id}/plain.gif`;
 }
 
 function gifResponse(buffer: Buffer, id: string): Response {
@@ -18,8 +24,11 @@ function gifResponse(buffer: Buffer, id: string): Response {
     headers: {
       'Content-Type': 'image/gif',
       'Content-Disposition': `attachment; filename="blindfold-chess-${id}.gif"`,
-      // Deterministic from `moves` alone (no title involved, unlike the OG
-      // image) — genuinely immutable, safe to cache forever.
+      // Deterministic from the game row (moves + playSettings +
+      // playSettingsLog + operationLogs + undoneLogs) — genuinely immutable
+      // for a given render version, safe to cache forever. The version lives
+      // in the 'played' Storage key (see gifStorageKey), so a render-rule
+      // change never collides with a previously cached response.
       'Cache-Control': 'public, max-age=31536000, immutable',
     },
   });

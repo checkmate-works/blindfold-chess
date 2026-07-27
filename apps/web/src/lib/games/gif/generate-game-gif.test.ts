@@ -71,4 +71,28 @@ describe('generateGameGif', () => {
     const meta = await sharp(buf, { animated: true }).metadata();
     expect(meta.pages).toBe(game.moves.length + 1);
   });
+
+  // Regression: 'played' used to apply the start-of-game playSettings
+  // snapshot to every frame, so a game that revealed its board partway
+  // through (playSettingsLog) rendered every frame hidden. This only asserts
+  // the whole-game generation completes without error for a log-bearing
+  // game; the per-frame folding itself is covered by
+  // play-settings-thumbnail.test.ts.
+  it('renders a "played" GIF for a game whose board visibility changes mid-game via playSettingsLog', async () => {
+    const game = buildGame({
+      playSettings: {
+        boardVisibility: 'never',
+        showOwnPieces: true,
+        showOpponentPieces: true,
+        pieceShapeMode: 'normal',
+        pieceColors: 'normal',
+        pawnHideMode: 'none',
+      },
+      playSettingsLog: [{ atMoveIndex: 2, key: 'boardVisibility', to: 'always' }],
+    });
+    const buf = await generateGameGif(game, 'played');
+    expect(buf.subarray(0, 6).toString('ascii')).toBe('GIF89a');
+    const meta = await sharp(buf, { animated: true }).metadata();
+    expect(meta.pages).toBe(game.moves.length + 1);
+  });
 });

@@ -1,8 +1,12 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import type { Side } from '@blindfold-chess/types';
 
-import { playSettingsAreNotable } from './play-settings-log';
-import type { GamePlaySettings } from './saved-game-types';
+import {
+  gameUsedNotablePlaySettings,
+  playSettingsAreNotable,
+  playSettingsAtHalfMove,
+} from './play-settings-log';
+import type { GamePlaySettings, PlaySettingsChangeEntry } from './saved-game-types';
 
 /**
  * Fold a published game's start-of-game blindfold snapshot into the
@@ -45,6 +49,42 @@ export function playSettingsToThumbnailDisplay(
     pieceShapeMode: playSettings.pieceShapeMode,
     pieceColors: playSettings.pieceColors,
     pawnHideMode: playSettings.pawnHideMode,
+    hiddenPieceStyle: 'ghost',
+  };
+}
+
+/**
+ * Same fold as {@link playSettingsToThumbnailDisplay}, but at a specific
+ * position rather than only the game's start-of-game snapshot — for a replay
+ * (GIF or otherwise) that must show what the player saw at each half-move,
+ * not just how the game began. A game that started sighted and was later
+ * hidden (or vice versa) needs this: the snapshot alone would say "nothing to
+ * reflect" and render every frame as a plain board, contradicting whatever
+ * the mid-game change actually showed.
+ *
+ * The notability gate is therefore {@link gameUsedNotablePlaySettings}
+ * (snapshot OR log), not {@link playSettingsAreNotable} (snapshot only) —
+ * using the narrower gate here would wrongly return null for a
+ * plain-start-then-hidden game.
+ */
+export function playSettingsDisplayAtHalfMove(
+  playSettings: GamePlaySettings | null | undefined,
+  playSettingsLog: PlaySettingsChangeEntry[] | null | undefined,
+  playerColor: Side,
+  halfMovesShown: number
+): BlindfoldDisplaySettings | null {
+  if (!playSettings || !gameUsedNotablePlaySettings(playSettings, playSettingsLog)) return null;
+
+  const at = playSettingsAtHalfMove(playSettings, playSettingsLog, halfMovesShown);
+  const boardHidden = at.boardVisibility === 'never';
+
+  return {
+    ownColor: playerColor === 'white' ? 'w' : 'b',
+    showOwnPieces: boardHidden ? false : at.showOwnPieces,
+    showOpponentPieces: boardHidden ? false : at.showOpponentPieces,
+    pieceShapeMode: at.pieceShapeMode,
+    pieceColors: at.pieceColors,
+    pawnHideMode: at.pawnHideMode,
     hiddenPieceStyle: 'ghost',
   };
 }
