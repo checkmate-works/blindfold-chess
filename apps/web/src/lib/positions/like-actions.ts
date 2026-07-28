@@ -14,8 +14,7 @@ export type { ToggleLikeResult };
  *
  * Thin wrapper around `performEntityToggleLike` — the orchestration
  * skeleton lives in `@/lib/db/like-actions`, and this file supplies the
- * position-specific owner lookup, notification metadata, and revalidate
- * fan-out (which differs between puzzles and position-memory rows).
+ * position-specific owner lookup and notification metadata.
  *
  * Plain (non-`"use server"`) module so it can be imported by Server
  * Actions in multiple routes. The caller must be an async `"use server"`
@@ -29,7 +28,6 @@ export async function togglePositionLike(
 
   return performEntityToggleLike<{ positionType: PositionType | null }>({
     id: positionId,
-    locale,
     fieldName: 'positionId',
     targetType: 'position',
     fetchOwner: async (id) => {
@@ -54,21 +52,5 @@ export async function togglePositionLike(
       // outside the known union.
       ...(positionType ? { positionType } : {}),
     }),
-    revalidatePaths: (locale, positionId, extra) => {
-      // Revalidate the detail page for whichever position type this row
-      // is, so a freshly-loaded SSR render reflects the new like count.
-      // The list pages are revalidated too, but the puzzle list is
-      // paginated/generic enough that `/practice/puzzle` alone is
-      // sufficient. When the row vanished between the toggle and the
-      // lookup we fall back to position-memory, which is the most common
-      // case (puzzles are only created internally for now).
-      if (extra?.positionType === 'puzzle') {
-        return [`/${locale}/practice/puzzle`, `/${locale}/practice/puzzle/${positionId}`];
-      }
-      return [
-        `/${locale}/practice/position-memory`,
-        `/${locale}/practice/position-memory/${positionId}`,
-      ];
-    },
   });
 }

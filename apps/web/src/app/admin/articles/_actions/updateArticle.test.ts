@@ -1,3 +1,4 @@
+import { SUPPORTED_LOCALES } from '@/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { updateArticle } from './updateArticle';
@@ -291,6 +292,20 @@ describe('updateArticle', () => {
 
     await updateArticle(articleId, validData);
     expect(mockRevalidatePath).toHaveBeenCalledWith('/admin/articles');
+  });
+
+  // A rename leaves the OLD url still serving a prerendered page, so both
+  // slugs have to be invalidated.
+  it('should revalidate the public pages for both the new and the previous slug', async () => {
+    setupAdminWithArticle();
+
+    await updateArticle(articleId, validData);
+
+    for (const locale of SUPPORTED_LOCALES) {
+      expect(mockRevalidatePath).toHaveBeenCalledWith(`/${locale}/articles/${validData.slug}`);
+      expect(mockRevalidatePath).toHaveBeenCalledWith(`/${locale}/articles/old-slug`);
+    }
+    expect(mockRevalidateTag).toHaveBeenCalledWith('articles', { expire: 60 });
   });
 
   it('should not call revalidatePath when unauthorized', async () => {

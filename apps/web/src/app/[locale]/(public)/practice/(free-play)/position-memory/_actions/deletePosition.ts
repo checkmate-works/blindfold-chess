@@ -20,7 +20,6 @@ export async function deletePosition(positionId: string, locale: string): Promis
 
   return deletePositionEntry({
     positionId,
-    locale,
     kind: 'memory',
     rateLimit: RATE_LIMITS.deletePosition,
   });

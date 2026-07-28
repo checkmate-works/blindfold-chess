@@ -23,8 +23,15 @@
  *   and by the admin puzzle soft-delete (`deletePuzzle`) so pool changes and
  *   removals swap the featured card immediately instead of at the hourly
  *   revalidate.
+ * - {@link ARTICLES_CACHE_TAG} — the public article list queries
+ *   (`getLatestPublishedArticles`, `getPublishedArticleCount`). Invalidated by
+ *   the admin article create / update / delete actions. Note this covers the
+ *   LIST only: the article *detail* page is prerendered per (locale, slug), so
+ *   those actions additionally call `revalidatePublicArticlePages()` — a tag
+ *   cannot reach a Full Route Cache entry.
  */
 
 export const LEADERBOARD_CACHE_TAG = 'leaderboard' as const;
 export const EXP_LEADERBOARD_CACHE_TAG = 'exp-leaderboard' as const;
 export const DAILY_PUZZLE_CACHE_TAG = 'daily-puzzle' as const;
+export const ARTICLES_CACHE_TAG = 'articles' as const;

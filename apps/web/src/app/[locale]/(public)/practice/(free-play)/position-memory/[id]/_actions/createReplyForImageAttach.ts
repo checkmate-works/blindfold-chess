@@ -20,7 +20,6 @@ export async function createReplyForImageAttach(
     topicKey: positionId,
     urlSegment: 'practice/position-memory',
     validateTopic: async (id) => (await getPositionById({ id, type: 'memory' })) !== null,
-    revalidate: () => `/${locale}/practice/position-memory/${positionId}`,
     formData,
   });
 }

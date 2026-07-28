@@ -177,11 +177,14 @@ describe('grantRank', () => {
     );
   });
 
-  it('should call revalidatePath with the user detail path on success', async () => {
+  // The admin user page is dynamic, and `GrantRankButton` already calls
+  // `router.refresh()` on success — revalidating here only forced a second,
+  // redundant server render of the page the admin is looking at.
+  it('should not revalidate any path on success', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
     await grantRank(targetUserId, '1dan', 'reason');
-    expect(mockRevalidatePath).toHaveBeenCalledWith(`/admin/users/${targetUserId}`);
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
   it('should revalidate the rank-status cache tag on success so ad-hiding reflects the manual grant', async () => {

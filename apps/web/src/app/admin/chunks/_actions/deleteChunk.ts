@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- AdminDeleteButton has no router.refresh(); this revalidate is the only thing that removes the deleted row from the /admin/chunks list
 import { revalidatePath } from 'next/cache';
 
 import type { DeleteResult } from '@/app/admin/_lib/action-factories';

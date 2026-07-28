@@ -10,7 +10,7 @@ export type { ToggleLikeResult };
 /**
  * Core "toggle like" for a repertoire (型). Thin wrapper around the generic
  * `performEntityToggleLike` (auth, rate limit, INSERT/DELETE, owner
- * notification, revalidation) with the repertoire-specific owner lookup.
+ * notification) with the repertoire-specific owner lookup.
  * `targetType = 'repertoire'` is the polymorphic key shared with the `likes`
  * table and notifications.
  */
@@ -22,7 +22,6 @@ export async function toggleRepertoireLike(
 
   return performEntityToggleLike<Record<never, never>>({
     id: repertoireId,
-    locale,
     fieldName: 'repertoireId',
     targetType: 'repertoire',
     fetchOwner: async (id) => {
@@ -35,6 +34,5 @@ export async function toggleRepertoireLike(
       return { userId: row.userId, extra: {} };
     },
     notificationMeta: (id) => ({ repertoireId: id }),
-    revalidatePaths: (loc, id) => [`/${loc}/repertoires`, `/${loc}/repertoires/${id}`],
   });
 }

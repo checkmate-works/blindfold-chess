@@ -496,11 +496,13 @@ describe('createPositionEntry', () => {
     expect(result).toMatchObject({ success: true, grantedRanks: [grantedRank] });
   });
 
-  it('revalidates the practice listing for the kind (puzzle uses its own segment and point type)', async () => {
+  // Revalidation is deliberately absent — every practice route is dynamic and
+  // the preview clients `router.push` to the new detail page on success.
+  it("uses the kind's own segment and point type, revalidating nothing", async () => {
     const { createPositionEntry } = await import('./user-position-mutations');
     await createPositionEntry({ ...baseCreateParams, kind: 'puzzle' });
 
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/practice/puzzle');
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
     expect(mockInsertValues).toHaveBeenCalledWith(expect.objectContaining({ type: 'puzzle' }));
     expect(mockGrantPointsForPost).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
       type: 'puzzle',
@@ -647,13 +649,7 @@ describe('updatePositionEntry', () => {
       ['theme-1'],
       undefined
     );
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/practice/position-memory');
-    expect(mockRevalidatePath).toHaveBeenCalledWith(
-      `/practice/position-memory/${TEST_POSITION_ID}`
-    );
-    expect(mockRevalidatePath).toHaveBeenCalledWith(
-      `/practice/position-memory/${TEST_POSITION_ID}/history`
-    );
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
   it('logs an update activity event with old → new changes', async () => {
@@ -781,7 +777,7 @@ describe('deletePositionEntry', () => {
     expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
-  it('soft-deletes the row, claws back points and revalidates the locale paths', async () => {
+  it('soft-deletes the row and claws back points, revalidating nothing', async () => {
     const { deletePositionEntry } = await import('./user-position-mutations');
     const result = await deletePositionEntry(baseDeleteParams);
 
@@ -795,9 +791,6 @@ describe('deletePositionEntry', () => {
     });
     // Soft-delete leaves the row as the durable record — no activity log.
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/ja/practice/position-memory');
-    expect(mockRevalidatePath).toHaveBeenCalledWith(
-      `/ja/practice/position-memory/${TEST_POSITION_ID}`
-    );
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 });

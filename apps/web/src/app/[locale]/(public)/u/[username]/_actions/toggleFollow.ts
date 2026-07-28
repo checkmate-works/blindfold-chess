@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- FollowButton (/u/[username]) and FollowingList (/mypage/following) update via useOptimistic and never router.refresh(); these revalidates are what re-render the server-owned follow state (follower count, list membership) on both surfaces
 import { revalidatePath } from 'next/cache';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';

@@ -362,7 +362,10 @@ describe('attachPostFen — DB error mapping', () => {
 });
 
 describe('attachPostFen — edit-flow side effects', () => {
-  it('omits the activity log + revalidate when locale is not provided', async () => {
+  // Attaching neither writes an activity-log row (the attachment row itself
+  // survives in post_fen_attachments) nor revalidates: the topic page is
+  // dynamic, and `AttachmentAddButton` calls `router.refresh()` on success.
+  it('writes no activity-log row and revalidates nothing', async () => {
     const { logActivityEvent } = await import('@/lib/users/activity-log');
     const { revalidatePath } = await import('next/cache');
 
@@ -370,17 +373,5 @@ describe('attachPostFen — edit-flow side effects', () => {
 
     expect(logActivityEvent).not.toHaveBeenCalled();
     expect(revalidatePath).not.toHaveBeenCalled();
-  });
-
-  it('revalidates the topic path (but writes no activity-log row) when locale is provided', async () => {
-    const { logActivityEvent } = await import('@/lib/users/activity-log');
-    const { revalidatePath } = await import('next/cache');
-
-    await attachPostFen({ postId, fen: STARTING_FEN, locale: 'en' });
-
-    // The FEN attachment row survives in post_fen_attachments, so attaching is
-    // not duplicated into the activity log.
-    expect(logActivityEvent).not.toHaveBeenCalled();
-    expect(revalidatePath).toHaveBeenCalledWith('/en/topics/openings/sicilian');
   });
 });

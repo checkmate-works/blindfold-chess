@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -13,8 +11,6 @@ import {
   deletePostCore,
   purgePostImageAttachmentsFromStorage,
 } from '@/lib/topic-posts/delete-core';
-
-import { buildTopicDetailPath } from '../_lib/topic-paths';
 
 export type DeletePostResult = ActionResult;
 
@@ -31,7 +27,6 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
   if ('error' in lookup) {
     return { error: lookup.error };
   }
-  const { post } = lookup;
 
   const supabase = await createSupabaseSessionClient();
   await purgePostImageAttachmentsFromStorage(postId, supabase, 'deletePost');
@@ -40,8 +35,6 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
   // tab that re-submits the action lands on a no-op write rather than
   // re-stamping `deletedAt`.
   await deletePostCore(postId, user.id, { requireNotDeleted: true });
-
-  revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
 
   return { success: true };
 }

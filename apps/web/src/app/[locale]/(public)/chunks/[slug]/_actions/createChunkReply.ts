@@ -22,7 +22,6 @@ export async function createChunkReply(
     validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
     redirectPath: (_parentPostId, replyId) =>
       `/${locale}/chunks/${slug}?toast=post_created#post-${replyId}`,
-    revalidate: () => `/${locale}/chunks/${slug}`,
     formData,
   });
 }

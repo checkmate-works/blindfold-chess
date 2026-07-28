@@ -35,7 +35,6 @@ export async function createReplyWithFenAttachmentBase(args: {
   urlSegment: string;
   validateTopic: (identifier: string) => boolean | Promise<boolean>;
   redirectPath?: (postId: string, replyId: string) => string;
-  revalidate?: (postId: string) => string;
   isSpoiler?: boolean;
   /** Topic-specific extra rows to insert inside the same transaction. */
   extraAfterInsert?: ExtraAfterInsert;

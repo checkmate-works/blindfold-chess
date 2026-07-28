@@ -1,15 +1,17 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import type { CreateRepertoireResult } from '@/lib/repertoires/mutations';
 import { createRepertoireEntry } from '@/lib/repertoires/mutations';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
 
 /**
- * Create a repertoire (型) for the current user from a pasted PGN, then
- * revalidate the list so a navigation back to /repertoires shows the new course.
+ * Create a repertoire (型) for the current user from a pasted PGN.
+ *
+ * No `revalidatePath`: /repertoires is a dynamic route and
+ * `RepertoireImportForm` `router.push`es to the new course on success, so the
+ * navigation re-queries the list on its own. See the note on
+ * `performEntityToggleLike` in `@/lib/db/like-actions`.
  */
 export async function createRepertoire(input: {
   name: string;
@@ -24,7 +26,6 @@ export async function createRepertoire(input: {
   annotations?: Record<string, string>;
   /** Position-keyed board markup (arrows / circles) drawn in board mode. */
   shapes?: Record<string, unknown>;
-  locale: string;
 }): Promise<CreateRepertoireResult> {
   const result = await createRepertoireEntry({
     name: input.name,
@@ -37,8 +38,5 @@ export async function createRepertoire(input: {
     annotations: input.annotations,
     shapes: input.shapes,
   });
-  if ('success' in result) {
-    revalidatePath(`/${input.locale}/repertoires`);
-  }
   return result;
 }

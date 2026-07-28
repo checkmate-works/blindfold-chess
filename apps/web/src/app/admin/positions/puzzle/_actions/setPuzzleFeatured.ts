@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- FeaturePuzzleToggle explicitly relies on this revalidate for its re-render (see its TSDoc); there is no router.refresh() in that flow
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';

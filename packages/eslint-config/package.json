@@ -6,7 +6,8 @@
   "exports": {
     "./base": "./base.js",
     "./next": "./next.js",
-    "./react": "./react.js"
+    "./react": "./react.js",
+    "./revalidate-path-ban": "./revalidate-path-ban.js"
   },
   "dependencies": {
     "@eslint/js": "^9.39.4",

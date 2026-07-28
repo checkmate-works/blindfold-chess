@@ -80,7 +80,6 @@ export default async function NewRepertoireLinePage({ params, searchParams }: Pr
       <SectionTitle>{t('line.new.title')}</SectionTitle>
 
       <NewLineForm
-        locale={locale}
         repertoireId={id}
         side={repertoire.side}
         initialPgn={initialPgn}

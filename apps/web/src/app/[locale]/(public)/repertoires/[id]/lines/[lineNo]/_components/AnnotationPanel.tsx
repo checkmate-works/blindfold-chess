@@ -21,7 +21,6 @@ import { saveAnnotation } from '../_actions/saveAnnotation';
 
 type Props = {
   repertoireId: string;
-  lineNo: number;
   locale: string;
   /** Normalised FEN of the position reached by this move (the annotation key). */
   positionKey: string;
@@ -55,7 +54,6 @@ type Props = {
  */
 export function AnnotationPanel({
   repertoireId,
-  lineNo,
   locale,
   positionKey,
   moveLabel,
@@ -100,8 +98,8 @@ export function AnnotationPanel({
     setPending(true);
     setFailed(false);
     const result = value
-      ? await saveAnnotation({ repertoireId, lineNo, locale, positionKey, text: value })
-      : await deleteAnnotation({ repertoireId, lineNo, locale, positionKey });
+      ? await saveAnnotation({ repertoireId, positionKey, text: value })
+      : await deleteAnnotation({ repertoireId, positionKey });
     setPending(false);
     if (!result.ok) {
       setFailed(true);
@@ -114,7 +112,7 @@ export function AnnotationPanel({
   async function handleDelete() {
     setDeleting(true);
     setDeleteError(null);
-    const result = await deleteAnnotation({ repertoireId, lineNo, locale, positionKey });
+    const result = await deleteAnnotation({ repertoireId, positionKey });
     setDeleting(false);
     if (!result.ok) {
       setDeleteError(t('error'));

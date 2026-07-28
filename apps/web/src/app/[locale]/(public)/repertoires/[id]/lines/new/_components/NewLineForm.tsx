@@ -23,7 +23,6 @@ import { MoveAnnotationField } from '@/app/[locale]/(public)/repertoires/_compon
 import { RepertoireBoardBuilder } from '@/app/[locale]/(public)/repertoires/_components/RepertoireBoardBuilder';
 
 type Props = {
-  locale: string;
   repertoireId: string;
   /** The repertoire's side — orients the board in board mode. */
   side: RepertoireSide;
@@ -48,7 +47,6 @@ type Props = {
  * existing notes.
  */
 export function NewLineForm({
-  locale,
   repertoireId,
   side,
   initialPgn,
@@ -94,7 +92,7 @@ export function NewLineForm({
     setPending(true);
     setError(null);
 
-    const result = await addLine({ repertoireId, locale, name: name.trim() || null, pgn });
+    const result = await addLine({ repertoireId, name: name.trim() || null, pgn });
     if (!result.ok) {
       setPending(false);
       setError(
@@ -104,19 +102,12 @@ export function NewLineForm({
     }
 
     // Persist notes / markup authored alongside; position-keyed, so they only
-    // needed a repertoire (which already existed) — the fresh lineNo merely
-    // picks the page these actions revalidate.
+    // needed a repertoire (which already existed).
     const noteResults = await Promise.all([
       ...changedAnnotations.map(([positionKey, text]) =>
         text.trim()
-          ? saveAnnotation({
-              repertoireId,
-              lineNo: result.lineNo,
-              locale,
-              positionKey,
-              text: text.trim(),
-            })
-          : deleteAnnotation({ repertoireId, lineNo: result.lineNo, locale, positionKey })
+          ? saveAnnotation({ repertoireId, positionKey, text: text.trim() })
+          : deleteAnnotation({ repertoireId, positionKey })
       ),
       ...changedShapes.map(([positionKey, value]) =>
         saveShapes({ repertoireId, positionKey, shapes: value })

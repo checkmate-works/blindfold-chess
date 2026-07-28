@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports -- AdminDeleteButton deliberately has no router.refresh(); the factory's revalidatePath is the sole re-render path that removes the deleted row from every admin list built on it
 import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';

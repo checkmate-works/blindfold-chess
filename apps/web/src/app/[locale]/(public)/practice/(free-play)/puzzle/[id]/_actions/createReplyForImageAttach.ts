@@ -26,7 +26,6 @@ export async function createReplyForImageAttach(
     topicKey: positionId,
     urlSegment: 'practice/puzzle',
     validateTopic: async (id) => (await getPositionById({ id, type: 'puzzle' })) !== null,
-    revalidate: () => `/${locale}/practice/puzzle/${positionId}`,
     isSpoiler,
     formData,
   });

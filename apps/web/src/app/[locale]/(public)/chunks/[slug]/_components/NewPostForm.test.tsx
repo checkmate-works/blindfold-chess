@@ -8,7 +8,6 @@ const mockCreateChunkPostWithAttachment = vi.fn();
 const mockCreateChunkPostForImageAttach = vi.fn();
 const mockRouterRefresh = vi.fn();
 const mockRouterPush = vi.fn();
-const mockRevalidatePathAction = vi.fn();
 
 vi.mock('../_actions/createChunkPostWithFenAttachment', () => ({
   createChunkPostWithFenAttachment: (...args: unknown[]) =>
@@ -19,9 +18,6 @@ vi.mock('../_actions/createChunkPostWithAttachment', () => ({
 }));
 vi.mock('../_actions/createChunkPostForImageAttach', () => ({
   createChunkPostForImageAttach: (...args: unknown[]) => mockCreateChunkPostForImageAttach(...args),
-}));
-vi.mock('@/app/[locale]/(public)/topics/_actions/revalidatePathAction', () => ({
-  revalidatePathAction: (...args: unknown[]) => mockRevalidatePathAction(...args),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -383,9 +379,9 @@ describe('NewPostForm — Images tab 2-step upload routing', () => {
         expect.objectContaining({ method: 'POST' })
       );
     });
-    await waitFor(() => {
-      expect(mockRevalidatePathAction).toHaveBeenCalledWith('/en/chunks/rook-battery');
-    });
+    // The refresh alone is what surfaces the uploaded image: the page is a
+    // dynamic route, so re-fetching it re-runs the query. There is no Full
+    // Route Cache to bust first.
     await waitFor(() => {
       expect(mockRouterRefresh).toHaveBeenCalled();
     });

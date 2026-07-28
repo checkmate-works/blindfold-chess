@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import type { RepertoireVisibility } from '@/lib/points';
 import type { ChangeRepertoireVisibilityResult } from '@/lib/repertoires/mutations';
 import { changeRepertoireVisibility } from '@/lib/repertoires/mutations';
@@ -23,8 +21,8 @@ export async function changeVisibility(input: {
     target: input.target,
   });
   if ('success' in result) {
-    revalidatePath(`/${input.locale}/repertoires/${input.id}`);
-    revalidatePath(`/${input.locale}/repertoires`);
+    // No revalidatePath: both routes are dynamic, and
+    // `RepertoireVisibilityControl` calls `router.refresh()` on success.
   }
   return result;
 }

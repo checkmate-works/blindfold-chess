@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
@@ -11,11 +9,8 @@ import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
 import { validateContent } from '@/lib/validations/content';
 
-import { buildTopicDetailPath } from '../_lib/topic-paths';
-
 export type EditPostResult =
-  | { success: true; content: string; isSpoiler: boolean; updatedAt: Date }
-  | { error: string };
+  { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string };
 
 /**
  * Edit a topic_post's text content (and, for `position_puzzle`, its spoiler
@@ -41,7 +36,9 @@ export type EditPostResult =
  */
 export async function editPost(
   postId: string,
-  locale: string,
+  // Positional slot kept for the shared `EditPostAction` signature; the
+  // caller (CommentNode / OpCard) swaps in the returned values directly.
+  _locale: string,
   formData: FormData
 ): Promise<EditPostResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.editPost);
@@ -117,8 +114,6 @@ export async function editPost(
       changes,
     },
   });
-
-  revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
 
   return {
     success: true,

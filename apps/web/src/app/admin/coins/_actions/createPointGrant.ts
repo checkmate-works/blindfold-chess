@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- PointGrantForm router.push()es to /admin/coins on success; the purge guarantees the pushed list shows the new grant instead of a stale Router Cache/prefetch entry
 import { revalidatePath } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';

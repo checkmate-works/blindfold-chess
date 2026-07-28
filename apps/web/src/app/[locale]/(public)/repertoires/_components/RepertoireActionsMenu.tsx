@@ -32,7 +32,7 @@ export function RepertoireActionsMenu({ id, locale }: Props) {
   async function handleConfirm() {
     setPending(true);
     setError(null);
-    const result = await deleteRepertoire({ id, locale });
+    const result = await deleteRepertoire({ id });
     if ('error' in result) {
       setPending(false);
       setError(t('errors.generic'));

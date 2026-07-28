@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- DeletePostAdminButton has no router.refresh(); these revalidates are what drop the deleted post from the admin users and topic-posts surfaces
 import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';

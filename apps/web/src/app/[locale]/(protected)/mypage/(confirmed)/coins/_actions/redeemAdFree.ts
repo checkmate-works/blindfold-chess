@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
 import { authenticateAndCheckBan } from '@/lib/auth';
@@ -74,8 +74,10 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
 
   revalidateTag('grant-status', { expire: 60 });
   await writeAdsHiddenCookieForUser(auth.user);
-  revalidatePath('/mypage/coins');
-  revalidatePath('/mypage/benefits');
+  // No revalidatePath: /mypage/coins and /mypage/benefits are both dynamic
+  // routes, and `RedeemForm` calls `router.refresh()` on success — which is
+  // what actually repaints the new balance. See the @design note on
+  // `performEntityToggleLike` for why the extra revalidation is not free.
 
   return {
     ok: true,

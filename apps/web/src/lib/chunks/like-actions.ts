@@ -10,10 +10,9 @@ export type ToggleChunkLikeResult = ToggleLikeResult;
  * Core implementation of the "toggle like" operation for a chunk entity.
  *
  * Thin wrapper around `performEntityToggleLike` — the orchestration
- * skeleton (auth + ban + rate-limit + DB toggle + notify + revalidate)
- * lives in `@/lib/db/like-actions`, and this file supplies only the
- * chunk-specific owner lookup, notification metadata, and revalidate
- * fan-out.
+ * skeleton (auth + ban + rate-limit + DB toggle + notify) lives in
+ * `@/lib/db/like-actions`, and this file supplies only the chunk-specific
+ * owner lookup and notification metadata.
  *
  * The "like a comment in the chunk thread" path is separate and lives at
  * `(public)/chunks/[slug]/_actions/toggleChunkLike.ts` (which delegates
@@ -25,11 +24,10 @@ export type ToggleChunkLikeResult = ToggleLikeResult;
  */
 export async function toggleChunkLikeBase(
   chunkId: string,
-  locale: string
+  _locale: string
 ): Promise<ToggleChunkLikeResult> {
   return performEntityToggleLike<{ slug: string }>({
     id: chunkId,
-    locale,
     fieldName: 'chunkId',
     targetType: 'chunk',
     fetchOwner: async (id) => {
@@ -42,10 +40,5 @@ export async function toggleChunkLikeBase(
       return { userId: row.userId, extra: { slug: row.slug } };
     },
     notificationMeta: (chunkId, { slug }) => ({ chunkId, slug }),
-    revalidatePaths: (locale, _chunkId, extra) => {
-      const paths = [`/${locale}/chunks`];
-      if (extra) paths.push(`/${locale}/chunks/${extra.slug}`);
-      return paths;
-    },
   });
 }

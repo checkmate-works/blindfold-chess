@@ -49,7 +49,6 @@ const VISIBILITY_I18N_KEY: Record<RepertoireVisibility, string> = {
 };
 
 type Props = {
-  locale: string;
   openings: OpeningOption[];
   /** The author's spendable coin balance — shown next to the paid tiers. */
   spendableBalance: number;
@@ -73,7 +72,6 @@ type Props = {
  * variations) also happens in `createRepertoire`.
  */
 export function RepertoireImportForm({
-  locale,
   openings,
   spendableBalance,
   initialPgn,
@@ -165,7 +163,6 @@ export function RepertoireImportForm({
       openingIds: phase === 'opening' ? openingIds : [],
       annotations,
       shapes,
-      locale,
     });
     if ('error' in result) {
       setPending(false);

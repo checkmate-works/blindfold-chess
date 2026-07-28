@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- BanButton has no router.refresh(); this revalidate is what re-renders the admin users surface with the new banned state
 import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';

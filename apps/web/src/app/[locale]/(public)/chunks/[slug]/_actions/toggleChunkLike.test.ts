@@ -121,11 +121,12 @@ describe('toggleChunkLike', () => {
     expect(result).toEqual({ liked: true, likeCount: 1 });
   });
 
-  it('revalidates the chunks detail path, not /topics/...', async () => {
+  // Liking deliberately performs no `revalidatePath`: every page showing a
+  // like count is uncached, and calling it makes Next.js re-render and ship
+  // the caller's whole current page with the action result (256 KB per like
+  // on the home feed). See the `@design` note on `toggleLikeBase`.
+  it('does not revalidate any path', async () => {
     await toggleChunkLike(testPostId, 'en', testSlug);
-    expect(revalidatePath).toHaveBeenCalledWith(`/en/chunks/${testSlug}`);
-    // Should NOT have been called with the legacy /topics/... path.
-    const calls = vi.mocked(revalidatePath).mock.calls.map((c) => c[0]);
-    expect(calls).not.toContain(`/en/topics/chunks/${testSlug}`);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 });

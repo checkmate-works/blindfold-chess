@@ -10,8 +10,6 @@ export async function toggleChunkLike(postId: string, locale: string, slug: stri
     locale,
     topicIdentifier: slug,
     topicType: 'chunk',
-    urlSegment: 'chunks',
     validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
-    revalidate: () => [`/${locale}/chunks/${slug}`],
   });
 }

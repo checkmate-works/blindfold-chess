@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-import { revalidatePathAction } from '../_actions/revalidatePathAction';
 import type { ImageAttachResult } from '../_lib/image-attach-types';
 import { uploadPostImages } from '../_lib/upload-post-images';
 
@@ -40,7 +39,6 @@ export function usePostImageAttachFlow({
   imageRedirectPath?: (postId: string) => string;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
 
   const [pendingNav, setPendingNav] = useState<
     { kind: 'push'; path: string } | { kind: 'refresh' } | null
@@ -72,15 +70,13 @@ export function usePostImageAttachFlow({
       if (imageRedirectPath) {
         setPendingNav({ kind: 'push', path: imageRedirectPath(created.postId) });
       } else {
-        // Inline forms stay put: the upload API does not revalidate, so
-        // bust the Full Route Cache for the current page before refresh
-        // (mirrors what the PGN / FEN Server Actions do).
-        await revalidatePathAction(pathname);
+        // Inline forms stay put; the refresh re-fetches the (dynamic) page
+        // so the freshly uploaded image appears.
         setPendingNav({ kind: 'refresh' });
       }
       return {};
     },
-    [clearDirty, imageRedirectPath, pathname]
+    [clearDirty, imageRedirectPath]
   );
 
   return { runImageAttach };

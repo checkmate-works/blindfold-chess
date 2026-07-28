@@ -1,3 +1,4 @@
+import { SUPPORTED_LOCALES } from '@/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createArticle } from './createArticle';
@@ -6,6 +7,7 @@ const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockInsertValuesReturning = vi.fn();
 const mockRevalidatePath = vi.fn();
+const mockRevalidateTag = vi.fn();
 
 const generatedId = 'generated-00000000-0000-0000-0000-000000000001';
 
@@ -63,6 +65,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
+  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
@@ -326,6 +329,18 @@ describe('createArticle', () => {
 
     await createArticle(validData);
     expect(mockRevalidatePath).toHaveBeenCalledWith('/admin/articles');
+  });
+
+  it('should revalidate the public article page for every locale on success', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    await createArticle(validData);
+
+    for (const locale of SUPPORTED_LOCALES) {
+      expect(mockRevalidatePath).toHaveBeenCalledWith(`/${locale}/articles/${validData.slug}`);
+    }
+    expect(mockRevalidateTag).toHaveBeenCalledWith('articles', { expire: 60 });
   });
 
   it('should not call revalidatePath when unauthorized', async () => {

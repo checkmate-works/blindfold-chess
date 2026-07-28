@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { consumeMaiaGamePoint } from '@/lib/points';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
@@ -56,7 +54,10 @@ export async function startMaiaGame(clientGameId: string): Promise<StartMaiaGame
   }
 
   // Balance moved — refresh the points page so the user sees it on return.
-  revalidatePath('/mypage/coins');
+  // No revalidatePath: /mypage/coins is a dynamic route, so it re-queries the
+  // balance whenever the player next opens it. Revalidating here would instead
+  // force a server re-render of the page the player is leaving, right as the
+  // game launches.
 
   return { ok: true, charged: !result.alreadyCharged };
 }

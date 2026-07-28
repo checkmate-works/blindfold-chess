@@ -64,7 +64,6 @@ export default async function NewLinePage({ params, searchParams }: Props) {
     >
       <SectionTitle>{t('new.sectionTitle')}</SectionTitle>
       <RepertoireImportForm
-        locale={locale}
         openings={openings}
         spendableBalance={balance.total}
         initialPgn={initialPgn}

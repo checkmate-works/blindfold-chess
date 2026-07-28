@@ -22,7 +22,6 @@ export async function createReply(
     validateTopic: async (id) => (await getPositionById({ id, type: 'memory' })) !== null,
     redirectPath: (_postId, replyId) =>
       `/${locale}/practice/position-memory/${positionId}?toast=post_created#post-${replyId}`,
-    revalidate: () => `/${locale}/practice/position-memory/${positionId}`,
     formData,
   });
 }

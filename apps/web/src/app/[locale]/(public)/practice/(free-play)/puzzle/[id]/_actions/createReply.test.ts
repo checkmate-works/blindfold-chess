@@ -207,11 +207,13 @@ describe('puzzle parent-page createReply', () => {
     );
   });
 
-  it('revalidates the parent puzzle page so the inline tree picks up the new reply', async () => {
+  // No revalidation: the redirect above lands on the (dynamic) parent puzzle
+  // page, which re-queries and shows the new reply in the inline tree.
+  it('does not revalidate any path', async () => {
     await expect(
       createReply('en', positionId, validPostId, {}, makeFormData('hi'))
     ).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(revalidatePath).toHaveBeenCalledWith(`/en/practice/puzzle/${positionId}`);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 });

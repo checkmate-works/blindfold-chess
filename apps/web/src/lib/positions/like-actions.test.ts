@@ -378,7 +378,11 @@ describe('toggleLike (position-memory)', () => {
     });
   });
 
-  describe('revalidation', () => {
+  // Liking deliberately performs no `revalidatePath`: every page showing a
+  // like count is uncached, and calling it makes Next.js re-render and ship
+  // the caller's whole current page with the action result (256 KB per like
+  // on the home feed). See the `@design` note on `performEntityToggleLike`.
+  describe('no revalidation', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);
@@ -386,40 +390,23 @@ describe('toggleLike (position-memory)', () => {
       mockSelectCount.mockResolvedValue([{ count: 1 }]);
     });
 
-    it('should revalidate the position list and detail paths', async () => {
+    it('should not revalidate any path when liking a position', async () => {
       await toggleLike(testPositionId, testLocale);
 
-      expect(mockRevalidatePath).toHaveBeenCalledWith(`/${testLocale}/practice/position-memory`);
-      expect(mockRevalidatePath).toHaveBeenCalledWith(
-        `/${testLocale}/practice/position-memory/${testPositionId}`
-      );
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
 
-    it('should revalidate the puzzle list and detail paths for a puzzle-type position', async () => {
-      // Puzzle detail pages are rendered dynamically (force-dynamic), but the
-      // puzzle list still caches its aggregate like counts. Liking a puzzle
-      // must revalidate both the list and the specific detail URL so a
-      // freshly-rendered SSR response reflects the new like count — and must
-      // NOT revalidate the unrelated position-memory paths.
+    it('should not revalidate any path for a puzzle-type position either', async () => {
       mockSelectPositionAuthor.mockResolvedValue([
         { userId: testPositionAuthorId, type: 'puzzle' },
       ]);
 
       await toggleLike(testPositionId, testLocale);
 
-      expect(mockRevalidatePath).toHaveBeenCalledWith(`/${testLocale}/practice/puzzle`);
-      expect(mockRevalidatePath).toHaveBeenCalledWith(
-        `/${testLocale}/practice/puzzle/${testPositionId}`
-      );
-      expect(mockRevalidatePath).not.toHaveBeenCalledWith(
-        `/${testLocale}/practice/position-memory`
-      );
-      expect(mockRevalidatePath).not.toHaveBeenCalledWith(
-        `/${testLocale}/practice/position-memory/${testPositionId}`
-      );
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
 
-    it('should revalidate the puzzle paths when unliking a puzzle (toggle-off)', async () => {
+    it('should not revalidate when unliking a puzzle (toggle-off)', async () => {
       mockSelectPositionAuthor.mockResolvedValue([
         { userId: testPositionAuthorId, type: 'puzzle' },
       ]);
@@ -431,33 +418,26 @@ describe('toggleLike (position-memory)', () => {
       mockDeleteWhere.mockResolvedValue(undefined);
       mockSelectCount.mockResolvedValue([{ count: 0 }]);
 
-      await toggleLike(testPositionId, testLocale);
+      await expect(toggleLike(testPositionId, testLocale)).resolves.toEqual({
+        liked: false,
+        likeCount: 0,
+      });
 
-      expect(mockRevalidatePath).toHaveBeenCalledWith(`/${testLocale}/practice/puzzle`);
-      expect(mockRevalidatePath).toHaveBeenCalledWith(
-        `/${testLocale}/practice/puzzle/${testPositionId}`
-      );
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
 
-    it('should revalidate puzzle paths when the author likes their own puzzle (no notification)', async () => {
-      // Self-like suppresses notifications, but the revalidation side-effect
-      // is independent and must still run so the author sees the updated
-      // like count on the detail page they just toggled.
+    it('should not revalidate when the author likes their own puzzle (no notification)', async () => {
       mockSelectPositionAuthor.mockResolvedValue([{ userId: testUserId, type: 'puzzle' }]);
 
       await toggleLike(testPositionId, testLocale);
 
       expect(createNotification).not.toHaveBeenCalled();
-      expect(mockRevalidatePath).toHaveBeenCalledWith(`/${testLocale}/practice/puzzle`);
-      expect(mockRevalidatePath).toHaveBeenCalledWith(
-        `/${testLocale}/practice/puzzle/${testPositionId}`
-      );
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
 
-    it('should fall back to position-memory paths when the position lookup returns null', async () => {
+    it('should still resolve when the position lookup returns null', async () => {
       // Defensive: if the row disappears between the like insert and the
-      // position-type lookup, the code should not throw. It currently falls
-      // back to the memory-type revalidation branch.
+      // position-type lookup, the code should not throw.
       mockSelectPositionAuthor.mockResolvedValue([]);
 
       await expect(toggleLike(testPositionId, testLocale)).resolves.toEqual({
@@ -465,10 +445,7 @@ describe('toggleLike (position-memory)', () => {
         likeCount: 1,
       });
 
-      expect(mockRevalidatePath).toHaveBeenCalledWith(`/${testLocale}/practice/position-memory`);
-      expect(mockRevalidatePath).toHaveBeenCalledWith(
-        `/${testLocale}/practice/position-memory/${testPositionId}`
-      );
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
   });
 });

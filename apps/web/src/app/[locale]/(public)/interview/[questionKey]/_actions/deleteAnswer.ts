@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- the shared delete dialog never router.refresh()es; revalidating is the only thing that re-renders the question page back to its unanswered form and updates the /interview answered marks
 import { revalidatePath } from 'next/cache';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';

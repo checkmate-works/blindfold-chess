@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- OpeningSelectForm submits via useActionState with no navigation or refresh; revalidating the current question page is the only thing that flips it to its answered view, and /interview needs its answered marks updated
 import { revalidatePath } from 'next/cache';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';

@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- UnbanButton has no router.refresh(); this revalidate is what re-renders the admin users surface with the cleared ban
 import { revalidatePath } from 'next/cache';
 
 import * as Sentry from '@sentry/nextjs';
