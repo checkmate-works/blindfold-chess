@@ -8,6 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import {
   fenToLichessUrl,
   getLastMoveDetails,
+  isCheckmateFen,
   replayMoves,
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -21,6 +22,11 @@ import type {
   MoveOperationLog,
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
+import {
+  isFinalPosition,
+  resolveLosingColor,
+  resolveTerminationMark,
+} from '@/lib/games/termination-mark';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
@@ -38,6 +44,7 @@ import { logForMovesIndex } from '@/app/[locale]/(public)/games/play/_lib/move-o
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
@@ -71,6 +78,13 @@ type Props = {
    */
   setupPlies?: number | null;
   playerColor: 'white' | 'black';
+  /**
+   * How the game ended, from `playerColor`'s point of view. Drives the
+   * end-of-game badge on the losing king (see `resolveTerminationMark`); the
+   * first-person / neutral wording of the result itself is the caller's job
+   * (`statsHeader`).
+   */
+  result: 'win' | 'loss' | 'draw';
   /** Opening detected from the moves (server-side); shown above the stats block. */
   detectedOpening: DetectedOpening | null;
   engineConfig: EngineConfig;
@@ -122,6 +136,7 @@ export function GameReview({
   startingFen,
   setupPlies,
   playerColor,
+  result,
   detectedOpening,
   engineConfig,
   operationLogs,
@@ -232,6 +247,25 @@ export function GameReview({
   const lichessAnalysisUrl = fenToLichessUrl(
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
   );
+
+  // End-of-game badge on the losing king, shown only while the board is on the
+  // final position — stepping back through the replay puts the viewer inside a
+  // game that had not ended yet. The kind is read off the position itself
+  // (`isCheckmateFen`), which is the only place a resignation is distinguishable
+  // from a mate: the record stores just win/loss/draw. See
+  // `resolveTerminationMark`.
+  const terminationMark = useMemo(
+    () =>
+      isFinalPosition(currentPosition, notationMoves.length)
+        ? resolveTerminationMark({
+            fen: latestFen,
+            losingColor: resolveLosingColor(result, playerColor),
+            isCheckmate: isCheckmateFen(latestFen),
+          })
+        : null,
+    [currentPosition, notationMoves.length, latestFen, result, playerColor]
+  );
+  const terminationMarkLabel = useTerminationMarkLabel();
 
   // Same game-statistics overview as the result screen, derived from the
   // per-move operation logs. The effort strip jumps the inline board.
@@ -462,6 +496,8 @@ export function GameReview({
             onFlipBoard={toggleFlip}
             hiddenPieceStyle={hiddenPieceStyle}
             illegalAttempt={illegalAttempt}
+            terminationMark={terminationMark}
+            terminationMarkLabel={terminationMarkLabel(terminationMark)}
             alwaysOpen
           />
 

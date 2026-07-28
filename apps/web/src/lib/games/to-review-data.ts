@@ -30,6 +30,12 @@ export type GameReviewData = {
   /** Seeded setup-prefix length ({@link Game.setupPlies}); null = no prefix. */
   setupPlies: number | null;
   playerColor: Side;
+  /**
+   * How the game ended, from `playerColor`'s point of view. Drives both the
+   * result label and the losing king's end-of-game badge, so it belongs to the
+   * view model rather than being re-derived per surface.
+   */
+  result: 'win' | 'loss' | 'draw';
   engineConfig: EngineConfig;
   operationLogs: MoveOperationLog[] | null;
   playSettings: GamePlaySettings | null;
@@ -99,6 +105,10 @@ export function toReviewData(game: Game): GameReviewData {
     startingFen: game.startingFen ?? null,
     setupPlies: game.setupPlies ?? null,
     playerColor: game.playerColor,
+    // A game only reaches the review screens once it is over; anything that is
+    // not a decisive status reviews as a draw, which is also the safe reading
+    // for the end-of-game badge (a draw marks no king).
+    result: game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw',
     engineConfig: game.engineConfig,
     operationLogs: game.operationLogs ?? null,
     playSettings: toPlaySettings(game.gamePreferences),

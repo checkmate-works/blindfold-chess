@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { notFound, useSearchParams } from 'next/navigation';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -12,9 +11,14 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
-import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
+import {
+  isFinalPosition,
+  resolveLosingColor,
+  resolveTerminationMark,
+} from '@/lib/games/termination-mark';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
+import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -87,7 +91,7 @@ export function PlayClient({
   isAuthenticated,
   expInfo,
 }: Props) {
-  const t = useTranslations('play');
+  const terminationMarkLabel = useTerminationMarkLabel();
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
   // finished game in the familiar game UI (read-only). Suppresses the
@@ -276,14 +280,14 @@ export function PlayClient({
   // separates a mate from a resignation; see `resolveTerminationMark`.
   const terminationMark = useMemo(
     () =>
-      isFinished && currentPosition === -1
+      isFinished && isFinalPosition(currentPosition, moves.length)
         ? resolveTerminationMark({
             fen: currentFen,
             losingColor: resolveLosingColor(playerResult, playerSide),
             isCheckmate: derivedStatus === 'checkmate',
           })
         : null,
-    [isFinished, currentPosition, currentFen, playerResult, playerSide, derivedStatus]
+    [isFinished, currentPosition, moves.length, currentFen, playerResult, playerSide, derivedStatus]
   );
 
   // Finished-game navigation hub: prefetches the result route and exposes the
@@ -391,9 +395,7 @@ export function PlayClient({
     canEditPerGameSettings,
     onOpenSettings: () => setShowSettingsModal(true),
     terminationMark,
-    terminationMarkLabel: terminationMark
-      ? t(`finishedGame.termination.${terminationMark.kind}`)
-      : '',
+    terminationMarkLabel: terminationMarkLabel(terminationMark),
   });
 
   if (gameNotFound) {

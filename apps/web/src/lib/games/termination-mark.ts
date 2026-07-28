@@ -32,6 +32,22 @@ export const TERMINATION_MARK_STYLE = {
 export const HASH_GLYPH_PATHS = ['M9 3v18', 'M15 3v18', 'M3 9h18', 'M3 15h18'] as const;
 
 /**
+ * Whether a board's navigation position is showing the game's last position —
+ * the only one the end-of-game mark belongs on.
+ *
+ * Two positions render that same board: `-1` ("latest", where a live game sits
+ * and where the ⏭ control lands) and the last ply's own index, which is what a
+ * deep link (`…/games/shared/<id>#34`) or a click on the final move produces.
+ * Testing only for `-1` silently drops the mark on exactly the link someone
+ * shares to show how the game ended.
+ *
+ * `-2` — the replay's pre-game overview board — is neither.
+ */
+export function isFinalPosition(currentPosition: number, movesLength: number): boolean {
+  return currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1);
+}
+
+/**
  * Which colour lost, from the player's own result and the side they had.
  * `null` for a draw or an unfinished game — nobody's king goes down.
  */

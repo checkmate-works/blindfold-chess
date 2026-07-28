@@ -106,6 +106,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           startingFen={game.startingFen}
           setupPlies={game.setupPlies}
           playerColor={game.playerColor}
+          result={game.result}
           detectedOpening={opening}
           engineConfig={game.engineConfig}
           operationLogs={game.operationLogs}

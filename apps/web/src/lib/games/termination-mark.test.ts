@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveLosingColor, resolveTerminationMark } from './termination-mark';
+import { isFinalPosition, resolveLosingColor, resolveTerminationMark } from './termination-mark';
 
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 // Scholar's mate: black is mated, black king still on e8.
@@ -62,5 +62,25 @@ describe('resolveTerminationMark', () => {
         isCheckmate: true,
       })
     ).toBeNull();
+  });
+});
+
+describe('isFinalPosition', () => {
+  it('accepts the "latest" sentinel', () => {
+    expect(isFinalPosition(-1, 34)).toBe(true);
+  });
+
+  it('accepts the last ply addressed by index (a #34-style deep link)', () => {
+    expect(isFinalPosition(33, 34)).toBe(true);
+  });
+
+  it('rejects any earlier ply and the pre-game overview board', () => {
+    expect(isFinalPosition(32, 34)).toBe(false);
+    expect(isFinalPosition(0, 34)).toBe(false);
+    expect(isFinalPosition(-2, 34)).toBe(false);
+  });
+
+  it('does not mistake the overview of an empty game for its end', () => {
+    expect(isFinalPosition(-2, 0)).toBe(false);
   });
 });
