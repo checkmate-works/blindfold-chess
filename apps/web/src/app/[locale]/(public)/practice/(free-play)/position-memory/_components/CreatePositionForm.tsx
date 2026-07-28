@@ -13,7 +13,6 @@ import { flushSync } from 'react-dom';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
-import { ForkSourceLine } from '@/app/[locale]/(public)/practice/(free-play)/_components/ForkSourceLine';
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 import { buildDefaultPracticeTitle } from '@/app/[locale]/(public)/practice/(free-play)/_lib/default-title';
@@ -219,18 +218,6 @@ export function CreatePositionForm({
   return (
     <>
       <div className="space-y-6">
-        {/* Provenance sits at the very top so it attaches to the section
-            heading, the way the detail page's note attaches to the H1. */}
-        {forkSeed && (
-          <p className="text-sm text-muted-foreground">
-            <ForkSourceLine
-              label={t('forkedFrom')}
-              title={forkSeed.sourceTitle}
-              href={`/practice/position-memory/${forkSeed.sourceId}`}
-            />
-          </p>
-        )}
-
         <PositionMemoryStepIndicator current="position" />
 
         {error && (

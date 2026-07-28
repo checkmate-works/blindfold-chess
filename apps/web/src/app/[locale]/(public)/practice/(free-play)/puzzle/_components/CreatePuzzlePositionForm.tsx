@@ -14,7 +14,6 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
-import { ForkSourceLine } from '../../_components/ForkSourceLine';
 import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { buildDefaultPracticeTitle } from '../../_lib/default-title';
@@ -276,18 +275,6 @@ export function CreatePuzzlePositionForm({
   return (
     <>
       <div className="space-y-6">
-        {/* Provenance sits at the very top so it attaches to the section
-            heading, the way the detail page's note attaches to the H1. */}
-        {forkSeed && (
-          <p className="text-sm text-muted-foreground">
-            <ForkSourceLine
-              label={forkSeed.sourceType === 'memory' ? t('createdFrom') : t('forkedFrom')}
-              title={forkSeed.sourceTitle}
-              href={`/practice/${forkSeed.sourceType === 'memory' ? 'position-memory' : 'puzzle'}/${forkSeed.sourceId}`}
-            />
-          </p>
-        )}
-
         <PuzzleStepIndicator flow="create" current="position" />
 
         <PuzzleFormErrorBanner message={step.error} />

@@ -431,32 +431,16 @@ describe('CreatePuzzlePositionForm', () => {
       expect(screen.getByLabelText(/descriptionLabel/)).toHaveValue('Source description');
     });
 
-    it('shows no provenance line at all on a plain /new visit', () => {
-      render(<CreatePuzzlePositionForm displayName="alice" />);
-
-      expect(screen.queryByRole('link', { name: 'Source Puzzle' })).not.toBeInTheDocument();
-    });
-
-    it('states the fork with the "forked from" label and links to the source puzzle', () => {
+    // The "forked from …" line is page-level, rendered into PageLayout's
+    // `headerNote` by the create-page factory so it sits under the H1 exactly
+    // as it does on the detail page. The form must not restate it — see
+    // `_lib/fork-provenance.test.ts` for the label/link rules.
+    it('does not restate the fork inside the form', () => {
       render(<CreatePuzzlePositionForm forkSeed={makeForkSeed()} />);
 
-      expect(screen.getByText('forkedFrom')).toBeInTheDocument();
-      expect(screen.queryByText('createdFrom')).not.toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Source Puzzle' })).toHaveAttribute(
-        'href',
-        `/practice/puzzle/${FORK_SOURCE_ID}`
-      );
-    });
-
-    it('uses the cross-type label (not "fork" wording) and the position-memory link for a memory source', () => {
-      render(<CreatePuzzlePositionForm forkSeed={{ ...makeForkSeed(), sourceType: 'memory' }} />);
-
-      expect(screen.getByText('createdFrom')).toBeInTheDocument();
       expect(screen.queryByText('forkedFrom')).not.toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Source Puzzle' })).toHaveAttribute(
-        'href',
-        `/practice/position-memory/${FORK_SOURCE_ID}`
-      );
+      expect(screen.queryByText('createdFrom')).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Source Puzzle' })).not.toBeInTheDocument();
     });
 
     it('carries forkedFromId through to the draft on Continue', () => {

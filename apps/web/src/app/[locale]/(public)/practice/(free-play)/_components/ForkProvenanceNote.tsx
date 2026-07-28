@@ -1,13 +1,8 @@
 import { Link } from '@/i18n/routing';
 import { FiGitBranch } from 'react-icons/fi';
 
+import { POSITION_KIND_PATH_PREFIX as KIND_PATH_PREFIX } from '../_lib/fork-provenance';
 import { ForkSourceLine } from './ForkSourceLine';
-
-/** Route segment for a position kind, used to build detail links. */
-const KIND_PATH_PREFIX = {
-  memory: 'practice/position-memory',
-  puzzle: 'practice/puzzle',
-} as const;
 
 /**
  * Two-segment provenance line shown under the position-detail title:

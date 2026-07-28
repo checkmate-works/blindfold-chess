@@ -5,11 +5,12 @@ import { FiGitBranch } from 'react-icons/fi';
  * `⑂ <label> <source title>` — the one-line fork-provenance marker.
  *
  * Shared so a fork looks the same wherever it is stated: under the H1 on a
- * position's detail page (via {@link ForkProvenanceNote}) and at the top of
- * the create form while the fork is still being authored. Both are the same
- * claim — "this position descends from that one" — and previously read as
- * two unrelated UI elements, the create form using a boxed info banner with
- * its own sentence-shaped copy.
+ * position's detail page (via `ForkProvenanceNote`) and under the H1 on the
+ * create page while the fork is still being authored (via the create-page
+ * factory's `headerNote`). Both are the same claim — "this position descends
+ * from that one" — and previously read as two unrelated UI elements, the
+ * create page using a boxed info banner inside the form with its own
+ * sentence-shaped copy.
  *
  * Renders the label alone (no title, no link) when `href` is omitted — the
  * detail page's soft-deleted-parent case, where the label itself carries the
