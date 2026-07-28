@@ -87,15 +87,11 @@ export function PuzzleSolutionFields({
         <FlipBoardButton onClick={onFlip} title={t('flipBoard')} />
       </div>
       <BoardFrame>
-        {solution.formattedPgn.length > 0 && (
-          <div className="overflow-x-auto px-2 py-1.5">
-            <HorizontalMoveList
-              formattedPgn={solution.formattedPgn}
-              currentPosition={solution.viewedPly - 1}
-              onNavigateToPosition={(position) => solution.goToPly(position + 1)}
-            />
-          </div>
-        )}
+        <HorizontalMoveList
+          formattedPgn={solution.formattedPgn}
+          currentPosition={solution.viewedPly - 1}
+          onNavigateToPosition={(position) => solution.goToPly(position + 1)}
+        />
         <ChessBoard
           fen={solution.viewedFen}
           flipped={flipped}

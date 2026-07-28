@@ -15,6 +15,7 @@ import { countPublicRepertoiresForOpening } from '@/lib/repertoires/queries';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
+import { MOVE_NAV_ROW_CLASS } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
@@ -288,24 +289,26 @@ async function OpeningDetailSkeleton() {
           <div className="h-6 w-48 bg-muted rounded animate-pulse inline-block align-middle" />
         </SectionTitle>
 
-        {/* OpeningBoardWithMoves skeleton */}
+        {/* OpeningBoardWithMoves skeleton: move list + board + nav row + CTA */}
         <div className="space-y-3">
           <BoardFrame expandOnMobile>
+            <div className="flex items-center gap-1 px-2 py-1.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-5 w-16 bg-muted rounded animate-pulse" />
+              ))}
+            </div>
+
             <div className="aspect-square bg-muted rounded animate-pulse" />
+
+            {/* Same reserved height as the real strip, which is touch-sized
+                below `sm` — a fixed 40px row would shift the page on hydrate. */}
+            <div className={`flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
+              <div className="h-12 w-52 bg-muted rounded animate-pulse" />
+            </div>
           </BoardFrame>
 
-          <div className="flex justify-center gap-1">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="w-10 h-10 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
-
           <div className="flex justify-center">
-            <div className="h-5 w-32 bg-muted rounded animate-pulse mt-2" />
-          </div>
-
-          <div className="flex justify-center mt-2">
-            <div className="h-9 w-48 bg-muted rounded-md animate-pulse mt-1" />
+            <div className="h-9 w-48 bg-muted rounded-md animate-pulse" />
           </div>
         </div>
 

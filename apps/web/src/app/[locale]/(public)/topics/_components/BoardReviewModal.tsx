@@ -118,14 +118,13 @@ export function BoardReviewModal({
   return (
     <BoardModal isOpen={isOpen} title={title} onClose={onClose} maxWidth="max-w-md">
       <>
-        {showNavigation && formattedPgn.length > 0 && (
-          <div className="px-2 py-1.5 overflow-x-auto border-b border-border">
-            <HorizontalMoveList
-              formattedPgn={formattedPgn}
-              currentPosition={currentMoveIndex}
-              onNavigateToPosition={onNavigateToIndex}
-            />
-          </div>
+        {showNavigation && (
+          <HorizontalMoveList
+            className="border-b border-border"
+            formattedPgn={formattedPgn}
+            currentPosition={currentMoveIndex}
+            onNavigateToPosition={onNavigateToIndex}
+          />
         )}
 
         <MiniBoard

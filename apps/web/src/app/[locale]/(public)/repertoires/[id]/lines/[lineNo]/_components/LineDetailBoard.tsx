@@ -152,15 +152,11 @@ export function LineDetailBoard({
         <div className="space-y-4 lg:col-span-2">
           <div className={INLINE_BOARD_CARD_CHROME}>
             <div className="relative">
-              {formatted.length > 0 && (
-                <div className="overflow-x-auto px-2 py-1.5">
-                  <HorizontalMoveList
-                    formattedPgn={formatted}
-                    currentPosition={clampedPly - 1}
-                    onNavigateToPosition={(position) => setPly(position + 1)}
-                  />
-                </div>
-              )}
+              <HorizontalMoveList
+                formattedPgn={formatted}
+                currentPosition={clampedPly - 1}
+                onNavigateToPosition={(position) => setPly(position + 1)}
+              />
 
               <ChessBoard
                 fen={current.fen}

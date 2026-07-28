@@ -261,16 +261,13 @@ export function InlineBoardView({
           <div className="relative">
             {/* Horizontal Move List. Reserve right padding for the top-right
                 control (settings gear) so the latest moves don't slide under it. */}
-            {formattedPgn.length > 0 && onNavigateToPosition && (
-              <div
-                className={`overflow-x-auto px-2 py-1.5 ${topRightControl ? 'pr-10' : ''} ${alwaysOpen ? '' : 'border-t border-border'}`}
-              >
-                <HorizontalMoveList
-                  formattedPgn={formattedPgn}
-                  currentPosition={currentPosition}
-                  onNavigateToPosition={onNavigateToPosition}
-                />
-              </div>
+            {onNavigateToPosition && (
+              <HorizontalMoveList
+                className={`${topRightControl ? 'pr-10' : ''} ${alwaysOpen ? '' : 'border-t border-border'}`}
+                formattedPgn={formattedPgn}
+                currentPosition={currentPosition}
+                onNavigateToPosition={onNavigateToPosition}
+              />
             )}
             <ChessBoard
               fen={fen}

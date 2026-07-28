@@ -66,3 +66,19 @@ export const INLINE_BOARD_HEADER_MIN_H = 'min-h-[46px]';
  */
 export const STATUS_PILL_CLASSES =
   'inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium whitespace-nowrap';
+
+/**
+ * Height policy for the control strip under a board (`MoveNavigationRow`, which
+ * owns the design). Boards place it directly under the board, where
+ * `aspect-[8/1]` makes it exactly one rank tall — a continuation of the board
+ * rather than a separate bar. On a phone that ratio resolves to ~47px, shorter
+ * than the touch-sized stepper, so below `sm` the strip is sized by its content
+ * instead.
+ *
+ * It lives here rather than beside the row because the skeletons that reserve
+ * this height (`AlwaysVisibleBoardSkeleton`, the openings post's `loading.tsx`)
+ * are Server Components, and `MoveNavigationRow` is a client module — a class
+ * string imported across that boundary is not reliably a string in the RSC
+ * pass. Everything that can render controls should render the row itself.
+ */
+export const MOVE_NAV_ROW_CLASS = 'min-h-14 sm:min-h-0 sm:aspect-[8/1]';
