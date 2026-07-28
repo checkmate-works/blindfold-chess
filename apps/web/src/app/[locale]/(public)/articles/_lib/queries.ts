@@ -4,6 +4,7 @@ import { unstable_cache } from 'next/cache';
 
 import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
 
+import { ARTICLES_CACHE_TAG } from '@/lib/cache-tags';
 import { type Article, articles, db } from '@/lib/db';
 
 import { DEFAULT_LOCALE, pickByLocale } from '@/app/[locale]/_lib/locale-utils';
@@ -96,7 +97,7 @@ export const getLatestPublishedArticles = unstable_cache(
     return getDeduplicatedArticles(locale, limit, 0);
   },
   ['latest-published-articles'],
-  { tags: ['articles'], revalidate: 300 }
+  { tags: [ARTICLES_CACHE_TAG], revalidate: 300 }
 );
 
 /**
@@ -112,7 +113,7 @@ export const getPublishedArticleCount = unstable_cache(
     return Number(result.count);
   },
   ['published-article-count'],
-  { tags: ['articles'], revalidate: 300 }
+  { tags: [ARTICLES_CACHE_TAG], revalidate: 300 }
 );
 
 /**
