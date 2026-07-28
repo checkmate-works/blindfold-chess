@@ -16,9 +16,6 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string) => key,
 }));
 
-vi.mock('./CreateFromPositionMenu', () => ({
-  CreateFromPositionMenu: () => <div data-testid="create-from-position" />,
-}));
 vi.mock('./GameMoveContributions', () => ({
   GameMoveContributions: () => <div data-testid="move-contributions" />,
 }));
@@ -28,8 +25,6 @@ afterEach(() => cleanup());
 const baseProps = {
   title: '4...Nf6',
   locale: 'ja' as const,
-  currentFen: 'rnbqkb1r/pppppppp/5n2/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 2 3',
-  continuationSan: undefined,
   gameId: 'game-1',
   currentPly: 6,
   comments: [],

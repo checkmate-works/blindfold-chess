@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-
-import Link from 'next/link';
-
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FiChevronDown, FiPlus } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
 
+import { MOVE_NAV_SIDE_BUTTON_CLASS } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
+import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -21,33 +19,30 @@ type Props = {
 };
 
 /**
- * "Create from this position ▾" — a single position-anchored entry point that
+ * "Create from this position" — a single position-anchored entry point that
  * groups the authoring destinations a viewer can seed from the current board:
  * a chunk, a position-memory entry, or a puzzle (the latter pre-filled with the
  * game's continuation as a draft solution). Shown only to signed-in viewers;
  * each item is a plain link so the seeding contract stays in the URL.
+ *
+ * @design Lives in the board's control strip, behind a "+"
+ *
+ * It reads the position the board currently shows, so it belongs beside the
+ * ply it reads and steps with it — the same reasoning that put the repertoire
+ * line's "branch from here" in that strip. It was previously a labelled button
+ * at the top of the per-move panel, which on a phone left it sitting between
+ * the board and the comment thread discussing that same move.
+ *
+ * The trigger stays a "+", not the "⋯" this menu's {@link ActionsMenu} base
+ * renders by default: "⋯" is already spoken for on this very page by
+ * `OwnerActions`, where it means "more actions on this game". These three items
+ * are not an overflow — they are one intent (author something new), and a
+ * second "⋯" with a different meaning would split the glyph. The popup opens
+ * upward because the strip sits at the bottom edge of a card that clips its
+ * descendants (`INLINE_BOARD_CARD_CHROME`).
  */
 export function CreateFromPositionMenu({ locale, currentFen, continuationSan }: Props) {
   const t = useTranslations('sharedGames.create');
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Close on outside click / Escape while open.
-  useEffect(() => {
-    if (!open) return;
-    const onClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onClick);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onClick);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
 
   const fen = encodeURIComponent(currentFen);
   const puzzleHref =
@@ -66,41 +61,17 @@ export function CreateFromPositionMenu({ locale, currentFen, continuationSan }: 
   ];
 
   return (
-    <div ref={containerRef} className="relative inline-block">
-      <button
-        type="button"
-        data-tour-id="game-create-from-position"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-      >
-        <FiPlus className="h-4 w-4" aria-hidden />
-        <span>{t('menuLabel')}</span>
-        <FiChevronDown
-          className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden
-        />
-      </button>
-
-      {open && (
-        <div
-          role="menu"
-          className="absolute z-10 mt-1 min-w-full overflow-hidden rounded-md border border-border bg-background shadow-md"
-        >
-          {items.map((item) => (
-            <Link
-              key={item.key}
-              role="menuitem"
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="block whitespace-nowrap px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+    // The help tour finds its target by `data-tour-id`; the wrapper carries it
+    // so the highlight tracks the trigger's box without ActionsMenu having to
+    // grow a passthrough for one caller.
+    <span data-tour-id="game-create-from-position" className="inline-flex shrink-0">
+      <ActionsMenu
+        ariaLabel={t('menuLabel')}
+        items={items}
+        icon={<FiPlus className="h-4 w-4" aria-hidden />}
+        triggerClassName={MOVE_NAV_SIDE_BUTTON_CLASS}
+        placement="top"
+      />
+    </span>
   );
 }

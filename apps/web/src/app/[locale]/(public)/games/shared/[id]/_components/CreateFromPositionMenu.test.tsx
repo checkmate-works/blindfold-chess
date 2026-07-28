@@ -25,9 +25,25 @@ function open(continuationSan?: string) {
 }
 
 describe('CreateFromPositionMenu', () => {
+  // The popup is kept mounted and hidden with a CSS class (see ActionsMenu),
+  // which jsdom does not apply — so collapse is asserted on the trigger's
+  // `aria-expanded`, the same signal assistive tech reads.
   it('is collapsed until the trigger is clicked', () => {
     render(<CreateFromPositionMenu locale={'en' as Locale} currentFen={FEN} />);
-    expect(screen.queryByRole('menuitem')).toBeNull();
+    const trigger = screen.getByRole('button', { name: /menuLabel/ });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  // The tour step (see GameHelpTour) resolves its target by this attribute; a
+  // rename here silently drops the step rather than failing.
+  it('exposes the help tour target', () => {
+    const { container } = render(
+      <CreateFromPositionMenu locale={'en' as Locale} currentFen={FEN} />
+    );
+    expect(container.querySelector('[data-tour-id="game-create-from-position"]')).not.toBeNull();
   });
 
   it('lists chunk, position-memory and puzzle (in that order), all seeded with the encoded FEN', () => {

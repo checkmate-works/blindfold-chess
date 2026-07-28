@@ -42,15 +42,35 @@ type Props = {
    * screen.
    */
   align?: 'left' | 'right';
+  /**
+   * Which side of the trigger the popup grows towards. Defaults to `bottom`.
+   * Use `top` when the trigger sits at the bottom edge of a clipping container
+   * (`overflow-hidden`), where a downward popup would be cut off — e.g. the
+   * board's control strip, whose card chrome clips its descendants.
+   */
+  placement?: 'bottom' | 'top';
+  /**
+   * Replaces the trigger's own box classes (size, shape, colours). Use when the
+   * menu has to adopt a surrounding control's geometry — e.g.
+   * `MOVE_NAV_SIDE_BUTTON_CLASS`, so the trigger matches the flip button it
+   * sits beside. Mutually exclusive with `label`, which picks a preset box.
+   */
+  triggerClassName?: string;
 };
 
 /**
- * SNS-style "⋯" overflow menu for owner/viewer actions (edit, fork, publish,
- * delete, block) on content detail pages and user profiles. Follows the
- * established dropdown pattern from `CreateFromPositionMenu`: outside-click /
- * Escape to close, plain links as menu items so every destination stays
- * crawlable. Any click inside the popup closes it (menu semantics) — modals
- * opened by custom items live in a portal, so they are unaffected.
+ * The app's dropdown menu: outside-click / Escape to close, plain links as
+ * menu items so every destination stays crawlable. Any click inside the popup
+ * closes it (menu semantics) — modals opened by custom items live in a portal,
+ * so they are unaffected.
+ *
+ * Its default dress is the SNS-style "⋯" overflow menu for owner/viewer
+ * actions (edit, fork, publish, delete, block) on content detail pages and
+ * user profiles. `icon` / `triggerClassName` / `placement` let a caller keep
+ * the behaviour while wearing a different trigger — see
+ * `CreateFromPositionMenu`, a "+" menu sized to sit inside a board's control
+ * strip. Reach for those before hand-rolling another popup: this component
+ * exists because that logic had already been copied once.
  */
 export function ActionsMenu({
   ariaLabel,
@@ -59,6 +79,8 @@ export function ActionsMenu({
   icon,
   label,
   align = 'right',
+  placement = 'bottom',
+  triggerClassName,
 }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,9 +111,10 @@ export function ActionsMenu({
         aria-label={ariaLabel}
         onClick={() => setOpen((v) => !v)}
         className={
-          label
+          triggerClassName ??
+          (label
             ? 'inline-flex cursor-pointer items-center gap-1 text-base text-muted-foreground transition-colors hover:text-foreground'
-            : 'inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+            : 'inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground')
         }
       >
         {icon ?? <FiMoreHorizontal className="h-5 w-5" aria-hidden />}
@@ -101,7 +124,11 @@ export function ActionsMenu({
       <div
         role="menu"
         onClick={() => setOpen(false)}
-        className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} z-10 mt-1 overflow-hidden rounded-md border border-border bg-background shadow-md ${open ? '' : 'hidden'}`}
+        className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} ${
+          placement === 'top' ? 'bottom-full mb-1' : 'mt-1'
+        } z-10 overflow-hidden rounded-md border border-border bg-background shadow-md ${
+          open ? '' : 'hidden'
+        }`}
       >
         {items.map((item) => (
           <Link
