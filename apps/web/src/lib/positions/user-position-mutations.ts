@@ -1,5 +1,3 @@
-import { revalidatePath } from 'next/cache';
-
 import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
@@ -289,8 +287,6 @@ export async function createPositionEntry(params: {
     'position create'
   );
 
-  revalidatePath(`/practice/${config.urlSegment}`);
-
   const grant = txResult.grant;
   const coinCapped = grant.status === 'capped' || (grant.status === 'granted' && grant.cappedDaily);
 
@@ -416,10 +412,6 @@ export async function updatePositionEntry(params: {
     });
   }
 
-  revalidatePath(`/practice/${config.urlSegment}`);
-  revalidatePath(`/practice/${config.urlSegment}/${data.id}`);
-  revalidatePath(`/practice/${config.urlSegment}/${data.id}/history`);
-
   return { success: true };
 }
 
@@ -431,12 +423,11 @@ export async function updatePositionEntry(params: {
  */
 export async function deletePositionEntry(params: {
   positionId: string;
-  locale: string;
   kind: PositionKind;
   rateLimit: RateLimitRule;
 }): Promise<ActionResult> {
   const config = POSITION_KINDS[params.kind];
-  const { positionId, locale } = params;
+  const { positionId } = params;
 
   const guardResult = await authenticateAndGuard(params.rateLimit);
   if ('error' in guardResult) {
@@ -473,9 +464,6 @@ export async function deletePositionEntry(params: {
 
   // No activity-log row: deletion is a soft-delete, so the positions row
   // (with `deletedAt`) survives as the durable record.
-
-  revalidatePath(`/${locale}/practice/${config.urlSegment}`);
-  revalidatePath(`/${locale}/practice/${config.urlSegment}/${positionId}`);
 
   return { success: true };
 }

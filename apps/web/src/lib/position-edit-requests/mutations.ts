@@ -1,5 +1,3 @@
-import { revalidatePath } from 'next/cache';
-
 import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
@@ -9,9 +7,7 @@ import { db, positionChunks, positionEditRequests, positionThemes, positions } f
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { EDIT_REQUEST_TERMINAL_STATUS, type EditRequestAction } from '@/lib/edit-requests/shared';
 import { createNotification } from '@/lib/notifications/notification';
-import { getPositionDetailPath } from '@/lib/positions/routes';
 import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
-import type { PositionType } from '@/lib/positions/types';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -58,11 +54,6 @@ async function loadPositionForRequest(id: string) {
     .where(eq(positions.id, id))
     .limit(1);
   return position ?? null;
-}
-
-function revalidatePositionDetail(type: string, id: string): void {
-  const path = getPositionDetailPath(type as PositionType, id);
-  if (path) revalidatePath(path);
 }
 
 export async function submitPositionEditRequestEntry(params: {
@@ -150,8 +141,6 @@ export async function submitPositionEditRequestEntry(params: {
     targetId: inserted.id,
     metadata: { positionId: position.id, positionType: position.type },
   });
-
-  revalidatePositionDetail(position.type, position.id);
 
   return { success: true, id: inserted.id };
 }
@@ -262,8 +251,6 @@ async function resolvePositionEditRequest(
       metadata: { positionId: position.id, positionType: position.type },
     });
   }
-
-  revalidatePositionDetail(position.type, position.id);
 
   return { success: true };
 }
