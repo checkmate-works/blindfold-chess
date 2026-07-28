@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 
 import type { EvaluationMark } from '@/lib/games/evaluation';
+import type { TerminationMark } from '@/lib/games/termination-mark';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { BoardModal } from '@/app/[locale]/_components/BoardModal';
@@ -33,6 +34,15 @@ type Props = {
   currentPosition: number;
   formattedPgn: FormattedPgnMove[];
   evaluationMark?: EvaluationMark | null;
+  /**
+   * Relayed straight to the inner `ChessBoard` — see its prop doc. The modal
+   * previews its own position, so the caller must resolve the mark for THAT
+   * position (`isFinalPosition(currentPosition, …)`), not for whatever the
+   * board behind the modal happens to show.
+   */
+  terminationMark?: TerminationMark | null;
+  /** Relayed straight to the inner `ChessBoard` — see its prop doc. */
+  terminationMarkLabel?: string;
   onNavigateToStart?: () => void;
   onNavigatePrevious?: () => void;
   onNavigateNext?: () => void;
@@ -62,6 +72,8 @@ export function BoardViewModal({
   currentPosition,
   formattedPgn,
   evaluationMark,
+  terminationMark = null,
+  terminationMarkLabel,
   onNavigateToStart,
   onNavigatePrevious,
   onNavigateNext,
@@ -98,6 +110,8 @@ export function BoardViewModal({
           {...resolveBoardDisplay(preferences, lastMove)}
           rounded={false}
           evaluationMark={evaluationMark}
+          terminationMark={terminationMark}
+          terminationMarkLabel={terminationMarkLabel}
         />
 
         {/* Navigation Controls & Flip Button */}
