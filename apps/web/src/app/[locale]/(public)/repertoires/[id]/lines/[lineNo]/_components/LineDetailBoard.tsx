@@ -88,6 +88,7 @@ export function LineDetailBoard({
   continuations,
 }: Props) {
   const tLine = useTranslations('Repertoires.line');
+  const tCommon = useTranslations('Common');
   const tTransposition = useTranslations('Repertoires.line.transposition');
   const router = useRouter();
   const pathname = usePathname();
@@ -96,6 +97,9 @@ export function LineDetailBoard({
 
   const maxPly = positions.length - 1;
   const [ply, setPly] = useState(Math.min(Math.max(initialPly, 0), maxPly));
+  // Opens from the repertoire author's side — the perspective the line is
+  // written for — but a reader studying the opposing side can flip it.
+  const [flipped, setFlipped] = useState(side === 'black');
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -153,7 +157,7 @@ export function LineDetailBoard({
 
               <ChessBoard
                 fen={current.fen}
-                flipped={side === 'black'}
+                flipped={flipped}
                 playerSide={side}
                 showOwnPieces
                 showOpponentPieces
@@ -169,6 +173,7 @@ export function LineDetailBoard({
                 onNavigateToEnd={() => setPly(maxPly)}
                 isPreviousDisabled={clampedPly === 0}
                 isNextDisabled={clampedPly === maxPly}
+                flip={{ onClick: () => setFlipped((f) => !f), label: tCommon('flipBoard') }}
               />
             </div>
           </div>
