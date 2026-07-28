@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- ArticleForm router.push()es to the publish page after save; purging the admin edit/publish pages keeps that push (and edit↔publish bouncing) from serving a stale Router Cache copy
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';

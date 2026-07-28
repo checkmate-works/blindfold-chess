@@ -158,6 +158,16 @@ export async function deletePost(postId: string, locale: string) {
 }
 ```
 
+### `revalidatePath` Is Lint-Banned by Default
+
+`no-restricted-imports` in `apps/web/eslint.config.mjs` blocks importing `revalidatePath` from `next/cache` (enforced in-editor and by the lint-staged pre-commit hook). Rationale:
+
+- **Almost every route in this app is dynamic** (`ƒ` in the build's route table) — there is no Full Route Cache entry for `revalidatePath` to purge. The ONLY prerendered page is `/[locale]/articles/[slug]` (see `src/app/admin/articles/_lib/revalidate-public.ts`).
+- **Calling it inside a Server Action is not free even when it purges nothing**: Next.js re-renders the current page and embeds its RSC payload in the action response (measured 256 KB on the home feed), and wipes the client Router Cache. Full history: `@design` TSDoc in `src/lib/db/like-actions.ts`.
+- **Before adding a disable, check two things**: (1) is the target page actually cached (SSG/ISR)? (2) does the calling client component already `router.refresh()`/`push()`, or own the state via `useOptimistic`/local state? If neither applies and a server-rendered surface genuinely must re-render, add `// eslint-disable-next-line no-restricted-imports -- <reason>` naming the concrete consumer that depends on it.
+- **`revalidateTag` stays allowed** — it is the correct tool for `unstable_cache` tags — but inside a Server Action it pays the same current-page re-render + response-embed cost. Do NOT switch to it just to silence this rule; use it only when a tagged cache actually exists.
+- Test files are exempt (they import the mocked `revalidatePath` to assert it is or is not called).
+
 ### Barrel File (index.ts) Convention
 
 - **Keep barrel imports for client-safe components** - Components are re-exported from `_components/index.ts` barrel files. Use barrel imports (e.g., `from './_components'`) to keep import statements concise.

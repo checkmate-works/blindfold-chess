@@ -1,5 +1,6 @@
 'use server';
 
+// eslint-disable-next-line no-restricted-imports -- TermPositionEditor has no router.refresh(); this revalidate is what re-renders the term page with the saved annotations
 import { revalidatePath } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';

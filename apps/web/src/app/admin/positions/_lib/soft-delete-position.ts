@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports -- the admin delete flows built on this helper have no router.refresh(); revalidating the configured list/detail paths is their only re-render path
 import { revalidatePath } from 'next/cache';
 
 import type { DeleteResult } from '@/app/admin/_lib/action-factories';
