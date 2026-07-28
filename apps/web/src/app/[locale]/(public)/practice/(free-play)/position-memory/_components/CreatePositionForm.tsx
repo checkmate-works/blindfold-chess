@@ -16,8 +16,11 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
-import { EMPTY_BOARD_FEN } from '@/app/[locale]/(public)/practice/(free-play)/_lib/board-editor-constants';
 import { buildDefaultPracticeTitle } from '@/app/[locale]/(public)/practice/(free-play)/_lib/default-title';
+import {
+  normalizeBaselineFen,
+  toSortedIdKey,
+} from '@/app/[locale]/(public)/practice/(free-play)/_lib/dirty-baseline';
 import { resolveOptionsByIds } from '@/app/[locale]/(public)/practice/(free-play)/_lib/resolve-options';
 
 import { readDraft, writeDraft } from '../_lib/draft-storage';
@@ -39,24 +42,6 @@ export type PositionForkSeed = {
   themeIds: string[];
   chunkIds: string[];
 };
-
-/** Stable key for an unordered list of tag options, for dirty comparison. */
-function toSortedIdKey(items: ReadonlyArray<{ id: string }>): string {
-  return items
-    .map((item) => item.id)
-    .sort()
-    .join(',');
-}
-
-/**
- * Treat the empty-board FEN and a blank input as the same "no position yet"
- * baseline, so clearing the board on a fresh `/new` does not count as an edit.
- * Fork mode seeds a real FEN, so a change there is still detected.
- */
-function normalizeFen(fen: string): string {
-  const trimmed = fen.trim();
-  return trimmed === EMPTY_BOARD_FEN ? '' : trimmed;
-}
 
 type Props = {
   displayName?: string;
@@ -187,7 +172,7 @@ export function CreatePositionForm({
     !submitted &&
     (title.trim() !== defaultTitleRef.current.trim() ||
       description.trim() !== defaultDescriptionRef.current.trim() ||
-      normalizeFen(board.fenInput) !== normalizeFen(seededFen ?? '') ||
+      normalizeBaselineFen(board.fenInput) !== normalizeBaselineFen(seededFen ?? '') ||
       toSortedIdKey(tags.selectedThemes) !== initialThemeIdsRef.current ||
       toSortedIdKey(tags.selectedChunks) !== initialChunkIdsRef.current);
 

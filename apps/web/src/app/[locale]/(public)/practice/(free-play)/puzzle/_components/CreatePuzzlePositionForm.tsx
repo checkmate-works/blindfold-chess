@@ -16,13 +16,14 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 
 import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagSelection } from '../../_hooks/use-tag-selection';
-import { EMPTY_BOARD_FEN } from '../../_lib/board-editor-constants';
 import { buildDefaultPracticeTitle } from '../../_lib/default-title';
+import { normalizeBaselineFen, toSortedIdKey } from '../../_lib/dirty-baseline';
 import { resolveOptionsByIds } from '../../_lib/resolve-options';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import { usePuzzlePositionStep } from '../_hooks/use-puzzle-position-step';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
+import { stringArraysEqual } from '../_lib/string-arrays-equal';
 import { PositionChangedModal } from './PositionChangedModal';
 import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
@@ -139,8 +140,9 @@ export function CreatePuzzlePositionForm({
   const defaultTitleRef = useRef(
     forkSeed ? forkSeed.title : buildDefaultPracticeTitle('Puzzle', displayName)
   );
+  const defaultDescriptionRef = useRef(forkSeed?.description ?? '');
   const [title, setTitle] = useState(defaultTitleRef.current);
-  const [description, setDescription] = useState(forkSeed?.description ?? '');
+  const [description, setDescription] = useState(defaultDescriptionRef.current);
   // forkedFromId lives in React state (not just the prop) so the lineage
   // survives a `/new?from=X` → solution → preview → "Back to edit" round
   // trip: later visits to `/new` arrive WITHOUT `?from=`, so `forkSeed` is
@@ -166,6 +168,12 @@ export function CreatePuzzlePositionForm({
   const seedMoves = forkSeed?.moves ?? injectedSolution ?? [];
   const seedNotes = forkSeed?.notes ?? injectedSolution?.map(() => '') ?? [];
   const seedFen = forkSeed?.fen ?? injectedFen ?? '';
+
+  // Tag baselines for the dirty-check, captured once on mount. Like the
+  // title/description refs above, these anchor the comparison to what the
+  // seed put in the form rather than to "empty".
+  const initialThemeIdsRef = useRef(toSortedIdKey(seededThemes));
+  const initialChunkIdsRef = useRef(toSortedIdKey(seededChunks));
 
   const step = usePuzzlePositionStep({
     board,
@@ -225,15 +233,20 @@ export function CreatePuzzlePositionForm({
     },
   });
 
+  // Every field is compared against the value it was seeded with, not
+  // against "empty" — a fork (or a `?fen=` / `?chunk=` injection) arrives
+  // fully populated, so an "is it non-empty?" check would read as dirty on
+  // mount and trip the guard on the first navigation away from an untouched
+  // form. Mirrors the position-memory create form.
   const isDirty =
     !step.submitted &&
     (title.trim() !== defaultTitleRef.current.trim() ||
-      description.trim() !== '' ||
-      step.carriedMoves.length > 0 ||
-      step.carriedNotes.some((n) => n.trim() !== '') ||
-      (board.fenInput.trim() !== '' && board.fenInput !== EMPTY_BOARD_FEN) ||
-      tags.selectedThemes.length > 0 ||
-      tags.selectedChunks.length > 0);
+      description.trim() !== defaultDescriptionRef.current.trim() ||
+      !stringArraysEqual(step.carriedMoves, seedMoves) ||
+      !stringArraysEqual(step.carriedNotes, seedNotes) ||
+      normalizeBaselineFen(board.fenInput) !== normalizeBaselineFen(seedFen) ||
+      toSortedIdKey(tags.selectedThemes) !== initialThemeIdsRef.current ||
+      toSortedIdKey(tags.selectedChunks) !== initialChunkIdsRef.current);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({
     isDirty: disableUnsavedGuard ? false : isDirty,
@@ -245,7 +258,10 @@ export function CreatePuzzlePositionForm({
     tags.reset();
     step.seedCarried(seedMoves, seedNotes, seedFen);
     setTitle(defaultTitleRef.current);
-    setDescription('');
+    // Restores the seeded description, not an empty string, matching what
+    // `board.resetBoard()` / `tags.reset()` / `seedCarried` already do:
+    // start-over discards the user's edits back to the form's baseline.
+    setDescription(defaultDescriptionRef.current);
     // Start-over also clears the fork lineage held in component state —
     // otherwise the next write would still pin to the old parent even
     // though the user has explicitly asked for a clean slate.
