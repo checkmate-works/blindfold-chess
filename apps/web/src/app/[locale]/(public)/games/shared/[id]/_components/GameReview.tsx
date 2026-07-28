@@ -249,22 +249,36 @@ export function GameReview({
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
   );
 
-  // End-of-game badge on the losing king, shown only while the board is on the
+  // End-of-game badge on the losing king, shown only while a board is on the
   // final position — stepping back through the replay puts the viewer inside a
   // game that had not ended yet. The kind is read off the position itself
   // (`isCheckmateFen`), which is the only place a resignation is distinguishable
   // from a mate: the record stores just win/loss/draw. See
   // `resolveTerminationMark`.
-  const terminationMark = useMemo(
-    () =>
-      isFinalPosition(currentPosition, notationMoves.length)
+  //
+  // Resolved per navigation position rather than once, because the quick-peek
+  // modal scrubs independently of the live board (see `useQuickPeekModal`): a
+  // single value would leave the modal's final position unmarked whenever the
+  // board behind it sits mid-history, which is the usual case when the strip
+  // opens it.
+  const terminationMarkAt = useCallback(
+    (position: number) =>
+      isFinalPosition(position, notationMoves.length)
         ? resolveTerminationMark({
             fen: latestFen,
             losingColor: resolveLosingColor(result, playerColor),
             isCheckmate: isCheckmateFen(latestFen),
           })
         : null,
-    [currentPosition, notationMoves.length, latestFen, result, playerColor]
+    [notationMoves.length, latestFen, result, playerColor]
+  );
+  const terminationMark = useMemo(
+    () => terminationMarkAt(currentPosition),
+    [terminationMarkAt, currentPosition]
+  );
+  const quickPeekTerminationMark = useMemo(
+    () => terminationMarkAt(quickPeek.nav.currentPosition),
+    [terminationMarkAt, quickPeek.nav.currentPosition]
   );
   const terminationMarkLabel = useTerminationMarkLabel();
 
@@ -692,6 +706,8 @@ export function GameReview({
         onNavigateToEnd={quickPeek.nav.navigateToEnd}
         onNavigateToPosition={quickPeek.nav.navigateToPosition}
         onFlipBoard={toggleFlip}
+        terminationMark={quickPeekTerminationMark}
+        terminationMarkLabel={terminationMarkLabel(quickPeekTerminationMark)}
         footer={
           <button
             type="button"

@@ -38,6 +38,9 @@ let mockStats: { totalMoves: number };
 let mockNotable: boolean;
 let mockEffectiveSettings: Record<string, unknown> | null;
 let inlineBoardProps: Record<string, unknown>;
+let boardViewModalProps: Record<string, unknown>;
+/** moves[] index the stubbed "By Move" strip opens the quick-peek modal at. */
+let quickPeekTarget: number;
 const pushSpy = vi.fn();
 
 vi.mock('@/app/[locale]/(public)/games/play/_hooks', () => ({
@@ -96,8 +99,23 @@ vi.mock('@/app/[locale]/(public)/games/play/_components/MoveOpsDetail', () => ({
   ),
 }));
 
+// Stands in for the "By Move" strip: one button that opens the quick-peek modal
+// at `quickPeekTarget`, which is all these tests need from the overview.
 vi.mock('@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview', () => ({
-  GameStatsOverview: () => <div data-testid="stats-overview" />,
+  GameStatsOverview: ({ onSelectMove }: { onSelectMove: (movesIndex: number) => void }) => (
+    <button
+      type="button"
+      data-testid="stats-overview"
+      onClick={() => onSelectMove(quickPeekTarget)}
+    />
+  ),
+}));
+
+vi.mock('@/app/[locale]/(public)/games/play/_components/BoardViewModal', () => ({
+  BoardViewModal: (props: Record<string, unknown>) => {
+    boardViewModalProps = props;
+    return props.isOpen ? <div data-testid="board-view-modal" /> : null;
+  },
 }));
 
 vi.mock('@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate', () => ({
@@ -183,6 +201,8 @@ beforeEach(() => {
   mockNotable = false;
   mockEffectiveSettings = null;
   inlineBoardProps = {};
+  boardViewModalProps = {};
+  quickPeekTarget = 2;
   pushSpy.mockClear();
   window.location.hash = '';
 });
@@ -402,5 +422,36 @@ describe('GameReview — end-of-game mark', () => {
     render(<GameReview {...baseProps({ result: 'win', playerColor: 'white' })} />);
 
     expect(inlineBoardProps.terminationMark).toEqual({ square: 'e8', kind: 'checkmate' });
+  });
+
+  // The quick-peek modal scrubs independently of the live board, so it needs the
+  // mark resolved for ITS position — the summary's By Move strip opens it from
+  // the overview board (-2), where the live board carries no mark at all.
+  it('marks the final position in the By Move quick-peek modal', () => {
+    mockNav.latestFen = MATE_FEN;
+    mockNav.currentPosition = -2; // overview board, where the By Move strip lives
+    mockStats = { totalMoves: 3 };
+    quickPeekTarget = 2; // the last ply
+
+    render(<GameReview {...baseProps({ result: 'win', playerColor: 'white' })} />);
+    fireEvent.click(screen.getByTestId('stats-overview'));
+
+    expect(boardViewModalProps.isOpen).toBe(true);
+    expect(boardViewModalProps.terminationMark).toEqual({ square: 'e8', kind: 'checkmate' });
+    expect(boardViewModalProps.terminationMarkLabel).toBe('finishedGame.termination.checkmate');
+    // The board behind it is on the overview position and stays unmarked.
+    expect(inlineBoardProps.terminationMark).toBeNull();
+  });
+
+  it('leaves a mid-game position unmarked in the quick-peek modal', () => {
+    mockNav.latestFen = MATE_FEN;
+    mockNav.currentPosition = -2;
+    mockStats = { totalMoves: 3 };
+    quickPeekTarget = 0; // the first ply — the game had not ended there
+
+    render(<GameReview {...baseProps({ result: 'win', playerColor: 'white' })} />);
+    fireEvent.click(screen.getByTestId('stats-overview'));
+
+    expect(boardViewModalProps.terminationMark).toBeNull();
   });
 });
