@@ -477,8 +477,16 @@ export function GameReview({
 
   return (
     <div className="space-y-6">
+      {/* One grid holds the board, the move list AND the block below them, so
+          their order can differ per breakpoint. DOM order is the phone's —
+          board, then the per-move/overview block, then the move list — because
+          on a single column the comment thread belongs directly under the board
+          it discusses; a move list wedged between them separates a position
+          from its own commentary. From `lg` the `order-*` classes restore the
+          desktop reading: board (2/3) beside the move list (1/3), with the
+          block spanning the full width below both. */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2" ref={quickPeek.boardColumnRef}>
+        <div className="lg:order-1 lg:col-span-2" ref={quickPeek.boardColumnRef}>
           <InlineBoardView
             fen={displayFen ?? latestFen}
             playerSide={playerColor}
@@ -511,7 +519,99 @@ export function GameReview({
           )}
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:order-3 lg:col-span-3">
+          {/* Local (result) mode: same [Summary | Discussion] overview as the shared
+          game, for a consistent layout. There is no persisted game to anchor
+          social data to, so the Discussion tab holds the share CTA (share to
+          unlock discussion) instead of a comment feed, and the tabs stay put as
+          the viewer steps through the moves. */}
+          {social.mode === 'local' ? (
+            <div className="space-y-4">
+              {children}
+
+              {/* This move's aid-usage detail — the SAME block the shared game shows
+              in its per-move panel — so a rejected (illegal) board move surfaces
+              *which* move was tried here too, before the game is published, not
+              only its count. Self-hiding on moves with nothing notable, so the
+              overview layout below is unchanged in the common case. */}
+              {currentPly != null && (
+                <MoveOpsDetail
+                  title={moveLabel ?? t('comments.title')}
+                  moveOperationLog={currentMoveOperationLog}
+                />
+              )}
+
+              <ReviewOverviewTabs
+                active={overview.overviewView}
+                onChange={overview.setOverviewView}
+                summaryLabel={t('overview.summaryTab')}
+                discussionLabel={t('overview.discussionTab')}
+              />
+
+              {overview.overviewView === 'summary' && gatedStats}
+              {overview.overviewView === 'discussion' && social.discussionContent}
+            </div>
+          ) : /* On a move position: that move's comment thread. On the opening
+          board: the description + statistics. */
+          isInitialPosition ? (
+            // `id` + `scroll-mt-20`: lets a link from elsewhere (e.g. the home
+            // feed's comment-count icon, via `#game-overview`) land here instead
+            // of the top of the page — this sits below the board/move-list widget.
+            // `space-y-6` replaces the gap the parent's own `space-y-6` used to
+            // apply between these (previously fragment-spread, now grouped) children.
+            <div id="game-overview" className="scroll-mt-20 space-y-6">
+              {children}
+
+              {overview.showOverviewTabs && (
+                <ReviewOverviewTabs
+                  active={overview.activeOverviewView}
+                  onChange={overview.setOverviewView}
+                  summaryLabel={t('overview.summaryTab')}
+                  discussionLabel={`${t('overview.discussionTab')} (${overview.discussionCount})`}
+                />
+              )}
+
+              {overview.activeOverviewView === 'summary' && gatedStats}
+
+              {overview.activeOverviewView === 'discussion' && overview.hasDiscussion && (
+                <GameDiscussionFeed
+                  comments={comments}
+                  gameChunks={gameChunks}
+                  notationMoves={notationMoves}
+                  startingFen={startingFen}
+                  playerColor={playerColor}
+                  onJumpToPly={navigateToPosition}
+                  locale={locale}
+                />
+              )}
+            </div>
+          ) : (
+            currentPly != null && (
+              <ReviewMovePositionPanel
+                title={moveLabel ?? t('comments.title')}
+                locale={locale}
+                currentFen={displayFen ?? latestFen}
+                continuationSan={continuationSan}
+                gameId={gameId}
+                currentPly={currentPly}
+                comments={comments}
+                gameChunks={gameChunks}
+                availableChunks={availableChunks}
+                currentUser={currentUser}
+                isGameOwner={isGameOwner}
+                moves={notationMoves}
+                startingFen={startingFen}
+                playerColor={playerColor}
+                moveOperationLog={currentMoveOperationLog}
+                onAttemptSelect={handleAttemptSelect}
+                selectedAttemptIndex={selectedAttemptIndex}
+                isAttemptSelectable={isAttemptSelectable}
+              />
+            )
+          )}
+        </div>
+
+        <div className="lg:order-2 lg:col-span-1">
           <MovesPanel
             moveList={{
               formattedPgn,
@@ -556,96 +656,6 @@ export function GameReview({
           />
         </div>
       </div>
-
-      {/* Local (result) mode: same [Summary | Discussion] overview as the shared
-          game, for a consistent layout. There is no persisted game to anchor
-          social data to, so the Discussion tab holds the share CTA (share to
-          unlock discussion) instead of a comment feed, and the tabs stay put as
-          the viewer steps through the moves. */}
-      {social.mode === 'local' ? (
-        <div className="space-y-4">
-          {children}
-
-          {/* This move's aid-usage detail — the SAME block the shared game shows
-              in its per-move panel — so a rejected (illegal) board move surfaces
-              *which* move was tried here too, before the game is published, not
-              only its count. Self-hiding on moves with nothing notable, so the
-              overview layout below is unchanged in the common case. */}
-          {currentPly != null && (
-            <MoveOpsDetail
-              title={moveLabel ?? t('comments.title')}
-              moveOperationLog={currentMoveOperationLog}
-            />
-          )}
-
-          <ReviewOverviewTabs
-            active={overview.overviewView}
-            onChange={overview.setOverviewView}
-            summaryLabel={t('overview.summaryTab')}
-            discussionLabel={t('overview.discussionTab')}
-          />
-
-          {overview.overviewView === 'summary' && gatedStats}
-          {overview.overviewView === 'discussion' && social.discussionContent}
-        </div>
-      ) : /* On a move position: that move's comment thread, directly under the
-          move list. On the opening board: the description + statistics. */
-      isInitialPosition ? (
-        // `id` + `scroll-mt-20`: lets a link from elsewhere (e.g. the home
-        // feed's comment-count icon, via `#game-overview`) land here instead
-        // of the top of the page — this sits below the board/move-list widget.
-        // `space-y-6` replaces the gap the parent's own `space-y-6` used to
-        // apply between these (previously fragment-spread, now grouped) children.
-        <div id="game-overview" className="scroll-mt-20 space-y-6">
-          {children}
-
-          {overview.showOverviewTabs && (
-            <ReviewOverviewTabs
-              active={overview.activeOverviewView}
-              onChange={overview.setOverviewView}
-              summaryLabel={t('overview.summaryTab')}
-              discussionLabel={`${t('overview.discussionTab')} (${overview.discussionCount})`}
-            />
-          )}
-
-          {overview.activeOverviewView === 'summary' && gatedStats}
-
-          {overview.activeOverviewView === 'discussion' && overview.hasDiscussion && (
-            <GameDiscussionFeed
-              comments={comments}
-              gameChunks={gameChunks}
-              notationMoves={notationMoves}
-              startingFen={startingFen}
-              playerColor={playerColor}
-              onJumpToPly={navigateToPosition}
-              locale={locale}
-            />
-          )}
-        </div>
-      ) : (
-        currentPly != null && (
-          <ReviewMovePositionPanel
-            title={moveLabel ?? t('comments.title')}
-            locale={locale}
-            currentFen={displayFen ?? latestFen}
-            continuationSan={continuationSan}
-            gameId={gameId}
-            currentPly={currentPly}
-            comments={comments}
-            gameChunks={gameChunks}
-            availableChunks={availableChunks}
-            currentUser={currentUser}
-            isGameOwner={isGameOwner}
-            moves={notationMoves}
-            startingFen={startingFen}
-            playerColor={playerColor}
-            moveOperationLog={currentMoveOperationLog}
-            onAttemptSelect={handleAttemptSelect}
-            selectedAttemptIndex={selectedAttemptIndex}
-            isAttemptSelectable={isAttemptSelectable}
-          />
-        )
-      )}
 
       {/* By Move quick-peek modal (mirrors the result page). Runs its own
           navigation so previewing never moves the live replay; the footer CTA
