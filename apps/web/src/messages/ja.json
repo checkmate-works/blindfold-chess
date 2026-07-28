@@ -2384,6 +2384,8 @@
     },
     "finishedGame": {
       "heading": "このゲームは終了しています",
+      "revealPosition": "盤面をすべて表示",
+      "showAsPlayed": "対局中の見え方に戻す",
       "viewResult": "結果を見る"
     },
     "finishModal": {

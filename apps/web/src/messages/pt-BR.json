@@ -2384,6 +2384,8 @@
     },
     "finishedGame": {
       "heading": "Esta partida terminou",
+      "revealPosition": "Revelar a posição",
+      "showAsPlayed": "Ver como você jogou",
       "viewResult": "Ver resultado"
     },
     "finishModal": {

@@ -1,8 +1,12 @@
-import type { ComponentProps, ReactNode } from 'react';
+import { type ComponentProps, type ReactNode, useMemo, useState } from 'react';
+
+import { foldBoardVisibility } from '@/lib/games/play-settings-log';
+import { hidesAnyPiece, revealPieces } from '@/lib/games/reveal-preferences';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { AiReplyChip } from '../_components/AiReplyChip';
+import { BoardRevealToggle } from '../_components/BoardRevealToggle';
 import { BoardSettingsButton } from '../_components/BoardSettingsButton';
 import { InlineBoardView } from '../_components/InlineBoardView';
 import type { FormattedPgn } from '../_lib';
@@ -27,7 +31,12 @@ type BoardNavigation = {
  *   peek (`!boardMasked`) — on the player's turn, so a peeked board is as
  *   operable as an always-visible one.
  * - Finished board (read-only review): the board is simply visible — a
- *   finished game is being reviewed, not played, so no mask or peek.
+ *   finished game is being reviewed, not played, so no mask or peek. It also
+ *   starts fully REVEALED: handing the game's own blindfold preferences to the
+ *   final position left a player who had hidden the pieces staring at an empty
+ *   board at the exact moment the game's outcome became the thing to look at.
+ *   A top-right toggle switches back to the as-played view for the answer-check
+ *   ("this is what I was seeing"), which is the whole point of a blindfold game.
  */
 export function usePlayBoardViews({
   displayFen,
@@ -140,7 +149,42 @@ export function usePlayBoardViews({
     />
   );
 
-  const finishedBoardView = <InlineBoardView {...sharedProps} alwaysOpen />;
+  // Finished-review piece visibility. Revealed by default; the toggle is only
+  // offered when the game actually hid something (`hidesAnyPiece` folds the
+  // board-visibility axis in, so a peek/never game counts even though its
+  // per-side flags were both true).
+  const [finishedRevealed, setFinishedRevealed] = useState(true);
+  const canRevealFinished = hidesAnyPiece(preferences);
+  const finishedPreferences = useMemo(
+    () =>
+      finishedRevealed
+        ? revealPieces(preferences)
+        : // As played: the same fold every other "as played" surface uses, so a
+          // masked-board game reproduces as both sides hidden rather than as a
+          // fully sighted position.
+          { ...preferences, ...foldBoardVisibility(preferences) },
+    [finishedRevealed, preferences]
+  );
+
+  const finishedBoardView = (
+    <InlineBoardView
+      {...sharedProps}
+      alwaysOpen
+      preferences={finishedPreferences}
+      // Nothing is hidden on a revealed board; in the as-played view the pieces
+      // the player could not see are drawn as faint ghosts, which reads as "you
+      // were blind to this" rather than as an empty square.
+      hiddenPieceStyle={finishedRevealed ? 'absent' : 'ghost'}
+      topRightControl={
+        canRevealFinished ? (
+          <BoardRevealToggle
+            revealed={finishedRevealed}
+            onToggle={() => setFinishedRevealed((prev) => !prev)}
+          />
+        ) : undefined
+      }
+    />
+  );
 
   return { inProgressBoardView, finishedBoardView };
 }
