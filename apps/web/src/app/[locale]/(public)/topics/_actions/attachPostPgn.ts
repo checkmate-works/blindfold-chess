@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postGamePgnAttachments } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
@@ -11,8 +9,6 @@ import {
 } from '@/lib/games/build-pgn-attachment-values';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { loadAuthoredPost } from '@/lib/topic-posts';
-
-import { buildTopicDetailPath } from '../_lib/topic-paths';
 
 export type AttachPostPgnResult =
   | {
@@ -53,7 +49,8 @@ export type AttachPostPgnResult =
  */
 export async function attachPostPgn(
   postId: string,
-  locale: string,
+  // Positional slot kept for the shared `AttachAction` signature; unused.
+  _locale: string,
   formData: FormData
 ): Promise<AttachPostPgnResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.attachPostPgn);
@@ -86,8 +83,6 @@ export async function attachPostPgn(
       .insert(postGamePgnAttachments)
       .values({ postId: post.id, ...built.values })
       .returning({ id: postGamePgnAttachments.id, createdAt: postGamePgnAttachments.createdAt });
-
-    revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
 
     return {
       success: true,

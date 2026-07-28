@@ -31,7 +31,6 @@ export async function createReplyWithFenAttachment(
     validateTopic: async (id) => (await getPositionById({ id, type: 'puzzle' })) !== null,
     redirectPath: (_postId, replyId) =>
       `/${locale}/practice/puzzle/${positionId}?toast=post_created#post-${replyId}`,
-    revalidate: () => `/${locale}/practice/puzzle/${positionId}`,
     isSpoiler,
     formData,
   });

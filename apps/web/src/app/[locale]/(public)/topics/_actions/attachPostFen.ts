@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postFenAttachments } from '@/lib/db';
@@ -12,8 +10,6 @@ import {
 } from '@/lib/post-fens/build-fen-attachment-values';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { loadAuthoredPost } from '@/lib/topic-posts';
-
-import { buildTopicDetailPath } from '../_lib/topic-paths';
 
 /**
  * Edit-flow adapter: same auth + validation pipeline as `attachPostFen`,
@@ -27,7 +23,9 @@ import { buildTopicDetailPath } from '../_lib/topic-paths';
  */
 export async function attachPostFenFromForm(
   postId: string,
-  locale: string,
+  // Positional slot kept for the shared `AttachAction` signature; the action
+  // itself has no locale-dependent behaviour any more.
+  _locale: string,
   formData: FormData
 ): Promise<
   ActionResult<{
@@ -38,7 +36,7 @@ export async function attachPostFenFromForm(
   const fen = typeof rawFen === 'string' ? rawFen : '';
   const rawCaption = formData.get('attachmentFenCaption');
   const caption = typeof rawCaption === 'string' ? rawCaption : null;
-  return attachPostFen({ postId, fen, caption, locale });
+  return attachPostFen({ postId, fen, caption });
 }
 
 /**
@@ -72,15 +70,6 @@ export async function attachPostFen(input: {
   postId: string;
   fen: string;
   caption?: string | null;
-  /**
-   * Locale for the optional post-detail revalidation. When provided, the
-   * action treats the call as part of the edit flow and revalidates the
-   * topic detail path on success, plus logs an `attach_post_fen` activity
-   * event so the moderation surface can audit author-side edits. Omitting
-   * `locale` keeps the legacy "attach later, no edit-flow side effects"
-   * contract intact for any non-UI caller that does not own the path.
-   */
-  locale?: string;
 }): Promise<
   ActionResult<{
     attachment: {
@@ -91,7 +80,7 @@ export async function attachPostFen(input: {
     };
   }>
 > {
-  const { postId, fen: rawFenInput, caption: rawCaption = null, locale } = input;
+  const { postId, fen: rawFenInput, caption: rawCaption = null } = input;
 
   // Trim + structural + semantic FEN validation and caption sanitization in
   // one shared call (identical to the create-flow bases). Runs before auth so
@@ -140,10 +129,6 @@ export async function attachPostFen(input: {
         caption: postFenAttachments.caption,
         createdAt: postFenAttachments.createdAt,
       });
-
-    if (locale !== undefined) {
-      revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
-    }
 
     return {
       success: true,

@@ -23,7 +23,6 @@ export async function createReplyForImageAttach(
     topicKey: repertoireId,
     urlSegment: 'repertoires',
     validateTopic: async (id) => (await getRepertoireById(id)) !== null,
-    revalidate: () => `/${locale}/repertoires/${repertoireId}`,
     isSpoiler,
     formData,
   });

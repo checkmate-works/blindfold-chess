@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { and, eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
@@ -18,8 +16,6 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
 import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
-
-import { buildTopicDetailPath } from '../_lib/topic-paths';
 
 export type AttachmentKind = 'pgn' | 'fen' | 'image' | 'video' | 'embed';
 
@@ -72,7 +68,8 @@ export async function removePostAttachment(
   postId: string,
   attachmentId: string,
   kind: AttachmentKind,
-  locale: string
+  // Positional slot kept for the shared action signature; unused.
+  _locale: string
 ): Promise<RemovePostAttachmentResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.removePostAttachment);
   if ('error' in guardResult) {
@@ -154,8 +151,6 @@ export async function removePostAttachment(
       attachmentId,
     },
   });
-
-  revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
 
   return { success: true };
 }

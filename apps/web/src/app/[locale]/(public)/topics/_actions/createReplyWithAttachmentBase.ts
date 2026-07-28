@@ -24,7 +24,7 @@ import { createReplyBase } from './createReply';
  * `root_post_id` columns on `topic_posts` distinguish the two. The PGN
  * parsing / Lichess auto-fetch / chess-core validation logic is shared
  * with the post surface via `buildPgnAttachmentValues`, so the per-topic
- * reply wrappers only describe topic spec + optional redirect / revalidate
+ * reply wrappers only describe topic spec + optional redirect
  * overrides.
  */
 
@@ -39,7 +39,6 @@ export async function createReplyWithAttachmentBase(args: {
   urlSegment: string;
   validateTopic: (identifier: string) => boolean | Promise<boolean>;
   redirectPath?: (postId: string, replyId: string) => string;
-  revalidate?: (postId: string) => string;
   isSpoiler?: boolean;
   /** Topic-specific extra rows to insert inside the same transaction
    *  as the reply + PGN attachment. */

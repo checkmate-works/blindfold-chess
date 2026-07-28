@@ -99,7 +99,6 @@ export async function buildMoveReplyConfig(opts: {
     validateTopic: async () => (await getRepertoireById(repertoireId)) !== null,
     redirectPath: (_postId: string, replyId: string) =>
       `${path}${resolved ? '&' : '?'}toast=post_created#post-${replyId}`,
-    revalidate: () => path.split('?')[0],
     isSpoiler: readSpoilerFlag(formData),
     formData,
   };

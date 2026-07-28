@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
@@ -37,11 +36,6 @@ type CreateReplyParams = {
    * `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created` URL.
    */
   redirectPath?: (postId: string, replyId: string) => string;
-  /**
-   * Override the path passed to `revalidatePath` after insertion. When omitted,
-   * defaults to the legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}` path.
-   */
-  revalidate?: (postId: string) => string;
   /**
    * Self-declared "this reply contains spoilers" flag, persisted to
    * `topic_posts.is_spoiler`. Surface today is `topic_type='position_puzzle'`
@@ -199,23 +193,11 @@ async function insertReply(
   return { ok: true, replyId: inserted.id };
 }
 
-/**
- * Default `revalidatePath` target shared by the redirecting and
- * image-attach reply entry points.
- */
-function replyRevalidatePath(params: CreateReplyParams): string {
-  return params.revalidate
-    ? params.revalidate(params.postId)
-    : `/${params.locale}/topics/${params.urlSegment}/${params.topicIdentifier}/posts/${params.postId}`;
-}
-
 export async function createReplyBase(params: CreateReplyParams): Promise<CreateReplyState> {
   const result = await insertReply(params);
   if ('error' in result) {
     return { error: result.error };
   }
-
-  revalidatePath(replyRevalidatePath(params));
 
   redirect(
     params.redirectPath
@@ -231,8 +213,8 @@ export async function createReplyBase(params: CreateReplyParams): Promise<Create
  * notification fan-out via the shared `insertReply` core) but returns
  * the new reply id instead of redirecting, so the client can POST each
  * selected image to `/api/posts/[id]/images` (keyed on the reply id).
- * `revalidatePath` still fires so the thread cache is fresh for the
- * client's post-upload `router.refresh()`.
+ * The client's post-upload `router.refresh()` re-fetches the (dynamic)
+ * thread page, which is what surfaces the new reply and its images.
  */
 export async function createReplyForImageAttachBase(
   params: CreateReplyParams
@@ -241,8 +223,6 @@ export async function createReplyForImageAttachBase(
   if ('error' in result) {
     return { ok: false, error: result.error };
   }
-
-  revalidatePath(replyRevalidatePath(params));
 
   return { ok: true, postId: result.replyId };
 }

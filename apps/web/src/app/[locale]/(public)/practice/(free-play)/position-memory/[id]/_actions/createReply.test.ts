@@ -188,11 +188,13 @@ describe('position-memory parent-page createReply', () => {
     );
   });
 
-  it('revalidates the parent page (not a per-comment detail path) so newly inserted replies appear in the tree', async () => {
+  // No revalidation: the redirect above lands on the (dynamic) parent page,
+  // which re-queries and shows the new reply in the tree.
+  it('does not revalidate any path', async () => {
     await expect(
       createReply('en', positionId, validPostId, {}, makeFormData('hi'))
     ).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(revalidatePath).toHaveBeenCalledWith(`/en/practice/position-memory/${positionId}`);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 });

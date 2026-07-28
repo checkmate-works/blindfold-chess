@@ -26,7 +26,6 @@ export async function createReplyWithFenAttachment(
     validateTopic: async (id) => (await getRepertoireById(id)) !== null,
     redirectPath: (_postId, replyId) =>
       `/${locale}/repertoires/${repertoireId}?toast=post_created#post-${replyId}`,
-    revalidate: () => `/${locale}/repertoires/${repertoireId}`,
     isSpoiler,
     formData,
   });

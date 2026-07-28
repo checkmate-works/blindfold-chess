@@ -189,12 +189,14 @@ describe('createChunkReply', () => {
     );
   });
 
-  it('revalidates the chunk detail path, not /topics/...', async () => {
+  // No revalidation: the redirect above already lands on the (dynamic) chunk
+  // page, which re-queries and shows the new reply.
+  it('does not revalidate any path', async () => {
     await expect(
       createChunkReply('en', testSlug, validPostId, {}, makeFormData('hi'))
     ).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(revalidatePath).toHaveBeenCalledWith(`/en/chunks/${testSlug}`);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 
   it('does not write an activity-log row (the topic_post reply row is the record)', async () => {

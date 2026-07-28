@@ -213,7 +213,7 @@ describe('createChunkReplyWithAttachment', () => {
     expect(mockRedirect).toHaveBeenCalledWith(
       `/en/chunks/${testSlug}?toast=post_created#post-${generatedReplyId}`
     );
-    expect(revalidatePath).toHaveBeenCalledWith(`/en/chunks/${testSlug}`);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 
   it('inserts the PGN attachment row in the same transaction as the reply', async () => {

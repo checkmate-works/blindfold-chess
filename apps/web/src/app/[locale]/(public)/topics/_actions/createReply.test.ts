@@ -383,11 +383,11 @@ describe('createReplyBase', () => {
       );
     });
 
-    it('should call revalidatePath with correct path after successful reply', async () => {
+    // No revalidation: the redirect navigates to the (dynamic) thread page,
+    // which re-queries and shows the new reply.
+    it('should not revalidate any path after a successful reply', async () => {
       await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
-      expect(revalidatePath).toHaveBeenCalledWith(
-        `/en/topics/openings/test-topic/posts/${validPostId}`
-      );
+      expect(revalidatePath).not.toHaveBeenCalled();
     });
 
     it('should redirect with toast param after successful reply', async () => {
