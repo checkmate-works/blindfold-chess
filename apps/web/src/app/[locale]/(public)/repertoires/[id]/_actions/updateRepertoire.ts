@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { authenticateAndGuard } from '@/lib/auth';
 import { updateRepertoireDetails } from '@/lib/repertoires/mutations';
 import type { UpdateRepertoireResult } from '@/lib/repertoires/mutations';
@@ -11,13 +9,13 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 /**
  * Owner-only: save a repertoire's METADATA — title, description, side, and
  * opening links. The move tree is not touched here; lines are edited one at a
- * time on their own pages. The listing shows the title, side chip and thumbnail
- * (side flips the default orientation), so the list is revalidated alongside
- * the detail page.
+ * time on their own pages.
+ *
+ * No `revalidatePath`: `EditRepertoireForm` `router.push`es back to the detail
+ * page, and both it and the listing are dynamic routes.
  */
 export async function updateRepertoire(input: {
   repertoireId: string;
-  locale: string;
   name: string;
   side: RepertoireSide;
   /** Course-level blurb; trimmed to null server-side when blank. */
@@ -35,9 +33,5 @@ export async function updateRepertoire(input: {
     description: input.description,
     openingIds: input.openingIds,
   });
-  if (!result.ok) return result;
-
-  revalidatePath(`/${input.locale}/repertoires/${input.repertoireId}`);
-  revalidatePath(`/${input.locale}/repertoires`);
   return result;
 }

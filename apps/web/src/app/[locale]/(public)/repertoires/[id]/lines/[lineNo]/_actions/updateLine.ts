@@ -1,17 +1,18 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { authenticateAndGuard } from '@/lib/auth';
 import { updateRepertoireLine } from '@/lib/repertoires/mutations';
 import type { UpdateLineResult } from '@/lib/repertoires/mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
-/** Owner-only: save a line's edited title + moves. */
+/**
+ * Owner-only: save a line's edited title + moves.
+ *
+ * No `revalidatePath`: `EditLineForm` `router.push`es back to the line page.
+ */
 export async function updateLine(input: {
   repertoireId: string;
   lineNo: number;
-  locale: string;
   name: string | null;
   pgn: string;
 }): Promise<UpdateLineResult | { ok: false; error: string }> {
@@ -24,9 +25,5 @@ export async function updateLine(input: {
     name: input.name,
     pgn: input.pgn,
   });
-  if (result.ok) {
-    revalidatePath(`/${input.locale}/repertoires/${input.repertoireId}/lines/${input.lineNo}`);
-    revalidatePath(`/${input.locale}/repertoires/${input.repertoireId}`);
-  }
   return result;
 }

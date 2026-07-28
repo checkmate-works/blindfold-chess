@@ -234,7 +234,6 @@ export function LineDetailBoard({
           <AnnotationPanel
             key={focusedMove.positionKey}
             repertoireId={repertoireId}
-            lineNo={lineNo}
             locale={locale}
             positionKey={focusedMove.positionKey}
             moveLabel={focusedMove.label}

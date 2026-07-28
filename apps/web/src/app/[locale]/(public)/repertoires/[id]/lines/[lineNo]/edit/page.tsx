@@ -85,7 +85,6 @@ export default async function EditRepertoireLinePage({ params }: Props) {
       <SectionTitle>{t('line.edit.title')}</SectionTitle>
 
       <EditLineForm
-        locale={locale}
         repertoireId={id}
         lineNo={lineNo}
         initialName={line.name ?? ''}

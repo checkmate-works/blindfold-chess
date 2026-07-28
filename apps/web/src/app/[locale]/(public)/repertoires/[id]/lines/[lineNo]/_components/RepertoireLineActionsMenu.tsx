@@ -36,7 +36,7 @@ export function RepertoireLineActionsMenu({ repertoireId, lineNo, locale }: Prop
   async function handleConfirm() {
     setPending(true);
     setError(null);
-    const result = await deleteLine({ repertoireId, lineNo, locale });
+    const result = await deleteLine({ repertoireId, lineNo });
     if (!result.ok) {
       setPending(false);
       setError(t('errors.generic'));

@@ -65,7 +65,6 @@ export default async function EditRepertoirePage({ params }: Props) {
       <SectionTitle>{t('edit.title')}</SectionTitle>
 
       <EditRepertoireForm
-        locale={locale}
         repertoireId={id}
         initialName={repertoire.name}
         initialDescription={repertoire.description ?? ''}

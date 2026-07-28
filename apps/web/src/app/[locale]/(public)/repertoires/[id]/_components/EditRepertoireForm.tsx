@@ -18,7 +18,6 @@ import { OpeningLinksField } from '../../_components/OpeningLinksField';
 import { updateRepertoire } from '../_actions/updateRepertoire';
 
 type Props = {
-  locale: string;
   repertoireId: string;
   initialName: string;
   /** The course-level description blurb (empty string when unset). */
@@ -43,7 +42,6 @@ type Props = {
  * PGN, so relabeling it can't desync anything.
  */
 export function EditRepertoireForm({
-  locale,
   repertoireId,
   initialName,
   initialDescription,
@@ -83,7 +81,6 @@ export function EditRepertoireForm({
 
     const result = await updateRepertoire({
       repertoireId,
-      locale,
       name,
       description,
       side,

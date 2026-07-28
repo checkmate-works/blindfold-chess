@@ -24,7 +24,6 @@ import { saveShapes } from '../_actions/saveShapes';
 import { updateLine } from '../_actions/updateLine';
 
 type Props = {
-  locale: string;
   repertoireId: string;
   lineNo: number;
   initialName: string;
@@ -53,7 +52,6 @@ type Props = {
  * with no migration here.
  */
 export function EditLineForm({
-  locale,
   repertoireId,
   lineNo,
   initialName,
@@ -112,7 +110,6 @@ export function EditLineForm({
     const result = await updateLine({
       repertoireId,
       lineNo,
-      locale,
       name: name.trim() || null,
       pgn,
     });
@@ -131,8 +128,8 @@ export function EditLineForm({
     const noteResults = await Promise.all([
       ...changedAnnotations.map(([positionKey, text]) =>
         text.trim()
-          ? saveAnnotation({ repertoireId, lineNo, locale, positionKey, text: text.trim() })
-          : deleteAnnotation({ repertoireId, lineNo, locale, positionKey })
+          ? saveAnnotation({ repertoireId, positionKey, text: text.trim() })
+          : deleteAnnotation({ repertoireId, positionKey })
       ),
       ...changedShapes.map(([positionKey, value]) =>
         saveShapes({ repertoireId, positionKey, shapes: value })
