@@ -7,6 +7,7 @@ import {
   gameUsedNotablePlaySettings,
   playSettingsAtHalfMove,
 } from '@/lib/games/play-settings-log';
+import { revealPieces } from '@/lib/games/reveal-preferences';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -82,15 +83,7 @@ export function useReplayPreferences({
   const [reproduceView, setReproduceView] = useState(true);
 
   const revealedPreferences = useMemo<GamePreferences>(
-    () => ({
-      ...preferences,
-      showOwnPieces: true,
-      showOpponentPieces: true,
-      pieceShapeMode: 'normal',
-      pieceColors: 'normal',
-      pawnHideMode: 'none',
-      boardVisibility: 'always',
-    }),
+    () => revealPieces(preferences),
     [preferences]
   );
 
