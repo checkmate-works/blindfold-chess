@@ -102,8 +102,9 @@ function ResultContent({
   initialExp,
   openingEntries,
 }: ResultContentProps) {
-  // Derive player result from game status.
-  const playerResult = game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw';
+  // The review view model — the same shape the shared game builds from its DB
+  // row, so both screens read the result (and everything else) from one mapping.
+  const reviewData = toReviewData(game);
 
   // Opening played — detected client-side from the local game (the result game
   // is never persisted server-side; see detectOpening). Null for custom-start
@@ -140,10 +141,10 @@ function ResultContent({
   // guard. The Discussion tab just explains that discussion opens once shared.
   return (
     <GameReview
-      {...toReviewData(game)}
+      {...reviewData}
       detectedOpening={opening}
       locale={locale}
-      statsHeader={<CompactResultHeader result={playerResult} />}
+      statsHeader={<CompactResultHeader result={reviewData.result} />}
       social={{
         mode: 'local',
         isAuthenticated,

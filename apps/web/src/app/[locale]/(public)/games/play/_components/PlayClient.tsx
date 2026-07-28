@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { notFound, useSearchParams } from 'next/navigation';
 
@@ -11,8 +11,14 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
+import {
+  isFinalPosition,
+  resolveLosingColor,
+  resolveTerminationMark,
+} from '@/lib/games/termination-mark';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
+import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -85,6 +91,7 @@ export function PlayClient({
   isAuthenticated,
   expInfo,
 }: Props) {
+  const terminationMarkLabel = useTerminationMarkLabel();
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
   // finished game in the familiar game UI (read-only). Suppresses the
@@ -114,7 +121,15 @@ export function PlayClient({
     preferenceChangeLog,
     gameId,
   } = gameConfig;
-  const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
+  const {
+    gameStatus,
+    derivedStatus,
+    playerResult,
+    isPlayerTurn,
+    isLoading,
+    lastMove,
+    gameNotFound,
+  } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, clearMoveError } = moveInput;
   const {
@@ -259,6 +274,22 @@ export function PlayClient({
   // play and when reviewing one opened from the list (`?finished=1`).
   const isFinished = gameStatus !== 'in_progress' && !!playerResult;
 
+  // The end-of-game badge on the loser's king. Only on the final position — a
+  // board scrubbed back through history is showing a game still in progress.
+  // `derivedStatus` (the position's own status, not the stored one) is what
+  // separates a mate from a resignation; see `resolveTerminationMark`.
+  const terminationMark = useMemo(
+    () =>
+      isFinished && isFinalPosition(currentPosition, moves.length)
+        ? resolveTerminationMark({
+            fen: currentFen,
+            losingColor: resolveLosingColor(playerResult, playerSide),
+            isCheckmate: derivedStatus === 'checkmate',
+          })
+        : null,
+    [isFinished, currentPosition, moves.length, currentFen, playerResult, playerSide, derivedStatus]
+  );
+
   // Finished-game navigation hub: prefetches the result route and exposes the
   // game-finished modal's actions.
   const { handleViewResult, handleShare, openRecall, openRepertoireCheck, isShared } =
@@ -363,6 +394,8 @@ export function PlayClient({
     isAiThinking,
     canEditPerGameSettings,
     onOpenSettings: () => setShowSettingsModal(true),
+    terminationMark,
+    terminationMarkLabel: terminationMarkLabel(terminationMark),
   });
 
   if (gameNotFound) {

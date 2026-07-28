@@ -192,6 +192,13 @@ export function useGameState({
   return {
     gameStatus,
     setGameStatus,
+    /**
+     * The status the move list alone implies, before any player-driven
+     * override is folded in. `gameStatus` can outrun it — resigning stamps
+     * `'checkmate'` onto a position that is still playable — which is exactly
+     * what makes a resignation identifiable downstream (`resolveTermination`).
+     */
+    derivedStatus: derivedGameState.status,
     playerResult,
     setPlayerResult,
     isPlayerTurn,

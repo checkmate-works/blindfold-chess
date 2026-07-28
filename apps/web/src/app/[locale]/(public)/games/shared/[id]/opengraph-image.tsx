@@ -1,11 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 import { ImageResponse } from 'next/og';
 
-import { replayMoves } from '@blindfold-chess/features/chess-core';
+import { isCheckmateFen, replayMoves } from '@blindfold-chess/features/chess-core';
 
 import { renderBoardSvg } from '@/lib/board-svg/render-board-svg';
 import { getGameById } from '@/lib/db/games-read';
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
+import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
 import { loadOgFonts } from '@/lib/og/load-og-fonts';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -48,6 +49,14 @@ export default async function Image({ params }: Props) {
     size: BOARD_SIZE,
     flipped,
     lastMove: lastPosition.lastMove ?? null,
+    // The card shows the position the game ended on, so it carries the same
+    // end-of-game badge as the replay it links to — otherwise a resigned game
+    // previews as an ordinary midgame position.
+    terminationMark: resolveTerminationMark({
+      fen: lastPosition.fen,
+      losingColor: resolveLosingColor(game.result, game.playerColor),
+      isCheckmate: isCheckmateFen(lastPosition.fen),
+    }),
   });
   const boardDataUri = `data:image/svg+xml;base64,${Buffer.from(boardSvg).toString('base64')}`;
 

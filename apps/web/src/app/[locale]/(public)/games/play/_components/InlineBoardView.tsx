@@ -7,6 +7,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
+import type { TerminationMark } from '@/lib/games/termination-mark';
+
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { resolveBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
@@ -145,6 +147,10 @@ type Props = {
    * underneath stay operable.
    */
   aiThinking?: boolean;
+  /** Relayed straight to the inner ChessBoard — see its prop doc. */
+  terminationMark?: TerminationMark | null;
+  /** Relayed straight to the inner ChessBoard — see its prop doc. */
+  terminationMarkLabel?: string;
 };
 
 export function InlineBoardView({
@@ -178,6 +184,8 @@ export function InlineBoardView({
   badgeActive,
   topRightControl,
   aiThinking,
+  terminationMark = null,
+  terminationMarkLabel,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -289,6 +297,8 @@ export function InlineBoardView({
               onIllegalMove={masked ? undefined : onIllegalMove}
               illegalAttempt={illegalAttempt}
               movablePieces={movablePieces}
+              terminationMark={terminationMark}
+              terminationMarkLabel={terminationMarkLabel}
             />
             {/* Navigation Controls & Flip Button */}
             {(movesLength > 0 || onFlipBoard) && (

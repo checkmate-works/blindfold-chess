@@ -39,6 +39,7 @@ async function renderFramesToPng(frames: GifFrame[], flipped: boolean): Promise<
           lastMove: frame.lastMove,
           displaySettings: frame.displaySettings,
           overlay: frame.overlay ? toRenderOverlay(frame.overlay) : null,
+          terminationMark: frame.terminationMark ?? null,
         });
         return sharp(Buffer.from(svg)).png().toBuffer();
       })

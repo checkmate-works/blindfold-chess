@@ -1,5 +1,5 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
-import { executeMove, replayMoves } from '@blindfold-chess/features/chess-core';
+import { executeMove, isCheckmateFen, replayMoves } from '@blindfold-chess/features/chess-core';
 
 import type { GameRecord } from '@/lib/db/schema';
 import type { GameGifVariant } from '@/lib/games/gif/constants';
@@ -15,6 +15,8 @@ import type {
   MoveOperationLog,
   UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
+import type { TerminationMark } from '@/lib/games/termination-mark';
+import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
 
 import { getPlayerMoveIndices } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 
@@ -69,6 +71,13 @@ export type GifFrame = {
   lastMove: { from: string; to: string } | null;
   displaySettings: BlindfoldDisplaySettings | null;
   overlay?: GifOverlay;
+  /**
+   * End-of-game mark, set on the final frame only (see
+   * {@link withTerminationMark}). Unlike {@link GifOverlay} this needs no
+   * translation at the rasterization boundary — the renderer draws the very
+   * same value the DOM board takes.
+   */
+  terminationMark?: TerminationMark | null;
   delayMs: number;
 };
 
@@ -78,6 +87,7 @@ export type GameFrameSource = Pick<
   | 'startingFen'
   | 'setupPlies'
   | 'playerColor'
+  | 'result'
   | 'playSettings'
   | 'playSettingsLog'
   | 'operationLogs'
@@ -293,17 +303,44 @@ function buildSlotAnnotations(
  * exceed {@link MAX_FRAMES}, every remaining slot's annotations are skipped
  * (real positions are never sacrificed to make room).
  */
+/**
+ * Stamp the end-of-game mark onto the last frame — the loser's king marked with
+ * `#` or a flag, exactly as the play board and the interactive replay mark it
+ * (`resolveTerminationMark`).
+ *
+ * Only the last frame: every earlier one is a position the game was still
+ * running from. It lands after the `DELAY_LAST_MS` hold, so the mark is what
+ * the GIF rests on — which is the frame a shared replay is judged by, and the
+ * only place the outcome can be read at all without a caption.
+ */
+function withTerminationMark(frames: GifFrame[], game: GameFrameSource): GifFrame[] {
+  const last = frames.at(-1);
+  if (!last) return frames;
+
+  const terminationMark = resolveTerminationMark({
+    fen: last.fen,
+    losingColor: resolveLosingColor(game.result, game.playerColor),
+    isCheckmate: isCheckmateFen(last.fen),
+  });
+  if (!terminationMark) return frames;
+
+  return [...frames.slice(0, -1), { ...last, terminationMark }];
+}
+
 export function buildGameFrames(game: GameFrameSource, variant: GameGifVariant): GifFrame[] {
   const allPositions = replayMoves(game.moves, game.startingFen ?? undefined);
   const realFrames = selectRealFrames(allPositions);
 
   if (variant === 'plain') {
-    return realFrames.map(({ position }, idx) => ({
-      fen: position.fen,
-      lastMove: position.lastMove ?? null,
-      displaySettings: null,
-      delayMs: delayForRealFrame(idx, realFrames.length),
-    }));
+    return withTerminationMark(
+      realFrames.map(({ position }, idx) => ({
+        fen: position.fen,
+        lastMove: position.lastMove ?? null,
+        displaySettings: null,
+        delayMs: delayForRealFrame(idx, realFrames.length),
+      })),
+      game
+    );
   }
 
   const playerMoveIndices = getPlayerMoveIndices(
@@ -356,5 +393,5 @@ export function buildGameFrames(game: GameFrameSource, variant: GameGifVariant):
     });
   });
 
-  return frames;
+  return withTerminationMark(frames, game);
 }

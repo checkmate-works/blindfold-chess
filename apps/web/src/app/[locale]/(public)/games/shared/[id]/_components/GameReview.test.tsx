@@ -154,6 +154,7 @@ function baseProps(overrides: Partial<ReplayProps> = {}): ReplayProps {
     moves: mockMoves,
     startingFen: null,
     playerColor: 'white',
+    result: 'win',
     detectedOpening: null,
     engineConfig: { kind: 'stockfish', skillLevel: 5 } as ReplayProps['engineConfig'],
     operationLogs: null,
@@ -350,5 +351,56 @@ describe('GameReview — URL hash sync', () => {
     expect(url.hash).toBe('#2');
 
     replaceState.mockRestore();
+  });
+});
+
+describe('GameReview — end-of-game mark', () => {
+  // Scholar's mate: black is mated with its king still on e8.
+  const MATE_FEN = 'r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4';
+  // The same game one move earlier — decisive result, but not mate on the board.
+  const PLAYABLE_FEN = 'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 3';
+
+  beforeEach(() => {
+    mockNav.currentPosition = -1;
+  });
+
+  it('marks the mated king on the final position', () => {
+    mockNav.latestFen = MATE_FEN;
+    render(<GameReview {...baseProps({ result: 'win', playerColor: 'white' })} />);
+
+    expect(inlineBoardProps.terminationMark).toEqual({ square: 'e8', kind: 'checkmate' });
+  });
+
+  it('reads a decisive result on a still-playable position as a resignation', () => {
+    mockNav.latestFen = PLAYABLE_FEN;
+    render(<GameReview {...baseProps({ result: 'loss', playerColor: 'white' })} />);
+
+    // The player lost without being mated — their own king carries the flag.
+    expect(inlineBoardProps.terminationMark).toEqual({ square: 'e1', kind: 'resignation' });
+  });
+
+  it('marks nothing on a draw', () => {
+    mockNav.latestFen = PLAYABLE_FEN;
+    render(<GameReview {...baseProps({ result: 'draw' })} />);
+
+    expect(inlineBoardProps.terminationMark).toBeNull();
+  });
+
+  it('drops the mark while the viewer is stepping through history', () => {
+    mockNav.latestFen = MATE_FEN;
+    mockNav.currentPosition = 1;
+    render(<GameReview {...baseProps({ result: 'win', playerColor: 'white' })} />);
+
+    expect(inlineBoardProps.terminationMark).toBeNull();
+  });
+
+  it('marks the last ply when it is addressed by index (a #N deep link)', () => {
+    mockNav.latestFen = MATE_FEN;
+    // mockMoves has 3 plies, so the final one is index 2 — the position a
+    // shared "…#3" link opens at, which is not the `-1` latest sentinel.
+    mockNav.currentPosition = 2;
+    render(<GameReview {...baseProps({ result: 'win', playerColor: 'white' })} />);
+
+    expect(inlineBoardProps.terminationMark).toEqual({ square: 'e8', kind: 'checkmate' });
   });
 });

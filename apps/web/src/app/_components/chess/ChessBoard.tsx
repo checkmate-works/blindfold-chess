@@ -29,10 +29,12 @@ import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-them
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import { getEvaluationIcon } from '@/lib/games/evaluation';
 import { goStoneStyle } from '@/lib/games/go-stone-style';
+import type { TerminationMark } from '@/lib/games/termination-mark';
 
 import type { SquareRenderInfo } from './BoardLayout';
 import { BoardLayout } from './BoardLayout';
 import { PromotionPicker } from './PromotionPicker';
+import { TerminationMarkBadge } from './TerminationMarkBadge';
 import { useBoardDragDrop } from './use-board-drag-drop';
 
 /**
@@ -204,6 +206,24 @@ type Props = {
    * toggle. Ignored in interactive mode (a real selection takes over).
    */
   previewSelection?: string | null;
+  /**
+   * End-of-game mark for a finished position: a badge on the losing side's king
+   * square naming the reason — `#` for a mate, a flag for a resignation. See
+   * `resolveTerminationMark`, which owns the "which square, which kind" rule for
+   * every surface that shows a finished game.
+   *
+   * Caller-supplied rather than derived here: a board renders one position, and
+   * only its owner knows whether that position is the game's last (a board
+   * scrubbed back through history must not carry the mark).
+   */
+  terminationMark?: TerminationMark | null;
+  /**
+   * Accessible name for the termination badge, already localized. Required in
+   * practice whenever `terminationMark` is set — this component is used by
+   * locale-agnostic surfaces (thumbnails, previews), so the wording stays with
+   * the caller rather than pulling `next-intl` in here.
+   */
+  terminationMarkLabel?: string;
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -232,6 +252,8 @@ export const ChessBoard = memo(function ChessBoard({
   onIllegalMove,
   movablePieces = 'own',
   previewSelection = null,
+  terminationMark = null,
+  terminationMarkLabel = '',
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
   const interactive = onMove !== undefined;
@@ -563,10 +585,20 @@ export const ChessBoard = memo(function ChessBoard({
         ? getEvaluationIcon(evaluationMark.loss, evaluationMark.isMate)
         : undefined;
 
+      // The termination badge outranks the move-quality one on the rare square
+      // that qualifies for both: how the game ENDED is the more terminal fact,
+      // and the mating move's own quality mark still sits on its destination.
+      const badge =
+        terminationMark?.square === square ? (
+          <TerminationMarkBadge kind={terminationMark.kind} label={terminationMarkLabel} />
+        ) : (
+          evalBadge
+        );
+
       return {
         dataSquare: onSquareClick || interactive ? square : undefined,
         highlightType,
-        badge: evalBadge,
+        badge,
       };
     },
     [
@@ -579,6 +611,8 @@ export const ChessBoard = memo(function ChessBoard({
       moveSource,
       legalDestinations,
       pieceAt,
+      terminationMark,
+      terminationMarkLabel,
     ]
   );
 

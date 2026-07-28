@@ -2384,6 +2384,14 @@
     },
     "finishedGame": {
       "heading": "Esta partida ha terminado",
+      "revealPosition": "Revelar la posición",
+      "showAsPlayed": "Ver como la jugaste",
+      "termination": {
+        "checkmate": "Jaque mate",
+        "draw": "Tablas",
+        "resignation": "Abandono",
+        "stalemate": "Ahogado"
+      },
       "viewResult": "Ver resultado"
     },
     "finishModal": {
