@@ -10,8 +10,8 @@ type Props = {
 };
 
 /**
- * The badge riding on the toppled king's square: `#` for a checkmate, a flag
- * for a resignation.
+ * The end-of-game badge sitting on the losing king's square: `#` for a
+ * checkmate, a flag for a resignation.
  *
  * Both glyphs are stroke paths rather than characters, and both come from data
  * the SVG/GIF renderer can read too (`HASH_GLYPH_PATHS`, `flagData`) — that

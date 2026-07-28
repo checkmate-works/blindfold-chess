@@ -1,6 +1,6 @@
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 
-/** Why the losing side's king is down. */
+/** Why the losing side's king is marked. */
 export type TerminationMarkKind = 'checkmate' | 'resignation';
 
 /** Where to draw the end-of-game mark, and which one. */
@@ -9,13 +9,6 @@ export type TerminationMark = {
   square: string;
   kind: TerminationMarkKind;
 };
-
-/**
- * How far the toppled king is rotated, in degrees. Shared so the DOM board and
- * the SVG/GIF renderer topple by the same amount — a king that falls further in
- * the replay than it did on the board reads as two different marks.
- */
-export const TOPPLED_KING_ROTATION_DEG = 90;
 
 /**
  * Badge appearance per kind, in renderer-neutral values (CSS and SVG both take

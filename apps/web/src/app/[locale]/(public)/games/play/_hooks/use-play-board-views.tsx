@@ -88,7 +88,7 @@ export function usePlayBoardViews({
   canEditPerGameSettings: boolean;
   onOpenSettings: () => void;
   /**
-   * The toppled-king mark for the finished board; null while the game is in
+   * The end-of-game mark for the finished board; null while the game is in
    * progress or when the viewer has scrubbed off the final position.
    */
   terminationMark: TerminationMark | null;

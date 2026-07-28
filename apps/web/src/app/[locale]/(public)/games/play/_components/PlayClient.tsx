@@ -270,7 +270,7 @@ export function PlayClient({
   // play and when reviewing one opened from the list (`?finished=1`).
   const isFinished = gameStatus !== 'in_progress' && !!playerResult;
 
-  // The toppled king on the loser's square. Only on the final position — a
+  // The end-of-game badge on the loser's king. Only on the final position — a
   // board scrubbed back through history is showing a game still in progress.
   // `derivedStatus` (the position's own status, not the stored one) is what
   // separates a mate from a resignation; see `resolveTerminationMark`.
