@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
+import { MOVE_NAV_ROW_CLASS } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 export default async function OpeningPostDetailLoading() {
@@ -20,21 +21,21 @@ export default async function OpeningPostDetailLoading() {
           <span className="inline-block h-5 md:h-6 w-2/3 bg-muted rounded align-middle animate-pulse" />
         </SectionTitle>
 
-        {/* OpeningBoardWithMoves: board + nav controls + move list + new-game button */}
+        {/* OpeningBoardWithMoves: move list + board + nav row + new-game button */}
         <div className="space-y-3">
           <BoardFrame expandOnMobile>
+            <div className="flex items-center gap-1 px-2 py-1.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-5 w-16 bg-muted rounded animate-pulse" />
+              ))}
+            </div>
             <BoardSkeleton />
+            {/* Same reserved height as the real strip, which is touch-sized
+                below `sm` — a fixed 40px row would shift the page on hydrate. */}
+            <div className={`flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
+              <div className="h-12 w-52 bg-muted rounded animate-pulse" />
+            </div>
           </BoardFrame>
-          <div className="flex justify-center gap-1">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="w-10 h-10 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
-          <div className="flex items-center gap-1 justify-center flex-wrap">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-5 w-16 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
           <div className="flex justify-center">
             <div className="h-9 w-40 bg-muted rounded animate-pulse" />
           </div>

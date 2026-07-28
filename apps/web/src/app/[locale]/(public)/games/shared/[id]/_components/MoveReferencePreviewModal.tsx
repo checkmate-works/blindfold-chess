@@ -94,13 +94,12 @@ export function MoveReferencePreviewModal({
           same stack every other board+moves surface uses (InlineBoardView,
           BoardViewModal, the repertoire viewers). */}
       <div>
-        <div className="bg-card px-2 py-1.5 overflow-x-auto">
-          <HorizontalMoveList
-            formattedPgn={formattedPgn}
-            currentPosition={effectivePosition}
-            onNavigateToPosition={(position) => nav.navigateToPosition(position)}
-          />
-        </div>
+        <HorizontalMoveList
+          className="bg-card"
+          formattedPgn={formattedPgn}
+          currentPosition={effectivePosition}
+          onNavigateToPosition={(position) => nav.navigateToPosition(position)}
+        />
 
         <ChessBoard fen={fen} flipped={playerColor === 'black'} rounded={false} {...display} />
 

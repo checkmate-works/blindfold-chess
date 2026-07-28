@@ -123,15 +123,11 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
             card holding the horizontal move strip, the board, and the controls. */}
         <div className={INLINE_BOARD_CARD_CHROME}>
           <div className="relative">
-            {line.formatted.length > 0 && (
-              <div className="overflow-x-auto px-2 py-1.5">
-                <HorizontalMoveList
-                  formattedPgn={line.formatted}
-                  currentPosition={clampedPly - 1}
-                  onNavigateToPosition={(position) => setPly(position + 1)}
-                />
-              </div>
-            )}
+            <HorizontalMoveList
+              formattedPgn={line.formatted}
+              currentPosition={clampedPly - 1}
+              onNavigateToPosition={(position) => setPly(position + 1)}
+            />
 
             <ChessBoard
               fen={current.fen}

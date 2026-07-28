@@ -4,13 +4,14 @@ import { useMemo, useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { formatMovesToPgn, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { useBoardFlip } from '@/app/[locale]/(public)/games/play/_hooks/use-board-flip';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks/use-move-navigation';
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Props = {
@@ -45,17 +46,15 @@ export function PgnPreview({ pgnMoves, startingFen, color }: Props) {
 
   const displayFen = hookDisplayFen || latestFen;
 
+  // Shared formatter rather than a local pairing loop: the local one emitted
+  // no `whiteMoveIndex`/`blackMoveIndex`, which is what the move list uses to
+  // highlight the current move and to navigate when one is clicked — so every
+  // move in this preview rendered inert. It also numbered from 1 regardless of
+  // `startingFen`, mis-labelling a preview of a game set up mid-game.
   const formattedPgn = useMemo(() => {
-    const formatted: { moveNumber: number; whiteMove: string; blackMove?: string }[] = [];
-    for (let i = 0; i < pgnMoves.length; i += 2) {
-      formatted.push({
-        moveNumber: Math.floor(i / 2) + 1,
-        whiteMove: pgnMoves[i],
-        blackMove: pgnMoves[i + 1],
-      });
-    }
-    return formatted;
-  }, [pgnMoves]);
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
+    return formatMovesToPgn(pgnMoves, startsAsBlack, startMoveNumber);
+  }, [pgnMoves, startingFen]);
 
   const lastMove = useMemo(() => {
     if (pgnMoves.length === 0) return null;

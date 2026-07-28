@@ -4,19 +4,8 @@ import type { ReactNode } from 'react';
 
 import { FlipBoardButton } from '@/app/_components';
 
+import { MOVE_NAV_ROW_CLASS } from '../_lib/skeleton-layout-classes';
 import { MoveNavigationControls } from './MoveNavigationControls';
-
-/**
- * Height policy for the strip. Boards place it directly under the board, where
- * `aspectRatio: 8/1` makes it exactly one rank tall — a continuation of the
- * board rather than a separate bar. On a phone that ratio resolves to ~47px,
- * shorter than the touch-sized stepper, so below `sm` the strip is sized by
- * its content instead.
- *
- * Exported for the loading skeleton, which has to reserve the same height
- * without rendering any controls. Everything else should render the row.
- */
-export const MOVE_NAV_ROW_CLASS = 'min-h-14 sm:min-h-0 sm:aspect-[8/1]';
 
 /**
  * Shared geometry for the secondary buttons that sit after the divider. They

@@ -15,6 +15,7 @@
       "nextMove": "Movimiento siguiente",
       "goToEnd": "Ir al final"
     },
+    "flipBoard": "Girar tablero",
     "close": "Cerrar"
   },
   "Repertoires": {

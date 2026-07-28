@@ -76,14 +76,13 @@ export function BoardViewModal({
     <BoardModal isOpen={isOpen} title={title ?? t('boardModalTitle')} onClose={onClose}>
       <>
         {/* Horizontal Move List */}
-        {formattedPgn.length > 0 && onNavigateToPosition && (
-          <div className="bg-card px-2 py-1.5 overflow-x-auto">
-            <HorizontalMoveList
-              formattedPgn={formattedPgn}
-              currentPosition={currentPosition}
-              onNavigateToPosition={onNavigateToPosition}
-            />
-          </div>
+        {onNavigateToPosition && (
+          <HorizontalMoveList
+            className="bg-card"
+            formattedPgn={formattedPgn}
+            currentPosition={currentPosition}
+            onNavigateToPosition={onNavigateToPosition}
+          />
         )}
 
         <ChessBoard

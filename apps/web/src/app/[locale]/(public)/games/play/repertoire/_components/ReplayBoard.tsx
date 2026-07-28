@@ -81,15 +81,11 @@ export function ReplayBoard({
     <div className="space-y-4">
       <div className={INLINE_BOARD_CARD_CHROME}>
         <div className="relative">
-          {formatted.length > 0 && (
-            <div className="overflow-x-auto px-2 py-1.5">
-              <HorizontalMoveList
-                formattedPgn={formatted}
-                currentPosition={ply - 1}
-                onNavigateToPosition={(position) => goTo(position + 1)}
-              />
-            </div>
-          )}
+          <HorizontalMoveList
+            formattedPgn={formatted}
+            currentPosition={ply - 1}
+            onNavigateToPosition={(position) => goTo(position + 1)}
+          />
 
           <div className="relative">
             <ChessBoard
