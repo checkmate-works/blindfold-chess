@@ -3,11 +3,11 @@ import type { ReactElement } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import type { TerminationMark } from '@/lib/games/termination-mark';
+
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { InlineBoardView } from '../_components/InlineBoardView';
-import type { GameResult } from '../_lib/result-visuals';
-import type { Termination } from '../_lib/termination';
 import { usePlayBoardViews } from './use-play-board-views';
 
 // The views are inspected as React elements rather than rendered: what this
@@ -33,11 +33,13 @@ const sightedPreferences = {
   showOpponentPieces: true,
 } as GamePreferences;
 
+const MATE_MARK: TerminationMark = { square: 'e8', kind: 'checkmate' };
+
 function setup(
   preferences: GamePreferences,
-  ending: { termination: Termination | null; playerResult: GameResult | null } = {
-    termination: 'checkmate',
-    playerResult: 'win',
+  ending: { terminationMark: TerminationMark | null; terminationMarkLabel: string } = {
+    terminationMark: MATE_MARK,
+    terminationMarkLabel: 'Checkmate',
   }
 ) {
   return renderHook(() =>
@@ -133,23 +135,26 @@ describe('usePlayBoardViews finished board', () => {
     expect(finishedProps(result.current.finishedBoardView).topRightControl).toBeUndefined();
   });
 
-  it('banners the termination and result on the board', () => {
+  it('hands the termination mark to the finished board only', () => {
+    const mark: TerminationMark = { square: 'e1', kind: 'resignation' };
     const { result } = setup(sightedPreferences, {
-      termination: 'resignation',
-      playerResult: 'loss',
+      terminationMark: mark,
+      terminationMarkLabel: 'Resignation',
     });
-    const banner = finishedProps(result.current.finishedBoardView).bottomBanner as ReactElement<{
-      termination: Termination;
-      result: GameResult;
-    }>;
 
-    expect(banner.props).toMatchObject({ termination: 'resignation', result: 'loss' });
+    const finished = finishedProps(result.current.finishedBoardView);
+    expect(finished.terminationMark).toEqual(mark);
+    expect(finished.terminationMarkLabel).toBe('Resignation');
+    // The in-progress board never carries it — a live game has no loser yet.
+    expect(finishedProps(result.current.inProgressBoardView).terminationMark).toBeUndefined();
   });
 
-  it('omits the banner while the game is still in progress', () => {
-    const { result } = setup(sightedPreferences, { termination: null, playerResult: null });
+  it('marks nothing while the game is still in progress', () => {
+    const { result } = setup(sightedPreferences, {
+      terminationMark: null,
+      terminationMarkLabel: '',
+    });
 
-    expect(finishedProps(result.current.finishedBoardView).bottomBanner).toBeUndefined();
-    expect(finishedProps(result.current.inProgressBoardView).bottomBanner).toBeUndefined();
+    expect(finishedProps(result.current.finishedBoardView).terminationMark).toBeNull();
   });
 });

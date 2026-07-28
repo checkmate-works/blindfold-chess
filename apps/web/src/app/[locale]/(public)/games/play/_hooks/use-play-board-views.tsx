@@ -2,17 +2,15 @@ import { type ComponentProps, type ReactNode, useMemo, useState } from 'react';
 
 import { foldBoardVisibility } from '@/lib/games/play-settings-log';
 import { hidesAnyPiece, revealPieces } from '@/lib/games/reveal-preferences';
+import type { TerminationMark } from '@/lib/games/termination-mark';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { AiReplyChip } from '../_components/AiReplyChip';
 import { BoardRevealToggle } from '../_components/BoardRevealToggle';
 import { BoardSettingsButton } from '../_components/BoardSettingsButton';
-import { GameTerminationBanner } from '../_components/GameTerminationBanner';
 import { InlineBoardView } from '../_components/InlineBoardView';
 import type { FormattedPgn } from '../_lib';
-import type { GameResult } from '../_lib/result-visuals';
-import type { Termination } from '../_lib/termination';
 
 type BoardNavigation = {
   navigateToStart: () => void;
@@ -64,8 +62,8 @@ export function usePlayBoardViews({
   isAiThinking,
   canEditPerGameSettings,
   onOpenSettings,
-  termination,
-  playerResult,
+  terminationMark,
+  terminationMarkLabel,
 }: {
   displayFen: string | null;
   currentFen: string;
@@ -89,10 +87,13 @@ export function usePlayBoardViews({
   isAiThinking: boolean;
   canEditPerGameSettings: boolean;
   onOpenSettings: () => void;
-  /** How the game ended; null while it is still in progress. */
-  termination: Termination | null;
-  /** The player's terminal result; null while the game is still in progress. */
-  playerResult: GameResult | null;
+  /**
+   * The toppled-king mark for the finished board; null while the game is in
+   * progress or when the viewer has scrubbed off the final position.
+   */
+  terminationMark: TerminationMark | null;
+  /** Localized accessible name for that mark. */
+  terminationMarkLabel: string;
 }): { inProgressBoardView: ReactNode; finishedBoardView: ReactNode } {
   // Only surface the on-board AI chip while the board is actually hidden (a
   // blindfold mode AND currently masked). When the board is visible — 'always'
@@ -184,11 +185,8 @@ export function usePlayBoardViews({
       // the player could not see are drawn as faint ghosts, which reads as "you
       // were blind to this" rather than as an empty square.
       hiddenPieceStyle={finishedRevealed ? 'absent' : 'ghost'}
-      bottomBanner={
-        termination && playerResult ? (
-          <GameTerminationBanner termination={termination} result={playerResult} />
-        ) : undefined
-      }
+      terminationMark={terminationMark}
+      terminationMarkLabel={terminationMarkLabel}
       topRightControl={
         canRevealFinished ? (
           <BoardRevealToggle

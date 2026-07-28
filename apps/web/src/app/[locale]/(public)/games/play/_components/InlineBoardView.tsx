@@ -7,6 +7,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
+import type { TerminationMark } from '@/lib/games/termination-mark';
+
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { resolveBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
@@ -145,14 +147,10 @@ type Props = {
    * underneath stay operable.
    */
   aiThinking?: boolean;
-  /**
-   * Optional strip rendered between the board and the navigation controls, in
-   * the normal flow (not an overlay) so it never covers a square. Used by the
-   * finished-game board for the "Checkmate — you win" banner. Sits inside the
-   * mask region, so it stays hidden along with the board in blindfold modes —
-   * correct for its one caller, whose board is never masked.
-   */
-  bottomBanner?: ReactNode;
+  /** Relayed straight to the inner ChessBoard — see its prop doc. */
+  terminationMark?: TerminationMark | null;
+  /** Relayed straight to the inner ChessBoard — see its prop doc. */
+  terminationMarkLabel?: string;
 };
 
 export function InlineBoardView({
@@ -186,7 +184,8 @@ export function InlineBoardView({
   badgeActive,
   topRightControl,
   aiThinking,
-  bottomBanner,
+  terminationMark = null,
+  terminationMarkLabel,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -298,11 +297,9 @@ export function InlineBoardView({
               onIllegalMove={masked ? undefined : onIllegalMove}
               illegalAttempt={illegalAttempt}
               movablePieces={movablePieces}
+              terminationMark={terminationMark}
+              terminationMarkLabel={terminationMarkLabel}
             />
-            {/* Terminal-result strip, directly under the last rank so the
-                outcome reads as part of the board rather than as page chrome. */}
-            {bottomBanner}
-
             {/* Navigation Controls & Flip Button */}
             {(movesLength > 0 || onFlipBoard) && (
               <MoveNavigationRow

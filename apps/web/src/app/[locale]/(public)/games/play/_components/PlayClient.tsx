@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { notFound, useSearchParams } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -11,6 +12,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
+import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -25,7 +27,6 @@ import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayBoardViews } from '../_hooks/use-play-board-views';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
 import { usePublishPromotion } from '../_hooks/use-publish-promotion';
-import { resolveTermination } from '../_lib/termination';
 import { useAiReplyChip } from './AiReplyChip';
 import { GameFinishModal } from './GameFinishModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
@@ -86,6 +87,7 @@ export function PlayClient({
   isAuthenticated,
   expInfo,
 }: Props) {
+  const t = useTranslations('play');
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
   // finished game in the familiar game UI (read-only). Suppresses the
@@ -268,10 +270,21 @@ export function PlayClient({
   // play and when reviewing one opened from the list (`?finished=1`).
   const isFinished = gameStatus !== 'in_progress' && !!playerResult;
 
-  // How the game ended, for the on-board banner. Derived rather than stored:
-  // resigning stamps `'checkmate'` onto a still-playable position, so only the
-  // replayed position can tell the two apart — see `resolveTermination`.
-  const termination = resolveTermination(gameStatus, derivedStatus);
+  // The toppled king on the loser's square. Only on the final position — a
+  // board scrubbed back through history is showing a game still in progress.
+  // `derivedStatus` (the position's own status, not the stored one) is what
+  // separates a mate from a resignation; see `resolveTerminationMark`.
+  const terminationMark = useMemo(
+    () =>
+      isFinished && currentPosition === -1
+        ? resolveTerminationMark({
+            fen: currentFen,
+            losingColor: resolveLosingColor(playerResult, playerSide),
+            isCheckmate: derivedStatus === 'checkmate',
+          })
+        : null,
+    [isFinished, currentPosition, currentFen, playerResult, playerSide, derivedStatus]
+  );
 
   // Finished-game navigation hub: prefetches the result route and exposes the
   // game-finished modal's actions.
@@ -377,8 +390,10 @@ export function PlayClient({
     isAiThinking,
     canEditPerGameSettings,
     onOpenSettings: () => setShowSettingsModal(true),
-    termination,
-    playerResult,
+    terminationMark,
+    terminationMarkLabel: terminationMark
+      ? t(`finishedGame.termination.${terminationMark.kind}`)
+      : '',
   });
 
   if (gameNotFound) {
