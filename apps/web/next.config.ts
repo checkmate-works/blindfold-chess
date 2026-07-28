@@ -99,13 +99,17 @@ const nextConfig: NextConfig = {
   // TODO: Remove this redirect after ~3-6 months (added 2026-02-16).
   //       Once Google Search Console shows no traffic to /game/new, it is safe to remove.
   //
-  // NOTE ON MISSING LOCALE MIDDLEWARE / REDIRECTS:
-  // We intentionally do NOT globally redirect non-localized paths (e.g. `/learn` -> `/en/learn`)
-  // because the Landing Page (app/(landing)/page.tsx) serves at the root `/` across
-  // all languages without a `/[locale]` prefix. Forcing middleware redirects on `/`
-  // would break this requirement.
-  // As a result, old crawled URLs (like `/practice`) may show up as 404s in Google
-  // Search Console. This is an accepted tradeoff.
+  // NOTE ON LOCALE REDIRECTS:
+  // Locale-less in-app paths (e.g. `/learn` -> `/en/learn`) are completed by the
+  // proxy, NOT here: the target locale depends on the request's `Accept-Language`,
+  // which a static `redirects()` entry cannot read. See `needsLocalePrefix()` in
+  // `src/i18n/locale-path.ts` for the rules — chiefly that `/` is excluded, since
+  // the Landing Page (app/(landing)/page.tsx) serves every language at the bare
+  // root. That exclusion is also why next-intl's own middleware is not used.
+  //
+  // Every `source` below carries an explicit `/:locale` prefix, so a locale-less
+  // old URL resolves in two hops: the proxy completes the locale, then the rule
+  // below maps the renamed path (`/game/new` -> `/en/game/new` -> `/en/games/new`).
   async redirects() {
     return [
       {

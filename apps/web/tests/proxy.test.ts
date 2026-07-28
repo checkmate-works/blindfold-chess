@@ -21,8 +21,8 @@ vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
 }));
 
-function createRequest(path: string): NextRequest {
-  return new NextRequest(new URL(path, 'http://localhost:3000'));
+function createRequest(path: string, headers?: Record<string, string>): NextRequest {
+  return new NextRequest(new URL(path, 'http://localhost:3000'), headers ? { headers } : undefined);
 }
 
 describe('proxy', () => {
@@ -216,6 +216,80 @@ describe('proxy', () => {
       const result = await proxy(request);
 
       expect(result).toBe(mockResponse);
+    });
+  });
+
+  describe('locale prefix completion', () => {
+    it('should redirect a locale-less in-app path to the negotiated locale', async () => {
+      // Regression guard for the `/games/new` cards, which linked to a bare
+      // `/games/new/standard` and 404'd in production.
+      const request = createRequest('/games/new/standard', { 'accept-language': 'ja,en;q=0.9' });
+      const result = await proxy(request);
+
+      expect(result.status).toBe(307);
+      expect(new URL(result.headers.get('location')!).pathname).toBe('/ja/games/new/standard');
+    });
+
+    it('should fall back to the default locale without an Accept-Language header', async () => {
+      const result = await proxy(createRequest('/practice'));
+
+      expect(result.status).toBe(307);
+      expect(new URL(result.headers.get('location')!).pathname).toBe('/en/practice');
+    });
+
+    it('should preserve the query string', async () => {
+      const result = await proxy(createRequest('/preferences?tab=notifications'));
+
+      const location = new URL(result.headers.get('location')!);
+      expect(location.pathname).toBe('/en/preferences');
+      expect(location.searchParams.get('tab')).toBe('notifications');
+    });
+
+    it('should mark the redirect as language-dependent for caches', async () => {
+      const result = await proxy(createRequest('/practice'));
+
+      expect(result.headers.get('vary')).toBe('Accept-Language');
+    });
+
+    it('should not spend an auth round-trip on a redirect', async () => {
+      await proxy(createRequest('/practice'));
+
+      expect(mockUpdateSession).not.toHaveBeenCalled();
+    });
+
+    it('should leave the bare root to the landing page', async () => {
+      const mockResponse = NextResponse.next();
+      mockUpdateSession.mockResolvedValue({
+        response: mockResponse,
+        authenticated: false,
+        userId: null,
+      });
+
+      const result = await proxy(createRequest('/', { 'accept-language': 'ja' }));
+
+      expect(result.status).not.toBe(307);
+      expect(mockUpdateSession).toHaveBeenCalled();
+    });
+
+    it('should leave non-localized route trees alone', async () => {
+      const mockResponse = NextResponse.next();
+      mockUpdateSession.mockResolvedValue({
+        response: mockResponse,
+        authenticated: true,
+        userId: 'user-123',
+      });
+
+      for (const path of ['/admin/users', '/auth/callback', '/g/abc123']) {
+        const result = await proxy(createRequest(path, { 'accept-language': 'ja' }));
+        expect(result.status, path).not.toBe(307);
+      }
+    });
+
+    it('should 404 a blocked path rather than redirecting it', async () => {
+      const result = await proxy(createRequest('/wp-login.php'));
+
+      expect(result.status).toBe(404);
+      expect(result.headers.get('location')).toBeNull();
     });
   });
 
