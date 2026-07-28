@@ -38,6 +38,9 @@ export function ReviewMovePositionPanel({
   startingFen,
   playerColor,
   moveOperationLog,
+  onAttemptSelect,
+  selectedAttemptIndex,
+  isAttemptSelectable,
 }: {
   title: string;
   locale: Locale;
@@ -60,6 +63,14 @@ export function ReviewMovePositionPanel({
    * recorded log. Only rendered when it has at least one non-zero counter.
    */
   moveOperationLog: MoveOperationLog | null;
+  /**
+   * Relayed to {@link MoveOpsDetail}: tapping a rejected-move chip marks that
+   * attempt on the replay board (this panel and the board are siblings under
+   * `GameReview`, which owns the selection).
+   */
+  onAttemptSelect?: (attemptIndex: number) => void;
+  selectedAttemptIndex?: number | null;
+  isAttemptSelectable?: (attemptIndex: number) => boolean;
 }) {
   return (
     <div className="space-y-4">
@@ -69,7 +80,12 @@ export function ReviewMovePositionPanel({
           actually tried when an illegal-move attempt was rejected here.
           Self-hiding when the move has nothing notable (the common case).
           Shared verbatim with the local result screen (see MoveOpsDetail). */}
-      <MoveOpsDetail moveOperationLog={moveOperationLog} />
+      <MoveOpsDetail
+        moveOperationLog={moveOperationLog}
+        onAttemptSelect={onAttemptSelect}
+        selectedAttemptIndex={selectedAttemptIndex}
+        isAttemptSelectable={isAttemptSelectable}
+      />
 
       {/* Author something from the position currently on the board —
           chunk / position-memory / puzzle. Signed-in only, mirroring the

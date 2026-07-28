@@ -1,10 +1,18 @@
+import type { MoveOperationLog } from './saved-game-types';
+
+/**
+ * Where a rejected move was aimed. Either square may be missing: some attempt
+ * texts name only a destination (see {@link parseAttemptSquares}).
+ */
+export type IllegalAttemptSquares = { from?: string; to?: string };
+
 /** A generic move ending in a destination square, with an optional promotion suffix. */
 const TRAILING_SQUARE_RE = /([a-h][1-8])(?:=[QRBNqrbn])?$/;
 
 /**
- * Recovers `from`/`to` squares from one rejected-move attempt text, so the GIF
- * can mark the illegal squares rather than just flashing an unlabeled red
- * frame. Two very different sources feed `invalidAttempts` (see
+ * Recovers `from`/`to` squares from one rejected-move attempt text, so a
+ * rejected move can be marked on its actual squares rather than shown as an
+ * unlabeled red flash. Two very different sources feed `invalidAttempts` (see
  * {@link MoveOperationLog.invalidAttempts}): board drag/click attempts, which
  * synthesize a SAN-like label via `describeIllegalAttempt`, and raw text-input
  * submissions, which can be anything a user typed — so this is written
@@ -26,7 +34,7 @@ const TRAILING_SQUARE_RE = /([a-h][1-8])(?:=[QRBNqrbn])?$/;
 export function parseAttemptSquares(
   attempt: string,
   playerColor: 'white' | 'black'
-): { from?: string; to?: string } | null {
+): IllegalAttemptSquares | null {
   const stripped = attempt.replace(/[+#]+$/, '');
 
   const coordinateLong = stripped.match(/^([a-h][1-8])-([a-h][1-8])$/);
@@ -45,4 +53,32 @@ export function parseAttemptSquares(
   if (trailingSquare) return { to: trailingSquare[1] };
 
   return null;
+}
+
+/**
+ * Where the move at `attemptIndex` of a log's {@link MoveOperationLog.invalidAttempts}
+ * was aimed, or null when that cannot be told.
+ *
+ * The single answer to "which squares does this rejected attempt mark", shared
+ * by every surface that draws one — the "as played" GIF and the replay board's
+ * tap-a-chip highlight — so the two can never disagree about where a given
+ * attempt pointed.
+ *
+ * Prefers the squares recorded at the moment of rejection
+ * ({@link MoveOperationLog.invalidAttemptSquares}, board attempts only, exact)
+ * and falls back to re-parsing the display text, which is all a MoveInputPanel
+ * attempt or a pre-2026-07 record leaves behind. Callers should treat null as
+ * "not markable" — draw nothing, and do not offer the interaction at all
+ * rather than offering one that does nothing.
+ */
+export function resolveIllegalAttemptSquares(
+  log: MoveOperationLog,
+  attemptIndex: number,
+  playerColor: 'white' | 'black'
+): IllegalAttemptSquares | null {
+  const recorded = log.invalidAttemptSquares?.[attemptIndex];
+  if (recorded) return recorded;
+
+  const text = log.invalidAttempts?.[attemptIndex];
+  return text ? parseAttemptSquares(text, playerColor) : null;
 }

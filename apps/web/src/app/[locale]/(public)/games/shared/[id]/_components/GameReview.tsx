@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -15,6 +15,7 @@ import { FaArrowRight } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
+import { resolveIllegalAttemptSquares } from '@/lib/games/illegal-attempts';
 import type {
   GamePlaySettings,
   MoveOperationLog,
@@ -281,6 +282,35 @@ export function GameReview({
     [currentPly, playerMoveIndices, operationLogs]
   );
 
+  // Which rejected attempt of the current move is being pointed at on the
+  // board, if any. Reset whenever the displayed move changes — the indices
+  // are per-move, so keeping a selection across a navigation would mark an
+  // unrelated square.
+  const [selectedAttemptIndex, setSelectedAttemptIndex] = useState<number | null>(null);
+  useEffect(() => {
+    setSelectedAttemptIndex(null);
+  }, [currentPly]);
+
+  const attemptSquaresAt = useCallback(
+    (attemptIndex: number) =>
+      currentMoveOperationLog
+        ? resolveIllegalAttemptSquares(currentMoveOperationLog, attemptIndex, playerColor)
+        : null,
+    [currentMoveOperationLog, playerColor]
+  );
+  // Toggle: tapping the chip already on the board clears it.
+  const handleAttemptSelect = useCallback(
+    (attemptIndex: number) =>
+      setSelectedAttemptIndex((current) => (current === attemptIndex ? null : attemptIndex)),
+    []
+  );
+  const isAttemptSelectable = useCallback(
+    (attemptIndex: number) => attemptSquaresAt(attemptIndex) !== null,
+    [attemptSquaresAt]
+  );
+  const illegalAttempt =
+    selectedAttemptIndex != null ? attemptSquaresAt(selectedAttemptIndex) : null;
+
   // The opening (pre-move) board is the game's overview: show the description
   // and statistics there. Once a move is on the board, that move's comment
   // thread takes their place, directly under the move list.
@@ -431,6 +461,7 @@ export function GameReview({
             onNavigateToPosition={userNav.toPosition}
             onFlipBoard={toggleFlip}
             hiddenPieceStyle={hiddenPieceStyle}
+            illegalAttempt={illegalAttempt}
             alwaysOpen
           />
 
@@ -573,6 +604,9 @@ export function GameReview({
             startingFen={startingFen}
             playerColor={playerColor}
             moveOperationLog={currentMoveOperationLog}
+            onAttemptSelect={handleAttemptSelect}
+            selectedAttemptIndex={selectedAttemptIndex}
+            isAttemptSelectable={isAttemptSelectable}
           />
         )
       )}

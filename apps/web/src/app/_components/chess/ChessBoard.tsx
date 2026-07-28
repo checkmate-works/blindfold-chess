@@ -51,6 +51,18 @@ type Props = {
   lastMove?: { from: string; to: string } | null;
   onSquareClick?: (square: string) => void;
   highlightedSquares?: string[];
+  /**
+   * Mark a rejected move on the board: a red destination square with a ✗, and
+   * — when the origin is known — a red outline on the square it came from.
+   * Either square may be absent; a text-typed attempt often names only its
+   * destination (see `resolveIllegalAttemptSquares`).
+   *
+   * Read-only chrome for reviewing a finished game, shown in answer to a
+   * direct question ("where did this rejected move point?"), so it outranks
+   * the last-move tint — see `resolveSquareHighlight`. Same visual language
+   * as the "as played" GIF's illegal frames.
+   */
+  illegalAttempt?: { from?: string; to?: string } | null;
   showCoordinates?: boolean;
   showOwnPieces?: boolean;
   showOpponentPieces?: boolean;
@@ -80,12 +92,13 @@ type Props = {
    * `showOpponentPieces` / `pawnHideMode`) are drawn:
    * - `'absent'` (default) — rendered as an empty square, i.e. truly invisible.
    *   This is what a player must see during live blindfold play.
-   * - `'ghost'` — rendered as a faint, translucent copy of the real piece.
-   *   Used ONLY by the finished-game review's "As Played" toggle, where a
-   *   ghost both conveys what the player could not see and distinguishes a
-   *   hidden-occupied square from a genuinely empty one. Shape / colour
-   *   obfuscation is intentionally skipped for a ghost — it shows the true
-   *   piece so the reviewer learns what was hidden.
+   * - `'ghost'` — rendered translucently. Used ONLY by the finished-game
+   *   review's "As Played" toggle, where fading both conveys what the player
+   *   could not see and distinguishes a hidden-occupied square from a
+   *   genuinely empty one. A normally-shaped piece fades as its true self so
+   *   the reviewer learns what was hidden; a piece the player had set to
+   *   render as a Go stone stays a stone and merely fades, since that is
+   *   what revealing the square would have shown. See `resolvePieceDisplay`.
    */
   hiddenPieceStyle?: 'absent' | 'ghost';
   boardTheme?: BoardTheme;
@@ -200,6 +213,7 @@ export const ChessBoard = memo(function ChessBoard({
   lastMove = null,
   onSquareClick,
   highlightedSquares = EMPTY_HIGHLIGHTED_SQUARES,
+  illegalAttempt = null,
   showCoordinates = true,
   showOwnPieces = true,
   showOpponentPieces = true,
@@ -452,9 +466,11 @@ export const ChessBoard = memo(function ChessBoard({
 
       if (display.kind === 'circle') {
         // Show as Go stone-like circle with subtle gradient and shadow.
+        // A faint stone is a hidden one — same fade as a ghost piece, so
+        // "dimmed" reads as "could not see this" whichever form it takes.
         return (
           <div
-            className={`w-[60%] h-[60%] rounded-full ${grabClass} ${fadeClass}`}
+            className={`w-[60%] h-[60%] rounded-full ${display.faint ? 'opacity-40' : ''} ${grabClass} ${fadeClass}`}
             style={goStoneStyle(display.color)}
           />
         );
@@ -538,6 +554,8 @@ export const ChessBoard = memo(function ChessBoard({
         isLegalDestination,
         isLastMove: Boolean(isLastMove),
         isExternalHighlight,
+        isIllegalTo: illegalAttempt?.to === square,
+        isIllegalFrom: illegalAttempt?.from === square,
       });
 
       const showEvalMark = evaluationMark && evaluationMark.square === square;
@@ -554,6 +572,7 @@ export const ChessBoard = memo(function ChessBoard({
     [
       lastMove,
       highlightedSquares,
+      illegalAttempt,
       evaluationMark,
       onSquareClick,
       interactive,

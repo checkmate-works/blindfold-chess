@@ -81,6 +81,8 @@ type Props = {
    * count board-driven blindfold mistakes. See `ChessBoard`'s prop doc.
    */
   onIllegalMove?: (attempt?: string, squares?: { from: string; to: string }) => void;
+  /** Relayed straight to the inner ChessBoard — see its prop doc. */
+  illegalAttempt?: { from?: string; to?: string } | null;
   /**
    * Relayed to the inner ChessBoard. Defaults to `'own'` (real-game rule:
    * only the player's pieces respond). Recall passes `'side-to-move'` so
@@ -167,6 +169,7 @@ export function InlineBoardView({
   defaultOpen = false,
   onMove,
   onIllegalMove,
+  illegalAttempt = null,
   movablePieces,
   masked,
   onReveal,
@@ -287,6 +290,7 @@ export function InlineBoardView({
               // covered board never commits a move.
               onMove={masked ? undefined : onMove}
               onIllegalMove={masked ? undefined : onIllegalMove}
+              illegalAttempt={illegalAttempt}
               movablePieces={movablePieces}
             />
             {/* Navigation Controls & Flip Button */}

@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 
+import type { SquareHighlightType } from '@blindfold-chess/features/board-display';
+
 import type { TailwindThemeClasses } from '@/lib/games/board-themes';
 
 type Props = {
@@ -20,8 +22,9 @@ type Props = {
   // Interaction
   onClick?: () => void;
 
-  // Highlight
-  highlightType?: 'none' | 'last-move' | 'selectable' | 'selected' | 'move-dest' | 'capture-dest';
+  // Highlight — the union lives with its precedence rule (`resolveSquareHighlight`)
+  // so a new type cannot be added there and silently go unstyled here.
+  highlightType?: SquareHighlightType;
 
   // Badge (e.g., evaluation mark)
   badge?: ReactNode;
@@ -68,12 +71,19 @@ export const Square = memo(function Square({
   // destinations, captures — are rendered as an inset overlay (below) using
   // the exact lichess/chessground values, so the simple ring would be wrong
   // for them.
+  // `#dc2626` mirrors the GIF renderer's illegal marker (`ILLEGAL_RED` in
+  // `render-board-svg`) so a rejected move reads the same whether it is
+  // tapped on this board or watched in the replay. It is a literal rather
+  // than a theme token for the same reason the last-move yellow is: the SVG
+  // renderer runs where no CSS custom properties exist.
   const highlightClass =
     highlightType === 'last-move'
       ? 'ring-2 ring-yellow-400 ring-inset'
       : highlightType === 'selectable'
         ? 'ring-2 ring-foreground/50 ring-inset'
-        : '';
+        : highlightType === 'illegal-from'
+          ? 'ring-4 ring-[#dc2626] ring-inset'
+          : '';
 
   // Lichess/chessground move-affordance overlays, copied verbatim from lila
   // `ui/lib/css/theme/board/_chessground.scss`. Rendered as an absolutely
@@ -91,7 +101,9 @@ export const Square = memo(function Square({
               background:
                 'radial-gradient(transparent 0%, transparent 79%, rgba(20, 85, 0, 0.3) calc(80% + 1px))',
             }
-          : null;
+          : highlightType === 'illegal-to'
+            ? { backgroundColor: 'rgba(220,38,38,0.42)' }
+            : null;
 
   const coordinateColorClass = isLight ? colors.lightCoordinates : colors.darkCoordinates;
 
@@ -120,6 +132,25 @@ export const Square = memo(function Square({
       )}
 
       <div className="flex items-center justify-center w-full h-full">{children}</div>
+
+      {/* The rejected move's ✗, painted OVER the piece — an attempt onto an
+          occupied square (a self-capture, say) must still read as rejected.
+          Geometry mirrors the GIF's `illegalToMarkup`. */}
+      {highlightType === 'illegal-to' && (
+        <svg
+          aria-hidden
+          viewBox="0 0 100 100"
+          className="pointer-events-none absolute inset-0 h-full w-full"
+        >
+          <path
+            d="M28 28 L72 72 M72 28 L28 72"
+            stroke="#dc2626"
+            strokeWidth="11"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      )}
 
       {/* Coordinates */}
       {showCoordinates && showRankCoordinate && (

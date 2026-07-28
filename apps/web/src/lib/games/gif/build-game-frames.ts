@@ -3,7 +3,8 @@ import { executeMove, replayMoves } from '@blindfold-chess/features/chess-core';
 
 import type { GameRecord } from '@/lib/db/schema';
 import type { GameGifVariant } from '@/lib/games/gif/constants';
-import { parseAttemptSquares } from '@/lib/games/gif/parse-attempt-squares';
+import type { IllegalAttemptSquares } from '@/lib/games/illegal-attempts';
+import { resolveIllegalAttemptSquares } from '@/lib/games/illegal-attempts';
 import { playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
 import {
   foldPlaySettingsToDisplay,
@@ -244,17 +245,9 @@ function buildSlotAnnotations(
     });
   }
 
-  // Prefer the exact squares captured at record time (board attempts only —
-  // see MoveOperationLog.invalidAttemptSquares) over re-parsing the display
-  // text, which is lossy by design (no disambiguation for an illegal move).
-  // Falls back to parseAttemptSquares for MoveInputPanel attempts (no
-  // recorded squares) and for legacy entries predating this field.
   const illegalSquares = (log.invalidAttempts ?? [])
-    .map(
-      (attempt, i) =>
-        log.invalidAttemptSquares?.[i] ?? parseAttemptSquares(attempt, game.playerColor)
-    )
-    .filter((squares): squares is { from?: string; to?: string } => squares !== null)
+    .map((_, i) => resolveIllegalAttemptSquares(log, i, game.playerColor))
+    .filter((squares): squares is IllegalAttemptSquares => squares !== null)
     .slice(0, MAX_ILLEGAL_ATTEMPTS_DRAWN);
 
   for (const squares of illegalSquares) {

@@ -946,3 +946,42 @@ describe('ChessBoard — pawn hiding (pawnHideMode)', () => {
     expect(countPieces(container)).toBe(5);
   });
 });
+
+describe('ChessBoard — illegalAttempt marker', () => {
+  // Interactive so squares carry `data-square` (the review board is not, but
+  // the highlight path is identical — only event delegation differs).
+  const noop = () => {};
+
+  it('marks both squares of a rejected attempt, and nothing when absent', () => {
+    const { container, rerender } = render(<ChessBoard fen={STARTING_FEN} onMove={noop} />);
+    expect(container.querySelector('[data-highlight="illegal-to"]')).toBeNull();
+
+    rerender(
+      <ChessBoard fen={STARTING_FEN} onMove={noop} illegalAttempt={{ from: 'b1', to: 'c3' }} />
+    );
+    expect(squareEl(container, 'c3').querySelector('[data-highlight="illegal-to"]')).not.toBeNull();
+    // The origin is an inset ring on the square itself, not an overlay layer.
+    expect(squareEl(container, 'b1').className).toContain('ring-[#dc2626]');
+  });
+
+  it('marks only the destination when the origin could not be recovered', () => {
+    const { container } = render(
+      <ChessBoard fen={STARTING_FEN} onMove={noop} illegalAttempt={{ to: 'c3' }} />
+    );
+    expect(squareEl(container, 'c3').querySelector('[data-highlight="illegal-to"]')).not.toBeNull();
+    expect(container.querySelectorAll('[class*="ring-[#dc2626]"]')).toHaveLength(0);
+  });
+
+  it('outranks the last-move tint, so an attempt aimed at one is still visible', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        onMove={noop}
+        lastMove={{ from: 'b1', to: 'c3' }}
+        illegalAttempt={{ from: 'b1', to: 'c3' }}
+      />
+    );
+    expect(squareEl(container, 'c3').querySelector('[data-highlight="illegal-to"]')).not.toBeNull();
+    expect(squareEl(container, 'c3').className).not.toContain('ring-yellow-400');
+  });
+});
