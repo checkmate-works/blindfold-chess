@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPaperclip } from 'react-icons/fa';
 
-import { revalidatePathAction } from '../_actions/revalidatePathAction';
 import type { AttachAction } from '../_lib/action-types';
 import { applyAttachmentMode } from '../_lib/attachment-form-data';
 import { uploadPostImages } from '../_lib/upload-post-images';
@@ -58,7 +57,6 @@ export function AttachmentAddButton({
   const tAdd = useTranslations('topics.addAttachment');
   const tImgErr = useTranslations('attachment.image.error');
   const router = useRouter();
-  const pathname = usePathname();
 
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
   const [isAttaching, setIsAttaching] = useState(false);
@@ -81,10 +79,6 @@ export function AttachmentAddButton({
       }
       return;
     }
-    // The upload API does not revalidate; bust the Full Route Cache for
-    // the current page so the new image shows on refresh (without a
-    // full reload), matching the PGN / FEN attach Server Actions.
-    await revalidatePathAction(pathname);
     setIsAttaching(false);
     setIsAttachModalOpen(false);
     router.refresh();

@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { and, eq, isNull, or } from 'drizzle-orm';
 
@@ -67,9 +65,8 @@ export async function toggleBlock(
     targetId: targetProfile.id,
   });
 
-  revalidatePath(`/${locale}/u/${targetUsername}`);
-  revalidatePath(`/${locale}/u/${targetUsername}/block`);
-  revalidatePath(`/${locale}/mypage/following`);
+  // No revalidatePath: all three routes are dynamic, and `BlockActions` calls
+  // `router.refresh()` on success for the page the user is actually on.
 
   return { blocked };
 }

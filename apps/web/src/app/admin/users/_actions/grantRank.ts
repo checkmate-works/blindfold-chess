@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
@@ -94,7 +94,8 @@ export async function grantRank(
     return { error: 'failedToGrantRank' };
   }
 
-  revalidatePath(`/admin/users/${targetUserId}`);
+  // No revalidatePath: the admin user page is dynamic, and `GrantRankButton`
+  // calls `router.refresh()` on success.
   revalidateTag(RANK_STATUS_CACHE_TAG, { expire: 60 });
 
   // The recipient has no way to notice a manually-granted rank otherwise —

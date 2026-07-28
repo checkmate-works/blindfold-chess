@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import type { PublishRepertoireResult } from '@/lib/repertoires/mutations';
 import { publishRepertoireEntry } from '@/lib/repertoires/mutations';
 
@@ -17,8 +15,8 @@ export async function publishRepertoire(input: {
 }): Promise<PublishRepertoireResult> {
   const result = await publishRepertoireEntry(input.id);
   if ('success' in result) {
-    revalidatePath(`/${input.locale}/repertoires/${input.id}`);
-    revalidatePath(`/${input.locale}/repertoires`);
+    // No revalidatePath: both routes are dynamic, and
+    // `PublishRepertoireBanner` calls `router.refresh()` on success.
   }
   return result;
 }
