@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { eq } from 'drizzle-orm';
 
@@ -17,22 +15,28 @@ import type { TopicType } from '../_lib/constants';
 
 type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
 
+/**
+ * Shared "like / unlike a topic_post" core, behind a thin `"use server"`
+ * wrapper per topic type (squares, openings, chunks, repertoires, puzzle,
+ * position-memory, ...).
+ *
+ * @design No `revalidatePath` — deliberate, do not re-add.
+ * See the matching note on `performEntityToggleLike` in
+ * `@/lib/db/like-actions` for the full rationale and the measurement. In
+ * short: every page that renders a like count is uncached, so revalidation
+ * changed nothing on screen, while forcing Next.js to re-render and ship the
+ * caller's entire current page (256 KB on the home feed) with each like.
+ * Removing it also removed this helper's `urlSegment` parameter, which
+ * existed solely to build the default revalidate paths.
+ */
 export async function toggleLikeBase(params: {
   postId: string;
   locale: string;
   topicIdentifier: string;
   topicType: TopicType;
-  urlSegment: string;
   validateTopic: (identifier: string) => boolean | Promise<boolean>;
-  /**
-   * Override the paths passed to `revalidatePath`. When omitted, defaults to
-   * the legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}` and
-   * `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}` pair.
-   */
-  revalidate?: (postId: string) => string[];
 }): Promise<ToggleLikeResult> {
-  const { postId, locale, topicIdentifier, topicType, urlSegment, validateTopic, revalidate } =
-    params;
+  const { postId, locale, topicIdentifier, topicType, validateTopic } = params;
 
   assertSupportedLocale(locale);
 
@@ -76,16 +80,6 @@ export async function toggleLikeBase(params: {
       targetId: postId,
       metadata: { topicType, topicKey: topicIdentifier, postId },
     });
-  }
-
-  const pathsToRevalidate = revalidate
-    ? revalidate(postId)
-    : [
-        `/${locale}/topics/${urlSegment}/${topicIdentifier}`,
-        `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`,
-      ];
-  for (const path of pathsToRevalidate) {
-    revalidatePath(path);
   }
 
   return {

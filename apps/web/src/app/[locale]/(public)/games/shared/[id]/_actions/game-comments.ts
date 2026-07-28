@@ -35,8 +35,7 @@ export type AddGameCommentResponse =
   | { success: false; error: string };
 
 export type EditGameCommentResponse =
-  | { success: true; updatedAt: string }
-  | { success: false; error: string };
+  { success: true; updatedAt: string } | { success: false; error: string };
 
 export type DeleteGameCommentResponse = { success: true } | { success: false; error: string };
 
@@ -212,16 +211,15 @@ export async function deleteGameCommentAction(
 /**
  * Toggle a like on a shared-game comment (members-only). Reuses the generic
  * polymorphic like machinery under `target_type = 'game_comment'`, notifying
- * the comment's author and revalidating the game's detail page.
+ * the comment's author.
  */
 export async function toggleGameCommentLikeAction(
   commentId: string,
-  locale: string
+  _locale: string
 ): Promise<ToggleLikeResult> {
   try {
     return await performEntityToggleLike({
       id: commentId,
-      locale,
       fieldName: 'commentId',
       targetType: GAME_COMMENT_LIKE_TARGET,
       fetchOwner: async (id) => {
@@ -232,7 +230,6 @@ export async function toggleGameCommentLikeAction(
       // (`/games/shared/{gameId}?comment={commentId}`); the comment id is the
       // notification's targetId.
       notificationMeta: (_id, gameId) => ({ gameId }),
-      revalidatePaths: (loc, _id, gameId) => (gameId ? [`/${loc}/games/shared/${gameId}`] : []),
     });
   } catch (error) {
     return handleServerActionError(error, '[toggleGameCommentLikeAction]');

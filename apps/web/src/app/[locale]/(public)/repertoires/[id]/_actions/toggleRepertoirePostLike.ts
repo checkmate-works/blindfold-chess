@@ -14,8 +14,6 @@ export async function toggleRepertoirePostLike(
     locale,
     topicIdentifier: repertoireId,
     topicType: 'repertoire',
-    urlSegment: 'repertoires',
     validateTopic: async (id) => (await getRepertoireById(id)) !== null,
-    revalidate: () => [`/${locale}/repertoires/${repertoireId}`],
   });
 }

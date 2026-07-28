@@ -14,8 +14,6 @@ export async function togglePositionPuzzlePostLike(
     locale,
     topicIdentifier: positionId,
     topicType: 'position_puzzle',
-    urlSegment: 'practice/puzzle',
     validateTopic: async (id) => (await getPositionById({ id, type: 'puzzle' })) !== null,
-    revalidate: () => [`/${locale}/practice/puzzle/${positionId}`],
   });
 }

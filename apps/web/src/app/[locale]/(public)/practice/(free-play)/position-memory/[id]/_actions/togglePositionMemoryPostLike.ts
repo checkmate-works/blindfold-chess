@@ -14,8 +14,6 @@ export async function togglePositionMemoryPostLike(
     locale,
     topicIdentifier: positionId,
     topicType: 'position_memory',
-    urlSegment: 'practice/position-memory',
     validateTopic: async (id) => (await getPositionById({ id, type: 'memory' })) !== null,
-    revalidate: () => [`/${locale}/practice/position-memory/${positionId}`],
   });
 }

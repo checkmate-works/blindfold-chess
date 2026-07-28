@@ -1,5 +1,3 @@
-import { revalidatePath } from 'next/cache';
-
 import { and, count, eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
@@ -69,37 +67,49 @@ export async function toggleLikeForTarget(params: {
  *   3. Toggle the like.
  *   4. Look up the entity to discover its owner (and any extra context).
  *   5. Notify the owner on a fresh like (skipping self-likes and unlikes).
- *   6. Revalidate the relevant paths.
- *   7. Return `{ liked, likeCount }`.
+ *   6. Return `{ liked, likeCount }`.
  *
- * This factory captures (1)-(3), (5), (6), (7) and lets callers plug in
- * the per-entity bits — the owner-lookup query, the notification metadata
- * shape, and the revalidation fan-out — via three small callbacks. The
- * shape of `extra` is fully generic so each caller carries through its
- * own derived data (slug for chunks, positionType for positions, etc.).
+ * This factory captures (1)-(3), (5), (6) and lets callers plug in the
+ * per-entity bits — the owner-lookup query and the notification metadata
+ * shape — via two small callbacks. The shape of `extra` is fully generic
+ * so each caller carries through its own derived data (slug for chunks,
+ * positionType for positions, etc.).
+ *
+ * @design No `revalidatePath` — deliberate, do not re-add.
+ * A like only moves a counter that every reader re-queries anyway: each page
+ * rendering a like count is uncached, either by an explicit
+ * `export const dynamic = 'force-dynamic'` or because it reads auth cookies
+ * (`getOptionalUser()` / `auth.getUser()`) to decide `likedByMe`. No like
+ * count sits behind `unstable_cache` / `use cache` either — the only cache
+ * tags in this app are leaderboard, exp-leaderboard and daily-puzzle
+ * (see `@/lib/cache-tags`). So revalidation bought exactly nothing.
+ *
+ * It cost a great deal, though. `revalidatePath` inside a Server Action makes
+ * Next.js re-render the *caller's current page* server-side and ship its whole
+ * RSC tree back alongside the action result. Measured on the home feed
+ * (2026-07-29, Next 16.2): 256,249 B per like with it vs 94 B without —
+ * plus a full `getFeedData()` / `resolveNativeAds()` / `auth.getUser()`
+ * round-trip on every tap, and a wipe of the client Router Cache. The
+ * client already applies the new count optimistically (`useLikeToggle`),
+ * so the extra render never even reached the screen.
  */
 export async function performEntityToggleLike<TExtra>(params: {
   id: string;
-  locale: string;
   /** camelCase field name used to build the `invalid<Field>` error key. */
   fieldName: string;
   /** Polymorphic target type passed to `toggleLikeForTarget` and `createNotification`. */
   targetType: string;
   /**
    * Look up the target row's owner plus any extra context the caller will
-   * need in `notificationMeta` and `revalidatePaths`. Returning `null`
-   * means the row has gone away between the toggle and the lookup — in
-   * that case notification is skipped and revalidation is still attempted
-   * with `extra: null`.
+   * need in `notificationMeta`. Returning `null` means the row has gone
+   * away between the toggle and the lookup — in that case the notification
+   * is skipped and the toggle still counts.
    */
   fetchOwner: (id: string) => Promise<{ userId: string | null; extra: TExtra } | null>;
   /** Build notification metadata. Only called on a fresh like to a non-self. */
   notificationMeta: (id: string, extra: TExtra) => Record<string, unknown>;
-  /** Paths to revalidate. `extra` is `null` when the row could not be found. */
-  revalidatePaths: (locale: string, id: string, extra: TExtra | null) => string[];
 }): Promise<ToggleLikeResult> {
-  const { id, locale, fieldName, targetType, fetchOwner, notificationMeta, revalidatePaths } =
-    params;
+  const { id, fieldName, targetType, fetchOwner, notificationMeta } = params;
 
   const uuidError = validateUUID(id, fieldName);
   if (uuidError) return uuidError;
@@ -138,10 +148,6 @@ export async function performEntityToggleLike<TExtra>(params: {
       targetId: id,
       metadata: notificationMeta(id, owner.extra),
     });
-  }
-
-  for (const path of revalidatePaths(locale, id, owner?.extra ?? null)) {
-    revalidatePath(path);
   }
 
   return { liked, likeCount };
