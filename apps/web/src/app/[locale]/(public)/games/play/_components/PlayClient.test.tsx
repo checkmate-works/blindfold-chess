@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
-import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen } from '@testing-library/react';
+import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { FINISH_MODAL_AUTO_OPEN_DELAY_MS } from '../_hooks/use-finish-modal';
 import { PlayClient } from './PlayClient';
 
 // ---------------------------------------------------------------------------
@@ -234,14 +235,35 @@ describe('PlayClient — view selection', () => {
 });
 
 describe('PlayClient — game-finished modal', () => {
+  // The modal auto-opens a beat after the game ends, so the final position is
+  // readable first (see FINISH_MODAL_AUTO_OPEN_DELAY_MS). Tests that want it on
+  // screen have to let that beat pass.
+  function settleAutoOpen(): void {
+    act(() => {
+      vi.advanceTimersByTime(FINISH_MODAL_AUTO_OPEN_DELAY_MS);
+    });
+  }
+
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it('leaves the finished board uncovered before the modal auto-opens', () => {
+    renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win', gameId: 'g9' }));
+
+    expect(screen.queryByTestId('finish-modal')).not.toBeInTheDocument();
+    expect(screen.getByTestId('finished-panel')).toBeInTheDocument();
+  });
+
   it('shows the finish modal (no redirect) when a game ends in live play', () => {
     renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win', gameId: 'g9' }));
+    settleAutoOpen();
     expect(screen.getByTestId('finish-modal')).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
   });
 
   it('Game Review card navigates to the result page', () => {
     renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win', gameId: 'g9' }));
+    settleAutoOpen();
     screen.getByTestId('finish-review').click();
     expect(push).toHaveBeenCalledWith('/en/games/play/result?gameId=g9');
   });
@@ -249,12 +271,14 @@ describe('PlayClient — game-finished modal', () => {
   it('does NOT show the modal while reviewing a finished game (finished=1)', () => {
     finishedParam = '1';
     renderPlay(buildGameSession({ gameStatus: 'checkmate', playerResult: 'win' }));
+    settleAutoOpen();
     expect(screen.queryByTestId('finish-modal')).not.toBeInTheDocument();
     expect(screen.getByTestId('finished-panel')).toBeInTheDocument();
   });
 
   it('does NOT show the modal for an in-progress game', () => {
     renderPlay(buildGameSession({ gameStatus: 'in_progress' }));
+    settleAutoOpen();
     expect(screen.queryByTestId('finish-modal')).not.toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
   });
