@@ -25,6 +25,7 @@ import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayBoardViews } from '../_hooks/use-play-board-views';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
 import { usePublishPromotion } from '../_hooks/use-publish-promotion';
+import { resolveTermination } from '../_lib/termination';
 import { useAiReplyChip } from './AiReplyChip';
 import { GameFinishModal } from './GameFinishModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
@@ -114,7 +115,15 @@ export function PlayClient({
     preferenceChangeLog,
     gameId,
   } = gameConfig;
-  const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
+  const {
+    gameStatus,
+    derivedStatus,
+    playerResult,
+    isPlayerTurn,
+    isLoading,
+    lastMove,
+    gameNotFound,
+  } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, clearMoveError } = moveInput;
   const {
@@ -259,6 +268,11 @@ export function PlayClient({
   // play and when reviewing one opened from the list (`?finished=1`).
   const isFinished = gameStatus !== 'in_progress' && !!playerResult;
 
+  // How the game ended, for the on-board banner. Derived rather than stored:
+  // resigning stamps `'checkmate'` onto a still-playable position, so only the
+  // replayed position can tell the two apart — see `resolveTermination`.
+  const termination = resolveTermination(gameStatus, derivedStatus);
+
   // Finished-game navigation hub: prefetches the result route and exposes the
   // game-finished modal's actions.
   const { handleViewResult, handleShare, openRecall, openRepertoireCheck, isShared } =
@@ -363,6 +377,8 @@ export function PlayClient({
     isAiThinking,
     canEditPerGameSettings,
     onOpenSettings: () => setShowSettingsModal(true),
+    termination,
+    playerResult,
   });
 
   if (gameNotFound) {

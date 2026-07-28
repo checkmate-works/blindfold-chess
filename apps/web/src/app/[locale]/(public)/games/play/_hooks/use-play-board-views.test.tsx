@@ -6,6 +6,8 @@ import { describe, expect, it, vi } from 'vitest';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { InlineBoardView } from '../_components/InlineBoardView';
+import type { GameResult } from '../_lib/result-visuals';
+import type { Termination } from '../_lib/termination';
 import { usePlayBoardViews } from './use-play-board-views';
 
 // The views are inspected as React elements rather than rendered: what this
@@ -31,9 +33,16 @@ const sightedPreferences = {
   showOpponentPieces: true,
 } as GamePreferences;
 
-function setup(preferences: GamePreferences) {
+function setup(
+  preferences: GamePreferences,
+  ending: { termination: Termination | null; playerResult: GameResult | null } = {
+    termination: 'checkmate',
+    playerResult: 'win',
+  }
+) {
   return renderHook(() =>
     usePlayBoardViews({
+      ...ending,
       displayFen: null,
       currentFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       playerSide: 'white',
@@ -122,5 +131,25 @@ describe('usePlayBoardViews finished board', () => {
   it('offers no toggle for a game that hid nothing', () => {
     const { result } = setup(sightedPreferences);
     expect(finishedProps(result.current.finishedBoardView).topRightControl).toBeUndefined();
+  });
+
+  it('banners the termination and result on the board', () => {
+    const { result } = setup(sightedPreferences, {
+      termination: 'resignation',
+      playerResult: 'loss',
+    });
+    const banner = finishedProps(result.current.finishedBoardView).bottomBanner as ReactElement<{
+      termination: Termination;
+      result: GameResult;
+    }>;
+
+    expect(banner.props).toMatchObject({ termination: 'resignation', result: 'loss' });
+  });
+
+  it('omits the banner while the game is still in progress', () => {
+    const { result } = setup(sightedPreferences, { termination: null, playerResult: null });
+
+    expect(finishedProps(result.current.finishedBoardView).bottomBanner).toBeUndefined();
+    expect(finishedProps(result.current.inProgressBoardView).bottomBanner).toBeUndefined();
   });
 });

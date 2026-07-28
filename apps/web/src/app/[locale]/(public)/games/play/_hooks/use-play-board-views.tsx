@@ -8,8 +8,11 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { AiReplyChip } from '../_components/AiReplyChip';
 import { BoardRevealToggle } from '../_components/BoardRevealToggle';
 import { BoardSettingsButton } from '../_components/BoardSettingsButton';
+import { GameTerminationBanner } from '../_components/GameTerminationBanner';
 import { InlineBoardView } from '../_components/InlineBoardView';
 import type { FormattedPgn } from '../_lib';
+import type { GameResult } from '../_lib/result-visuals';
+import type { Termination } from '../_lib/termination';
 
 type BoardNavigation = {
   navigateToStart: () => void;
@@ -61,6 +64,8 @@ export function usePlayBoardViews({
   isAiThinking,
   canEditPerGameSettings,
   onOpenSettings,
+  termination,
+  playerResult,
 }: {
   displayFen: string | null;
   currentFen: string;
@@ -84,6 +89,10 @@ export function usePlayBoardViews({
   isAiThinking: boolean;
   canEditPerGameSettings: boolean;
   onOpenSettings: () => void;
+  /** How the game ended; null while it is still in progress. */
+  termination: Termination | null;
+  /** The player's terminal result; null while the game is still in progress. */
+  playerResult: GameResult | null;
 }): { inProgressBoardView: ReactNode; finishedBoardView: ReactNode } {
   // Only surface the on-board AI chip while the board is actually hidden (a
   // blindfold mode AND currently masked). When the board is visible — 'always'
@@ -175,6 +184,11 @@ export function usePlayBoardViews({
       // the player could not see are drawn as faint ghosts, which reads as "you
       // were blind to this" rather than as an empty square.
       hiddenPieceStyle={finishedRevealed ? 'absent' : 'ghost'}
+      bottomBanner={
+        termination && playerResult ? (
+          <GameTerminationBanner termination={termination} result={playerResult} />
+        ) : undefined
+      }
       topRightControl={
         canRevealFinished ? (
           <BoardRevealToggle

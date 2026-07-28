@@ -145,6 +145,14 @@ type Props = {
    * underneath stay operable.
    */
   aiThinking?: boolean;
+  /**
+   * Optional strip rendered between the board and the navigation controls, in
+   * the normal flow (not an overlay) so it never covers a square. Used by the
+   * finished-game board for the "Checkmate — you win" banner. Sits inside the
+   * mask region, so it stays hidden along with the board in blindfold modes —
+   * correct for its one caller, whose board is never masked.
+   */
+  bottomBanner?: ReactNode;
 };
 
 export function InlineBoardView({
@@ -178,6 +186,7 @@ export function InlineBoardView({
   badgeActive,
   topRightControl,
   aiThinking,
+  bottomBanner,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -290,6 +299,10 @@ export function InlineBoardView({
               illegalAttempt={illegalAttempt}
               movablePieces={movablePieces}
             />
+            {/* Terminal-result strip, directly under the last rank so the
+                outcome reads as part of the board rather than as page chrome. */}
+            {bottomBanner}
+
             {/* Navigation Controls & Flip Button */}
             {(movesLength > 0 || onFlipBoard) && (
               <MoveNavigationRow
