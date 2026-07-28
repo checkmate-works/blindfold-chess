@@ -54,6 +54,12 @@ export type SupersedeRule = {
    */
   dominatingTypes: readonly string[];
   /**
+   * Types that outrank the incoming one, excluding its own tier. Checked
+   * again *after* the insert: a colliding emitter running concurrently may
+   * have written its row after the pre-insert check read the group.
+   */
+  strictlyDominatingTypes: readonly string[];
+  /**
    * Types the incoming notification makes redundant — everything ranked
    * below it. Rows of these types already in the group are deleted after
    * the insert.
@@ -73,6 +79,7 @@ export function resolveSupersedeRule(type: string): SupersedeRule | null {
 
     return {
       dominatingTypes: tiers.slice(0, tierIndex + 1).flat(),
+      strictlyDominatingTypes: tiers.slice(0, tierIndex).flat(),
       dominatedTypes: tiers.slice(tierIndex + 1).flat(),
     };
   }

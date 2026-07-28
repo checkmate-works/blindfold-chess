@@ -53,6 +53,29 @@ describe('resolveSupersedeRule', () => {
     });
   });
 
+  describe('strictlyDominatingTypes', () => {
+    it('excludes the type itself and its tier siblings', () => {
+      // Used for the post-insert re-check, which must not treat a row this
+      // very call inserted (or a same-tier row) as a reason to self-delete.
+      expect(resolveSupersedeRule('new_post')?.strictlyDominatingTypes).toEqual([
+        'new_comment_on_topic',
+      ]);
+      expect(resolveSupersedeRule('puzzle_forked')?.strictlyDominatingTypes).toEqual([]);
+      expect(resolveSupersedeRule('memory_forked')?.strictlyDominatingTypes).toEqual([]);
+    });
+
+    it('is empty for the most specific tier, so it never self-deletes', () => {
+      expect(resolveSupersedeRule('new_comment_on_topic')?.strictlyDominatingTypes).toEqual([]);
+    });
+
+    it('lists every fork type for the new_position fan-out', () => {
+      expect(resolveSupersedeRule('new_position')?.strictlyDominatingTypes).toEqual([
+        'puzzle_forked',
+        'memory_forked',
+      ]);
+    });
+  });
+
   it('always includes the type itself among its dominating types', () => {
     // The supersede query replaces the exact-type dedup for these types, so
     // omitting self would let identical rows through.

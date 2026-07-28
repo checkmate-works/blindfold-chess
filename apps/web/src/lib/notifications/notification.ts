@@ -111,16 +111,40 @@ export function createNotification(event: NotificationEvent): void {
       metadata: event.metadata ?? {},
     });
 
-    // Drop the rows this one makes redundant. Deliberately AFTER the insert
-    // and re-evaluated against the DB (rather than deleting the ids the
-    // SELECT above returned): the colliding emitters run concurrently as
-    // fire-and-forget promises, so the less specific row may still be
-    // in flight while the check above runs. Cleaning up afterwards makes the
-    // outcome independent of which one wins the race.
-    if (supersede && supersede.dominatedTypes.length > 0) {
+    if (!supersede) return;
+
+    // Reconcile the group AFTER the insert. The colliding emitters run
+    // concurrently as fire-and-forget promises with several awaited
+    // roundtrips each, so the pre-insert check above can read the group
+    // before the other row lands and still insert after it. Both directions
+    // are therefore settled here, against the DB rather than against the
+    // rows the check returned — whichever emitter writes last cleans up, so
+    // the end state does not depend on who wins the race.
+    if (supersede.dominatedTypes.length > 0) {
+      // Rows this notification makes redundant.
       await db
         .delete(notifications)
         .where(and(supersede.groupFilter, inArray(notifications.type, supersede.dominatedTypes)));
+    }
+
+    if (supersede.strictlyDominatingTypes.length > 0) {
+      // ...and the mirror image: a more specific row appeared while this one
+      // was being written, so this type is now the redundant one. Deleting by
+      // type rather than by inserted id also sweeps up a same-type row a
+      // second racing writer may have added.
+      const moreSpecific = await db
+        .select({ id: notifications.id })
+        .from(notifications)
+        .where(
+          and(supersede.groupFilter, inArray(notifications.type, supersede.strictlyDominatingTypes))
+        )
+        .limit(1);
+
+      if (moreSpecific.length > 0) {
+        await db
+          .delete(notifications)
+          .where(and(supersede.groupFilter, eq(notifications.type, event.type)));
+      }
     }
   })().catch(() => {});
 }
@@ -140,7 +164,12 @@ function buildSupersedeContext(params: {
   targetType: string;
   targetId: string;
   since: Date;
-}): { groupFilter: SQL | undefined; dominatingTypes: string[]; dominatedTypes: string[] } | null {
+}): {
+  groupFilter: SQL | undefined;
+  dominatingTypes: string[];
+  strictlyDominatingTypes: string[];
+  dominatedTypes: string[];
+} | null {
   const rule = resolveSupersedeRule(params.type);
   if (!rule) return null;
 
@@ -153,6 +182,7 @@ function buildSupersedeContext(params: {
       gte(notifications.createdAt, params.since)
     ),
     dominatingTypes: [...rule.dominatingTypes],
+    strictlyDominatingTypes: [...rule.strictlyDominatingTypes],
     dominatedTypes: [...rule.dominatedTypes],
   };
 }
@@ -163,9 +193,13 @@ function buildSupersedeContext(params: {
  * `notifyFollowersOf*` entry points differ only in the per-follower event
  * they build and how a fan-out failure is surfaced.
  *
- * Each createNotification triggers up to 2 DB queries (dedup SELECT + INSERT).
- * At current scale this is acceptable, but for large follower counts consider
- * batching inserts instead of looping.
+ * Each createNotification triggers up to 2 DB queries (dedup SELECT + INSERT),
+ * plus one more for the fan-out types that take part in a supersede class
+ * (`new_post`, `new_position` — see `supersede.ts`), whose post-insert
+ * re-check runs per follower even though at most one of them can be the
+ * recipient of the colliding direct notification. At current scale this is
+ * acceptable, but for large follower counts consider batching inserts instead
+ * of looping.
  */
 function broadcastToFollowers(
   actorId: string,

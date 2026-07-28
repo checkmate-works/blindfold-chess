@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 let mockFollowers: { followerId: string }[] = [];
 let mockMutedRows: { id: string }[] = [];
-let mockExistingNotifications: { id: string }[] = [];
+/**
+ * Rows returned by successive `select().from(notifications)` calls, in order:
+ * the pre-insert dedup check, then (for supersede-class types) the
+ * post-insert re-check. Missing entries default to "no rows".
+ */
+let mockNotificationSelects: { id: string }[][] = [];
+let notificationSelectCall = 0;
 
 const mockDbInsertValues = vi.fn();
 const mockDbSelectWhere = vi.fn();
@@ -13,7 +19,7 @@ const mockDbDeleteWhere = vi.fn();
  * 1. notifyFollowersOfNewPost: db.select().from(userFollows).where() -> returns followers
  * 2. createNotification (block check): db.select().from(userBlocks).where().limit() -> returns [] (not blocked)
  * 3. createNotification (mute check): db.select().from(notificationMutes).where().limit() -> returns mockMutedRows
- * 4. createNotification (dedup check): db.select().from(notifications).where().limit() -> mockExistingNotifications
+ * 4. createNotification (dedup + post-insert checks): db.select().from(notifications).where().limit()
  * 5. createNotification (supersede cleanup): db.delete(notifications).where()
  *
  * We track which table is queried via the from() argument.
@@ -34,7 +40,9 @@ vi.mock('@/lib/db', () => ({
             }
             if (table === 'notifications_table') {
               mockDbSelectWhere(condition);
-              return { limit: () => Promise.resolve(mockExistingNotifications) };
+              const rows = mockNotificationSelects[notificationSelectCall] ?? [];
+              notificationSelectCall += 1;
+              return { limit: () => Promise.resolve(rows) };
             }
             // userBlocks (block check) returns an empty result.
             return {
@@ -98,7 +106,8 @@ describe('notifyFollowersOfNewPost', () => {
     vi.clearAllMocks();
     mockFollowers = [];
     mockMutedRows = [];
-    mockExistingNotifications = [];
+    mockNotificationSelects = [];
+    notificationSelectCall = 0;
   });
 
   it('should insert a notification for each follower', async () => {
@@ -202,7 +211,8 @@ describe('createNotification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockMutedRows = [];
-    mockExistingNotifications = [];
+    mockNotificationSelects = [];
+    notificationSelectCall = 0;
   });
 
   it('should not throw when called (fire-and-forget)', () => {
@@ -307,7 +317,8 @@ describe('notifyPositionForked', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockMutedRows = [];
-    mockExistingNotifications = [];
+    mockNotificationSelects = [];
+    notificationSelectCall = 0;
   });
 
   it('notifies the owner with type "puzzle_forked" for a same-type puzzle fork', async () => {
@@ -422,7 +433,8 @@ describe('createNotification — supersede', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockMutedRows = [];
-    mockExistingNotifications = [];
+    mockNotificationSelects = [];
+    notificationSelectCall = 0;
   });
 
   it('removes the new_post fan-out row after inserting new_comment_on_topic', async () => {
@@ -466,7 +478,7 @@ describe('createNotification — supersede', () => {
     // The two emitters race; this is the branch where the more specific row
     // already exists. (The mock returns rows for any dedup query — the
     // type-awareness of the query itself is asserted in the test above.)
-    mockExistingNotifications = [{ id: 'existing-comment-notification' }];
+    mockNotificationSelects = [[{ id: 'existing-comment-notification' }]];
 
     createNotification({
       userId: 'owner-1',
@@ -480,6 +492,30 @@ describe('createNotification — supersede', () => {
 
     expect(mockDbInsertValues).not.toHaveBeenCalled();
     expect(mockDbDeleteWhere).not.toHaveBeenCalled();
+  });
+
+  it('removes its own new_post row when the comment notification lands mid-write', async () => {
+    // The pre-insert check (1st select) sees an empty group, but the direct
+    // comment notification is written before the post-insert re-check (2nd
+    // select) runs. Without that second look both rows would survive — this
+    // is the interleaving the pre-insert check alone cannot cover.
+    mockNotificationSelects = [[], [{ id: 'late-comment-notification' }]];
+
+    createNotification({
+      userId: 'owner-1',
+      actorId: 'commenter-1',
+      type: 'new_post',
+      targetType: 'topic_post',
+      targetId: 'post-1',
+    });
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockDbInsertValues).toHaveBeenCalledTimes(1);
+    // The re-check looks only at types that outrank new_post.
+    expect(inArrayValues(mockDbSelectWhere.mock.calls[1][0])).toEqual(['new_comment_on_topic']);
+    // new_post has nothing below it, so this delete can only be the self-removal.
+    expect(mockDbDeleteWhere).toHaveBeenCalledTimes(1);
   });
 
   it('removes the new_position fan-out row after inserting puzzle_forked', async () => {
