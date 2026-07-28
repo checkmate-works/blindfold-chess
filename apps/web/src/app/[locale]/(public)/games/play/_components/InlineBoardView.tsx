@@ -151,6 +151,15 @@ type Props = {
   terminationMark?: TerminationMark | null;
   /** Relayed straight to the inner ChessBoard — see its prop doc. */
   terminationMarkLabel?: string;
+  /**
+   * Extra control for the bottom control strip, rendered after the flip button
+   * — relayed to {@link MoveNavigationRow}'s slot of the same name, which the
+   * repertoire boards already use for their position-dependent actions. Style
+   * it with `MOVE_NAV_SIDE_BUTTON_CLASS` so it matches the flip button. Note
+   * the strip's card clips its descendants, so anything that pops out (a menu)
+   * must open upward.
+   */
+  trailingAction?: ReactNode;
 };
 
 export function InlineBoardView({
@@ -186,6 +195,7 @@ export function InlineBoardView({
   aiThinking,
   terminationMark = null,
   terminationMarkLabel,
+  trailingAction,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -301,7 +311,7 @@ export function InlineBoardView({
               terminationMarkLabel={terminationMarkLabel}
             />
             {/* Navigation Controls & Flip Button */}
-            {(movesLength > 0 || onFlipBoard) && (
+            {(movesLength > 0 || onFlipBoard || trailingAction) && (
               <MoveNavigationRow
                 onNavigateToStart={movesLength > 0 ? onNavigateToStart : undefined}
                 onNavigatePrevious={movesLength > 0 ? onNavigatePrevious : undefined}
@@ -314,6 +324,7 @@ export function InlineBoardView({
                   currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
                 }
                 flip={onFlipBoard ? { onClick: onFlipBoard, label: t('flipBoard') } : undefined}
+                trailingAction={trailingAction}
               />
             )}
 

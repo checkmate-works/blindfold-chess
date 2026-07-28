@@ -60,6 +60,7 @@ import {
   formatMoveLabel,
   formatSetupMovesLine,
 } from '../_lib/replay-derivations';
+import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 import { GameDiscussionFeed } from './GameDiscussionFeed';
 import { ReproduceViewBar } from './ReproduceViewBar';
 import { ReviewMovePositionPanel } from './ReviewMovePositionPanel';
@@ -507,6 +508,21 @@ export function GameReview({
             terminationMark={terminationMark}
             terminationMarkLabel={terminationMarkLabel(terminationMark)}
             alwaysOpen
+            // Author a chunk / position-memory / puzzle seeded from the
+            // position on the board. It rides in the control strip because
+            // "this position" IS the board's, and it steps with it. Signed-in
+            // viewers only (`currentUser` is null in `local` mode by
+            // construction, so the result screen never gets it); nothing on the
+            // opening board, where a standard start seeds nothing worth saving.
+            trailingAction={
+              currentUser && !isInitialPosition ? (
+                <CreateFromPositionMenu
+                  locale={locale}
+                  currentFen={displayFen ?? latestFen}
+                  continuationSan={continuationSan}
+                />
+              ) : undefined
+            }
           />
 
           {showPlaySettings && effectivePlaySettings && (
@@ -590,8 +606,6 @@ export function GameReview({
               <ReviewMovePositionPanel
                 title={moveLabel ?? t('comments.title')}
                 locale={locale}
-                currentFen={displayFen ?? latestFen}
-                continuationSan={continuationSan}
                 gameId={gameId}
                 currentPly={currentPly}
                 comments={comments}

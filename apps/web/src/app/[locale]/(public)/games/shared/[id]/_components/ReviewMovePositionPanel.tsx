@@ -11,22 +11,22 @@ import { MoveOpsDetail } from '@/app/[locale]/(public)/games/play/_components/Mo
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 import type { CommentUser } from './GameCommentContext';
 import { GameMoveContributions } from './GameMoveContributions';
 
 /**
- * The per-move block shown under the move list while a move position is on
- * the board: the move's PGN-style title, that move's aid-usage stats (peeks /
- * undos / hints / rejected-move texts, when the player used any at this
- * exact move), the create-from-position menu (signed-in only, mirroring the
- * chunk picker's gate), and that move's comment / chunk-link thread.
+ * The per-move block shown below the board while a move position is on it: the
+ * move's PGN-style title, that move's aid-usage stats (peeks / undos / hints /
+ * rejected-move texts, when the player used any at this exact move), and that
+ * move's comment / chunk-link thread.
+ *
+ * Authoring from the displayed position lives in the board's own control strip
+ * (see `CreateFromPositionMenu`), not here — it tracks the board, not the move
+ * being discussed.
  */
 export function ReviewMovePositionPanel({
   title,
   locale,
-  currentFen,
-  continuationSan,
   gameId,
   currentPly,
   comments,
@@ -44,8 +44,6 @@ export function ReviewMovePositionPanel({
 }: {
   title: string;
   locale: Locale;
-  currentFen: string;
-  continuationSan: string | undefined;
   gameId: string;
   currentPly: number;
   comments: GameCommentItem[];
@@ -86,17 +84,6 @@ export function ReviewMovePositionPanel({
         selectedAttemptIndex={selectedAttemptIndex}
         isAttemptSelectable={isAttemptSelectable}
       />
-
-      {/* Author something from the position currently on the board —
-          chunk / position-memory / puzzle. Signed-in only, mirroring the
-          chunk picker's gate. */}
-      {currentUser && (
-        <CreateFromPositionMenu
-          locale={locale}
-          currentFen={currentFen}
-          continuationSan={continuationSan}
-        />
-      )}
 
       {/* Posted comments and chunk links shown serially; only the
           composer (post a comment vs link a chunk) is toggled. */}
