@@ -12,7 +12,6 @@ import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
-import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
@@ -22,7 +21,6 @@ import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import type { ContinuationLink } from '../_lib/line-continuations';
 import type { LineMove } from '../_lib/line-moves';
-import { useShapeAutosave } from '../_lib/use-shape-autosave';
 import { AnnotationPanel } from './AnnotationPanel';
 import { LineAnnotationIndex } from './LineAnnotationIndex';
 import type { LineNavItem } from './LineNavList';
@@ -89,7 +87,6 @@ export function LineDetailBoard({
   branchPgns,
   continuations,
 }: Props) {
-  const t = useTranslations('Repertoires.line.shapes');
   const tLine = useTranslations('Repertoires.line');
   const tTransposition = useTranslations('Repertoires.line.transposition');
   const router = useRouter();
@@ -99,8 +96,6 @@ export function LineDetailBoard({
 
   const maxPly = positions.length - 1;
   const [ply, setPly] = useState(Math.min(Math.max(initialPly, 0), maxPly));
-
-  const { shapesFor, draw, saveFailed } = useShapeAutosave(repertoireId, moves);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -136,11 +131,9 @@ export function LineDetailBoard({
   const focusedMove = clampedPly > 0 ? moves[clampedPly - 1] : null;
 
   // Markup is keyed by the position a move reaches, so the start position (ply
-  // 0) has none — and only the owner can draw.
-  const focusedKey = focusedMove?.positionKey ?? null;
-  const focusedShapes = focusedKey ? shapesFor(focusedKey) : EMPTY_BOARD_ANNOTATIONS;
-  const onAnnotationsChange =
-    isOwner && focusedKey ? (next: BoardAnnotations) => draw(focusedKey, next) : undefined;
+  // 0) has none. Read-only here — drawing belongs to the line editor, which
+  // already owns every other edit to this line.
+  const focusedShapes = focusedMove?.shapes ?? EMPTY_BOARD_ANNOTATIONS;
 
   return (
     // The note sits full-width BELOW the board+list grid (not inside the 2/3
@@ -167,7 +160,6 @@ export function LineDetailBoard({
                 {...display}
                 rounded={false}
                 annotations={focusedShapes}
-                onAnnotationsChange={onAnnotationsChange}
               />
 
               <MoveNavigationRow
@@ -180,15 +172,6 @@ export function LineDetailBoard({
               />
             </div>
           </div>
-
-          {isOwner && focusedKey && (
-            <p
-              className={`text-xs ${saveFailed ? 'text-destructive' : 'text-muted-foreground'}`}
-              role={saveFailed ? 'alert' : undefined}
-            >
-              {saveFailed ? t('saveFailed') : t('hint')}
-            </p>
-          )}
 
           {/* Only meaningful at the line's final position — a mid-line shared
               run is Phase 2's indicator, not this one. Plain text links (not
