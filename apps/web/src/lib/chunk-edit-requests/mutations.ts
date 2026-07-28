@@ -1,5 +1,3 @@
-import { revalidatePath } from 'next/cache';
-
 import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
@@ -151,8 +149,9 @@ export async function submitEditRequestEntry(params: {
     });
   }
 
-  revalidatePath(`/chunks/${chunk.slug}`);
-
+  // No revalidatePath: the chunk page is dynamic, and `EditRequestForm`
+  // `router.push`es back to it on success. (See the note on
+  // `dispatchChunkEvent` in `@/lib/chunks/chunk-event-handlers`.)
   return { success: true, id: inserted.id };
 }
 
@@ -264,11 +263,8 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
     });
   }
 
-  revalidatePath(`/chunks/${chunk.slug}`);
-  if (params.action === 'accept') {
-    revalidatePath('/chunks');
-  }
-
+  // No revalidatePath: `EditRequestItem` calls `router.refresh()` after
+  // accepting / rejecting, which re-fetches the (dynamic) chunk page.
   return { success: true };
 }
 

@@ -284,15 +284,15 @@ describe('createChunkEntry', () => {
     );
   });
 
-  it('revalidates listing + detail paths without writing an activity-log row', async () => {
+  it('writes no activity-log row and revalidates nothing', async () => {
     const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry(baseCreateInput);
 
     // The chunks row itself is the durable record of a creation, so it is not
-    // duplicated into the activity log.
+    // duplicated into the activity log. Revalidation is deliberately absent —
+    // see the @design note on `dispatchChunkEvent`.
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/chunks');
-    expect(mockRevalidatePath).toHaveBeenCalledWith(`/chunks/${TEST_SLUG}`);
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
   it('returns the point grant amount when grantPointsForPost succeeds', async () => {
@@ -657,7 +657,7 @@ describe('updateChunkEntry', () => {
     expect(result).toEqual({ error: 'slugTaken' });
   });
 
-  it('logs an update_chunk event with overwritten field values and revalidates paths', async () => {
+  it('logs an update_chunk event with overwritten field values, revalidating nothing', async () => {
     // The pre-update row carries the prior values; an in-place edit overwrites
     // them with no revision history, so the activity log captures old → new.
     mockSelectLimit.mockResolvedValue([
@@ -693,8 +693,7 @@ describe('updateChunkEntry', () => {
         },
       },
     });
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/chunks');
-    expect(mockRevalidatePath).toHaveBeenCalledWith(`/chunks/${TEST_SLUG}`);
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
   it('resets the feedback topics row set in the same transaction as the update', async () => {
