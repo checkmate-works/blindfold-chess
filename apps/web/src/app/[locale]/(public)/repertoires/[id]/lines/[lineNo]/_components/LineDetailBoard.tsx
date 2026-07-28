@@ -140,122 +140,126 @@ export function LineDetailBoard({
   const focusedShapes = focusedMove?.shapes ?? EMPTY_BOARD_ANNOTATIONS;
 
   return (
-    // The note sits full-width BELOW the board+list grid (not inside the 2/3
-    // board column), so its SectionTitle underline spans the page and lines up
-    // with the "Comments" heading right after it — the two read as stacked
-    // sections rather than a sidebar label over a full-width one.
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <div className={INLINE_BOARD_CARD_CHROME}>
-            <div className="relative">
-              <HorizontalMoveList
-                formattedPgn={formatted}
-                currentPosition={clampedPly - 1}
-                onNavigateToPosition={(position) => setPly(position + 1)}
-              />
+    // One grid holds all three blocks so their order can differ per breakpoint.
+    // DOM order is the phone's — board, then the note, then the line list —
+    // because on a single column the note belongs directly under the board it
+    // explains; a line switcher wedged between them separates a move from its
+    // own commentary. From `lg` the `order-*` classes restore the two-column
+    // reading: board (2/3) beside the line list (1/3), with the note spanning
+    // the full width below both, so its SectionTitle underline runs the width
+    // of the page and lines up with the "Comments" heading that follows.
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="space-y-4 lg:order-1 lg:col-span-2">
+        <div className={INLINE_BOARD_CARD_CHROME}>
+          <div className="relative">
+            <HorizontalMoveList
+              formattedPgn={formatted}
+              currentPosition={clampedPly - 1}
+              onNavigateToPosition={(position) => setPly(position + 1)}
+            />
 
-              <ChessBoard
-                fen={current.fen}
-                flipped={flipped}
-                playerSide={side}
-                showOwnPieces
-                showOpponentPieces
-                {...display}
-                rounded={false}
-                annotations={focusedShapes}
-              />
+            <ChessBoard
+              fen={current.fen}
+              flipped={flipped}
+              playerSide={side}
+              showOwnPieces
+              showOpponentPieces
+              {...display}
+              rounded={false}
+              annotations={focusedShapes}
+            />
 
-              <MoveNavigationRow
-                onNavigateToStart={() => setPly(0)}
-                onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}
-                onNavigateNext={() => setPly(Math.min(maxPly, clampedPly + 1))}
-                onNavigateToEnd={() => setPly(maxPly)}
-                isPreviousDisabled={clampedPly === 0}
-                isNextDisabled={clampedPly === maxPly}
-                flip={{ onClick: () => setFlipped((f) => !f), label: tCommon('flipBoard') }}
-              />
-            </div>
+            <MoveNavigationRow
+              onNavigateToStart={() => setPly(0)}
+              onNavigatePrevious={() => setPly(Math.max(0, clampedPly - 1))}
+              onNavigateNext={() => setPly(Math.min(maxPly, clampedPly + 1))}
+              onNavigateToEnd={() => setPly(maxPly)}
+              isPreviousDisabled={clampedPly === 0}
+              isNextDisabled={clampedPly === maxPly}
+              flip={{ onClick: () => setFlipped((f) => !f), label: tCommon('flipBoard') }}
+            />
           </div>
+        </div>
 
-          {/* Only meaningful at the line's final position — a mid-line shared
+        {/* Only meaningful at the line's final position — a mid-line shared
               run is Phase 2's indicator, not this one. Plain text links (not
               buttons) so it doesn't compete with "branch from here" below. */}
-          {clampedPly === maxPly && maxPly >= 1 && continuations.length > 0 && (
-            <div className="space-y-1 text-sm text-muted-foreground">
-              {continuations.slice(0, MAX_CONTINUATION_LINKS).map((c) => (
-                <p key={`${c.lineNo}-${c.ply}`}>
-                  {tTransposition.rich('continuesIn', {
-                    count: c.remainingPlies,
-                    lineLabel: c.label,
-                    link: (chunks) => (
-                      <Link
-                        href={`/${locale}/repertoires/${repertoireId}/lines/${c.lineNo}?move=${c.ply}`}
-                        className="font-medium text-foreground underline-offset-2 hover:underline"
-                      >
-                        {chunks}
-                      </Link>
-                    ),
-                  })}
-                </p>
-              ))}
-            </div>
-          )}
+        {clampedPly === maxPly && maxPly >= 1 && continuations.length > 0 && (
+          <div className="space-y-1 text-sm text-muted-foreground">
+            {continuations.slice(0, MAX_CONTINUATION_LINKS).map((c) => (
+              <p key={`${c.lineNo}-${c.ply}`}>
+                {tTransposition.rich('continuesIn', {
+                  count: c.remainingPlies,
+                  lineLabel: c.label,
+                  link: (chunks) => (
+                    <Link
+                      href={`/${locale}/repertoires/${repertoireId}/lines/${c.lineNo}?move=${c.ply}`}
+                      className="font-medium text-foreground underline-offset-2 hover:underline"
+                    >
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </p>
+            ))}
+          </div>
+        )}
 
-          {/* Owner-only: start a new line that shares this line's moves up to the
+        {/* Owner-only: start a new line that shares this line's moves up to the
               position in focus, then diverges — the per-line replacement for
               adding a variation in the (removed) whole-kata board editor. Hidden
               at the start position (ply 0), where "add a line" already covers a
               blank line from the root. */}
-          {isOwner && clampedPly >= 1 && branchPgns[clampedPly - 1] && (
-            <Link
-              href={`/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(
-                branchPgns[clampedPly - 1]
-              )}`}
-              className="block"
-            >
-              <Button asChild variant="outline" fullWidth>
-                {tLine('branchFromHere')}
-              </Button>
-            </Link>
-          )}
-        </div>
-
-        <div className="space-y-4 lg:col-span-1">
-          <LineNavList
-            items={navItems}
-            currentLineNo={lineNo}
-            repertoireId={repertoireId}
-            locale={locale}
-            heading={navHeading}
-            addLineLabel={navAddLineLabel}
-          />
-        </div>
+        {isOwner && clampedPly >= 1 && branchPgns[clampedPly - 1] && (
+          <Link
+            href={`/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(
+              branchPgns[clampedPly - 1]
+            )}`}
+            className="block"
+          >
+            <Button asChild variant="outline" fullWidth>
+              {tLine('branchFromHere')}
+            </Button>
+          </Link>
+        )}
       </div>
 
-      {focusedMove ? (
-        <AnnotationPanel
-          key={focusedMove.positionKey}
+      <div className="lg:order-3 lg:col-span-3">
+        {focusedMove ? (
+          <AnnotationPanel
+            key={focusedMove.positionKey}
+            repertoireId={repertoireId}
+            lineNo={lineNo}
+            locale={locale}
+            positionKey={focusedMove.positionKey}
+            moveLabel={focusedMove.label}
+            initialText={focusedMove.annotation}
+            moveNotation={moveNotation}
+            isOwner={isOwner}
+          />
+        ) : (
+          // At the start position (ply 0) no single move is in focus, so instead
+          // of the per-move note we surface a Discussion-style index of every move
+          // in this line that carries a note — each jumps the board there.
+          <LineAnnotationIndex
+            moves={moves}
+            onJumpToPly={(nextPly) => setPly(nextPly)}
+            moveNotation={moveNotation}
+            locale={locale}
+          />
+        )}
+      </div>
+
+      <div className="space-y-4 lg:order-2 lg:col-span-1">
+        <LineNavList
+          items={navItems}
+          currentLineNo={lineNo}
           repertoireId={repertoireId}
-          lineNo={lineNo}
           locale={locale}
-          positionKey={focusedMove.positionKey}
-          moveLabel={focusedMove.label}
-          initialText={focusedMove.annotation}
-          moveNotation={moveNotation}
-          isOwner={isOwner}
+          heading={navHeading}
+          addLineLabel={navAddLineLabel}
         />
-      ) : (
-        // At the start position (ply 0) no single move is in focus, so instead
-        // of the per-move note we surface a Discussion-style index of every move
-        // in this line that carries a note — each jumps the board there.
-        <LineAnnotationIndex
-          moves={moves}
-          onJumpToPly={(nextPly) => setPly(nextPly)}
-          moveNotation={moveNotation}
-          locale={locale}
-        />
-      )}
+      </div>
     </div>
   );
 }
