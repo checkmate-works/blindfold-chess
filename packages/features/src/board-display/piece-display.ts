@@ -6,40 +6,44 @@ import type {
 
 /**
  * Core blindfold display rule: decides whether a piece is shown, and as what
- * — absent, ghost, Go-stone circle, recolored, or the normal piece.
+ * — absent, ghost, Go-stone circle (solid or faint), recolored, or the
+ * normal piece.
  *
- * Rule order (each step may terminate with the hidden rendering):
- * 1. Whole-side visibility (`showOwnPieces` / `showOpponentPieces`).
- * 2. Partial pawn blindfold (`pawnHideMode`) — runs after the whole-side
- *    gate (a hidden side is already gone) and before the shape/color
- *    transforms (a hidden pawn renders nothing at all).
- * 3. Shape obfuscation (`pieceShapeMode` → circle).
- * 4. Color obfuscation (`pieceColors` → forced single color).
+ * Two independent questions, in this order:
  *
- * The hidden rendering is `absent` in live play or `ghost` on the review's
- * "As Played" toggle; a ghost deliberately shows the real type/colour (no
- * shape/colour obfuscation) so the reviewer sees what was concealed.
+ * 1. **Is it hidden?** — the whole-side gate (`showOwnPieces` /
+ *    `showOpponentPieces`) then the partial pawn blindfold (`pawnHideMode`).
+ *    In live play a hidden piece is simply `absent`.
+ * 2. **What form does it take?** — shape obfuscation (`pieceShapeMode` →
+ *    circle) then color obfuscation (`pieceColors` → forced single color).
+ *
+ * On the review's "As Played" toggle (`hiddenPieceStyle: 'ghost'`) the two
+ * compose rather than short-circuit: hiddenness becomes faintness, and the
+ * form is still whatever revealing the square would show. A normally-shaped
+ * piece is therefore a `ghost` — the true type/colour, so the reviewer sees
+ * what was concealed — while a piece the player had set to render as a Go
+ * stone stays a stone, just faint. Collapsing the second case to a ghost
+ * (as this once did) forced a review of a stone game to choose between
+ * looking hidden and looking like the player's board.
  */
 export function resolvePieceDisplay(
   piece: DisplayablePiece,
   settings: BlindfoldDisplaySettings,
 ): PieceDisplay {
-  const hidden: PieceDisplay =
-    settings.hiddenPieceStyle === "ghost"
-      ? { kind: "ghost", type: piece.type, color: piece.color }
-      : { kind: "absent" };
-
   const isOwnPiece = piece.color === settings.ownColor;
-  if (isOwnPiece && !settings.showOwnPieces) return hidden;
-  if (!isOwnPiece && !settings.showOpponentPieces) return hidden;
 
-  if (piece.type === "p") {
-    const hidePawn =
-      settings.pawnHideMode === "all" ||
+  const sideHidden = isOwnPiece
+    ? !settings.showOwnPieces
+    : !settings.showOpponentPieces;
+  const pawnHidden =
+    piece.type === "p" &&
+    (settings.pawnHideMode === "all" ||
       (settings.pawnHideMode === "own" && isOwnPiece) ||
-      (settings.pawnHideMode === "opponent" && !isOwnPiece);
-    if (hidePawn) return hidden;
-  }
+      (settings.pawnHideMode === "opponent" && !isOwnPiece));
+  const hidden = sideHidden || pawnHidden;
+
+  if (hidden && settings.hiddenPieceStyle === "absent")
+    return { kind: "absent" };
 
   let displayColor = piece.color;
   if (settings.pieceColors === "white-only") {
@@ -53,8 +57,15 @@ export function resolvePieceDisplay(
     (settings.pieceShapeMode === "circles-own" && isOwnPiece) ||
     (settings.pieceShapeMode === "circles-opponent" && !isOwnPiece);
   if (showAsCircle) {
-    return { kind: "circle", color: displayColor };
+    return hidden
+      ? { kind: "circle", color: displayColor, faint: true }
+      : { kind: "circle", color: displayColor };
   }
+
+  // A hidden piece with no shape obfuscation to preserve: show the truth,
+  // faintly. Deliberately the real colour, not `displayColor` — a recoloured
+  // ghost would conceal rather than reveal, which is the opposite of its job.
+  if (hidden) return { kind: "ghost", type: piece.type, color: piece.color };
 
   return { kind: "piece", type: piece.type, color: displayColor };
 }

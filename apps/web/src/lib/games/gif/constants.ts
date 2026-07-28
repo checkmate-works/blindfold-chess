@@ -6,6 +6,6 @@
  * browser/CDN's `immutable` HTTP cache in the same stroke. `'plain'` has no
  * version — its output never changes.
  */
-export const PLAYED_GIF_RENDER_VERSION = 2;
+export const PLAYED_GIF_RENDER_VERSION = 3;
 
 export type GameGifVariant = 'plain' | 'played';

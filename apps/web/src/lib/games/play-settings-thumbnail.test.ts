@@ -51,7 +51,7 @@ describe('playSettingsToThumbnailDisplay', () => {
     });
   });
 
-  it('passes through per-piece settings for a peek board (a peek reveals the real board)', () => {
+  it('folds a peek board into hidden while keeping pieceShapeMode for the faint stone', () => {
     const result = playSettingsToThumbnailDisplay(
       {
         ...SIGHTED,
@@ -63,8 +63,10 @@ describe('playSettingsToThumbnailDisplay', () => {
       'white'
     );
     expect(result).toMatchObject({
-      showOwnPieces: true,
+      showOwnPieces: false,
       showOpponentPieces: false,
+      // Survives the hide: `resolvePieceDisplay` renders it as a faint stone
+      // rather than flattening it into a ghost piece.
       pieceShapeMode: 'circles-own',
       hiddenPieceStyle: 'ghost',
     });
@@ -128,24 +130,23 @@ describe('playSettingsDisplayAtHalfMove', () => {
     expect(afterHide).toMatchObject({ showOwnPieces: false, showOpponentPieces: false });
   });
 
-  it('passes through per-piece settings for a peek board, mirroring the snapshot-only fold (d222e0da7)', () => {
-    const result = playSettingsDisplayAtHalfMove(
-      {
-        ...SIGHTED,
-        boardVisibility: 'peek',
-        showOwnPieces: true,
-        showOpponentPieces: false,
-        pieceShapeMode: 'circles-own',
-      },
-      null,
-      'white',
-      0
-    );
-    expect(result).toMatchObject({
+  it('treats a peek board as hidden — between peeks the player saw nothing', () => {
+    const peekBoard: GamePlaySettings = {
+      ...SIGHTED,
+      boardVisibility: 'peek',
       showOwnPieces: true,
-      showOpponentPieces: false,
+      showOpponentPieces: true,
       pieceShapeMode: 'circles-own',
+    };
+    const atPosition = playSettingsDisplayAtHalfMove(peekBoard, null, 'white', 0);
+    expect(atPosition).toMatchObject({
+      showOwnPieces: false,
+      showOpponentPieces: false,
       hiddenPieceStyle: 'ghost',
     });
+
+    // Every "as played" surface agrees on what hidden means, so the
+    // single-image fold resolves identically.
+    expect(playSettingsToThumbnailDisplay(peekBoard, 'white')).toEqual(atPosition);
   });
 });

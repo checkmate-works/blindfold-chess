@@ -2,7 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { gameUsedNotablePlaySettings, playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
+import {
+  foldBoardVisibility,
+  gameUsedNotablePlaySettings,
+  playSettingsAtHalfMove,
+} from '@/lib/games/play-settings-log';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -112,23 +116,11 @@ export function useReplayPreferences({
         playSettingsLog,
         halfMovesShown
       );
-      // Only a truly-never-shown board (`never`) means the player saw no pieces
-      // at this position, so fold it into "hide both sides" — the per-piece
-      // hide path then renders them all as ghosts, matching side / pawn hides.
-      // `'peek'` is NOT folded here: a peek reveals the real board with
-      // `pieceShapeMode`/`pieceColors`/etc. applied, so those settings must
-      // pass through unchanged (same as `'always'`) to reproduce what the
-      // player actually saw whenever they looked. Folding `'peek'` into
-      // hide-both would silently discard e.g. a Go-stone side for every
-      // peek-mode game, since `'peek'` is `DEFAULT_BOARD_VISIBILITY`.
-      const boardHidden = effectivePlaySettings.boardVisibility === 'never';
+      // Shared with every other "as played" surface — see `foldBoardVisibility`
+      // for what counts as hidden and why.
       const reflectedPreferences: GamePreferences = {
         ...preferences,
-        showOwnPieces: boardHidden ? false : effectivePlaySettings.showOwnPieces,
-        showOpponentPieces: boardHidden ? false : effectivePlaySettings.showOpponentPieces,
-        pieceShapeMode: effectivePlaySettings.pieceShapeMode,
-        pieceColors: effectivePlaySettings.pieceColors,
-        pawnHideMode: effectivePlaySettings.pawnHideMode,
+        ...foldBoardVisibility(effectivePlaySettings),
       };
       const reproducing = reproduceView;
       return {

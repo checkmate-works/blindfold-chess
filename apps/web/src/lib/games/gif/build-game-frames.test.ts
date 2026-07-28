@@ -111,6 +111,39 @@ describe('buildGameFrames', () => {
       });
     });
 
+    it('hides a peek-mode board between peeks, and restores its Go stones in the flash', () => {
+      // "Hide the board" + "Allow peeking" + own pieces as stones. Between
+      // peeks the player saw nothing, so the real frames must be ghosts; the
+      // flash is where the stones they actually looked at come back.
+      const game = buildGame({
+        playSettings: {
+          boardVisibility: 'peek',
+          showOwnPieces: true,
+          showOpponentPieces: true,
+          pieceShapeMode: 'circles-own',
+          pieceColors: 'normal',
+          pawnHideMode: 'none',
+        },
+        operationLogs: [{ inputMethod: 'board', peekCount: 1, undoCount: 0, movePeekCount: 0 }],
+      });
+      const frames = buildGameFrames(game, 'played');
+
+      const realFrames = frames.filter((f) => f.overlay === undefined);
+      for (const frame of realFrames) {
+        expect(frame.displaySettings).toMatchObject({
+          showOwnPieces: false,
+          showOpponentPieces: false,
+          hiddenPieceStyle: 'ghost',
+        });
+      }
+
+      expect(frames.find((f) => f.overlay?.kind === 'peek')?.displaySettings).toMatchObject({
+        showOwnPieces: true,
+        showOpponentPieces: true,
+        pieceShapeMode: 'circles-own',
+      });
+    });
+
     it('rounds any peek count to a single frame', () => {
       const game = buildGame({
         moves: ['e4'],

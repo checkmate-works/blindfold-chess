@@ -42,6 +42,8 @@ export type RenderBoardSvgOptions = {
 const DEFAULT_SIZE = 512;
 const DEFAULT_THEME: BoardTheme = 'lichess';
 const LAST_MOVE_HIGHLIGHT = 'rgba(155,199,0,0.41)';
+/** Opacity marking "the player could not see this" — ghosts and faint stones alike. */
+const HIDDEN_OPACITY = 0.4;
 
 type Color = 'w' | 'b';
 
@@ -175,6 +177,31 @@ function illegalFromMarkup(square: string, flipped: boolean, squareSize: number)
 }
 
 /**
+ * Badge geometry, expressed against a 512px board and scaled from there.
+ * A corner badge unavoidably sits on a real square (h8 in white's view) —
+ * an 8×8 grid has no free margin — so it is kept well under a square's width
+ * (a square is 64 at this size) and tucked toward the very corner, leaving
+ * the piece beneath it readable rather than covered.
+ */
+const BADGE_INSET = 28;
+const BADGE_RADIUS = 17;
+
+/**
+ * Badge colours. Peek is the quietest of the three annotation colours on
+ * purpose: it is by far the most frequent badge (a blindfold player peeks
+ * constantly), so a saturated alert colour would read as the subject of the
+ * frame rather than a footnote on it. Neutral slate says "meta annotation";
+ * the semantic colours stay reserved for the events that are genuinely
+ * about the chess — amber for a retracted move, red for a rejected one.
+ */
+const BADGE_STYLES = {
+  peek: { fill: 'rgba(51,65,85,0.55)', accent: '#334155' },
+  // Amber keeps more opacity than peek: its glyph is a thin white stroke,
+  // which needs the backing to stay legible (peek's is a filled shape).
+  undo: { fill: 'rgba(245,158,11,0.9)', accent: '#b45309' },
+} as const;
+
+/**
  * Fixed-position badge (top-right corner, independent of orientation) for
  * "a peek happened here" / "this move was undone and redone". A filled
  * circle plus a purely graphical glyph — an eye outline for peek, the shared
@@ -182,18 +209,26 @@ function illegalFromMarkup(square: string, flipped: boolean, squareSize: number)
  */
 function badgeMarkup(kind: 'peek' | 'undo', size: number): string {
   const scale = size / 512;
-  const cx = size - 40 * scale;
-  const cy = 40 * scale;
-  const r = 26 * scale;
-  const fill = kind === 'peek' ? 'rgba(14,165,233,0.92)' : 'rgba(245,158,11,0.92)';
-  const circle = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+  const cx = size - BADGE_INSET * scale;
+  const cy = BADGE_INSET * scale;
+  const r = BADGE_RADIUS * scale;
+  const { fill, accent } = BADGE_STYLES[kind];
+  // A hairline light ring, not decoration: the badge lands on whatever piece
+  // occupies the corner square, and a translucent dark fill alone dissolves
+  // into a dark piece. The ring keeps the silhouette readable on any
+  // background without making the badge louder.
+  const circle =
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" ` +
+    `stroke="rgba(255,255,255,0.55)" stroke-width="${r * 0.1}"/>`;
 
   if (kind === 'peek') {
     const s = r / 17;
+    // The pupil uses the opaque accent, not the translucent badge fill:
+    // punching a see-through hole in the white eye would wash it out.
     const glyph =
       `<g transform="translate(${cx},${cy}) scale(${s})">` +
       `<path d="M-14 0 Q0 -11 14 0 Q0 11 -14 0 Z" fill="#ffffff"/>` +
-      `<circle cx="0" cy="0" r="4.6" fill="${fill}"/>` +
+      `<circle cx="0" cy="0" r="4.6" fill="${accent}"/>` +
       `</g>`;
     return circle + glyph;
   }
@@ -257,9 +292,13 @@ export function renderBoardSvg({
       if (display.color === 'w') usesStoneWhite = true;
       else usesStoneBlack = true;
       const diameter = squareSize * 0.6;
+      // A faint stone is a hidden one — same opacity as a ghost piece, so
+      // "dimmed" reads as "the player could not see this" no matter which
+      // form the square takes.
+      const opacity = display.faint ? ` opacity="${HIDDEN_OPACITY}"` : '';
       piecesMarkup += `<circle cx="${x + squareSize / 2}" cy="${y + squareSize / 2}" r="${
         diameter / 2
-      }" fill="url(#bfc-stone-${display.color})"/>`;
+      }" fill="url(#bfc-stone-${display.color})"${opacity}/>`;
       continue;
     }
 
@@ -269,7 +308,8 @@ export function renderBoardSvg({
     const pieceGroup = `<g transform="translate(${x + offset},${y + offset}) scale(${scale})">${serializeElements(
       pieceData.elements
     )}</g>`;
-    piecesMarkup += display.kind === 'ghost' ? `<g opacity="0.4">${pieceGroup}</g>` : pieceGroup;
+    piecesMarkup +=
+      display.kind === 'ghost' ? `<g opacity="${HIDDEN_OPACITY}">${pieceGroup}</g>` : pieceGroup;
   }
 
   let highlightMarkup = '';
