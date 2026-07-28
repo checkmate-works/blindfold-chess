@@ -28,10 +28,13 @@ import {
 import type { Locale, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
+import { ForkSourceLine } from '../_components/ForkSourceLine';
 import { PositionListCard } from '../_components/PositionListCard';
 import { PositionEditRequestNewView } from '../_components/edit-request/PositionEditRequestNewView';
 import { PositionEditRequestsView } from '../_components/edit-request/PositionEditRequestsView';
 import { PositionHistoryView } from '../_components/history/PositionHistoryView';
+import type { ForkPositionKind } from './fork-provenance';
+import { resolveForkProvenance } from './fork-provenance';
 import { loadForksPageData } from './load-forks-page-data';
 
 /**
@@ -418,6 +421,18 @@ export interface CreatePositionFormContext<TSeed> {
   searchParams: Record<string, string | string[] | undefined>;
 }
 
+/**
+ * The slice of a fork seed the factory itself reads, to render the page-level
+ * provenance note. Both feature seeds carry it (see `BaseForkSeed` in
+ * `@/lib/positions/fork`); everything else about the seed is the form's
+ * business and passes through untouched.
+ */
+export type ForkSeedProvenance = {
+  sourceId: string;
+  sourceTitle: string;
+  sourceType: ForkPositionKind;
+};
+
 export interface PositionCreatePageOptions<TSeed> {
   /** Per-feature fork-seed loader passed to `loadPositionCreateContext`. */
   loadForkSeed: (params: { sourceId: string; currentUserId: string }) => Promise<TSeed | null>;
@@ -439,11 +454,11 @@ export interface PositionCreatePageOptions<TSeed> {
  * seed from `?from=`, tag bundle), `?fen=` validation, and the guest gate
  * around the injected form.
  */
-export function createPositionCreatePage<TSeed>(
+export function createPositionCreatePage<TSeed extends ForkSeedProvenance>(
   route: PositionRouteKind,
   options: PositionCreatePageOptions<TSeed>
 ) {
-  const { slug, namespace } = route;
+  const { slug, namespace, positionType } = route;
   const { loadForkSeed, renderForm, listTitleKey = 'list.title', formSectionClassName } = options;
 
   function generateMetadata({ params }: LocaleSearchPageProps) {
@@ -498,10 +513,30 @@ export function createPositionCreatePage<TSeed>(
       </>
     );
 
+    // Same slot, same component, same wording as the finished position's
+    // detail page: a fork announces itself under the H1, whether it is
+    // already saved or still being authored.
+    const provenance = forkSeed
+      ? resolveForkProvenance({
+          sourceId: forkSeed.sourceId,
+          sourceType: forkSeed.sourceType,
+          pageType: positionType,
+        })
+      : null;
+    const headerNote =
+      forkSeed && provenance ? (
+        <ForkSourceLine
+          label={t(provenance.isCrossType ? 'create.createdFrom' : 'create.forkedFrom')}
+          title={forkSeed.sourceTitle}
+          href={provenance.href}
+        />
+      ) : undefined;
+
     return (
       <PageLayout
         title={listTitle}
         locale={locale}
+        headerNote={headerNote}
         breadcrumb={[
           { label: tNav('practice'), href: '/practice' },
           { label: listTitle, href: `/practice/${slug}` },

@@ -3,6 +3,9 @@ import type { ReactNode } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ChunkOption } from '@/lib/chunks/types';
+import type { ThemeOption } from '@/lib/themes/types';
+
 import { DRAFT_STORAGE_KEY } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { CreatePuzzlePositionForm } from './CreatePuzzlePositionForm';
@@ -16,6 +19,11 @@ const { mockPush, mockReplace, stableRouter } = vi.hoisted(() => {
 });
 vi.mock('@/i18n/routing', () => ({
   useRouter: () => stableRouter,
+  Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 
 // `?resumed=1` detection. Individual tests override via mockSearchParamsGet.
@@ -60,9 +68,25 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessB
   ),
 }));
 
-vi.mock('next-navigation-guard', () => ({
-  useNavigationGuard: () => ({ active: false, accept: () => {}, reject: () => {} }),
+// Spied so the unsaved-changes tests can read the `enabled` flag the form
+// derives from `isDirty` — the dialog itself is stubbed out below, so this
+// is the only observable signal of the guard's state.
+const { mockNavigationGuard } = vi.hoisted(() => ({
+  mockNavigationGuard: vi.fn((_options: { enabled: boolean }) => ({
+    active: false,
+    accept: () => {},
+    reject: () => {},
+  })),
 }));
+vi.mock('next-navigation-guard', () => ({
+  useNavigationGuard: mockNavigationGuard,
+}));
+
+/** The `enabled` flag from the most recent render — i.e. the current isDirty. */
+function guardEnabled(): boolean {
+  const calls = mockNavigationGuard.mock.calls;
+  return calls[calls.length - 1]![0].enabled;
+}
 
 vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
   ConfirmationModal: ({
@@ -119,6 +143,23 @@ vi.mock('@/app/_components', () => ({
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const OTHER_VALID_FEN = 'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2';
 
+const FORK_SOURCE_ID = '11111111-1111-1111-1111-111111111111';
+
+function makeForkSeed() {
+  return {
+    sourceId: FORK_SOURCE_ID,
+    sourceTitle: 'Source Puzzle',
+    sourceType: 'puzzle' as const,
+    fen: VALID_FEN,
+    title: 'Source Puzzle',
+    description: 'Source description',
+    moves: ['Nf3'],
+    notes: ['develop'],
+    themeIds: [],
+    chunkIds: [],
+  };
+}
+
 function makeDraft(overrides: Partial<PuzzleDraftV1> = {}): PuzzleDraftV1 {
   return {
     version: 1,
@@ -140,6 +181,7 @@ beforeEach(() => {
   mockReplace.mockReset();
   mockSearchParamsGet.mockReset();
   mockSearchParamsGet.mockReturnValue(null);
+  mockNavigationGuard.mockClear();
   sessionStorage.clear();
 });
 
@@ -382,23 +424,6 @@ describe('CreatePuzzlePositionForm', () => {
   });
 
   describe('forkSeed', () => {
-    const FORK_SOURCE_ID = '11111111-1111-1111-1111-111111111111';
-
-    function makeForkSeed() {
-      return {
-        sourceId: FORK_SOURCE_ID,
-        sourceTitle: 'Source Puzzle',
-        sourceType: 'puzzle' as const,
-        fen: VALID_FEN,
-        title: 'Source Puzzle',
-        description: 'Source description',
-        moves: ['Nf3'],
-        notes: ['develop'],
-        themeIds: [],
-        chunkIds: [],
-      };
-    }
-
     it('prefills title, description, and position from the fork seed', () => {
       render(<CreatePuzzlePositionForm displayName="alice" forkSeed={makeForkSeed()} />);
 
@@ -406,18 +431,16 @@ describe('CreatePuzzlePositionForm', () => {
       expect(screen.getByLabelText(/descriptionLabel/)).toHaveValue('Source description');
     });
 
-    it('shows the plain fork banner when the source is another puzzle', () => {
+    // The "forked from …" line is page-level, rendered into PageLayout's
+    // `headerNote` by the create-page factory so it sits under the H1 exactly
+    // as it does on the detail page. The form must not restate it — see
+    // `_lib/fork-provenance.test.ts` for the label/link rules.
+    it('does not restate the fork inside the form', () => {
       render(<CreatePuzzlePositionForm forkSeed={makeForkSeed()} />);
 
-      expect(screen.getByText('forkBanner')).toBeInTheDocument();
-      expect(screen.queryByText('createdFromPositionMemoryBanner')).not.toBeInTheDocument();
-    });
-
-    it('shows the cross-type banner (not "fork" wording) when the source is a position-memory entry', () => {
-      render(<CreatePuzzlePositionForm forkSeed={{ ...makeForkSeed(), sourceType: 'memory' }} />);
-
-      expect(screen.getByText('createdFromPositionMemoryBanner')).toBeInTheDocument();
-      expect(screen.queryByText('forkBanner')).not.toBeInTheDocument();
+      expect(screen.queryByText('forkedFrom')).not.toBeInTheDocument();
+      expect(screen.queryByText('createdFrom')).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Source Puzzle' })).not.toBeInTheDocument();
     });
 
     it('carries forkedFromId through to the draft on Continue', () => {
@@ -456,6 +479,94 @@ describe('CreatePuzzlePositionForm', () => {
       expect(parsed.fen).toBe(VALID_FEN);
       expect(parsed.moves).toEqual(['e4']);
       expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/solution');
+    });
+  });
+
+  // The dirty-check compares each field against the value it was *seeded*
+  // with. A seeded form that reads as dirty on mount would raise the
+  // unsaved-changes dialog on the first navigation away from a form the
+  // user never touched.
+  describe('unsaved-changes guard', () => {
+    const THEME: ThemeOption = {
+      id: 'theme-1',
+      slug: 'fork',
+      label: 'Fork',
+      category: 'tactic',
+      previewFen: null,
+      definition: null,
+      reading: null,
+      positions: [],
+    };
+    const CHUNK: ChunkOption = {
+      id: 'chunk-1',
+      slug: 'ladder-mate',
+      label: 'Ladder mate',
+      representativeFen: VALID_FEN,
+      description: null,
+    };
+
+    it('is disabled on an untouched blank form', () => {
+      render(<CreatePuzzlePositionForm displayName="alice" />);
+      expect(guardEnabled()).toBe(false);
+    });
+
+    it('is disabled on an untouched fork-seeded form', () => {
+      render(<CreatePuzzlePositionForm displayName="alice" forkSeed={makeForkSeed()} />);
+      expect(guardEnabled()).toBe(false);
+    });
+
+    it('is disabled on an untouched fork whose seed carries tags', () => {
+      render(
+        <CreatePuzzlePositionForm
+          displayName="alice"
+          availableThemes={[THEME]}
+          availableChunks={[CHUNK]}
+          forkSeed={{ ...makeForkSeed(), themeIds: [THEME.id], chunkIds: [CHUNK.id] }}
+        />
+      );
+      expect(guardEnabled()).toBe(false);
+    });
+
+    it('is disabled on an untouched injected position + solution', () => {
+      render(<CreatePuzzlePositionForm injectedFen={VALID_FEN} injectedSolution={['e4']} />);
+      expect(guardEnabled()).toBe(false);
+    });
+
+    it('is disabled on an untouched form seeded with an injected chunk', () => {
+      render(<CreatePuzzlePositionForm availableChunks={[CHUNK]} injectedChunkIds={[CHUNK.id]} />);
+      expect(guardEnabled()).toBe(false);
+    });
+
+    it('turns on once the user edits a fork-seeded field', () => {
+      render(<CreatePuzzlePositionForm displayName="alice" forkSeed={makeForkSeed()} />);
+      expect(guardEnabled()).toBe(false);
+
+      fireEvent.change(screen.getByLabelText(/descriptionLabel/), {
+        target: { value: 'My own take' },
+      });
+      expect(guardEnabled()).toBe(true);
+    });
+
+    it('turns on when the fork-seeded position is replaced', () => {
+      render(<CreatePuzzlePositionForm displayName="alice" forkSeed={makeForkSeed()} />);
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: OTHER_VALID_FEN } });
+      expect(guardEnabled()).toBe(true);
+    });
+
+    it('turns on when the user types into a blank form', () => {
+      render(<CreatePuzzlePositionForm displayName="alice" />);
+
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Mate in 1' } });
+      expect(guardEnabled()).toBe(true);
+    });
+
+    it('stays off when disableUnsavedGuard is set, even after an edit', () => {
+      render(<CreatePuzzlePositionForm disableUnsavedGuard forkSeed={makeForkSeed()} />);
+
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'edited' } });
+      expect(guardEnabled()).toBe(false);
     });
   });
 });
