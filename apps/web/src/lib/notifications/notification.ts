@@ -1,10 +1,12 @@
-import { and, eq, gte } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
+import { and, eq, gte, inArray } from 'drizzle-orm';
 import 'server-only';
 
 import { db, notifications, userFollows } from '../db';
 import { isBlockedBetween } from '../moderation/block';
 import { isMutableNotificationType } from './mutable-types';
 import { isNotificationTypeMuted } from './mutes';
+import { resolveSupersedeRule } from './supersede';
 
 type NotificationEvent = {
   /**
@@ -31,6 +33,12 @@ const DEDUP_WINDOW_MS = 5 * 60 * 1000;
  * Includes deduplication: if a notification with the same userId + type +
  * actorId + targetType + targetId already exists within the time window,
  * the insert is skipped.
+ *
+ * On top of that exact-type dedup, types listed in `supersede.ts` collapse
+ * against each other within one (recipient, actor, target) group, so that a
+ * single action that emits both a follower fan-out and a direct notification
+ * leaves the recipient with only the more specific of the two. See that
+ * module for which types collide and why the collapse is opt-in per type.
  */
 export function createNotification(event: NotificationEvent): void {
   // A notification must have a recipient. When the recipient was anonymised
@@ -59,18 +67,33 @@ export function createNotification(event: NotificationEvent): void {
 
     // Deduplication check
     const since = new Date(Date.now() - DEDUP_WINDOW_MS);
+
+    // A supersede rule only applies to a fully-identified group: without an
+    // actor or a target there is nothing to collapse against, so those events
+    // keep the plain exact-type dedup below.
+    const { actorId, targetType, targetId } = event;
+    const supersede =
+      actorId && targetType && targetId
+        ? buildSupersedeContext({ type: event.type, userId, actorId, targetType, targetId, since })
+        : null;
+
     const existing = await db
       .select({ id: notifications.id })
       .from(notifications)
       .where(
-        and(
-          eq(notifications.userId, userId),
-          eq(notifications.type, event.type),
-          ...(event.actorId ? [eq(notifications.actorId, event.actorId)] : []),
-          ...(event.targetType ? [eq(notifications.targetType, event.targetType)] : []),
-          ...(event.targetId ? [eq(notifications.targetId, event.targetId)] : []),
-          gte(notifications.createdAt, since)
-        )
+        supersede
+          ? // Any equal-or-more-specific row already covers this event —
+            // including one of the same type, so this subsumes the exact-type
+            // dedup for these types rather than skipping it.
+            and(supersede.groupFilter, inArray(notifications.type, supersede.dominatingTypes))
+          : and(
+              eq(notifications.userId, userId),
+              eq(notifications.type, event.type),
+              ...(actorId ? [eq(notifications.actorId, actorId)] : []),
+              ...(targetType ? [eq(notifications.targetType, targetType)] : []),
+              ...(targetId ? [eq(notifications.targetId, targetId)] : []),
+              gte(notifications.createdAt, since)
+            )
       )
       .limit(1);
 
@@ -80,14 +103,58 @@ export function createNotification(event: NotificationEvent): void {
 
     await db.insert(notifications).values({
       userId,
-      actorId: event.actorId ?? null,
+      actorId: actorId ?? null,
       type: event.type,
-      targetType: event.targetType ?? null,
-      targetId: event.targetId ?? null,
+      targetType: targetType ?? null,
+      targetId: targetId ?? null,
       groupKey: event.groupKey ?? null,
       metadata: event.metadata ?? {},
     });
+
+    // Drop the rows this one makes redundant. Deliberately AFTER the insert
+    // and re-evaluated against the DB (rather than deleting the ids the
+    // SELECT above returned): the colliding emitters run concurrently as
+    // fire-and-forget promises, so the less specific row may still be
+    // in flight while the check above runs. Cleaning up afterwards makes the
+    // outcome independent of which one wins the race.
+    if (supersede && supersede.dominatedTypes.length > 0) {
+      await db
+        .delete(notifications)
+        .where(and(supersede.groupFilter, inArray(notifications.type, supersede.dominatedTypes)));
+    }
   })().catch(() => {});
+}
+
+/**
+ * Resolve the supersede rule for an event that has a full
+ * (recipient, actor, target) identity, and pair it with the SQL filter that
+ * selects that group inside the dedup window. Returns `null` when the type
+ * belongs to no collision class — the caller then falls back to exact-type
+ * dedup. Split out of {@link createNotification} so the narrowed,
+ * definitely-present actor/target values stay narrowed.
+ */
+function buildSupersedeContext(params: {
+  type: string;
+  userId: string;
+  actorId: string;
+  targetType: string;
+  targetId: string;
+  since: Date;
+}): { groupFilter: SQL | undefined; dominatingTypes: string[]; dominatedTypes: string[] } | null {
+  const rule = resolveSupersedeRule(params.type);
+  if (!rule) return null;
+
+  return {
+    groupFilter: and(
+      eq(notifications.userId, params.userId),
+      eq(notifications.actorId, params.actorId),
+      eq(notifications.targetType, params.targetType),
+      eq(notifications.targetId, params.targetId),
+      gte(notifications.createdAt, params.since)
+    ),
+    dominatingTypes: [...rule.dominatingTypes],
+    dominatedTypes: [...rule.dominatedTypes],
+  };
 }
 
 /**
