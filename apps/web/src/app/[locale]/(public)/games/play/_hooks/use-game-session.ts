@@ -123,6 +123,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   const {
     gameStatus,
     setGameStatus,
+    derivedStatus,
     playerResult,
     setPlayerResult,
     isPlayerTurn,
@@ -388,6 +389,9 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     },
     gameState: {
       gameStatus,
+      // Position-only status, kept alongside the (possibly player-overridden)
+      // `gameStatus` so consumers can tell a checkmate from a resignation.
+      derivedStatus,
       playerResult,
       isPlayerTurn,
       isLoading,
