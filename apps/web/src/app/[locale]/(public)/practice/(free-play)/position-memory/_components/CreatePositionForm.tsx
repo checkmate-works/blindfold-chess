@@ -9,11 +9,11 @@ import { Button, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { flushSync } from 'react-dom';
-import { FiInfo } from 'react-icons/fi';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
+import { ForkSourceLine } from '@/app/[locale]/(public)/practice/(free-play)/_components/ForkSourceLine';
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 import { buildDefaultPracticeTitle } from '@/app/[locale]/(public)/practice/(free-play)/_lib/default-title';
@@ -66,7 +66,8 @@ type Props = {
   /**
    * Seed only the board position (e.g. "add this game position to memory",
    * passed via `?fen=`). Validated server-side. Unlike a fork it carries no
-   * title/tags and shows no banner; `forkSeed` wins if both are present.
+   * title/tags and shows no provenance line; `forkSeed` wins if both are
+   * present.
    */
   injectedFen?: string;
   /**
@@ -218,22 +219,23 @@ export function CreatePositionForm({
   return (
     <>
       <div className="space-y-6">
+        {/* Provenance sits at the very top so it attaches to the section
+            heading, the way the detail page's note attaches to the H1. */}
+        {forkSeed && (
+          <p className="text-sm text-muted-foreground">
+            <ForkSourceLine
+              label={t('forkedFrom')}
+              title={forkSeed.sourceTitle}
+              href={`/practice/position-memory/${forkSeed.sourceId}`}
+            />
+          </p>
+        )}
+
         <PositionMemoryStepIndicator current="position" />
 
         {error && (
           <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
             {error}
-          </div>
-        )}
-
-        {forkSeed && (
-          <div
-            role="status"
-            aria-live="polite"
-            className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground"
-          >
-            <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
-            <span>{t('forkBanner', { sourceTitle: forkSeed.sourceTitle })}</span>
           </div>
         )}
 

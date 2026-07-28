@@ -1,6 +1,8 @@
 import { Link } from '@/i18n/routing';
 import { FiGitBranch } from 'react-icons/fi';
 
+import { ForkSourceLine } from './ForkSourceLine';
+
 /** Route segment for a position kind, used to build detail links. */
 const KIND_PATH_PREFIX = {
   memory: 'practice/position-memory',
@@ -64,22 +66,17 @@ export function ForkProvenanceNote({
   const isCrossType = forkParent !== null && KIND_PATH_PREFIX[forkParent.type] !== pathPrefix;
 
   const forkedFromSegment = forkedFromId ? (
-    <span className="inline-flex items-center gap-1">
-      <FiGitBranch className="h-3 w-3" aria-hidden />
-      {forkParent && forkParent.deletedAt === null ? (
-        <>
-          {isCrossType ? labels.crossTypeFrom : labels.forkedFrom}{' '}
-          <Link
-            href={`/${KIND_PATH_PREFIX[forkParent.type]}/${forkParent.id}`}
-            className="underline hover:text-foreground"
-          >
-            {forkParent.title}
-          </Link>
-        </>
-      ) : (
-        <span>{isCrossType ? labels.crossTypeFromDeleted : labels.forkedFromDeleted}</span>
-      )}
-    </span>
+    forkParent && forkParent.deletedAt === null ? (
+      <ForkSourceLine
+        label={isCrossType ? labels.crossTypeFrom : labels.forkedFrom}
+        title={forkParent.title}
+        href={`/${KIND_PATH_PREFIX[forkParent.type]}/${forkParent.id}`}
+      />
+    ) : (
+      <ForkSourceLine
+        label={isCrossType ? labels.crossTypeFromDeleted : labels.forkedFromDeleted}
+      />
+    )
   ) : null;
 
   const forksLinkSegment =

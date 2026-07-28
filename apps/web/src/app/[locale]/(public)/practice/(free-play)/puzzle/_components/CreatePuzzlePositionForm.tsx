@@ -14,6 +14,7 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
+import { ForkSourceLine } from '../../_components/ForkSourceLine';
 import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { buildDefaultPracticeTitle } from '../../_lib/default-title';
@@ -42,8 +43,9 @@ export type PuzzleForkSeed = {
   sourceId: string;
   sourceTitle: string;
   /** The source row's own kind — 'memory' when this puzzle was created from
-   * a position-memory entry ("Create puzzle from here"), which the banner
-   * uses to avoid the word "fork" for that relationship. */
+   * a position-memory entry ("Create puzzle from here"). Picks the provenance
+   * line's wording (which avoids the word "fork" for that relationship) and
+   * routes its link to the source's own detail page. */
   sourceType: 'puzzle' | 'memory';
   fen: string;
   title: string;
@@ -274,6 +276,18 @@ export function CreatePuzzlePositionForm({
   return (
     <>
       <div className="space-y-6">
+        {/* Provenance sits at the very top so it attaches to the section
+            heading, the way the detail page's note attaches to the H1. */}
+        {forkSeed && (
+          <p className="text-sm text-muted-foreground">
+            <ForkSourceLine
+              label={forkSeed.sourceType === 'memory' ? t('createdFrom') : t('forkedFrom')}
+              title={forkSeed.sourceTitle}
+              href={`/practice/${forkSeed.sourceType === 'memory' ? 'position-memory' : 'puzzle'}/${forkSeed.sourceId}`}
+            />
+          </p>
+        )}
+
         <PuzzleStepIndicator flow="create" current="position" />
 
         <PuzzleFormErrorBanner message={step.error} />
@@ -295,21 +309,6 @@ export function CreatePuzzlePositionForm({
             >
               {t('draftRestoredDiscard')}
             </button>
-          </div>
-        )}
-
-        {forkSeed && (
-          <div
-            role="status"
-            aria-live="polite"
-            className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground"
-          >
-            <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
-            <span>
-              {forkSeed.sourceType === 'memory'
-                ? t('createdFromPositionMemoryBanner', { sourceTitle: forkSeed.sourceTitle })
-                : t('forkBanner', { sourceTitle: forkSeed.sourceTitle })}
-            </span>
           </div>
         )}
 

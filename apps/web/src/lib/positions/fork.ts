@@ -124,7 +124,8 @@ type BaseForkSeed<T extends PositionType> = {
   sourceId: string;
   sourceTitle: string;
   /** The source row's own `positions.type` — lets the create form pick
-   * "Forking from" vs. cross-type banner copy (see `PuzzleForkSeedData`'s
+   * "forked from" vs. cross-type "created from" provenance copy, and route
+   * the source link to the right detail page (see `PuzzleForkSeedData`'s
    * `@design Cross-type sourcing` note). Narrowed per caller (see
    * `loadPuzzleForkSeed` / `loadPositionForkSeed`) rather than left as the
    * full `PositionType` union, so consumers don't have to handle a

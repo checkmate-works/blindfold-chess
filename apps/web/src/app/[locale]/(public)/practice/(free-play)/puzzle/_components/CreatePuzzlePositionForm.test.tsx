@@ -19,6 +19,11 @@ const { mockPush, mockReplace, stableRouter } = vi.hoisted(() => {
 });
 vi.mock('@/i18n/routing', () => ({
   useRouter: () => stableRouter,
+  Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 
 // `?resumed=1` detection. Individual tests override via mockSearchParamsGet.
@@ -426,18 +431,32 @@ describe('CreatePuzzlePositionForm', () => {
       expect(screen.getByLabelText(/descriptionLabel/)).toHaveValue('Source description');
     });
 
-    it('shows the plain fork banner when the source is another puzzle', () => {
-      render(<CreatePuzzlePositionForm forkSeed={makeForkSeed()} />);
+    it('shows no provenance line at all on a plain /new visit', () => {
+      render(<CreatePuzzlePositionForm displayName="alice" />);
 
-      expect(screen.getByText('forkBanner')).toBeInTheDocument();
-      expect(screen.queryByText('createdFromPositionMemoryBanner')).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Source Puzzle' })).not.toBeInTheDocument();
     });
 
-    it('shows the cross-type banner (not "fork" wording) when the source is a position-memory entry', () => {
+    it('states the fork with the "forked from" label and links to the source puzzle', () => {
+      render(<CreatePuzzlePositionForm forkSeed={makeForkSeed()} />);
+
+      expect(screen.getByText('forkedFrom')).toBeInTheDocument();
+      expect(screen.queryByText('createdFrom')).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Source Puzzle' })).toHaveAttribute(
+        'href',
+        `/practice/puzzle/${FORK_SOURCE_ID}`
+      );
+    });
+
+    it('uses the cross-type label (not "fork" wording) and the position-memory link for a memory source', () => {
       render(<CreatePuzzlePositionForm forkSeed={{ ...makeForkSeed(), sourceType: 'memory' }} />);
 
-      expect(screen.getByText('createdFromPositionMemoryBanner')).toBeInTheDocument();
-      expect(screen.queryByText('forkBanner')).not.toBeInTheDocument();
+      expect(screen.getByText('createdFrom')).toBeInTheDocument();
+      expect(screen.queryByText('forkedFrom')).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Source Puzzle' })).toHaveAttribute(
+        'href',
+        `/practice/position-memory/${FORK_SOURCE_ID}`
+      );
     });
 
     it('carries forkedFromId through to the draft on Continue', () => {
