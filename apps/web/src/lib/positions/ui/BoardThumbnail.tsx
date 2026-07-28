@@ -67,7 +67,13 @@ function renderThumbnailPiece(
         </div>
       );
     case 'circle':
-      return <div className="w-[60%] h-[60%] rounded-full" style={goStoneStyle(display.color)} />;
+      // A faint stone is a hidden one — same fade as the ghost above.
+      return (
+        <div
+          className={`w-[60%] h-[60%] rounded-full ${display.faint ? 'opacity-40' : ''}`}
+          style={goStoneStyle(display.color)}
+        />
+      );
     case 'piece':
       return (
         <ChessPieceIcon type={display.type} color={display.color} className="w-[80%] h-[80%]" />

@@ -344,8 +344,8 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     markPendingChange();
   }, [recordMovePeek, markPendingChange]);
   const recordInvalidDurable = useCallback(
-    (attempt?: string) => {
-      recordInvalid(attempt);
+    (attempt?: string, squares?: { from: string; to: string }) => {
+      recordInvalid(attempt, squares);
       markPendingChange();
     },
     [recordInvalid, markPendingChange]

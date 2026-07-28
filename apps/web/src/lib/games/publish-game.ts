@@ -75,8 +75,7 @@ export type GameColumns = {
 };
 
 export type ValidatePublishResult =
-  | { ok: true; game: ValidatedGame }
-  | { ok: false; error: string };
+  { ok: true; game: ValidatedGame } | { ok: false; error: string };
 
 const OUTCOMES: readonly GameOutcome[] = ['win', 'loss', 'draw'];
 const COLORS: readonly PlayerColor[] = ['white', 'black'];
@@ -90,6 +89,27 @@ const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
 // sized length (the longest real SAN, e.g. "exd8=Q+", is well under this).
 const MAX_INVALID_ATTEMPTS = 20;
 const MAX_INVALID_ATTEMPT_LEN = 12;
+
+// Bounds for an archived undo's retracted SAN(s): only the player's move and
+// the AI's reply are ever recorded (see UndoneMoveLog.sans), and real SAN
+// tops out around "exd8=Q#" (7 chars) — 10 leaves headroom without inviting
+// abuse.
+const MAX_SANS_PER_UNDO = 2;
+const MAX_SAN_LEN = 10;
+
+const ALGEBRAIC_SQUARE_RE = /^[a-h][1-8]$/;
+
+/** Shape guard for one `invalidAttemptSquares` slot's `{ from, to }` object. */
+function isAlgebraicSquarePair(value: unknown): value is { from: string; to: string } {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.from === 'string' &&
+    ALGEBRAIC_SQUARE_RE.test(v.from) &&
+    typeof v.to === 'string' &&
+    ALGEBRAIC_SQUARE_RE.test(v.to)
+  );
+}
 
 /**
  * Normalize the self-reported play settings into the validated display subset,
@@ -193,19 +213,41 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
   // operationLogs are self-reported aid counts; accept an array no longer than
   // the move list, else drop to null rather than rejecting (display tolerates
   // missing logs). computeGameStats reads fields defensively. The numeric
-  // fields are trusted as-is, but the new free-text `invalidAttempts` is bounded
-  // (count + length) before it becomes public data.
+  // fields are trusted as-is, but the free-text `invalidAttempts` and its
+  // `invalidAttemptSquares` companion are bounded (count / length / shape)
+  // before they become public data.
   let operationLogs: MoveOperationLog[] | null = null;
   if (Array.isArray(v.operationLogs) && v.operationLogs.length <= moves.length) {
     operationLogs = (v.operationLogs as MoveOperationLog[]).map((log) => {
       if (!log || typeof log !== 'object') return log;
-      const raw = (log as { invalidAttempts?: unknown }).invalidAttempts;
-      if (!Array.isArray(raw)) return log;
-      const attempts = raw
-        .filter((s): s is string => typeof s === 'string')
-        .slice(0, MAX_INVALID_ATTEMPTS)
-        .map((s) => s.slice(0, MAX_INVALID_ATTEMPT_LEN));
-      return { ...log, invalidAttempts: attempts.length > 0 ? attempts : undefined };
+      const rawAttempts = (log as { invalidAttempts?: unknown }).invalidAttempts;
+      const rawSquares = (log as { invalidAttemptSquares?: unknown }).invalidAttemptSquares;
+      if (!Array.isArray(rawAttempts) && !Array.isArray(rawSquares)) return log;
+
+      const attempts = Array.isArray(rawAttempts)
+        ? rawAttempts
+            .filter((s): s is string => typeof s === 'string')
+            .slice(0, MAX_INVALID_ATTEMPTS)
+            .map((s) => s.slice(0, MAX_INVALID_ATTEMPT_LEN))
+        : [];
+      // Best-effort only: a crafted payload could already misalign this
+      // against `attempts` above (e.g. by mixing non-string junk into
+      // invalidAttempts before the filter runs). That's display metadata,
+      // not an integrity boundary — worst case a self-authored GIF marks
+      // the wrong square, nothing worse.
+      const squares = Array.isArray(rawSquares)
+        ? rawSquares
+            .slice(0, MAX_INVALID_ATTEMPTS)
+            .map((s) =>
+              s === null ? null : isAlgebraicSquarePair(s) ? { from: s.from, to: s.to } : null
+            )
+        : undefined;
+
+      return {
+        ...log,
+        invalidAttempts: attempts.length > 0 ? attempts : undefined,
+        invalidAttemptSquares: squares && squares.some((s) => s !== null) ? squares : undefined,
+      };
     });
   }
 
@@ -235,6 +277,13 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
         .slice(0, MAX_INVALID_ATTEMPTS)
         .map((s) => s.slice(0, MAX_INVALID_ATTEMPT_LEN));
     };
+    const boundSquares = (
+      squares: ({ from: string; to: string } | null)[] | undefined
+    ): ({ from: string; to: string } | null)[] | undefined => {
+      if (!squares || squares.length === 0) return undefined;
+      const bounded = squares.slice(0, MAX_INVALID_ATTEMPTS);
+      return bounded.some((s) => s !== null) ? bounded : undefined;
+    };
     const bounded = (v.undoneLogs as UndoneMoveLog[]).slice(0, MAX_UNDONE_LOGS).map((entry) => {
       const out: UndoneMoveLog = { index: entry.index };
       if (entry.log !== undefined) {
@@ -245,10 +294,14 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
           movePeekCount: entry.log.movePeekCount,
           invalidCount: entry.log.invalidCount,
           invalidAttempts: boundAttempts(entry.log.invalidAttempts),
+          invalidAttemptSquares: boundSquares(entry.log.invalidAttemptSquares),
         };
       }
       const pending = boundAttempts(entry.pendingInvalidAttempts);
       if (pending) out.pendingInvalidAttempts = pending;
+      if (entry.sans && entry.sans.length > 0) {
+        out.sans = entry.sans.slice(0, MAX_SANS_PER_UNDO).map((s) => s.slice(0, MAX_SAN_LEN));
+      }
       return out;
     });
     undoneLogs = bounded.length > 0 ? bounded : null;

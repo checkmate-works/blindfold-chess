@@ -134,6 +134,49 @@ export function playSettingsAtHalfMove(
 }
 
 /**
+ * The per-piece display axes a board renderer understands, with the
+ * whole-board `boardVisibility` axis already folded away.
+ */
+export type BlindfoldDisplayAxes = Pick<
+  GamePlaySettings,
+  'showOwnPieces' | 'showOpponentPieces' | 'pieceShapeMode' | 'pieceColors' | 'pawnHideMode'
+>;
+
+/**
+ * Collapse `boardVisibility` — a whole-board axis — into the per-side
+ * `showOwnPieces` / `showOpponentPieces` flags, which is all a renderer can
+ * act on: `resolvePieceDisplay` has no notion of a hidden *board*, only of
+ * hidden pieces.
+ *
+ * This is the one place that rule lives. Every "as played" surface — the
+ * replay GIF, the interactive replay's reproduce-view, the feed and OG
+ * thumbnails — has to agree on what "the player could not see this" means,
+ * and it was previously copy-pasted into two of them, which is how a
+ * peek-mode game came to look hidden on one surface and fully sighted on
+ * another.
+ *
+ * Both `'never'` and `'peek'` count as hidden, matching live play's own
+ * masking rule (`boardMasked` in `use-peek-state`) and `BoardVisibility`'s
+ * own definition of `'peek'` — "the board is hidden by default; the player
+ * invokes a peek action to view it". A reproduction shows a *position*, and
+ * for all but the few seconds of an actual peek that position was masked.
+ * Surfaces that also want to show the revealed board do it with an extra
+ * frame rather than by weakening this rule: the GIF inserts a peek flash at
+ * the moves the player actually looked.
+ */
+export function foldBoardVisibility(settings: GamePlaySettings): BlindfoldDisplayAxes {
+  const boardHidden = settings.boardVisibility !== 'always';
+
+  return {
+    showOwnPieces: boardHidden ? false : settings.showOwnPieces,
+    showOpponentPieces: boardHidden ? false : settings.showOpponentPieces,
+    pieceShapeMode: settings.pieceShapeMode,
+    pieceColors: settings.pieceColors,
+    pawnHideMode: settings.pawnHideMode,
+  };
+}
+
+/**
  * Reconstruct full `from → to` transitions from a start-of-game snapshot plus
  * the to-only change log. The persisted log records only each change's resulting
  * value (`to`); the `from` is the key's effective value immediately before that

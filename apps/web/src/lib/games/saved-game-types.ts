@@ -108,22 +108,45 @@ export type MoveOperationLog = {
   /**
    * Number of invalid-move submission attempts since the previous commit.
    * Optional for backward compatibility — entries written before this field
-   * existed are treated as 0 by consumers. Counts only failed
-   * MoveInputPanel submissions (text / select / button paths); board moves
-   * (click-to-move / drag-and-drop) never submit illegal moves because the
-   * board only fires `onMove` for legal destinations.
+   * existed are treated as 0 by consumers. Counts both MoveInputPanel
+   * rejections (text / select / button) and board rejections (click-to-move
+   * onto an illegal destination after a selection, or any drag-drop onto an
+   * illegal square) — a bare opponent-piece *first tap* is the one board
+   * interaction that never counts, since it selects nothing and names no
+   * move (see `classifyBoardClick`).
    */
   invalidCount?: number;
   /**
    * The actual rejected move texts behind {@link invalidCount}, in attempt
    * order (e.g. `['Nf3', 'Bb4']`) — so a review can show *what* was tried, not
-   * just how many times. Only the text / select / button input paths populate
-   * this (the submitted SAN is in scope at rejection); board mis-grabs in
-   * blindfold mode have no SAN and only bump `invalidCount`. So
-   * `invalidAttempts.length` may be ≤ `invalidCount`. Omitted (undefined) when
-   * empty and on legacy records — consumers fall back to the bare count.
+   * just how many times. Both input paths populate this: MoveInputPanel with
+   * the submitted SAN, and the board with a synthesized SAN-like label
+   * (`describeIllegalAttempt`) built from the selected piece and destination.
+   * `invalidAttempts.length` may still be < `invalidCount` for a record
+   * written before board attempts were captured this way. Omitted
+   * (undefined) when empty and on legacy records — consumers fall back to
+   * the bare count.
    */
   invalidAttempts?: string[];
+  /**
+   * The exact origin/destination squares behind each {@link invalidAttempts}
+   * entry, same indexing, when the interaction that produced it directly
+   * knew them — i.e. only board attempts (click-to-move / drag-drop): the
+   * board always has both squares in hand at rejection time. A MoveInputPanel
+   * attempt has no board interaction to derive squares from, so its slot is
+   * `null`; a mixed turn (some board mis-clicks, some typed attempts before
+   * the eventual commit) can have both kinds of slot in the same array.
+   *
+   * This exists because {@link invalidAttempts}' SAN-like text is lossy by
+   * design for board attempts — `describeIllegalAttempt` deliberately omits
+   * disambiguation (a same-type sibling piece is moot for an illegal move),
+   * so the origin square cannot be recovered by re-parsing the text once
+   * more than one piece of that type could be the mover. Capturing it here
+   * at record time — where it is unambiguous — avoids that guesswork
+   * downstream (e.g. the "as played" GIF replay, which marks both squares
+   * of a rejected board attempt rather than only the destination).
+   */
+  invalidAttemptSquares?: ({ from: string; to: string } | null)[];
 };
 
 /**
@@ -148,6 +171,17 @@ export type UndoneMoveLog = {
   index: number;
   log?: MoveOperationLog;
   pendingInvalidAttempts?: string[];
+  /**
+   * The SAN(s) this undo retracted from `moves[]`, in board order (the
+   * player's move, then the AI's reply). Only the Undo button records this
+   * (restart-from-position does not — see {@link handleUndoLog}), and only
+   * once `moves[]` was still in scope to slice, so it is absent on records
+   * from before this field existed and whenever the retraction wasn't via
+   * Undo. Lets a "played" GIF re-enact the retracted move instead of only
+   * badging it (falls back to a badge when absent, or when the SAN turns
+   * out to be illegal against the position it would replay from).
+   */
+  sans?: string[];
 };
 
 /**

@@ -1,60 +1,44 @@
-import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
-import { replayMoves } from '@blindfold-chess/features/chess-core';
 import 'server-only';
 import sharp from 'sharp';
 
+import type { RenderBoardSvgOverlay } from '@/lib/board-svg/render-board-svg';
 import { renderBoardSvg } from '@/lib/board-svg/render-board-svg';
 import type { GameRecord } from '@/lib/db/schema';
-import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
+import type { GifFrame, GifOverlay } from '@/lib/games/gif/build-game-frames';
+import { buildGameFrames } from '@/lib/games/gif/build-game-frames';
+import type { GameGifVariant } from '@/lib/games/gif/constants';
 
-export type GameGifVariant = 'plain' | 'played';
+export type { GameGifVariant } from '@/lib/games/gif/constants';
 
 const BOARD_SIZE = 512;
-/**
- * Hard cap on rendered frames (120 moves + the initial position). Longer
- * games are truncated to the leading `MAX_FRAMES - 1` positions plus the true
- * final position, so playback never silently ends mid-game — it just skips
- * the middle. Accepted per spec rather than rendering every position, since a
- * 120+ move blindfold game is rare and an unbounded GIF is a real memory /
- * response-time risk.
- */
-const MAX_FRAMES = 241;
 /** Frames rendered to PNG concurrently, to bound peak memory. */
 const FRAME_RENDER_CONCURRENCY = 8;
-const DELAY_FIRST_MS = 1000;
-const DELAY_MOVE_MS = 800;
-const DELAY_LAST_MS = 4000;
 
-type ReplayPosition = ReturnType<typeof replayMoves>[number];
-
-function selectFrames(positions: ReplayPosition[]): ReplayPosition[] {
-  if (positions.length <= MAX_FRAMES) return positions;
-  return [...positions.slice(0, MAX_FRAMES - 1), positions[positions.length - 1]];
+/** Translates the frame builder's semantic overlay to the renderer's drawing vocabulary. */
+function toRenderOverlay(overlay: GifOverlay): RenderBoardSvgOverlay {
+  switch (overlay.kind) {
+    case 'peek':
+      return { badge: 'peek' };
+    case 'undo':
+      return { badge: 'undo' };
+    case 'illegal':
+      return { illegalTo: overlay.to, illegalFrom: overlay.from };
+  }
 }
 
-function delaysFor(frameCount: number): number[] {
-  return Array.from({ length: frameCount }, (_, i) => {
-    if (i === frameCount - 1) return DELAY_LAST_MS;
-    if (i === 0) return DELAY_FIRST_MS;
-    return DELAY_MOVE_MS;
-  });
-}
-
-async function renderFramesToPng(
-  positions: ReplayPosition[],
-  opts: { flipped: boolean; displaySettings: BlindfoldDisplaySettings | null }
-): Promise<Buffer[]> {
-  const buffers: Buffer[] = new Array(positions.length);
-  for (let i = 0; i < positions.length; i += FRAME_RENDER_CONCURRENCY) {
-    const chunk = positions.slice(i, i + FRAME_RENDER_CONCURRENCY);
+async function renderFramesToPng(frames: GifFrame[], flipped: boolean): Promise<Buffer[]> {
+  const buffers: Buffer[] = new Array(frames.length);
+  for (let i = 0; i < frames.length; i += FRAME_RENDER_CONCURRENCY) {
+    const chunk = frames.slice(i, i + FRAME_RENDER_CONCURRENCY);
     const rendered = await Promise.all(
-      chunk.map((position) => {
+      chunk.map((frame) => {
         const svg = renderBoardSvg({
-          fen: position.fen,
+          fen: frame.fen,
           size: BOARD_SIZE,
-          flipped: opts.flipped,
-          lastMove: position.lastMove ?? null,
-          displaySettings: opts.displaySettings,
+          flipped,
+          lastMove: frame.lastMove,
+          displaySettings: frame.displaySettings,
+          overlay: frame.overlay ? toRenderOverlay(frame.overlay) : null,
         });
         return sharp(Buffer.from(svg)).png().toBuffer();
       })
@@ -67,24 +51,18 @@ async function renderFramesToPng(
 }
 
 /**
- * Render a published game's replay as an animated GIF — the frame source
- * shared with {@link renderBoardSvg} (Phase 1's OG image). `'played'` renders
- * the blindfold "as played" board (ghosts / Go stones) via
- * {@link playSettingsToThumbnailDisplay}; games with no notable play settings
- * render identically for both variants.
+ * Render a published game's replay as an animated GIF. The frame sequence
+ * itself — which position, which annotation overlay, how long each shows —
+ * comes from {@link buildGameFrames}; this function only rasterizes that
+ * sequence and joins it into a GIF. See `build-game-frames.ts` for what
+ * `'plain'` vs `'played'` actually render.
  */
 export async function generateGameGif(game: GameRecord, variant: GameGifVariant): Promise<Buffer> {
-  const allPositions = replayMoves(game.moves, game.startingFen ?? undefined);
-  const positions = selectFrames(allPositions);
-
-  const displaySettings =
-    variant === 'played'
-      ? playSettingsToThumbnailDisplay(game.playSettings, game.playerColor)
-      : null;
+  const frames = buildGameFrames(game, variant);
   const flipped = game.playerColor === 'black';
 
-  const pngBuffers = await renderFramesToPng(positions, { flipped, displaySettings });
-  const delays = delaysFor(pngBuffers.length);
+  const pngBuffers = await renderFramesToPng(frames, flipped);
+  const delays = frames.map((frame) => frame.delayMs);
 
   return sharp(pngBuffers, { join: { animated: true } })
     .gif({ delay: delays, loop: 0, effort: 7 })

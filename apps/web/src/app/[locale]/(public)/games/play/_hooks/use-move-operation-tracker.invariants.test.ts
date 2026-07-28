@@ -150,6 +150,51 @@ describe('game-operation audit invariants (issue #95)', () => {
     }
   );
 
+  it("an undo's archived entry carries exactly the SANs the caller retracted", () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.commitMove('board');
+      // The caller passes the [player move, AI reply] SAN pair it is about
+      // to remove from moves[] — see useGameActions.handleUndo.
+      result.current.handleUndoLog(['Nf3', 'Nc6']);
+      result.current.recordUndo();
+    });
+
+    const archived = result.current.undoneLogs;
+    expect(archived).toHaveLength(1);
+    expect(archived[0].sans).toEqual(['Nf3', 'Nc6']);
+  });
+
+  it('omits sans entirely when the caller passes none (restart-from-position never records it)', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.commitMove('board');
+      result.current.handleUndoLog();
+      result.current.recordUndo();
+    });
+
+    expect(result.current.undoneLogs[0].sans).toBeUndefined();
+  });
+
+  it("restoring a longer undoneLogs list keeps every entry's sans intact", () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+    const restored = [
+      {
+        index: 0,
+        log: { inputMethod: 'board' as const, peekCount: 0, undoCount: 1, movePeekCount: 0 },
+        sans: ['Nf3', 'Nc6'],
+      },
+    ];
+
+    act(() => {
+      result.current.restoreUndoneLogs(restored);
+    });
+
+    expect(result.current.undoneLogs).toEqual(restored);
+  });
+
   it('restore can only grow the record — a stale snapshot never rolls anything back', () => {
     const { result } = renderHook(() => useMoveOperationTracker());
 

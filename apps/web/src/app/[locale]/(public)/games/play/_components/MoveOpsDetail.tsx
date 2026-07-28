@@ -27,9 +27,21 @@ import { OpsRowsList } from './OpsRowsList';
 export function MoveOpsDetail({
   title,
   moveOperationLog,
+  onAttemptSelect,
+  selectedAttemptIndex,
+  isAttemptSelectable,
 }: {
   title?: string;
   moveOperationLog: MoveOperationLog | null;
+  /**
+   * Opt-in, relayed to {@link OpsRowsList}: lets a caller with a board on
+   * screen turn each rejected-move chip into a button that points at it.
+   * Omitted on the local result screen and in live play, where the chips
+   * are read-only.
+   */
+  onAttemptSelect?: (attemptIndex: number) => void;
+  selectedAttemptIndex?: number | null;
+  isAttemptSelectable?: (attemptIndex: number) => boolean;
 }) {
   const t = useTranslations('play');
   const rows =
@@ -46,7 +58,12 @@ export function MoveOpsDetail({
 
   const opsBlock = (
     <div className="rounded-md border border-border bg-card overflow-hidden text-sm">
-      <OpsRowsList rows={rows} />
+      <OpsRowsList
+        rows={rows}
+        onAttemptSelect={onAttemptSelect}
+        selectedAttemptIndex={selectedAttemptIndex}
+        isAttemptSelectable={isAttemptSelectable}
+      />
     </div>
   );
 

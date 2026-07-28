@@ -122,6 +122,16 @@ export function isValidStoredGame(stored: unknown): stored is StoredGame {
               (Array.isArray((log as Record<string, unknown>).invalidAttempts) &&
                 ((log as Record<string, unknown>).invalidAttempts as unknown[]).every(
                   (s) => typeof s === 'string'
+                ))) &&
+            ((log as Record<string, unknown>).invalidAttemptSquares === undefined ||
+              (Array.isArray((log as Record<string, unknown>).invalidAttemptSquares) &&
+                ((log as Record<string, unknown>).invalidAttemptSquares as unknown[]).every(
+                  (s) =>
+                    s === null ||
+                    (typeof s === 'object' &&
+                      s !== null &&
+                      typeof (s as Record<string, unknown>).from === 'string' &&
+                      typeof (s as Record<string, unknown>).to === 'string')
                 )))
         ))) &&
     (g.operationTotals === undefined || isOperationTotals(g.operationTotals)) &&

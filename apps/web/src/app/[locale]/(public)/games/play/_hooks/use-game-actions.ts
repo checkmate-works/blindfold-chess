@@ -46,7 +46,7 @@ export function useGameActions({
   removeMoves: (count: number) => void;
   updateLastMove: (newMoves: AlgebraicNotation[]) => void;
   clearInputError: () => void;
-  handleUndoLog: () => void;
+  handleUndoLog: (retractedSans?: string[]) => void;
   recordUndo: () => void;
   truncateLogs: (playerMoveCount: number) => void;
   navigate: (url: string) => void;
@@ -66,7 +66,9 @@ export function useGameActions({
     // handleUndoLog removes the last player's log entry and resets peek/undo counters.
     // Any peeks accumulated before this undo are intentionally discarded (the move "never happened").
     // recordUndo then tracks this undo event on the *next* move's log entry.
-    handleUndoLog();
+    // moves.slice(-2) is the retracted [player move, AI reply] pair, taken
+    // from this closure's still-pre-undo `moves` before removeMoves takes effect.
+    handleUndoLog(moves.slice(-2));
     recordUndo();
   }, [
     markPlayerInteraction,

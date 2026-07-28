@@ -5,10 +5,24 @@ import type {
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import type { SvgElement } from '@blindfold-chess/icons/data';
-import { getPieceData } from '@blindfold-chess/icons/data';
+import { getPieceData, undoData } from '@blindfold-chess/icons/data';
 import type { BoardTheme } from '@blindfold-chess/types';
 import type { PieceType } from '@blindfold-chess/types';
 import { boardThemeColors } from '@blindfold-chess/ui';
+
+/**
+ * A GIF-replay annotation drawn on top of the board — a fixed-position badge
+ * (blindfold peek / undo), and/or a rejected move marked on its square(s).
+ * Purely graphical (rect / path / circle), like the rest of this module: no
+ * `<text>`, since the render target has no fonts installed.
+ */
+export type RenderBoardSvgOverlay = {
+  badge?: 'peek' | 'undo';
+  /** The rejected move's destination square (algebraic). Red fill + a cross. */
+  illegalTo?: string;
+  /** The rejected move's origin square, when recoverable. Red outline only. */
+  illegalFrom?: string;
+};
 
 export type RenderBoardSvgOptions = {
   fen: string;
@@ -21,11 +35,15 @@ export type RenderBoardSvgOptions = {
   displaySettings?: BlindfoldDisplaySettings | null;
   /** 直前の手のハイライト（from/to マス）。null で無し */
   lastMove?: { from: string; to: string } | null;
+  /** GIF replay annotation (peek/undo badge, rejected-move marker). null/省略で無し */
+  overlay?: RenderBoardSvgOverlay | null;
 };
 
 const DEFAULT_SIZE = 512;
 const DEFAULT_THEME: BoardTheme = 'lichess';
 const LAST_MOVE_HIGHLIGHT = 'rgba(155,199,0,0.41)';
+/** Opacity marking "the player could not see this" — ghosts and faint stones alike. */
+const HIDDEN_OPACITY = 0.4;
 
 type Color = 'w' | 'b';
 
@@ -123,6 +141,106 @@ function stoneGradientDef(color: Color): string {
   );
 }
 
+/** rgba red used for every illegal-attempt marker — the "rejected" register. */
+const ILLEGAL_RED = '#dc2626';
+
+/**
+ * The rejected move's destination square: a translucent red fill (drawn
+ * after the piece layer, so a self-capture / occupied-square attempt still
+ * shows the ✗ on top of the piece) plus a red ✗ built from two `<path>`
+ * strokes rather than `<text>`.
+ */
+function illegalToMarkup(square: string, flipped: boolean, squareSize: number): string {
+  const { col, row } = squareToColRow(square, flipped);
+  const x = col * squareSize;
+  const y = row * squareSize;
+  const inset = squareSize * 0.22;
+  const cx = x + squareSize / 2;
+  const cy = y + squareSize / 2;
+  const r = squareSize / 2 - inset;
+  const strokeWidth = squareSize * 0.11;
+  return (
+    `<rect x="${x}" y="${y}" width="${squareSize}" height="${squareSize}" fill="rgba(220,38,38,0.42)"/>` +
+    `<path d="M${cx - r} ${cy - r} L${cx + r} ${cy + r}" stroke="${ILLEGAL_RED}" stroke-width="${strokeWidth}" stroke-linecap="round"/>` +
+    `<path d="M${cx + r} ${cy - r} L${cx - r} ${cy + r}" stroke="${ILLEGAL_RED}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`
+  );
+}
+
+/** The rejected move's origin square, when recoverable: a red outline only. */
+function illegalFromMarkup(square: string, flipped: boolean, squareSize: number): string {
+  const { col, row } = squareToColRow(square, flipped);
+  const strokeWidth = squareSize * 0.08;
+  const x = col * squareSize + strokeWidth / 2;
+  const y = row * squareSize + strokeWidth / 2;
+  const side = squareSize - strokeWidth;
+  return `<rect x="${x}" y="${y}" width="${side}" height="${side}" fill="none" stroke="${ILLEGAL_RED}" stroke-width="${strokeWidth}"/>`;
+}
+
+/**
+ * Badge geometry, expressed against a 512px board and scaled from there.
+ * A corner badge unavoidably sits on a real square (h8 in white's view) —
+ * an 8×8 grid has no free margin — so it is kept well under a square's width
+ * (a square is 64 at this size) and tucked toward the very corner, leaving
+ * the piece beneath it readable rather than covered.
+ */
+const BADGE_INSET = 28;
+const BADGE_RADIUS = 17;
+
+/**
+ * Badge colours. Peek is the quietest of the three annotation colours on
+ * purpose: it is by far the most frequent badge (a blindfold player peeks
+ * constantly), so a saturated alert colour would read as the subject of the
+ * frame rather than a footnote on it. Neutral slate says "meta annotation";
+ * the semantic colours stay reserved for the events that are genuinely
+ * about the chess — amber for a retracted move, red for a rejected one.
+ */
+const BADGE_STYLES = {
+  peek: { fill: 'rgba(51,65,85,0.55)', accent: '#334155' },
+  // Amber keeps more opacity than peek: its glyph is a thin white stroke,
+  // which needs the backing to stay legible (peek's is a filled shape).
+  undo: { fill: 'rgba(245,158,11,0.9)', accent: '#b45309' },
+} as const;
+
+/**
+ * Fixed-position badge (top-right corner, independent of orientation) for
+ * "a peek happened here" / "this move was undone and redone". A filled
+ * circle plus a purely graphical glyph — an eye outline for peek, the shared
+ * `undoData` stroke path for undo — never `<text>`.
+ */
+function badgeMarkup(kind: 'peek' | 'undo', size: number): string {
+  const scale = size / 512;
+  const cx = size - BADGE_INSET * scale;
+  const cy = BADGE_INSET * scale;
+  const r = BADGE_RADIUS * scale;
+  const { fill, accent } = BADGE_STYLES[kind];
+  // A hairline light ring, not decoration: the badge lands on whatever piece
+  // occupies the corner square, and a translucent dark fill alone dissolves
+  // into a dark piece. The ring keeps the silhouette readable on any
+  // background without making the badge louder.
+  const circle =
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" ` +
+    `stroke="rgba(255,255,255,0.55)" stroke-width="${r * 0.1}"/>`;
+
+  if (kind === 'peek') {
+    const s = r / 17;
+    // The pupil uses the opaque accent, not the translucent badge fill:
+    // punching a see-through hole in the white eye would wash it out.
+    const glyph =
+      `<g transform="translate(${cx},${cy}) scale(${s})">` +
+      `<path d="M-14 0 Q0 -11 14 0 Q0 11 -14 0 Z" fill="#ffffff"/>` +
+      `<circle cx="0" cy="0" r="4.6" fill="${accent}"/>` +
+      `</g>`;
+    return circle + glyph;
+  }
+
+  const s = r / 13;
+  const glyph =
+    `<g transform="translate(${cx - 12 * s},${cy - 12 * s}) scale(${s})">` +
+    `<path d="${undoData.paths[0]}" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `</g>`;
+  return circle + glyph;
+}
+
 /**
  * Render a FEN position to a raw SVG string. React-free, DOM-free, chess.js-
  * free pure function — safe to feed directly into `next/og`'s `ImageResponse`
@@ -137,6 +255,7 @@ export function renderBoardSvg({
   boardTheme = DEFAULT_THEME,
   displaySettings = null,
   lastMove = null,
+  overlay = null,
 }: RenderBoardSvgOptions): string {
   const squareSize = size / 8;
   const theme = boardThemeColors[boardTheme];
@@ -173,9 +292,13 @@ export function renderBoardSvg({
       if (display.color === 'w') usesStoneWhite = true;
       else usesStoneBlack = true;
       const diameter = squareSize * 0.6;
+      // A faint stone is a hidden one — same opacity as a ghost piece, so
+      // "dimmed" reads as "the player could not see this" no matter which
+      // form the square takes.
+      const opacity = display.faint ? ` opacity="${HIDDEN_OPACITY}"` : '';
       piecesMarkup += `<circle cx="${x + squareSize / 2}" cy="${y + squareSize / 2}" r="${
         diameter / 2
-      }" fill="url(#bfc-stone-${display.color})"/>`;
+      }" fill="url(#bfc-stone-${display.color})"${opacity}/>`;
       continue;
     }
 
@@ -185,7 +308,8 @@ export function renderBoardSvg({
     const pieceGroup = `<g transform="translate(${x + offset},${y + offset}) scale(${scale})">${serializeElements(
       pieceData.elements
     )}</g>`;
-    piecesMarkup += display.kind === 'ghost' ? `<g opacity="0.4">${pieceGroup}</g>` : pieceGroup;
+    piecesMarkup +=
+      display.kind === 'ghost' ? `<g opacity="${HIDDEN_OPACITY}">${pieceGroup}</g>` : pieceGroup;
   }
 
   let highlightMarkup = '';
@@ -203,12 +327,22 @@ export function renderBoardSvg({
         }</defs>`
       : '';
 
+  // Drawn after the piece layer: illegalTo's ✗ must stay visible over a piece
+  // on the target square (self-capture / occupied-square attempts), and the
+  // badge is a fixed-position overlay independent of board content either way.
+  let overlayMarkup = '';
+  if (overlay?.illegalTo) overlayMarkup += illegalToMarkup(overlay.illegalTo, flipped, squareSize);
+  if (overlay?.illegalFrom)
+    overlayMarkup += illegalFromMarkup(overlay.illegalFrom, flipped, squareSize);
+  if (overlay?.badge) overlayMarkup += badgeMarkup(overlay.badge, size);
+
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">` +
     defsMarkup +
     `<g>${squaresMarkup}</g>` +
     `<g>${highlightMarkup}</g>` +
     `<g>${piecesMarkup}</g>` +
+    `<g>${overlayMarkup}</g>` +
     `</svg>`
   );
 }

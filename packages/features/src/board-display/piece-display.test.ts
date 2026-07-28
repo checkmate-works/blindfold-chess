@@ -103,6 +103,62 @@ describe("resolvePieceDisplay", () => {
     ).toEqual({ kind: "circle", color: "b" });
   });
 
+  it("keeps a hidden stone a stone, marked faint, on the review toggle", () => {
+    // A hidden board whose pieces were set to render as stones: the review
+    // must look hidden (faint) AND look like the player's board (a stone).
+    // Collapsing to a ghost would show a piece the player never saw.
+    const settings: BlindfoldDisplaySettings = {
+      ...normal,
+      showOwnPieces: false,
+      showOpponentPieces: false,
+      pieceShapeMode: "circles-own",
+      hiddenPieceStyle: "ghost",
+    };
+    expect(resolvePieceDisplay({ type: "q", color: "w" }, settings)).toEqual({
+      kind: "circle",
+      color: "w",
+      faint: true,
+    });
+    // The opponent had no shape obfuscation, so there is nothing to preserve
+    // and the ghost's reveal-the-truth job wins.
+    expect(resolvePieceDisplay({ type: "q", color: "b" }, settings)).toEqual({
+      kind: "ghost",
+      type: "q",
+      color: "b",
+    });
+  });
+
+  it("marks a hidden pawn's stone faint too (pawnHideMode composes the same way)", () => {
+    const settings: BlindfoldDisplaySettings = {
+      ...normal,
+      pieceShapeMode: "circles-all",
+      pawnHideMode: "own",
+      hiddenPieceStyle: "ghost",
+    };
+    expect(resolvePieceDisplay({ type: "p", color: "w" }, settings)).toEqual({
+      kind: "circle",
+      color: "w",
+      faint: true,
+    });
+    // A visible piece's stone carries no `faint` key at all.
+    expect(resolvePieceDisplay({ type: "r", color: "w" }, settings)).toEqual({
+      kind: "circle",
+      color: "w",
+    });
+  });
+
+  it("still renders hidden pieces as absent in live play, stones included", () => {
+    const settings: BlindfoldDisplaySettings = {
+      ...normal,
+      showOwnPieces: false,
+      pieceShapeMode: "circles-all",
+      hiddenPieceStyle: "absent",
+    };
+    expect(resolvePieceDisplay({ type: "q", color: "w" }, settings)).toEqual({
+      kind: "absent",
+    });
+  });
+
   it("forces a single color per pieceColors", () => {
     expect(
       resolvePieceDisplay(

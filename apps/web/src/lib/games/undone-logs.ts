@@ -14,6 +14,14 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((s) => typeof s === 'string');
 }
 
+/** Shape guard for one {@link MoveOperationLog.invalidAttemptSquares} slot. */
+function isAttemptSquaresSlot(value: unknown): value is { from: string; to: string } | null {
+  if (value === null) return true;
+  if (typeof value !== 'object') return false;
+  const s = value as Record<string, unknown>;
+  return typeof s.from === 'string' && typeof s.to === 'string';
+}
+
 /** Shape guard for an archived entry's embedded per-move log. */
 function isArchivedMoveLog(value: unknown): value is MoveOperationLog {
   if (typeof value !== 'object' || value === null) return false;
@@ -24,7 +32,10 @@ function isArchivedMoveLog(value: unknown): value is MoveOperationLog {
     typeof l.undoCount === 'number' &&
     (l.movePeekCount === undefined || typeof l.movePeekCount === 'number') &&
     (l.invalidCount === undefined || typeof l.invalidCount === 'number') &&
-    (l.invalidAttempts === undefined || isStringArray(l.invalidAttempts))
+    (l.invalidAttempts === undefined || isStringArray(l.invalidAttempts)) &&
+    (l.invalidAttemptSquares === undefined ||
+      (Array.isArray(l.invalidAttemptSquares) &&
+        l.invalidAttemptSquares.every(isAttemptSquaresSlot)))
   );
 }
 
@@ -42,5 +53,6 @@ export function isUndoneMoveLog(value: unknown): value is UndoneMoveLog {
   if (v.pendingInvalidAttempts !== undefined && !isStringArray(v.pendingInvalidAttempts)) {
     return false;
   }
+  if (v.sans !== undefined && !isStringArray(v.sans)) return false;
   return true;
 }

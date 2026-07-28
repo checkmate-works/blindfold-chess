@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import type { SquareHighlightType } from '@blindfold-chess/features/board-display';
 import { isLightSquare } from '@blindfold-chess/features/common';
 
 import { BoardAnnotationOverlay } from '@/lib/board-annotations/BoardAnnotationOverlay';
@@ -25,7 +26,7 @@ type Props = {
   renderSquare: (info: SquareRenderInfo) => ReactNode;
   squareProps?: (info: SquareRenderInfo) => {
     onClick?: () => void;
-    highlightType?: 'none' | 'last-move' | 'selectable' | 'selected' | 'move-dest' | 'capture-dest';
+    highlightType?: SquareHighlightType;
     badge?: ReactNode;
     dataSquare?: string;
   };

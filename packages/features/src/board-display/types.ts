@@ -10,10 +10,7 @@ export type DisplayablePiece = {
 };
 
 export type PieceShapeMode =
-  | "normal"
-  | "circles-all"
-  | "circles-own"
-  | "circles-opponent";
+  "normal" | "circles-all" | "circles-own" | "circles-opponent";
 
 export type PieceColorMode = "normal" | "white-only" | "black-only";
 
@@ -27,9 +24,17 @@ export type PawnHideMode = "none" | "all" | "own" | "opponent";
 /**
  * How pieces hidden by the blindfold settings are drawn:
  * - `'absent'` — rendered as an empty square (live blindfold play).
- * - `'ghost'` — rendered as a faint copy of the real piece (the finished-game
- *   review's "As Played" toggle). A ghost shows the true type/colour so the
- *   reviewer learns what was concealed.
+ * - `'ghost'` — rendered faintly (the finished-game review's "As Played"
+ *   toggle), so a hidden board still *looks* hidden instead of being
+ *   indistinguishable from a sighted one.
+ *
+ * Faintness marks "the player could not see this"; the form underneath is
+ * whatever revealing the square would show. So a normally-shaped piece
+ * becomes a faint real piece — the reviewer learns what was concealed — and
+ * a piece the player had set to render as a Go stone becomes a faint stone,
+ * since a stone is what a peek would have put there. Without that second
+ * case a stone game's review had to choose between looking hidden and
+ * looking like the player's board; it now does both.
  */
 export type HiddenPieceStyle = "absent" | "ghost";
 
@@ -56,5 +61,6 @@ export type BlindfoldDisplaySettings = {
 export type PieceDisplay =
   | { kind: "absent" }
   | { kind: "ghost"; type: PieceType; color: PieceColor }
-  | { kind: "circle"; color: PieceColor }
+  /** `faint` = the same stone, drawn as hidden. See {@link HiddenPieceStyle}. */
+  | { kind: "circle"; color: PieceColor; faint?: boolean }
   | { kind: "piece"; type: PieceType; color: PieceColor };

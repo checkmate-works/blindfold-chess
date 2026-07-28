@@ -367,6 +367,38 @@ describe('useMoveOperationTracker', () => {
     });
   });
 
+  it('captures the exact squares behind a board attempt alongside its text, aligned by index', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.recordInvalid('Nf3', { from: 'g1', to: 'f3' });
+      result.current.recordInvalid('Qd5'); // a MoveInputPanel attempt — no squares known
+      result.current.commitMove('board');
+    });
+
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'board',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+      invalidCount: 2,
+      invalidAttempts: ['Nf3', 'Qd5'],
+      invalidAttemptSquares: [{ from: 'g1', to: 'f3' }, null],
+    });
+  });
+
+  it('omits invalidAttemptSquares entirely when no attempt in the move ever knew its squares', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.recordInvalid('Nf3');
+      result.current.recordInvalid('Qd5');
+      result.current.commitMove('text');
+    });
+
+    expect(result.current.logs[0].invalidAttemptSquares).toBeUndefined();
+  });
+
   it('counts text-less attempts (board mis-grabs) but records no text for them', () => {
     const { result } = renderHook(() => useMoveOperationTracker());
 
@@ -385,6 +417,25 @@ describe('useMoveOperationTracker', () => {
       invalidCount: 2,
       invalidAttempts: ['Qd5'],
     });
+  });
+
+  it('discards captured attempt squares on undo, so they never leak into the next move at the wrong index', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.commitMove('board');
+      result.current.recordInvalid('Nf3', { from: 'g1', to: 'f3' });
+      result.current.handleUndoLog();
+      // If invalidAttemptSquaresRef weren't reset alongside invalidAttemptsRef,
+      // the stale {from:'g1',to:'f3'} would resurface at index 0 here instead
+      // of aligning with 'Bb4' (no squares).
+      result.current.recordInvalid('Bb4');
+      result.current.recordInvalid('Qd5', { from: 'd1', to: 'd5' });
+      result.current.commitMove('board');
+    });
+
+    expect(result.current.logs[0].invalidAttempts).toEqual(['Bb4', 'Qd5']);
+    expect(result.current.logs[0].invalidAttemptSquares).toEqual([null, { from: 'd1', to: 'd5' }]);
   });
 
   it('discards captured attempts on undo', () => {

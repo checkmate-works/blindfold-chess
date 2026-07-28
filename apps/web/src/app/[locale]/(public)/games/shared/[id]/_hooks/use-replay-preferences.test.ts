@@ -41,10 +41,9 @@ const PREFERENCES: GamePreferences = {
   aiReplyDuration: 5000,
 };
 
-// Hidden explicitly via showOwnPieces/showOpponentPieces (NOT derived from
-// `boardVisibility: 'peek'` — a peek reveals the real per-piece settings, so
-// `useReplayPreferences` no longer folds `'peek'` into hide-both; see
-// `boardHidden` in `use-replay-preferences.ts`).
+// Hidden both explicitly (showOwnPieces/showOpponentPieces) and by
+// `boardVisibility: 'peek'`, which `foldBoardVisibility` also counts as
+// hidden — so the "reveal" entries in the change log below are what flip it.
 const PLAY_SETTINGS: GamePlaySettings = {
   boardVisibility: 'peek',
   showOwnPieces: false,
@@ -122,11 +121,13 @@ describe('useReplayPreferences preferencesAt', () => {
     expect(modal.boardPreferences.showOpponentPieces).toBe(false);
   });
 
-  it('passes through pieceShapeMode on a peek board instead of folding to hide-both (regression)', () => {
-    // Reported bug: an "as played" reproduction of a peek-mode game with one
-    // side shown as Go stones rendered EVERY piece as a translucent ghost,
-    // because `boardVisibility: 'peek'` used to force showOwnPieces/
-    // showOpponentPieces to false regardless of pieceShapeMode.
+  it('hides a peek board while keeping its pieceShapeMode, so stones survive as faint stones (regression)', () => {
+    // Two reports, one fix. A peek-mode game with Go stones must look hidden
+    // (2026-07-28: it rendered fully sighted, indistinguishable from an
+    // always-visible game) WITHOUT flattening the stones into ghost pieces
+    // (2026-07-26: every piece became a translucent real piece). Hiding is
+    // now carried by opacity and the shape mode survives it — see
+    // `resolvePieceDisplay`, which turns this pair into a faint stone.
     const { result } = renderHook(() =>
       useReplayPreferences({
         preferences: PREFERENCES,
@@ -145,9 +146,10 @@ describe('useReplayPreferences preferencesAt', () => {
     );
 
     expect(result.current.effectivePlaySettings?.boardVisibility).toBe('peek');
-    expect(result.current.boardPreferences.showOwnPieces).toBe(true);
+    expect(result.current.boardPreferences.showOwnPieces).toBe(false);
     expect(result.current.boardPreferences.showOpponentPieces).toBe(false);
     expect(result.current.boardPreferences.pieceShapeMode).toBe('circles-own');
+    expect(result.current.hiddenPieceStyle).toBe('ghost');
   });
 
   it('reveals everything for both the live board and the modal when reproduceView is off', () => {
