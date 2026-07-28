@@ -10,6 +10,7 @@ function buildGame(overrides: Partial<GameFrameSource> = {}): GameFrameSource {
     startingFen: null,
     setupPlies: null,
     playerColor: 'white',
+    result: 'draw',
     playSettings: null,
     playSettingsLog: null,
     operationLogs: null,
@@ -577,5 +578,44 @@ describe('hasAnnotatableOps', () => {
     expect(
       hasAnnotatableOps([{ inputMethod: 'board', peekCount: 0, undoCount: 0, movePeekCount: 5 }])
     ).toBe(false);
+  });
+});
+
+describe('buildGameFrames — end-of-game mark', () => {
+  // Scholar's mate, played by white.
+  const MATE_MOVES = ['e4', 'e5', 'Qh5', 'Nc6', 'Bc4', 'Nf6', 'Qxf7#'];
+
+  it('marks the mated king on the final frame only', () => {
+    const frames = buildGameFrames(
+      buildGame({ moves: MATE_MOVES, result: 'win', playerColor: 'white' }),
+      'plain'
+    );
+
+    expect(frames.at(-1)?.terminationMark).toEqual({ square: 'e8', kind: 'checkmate' });
+    expect(frames.slice(0, -1).every((f) => f.terminationMark === undefined)).toBe(true);
+  });
+
+  it('marks a decisive game that ends on a playable position as a resignation', () => {
+    const frames = buildGameFrames(
+      buildGame({ moves: MATE_MOVES.slice(0, -1), result: 'loss', playerColor: 'white' }),
+      'plain'
+    );
+
+    expect(frames.at(-1)?.terminationMark).toEqual({ square: 'e1', kind: 'resignation' });
+  });
+
+  it('marks the played variant too', () => {
+    const frames = buildGameFrames(
+      buildGame({ moves: MATE_MOVES, result: 'win', playerColor: 'white' }),
+      'played'
+    );
+
+    expect(frames.at(-1)?.terminationMark).toEqual({ square: 'e8', kind: 'checkmate' });
+  });
+
+  it('leaves a drawn game unmarked', () => {
+    const frames = buildGameFrames(buildGame({ moves: MATE_MOVES, result: 'draw' }), 'plain');
+
+    expect(frames.every((f) => f.terminationMark === undefined)).toBe(true);
   });
 });

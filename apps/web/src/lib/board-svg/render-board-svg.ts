@@ -5,10 +5,13 @@ import type {
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import type { SvgElement } from '@blindfold-chess/icons/data';
-import { getPieceData, undoData } from '@blindfold-chess/icons/data';
+import { flagData, getPieceData, undoData } from '@blindfold-chess/icons/data';
 import type { BoardTheme } from '@blindfold-chess/types';
 import type { PieceType } from '@blindfold-chess/types';
 import { boardThemeColors } from '@blindfold-chess/ui';
+
+import type { TerminationMark } from '@/lib/games/termination-mark';
+import { HASH_GLYPH_PATHS, TERMINATION_MARK_STYLE } from '@/lib/games/termination-mark';
 
 /**
  * A GIF-replay annotation drawn on top of the board — a fixed-position badge
@@ -37,6 +40,13 @@ export type RenderBoardSvgOptions = {
   lastMove?: { from: string; to: string } | null;
   /** GIF replay annotation (peek/undo badge, rejected-move marker). null/省略で無し */
   overlay?: RenderBoardSvgOverlay | null;
+  /**
+   * 終局マーク（負けた側のキングのマスに `#` / 白旗のバッジ）。null/省略で無し。
+   * どのマスにどちらを描くかは `resolveTerminationMark` が決める — DOM 盤
+   * (`ChessBoard`) と同じ判定・同じ配色・同じグリフを使うので、対局画面と
+   * GIF で終局の見え方が食い違わない。
+   */
+  terminationMark?: TerminationMark | null;
 };
 
 const DEFAULT_SIZE = 512;
@@ -177,6 +187,42 @@ function illegalFromMarkup(square: string, flipped: boolean, squareSize: number)
 }
 
 /**
+ * End-of-game badge on the losing king's square: a filled disc tucked into the
+ * square's top-right corner, carrying the same stroke glyph the DOM board draws
+ * (`#` for a mate, a flag for a resignation).
+ *
+ * The corner is the square's own, not the board's — unlike the peek / undo
+ * badges, this mark has to point at a specific square. It is kept to a third of
+ * a square so the king underneath stays readable, and the light ring keeps the
+ * disc's silhouette off a same-coloured piece or square.
+ */
+function terminationMarkMarkup(
+  mark: TerminationMark,
+  flipped: boolean,
+  squareSize: number
+): string {
+  const { col, row } = squareToColRow(mark.square, flipped);
+  const r = squareSize * 0.17;
+  const cx = (col + 1) * squareSize - r * 0.8;
+  const cy = row * squareSize + r * 0.8;
+  const { fill, glyph } = TERMINATION_MARK_STYLE[mark.kind];
+  const paths = glyph === 'hash' ? HASH_GLYPH_PATHS : flagData.paths;
+  // The shared glyphs are drawn on a 24×24 grid; center that box on the disc.
+  const scale = (r * 1.45) / 24;
+  const strokeWidth = glyph === 'hash' ? 2.6 : 2.8;
+
+  return (
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" ` +
+    `stroke="rgba(255,255,255,0.7)" stroke-width="${r * 0.12}"/>` +
+    `<g transform="translate(${cx - 12 * scale},${cy - 12 * scale}) scale(${scale})" ` +
+    `fill="none" stroke="#ffffff" stroke-width="${strokeWidth}" ` +
+    `stroke-linecap="round" stroke-linejoin="round">` +
+    paths.map((d) => `<path d="${d}"/>`).join('') +
+    `</g>`
+  );
+}
+
+/**
  * Badge geometry, expressed against a 512px board and scaled from there.
  * A corner badge unavoidably sits on a real square (h8 in white's view) —
  * an 8×8 grid has no free margin — so it is kept well under a square's width
@@ -256,6 +302,7 @@ export function renderBoardSvg({
   displaySettings = null,
   lastMove = null,
   overlay = null,
+  terminationMark = null,
 }: RenderBoardSvgOptions): string {
   const squareSize = size / 8;
   const theme = boardThemeColors[boardTheme];
@@ -335,6 +382,7 @@ export function renderBoardSvg({
   if (overlay?.illegalFrom)
     overlayMarkup += illegalFromMarkup(overlay.illegalFrom, flipped, squareSize);
   if (overlay?.badge) overlayMarkup += badgeMarkup(overlay.badge, size);
+  if (terminationMark) overlayMarkup += terminationMarkMarkup(terminationMark, flipped, squareSize);
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">` +
