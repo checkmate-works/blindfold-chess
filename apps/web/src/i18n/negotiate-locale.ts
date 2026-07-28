@@ -5,10 +5,11 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 /**
  * Picks the best supported locale for an `Accept-Language` header.
  *
- * Used by locale-less entry points — currently only the `/g/<code>` share
- * link, which has no `[locale]` segment to read. This is deliberately NOT
- * wired up as global middleware: the landing page serves at `/` for every
- * language and must not be redirected (see the note in `next.config.ts`).
+ * Used by locale-less entry points: the `/g/<code>` share link, which has no
+ * `[locale]` segment to read, and the proxy's locale-prefix completion (see
+ * `needsLocalePrefix()` in `./locale-path.ts`). next-intl's own middleware is
+ * still not used, because it would claim the bare `/` that the landing page
+ * serves for every language.
  *
  * Matching is two-tier, most-preferred entry first: an exact tag match
  * (`pt-BR` → `pt-BR`) wins, otherwise the primary subtag matches a supported

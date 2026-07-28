@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { needsLocalePrefix } from '@/i18n/locale-path';
+import { negotiateLocale } from '@/i18n/negotiate-locale';
 import * as Sentry from '@sentry/nextjs';
 
 import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
@@ -95,6 +97,26 @@ export async function proxy(request: NextRequest) {
 
   if (isBlockedPath(pathname)) {
     return NextResponse.json(null, { status: 404 });
+  }
+
+  // Complete a missing locale prefix (`/games/new` -> `/ja/games/new`) before
+  // anything else touches the request. See `needsLocalePrefix()` for what is
+  // and is not redirected, and why this is not next-intl's middleware.
+  //
+  // Runs ahead of `updateSession()` so a redirect costs no auth round-trip,
+  // and carries no CSP headers on purpose — the response has no body to apply
+  // a script policy to.
+  //
+  // 307, not 301: the destination depends on `Accept-Language`, so a shared
+  // cache must not pin one language's answer for every visitor. `Vary` says
+  // the same thing to anything that caches despite the 307.
+  if (needsLocalePrefix(pathname)) {
+    const locale = negotiateLocale(request.headers.get('accept-language'));
+    const localizedUrl = request.nextUrl.clone();
+    localizedUrl.pathname = `/${locale}${pathname}`;
+    const redirect = NextResponse.redirect(localizedUrl, 307);
+    redirect.headers.set('Vary', 'Accept-Language');
+    return redirect;
   }
 
   // Generate a per-request nonce and expose it to downstream Server
