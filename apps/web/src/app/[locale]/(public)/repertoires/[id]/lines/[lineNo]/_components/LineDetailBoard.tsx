@@ -6,15 +6,18 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
+import { FaCodeBranch } from 'react-icons/fa';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
-import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
+import {
+  MOVE_NAV_SIDE_BUTTON_CLASS,
+  MoveNavigationRow,
+} from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
@@ -139,6 +142,14 @@ export function LineDetailBoard({
   // already owns every other edit to this line.
   const focusedShapes = focusedMove?.shapes ?? EMPTY_BOARD_ANNOTATIONS;
 
+  // Owner-only: the moves this line plays up to the position in focus, seeding
+  // a new line that shares them and then diverges — the per-line replacement
+  // for adding a variation in the (removed) whole-kata board editor. It rides
+  // in the board's control strip because "here" IS the position on the board,
+  // and it steps with it; nothing at the start position (ply 0), where "add a
+  // line" already covers a blank line from the root.
+  const branchPgn = isOwner && clampedPly >= 1 ? branchPgns[clampedPly - 1] : undefined;
+
   return (
     // One grid holds all three blocks so their order can differ per breakpoint.
     // DOM order is the phone's — board, then the note, then the line list —
@@ -177,13 +188,25 @@ export function LineDetailBoard({
               isPreviousDisabled={clampedPly === 0}
               isNextDisabled={clampedPly === maxPly}
               flip={{ onClick: () => setFlipped((f) => !f), label: tCommon('flipBoard') }}
+              trailingAction={
+                branchPgn ? (
+                  <Link
+                    href={`/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(branchPgn)}`}
+                    title={tLine('branchFromHere')}
+                    aria-label={tLine('branchFromHere')}
+                    className={MOVE_NAV_SIDE_BUTTON_CLASS}
+                  >
+                    <FaCodeBranch size={14} aria-hidden />
+                  </Link>
+                ) : undefined
+              }
             />
           </div>
         </div>
 
         {/* Only meaningful at the line's final position — a mid-line shared
-              run is Phase 2's indicator, not this one. Plain text links (not
-              buttons) so it doesn't compete with "branch from here" below. */}
+            run is Phase 2's indicator, not this one. Plain text links, since
+            this is a note about the position rather than an action on it. */}
         {clampedPly === maxPly && maxPly >= 1 && continuations.length > 0 && (
           <div className="space-y-1 text-sm text-muted-foreground">
             {continuations.slice(0, MAX_CONTINUATION_LINKS).map((c) => (
@@ -203,24 +226,6 @@ export function LineDetailBoard({
               </p>
             ))}
           </div>
-        )}
-
-        {/* Owner-only: start a new line that shares this line's moves up to the
-              position in focus, then diverges — the per-line replacement for
-              adding a variation in the (removed) whole-kata board editor. Hidden
-              at the start position (ply 0), where "add a line" already covers a
-              blank line from the root. */}
-        {isOwner && clampedPly >= 1 && branchPgns[clampedPly - 1] && (
-          <Link
-            href={`/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(
-              branchPgns[clampedPly - 1]
-            )}`}
-            className="block"
-          >
-            <Button asChild variant="outline" fullWidth>
-              {tLine('branchFromHere')}
-            </Button>
-          </Link>
         )}
       </div>
 
