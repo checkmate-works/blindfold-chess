@@ -4,10 +4,10 @@ import { Inter } from 'next/font/google';
 import { cookies, headers } from 'next/headers';
 
 import { DevGeoPicker } from '@/app/_components/DevGeoPicker';
-import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
+import { EnvironmentRibbon } from 'env-ribbon';
 
 import { getLocaleFromRequest } from '@/lib/locale';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';

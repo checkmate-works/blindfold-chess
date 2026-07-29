@@ -1,22 +1,22 @@
 /**
- * Regression guard for EnvironmentRibbon mounting across root layouts.
+ * Regression guard for `EnvironmentRibbon` mounting across root layouts.
  *
- * The app defines THREE independent root layouts, each emitting its own
+ * The ribbon itself lives in the external `env-ribbon` package, which owns and
+ * tests its own behaviour (detection rules, the production hard gate, dismiss
+ * state). What the package cannot know — and what this test covers — is that
+ * this app defines THREE independent root layouts, each emitting its own
  * `<html>`/`<body>`:
  *   - `src/app/[locale]/layout.tsx`      (most authenticated routes)
  *   - `src/app/(landing)/layout.tsx`     (root `/` URL, pre-locale redirect)
  *   - `src/app/admin/layout.tsx`         (admin console)
  *
- * A unit test against <EnvironmentRibbon /> proves the component itself
- * renders correctly, but it does NOT prove the component is actually mounted
- * in every root layout's <body>. The previous bug was exactly that: the
- * ribbon was only imported by `[locale]/layout.tsx`, so the root `/` URL
- * (served by `(landing)/layout.tsx`) showed no ribbon at all.
+ * The ribbon must be mounted in EVERY one of them. The original bug was
+ * exactly that: it was only imported by `[locale]/layout.tsx`, so the root `/`
+ * URL (served by `(landing)/layout.tsx`) showed no ribbon at all.
  *
- * This test is a static source-level check — it reads the layout files and
- * asserts both:
- *   (a) the layout imports `EnvironmentRibbon` from the canonical path
- *       (`@/app/_components/EnvironmentRibbon`), and
+ * This is a static source-level check — it reads the layout files and asserts
+ * both:
+ *   (a) the layout imports `EnvironmentRibbon` from `env-ribbon`, and
  *   (b) the layout references `<EnvironmentRibbon` somewhere in its JSX.
  *
  * It is intentionally NOT a render test: rendering these layouts requires a
@@ -24,6 +24,11 @@
  * the regression we are trying to prevent (namely: "somebody deleted the
  * import"). A static check catches that mistake just as well and runs in
  * milliseconds.
+ *
+ * The ribbon must also stay in the SERVER tree — it reads `process.env` on the
+ * server and hands only the resolved variant to its client child, so
+ * `VERCEL_ENV` never needs a `NEXT_PUBLIC_*` counterpart. Importing it from a
+ * client component would silently break detection.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -31,7 +36,7 @@ import { describe, expect, it } from 'vitest';
 
 // Resolve relative to this test file so the test does not depend on the
 // Vitest CWD.
-const APP_DIR = resolve(__dirname, '..');
+const APP_DIR = __dirname;
 
 const ROOT_LAYOUTS: ReadonlyArray<{ name: string; path: string }> = [
   { name: '[locale]/layout.tsx', path: resolve(APP_DIR, '[locale]/layout.tsx') },
@@ -40,11 +45,8 @@ const ROOT_LAYOUTS: ReadonlyArray<{ name: string; path: string }> = [
 ];
 
 // Matches an import that brings in `EnvironmentRibbon` as a named specifier
-// from the canonical `_components` location. Accepts both absolute
-// (`@/app/_components/EnvironmentRibbon`) and relative forms just in case a
-// future refactor moves a layout next to the component.
-const IMPORT_RE =
-  /import\s*\{[^}]*\bEnvironmentRibbon\b[^}]*\}\s*from\s*['"][^'"]*_components\/EnvironmentRibbon['"]/;
+// from the `env-ribbon` package.
+const IMPORT_RE = /import\s*\{[^}]*\bEnvironmentRibbon\b[^}]*\}\s*from\s*['"]env-ribbon['"]/;
 
 // Matches a JSX usage of the component. We deliberately match the opening
 // tag rather than the identifier alone so that "EnvironmentRibbon" inside a
@@ -56,10 +58,10 @@ describe('EnvironmentRibbon is mounted in every root layout', () => {
     describe(layout.name, () => {
       const source = readFileSync(layout.path, 'utf8');
 
-      it('imports EnvironmentRibbon from _components/EnvironmentRibbon', () => {
+      it('imports EnvironmentRibbon from env-ribbon', () => {
         expect(
           IMPORT_RE.test(source),
-          `${layout.name} must import EnvironmentRibbon from a _components/EnvironmentRibbon path. ` +
+          `${layout.name} must import EnvironmentRibbon from 'env-ribbon'. ` +
             `If the ribbon has been intentionally removed from this layout, update this test accordingly.`
         ).toBe(true);
       });

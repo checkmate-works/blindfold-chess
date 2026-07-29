@@ -6,12 +6,12 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { DevGeoPicker } from '@/app/_components/DevGeoPicker';
-import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
+import { EnvironmentRibbon } from 'env-ribbon';
 
 import { AdHideBootstrapScript } from '@/lib/ads/AdHideBootstrapScript';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';

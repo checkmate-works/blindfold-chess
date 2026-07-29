@@ -6,9 +6,9 @@ import { headers } from 'next/headers';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
-import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { eq } from 'drizzle-orm';
+import { EnvironmentRibbon } from 'env-ribbon';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { db, userRoles } from '@/lib/db';
