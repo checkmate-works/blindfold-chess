@@ -144,6 +144,19 @@ describe('buildCspHeader', () => {
     expect(header).toContain('report-uri /api/csp-report');
     expect(header).toContain('report-to csp-endpoint');
   });
+
+  it("forbids framing by default — allowFraming must be asked for, and 'none' is what an omitted option means", () => {
+    expect(buildCspHeader('n', { isDevelopment: false })).toContain("frame-ancestors 'none'");
+    expect(buildCspHeader('n', { isDevelopment: false, allowFraming: false })).toContain(
+      "frame-ancestors 'none'"
+    );
+  });
+
+  it('opens frame-ancestors for the embed surface', () => {
+    const header = buildCspHeader('n', { isDevelopment: false, allowFraming: true });
+    const frameAncestors = header.split('; ').find((d) => d.startsWith('frame-ancestors'));
+    expect(frameAncestors).toBe('frame-ancestors *');
+  });
 });
 
 describe('buildCspHeader — Supabase origin from env', () => {

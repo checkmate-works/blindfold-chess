@@ -99,9 +99,18 @@ function wsOriginFromUrl(raw: string | undefined): string | null {
  * and any future SSR-only code paths agree on the policy. When the hosting
  * environment is `development`, `'unsafe-eval'` is added to `script-src` so
  * Fast Refresh / Turbopack keep working; production builds never include it.
+ *
+ * `allowFraming` opts the response out of the default `frame-ancestors 'none'`
+ * — see `./framing.ts` for which paths get it and why the embed surface is
+ * safe to frame. The proxy decides per request; every other caller gets the
+ * closed default.
  */
-export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean } = {}): string {
+export function buildCspHeader(
+  nonce: string,
+  options: { isDevelopment?: boolean; allowFraming?: boolean } = {}
+): string {
   const isDevelopment = options.isDevelopment ?? process.env.NODE_ENV === 'development';
+  const allowFraming = options.allowFraming ?? false;
 
   // Derive the Supabase origin from `NEXT_PUBLIC_SUPABASE_URL` so local dev
   // (which uses `http://127.0.0.1:54321` and is NOT covered by the
@@ -213,7 +222,10 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     // absolute canonical manifest URL emitted by `metadataBase` when the request
     // was served on a non-canonical host. See `siteOrigin` derivation above.
     `manifest-src 'self' ${siteOrigin}`,
-    "frame-ancestors 'none'",
+    // `*` rather than an allow-list: an embed is only useful if any blog can
+    // host it, and the framed document is a read-only view of already-public
+    // data with no action a framing site could trick a viewer into taking.
+    allowFraming ? 'frame-ancestors *' : "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "object-src 'none'",
