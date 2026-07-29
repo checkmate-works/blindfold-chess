@@ -103,7 +103,9 @@ function wsOriginFromUrl(raw: string | undefined): string | null {
  * `allowFraming` opts the response out of the default `frame-ancestors 'none'`
  * — see `./framing.ts` for which paths get it and why the embed surface is
  * safe to frame. The proxy decides per request; every other caller gets the
- * closed default.
+ * closed default. That directive is inert while the policy is delivered
+ * report-only, so `X-Frame-Options` is what enforces framing today — see the
+ * `frame-ancestors` line below and the module doc in `./framing.ts`.
  */
 export function buildCspHeader(
   nonce: string,
@@ -229,6 +231,14 @@ export function buildCspHeader(
     // absolute canonical manifest URL emitted by `metadataBase` when the request
     // was served on a non-canonical host. See `siteOrigin` derivation above.
     `manifest-src 'self' ${siteOrigin}`,
+    // Emitted but INERT until the policy enforces: browsers ignore
+    // `frame-ancestors` in a report-only policy, and emit no violation report
+    // for it either, so this line currently neither blocks a frame nor tells
+    // us it would have. `X-Frame-Options` (next.config.ts) carries the split
+    // in the meantime — see the module doc in `./framing.ts` before changing
+    // either one, and note that flipping to an enforcing CSP (issue #89) turns
+    // this line on for the first time, untested by any report we have.
+    //
     // `*` rather than an allow-list: an embed is only useful if any blog can
     // host it, and the framed document is a read-only view of already-public
     // data with no action a framing site could trick a viewer into taking.
