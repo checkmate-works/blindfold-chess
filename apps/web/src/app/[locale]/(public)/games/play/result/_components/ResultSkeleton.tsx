@@ -8,11 +8,12 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  * layout — the shared `GameReview` in `local` mode — so the page doesn't flash
  * empty while the game loads from localStorage and the Suspense fallback
  * reserves the same space. That layout is: a 2/3 board + 1/3 move-list grid,
- * then (for games with moves) the {@link ShareGameCta} card, then the
- * [Summary | Discussion] tab row, then (Summary is the default tab) the
- * Game Stats overview — section title → win/loss/draw label → initial settings →
- * per-move effort strip. There are no trailing action buttons: the recall /
- * open-game actions moved to the breadcrumb (see ResultBreadcrumb).
+ * then the [Summary | Discussion] tab row, then (Summary is the default tab)
+ * the Game Stats overview — section title → win/loss/draw label → initial
+ * settings → per-move effort strip — and finally the "Played by" header plus
+ * the like/share engagement row (see {@link LocalGameSocial}). There are no
+ * trailing action buttons: the recall / open-game actions moved to the
+ * breadcrumb (see ResultBreadcrumb).
  */
 export function ResultSkeleton() {
   return (
@@ -25,13 +26,6 @@ export function ResultSkeleton() {
         <div className="lg:col-span-1">
           <Skeleton className="h-64 w-full rounded-md" />
         </div>
-      </div>
-
-      {/* ShareGameCta: bordered card with a prompt line + a publish button,
-          rendered above the tabs for games with at least one move. */}
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card p-5">
-        <Skeleton className="h-4 w-64 max-w-full" />
-        <Skeleton className="h-10 w-32 rounded-md" />
       </div>
 
       {/* Overview: the [Summary | Discussion] tab row, then the Summary tab's
@@ -92,6 +86,28 @@ export function ResultSkeleton() {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Footer: "Played by" caption, avatar + name over the date with the "⋯"
+          menu on the right, then the like/share engagement row. */}
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-20" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-8 w-8 rounded-full" />
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-5 w-5 rounded-full" />
+          <Skeleton className="h-5 w-16" />
         </div>
       </div>
     </div>

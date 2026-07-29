@@ -5,10 +5,12 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
+import { getCommentUserProfile } from '@/lib/db/game-comments';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { AI_GAME_RESULT_SOURCE } from '@/lib/db/save-exp';
 import { getOpeningEntries } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -49,6 +51,7 @@ export default async function ResultPage({ params, searchParams }: Props) {
   const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
   const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
+  const tShared = await getTranslations({ locale, namespace: 'sharedGames' });
 
   const supabase = await createClient();
   const {
@@ -72,6 +75,15 @@ export default async function ResultPage({ params, searchParams }: Props) {
   // detected client-side; ship the (cached, ~100-row) opening master for it.
   const openingEntries = await getOpeningEntries();
 
+  // The player of a local game is whoever is looking at it. Resolved here so
+  // the "Played by" header matches the shared game's, which reads the author
+  // row from the DB; signed-out players get the same guest fallback.
+  const playerProfile = user ? await getCommentUserProfile(user.id) : null;
+  const player = {
+    profile: playerProfile,
+    displayName: playerProfile ? resolveDisplayName(playerProfile) : tShared('detail.guest'),
+  };
+
   // The middle "Game" step links back to the finished-game view; that URL needs
   // the game's colour + engine (localStorage-only), so the breadcrumb is a
   // client component that loads the game by `?gameId` and builds the link.
@@ -94,6 +106,7 @@ export default async function ResultPage({ params, searchParams }: Props) {
           isAuthenticated={Boolean(user)}
           initialExp={initialExp}
           openingEntries={openingEntries}
+          player={player}
         />
       </Suspense>
 

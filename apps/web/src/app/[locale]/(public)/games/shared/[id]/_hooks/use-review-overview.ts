@@ -22,10 +22,9 @@ export type UseReviewOverviewReturn = {
 
 /**
  * State for the review's overview block: all comments + chunk links rolled up
- * by move, plus the [Summary | Discussion] segmented switch. The overview
- * offers the switch when both the stats and some activity exist; otherwise it
- * shows whichever is non-empty. Leads with the discussion when there is any
- * (this is an advice page); falls back to the stats summary otherwise.
+ * by move, plus the [Summary | Discussion] segmented switch. The switch is
+ * shown whenever the stats side has content; leads with the discussion when
+ * there is any (this is an advice page), the stats summary otherwise.
  */
 export function useReviewOverview({
   comments,
@@ -46,16 +45,17 @@ export function useReviewOverview({
     [discussionGroups]
   );
   const hasDiscussion = discussionGroups.length > 0;
-  const showOverviewTabs = hasSummary && hasDiscussion;
+  // The Discussion side always has content — the whole-game thread (or its
+  // compose CTA) — so an empty discussion no longer hides the switch; matching
+  // the result screen, which shows both tabs from the start. Only a missing
+  // Summary (no stats recorded — legacy games) collapses the block to the
+  // discussion side alone.
+  const showOverviewTabs = hasSummary;
 
   const [overviewView, setOverviewView] = useState<'summary' | 'discussion'>(
     hasDiscussion ? 'discussion' : 'summary'
   );
-  const activeOverviewView = showOverviewTabs
-    ? overviewView
-    : hasDiscussion
-      ? 'discussion'
-      : 'summary';
+  const activeOverviewView = showOverviewTabs ? overviewView : 'discussion';
 
   return {
     discussionGroups,

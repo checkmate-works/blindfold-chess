@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
-import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
+import { GameSocialFooter } from '@/app/[locale]/(public)/games/_components/GameSocialFooter';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -153,46 +153,41 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           )}
         </GameReview>
 
-        {/* SNS-style author block — "Shared by" caption, avatar + name with
-            the shared date underneath, and a "⋯" overflow menu (edit /
-            delete) matching the chunk / position UGC pages. Anonymous
-            authors get a fallback name and no profile link. OwnerActions
-            renders the whole menu client-side (ownership can hinge on this
-            browser's manage token) and returns null for non-owners. */}
-        <PositionAuthorHeader
+        {/* Author header + engagement row, in the layout the result screen
+            shares (see GameSocialFooter). Anonymous authors get a fallback
+            name and no profile link. OwnerActions renders the whole "⋯" menu
+            client-side (ownership can hinge on this browser's manage token)
+            and returns null for non-owners. */}
+        <GameSocialFooter
           profile={author ? { username: author.username, avatarUrl: author.avatarUrl } : null}
           displayName={authorDisplayName}
-          createdByLabel={t('detail.sharedBy')}
+          playedByLabel={t('detail.playedBy')}
           locale={locale}
-          createdAt={game.createdAt}
+          playedAt={game.createdAt}
           menu={
             <OwnerActions gameId={game.id} isRegisteredOwner={isRegisteredOwner} locale={locale} />
           }
+          like={
+            <LikeButton
+              postId={game.id}
+              locale={locale}
+              topicKey=""
+              initialLikeCount={likeMeta.likeCount}
+              initialLikedByMe={likeMeta.likedByMe}
+              toggleLikeAction={toggleGameLikeAction}
+              i18nNamespace="sharedGames.detail"
+            />
+          }
+          share={
+            <ShareMenu
+              gameId={game.id}
+              title={game.title}
+              locale={locale}
+              hasPlayedVariant={hasPlayedVariant}
+              canReproduce={canReproduce}
+            />
+          }
         />
-
-        {/* Engagement row — the app-wide slot for post-level actions on a UGC
-            detail page. Sharing lives here next to the like (SNS convention),
-            i.e. at the end of the content the viewer just read, rather than
-            beside the page title, which every other page reserves for the help
-            tour. */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <LikeButton
-            postId={game.id}
-            locale={locale}
-            topicKey=""
-            initialLikeCount={likeMeta.likeCount}
-            initialLikedByMe={likeMeta.likedByMe}
-            toggleLikeAction={toggleGameLikeAction}
-            i18nNamespace="sharedGames.detail"
-          />
-          <ShareMenu
-            gameId={game.id}
-            title={game.title}
-            locale={locale}
-            hasPlayedVariant={hasPlayedVariant}
-            canReproduce={canReproduce}
-          />
-        </div>
       </div>
 
       {/* Content-bottom ad, between the review and the breadcrumb — same slot and

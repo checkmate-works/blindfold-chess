@@ -193,6 +193,22 @@ function buildSupersedeContext(params: {
  * `notifyFollowersOf*` entry points differ only in the per-follower event
  * they build and how a fan-out failure is surfaced.
  *
+ * @design What earns a fan-out: publishing, not participating
+ *
+ * Only the creation of a new piece of content a follower might want to open
+ * broadcasts — a published game, a topic post, a chunk, a position. Comments,
+ * replies, likes and forks stay strictly 1:1 to the one person they concern
+ * (content owner / parent comment author / liked comment's author), and a
+ * reply inside a thread does NOT re-broadcast even though the thread's root
+ * did. Deliberate: fan-out volume scales with the actor's follower count, so
+ * routing conversation through it would let a single busy thread flood every
+ * follower's list, and the recipient's only escape would be to unfollow.
+ *
+ * So "someone commented on a game you follow" is not a missing feature —
+ * adding a `notifyFollowersOfNewComment` here would break that rule. If a
+ * follower-visible signal for activity is ever wanted, it belongs in a feed
+ * (pull), not in notifications (push).
+ *
  * Each createNotification triggers up to 2 DB queries (dedup SELECT + INSERT),
  * plus one more for the fan-out types that take part in a supersede class
  * (`new_post`, `new_position` — see `supersede.ts`), whose post-insert

@@ -62,6 +62,7 @@ import {
 } from '../_lib/replay-derivations';
 import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 import { GameDiscussionFeed } from './GameDiscussionFeed';
+import { GameMoveContributions } from './GameMoveContributions';
 import { ReproduceViewBar } from './ReproduceViewBar';
 import { ReviewMovePositionPanel } from './ReviewMovePositionPanel';
 import { ReviewOverviewTabs } from './ReviewOverviewTabs';
@@ -370,7 +371,6 @@ export function GameReview({
     navigateToPosition,
     highlightCommentId,
     comments,
-    isInitialPosition,
     currentPosition,
     // The result screen opens showing where play actually started (the setup
     // position of a seeded/custom-FEN game). The shared page keeps the
@@ -441,23 +441,33 @@ export function GameReview({
     hasSummary: statsOverview !== null,
   });
 
-  // Commit a previewed position from the quick-peek modal onto the live board.
-  // In `live` mode moving to a move position already surfaces that move's
-  // comment thread below the board; `local` mode has no per-move thread and a
-  // position-independent overview, so it additionally switches to the Discussion
-  // tab — matching the shared game, where opening a position reveals discussion.
-  const { commit: commitQuickPeek } = quickPeek;
+  // Local mode only: point the overview tab at whatever the board now shows.
+  // On the shared game the board position alone decides what sits below it —
+  // the opening board shows the overview (stats), any move position shows that
+  // move's comment thread. Local mode has no per-move thread and its overview
+  // does not move with the board, so the tab is what has to follow it, in BOTH
+  // directions: stepping onto a move reveals the Discussion, and stepping back
+  // to the opening board restores the Summary (the Game Stats the shared game
+  // shows at that position).
   const { setOverviewView } = overview;
+  const syncOverviewToPosition = useCallback(
+    (position: number) => setOverviewView(position === -2 ? 'summary' : 'discussion'),
+    [setOverviewView]
+  );
+
+  // Commit a previewed position from the quick-peek modal onto the live board.
+  const { commit: commitQuickPeek } = quickPeek;
+  const quickPeekPosition = quickPeek.nav.currentPosition;
   const handleCommitPosition = useCallback(() => {
     commitQuickPeek();
-    if (social.mode === 'local') setOverviewView('discussion');
-  }, [commitQuickPeek, social.mode, setOverviewView]);
+    if (social.mode === 'local') syncOverviewToPosition(quickPeekPosition);
+  }, [commitQuickPeek, social.mode, syncOverviewToPosition, quickPeekPosition]);
 
   // Local mode: user navigation (the arrows under the board, move-list
-  // clicks) onto a move position also routes the viewer to the Discussion
-  // tab — same rationale as handleCommitPosition above. The ref gates the
-  // switch to real interactions: the programmatic initial landing (deep link
-  // / setup position) must leave the Summary visible.
+  // clicks) moves the tab with the board — same rationale as
+  // handleCommitPosition above. The ref gates the switch to real
+  // interactions: the programmatic initial landing (deep link / setup
+  // position) must leave the Summary visible.
   const pendingUserNavRef = useRef(false);
   const withDiscussionReveal = useCallback(
     <A extends unknown[]>(navigate: (...args: A) => void) =>
@@ -470,8 +480,8 @@ export function GameReview({
   useEffect(() => {
     if (!pendingUserNavRef.current) return;
     pendingUserNavRef.current = false;
-    if (social.mode === 'local' && currentPosition !== -2) setOverviewView('discussion');
-  }, [currentPosition, social.mode, setOverviewView]);
+    if (social.mode === 'local') syncOverviewToPosition(currentPosition);
+  }, [currentPosition, social.mode, syncOverviewToPosition]);
   const userNav = useMemo(
     () => ({
       toStart: withDiscussionReveal(navigateToStart),
@@ -579,7 +589,8 @@ export function GameReview({
               />
 
               {overview.overviewView === 'summary' && gatedStats}
-              {overview.overviewView === 'discussion' && social.discussionContent}
+              {overview.overviewView === 'discussion' &&
+                social.discussionContent?.({ isInitialPosition })}
             </div>
           ) : /* On a move position: that move's comment thread. On the opening
           board: the description + statistics. */
@@ -597,22 +608,57 @@ export function GameReview({
                   active={overview.activeOverviewView}
                   onChange={overview.setOverviewView}
                   summaryLabel={t('overview.summaryTab')}
-                  discussionLabel={`${t('overview.discussionTab')} (${overview.discussionCount})`}
+                  discussionLabel={
+                    overview.discussionCount > 0
+                      ? `${t('overview.discussionTab')} (${overview.discussionCount})`
+                      : t('overview.discussionTab')
+                  }
                 />
               )}
 
               {overview.activeOverviewView === 'summary' && gatedStats}
 
-              {overview.activeOverviewView === 'discussion' && overview.hasDiscussion && (
-                <GameDiscussionFeed
-                  comments={comments}
-                  gameChunks={gameChunks}
-                  notationMoves={notationMoves}
-                  startingFen={startingFen}
-                  playerColor={playerColor}
-                  onJumpToPly={navigateToPosition}
-                  locale={locale}
-                />
+              {overview.activeOverviewView === 'discussion' && (
+                <div className="space-y-8">
+                  {/* The whole-game thread, fully interactive (composer, likes,
+                      replies) — unlike the per-move index below, `ply = NULL`
+                      comments have no per-move view to act in, so THIS is their
+                      thread. The heading names the anchor: a game with a custom
+                      FEN / seeded-prefix start has a discussable start position,
+                      a plain game just "the whole game" — one NULL anchor serves
+                      both readings (see the gameComments.ply schema TSDoc). */}
+                  <section className="space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {startPosition ? t('discussion.startPosition') : t('discussion.wholeGame')}
+                    </h3>
+                    <GameMoveContributions
+                      gameId={gameId}
+                      currentPly={null}
+                      comments={comments}
+                      gameChunks={gameChunks}
+                      availableChunks={availableChunks}
+                      currentUser={currentUser}
+                      isGameOwner={isGameOwner}
+                      locale={locale}
+                      moves={notationMoves}
+                      startingFen={startingFen}
+                      playerColor={playerColor}
+                    />
+                  </section>
+
+                  {/* Per-move contributions, as a read-only index that jumps
+                      into each move's own thread. Self-hiding when no move has
+                      any. */}
+                  <GameDiscussionFeed
+                    comments={comments}
+                    gameChunks={gameChunks}
+                    notationMoves={notationMoves}
+                    startingFen={startingFen}
+                    playerColor={playerColor}
+                    onJumpToPly={navigateToPosition}
+                    locale={locale}
+                  />
+                </div>
               )}
             </div>
           ) : (

@@ -12,10 +12,15 @@ export type DiscussionGroup = {
 
 /**
  * Roll every comment + chunk link for a game up into one chronological,
- * move-grouped feed for the overview board. Whole-game comments (`ply = null`)
- * lead; the rest follow in move order. Deleted comments are dropped, and an
- * anchor only appears when it has something live to show. The per-move detail
- * view stays the place to act — this is a read-only digest that links into it.
+ * move-grouped list. The whole-game group (`ply = null`) leads; the rest
+ * follow in move order. Deleted comments are dropped, and an anchor only
+ * appears when it has something live to show.
+ *
+ * Consumers split on the anchor: `GameDiscussionFeed` renders only the
+ * numbered plies (a read-only index that jumps into each move's own thread),
+ * while the `ply = null` group has no per-move view to jump to — its thread
+ * renders interactively on the opening board instead. `useReviewOverview`
+ * counts across all groups for the Discussion tab label.
  */
 export function buildDiscussionGroups(
   comments: GameCommentItem[],

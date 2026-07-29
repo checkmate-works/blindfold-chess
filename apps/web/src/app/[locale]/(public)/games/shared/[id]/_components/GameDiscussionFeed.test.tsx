@@ -72,11 +72,10 @@ function renderFeed(onJumpToPly = vi.fn()) {
 }
 
 describe('GameDiscussionFeed', () => {
-  it('renders the whole-game group as a non-clickable heading', () => {
+  it('excludes whole-game comments — their thread lives on the opening board, not the index', () => {
     renderFeed();
-    const wholeGame = screen.getByText('discussion.wholeGame');
-    expect(wholeGame.tagName).toBe('H3');
-    expect(wholeGame.closest('button')).toBeNull();
+    expect(screen.queryByText('discussion.wholeGame')).toBeNull();
+    expect(screen.queryByText('w1')).toBeNull();
   });
 
   it('labels a move group by its notation and jumps to that ply on click', () => {
@@ -88,8 +87,22 @@ describe('GameDiscussionFeed', () => {
 
   it('shows the comments and chunk links under their move group', () => {
     renderFeed();
-    // Whole-game comment + the move-2 comment both render.
-    expect(screen.getAllByTestId('comment-row').map((n) => n.textContent)).toEqual(['w1', 'm2']);
+    expect(screen.getAllByTestId('comment-row').map((n) => n.textContent)).toEqual(['m2']);
     expect(screen.getByTestId('chunk-card')).toHaveTextContent('k2');
+  });
+
+  it('renders nothing when only whole-game comments exist', () => {
+    render(
+      <GameDiscussionFeed
+        comments={[comment('w1', null)]}
+        gameChunks={[]}
+        notationMoves={['e4', 'e5']}
+        startingFen={null}
+        playerColor="white"
+        onJumpToPly={vi.fn()}
+        locale={'en' as Locale}
+      />
+    );
+    expect(screen.queryByRole('list')).toBeNull();
   });
 });

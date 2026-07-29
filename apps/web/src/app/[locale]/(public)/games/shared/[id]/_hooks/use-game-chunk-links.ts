@@ -12,8 +12,13 @@ import type { CommentUser } from '../_components/GameCommentContext';
 
 type Params = {
   gameId: string;
-  /** Move the links are anchored to (0-based ply). */
-  currentPly: number;
+  /**
+   * Move the links are anchored to (0-based ply). Null on the whole-game
+   * thread, where chunk linking is unavailable (`game_chunks.ply` is NOT
+   * NULL; issue #103 tracks the start-position relaxation) — the consumer
+   * hides the chunk UI there, and this hook just matches nothing.
+   */
+  currentPly: number | null;
   /** All chunk links for the game (every move); filtered to `currentPly` here. */
   chunks: GameChunkItem[];
   /** Signed-in viewer — enables linking, removing one's own links, and seeds
@@ -67,7 +72,8 @@ export function useGameChunkLinks({
   };
 
   async function handleSubmit() {
-    if (staged.length === 0 || submitting) return;
+    // currentPly is null only where the chunk UI is hidden; belt-and-braces.
+    if (staged.length === 0 || submitting || currentPly === null) return;
     setSubmitting(true);
     setError(null);
     const results = await Promise.all(

@@ -43,9 +43,12 @@ export type ReplaySocial =
       isAuthenticated: boolean;
       /**
        * Body of the Discussion tab for a not-yet-shared game — the compose CTAs
-       * that route to a sign-in / share prompt (see `LocalDiscussionPanel`).
+       * that route to a sign-in / share prompt (see `LocalDiscussionPanel`). A
+       * render prop because the caller can't know the board position: on the
+       * opening board the published game offers no chunk suggestions (chunks
+       * are per-move), so the local CTA set mirrors that per position.
        */
-      discussionContent: ReactNode;
+      discussionContent: ((ctx: { isInitialPosition: boolean }) => ReactNode) | null;
     };
 
 /** Stable empty collections for `local` mode, so hook deps never churn. */

@@ -2363,6 +2363,8 @@
       "sharePrompt": "Share this game to get feedback — sharing unlocks discussion and likes.",
       "publish": "Share this game",
       "viewShared": "View shared game",
+      "deleteConfirmTitle": "Delete this game?",
+      "deleteConfirmBody": "This removes it from this browser's game list and can't be undone.",
       "stats": {
         "title": "Game Stats",
         "moves": "Moves",
@@ -2478,7 +2480,7 @@
     "detail": {
       "fallbackTitle": "Shared game",
       "by": "Posted by {name}",
-      "sharedBy": "Posted by",
+      "playedBy": "Played by",
       "moreActions": "More actions",
       "guest": "Guest",
       "cleanRate": "Clean",
@@ -2597,6 +2599,7 @@
       "titleForMove": "Comments on {move}",
       "empty": "No comments on this move yet.",
       "placeholder": "Comment on this move…",
+      "placeholderGame": "Comment on this game…",
       "submit": "Post",
       "submitting": "Posting…",
       "joinConversation": "Join the conversation",
@@ -2694,6 +2697,7 @@
     },
     "discussion": {
       "wholeGame": "Whole game",
+      "startPosition": "Start position",
       "replies": "{count, plural, =1 {1 reply} other {# replies}}"
     },
     "tour": {
