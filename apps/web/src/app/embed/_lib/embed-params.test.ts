@@ -87,4 +87,25 @@ describe('parseEmbedParamsFromSearch', () => {
   it('handles the empty query a request without params carries', () => {
     expect(parseEmbedParamsFromSearch('')).toEqual(parseEmbedParams({}));
   });
+
+  // The layout parses the raw query and the page parses `searchParams`. If the
+  // two disagreed on a repeated key, `?lang=ja&lang=en` would give the document
+  // one `<html lang>` and the widget inside it the other language's strings.
+  it('takes the first value of a repeated key, as the object parse does', () => {
+    expect(parseEmbedParamsFromSearch('?lang=ja&lang=en').lang).toBe('ja');
+    expect(parseEmbedParamsFromSearch('?bg=dark&bg=light').bg).toBe('dark');
+  });
+
+  it.each([
+    '?lang=ja&lang=en&bg=dark&bg=light&view=plain&view=played',
+    '?view=plain&view=played&lang=ja&lang=en&bg=dark&bg=light',
+  ])('agrees with the object parse over %o', (search) => {
+    const fromSearch = parseEmbedParamsFromSearch(search);
+    const fromObject = parseEmbedParams({
+      lang: ['ja', 'en'],
+      bg: ['dark', 'light'],
+      view: ['plain', 'played'],
+    });
+    expect(fromSearch).toEqual(fromObject);
+  });
 });

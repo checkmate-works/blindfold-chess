@@ -90,6 +90,14 @@ export function parseEmbedParams(
  * instead. Repeated keys collapse to the first, matching {@link parseEmbedParams}.
  */
 export function parseEmbedParamsFromSearch(search: string): EmbedGameParams {
-  const entries = new URLSearchParams(search);
-  return parseEmbedParams(Object.fromEntries(entries));
+  const params = new URLSearchParams(search);
+  // Keyed off `get()`, which is the FIRST value for a key — `fromEntries()`
+  // over the entry list keeps the last one instead. The two parses have to
+  // agree on which wins: this one resolves `?lang` for the layout's
+  // `<html lang>`, while the page resolves the same param through
+  // `parseEmbedParams`, and disagreement renders the document's declared
+  // language and the widget's own strings in two different languages.
+  return parseEmbedParams(
+    Object.fromEntries([...params.keys()].map((key) => [key, params.get(key)!]))
+  );
 }
