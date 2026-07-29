@@ -44,7 +44,7 @@ export type {
 } from './constants';
 export { getPointBalanceSummary } from './get-balance';
 export type { PointBalanceSummary } from './get-balance';
-export { classifyKind, getPointHistory } from './get-history';
+export { classifyKind, countPointHistory, getPointHistory } from './get-history';
 export type { PointHistoryEntry } from './get-history';
 export { grantAdminPoints } from './grant-admin';
 export type { AdminGrantResult } from './grant-admin';

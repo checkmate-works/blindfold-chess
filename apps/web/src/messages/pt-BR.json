@@ -3739,7 +3739,6 @@
       "headerDate": "Data",
       "headerEvent": "Evento",
       "headerDelta": "Quantidade",
-      "truncatedNote": "Exibindo as entradas mais recentes.",
       "kind": {
         "post_grant": "Ganhas por uma publicação",
         "post_clawback": "Revertidas por publicação removida",

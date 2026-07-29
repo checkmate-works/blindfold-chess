@@ -3739,7 +3739,6 @@
       "headerDate": "日付",
       "headerEvent": "種別",
       "headerDelta": "増減",
-      "truncatedNote": "最新の履歴のみを表示しています。",
       "kind": {
         "post_grant": "投稿によるコイン獲得",
         "post_clawback": "投稿削除によるコイン取消",
