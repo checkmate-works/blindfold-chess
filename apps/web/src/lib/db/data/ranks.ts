@@ -393,3 +393,48 @@ export const ranksSeedData: RankSeed[] = [
     ],
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Level lookup / highest-rank resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Rank slug → level, including the UI-only Mukyu at level 0.
+ *
+ * Derived from {@link ranksSeedData} (the source of truth for levels) rather
+ * than from the `ranks` table, so pure/display code can order ranks without a
+ * DB round-trip.
+ */
+export const RANK_LEVEL_BY_SLUG: ReadonlyMap<string, number> = new Map<string, number>([
+  [MUKYU_SLUG, 0],
+  ...ranksSeedData.map((seed): [string, number] => [seed.slug, seed.level]),
+]);
+
+/**
+ * The highest-level slug among the ranks a user actually holds, or `null` when
+ * they hold none (Mukyu).
+ *
+ * Skip-grants make a sparse rank set a normal state — a player can hold 1dan
+ * with no kyū ranks at all, or 1kyu AND 1dan together — so "which rank is this
+ * user?" has exactly one honest answer: the highest one they hold. Use this
+ * anywhere users are placed into a SINGLE rank bucket (the admin rank
+ * distribution chart and the rank filter behind it), so those buckets stay
+ * disjoint and the chart's counts match the list it links into. Do NOT use it
+ * where the question is "has this user earned rank X" (grant idempotency, the
+ * entitlement checks) — that is membership, not bucketing.
+ *
+ * A slug with no known level (a DB rank absent from the seed data) sorts as
+ * level 0, matching how the distribution chart has always treated it.
+ */
+export function resolveHighestRankSlug(slugs: Iterable<string>): string | null {
+  let highestSlug: string | null = null;
+  let highestLevel = -Infinity;
+  for (const slug of slugs) {
+    const level = RANK_LEVEL_BY_SLUG.get(slug) ?? 0;
+    if (level > highestLevel) {
+      highestLevel = level;
+      highestSlug = slug;
+    }
+  }
+  return highestSlug;
+}
