@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { useCombobox } from 'downshift';
 
 import type { ChunkOption } from '@/lib/chunks/types';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 /**
  * Idle cap — mirrors `TagPicker`. Each row renders a 48px mini-board, so cap
@@ -122,7 +122,7 @@ export function GameChunkPicker({
                 aria-hidden
                 className="flex h-12 w-12 flex-shrink-0 items-center justify-center"
               >
-                <BoardThumbnail fen={item.representativeFen} className="h-12 w-12" />
+                <ThemedBoardThumbnail fen={item.representativeFen} className="h-12 w-12" />
               </span>
               <span className="truncate">{item.label}</span>
             </li>

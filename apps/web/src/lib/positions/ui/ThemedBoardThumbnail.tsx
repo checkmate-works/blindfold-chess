@@ -14,6 +14,8 @@ type Props = {
   annotations?: BoardAnnotations | null;
   /** Blindfold "as played" treatment — see {@link BoardThumbnail}'s prop. */
   displaySettings?: BlindfoldDisplaySettings | null;
+  /** Force the viewpoint — see {@link BoardThumbnail}'s prop (defaults to side-to-move). */
+  flipped?: boolean;
 };
 
 /**
@@ -29,6 +31,7 @@ export function ThemedBoardThumbnail({
   className,
   annotations = null,
   displaySettings = null,
+  flipped,
 }: Props) {
   const { preferences } = useGamePreferences();
 
@@ -39,6 +42,7 @@ export function ThemedBoardThumbnail({
       boardTheme={preferences.boardTheme}
       annotations={annotations}
       displaySettings={displaySettings}
+      flipped={flipped}
     />
   );
 }

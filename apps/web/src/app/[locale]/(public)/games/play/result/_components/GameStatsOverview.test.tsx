@@ -33,6 +33,13 @@ vi.mock('@/i18n/routing', () => ({
   Link: ({ children }: { children?: React.ReactNode }) => children,
 }));
 
+// The Starting-position thumbnail reads the board theme from this context; the
+// tests drive it directly instead of mounting the provider.
+const mockUseGamePreferences = vi.fn(() => ({ preferences: { boardTheme: 'lichess' } }));
+vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
+  useGamePreferences: () => mockUseGamePreferences(),
+}));
+
 const STATS: GameStats = {
   totalMoves: 1,
   peeks: 0,
@@ -102,5 +109,33 @@ describe('GameStatsOverview change log', () => {
     // (The Initial Settings indicator uses the `visibility.*` keys, not
     // `boardVisibilities.*`, so this stays specific to the change log.)
     expect(text).not.toContain('boardVisibilities');
+  });
+});
+
+describe('GameStatsOverview starting position', () => {
+  // Regression guard: the Starting-position thumbnail used to render an
+  // unthemed BoardThumbnail, so it always fell back to the default (lichess)
+  // board colours — a user on chesscom/monotone saw it clash with the replay
+  // board right above it on the same page.
+  it('renders the starting position with the user’s selected board theme', () => {
+    mockUseGamePreferences.mockReturnValue({ preferences: { boardTheme: 'chesscom' } });
+
+    const { container } = render(
+      <GameStatsOverview
+        stats={STATS}
+        playerMoveIndices={[0]}
+        moves={['e4']}
+        onSelectMove={vi.fn()}
+        playerColor="white"
+        startPosition={{
+          fen: '8/8/8/8/8/8/8/K6k w - - 0 1',
+          movesLine: null,
+          jumpIndex: -2,
+        }}
+      />
+    );
+
+    expect(container.innerHTML).toContain('--color-board-chesscom-light');
+    expect(container.innerHTML).not.toContain('--color-board-lichess-light');
   });
 });
