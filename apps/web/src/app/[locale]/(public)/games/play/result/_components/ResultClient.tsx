@@ -22,8 +22,14 @@ import { useGameExpGrant } from '../_hooks/use-game-exp-grant';
 import { useLoadGame } from '../_hooks/useLoadGame';
 import { CompactResultHeader } from './CompactResultHeader';
 import { LocalDiscussionPanel } from './LocalDiscussionPanel';
+import { LocalGameSocial } from './LocalGameSocial';
 import { ResultSkeleton } from './ResultSkeleton';
-import { ShareGameCta } from './ShareGameCta';
+
+/** The player (= the viewer), for the "Played by" header. Null when signed out. */
+export type ResultPlayer = {
+  profile: { username?: string | null; avatarUrl?: string | null } | null;
+  displayName: string;
+};
 
 type Props = {
   locale: Locale;
@@ -33,9 +39,17 @@ type Props = {
   initialExp: ExpInfo | null;
   /** Opening master, shipped from the server so detection can run on the local game. */
   openingEntries: OpeningCatalogEntry[];
+  /** Resolved server-side; anonymous players get a guest name and no profile link. */
+  player: ResultPlayer;
 };
 
-export function ResultClient({ locale, isAuthenticated, initialExp, openingEntries }: Props) {
+export function ResultClient({
+  locale,
+  isAuthenticated,
+  initialExp,
+  openingEntries,
+  player,
+}: Props) {
   const t = useTranslations('play');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,6 +95,7 @@ export function ResultClient({ locale, isAuthenticated, initialExp, openingEntri
       isAuthenticated={isAuthenticated}
       initialExp={initialExp}
       openingEntries={openingEntries}
+      player={player}
     />
   );
 }
@@ -92,6 +107,7 @@ type ResultContentProps = {
   isAuthenticated: boolean;
   initialExp: ExpInfo | null;
   openingEntries: OpeningCatalogEntry[];
+  player: ResultPlayer;
 };
 
 function ResultContent({
@@ -101,6 +117,7 @@ function ResultContent({
   isAuthenticated,
   initialExp,
   openingEntries,
+  player,
 }: ResultContentProps) {
   // The review view model — the same shape the shared game builds from its DB
   // row, so both screens read the result (and everything else) from one mapping.
@@ -133,31 +150,49 @@ function ResultContent({
   const hasMoves = game.moves.length > 0;
 
   // The same review screen as the shared game (games/shared/[id]) — board, move
-  // list, blindfold indicator, and stats — sourced from the local game. The
-  // win/loss/draw label rides at the top of the stats block (statsHeader), not
-  // above the board. A first-class, ungated "Share this game" CTA sits above the
-  // tabs (as children): publishing is open to everyone — anonymous and
-  // provisional players included — so it is deliberately not behind an auth
-  // guard. The Discussion tab just explains that discussion opens once shared.
+  // list, blindfold indicator, and stats — sourced from the local game, then the
+  // same "Played by" + like/share footer below it. The win/loss/draw label rides
+  // at the top of the stats block (statsHeader), not above the board; its
+  // wording is first-person here and neutral on the shared game, which third
+  // parties read.
+  //
+  // The share pitch is made by the CTA modal every engagement action opens (see
+  // LocalGameSocial), not by an inline card — a card had no counterpart on the
+  // shared game and pushed the whole layout down. Nothing is rendered for a
+  // game with no moves: there is nothing to publish, discuss or delete.
   return (
-    <GameReview
-      {...reviewData}
-      detectedOpening={opening}
-      locale={locale}
-      statsHeader={<CompactResultHeader result={reviewData.result} />}
-      social={{
-        mode: 'local',
-        isAuthenticated,
-        // Discussion tab: members-only compose CTAs (join conversation / suggest
-        // chunk) that route to sign-in / finish-registration (anonymous /
-        // provisional) or a share prompt (registered) — discussion needs both an
-        // account and a published game.
-        discussionContent: hasMoves ? (
-          <LocalDiscussionPanel onShare={handleShare} isShared={isShared} />
-        ) : null,
-      }}
-    >
-      {hasMoves ? <ShareGameCta onShare={handleShare} isShared={isShared} /> : null}
-    </GameReview>
+    <div className="space-y-6">
+      <GameReview
+        {...reviewData}
+        detectedOpening={opening}
+        locale={locale}
+        statsHeader={<CompactResultHeader result={reviewData.result} />}
+        social={{
+          mode: 'local',
+          isAuthenticated,
+          // Discussion tab: members-only compose CTAs (join conversation / suggest
+          // chunk) that route to sign-in / finish-registration (anonymous /
+          // provisional) or a share prompt (registered) — discussion needs both an
+          // account and a published game.
+          discussionContent: hasMoves ? (
+            <LocalDiscussionPanel onShare={handleShare} isShared={isShared} />
+          ) : null,
+        }}
+      />
+
+      {hasMoves && (
+        <LocalGameSocial
+          locale={locale}
+          gameId={gameId}
+          profile={player.profile}
+          displayName={player.displayName}
+          // When the game was played, not when it was saved to the catalog —
+          // the shared page's counterpart is the publish date.
+          playedAt={new Date(game.lastPlayed ?? game.date)}
+          onShare={handleShare}
+          isShared={isShared}
+        />
+      )}
+    </div>
   );
 }

@@ -441,23 +441,33 @@ export function GameReview({
     hasSummary: statsOverview !== null,
   });
 
-  // Commit a previewed position from the quick-peek modal onto the live board.
-  // In `live` mode moving to a move position already surfaces that move's
-  // comment thread below the board; `local` mode has no per-move thread and a
-  // position-independent overview, so it additionally switches to the Discussion
-  // tab — matching the shared game, where opening a position reveals discussion.
-  const { commit: commitQuickPeek } = quickPeek;
+  // Local mode only: point the overview tab at whatever the board now shows.
+  // On the shared game the board position alone decides what sits below it —
+  // the opening board shows the overview (stats), any move position shows that
+  // move's comment thread. Local mode has no per-move thread and its overview
+  // does not move with the board, so the tab is what has to follow it, in BOTH
+  // directions: stepping onto a move reveals the Discussion, and stepping back
+  // to the opening board restores the Summary (the Game Stats the shared game
+  // shows at that position).
   const { setOverviewView } = overview;
+  const syncOverviewToPosition = useCallback(
+    (position: number) => setOverviewView(position === -2 ? 'summary' : 'discussion'),
+    [setOverviewView]
+  );
+
+  // Commit a previewed position from the quick-peek modal onto the live board.
+  const { commit: commitQuickPeek } = quickPeek;
+  const quickPeekPosition = quickPeek.nav.currentPosition;
   const handleCommitPosition = useCallback(() => {
     commitQuickPeek();
-    if (social.mode === 'local') setOverviewView('discussion');
-  }, [commitQuickPeek, social.mode, setOverviewView]);
+    if (social.mode === 'local') syncOverviewToPosition(quickPeekPosition);
+  }, [commitQuickPeek, social.mode, syncOverviewToPosition, quickPeekPosition]);
 
   // Local mode: user navigation (the arrows under the board, move-list
-  // clicks) onto a move position also routes the viewer to the Discussion
-  // tab — same rationale as handleCommitPosition above. The ref gates the
-  // switch to real interactions: the programmatic initial landing (deep link
-  // / setup position) must leave the Summary visible.
+  // clicks) moves the tab with the board — same rationale as
+  // handleCommitPosition above. The ref gates the switch to real
+  // interactions: the programmatic initial landing (deep link / setup
+  // position) must leave the Summary visible.
   const pendingUserNavRef = useRef(false);
   const withDiscussionReveal = useCallback(
     <A extends unknown[]>(navigate: (...args: A) => void) =>
@@ -470,8 +480,8 @@ export function GameReview({
   useEffect(() => {
     if (!pendingUserNavRef.current) return;
     pendingUserNavRef.current = false;
-    if (social.mode === 'local' && currentPosition !== -2) setOverviewView('discussion');
-  }, [currentPosition, social.mode, setOverviewView]);
+    if (social.mode === 'local') syncOverviewToPosition(currentPosition);
+  }, [currentPosition, social.mode, syncOverviewToPosition]);
   const userNav = useMemo(
     () => ({
       toStart: withDiscussionReveal(navigateToStart),

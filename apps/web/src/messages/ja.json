@@ -2363,6 +2363,8 @@
       "sharePrompt": "この対局を共有するとコメントやいいねが有効になり、フィードバックを受け取れます。",
       "publish": "この対局を共有する",
       "viewShared": "共有した対局を見る",
+      "deleteConfirmTitle": "この対局を削除しますか？",
+      "deleteConfirmBody": "このブラウザの対局一覧から削除されます。この操作は取り消せません。",
       "stats": {
         "title": "対局統計",
         "moves": "手数",
@@ -2478,7 +2480,7 @@
     "detail": {
       "fallbackTitle": "公開対局",
       "by": "{name} さんの対局",
-      "sharedBy": "投稿者",
+      "playedBy": "対局者",
       "moreActions": "その他の操作",
       "guest": "ゲスト",
       "cleanRate": "クリーン率",

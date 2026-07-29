@@ -29,9 +29,9 @@ type Props = {
  * - Registered click → the share prompt modal (this game must be published
  *   before it can be discussed), surfaced via {@link JoinConversationToggle.onActivate}.
  *
- * Publishing itself is open to everyone via the ungated ShareGameCta above the
- * tabs; this Discussion tab is specifically the members-only *conversation*
- * surface, so its gate is deliberate.
+ * Publishing itself is open to everyone via the ungated share actions in the
+ * footer below (see LocalGameSocial); this Discussion tab is specifically the
+ * members-only *conversation* surface, so its gate is deliberate.
  */
 export function LocalDiscussionPanel({ onShare, isShared }: Props) {
   const t = useTranslations('sharedGames');

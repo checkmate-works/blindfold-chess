@@ -2363,6 +2363,8 @@
       "sharePrompt": "Comparte esta partida para recibir comentarios: compartir habilita los comentarios y los me gusta.",
       "publish": "Compartir esta partida",
       "viewShared": "Ver partida compartida",
+      "deleteConfirmTitle": "¿Eliminar esta partida?",
+      "deleteConfirmBody": "Se quitará de la lista de partidas de este navegador y no se puede deshacer.",
       "stats": {
         "title": "Estadísticas de la Partida",
         "moves": "Jugadas",
@@ -2478,7 +2480,7 @@
     "detail": {
       "fallbackTitle": "Partida compartida",
       "by": "Publicado por {name}",
-      "sharedBy": "Publicado por",
+      "playedBy": "Jugado por",
       "moreActions": "Más acciones",
       "guest": "Invitado",
       "cleanRate": "Limpias",
