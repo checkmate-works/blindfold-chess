@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm';
+import { count, desc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
@@ -69,6 +69,20 @@ export async function getPointHistory(
     createdAt: row.createdAt,
     kind: classifyKind(row.source, row.delta, row.metadata),
   }));
+}
+
+/**
+ * Total ledger rows the user has, for deriving a page count. Counterpart to
+ * {@link getPointHistory}'s `limit`/`offset`; `/mypage/coins` needs the total
+ * because it renders a numbered pagination bar rather than a "load more".
+ */
+export async function countPointHistory(userId: string): Promise<number> {
+  const [row] = await db
+    .select({ count: count() })
+    .from(pointEvents)
+    .where(eq(pointEvents.userId, userId));
+
+  return row?.count ?? 0;
 }
 
 export function classifyKind(

@@ -15,24 +15,31 @@
  * 3. Renders three sections:
  *    - Balance card: the user's total Coin balance.
  *    - Redeem control (only when balance ≥ 1): N Coin → N days of ad_free.
- *    - History table: most recent ledger rows.
+ *    - History table: one page of ledger rows, newest first, with a `?page=`
+ *      pagination bar.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 import { CoinIcon } from '@blindfold-chess/icons';
+import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { AD_FREE_DAYS_PER_POINT } from '@/lib/points';
 import { hasDanTierRank } from '@/lib/users/dan-rank';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
-import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RedeemForm } from './_components/RedeemForm';
 import { getPointsPageData } from './_lib/getPointsPageData';
+
+const searchParamsCache = createSearchParamsCache({
+  page: parseAsInteger.withDefault(1),
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
@@ -43,17 +50,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function CoinsPage({ params }: Props) {
+export default async function CoinsPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypagePoints' });
 
   const user = await getAuthenticatedUser();
-  const [{ balance, history, hasMore, dailyCap }, danAdFree] = await Promise.all([
-    getPointsPageData(user.id),
+  const { page } = await searchParamsCache.parse(searchParams);
+  const [{ balance, history, currentPage, totalPages, dailyCap }, danAdFree] = await Promise.all([
+    getPointsPageData(user.id, page),
     hasDanTierRank(user.id),
   ]);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
+  const buildHref = (p: number) => `/${locale}/mypage/coins${p > 1 ? `?page=${p}` : ''}`;
 
   return (
     <PageLayout
@@ -158,13 +167,15 @@ export default async function CoinsPage({ params }: Props) {
                   </tbody>
                 </table>
               </div>
-              {hasMore && (
-                <p className="border-t border-border bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
-                  {t('history.truncatedNote')}
-                </p>
-              )}
             </div>
           )}
+
+          <PaginationNav
+            currentPage={currentPage}
+            totalPages={totalPages}
+            buildHref={buildHref}
+            locale={locale}
+          />
         </div>
       </div>
     </PageLayout>

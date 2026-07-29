@@ -2,6 +2,7 @@ import {
   type DailyCreationCapStatus,
   type PointBalanceSummary,
   type PointHistoryEntry,
+  countPointHistory,
   getDailyCreationCapStatus,
   getPointBalanceSummary,
   getPointHistory,
@@ -9,7 +10,7 @@ import {
 
 import { resolveHistoryLinks } from './resolveHistoryLinks';
 
-const HISTORY_PAGE_SIZE = 50;
+const HISTORY_PAGE_SIZE = 20;
 
 /**
  * A history row plus an optional deep link to the UGC that earned it. `href`
@@ -20,34 +21,44 @@ export type PointsHistoryRow = PointHistoryEntry & { href?: string };
 export type PointsPageData = {
   balance: PointBalanceSummary;
   history: PointsHistoryRow[];
-  hasMore: boolean;
+  /** Page actually rendered — `page` clamped into `[1, totalPages]`. */
+  currentPage: number;
+  totalPages: number;
   dailyCap: DailyCreationCapStatus;
 };
 
 /**
- * Single batched fetch for the /mypage/coins view. Reads the balance
- * summary, the daily creation-cap status, and the most recent history
- * rows in parallel; the +1 trick (fetch HISTORY_PAGE_SIZE+1 and slice)
- * lets the UI know whether more history exists without an extra count
- * query.
+ * Single batched fetch for the /mypage/coins view: the balance summary, the
+ * daily creation-cap status, and one page of history rows.
+ *
+ * The row count is fetched up front (rather than probing with a
+ * `PAGE_SIZE + 1` row) because the view renders a numbered pagination bar,
+ * which needs `totalPages` and not just "is there more". `page` is clamped
+ * here so an out-of-range `?page=` lands on the last real page instead of an
+ * empty table.
  */
-export async function getPointsPageData(userId: string): Promise<PointsPageData> {
-  const [balance, historyPlusOne, dailyCap] = await Promise.all([
+export async function getPointsPageData(userId: string, page: number = 1): Promise<PointsPageData> {
+  const [balance, totalCount, dailyCap] = await Promise.all([
     getPointBalanceSummary(userId),
-    getPointHistory(userId, HISTORY_PAGE_SIZE + 1),
+    countPointHistory(userId),
     getDailyCreationCapStatus(userId),
   ]);
 
-  const hasMore = historyPlusOne.length > HISTORY_PAGE_SIZE;
-  const historyRows = hasMore ? historyPlusOne.slice(0, HISTORY_PAGE_SIZE) : historyPlusOne;
+  const totalPages = Math.ceil(totalCount / HISTORY_PAGE_SIZE);
+  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
 
-  // Attach a deep link to the earning UGC for each live creation grant. Only
-  // the displayed page is resolved (not the +1 probe row).
+  const historyRows = await getPointHistory(
+    userId,
+    HISTORY_PAGE_SIZE,
+    (currentPage - 1) * HISTORY_PAGE_SIZE
+  );
+
+  // Attach a deep link to the earning UGC for each live creation grant.
   const links = await resolveHistoryLinks(historyRows);
   const history: PointsHistoryRow[] = historyRows.map((row) => {
     const href = links.get(row.id);
     return href ? { ...row, href } : row;
   });
 
-  return { balance, history, hasMore, dailyCap };
+  return { balance, history, currentPage, totalPages, dailyCap };
 }

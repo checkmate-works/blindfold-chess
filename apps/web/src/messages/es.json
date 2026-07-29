@@ -3743,7 +3743,6 @@
       "headerDate": "Fecha",
       "headerEvent": "Evento",
       "headerDelta": "Cantidad",
-      "truncatedNote": "Mostrando las entradas más recientes.",
       "kind": {
         "post_grant": "Ganadas por una publicación",
         "post_clawback": "Revertidas por publicación eliminada",

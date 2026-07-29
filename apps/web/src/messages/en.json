@@ -3743,7 +3743,6 @@
       "headerDate": "Date",
       "headerEvent": "Event",
       "headerDelta": "Amount",
-      "truncatedNote": "Showing the most recent entries.",
       "kind": {
         "post_grant": "Earned from a post",
         "post_clawback": "Reversed for deleted post",
