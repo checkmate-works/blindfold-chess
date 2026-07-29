@@ -80,10 +80,14 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   // typo (invalid attempt) or a board peek still shows up as an annotation,
   // and a game whose visibility changed mid-game isn't captured by the
   // start-of-game snapshot alone.
-  const hasPlayedVariant =
-    (game.playSettings != null &&
-      gameUsedNotablePlaySettings(game.playSettings, game.playSettingsLog)) ||
-    hasAnnotatableOps(game.operationLogs);
+  //
+  // The embed draws no annotations, so it splits the first half out: its "as
+  // played" view differs from the revealed board only when the blindfold
+  // settings themselves did something.
+  const canReproduce =
+    game.playSettings != null &&
+    gameUsedNotablePlaySettings(game.playSettings, game.playSettingsLog);
+  const hasPlayedVariant = canReproduce || hasAnnotatableOps(game.operationLogs);
 
   return (
     <PageLayout
@@ -186,6 +190,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
             title={game.title}
             locale={locale}
             hasPlayedVariant={hasPlayedVariant}
+            canReproduce={canReproduce}
           />
         </div>
       </div>

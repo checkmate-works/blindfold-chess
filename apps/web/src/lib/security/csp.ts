@@ -215,9 +215,16 @@ export function buildCspHeader(
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
       ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google' +
       ' fundingchoicesmessages.google.com',
+    // `'self'`: the share dialog previews the embeddable replay by framing our
+    // own `/embed/g/<code>` — without this the preview is a blank box the
+    // moment the policy is enforced (issue #89), which is the one thing that
+    // dialog exists to rule out. Reported as a violation on every open until
+    // it was added, since `frame-src` does not fall back to `default-src`
+    // once the directive is present.
+    //
     // `pagead2.googlesyndication.com`: AdSense also renders some ad iframes from
     // this host (in addition to googleads.g.doubleclick.net / tpc.googlesyndication.com).
-    'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
+    "frame-src 'self' googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com",
     // `'self'` covers the host that served the document; `siteOrigin` covers the
     // absolute canonical manifest URL emitted by `metadataBase` when the request
     // was served on a non-canonical host. See `siteOrigin` derivation above.

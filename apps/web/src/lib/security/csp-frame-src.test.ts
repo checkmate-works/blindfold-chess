@@ -32,10 +32,14 @@ async function readNextConfigSource(): Promise<string> {
 
 function extractFrameSrcDirective(source: string): string {
   // The directive is a single line of the form
-  //   'frame-src googleads.g.doubleclick.net ... www.chess.com',
+  //   "frame-src 'self' googleads.g.doubleclick.net ... www.chess.com",
   // Single OR double quoted, with the directive name `frame-src` first.
   // We extract the entire string literal that contains `frame-src`.
-  const match = source.match(/['"]\s*frame-src\b[^'"\n]*['"]/);
+  //
+  // Each alternative excludes only its OWN quote character, so a CSP keyword
+  // written in the other one — `'self'` inside a double-quoted literal — stays
+  // part of the match instead of terminating it.
+  const match = source.match(/"\s*frame-src\b[^"\n]*"|'\s*frame-src\b[^'\n]*'/);
   if (!match) {
     throw new Error('frame-src directive not found in next.config.ts source');
   }

@@ -2502,7 +2502,29 @@
         "shareOnX": "Xで共有",
         "downloadGif": "GIFをダウンロード",
         "downloadGifAsPlayed": "GIFをダウンロード(実際に見えていた盤で)",
-        "gifHint": "Xに投稿するときはGIFを添付してください(リンクのままだと再生されません)"
+        "gifHint": "Xに投稿するときはGIFを添付してください(リンクのままだと再生されません)",
+        "embed": {
+          "menuItem": "ブログに埋め込む",
+          "title": "この対局を埋め込む",
+          "description": "記事に貼り付けると、読者はページを離れずに手を進めて並べられます。",
+          "previewLabel": "埋め込みのプレビュー",
+          "view": "盤面",
+          "viewPlayed": "対局者に見えていた盤",
+          "viewPlain": "すべて表示",
+          "bg": "配色",
+          "bgAuto": "読者の設定に合わせる",
+          "bgLight": "ライト",
+          "bgDark": "ダーク",
+          "orientation": "盤の向き",
+          "orientationPlayer": "対局者の側",
+          "orientationWhite": "白",
+          "orientationBlack": "黒",
+          "pinLanguage": "表示言語をこの言語に固定する",
+          "codeLabel": "埋め込みコード",
+          "copy": "コードをコピー",
+          "copied": "コピーしました",
+          "hint": "HTML を書ける場所ならどこでも動きます（WordPress、はてなブログ、Ghost、Notion、Discourse など）。iframe が使えない場所では、リンクか GIF を共有してください。"
+        }
       },
       "claim": {
         "signedOutTitle": "このゲームを自分の実績にしませんか？",

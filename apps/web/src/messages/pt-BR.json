@@ -2502,7 +2502,29 @@
         "shareOnX": "Compartilhar no X",
         "downloadGif": "Baixar GIF",
         "downloadGifAsPlayed": "Baixar GIF (como foi jogado)",
-        "gifHint": "Anexe o GIF ao postar no X — GIFs em links não animam lá."
+        "gifHint": "Anexe o GIF ao postar no X — GIFs em links não animam lá.",
+        "embed": {
+          "menuItem": "Incorporar em um blog",
+          "title": "Incorporar esta partida",
+          "description": "Cole isto no seu post e os leitores poderão percorrer a partida sem sair da página.",
+          "previewLabel": "Prévia da partida incorporada",
+          "view": "Tabuleiro",
+          "viewPlayed": "Como o jogador via",
+          "viewPlain": "Totalmente revelado",
+          "bg": "Cores",
+          "bgAuto": "Conforme o leitor",
+          "bgLight": "Claro",
+          "bgDark": "Escuro",
+          "orientation": "Orientação",
+          "orientationPlayer": "O lado do jogador",
+          "orientationWhite": "Brancas",
+          "orientationBlack": "Pretas",
+          "pinLanguage": "Sempre mostrar o widget neste idioma",
+          "codeLabel": "Código de incorporação",
+          "copy": "Copiar código",
+          "copied": "Copiado!",
+          "hint": "Funciona onde HTML é permitido (WordPress, Ghost, Notion, Discourse). Onde não for, compartilhe o link ou o GIF."
+        }
       },
       "claim": {
         "signedOutTitle": "Faça esta partida fazer parte do seu histórico",

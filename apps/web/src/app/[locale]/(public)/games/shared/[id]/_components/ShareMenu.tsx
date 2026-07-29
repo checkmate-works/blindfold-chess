@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { SITE_URL } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaXTwitter } from 'react-icons/fa6';
-import { FiDownload, FiLink, FiShare2 } from 'react-icons/fi';
+import { FiCode, FiDownload, FiLink, FiShare2 } from 'react-icons/fi';
 
 import { PLAYED_GIF_RENDER_VERSION } from '@/lib/games/gif/constants';
 import { encodeGameShortId } from '@/lib/games/short-id';
@@ -13,6 +13,8 @@ import { encodeGameShortId } from '@/lib/games/short-id';
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { EmbedCodeModal } from './EmbedCodeModal';
 
 type GifVariant = 'plain' | 'played';
 
@@ -22,6 +24,14 @@ type Props = {
   locale: Locale;
   /** Whether `?view=played` renders a meaningfully different board (hidden-board game). */
   hasPlayedVariant: boolean;
+  /**
+   * Whether the embed's "as played" view differs from the revealed board.
+   * Narrower than {@link hasPlayedVariant}, which also counts annotations the
+   * GIF animates (peeks, undos, rejected moves) — the embed draws none of
+   * those, so a game whose only difference is an annotation gets no view
+   * toggle in the embed dialog.
+   */
+  canReproduce: boolean;
 };
 
 function Spinner() {
@@ -51,10 +61,11 @@ function Spinner() {
  * `Content-Disposition: attachment`, so this still saves to disk rather than
  * navigating.
  */
-export function ShareMenu({ gameId, title, locale, hasPlayedVariant }: Props) {
+export function ShareMenu({ gameId, title, locale, hasPlayedVariant, canReproduce }: Props) {
   const t = useTranslations('sharedGames');
   const { showToast } = useToast();
   const [downloading, setDownloading] = useState<GifVariant | null>(null);
+  const [embedOpen, setEmbedOpen] = useState(false);
 
   // Copying hands the URL to a human, who may paste it somewhere that shows it
   // verbatim (LINE, Discord, a QR code, a slide), so it gets the short form.
@@ -105,36 +116,64 @@ export function ShareMenu({ gameId, title, locale, hasPlayedVariant }: Props) {
   }
 
   return (
-    <ActionsMenu
-      ariaLabel={t('detail.share.menuLabel')}
-      label={t('detail.share.menuLabel')}
-      icon={<FiShare2 className="h-5 w-5" aria-hidden />}
-      align="left"
-    >
-      <ActionsMenuButton onClick={handleCopyLink}>
-        <FiLink className="h-4 w-4" aria-hidden />
-        {t('detail.share.copyLink')}
-      </ActionsMenuButton>
-      <ActionsMenuButton onClick={handleShareOnX}>
-        <FaXTwitter className="h-4 w-4" aria-hidden />
-        {t('detail.share.shareOnX')}
-      </ActionsMenuButton>
-      <ActionsMenuButton onClick={() => handleDownloadGif('plain')} disabled={downloading !== null}>
-        {downloading === 'plain' ? <Spinner /> : <FiDownload className="h-4 w-4" aria-hidden />}
-        {t('detail.share.downloadGif')}
-      </ActionsMenuButton>
-      {hasPlayedVariant && (
+    <>
+      <ActionsMenu
+        ariaLabel={t('detail.share.menuLabel')}
+        label={t('detail.share.menuLabel')}
+        icon={<FiShare2 className="h-5 w-5" aria-hidden />}
+        align="left"
+      >
+        <ActionsMenuButton onClick={handleCopyLink}>
+          <FiLink className="h-4 w-4" aria-hidden />
+          {t('detail.share.copyLink')}
+        </ActionsMenuButton>
+        <ActionsMenuButton onClick={handleShareOnX}>
+          <FaXTwitter className="h-4 w-4" aria-hidden />
+          {t('detail.share.shareOnX')}
+        </ActionsMenuButton>
+        {/* Between the link/X items and the GIF ones on purpose: an embed is a
+          link-shaped share (the reader gets the live game), while the GIF is a
+          file the author attaches by hand. */}
+        <ActionsMenuButton onClick={() => setEmbedOpen(true)}>
+          <FiCode className="h-4 w-4" aria-hidden />
+          {t('detail.share.embed.menuItem')}
+        </ActionsMenuButton>
         <ActionsMenuButton
-          onClick={() => handleDownloadGif('played')}
+          onClick={() => handleDownloadGif('plain')}
           disabled={downloading !== null}
         >
-          {downloading === 'played' ? <Spinner /> : <FiDownload className="h-4 w-4" aria-hidden />}
-          {t('detail.share.downloadGifAsPlayed')}
+          {downloading === 'plain' ? <Spinner /> : <FiDownload className="h-4 w-4" aria-hidden />}
+          {t('detail.share.downloadGif')}
         </ActionsMenuButton>
-      )}
-      <div className="max-w-64 px-3 py-2 text-xs text-muted-foreground">
-        {t('detail.share.gifHint')}
-      </div>
-    </ActionsMenu>
+        {hasPlayedVariant && (
+          <ActionsMenuButton
+            onClick={() => handleDownloadGif('played')}
+            disabled={downloading !== null}
+          >
+            {downloading === 'played' ? (
+              <Spinner />
+            ) : (
+              <FiDownload className="h-4 w-4" aria-hidden />
+            )}
+            {t('detail.share.downloadGifAsPlayed')}
+          </ActionsMenuButton>
+        )}
+        <div className="max-w-64 px-3 py-2 text-xs text-muted-foreground">
+          {t('detail.share.gifHint')}
+        </div>
+      </ActionsMenu>
+      {/* Outside the menu rather than inside it: a closed `ActionsMenu` hides
+          its children with `hidden`, and while the dialog's portal would in
+          fact escape that, its visibility would then hinge on an
+          implementation detail of the menu. */}
+      <EmbedCodeModal
+        isOpen={embedOpen}
+        onClose={() => setEmbedOpen(false)}
+        gameId={gameId}
+        title={title}
+        locale={locale}
+        canReproduce={canReproduce}
+      />
+    </>
   );
 }

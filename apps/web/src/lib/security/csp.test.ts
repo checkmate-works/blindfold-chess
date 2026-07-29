@@ -118,6 +118,16 @@ describe('buildCspHeader', () => {
     expect(frameSrc).toContain('ep2.adtrafficquality.google');
   });
 
+  it("allows framing our own origin, which the share dialog's embed preview needs", () => {
+    // `frame-src` does not fall back to `default-src 'self'` once the
+    // directive exists, so omitting this makes the preview a blank box the
+    // moment the policy is enforced — and the preview is the only thing
+    // telling a blogger what they are about to publish.
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const frameSrc = header.split('; ').find((d) => d.startsWith('frame-src '));
+    expect(frameSrc).toContain("'self'");
+  });
+
   it('emits a manifest-src allowing self and the canonical site origin', () => {
     // metadataBase resolves /manifest.webmanifest to an absolute canonical URL.
     // When the document is served on a non-canonical host that URL is
