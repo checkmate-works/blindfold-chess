@@ -6,7 +6,8 @@ import {
   BELT_COLOR_HEX,
   MUKYU_SLUG,
   RANK_COLORS,
-  ranksSeedData,
+  RANK_LEVEL_BY_SLUG,
+  resolveHighestRankSlug,
 } from '@/lib/db/data/ranks';
 
 type Rank = typeof ranks.$inferSelect;
@@ -41,35 +42,22 @@ export type RankStatsContext = {
  * rank-resolution context.
  */
 export function aggregateRankStats(users: User[], ctx: RankStatsContext): RankStat[] {
-  // Build level map from seed data + mukyu
-  const levelMap = new Map<string, number>();
-  levelMap.set(MUKYU_SLUG, 0);
-  for (const seed of ranksSeedData) {
-    levelMap.set(seed.slug, seed.level);
-  }
-
   const rankCountMap = new Map<string, number>();
   const rankedUserIds = new Set<string>();
 
   // A user's rank set may be sparse — skip-grants are allowed (e.g. a player
   // can hold 初段 with no kyū ranks at all) — or dense from walking up the
   // ladder. Either way, count each user only at their highest-level rank so
-  // the buckets don't overlap.
+  // the buckets don't overlap. The rank FILTER on the list tab buckets by the
+  // same rule (`getFilteredPopulation`), so clicking a bar lands on a list of
+  // exactly this many users.
   for (const user of users) {
     const slugs = ctx.userSlugs.get(user.id);
     if (!slugs || slugs.size === 0) continue;
     rankedUserIds.add(user.id);
 
-    let highestSlug: string | undefined;
-    let highestLevel = -Infinity;
-    for (const slug of slugs) {
-      const level = levelMap.get(slug) ?? 0;
-      if (level > highestLevel) {
-        highestLevel = level;
-        highestSlug = slug;
-      }
-    }
-    if (highestSlug !== undefined) {
+    const highestSlug = resolveHighestRankSlug(slugs);
+    if (highestSlug !== null) {
       rankCountMap.set(highestSlug, (rankCountMap.get(highestSlug) ?? 0) + 1);
     }
   }
@@ -86,7 +74,7 @@ export function aggregateRankStats(users: User[], ctx: RankStatsContext): RankSt
       name: slug, // Will be replaced with i18n label by the component
       count: slug === MUKYU_SLUG ? mukyuCount : (rankCountMap.get(slug) ?? 0),
       color: hexColor,
-      level: levelMap.get(slug) ?? 0,
+      level: RANK_LEVEL_BY_SLUG.get(slug) ?? 0,
     };
   }).sort((a, b) => a.level - b.level);
 }

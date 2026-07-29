@@ -4,7 +4,7 @@ import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { inArray } from 'drizzle-orm';
 
 import { db, profiles, ranks, userRanks } from '@/lib/db';
-import { MUKYU_SLUG } from '@/lib/db/data/ranks';
+import { MUKYU_SLUG, resolveHighestRankSlug } from '@/lib/db/data/ranks';
 import { listAllAuthUsers } from '@/lib/supabase/list-all-auth-users';
 
 import type { AdminUserFilters } from '../filters';
@@ -104,14 +104,18 @@ export const getFilteredPopulation = cache(
         if (userCountry !== countryFilter) return false;
       }
 
-      // Rank filter
+      // Rank filter — bucket each user at their HIGHEST held rank, matching
+      // the "Users by Rank" chart that links here. Filtering on mere
+      // membership would put a user who holds both 1kyu and 1dan in both
+      // `?rank=1kyu` and `?rank=1dan`, and the list would then disagree with
+      // the bar the admin just clicked.
       if (rankFilter) {
+        const held = userSlugs.get(user.id);
         if (rankFilter === MUKYU_SLUG) {
           // Mukyu = user has no rank records
-          if (userSlugs.has(user.id)) return false;
+          if (held && held.size > 0) return false;
         } else {
-          const held = userSlugs.get(user.id);
-          if (!held || !held.has(rankFilter)) return false;
+          if (!held || resolveHighestRankSlug(held) !== rankFilter) return false;
         }
       }
 

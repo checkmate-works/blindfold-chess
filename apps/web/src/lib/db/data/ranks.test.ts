@@ -4,6 +4,7 @@ import {
   ALL_RANK_SLUGS,
   BELT_COLOR_HEX,
   RANK_COLORS,
+  RANK_LEVEL_BY_SLUG,
   isChallengeScoreRequirement,
   isGamePublishWinHiddenBoardRequirement,
   isGamePublishWinRequirement,
@@ -11,6 +12,7 @@ import {
   isPositionSubmissionCountRequirement,
   parseRequirements,
   ranksSeedData,
+  resolveHighestRankSlug,
 } from './ranks';
 import type { ChallengeScoreRequirement, PositionSubmissionCountRequirement } from './ranks';
 
@@ -472,5 +474,63 @@ describe('isMukyuSlug', () => {
   it('should return false for arbitrary strings', () => {
     expect(isMukyuSlug('unknown')).toBe(false);
     expect(isMukyuSlug('')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RANK_LEVEL_BY_SLUG / resolveHighestRankSlug
+// ---------------------------------------------------------------------------
+
+describe('RANK_LEVEL_BY_SLUG', () => {
+  it('should map mukyu to level 0', () => {
+    expect(RANK_LEVEL_BY_SLUG.get('mukyu')).toBe(0);
+  });
+
+  it('should carry the seed level for every seeded rank', () => {
+    for (const seed of ranksSeedData) {
+      expect(RANK_LEVEL_BY_SLUG.get(seed.slug)).toBe(seed.level);
+    }
+  });
+
+  it('should cover every slug in ALL_RANK_SLUGS', () => {
+    for (const slug of ALL_RANK_SLUGS) {
+      expect(RANK_LEVEL_BY_SLUG.has(slug)).toBe(true);
+    }
+  });
+});
+
+describe('resolveHighestRankSlug', () => {
+  it('should return null for an empty set', () => {
+    expect(resolveHighestRankSlug(new Set<string>())).toBeNull();
+  });
+
+  it('should return the only slug when the user holds one rank', () => {
+    expect(resolveHighestRankSlug(new Set(['5kyu']))).toBe('5kyu');
+  });
+
+  it('should return the highest slug for a dense ladder walk', () => {
+    expect(resolveHighestRankSlug(new Set(['5kyu', '4kyu', '3kyu']))).toBe('3kyu');
+  });
+
+  it('should return 1dan when a user holds both 1kyu and 1dan', () => {
+    // The overlap case the admin rank buckets exist to disambiguate.
+    expect(resolveHighestRankSlug(new Set(['1kyu', '1dan']))).toBe('1dan');
+  });
+
+  it('should return the granted rank for a skip-grant (sparse) rank set', () => {
+    expect(resolveHighestRankSlug(new Set(['1dan']))).toBe('1dan');
+  });
+
+  it('should be independent of iteration order', () => {
+    expect(resolveHighestRankSlug(['1dan', '5kyu'])).toBe('1dan');
+    expect(resolveHighestRankSlug(['5kyu', '1dan'])).toBe('1dan');
+  });
+
+  it('should treat an unknown slug as level 0 and never outrank a real rank', () => {
+    expect(resolveHighestRankSlug(new Set(['nonexistent', '5kyu']))).toBe('5kyu');
+  });
+
+  it('should return the unknown slug when it is the only one held', () => {
+    expect(resolveHighestRankSlug(new Set(['nonexistent']))).toBe('nonexistent');
   });
 });

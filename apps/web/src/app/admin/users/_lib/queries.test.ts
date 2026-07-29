@@ -1187,6 +1187,80 @@ describe('fetchFilteredUsers — rank filter', () => {
     expect(result.totalCount).toBe(0);
     expect(result.users).toEqual([]);
   });
+
+  /**
+   * The rank buckets must be disjoint: a user holding several ranks belongs
+   * to exactly one `?rank=` list — the highest one — so the list agrees with
+   * the "Users by Rank" chart bar the admin clicked to get here.
+   */
+  describe('users holding multiple ranks', () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'a@example.com' }, // 1kyu + 1dan (walked the ladder)
+      { id: 'user-2', email: 'b@example.com' }, // 1kyu only
+      { id: 'user-3', email: 'c@example.com' }, // 1dan only (skip-grant)
+    ];
+
+    async function setupMultiRankMock() {
+      await setupFilterMock({
+        profileRows: [
+          { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+          { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
+          { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+        ],
+        rankRows: STANDARD_RANK_ROWS,
+        userRankRows: [
+          { userId: 'user-1', rankId: 5 }, // 1kyu
+          { userId: 'user-1', rankId: 6 }, // 1dan
+          { userId: 'user-2', rankId: 5 }, // 1kyu
+          { userId: 'user-3', rankId: 6 }, // 1dan
+        ],
+      });
+    }
+
+    it('should exclude a 1dan holder from the 1kyu list even when they also hold 1kyu', async () => {
+      const mockAdminClient = createMockAdminClient(mockUsers);
+      await setupMultiRankMock();
+
+      const { fetchUsersPageData } = await import('./queries');
+      const result = await fetchUsersPageData(mockAdminClient as never, 1, {
+        ...EMPTY_ADMIN_USER_FILTERS,
+        rankFilter: '1kyu',
+      });
+
+      expect(result.users.map((u) => u.id)).toEqual(['user-2']);
+      expect(result.totalCount).toBe(1);
+    });
+
+    it('should list every 1dan holder regardless of which lower ranks they hold', async () => {
+      const mockAdminClient = createMockAdminClient(mockUsers);
+      await setupMultiRankMock();
+
+      const { fetchUsersPageData } = await import('./queries');
+      const result = await fetchUsersPageData(mockAdminClient as never, 1, {
+        ...EMPTY_ADMIN_USER_FILTERS,
+        rankFilter: '1dan',
+      });
+
+      expect(result.users.map((u) => u.id).sort()).toEqual(['user-1', 'user-3']);
+      expect(result.totalCount).toBe(2);
+    });
+
+    it('should agree with the rank chart counts for the same population', async () => {
+      const mockAdminClient = createMockAdminClient(mockUsers);
+      await setupMultiRankMock();
+
+      const { fetchRankStats, fetchUsersPageData } = await import('./queries');
+      const stats = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
+
+      for (const slug of ['1kyu', '1dan', 'mukyu']) {
+        const list = await fetchUsersPageData(mockAdminClient as never, 1, {
+          ...EMPTY_ADMIN_USER_FILTERS,
+          rankFilter: slug,
+        });
+        expect(list.totalCount).toBe(stats.find((s) => s.slug === slug)!.count);
+      }
+    });
+  });
 });
 
 describe('fetchFilteredUsers — username/email filter', () => {
