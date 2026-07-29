@@ -33,6 +33,21 @@ type Options = {
   initialIndex?: 'start' | 'end' | number;
 };
 
+/**
+ * Confine a cursor to `[-1, lastIndex]`.
+ *
+ * Applied on read AND to every write that steps relative to the stored value,
+ * because the stored value can be out of range two ways: a caller seeds it past
+ * the end (the embed surface takes `?ply=` from a URL, where any integer is
+ * expressible), or `moves` shrinks under a live cursor (the repertoire viewer
+ * switching lines). Clamping only on read leaves those cases rendering the
+ * right board while `previous`/`next` step from the raw value — one click per
+ * unit of overshoot before the board moves at all.
+ */
+function clampIndex(value: number, lastIndex: number): number {
+  return Math.min(Math.max(value, -1), lastIndex);
+}
+
 export type PgnReplay = {
   /** -1 = before any move; 0..total-1 = the position after that move. */
   index: number;
@@ -79,14 +94,14 @@ export function usePgnReplay({
   const lastIndex = total - 1;
 
   const [index, setIndex] = useState(() => {
-    if (typeof initialIndex === 'number') return initialIndex;
+    if (typeof initialIndex === 'number') return clampIndex(initialIndex, lastIndex);
     return initialIndex === 'start' ? -1 : lastIndex;
   });
 
   // Clamped rather than trusted: `moves` can shrink under a live cursor (the
   // repertoire viewer switches lines), and a stale index would replay moves
   // that no longer exist.
-  const current = Math.min(Math.max(index, -1), lastIndex);
+  const current = clampIndex(index, lastIndex);
 
   const fen = useMemo(() => {
     if (current === -1) return baseFen;
@@ -108,11 +123,18 @@ export function usePgnReplay({
   }, [moves, baseFen]);
 
   const toStart = useCallback(() => setIndex(-1), []);
-  const previous = useCallback(() => setIndex((i) => Math.max(-1, i - 1)), []);
-  const next = useCallback(() => setIndex((i) => Math.min(lastIndex, i + 1)), [lastIndex]);
+  // Both step from the clamped value, not the stored one — see `clampIndex`.
+  const previous = useCallback(
+    () => setIndex((i) => clampIndex(clampIndex(i, lastIndex) - 1, lastIndex)),
+    [lastIndex]
+  );
+  const next = useCallback(
+    () => setIndex((i) => clampIndex(clampIndex(i, lastIndex) + 1, lastIndex)),
+    [lastIndex]
+  );
   const toEnd = useCallback(() => setIndex(lastIndex), [lastIndex]);
   const toIndex = useCallback(
-    (target: number) => setIndex(Math.min(Math.max(target, -1), lastIndex)),
+    (target: number) => setIndex(clampIndex(target, lastIndex)),
     [lastIndex]
   );
 
