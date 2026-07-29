@@ -34,17 +34,29 @@ export const DEFAULT_EMBED_OPTIONS: EmbedOptions = {
 };
 
 /**
- * Height of the default snippet, and the ratio behind it.
+ * Default size of the snippet, and the arithmetic behind the pair.
  *
- * The widget is a square board plus roughly 130px of chrome (move strip,
- * stepper, attribution), so a 600px-wide embed wants about 600 + 130. Pinned
- * at 480 rather than 730 because an article column is usually narrower than
- * 600px: at the ~560px a typical blog gives it, this leaves the board its full
- * width and a little slack. The widget itself never overflows whatever height
- * it is given — the board shrinks — so a blogger who edits this number gets a
- * sane result either way.
+ * The widget is a square board plus ~130px of chrome (move strip, stepper,
+ * attribution), and the board takes the smaller of the two axes it is given.
+ * A fluid width and a fixed height therefore always letterbox somewhere; the
+ * job of these numbers is to keep that margin small at both ends of the range
+ * an article actually spans:
+ *
+ * - at the 480px cap: board 430, a 25px margin each side;
+ * - on a 360px phone: board 360, ~70px of vertical slack.
+ *
+ * Nothing breaks outside that range — the board shrinks to fit whatever it
+ * gets and the controls stay on screen — so a blogger who edits either number
+ * still gets a sane widget, just with more empty space on one axis.
  */
-export const DEFAULT_EMBED_HEIGHT = 480;
+export const DEFAULT_EMBED_HEIGHT = 560;
+
+/**
+ * Cap on the embed's width. Below the 600px the board could use, because
+ * matching it would need a 730px-tall embed to avoid letterboxing — more
+ * vertical space than a game replay deserves in the middle of an article.
+ */
+const DEFAULT_EMBED_MAX_WIDTH = 480;
 
 /**
  * Build the embed URL, omitting every param that is already the default.
@@ -99,7 +111,7 @@ export function buildEmbedSnippet({
   height?: number;
 }): string {
   const url = buildEmbedUrl(siteUrl, gameId, options);
-  return `<iframe src="${escapeAttribute(url)}" title="${escapeAttribute(title)}" width="100%" height="${height}" style="border:0;max-width:600px" loading="lazy"></iframe>`;
+  return `<iframe src="${escapeAttribute(url)}" title="${escapeAttribute(title)}" width="100%" height="${height}" style="border:0;max-width:${DEFAULT_EMBED_MAX_WIDTH}px" loading="lazy"></iframe>`;
 }
 
 /**

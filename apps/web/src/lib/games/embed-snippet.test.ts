@@ -73,7 +73,7 @@ describe('buildEmbedSnippet', () => {
   it('is a responsive iframe with an accessible name', () => {
     expect(snippet('My blindfold win')).toBe(
       '<iframe src="https://example.test/embed/g/AZ-OkzKtdQ6JTiZ6zxV14g" title="My blindfold win"' +
-        ' width="100%" height="480" style="border:0;max-width:600px" loading="lazy"></iframe>'
+        ' width="100%" height="560" style="border:0;max-width:480px" loading="lazy"></iframe>'
     );
   });
 

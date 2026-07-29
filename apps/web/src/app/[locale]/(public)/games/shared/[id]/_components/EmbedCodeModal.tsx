@@ -113,7 +113,9 @@ export function EmbedCodeModal({ isOpen, onClose, gameId, title, locale, canRepr
       <div className="space-y-4 px-6 py-4">
         <p className="text-sm text-muted-foreground">{t('detail.share.embed.description')}</p>
 
-        <div className="mx-auto w-full max-w-[600px] overflow-hidden rounded-md border border-border">
+        {/* Same cap and height the snippet carries, so what is judged here is
+            what gets published. */}
+        <div className="mx-auto w-full max-w-[480px] overflow-hidden rounded-md border border-border">
           <iframe
             key={previewUrl}
             src={previewUrl}
