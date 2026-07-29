@@ -7,7 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FiCheck, FiCopy } from 'react-icons/fi';
 
 import {
-  DEFAULT_EMBED_HEIGHT,
+  DEFAULT_EMBED_ASPECT_RATIO,
   DEFAULT_EMBED_OPTIONS,
   type EmbedOptions,
   buildEmbedSnippet,
@@ -110,18 +110,26 @@ export function EmbedCodeModal({ isOpen, onClose, gameId, title, locale, canRepr
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('detail.share.embed.title')} trapFocus>
-      <div className="space-y-4 px-6 py-4">
+      <div className="space-y-4 px-4 py-4 sm:px-6">
         <p className="text-sm text-muted-foreground">{t('detail.share.embed.description')}</p>
 
-        {/* Same cap and height the snippet carries, so what is judged here is
-            what gets published. */}
-        <div className="mx-auto w-full max-w-[480px] overflow-hidden rounded-md border border-border">
+        {/* The cap and the ratio the snippet carries, so the preview is the
+            published widget at every width — including this dialog on a phone,
+            where the modal is narrower than the cap and a fixed height would
+            show a gap the reader will never see. */}
+        {/* Edge-to-edge below `sm`, cancelling the dialog's own gutter: a
+            phone screen leaves the preview ~260px otherwise, narrower than any
+            real article column, so it would show a squeezed board the reader
+            is never going to get. */}
+        <div
+          className="-mx-4 w-[calc(100%+2rem)] overflow-hidden border-y border-border sm:mx-auto sm:w-full sm:max-w-[480px] sm:rounded-md sm:border"
+          style={{ aspectRatio: DEFAULT_EMBED_ASPECT_RATIO }}
+        >
           <iframe
             key={previewUrl}
             src={previewUrl}
             title={t('detail.share.embed.previewLabel')}
-            className="block w-full"
-            height={DEFAULT_EMBED_HEIGHT}
+            className="block h-full w-full"
           />
         </div>
 

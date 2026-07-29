@@ -34,29 +34,44 @@ export const DEFAULT_EMBED_OPTIONS: EmbedOptions = {
 };
 
 /**
- * Default size of the snippet, and the arithmetic behind the pair.
- *
- * The widget is a square board plus ~130px of chrome (move strip, stepper,
- * attribution), and the board takes the smaller of the two axes it is given.
- * A fluid width and a fixed height therefore always letterbox somewhere; the
- * job of these numbers is to keep that margin small at both ends of the range
- * an article actually spans:
- *
- * - at the 480px cap: board 430, a 25px margin each side;
- * - on a 360px phone: board 360, ~70px of vertical slack.
- *
- * Nothing breaks outside that range — the board shrinks to fit whatever it
- * gets and the controls stay on screen — so a blogger who edits either number
- * still gets a sane widget, just with more empty space on one axis.
- */
-export const DEFAULT_EMBED_HEIGHT = 560;
-
-/**
- * Cap on the embed's width. Below the 600px the board could use, because
- * matching it would need a 730px-tall embed to avoid letterboxing — more
- * vertical space than a game replay deserves in the middle of an article.
+ * Cap on the embed's width. Below the 600px a desktop column could give it,
+ * because the widget is a *square* board plus chrome: every extra pixel of
+ * width costs the same in height, and a 740px-tall block is more of an article
+ * than a game replay should take.
  */
 const DEFAULT_EMBED_MAX_WIDTH = 480;
+
+/**
+ * Non-board vertical space in the widget: move strip (37) + stepper (57) +
+ * attribution (33) + the board's own padding (16). Measured, not guessed — if
+ * the chrome changes materially, {@link DEFAULT_EMBED_ASPECT_RATIO} drifts and
+ * a gap re-appears at one end of the range.
+ */
+const EMBED_CHROME_HEIGHT = 143;
+
+/**
+ * The snippet's height is expressed as a ratio of its width, not as a fixed
+ * number, because the width is fluid: an article column is ~480px on a laptop
+ * and ~330px on a phone, and the board — being square — takes the smaller of
+ * the two axes it is given. Against a fixed height, a phone-width embed spent
+ * the difference on empty space above and below the board.
+ *
+ * A single ratio cannot be exact at every width (the chrome is a constant, not
+ * a proportion), so it is set to be exact at the width cap and to fall
+ * slightly short below it. That direction is deliberate: falling short leaves
+ * a small gutter left and right of a centred board, which reads as framing,
+ * while overshooting leaves the dead space above and below that this replaced.
+ */
+export const DEFAULT_EMBED_ASPECT_RATIO = `${DEFAULT_EMBED_MAX_WIDTH} / ${DEFAULT_EMBED_MAX_WIDTH + EMBED_CHROME_HEIGHT}`;
+
+/**
+ * Height for the `height` attribute, which is what a reader gets if the CMS
+ * strips `style` — some editors do. It is a plain fallback, deliberately not
+ * the ratio's answer for any particular width: nothing is exact once the ratio
+ * is gone, and a mid-range value keeps that case merely imperfect rather than
+ * broken.
+ */
+export const DEFAULT_EMBED_HEIGHT = 560;
 
 /**
  * Build the embed URL, omitting every param that is already the default.
@@ -87,8 +102,14 @@ export function buildEmbedUrl(siteUrl: string, gameId: string, options: EmbedOpt
  *   column is a different width on every site and on every phone, and a fixed
  *   600px embed is the classic cause of a page that scrolls sideways on
  *   mobile.
- * - `style` carries only `border:0` and the max-width. Some editors strip
- *   `style` entirely; losing it costs a border and a size cap, not the embed.
+ * - `aspect-ratio` with `height:auto`, so the height follows that fluid width
+ *   instead of being a number chosen for one screen. See
+ *   {@link DEFAULT_EMBED_ASPECT_RATIO}.
+ * - The `height` attribute stays anyway, as the answer for a CMS that strips
+ *   `style` — a stripped snippet then loses the ratio and the cap but still
+ *   renders a usable widget, which a single-element responsive trick (a
+ *   `padding-bottom` wrapper) would not: that one collapses to zero height
+ *   with its style gone.
  * - `title` because an untitled iframe is an unlabelled document to a screen
  *   reader — the blogger's readers pay for that, not us.
  * - `loading="lazy"` so an article embedding several games does not fetch them
@@ -111,7 +132,8 @@ export function buildEmbedSnippet({
   height?: number;
 }): string {
   const url = buildEmbedUrl(siteUrl, gameId, options);
-  return `<iframe src="${escapeAttribute(url)}" title="${escapeAttribute(title)}" width="100%" height="${height}" style="border:0;max-width:${DEFAULT_EMBED_MAX_WIDTH}px" loading="lazy"></iframe>`;
+  const style = `border:0;width:100%;max-width:${DEFAULT_EMBED_MAX_WIDTH}px;aspect-ratio:${DEFAULT_EMBED_ASPECT_RATIO};height:auto`;
+  return `<iframe src="${escapeAttribute(url)}" title="${escapeAttribute(title)}" width="100%" height="${height}" style="${style}" loading="lazy"></iframe>`;
 }
 
 /**
