@@ -99,16 +99,24 @@ export function GameMoveContributions({
           count={thread.commentCount}
           joinLabel={t('comments.joinConversation')}
         >
-          <GameCommentForm
-            placeholder={
-              currentPly === null ? t('comments.placeholderGame') : t('comments.placeholder')
-            }
-            submitLabel={t('comments.submit')}
-            submittingLabel={t('comments.submitting')}
-            autoFocus
-            resetOnSuccess
-            onSubmit={(body) => thread.postComment(null, body)}
-          />
+          {/* Collapse back to the trigger once the comment is posted: it now
+              sits in the thread below, and an empty textarea left open pushes
+              that thread off a phone screen. Matches the inline reply form. */}
+          {({ close }) => (
+            <GameCommentForm
+              placeholder={
+                currentPly === null ? t('comments.placeholderGame') : t('comments.placeholder')
+              }
+              submitLabel={t('comments.submit')}
+              submittingLabel={t('comments.submitting')}
+              autoFocus
+              onSubmit={async (body) => {
+                const result = await thread.postComment(null, body);
+                if (!result.error) close();
+                return result;
+              }}
+            />
+          )}
         </JoinConversationToggle>
 
         {currentPly !== null && (

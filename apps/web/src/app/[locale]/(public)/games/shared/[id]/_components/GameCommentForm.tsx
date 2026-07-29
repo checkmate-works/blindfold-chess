@@ -26,8 +26,6 @@ type Props = {
   autoFocus?: boolean;
   /** Injected above the textarea (e.g. the "replying to @name ×" cue). */
   header?: ReactNode;
-  /** Clear the textarea after a successful submit (used by the top-level form). */
-  resetOnSuccess?: boolean;
 };
 
 /**
@@ -48,7 +46,6 @@ export function GameCommentForm({
   cancelLabel,
   autoFocus = false,
   header,
-  resetOnSuccess = false,
 }: Props) {
   const textareaId = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -76,7 +73,9 @@ export function GameCommentForm({
       setError(result.error);
       return;
     }
-    if (resetOnSuccess) setValue('');
+    // No draft reset on success: every caller either unmounts this form
+    // (compose — the toggle collapses, the reply form closes) or keeps the
+    // saved text as the new value (edit).
   }
 
   return (
