@@ -10,8 +10,9 @@ import { DevGeoPickerClient } from './DevGeoPickerClient';
  * page so both the SSR feed path and the `/api/ad-slot/[slot]` fetch re-resolve
  * to the chosen country.
  *
- * Gating mirrors the intent of `EnvironmentRibbon`, but is deliberately
- * stricter: it renders ONLY when `NODE_ENV === 'development'`. That is exactly
+ * Gating mirrors the intent of the `env-ribbon` LOCAL/PREVIEW ribbon mounted
+ * in the root layouts, but is deliberately stricter: it renders ONLY when
+ * `NODE_ENV === 'development'`. That is exactly
  * the set of environments where the server-side override is honored —
  * `getRequestCountry` compiles the cookie fallback out when
  * `NODE_ENV === 'production'`, and Vercel *preview* builds run with
@@ -19,9 +20,9 @@ import { DevGeoPickerClient } from './DevGeoPickerClient';
  * the picker there would be a dead control. `NODE_ENV === 'test'` is likewise
  * excluded to avoid interfering with Playwright/E2E runs.
  *
- * Placed under `src/app/_components/` (not `[locale]/_components/`) for the
- * same reason as `EnvironmentRibbon`: the app has multiple root layouts, and
- * this location is reachable from each. It is mounted only on the ad-bearing
+ * Placed under `src/app/_components/` (not `[locale]/_components/`) because
+ * the app has multiple root layouts and this location is reachable from each.
+ * It is mounted only on the ad-bearing
  * surfaces (`[locale]` and `(landing)`), not on `admin`, where no ads render
  * and the control would have no locally visible effect.
  */
