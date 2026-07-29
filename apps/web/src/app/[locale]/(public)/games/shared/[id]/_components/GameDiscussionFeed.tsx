@@ -38,10 +38,14 @@ type Props = {
 const NOOP_REMOVE = () => Promise.resolve({});
 
 /**
- * The overview discussion feed: every comment + chunk link rolled up by move.
- * Whole-game comments lead; each move group is headed by its notation (e.g.
- * "10...Bg7") which jumps the replay to that ply. Read-only — the per-move view
- * is where you reply / link / delete; this is the table of contents into it.
+ * The overview discussion feed: every per-move comment + chunk link rolled up
+ * by move. Each group is headed by its notation (e.g. "10...Bg7") which jumps
+ * the replay to that ply. Read-only — the per-move view is where you reply /
+ * link / delete; this is the table of contents into it. Whole-game comments
+ * (`ply = NULL`) are NOT part of the index: they have no per-move view to jump
+ * to, so their thread renders interactively above this feed (see the
+ * whole-game section in `GameReview`). Renders nothing when no move has
+ * contributions.
  */
 export function GameDiscussionFeed({
   comments,
@@ -54,7 +58,10 @@ export function GameDiscussionFeed({
 }: Props) {
   const t = useTranslations('sharedGames');
 
-  const groups = useMemo(() => buildDiscussionGroups(comments, gameChunks), [comments, gameChunks]);
+  const groups = useMemo(
+    () => buildDiscussionGroups(comments, gameChunks).filter((g) => g.ply !== null),
+    [comments, gameChunks]
+  );
 
   const moveLabel = useMemo(() => {
     const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
@@ -62,22 +69,20 @@ export function GameDiscussionFeed({
       formatPlyLabel(ply, notationMoves[ply] ?? '', startsAsBlack, startMoveNumber);
   }, [notationMoves, startingFen]);
 
+  if (groups.length === 0) return null;
+
   return (
     <ul className="space-y-8">
       {groups.map((group) => (
-        <li key={group.ply ?? 'whole-game'} className="space-y-4">
-          {group.ply === null ? (
-            <h3 className="text-sm font-semibold text-foreground">{t('discussion.wholeGame')}</h3>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onJumpToPly(group.ply as number)}
-              className="inline-flex items-center gap-0.5 text-sm font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
-            >
-              {moveLabel(group.ply)}
-              <FiChevronRight className="h-4 w-4" aria-hidden />
-            </button>
-          )}
+        <li key={group.ply} className="space-y-4">
+          <button
+            type="button"
+            onClick={() => onJumpToPly(group.ply as number)}
+            className="inline-flex items-center gap-0.5 text-sm font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+          >
+            {moveLabel(group.ply as number)}
+            <FiChevronRight className="h-4 w-4" aria-hidden />
+          </button>
 
           {group.comments.length > 0 && (
             <div className="space-y-6">

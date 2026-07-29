@@ -2599,6 +2599,7 @@
       "titleForMove": "Comments on {move}",
       "empty": "No comments on this move yet.",
       "placeholder": "Comment on this move…",
+      "placeholderGame": "Comment on this game…",
       "submit": "Post",
       "submitting": "Posting…",
       "joinConversation": "Join the conversation",
@@ -2696,6 +2697,7 @@
     },
     "discussion": {
       "wholeGame": "Whole game",
+      "startPosition": "Start position",
       "replies": "{count, plural, =1 {1 reply} other {# replies}}"
     },
     "tour": {

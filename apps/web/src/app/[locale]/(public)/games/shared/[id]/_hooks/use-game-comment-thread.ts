@@ -16,20 +16,22 @@ import { buildGameCommentTree } from '../_lib/game-comment-tree';
 
 type Params = {
   gameId: string;
-  /** Move the thread is anchored to (0-based ply). */
-  currentPly: number;
+  /** Move the thread is anchored to (0-based ply), or null for the whole-game thread. */
+  currentPly: number | null;
   /** All comments for the game (every ply); filtered to `currentPly` here. */
   comments: GameCommentItem[];
   currentUser: CommentUser | null;
 };
 
 /**
- * Optimistic state + mutation handlers for the per-move advice thread. Holds
- * every comment for the game so adds / edits / deletes / replies reflect
- * instantly and survive move-to-move navigation while mounted, filters to the
- * current ply, and builds the Reddit-style tree (`GameCommentNode`). Extracted
- * from the former `GameCommentThread` so the list and the composer can be
- * placed in separate regions by `GameMoveContributions`.
+ * Optimistic state + mutation handlers for one advice thread — a move's
+ * (`currentPly = N`) or the whole game's (`currentPly = null`, shown on the
+ * opening board). Holds every comment for the game so adds / edits / deletes /
+ * replies reflect instantly and survive move-to-move navigation while mounted,
+ * filters to the current ply, and builds the Reddit-style tree
+ * (`GameCommentNode`). Extracted from the former `GameCommentThread` so the
+ * list and the composer can be placed in separate regions by
+ * `GameMoveContributions`.
  */
 export function useGameCommentThread({
   gameId,

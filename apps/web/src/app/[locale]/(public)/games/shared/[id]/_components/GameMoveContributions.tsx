@@ -25,8 +25,13 @@ import { GameCommentNode } from './GameCommentNode';
 
 type Props = {
   gameId: string;
-  /** Move both threads anchor to (0-based ply). */
-  currentPly: number;
+  /**
+   * Move both threads anchor to (0-based ply), or null for the whole-game
+   * thread shown on the opening board. Chunk links are per-move only
+   * (`game_chunks.ply` is NOT NULL), so the chunk picker/list render only for
+   * a numbered ply.
+   */
+  currentPly: number | null;
   /** All comments for the game (every ply); filtered to `currentPly` inside. */
   comments: GameCommentItem[];
   /** All chunk links for the game (every ply); filtered to `currentPly` inside. */
@@ -45,11 +50,16 @@ type Props = {
 };
 
 /**
- * Per-move contributions for the position on the board: the advice comments
- * and the applicable-chunk links, shown one after another (both always
- * visible). Below them sit two collapsed CTAs — "join the conversation" and
- * "suggest a chunk" — each expanding its own composer on demand. (Previously
- * the posted content itself was tabbed, which hid one axis behind the other.)
+ * Contributions for the position on the board: the advice comments and the
+ * applicable-chunk links, shown one after another (both always visible).
+ * Below them sit two collapsed CTAs — "join the conversation" and "suggest a
+ * chunk" — each expanding its own composer on demand. (Previously the posted
+ * content itself was tabbed, which hid one axis behind the other.)
+ *
+ * Serves both anchors: a move position (`currentPly = N`) and the whole-game
+ * thread on the opening board (`currentPly = null`), where the composer copy
+ * targets the game rather than a move and the chunk affordances are absent
+ * (chunks are assertions about a specific move's position).
  */
 export function GameMoveContributions({
   gameId,
@@ -90,7 +100,9 @@ export function GameMoveContributions({
           joinLabel={t('comments.joinConversation')}
         >
           <GameCommentForm
-            placeholder={t('comments.placeholder')}
+            placeholder={
+              currentPly === null ? t('comments.placeholderGame') : t('comments.placeholder')
+            }
             submitLabel={t('comments.submit')}
             submittingLabel={t('comments.submitting')}
             autoFocus
@@ -99,60 +111,62 @@ export function GameMoveContributions({
           />
         </JoinConversationToggle>
 
-        <JoinConversationToggle
-          count={links.forPly.length}
-          joinLabel={t('chunks.suggest')}
-          icon={<FaBrain aria-hidden="true" className="text-muted-foreground" />}
-        >
-          <div className="space-y-3">
-            <GameChunkPicker
-              availableChunks={availableChunks}
-              linkedChunkIds={links.excludedChunkIds}
-              disabled={links.submitting}
-              onSelect={links.stage}
-              labels={{
-                placeholder: t('chunks.placeholder'),
-                noResults: t('chunks.noResults'),
-                moreItemsHint: (count: number) => t('chunks.moreItemsHint', { count }),
-              }}
-            />
+        {currentPly !== null && (
+          <JoinConversationToggle
+            count={links.forPly.length}
+            joinLabel={t('chunks.suggest')}
+            icon={<FaBrain aria-hidden="true" className="text-muted-foreground" />}
+          >
+            <div className="space-y-3">
+              <GameChunkPicker
+                availableChunks={availableChunks}
+                linkedChunkIds={links.excludedChunkIds}
+                disabled={links.submitting}
+                onSelect={links.stage}
+                labels={{
+                  placeholder: t('chunks.placeholder'),
+                  noResults: t('chunks.noResults'),
+                  moreItemsHint: (count: number) => t('chunks.moreItemsHint', { count }),
+                }}
+              />
 
-            {links.staged.length > 0 && (
-              <>
-                <ul className="space-y-2">
-                  {links.staged.map((c) => (
-                    <GameChunkCard
-                      key={c.id}
-                      slug={c.slug}
-                      title={c.label}
-                      description={c.description}
-                      representativeFen={c.representativeFen}
-                      badge={t('chunks.badge')}
-                      locale={locale}
-                      onRemove={() => links.unstage(c.id)}
-                      removeLabel={t('chunks.remove', { title: c.label })}
-                    />
-                  ))}
-                </ul>
-                {links.error && <p className="text-sm text-destructive">{links.error}</p>}
-                <Button
-                  variant="primary"
-                  fullWidth
-                  onClick={links.handleSubmit}
-                  disabled={links.submitting}
-                  loading={links.submitting}
-                >
-                  {links.submitting
-                    ? t('chunks.submitting')
-                    : t('chunks.submit', { count: links.staged.length })}
-                </Button>
-              </>
-            )}
-            {links.staged.length === 0 && links.error && (
-              <p className="text-sm text-destructive">{links.error}</p>
-            )}
-          </div>
-        </JoinConversationToggle>
+              {links.staged.length > 0 && (
+                <>
+                  <ul className="space-y-2">
+                    {links.staged.map((c) => (
+                      <GameChunkCard
+                        key={c.id}
+                        slug={c.slug}
+                        title={c.label}
+                        description={c.description}
+                        representativeFen={c.representativeFen}
+                        badge={t('chunks.badge')}
+                        locale={locale}
+                        onRemove={() => links.unstage(c.id)}
+                        removeLabel={t('chunks.remove', { title: c.label })}
+                      />
+                    ))}
+                  </ul>
+                  {links.error && <p className="text-sm text-destructive">{links.error}</p>}
+                  <Button
+                    variant="primary"
+                    fullWidth
+                    onClick={links.handleSubmit}
+                    disabled={links.submitting}
+                    loading={links.submitting}
+                  >
+                    {links.submitting
+                      ? t('chunks.submitting')
+                      : t('chunks.submit', { count: links.staged.length })}
+                  </Button>
+                </>
+              )}
+              {links.staged.length === 0 && links.error && (
+                <p className="text-sm text-destructive">{links.error}</p>
+              )}
+            </div>
+          </JoinConversationToggle>
+        )}
       </div>
 
       {/* Posted advice comments for this move. */}

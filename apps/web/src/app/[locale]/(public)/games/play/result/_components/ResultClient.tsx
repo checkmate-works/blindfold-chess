@@ -173,10 +173,18 @@ function ResultContent({
           // Discussion tab: members-only compose CTAs (join conversation / suggest
           // chunk) that route to sign-in / finish-registration (anonymous /
           // provisional) or a share prompt (registered) — discussion needs both an
-          // account and a published game.
-          discussionContent: hasMoves ? (
-            <LocalDiscussionPanel onShare={handleShare} isShared={isShared} />
-          ) : null,
+          // account and a published game. Render prop: on the opening board the
+          // chunk CTA is withheld, matching the published game's whole-game
+          // thread (chunks are per-move).
+          discussionContent: hasMoves
+            ? ({ isInitialPosition }) => (
+                <LocalDiscussionPanel
+                  onShare={handleShare}
+                  isShared={isShared}
+                  showChunkCta={!isInitialPosition}
+                />
+              )
+            : null,
         }}
       />
 

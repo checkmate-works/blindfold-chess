@@ -14,6 +14,13 @@ type Props = {
   onShare: () => void;
   /** Whether this game was already published from this browser. */
   isShared: boolean;
+  /**
+   * Whether to offer the "suggest a chunk" CTA. False on the opening board:
+   * chunks are per-move (`game_chunks.ply` is NOT NULL), so the published
+   * game's whole-game thread has no chunk composer either — promising one
+   * here would be a CTA the shared page can't honour at this position.
+   */
+  showChunkCta: boolean;
 };
 
 /**
@@ -33,7 +40,7 @@ type Props = {
  * footer below (see LocalGameSocial); this Discussion tab is specifically the
  * members-only *conversation* surface, so its gate is deliberate.
  */
-export function LocalDiscussionPanel({ onShare, isShared }: Props) {
+export function LocalDiscussionPanel({ onShare, isShared, showChunkCta }: Props) {
   const t = useTranslations('sharedGames');
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
@@ -44,12 +51,14 @@ export function LocalDiscussionPanel({ onShare, isShared }: Props) {
         joinLabel={t('comments.joinConversation')}
         onActivate={() => setShareModalOpen(true)}
       />
-      <JoinConversationToggle
-        count={0}
-        joinLabel={t('chunks.suggest')}
-        icon={<FaBrain aria-hidden="true" className="text-muted-foreground" />}
-        onActivate={() => setShareModalOpen(true)}
-      />
+      {showChunkCta && (
+        <JoinConversationToggle
+          count={0}
+          joinLabel={t('chunks.suggest')}
+          icon={<FaBrain aria-hidden="true" className="text-muted-foreground" />}
+          onActivate={() => setShareModalOpen(true)}
+        />
+      )}
 
       <ShareEnableModal
         isOpen={shareModalOpen}

@@ -22,7 +22,6 @@ type Params = {
   /** When set (from a like notification), open at this comment's move. */
   highlightCommentId: string | undefined;
   comments: GameCommentItem[];
-  isInitialPosition: boolean;
   currentPosition: number;
   /**
    * Where to open when nothing deep-links (no comment, no hash). Defaults to
@@ -46,7 +45,6 @@ export function useReplayDeepLink({
   navigateToPosition,
   highlightCommentId,
   comments,
-  isInitialPosition,
   currentPosition,
   fallbackPosition = -2,
 }: Params) {
@@ -64,14 +62,17 @@ export function useReplayDeepLink({
     // startedRef makes re-runs no-ops, so the extra deps cannot re-trigger it.
   }, [notationMovesLength, navigateToPosition, highlightCommentId, comments, fallbackPosition]);
 
-  // Once the deep-linked comment's move is on the board (its thread mounted),
-  // scroll it into view. Runs once.
+  // Once the deep-linked comment's thread is mounted, scroll it into view.
+  // Element presence is the readiness signal — the anchor id exists only when
+  // the right region is on screen (a move's thread at its ply, the whole-game
+  // thread on the opening board), so no position check is needed here; the
+  // effect just re-tries as navigation mounts new regions. Runs once.
   const scrolledRef = useRef(false);
   useEffect(() => {
-    if (!highlightCommentId || scrolledRef.current || isInitialPosition) return;
+    if (!highlightCommentId || scrolledRef.current) return;
     const el = document.getElementById(`game-comment-${highlightCommentId}`);
     if (!el) return;
     scrolledRef.current = true;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [highlightCommentId, isInitialPosition, currentPosition]);
+  }, [highlightCommentId, currentPosition]);
 }

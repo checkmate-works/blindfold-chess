@@ -2599,6 +2599,7 @@
       "titleForMove": "{move} へのコメント",
       "empty": "この手にはまだコメントがありません。",
       "placeholder": "この手についてコメント…",
+      "placeholderGame": "この対局についてコメント…",
       "submit": "コメントする",
       "submitting": "送信中…",
       "joinConversation": "コメントする",
@@ -2696,6 +2697,7 @@
     },
     "discussion": {
       "wholeGame": "全体",
+      "startPosition": "開始局面",
       "replies": "{count}件の返信"
     },
     "tour": {

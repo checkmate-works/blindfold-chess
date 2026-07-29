@@ -162,7 +162,7 @@ function localSocial(overrides: Partial<LocalSocial> = {}): LocalSocial {
   return {
     mode: 'local',
     isAuthenticated: true,
-    discussionContent: <div data-testid="local-discussion" />,
+    discussionContent: () => <div data-testid="local-discussion" />,
     ...overrides,
   };
 }
@@ -278,17 +278,31 @@ describe('GameReview — board preferences (reproduce view)', () => {
   });
 });
 
-describe('GameReview — per-move contributions', () => {
+describe('GameReview — contributions', () => {
   it('renders the contributions panel on a move position', () => {
     mockNav.currentPosition = 0;
     render(<GameReview {...baseProps()} />);
     expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
   });
 
-  it('hides the contributions panel at the initial (overview) position', () => {
+  it('renders the whole-game thread at the initial (overview) position', () => {
+    // No stats recorded → no Summary side → the discussion view (whole-game
+    // thread + per-move index) renders directly, without a tab row.
     mockNav.currentPosition = -2;
     render(<GameReview {...baseProps()} />);
+    expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
+    expect(screen.getByTestId('discussion-feed')).toBeInTheDocument();
+    expect(screen.queryByRole('tab')).toBeNull();
+  });
+
+  it('keeps the whole-game thread behind the Discussion tab when a summary exists', () => {
+    mockStats = { totalMoves: 3 };
+    mockNav.currentPosition = -2;
+    render(<GameReview {...baseProps({ social: liveSocial({ isAuthenticated: true }) })} />);
+    // No comments → Summary is the default tab; the tab row shows regardless.
     expect(screen.queryByTestId('move-contributions')).toBeNull();
+    fireEvent.click(screen.getByRole('tab', { name: 'overview.discussionTab' }));
+    expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
   });
 });
 

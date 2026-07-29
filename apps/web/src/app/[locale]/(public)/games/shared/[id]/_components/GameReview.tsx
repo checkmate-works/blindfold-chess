@@ -62,6 +62,7 @@ import {
 } from '../_lib/replay-derivations';
 import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 import { GameDiscussionFeed } from './GameDiscussionFeed';
+import { GameMoveContributions } from './GameMoveContributions';
 import { ReproduceViewBar } from './ReproduceViewBar';
 import { ReviewMovePositionPanel } from './ReviewMovePositionPanel';
 import { ReviewOverviewTabs } from './ReviewOverviewTabs';
@@ -370,7 +371,6 @@ export function GameReview({
     navigateToPosition,
     highlightCommentId,
     comments,
-    isInitialPosition,
     currentPosition,
     // The result screen opens showing where play actually started (the setup
     // position of a seeded/custom-FEN game). The shared page keeps the
@@ -589,7 +589,8 @@ export function GameReview({
               />
 
               {overview.overviewView === 'summary' && gatedStats}
-              {overview.overviewView === 'discussion' && social.discussionContent}
+              {overview.overviewView === 'discussion' &&
+                social.discussionContent?.({ isInitialPosition })}
             </div>
           ) : /* On a move position: that move's comment thread. On the opening
           board: the description + statistics. */
@@ -607,22 +608,57 @@ export function GameReview({
                   active={overview.activeOverviewView}
                   onChange={overview.setOverviewView}
                   summaryLabel={t('overview.summaryTab')}
-                  discussionLabel={`${t('overview.discussionTab')} (${overview.discussionCount})`}
+                  discussionLabel={
+                    overview.discussionCount > 0
+                      ? `${t('overview.discussionTab')} (${overview.discussionCount})`
+                      : t('overview.discussionTab')
+                  }
                 />
               )}
 
               {overview.activeOverviewView === 'summary' && gatedStats}
 
-              {overview.activeOverviewView === 'discussion' && overview.hasDiscussion && (
-                <GameDiscussionFeed
-                  comments={comments}
-                  gameChunks={gameChunks}
-                  notationMoves={notationMoves}
-                  startingFen={startingFen}
-                  playerColor={playerColor}
-                  onJumpToPly={navigateToPosition}
-                  locale={locale}
-                />
+              {overview.activeOverviewView === 'discussion' && (
+                <div className="space-y-8">
+                  {/* The whole-game thread, fully interactive (composer, likes,
+                      replies) — unlike the per-move index below, `ply = NULL`
+                      comments have no per-move view to act in, so THIS is their
+                      thread. The heading names the anchor: a game with a custom
+                      FEN / seeded-prefix start has a discussable start position,
+                      a plain game just "the whole game" — one NULL anchor serves
+                      both readings (see the gameComments.ply schema TSDoc). */}
+                  <section className="space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {startPosition ? t('discussion.startPosition') : t('discussion.wholeGame')}
+                    </h3>
+                    <GameMoveContributions
+                      gameId={gameId}
+                      currentPly={null}
+                      comments={comments}
+                      gameChunks={gameChunks}
+                      availableChunks={availableChunks}
+                      currentUser={currentUser}
+                      isGameOwner={isGameOwner}
+                      locale={locale}
+                      moves={notationMoves}
+                      startingFen={startingFen}
+                      playerColor={playerColor}
+                    />
+                  </section>
+
+                  {/* Per-move contributions, as a read-only index that jumps
+                      into each move's own thread. Self-hiding when no move has
+                      any. */}
+                  <GameDiscussionFeed
+                    comments={comments}
+                    gameChunks={gameChunks}
+                    notationMoves={notationMoves}
+                    startingFen={startingFen}
+                    playerColor={playerColor}
+                    onJumpToPly={navigateToPosition}
+                    locale={locale}
+                  />
+                </div>
               )}
             </div>
           ) : (

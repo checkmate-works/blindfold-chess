@@ -231,7 +231,15 @@ export const gameComments = pgTable(
     gameId: uuid('game_id')
       .notNull()
       .references(() => games.id, { onDelete: 'cascade' }),
-    /** 0-based index into `games.moves[]`; NULL = whole-game comment. */
+    /**
+     * 0-based index into `games.moves[]`; NULL anchors the comment to the game
+     * as a whole. NULL deliberately carries two readings that share one thread
+     * (shown on the review's opening board): "about the whole game" and, for a
+     * custom-FEN / seeded-prefix game, "about the start position" — the UI
+     * swaps the thread's heading on that distinction (see `GameReview`) rather
+     * than minting a second anchor value, because a commenter can't
+     * meaningfully be asked to pick between the two.
+     */
     ply: integer('ply'),
     /** Parent comment for replies; NULL for a top-level comment on the move. */
     parentId: uuid('parent_id').references((): AnyPgColumn => gameComments.id, {

@@ -2599,6 +2599,7 @@
       "titleForMove": "Comentarios sobre {move}",
       "empty": "Aún no hay comentarios sobre esta jugada.",
       "placeholder": "Comenta sobre esta jugada…",
+      "placeholderGame": "Comenta sobre esta partida…",
       "submit": "Publicar",
       "submitting": "Publicando…",
       "joinConversation": "Únete a la conversación",
@@ -2696,6 +2697,7 @@
     },
     "discussion": {
       "wholeGame": "Toda la partida",
+      "startPosition": "Posición inicial",
       "replies": "{count, plural, =1 {1 respuesta} other {# respuestas}}"
     },
     "tour": {
