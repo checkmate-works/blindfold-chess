@@ -2359,8 +2359,17 @@
         "columnDetail": "詳細"
       },
       "openFinishedGame": "終了したゲームを開く",
-      "shareTitle": "共有してディスカッションを始める",
-      "sharePrompt": "この対局を共有するとコメントやいいねが有効になり、フィードバックを受け取れます。",
+      "shareTitle": "公開すると、この対局でできること",
+      "shareGifCaption": "最初の数手だけの再生です。公開すると全体をGIFで保存できます。",
+      "shareGifPreviewLabel": "この対局のアニメーションプレビュー",
+      "shareGifPlay": "プレビューを再生",
+      "shareGifPause": "プレビューを一時停止",
+      "shareUnlock": {
+        "gif": "リプレイをアニメーションGIFで保存（覗き見や待ったも描かれる「as played」版つき）",
+        "discussion": "任意の手にコメントをもらう・自分でも書く",
+        "likes": "他のプレイヤーからいいねをもらう",
+        "link": "リンクで共有、ブログにリプレイを埋め込む"
+      },
       "publish": "この対局を共有する",
       "viewShared": "共有した対局を見る",
       "deleteConfirmTitle": "この対局を削除しますか？",

@@ -9,6 +9,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { AiOutlineHeart } from 'react-icons/ai';
 import { FiShare2, FiTrash2 } from 'react-icons/fi';
 
+import type { GifPreviewSource } from '@/lib/games/gif/preview-frames';
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 
 import { GameSocialFooter } from '@/app/[locale]/(public)/games/_components/GameSocialFooter';
@@ -34,6 +35,8 @@ type Props = {
   onShare: () => void;
   /** Whether this game was already published from this browser. */
   isShared: boolean;
+  /** Animated GIF teaser for the share prompt — see {@link ShareEnableModal}. */
+  gifPreview: GifPreviewSource | null;
 };
 
 /**
@@ -61,6 +64,7 @@ export function LocalGameSocial({
   playedAt,
   onShare,
   isShared,
+  gifPreview,
 }: Props) {
   const t = useTranslations('sharedGames');
   const tPlay = useTranslations('play');
@@ -148,6 +152,7 @@ export function LocalGameSocial({
         onClose={() => setShareOpen(false)}
         onShare={onShare}
         isShared={isShared}
+        gifPreview={gifPreview}
       />
 
       <ConfirmationModal

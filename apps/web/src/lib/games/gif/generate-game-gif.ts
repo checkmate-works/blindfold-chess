@@ -1,30 +1,18 @@
 import 'server-only';
 import sharp from 'sharp';
 
-import type { RenderBoardSvgOverlay } from '@/lib/board-svg/render-board-svg';
 import { renderBoardSvg } from '@/lib/board-svg/render-board-svg';
 import type { GameRecord } from '@/lib/db/schema';
-import type { GifFrame, GifOverlay } from '@/lib/games/gif/build-game-frames';
+import type { GifFrame } from '@/lib/games/gif/build-game-frames';
 import { buildGameFrames } from '@/lib/games/gif/build-game-frames';
 import type { GameGifVariant } from '@/lib/games/gif/constants';
+import { toRenderOverlay } from '@/lib/games/gif/to-render-overlay';
 
 export type { GameGifVariant } from '@/lib/games/gif/constants';
 
 const BOARD_SIZE = 512;
 /** Frames rendered to PNG concurrently, to bound peak memory. */
 const FRAME_RENDER_CONCURRENCY = 8;
-
-/** Translates the frame builder's semantic overlay to the renderer's drawing vocabulary. */
-function toRenderOverlay(overlay: GifOverlay): RenderBoardSvgOverlay {
-  switch (overlay.kind) {
-    case 'peek':
-      return { badge: 'peek' };
-    case 'undo':
-      return { badge: 'undo' };
-    case 'illegal':
-      return { illegalTo: overlay.to, illegalFrom: overlay.from };
-  }
-}
 
 async function renderFramesToPng(frames: GifFrame[], flipped: boolean): Promise<Buffer[]> {
   const buffers: Buffer[] = new Array(frames.length);

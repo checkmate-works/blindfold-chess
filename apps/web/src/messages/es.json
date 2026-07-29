@@ -2359,8 +2359,17 @@
         "columnDetail": "Detalle"
       },
       "openFinishedGame": "Abrir partida terminada",
-      "shareTitle": "Comparte para habilitar la discusión",
-      "sharePrompt": "Comparte esta partida para recibir comentarios: compartir habilita los comentarios y los me gusta.",
+      "shareTitle": "Al publicar desbloqueas esto",
+      "shareGifCaption": "Solo las primeras jugadas: publica para descargar la partida entera en GIF.",
+      "shareGifPreviewLabel": "Vista previa animada de esta partida",
+      "shareGifPlay": "Reproducir la vista previa",
+      "shareGifPause": "Pausar la vista previa",
+      "shareUnlock": {
+        "gif": "Descarga la repetición como GIF animado, incluida la versión «tal como se jugó», con tus vistazos y retrocesos dibujados",
+        "discussion": "Recibe comentarios en cualquier jugada y escribe los tuyos",
+        "likes": "Consigue «me gusta» de otros jugadores",
+        "link": "Comparte un enlace o incrusta la repetición en un blog"
+      },
       "publish": "Compartir esta partida",
       "viewShared": "Ver partida compartida",
       "deleteConfirmTitle": "¿Eliminar esta partida?",

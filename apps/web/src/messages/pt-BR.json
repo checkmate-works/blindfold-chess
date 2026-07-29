@@ -2359,8 +2359,17 @@
         "columnDetail": "Detalhe"
       },
       "openFinishedGame": "Abrir partida finalizada",
-      "shareTitle": "Compartilhe para habilitar a discussão",
-      "sharePrompt": "Compartilhe esta partida para receber feedback — compartilhar habilita comentários e curtidas.",
+      "shareTitle": "Publicar libera estes recursos",
+      "shareGifCaption": "Apenas os primeiros lances — publique para baixar a partida inteira em GIF.",
+      "shareGifPreviewLabel": "Prévia animada desta partida",
+      "shareGifPlay": "Reproduzir a prévia",
+      "shareGifPause": "Pausar a prévia",
+      "shareUnlock": {
+        "gif": "Baixe a repetição como GIF animado, incluindo a versão \"como foi jogada\", com suas espiadas e voltas desenhadas",
+        "discussion": "Receba comentários em qualquer lance e escreva os seus",
+        "likes": "Receba curtidas de outros jogadores",
+        "link": "Compartilhe um link ou incorpore a repetição em um blog"
+      },
       "publish": "Compartilhar esta partida",
       "viewShared": "Ver partida compartilhada",
       "deleteConfirmTitle": "Excluir esta partida?",

@@ -9,6 +9,9 @@ import { buildOpeningIndex, detectOpening } from '@blindfold-chess/features/ches
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { computeGameStats } from '@/lib/games/compute-game-stats';
+import type { GifPreviewSource } from '@/lib/games/gif/preview-frames';
+import { hasPlayedGifVariant } from '@/lib/games/gif/preview-frames';
+import { toGameFrameSource } from '@/lib/games/gif/to-game-frame-source';
 import type { Game } from '@/lib/games/saved-game-types';
 import { getSharedGame } from '@/lib/games/shared-game-store';
 import { toReviewData } from '@/lib/games/to-review-data';
@@ -149,6 +152,16 @@ function ResultContent({
 
   const hasMoves = game.moves.length > 0;
 
+  // The share prompt plays the opening of the GIF this game would produce, to
+  // pitch the download that publishing unlocks. Withheld for an unfinished game:
+  // the frame builder's termination mark reads the final result, and a game
+  // still in progress has none to read.
+  const gifPreview = useMemo<GifPreviewSource | null>(() => {
+    if (!hasMoves || game.status === 'in_progress') return null;
+    const source = toGameFrameSource(game);
+    return { source, variant: hasPlayedGifVariant(source) ? 'played' : 'plain' };
+  }, [game, hasMoves]);
+
   // The same review screen as the shared game (games/shared/[id]) — board, move
   // list, blindfold indicator, and stats — sourced from the local game, then the
   // same "Played by" + like/share footer below it. The win/loss/draw label rides
@@ -182,6 +195,7 @@ function ResultContent({
                   onShare={handleShare}
                   isShared={isShared}
                   showChunkCta={!isInitialPosition}
+                  gifPreview={gifPreview}
                 />
               )
             : null,
@@ -199,6 +213,7 @@ function ResultContent({
           playedAt={new Date(game.lastPlayed ?? game.date)}
           onShare={handleShare}
           isShared={isShared}
+          gifPreview={gifPreview}
         />
       )}
     </div>

@@ -8,7 +8,7 @@ import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
 import { getGameById } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
-import { hasAnnotatableOps } from '@/lib/games/gif/build-game-frames';
+import { hasPlayedGifVariant } from '@/lib/games/gif/preview-frames';
 import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
@@ -76,18 +76,16 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     getAllAvailableChunkOptions(),
   ]);
 
-  // A "played" GIF can differ from "plain" even for a fully-sighted game: a
-  // typo (invalid attempt) or a board peek still shows up as an annotation,
-  // and a game whose visibility changed mid-game isn't captured by the
-  // start-of-game snapshot alone.
+  // Whether to offer the "as played" GIF — shared with the pre-publish teaser
+  // on the result screen, so the two never disagree about which variant exists.
   //
-  // The embed draws no annotations, so it splits the first half out: its "as
-  // played" view differs from the revealed board only when the blindfold
-  // settings themselves did something.
+  // The embed draws no annotations, so it needs only the first half of that
+  // test: its "as played" view differs from the revealed board only when the
+  // blindfold settings themselves did something.
   const canReproduce =
     game.playSettings != null &&
     gameUsedNotablePlaySettings(game.playSettings, game.playSettingsLog);
-  const hasPlayedVariant = canReproduce || hasAnnotatableOps(game.operationLogs);
+  const hasPlayedVariant = hasPlayedGifVariant(game);
 
   return (
     <PageLayout

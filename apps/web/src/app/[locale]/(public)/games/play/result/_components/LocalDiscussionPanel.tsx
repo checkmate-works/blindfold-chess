@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaBrain } from 'react-icons/fa';
 
+import type { GifPreviewSource } from '@/lib/games/gif/preview-frames';
+
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 
 import { ShareEnableModal } from './ShareEnableModal';
@@ -14,6 +16,8 @@ type Props = {
   onShare: () => void;
   /** Whether this game was already published from this browser. */
   isShared: boolean;
+  /** Animated GIF teaser for the share prompt — see {@link ShareEnableModal}. */
+  gifPreview: GifPreviewSource | null;
   /**
    * Whether to offer the "suggest a chunk" CTA. False on the opening board:
    * chunks are per-move (`game_chunks.ply` is NOT NULL), so the published
@@ -40,7 +44,7 @@ type Props = {
  * footer below (see LocalGameSocial); this Discussion tab is specifically the
  * members-only *conversation* surface, so its gate is deliberate.
  */
-export function LocalDiscussionPanel({ onShare, isShared, showChunkCta }: Props) {
+export function LocalDiscussionPanel({ onShare, isShared, showChunkCta, gifPreview }: Props) {
   const t = useTranslations('sharedGames');
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
@@ -65,6 +69,7 @@ export function LocalDiscussionPanel({ onShare, isShared, showChunkCta }: Props)
         onClose={() => setShareModalOpen(false)}
         onShare={onShare}
         isShared={isShared}
+        gifPreview={gifPreview}
       />
     </div>
   );
