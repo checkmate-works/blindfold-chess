@@ -17,7 +17,7 @@ import { SUPPORTED_LOCALES } from '@/config';
  * here for completeness (and to keep the drift test honest) rather than
  * because the check would otherwise be reached.
  */
-export const NON_LOCALE_TOP_SEGMENTS = ['admin', 'api', 'auth', 'g'] as const;
+export const NON_LOCALE_TOP_SEGMENTS = ['admin', 'api', 'auth', 'embed', 'g'] as const;
 
 /**
  * Whether `pathname` is a locale-less in-app path that should be redirected to

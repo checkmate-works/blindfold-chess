@@ -140,6 +140,12 @@ export async function proxy(request: NextRequest) {
   // which a layout cannot otherwise derive (layouts only receive their own
   // segment's params, not the active child path).
   requestHeaders.set('x-pathname', pathname);
+  // Likewise the query string. Layouts receive neither `searchParams` nor the
+  // URL, and the embed layout needs `?lang` / `?bg` to emit the right
+  // `<html lang>` and theme class in the SSR'd markup — the theme has to be on
+  // the element before first paint, so resolving it in the page below is too
+  // late. Includes the leading `?`, or is empty when there is no query.
+  requestHeaders.set('x-search', request.nextUrl.search);
 
   const { response, authenticated, userId } = await updateSession(request, { requestHeaders });
 

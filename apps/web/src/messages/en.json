@@ -255,6 +255,13 @@
       "current": "Currently: {tier}"
     }
   },
+  "embed": {
+    "flipBoard": "Flip board",
+    "showAsPlayed": "Show the board as played",
+    "revealBoard": "Reveal the board",
+    "byAuthor": "by {author}",
+    "unavailable": "This game is no longer available."
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Blindfold Chess",

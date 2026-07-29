@@ -41,6 +41,12 @@ export type EmbedGameParams = {
   ply: number | undefined;
   /** UI language. Undefined = negotiate from the visitor's `Accept-Language`. */
   lang: Locale | undefined;
+  /**
+   * Force the widget's colour scheme, so it can be matched to the host page.
+   * Undefined follows the visitor's OS setting, which is the best guess
+   * available: an iframe cannot read the theme of the site around it.
+   */
+  bg: 'light' | 'dark' | undefined;
 };
 
 const BOARD_THEMES: readonly BoardTheme[] = ['monotone', 'lichess', 'chesscom'];
@@ -57,6 +63,7 @@ export function parseEmbedParams(
   const color = single(searchParams.color);
   const theme = single(searchParams.theme);
   const lang = single(searchParams.lang);
+  const bg = single(searchParams.bg);
   // Matched as a literal decimal rather than fed to `Number()`, which reads
   // `''` and `' '` (i.e. a bare `?ply=`) as 0 — "start at the opening board"
   // is a meaningful request here, and an empty param is not making it.
@@ -73,5 +80,16 @@ export function parseEmbedParams(
         ? Number(plyDigits)
         : undefined,
     lang: SUPPORTED_LOCALES.find((known) => known === lang),
+    bg: bg === 'light' || bg === 'dark' ? bg : undefined,
   };
+}
+
+/**
+ * Same parse from a raw query string — the form the embed layout has, since
+ * layouts receive no `searchParams` and read `x-search` (set by `src/proxy.ts`)
+ * instead. Repeated keys collapse to the first, matching {@link parseEmbedParams}.
+ */
+export function parseEmbedParamsFromSearch(search: string): EmbedGameParams {
+  const entries = new URLSearchParams(search);
+  return parseEmbedParams(Object.fromEntries(entries));
 }

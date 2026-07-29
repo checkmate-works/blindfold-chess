@@ -255,6 +255,13 @@
       "current": "現在：{tier}"
     }
   },
+  "embed": {
+    "flipBoard": "盤を反転",
+    "showAsPlayed": "対局者に見えていた盤にする",
+    "revealBoard": "盤面をすべて表示",
+    "byAuthor": "{author} さん",
+    "unavailable": "この対局は公開されていません。"
+  },
   "metadata": {
     "siteName": "心眼チェス",
     "seoSiteName": "目隠しチェス",

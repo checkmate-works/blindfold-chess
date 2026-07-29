@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseEmbedParams } from './embed-params';
+import { parseEmbedParams, parseEmbedParamsFromSearch } from './embed-params';
 
 describe('parseEmbedParams', () => {
   it('defaults to the as-played view with everything else left to the caller', () => {
@@ -10,18 +10,27 @@ describe('parseEmbedParams', () => {
       theme: undefined,
       ply: undefined,
       lang: undefined,
+      bg: undefined,
     });
   });
 
   it('accepts the documented values', () => {
     expect(
-      parseEmbedParams({ view: 'plain', color: 'black', theme: 'chesscom', ply: '12', lang: 'ja' })
+      parseEmbedParams({
+        view: 'plain',
+        color: 'black',
+        theme: 'chesscom',
+        ply: '12',
+        lang: 'ja',
+        bg: 'dark',
+      })
     ).toEqual({
       view: 'plain',
       orientation: 'black',
       theme: 'chesscom',
       ply: 12,
       lang: 'ja',
+      bg: 'dark',
     });
   });
 
@@ -36,6 +45,7 @@ describe('parseEmbedParams', () => {
       theme: 'neon',
       ply: '-3',
       lang: 'fr',
+      bg: 'sepia',
     });
     expect(params).toEqual({
       view: 'played',
@@ -43,6 +53,7 @@ describe('parseEmbedParams', () => {
       theme: undefined,
       ply: undefined,
       lang: undefined,
+      bg: undefined,
     });
   });
 
@@ -58,5 +69,22 @@ describe('parseEmbedParams', () => {
   it('matches locales case-sensitively so a hand-written pt-br falls back rather than 404ing later', () => {
     expect(parseEmbedParams({ lang: 'pt-BR' }).lang).toBe('pt-BR');
     expect(parseEmbedParams({ lang: 'pt-br' }).lang).toBeUndefined();
+  });
+});
+
+describe('parseEmbedParamsFromSearch', () => {
+  it('reads the same values out of a raw query string', () => {
+    expect(parseEmbedParamsFromSearch('?view=plain&bg=dark&lang=ja&ply=4')).toEqual({
+      view: 'plain',
+      orientation: undefined,
+      theme: undefined,
+      ply: 4,
+      lang: 'ja',
+      bg: 'dark',
+    });
+  });
+
+  it('handles the empty query a request without params carries', () => {
+    expect(parseEmbedParamsFromSearch('')).toEqual(parseEmbedParams({}));
   });
 });

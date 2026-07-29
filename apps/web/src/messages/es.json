@@ -255,6 +255,13 @@
       "current": "Actual: {tier}"
     }
   },
+  "embed": {
+    "flipBoard": "Girar el tablero",
+    "showAsPlayed": "Mostrar el tablero como se jugó",
+    "revealBoard": "Revelar el tablero",
+    "byAuthor": "por {author}",
+    "unavailable": "Esta partida ya no está disponible."
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Ajedrez a Ciegas",
