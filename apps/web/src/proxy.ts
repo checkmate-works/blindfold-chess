@@ -11,6 +11,7 @@ import {
   buildReportingEndpointsHeader,
   generateCspNonce,
 } from '@/lib/security/csp';
+import { isFramablePath } from '@/lib/security/framing';
 import { updateSession } from '@/lib/supabase/proxy';
 
 const BLOCKED_PATHS = [
@@ -70,7 +71,12 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
 
 /**
  * Apply CSP + reporting endpoint headers to a response, given the request
- * nonce.
+ * nonce and path.
+ *
+ * The path decides `frame-ancestors`: the embed surface is meant to be put in
+ * someone else's `<iframe>`, everything else must not be. See
+ * `@/lib/security/framing`, which the static `X-Frame-Options` rule in
+ * `next.config.ts` mirrors.
  *
  * Extracted into a helper so every `return` branch below can stamp the
  * headers consistently. The CSP is currently emitted as `Report-Only` — the
@@ -85,8 +91,11 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
  * `Report-To` (its deprecated JSON predecessor) are emitted concurrently so
  * supporting browsers use the former while older ones keep working.
  */
-function applyCspHeaders(response: NextResponse, nonce: string): NextResponse {
-  response.headers.set('Content-Security-Policy-Report-Only', buildCspHeader(nonce));
+function applyCspHeaders(response: NextResponse, nonce: string, pathname: string): NextResponse {
+  response.headers.set(
+    'Content-Security-Policy-Report-Only',
+    buildCspHeader(nonce, { allowFraming: isFramablePath(pathname) })
+  );
   response.headers.set('Reporting-Endpoints', buildReportingEndpointsHeader());
   response.headers.set('Report-To', buildReportToHeader());
   return response;
@@ -131,26 +140,32 @@ export async function proxy(request: NextRequest) {
   // which a layout cannot otherwise derive (layouts only receive their own
   // segment's params, not the active child path).
   requestHeaders.set('x-pathname', pathname);
+  // Likewise the query string. Layouts receive neither `searchParams` nor the
+  // URL, and the embed layout needs `?lang` / `?bg` to emit the right
+  // `<html lang>` and theme class in the SSR'd markup — the theme has to be on
+  // the element before first paint, so resolving it in the page below is too
+  // late. Includes the leading `?`, or is empty when there is no query.
+  requestHeaders.set('x-search', request.nextUrl.search);
 
   const { response, authenticated, userId } = await updateSession(request, { requestHeaders });
 
   // Return 404 for unauthenticated admin access to hide admin panel existence
   if (isAdminPath(pathname) && !authenticated) {
-    return applyCspHeaders(new NextResponse(null, { status: 404 }), nonce);
+    return applyCspHeaders(new NextResponse(null, { status: 404 }), nonce, pathname);
   }
 
   // Redirect unauthenticated users away from auth-required pages
   if (isAuthRequiredPath(pathname) && !authenticated) {
     const locale = pathname.split('/')[1] || 'en';
     const signInUrl = new URL(`/${locale}/sign-in`, request.url);
-    return applyCspHeaders(NextResponse.redirect(signInUrl), nonce);
+    return applyCspHeaders(NextResponse.redirect(signInUrl), nonce, pathname);
   }
 
   // Redirect authenticated users away from the sign-in page
   if (isSignInPath(pathname) && authenticated) {
     const locale = pathname.split('/')[1] || 'en';
     const mypageUrl = new URL(`/${locale}/mypage?toast=already_logged_in`, request.url);
-    return applyCspHeaders(NextResponse.redirect(mypageUrl), nonce);
+    return applyCspHeaders(NextResponse.redirect(mypageUrl), nonce, pathname);
   }
 
   // Refresh the `bfc_ads_hidden` cookie on the response when the user is
@@ -172,7 +187,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return applyCspHeaders(response, nonce);
+  return applyCspHeaders(response, nonce, pathname);
 }
 
 export const config = {

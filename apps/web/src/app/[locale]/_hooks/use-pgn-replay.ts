@@ -24,8 +24,13 @@ type Options = {
    * is where every caller starts — costs no replay at all.
    */
   finalFen?: string;
-  /** Where the cursor starts. Defaults to the final position. */
-  initialIndex?: 'start' | 'end';
+  /**
+   * Where the cursor starts. Defaults to the final position. A number is a
+   * concrete cursor value in the same space as {@link PgnReplay.index} (-1 =
+   * before any move), clamped like every other cursor write — the embed
+   * surface takes one from the URL, where any integer is expressible.
+   */
+  initialIndex?: 'start' | 'end' | number;
 };
 
 export type PgnReplay = {
@@ -73,7 +78,10 @@ export function usePgnReplay({
   const baseFen = startingFen ?? getStartingFen();
   const lastIndex = total - 1;
 
-  const [index, setIndex] = useState(initialIndex === 'start' ? -1 : lastIndex);
+  const [index, setIndex] = useState(() => {
+    if (typeof initialIndex === 'number') return initialIndex;
+    return initialIndex === 'start' ? -1 : lastIndex;
+  });
 
   // Clamped rather than trusted: `moves` can shrink under a live cursor (the
   // repertoire viewer switches lines), and a stale index would replay moves

@@ -15,6 +15,12 @@ export default function robots(): MetadataRoute.Robots {
       disallow: [
         '/api/',
         '/_vercel/',
+        // The embeddable replay is the same game as its canonical
+        // `/[locale]/games/shared/[id]` page, which is the URL meant to rank.
+        // The pages carry `noindex` too (see `app/embed/layout.tsx`); this
+        // additionally spares the crawl budget, since every article that
+        // embeds a game links one.
+        '/embed/',
         // Block manifest files to optimize crawl budget
         '/*_buildManifest.js$',
         '/*_middlewareManifest.js$',

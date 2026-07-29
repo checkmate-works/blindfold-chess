@@ -118,6 +118,16 @@ describe('buildCspHeader', () => {
     expect(frameSrc).toContain('ep2.adtrafficquality.google');
   });
 
+  it("allows framing our own origin, which the share dialog's embed preview needs", () => {
+    // `frame-src` does not fall back to `default-src 'self'` once the
+    // directive exists, so omitting this makes the preview a blank box the
+    // moment the policy is enforced — and the preview is the only thing
+    // telling a blogger what they are about to publish.
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const frameSrc = header.split('; ').find((d) => d.startsWith('frame-src '));
+    expect(frameSrc).toContain("'self'");
+  });
+
   it('emits a manifest-src allowing self and the canonical site origin', () => {
     // metadataBase resolves /manifest.webmanifest to an absolute canonical URL.
     // When the document is served on a non-canonical host that URL is
@@ -143,6 +153,19 @@ describe('buildCspHeader', () => {
     const header = buildCspHeader('n', { isDevelopment: false });
     expect(header).toContain('report-uri /api/csp-report');
     expect(header).toContain('report-to csp-endpoint');
+  });
+
+  it("forbids framing by default — allowFraming must be asked for, and 'none' is what an omitted option means", () => {
+    expect(buildCspHeader('n', { isDevelopment: false })).toContain("frame-ancestors 'none'");
+    expect(buildCspHeader('n', { isDevelopment: false, allowFraming: false })).toContain(
+      "frame-ancestors 'none'"
+    );
+  });
+
+  it('opens frame-ancestors for the embed surface', () => {
+    const header = buildCspHeader('n', { isDevelopment: false, allowFraming: true });
+    const frameAncestors = header.split('; ').find((d) => d.startsWith('frame-ancestors'));
+    expect(frameAncestors).toBe('frame-ancestors *');
   });
 });
 

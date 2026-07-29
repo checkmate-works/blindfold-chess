@@ -255,6 +255,13 @@
       "current": "Actual: {tier}"
     }
   },
+  "embed": {
+    "flipBoard": "Girar el tablero",
+    "showAsPlayed": "Mostrar el tablero como se jugó",
+    "revealBoard": "Revelar el tablero",
+    "byAuthor": "por {author}",
+    "unavailable": "Esta partida ya no está disponible."
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Ajedrez a Ciegas",
@@ -2495,7 +2502,29 @@
         "shareOnX": "Compartir en X",
         "downloadGif": "Descargar GIF",
         "downloadGifAsPlayed": "Descargar GIF (tal como se jugó)",
-        "gifHint": "Adjunta el GIF al publicar en X — los GIF enlazados no se animan allí."
+        "gifHint": "Adjunta el GIF al publicar en X — los GIF enlazados no se animan allí.",
+        "embed": {
+          "menuItem": "Insertar en un blog",
+          "title": "Insertar esta partida",
+          "description": "Pega esto en tu entrada y tus lectores podrán recorrer la partida sin salir de la página.",
+          "previewLabel": "Vista previa de la partida insertada",
+          "view": "Tablero",
+          "viewPlayed": "Como lo veía el jugador",
+          "viewPlain": "Totalmente visible",
+          "bg": "Colores",
+          "bgAuto": "Según el lector",
+          "bgLight": "Claro",
+          "bgDark": "Oscuro",
+          "orientation": "Orientación",
+          "orientationPlayer": "El lado del jugador",
+          "orientationWhite": "Blancas",
+          "orientationBlack": "Negras",
+          "pinLanguage": "Mostrar siempre el widget en este idioma",
+          "codeLabel": "Código para insertar",
+          "copy": "Copiar código",
+          "copied": "¡Copiado!",
+          "hint": "Funciona donde se permita HTML (WordPress, Ghost, Notion, Discourse). Donde no, comparte el enlace o el GIF."
+        }
       },
       "claim": {
         "signedOutTitle": "Haz que esta partida forme parte de tu historial",

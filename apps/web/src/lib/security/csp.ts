@@ -99,9 +99,18 @@ function wsOriginFromUrl(raw: string | undefined): string | null {
  * and any future SSR-only code paths agree on the policy. When the hosting
  * environment is `development`, `'unsafe-eval'` is added to `script-src` so
  * Fast Refresh / Turbopack keep working; production builds never include it.
+ *
+ * `allowFraming` opts the response out of the default `frame-ancestors 'none'`
+ * — see `./framing.ts` for which paths get it and why the embed surface is
+ * safe to frame. The proxy decides per request; every other caller gets the
+ * closed default.
  */
-export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean } = {}): string {
+export function buildCspHeader(
+  nonce: string,
+  options: { isDevelopment?: boolean; allowFraming?: boolean } = {}
+): string {
   const isDevelopment = options.isDevelopment ?? process.env.NODE_ENV === 'development';
+  const allowFraming = options.allowFraming ?? false;
 
   // Derive the Supabase origin from `NEXT_PUBLIC_SUPABASE_URL` so local dev
   // (which uses `http://127.0.0.1:54321` and is NOT covered by the
@@ -206,14 +215,24 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
       ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google' +
       ' fundingchoicesmessages.google.com',
+    // `'self'`: the share dialog previews the embeddable replay by framing our
+    // own `/embed/g/<code>` — without this the preview is a blank box the
+    // moment the policy is enforced (issue #89), which is the one thing that
+    // dialog exists to rule out. Reported as a violation on every open until
+    // it was added, since `frame-src` does not fall back to `default-src`
+    // once the directive is present.
+    //
     // `pagead2.googlesyndication.com`: AdSense also renders some ad iframes from
     // this host (in addition to googleads.g.doubleclick.net / tpc.googlesyndication.com).
-    'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
+    "frame-src 'self' googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com",
     // `'self'` covers the host that served the document; `siteOrigin` covers the
     // absolute canonical manifest URL emitted by `metadataBase` when the request
     // was served on a non-canonical host. See `siteOrigin` derivation above.
     `manifest-src 'self' ${siteOrigin}`,
-    "frame-ancestors 'none'",
+    // `*` rather than an allow-list: an embed is only useful if any blog can
+    // host it, and the framed document is a read-only view of already-public
+    // data with no action a framing site could trick a viewer into taking.
+    allowFraming ? 'frame-ancestors *' : "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "object-src 'none'",

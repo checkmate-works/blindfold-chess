@@ -231,12 +231,27 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        // Everything EXCEPT the embed surface (`/embed/...`), which exists to
+        // be framed by other sites — see `src/lib/security/framing.ts` for why
+        // that is safe and what enforces the same split in the CSP. The prefix
+        // is repeated as a literal because `source` patterns are resolved
+        // before the app's module graph exists, so this file cannot import the
+        // constant; `framing.test.ts` asserts the two never drift.
+        //
+        // X-Frame-Options has no "allow any origin" value (`ALLOW-FROM` was
+        // never implemented by Chrome and is dropped from the spec), so
+        // permitting the embed means not emitting the header for it at all.
+        source: '/:path((?!embed$|embed/).*)',
         headers: [
           {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
+        ],
+      },
+      {
+        source: '/:path*',
+        headers: [
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',

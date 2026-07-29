@@ -255,6 +255,13 @@
       "current": "Currently: {tier}"
     }
   },
+  "embed": {
+    "flipBoard": "Flip board",
+    "showAsPlayed": "Show the board as played",
+    "revealBoard": "Reveal the board",
+    "byAuthor": "by {author}",
+    "unavailable": "This game is no longer available."
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Blindfold Chess",
@@ -2495,7 +2502,29 @@
         "shareOnX": "Share on X",
         "downloadGif": "Download GIF",
         "downloadGifAsPlayed": "Download GIF (as played)",
-        "gifHint": "Attach the GIF yourself when posting on X — linked GIFs don't animate there."
+        "gifHint": "Attach the GIF yourself when posting on X — linked GIFs don't animate there.",
+        "embed": {
+          "menuItem": "Embed in a blog",
+          "title": "Embed this game",
+          "description": "Paste this into your post and readers can step through the game without leaving the page.",
+          "previewLabel": "Preview of the embedded game",
+          "view": "Board",
+          "viewPlayed": "As the player saw it",
+          "viewPlain": "Fully revealed",
+          "bg": "Colours",
+          "bgAuto": "Match the reader",
+          "bgLight": "Light",
+          "bgDark": "Dark",
+          "orientation": "Facing",
+          "orientationPlayer": "The player's side",
+          "orientationWhite": "White",
+          "orientationBlack": "Black",
+          "pinLanguage": "Always show the widget in this language",
+          "codeLabel": "Embed code",
+          "copy": "Copy code",
+          "copied": "Copied!",
+          "hint": "Works anywhere HTML is allowed (WordPress, Ghost, Hatena Blog, Notion, Discourse). Where it is not, share the link or the GIF instead."
+        }
       },
       "claim": {
         "signedOutTitle": "Make this game part of your record",
