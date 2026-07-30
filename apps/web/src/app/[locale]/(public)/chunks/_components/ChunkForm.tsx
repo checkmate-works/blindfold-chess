@@ -16,6 +16,7 @@ import { FiInfo } from 'react-icons/fi';
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
+import { checkSlugAvailability } from '../_actions/checkSlugAvailability';
 import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
 import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
 import { type ChunkFormField, validateChunkForm } from '../_lib/chunk-form-validation';
@@ -159,6 +160,11 @@ export function ChunkForm(props: Props) {
 
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
+  // In-flight slug preflight (see `handleSubmit`). Only guards against a
+  // double submit while the round trip is out — every *validation* verdict
+  // still reaches the author through `submitError`, never through a
+  // silently inert button.
+  const [checkingSlug, setCheckingSlug] = useState(false);
 
   // The FEN rule can fail from either position tab, so on the board tab
   // it anchors on the position section wrapper — the raw FEN textarea
@@ -213,6 +219,7 @@ export function ChunkForm(props: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (checkingSlug) return;
     submitError.clear();
 
     const invalid = validateChunkForm({
@@ -225,6 +232,34 @@ export function ChunkForm(props: Props) {
     if (invalid) {
       submitError.report(invalid.field, t(invalid.key));
       return;
+    }
+
+    // A slug collision is the one submit-blocking rule the client can't
+    // answer on its own, so it used to surface at the preview's Confirm —
+    // two steps away from the field at fault, in a banner, with the input
+    // no longer on screen. Asking the server here puts the same verdict on
+    // the slug control alongside every other rejection.
+    //
+    // Skipped in edit mode when the slug is untouched: the row's own slug
+    // is trivially "taken", and `saveChunkEdit` omits an unchanged slug
+    // from its payload anyway.
+    const trimmedSlug = slug.trim();
+    if (props.mode === 'create' || trimmedSlug !== props.initial.slug) {
+      setCheckingSlug(true);
+      try {
+        const { available } = await checkSlugAvailability(trimmedSlug);
+        if (!available) {
+          submitError.report('slug', t('errors.slugTaken'));
+          return;
+        }
+      } catch {
+        // Preflight only — a failed round trip must not strand an
+        // otherwise valid draft on the form. The create / update actions
+        // re-check under the DB's UNIQUE constraint, so a collision that
+        // slips through here is still caught at the preview.
+      } finally {
+        setCheckingSlug(false);
+      }
     }
 
     // Both modes hand off to a confirmation page: create persists via
@@ -319,18 +354,27 @@ export function ChunkForm(props: Props) {
           feedbackTopics={feedbackTopics}
           onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
-          pending={false}
+          pending={checkingSlug}
           messageFor={submitError.messageFor}
         />
 
         <div className="space-y-4">
           {/*
-           * Deliberately always enabled: a disabled submit is silent
-           * about *why* it won't move, which is the same dead-end as an
-           * off-screen error. Pressing it runs `validateChunkForm` and
-           * puts the author on the offending field with an explanation.
+           * Deliberately never disabled *by validation state*: a disabled
+           * submit is silent about *why* it won't move, which is the same
+           * dead-end as an off-screen error. Pressing it runs
+           * `validateChunkForm` and puts the author on the offending field
+           * with an explanation. The only thing that holds it is the slug
+           * preflight already in flight, and that says so with a spinner.
            */}
-          <Button type="submit" variant="primary" size="lg" fullWidth>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={checkingSlug}
+            loading={checkingSlug}
+          >
             {t('actions.continueToPreview')}
           </Button>
 
