@@ -13,12 +13,15 @@ vi.mock('@/i18n/use-safe-translations', () => ({
 // A real mid-game FEN — has spaces and slashes that must be URL-encoded.
 const FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 2 2';
 
-function open(continuationSan?: string) {
+const GAME_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
+
+function open(continuationSan?: string, linkTarget?: { gameId: string; ply: number }) {
   render(
     <CreateFromPositionMenu
       locale={'en' as Locale}
       currentFen={FEN}
       continuationSan={continuationSan}
+      linkTarget={linkTarget}
     />
   );
   fireEvent.click(screen.getByRole('button', { name: /menuLabel/ }));
@@ -77,6 +80,49 @@ describe('CreateFromPositionMenu', () => {
     expect(screen.getByRole('menuitem', { name: 'puzzle' })).toHaveAttribute(
       'href',
       `/en/practice/puzzle/new?fen=${encodeURIComponent(FEN)}`
+    );
+  });
+
+  // The chunk create flow turns `?game=&ply=` into a `game_chunks` row, so a
+  // dropped param silently costs the auto-link rather than erroring.
+  it('carries the game and ply on the chunk link when a link target is given', () => {
+    open('e4', { gameId: GAME_ID, ply: 16 });
+    expect(screen.getByRole('menuitem', { name: 'chunk' })).toHaveAttribute(
+      'href',
+      `/en/chunks/new?fen=${encodeURIComponent(FEN)}&game=${GAME_ID}&ply=16`
+    );
+  });
+
+  // `game_chunks` cannot anchor a link off a numbered move, and `positions`
+  // carries no game reference at all — so neither gets the pair.
+  it('leaves position-memory and puzzle as FEN-only seeds even with a link target', () => {
+    open('e4', { gameId: GAME_ID, ply: 16 });
+    const enc = encodeURIComponent(FEN);
+    expect(screen.getByRole('menuitem', { name: 'positionMemory' })).toHaveAttribute(
+      'href',
+      `/en/practice/position-memory/new?fen=${enc}`
+    );
+    expect(screen.getByRole('menuitem', { name: 'puzzle' })).toHaveAttribute(
+      'href',
+      `/en/practice/puzzle/new?fen=${enc}&solution=e4`
+    );
+  });
+
+  it('falls back to a plain FEN seed when there is no link target', () => {
+    open('e4', undefined);
+    expect(screen.getByRole('menuitem', { name: 'chunk' })).toHaveAttribute(
+      'href',
+      `/en/chunks/new?fen=${encodeURIComponent(FEN)}`
+    );
+  });
+
+  // ply 0 is a real move (0-based index into games.moves[]); a truthiness
+  // check on the ply instead of the target would drop the link there.
+  it('carries ply 0 rather than treating it as absent', () => {
+    open('e4', { gameId: GAME_ID, ply: 0 });
+    expect(screen.getByRole('menuitem', { name: 'chunk' })).toHaveAttribute(
+      'href',
+      `/en/chunks/new?fen=${encodeURIComponent(FEN)}&game=${GAME_ID}&ply=0`
     );
   });
 });

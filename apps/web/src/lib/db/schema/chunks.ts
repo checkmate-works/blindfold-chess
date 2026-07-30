@@ -188,10 +188,20 @@ export const chunks = pgTable(
      * lifecycle:
      *
      * - `draft` — workshop state. Owner can edit freely; other users
-     *   see it on the catalog (with a "Draft" badge) and can submit
-     *   Qiita-style edit-suggestion requests against the title /
-     *   description (see `chunk_edit_requests`). New chunks created
-     *   via the UGC flow default to `draft`.
+     *   see it on the catalog (badged "Feedback wanted" / 提案募集中)
+     *   and can submit Qiita-style edit-suggestion requests against the
+     *   title / description (see `chunk_edit_requests`). New chunks
+     *   created via the UGC flow default to `draft`.
+     *
+     *   The stored value stays `draft`, but nothing user-facing says
+     *   "draft" any more. The word described the wrong thing: a draft
+     *   here is already public and already listed — what distinguishes
+     *   it is that the author is still soliciting a better name, which
+     *   is what the `chunk_edit_requests` workflow and
+     *   `chunk_feedback_topics` exist to serve. Renamed at the read
+     *   layer only, following the same rule as `point_events.source`
+     *   and `topic_posts.topic_type`: stored discriminators are never
+     *   renamed, display labels are mapped on the way out.
      * - `published` — canonical state. The author has settled the title /
      *   description; the row is locked against owner edits at the
      *   application layer so the slug, title, and description that

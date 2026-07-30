@@ -150,6 +150,9 @@ export function ChunkPreviewClient(props: Props) {
         // submitting the preview retains their ticks without a
         // surprise round-trip clear.
         feedbackTopics: draft.feedbackTopics,
+        // Present when the chunk was started from a game position; the
+        // create action links it to that move in the same transaction.
+        linkTarget: draft.linkTarget,
       });
       if ('error' in result) {
         setError(localizeChunkError(result.error, tForm, PREVIEW_ERROR_CODES));
@@ -158,7 +161,6 @@ export function ChunkPreviewClient(props: Props) {
       clearChunkDraft();
       flushSync(() => setSubmitted(true));
 
-      // Land straight on the created chunk so the author can verify it.
       // A point grant surfaces the coin reward as a toast on arrival
       // (`?coinsEarned=N`) and a daily-cap hit adds a `?coinsCapped=1` warning;
       // an uncapped no-grant create navigates silently as before.
@@ -166,6 +168,24 @@ export function ChunkPreviewClient(props: Props) {
       if (result.pointGrant) toastParams.set('coinsEarned', String(result.pointGrant.amount));
       if (result.coinCapped) toastParams.set('coinsCapped', '1');
       const toastQs = toastParams.toString();
+
+      // When the chunk was authored from a game move and the link landed,
+      // return the author to that move — the chunk is visible there, in the
+      // context that prompted it, and the round trip they started is closed.
+      // A link that did not land (stale game, ineligible chunk) falls
+      // through to the chunk page, which is still a correct landing spot.
+      if (result.linkedToGame && draft.linkTarget) {
+        const { gameId, ply } = draft.linkTarget;
+        // The replay's deep-link fragment counts half-moves from 1
+        // (`parseHashPly`), while `ply` — like `game_chunks.ply` — is a
+        // 0-based index into `games.moves[]`.
+        router.push(
+          `/games/shared/${gameId}${toastQs ? `?${toastQs}` : ''}#${ply + 1}` as '/games/shared/[id]'
+        );
+        return;
+      }
+
+      // Otherwise land straight on the created chunk so the author can verify it.
       router.push(`/chunks/${result.slug}${toastQs ? `?${toastQs}` : ''}` as '/chunks/[slug]');
     } catch {
       setError(mode === 'edit' ? t('saveError') : t('createError'));

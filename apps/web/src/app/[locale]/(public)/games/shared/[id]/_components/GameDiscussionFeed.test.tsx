@@ -50,6 +50,7 @@ function chunk(id: string, ply: number): GameChunkItem {
     title: id,
     description: null,
     representativeFen: '8/8/8/8/8/8/8/8 w - - 0 1',
+    status: 'published' as const,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     suggestedById: 'u1',
     suggester: null,

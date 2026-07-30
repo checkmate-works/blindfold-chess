@@ -16,6 +16,16 @@ type Props = {
    * solution (`?solution=`). Undefined at the final position (no continuation).
    */
   continuationSan?: string;
+  /**
+   * The game + move this position belongs to. Carried to the chunk create
+   * flow (`?game=&ply=`) so the chunk it produces is linked back to this
+   * move on save, instead of stranding the author on the new chunk's page
+   * with the link left as manual homework. Undefined where `game_chunks`
+   * cannot anchor a link — the opening board has no ply (`ply` is NOT NULL;
+   * issue #103 tracks relaxing that) — in which case the menu falls back to
+   * the plain `?fen=` seed.
+   */
+  linkTarget?: { gameId: string; ply: number };
 };
 
 /**
@@ -24,6 +34,13 @@ type Props = {
  * a chunk, a position-memory entry, or a puzzle (the latter pre-filled with the
  * game's continuation as a draft solution). Shown only to signed-in viewers;
  * each item is a plain link so the seeding contract stays in the URL.
+ *
+ * The chunk destination additionally carries `?game=&ply=`, which the create
+ * flow turns into a `game_chunks` row alongside the chunk itself — so the
+ * pattern the author just extracted shows up on the move it came from, and
+ * they land back on that move rather than on the new chunk's page. The other
+ * two destinations have no game-anchored counterpart (`positions` carries no
+ * game reference at all), so they stay FEN-only seeds.
  *
  * @design Lives in the board's control strip, behind a "+"
  *
@@ -41,17 +58,23 @@ type Props = {
  * upward because the strip sits at the bottom edge of a card that clips its
  * descendants (`INLINE_BOARD_CARD_CHROME`).
  */
-export function CreateFromPositionMenu({ locale, currentFen, continuationSan }: Props) {
+export function CreateFromPositionMenu({ locale, currentFen, continuationSan, linkTarget }: Props) {
   const t = useTranslations('sharedGames.create');
 
   const fen = encodeURIComponent(currentFen);
   const puzzleHref =
     `/${locale}/practice/puzzle/new?fen=${fen}` +
     (continuationSan ? `&solution=${encodeURIComponent(continuationSan)}` : '');
+  // Only the chunk destination has a game-anchored counterpart
+  // (`game_chunks`); positions carry no game reference at all, so the
+  // other two stay FEN-only seeds.
+  const chunkHref =
+    `/${locale}/chunks/new?fen=${fen}` +
+    (linkTarget ? `&game=${linkTarget.gameId}&ply=${linkTarget.ply}` : '');
 
   // Chunk first (most common), then position-memory, then puzzle (heaviest).
   const items = [
-    { key: 'chunk', label: t('chunk'), href: `/${locale}/chunks/new?fen=${fen}` },
+    { key: 'chunk', label: t('chunk'), href: chunkHref },
     {
       key: 'positionMemory',
       label: t('positionMemory'),

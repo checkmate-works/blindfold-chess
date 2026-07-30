@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockAuthenticateAndGuard = vi.fn();
 const mockGetForDelete = vi.fn();
 const mockDelete = vi.fn();
+const mockIsLinkable = vi.fn();
+const mockInsert = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -13,8 +15,8 @@ vi.mock('@/lib/auth', () => ({
 vi.mock('@/lib/db/game-chunks', () => ({
   getGameChunkForDelete: (...args: unknown[]) => mockGetForDelete(...args),
   deleteGameChunk: (...args: unknown[]) => mockDelete(...args),
-  insertGameChunk: vi.fn(),
-  isLinkablePublishedChunk: vi.fn(),
+  insertGameChunk: (...args: unknown[]) => mockInsert(...args),
+  isLinkableChunkForViewer: (...args: unknown[]) => mockIsLinkable(...args),
 }));
 
 vi.mock('@/lib/security/rate-limit', () => ({
@@ -31,6 +33,68 @@ const LINK_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 const CALLER = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const SUGGESTER = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const OWNER = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+const GAME_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
+const CHUNK_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+
+describe('addGameChunkAction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
+    mockIsLinkable.mockResolvedValue(true);
+    mockInsert.mockResolvedValue({ id: LINK_ID, createdAt: new Date('2026-07-30T00:00:00Z') });
+  });
+
+  // The eligibility rule is "published, or a draft the caller owns", so the
+  // check cannot be answered without knowing who is asking — passing the
+  // caller through is what makes the own-draft carve-out possible at all.
+  it('scopes the linkability check to the calling user', async () => {
+    const { addGameChunkAction } = await import('./game-chunks');
+    const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
+
+    expect(mockIsLinkable).toHaveBeenCalledWith(CHUNK_ID, CALLER);
+    expect(result).toEqual({
+      success: true,
+      id: LINK_ID,
+      createdAt: '2026-07-30T00:00:00.000Z',
+    });
+    expect(mockInsert).toHaveBeenCalledWith({
+      gameId: GAME_ID,
+      ply: 3,
+      chunkId: CHUNK_ID,
+      suggestedById: CALLER,
+    });
+  });
+
+  it('rejects a chunk the caller may not link, without inserting', async () => {
+    mockIsLinkable.mockResolvedValue(false);
+
+    const { addGameChunkAction } = await import('./game-chunks');
+    const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
+
+    expect(result).toEqual({ success: false, error: 'chunk_not_available' });
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a duplicate link as already_linked rather than an error', async () => {
+    mockInsert.mockResolvedValue(null);
+
+    const { addGameChunkAction } = await import('./game-chunks');
+    const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
+
+    expect(result).toEqual({ success: false, error: 'already_linked' });
+  });
+
+  it('never reaches the linkability check when auth fails', async () => {
+    mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
+
+    const { addGameChunkAction } = await import('./game-chunks');
+    const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
+
+    expect(result).toEqual({ success: false, error: 'signInRequired' });
+    expect(mockIsLinkable).not.toHaveBeenCalled();
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+});
 
 describe('deleteGameChunkAction', () => {
   beforeEach(() => {

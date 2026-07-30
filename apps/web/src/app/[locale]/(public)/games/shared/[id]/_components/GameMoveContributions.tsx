@@ -36,7 +36,10 @@ type Props = {
   comments: GameCommentItem[];
   /** All chunk links for the game (every ply); filtered to `currentPly` inside. */
   gameChunks: GameChunkItem[];
-  /** Published chunks selectable in the picker. */
+  /**
+   * Chunks selectable in the picker: the published catalog plus the
+   * viewer's own drafts (`getLinkableChunkOptionsForViewer`).
+   */
   availableChunks: ChunkOption[];
   /** The signed-in viewer, or null. */
   currentUser: CommentUser | null;
@@ -135,6 +138,7 @@ export function GameMoveContributions({
                   placeholder: t('chunks.placeholder'),
                   noResults: t('chunks.noResults'),
                   moreItemsHint: (count: number) => t('chunks.moreItemsHint', { count }),
+                  draft: t('chunks.draftBadge'),
                 }}
               />
 
@@ -148,7 +152,7 @@ export function GameMoveContributions({
                         title={c.label}
                         description={c.description}
                         representativeFen={c.representativeFen}
-                        badge={t('chunks.badge')}
+                        badge={c.status === 'draft' ? t('chunks.draftBadge') : t('chunks.badge')}
                         locale={locale}
                         onRemove={() => links.unstage(c.id)}
                         removeLabel={t('chunks.remove', { title: c.label })}
@@ -209,6 +213,7 @@ export function GameMoveContributions({
               key={group[0].id}
               items={group}
               badge={t('chunks.badge')}
+              draftBadge={t('chunks.draftBadge')}
               locale={locale}
               canRemove={links.canRemove}
               onRemove={(item) => links.handleRemoveSaved(item.id)}

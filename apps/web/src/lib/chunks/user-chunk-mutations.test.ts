@@ -18,6 +18,7 @@ const mockClawbackPointsForPost = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockRevalidatePath = vi.fn();
 const mockIsUniqueViolation = vi.fn();
+const mockLinkNewChunkToGameMove = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -36,6 +37,10 @@ vi.mock('@/lib/notifications/notification', () => ({
 vi.mock('@/lib/points', () => ({
   grantPointsForPost: (...args: unknown[]) => mockGrantPointsForPost(...args),
   clawbackPointsForPost: (...args: unknown[]) => mockClawbackPointsForPost(...args),
+}));
+
+vi.mock('@/lib/db/game-chunks', () => ({
+  linkNewChunkToGameMove: (...args: unknown[]) => mockLinkNewChunkToGameMove(...args),
 }));
 
 vi.mock('@/lib/db/extract-pg-error-code', () => ({
@@ -189,6 +194,7 @@ describe('createChunkEntry', () => {
       cappedDaily: false,
     });
     mockIsUniqueViolation.mockReturnValue(false);
+    mockLinkNewChunkToGameMove.mockResolvedValue(true);
   });
 
   it('propagates signInRequired from the guard', async () => {
@@ -434,6 +440,65 @@ describe('createChunkEntry', () => {
     });
 
     expect(mockTxFeedbackInsertValues).not.toHaveBeenCalled();
+  });
+
+  // "Create a chunk from this game position": the link rides inside the
+  // create transaction so the author never lands on the new chunk with the
+  // link left as manual homework.
+  describe('game link', () => {
+    const GAME_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
+
+    it('links the new chunk to the move and reports it', async () => {
+      const { createChunkEntry } = await import('./user-chunk-mutations');
+      const result = await createChunkEntry(baseCreateInput, {
+        linkTarget: { gameId: GAME_ID, ply: 16 },
+      });
+
+      expect(mockLinkNewChunkToGameMove).toHaveBeenCalledWith(expect.anything(), {
+        gameId: GAME_ID,
+        ply: 16,
+        chunkId: TEST_CHUNK_ID,
+        // Attribution follows the authenticated user, never the payload's
+        // (client-supplied, always-overwritten) `userId`.
+        suggestedById: TEST_USER_ID,
+      });
+      expect(result).toMatchObject({ success: true, linkedToGame: true });
+    });
+
+    it('does not touch game_chunks when no link target is given', async () => {
+      const { createChunkEntry } = await import('./user-chunk-mutations');
+      const result = await createChunkEntry(baseCreateInput);
+
+      expect(mockLinkNewChunkToGameMove).not.toHaveBeenCalled();
+      expect(result).not.toHaveProperty('linkedToGame');
+    });
+
+    // The chunk is what the author came to write; the link is the
+    // convenience. A refused link (stale game, out-of-range ply) must not
+    // cost them the chunk.
+    it('still creates the chunk when the link is refused', async () => {
+      mockLinkNewChunkToGameMove.mockResolvedValue(false);
+
+      const { createChunkEntry } = await import('./user-chunk-mutations');
+      const result = await createChunkEntry(baseCreateInput, {
+        linkTarget: { gameId: GAME_ID, ply: 999 },
+      });
+
+      expect(result).toMatchObject({ success: true, id: TEST_CHUNK_ID, slug: TEST_SLUG });
+      expect(result).not.toHaveProperty('linkedToGame');
+    });
+
+    // ply 0 is the game's first move; a truthiness check on the ply
+    // instead of the target would silently drop the link there.
+    it('links at ply 0', async () => {
+      const { createChunkEntry } = await import('./user-chunk-mutations');
+      await createChunkEntry(baseCreateInput, { linkTarget: { gameId: GAME_ID, ply: 0 } });
+
+      expect(mockLinkNewChunkToGameMove).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ ply: 0 })
+      );
+    });
   });
 });
 

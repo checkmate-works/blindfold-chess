@@ -140,6 +140,7 @@ const CHUNK: ChunkOption = {
   slug: 'knight-fork',
   representativeFen: VALID_FEN,
   description: null,
+  status: 'published',
 };
 
 function baseProps() {

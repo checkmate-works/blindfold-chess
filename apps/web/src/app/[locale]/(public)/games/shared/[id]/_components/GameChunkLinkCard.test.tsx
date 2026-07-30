@@ -56,6 +56,7 @@ function link(id: string, title: string): GameChunkItem {
     title,
     description: null,
     representativeFen: '8/8/8/8/8/8/8/8 w - - 0 1',
+    status: 'published' as const,
     createdAt: new Date('2026-01-02T03:04:05Z'),
     suggestedById: 'u1',
     suggester: { username: 'alice', displayName: 'Alice', avatarUrl: null },
@@ -71,6 +72,7 @@ function renderCard(
     <GameChunkLinkCard
       items={items}
       badge="Chunk"
+      draftBadge="Draft"
       locale={'en' as Locale}
       canRemove={() => canRemove}
       onRemove={onRemove}

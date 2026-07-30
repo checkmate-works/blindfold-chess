@@ -106,6 +106,7 @@ export function GameDiscussionFeed({
                   key={run[0].id}
                   items={run}
                   badge={t('chunks.badge')}
+                  draftBadge={t('chunks.draftBadge')}
                   locale={locale}
                   canRemove={() => false}
                   onRemove={NOOP_REMOVE}

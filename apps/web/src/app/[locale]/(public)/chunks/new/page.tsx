@@ -11,6 +11,7 @@ import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 import { ChunkForm } from '../_components/ChunkForm';
+import { parseChunkLinkTarget } from '../_lib/link-target';
 
 /**
  * New Chunk (チャンク新規作成)
@@ -29,6 +30,14 @@ import { ChunkForm } from '../_components/ChunkForm';
  * position" link) seeds the board. It is validated structurally here and
  * ignored when malformed, so a stray URL never lands the form in a broken
  * state.
+ *
+ * `?game=<uuid>&ply=<n>` accompanies `?fen=` when the position came from a
+ * shared game's move. It rides along to the create action, which links the
+ * new chunk to that move in the same transaction — closing the loop that
+ * otherwise left the author on the new chunk's page with the link as manual
+ * homework. Shape-validated only (existence and the caller's right to link
+ * are re-checked server-side); a malformed pair is dropped and the flow
+ * degrades to a plain FEN seed.
  */
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
   return createPageMetadata({
@@ -41,14 +50,24 @@ export async function generateMetadata({ params }: LocalePageProps): Promise<Met
 
 export default async function NewChunkPage({ params, searchParams }: LocaleSearchPageProps) {
   const { locale } = await params;
-  const { fen: fenParam } = await searchParams;
+  const { fen: fenParam, game: gameParam, ply: plyParam } = await searchParams;
   const user = await getOptionalUser();
   const t = await getTranslations({ locale, namespace: 'chunks' });
 
   const injectedFen =
     typeof fenParam === 'string' && validateFenStructure(fenParam).ok ? fenParam : undefined;
 
-  const form = <ChunkForm mode="create" disableUnsavedGuard={!user} injectedFen={injectedFen} />;
+  const form = (
+    <ChunkForm
+      mode="create"
+      disableUnsavedGuard={!user}
+      injectedFen={injectedFen}
+      // Both halves must be well-formed for the pair to mean anything; a
+      // partial or malformed pair degrades to a plain FEN seed rather than
+      // sending the create action on an errand it cannot complete.
+      injectedLinkTarget={parseChunkLinkTarget(gameParam, plyParam)}
+    />
+  );
 
   return (
     <PageLayout

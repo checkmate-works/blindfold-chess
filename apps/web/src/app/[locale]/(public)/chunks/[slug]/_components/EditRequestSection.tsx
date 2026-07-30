@@ -31,6 +31,12 @@ type Props = {
    */
   viewerHasPending: boolean;
   /**
+   * Live positions / game moves already pointing at this chunk. Threaded
+   * to each item so the owner's accept-confirm can say that adopting a
+   * title proposal renames what those references were made against.
+   */
+  referenceCount: number;
+  /**
    * Field to focus on load, from the `?topic=` deep link on the detail
    * page's callout pills. Forwarded to the form; ignored by the review
    * list.
@@ -56,6 +62,7 @@ export async function EditRequestSection({
   viewerId,
   ownerId,
   viewerHasPending,
+  referenceCount,
   focusTopic,
   locale,
 }: Props) {
@@ -166,6 +173,7 @@ export async function EditRequestSection({
                     comment={request.comment}
                     viewerIsOwner={viewerIsOwner}
                     viewerIsProposer={!!viewerId && request.proposerId === viewerId}
+                    referenceCount={referenceCount}
                     locale={locale}
                   />
                 </li>

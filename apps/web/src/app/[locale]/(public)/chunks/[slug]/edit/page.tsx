@@ -4,7 +4,11 @@ import { notFound } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
-import { getChunkBySlug, getFeedbackTopicsForChunk } from '@/lib/chunks/queries';
+import {
+  countChunkReferences,
+  getChunkBySlug,
+  getFeedbackTopicsForChunk,
+} from '@/lib/chunks/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -63,9 +67,13 @@ export default async function EditChunkPage({ params }: Props) {
     notFound();
   }
 
-  const [t, feedbackTopics] = await Promise.all([
+  const [t, feedbackTopics, references] = await Promise.all([
     getTranslations({ locale, namespace: 'chunks' }),
     getFeedbackTopicsForChunk(chunk.id),
+    // Drives the "others already point at this" warning on the identity
+    // fields. Read here rather than in the form so the count is accurate
+    // at the moment editing starts.
+    countChunkReferences(chunk.id),
   ]);
 
   return (
@@ -91,6 +99,7 @@ export default async function EditChunkPage({ params }: Props) {
             annotations: parseBoardAnnotations(chunk.annotations),
             feedbackTopics,
           }}
+          references={references}
         />
       </div>
     </PageLayout>

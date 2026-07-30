@@ -99,6 +99,7 @@ export function useGameChunkLinks({
           title: chunk.label,
           description: chunk.description,
           representativeFen: chunk.representativeFen,
+          status: chunk.status,
           createdAt: new Date(res.createdAt),
           suggestedById: currentUser?.id ?? null,
           // Seed the suggester from the viewer so the freshly-linked card shows

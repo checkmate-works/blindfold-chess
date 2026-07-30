@@ -456,6 +456,15 @@ export function GameReview({
                     locale={locale}
                     currentFen={displayFen ?? latestFen}
                     continuationSan={continuationSan}
+                    // A chunk authored here links back to this move on save.
+                    // Only in `live` mode (the local result screen has no
+                    // persisted game to anchor to) and only on a numbered
+                    // ply — `game_chunks.ply` is NOT NULL.
+                    linkTarget={
+                      social.mode === 'live' && currentPly != null
+                        ? { gameId, ply: currentPly }
+                        : undefined
+                    }
                   />
                 ) : undefined,
             }}

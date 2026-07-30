@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getViewerPendingEditRequestForChunk } from '@/lib/chunk-edit-requests/queries';
-import { getChunkBySlug } from '@/lib/chunks/queries';
+import { countChunkReferences, getChunkBySlug } from '@/lib/chunks/queries';
 import { isChunkFeedbackTopic, isChunkStatus } from '@/lib/chunks/validation';
 
 import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -72,10 +72,11 @@ export default async function ChunkEditRequestsPage({ params, searchParams }: Pr
     getTranslations({ locale, namespace: 'chunks' }),
   ]);
 
-  const viewerPendingRequestId = await getViewerPendingEditRequestForChunk(
-    chunk.id,
-    user?.id ?? null
-  );
+  const [viewerPendingRequestId, references] = await Promise.all([
+    getViewerPendingEditRequestForChunk(chunk.id, user?.id ?? null),
+    // Accepting a title proposal renames the chunk these already assert.
+    countChunkReferences(chunk.id),
+  ]);
 
   // The former inline "other players can suggest…" hint now lives in a
   // help tour beside the page title; its single step spotlights the
@@ -132,6 +133,7 @@ export default async function ChunkEditRequestsPage({ params, searchParams }: Pr
         viewerId={user?.id ?? null}
         ownerId={chunk.userId}
         viewerHasPending={viewerPendingRequestId !== null}
+        referenceCount={references.positions + references.games}
         focusTopic={focusTopic}
         locale={locale}
       />

@@ -17,6 +17,12 @@ type Props = {
   /** A run of consecutive links by the same suggester (non-empty). */
   items: GameChunkItem[];
   badge: string;
+  /**
+   * Badge substituted for `badge` on links pointing at a draft chunk. A
+   * draft's title is still open to renegotiation, so the card says so
+   * rather than presenting it as a settled catalog entry.
+   */
+  draftBadge: string;
   locale: Locale;
   /** Whether the viewer may unlink a given link (owner / the suggester). */
   canRemove: (item: GameChunkItem) => boolean;
@@ -35,7 +41,14 @@ type Props = {
  * apply, so they are absent. Grouping keeps one person's batch of links to a
  * single header instead of repeating the avatar per link.
  */
-export function GameChunkLinkCard({ items, badge, locale, canRemove, onRemove }: Props) {
+export function GameChunkLinkCard({
+  items,
+  badge,
+  draftBadge,
+  locale,
+  canRemove,
+  onRemove,
+}: Props) {
   const t = useTranslations('sharedGames');
   const tCommon = useTranslations('Common');
 
@@ -100,7 +113,7 @@ export function GameChunkLinkCard({ items, badge, locale, canRemove, onRemove }:
                   title={item.title}
                   description={item.description}
                   representativeFen={item.representativeFen}
-                  badge={badge}
+                  badge={item.status === 'draft' ? draftBadge : badge}
                   locale={locale}
                 />
                 {canRemove(item) && (
