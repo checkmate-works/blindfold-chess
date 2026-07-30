@@ -1,14 +1,13 @@
 'use client';
 
-import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { type RefObject, useCallback } from 'react';
+
+import { usePointerDragGesture } from '@/app/_components/chess/use-pointer-drag-gesture';
 
 import type { FenPieceChar } from './types';
 
-const DRAG_THRESHOLD_PX = 4;
-
 export type EditableBoardDragSource =
-  | { kind: 'palette'; piece: FenPieceChar }
-  | { kind: 'board'; index: number; piece: FenPieceChar };
+  { kind: 'palette'; piece: FenPieceChar } | { kind: 'board'; index: number; piece: FenPieceChar };
 
 type Params = {
   enabled: boolean;
@@ -43,148 +42,52 @@ type Result = {
 };
 
 /**
- * Pointer-based drag-and-drop for {@link EditableChessBoard}, mirroring
- * `useBoardDragDrop` (the live-game board's piece dragging) but for free
- * piece placement rather than legal-move dragging: a palette button can be
- * dragged onto a square to place a new piece, and a board piece can be
- * dragged to another square — or off the board entirely, to remove it —
- * instead of only via tap-select-then-tap-place/-remove.
+ * Piece dragging for {@link EditableChessBoard} — {@link usePointerDragGesture}
+ * with free-placement rules rather than legal-move rules: a palette button can
+ * be dragged onto a square to place a new piece, and a board piece can be
+ * dragged to another square, or off the board entirely to remove it, instead
+ * of only via tap-select-then-tap-place/-remove.
  *
  * Hit-testing is delegated off a single pointerdown handler attached to the
  * board's outer wrapper: palette buttons carry `data-palette-piece`, board
- * squares carry `data-square` (the same logical index click-to-place
- * already uses). Bookkeeping lives in refs so the window listeners
- * (attached fresh per gesture, so the gesture survives the pointer leaving
- * the board) never force a re-render on every `pointermove`.
+ * squares carry `data-square` (the same logical index click-to-place already
+ * uses).
  */
 export function useEditableBoardDragDrop({ enabled, boardRef, pieceAt, onDrop }: Params): Result {
-  const [dragging, setDragging] = useState<{
-    source: EditableBoardDragSource;
-    size: number;
-  } | null>(null);
-
-  const pendingDragRef = useRef<{
-    source: EditableBoardDragSource;
-    startX: number;
-    startY: number;
-    size: number;
-  } | null>(null);
-  const dragPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const dragLayerRef = useRef<HTMLDivElement | null>(null);
-  const didDragRef = useRef(false);
-  const dragCleanupRef = useRef<(() => void) | null>(null);
-
-  // Detach lingering window listeners if the board unmounts mid-drag.
-  useEffect(() => () => dragCleanupRef.current?.(), []);
-
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      if (!enabled || e.button !== 0) return;
-
+  const resolveSource = useCallback(
+    (e: React.PointerEvent): EditableBoardDragSource | null => {
       const target = e.target as HTMLElement;
       const paletteEl = target.closest<HTMLElement>('[data-palette-piece]');
-      let source: EditableBoardDragSource | null = null;
       if (paletteEl) {
-        source = {
-          kind: 'palette',
-          piece: paletteEl.dataset.palettePiece as FenPieceChar,
-        };
-      } else {
-        const squareIndexAttr = target.closest<HTMLElement>('[data-square]')?.dataset.square;
-        if (squareIndexAttr !== undefined) {
-          const index = Number(squareIndexAttr);
-          const piece = pieceAt(index);
-          // Only an occupied square is a drag source — an empty square falls
-          // through to the click handler, preserving tap-to-place.
-          if (piece) source = { kind: 'board', index, piece };
-        }
+        return { kind: 'palette', piece: paletteEl.dataset.palettePiece as FenPieceChar };
       }
-      if (!source) return;
-
-      // Touch pointers get *implicit* pointer capture on the element hit by
-      // `pointerdown`, which pins `event.target` to that element for the
-      // rest of the gesture — subsequent `pointermove`/`pointerup` events
-      // report the drag source as their target no matter where the finger
-      // actually is. Releasing capture immediately restores normal
-      // pointer-position-based targeting (as mouse input already has), so
-      // the drop-square lookup below sees the real element under the finger.
-      (e.target as Element).releasePointerCapture?.(e.pointerId);
-
-      const size = (boardRef.current?.getBoundingClientRect().width ?? 0) / 8;
-      pendingDragRef.current = { source, startX: e.clientX, startY: e.clientY, size };
-      dragPosRef.current = { x: e.clientX, y: e.clientY };
-      didDragRef.current = false;
-
-      const onPointerMove = (ev: PointerEvent) => {
-        const pending = pendingDragRef.current;
-        if (!pending) return;
-        dragPosRef.current = { x: ev.clientX, y: ev.clientY };
-        if (!didDragRef.current) {
-          const dx = ev.clientX - pending.startX;
-          const dy = ev.clientY - pending.startY;
-          if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
-          didDragRef.current = true;
-          setDragging({ source: pending.source, size: pending.size });
-        } else if (dragLayerRef.current) {
-          dragLayerRef.current.style.left = `${ev.clientX}px`;
-          dragLayerRef.current.style.top = `${ev.clientY}px`;
-        }
-      };
-      const onPointerUp = (ev: PointerEvent) => {
-        cleanup();
-        const pending = pendingDragRef.current;
-        pendingDragRef.current = null;
-        setDragging(null);
-        if (!pending || !didDragRef.current) return; // a plain tap → click handles it
-        const destAttr = (ev.target as HTMLElement | null)?.closest<HTMLElement>('[data-square]')
-          ?.dataset.square;
-        const destIndex = destAttr !== undefined ? Number(destAttr) : null;
-        onDrop(pending.source, destIndex);
-        // didDragRef stays true so the trailing synthetic click is suppressed.
-      };
-      // The OS / browser can abort a gesture (e.g. it decides a touch is a
-      // scroll). Tear down without applying a drop.
-      const onPointerCancel = () => {
-        cleanup();
-        pendingDragRef.current = null;
-        didDragRef.current = false;
-        setDragging(null);
-      };
-      const cleanup = () => {
-        window.removeEventListener('pointermove', onPointerMove);
-        window.removeEventListener('pointerup', onPointerUp);
-        window.removeEventListener('pointercancel', onPointerCancel);
-        dragCleanupRef.current = null;
-      };
-      window.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onPointerUp);
-      window.addEventListener('pointercancel', onPointerCancel);
-      dragCleanupRef.current = cleanup;
+      const squareIndexAttr = target.closest<HTMLElement>('[data-square]')?.dataset.square;
+      if (squareIndexAttr === undefined) return null;
+      const index = Number(squareIndexAttr);
+      const piece = pieceAt(index);
+      // Only an occupied square is a drag source — an empty square falls
+      // through to the click handler, preserving tap-to-place.
+      return piece ? { kind: 'board', index, piece } : null;
     },
-    [enabled, boardRef, pieceAt, onDrop]
+    [pieceAt]
   );
 
-  const floatingRef = useCallback((el: HTMLDivElement | null) => {
-    dragLayerRef.current = el;
-    if (el) {
-      el.style.left = `${dragPosRef.current.x}px`;
-      el.style.top = `${dragPosRef.current.y}px`;
-    }
-  }, []);
+  const measureSquareSize = useCallback(
+    () => (boardRef.current?.getBoundingClientRect().width ?? 0) / 8,
+    [boardRef]
+  );
 
-  const consumeTrailingClick = useCallback(() => {
-    if (didDragRef.current) {
-      didDragRef.current = false;
-      return true;
-    }
-    return false;
-  }, []);
+  const handleDrop = useCallback(
+    (source: EditableBoardDragSource, squareAttr: string | undefined) => {
+      onDrop(source, squareAttr !== undefined ? Number(squareAttr) : null);
+    },
+    [onDrop]
+  );
 
-  return {
-    dragSource: dragging?.source ?? null,
-    dragSize: dragging?.size ?? null,
-    handlePointerDown,
-    floatingRef,
-    consumeTrailingClick,
-  };
+  return usePointerDragGesture<EditableBoardDragSource>({
+    enabled,
+    resolveSource,
+    measureSquareSize,
+    onDrop: handleDrop,
+  });
 }
