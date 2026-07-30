@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
+import { CommentTreeBatch } from '@/app/[locale]/(public)/topics/_components/CommentTreeBatch';
 import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
@@ -17,8 +18,8 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { loadMoreRepertoireComments } from '../_actions/loadMoreRepertoireComments';
+import { repertoireCommentThread } from '../_lib/comment-thread';
 import { NewPostForm } from './NewPostForm';
-import { RepertoireCommentTreeBatch } from './RepertoireCommentTreeBatch';
 
 type Props = {
   locale: Locale;
@@ -89,9 +90,9 @@ export async function RepertoireCommentsSection({
               error: tTopics('loadMoreComments.error'),
             }}
           >
-            <RepertoireCommentTreeBatch
+            <CommentTreeBatch
+              {...repertoireCommentThread(locale, repertoireId)}
               locale={locale}
-              repertoireId={repertoireId}
               userId={currentUserId}
               comments={posts}
               attachments={attachments}

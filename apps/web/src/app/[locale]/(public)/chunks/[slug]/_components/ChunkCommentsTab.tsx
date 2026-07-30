@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { CommentTreeBatch } from '@/app/[locale]/(public)/topics/_components/CommentTreeBatch';
 import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
@@ -8,8 +9,8 @@ import type { validateSort } from '@/app/[locale]/(public)/topics/_lib/paginatio
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { loadMoreChunkComments } from '../_actions/loadMoreChunkComments';
+import { chunkCommentThread } from '../_lib/comment-thread';
 import type { ChunkDetailData } from '../_lib/load-chunk-detail';
-import { ChunkCommentTreeBatch } from './ChunkCommentTreeBatch';
 import { NewPostForm } from './NewPostForm';
 
 /**
@@ -88,14 +89,13 @@ export async function ChunkCommentsTab({
               error: tTopics('loadMoreComments.error'),
             }}
           >
-            <ChunkCommentTreeBatch
+            <CommentTreeBatch
+              {...chunkCommentThread(locale, slug, representativeFen)}
               locale={locale}
-              slug={slug}
               userId={userId}
               comments={comments}
               attachments={attachments}
               sortBy={sortBy}
-              representativeFen={representativeFen}
             />
           </CommentTreeLoadMore>
         </>

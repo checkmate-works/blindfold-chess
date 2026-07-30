@@ -14,6 +14,7 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
+import { CommentTreeBatch } from '@/app/[locale]/(public)/topics/_components/CommentTreeBatch';
 import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -44,7 +45,7 @@ import { DeletePositionButton } from '../_components/DeletePositionButton';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
 import { loadMorePositionMemoryComments } from './_actions/loadMorePositionMemoryComments';
 import { NewPostForm } from './_components/NewPostForm';
-import { PositionMemoryCommentTreeBatch } from './_components/PositionMemoryCommentTreeBatch';
+import { positionMemoryCommentThread } from './_lib/comment-thread';
 
 export const dynamic = 'force-dynamic';
 
@@ -330,9 +331,9 @@ export default async function PositionDetailPage({ params, searchParams }: Props
               error: tTopics('loadMoreComments.error'),
             }}
           >
-            <PositionMemoryCommentTreeBatch
+            <CommentTreeBatch
+              {...positionMemoryCommentThread(locale, position.id)}
               locale={locale}
-              positionId={position.id}
               userId={currentUser?.id}
               comments={comments}
               attachments={attachments}

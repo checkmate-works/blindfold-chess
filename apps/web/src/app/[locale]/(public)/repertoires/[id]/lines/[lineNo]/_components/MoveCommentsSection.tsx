@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
+import { CommentTreeBatch } from '@/app/[locale]/(public)/topics/_components/CommentTreeBatch';
 import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
@@ -14,7 +15,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { loadMoreMoveComments } from '../_actions/loadMoreMoveComments';
-import { MoveCommentTreeBatch } from './MoveCommentTreeBatch';
+import { moveCommentThread } from '../_lib/comment-thread';
 import { NewMovePostForm } from './NewMovePostForm';
 
 type Props = {
@@ -105,16 +106,20 @@ export async function MoveCommentsSection({
             error: tTopics('loadMoreComments.error'),
           }}
         >
-          <MoveCommentTreeBatch
+          <CommentTreeBatch
+            {...moveCommentThread({
+              locale,
+              repertoireId,
+              lineNo,
+              ply,
+              topicKey,
+              moveNotationLine,
+            })}
             locale={locale}
-            repertoireId={repertoireId}
-            lineNo={lineNo}
-            ply={ply}
-            topicKey={topicKey}
-            moveNotationLine={moveNotationLine}
             userId={currentUserId}
             comments={posts}
             attachments={attachments}
+            sortBy="new"
           />
         </CommentTreeLoadMore>
       )}
