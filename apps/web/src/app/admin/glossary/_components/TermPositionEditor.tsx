@@ -78,7 +78,7 @@ export function TermPositionEditor({ rowId, termSlug, fen, caption, initialAnnot
         />
       </div>
 
-      <FormErrorBanner variant="soft" message={error} />
+      <FormErrorBanner message={error} />
       {!error && savedAt && !isDirty && (
         <p className="text-xs text-muted-foreground">Saved at {savedAt.toLocaleTimeString()}</p>
       )}

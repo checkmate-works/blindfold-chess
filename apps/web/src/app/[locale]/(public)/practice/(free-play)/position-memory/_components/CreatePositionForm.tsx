@@ -232,11 +232,7 @@ export function CreatePositionForm({
       <div className="space-y-6">
         <PositionMemoryStepIndicator current="position" />
 
-        <FormErrorBanner
-          ref={submitError.summaryRef}
-          variant="soft"
-          message={submitError.formMessage}
-        />
+        <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
         <PositionFormFields
           board={board}

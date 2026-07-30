@@ -130,11 +130,7 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
        * gate below owns the message and the focus move.
        */}
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
-        <FormErrorBanner
-          ref={submitError.summaryRef}
-          variant="soft"
-          message={submitError.formMessage}
-        />
+        <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
         <PositionFormFields
           board={board}

@@ -3,13 +3,14 @@ import type { Ref } from 'react';
 type Props = {
   message: string | null;
   /**
-   * Visual variant:
-   * - 'inline' (default): simple rounded banner, left-aligned text
-   * - 'bordered': adds a border and centers the text
-   * - 'soft': theme-token fill (`destructive-soft`), left-aligned. Used by
-   *   the UGC authoring flows (chunks / puzzle / position memory).
+   * Layout variant. Both share the `destructive-soft` theme-token fill —
+   * there is one error colour in this app, defined once in
+   * `@blindfold-chess/ui`.
+   *
+   * - 'inline' (default): left-aligned strip above a form's fields
+   * - 'bordered': bordered and centered, for the narrow auth cards
    */
-  variant?: 'inline' | 'bordered' | 'soft';
+  variant?: 'inline' | 'bordered';
   /**
    * Focus target for `useSubmitError`. Pass its `summaryRef` when this
    * banner carries submit errors: the strip is then focused (and scrolled
@@ -33,23 +34,13 @@ export function FormErrorBanner({ message, variant = 'inline', ref }: Props) {
   // `tabIndex` makes it programmatically focusable without adding it to
   // the tab order; `role="alert"` announces it when it appears.
   const shared = { ref, tabIndex: -1, role: 'alert' } as const;
+  const fill = 'bg-destructive-soft text-destructive-soft-foreground text-sm';
 
   if (variant === 'bordered') {
     return (
       <div
         {...shared}
-        className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-center"
-      >
-        <p className="text-sm text-destructive">{message}</p>
-      </div>
-    );
-  }
-
-  if (variant === 'soft') {
-    return (
-      <div
-        {...shared}
-        className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm"
+        className={`p-3 rounded-lg border border-destructive/20 text-center ${fill}`}
       >
         {message}
       </div>
@@ -57,7 +48,7 @@ export function FormErrorBanner({ message, variant = 'inline', ref }: Props) {
   }
 
   return (
-    <div {...shared} className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+    <div {...shared} className={`p-3 rounded-md ${fill}`}>
       {message}
     </div>
   );

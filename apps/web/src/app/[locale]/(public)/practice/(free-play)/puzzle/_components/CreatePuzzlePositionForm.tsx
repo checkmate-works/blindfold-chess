@@ -278,11 +278,7 @@ export function CreatePuzzlePositionForm({
       <div className="space-y-6">
         <PuzzleStepIndicator flow="create" current="position" />
 
-        <FormErrorBanner
-          ref={step.submitError.summaryRef}
-          variant="soft"
-          message={step.submitError.formMessage}
-        />
+        <FormErrorBanner ref={step.submitError.summaryRef} message={step.submitError.formMessage} />
 
         {hydratedFromDraft && !resumed && (
           <div

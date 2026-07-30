@@ -42,7 +42,7 @@ export function CreativeFormShell({
     <div>
       {error && (
         <div className="mb-4">
-          <FormErrorBanner variant="soft" message={error} />
+          <FormErrorBanner message={error} />
         </div>
       )}
 

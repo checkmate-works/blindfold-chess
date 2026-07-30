@@ -233,7 +233,7 @@ export function ChunkPreviewClient(props: Props) {
           </dd>
         </dl>
 
-        <FormErrorBanner variant="soft" message={error} />
+        <FormErrorBanner message={error} />
 
         <div className="flex flex-col gap-3 pt-2">
           <Button

@@ -56,7 +56,7 @@ export function CreatePuzzleSolutionForm({ disableUnsavedGuard = false }: Props 
       <div className="space-y-6">
         {stepIndicator}
 
-        <FormErrorBanner variant="soft" message={step.error} />
+        <FormErrorBanner message={step.error} />
 
         <PuzzleSolutionFields
           flipped={step.flipped}

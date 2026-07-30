@@ -139,7 +139,7 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <FormErrorBanner variant="soft" message={error} />
+        <FormErrorBanner message={error} />
 
         <TagPicker
           selectedThemes={addedThemes}

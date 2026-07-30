@@ -130,11 +130,7 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
       <div className="space-y-6">
         <PuzzleStepIndicator flow="edit" current="position" />
 
-        <FormErrorBanner
-          ref={step.submitError.summaryRef}
-          variant="soft"
-          message={step.submitError.formMessage}
-        />
+        <FormErrorBanner ref={step.submitError.summaryRef} message={step.submitError.formMessage} />
 
         <PuzzlePositionFields
           board={board}

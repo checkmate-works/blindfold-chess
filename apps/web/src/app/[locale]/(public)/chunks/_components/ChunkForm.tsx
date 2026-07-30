@@ -236,11 +236,7 @@ export function ChunkForm(props: Props) {
          * rendered against that control instead, so the same sentence
          * never appears twice.
          */}
-        <FormErrorBanner
-          ref={submitError.summaryRef}
-          variant="soft"
-          message={submitError.formMessage}
-        />
+        <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
         {hydratedFromDraft && mode === 'create' && !resumed && (
           <div

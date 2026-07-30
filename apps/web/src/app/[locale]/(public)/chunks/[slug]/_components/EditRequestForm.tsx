@@ -232,7 +232,7 @@ export function EditRequestForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-xs text-muted-foreground">{t('formHint')}</p>
 
-        <FormErrorBanner variant="soft" message={error} />
+        <FormErrorBanner message={error} />
 
         {titlePrimary && titleField}
         {descriptionPrimary && descriptionField}
