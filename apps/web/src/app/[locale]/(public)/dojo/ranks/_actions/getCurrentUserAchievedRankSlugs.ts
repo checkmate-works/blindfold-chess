@@ -2,8 +2,8 @@
 
 import { getOptionalUser } from '@/lib/auth';
 
-import { resolveDisplayAchievedSlugs } from '../_lib/helpers';
 import { getAchievedSlugsForUser } from '../_lib/queries';
+import { resolveDisplayAchievedSlugs } from '../_lib/rank-progression';
 
 /**
  * Return the DISPLAY set of rank slugs the currently-signed-in user has

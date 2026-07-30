@@ -11,14 +11,13 @@ import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCurrentUserAchievedRankIds } from '../_actions/getCurrentUserAchievedRankIds';
+import { getBeltColorHex } from '../_lib/belt-colors';
 import {
-  buildRequirementLabels,
-  getBeltColorHex,
-  getRankCardState,
   resolveAchievedSlugs,
   resolveDisplayAchievedSlugs,
   resolveRecommendedNextSlug,
-} from '../_lib/helpers';
+} from '../_lib/rank-progression';
+import { buildRequirementLabels, getRankCardState } from '../_lib/requirement-items';
 import { RankCard } from './RankCard';
 
 /**

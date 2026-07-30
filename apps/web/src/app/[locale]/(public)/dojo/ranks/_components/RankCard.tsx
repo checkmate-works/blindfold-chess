@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 import { HiCheckCircle, HiChevronRight } from 'react-icons/hi2';
 
-import { isWhiteBelt } from '../_lib/helpers';
-import type { RankCardState } from '../_lib/helpers';
+import { isWhiteBelt } from '../_lib/belt-colors';
+import type { RankCardState } from '../_lib/requirement-items';
 import { RequirementsList } from './RequirementsList';
 import type { RequirementDivider } from './RequirementsList';
 

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { GiBlackBelt } from 'react-icons/gi';
 
 import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
-import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {

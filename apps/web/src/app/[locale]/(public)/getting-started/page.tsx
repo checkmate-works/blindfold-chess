@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { FaChess, FaComments, FaDumbbell } from 'react-icons/fa';
 
 import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
-import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 import { PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';

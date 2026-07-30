@@ -1,6 +1,6 @@
 import type { RankSlug } from '@/lib/db/data/ranks';
 
-import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
 
 type BeltStripProps = {
   slug: RankSlug;

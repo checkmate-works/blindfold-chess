@@ -4,7 +4,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
 import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
-import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 
 type Props = {
   locale: string;

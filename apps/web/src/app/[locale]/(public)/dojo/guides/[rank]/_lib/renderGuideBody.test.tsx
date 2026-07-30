@@ -133,7 +133,7 @@ vi.mock('@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList', () =>
   ),
 }));
 
-vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/helpers', () => ({
+vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items', () => ({
   buildRequirementItems: (reqs: Array<{ minScore: number; menuType: string }>) =>
     reqs.map((r) => ({ label: `score>=${r.minScore} ${r.menuType}`, href: '/x' })),
   getBeltColorHex: () => '#abcdef',

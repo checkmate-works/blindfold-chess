@@ -4,7 +4,7 @@ import { db, ranks, userRanks } from '@/lib/db';
 import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
-import { resolveAchievedSlugs } from './helpers';
+import { resolveAchievedSlugs } from './rank-progression';
 
 export async function getAllRanks() {
   return db.select().from(ranks).orderBy(asc(ranks.level));

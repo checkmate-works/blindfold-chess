@@ -25,18 +25,20 @@ import { buildGuidePath, getRankGuide } from '@/lib/guides';
 import { createClient } from '@/lib/supabase/server';
 
 import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
-import {
-  buildRequirementItems,
-  getBeltColorHex,
-  isRankEarnedByPlaying,
-  resolveAchievedSlugs,
-  resolveDisplayAchievedSlugs,
-  resolveNextRank,
-} from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
 import {
   getAllRanks,
   getUserAchievedRankIds,
 } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
+import {
+  resolveAchievedSlugs,
+  resolveDisplayAchievedSlugs,
+  resolveNextRank,
+} from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
+import {
+  buildRequirementItems,
+  isRankEarnedByPlaying,
+} from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 import { PublishNudgeBanner } from '@/app/[locale]/(public)/games/_components/PublishNudgeBanner';
 import {
   CurriculumToc,

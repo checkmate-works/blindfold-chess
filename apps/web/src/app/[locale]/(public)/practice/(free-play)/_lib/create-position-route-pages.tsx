@@ -89,121 +89,112 @@ type IdSearchProps = IdProps & {
 };
 
 /**
- * Build the `generateMetadata` + `Page` pair for a position's edit-requests
- * page. The body is entirely delegated to the shared
- * `PositionEditRequestsView`; only the position type and canonical path vary.
+ * The props every position sub-page view takes — they are interchangeable.
+ * Async because all three are Server Components that load their own data.
  */
-export function createPositionEditRequestsPage(route: PositionRouteKind) {
+type PositionSubPageView = (props: {
+  positionId: string;
+  positionType: PositionRouteKind['positionType'];
+  locale: Locale;
+}) => ReactNode | Promise<ReactNode>;
+
+type PositionSubPageOptions = {
+  /** `next-intl` namespace holding this sub-page's title key. */
+  namespace: string;
+  /** Title key within `namespace`, interpolated with the position's `name`. */
+  titleKey: string;
+  /** Path under `practice/<slug>/<id>/`, e.g. `'suggestions/new'`. */
+  pathSuffix: string;
+  /** Rendered with the position id / type / locale; owns the whole body. */
+  View: PositionSubPageView;
+  /** Omit to stay indexable. */
+  robots?: Metadata['robots'];
+};
+
+/**
+ * Build the `generateMetadata` + `Page` pair for a position sub-page whose body
+ * is entirely delegated to one view component: edit-requests, the "propose a
+ * suggestion" form, and edit history.
+ *
+ * All three are the same page shape — resolve the row for its title, 404-title
+ * it when missing, emit canonical metadata, then hand id/type/locale to a view —
+ * so they are one factory parameterised by {@link PositionSubPageOptions} rather
+ * than three near-identical ones. A sub-page that needs to do more than name a
+ * view (data loading, an owner check, its own layout) gets its own factory
+ * instead; see `createPositionEditPage` / `createPositionForksPage`.
+ */
+export function createPositionSubPage(
+  route: PositionRouteKind,
+  { namespace, titleKey, pathSuffix, View, robots }: PositionSubPageOptions
+) {
   const { slug, positionType } = route;
 
   async function generateMetadata({ params }: IdProps): Promise<Metadata> {
     const { locale, id } = await params;
-    const t = await getTranslations({ locale, namespace: 'practice.positionEditRequests' });
+    const t = await getTranslations({ locale, namespace });
     const row = await getPositionWithProfileById({ id, type: positionType });
 
     if (!row) {
       return { title: resolveTitle('Not Found', locale) };
     }
 
-    const title = t('pageTitle', { name: row.position.title });
+    const title = t(titleKey, { name: row.position.title });
     return {
       ...generateCanonicalMetadata({
         locale,
-        path: `practice/${slug}/${id}/suggestions`,
+        path: `practice/${slug}/${id}/${pathSuffix}`,
         title,
       }),
       title: resolveTitle(title, locale),
+      ...(robots ? { robots } : {}),
     };
   }
 
   async function Page({ params }: IdProps) {
     const { locale, id } = await params;
-    return <PositionEditRequestsView positionId={id} positionType={positionType} locale={locale} />;
+    return <View positionId={id} positionType={positionType} locale={locale} />;
   }
 
   return { generateMetadata, Page };
 }
 
+/** Edit-requests list / review page (`/practice/<slug>/[id]/suggestions`). */
+export function createPositionEditRequestsPage(route: PositionRouteKind) {
+  return createPositionSubPage(route, {
+    namespace: 'practice.positionEditRequests',
+    titleKey: 'pageTitle',
+    pathSuffix: 'suggestions',
+    View: PositionEditRequestsView,
+  });
+}
+
 /**
- * Build the `generateMetadata` + `Page` pair for a position's "propose a
- * suggestion" form page (`/practice/<slug>/[id]/suggestions/new`). The body
- * is entirely delegated to the shared `PositionEditRequestNewView`; only the
- * position type and canonical path vary. Sibling of
- * `createPositionEditRequestsPage`, which owns the list/review page this
- * one links back to.
+ * "Propose a suggestion" form (`/practice/<slug>/[id]/suggestions/new`) —
+ * sibling of {@link createPositionEditRequestsPage}, which owns the list page
+ * this one links back to.
  */
 export function createPositionEditRequestNewPage(route: PositionRouteKind) {
-  const { slug, positionType } = route;
-
-  async function generateMetadata({ params }: IdProps): Promise<Metadata> {
-    const { locale, id } = await params;
-    const t = await getTranslations({ locale, namespace: 'practice.positionEditRequests' });
-    const row = await getPositionWithProfileById({ id, type: positionType });
-
-    if (!row) {
-      return { title: resolveTitle('Not Found', locale) };
-    }
-
-    const title = t('newPageTitle', { name: row.position.title });
-    return {
-      ...generateCanonicalMetadata({
-        locale,
-        path: `practice/${slug}/${id}/suggestions/new`,
-        title,
-      }),
-      title: resolveTitle(title, locale),
-    };
-  }
-
-  async function Page({ params }: IdProps) {
-    const { locale, id } = await params;
-    return (
-      <PositionEditRequestNewView positionId={id} positionType={positionType} locale={locale} />
-    );
-  }
-
-  return { generateMetadata, Page };
+  return createPositionSubPage(route, {
+    namespace: 'practice.positionEditRequests',
+    titleKey: 'newPageTitle',
+    pathSuffix: 'suggestions/new',
+    View: PositionEditRequestNewView,
+  });
 }
 
-/**
- * Build the `generateMetadata` + `Page` pair for a position's edit-history
- * page. The body is entirely delegated to the shared `PositionHistoryView`;
- * only the position type and canonical path vary.
- */
+/** Edit-history page (`/practice/<slug>/[id]/history`). */
 export function createPositionHistoryPage(route: PositionRouteKind) {
-  const { slug, positionType } = route;
-
-  async function generateMetadata({ params }: IdProps): Promise<Metadata> {
-    const { locale, id } = await params;
-    const t = await getTranslations({ locale, namespace: 'practice.positionHistory' });
-    const row = await getPositionWithProfileById({ id, type: positionType });
-
-    if (!row) {
-      return { title: resolveTitle('Not Found', locale) };
-    }
-
-    const title = t('pageTitle', { name: row.position.title });
-    return {
-      ...generateCanonicalMetadata({
-        locale,
-        path: `practice/${slug}/${id}/history`,
-        title,
-      }),
-      title: resolveTitle(title, locale),
-      // Noindex: a revision row can preserve an overwritten old title/
-      // description verbatim (e.g. the author fixing a typo or removing
-      // something regrettable), so this page shouldn't be a search result
-      // in its own right the way the detail page is.
-      robots: { index: false, follow: true },
-    };
-  }
-
-  async function Page({ params }: IdProps) {
-    const { locale, id } = await params;
-    return <PositionHistoryView positionId={id} positionType={positionType} locale={locale} />;
-  }
-
-  return { generateMetadata, Page };
+  return createPositionSubPage(route, {
+    namespace: 'practice.positionHistory',
+    titleKey: 'pageTitle',
+    pathSuffix: 'history',
+    View: PositionHistoryView,
+    // Noindex: a revision row can preserve an overwritten old title /
+    // description verbatim (e.g. the author fixing a typo or removing something
+    // regrettable), so this page shouldn't be a search result in its own right
+    // the way the detail page is.
+    robots: { index: false, follow: true },
+  });
 }
 
 const FORKS_PAGE_SIZE = 20;
