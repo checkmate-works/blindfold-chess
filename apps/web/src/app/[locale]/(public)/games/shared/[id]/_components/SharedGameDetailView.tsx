@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
-import { getAllAvailableChunkOptions } from '@/lib/chunks/queries';
+import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
 import { getGameById } from '@/lib/db/games-read';
@@ -73,7 +73,10 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     user ? getCommentUserProfile(user.id) : Promise.resolve(null),
     getLikeMeta(GAME_LIKE_TARGET, game.id, user?.id),
     listGameChunks(game.id),
-    getAllAvailableChunkOptions(),
+    // Published catalog + the viewer's own drafts, so a chunk just authored
+    // from a position on this very board can be linked back to it without a
+    // publish round-trip. See `linkableChunkPredicate`.
+    getLinkableChunkOptionsForViewer(user?.id ?? null),
   ]);
 
   // Whether to offer the "as played" GIF — shared with the pre-publish teaser

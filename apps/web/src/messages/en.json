@@ -2669,6 +2669,7 @@
       "signIn": "Sign in",
       "remove": "Remove {title}",
       "badge": "Chunk",
+      "draftBadge": "Draft",
       "submit": "Link {count}",
       "submitting": "Linking…",
       "errors": {

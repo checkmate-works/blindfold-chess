@@ -2669,6 +2669,7 @@
       "signIn": "Iniciar sesión",
       "remove": "Quitar {title}",
       "badge": "Chunk",
+      "draftBadge": "Borrador",
       "submit": "Vincular {count}",
       "submitting": "Vinculando…",
       "errors": {

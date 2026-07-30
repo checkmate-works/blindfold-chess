@@ -2669,6 +2669,7 @@
       "signIn": "ログイン",
       "remove": "{title} の紐付けを解除",
       "badge": "チャンク",
+      "draftBadge": "下書き",
       "submit": "{count}件を紐付ける",
       "submitting": "保存中…",
       "errors": {

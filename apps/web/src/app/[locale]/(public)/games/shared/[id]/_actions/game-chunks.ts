@@ -5,7 +5,7 @@ import {
   deleteGameChunk,
   getGameChunkForDelete,
   insertGameChunk,
-  isLinkablePublishedChunk,
+  isLinkableChunkForViewer,
 } from '@/lib/db/game-chunks';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
@@ -19,15 +19,18 @@ export type AddGameChunkInput = {
 };
 
 export type AddGameChunkResponse =
-  | { success: true; id: string; createdAt: string }
-  | { success: false; error: string };
+  { success: true; id: string; createdAt: string } | { success: false; error: string };
 
 export type DeleteGameChunkResponse = { success: true } | { success: false; error: string };
 
 /**
- * Link a published chunk to a shared game's move (members-only). Any signed-in
- * member may suggest a link; it is deduped by the (game, ply, chunk) unique
+ * Link a chunk to a shared game's move (members-only). Any signed-in member
+ * may suggest a link; it is deduped by the (game, ply, chunk) unique
  * constraint, so a repeat link surfaces as `already_linked` rather than an error.
+ *
+ * Eligible chunks are the published catalog plus the caller's own drafts —
+ * see `linkableChunkPredicate`. The check re-asserts server-side what
+ * `getLinkableChunkOptionsForViewer` already filtered for the picker.
  */
 export async function addGameChunkAction(input: AddGameChunkInput): Promise<AddGameChunkResponse> {
   try {
@@ -48,7 +51,7 @@ export async function addGameChunkAction(input: AddGameChunkInput): Promise<AddG
     if ('error' in guardResult) return { success: false, error: guardResult.error };
     const { user } = guardResult;
 
-    if (!(await isLinkablePublishedChunk(input.chunkId))) {
+    if (!(await isLinkableChunkForViewer(input.chunkId, user.id))) {
       return { success: false, error: 'chunk_not_available' };
     }
 

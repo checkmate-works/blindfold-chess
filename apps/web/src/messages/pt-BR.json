@@ -2669,6 +2669,7 @@
       "signIn": "Entrar",
       "remove": "Remover {title}",
       "badge": "Chunk",
+      "draftBadge": "Rascunho",
       "submit": "Vincular {count}",
       "submitting": "Vinculando…",
       "errors": {

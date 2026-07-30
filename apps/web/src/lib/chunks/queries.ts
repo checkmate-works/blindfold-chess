@@ -15,9 +15,10 @@ import {
 import { combineConditions, countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
+import { linkableChunkPredicate } from './linkability';
 import type { ChunkOption } from './types';
 import type { ChunkFeedbackTopic, ChunkStatus } from './validation';
-import { isChunkFeedbackTopic } from './validation';
+import { isChunkFeedbackTopic, isChunkStatus } from './validation';
 
 // Shared select column list for the picker-facing chunk queries.
 // Centralized so the per-position and the global catalog loaders stay
@@ -28,6 +29,7 @@ const chunkOptionSelectColumns = {
   title: chunks.title,
   representativeFen: chunks.representativeFen,
   description: chunks.description,
+  status: chunks.status,
 } as const;
 
 type ChunkOptionRow = {
@@ -36,6 +38,7 @@ type ChunkOptionRow = {
   title: string;
   representativeFen: string;
   description: string | null;
+  status: string;
 };
 
 function mapChunkOption(row: ChunkOptionRow): ChunkOption {
@@ -45,6 +48,11 @@ function mapChunkOption(row: ChunkOptionRow): ChunkOption {
     label: row.title,
     representativeFen: row.representativeFen,
     description: row.description ?? null,
+    // `status` is a varchar column (deliberately not a pgEnum, so future
+    // states need no ALTER TYPE). Anything outside the known set reads as
+    // 'published' — the conservative default: an unrecognized state must
+    // not render as "still being workshopped".
+    status: isChunkStatus(row.status) ? row.status : 'published',
   };
 }
 
@@ -334,6 +342,26 @@ export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]
     .orderBy(asc(chunks.title));
   return rows.map(mapChunkOption);
 });
+
+/**
+ * Picker catalog for the game-move chunk link: every published chunk,
+ * **plus the viewer's own drafts**. See `linkableChunkPredicate` for why
+ * the draft allowance exists and why it is keyed on the chunk's owner.
+ *
+ * Anonymous viewers get the published-only list — identical to
+ * `getAllAvailableChunkOptions`, but reached through the same call site so
+ * the page does not branch on auth just to pick a loader.
+ */
+export const getLinkableChunkOptionsForViewer = cache(
+  async (viewerId: string | null): Promise<ChunkOption[]> => {
+    const rows = await db
+      .select(chunkOptionSelectColumns)
+      .from(chunks)
+      .where(and(isNull(chunks.deletedAt), linkableChunkPredicate(viewerId)))
+      .orderBy(asc(chunks.title));
+    return rows.map(mapChunkOption);
+  }
+);
 
 /**
  * Linked positions for the chunk detail page.

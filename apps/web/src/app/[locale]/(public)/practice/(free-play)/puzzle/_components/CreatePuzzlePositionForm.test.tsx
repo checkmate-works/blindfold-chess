@@ -523,6 +523,7 @@ describe('CreatePuzzlePositionForm', () => {
       label: 'Ladder mate',
       representativeFen: VALID_FEN,
       description: null,
+      status: 'published',
     };
 
     it('is disabled on an untouched blank form', () => {

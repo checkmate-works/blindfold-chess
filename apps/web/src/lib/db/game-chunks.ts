@@ -7,6 +7,9 @@
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
+import { linkableChunkPredicate } from '@/lib/chunks/linkability';
+import { type ChunkStatus, isChunkStatus } from '@/lib/chunks/validation';
+
 import { db } from './index';
 import { liveProfileJoinOn } from './profile-select';
 import { chunks, gameChunks, games, profiles } from './schema';
@@ -19,6 +22,13 @@ export type GameChunkItem = {
   title: string;
   description: string | null;
   representativeFen: string;
+  /**
+   * Lifecycle state of the linked chunk. A link may point at a draft (the
+   * author's own — see `linkableChunkPredicate`), whose title is still
+   * open to renegotiation, so the UI marks those rows rather than letting
+   * them read as settled catalog entries.
+   */
+  status: ChunkStatus;
   createdAt: Date;
   suggestedById: string | null;
   suggester: {
@@ -43,6 +53,7 @@ export async function listGameChunks(gameId: string): Promise<GameChunkItem[]> {
       title: chunks.title,
       description: chunks.description,
       representativeFen: chunks.representativeFen,
+      status: chunks.status,
       createdAt: gameChunks.createdAt,
       suggestedById: gameChunks.suggestedById,
       suggesterUsername: profiles.username,
@@ -63,6 +74,9 @@ export async function listGameChunks(gameId: string): Promise<GameChunkItem[]> {
     title: r.title,
     description: r.description,
     representativeFen: r.representativeFen,
+    // Unknown values fall back to 'published' — an unrecognized lifecycle
+    // state must not render as "still being workshopped".
+    status: isChunkStatus(r.status) ? r.status : 'published',
     createdAt: r.createdAt,
     suggestedById: r.suggestedById,
     suggester: r.suggesterUsername
@@ -75,12 +89,23 @@ export async function listGameChunks(gameId: string): Promise<GameChunkItem[]> {
   }));
 }
 
-/** True if the chunk exists, is published, and is not soft-deleted (linkable). */
-export async function isLinkablePublishedChunk(chunkId: string): Promise<boolean> {
+/**
+ * True if `viewerId` may link this chunk to a game move: the chunk exists,
+ * is not soft-deleted, and is either published or a draft the viewer owns.
+ *
+ * The draft allowance is the server-side half of
+ * `getLinkableChunkOptionsForViewer` — both sides share
+ * `linkableChunkPredicate` so the picker's contents and this gate cannot
+ * drift. See that query's TSDoc for why own drafts are eligible.
+ */
+export async function isLinkableChunkForViewer(
+  chunkId: string,
+  viewerId: string
+): Promise<boolean> {
   const [row] = await db
     .select({ id: chunks.id })
     .from(chunks)
-    .where(and(eq(chunks.id, chunkId), eq(chunks.status, 'published'), isNull(chunks.deletedAt)))
+    .where(and(eq(chunks.id, chunkId), isNull(chunks.deletedAt), linkableChunkPredicate(viewerId)))
     .limit(1);
   return row !== undefined;
 }

@@ -19,11 +19,17 @@ type Props = {
   linkedChunkIds: Set<string>;
   disabled?: boolean;
   onSelect: (chunk: ChunkOption) => void;
-  labels: { placeholder: string; noResults: string; moreItemsHint: (count: number) => string };
+  labels: {
+    placeholder: string;
+    noResults: string;
+    moreItemsHint: (count: number) => string;
+    /** Marker for the viewer's own drafts, which only they can see here. */
+    draft: string;
+  };
 };
 
 /**
- * Searchable chunk selector for linking a published chunk to a game's move.
+ * Searchable chunk selector for linking a chunk to a game's move.
  * A focused, chunk-only adaptation of the puzzle/position `TagPicker` combobox:
  * select a chunk → `onSelect` fires (the caller links it via a server action) →
  * the input clears for the next pick.
@@ -125,6 +131,13 @@ export function GameChunkPicker({
                 <ThemedBoardThumbnail fen={item.representativeFen} className="h-12 w-12" />
               </span>
               <span className="truncate">{item.label}</span>
+              {/* Own drafts are offered here but nowhere else; mark them so a
+                  still-unsettled title is never mistaken for a settled one. */}
+              {item.status === 'draft' && (
+                <span className="ml-auto flex-shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+                  {labels.draft}
+                </span>
+              )}
             </li>
           ))}
         {isOpen && displayItems.length === 0 && inputValue.length > 0 && (
