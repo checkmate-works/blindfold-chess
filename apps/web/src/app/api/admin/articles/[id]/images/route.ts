@@ -4,12 +4,7 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
-import {
-  ALLOWED_MIME_TYPES,
-  MAX_FILE_SIZE,
-  MIME_TO_EXTENSION,
-  validateBinarySignature,
-} from '@/lib/admin-images/validation';
+import { MIME_TO_EXTENSION, parseAdminImageUpload } from '@/lib/admin-images/validation';
 import { checkMutationOrigin, parseJsonBody } from '@/lib/api-mutation-guard';
 import { articleImages, articles, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
@@ -55,36 +50,14 @@ async function verifyArticleExists(articleId: string): Promise<NextResponse | nu
   return null;
 }
 
+/** The shared admin-image gate, plus this endpoint's own `altText` field. */
 async function parseAndValidateFile(request: Request) {
-  let formData: FormData;
-  try {
-    formData = await request.formData();
-  } catch {
-    return { error: NextResponse.json({ error: 'invalid_form_data' }, { status: 400 }) } as const;
-  }
+  const upload = await parseAdminImageUpload(request);
+  if (upload.error) return { error: upload.error } as const;
 
-  const file = formData.get('file');
-  if (!(file instanceof File)) {
-    return { error: NextResponse.json({ error: 'file_required' }, { status: 400 }) } as const;
-  }
+  const altText = (upload.formData.get('altText') as string) || null;
 
-  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    return { error: NextResponse.json({ error: 'invalid_file_type' }, { status: 400 }) } as const;
-  }
-
-  if (file.size > MAX_FILE_SIZE) {
-    return { error: NextResponse.json({ error: 'file_too_large' }, { status: 400 }) } as const;
-  }
-
-  const buffer = await file.arrayBuffer();
-
-  if (!validateBinarySignature(buffer, file.type)) {
-    return { error: NextResponse.json({ error: 'invalid_file_type' }, { status: 400 }) } as const;
-  }
-
-  const altText = (formData.get('altText') as string) || null;
-
-  return { file, buffer, altText } as const;
+  return { file: upload.file, buffer: upload.buffer, altText } as const;
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {

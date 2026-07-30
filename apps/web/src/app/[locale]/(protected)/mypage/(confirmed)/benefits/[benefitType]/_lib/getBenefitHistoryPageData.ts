@@ -1,8 +1,10 @@
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
-import { db, positions, topicPosts, userGrants } from '@/lib/db';
+import { db, userGrants } from '@/lib/db';
 import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
 import { getPaginationParams } from '@/lib/pagination';
+
+import { resolveGrantSources } from '@/app/[locale]/(protected)/mypage/(confirmed)/benefits/_lib/resolve-grant-sources';
 
 import { type GrantSourceMeta, resolveGrantSourceMeta } from '../../_lib/source';
 
@@ -77,34 +79,7 @@ export async function getBenefitHistoryPageData({
     .limit(limit)
     .offset(offset);
 
-  const topicPostIds = grantRows
-    .filter((g) => g.sourceType === 'topic_post' && g.sourceId)
-    .map((g) => g.sourceId as string);
-  const positionIds = grantRows
-    .filter((g) => g.sourceType === 'position' && g.sourceId)
-    .map((g) => g.sourceId as string);
-
-  const [topicPostRows, positionRows] = await Promise.all([
-    topicPostIds.length
-      ? db
-          .select({
-            id: topicPosts.id,
-            topicType: topicPosts.topicType,
-            topicKey: topicPosts.topicKey,
-          })
-          .from(topicPosts)
-          .where(inArray(topicPosts.id, topicPostIds))
-      : Promise.resolve([] as Array<{ id: string; topicType: string; topicKey: string }>),
-    positionIds.length
-      ? db
-          .select({ id: positions.id, type: positions.type })
-          .from(positions)
-          .where(inArray(positions.id, positionIds))
-      : Promise.resolve([] as Array<{ id: string; type: string }>),
-  ]);
-
-  const topicPostMap = new Map(topicPostRows.map((r) => [r.id, r]));
-  const positionMap = new Map(positionRows.map((r) => [r.id, r]));
+  const { topicPostMap, positionMap } = await resolveGrantSources(grantRows);
 
   const now = new Date();
 
