@@ -1,7 +1,14 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { MUTABLE_NOTIFICATION_TYPES } from '@/lib/notifications/mutable-types';
+
 import { NotificationSettings } from './NotificationSettings';
+
+// Both the skeleton and the loaded list are rendered straight from the
+// constant, so the counts are derived rather than spelled out — adding a
+// mutable type should not require editing an unrelated magic number here.
+const TYPE_COUNT = MUTABLE_NOTIFICATION_TYPES.length;
 
 afterEach(() => {
   cleanup();
@@ -24,6 +31,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
       'notifications.types.chunk_published': 'Chunk published',
       'notifications.types.new_game': 'New games',
       'notifications.types.new_comment_on_topic': 'Comments on your posts',
+      'notifications.types.game_chunk_linked': 'Chunks linked to your games',
     };
     return labels[key] ?? key;
   },
@@ -40,15 +48,15 @@ describe('NotificationSettings', () => {
     const { container } = render(<NotificationSettings />);
 
     expect(screen.queryAllByRole('switch')).toHaveLength(0);
-    // 5 skeleton rows × 2 shapes (label bar + switch placeholder).
-    expect(container.querySelectorAll('[aria-hidden="true"]')).toHaveLength(10);
+    // One skeleton row per type × 2 shapes (label bar + switch placeholder).
+    expect(container.querySelectorAll('[aria-hidden="true"]')).toHaveLength(TYPE_COUNT * 2);
   });
 
   it('renders one switch per mutable type once loaded', async () => {
     mockGetNotificationMutes.mockResolvedValue([]);
     render(<NotificationSettings />);
 
-    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(5));
+    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(TYPE_COUNT));
   });
 
   it('renders a muted type as off and an unmuted type as on', async () => {
@@ -68,7 +76,7 @@ describe('NotificationSettings', () => {
   it('calls setNotificationMute(type, true) when toggling an enabled type off', async () => {
     mockGetNotificationMutes.mockResolvedValue([]);
     render(<NotificationSettings />);
-    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(5));
+    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(TYPE_COUNT));
 
     fireEvent.click(screen.getByRole('switch', { name: 'New problem posts' }));
 
@@ -81,7 +89,7 @@ describe('NotificationSettings', () => {
   it('calls setNotificationMute(type, false) when toggling a muted type back on', async () => {
     mockGetNotificationMutes.mockResolvedValue(['new_position']);
     render(<NotificationSettings />);
-    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(5));
+    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(TYPE_COUNT));
 
     fireEvent.click(screen.getByRole('switch', { name: 'New problem posts' }));
 

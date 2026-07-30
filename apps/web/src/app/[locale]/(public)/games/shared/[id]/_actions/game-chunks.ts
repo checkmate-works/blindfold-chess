@@ -7,6 +7,7 @@ import {
   insertGameChunk,
   isLinkableChunkForViewer,
 } from '@/lib/db/game-chunks';
+import { notifyGameOwnerOfChunkLink } from '@/lib/notifications/game-chunk-link-notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -62,6 +63,15 @@ export async function addGameChunkAction(input: AddGameChunkInput): Promise<AddG
       suggestedById: user.id,
     });
     if (!row) return { success: false, error: 'already_linked' };
+
+    // Only a link that actually landed notifies — a deduped repeat would
+    // otherwise let anyone re-ping the owner by re-submitting the same pair.
+    notifyGameOwnerOfChunkLink({
+      actorId: user.id,
+      gameId: input.gameId,
+      ply: input.ply,
+      chunkId: input.chunkId,
+    });
 
     return { success: true, id: row.id, createdAt: row.createdAt.toISOString() };
   } catch (error) {

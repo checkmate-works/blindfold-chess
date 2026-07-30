@@ -112,6 +112,23 @@ export function isGameCommentLikeMetadata(m: unknown): m is GameCommentLikeMetad
   return typeof r.gameId === 'string';
 }
 
+/**
+ * Metadata persisted with a `game_chunk_linked` notification — a member
+ * linked a chunk to a move of the recipient's shared game. `targetId` is the
+ * game (it groups a burst of links into one notification; see
+ * `notifyGameOwnerOfChunkLink`), so the move has to ride in metadata: `ply`
+ * builds the `#<half-move>` replay deep link. `chunkId` is also persisted but
+ * not asserted here — nothing on the read path resolves it, and requiring it
+ * would only make the link builder fall back to a non-link button.
+ */
+export type GameChunkLinkMetadata = { gameId: string; ply: number };
+
+export function isGameChunkLinkMetadata(m: unknown): m is GameChunkLinkMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.gameId === 'string' && typeof r.ply === 'number' && Number.isInteger(r.ply);
+}
+
 export function isAnnouncementMetadata(m: unknown): m is AnnouncementMetadata {
   if (typeof m !== 'object' || m === null) return false;
   const r = m as Record<string, unknown>;

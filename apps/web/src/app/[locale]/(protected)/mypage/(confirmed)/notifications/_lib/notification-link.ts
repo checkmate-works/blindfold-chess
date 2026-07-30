@@ -9,6 +9,7 @@ import {
   isChunkEditRequestMetadata,
   isChunkLifecycleMetadata,
   isChunkLikeMetadata,
+  isGameChunkLinkMetadata,
   isGameCommentLikeMetadata,
   isPositionMetadata,
   isPostMetadata,
@@ -218,6 +219,13 @@ export function buildNotificationLink(
   if (notification.type === 'new_game' && notification.targetId) {
     // A followed author published a game; the target is the game id.
     return `/games/shared/${notification.targetId}`;
+  }
+  if (notification.type === 'game_chunk_linked' && isGameChunkLinkMetadata(notification.metadata)) {
+    // Open the replay at the tagged move, where that move's chunk links are
+    // listed. The replay parses `#<half-move>` client-side as 1-based (see
+    // `useReplayDeepLink`), hence the +1; an out-of-range value there simply
+    // degrades to the overview board rather than 404ing.
+    return `/games/shared/${notification.metadata.gameId}#${notification.metadata.ply + 1}`;
   }
   if (
     (notification.type === 'like' ||

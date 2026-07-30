@@ -237,6 +237,51 @@ describe('buildNotificationLink — games', () => {
     ).toBe('/games/shared/game-42?comment=reply-8');
   });
 
+  // The replay's own deep link is the 1-based half-move hash, so ply 3 (the
+  // 4th half-move, 0-based) has to render as #4 — an off-by-one here silently
+  // opens the wrong move's chunk list.
+  it('deep-links a game_chunk_linked to the tagged move', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'game_chunk_linked',
+          targetType: 'game',
+          targetId: 'game-42',
+          metadata: { gameId: 'game-42', ply: 3, chunkId: 'chunk-1' },
+        }),
+        {}
+      )
+    ).toBe('/games/shared/game-42#4');
+  });
+
+  it('deep-links a game_chunk_linked at ply 0 to the first half-move', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'game_chunk_linked',
+          targetType: 'game',
+          targetId: 'game-42',
+          metadata: { gameId: 'game-42', ply: 0, chunkId: 'chunk-1' },
+        }),
+        {}
+      )
+    ).toBe('/games/shared/game-42#1');
+  });
+
+  it('degrades a game_chunk_linked without a ply to a non-link', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'game_chunk_linked',
+          targetType: 'game',
+          targetId: 'game-42',
+          metadata: { gameId: 'game-42' },
+        }),
+        {}
+      )
+    ).toBeNull();
+  });
+
   it('links a new_game to the shared game page', () => {
     expect(
       buildNotificationLink(

@@ -12,6 +12,7 @@ const mockTxDeleteWhere = vi.fn();
 const mockTxFeedbackInsertValues = vi.fn();
 const mockTxFeedInsertValues = vi.fn();
 const mockNotifyFollowersOfNewChunk = vi.fn();
+const mockNotifyGameOwnerOfChunkLink = vi.fn();
 const mockFindChunkBySlug = vi.fn();
 const mockGrantPointsForPost = vi.fn();
 const mockClawbackPointsForPost = vi.fn();
@@ -32,6 +33,10 @@ vi.mock('@/lib/users/activity-log', () => ({
 
 vi.mock('@/lib/notifications/notification', () => ({
   notifyFollowersOfNewChunk: (...args: unknown[]) => mockNotifyFollowersOfNewChunk(...args),
+}));
+
+vi.mock('@/lib/notifications/game-chunk-link-notification', () => ({
+  notifyGameOwnerOfChunkLink: (...args: unknown[]) => mockNotifyGameOwnerOfChunkLink(...args),
 }));
 
 vi.mock('@/lib/points', () => ({
@@ -463,6 +468,30 @@ describe('createChunkEntry', () => {
         suggestedById: TEST_USER_ID,
       });
       expect(result).toMatchObject({ success: true, linkedToGame: true });
+    });
+
+    // Authoring from a game position must reach the owner the same way the
+    // per-move picker does — otherwise the flow that creates the most links
+    // would be the silent one.
+    it("notifies the game's owner when the link lands", async () => {
+      const { createChunkEntry } = await import('./user-chunk-mutations');
+      await createChunkEntry(baseCreateInput, { linkTarget: { gameId: GAME_ID, ply: 16 } });
+
+      expect(mockNotifyGameOwnerOfChunkLink).toHaveBeenCalledWith({
+        actorId: TEST_USER_ID,
+        gameId: GAME_ID,
+        ply: 16,
+        chunkId: TEST_CHUNK_ID,
+      });
+    });
+
+    it('does not notify when the link was refused', async () => {
+      mockLinkNewChunkToGameMove.mockResolvedValue(false);
+
+      const { createChunkEntry } = await import('./user-chunk-mutations');
+      await createChunkEntry(baseCreateInput, { linkTarget: { gameId: GAME_ID, ply: 999 } });
+
+      expect(mockNotifyGameOwnerOfChunkLink).not.toHaveBeenCalled();
     });
 
     it('does not touch game_chunks when no link target is given', async () => {
