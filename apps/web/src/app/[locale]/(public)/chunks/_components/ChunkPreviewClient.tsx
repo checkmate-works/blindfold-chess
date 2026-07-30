@@ -16,7 +16,9 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { createChunk } from '../_actions/createChunk';
 import { saveChunkEdit, submitChunkPublish } from '../_lib/chunk-form-actions';
 import { type ChunkDraftV1, clearChunkDraft, readChunkDraft } from '../_lib/draft-storage';
+import { type ChunkIdentity, diffChunkIdentity } from '../_lib/identity-changes';
 import { localizeChunkError } from '../_lib/localize-error';
+import { type ChunkReferenceCounts, ChunkReferenceWarning } from './ChunkReferenceWarning';
 
 const PREVIEW_ERROR_CODES = new Set([
   'signInRequired',
@@ -33,8 +35,22 @@ const PREVIEW_ERROR_CODES = new Set([
 
 type Props =
   | { mode: 'create' }
-  /** `editHref` is the edit form to return to (e.g. `/chunks/foo/edit`). */
-  | { mode: 'edit'; editHref: string };
+  | {
+      mode: 'edit';
+      /** The edit form to return to (e.g. `/chunks/foo/edit`). */
+      editHref: string;
+      /**
+       * The saved row's identity fields, to diff the draft against — the
+       * draft itself only remembers the starting slug. Read on the server
+       * so the comparison is against the row as it stands now.
+       */
+      saved: ChunkIdentity;
+      /**
+       * How many live positions / game moves already point at this chunk.
+       * Together with the diff above, drives `ChunkReferenceWarning`.
+       */
+      references: ChunkReferenceCounts;
+    };
 
 /**
  * Read the chunk draft and present it for confirmation before persisting.
@@ -44,7 +60,10 @@ type Props =
  * 1. On mount, read the draft. If absent (deep link or stale tab), bounce
  *    back to the form (`/chunks/new` for create, `editHref` for edit).
  * 2. Render the title, description, board (with annotations), and slug for
- *    the author to verify.
+ *    the author to verify. In edit mode, warn when the pending save would
+ *    change what existing links to this chunk assert
+ *    (`ChunkReferenceWarning`) — this step, not the form, is where that
+ *    decision is actually made.
  * 3. Confirm →
  *      - create: `createChunk`; on success clear the draft and navigate to
  *        `/chunks/<slug>`, appending `?coinsEarned=N` to surface the
@@ -252,6 +271,16 @@ export function ChunkPreviewClient(props: Props) {
             </span>
           </dd>
         </dl>
+
+        {/* Directly above the CTA it qualifies: the warning is a
+            consequence of confirming, and this is the step the author is
+            here to read. */}
+        {props.mode === 'edit' && (
+          <ChunkReferenceWarning
+            references={props.references}
+            changed={diffChunkIdentity(props.saved, draft)}
+          />
+        )}
 
         <FormErrorBanner message={error} />
 

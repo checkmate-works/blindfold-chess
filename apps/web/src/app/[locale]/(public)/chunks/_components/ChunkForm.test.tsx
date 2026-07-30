@@ -288,7 +288,7 @@ describe('ChunkForm — slug preflight in edit mode', () => {
 
   // The row's own slug is trivially "taken"; asking would reject the save.
   it('skips the check when the slug is untouched', async () => {
-    render(<ChunkForm mode="edit" initial={INITIAL} references={{ positions: 0, games: 0 }} />);
+    render(<ChunkForm mode="edit" initial={INITIAL} />);
 
     fireEvent.click(screen.getByText('actions.continueToPreview'));
 
@@ -298,7 +298,7 @@ describe('ChunkForm — slug preflight in edit mode', () => {
 
   it('checks a renamed slug and reports a collision on the control', async () => {
     checkSlugAvailability.mockResolvedValue({ available: false });
-    render(<ChunkForm mode="edit" initial={INITIAL} references={{ positions: 0, games: 0 }} />);
+    render(<ChunkForm mode="edit" initial={INITIAL} />);
     fireEvent.change(screen.getByLabelText('slug'), { target: { value: 'rook-doubling' } });
 
     fireEvent.click(screen.getByText('actions.continueToPreview'));
@@ -311,81 +311,6 @@ describe('ChunkForm — slug preflight in edit mode', () => {
   });
 });
 
-describe('ChunkForm — reference warning', () => {
-  const SAVED_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
-  const INITIAL = {
-    id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
-    representativeFen: SAVED_FEN,
-    title: 'Rook battery',
-    slug: 'rook-battery',
-    description: 'Doubled rooks',
-    annotations: { arrows: [], circles: [] },
-    feedbackTopics: [],
-  };
-
-  function renderEdit(references: { positions: number; games: number }) {
-    return render(<ChunkForm mode="edit" initial={INITIAL} references={references} />);
-  }
-
-  beforeEach(() => {
-    (readChunkDraft as Mock).mockReset();
-    nav.search = '';
-    // Board matches the saved row unless a test says otherwise.
-    boardState.trimmedFen = SAVED_FEN;
-  });
-
-  // Noise is what gets warnings ignored: an untouched form, or one where only
-  // the description changed, has nothing to warn about.
-  it('stays hidden while nothing identity-bearing has changed', () => {
-    renderEdit({ positions: 3, games: 2 });
-    expect(screen.queryByText('body')).toBeNull();
-  });
-
-  it('stays hidden when only the description changed', () => {
-    renderEdit({ positions: 3, games: 2 });
-    fireEvent.change(screen.getByLabelText('description'), { target: { value: 'reworded' } });
-    expect(screen.queryByText('body')).toBeNull();
-  });
-
-  it('appears once the title changes', () => {
-    renderEdit({ positions: 3, games: 2 });
-    fireEvent.change(screen.getByLabelText('title'), { target: { value: 'Rook doubling' } });
-    expect(screen.getByText('body')).toBeInTheDocument();
-  });
-
-  it('appears once the slug changes', () => {
-    renderEdit({ positions: 1, games: 0 });
-    fireEvent.change(screen.getByLabelText('slug'), { target: { value: 'rook-doubling' } });
-    expect(screen.getByText('body')).toBeInTheDocument();
-  });
-
-  it('appears when the board differs from the saved row', () => {
-    boardState.trimmedFen = '8/8/8/8/4P3/8/8/8 w - - 0 1';
-    renderEdit({ positions: 0, games: 1 });
-    expect(screen.getByText('body')).toBeInTheDocument();
-  });
-
-  // Nothing points at the chunk yet, so a rename costs nobody anything.
-  it('stays hidden when no live reference exists, however the title changes', () => {
-    renderEdit({ positions: 0, games: 0 });
-    fireEvent.change(screen.getByLabelText('title'), { target: { value: 'Rook doubling' } });
-    expect(screen.queryByText('body')).toBeNull();
-  });
-
-  // Reverting an edit should retract the warning, not leave it latched.
-  it('disappears again when the title is typed back to its saved value', () => {
-    renderEdit({ positions: 3, games: 2 });
-    const titleInput = screen.getByLabelText('title');
-    fireEvent.change(titleInput, { target: { value: 'Rook doubling' } });
-    expect(screen.getByText('body')).toBeInTheDocument();
-    fireEvent.change(titleInput, { target: { value: INITIAL.title } });
-    expect(screen.queryByText('body')).toBeNull();
-  });
-
-  // Create mode has no saved row to diverge from — and no references.
-  it('never renders in create mode', () => {
-    readChunkDraft.mockReturnValue(null);
-    render(<ChunkForm mode="create" />);
-    expect(screen.queryByText('body')).toBeNull();
-  });
-});
+// The "others already point at this" warning is NOT rendered here — it
+// belongs to the preview step, where the save is confirmed. See
+// `ChunkPreviewClient.test.tsx` and `_lib/identity-changes.test.ts`.

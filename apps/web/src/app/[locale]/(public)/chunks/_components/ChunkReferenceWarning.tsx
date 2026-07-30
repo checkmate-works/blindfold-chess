@@ -4,6 +4,8 @@ import { useTranslations } from 'next-intl';
 
 import { FiAlertTriangle } from 'react-icons/fi';
 
+import type { ChangedIdentityField } from '../_lib/identity-changes';
+
 export type ChunkReferenceCounts = {
   /** Live positions tagging this chunk via `position_chunks`. */
   positions: number;
@@ -11,19 +13,16 @@ export type ChunkReferenceCounts = {
   games: number;
 };
 
-/** The fields whose change alters what an existing reference asserts. */
-export type ChangedIdentityField = 'title' | 'slug' | 'fen';
-
 type Props = {
   references: ChunkReferenceCounts;
-  /** Identity fields currently differing from the saved row. */
+  /** Identity fields the pending save would change (`diffChunkIdentity`). */
   changed: readonly ChangedIdentityField[];
 };
 
 /**
  * Warns the owner that other people's positions and games already point at
- * this chunk, shown once an edit actually changes what those references
- * assert.
+ * this chunk, when the save they are about to confirm changes what those
+ * references assert.
  *
  * @design why a warning and not a lock
  * A pre-publish chunk is editable precisely because its name is still being
@@ -33,13 +32,23 @@ type Props = {
  * the veto in the hands of whoever moved first. So the owner keeps the
  * decision; they just stop making it blind.
  *
- * @design why it is reactive rather than always-on
- * A banner shown on every edit is noise for the common case (fixing a typo in
- * the description), and noise is what gets banners ignored. It appears only
- * when the title, slug, or board differ from the saved row — the three fields
- * a reference's meaning actually rests on. Description and annotations are
- * excluded: they elaborate the pattern rather than identify it, so changing
- * them cannot invalidate someone's "this position exhibits X".
+ * @design why the preview and not the edit form
+ * It first lived above the form's fields, appearing the moment a keystroke
+ * made the title differ. That is the wrong moment twice over: the form is
+ * taller than a phone screen, so a banner pinned to its top is off-screen
+ * from the field being typed in, and mid-edit is not when the author is
+ * deciding anything — they are still composing. The preview is the step
+ * that exists to be read before committing, and the warning is a
+ * consequence of confirming, so it belongs beside that button. Being a
+ * once-per-page verdict rather than a per-keystroke one also means the
+ * comparison is a plain call at render (`diffChunkIdentity`), not reactive
+ * state the form has to maintain.
+ *
+ * @design why it is conditional at all
+ * A banner shown on every save is noise for the common case (fixing a typo
+ * in the description), and noise is what gets banners ignored. It appears
+ * only when the title, slug, or board differ from the saved row — the three
+ * fields a reference's meaning actually rests on.
  *
  * @design what it does NOT do
  * The people who made those assertions are not notified. Their links survive

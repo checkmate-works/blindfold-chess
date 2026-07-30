@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
@@ -23,11 +23,6 @@ import { type ChunkFormField, validateChunkForm } from '../_lib/chunk-form-valid
 import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
 import type { ChunkLinkTarget } from '../_lib/link-target';
 import { ChunkFormFields } from './ChunkFormFields';
-import {
-  type ChangedIdentityField,
-  type ChunkReferenceCounts,
-  ChunkReferenceWarning,
-} from './ChunkReferenceWarning';
 
 export type { ChunkFormInitial } from '../_hooks/use-chunk-form-state';
 
@@ -68,12 +63,6 @@ type EditProps = {
   mode: 'edit';
   initial: ChunkFormInitial;
   disableUnsavedGuard?: boolean;
-  /**
-   * How many live positions / game moves already point at this chunk.
-   * Drives the warning shown once an edit changes what those references
-   * assert — see `ChunkReferenceWarning`.
-   */
-  references: ChunkReferenceCounts;
 };
 
 type Props = CreateProps | EditProps;
@@ -183,19 +172,6 @@ export function ChunkForm(props: Props) {
   });
 
   const isDirty = !submitted && form.computeIsDirty(board.trimmedFen);
-
-  // Which identity-bearing fields currently differ from the saved row.
-  // Only these three change what an existing reference asserts, so only
-  // these raise the "others already point at this" warning.
-  const changedIdentityFields = useMemo<ChangedIdentityField[]>(() => {
-    if (mode !== 'edit') return [];
-    const initial = (props as EditProps).initial;
-    const fields: ChangedIdentityField[] = [];
-    if (title !== initial.title) fields.push('title');
-    if (slug !== initial.slug) fields.push('slug');
-    if (board.trimmedFen !== initial.representativeFen) fields.push('fen');
-    return fields;
-  }, [mode, props, title, slug, board.trimmedFen]);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({
     isDirty: disableUnsavedGuard ? false : isDirty,
@@ -327,16 +303,6 @@ export function ChunkForm(props: Props) {
               {t('draftRestoredDiscard')}
             </button>
           </div>
-        )}
-
-        {/* Sits above the fields, not next to one: a rename and a board
-            change carry the same consequence, and the warning is about the
-            edit as a whole rather than about any single control. */}
-        {mode === 'edit' && (
-          <ChunkReferenceWarning
-            references={(props as EditProps).references}
-            changed={changedIdentityFields}
-          />
         )}
 
         <ChunkFormFields
