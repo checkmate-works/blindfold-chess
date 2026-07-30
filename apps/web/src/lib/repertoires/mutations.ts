@@ -12,6 +12,7 @@ import {
   repertoires,
 } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
+import type { DbTx } from '@/lib/db/types';
 import type { RepertoireVisibility } from '@/lib/points';
 import {
   chargeRepertoireVisibility,
@@ -42,6 +43,34 @@ export type UpdateLineResult =
   { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' | RepertoireLineEditError };
 
 /**
+ * "The lines this repertoire still has" — the live-rows predicate every line
+ * query in this module shares. Soft-deleted rows are excluded everywhere: a
+ * deleted line is gone as far as line numbering, annotation reachability and the
+ * publish/visibility line-count bar are concerned.
+ */
+function liveLinesOf(repertoireId: string) {
+  return and(eq(repertoireLines.repertoireId, repertoireId), isNull(repertoireLines.deletedAt));
+}
+
+/**
+ * Load one live line by its 1-based number (`seq + 1`, the form that appears in
+ * URLs and "Line N" labels), or undefined when the repertoire has no such line.
+ *
+ * Returns a single superset of columns rather than a per-caller column list —
+ * same posture as `ownedPositionColumns` in `lib/positions/user-position-mutations`:
+ * the edit path needs the root FEN to validate against, the delete path needs
+ * only the id, and one shape keeps the seq→lineNo conversion in one place.
+ */
+async function loadLiveLineByNo(repertoireId: string, lineNo: number) {
+  const [line] = await db
+    .select({ id: repertoireLines.id, startingFen: repertoireLines.startingFen })
+    .from(repertoireLines)
+    .where(and(liveLinesOf(repertoireId), eq(repertoireLines.seq, lineNo - 1)))
+    .limit(1);
+  return line;
+}
+
+/**
  * Delete every annotation of a repertoire whose position no longer appears in
  * ANY of its live lines — the "collect unused notes" step run after a
  * structural line change (a line edit that shortens/rewrites moves, or a line
@@ -61,11 +90,11 @@ export type UpdateLineResult =
  * Runs inside the caller's transaction so the reachable set reflects the same
  * post-mutation line state the prune deletes against.
  */
-async function pruneOrphanAnnotations(tx: Tx, repertoireId: string): Promise<void> {
+async function pruneOrphanAnnotations(tx: DbTx, repertoireId: string): Promise<void> {
   const lines = await tx
     .select({ pgn: repertoireLines.pgn, startingFen: repertoireLines.startingFen })
     .from(repertoireLines)
-    .where(and(eq(repertoireLines.repertoireId, repertoireId), isNull(repertoireLines.deletedAt)));
+    .where(liveLinesOf(repertoireId));
 
   const reachable = new Set<string>();
   for (const line of lines) {
@@ -110,17 +139,7 @@ export async function updateRepertoireLine(params: {
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
   if (ownerError) return { ok: false, error: ownerError };
 
-  const [line] = await db
-    .select({ id: repertoireLines.id, startingFen: repertoireLines.startingFen })
-    .from(repertoireLines)
-    .where(
-      and(
-        eq(repertoireLines.repertoireId, params.repertoireId),
-        eq(repertoireLines.seq, params.lineNo - 1),
-        isNull(repertoireLines.deletedAt)
-      )
-    )
-    .limit(1);
+  const line = await loadLiveLineByNo(params.repertoireId, params.lineNo);
   if (!line) return { ok: false, error: 'notFound' };
 
   const validated = validateRepertoireLineEdit({
@@ -160,17 +179,7 @@ export async function deleteRepertoireLine(params: {
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
   if (ownerError) return { ok: false, error: ownerError };
 
-  const [line] = await db
-    .select({ id: repertoireLines.id })
-    .from(repertoireLines)
-    .where(
-      and(
-        eq(repertoireLines.repertoireId, params.repertoireId),
-        eq(repertoireLines.seq, params.lineNo - 1),
-        isNull(repertoireLines.deletedAt)
-      )
-    )
-    .limit(1);
+  const line = await loadLiveLineByNo(params.repertoireId, params.lineNo);
   if (!line) return { ok: false, error: 'notFound' };
 
   await db.transaction(async (tx) => {
@@ -184,12 +193,7 @@ export async function deleteRepertoireLine(params: {
     const remaining = await tx
       .select({ id: repertoireLines.id, seq: repertoireLines.seq })
       .from(repertoireLines)
-      .where(
-        and(
-          eq(repertoireLines.repertoireId, params.repertoireId),
-          isNull(repertoireLines.deletedAt)
-        )
-      )
+      .where(liveLinesOf(params.repertoireId))
       .orderBy(asc(repertoireLines.seq));
     for (const [index, row] of remaining.entries()) {
       if (row.seq !== index) {
@@ -246,12 +250,7 @@ export async function addRepertoireLine(params: {
     const [{ maxSeq }] = await tx
       .select({ maxSeq: sql<number>`coalesce(max(${repertoireLines.seq}), -1)` })
       .from(repertoireLines)
-      .where(
-        and(
-          eq(repertoireLines.repertoireId, params.repertoireId),
-          isNull(repertoireLines.deletedAt)
-        )
-      );
+      .where(liveLinesOf(params.repertoireId));
     const nextSeq = maxSeq + 1;
     await tx.insert(repertoireLines).values({
       repertoireId: params.repertoireId,
@@ -279,9 +278,6 @@ export type UpdateRepertoireResult =
         | 'invalidSide';
     };
 
-/** The transaction handle drizzle hands to a `db.transaction` callback. */
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
-
 type OpeningLinks = { repertoireId: string; phase: RepertoirePhase; openingIds: string[] };
 
 /**
@@ -291,7 +287,7 @@ type OpeningLinks = { repertoireId: string; phase: RepertoirePhase; openingIds: 
  * re-checked against the master, so a stale or forged id is dropped rather than
  * tripping the FK.
  */
-async function insertOpeningLinks(tx: Tx, { repertoireId, phase, openingIds }: OpeningLinks) {
+async function insertOpeningLinks(tx: DbTx, { repertoireId, phase, openingIds }: OpeningLinks) {
   const requested = phase === 'opening' ? [...new Set(openingIds)] : [];
   if (requested.length === 0) return;
 
@@ -308,7 +304,7 @@ async function insertOpeningLinks(tx: Tx, { repertoireId, phase, openingIds }: O
  * Point an existing repertoire at a new set of openings. The links are a plain
  * n:n value with nothing hanging off them, so an edit replaces them wholesale.
  */
-async function replaceOpeningLinks(tx: Tx, links: OpeningLinks) {
+async function replaceOpeningLinks(tx: DbTx, links: OpeningLinks) {
   await tx
     .delete(repertoireOpenings)
     .where(eq(repertoireOpenings.repertoireId, links.repertoireId));
@@ -524,10 +520,7 @@ export async function publishRepertoireEntry(id: string): Promise<PublishReperto
   if (!repertoire) return { error: 'notFound' };
   if (repertoire.status !== 'building') return { error: 'alreadyPublished' };
 
-  const lineCount = await countRows(
-    repertoireLines,
-    and(eq(repertoireLines.repertoireId, id), isNull(repertoireLines.deletedAt))
-  );
+  const lineCount = await countRows(repertoireLines, liveLinesOf(id));
   if (lineCount < 1) return { error: 'noLines' };
 
   await db.transaction(async (tx) => {
@@ -597,10 +590,7 @@ export async function changeRepertoireVisibility(params: {
     return { success: true, status: params.target, charged: 0 };
   }
 
-  const lineCount = await countRows(
-    repertoireLines,
-    and(eq(repertoireLines.repertoireId, params.repertoireId), isNull(repertoireLines.deletedAt))
-  );
+  const lineCount = await countRows(repertoireLines, liveLinesOf(params.repertoireId));
   if (lineCount < 1) return { error: 'noLines' };
 
   const outcome = await db.transaction(
