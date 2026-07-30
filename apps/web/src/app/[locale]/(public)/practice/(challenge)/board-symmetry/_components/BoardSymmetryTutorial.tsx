@@ -1,16 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
-import { useRouter } from 'next/navigation';
-
-import { BoardSkeleton, Button } from '@/app/_components';
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaArrowLeft, FaArrowRight, FaInfinity, FaPlay } from 'react-icons/fa';
-
-import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
-import { Divider } from '@/app/[locale]/_components';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { SteppedTutorial } from '@/app/[locale]/(public)/practice/(challenge)/_components/SteppedTutorial';
+import { TutorialBoardFrame } from '@/app/[locale]/(public)/practice/(challenge)/_components/TutorialBoardFrame';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -19,233 +10,150 @@ type Props = {
 
 type TutorialStep = 'intro' | 'horizontal' | 'vertical' | 'point' | 'start';
 
-export function BoardSymmetryTutorial({ locale }: Props) {
-  const t = useTranslations('practice.boardSymmetry.tutorial');
-  const tp = useTranslations('practice');
-  const router = useRouter();
-  const { preferences, isLoaded } = useGamePreferences();
-  const [step, setStep] = useState<TutorialStep>('intro');
+const STEPS: readonly TutorialStep[] = ['intro', 'horizontal', 'vertical', 'point', 'start'];
 
-  const handleStartChallenge = () => {
-    router.push(`/${locale}/practice/board-symmetry/challenge`);
-  };
+const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
-  const handleSwitchToTraining = () => {
-    router.push(`/${locale}/practice/board-symmetry/training`);
-  };
+const OVERLAY_CLASSES = 'absolute inset-0 w-full h-full pointer-events-none z-10';
 
-  const steps: TutorialStep[] = ['intro', 'horizontal', 'vertical', 'point', 'start'];
-  const currentIndex = steps.indexOf(step);
+/**
+ * Each mirror axis is shown as a dashed red line through the reflection plane,
+ * plus a pair of blue arcs connecting two squares that map onto each other.
+ *
+ * Only the first axis step declares the `#arrowhead` marker, and each step's
+ * overlay replaces the previous one — so the `markerEnd="url(#arrowhead)"` on
+ * the later two steps resolves to nothing and their arcs render unheaded. That
+ * predates this component being extracted and is preserved as-is; hoisting the
+ * `<defs>` out of the first step would add arrowheads to two steps that have
+ * never had them, which is a design call, not a refactor.
+ */
+function StepOverlay({ step }: { step: TutorialStep }) {
+  switch (step) {
+    case 'horizontal':
+      return (
+        <svg className={OVERLAY_CLASSES} viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Dashed line between d and e files (center vertical) */}
+          <line
+            x1="50"
+            y1="0"
+            x2="50"
+            y2="100"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            strokeDasharray="2 2"
+            className="text-red-500"
+          />
+          {/* Arrows connecting equivalent files */}
+          <path
+            d="M 12.5 90 Q 50 70 87.5 90"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            className="text-blue-500 opacity-60"
+            markerEnd="url(#arrowhead)"
+          />
+          <path
+            d="M 87.5 90 Q 50 70 12.5 90"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            className="text-blue-500 opacity-60"
+            markerEnd="url(#arrowhead)"
+          />
 
-  const handleNext = () => {
-    if (currentIndex < steps.length - 1) {
-      setStep(steps[currentIndex + 1]);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setStep(steps[currentIndex - 1]);
-    }
-  };
-
-  const getOverlayContent = () => {
-    switch (step) {
-      case 'intro':
-        return null;
-      case 'horizontal':
-        return (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-10"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            {/* Dashed line between d and e files (center vertical) */}
-            <line
-              x1="50"
-              y1="0"
-              x2="50"
-              y2="100"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              strokeDasharray="2 2"
-              className="text-red-500"
-            />
-            {/* Arrows connecting equivalent files */}
-            <path
-              d="M 12.5 90 Q 50 70 87.5 90"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              className="text-blue-500 opacity-60"
-              markerEnd="url(#arrowhead)"
-            />
-            <path
-              d="M 87.5 90 Q 50 70 12.5 90"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              className="text-blue-500 opacity-60"
-              markerEnd="url(#arrowhead)"
-            />
-
-            <defs>
-              <marker
-                id="arrowhead"
-                markerWidth="10"
-                markerHeight="7"
-                refX="9"
-                refY="3.5"
-                orient="auto"
-              >
-                <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" className="text-blue-500" />
-              </marker>
-            </defs>
-          </svg>
-        );
-      case 'vertical':
-        return (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-10"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            {/* Dashed line between 4 and 5 ranks (center horizontal) */}
-            <line
-              x1="0"
-              y1="50"
-              x2="100"
-              y2="50"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              strokeDasharray="2 2"
-              className="text-red-500"
-            />
-            {/* Arrows connecting equivalent ranks */}
-            <path
-              d="M 10 87.5 Q 30 50 10 12.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              className="text-blue-500 opacity-60"
-              markerEnd="url(#arrowhead)"
-            />
-            <path
-              d="M 10 12.5 Q 30 50 10 87.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              className="text-blue-500 opacity-60"
-              markerEnd="url(#arrowhead)"
-            />
-          </svg>
-        );
-      case 'point':
-        return (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-10"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            {/* Center point */}
-            <circle cx="50" cy="50" r="1.5" fill="currentColor" className="text-red-500" />
-            {/* Rotation arrows */}
-            <path
-              d="M 12.5 87.5 Q 50 50 87.5 12.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              className="text-blue-500 opacity-60"
-              markerEnd="url(#arrowhead)"
-            />
-            <path
-              d="M 87.5 12.5 Q 50 50 12.5 87.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              className="text-blue-500 opacity-60"
-              markerEnd="url(#arrowhead)"
-            />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-2xl p-6 border border-border">
-        {/* Progress Dots */}
-        <div className="flex justify-center gap-2 mb-6">
-          {steps.map((s, idx) => (
-            <div
-              key={s}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                idx === currentIndex
-                  ? 'bg-primary'
-                  : idx < currentIndex
-                    ? 'bg-primary/50'
-                    : 'bg-muted'
-              }`}
-            />
-          ))}
-        </div>
-
-        <h3 className="text-xl font-bold text-center mb-4">{t(`steps.${step}.title`)}</h3>
-
-        <p className="text-muted-foreground mb-6 min-h-[4.5rem]">
-          {t(`steps.${step}.description`)}
-        </p>
-
-        <div className="aspect-square bg-secondary/30 rounded-lg overflow-hidden mb-6 relative">
-          {!isLoaded ? (
-            <BoardSkeleton rounded={false} />
-          ) : (
-            <AnimatedChessBoard
-              initialFen="8/8/8/8/8/8/8/8 w - - 0 1" // Empty board
-              showCoordinates={true}
-              flipped={false}
-              boardTheme={preferences.boardTheme}
+          <defs>
+            <marker
+              id="arrowhead"
+              markerWidth="10"
+              markerHeight="7"
+              refX="9"
+              refY="3.5"
+              orient="auto"
             >
-              {getOverlayContent()}
-            </AnimatedChessBoard>
-          )}
-        </div>
+              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" className="text-blue-500" />
+            </marker>
+          </defs>
+        </svg>
+      );
+    case 'vertical':
+      return (
+        <svg className={OVERLAY_CLASSES} viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Dashed line between 4 and 5 ranks (center horizontal) */}
+          <line
+            x1="0"
+            y1="50"
+            x2="100"
+            y2="50"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            strokeDasharray="2 2"
+            className="text-red-500"
+          />
+          {/* Arrows connecting equivalent ranks */}
+          <path
+            d="M 10 87.5 Q 30 50 10 12.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            className="text-blue-500 opacity-60"
+            markerEnd="url(#arrowhead)"
+          />
+          <path
+            d="M 10 12.5 Q 30 50 10 87.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            className="text-blue-500 opacity-60"
+            markerEnd="url(#arrowhead)"
+          />
+        </svg>
+      );
+    case 'point':
+      return (
+        <svg className={OVERLAY_CLASSES} viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Center point */}
+          <circle cx="50" cy="50" r="1.5" fill="currentColor" className="text-red-500" />
+          {/* Rotation arrows */}
+          <path
+            d="M 12.5 87.5 Q 50 50 87.5 12.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            className="text-blue-500 opacity-60"
+            markerEnd="url(#arrowhead)"
+          />
+          <path
+            d="M 87.5 12.5 Q 50 50 12.5 87.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            className="text-blue-500 opacity-60"
+            markerEnd="url(#arrowhead)"
+          />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
-        {step === 'start' ? (
-          <div>
-            <Button onClick={handleStartChallenge} variant="primary" size="lg" className="w-full">
-              <FaPlay className="mr-2 h-4 w-4" />
-              {t('startChallenge')}
-            </Button>
-
-            <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
-              <Divider className="flex-1" />
-              <span className="text-sm text-muted-foreground">{tp('orDivider')}</span>
-              <Divider className="flex-1" />
-            </div>
-
-            <Button onClick={handleSwitchToTraining} variant="outline" size="lg" className="w-full">
-              <FaInfinity className="mr-2 h-4 w-4" />
-              {tp('startTraining')}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-4">
-            {step !== 'intro' && (
-              <Button variant="outline" size="lg" onClick={handlePrevious} className="flex-1">
-                <FaArrowLeft className="mr-2 h-4 w-4" />
-                {t('previous')}
-              </Button>
-            )}
-            <Button onClick={handleNext} variant="primary" size="lg" className="flex-1">
-              {t('next')}
-              <FaArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+/**
+ * Walks the three symmetries the challenge quizzes — mirror across the files,
+ * mirror across the ranks, and 180° point rotation — on an empty board so the
+ * axes are the only thing to look at.
+ */
+export function BoardSymmetryTutorial({ locale }: Props) {
+  return (
+    <SteppedTutorial
+      locale={locale}
+      moduleSlug="board-symmetry"
+      steps={STEPS}
+      namespace="practice.boardSymmetry.tutorial"
+      renderStep={(step) => (
+        <TutorialBoardFrame fen={EMPTY_BOARD_FEN}>
+          <StepOverlay step={step} />
+        </TutorialBoardFrame>
+      )}
+    />
   );
 }
