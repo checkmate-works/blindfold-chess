@@ -1,16 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
-import { useRouter } from 'next/navigation';
-
-import { BoardSkeleton, Button } from '@/app/_components';
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaArrowLeft, FaArrowRight, FaInfinity, FaPlay } from 'react-icons/fa';
-
-import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
-import { Divider } from '@/app/[locale]/_components';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { SteppedTutorial } from '@/app/[locale]/(public)/practice/(challenge)/_components/SteppedTutorial';
+import { TutorialBoardFrame } from '@/app/[locale]/(public)/practice/(challenge)/_components/TutorialBoardFrame';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -19,226 +10,125 @@ type Props = {
 
 type TutorialStep = 'intro' | 'visualization' | 'start';
 
-export function RoutePlannerTutorial({ locale }: Props) {
-  const t = useTranslations('practice.routePlanner.tutorial');
-  const tp = useTranslations('practice');
-  const router = useRouter();
-  const { preferences, isLoaded } = useGamePreferences();
-  const [step, setStep] = useState<TutorialStep>('intro');
+const STEPS: readonly TutorialStep[] = ['intro', 'visualization', 'start'];
 
-  const handleStartChallenge = () => {
-    router.push(`/${locale}/practice/route-planner/challenge`);
-  };
+/** A lone knight on e4 — the piece and start square the overlay routes from. */
+const KNIGHT_FEN = '8/8/8/8/4N3/8/8/8 w - - 0 1';
 
-  const handleSwitchToTraining = () => {
-    router.push(`/${locale}/practice/route-planner/training`);
-  };
+const OVERLAY_CLASSES = 'absolute inset-0 w-full h-full pointer-events-none z-10';
 
-  const steps: TutorialStep[] = ['intro', 'visualization', 'start'];
-  const currentIndex = steps.indexOf(step);
+/** The circled target square the route has to reach (h5 in SVG coordinates). */
+function GoalMarker({ pulse = false }: { pulse?: boolean }) {
+  return (
+    <>
+      <circle
+        cx="93.75"
+        cy="43.75"
+        r="5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1"
+        className={`text-red-500 ${pulse ? 'animate-pulse' : ''}`}
+      />
+      <text
+        x="93.75"
+        y="43.75"
+        textAnchor="middle"
+        dy="1.5"
+        fontSize="4"
+        fill="currentColor"
+        className="text-red-500 font-bold"
+      >
+        GOAL
+      </text>
+    </>
+  );
+}
 
-  const handleNext = () => {
-    if (currentIndex < steps.length - 1) {
-      setStep(steps[currentIndex + 1]);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setStep(steps[currentIndex - 1]);
-    }
-  };
-
-  const getOverlayContent = () => {
-    // Common arrow marker definition
-    const arrowMarker = (
-      <defs>
-        <marker
-          id="arrowhead-blue"
-          markerWidth="10"
-          markerHeight="7"
-          refX="9"
-          refY="3.5"
-          orient="auto"
-        >
-          <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" className="text-blue-500" />
-        </marker>
-      </defs>
+/**
+ * Intro pulses the goal square to name the task; the visualization step draws
+ * the two knight hops that reach it, which is the mental picture the challenge
+ * asks the player to build unaided.
+ */
+function StepOverlay({ step }: { step: TutorialStep }) {
+  if (step === 'visualization') {
+    return (
+      <svg className={OVERLAY_CLASSES} viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <marker
+            id="arrowhead-blue"
+            markerWidth="10"
+            markerHeight="7"
+            refX="9"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" className="text-blue-500" />
+          </marker>
+        </defs>
+        <line
+          x1="56.25"
+          y1="56.25"
+          x2="68.75"
+          y2="31.25"
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-blue-500 opacity-60"
+          markerEnd="url(#arrowhead-blue)"
+        />
+        <line
+          x1="68.75"
+          y1="31.25"
+          x2="93.75"
+          y2="43.75"
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-blue-500 opacity-60"
+          markerEnd="url(#arrowhead-blue)"
+        />
+        <GoalMarker />
+      </svg>
     );
-
-    switch (step) {
-      case 'intro':
-        return (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-10"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <circle
-              cx="93.75"
-              cy="43.75"
-              r="5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-red-500 animate-pulse"
-            />
-            <text
-              x="93.75"
-              y="43.75"
-              textAnchor="middle"
-              dy="1.5"
-              fontSize="4"
-              fill="currentColor"
-              className="text-red-500 font-bold"
-            >
-              GOAL
-            </text>
-          </svg>
-        );
-      case 'visualization':
-        return (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-10"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            {arrowMarker}
-            <line
-              x1="56.25"
-              y1="56.25"
-              x2="68.75"
-              y2="31.25"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-blue-500 opacity-60"
-              markerEnd="url(#arrowhead-blue)"
-            />
-            <line
-              x1="68.75"
-              y1="31.25"
-              x2="93.75"
-              y2="43.75"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-blue-500 opacity-60"
-              markerEnd="url(#arrowhead-blue)"
-            />
-            <circle
-              cx="93.75"
-              cy="43.75"
-              r="5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-red-500"
-            />
-            <text
-              x="93.75"
-              y="43.75"
-              textAnchor="middle"
-              dy="1.5"
-              fontSize="4"
-              fill="currentColor"
-              className="text-red-500 font-bold"
-            >
-              GOAL
-            </text>
-          </svg>
-        );
-      default:
-        return (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-10"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <circle
-              cx="93.75"
-              cy="43.75"
-              r="5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-red-500"
-            />
-          </svg>
-        );
-    }
-  };
+  }
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-2xl p-6 border border-border">
-        {/* Progress Dots */}
-        <div className="flex justify-center gap-2 mb-6">
-          {steps.map((s, idx) => (
-            <div
-              key={s}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                idx === currentIndex
-                  ? 'bg-primary'
-                  : idx < currentIndex
-                    ? 'bg-primary/50'
-                    : 'bg-muted'
-              }`}
-            />
-          ))}
-        </div>
+    <svg className={OVERLAY_CLASSES} viewBox="0 0 100 100" preserveAspectRatio="none">
+      {step === 'intro' ? (
+        <GoalMarker pulse />
+      ) : (
+        /* Final step: the goal stays visible, unlabelled, behind the CTA. */
+        <circle
+          cx="93.75"
+          cy="43.75"
+          r="5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-red-500"
+        />
+      )}
+    </svg>
+  );
+}
 
-        <h3 className="text-xl font-bold text-center mb-4">{t(`steps.${step}.title`)}</h3>
-        <p className="text-muted-foreground mb-6 min-h-[4.5rem] whitespace-pre-wrap text-center">
-          {t(`steps.${step}.description`)}
-        </p>
-
-        <div className="aspect-square bg-secondary/30 rounded-lg overflow-hidden mb-6 relative">
-          {!isLoaded ? (
-            <BoardSkeleton rounded={false} />
-          ) : (
-            <AnimatedChessBoard
-              initialFen="8/8/8/8/4N3/8/8/8 w - - 0 1"
-              showCoordinates={true}
-              flipped={false}
-              boardTheme={preferences.boardTheme}
-            >
-              {getOverlayContent()}
-            </AnimatedChessBoard>
-          )}
-        </div>
-
-        {step === 'start' ? (
-          <div>
-            <Button onClick={handleStartChallenge} variant="primary" size="lg" className="w-full">
-              <FaPlay className="mr-2 h-4 w-4" />
-              {t('startChallenge')}
-            </Button>
-
-            <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
-              <Divider className="flex-1" />
-              <span className="text-sm text-muted-foreground">{tp('orDivider')}</span>
-              <Divider className="flex-1" />
-            </div>
-
-            <Button onClick={handleSwitchToTraining} variant="outline" size="lg" className="w-full">
-              <FaInfinity className="mr-2 h-4 w-4" />
-              {tp('startTraining')}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-4">
-            {step !== 'intro' && (
-              <Button variant="outline" size="lg" onClick={handlePrevious} className="flex-1">
-                <FaArrowLeft className="mr-2 h-4 w-4" />
-                {t('previous')}
-              </Button>
-            )}
-            <Button onClick={handleNext} variant="primary" size="lg" className="flex-1">
-              {t('next')}
-              <FaArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+/**
+ * Explains the challenge's ask — get the knight to the circled square in as
+ * few hops as possible — by drawing the route the player is expected to
+ * visualize without the board's help.
+ */
+export function RoutePlannerTutorial({ locale }: Props) {
+  return (
+    <SteppedTutorial
+      locale={locale}
+      moduleSlug="route-planner"
+      steps={STEPS}
+      namespace="practice.routePlanner.tutorial"
+      descriptionClassName="whitespace-pre-wrap text-center"
+      renderStep={(step) => (
+        <TutorialBoardFrame fen={KNIGHT_FEN}>
+          <StepOverlay step={step} />
+        </TutorialBoardFrame>
+      )}
+    />
   );
 }
