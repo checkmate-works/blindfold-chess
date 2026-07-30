@@ -4,7 +4,7 @@
  * the link asserts "this known pattern applies to this position". Reads expose
  * the chunk (title / slug / board) plus the suggester's public profile.
  */
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { linkableChunkPredicate } from '@/lib/chunks/linkability';
@@ -131,6 +131,56 @@ export async function insertGameChunk(params: {
     .onConflictDoNothing()
     .returning({ id: gameChunks.id, createdAt: gameChunks.createdAt });
   return row ?? null;
+}
+
+/** The slice of the Drizzle client this module's tx-aware writer needs. */
+type GameChunkWriteTx = Pick<typeof db, 'select' | 'insert'>;
+
+/**
+ * Link a just-created chunk to a game move from inside the creating
+ * transaction ("create a chunk from this position"). Returns whether a link
+ * row landed.
+ *
+ * @design why this validates instead of leaning on the FK
+ * `insertGameChunk` lets the `game_id` foreign key reject a bad game,
+ * because there the failed insert is the whole operation. Here the insert
+ * shares a transaction with the chunk itself, so a raised FK would roll the
+ * chunk back too — losing the thing the author actually came to write over
+ * a stale or hand-edited `?game=`. The existence check moves the failure
+ * from "abort" to "skip".
+ *
+ * The ply is bounds-checked against the game's move list for the same
+ * reason a link needs a target at all: `game_chunks.ply` has no DB
+ * constraint, so an out-of-range value would persist a row that renders on
+ * no move and can never be found to remove. The manual picker path needs no
+ * such check — it is only mounted on a real move.
+ *
+ * Chunk-side eligibility is NOT re-checked: the chunk was created moments
+ * ago in this same transaction by `suggestedById`, so it is by construction
+ * the caller's own — always linkable under `linkableChunkPredicate`.
+ */
+export async function linkNewChunkToGameMove(
+  tx: GameChunkWriteTx,
+  params: { gameId: string; ply: number; chunkId: string; suggestedById: string }
+): Promise<boolean> {
+  const [game] = await tx
+    .select({ moveCount: sql<number>`coalesce(jsonb_array_length(${games.moves}), 0)` })
+    .from(games)
+    .where(eq(games.id, params.gameId))
+    .limit(1);
+  if (!game || params.ply < 0 || params.ply >= game.moveCount) return false;
+
+  const [row] = await tx
+    .insert(gameChunks)
+    .values({
+      gameId: params.gameId,
+      ply: params.ply,
+      chunkId: params.chunkId,
+      suggestedById: params.suggestedById,
+    })
+    .onConflictDoNothing()
+    .returning({ id: gameChunks.id });
+  return row !== undefined;
 }
 
 /**

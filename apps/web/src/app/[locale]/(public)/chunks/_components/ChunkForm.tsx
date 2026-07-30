@@ -20,6 +20,7 @@ import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
 import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
 import { type ChunkFormField, validateChunkForm } from '../_lib/chunk-form-validation';
 import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
+import type { ChunkLinkTarget } from '../_lib/link-target';
 import { ChunkFormFields } from './ChunkFormFields';
 
 export type { ChunkFormInitial } from '../_hooks/use-chunk-form-state';
@@ -47,6 +48,14 @@ type CreateProps = {
    * draft — see `useChunkDraftRecovery`.
    */
   injectedFen?: string;
+  /**
+   * The game move the injected position came from (`?game=&ply=`). Written
+   * into the draft so the preview's create call can link the new chunk back
+   * to that move. Tied to `injectedFen`: it is only meaningful for the
+   * position it accompanies, so a draft restored over the injected seed
+   * carries its own target (or none) rather than inheriting this one.
+   */
+  injectedLinkTarget?: ChunkLinkTarget;
 };
 
 type EditProps = {
@@ -122,6 +131,7 @@ export function ChunkForm(props: Props) {
   const form = useChunkFormState({
     mode,
     initial: mode === 'edit' ? props.initial : undefined,
+    initialLinkTarget: props.mode === 'create' ? props.injectedLinkTarget : undefined,
   });
   const {
     title,
@@ -130,6 +140,7 @@ export function ChunkForm(props: Props) {
     annotations,
     status,
     feedbackTopics,
+    linkTarget,
     setAnnotations,
     setStatus,
     setFeedbackTopics,
@@ -211,6 +222,7 @@ export function ChunkForm(props: Props) {
       ...(mode === 'edit'
         ? { edit: { chunkId: props.initial.id, initialSlug: props.initial.slug } }
         : {}),
+      ...(linkTarget ? { linkTarget } : {}),
       activeTab: board.activeTab,
       sideToMove: board.sideToMove,
       flipped: board.flipped,

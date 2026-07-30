@@ -6,6 +6,7 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { chunkFeedbackTopics, chunks, db, feedItems, topicPosts } from '@/lib/db';
 import { diffFields } from '@/lib/db/diff-fields';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
+import { linkNewChunkToGameMove } from '@/lib/db/game-chunks';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
@@ -84,11 +85,32 @@ async function isSlugTaken(slug: string): Promise<boolean> {
  * INSERT race window. Both surface as `{ error: 'slugTaken' }`.
  */
 
+/**
+ * Optional side-effects the UGC create path performs alongside the row
+ * insert. Kept out of `ChunkMutationData` because it is not chunk column
+ * data — the admin create path shares that payload type and has no notion
+ * of a game move.
+ */
+export type CreateChunkOptions = {
+  /**
+   * Game move to link the new chunk to, in the same transaction ("create a
+   * chunk from this position"). Silently skipped when the chunk turns out
+   * not to be linkable by this author — see `createChunkEntry`.
+   */
+  linkTarget?: { gameId: string; ply: number };
+};
+
 export type CreateChunkResult =
   | {
       success: true;
       id: string;
       slug: string;
+      /**
+       * True when `options.linkTarget` was supplied AND the link landed.
+       * Lets the caller send the author back to the game move instead of
+       * the new chunk's page, without guessing whether the link happened.
+       */
+      linkedToGame?: boolean;
       pointGrant?: { pointEventId: string; amount: number };
       /**
        * True when the daily creation cap limited the reward — either trimmed
@@ -103,7 +125,27 @@ export type UpdateChunkResult = ActionResult;
 
 export type DeleteChunkResult = ActionResult;
 
-export async function createChunkEntry(data: ChunkMutationData): Promise<CreateChunkResult> {
+/**
+ * @design the game link rides inside the create transaction
+ * When the author came from a shared game's "create a chunk from this
+ * position", the resulting chunk is linked back to that move here rather
+ * than by a follow-up call from the client. Two reasons: a chunk that
+ * silently fails to link would strand the author on the new chunk's page
+ * with the link left as manual homework (the exact dead end this flow
+ * exists to remove), and a second round-trip could be lost to a navigation
+ * between the two writes.
+ *
+ * The link is best-effort in one specific sense: `insertGameChunk` uses
+ * `onConflictDoNothing`, and the eligibility re-check can legitimately say
+ * no (a game that vanished, or someone hand-editing `?game=` to a chunk
+ * they may not link). Neither aborts the create — the chunk is what the
+ * author asked for; the link is the convenience. `linkedToGame` reports
+ * which happened so the caller can route accordingly.
+ */
+export async function createChunkEntry(
+  data: ChunkMutationData,
+  options?: CreateChunkOptions
+): Promise<CreateChunkResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.createChunk);
   if ('error' in guardResult) {
     return { error: guardResult.error };
@@ -172,7 +214,16 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
         id: chunk.id,
       });
 
-      return { chunk, grant };
+      const linkedToGame = options?.linkTarget
+        ? await linkNewChunkToGameMove(tx, {
+            gameId: options.linkTarget.gameId,
+            ply: options.linkTarget.ply,
+            chunkId: chunk.id,
+            suggestedById: user.id,
+          })
+        : false;
+
+      return { chunk, grant, linkedToGame };
     });
 
     dispatchChunkEvent({
@@ -191,6 +242,7 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
       success: true,
       id: txResult.chunk.id,
       slug: txResult.chunk.slug,
+      ...(txResult.linkedToGame ? { linkedToGame: true } : {}),
       ...(grant.status === 'granted'
         ? {
             pointGrant: {

@@ -8,6 +8,8 @@ import {
   isChunkStatus,
 } from '@/lib/chunks/validation';
 
+import { type ChunkLinkTarget, isChunkLinkTarget } from './link-target';
+
 /**
  * sessionStorage slot for handing the chunk authoring draft between
  * `/chunks/new` and `/chunks/new/preview`. Single slot per browser —
@@ -63,6 +65,16 @@ export type ChunkDraftV1 = {
     chunkId: string;
     initialSlug: string;
   };
+  /**
+   * The game move this chunk is being authored from (`?game=&ply=` on
+   * `/chunks/new`). Survives the form → preview handoff so the create
+   * action can link the new chunk to that move in the same transaction —
+   * sessionStorage is the only channel between the two steps, since the
+   * preview reads the draft rather than the URL. Absent for chunks not
+   * started from a game position, and never set on edit drafts (an
+   * existing chunk's links are managed from the game page).
+   */
+  linkTarget?: ChunkLinkTarget;
   /** Tracks which editor tab was last active so re-entering /new restores it. */
   activeTab: 'board' | 'fen';
   /** White / black to move — encoded redundantly with the FEN for cheap reads. */
@@ -106,6 +118,10 @@ function isChunkDraftV1(value: unknown): value is ChunkDraftV1 {
     if (typeof e.chunkId !== 'string') return false;
     if (typeof e.initialSlug !== 'string') return false;
   }
+  // Same tolerance as `edit` above: added after v1 shipped, absent on
+  // drafts written by older bundles and on any chunk not started from a
+  // game position.
+  if (v.linkTarget !== undefined && !isChunkLinkTarget(v.linkTarget)) return false;
   if (v.activeTab !== 'board' && v.activeTab !== 'fen') return false;
   if (v.sideToMove !== 'w' && v.sideToMove !== 'b') return false;
   if (typeof v.flipped !== 'boolean') return false;

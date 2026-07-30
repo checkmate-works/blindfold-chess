@@ -6,6 +6,7 @@ import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-anno
 import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
 
 import type { ChunkDraftV1 } from '../_lib/draft-storage';
+import type { ChunkLinkTarget } from '../_lib/link-target';
 
 export type ChunkFormInitial = {
   id: string;
@@ -32,9 +33,18 @@ export type ChunkFormInitial = {
 export function useChunkFormState({
   mode,
   initial,
+  initialLinkTarget,
 }: {
   mode: 'create' | 'edit';
   initial?: ChunkFormInitial;
+  /**
+   * Game move the create flow was seeded from (`?game=&ply=`). Not an
+   * editable field — provenance the form carries so the preview can hand
+   * it to the create action — but it lives here because every place that
+   * rewrites the form's state (draft restore, Start over) has to move it
+   * in lock-step with the position it describes.
+   */
+  initialLinkTarget?: ChunkLinkTarget;
 }) {
   const [title, setTitle] = useState(mode === 'edit' && initial ? initial.title : '');
   const [slug, setSlug] = useState(mode === 'edit' && initial ? initial.slug : '');
@@ -53,6 +63,9 @@ export function useChunkFormState({
   const [feedbackTopics, setFeedbackTopics] = useState<ChunkFeedbackTopic[]>(
     mode === 'edit' && initial ? [...initial.feedbackTopics] : []
   );
+  const [linkTarget, setLinkTarget] = useState<ChunkLinkTarget | undefined>(
+    mode === 'create' ? initialLinkTarget : undefined
+  );
 
   /** Reset every field to the create-mode blank state (Start over). */
   function resetFields() {
@@ -62,6 +75,10 @@ export function useChunkFormState({
     setAnnotations(EMPTY_BOARD_ANNOTATIONS);
     setStatus('published');
     setFeedbackTopics([]);
+    // Start over also clears the board, so the position the link target
+    // describes is gone — keeping it would auto-link a game move to a
+    // chunk about some other position entirely.
+    setLinkTarget(undefined);
   }
 
   /** Apply a recovered sessionStorage draft's non-board fields. */
@@ -72,6 +89,10 @@ export function useChunkFormState({
     setAnnotations(draft.annotations);
     setStatus(draft.status);
     setFeedbackTopics(draft.feedbackTopics);
+    // The draft's own provenance wins: on the preview's "Back to edit"
+    // round-trip the `?game=&ply=` params are gone from the URL, so the
+    // stored value is the only surviving record of where this came from.
+    setLinkTarget(draft.linkTarget);
   }
 
   /**
@@ -110,6 +131,7 @@ export function useChunkFormState({
     setStatus,
     feedbackTopics,
     setFeedbackTopics,
+    linkTarget,
     resetFields,
     applyDraft,
     computeIsDirty,
