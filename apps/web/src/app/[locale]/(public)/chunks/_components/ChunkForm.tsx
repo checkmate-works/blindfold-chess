@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
@@ -16,17 +16,13 @@ import { FiInfo } from 'react-icons/fi';
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
+import { checkSlugAvailability } from '../_actions/checkSlugAvailability';
 import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
 import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
 import { type ChunkFormField, validateChunkForm } from '../_lib/chunk-form-validation';
 import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
 import type { ChunkLinkTarget } from '../_lib/link-target';
 import { ChunkFormFields } from './ChunkFormFields';
-import {
-  type ChangedIdentityField,
-  type ChunkReferenceCounts,
-  ChunkReferenceWarning,
-} from './ChunkReferenceWarning';
 
 export type { ChunkFormInitial } from '../_hooks/use-chunk-form-state';
 
@@ -67,12 +63,6 @@ type EditProps = {
   mode: 'edit';
   initial: ChunkFormInitial;
   disableUnsavedGuard?: boolean;
-  /**
-   * How many live positions / game moves already point at this chunk.
-   * Drives the warning shown once an edit changes what those references
-   * assert — see `ChunkReferenceWarning`.
-   */
-  references: ChunkReferenceCounts;
 };
 
 type Props = CreateProps | EditProps;
@@ -159,6 +149,11 @@ export function ChunkForm(props: Props) {
 
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
+  // In-flight slug preflight (see `handleSubmit`). Only guards against a
+  // double submit while the round trip is out — every *validation* verdict
+  // still reaches the author through `submitError`, never through a
+  // silently inert button.
+  const [checkingSlug, setCheckingSlug] = useState(false);
 
   // The FEN rule can fail from either position tab, so on the board tab
   // it anchors on the position section wrapper — the raw FEN textarea
@@ -177,19 +172,6 @@ export function ChunkForm(props: Props) {
   });
 
   const isDirty = !submitted && form.computeIsDirty(board.trimmedFen);
-
-  // Which identity-bearing fields currently differ from the saved row.
-  // Only these three change what an existing reference asserts, so only
-  // these raise the "others already point at this" warning.
-  const changedIdentityFields = useMemo<ChangedIdentityField[]>(() => {
-    if (mode !== 'edit') return [];
-    const initial = (props as EditProps).initial;
-    const fields: ChangedIdentityField[] = [];
-    if (title !== initial.title) fields.push('title');
-    if (slug !== initial.slug) fields.push('slug');
-    if (board.trimmedFen !== initial.representativeFen) fields.push('fen');
-    return fields;
-  }, [mode, props, title, slug, board.trimmedFen]);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({
     isDirty: disableUnsavedGuard ? false : isDirty,
@@ -213,6 +195,7 @@ export function ChunkForm(props: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (checkingSlug) return;
     submitError.clear();
 
     const invalid = validateChunkForm({
@@ -223,8 +206,36 @@ export function ChunkForm(props: Props) {
       description,
     });
     if (invalid) {
-      submitError.report(invalid.field, t(invalid.key));
+      submitError.report(invalid.field, t(invalid.key, invalid.values));
       return;
+    }
+
+    // A slug collision is the one submit-blocking rule the client can't
+    // answer on its own, so it used to surface at the preview's Confirm —
+    // two steps away from the field at fault, in a banner, with the input
+    // no longer on screen. Asking the server here puts the same verdict on
+    // the slug control alongside every other rejection.
+    //
+    // Skipped in edit mode when the slug is untouched: the row's own slug
+    // is trivially "taken", and `saveChunkEdit` omits an unchanged slug
+    // from its payload anyway.
+    const trimmedSlug = slug.trim();
+    if (props.mode === 'create' || trimmedSlug !== props.initial.slug) {
+      setCheckingSlug(true);
+      try {
+        const { available } = await checkSlugAvailability(trimmedSlug);
+        if (!available) {
+          submitError.report('slug', t('errors.slugTaken'));
+          return;
+        }
+      } catch {
+        // Preflight only — a failed round trip must not strand an
+        // otherwise valid draft on the form. The create / update actions
+        // re-check under the DB's UNIQUE constraint, so a collision that
+        // slips through here is still caught at the preview.
+      } finally {
+        setCheckingSlug(false);
+      }
     }
 
     // Both modes hand off to a confirmation page: create persists via
@@ -294,16 +305,6 @@ export function ChunkForm(props: Props) {
           </div>
         )}
 
-        {/* Sits above the fields, not next to one: a rename and a board
-            change carry the same consequence, and the warning is about the
-            edit as a whole rather than about any single control. */}
-        {mode === 'edit' && (
-          <ChunkReferenceWarning
-            references={(props as EditProps).references}
-            changed={changedIdentityFields}
-          />
-        )}
-
         <ChunkFormFields
           board={board}
           title={title}
@@ -319,18 +320,27 @@ export function ChunkForm(props: Props) {
           feedbackTopics={feedbackTopics}
           onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
-          pending={false}
+          pending={checkingSlug}
           messageFor={submitError.messageFor}
         />
 
         <div className="space-y-4">
           {/*
-           * Deliberately always enabled: a disabled submit is silent
-           * about *why* it won't move, which is the same dead-end as an
-           * off-screen error. Pressing it runs `validateChunkForm` and
-           * puts the author on the offending field with an explanation.
+           * Deliberately never disabled *by validation state*: a disabled
+           * submit is silent about *why* it won't move, which is the same
+           * dead-end as an off-screen error. Pressing it runs
+           * `validateChunkForm` and puts the author on the offending field
+           * with an explanation. The only thing that holds it is the slug
+           * preflight already in flight, and that says so with a spinner.
            */}
-          <Button type="submit" variant="primary" size="lg" fullWidth>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={checkingSlug}
+            loading={checkingSlug}
+          >
             {t('actions.continueToPreview')}
           </Button>
 

@@ -3418,7 +3418,10 @@
       "errors": {
         "invalidFen": "FEN is not a valid chess board layout.",
         "titleRequired": "Title is required.",
+        "titleTooLong": "Title must be {max} characters or fewer.",
         "slugRequired": "Slug is required.",
+        "slugInvalid": "Slug can only use lowercase letters, numbers, and single hyphens (e.g. rook-battery).",
+        "slugTooLong": "Slug must be {max} characters or fewer.",
         "draftWriteFailed": "Could not save the draft locally. Browser storage may be full or unavailable.",
         "signInRequired": "Please sign in to continue.",
         "banned": "Your account is suspended.",
@@ -3429,24 +3432,12 @@
         "alreadyDeleted": "This chunk has already been deleted.",
         "cannotEditPublished": "This chunk is published and is no longer editable. Publishing is one-way — to revise, delete this chunk and create a new one.",
         "descriptionRequired": "This chunk needs a description before it can be published.",
+        "descriptionTooLong": "Description must be {max} characters or fewer.",
         "invalidFeedbackTopic": "Unknown feedback topic. Please refresh the page and try again."
       },
       "draft": {
         "toggleLabel": "Ask for feedback first",
         "toggleHint": "The chunk goes live either way. Asking for feedback keeps it editable and invites other players to suggest a sharper title or description; you settle it later from the detail page, which locks it."
-      },
-      "referenceWarning": {
-        "body": "You are changing the {fields}, and {scope} already point at this chunk. Those links stay attached, but what they claim changes with it.",
-        "hint": "Nobody is notified. If the pattern itself is now a different one, consider creating a separate chunk instead.",
-        "scopeBoth": "{positions, plural, =1 {1 position} other {# positions}} and {games, plural, =1 {1 game move} other {# game moves}}",
-        "scopePositions": "{count, plural, =1 {1 position} other {# positions}}",
-        "scopeGames": "{count, plural, =1 {1 game move} other {# game moves}}",
-        "separator": ", ",
-        "fields": {
-          "title": "title",
-          "slug": "slug",
-          "fen": "board"
-        }
       },
       "feedbackTopics": {
         "legend": "What do you want feedback on?",
@@ -3491,7 +3482,20 @@
       "saveError": "Something went wrong saving the chunk. Please try again.",
       "statusLabel": "Status",
       "statusDraft": "Feedback wanted",
-      "statusPublished": "Published"
+      "statusPublished": "Published",
+      "referenceWarning": {
+        "body": "You are changing the {fields}, and {scope} already point at this chunk. Those links stay attached, but what they claim changes with it.",
+        "hint": "Nobody is notified. If the pattern itself is now a different one, consider creating a separate chunk instead.",
+        "scopeBoth": "{positions, plural, =1 {1 position} other {# positions}} and {games, plural, =1 {1 game move} other {# game moves}}",
+        "scopePositions": "{count, plural, =1 {1 position} other {# positions}}",
+        "scopeGames": "{count, plural, =1 {1 game move} other {# game moves}}",
+        "separator": ", ",
+        "fields": {
+          "title": "title",
+          "slug": "slug",
+          "fen": "board"
+        }
+      }
     },
     "editRequests": {
       "linkLabel": "Edit suggestions",

@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { getChunkBySlug } from '@/lib/chunks/queries';
+import { countChunkReferences, getChunkBySlug } from '@/lib/chunks/queries';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -19,6 +19,10 @@ import { ChunkPreviewClient } from '../../../_components/ChunkPreviewClient';
  * edit mode. The actual draft read and the call to `updateChunk` happen
  * client-side there because the sessionStorage handoff cannot be
  * inspected on the server. `editHref` is where "Back to edit" returns.
+ *
+ * The saved row's identity fields and its live reference counts are read
+ * here and passed down: the client can diff the draft against them, but
+ * neither is knowable from sessionStorage alone.
  */
 type Props = {
   params: Promise<{ locale: Locale; slug: string }>;
@@ -49,9 +53,13 @@ export default async function EditChunkPreviewPage({ params }: Props) {
     notFound();
   }
 
-  const [t, tPreview] = await Promise.all([
+  const [t, tPreview, references] = await Promise.all([
     getTranslations({ locale, namespace: 'chunks' }),
     getTranslations({ locale, namespace: 'chunks.preview' }),
+    // Drives the "others already point at this" warning. Counted here,
+    // at the confirmation step, so the number is the one that holds when
+    // the save is actually made — however long the form was left open.
+    countChunkReferences(chunk.id),
   ]);
 
   return (
@@ -65,7 +73,16 @@ export default async function EditChunkPreviewPage({ params }: Props) {
         { label: tPreview('title') },
       ]}
     >
-      <ChunkPreviewClient mode="edit" editHref={`/chunks/${slug}/edit`} />
+      <ChunkPreviewClient
+        mode="edit"
+        editHref={`/chunks/${slug}/edit`}
+        saved={{
+          title: chunk.title,
+          slug: chunk.slug,
+          representativeFen: chunk.representativeFen,
+        }}
+        references={references}
+      />
     </PageLayout>
   );
 }

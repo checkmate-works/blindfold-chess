@@ -3418,7 +3418,10 @@
       "errors": {
         "invalidFen": "O FEN não é um layout de tabuleiro válido.",
         "titleRequired": "O título é obrigatório.",
+        "titleTooLong": "O título deve ter no máximo {max} caracteres.",
         "slugRequired": "O slug é obrigatório.",
+        "slugInvalid": "O slug pode conter apenas letras minúsculas, números e hifens simples (por exemplo, rook-battery).",
+        "slugTooLong": "O slug deve ter no máximo {max} caracteres.",
         "draftWriteFailed": "Não foi possível salvar o rascunho localmente. O armazenamento do navegador pode estar cheio ou indisponível.",
         "signInRequired": "Faça login para continuar.",
         "banned": "Sua conta está suspensa.",
@@ -3429,24 +3432,12 @@
         "alreadyDeleted": "Este chunk já foi excluído.",
         "cannotEditPublished": "Este chunk está publicado e não pode mais ser editado. A publicação é irreversível — para revisá-lo, exclua este chunk e crie um novo.",
         "descriptionRequired": "Este chunk precisa de uma descrição antes de poder ser publicado.",
+        "descriptionTooLong": "A descrição deve ter no máximo {max} caracteres.",
         "invalidFeedbackTopic": "Tópico de feedback desconhecido. Atualize a página e tente novamente."
       },
       "draft": {
         "toggleLabel": "Pedir sugestões primeiro",
         "toggleHint": "O chunk fica visível de qualquer forma. Pedir sugestões o mantém editável e convida outros jogadores a propor um título ou descrição mais precisos; você o fecha depois pela página de detalhes, o que o bloqueia."
-      },
-      "referenceWarning": {
-        "body": "Você vai mudar {fields}, e já há {scope} apontando para este chunk. Esses vínculos continuam, mas o que eles afirmam muda junto.",
-        "hint": "Ninguém é notificado. Se o padrão passou a ser outro, considere criar um chunk separado em vez de reescrever este.",
-        "scopeBoth": "{positions, plural, =1 {1 posição} other {# posições}} e {games, plural, =1 {1 lance de partida} other {# lances de partidas}}",
-        "scopePositions": "{count, plural, =1 {1 posição} other {# posições}}",
-        "scopeGames": "{count, plural, =1 {1 lance de partida} other {# lances de partidas}}",
-        "separator": ", ",
-        "fields": {
-          "title": "o título",
-          "slug": "o slug",
-          "fen": "o tabuleiro"
-        }
       },
       "feedbackTopics": {
         "legend": "Sobre o que você quer feedback?",
@@ -3491,7 +3482,20 @@
       "saveError": "Algo deu errado ao salvar o chunk. Tente novamente.",
       "statusLabel": "Status",
       "statusDraft": "Busca sugestões",
-      "statusPublished": "Publicado"
+      "statusPublished": "Publicado",
+      "referenceWarning": {
+        "body": "Você vai mudar {fields}, e já há {scope} apontando para este chunk. Esses vínculos continuam, mas o que eles afirmam muda junto.",
+        "hint": "Ninguém é notificado. Se o padrão passou a ser outro, considere criar um chunk separado em vez de reescrever este.",
+        "scopeBoth": "{positions, plural, =1 {1 posição} other {# posições}} e {games, plural, =1 {1 lance de partida} other {# lances de partidas}}",
+        "scopePositions": "{count, plural, =1 {1 posição} other {# posições}}",
+        "scopeGames": "{count, plural, =1 {1 lance de partida} other {# lances de partidas}}",
+        "separator": ", ",
+        "fields": {
+          "title": "o título",
+          "slug": "o slug",
+          "fen": "o tabuleiro"
+        }
+      }
     },
     "editRequests": {
       "linkLabel": "Sugestões de edição",

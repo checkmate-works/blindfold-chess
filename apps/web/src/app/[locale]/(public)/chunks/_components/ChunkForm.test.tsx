@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ChunkForm } from './ChunkForm';
@@ -127,6 +127,13 @@ vi.mock('../_lib/draft-storage', () => ({
   writeChunkDraft: () => writeChunkDraft(),
 }));
 
+// The slug preflight is a Server Action (DB-backed); stubbed so the tests
+// drive the verdict rather than a database. Free unless a test says taken.
+const checkSlugAvailability = vi.fn();
+vi.mock('../_actions/checkSlugAvailability', () => ({
+  checkSlugAvailability: (slug: string) => checkSlugAvailability(slug),
+}));
+
 const STORED_DRAFT = {
   version: 1 as const,
   representativeFen: '8/8/8/8/8/8/8/8 w - - 0 1',
@@ -174,11 +181,19 @@ describe('ChunkForm — submit error routing', () => {
   beforeEach(() => {
     (readChunkDraft as Mock).mockReset();
     (writeChunkDraft as Mock).mockReset();
+    checkSlugAvailability.mockReset();
+    checkSlugAvailability.mockResolvedValue({ available: true });
     nav.search = '';
   });
 
   function fill(field: string, value: string) {
     fireEvent.change(screen.getByLabelText(field), { target: { value } });
+  }
+
+  function fillValidCreateForm() {
+    fill('title', 'Rook battery');
+    fill('slug', 'rook-battery');
+    fill('description', 'Doubled rooks on an open file.');
   }
 
   it('lands a field error on its own control and focuses it', () => {
@@ -195,27 +210,65 @@ describe('ChunkForm — submit error routing', () => {
     expect(document.activeElement).toBe(screen.getByLabelText('description'));
   });
 
-  it('falls back to the form-wide strip for errors no control owns', () => {
+  it('falls back to the form-wide strip for errors no control owns', async () => {
     writeChunkDraft.mockReturnValue(false);
     render(<ChunkForm mode="create" />);
-    fill('title', 'Rook battery');
-    fill('slug', 'rook-battery');
-    fill('description', 'Doubled rooks on an open file.');
+    fillValidCreateForm();
 
     fireEvent.click(screen.getByText('actions.continueToPreview'));
 
-    const strip = screen.getByRole('alert');
+    const strip = await screen.findByRole('alert');
     expect(strip).toHaveTextContent('errors.draftWriteFailed');
     expect(screen.getByTestId('field-error')).toHaveTextContent('');
     expect(document.activeElement).toBe(strip);
   });
+
+  // The collision used to be reported two steps later, by the preview's
+  // Confirm, in a banner — with the input that caused it off screen.
+  it('reports a taken slug on the slug control before leaving the form', async () => {
+    checkSlugAvailability.mockResolvedValue({ available: false });
+    render(<ChunkForm mode="create" />);
+    fillValidCreateForm();
+
+    fireEvent.click(screen.getByText('actions.continueToPreview'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('field-error')).toHaveTextContent('slug:errors.slugTaken')
+    );
+    expect(document.activeElement).toBe(screen.getByLabelText('slug'));
+    expect(writeChunkDraft).not.toHaveBeenCalled();
+  });
+
+  it('hands off to the preview once the slug is free', async () => {
+    writeChunkDraft.mockReturnValue(true);
+    render(<ChunkForm mode="create" />);
+    fillValidCreateForm();
+
+    fireEvent.click(screen.getByText('actions.continueToPreview'));
+
+    await waitFor(() => expect(writeChunkDraft).toHaveBeenCalled());
+    expect(checkSlugAvailability).toHaveBeenCalledWith('rook-battery');
+    expect(screen.getByTestId('field-error')).toHaveTextContent('');
+  });
+
+  // Preflight only — the create action re-checks under the DB's UNIQUE
+  // constraint, so a dead round trip must not trap a valid draft here.
+  it('continues to the preview when the preflight itself fails', async () => {
+    checkSlugAvailability.mockRejectedValue(new Error('network'));
+    writeChunkDraft.mockReturnValue(true);
+    render(<ChunkForm mode="create" />);
+    fillValidCreateForm();
+
+    fireEvent.click(screen.getByText('actions.continueToPreview'));
+
+    await waitFor(() => expect(writeChunkDraft).toHaveBeenCalled());
+  });
 });
 
-describe('ChunkForm — reference warning', () => {
-  const SAVED_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
+describe('ChunkForm — slug preflight in edit mode', () => {
   const INITIAL = {
     id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
-    representativeFen: SAVED_FEN,
+    representativeFen: '8/8/8/8/8/8/8/8 w - - 0 1',
     title: 'Rook battery',
     slug: 'rook-battery',
     description: 'Doubled rooks',
@@ -223,69 +276,41 @@ describe('ChunkForm — reference warning', () => {
     feedbackTopics: [],
   };
 
-  function renderEdit(references: { positions: number; games: number }) {
-    return render(<ChunkForm mode="edit" initial={INITIAL} references={references} />);
-  }
-
   beforeEach(() => {
     (readChunkDraft as Mock).mockReset();
+    (writeChunkDraft as Mock).mockReset();
+    writeChunkDraft.mockReturnValue(true);
+    checkSlugAvailability.mockReset();
+    checkSlugAvailability.mockResolvedValue({ available: true });
+    boardState.trimmedFen = INITIAL.representativeFen;
     nav.search = '';
-    // Board matches the saved row unless a test says otherwise.
-    boardState.trimmedFen = SAVED_FEN;
   });
 
-  // Noise is what gets warnings ignored: an untouched form, or one where only
-  // the description changed, has nothing to warn about.
-  it('stays hidden while nothing identity-bearing has changed', () => {
-    renderEdit({ positions: 3, games: 2 });
-    expect(screen.queryByText('body')).toBeNull();
+  // The row's own slug is trivially "taken"; asking would reject the save.
+  it('skips the check when the slug is untouched', async () => {
+    render(<ChunkForm mode="edit" initial={INITIAL} />);
+
+    fireEvent.click(screen.getByText('actions.continueToPreview'));
+
+    await waitFor(() => expect(writeChunkDraft).toHaveBeenCalled());
+    expect(checkSlugAvailability).not.toHaveBeenCalled();
   });
 
-  it('stays hidden when only the description changed', () => {
-    renderEdit({ positions: 3, games: 2 });
-    fireEvent.change(screen.getByLabelText('description'), { target: { value: 'reworded' } });
-    expect(screen.queryByText('body')).toBeNull();
-  });
-
-  it('appears once the title changes', () => {
-    renderEdit({ positions: 3, games: 2 });
-    fireEvent.change(screen.getByLabelText('title'), { target: { value: 'Rook doubling' } });
-    expect(screen.getByText('body')).toBeInTheDocument();
-  });
-
-  it('appears once the slug changes', () => {
-    renderEdit({ positions: 1, games: 0 });
+  it('checks a renamed slug and reports a collision on the control', async () => {
+    checkSlugAvailability.mockResolvedValue({ available: false });
+    render(<ChunkForm mode="edit" initial={INITIAL} />);
     fireEvent.change(screen.getByLabelText('slug'), { target: { value: 'rook-doubling' } });
-    expect(screen.getByText('body')).toBeInTheDocument();
-  });
 
-  it('appears when the board differs from the saved row', () => {
-    boardState.trimmedFen = '8/8/8/8/4P3/8/8/8 w - - 0 1';
-    renderEdit({ positions: 0, games: 1 });
-    expect(screen.getByText('body')).toBeInTheDocument();
-  });
+    fireEvent.click(screen.getByText('actions.continueToPreview'));
 
-  // Nothing points at the chunk yet, so a rename costs nobody anything.
-  it('stays hidden when no live reference exists, however the title changes', () => {
-    renderEdit({ positions: 0, games: 0 });
-    fireEvent.change(screen.getByLabelText('title'), { target: { value: 'Rook doubling' } });
-    expect(screen.queryByText('body')).toBeNull();
-  });
-
-  // Reverting an edit should retract the warning, not leave it latched.
-  it('disappears again when the title is typed back to its saved value', () => {
-    renderEdit({ positions: 3, games: 2 });
-    const titleInput = screen.getByLabelText('title');
-    fireEvent.change(titleInput, { target: { value: 'Rook doubling' } });
-    expect(screen.getByText('body')).toBeInTheDocument();
-    fireEvent.change(titleInput, { target: { value: INITIAL.title } });
-    expect(screen.queryByText('body')).toBeNull();
-  });
-
-  // Create mode has no saved row to diverge from — and no references.
-  it('never renders in create mode', () => {
-    readChunkDraft.mockReturnValue(null);
-    render(<ChunkForm mode="create" />);
-    expect(screen.queryByText('body')).toBeNull();
+    await waitFor(() =>
+      expect(screen.getByTestId('field-error')).toHaveTextContent('slug:errors.slugTaken')
+    );
+    expect(checkSlugAvailability).toHaveBeenCalledWith('rook-doubling');
+    expect(writeChunkDraft).not.toHaveBeenCalled();
   });
 });
+
+// The "others already point at this" warning is NOT rendered here — it
+// belongs to the preview step, where the save is confirmed. See
+// `ChunkPreviewClient.test.tsx` and `_lib/identity-changes.test.ts`.
