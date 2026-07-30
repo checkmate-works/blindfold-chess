@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
@@ -19,25 +20,11 @@ import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
 import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
 import { type ChunkFormField, validateChunkForm } from '../_lib/chunk-form-validation';
 import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
-import { type ChunkFieldError, ChunkFormFields } from './ChunkFormFields';
+import { ChunkFormFields } from './ChunkFormFields';
 
 export type { ChunkFormInitial } from '../_hooks/use-chunk-form-state';
 
-/**
- * A submit error is either bound to a control — rendered inline next to
- * it, see `ChunkFormFields` — or form-wide (`field: null`, e.g. the
- * sessionStorage handoff failing), which falls back to the strip above
- * the fields. Exactly one of the two surfaces shows at a time so the
- * same sentence is never duplicated.
- */
-type ChunkSubmitError = { field: ChunkFormField | null; message: string };
-
-/**
- * DOM ids the submit gate focuses per field. The FEN rule can fail from
- * either position tab, so on the board tab it targets the position
- * section wrapper (which carries `tabIndex={-1}`) instead of the raw FEN
- * textarea, which isn't mounted there.
- */
+/** DOM ids a rejected submit focuses, per field. */
 const FIELD_ANCHOR_IDS: Record<ChunkFormField, string> = {
   fen: 'chunk-fen',
   title: 'chunk-title',
@@ -148,10 +135,15 @@ export function ChunkForm(props: Props) {
     setFeedbackTopics,
   } = form;
 
-  const [error, setError] = useState<ChunkSubmitError | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
-  const formErrorRef = useRef<HTMLDivElement>(null);
+
+  // The FEN rule can fail from either position tab, so on the board tab
+  // it anchors on the position section wrapper — the raw FEN textarea
+  // isn't mounted there.
+  const submitError = useSubmitError<ChunkFormField>((field) =>
+    field === 'fen' && board.activeTab === 'board' ? 'chunk-position' : FIELD_ANCHOR_IDS[field]
+  );
 
   const { hydratedFromDraft, setHydratedFromDraft } = useChunkDraftRecovery({
     mode,
@@ -172,7 +164,7 @@ export function ChunkForm(props: Props) {
     clearChunkDraft();
     board.resetBoard();
     form.resetFields();
-    setError(null);
+    submitError.clear();
     setHydratedFromDraft(false);
     setStartOverOpen(false);
   }
@@ -184,38 +176,9 @@ export function ChunkForm(props: Props) {
     router.push(path as '/chunks/[slug]');
   }
 
-  /**
-   * Show a submit error and send the author to it. Focus (not a bare
-   * scroll) because it drags the viewport along for pointer users *and*
-   * lands keyboard / screen-reader users on the control that needs
-   * fixing. This form is taller than a phone screen — the board editor
-   * alone fills one — so an error rendered somewhere off-viewport reads
-   * as "the submit button does nothing", which is exactly how the
-   * missing-description gate used to fail.
-   *
-   * flushSync so the inline message and its `aria-describedby` target
-   * are committed before focus lands; otherwise the screen reader
-   * announces the control without the sentence explaining it.
-   */
-  function reportError(field: ChunkFormField | null, message: string) {
-    flushSync(() => setError({ field, message }));
-
-    const anchorId =
-      field === null
-        ? null
-        : field === 'fen' && board.activeTab === 'board'
-          ? 'chunk-position'
-          : FIELD_ANCHOR_IDS[field];
-    const anchor = anchorId === null ? formErrorRef.current : document.getElementById(anchorId);
-
-    anchor?.focus({ preventScroll: true });
-    // Optional-called because jsdom does not implement scrollIntoView.
-    anchor?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    submitError.clear();
 
     const invalid = validateChunkForm({
       isFenValid: board.isFenValid,
@@ -225,7 +188,7 @@ export function ChunkForm(props: Props) {
       description,
     });
     if (invalid) {
-      reportError(invalid.field, t(invalid.key));
+      submitError.report(invalid.field, t(invalid.key));
       return;
     }
 
@@ -256,7 +219,7 @@ export function ChunkForm(props: Props) {
 
     const ok = writeChunkDraft(draft);
     if (!ok) {
-      reportError(null, t('errors.draftWriteFailed'));
+      submitError.report(null, t('errors.draftWriteFailed'));
       return;
     }
 
@@ -265,28 +228,19 @@ export function ChunkForm(props: Props) {
     );
   }
 
-  const fieldError: ChunkFieldError | null =
-    error && error.field ? { field: error.field, message: error.message } : null;
-
   return (
     <>
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
         {/*
-         * Form-wide errors only (see `ChunkSubmitError`) — anything
-         * attributable to a control is rendered against that control
-         * instead. `tabIndex={-1}` makes it a focus target for
-         * `reportError`.
+         * Form-wide errors only — anything attributable to a control is
+         * rendered against that control instead, so the same sentence
+         * never appears twice.
          */}
-        {error && !error.field && (
-          <div
-            ref={formErrorRef}
-            tabIndex={-1}
-            role="alert"
-            className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm"
-          >
-            {error.message}
-          </div>
-        )}
+        <FormErrorBanner
+          ref={submitError.summaryRef}
+          variant="soft"
+          message={submitError.formMessage}
+        />
 
         {hydratedFromDraft && mode === 'create' && !resumed && (
           <div
@@ -324,7 +278,7 @@ export function ChunkForm(props: Props) {
           onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
           pending={false}
-          error={fieldError}
+          messageFor={submitError.messageFor}
         />
 
         <div className="space-y-4">

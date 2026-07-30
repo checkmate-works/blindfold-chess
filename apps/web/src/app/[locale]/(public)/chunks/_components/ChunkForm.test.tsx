@@ -22,13 +22,26 @@ vi.mock('@/_hooks/useUnsavedChanges', () => ({
   useUnsavedChanges: () => ({ isBlocking: false, confirm: vi.fn(), cancel: vi.fn() }),
 }));
 
-// Forwards `type` so the submit button really submits the form — the
-// error-routing tests below depend on the real submit path running.
+// `Button` forwards `type` so the submit button really submits, and the
+// banner keeps its ref + role — the error-routing tests below assert on
+// the real submit path and on where focus lands.
 vi.mock('@/app/_components', () => ({
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Button: ({ children, type }: { children: React.ReactNode; type?: 'button' | 'submit' }) => (
     <button type={type}>{children}</button>
   ),
+  FormErrorBanner: ({
+    message,
+    ref,
+  }: {
+    message: string | null;
+    ref?: React.Ref<HTMLDivElement>;
+  }) =>
+    message ? (
+      <div ref={ref} tabIndex={-1} role="alert">
+        {message}
+      </div>
+    ) : null,
   UnsavedChangesDialog: () => null,
 }));
 
@@ -57,7 +70,7 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-edito
 // the message lands on) is assertable without mounting the board editor.
 vi.mock('./ChunkFormFields', () => ({
   ChunkFormFields: ({
-    error,
+    messageFor,
     title,
     onTitleChange,
     slug,
@@ -65,7 +78,7 @@ vi.mock('./ChunkFormFields', () => ({
     description,
     onDescriptionChange,
   }: {
-    error: { field: string; message: string } | null;
+    messageFor: (field: string) => string | null;
     title: string;
     onTitleChange: (value: string) => void;
     slug: string;
@@ -92,7 +105,12 @@ vi.mock('./ChunkFormFields', () => ({
         value={description}
         onChange={(e) => onDescriptionChange(e.target.value)}
       />
-      <div data-testid="field-error">{error ? `${error.field}:${error.message}` : ''}</div>
+      <div data-testid="field-error">
+        {(['title', 'slug', 'description', 'fen'] as const)
+          .filter((field) => messageFor(field))
+          .map((field) => `${field}:${messageFor(field)}`)
+          .join('')}
+      </div>
     </div>
   ),
 }));

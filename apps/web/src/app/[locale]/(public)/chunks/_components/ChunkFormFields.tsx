@@ -4,7 +4,14 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { BoardFrame, BoardSkeleton, FlipBoardButton } from '@/app/_components';
+import {
+  BoardFrame,
+  BoardSkeleton,
+  FieldError,
+  FlipBoardButton,
+  fieldBorderClass,
+  fieldErrorProps,
+} from '@/app/_components';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import {
@@ -22,9 +29,6 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { ChunkFormField } from '../_lib/chunk-form-validation';
-
-/** A submit error bound to one control, rendered against that control. */
-export type ChunkFieldError = { field: ChunkFormField; message: string };
 
 type Props = {
   board: ReturnType<typeof useFenBoardEditor>;
@@ -60,12 +64,12 @@ type Props = {
   mode: 'create' | 'edit';
   pending: boolean;
   /**
-   * The submit gate's verdict, if it failed on one of these controls.
+   * The submit gate's verdict per control (`useSubmitError.messageFor`).
    * Drives the highlight, the `aria-invalid` / `aria-describedby` pair,
    * and the message rendered directly under the control — the author
    * should never have to hunt elsewhere on the page for the reason.
    */
-  error: ChunkFieldError | null;
+  messageFor: (field: ChunkFormField) => string | null;
 };
 
 /**
@@ -93,7 +97,7 @@ export function ChunkFormFields({
   onFeedbackTopicsChange,
   mode,
   pending,
-  error,
+  messageFor,
 }: Props) {
   const t = useTranslations('chunks.form');
   const editableBoardLabels = useEditableBoardLabels();
@@ -101,11 +105,10 @@ export function ChunkFormFields({
 
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
-  const errorFor = (field: ChunkFormField) => (error?.field === field ? error.message : null);
-  const titleError = errorFor('title');
-  const descriptionError = errorFor('description');
-  const slugError = errorFor('slug');
-  const fenError = errorFor('fen');
+  const titleError = messageFor('title');
+  const descriptionError = messageFor('description');
+  const slugError = messageFor('slug');
+  const fenError = messageFor('fen');
 
   // A description is only mandatory on the publish path, so the required
   // marker follows the "Save as draft" toggle rather than being static.
@@ -124,12 +127,9 @@ export function ChunkFormFields({
           type="text"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
-            titleError ? 'border-destructive' : 'border-border'
-          }`}
+          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${fieldBorderClass(titleError)}`}
           required
-          aria-invalid={titleError ? true : undefined}
-          aria-describedby={titleError ? 'chunk-title-error' : undefined}
+          {...fieldErrorProps('chunk-title-error', titleError)}
         />
         <FieldError id="chunk-title-error" message={titleError} />
       </div>
@@ -144,12 +144,9 @@ export function ChunkFormFields({
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
           rows={4}
-          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
-            descriptionError ? 'border-destructive' : 'border-border'
-          }`}
+          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${fieldBorderClass(descriptionError)}`}
           required={descriptionRequired}
-          aria-invalid={descriptionError ? true : undefined}
-          aria-describedby={descriptionError ? 'chunk-description-error' : undefined}
+          {...fieldErrorProps('chunk-description-error', descriptionError)}
         />
         <FieldError id="chunk-description-error" message={descriptionError} />
       </div>
@@ -273,11 +270,8 @@ export function ChunkFormFields({
               onChange={board.handleFenInputChange}
               placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
               rows={2}
-              className={`w-full px-3 py-2 rounded border bg-card text-foreground text-sm font-mono ${
-                fenError ? 'border-destructive' : 'border-border'
-              }`}
-              aria-invalid={fenError ? true : undefined}
-              aria-describedby={fenError ? 'chunk-fen-error' : undefined}
+              className={`w-full px-3 py-2 rounded border bg-card text-foreground text-sm font-mono ${fieldBorderClass(fenError)}`}
+              {...fieldErrorProps('chunk-fen-error', fenError)}
             />
             <p className="text-xs text-muted-foreground mt-1">{t('hints.fen')}</p>
             <FieldError
@@ -302,12 +296,9 @@ export function ChunkFormFields({
             value={slug}
             onChange={(e) => onSlugChange(e.target.value)}
             placeholder="rook-battery"
-            className={`flex-1 px-3 py-2 rounded border bg-card text-foreground font-mono text-sm disabled:opacity-60 disabled:cursor-not-allowed ${
-              slugError ? 'border-destructive' : 'border-border'
-            }`}
+            className={`flex-1 px-3 py-2 rounded border bg-card text-foreground font-mono text-sm disabled:opacity-60 disabled:cursor-not-allowed ${fieldBorderClass(slugError)}`}
             required={mode === 'create'}
-            aria-invalid={slugError ? true : undefined}
-            aria-describedby={slugError ? 'chunk-slug-error' : undefined}
+            {...fieldErrorProps('chunk-slug-error', slugError)}
           />
           <button
             type="button"
@@ -394,20 +385,5 @@ export function ChunkFormFields({
         onCancel={() => setClearBoardOpen(false)}
       />
     </>
-  );
-}
-
-/**
- * Message rendered directly under the control that failed. `role="alert"`
- * so it is announced when it appears, and the `id` is what the control's
- * `aria-describedby` points at.
- */
-function FieldError({ id, message }: { id: string; message: string | null }) {
-  if (!message) return null;
-
-  return (
-    <p id={id} role="alert" className="mt-1 text-sm text-destructive">
-      {message}
-    </p>
   );
 }

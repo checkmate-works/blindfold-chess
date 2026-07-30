@@ -1,4 +1,5 @@
 export { Button } from './Button';
+export { FieldError, fieldBorderClass, fieldErrorProps } from './FieldError';
 export { FormErrorBanner } from './FormErrorBanner';
 export { ChallengeCard } from './ChallengeCard';
 export { TextInput } from './TextInput';
