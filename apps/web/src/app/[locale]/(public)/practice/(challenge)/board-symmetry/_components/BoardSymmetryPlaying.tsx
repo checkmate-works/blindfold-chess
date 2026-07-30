@@ -1,20 +1,17 @@
 'use client';
 
-import { BoardOverlay } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
-import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeCountdownOverlay';
+import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
+import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
+import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
-import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
-import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
-import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type Props = {
   problem: BoardSymmetryProblem;
@@ -64,9 +61,6 @@ export function BoardSymmetryPlaying({
   onQuitCancel,
 }: Props) {
   const t = useTranslations('practice.boardSymmetry');
-  const tPractice = useTranslations('practice');
-  const quitConfirmLabels = useQuitConfirmLabels();
-  const timeElapsed = timeLimit - timeRemaining;
   const isDisabled = isProcessing || countdown !== null || isPaused;
 
   useAlgebraicKeyboardInput({
@@ -86,27 +80,8 @@ export function BoardSymmetryPlaying({
   return (
     <div className="max-w-md mx-auto">
       <div className="p-8 text-center relative overflow-hidden">
-        {/* Countdown Overlay */}
-        <BoardOverlay
-          isVisible={countdown !== null}
-          className="backdrop-blur-md z-50"
-          data-testid="countdown-overlay"
-        >
-          <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
-            {countdown !== null && (countdown > 0 ? countdown : 'START!')}
-          </span>
-        </BoardOverlay>
-
-        {/* Pause Overlay with Play Button */}
-        <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40 z-50">
-          <button
-            onClick={onTogglePause}
-            className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto"
-            aria-label={tPractice('resume')}
-          >
-            <LuPlay size={48} className="fill-current ml-1" />
-          </button>
-        </BoardOverlay>
+        <ChallengeCountdownOverlay countdown={countdown} />
+        <ChallengePauseOverlay isPaused={isPaused} onTogglePause={onTogglePause} />
 
         {/* Content with Blur when Paused */}
         <div
@@ -119,46 +94,16 @@ export function BoardSymmetryPlaying({
             })}
           </SectionTitle>
 
-          {/* Header: Lives and Timer */}
-          <div className="mb-6 flex justify-between items-center">
-            {/* Lives */}
-            <div className="flex items-center gap-1">
-              {maxLives !== undefined &&
-                remainingLives !== undefined &&
-                Array.from({ length: maxLives }, (_, i) => (
-                  <span key={i} className="text-destructive">
-                    {i < remainingLives ? (
-                      <FaHeart className="w-5 h-5" />
-                    ) : (
-                      <FaRegHeart className="w-5 h-5 opacity-30" />
-                    )}
-                  </span>
-                ))}
-            </div>
-            {/* Timer */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={onTogglePause}
-                disabled={countdown !== null || isProcessing}
-                className="p-1 rounded-full hover:bg-muted transition-colors disabled:opacity-50"
-                aria-label={isPaused ? 'Resume' : 'Pause'}
-              >
-                {isPaused ? (
-                  <LuPlay size={18} className="fill-current" />
-                ) : (
-                  <LuPause size={18} className="fill-current" />
-                )}
-              </button>
-
-              <QuizTimer
-                timeRemaining={timeRemaining}
-                progress={timeLimit > 0 ? timeElapsed / timeLimit : 0}
-                size={40}
-                fontSize="text-xs"
-                strokeWidth={4}
-              />
-            </div>
-          </div>
+          <ChallengeStatusHeader
+            className="mb-6 flex justify-between items-center"
+            remainingLives={remainingLives}
+            maxLives={maxLives}
+            isPaused={isPaused}
+            onTogglePause={onTogglePause}
+            pauseDisabled={countdown !== null || isProcessing}
+            timeRemaining={timeRemaining}
+            timeLimit={timeLimit}
+          />
 
           <div className="mb-8">
             <div className="flex items-center justify-center gap-4 text-6xl font-bold text-foreground mb-4 font-mono select-none">
@@ -187,17 +132,12 @@ export function BoardSymmetryPlaying({
 
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-4" />
 
-      <div className="flex flex-col items-center gap-2 mt-4">
-        <button onClick={onQuitRequest} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-          {tPractice('quit')}
-        </button>
-      </div>
-
-      <QuitConfirmModal
-        isOpen={showQuitModal}
-        onConfirm={onQuitConfirm}
-        onCancel={onQuitCancel}
-        labels={quitConfirmLabels}
+      <ChallengeQuitControl
+        className="flex flex-col items-center gap-2 mt-4"
+        onQuitRequest={onQuitRequest}
+        showQuitModal={showQuitModal}
+        onQuitConfirm={onQuitConfirm}
+        onQuitCancel={onQuitCancel}
       />
     </div>
   );
