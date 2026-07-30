@@ -1,28 +1,25 @@
 /**
- * Tests for `InlineBoardView` focusing on the two non-trivial behaviors
- * added during the Phase 2 / Phase 3 work:
+ * Tests for `InlineBoardView`'s own visibility state machine — the two mutually
+ * exclusive shapes of its `visibility` prop:
  *
- *   1. `collapseSignal` — auto-collapse on player move commit, with the
- *      initial-mount run skipped so a freshly opened page doesn't
- *      redundantly close an already-closed accordion.
+ *   1. `{ kind: 'accordion' }` — collapsed on mount behind a "Show board"
+ *      header, with `onPeek` firing once per expand (one expand = one peek).
  *
- *   2. `alwaysOpen` — when true, the collapse chrome is removed, the
- *      board is permanently visible, and `collapseSignal` is ignored.
- *      Used for `boardVisibility === 'always'`.
+ *   2. `{ kind: 'always' }` — no collapse chrome, board permanently mounted,
+ *      optionally under a blindfold `mask`. A dismissable mask is the 'peek'
+ *      board (tap to reveal); a non-dismissable one is pure blindfold
+ *      ('never'), which renders a compact bar instead of a covered board.
  *
- *   3. `defaultOpen` — seeds the initial `isOpen` state for plain-collapse
- *      mode (no `alwaysOpen`, no `masked`), so a caller can start expanded
- *      while still offering the fold affordance. Used by Recall.
- *
- * The `ChessBoard` and navigation/flip controls are stubbed so the tests
- * focus purely on `InlineBoardView`'s own state machine without coupling
- * to the rendering of the chess content.
+ * The `ChessBoard` and navigation/flip controls are stubbed so the tests focus
+ * purely on `InlineBoardView`'s own branching without coupling to the rendering
+ * of the chess content.
  */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import type { InlineBoardVisibility } from './InlineBoardView';
 import { InlineBoardView } from './InlineBoardView';
 
 // InlineBoardView uses `useSafeTranslations`, which falls through to its
@@ -68,29 +65,32 @@ const PREFS: GamePreferences = {
 };
 
 const BASE_PROPS = {
-  fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-  playerSide: 'white' as const,
-  lastMove: null,
-  preferences: PREFS,
-  movesLength: 0,
-  currentPosition: -1,
-  formattedPgn: [],
+  board: {
+    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+    playerSide: 'white' as const,
+    lastMove: null,
+    preferences: PREFS,
+  },
+  moveList: { movesLength: 0, currentPosition: -1, formattedPgn: [] },
 };
+
+const renderView = (visibility: InlineBoardVisibility) =>
+  render(<InlineBoardView {...BASE_PROPS} visibility={visibility} />);
 
 afterEach(() => {
   cleanup();
 });
 
-describe('InlineBoardView — peek (collapsible) mode', () => {
+describe("InlineBoardView — visibility { kind: 'accordion' }", () => {
   it('starts collapsed: header is rendered but the board content is not', () => {
-    render(<InlineBoardView {...BASE_PROPS} />);
+    renderView({ kind: 'accordion' });
 
     expect(screen.getByText('showBoard')).toBeInTheDocument();
     expect(screen.queryByTestId('chess-board')).not.toBeInTheDocument();
   });
 
   it('expands when the header button is clicked', () => {
-    render(<InlineBoardView {...BASE_PROPS} />);
+    renderView({ kind: 'accordion' });
 
     fireEvent.click(screen.getByText('showBoard'));
     expect(screen.getByTestId('chess-board')).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('InlineBoardView — peek (collapsible) mode', () => {
 
   it('fires onPeek exactly once per expand action', () => {
     const onPeek = vi.fn();
-    render(<InlineBoardView {...BASE_PROPS} onPeek={onPeek} />);
+    renderView({ kind: 'accordion', onPeek });
 
     fireEvent.click(screen.getByText('showBoard')); // expand → 1
     expect(onPeek).toHaveBeenCalledTimes(1);
@@ -110,92 +110,26 @@ describe('InlineBoardView — peek (collapsible) mode', () => {
     expect(onPeek).toHaveBeenCalledTimes(2);
   });
 
-  it('does NOT auto-collapse on the initial render despite collapseSignal being defined', () => {
-    // collapseSignal: 0 on first render must not trigger setIsOpen(false)
-    // — initial state already false, but firing the effect could mask a
-    // future change-detection bug. Render and verify no inadvertent close.
-    render(<InlineBoardView {...BASE_PROPS} collapseSignal={0} />);
-    fireEvent.click(screen.getByText('showBoard')); // open
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
-  });
+  it('renders no mask affordance — the accordion has no blindfold cover', () => {
+    renderView({ kind: 'accordion' });
+    fireEvent.click(screen.getByText('showBoard'));
 
-  it('auto-collapses when collapseSignal increments after the board was opened', () => {
-    const { rerender } = render(<InlineBoardView {...BASE_PROPS} collapseSignal={0} />);
-
-    fireEvent.click(screen.getByText('showBoard')); // open
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
-
-    rerender(<InlineBoardView {...BASE_PROPS} collapseSignal={1} />);
-    expect(screen.queryByTestId('chess-board')).not.toBeInTheDocument();
-  });
-
-  it('re-firing the same collapseSignal value does NOT re-collapse', () => {
-    // Idempotent guard: only a CHANGE in collapseSignal triggers auto-collapse.
-    const { rerender } = render(<InlineBoardView {...BASE_PROPS} collapseSignal={3} />);
-
-    fireEvent.click(screen.getByText('showBoard')); // open after the initial
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
-
-    // Same value → no effect run.
-    rerender(<InlineBoardView {...BASE_PROPS} collapseSignal={3} />);
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
+    expect(screen.queryByText('revealBoard')).not.toBeInTheDocument();
+    expect(screen.queryByText('boardHidden')).not.toBeInTheDocument();
   });
 });
 
-describe('InlineBoardView — defaultOpen', () => {
-  it('starts expanded when defaultOpen is true, but remains foldable', () => {
-    render(<InlineBoardView {...BASE_PROPS} defaultOpen />);
-
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByText('showBoard')); // collapse
-    expect(screen.queryByTestId('chess-board')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByText('showBoard')); // expand again
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
-  });
-
-  it('is ignored when alwaysOpen is set (no collapse chrome either way)', () => {
-    render(<InlineBoardView {...BASE_PROPS} alwaysOpen defaultOpen={false} />);
-
-    expect(screen.queryByText('showBoard')).not.toBeInTheDocument();
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
-  });
-});
-
-describe('InlineBoardView — alwaysOpen mode', () => {
+describe("InlineBoardView — visibility { kind: 'always' }", () => {
   it('renders the board immediately without showing the collapse header', () => {
-    render(<InlineBoardView {...BASE_PROPS} alwaysOpen />);
+    renderView({ kind: 'always' });
 
     expect(screen.getByTestId('chess-board')).toBeInTheDocument();
     expect(screen.queryByText('showBoard')).not.toBeInTheDocument();
-  });
-
-  it('does not fire onPeek (no discrete peek event in always-open mode)', () => {
-    const onPeek = vi.fn();
-    render(<InlineBoardView {...BASE_PROPS} alwaysOpen onPeek={onPeek} />);
-
-    // No header to click — and even if the parent wired onPeek defensively,
-    // it should never be invoked from inside InlineBoardView when alwaysOpen.
-    expect(onPeek).not.toHaveBeenCalled();
-  });
-
-  it('ignores collapseSignal changes — the board stays visible', () => {
-    const { rerender } = render(<InlineBoardView {...BASE_PROPS} alwaysOpen collapseSignal={0} />);
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
-
-    rerender(<InlineBoardView {...BASE_PROPS} alwaysOpen collapseSignal={5} />);
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
-
-    rerender(<InlineBoardView {...BASE_PROPS} alwaysOpen collapseSignal={6} />);
-    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
   });
 
   it('renders a dismissable mask (peek) over the board and reveals on tap', () => {
     const onReveal = vi.fn();
-    render(
-      <InlineBoardView {...BASE_PROPS} alwaysOpen masked maskDismissable onReveal={onReveal} />
-    );
+    renderView({ kind: 'always', mask: { active: true, dismissable: true, onReveal } });
 
     // The board frame is still mounted (layout stable); the mask covers it.
     expect(screen.getByTestId('chess-board')).toBeInTheDocument();
@@ -205,7 +139,7 @@ describe('InlineBoardView — alwaysOpen mode', () => {
 
   it('collapses to a compact bar (never) — no board, no reveal affordance', () => {
     const onReveal = vi.fn();
-    render(<InlineBoardView {...BASE_PROPS} alwaysOpen masked onReveal={onReveal} />);
+    renderView({ kind: 'always', mask: { active: true, dismissable: false, onReveal } });
 
     // Pure blindfold: the board frame is not rendered at all (no full-size
     // board to scroll past / see through), only the "board hidden" indicator.
@@ -215,26 +149,32 @@ describe('InlineBoardView — alwaysOpen mode', () => {
     expect(onReveal).not.toHaveBeenCalled();
   });
 
-  it('renders no mask when not masked', () => {
-    render(<InlineBoardView {...BASE_PROPS} alwaysOpen />);
+  it('renders no mask when the mask is absent', () => {
+    renderView({ kind: 'always' });
 
     expect(screen.queryByText('revealBoard')).not.toBeInTheDocument();
     expect(screen.queryByText('boardHidden')).not.toBeInTheDocument();
   });
 
-  it('preserves the local isOpen state when alwaysOpen flips off (returns to whatever it was)', () => {
-    // User opened the board manually under peek mode; switching the same
-    // component to alwaysOpen and back should not clobber the "opened" state.
-    // (This is a structural invariant — InlineBoardView's local state is not
-    // tied to alwaysOpen, only its rendering branch is.)
-    const { rerender } = render(<InlineBoardView {...BASE_PROPS} />);
+  it('renders no mask when the mask is present but inactive', () => {
+    renderView({ kind: 'always', mask: { active: false, dismissable: true } });
+
+    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
+    expect(screen.queryByText('revealBoard')).not.toBeInTheDocument();
+    expect(screen.queryByText('boardHidden')).not.toBeInTheDocument();
+  });
+
+  it("preserves the accordion's local open state across a switch to 'always' and back", () => {
+    // Structural invariant: the accordion's `isOpen` is independent of the
+    // always-open branch, so toggling between the two modes never clobbers it.
+    const { rerender } = renderView({ kind: 'accordion' });
     fireEvent.click(screen.getByText('showBoard')); // open
     expect(screen.getByTestId('chess-board')).toBeInTheDocument();
 
-    rerender(<InlineBoardView {...BASE_PROPS} alwaysOpen />);
+    rerender(<InlineBoardView {...BASE_PROPS} visibility={{ kind: 'always' }} />);
     expect(screen.getByTestId('chess-board')).toBeInTheDocument();
 
-    rerender(<InlineBoardView {...BASE_PROPS} />);
+    rerender(<InlineBoardView {...BASE_PROPS} visibility={{ kind: 'accordion' }} />);
     // The header reappears; the local isOpen state is still true, so the
     // board content stays mounted.
     expect(screen.getByText('showBoard')).toBeInTheDocument();

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -21,217 +21,220 @@ import {
 import { HorizontalMoveList } from './HorizontalMoveList';
 import { MoveNavigationRow } from './MoveNavigationRow';
 
-type Props = {
+/**
+ * Everything relayed straight through to the inner {@link ChessBoard}. Grouped
+ * because it IS that component's interface: this view adds chrome around a
+ * board, it does not reinterpret how the board draws itself. See `ChessBoard`'s
+ * own prop docs for the semantics of each field.
+ */
+export type InlineBoardChessProps = {
   fen: string;
   playerSide: Side;
+  /** Defaults to "flipped iff `playerSide` is black". */
   flipped?: boolean;
   lastMove: { from: string; to: string } | null;
   preferences: GamePreferences;
   /**
-   * How pieces hidden by the blindfold settings are drawn — relayed to the
-   * inner `ChessBoard`. Defaults to `'absent'` (live play); the finished-game
-   * review passes `'ghost'` when reproducing the player's view.
+   * How pieces hidden by the blindfold settings are drawn. Defaults to
+   * `'absent'` (live play); the finished-game review passes `'ghost'` when
+   * reproducing the player's view.
    */
   hiddenPieceStyle?: 'absent' | 'ghost';
+  illegalAttempt?: { from?: string; to?: string } | null;
+  /**
+   * Defaults to `'own'` (real-game rule: only the player's pieces respond).
+   * Recall passes `'side-to-move'` so the reviewer can also move the
+   * opponent's pieces on the opponent's turn.
+   */
+  movablePieces?: 'own' | 'side-to-move';
+  terminationMark?: TerminationMark | null;
+  terminationMarkLabel?: string;
+  /**
+   * Enables interactive move input, firing once per completed legal move with
+   * the SAN string. The parent gates this on game state (player's turn, not
+   * browsing history, …); this view additionally suppresses it while a mask is
+   * up, so a covered board can never commit a move.
+   */
+  onMove?: (san: string) => void;
+  /**
+   * Fires once per illegal move attempt so always-visible games can count
+   * board-driven blindfold mistakes. Suppressed while masked, like `onMove`.
+   */
+  onIllegalMove?: (attempt?: string, squares?: { from: string; to: string }) => void;
+};
+
+/** The horizontal move-list strip above the board, and what the nav row enables. */
+export type InlineBoardMoveListProps = {
   movesLength: number;
   currentPosition: number;
   formattedPgn: FormattedPgnMove[];
+};
+
+/**
+ * Navigation callbacks for the strip and the control row below the board. All
+ * optional: a static board (a position preview) supplies none, and the row
+ * hides itself when there is nothing to drive.
+ */
+export type InlineBoardNavigationProps = {
   onNavigateToStart?: () => void;
   onNavigatePrevious?: () => void;
   onNavigateNext?: () => void;
   onNavigateToEnd?: () => void;
   onNavigateToPosition?: (position: number) => void;
   onFlipBoard?: () => void;
-  onPeek?: () => void;
+};
+
+/**
+ * The blindfold mask: a frosted overlay over the whole board block (move-list
+ * strip, board, nav row) so nothing board-related shows or is operable while it
+ * is up.
+ *
+ * Note the pieces ARE rendered behind the blur, so a reveal is a plain overlay
+ * removal — a client-side blindfold, not a hard secret.
+ */
+export type InlineBoardMask = {
+  /** Whether the cover is currently up. */
+  active: boolean;
   /**
-   * Monotonic counter bumped by the parent each time the player commits a
-   * move. A change here auto-collapses the inline board so the next peek
-   * requires a fresh expand — which fires `onPeek` again, keeping the
-   * peek-count semantics symmetric with the modal mode (1 expand = 1 peek).
-   * Ignored when `alwaysOpen` is true.
+   * Whether tapping the cover reveals the board. True for `boardVisibility ===
+   * 'peek'`; false for `'never'` (pure blindfold), which renders as a compact
+   * bar instead of a full-size board under a permanent cover.
    */
-  collapseSignal?: number;
+  dismissable: boolean;
   /**
-   * When true, the collapse chrome is removed, the board is permanently
-   * visible, and `collapseSignal` is ignored. Used for `boardVisibility ===
-   * 'always'`: the player has declared they want the board on screen, so
-   * there is no "peek" event to track (`onPeek` is also not invoked in this
-   * mode — the audit story shifts to the visual settings doing the
-   * obfuscation rather than discrete peek actions).
-   */
-  alwaysOpen?: boolean;
-  /**
-   * Seeds the initial `isOpen` state for the plain-collapse mode (no
-   * `alwaysOpen`, no `masked`) — a manual fold/unfold accordion unrelated to
-   * `boardVisibility`. Ignored when `alwaysOpen` is true. Defaults to
-   * `false` (puzzle's closed-by-default behavior, its own `onPeek`-counted
-   * accordion — distinct from the masked-overlay peek used by play/recall).
-   */
-  defaultOpen?: boolean;
-  /**
-   * Optional move handler. When provided, the inner ChessBoard switches
-   * into interactive mode (click-to-move + HTML5 drag-and-drop on
-   * own-color pieces). Fires once per completed legal move with the SAN
-   * string. The parent is responsible for gating this on the current
-   * game state (player's turn, not browsing history, etc.) — InlineBoardView
-   * itself only relays the callback.
-   */
-  onMove?: (san: string) => void;
-  /**
-   * Relayed straight to the inner ChessBoard. Fires once per illegal move
-   * attempt (illegal drop / destination click) so always-visible games can
-   * count board-driven blindfold mistakes. See `ChessBoard`'s prop doc.
-   */
-  onIllegalMove?: (attempt?: string, squares?: { from: string; to: string }) => void;
-  /** Relayed straight to the inner ChessBoard — see its prop doc. */
-  illegalAttempt?: { from?: string; to?: string } | null;
-  /**
-   * Relayed to the inner ChessBoard. Defaults to `'own'` (real-game rule:
-   * only the player's pieces respond). Recall passes `'side-to-move'` so
-   * the reviewer can also move the opponent's pieces on the opponent's turn.
-   */
-  movablePieces?: 'own' | 'side-to-move';
-  /**
-   * When true, the board stays in place (same position/size) but a frosted
-   * overlay blurs it — the blindfold mask. This is the always-present-board
-   * model for `boardVisibility` 'peek' / 'never': the board never changes
-   * layout, only its mask toggles. The blur + tint is dense enough that piece
-   * types can't be read; the masked board is also non-interactive (the overlay
-   * intercepts pointer events).
-   *
-   * Note: the pieces ARE rendered (behind the blur) so a peek reveal is a plain
-   * overlay removal — a client-side blindfold, not a hard secret.
-   */
-  masked?: boolean;
-  /**
-   * Invoked when the viewer taps a dismissable mask to reveal the board. Only
-   * wired when `maskDismissable` is true (peek). The parent owns the reveal /
-   * re-mask lifecycle and the peek-count accounting.
+   * Invoked when the viewer taps a dismissable cover. The parent owns the
+   * reveal / re-mask lifecycle and the peek-count accounting.
    */
   onReveal?: () => void;
+};
+
+/**
+ * How the board is surfaced — the two shapes are mutually exclusive, which is
+ * why they are a union rather than independent flags. Previously this was six
+ * separate booleans/callbacks that the component recombined internally, so
+ * "always-open but with a collapse signal" was expressible and meaningless.
+ */
+export type InlineBoardVisibility =
+  | {
+      /**
+       * Collapsible accordion behind a "Show board" header, closed on mount.
+       * Used where revealing the board is itself the tracked action (puzzle).
+       */
+      kind: 'accordion';
+      /** Fired on each expand — one expand counts as one peek. */
+      onPeek?: () => void;
+    }
+  | {
+      /**
+       * Board permanently on screen with no collapse chrome, optionally under a
+       * blindfold {@link InlineBoardMask}. Used for `boardVisibility` 'always'
+       * (no mask), 'peek' and 'never' (masked), and for finished-game review.
+       */
+      kind: 'always';
+      mask?: InlineBoardMask;
+    };
+
+/** Optional chrome layered over / around the board. */
+export type InlineBoardSlots = {
   /**
-   * Whether tapping the mask reveals the board. True for `boardVisibility ===
-   * 'peek'` (tap to peek); false for `'never'` (pure blindfold — the cover
-   * stays put and is non-interactive). Ignored unless `masked` is true.
-   */
-  maskDismissable?: boolean;
-  /**
-   * Optional node centered over the board, above the mask (so it stays visible
-   * in blindfold modes). Used by the play surface for the AI-reply chip. The
-   * slot is `pointer-events-none`, so it never blocks a peek tap.
+   * Node centered over the board, above the mask (so it stays visible in
+   * blindfold modes). Used by the play surface for the AI-reply chip. The slot
+   * is `pointer-events-none`, so it never blocks a peek tap.
    */
   boardBadge?: ReactNode;
   /**
-   * When true, the `boardBadge` currently occupies the board center, so the
-   * mask's own center label ("tap to reveal" / "board hidden") steps aside to
-   * avoid stacking two centered labels. The frosted cover and its tap-to-reveal
-   * behavior are unaffected — only the label is suppressed.
+   * When true, `boardBadge` currently occupies the board center, so the mask's
+   * own center label steps aside to avoid stacking two centered labels. The
+   * cover and its tap-to-reveal behavior are unaffected.
    */
   badgeActive?: boolean;
   /**
-   * Optional control pinned to the board's top-right corner, above the mask
-   * (so it stays operable while blindfolded) and within the no-piece move-list
-   * strip zone (so it never overlaps pieces). Used by the play surface for the
-   * per-game settings gear. Unlike `boardBadge`, this slot IS interactive.
+   * Control pinned to the board's top-right corner, above the mask (so it stays
+   * operable while blindfolded) and within the no-piece move-list strip zone.
+   * Used for the per-game settings gear. Unlike `boardBadge`, this IS interactive.
    */
   topRightControl?: ReactNode;
   /**
-   * When true, a non-blocking "AI is thinking" overlay (a light scrim + a
-   * centered spinner chip) is shown over the board. Used for `boardVisibility
-   * === 'always'`, where the board is visible — so the blindfold mask and the
-   * AI-reply chip are both absent — but the player still needs a clear "the
-   * engine is working, not frozen" signal while a slow AI move is computed. In
-   * blindfold modes the masked board + AiReplyChip already convey this, so this
-   * is left off there. The overlay is `pointer-events-none` (the board is not
-   * the player's to move during the AI's turn anyway), so navigation controls
-   * underneath stay operable.
-   */
-  aiThinking?: boolean;
-  /** Relayed straight to the inner ChessBoard — see its prop doc. */
-  terminationMark?: TerminationMark | null;
-  /** Relayed straight to the inner ChessBoard — see its prop doc. */
-  terminationMarkLabel?: string;
-  /**
-   * Extra control for the bottom control strip, rendered after the flip button
-   * — relayed to {@link MoveNavigationRow}'s slot of the same name, which the
-   * repertoire boards already use for their position-dependent actions. Style
-   * it with `MOVE_NAV_SIDE_BUTTON_CLASS` so it matches the flip button. Note
-   * the strip's card clips its descendants, so anything that pops out (a menu)
-   * must open upward.
+   * Extra control for the bottom control strip, after the flip button — relayed
+   * to {@link MoveNavigationRow}'s slot of the same name. Style it with
+   * `MOVE_NAV_SIDE_BUTTON_CLASS` so it matches the flip button. The strip's card
+   * clips its descendants, so anything that pops out (a menu) must open upward.
    */
   trailingAction?: ReactNode;
+  /**
+   * Non-blocking "AI is thinking" overlay (light scrim + spinner chip). Used for
+   * `boardVisibility === 'always'`, where the board is visible — so mask and
+   * AI-reply chip are both absent — but the player still needs a clear "the
+   * engine is working, not frozen" signal. `pointer-events-none`, so the
+   * navigation controls underneath stay operable.
+   */
+  aiThinking?: boolean;
+};
+
+type Props = {
+  board: InlineBoardChessProps;
+  moveList: InlineBoardMoveListProps;
+  navigation?: InlineBoardNavigationProps;
+  visibility: InlineBoardVisibility;
+  slots?: InlineBoardSlots;
 };
 
 export function InlineBoardView({
-  fen,
-  playerSide,
-  flipped,
-  lastMove,
-  preferences,
-  hiddenPieceStyle = 'absent',
-  movesLength,
-  currentPosition,
-  formattedPgn,
-  onNavigateToStart,
-  onNavigatePrevious,
-  onNavigateNext,
-  onNavigateToEnd,
-  onNavigateToPosition,
-  onFlipBoard,
-  onPeek,
-  collapseSignal,
-  alwaysOpen,
-  defaultOpen = false,
-  onMove,
-  onIllegalMove,
-  illegalAttempt = null,
-  movablePieces,
-  masked,
-  onReveal,
-  maskDismissable,
-  boardBadge,
-  badgeActive,
-  topRightControl,
-  aiThinking,
-  terminationMark = null,
-  terminationMarkLabel,
-  trailingAction,
+  board,
+  moveList,
+  navigation = {},
+  visibility,
+  slots = {},
 }: Props) {
   const t = useTranslations('play');
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Auto-collapse when the parent's collapse signal changes (player committed
-  // a move). The initial-mount run is skipped so a freshly opened page does
-  // not redundantly close an already-closed accordion. Also short-circuited
-  // in always-open mode: the board has no collapse to trigger.
-  const lastSeenSignal = useRef(collapseSignal);
-  useEffect(() => {
-    if (alwaysOpen) return;
-    if (collapseSignal === undefined) return;
-    if (lastSeenSignal.current !== collapseSignal) {
-      lastSeenSignal.current = collapseSignal;
-      setIsOpen(false);
-    }
-  }, [collapseSignal, alwaysOpen]);
+  const {
+    fen,
+    playerSide,
+    flipped,
+    lastMove,
+    preferences,
+    hiddenPieceStyle = 'absent',
+    illegalAttempt = null,
+    movablePieces,
+    terminationMark = null,
+    terminationMarkLabel,
+    onMove,
+    onIllegalMove,
+  } = board;
+  const { movesLength, currentPosition, formattedPgn } = moveList;
+  const {
+    onNavigateToStart,
+    onNavigatePrevious,
+    onNavigateNext,
+    onNavigateToEnd,
+    onNavigateToPosition,
+    onFlipBoard,
+  } = navigation;
+  const { boardBadge, badgeActive, topRightControl, trailingAction, aiThinking } = slots;
 
-  // In always-open mode the board is unconditionally visible. The local
-  // `isOpen` state is left untouched so toggling alwaysOpen on/off restores
-  // the previous peek-collapse state cleanly.
+  const alwaysOpen = visibility.kind === 'always';
+  const mask = visibility.kind === 'always' ? visibility.mask : undefined;
+  const masked = mask?.active ?? false;
+
+  // In always-open mode the board is unconditionally visible. The accordion's
+  // own `isOpen` is left untouched, so the two modes never interfere.
   const effectivelyOpen = alwaysOpen ? true : isOpen;
 
   // Pure blindfold ('never'): the board is never revealed. Rather than render a
   // full-size board under a permanent frosted cover — which wastes the board's
   // vertical space and forces the player to scroll between the (hidden)
   // position and the move input — collapse it to a compact bar (see below).
-  const isBlindfoldNever = masked && !maskDismissable;
+  const isBlindfoldNever = masked && !mask?.dismissable;
 
   return (
     <div className={INLINE_BOARD_CARD_CHROME}>
-      {!alwaysOpen && (
+      {visibility.kind === 'accordion' && (
         <button
           type="button"
           onClick={() => {
-            if (!isOpen) onPeek?.();
+            if (!isOpen) visibility.onPeek?.();
             setIsOpen(!isOpen);
           }}
           className={`${INLINE_BOARD_HEADER_CHROME} text-left hover:bg-muted transition-colors`}
@@ -338,7 +341,7 @@ export function InlineBoardView({
             {masked && (
               <button
                 type="button"
-                onClick={onReveal}
+                onClick={mask?.onReveal}
                 aria-label={t('revealBoard')}
                 className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-2xl transition-colors"
               >

@@ -1,32 +1,21 @@
 'use client';
 
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useMemo } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import {
-  fenToLichessUrl,
-  getLastMoveDetails,
-  isCheckmateFen,
-  replayMoves,
-} from '@blindfold-chess/features/chess-core';
+import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
-import { resolveIllegalAttemptSquares } from '@/lib/games/illegal-attempts';
 import type {
   GamePlaySettings,
   MoveOperationLog,
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
-import {
-  isFinalPosition,
-  resolveLosingColor,
-  resolveTerminationMark,
-} from '@/lib/games/termination-mark';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
@@ -47,10 +36,14 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useHashScrollOnce } from '../_hooks/use-hash-scroll-once';
+import { useIllegalAttemptSelection } from '../_hooks/use-illegal-attempt-selection';
+import { useOverviewPositionSync } from '../_hooks/use-overview-position-sync';
 import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
 import { useReplayPreferences } from '../_hooks/use-replay-preferences';
 import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
 import { useReviewOverview } from '../_hooks/use-review-overview';
+import { useReviewPositionMarks } from '../_hooks/use-review-position-marks';
 import { type ReplaySocial, normalizeReplaySocial } from '../_lib/normalize-replay-social';
 import {
   computeContinuation,
@@ -213,17 +206,16 @@ export function GameReview({
     effectiveFlipped,
   });
 
-  // Highlight the move that produced a given navigation position. Shared by the
-  // live board and the quick-peek modal (each with its own position).
-  const lastMoveAt = useCallback(
-    (position: number) => {
-      if (position === -2) return null;
-      const upto = position === -1 ? notationMoves : notationMoves.slice(0, position + 1);
-      if (upto.length === 0) return null;
-      return getLastMoveDetails(upto as string[], startingFen ?? undefined);
-    },
-    [notationMoves, startingFen]
-  );
+  // The last-move highlight and the end-of-game badge, both resolved per
+  // navigation position because the live board and the quick-peek modal scrub
+  // independently. See the hook for why neither can be a single value.
+  const { lastMoveAt, terminationMarkAt } = useReviewPositionMarks({
+    notationMoves,
+    startingFen: startingFen ?? undefined,
+    playerColor,
+    result,
+    latestFen,
+  });
   const lastMove = useMemo(() => lastMoveAt(currentPosition), [lastMoveAt, currentPosition]);
 
   // "By Move" quick-peek modal: its own navigation (so previewing never moves the
@@ -250,29 +242,6 @@ export function GameReview({
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
   );
 
-  // End-of-game badge on the losing king, shown only while a board is on the
-  // final position — stepping back through the replay puts the viewer inside a
-  // game that had not ended yet. The kind is read off the position itself
-  // (`isCheckmateFen`), which is the only place a resignation is distinguishable
-  // from a mate: the record stores just win/loss/draw. See
-  // `resolveTerminationMark`.
-  //
-  // Resolved per navigation position rather than once, because the quick-peek
-  // modal scrubs independently of the live board (see `useQuickPeekModal`): a
-  // single value would leave the modal's final position unmarked whenever the
-  // board behind it sits mid-history, which is the usual case when the strip
-  // opens it.
-  const terminationMarkAt = useCallback(
-    (position: number) =>
-      isFinalPosition(position, notationMoves.length)
-        ? resolveTerminationMark({
-            fen: latestFen,
-            losingColor: resolveLosingColor(result, playerColor),
-            isCheckmate: isCheckmateFen(latestFen),
-          })
-        : null,
-    [notationMoves.length, latestFen, result, playerColor]
-  );
   const terminationMark = useMemo(
     () => terminationMarkAt(currentPosition),
     [terminationMarkAt, currentPosition]
@@ -332,34 +301,14 @@ export function GameReview({
     [currentPly, playerMoveIndices, operationLogs]
   );
 
-  // Which rejected attempt of the current move is being pointed at on the
-  // board, if any. Reset whenever the displayed move changes — the indices
-  // are per-move, so keeping a selection across a navigation would mark an
-  // unrelated square.
-  const [selectedAttemptIndex, setSelectedAttemptIndex] = useState<number | null>(null);
-  useEffect(() => {
-    setSelectedAttemptIndex(null);
-  }, [currentPly]);
-
-  const attemptSquaresAt = useCallback(
-    (attemptIndex: number) =>
-      currentMoveOperationLog
-        ? resolveIllegalAttemptSquares(currentMoveOperationLog, attemptIndex, playerColor)
-        : null,
-    [currentMoveOperationLog, playerColor]
-  );
-  // Toggle: tapping the chip already on the board clears it.
-  const handleAttemptSelect = useCallback(
-    (attemptIndex: number) =>
-      setSelectedAttemptIndex((current) => (current === attemptIndex ? null : attemptIndex)),
-    []
-  );
-  const isAttemptSelectable = useCallback(
-    (attemptIndex: number) => attemptSquaresAt(attemptIndex) !== null,
-    [attemptSquaresAt]
-  );
-  const illegalAttempt =
-    selectedAttemptIndex != null ? attemptSquaresAt(selectedAttemptIndex) : null;
+  // Which rejected attempt of the displayed move is pointed at on the board —
+  // shared between the panel's chips and the board's marking.
+  const { selectedAttemptIndex, illegalAttempt, handleAttemptSelect, isAttemptSelectable } =
+    useIllegalAttemptSelection({
+      moveOperationLog: currentMoveOperationLog,
+      playerColor,
+      currentPly,
+    });
 
   // The opening (pre-move) board is the game's overview: show the description
   // and statistics there. Once a move is on the board, that move's comment
@@ -380,22 +329,10 @@ export function GameReview({
       social.mode === 'local' && startPosition ? startPosition.jumpIndex : undefined,
   });
 
-  // `#game-overview` deep-link from the home feed's comment-count icon.
-  // Native hash-anchor scrolling can't reach this block: `useMoveNavigation`
-  // defaults `currentPosition` to -1 (latest move) on first paint, so
-  // `isInitialPosition` — and the `id="game-overview"` div below — doesn't
-  // exist until the `useReplayDeepLink` effect above navigates to -2, by
-  // which point the browser's one-shot scroll-to-hash has already fired and
-  // found nothing. Scroll manually once the block actually mounts.
-  const scrolledToOverviewRef = useRef(false);
-  useEffect(() => {
-    if (scrolledToOverviewRef.current || !isInitialPosition) return;
-    if (window.location.hash !== '#game-overview') return;
-    const el = document.getElementById('game-overview');
-    if (!el) return;
-    scrolledToOverviewRef.current = true;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [isInitialPosition]);
+  // `#game-overview` deep-link from the home feed's comment-count icon. The
+  // block only exists once `useReplayDeepLink` above has navigated to the
+  // opening board, which is too late for the browser's own scroll-to-hash.
+  useHashScrollOnce('game-overview', isInitialPosition);
 
   // The opening-board stats overview (engine + By Move + change log). Anonymous
   // viewers get it gated behind a members-only sign-up CTA, matching the result
@@ -441,64 +378,30 @@ export function GameReview({
     hasSummary: statsOverview !== null,
   });
 
-  // Local mode only: point the overview tab at whatever the board now shows.
-  // On the shared game the board position alone decides what sits below it —
-  // the opening board shows the overview (stats), any move position shows that
-  // move's comment thread. Local mode has no per-move thread and its overview
-  // does not move with the board, so the tab is what has to follow it, in BOTH
-  // directions: stepping onto a move reveals the Discussion, and stepping back
-  // to the opening board restores the Summary (the Game Stats the shared game
-  // shows at that position).
-  const { setOverviewView } = overview;
-  const syncOverviewToPosition = useCallback(
-    (position: number) => setOverviewView(position === -2 ? 'summary' : 'discussion'),
-    [setOverviewView]
-  );
-
-  // Commit a previewed position from the quick-peek modal onto the live board.
-  const { commit: commitQuickPeek } = quickPeek;
-  const quickPeekPosition = quickPeek.nav.currentPosition;
-  const handleCommitPosition = useCallback(() => {
-    commitQuickPeek();
-    if (social.mode === 'local') syncOverviewToPosition(quickPeekPosition);
-  }, [commitQuickPeek, social.mode, syncOverviewToPosition, quickPeekPosition]);
-
-  // Local mode: user navigation (the arrows under the board, move-list
-  // clicks) moves the tab with the board — same rationale as
-  // handleCommitPosition above. The ref gates the switch to real
-  // interactions: the programmatic initial landing (deep link / setup
-  // position) must leave the Summary visible.
-  const pendingUserNavRef = useRef(false);
-  const withDiscussionReveal = useCallback(
-    <A extends unknown[]>(navigate: (...args: A) => void) =>
-      (...args: A) => {
-        pendingUserNavRef.current = true;
-        navigate(...args);
-      },
-    []
-  );
-  useEffect(() => {
-    if (!pendingUserNavRef.current) return;
-    pendingUserNavRef.current = false;
-    if (social.mode === 'local') syncOverviewToPosition(currentPosition);
-  }, [currentPosition, social.mode, syncOverviewToPosition]);
-  const userNav = useMemo(
-    () => ({
-      toStart: withDiscussionReveal(navigateToStart),
-      previous: withDiscussionReveal(navigatePrevious),
-      next: withDiscussionReveal(navigateNext),
-      toEnd: withDiscussionReveal(navigateToEnd),
-      toPosition: withDiscussionReveal(navigateToPosition),
-    }),
-    [
-      withDiscussionReveal,
+  // Local (result) mode only: the overview tab follows the board, since this
+  // mode has no per-move thread for the position alone to select. `userNav`
+  // replaces the raw navigation callbacks everywhere the viewer drives them.
+  const { userNav, syncToPosition } = useOverviewPositionSync({
+    enabled: social.mode === 'local',
+    currentPosition,
+    navigation: {
       navigateToStart,
       navigatePrevious,
       navigateNext,
       navigateToEnd,
       navigateToPosition,
-    ]
-  );
+    },
+    setOverviewView: overview.setOverviewView,
+  });
+
+  // Commit a previewed position from the quick-peek modal onto the live board.
+  // The jump doesn't go through `userNav`, so the tab is synced explicitly.
+  const { commit: commitQuickPeek } = quickPeek;
+  const quickPeekPosition = quickPeek.nav.currentPosition;
+  const handleCommitPosition = useCallback(() => {
+    commitQuickPeek();
+    syncToPosition(quickPeekPosition);
+  }, [commitQuickPeek, syncToPosition, quickPeekPosition]);
 
   return (
     <div className="space-y-6">
@@ -513,40 +416,49 @@ export function GameReview({
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:order-1 lg:col-span-2" ref={quickPeek.boardColumnRef}>
           <InlineBoardView
-            fen={displayFen ?? latestFen}
-            playerSide={playerColor}
-            flipped={effectiveFlipped}
-            lastMove={lastMove}
-            preferences={boardPreferences}
-            movesLength={notationMoves.length}
-            currentPosition={currentPosition}
-            formattedPgn={formattedPgn}
-            onNavigateToStart={userNav.toStart}
-            onNavigatePrevious={userNav.previous}
-            onNavigateNext={userNav.next}
-            onNavigateToEnd={userNav.toEnd}
-            onNavigateToPosition={userNav.toPosition}
-            onFlipBoard={toggleFlip}
-            hiddenPieceStyle={hiddenPieceStyle}
-            illegalAttempt={illegalAttempt}
-            terminationMark={terminationMark}
-            terminationMarkLabel={terminationMarkLabel(terminationMark)}
-            alwaysOpen
-            // Author a chunk / position-memory / puzzle seeded from the
-            // position on the board. It rides in the control strip because
-            // "this position" IS the board's, and it steps with it. Signed-in
-            // viewers only (`currentUser` is null in `local` mode by
-            // construction, so the result screen never gets it); nothing on the
-            // opening board, where a standard start seeds nothing worth saving.
-            trailingAction={
-              currentUser && !isInitialPosition ? (
-                <CreateFromPositionMenu
-                  locale={locale}
-                  currentFen={displayFen ?? latestFen}
-                  continuationSan={continuationSan}
-                />
-              ) : undefined
-            }
+            board={{
+              fen: displayFen ?? latestFen,
+              playerSide: playerColor,
+              flipped: effectiveFlipped,
+              lastMove,
+              preferences: boardPreferences,
+              hiddenPieceStyle,
+              illegalAttempt,
+              terminationMark,
+              terminationMarkLabel: terminationMarkLabel(terminationMark),
+            }}
+            moveList={{
+              movesLength: notationMoves.length,
+              currentPosition,
+              formattedPgn,
+            }}
+            navigation={{
+              onNavigateToStart: userNav.toStart,
+              onNavigatePrevious: userNav.previous,
+              onNavigateNext: userNav.next,
+              onNavigateToEnd: userNav.toEnd,
+              onNavigateToPosition: userNav.toPosition,
+              onFlipBoard: toggleFlip,
+            }}
+            // A finished game is reviewed, not played: no mask, no peek.
+            visibility={{ kind: 'always' }}
+            slots={{
+              // Author a chunk / position-memory / puzzle seeded from the
+              // position on the board. It rides in the control strip because
+              // "this position" IS the board's, and it steps with it. Signed-in
+              // viewers only (`currentUser` is null in `local` mode by
+              // construction, so the result screen never gets it); nothing on
+              // the opening board, where a standard start seeds nothing worth
+              // saving.
+              trailingAction:
+                currentUser && !isInitialPosition ? (
+                  <CreateFromPositionMenu
+                    locale={locale}
+                    currentFen={displayFen ?? latestFen}
+                    continuationSan={continuationSan}
+                  />
+                ) : undefined,
+            }}
           />
 
           {showPlaySettings && effectivePlaySettings && (

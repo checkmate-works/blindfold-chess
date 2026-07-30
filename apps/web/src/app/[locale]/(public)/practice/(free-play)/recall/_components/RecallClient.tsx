@@ -215,37 +215,49 @@ export function RecallClient({
 
   const inlineBoardView = (
     <InlineBoardView
-      fen={boardFen}
-      playerSide={playerColor}
-      lastMove={navigation.currentPosition === -1 ? currentLastMove : null}
-      preferences={preferences}
-      movesLength={originalMoves.length}
-      currentPosition={navigation.currentPosition}
-      formattedPgn={formattedPgn}
-      onNavigateToStart={navigation.navigateToStart}
-      onNavigatePrevious={navigation.navigatePrevious}
-      onNavigateNext={navigation.navigateNext}
-      onNavigateToEnd={navigation.navigateToEnd}
-      alwaysOpen
-      masked={isBoardMaskActive}
-      maskDismissable={!isCompleted && preferences.boardVisibility === 'peek'}
-      onReveal={handleReveal}
-      movablePieces="side-to-move"
-      onMove={
-        canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
-      }
-      // Settings gear pinned to the board's top-right corner, matching
-      // games/play's BoardSettingsButton placement exactly (recall has no
-      // legacy-game gate on editability, so it's always shown here).
-      topRightControl={
-        <BoardSettingsButton onClick={() => setShowSettings(true)} dataTourId="recall-settings" />
-      }
-      boardBadge={
-        showOpponentChip ? (
+      board={{
+        fen: boardFen,
+        playerSide: playerColor,
+        lastMove: navigation.currentPosition === -1 ? currentLastMove : null,
+        preferences,
+        // The reviewer enters BOTH sides' moves, so the opponent's pieces must
+        // be grabbable on the opponent's turn.
+        movablePieces: 'side-to-move',
+        onMove: canBoardInput
+          ? (san) => actions.handleSubmitMove(san as AlgebraicNotation)
+          : undefined,
+      }}
+      moveList={{
+        movesLength: originalMoves.length,
+        currentPosition: navigation.currentPosition,
+        formattedPgn,
+      }}
+      navigation={{
+        onNavigateToStart: navigation.navigateToStart,
+        onNavigatePrevious: navigation.navigatePrevious,
+        onNavigateNext: navigation.navigateNext,
+        onNavigateToEnd: navigation.navigateToEnd,
+      }}
+      visibility={{
+        kind: 'always',
+        mask: {
+          active: isBoardMaskActive,
+          dismissable: !isCompleted && preferences.boardVisibility === 'peek',
+          onReveal: handleReveal,
+        },
+      }}
+      slots={{
+        // Settings gear pinned to the board's top-right corner, matching
+        // games/play's BoardSettingsButton placement exactly (recall has no
+        // legacy-game gate on editability, so it's always shown here).
+        topRightControl: (
+          <BoardSettingsButton onClick={() => setShowSettings(true)} dataTourId="recall-settings" />
+        ),
+        boardBadge: showOpponentChip ? (
           <RecallOpponentMoveChip active={opponentChipActive} moveNotation={opponentMoveNotation} />
-        ) : undefined
-      }
-      badgeActive={showOpponentChip && opponentChipActive}
+        ) : undefined,
+        badgeActive: showOpponentChip && opponentChipActive,
+      }}
     />
   );
 

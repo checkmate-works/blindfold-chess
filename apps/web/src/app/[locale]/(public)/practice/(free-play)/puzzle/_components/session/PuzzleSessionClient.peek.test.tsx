@@ -74,13 +74,13 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   }),
 }));
 
-// Capture the props InlineBoardView is invoked with so assertions can inspect
-// the spread-override pieces flags.
+// Capture the `board` prop group InlineBoardView is invoked with so assertions
+// can inspect the spread-override pieces flags.
 const capturedInline: Array<Record<string, unknown>> = [];
 
 vi.mock('@/app/[locale]/(public)/games/play/_components/InlineBoardView', () => ({
-  InlineBoardView: (props: Record<string, unknown>) => {
-    capturedInline.push(props);
+  InlineBoardView: ({ board }: { board: Record<string, unknown> }) => {
+    capturedInline.push(board);
     return <div data-testid="inline-board-view" />;
   },
 }));

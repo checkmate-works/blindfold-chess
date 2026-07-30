@@ -77,14 +77,20 @@ function setup(
   );
 }
 
-function finishedProps(view: React.ReactNode): BoardProps {
-  return (view as ReactElement<BoardProps>).props;
+/** The `board` group the hook handed InlineBoardView for this view. */
+function boardOf(view: React.ReactNode): BoardProps['board'] {
+  return (view as ReactElement<BoardProps>).props.board;
+}
+
+/** The `slots` group the hook handed InlineBoardView for this view. */
+function slotsOf(view: React.ReactNode): NonNullable<BoardProps['slots']> {
+  return (view as ReactElement<BoardProps>).props.slots ?? {};
 }
 
 describe('usePlayBoardViews finished board', () => {
   it('reveals the final position of a blindfold game', () => {
     const { result } = setup(blindfoldPreferences);
-    const { preferences, hiddenPieceStyle } = finishedProps(result.current.finishedBoardView);
+    const { preferences, hiddenPieceStyle } = boardOf(result.current.finishedBoardView);
 
     expect(preferences.showOwnPieces).toBe(true);
     expect(preferences.showOpponentPieces).toBe(true);
@@ -93,7 +99,7 @@ describe('usePlayBoardViews finished board', () => {
 
   it('leaves the in-progress board on the game’s own preferences', () => {
     const { result } = setup(blindfoldPreferences);
-    const { preferences } = finishedProps(result.current.inProgressBoardView);
+    const { preferences } = boardOf(result.current.inProgressBoardView);
 
     expect(preferences.showOwnPieces).toBe(false);
     expect(preferences.showOpponentPieces).toBe(false);
@@ -101,7 +107,7 @@ describe('usePlayBoardViews finished board', () => {
 
   it('switches back to the as-played view, ghosting what was hidden', () => {
     const { result } = setup(blindfoldPreferences);
-    const toggle = finishedProps(result.current.finishedBoardView).topRightControl as ReactElement<{
+    const toggle = slotsOf(result.current.finishedBoardView).topRightControl as ReactElement<{
       revealed: boolean;
       onToggle: () => void;
     }>;
@@ -109,7 +115,7 @@ describe('usePlayBoardViews finished board', () => {
 
     act(() => toggle.props.onToggle());
 
-    const { preferences, hiddenPieceStyle } = finishedProps(result.current.finishedBoardView);
+    const { preferences, hiddenPieceStyle } = boardOf(result.current.finishedBoardView);
     expect(preferences.showOwnPieces).toBe(false);
     expect(preferences.showOpponentPieces).toBe(false);
     expect(hiddenPieceStyle).toBe('ghost');
@@ -119,20 +125,20 @@ describe('usePlayBoardViews finished board', () => {
     // Played on a peek board with both per-side flags left true: nothing is
     // hidden per-flag, but the player still saw a covered board.
     const { result } = setup({ ...sightedPreferences, boardVisibility: 'peek' });
-    const toggle = finishedProps(result.current.finishedBoardView).topRightControl as ReactElement<{
+    const toggle = slotsOf(result.current.finishedBoardView).topRightControl as ReactElement<{
       onToggle: () => void;
     }>;
 
     act(() => toggle.props.onToggle());
 
-    const { preferences } = finishedProps(result.current.finishedBoardView);
+    const { preferences } = boardOf(result.current.finishedBoardView);
     expect(preferences.showOwnPieces).toBe(false);
     expect(preferences.showOpponentPieces).toBe(false);
   });
 
   it('offers no toggle for a game that hid nothing', () => {
     const { result } = setup(sightedPreferences);
-    expect(finishedProps(result.current.finishedBoardView).topRightControl).toBeUndefined();
+    expect(slotsOf(result.current.finishedBoardView).topRightControl).toBeUndefined();
   });
 
   it('hands the termination mark to the finished board only', () => {
@@ -142,11 +148,11 @@ describe('usePlayBoardViews finished board', () => {
       terminationMarkLabel: 'Resignation',
     });
 
-    const finished = finishedProps(result.current.finishedBoardView);
+    const finished = boardOf(result.current.finishedBoardView);
     expect(finished.terminationMark).toEqual(mark);
     expect(finished.terminationMarkLabel).toBe('Resignation');
     // The in-progress board never carries it — a live game has no loser yet.
-    expect(finishedProps(result.current.inProgressBoardView).terminationMark).toBeUndefined();
+    expect(boardOf(result.current.inProgressBoardView).terminationMark).toBeUndefined();
   });
 
   it('marks nothing while the game is still in progress', () => {
@@ -155,6 +161,6 @@ describe('usePlayBoardViews finished board', () => {
       terminationMarkLabel: '',
     });
 
-    expect(finishedProps(result.current.finishedBoardView).terminationMark).toBeNull();
+    expect(boardOf(result.current.finishedBoardView).terminationMark).toBeNull();
   });
 });

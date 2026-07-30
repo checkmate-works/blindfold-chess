@@ -12,6 +12,7 @@ import { computeGameStats } from './compute-game-stats';
 import { isOperationTotals } from './operation-totals';
 import { normalizePlaySettingsLog } from './play-settings-log';
 import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
+import { sanitizeOperationLogs, sanitizeUndoneLogs } from './sanitize-published-logs';
 import type {
   GamePlaySettings,
   MoveOperationLog,
@@ -19,7 +20,6 @@ import type {
   PlaySettingsChangeEntry,
   UndoneMoveLog,
 } from './saved-game-types';
-import { MAX_UNDONE_LOGS, isUndoneMoveLog } from './undone-logs';
 
 /**
  * Validation + denormalization for publishing a shared game.
@@ -83,33 +83,6 @@ const COLORS: readonly PlayerColor[] = ['white', 'black'];
 const PIECE_SHAPE_MODES = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
 const PIECE_COLORS = ['normal', 'white-only', 'black-only'] as const;
 const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
-
-// Bounds for the self-reported `invalidAttempts` move texts before they are
-// persisted as public data: at most this many per move, each clipped to a SAN-
-// sized length (the longest real SAN, e.g. "exd8=Q+", is well under this).
-const MAX_INVALID_ATTEMPTS = 20;
-const MAX_INVALID_ATTEMPT_LEN = 12;
-
-// Bounds for an archived undo's retracted SAN(s): only the player's move and
-// the AI's reply are ever recorded (see UndoneMoveLog.sans), and real SAN
-// tops out around "exd8=Q#" (7 chars) — 10 leaves headroom without inviting
-// abuse.
-const MAX_SANS_PER_UNDO = 2;
-const MAX_SAN_LEN = 10;
-
-const ALGEBRAIC_SQUARE_RE = /^[a-h][1-8]$/;
-
-/** Shape guard for one `invalidAttemptSquares` slot's `{ from, to }` object. */
-function isAlgebraicSquarePair(value: unknown): value is { from: string; to: string } {
-  if (!value || typeof value !== 'object') return false;
-  const v = value as Record<string, unknown>;
-  return (
-    typeof v.from === 'string' &&
-    ALGEBRAIC_SQUARE_RE.test(v.from) &&
-    typeof v.to === 'string' &&
-    ALGEBRAIC_SQUARE_RE.test(v.to)
-  );
-}
 
 /**
  * Normalize the self-reported play settings into the validated display subset,
@@ -210,48 +183,7 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
     setupPlies = v.setupPlies;
   }
 
-  // operationLogs are self-reported aid counts; accept an array no longer than
-  // the move list, else drop to null rather than rejecting (display tolerates
-  // missing logs). computeGameStats reads fields defensively. The numeric
-  // fields are trusted as-is, but the free-text `invalidAttempts` and its
-  // `invalidAttemptSquares` companion are bounded (count / length / shape)
-  // before they become public data.
-  let operationLogs: MoveOperationLog[] | null = null;
-  if (Array.isArray(v.operationLogs) && v.operationLogs.length <= moves.length) {
-    operationLogs = (v.operationLogs as MoveOperationLog[]).map((log) => {
-      if (!log || typeof log !== 'object') return log;
-      const rawAttempts = (log as { invalidAttempts?: unknown }).invalidAttempts;
-      const rawSquares = (log as { invalidAttemptSquares?: unknown }).invalidAttemptSquares;
-      if (!Array.isArray(rawAttempts) && !Array.isArray(rawSquares)) return log;
-
-      const attempts = Array.isArray(rawAttempts)
-        ? rawAttempts
-            .filter((s): s is string => typeof s === 'string')
-            .slice(0, MAX_INVALID_ATTEMPTS)
-            .map((s) => s.slice(0, MAX_INVALID_ATTEMPT_LEN))
-        : [];
-      // Best-effort only: a crafted payload could already misalign this
-      // against `attempts` above (e.g. by mixing non-string junk into
-      // invalidAttempts before the filter runs). That's display metadata,
-      // not an integrity boundary — worst case a self-authored GIF marks
-      // the wrong square, nothing worse.
-      const squares = Array.isArray(rawSquares)
-        ? rawSquares
-            .slice(0, MAX_INVALID_ATTEMPTS)
-            .map((s) =>
-              s === null ? null : isAlgebraicSquarePair(s) ? { from: s.from, to: s.to } : null
-            )
-        : undefined;
-
-      return {
-        ...log,
-        invalidAttempts: attempts.length > 0 ? attempts : undefined,
-        invalidAttemptSquares: squares && squares.some((s) => s !== null) ? squares : undefined,
-      };
-    });
-  }
-
-  // Monotonic lifetime totals: same self-reported posture as operationLogs
+  // Monotonic lifetime totals: same self-reported posture as the logs below
   // (numbers trusted as-is once the shape checks out), but a malformed blob
   // drops to null rather than rejecting the publish. Whitelist-copied so no
   // extra keys reach the DB. Null feeds the rank evaluator's legacy path,
@@ -265,48 +197,6 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       }
     : null;
 
-  // Archived rollback discards: same audit-metadata posture (malformed →
-  // null, never a rejection). Entry count and every free-text SAN list are
-  // re-bounded server-side — the client caps them too, but a crafted payload
-  // must not bloat the public row. Whitelist-copied per entry.
-  let undoneLogs: UndoneMoveLog[] | null = null;
-  if (Array.isArray(v.undoneLogs) && v.undoneLogs.every((entry) => isUndoneMoveLog(entry))) {
-    const boundAttempts = (attempts: string[] | undefined): string[] | undefined => {
-      if (!attempts || attempts.length === 0) return undefined;
-      return attempts
-        .slice(0, MAX_INVALID_ATTEMPTS)
-        .map((s) => s.slice(0, MAX_INVALID_ATTEMPT_LEN));
-    };
-    const boundSquares = (
-      squares: ({ from: string; to: string } | null)[] | undefined
-    ): ({ from: string; to: string } | null)[] | undefined => {
-      if (!squares || squares.length === 0) return undefined;
-      const bounded = squares.slice(0, MAX_INVALID_ATTEMPTS);
-      return bounded.some((s) => s !== null) ? bounded : undefined;
-    };
-    const bounded = (v.undoneLogs as UndoneMoveLog[]).slice(0, MAX_UNDONE_LOGS).map((entry) => {
-      const out: UndoneMoveLog = { index: entry.index };
-      if (entry.log !== undefined) {
-        out.log = {
-          inputMethod: entry.log.inputMethod,
-          peekCount: entry.log.peekCount,
-          undoCount: entry.log.undoCount,
-          movePeekCount: entry.log.movePeekCount,
-          invalidCount: entry.log.invalidCount,
-          invalidAttempts: boundAttempts(entry.log.invalidAttempts),
-          invalidAttemptSquares: boundSquares(entry.log.invalidAttemptSquares),
-        };
-      }
-      const pending = boundAttempts(entry.pendingInvalidAttempts);
-      if (pending) out.pendingInvalidAttempts = pending;
-      if (entry.sans && entry.sans.length > 0) {
-        out.sans = entry.sans.slice(0, MAX_SANS_PER_UNDO).map((s) => s.slice(0, MAX_SAN_LEN));
-      }
-      return out;
-    });
-    undoneLogs = bounded.length > 0 ? bounded : null;
-  }
-
   return {
     ok: true,
     game: {
@@ -318,9 +208,12 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       playerColor: v.playerColor as PlayerColor,
       engineConfig: v.engineConfig,
       result: v.result as GameOutcome,
-      operationLogs,
+      // Self-reported aid records. Bounded, never rejected — see
+      // `sanitize-published-logs` for why these carry the opposite failure
+      // policy from everything validated above.
+      operationLogs: sanitizeOperationLogs(v.operationLogs, moves.length),
       operationTotals,
-      undoneLogs,
+      undoneLogs: sanitizeUndoneLogs(v.undoneLogs),
       playSettings: normalizePlaySettings(v.playSettings),
       // Self-reported mid-game settings timeline; validated to the display
       // subset and anchored within [0, moves.length]. Folded over playSettings

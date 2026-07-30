@@ -30,14 +30,15 @@ export function PositionPeekBoard({ fen }: Props) {
   return (
     <BoardFrame>
       <InlineBoardView
-        fen={fen}
-        playerSide={blackToMove ? 'black' : 'white'}
-        flipped={blackToMove}
-        lastMove={null}
-        preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
-        movesLength={0}
-        currentPosition={-1}
-        formattedPgn={[]}
+        board={{
+          fen,
+          playerSide: blackToMove ? 'black' : 'white',
+          flipped: blackToMove,
+          lastMove: null,
+          preferences: { ...preferences, showOwnPieces: true, showOpponentPieces: true },
+        }}
+        moveList={{ movesLength: 0, currentPosition: -1, formattedPgn: [] }}
+        visibility={{ kind: 'accordion' }}
       />
     </BoardFrame>
   );
