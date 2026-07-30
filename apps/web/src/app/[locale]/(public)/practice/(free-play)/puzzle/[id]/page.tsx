@@ -14,6 +14,7 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
+import { CommentTreeBatch } from '@/app/[locale]/(public)/topics/_components/CommentTreeBatch';
 import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -43,7 +44,7 @@ import { DeletePuzzleButton } from '../_components/DeletePuzzleButton';
 import { loadPuzzleWithSolutions } from '../_lib/load-puzzle';
 import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
 import { NewPostForm } from './_components/NewPostForm';
-import { PuzzleCommentTreeBatch } from './_components/PuzzleCommentTreeBatch';
+import { puzzleCommentThread } from './_lib/comment-thread';
 
 export const dynamic = 'force-dynamic';
 
@@ -324,9 +325,9 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
               error: tTopics('loadMoreComments.error'),
             }}
           >
-            <PuzzleCommentTreeBatch
+            <CommentTreeBatch
+              {...puzzleCommentThread(locale, position.id)}
               locale={locale}
-              positionId={position.id}
               userId={currentUser?.id}
               comments={comments}
               attachments={attachments}

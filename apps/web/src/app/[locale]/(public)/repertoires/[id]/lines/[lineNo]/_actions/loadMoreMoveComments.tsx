@@ -1,27 +1,18 @@
 'use server';
 
-import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
-
-import { getOptionalUser } from '@/lib/auth';
-import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { buildPositionTopicKey } from '@/lib/repertoires/position-topic-key';
 import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 import { isValidUUID } from '@/lib/validations/uuid';
 
 import type { LoadMoreCommentsResult } from '@/app/[locale]/(public)/topics/_lib/load-more-comments';
-import { clampCommentOffset } from '@/app/[locale]/(public)/topics/_lib/load-more-comments';
-import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
-import { COMMENT_TREE_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { getCommentTreePageForTopic } from '@/app/[locale]/(public)/topics/_lib/queries';
+import { loadMoreCommentsBase } from '@/app/[locale]/(public)/topics/_lib/load-more-comments-base';
 
-import { MoveCommentTreeBatch } from '../_components/MoveCommentTreeBatch';
+import { moveCommentThread } from '../_lib/comment-thread';
 
 /**
  * Fetch + render the next comment-tree batch for a move thread on
- * `/repertoires/[id]/lines/[lineNo]` (issue #81). Returns the batch as
- * server-rendered JSX so the client wrapper appends exactly what the page
- * itself would SSR — see `LoadMoreCommentsResult`. Sort is fixed to 'new',
+ * `/repertoires/[id]/lines/[lineNo]` (issue #81). Sort is fixed to 'new',
  * matching the section (no sort control — per-move volume is low).
  *
  * All parameters except `offset` are bound server-side at render time
@@ -41,61 +32,36 @@ export async function loadMoreMoveComments(
   locale: string,
   offset: number
 ): Promise<LoadMoreCommentsResult> {
-  assertSupportedLocale(locale);
-  const safeOffset = clampCommentOffset(offset);
-  // Nothing to append, stop the loader — shared by every validation exit.
-  const stop: LoadMoreCommentsResult = { node: null, hasMore: false, nextOffset: safeOffset };
+  return loadMoreCommentsBase({
+    locale,
+    sortBy: 'new',
+    offset,
+    topicType: 'repertoire_move',
+    resolveWiring: async ({ viewerId, locale }) => {
+      if (!isValidUUID(repertoireId) || !Number.isInteger(lineNo) || lineNo < 1) return null;
 
-  if (!isValidUUID(repertoireId) || !Number.isInteger(lineNo) || lineNo < 1) {
-    return stop;
-  }
+      // Line visibility is viewer-scoped — an unlisted kata's lines are
+      // readable by its owner only.
+      const data = await getRepertoireLineForViewer(repertoireId, lineNo, viewerId ?? null);
+      if (!data) return null; // repertoire or line deleted between render and click
+      const { repertoire, line } = data;
 
-  const user = await getOptionalUser();
-  const data = await getRepertoireLineForViewer(repertoireId, lineNo, user?.id ?? null);
-  if (!data) {
-    // Repertoire or line deleted between render and click.
-    return stop;
-  }
-  const { repertoire, line } = data;
+      const { sans, positions } = replayRepertoireLine(line);
+      if (!Number.isInteger(ply) || ply < 1 || ply > sans.length) return null;
+      if (buildPositionTopicKey(repertoireId, positions[ply].fen) !== topicKey) return null;
 
-  const { sans, positions } = replayRepertoireLine(line);
-  if (!Number.isInteger(ply) || ply < 1 || ply > sans.length) {
-    return stop;
-  }
-  if (buildPositionTopicKey(repertoireId, positions[ply].fen) !== topicKey) {
-    return stop;
-  }
-
-  const moveNotationLine: MoveNotationLine = {
-    moves: sans,
-    startingFen: line.startingFen,
-    playerColor: repertoire.side,
-  };
-
-  const { posts, hasMore } = await getCommentTreePageForTopic(
-    'repertoire_move',
-    topicKey,
-    { sortBy: 'new', offset: safeOffset, limit: COMMENT_TREE_PAGE_SIZE },
-    user?.id
-  );
-  const attachments =
-    posts.length > 0 ? await getAttachmentsForPosts(posts.map((p) => p.id)) : new Map();
-
-  return {
-    node: (
-      <MoveCommentTreeBatch
-        locale={locale}
-        repertoireId={repertoireId}
-        lineNo={lineNo}
-        ply={ply}
-        topicKey={topicKey}
-        moveNotationLine={moveNotationLine}
-        userId={user?.id}
-        comments={posts}
-        attachments={attachments}
-      />
-    ),
-    hasMore,
-    nextOffset: safeOffset + COMMENT_TREE_PAGE_SIZE,
-  };
+      return moveCommentThread({
+        locale,
+        repertoireId,
+        lineNo,
+        ply,
+        topicKey,
+        moveNotationLine: {
+          moves: sans,
+          startingFen: line.startingFen,
+          playerColor: repertoire.side,
+        },
+      });
+    },
+  });
 }
