@@ -21,6 +21,11 @@ import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-p
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import type { ChunkFormField } from '../_lib/chunk-form-validation';
+
+/** A submit error bound to one control, rendered against that control. */
+export type ChunkFieldError = { field: ChunkFormField; message: string };
+
 type Props = {
   board: ReturnType<typeof useFenBoardEditor>;
   title: string;
@@ -54,6 +59,13 @@ type Props = {
    */
   mode: 'create' | 'edit';
   pending: boolean;
+  /**
+   * The submit gate's verdict, if it failed on one of these controls.
+   * Drives the highlight, the `aria-invalid` / `aria-describedby` pair,
+   * and the message rendered directly under the control — the author
+   * should never have to hunt elsewhere on the page for the reason.
+   */
+  error: ChunkFieldError | null;
 };
 
 /**
@@ -81,12 +93,25 @@ export function ChunkFormFields({
   onFeedbackTopicsChange,
   mode,
   pending,
+  error,
 }: Props) {
   const t = useTranslations('chunks.form');
   const editableBoardLabels = useEditableBoardLabels();
   const { preferences, isLoaded } = useGamePreferences();
 
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
+
+  const errorFor = (field: ChunkFormField) => (error?.field === field ? error.message : null);
+  const titleError = errorFor('title');
+  const descriptionError = errorFor('description');
+  const slugError = errorFor('slug');
+  const fenError = errorFor('fen');
+
+  // A description is only mandatory on the publish path, so the required
+  // marker follows the "Save as draft" toggle rather than being static.
+  // Create mode defaults to publishing — without this the requirement
+  // was invisible until submit rejected it.
+  const descriptionRequired = status === 'published';
 
   return (
     <>
@@ -99,124 +124,172 @@ export function ChunkFormFields({
           type="text"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
+            titleError ? 'border-destructive' : 'border-border'
+          }`}
           required
+          aria-invalid={titleError ? true : undefined}
+          aria-describedby={titleError ? 'chunk-title-error' : undefined}
         />
+        <FieldError id="chunk-title-error" message={titleError} />
       </div>
 
       <div>
         <label htmlFor="chunk-description" className="block text-sm font-medium mb-1">
-          {t('fields.description')}
+          {t('fields.description')}{' '}
+          {descriptionRequired && <span className="text-destructive">*</span>}
         </label>
         <textarea
           id="chunk-description"
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
+            descriptionError ? 'border-destructive' : 'border-border'
+          }`}
+          required={descriptionRequired}
+          aria-invalid={descriptionError ? true : undefined}
+          aria-describedby={descriptionError ? 'chunk-description-error' : undefined}
         />
+        <FieldError id="chunk-description-error" message={descriptionError} />
       </div>
 
-      <div>
-        <span className="block text-sm font-medium mb-1">{t('positionLabel')}</span>
-        <BoardFenTabs
-          activeTab={board.activeTab}
-          onTabChange={board.setActiveTab}
-          boardLabel={t('tabBoard')}
-          fenLabel={t('tabFen')}
-        />
-      </div>
+      {/*
+       * `id` + `tabIndex` make the whole position block a focus target:
+       * the FEN rule can fail while the board tab is active, where there
+       * is no text input to focus. See `reportError` in `ChunkForm`.
+       */}
+      <div
+        id="chunk-position"
+        tabIndex={-1}
+        role="group"
+        aria-label={t('positionLabel')}
+        aria-describedby={
+          fenError && board.activeTab === 'board' ? 'chunk-position-error' : undefined
+        }
+        className="space-y-6"
+      >
+        <div>
+          <span className="block text-sm font-medium mb-1">{t('positionLabel')}</span>
+          <BoardFenTabs
+            activeTab={board.activeTab}
+            onTabChange={board.setActiveTab}
+            boardLabel={t('tabBoard')}
+            fenLabel={t('tabFen')}
+          />
+        </div>
 
-      {board.activeTab === 'board' && (
-        <>
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div
-              role="radiogroup"
-              aria-label={t('sideToMove')}
-              className="inline-flex rounded-md border border-border overflow-hidden text-sm"
-            >
+        {board.activeTab === 'board' && (
+          <>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div
+                role="radiogroup"
+                aria-label={t('sideToMove')}
+                className="inline-flex rounded-md border border-border overflow-hidden text-sm"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={board.sideToMove === 'w'}
+                  onClick={() => board.handleSideToMoveChange('w')}
+                  className={`px-3 py-1.5 transition-colors ${
+                    board.sideToMove === 'w'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t('sideWhite')}
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={board.sideToMove === 'b'}
+                  onClick={() => board.handleSideToMoveChange('b')}
+                  className={`px-3 py-1.5 transition-colors ${
+                    board.sideToMove === 'b'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t('sideBlack')}
+                </button>
+              </div>
+              <FlipBoardButton onClick={board.handleFlip} title={t('flipBoard')} />
+            </div>
+            {!isLoaded ? (
+              <BoardFrame>
+                <BoardSkeleton />
+              </BoardFrame>
+            ) : (
+              <EditableChessBoard
+                fen={board.boardFen}
+                onFenChange={board.handleBoardChange}
+                labels={editableBoardLabels}
+                editable={true}
+                flipped={board.flipped}
+                showCoordinates={true}
+                boardTheme={preferences.boardTheme}
+                annotations={annotations}
+                onAnnotationsChange={onAnnotationsChange}
+              />
+            )}
+
+            {/*
+             * `fenError` is the submit gate's verdict (covers "no
+             * position placed at all"); `positionError` is the board
+             * editor's own live complaint. Either renders here, right
+             * under the board the author has to fix.
+             */}
+            {(fenError || board.positionError) && (
+              <p
+                id="chunk-position-error"
+                role="alert"
+                className="text-sm text-destructive text-center"
+              >
+                {fenError ?? t('errors.invalidFen')}
+              </p>
+            )}
+
+            <div className="flex justify-center">
               <button
                 type="button"
-                role="radio"
-                aria-checked={board.sideToMove === 'w'}
-                onClick={() => board.handleSideToMoveChange('w')}
-                className={`px-3 py-1.5 transition-colors ${
-                  board.sideToMove === 'w'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted'
-                }`}
+                onClick={() => setClearBoardOpen(true)}
+                className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
               >
-                {t('sideWhite')}
-              </button>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={board.sideToMove === 'b'}
-                onClick={() => board.handleSideToMoveChange('b')}
-                className={`px-3 py-1.5 transition-colors ${
-                  board.sideToMove === 'b'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted'
-                }`}
-              >
-                {t('sideBlack')}
+                {t('clearBoard')}
               </button>
             </div>
-            <FlipBoardButton onClick={board.handleFlip} title={t('flipBoard')} />
-          </div>
-          {!isLoaded ? (
-            <BoardFrame>
-              <BoardSkeleton />
-            </BoardFrame>
-          ) : (
-            <EditableChessBoard
-              fen={board.boardFen}
-              onFenChange={board.handleBoardChange}
-              labels={editableBoardLabels}
-              editable={true}
-              flipped={board.flipped}
-              showCoordinates={true}
-              boardTheme={preferences.boardTheme}
-              annotations={annotations}
-              onAnnotationsChange={onAnnotationsChange}
+          </>
+        )}
+
+        {board.activeTab === 'fen' && (
+          <div>
+            <label htmlFor="chunk-fen" className="block text-sm font-medium mb-1">
+              {t('fields.fen')}
+            </label>
+            <textarea
+              id="chunk-fen"
+              value={board.fenInput}
+              onChange={board.handleFenInputChange}
+              placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+              rows={2}
+              className={`w-full px-3 py-2 rounded border bg-card text-foreground text-sm font-mono ${
+                fenError ? 'border-destructive' : 'border-border'
+              }`}
+              aria-invalid={fenError ? true : undefined}
+              aria-describedby={fenError ? 'chunk-fen-error' : undefined}
             />
-          )}
-
-          {board.positionError && (
-            <p className="text-sm text-destructive text-center">{t('errors.invalidFen')}</p>
-          )}
-
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={() => setClearBoardOpen(true)}
-              className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
-            >
-              {t('clearBoard')}
-            </button>
+            <p className="text-xs text-muted-foreground mt-1">{t('hints.fen')}</p>
+            <FieldError
+              id="chunk-fen-error"
+              message={
+                fenError ??
+                (board.fenInput.trim() !== '' && !board.isFenValid ? t('errors.invalidFen') : null)
+              }
+            />
           </div>
-        </>
-      )}
-
-      {board.activeTab === 'fen' && (
-        <div>
-          <label htmlFor="chunk-fen" className="block text-sm font-medium mb-1">
-            {t('fields.fen')}
-          </label>
-          <textarea
-            id="chunk-fen"
-            value={board.fenInput}
-            onChange={board.handleFenInputChange}
-            placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            rows={2}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground text-sm font-mono"
-          />
-          <p className="text-xs text-muted-foreground mt-1">{t('hints.fen')}</p>
-          {board.fenInput.trim() && !board.isFenValid && (
-            <p className="text-sm text-destructive mt-1">{t('errors.invalidFen')}</p>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       <div>
         <label htmlFor="chunk-slug" className="block text-sm font-medium mb-1">
@@ -229,8 +302,12 @@ export function ChunkFormFields({
             value={slug}
             onChange={(e) => onSlugChange(e.target.value)}
             placeholder="rook-battery"
-            className="flex-1 px-3 py-2 rounded border border-border bg-card text-foreground font-mono text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            className={`flex-1 px-3 py-2 rounded border bg-card text-foreground font-mono text-sm disabled:opacity-60 disabled:cursor-not-allowed ${
+              slugError ? 'border-destructive' : 'border-border'
+            }`}
             required={mode === 'create'}
+            aria-invalid={slugError ? true : undefined}
+            aria-describedby={slugError ? 'chunk-slug-error' : undefined}
           />
           <button
             type="button"
@@ -244,6 +321,7 @@ export function ChunkFormFields({
         <p className="text-xs text-muted-foreground mt-1">
           {mode === 'create' ? t('hints.slugCreate') : t('hints.slugDraftEditable')}
         </p>
+        <FieldError id="chunk-slug-error" message={slugError} />
       </div>
 
       <div className="rounded border border-border bg-card p-3">
@@ -316,5 +394,20 @@ export function ChunkFormFields({
         onCancel={() => setClearBoardOpen(false)}
       />
     </>
+  );
+}
+
+/**
+ * Message rendered directly under the control that failed. `role="alert"`
+ * so it is announced when it appears, and the `id` is what the control's
+ * `aria-describedby` points at.
+ */
+function FieldError({ id, message }: { id: string; message: string | null }) {
+  if (!message) return null;
+
+  return (
+    <p id={id} role="alert" className="mt-1 text-sm text-destructive">
+      {message}
+    </p>
   );
 }

@@ -17,11 +17,33 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 
 import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
 import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
-import { validateChunkForm } from '../_lib/chunk-form-validation';
+import { type ChunkFormField, validateChunkForm } from '../_lib/chunk-form-validation';
 import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
-import { ChunkFormFields } from './ChunkFormFields';
+import { type ChunkFieldError, ChunkFormFields } from './ChunkFormFields';
 
 export type { ChunkFormInitial } from '../_hooks/use-chunk-form-state';
+
+/**
+ * A submit error is either bound to a control — rendered inline next to
+ * it, see `ChunkFormFields` — or form-wide (`field: null`, e.g. the
+ * sessionStorage handoff failing), which falls back to the strip above
+ * the fields. Exactly one of the two surfaces shows at a time so the
+ * same sentence is never duplicated.
+ */
+type ChunkSubmitError = { field: ChunkFormField | null; message: string };
+
+/**
+ * DOM ids the submit gate focuses per field. The FEN rule can fail from
+ * either position tab, so on the board tab it targets the position
+ * section wrapper (which carries `tabIndex={-1}`) instead of the raw FEN
+ * textarea, which isn't mounted there.
+ */
+const FIELD_ANCHOR_IDS: Record<ChunkFormField, string> = {
+  fen: 'chunk-fen',
+  title: 'chunk-title',
+  slug: 'chunk-slug',
+  description: 'chunk-description',
+};
 
 type CreateProps = {
   mode: 'create';
@@ -126,9 +148,10 @@ export function ChunkForm(props: Props) {
     setFeedbackTopics,
   } = form;
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ChunkSubmitError | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
+  const formErrorRef = useRef<HTMLDivElement>(null);
 
   const { hydratedFromDraft, setHydratedFromDraft } = useChunkDraftRecovery({
     mode,
@@ -161,19 +184,48 @@ export function ChunkForm(props: Props) {
     router.push(path as '/chunks/[slug]');
   }
 
+  /**
+   * Show a submit error and send the author to it. Focus (not a bare
+   * scroll) because it drags the viewport along for pointer users *and*
+   * lands keyboard / screen-reader users on the control that needs
+   * fixing. This form is taller than a phone screen — the board editor
+   * alone fills one — so an error rendered somewhere off-viewport reads
+   * as "the submit button does nothing", which is exactly how the
+   * missing-description gate used to fail.
+   *
+   * flushSync so the inline message and its `aria-describedby` target
+   * are committed before focus lands; otherwise the screen reader
+   * announces the control without the sentence explaining it.
+   */
+  function reportError(field: ChunkFormField | null, message: string) {
+    flushSync(() => setError({ field, message }));
+
+    const anchorId =
+      field === null
+        ? null
+        : field === 'fen' && board.activeTab === 'board'
+          ? 'chunk-position'
+          : FIELD_ANCHOR_IDS[field];
+    const anchor = anchorId === null ? formErrorRef.current : document.getElementById(anchorId);
+
+    anchor?.focus({ preventScroll: true });
+    // Optional-called because jsdom does not implement scrollIntoView.
+    anchor?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    const errorKey = validateChunkForm({
+    const invalid = validateChunkForm({
       isFenValid: board.isFenValid,
       title,
       slug,
       status,
       description,
     });
-    if (errorKey) {
-      setError(t(errorKey));
+    if (invalid) {
+      reportError(invalid.field, t(invalid.key));
       return;
     }
 
@@ -204,7 +256,7 @@ export function ChunkForm(props: Props) {
 
     const ok = writeChunkDraft(draft);
     if (!ok) {
-      setError(t('errors.draftWriteFailed'));
+      reportError(null, t('errors.draftWriteFailed'));
       return;
     }
 
@@ -213,14 +265,26 @@ export function ChunkForm(props: Props) {
     );
   }
 
-  const submitDisabled = !board.isFenValid || title.trim() === '' || slug.trim() === '';
+  const fieldError: ChunkFieldError | null =
+    error && error.field ? { field: error.field, message: error.message } : null;
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        {/*
+         * Form-wide errors only (see `ChunkSubmitError`) — anything
+         * attributable to a control is rendered against that control
+         * instead. `tabIndex={-1}` makes it a focus target for
+         * `reportError`.
+         */}
+        {error && !error.field && (
+          <div
+            ref={formErrorRef}
+            tabIndex={-1}
+            role="alert"
+            className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm"
+          >
+            {error.message}
           </div>
         )}
 
@@ -260,10 +324,17 @@ export function ChunkForm(props: Props) {
           onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
           pending={false}
+          error={fieldError}
         />
 
         <div className="space-y-4">
-          <Button type="submit" variant="primary" size="lg" fullWidth disabled={submitDisabled}>
+          {/*
+           * Deliberately always enabled: a disabled submit is silent
+           * about *why* it won't move, which is the same dead-end as an
+           * off-screen error. Pressing it runs `validateChunkForm` and
+           * puts the author on the offending field with an explanation.
+           */}
+          <Button type="submit" variant="primary" size="lg" fullWidth>
             {t('actions.continueToPreview')}
           </Button>
 

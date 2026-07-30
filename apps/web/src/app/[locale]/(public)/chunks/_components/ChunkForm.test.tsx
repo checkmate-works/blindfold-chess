@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ChunkForm } from './ChunkForm';
@@ -22,10 +22,12 @@ vi.mock('@/_hooks/useUnsavedChanges', () => ({
   useUnsavedChanges: () => ({ isBlocking: false, confirm: vi.fn(), cancel: vi.fn() }),
 }));
 
+// Forwards `type` so the submit button really submits the form — the
+// error-routing tests below depend on the real submit path running.
 vi.mock('@/app/_components', () => ({
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Button: ({ children }: { children: React.ReactNode }) => (
-    <button type="button">{children}</button>
+  Button: ({ children, type }: { children: React.ReactNode; type?: 'button' | 'submit' }) => (
+    <button type={type}>{children}</button>
   ),
   UnsavedChangesDialog: () => null,
 }));
@@ -50,14 +52,58 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-edito
   }),
 }));
 
-vi.mock('./ChunkFormFields', () => ({ ChunkFormFields: () => <div data-testid="fields" /> }));
+// Stands in for the real fields: keeps the DOM ids `reportError` focuses,
+// and echoes the field error it was handed so the routing (which control
+// the message lands on) is assertable without mounting the board editor.
+vi.mock('./ChunkFormFields', () => ({
+  ChunkFormFields: ({
+    error,
+    title,
+    onTitleChange,
+    slug,
+    onSlugChange,
+    description,
+    onDescriptionChange,
+  }: {
+    error: { field: string; message: string } | null;
+    title: string;
+    onTitleChange: (value: string) => void;
+    slug: string;
+    onSlugChange: (value: string) => void;
+    description: string;
+    onDescriptionChange: (value: string) => void;
+  }) => (
+    <div data-testid="fields">
+      <input
+        id="chunk-title"
+        aria-label="title"
+        value={title}
+        onChange={(e) => onTitleChange(e.target.value)}
+      />
+      <input
+        id="chunk-slug"
+        aria-label="slug"
+        value={slug}
+        onChange={(e) => onSlugChange(e.target.value)}
+      />
+      <textarea
+        id="chunk-description"
+        aria-label="description"
+        value={description}
+        onChange={(e) => onDescriptionChange(e.target.value)}
+      />
+      <div data-testid="field-error">{error ? `${error.field}:${error.message}` : ''}</div>
+    </div>
+  ),
+}));
 vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({ ConfirmationModal: () => null }));
 
 const readChunkDraft = vi.fn();
+const writeChunkDraft = vi.fn();
 vi.mock('../_lib/draft-storage', () => ({
   readChunkDraft: () => readChunkDraft(),
   clearChunkDraft: vi.fn(),
-  writeChunkDraft: vi.fn(),
+  writeChunkDraft: () => writeChunkDraft(),
 }));
 
 const STORED_DRAFT = {
@@ -100,5 +146,46 @@ describe('ChunkForm — injectedFen vs. stored draft', () => {
     readChunkDraft.mockReturnValue(STORED_DRAFT);
     render(<ChunkForm mode="create" />);
     expect(screen.queryByText('draftRestoredBanner')).toBeNull();
+  });
+});
+
+describe('ChunkForm — submit error routing', () => {
+  beforeEach(() => {
+    (readChunkDraft as Mock).mockReset();
+    (writeChunkDraft as Mock).mockReset();
+    nav.search = '';
+  });
+
+  function fill(field: string, value: string) {
+    fireEvent.change(screen.getByLabelText(field), { target: { value } });
+  }
+
+  it('lands a field error on its own control and focuses it', () => {
+    render(<ChunkForm mode="create" />);
+    fill('title', 'Rook battery');
+    fill('slug', 'rook-battery');
+
+    // Create mode defaults to publishing, where a description is required.
+    fireEvent.click(screen.getByText('actions.continueToPreview'));
+
+    expect(screen.getByTestId('field-error')).toHaveTextContent(
+      'description:errors.descriptionRequired'
+    );
+    expect(document.activeElement).toBe(screen.getByLabelText('description'));
+  });
+
+  it('falls back to the form-wide strip for errors no control owns', () => {
+    writeChunkDraft.mockReturnValue(false);
+    render(<ChunkForm mode="create" />);
+    fill('title', 'Rook battery');
+    fill('slug', 'rook-battery');
+    fill('description', 'Doubled rooks on an open file.');
+
+    fireEvent.click(screen.getByText('actions.continueToPreview'));
+
+    const strip = screen.getByRole('alert');
+    expect(strip).toHaveTextContent('errors.draftWriteFailed');
+    expect(screen.getByTestId('field-error')).toHaveTextContent('');
+    expect(document.activeElement).toBe(strip);
   });
 });
