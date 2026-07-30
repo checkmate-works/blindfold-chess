@@ -2,12 +2,11 @@
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaArrowRight, FaHeart, FaRegHeart } from 'react-icons/fa';
-import { LuPause, LuPlay } from 'react-icons/lu';
+import { FaArrowRight } from 'react-icons/fa';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
-import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
 
 import type { PieceType } from '../../../_lib/pieces';
 
@@ -23,6 +22,12 @@ type Props = {
   onTogglePause: () => void;
 };
 
+/**
+ * Route-planner's session header: the shared lives / pause / timer row,
+ * followed by this module's own problem statement (piece + start → target
+ * squares). Lives are derived from the mistake count rather than tracked
+ * separately, which is why the run's remaining lives are computed here.
+ */
 export function SessionHeader({
   incorrectCount,
   currentProblem,
@@ -35,45 +40,20 @@ export function SessionHeader({
   onTogglePause,
 }: Props) {
   const t = useTranslations('practice.routePlanner');
-  const tPractice = useTranslations('practice');
 
   return (
     <>
-      {/* Header: Lives and Timer */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-1">
-          {Array.from({ length: MISTAKE_LIMIT }, (_, i) => (
-            <span key={i} className="text-destructive">
-              {i < MISTAKE_LIMIT - incorrectCount ? (
-                <FaHeart className="w-5 h-5" />
-              ) : (
-                <FaRegHeart className="w-5 h-5 opacity-30" />
-              )}
-            </span>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onTogglePause}
-            disabled={countdown !== null || showFeedback}
-            className="p-1 rounded-full hover:bg-muted transition-colors disabled:opacity-50"
-            aria-label={isPaused ? tPractice('resume') : tPractice('pause')}
-          >
-            {isPaused ? (
-              <LuPlay size={18} className="fill-current" />
-            ) : (
-              <LuPause size={18} className="fill-current" />
-            )}
-          </button>
-          <QuizTimer
-            timeRemaining={timeRemaining}
-            progress={initialTimeLimit > 0 ? timeElapsed / initialTimeLimit : 0}
-            size={40}
-            fontSize="text-xs"
-            strokeWidth={4}
-          />
-        </div>
-      </div>
+      <ChallengeStatusHeader
+        className="flex justify-between items-center mb-4"
+        remainingLives={MISTAKE_LIMIT - incorrectCount}
+        maxLives={MISTAKE_LIMIT}
+        isPaused={isPaused}
+        onTogglePause={onTogglePause}
+        pauseDisabled={countdown !== null || showFeedback}
+        timeRemaining={timeRemaining}
+        timeLimit={initialTimeLimit}
+        timeElapsed={timeElapsed}
+      />
 
       {/* Problem Header */}
       <div className="flex justify-between items-center pb-4 mb-4">

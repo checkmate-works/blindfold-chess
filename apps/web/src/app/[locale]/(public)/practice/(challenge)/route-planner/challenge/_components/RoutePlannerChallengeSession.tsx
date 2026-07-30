@@ -2,21 +2,18 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { BoardOverlay } from '@/app/_components';
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner/client';
-import { LuPlay } from 'react-icons/lu';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeCountdownOverlay';
+import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
+import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/(challenge)/route-planner/_actions/save-result';
-import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
-import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RoutePlannerPlaySkeleton } from '../../_components/RoutePlannerPlaySkeleton';
@@ -37,9 +34,6 @@ export default function RoutePlannerChallengeSession({
   initialTimeLimit,
   allowedPieces,
 }: Props) {
-  const tPractice = useTranslations('practice');
-  const quitConfirmLabels = useQuitConfirmLabels();
-
   const [problemResults, setProblemResults] = useState<ProblemResult[]>([]);
 
   const piecesForGeneration = useMemo(
@@ -150,27 +144,8 @@ export default function RoutePlannerChallengeSession({
   return (
     <div id="route-planner-challenge-session" className="min-h-screen max-w-2xl mx-auto space-y-4">
       <div className="space-y-6 relative overflow-hidden">
-        {/* Countdown Overlay */}
-        <BoardOverlay
-          isVisible={countdown !== null}
-          className="backdrop-blur-md z-50"
-          data-testid="countdown-overlay"
-        >
-          <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
-            {countdown !== null && (countdown > 0 ? countdown : 'START!')}
-          </span>
-        </BoardOverlay>
-
-        {/* Pause Overlay */}
-        <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40 z-50">
-          <button
-            onClick={togglePause}
-            className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto"
-            aria-label={tPractice('resume')}
-          >
-            <LuPlay size={48} className="fill-current ml-1" />
-          </button>
-        </BoardOverlay>
+        <ChallengeCountdownOverlay countdown={countdown} />
+        <ChallengePauseOverlay isPaused={isPaused} onTogglePause={togglePause} />
 
         <div
           className={`transition-all duration-300 ${isPaused || countdown !== null ? 'blur-sm' : ''}`}
@@ -203,17 +178,12 @@ export default function RoutePlannerChallengeSession({
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} />
 
       {/* Quit section (no Skip in challenge mode) */}
-      <div className="flex flex-col items-center gap-2">
-        <button onClick={handleQuitRequest} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-          {tPractice('quit')}
-        </button>
-      </div>
-
-      <QuitConfirmModal
-        isOpen={showQuitModal}
-        onConfirm={handleQuitConfirm}
-        onCancel={handleQuitCancel}
-        labels={quitConfirmLabels}
+      <ChallengeQuitControl
+        className="flex flex-col items-center gap-2"
+        onQuitRequest={handleQuitRequest}
+        showQuitModal={showQuitModal}
+        onQuitConfirm={handleQuitConfirm}
+        onQuitCancel={handleQuitCancel}
       />
     </div>
   );
