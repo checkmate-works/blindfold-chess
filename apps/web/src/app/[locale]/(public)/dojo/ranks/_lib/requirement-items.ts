@@ -1,23 +1,26 @@
-import {
-  ALL_RANK_SLUGS,
-  BELT_COLOR_HEX,
-  MUKYU_SLUG,
-  RANK_COLORS,
-  isMukyuSlug,
-  parseRequirements,
-  ranksSeedData,
-} from '@/lib/db/data/ranks';
+import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
 import type {
   ChallengeScoreRequirement,
   GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
   PositionSubmissionCountRequirement,
   RankRequirement,
-  RankSlug,
 } from '@/lib/db/data/ranks';
-import type { Rank } from '@/lib/db/schema';
 
 import type { RequirementDivider, RequirementItem } from '../_components/RequirementsList';
+import { getBeltColorHex } from './belt-colors';
+
+/**
+ * Turning a rank's {@link RankRequirement}s into something a user can read and
+ * click: localized labels, and hrefs pointing at the surface that can actually
+ * satisfy each requirement.
+ *
+ * Every entry point here dispatches on `req.type` in ONE place. Three call sites
+ * used to inline `if (challenge_score) … else <position>`, which silently
+ * assumed only two requirement types existed — a third would have hit the
+ * position branch and thrown on `req.positionTypes`. Adding a requirement type
+ * is now one branch here plus one i18n template.
+ */
 
 export type RankCardState = 'achieved' | 'next' | 'unachieved' | 'coming-soon';
 
@@ -122,11 +125,6 @@ export function buildPositionSubmissionLabels(
 /**
  * Labels for one requirement, with no hrefs — the summary view used by the
  * ranks grid, the dojo's next-rank card, and the landing teasers.
- *
- * Those three each used to inline `if (challenge_score) … else <position>`,
- * which silently assumed only two requirement types existed: a third would have
- * hit the position branch and thrown on `req.positionTypes`. Dispatching in one
- * place means a new type is one edit here, not four scattered ones.
  */
 export function buildRequirementLabels(
   req: RankRequirement,
@@ -237,22 +235,6 @@ export function isRankEarnedByPlaying(requirements: RankRequirement[]): boolean 
   );
 }
 
-export function getBeltColorHex(slug: RankSlug): string {
-  const colorName = RANK_COLORS[slug];
-  return BELT_COLOR_HEX[colorName] ?? '#6b7280';
-}
-
-/**
- * Whether a given hex belt color should be treated as the "white belt" color.
- *
- * `#ffffff` is invisible on light backgrounds, so components rendering white
- * belts need to add a visible border / outline. Centralising the check here
- * keeps belt-color UI behaviour consistent across components.
- */
-export function isWhiteBelt(beltColor: string): boolean {
-  return beltColor.toLowerCase() === '#ffffff';
-}
-
 /**
  * Card state for the ranks grid. Ranks are granted independently
  * (skip-grants allowed), so there is NO gate on lower ranks: every defined
@@ -322,138 +304,4 @@ export function buildRankTeaserCards(
       comingSoonLabel: tRanks('comingSoon'),
     };
   });
-}
-
-/**
- * Convert a user's achieved rank IDs into a typed slug set, guarding DB slugs
- * against the known progression order so stale / unknown slugs cannot leak
- * into the helpers below (notably {@link resolveNextRank}).
- */
-export function resolveAchievedSlugs(
-  dbRanks: Rank[],
-  achievedRankIds: ReadonlySet<string>
-): ReadonlySet<RankSlug> {
-  return new Set(
-    dbRanks
-      .filter((r) => achievedRankIds.has(r.id))
-      .map((r) => r.slug)
-      .filter((slug): slug is RankSlug => (ALL_RANK_SLUGS as readonly string[]).includes(slug))
-  );
-}
-
-/**
- * View model for the dojo page — identifies the user's current rank and the
- * next rank they are working toward.
- *
- * `current` is `null` for unranked users (mukyu / not logged in).
- * `next` is `null` only when the user has achieved the top rank.
- */
-type ResolvedRankView = {
-  slug: RankSlug;
-  dbRank: Rank | null;
-  requirements: RankRequirement[];
-};
-
-export type ResolveNextRankResult = {
-  current: ResolvedRankView | null;
-  next: ResolvedRankView | null;
-};
-
-/** Non-mukyu rank slugs, in ascending progression order. */
-const REAL_RANK_SLUGS = ALL_RANK_SLUGS.filter((slug) => !isMukyuSlug(slug));
-
-/**
- * The single rank slug to recommend as "next" — the first unachieved slug
- * with a level HIGHER than the highest currently achieved rank (forward-only
- * progression), or the first real rank if nothing is achieved yet.
- *
- * Skip-grants make achievement gaps a normal state (e.g. a player can hold
- * 1dan with no kyū ranks at all — a black-belt-grade game grants it
- * outright). A lower unachieved rank must never be recommended once a higher
- * one is already held: "next" means "work toward this", and recommending a
- * rank BELOW what the user already has reads as a regression, not a goal.
- * Returns `null` once the highest defined rank is achieved — there is
- * nothing higher to recommend (skipped lower ranks stay freely earnable via
- * `/dojo/ranks`, just not pushed as "next").
- */
-export function resolveRecommendedNextSlug(achievedSlugs: ReadonlySet<RankSlug>): RankSlug | null {
-  let highestAchievedIndex = -1;
-  for (let i = 0; i < REAL_RANK_SLUGS.length; i++) {
-    if (achievedSlugs.has(REAL_RANK_SLUGS[i])) highestAchievedIndex = i;
-  }
-  for (let i = highestAchievedIndex + 1; i < REAL_RANK_SLUGS.length; i++) {
-    if (!achievedSlugs.has(REAL_RANK_SLUGS[i])) return REAL_RANK_SLUGS[i];
-  }
-  return null;
-}
-
-/**
- * Expand a literal (DB-row-backed) achieved-slugs set into "effective"
- * achievement for DISPLAY purposes: every real rank at or below the highest
- * actually-achieved rank's level counts as achieved too, even without its
- * own `user_ranks` row.
- *
- * Skip-grants make sparse achievement a normal DB state (e.g. a 1dan holder
- * with no kyū rows at all), but a checkmark UI showing gaps below the
- * user's actual rank reads as broken, not as a nuance of the grant model —
- * real-world belt systems don't ask a black belt to separately "prove" 5th
- * kyū. Use this wherever achievement is rendered as a checkmark (the ranks
- * grid, the curriculum roadmap). Do NOT use it for grant-adjacent logic —
- * {@link resolveRecommendedNextSlug} and the grant evaluator must stay keyed
- * off literal rows; expanding first would be harmless there today (both
- * only look at the highest level) but conflating "earned" and "implied"
- * achievement is the wrong default for anything that isn't pure display.
- */
-export function resolveEffectiveAchievedSlugs(
-  achievedSlugs: ReadonlySet<RankSlug>
-): ReadonlySet<RankSlug> {
-  let highestAchievedIndex = -1;
-  for (let i = 0; i < REAL_RANK_SLUGS.length; i++) {
-    if (achievedSlugs.has(REAL_RANK_SLUGS[i])) highestAchievedIndex = i;
-  }
-  if (highestAchievedIndex === -1) return achievedSlugs;
-  return new Set(REAL_RANK_SLUGS.slice(0, highestAchievedIndex + 1));
-}
-
-/** Display-only: effective expansion + mukyu iff the user holds >=1 real rank. */
-export function resolveDisplayAchievedSlugs(
-  achievedSlugs: ReadonlySet<RankSlug>
-): ReadonlySet<RankSlug> {
-  const effectiveSlugs = resolveEffectiveAchievedSlugs(achievedSlugs);
-  if (achievedSlugs.size === 0) return effectiveSlugs;
-  return new Set([...effectiveSlugs, MUKYU_SLUG]);
-}
-
-/**
- * Resolve the highest achieved rank and the next rank to pursue from DB ranks
- * and the set of achieved slugs.
- *
- * - `current` = highest achieved slug (or `null` when nothing is achieved).
- * - `next` = {@link resolveRecommendedNextSlug} resolved to its DB row and
- *   requirements (or `null` once the highest rank is achieved).
- *
- * Mukyu is UI-only and is always skipped — it is never counted as achieved
- * or assigned as `current` / `next`.
- */
-export function resolveNextRank(
-  dbRanks: Rank[],
-  achievedSlugs: ReadonlySet<RankSlug>
-): ResolveNextRankResult {
-  const dbRanksBySlug = new Map(dbRanks.map((r) => [r.slug, r]));
-
-  const toView = (slug: RankSlug): ResolvedRankView => {
-    const dbRank = dbRanksBySlug.get(slug) ?? null;
-    const requirements = dbRank ? parseRequirements(dbRank.requirements) : [];
-    return { slug, dbRank, requirements };
-  };
-
-  let current: ResolvedRankView | null = null;
-  for (const slug of REAL_RANK_SLUGS) {
-    if (achievedSlugs.has(slug)) current = toView(slug);
-  }
-
-  const nextSlug = resolveRecommendedNextSlug(achievedSlugs);
-  const next = nextSlug ? toView(nextSlug) : null;
-
-  return { current, next };
 }

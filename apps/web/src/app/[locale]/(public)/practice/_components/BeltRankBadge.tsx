@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { RANK_COLORS, type RankSlug } from '@/lib/db/data/ranks';
 
-import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
 
 /**
  * Belt colors light enough to need dark text for contrast.

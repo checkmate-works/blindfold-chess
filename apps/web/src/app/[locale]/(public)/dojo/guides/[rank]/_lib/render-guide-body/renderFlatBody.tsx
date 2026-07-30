@@ -12,7 +12,7 @@ import { JsonLd } from '@/lib/seo/jsonld';
 import { GuidePageFooter } from '@/app/[locale]/(public)/dojo/guides/_components/GuidePageFooter';
 import { RankHeader } from '@/app/[locale]/(public)/dojo/ranks/_components/RankHeader';
 import { RequirementsList } from '@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList';
-import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 import { Divider, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';

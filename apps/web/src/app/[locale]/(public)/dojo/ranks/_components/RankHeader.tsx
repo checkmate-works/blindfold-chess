@@ -1,4 +1,4 @@
-import { isWhiteBelt } from '../_lib/helpers';
+import { isWhiteBelt } from '../_lib/belt-colors';
 
 type RankHeaderProps = {
   beltColor: string;

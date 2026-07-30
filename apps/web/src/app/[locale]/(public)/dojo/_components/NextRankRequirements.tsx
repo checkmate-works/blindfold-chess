@@ -4,7 +4,7 @@ import type {
   RequirementDivider,
   RequirementItem,
 } from '@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList';
-import { isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/helpers';
+import { isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
 import { FOCUS_RING_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 function isRequirementDivider(

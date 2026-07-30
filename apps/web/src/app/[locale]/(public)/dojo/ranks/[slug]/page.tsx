@@ -44,8 +44,9 @@ import { RankHeader } from '../_components/RankHeader';
 import { RankNavigation } from '../_components/RankNavigation';
 import { RequirementsList } from '../_components/RequirementsList';
 import { ScatteredPawnsBoard } from '../_components/ScatteredPawnsBoard';
-import { buildRequirementItems, getBeltColorHex } from '../_lib/helpers';
+import { getBeltColorHex } from '../_lib/belt-colors';
 import { getValidatedRank } from '../_lib/queries';
+import { buildRequirementItems } from '../_lib/requirement-items';
 
 type Props = {
   params: Promise<{
