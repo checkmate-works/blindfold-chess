@@ -70,40 +70,44 @@ vi.mock('@/app/[locale]/(public)/games/play/_components/InlineBoardView', () => 
   // `fen` / `lastMove` are surfaced as data attributes so the opponent-reply
   // reveal tests can assert what the board is painting at each phase.
   InlineBoardView: ({
-    onPeek,
-    fen,
-    lastMove,
-    onMove,
-    boardBadge,
+    board,
+    visibility,
+    slots,
   }: {
-    onPeek?: () => void;
-    fen?: string;
-    lastMove?: { from: string; to: string } | null;
-    onMove?: (san: string) => void;
-    boardBadge?: React.ReactNode;
-  }) => (
-    <div data-testid="inline-board-view-wrapper">
-      <button
-        type="button"
-        aria-label="showBoard"
-        data-testid="inline-board-view"
-        data-fen={fen}
-        data-last-move={lastMove ? `${lastMove.from}-${lastMove.to}` : ''}
-        onClick={onPeek}
-      >
-        showBoard
-      </button>
-      {/* Stand-in for a drag/click move on the real board — submits 'e4' so the
-          board-sourced feedback path can be exercised. Present only while the
-          real board is interactive (`onMove` defined). */}
-      {onMove && (
-        <button type="button" data-testid="stub-board-move" onClick={() => onMove('e4')}>
-          board move
+    board: {
+      fen?: string;
+      lastMove?: { from: string; to: string } | null;
+      onMove?: (san: string) => void;
+    };
+    visibility: { kind: string; onPeek?: () => void };
+    slots?: { boardBadge?: React.ReactNode };
+  }) => {
+    const { fen, lastMove, onMove } = board;
+    const boardBadge = slots?.boardBadge;
+    return (
+      <div data-testid="inline-board-view-wrapper">
+        <button
+          type="button"
+          aria-label="showBoard"
+          data-testid="inline-board-view"
+          data-fen={fen}
+          data-last-move={lastMove ? `${lastMove.from}-${lastMove.to}` : ''}
+          onClick={visibility.onPeek}
+        >
+          showBoard
         </button>
-      )}
-      {boardBadge}
-    </div>
-  ),
+        {/* Stand-in for a drag/click move on the real board — submits 'e4' so the
+            board-sourced feedback path can be exercised. Present only while the
+            real board is interactive (`onMove` defined). */}
+        {onMove && (
+          <button type="button" data-testid="stub-board-move" onClick={() => onMove('e4')}>
+            board move
+          </button>
+        )}
+        {boardBadge}
+      </div>
+    );
+  },
 }));
 
 // Mock the EXP-grant Server Action so the session component does not attempt

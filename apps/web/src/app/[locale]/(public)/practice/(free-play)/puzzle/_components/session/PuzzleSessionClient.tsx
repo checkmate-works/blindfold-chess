@@ -266,48 +266,51 @@ export function PuzzleSessionClient({
               keep the full-width layout. `mx-auto` centers it within the panel. */}
           <div className="lg:mx-auto lg:max-w-[calc((200%_-_2rem)/3)]">
             <InlineBoardView
-              fen={boardView.fen}
-              playerSide={playerColor === 'b' ? 'black' : 'white'}
-              flipped={playerColor === 'b'}
-              lastMove={boardView.lastMove}
-              preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
-              movesLength={0}
-              currentPosition={-1}
-              formattedPgn={[]}
-              onPeek={() => setPeekCount((c) => c + 1)}
-              // Once the board is peeked open, let the player answer directly on
-              // it: a click/drag of an own piece submits that move just like the
-              // text/select/button input. ChessBoard only emits legal moves, so
-              // this runs the same correct/incorrect evaluation as handleSubmit.
-              // Disabled while the opponent's reply is revealing so a move can't
-              // be dropped onto a mid-transition position. `'board'` routes a
-              // rejection's feedback onto the board instead of the input panel.
-              onMove={
-                isSolved || isOpponentReplying
-                  ? undefined
-                  : (san) => handleSubmit(san as AlgebraicNotation, 'board')
-              }
-              // A drag/click move flashes its feedback centered over the board
-              // — where the player's attention is — rather than at the input
-              // panel below: red "Incorrect" on a miss, the celebratory
-              // "Correct! 🎉" on the solving move.
-              boardBadge={
-                feedback?.source === 'board' ? (
-                  <FeedbackChip
-                    key={`fb-board-${feedback.count}`}
-                    kind={feedback.kind}
-                    variant="board"
-                    label={
-                      feedback.kind === 'incorrect'
-                        ? t('incorrect')
-                        : feedback.kind === 'correct'
-                          ? t('correctMove')
-                          : t('correct')
-                    }
-                  />
-                ) : undefined
-              }
-              badgeActive={feedback?.source === 'board'}
+              board={{
+                fen: boardView.fen,
+                playerSide: playerColor === 'b' ? 'black' : 'white',
+                flipped: playerColor === 'b',
+                lastMove: boardView.lastMove,
+                preferences: { ...preferences, showOwnPieces: true, showOpponentPieces: true },
+                // Once the board is peeked open, let the player answer directly
+                // on it: a click/drag of an own piece submits that move just
+                // like the text/select/button input. ChessBoard only emits legal
+                // moves, so this runs the same correct/incorrect evaluation as
+                // handleSubmit. Disabled while the opponent's reply is revealing
+                // so a move can't be dropped onto a mid-transition position.
+                // `'board'` routes a rejection's feedback onto the board
+                // instead of the input panel.
+                onMove:
+                  isSolved || isOpponentReplying
+                    ? undefined
+                    : (san) => handleSubmit(san as AlgebraicNotation, 'board'),
+              }}
+              moveList={{ movesLength: 0, currentPosition: -1, formattedPgn: [] }}
+              // Revealing the board IS the tracked action here, so each expand
+              // counts as a peek.
+              visibility={{ kind: 'accordion', onPeek: () => setPeekCount((c) => c + 1) }}
+              slots={{
+                // A drag/click move flashes its feedback centered over the board
+                // — where the player's attention is — rather than at the input
+                // panel below: red "Incorrect" on a miss, the celebratory
+                // "Correct! 🎉" on the solving move.
+                boardBadge:
+                  feedback?.source === 'board' ? (
+                    <FeedbackChip
+                      key={`fb-board-${feedback.count}`}
+                      kind={feedback.kind}
+                      variant="board"
+                      label={
+                        feedback.kind === 'incorrect'
+                          ? t('incorrect')
+                          : feedback.kind === 'correct'
+                            ? t('correctMove')
+                            : t('correct')
+                      }
+                    />
+                  ) : undefined,
+                badgeActive: feedback?.source === 'board',
+              }}
             />
           </div>
 

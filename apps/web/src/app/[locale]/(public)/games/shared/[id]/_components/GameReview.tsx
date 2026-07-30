@@ -513,40 +513,49 @@ export function GameReview({
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:order-1 lg:col-span-2" ref={quickPeek.boardColumnRef}>
           <InlineBoardView
-            fen={displayFen ?? latestFen}
-            playerSide={playerColor}
-            flipped={effectiveFlipped}
-            lastMove={lastMove}
-            preferences={boardPreferences}
-            movesLength={notationMoves.length}
-            currentPosition={currentPosition}
-            formattedPgn={formattedPgn}
-            onNavigateToStart={userNav.toStart}
-            onNavigatePrevious={userNav.previous}
-            onNavigateNext={userNav.next}
-            onNavigateToEnd={userNav.toEnd}
-            onNavigateToPosition={userNav.toPosition}
-            onFlipBoard={toggleFlip}
-            hiddenPieceStyle={hiddenPieceStyle}
-            illegalAttempt={illegalAttempt}
-            terminationMark={terminationMark}
-            terminationMarkLabel={terminationMarkLabel(terminationMark)}
-            alwaysOpen
-            // Author a chunk / position-memory / puzzle seeded from the
-            // position on the board. It rides in the control strip because
-            // "this position" IS the board's, and it steps with it. Signed-in
-            // viewers only (`currentUser` is null in `local` mode by
-            // construction, so the result screen never gets it); nothing on the
-            // opening board, where a standard start seeds nothing worth saving.
-            trailingAction={
-              currentUser && !isInitialPosition ? (
-                <CreateFromPositionMenu
-                  locale={locale}
-                  currentFen={displayFen ?? latestFen}
-                  continuationSan={continuationSan}
-                />
-              ) : undefined
-            }
+            board={{
+              fen: displayFen ?? latestFen,
+              playerSide: playerColor,
+              flipped: effectiveFlipped,
+              lastMove,
+              preferences: boardPreferences,
+              hiddenPieceStyle,
+              illegalAttempt,
+              terminationMark,
+              terminationMarkLabel: terminationMarkLabel(terminationMark),
+            }}
+            moveList={{
+              movesLength: notationMoves.length,
+              currentPosition,
+              formattedPgn,
+            }}
+            navigation={{
+              onNavigateToStart: userNav.toStart,
+              onNavigatePrevious: userNav.previous,
+              onNavigateNext: userNav.next,
+              onNavigateToEnd: userNav.toEnd,
+              onNavigateToPosition: userNav.toPosition,
+              onFlipBoard: toggleFlip,
+            }}
+            // A finished game is reviewed, not played: no mask, no peek.
+            visibility={{ kind: 'always' }}
+            slots={{
+              // Author a chunk / position-memory / puzzle seeded from the
+              // position on the board. It rides in the control strip because
+              // "this position" IS the board's, and it steps with it. Signed-in
+              // viewers only (`currentUser` is null in `local` mode by
+              // construction, so the result screen never gets it); nothing on
+              // the opening board, where a standard start seeds nothing worth
+              // saving.
+              trailingAction:
+                currentUser && !isInitialPosition ? (
+                  <CreateFromPositionMenu
+                    locale={locale}
+                    currentFen={displayFen ?? latestFen}
+                    continuationSan={continuationSan}
+                  />
+                ) : undefined,
+            }}
           />
 
           {showPlaySettings && effectivePlaySettings && (

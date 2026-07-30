@@ -1,4 +1,4 @@
-import { type ComponentProps, type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
 import { foldBoardVisibility } from '@/lib/games/play-settings-log';
 import { hidesAnyPiece, revealPieces } from '@/lib/games/reveal-preferences';
@@ -9,6 +9,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { AiReplyChip } from '../_components/AiReplyChip';
 import { BoardRevealToggle } from '../_components/BoardRevealToggle';
 import { BoardSettingsButton } from '../_components/BoardSettingsButton';
+import type { InlineBoardChessProps } from '../_components/InlineBoardView';
 import { InlineBoardView } from '../_components/InlineBoardView';
 import type { FormattedPgn } from '../_lib';
 
@@ -70,7 +71,7 @@ export function usePlayBoardViews({
   playerSide: 'white' | 'black';
   effectiveFlipped: boolean;
   preferences: GamePreferences;
-  lastMove: ComponentProps<typeof InlineBoardView>['lastMove'];
+  lastMove: InlineBoardChessProps['lastMove'];
   movesLength: number;
   currentPosition: number;
   formattedPgn: FormattedPgn;
@@ -105,15 +106,20 @@ export function usePlayBoardViews({
 
   const canBoardMove = !boardMasked && isPlayerTurn && !isLoading && currentPosition === -1;
 
-  const sharedProps = {
+  // Board fields both views share. Each view then overrides the pieces it
+  // renders differently (the finished one swaps `preferences` for its
+  // revealed/as-played fold).
+  const sharedBoard = {
     fen: displayFen || currentFen,
     playerSide,
     flipped: effectiveFlipped,
     lastMove: currentPosition === -1 ? lastMove : null,
     preferences,
-    movesLength,
-    currentPosition,
-    formattedPgn,
+  } as const;
+
+  const sharedMoveList = { movesLength, currentPosition, formattedPgn } as const;
+
+  const sharedNavigation = {
     onNavigateToStart: navigation.navigateToStart,
     onNavigatePrevious: navigation.navigatePrevious,
     onNavigateNext: navigation.navigateNext,
@@ -124,38 +130,47 @@ export function usePlayBoardViews({
 
   const inProgressBoardView = (
     <InlineBoardView
-      {...sharedProps}
-      alwaysOpen
-      masked={boardMasked}
-      maskDismissable={preferences.boardVisibility === 'peek'}
-      onReveal={onReveal}
-      onMove={canBoardMove ? onBoardMove : undefined}
-      onIllegalMove={canBoardMove ? onIllegalMove : undefined}
-      // AI reply surfaced on the board itself (visible without scrolling to the
-      // page title): "thinking…" while computing, then the move, which fades.
-      // While the chip is active it owns the board center; `badgeActive` tells
-      // the mask to drop its own label so the two don't stack.
-      boardBadge={
-        showAiReplyChip ? (
+      board={{
+        ...sharedBoard,
+        onMove: canBoardMove ? onBoardMove : undefined,
+        onIllegalMove: canBoardMove ? onIllegalMove : undefined,
+      }}
+      moveList={sharedMoveList}
+      navigation={sharedNavigation}
+      visibility={{
+        kind: 'always',
+        mask: {
+          active: boardMasked,
+          dismissable: preferences.boardVisibility === 'peek',
+          onReveal,
+        },
+      }}
+      slots={{
+        // AI reply surfaced on the board itself (visible without scrolling to
+        // the page title): "thinking…" while computing, then the move, which
+        // fades. While the chip is active it owns the board center;
+        // `badgeActive` tells the mask to drop its own label so the two don't
+        // stack.
+        boardBadge: showAiReplyChip ? (
           <AiReplyChip
             active={aiReply.active}
             thinking={aiReply.thinking}
             aiMoveNotation={aiMoveNotation}
           />
-        ) : undefined
-      }
-      badgeActive={showAiReplyChip && aiReply.active}
-      // In 'always' mode the board is visible (no mask, no AI-reply chip), so a
-      // slow engine looks indistinguishable from a freeze. Surface a "thinking"
-      // overlay while the AI computes. In blindfold modes the masked board +
-      // AiReplyChip already cover this, so this stays off there.
-      aiThinking={preferences.boardVisibility === 'always' && isAiThinking}
-      // Per-game settings gear, pinned to the board's top-right (move-list strip
-      // end when shown, mask top-right when masked). Hidden for legacy games
-      // with no per-game snapshot to edit. Game details stays in the panel.
-      topRightControl={
-        canEditPerGameSettings ? <BoardSettingsButton onClick={onOpenSettings} /> : undefined
-      }
+        ) : undefined,
+        badgeActive: showAiReplyChip && aiReply.active,
+        // In 'always' mode the board is visible (no mask, no AI-reply chip), so
+        // a slow engine looks indistinguishable from a freeze. Surface a
+        // "thinking" overlay while the AI computes. In blindfold modes the
+        // masked board + AiReplyChip already cover this, so this stays off there.
+        aiThinking: preferences.boardVisibility === 'always' && isAiThinking,
+        // Per-game settings gear, pinned to the board's top-right (move-list
+        // strip end when shown, mask top-right when masked). Hidden for legacy
+        // games with no per-game snapshot to edit. Game details stays in the panel.
+        topRightControl: canEditPerGameSettings ? (
+          <BoardSettingsButton onClick={onOpenSettings} />
+        ) : undefined,
+      }}
     />
   );
 
@@ -178,23 +193,28 @@ export function usePlayBoardViews({
 
   const finishedBoardView = (
     <InlineBoardView
-      {...sharedProps}
-      alwaysOpen
-      preferences={finishedPreferences}
-      // Nothing is hidden on a revealed board; in the as-played view the pieces
-      // the player could not see are drawn as faint ghosts, which reads as "you
-      // were blind to this" rather than as an empty square.
-      hiddenPieceStyle={finishedRevealed ? 'absent' : 'ghost'}
-      terminationMark={terminationMark}
-      terminationMarkLabel={terminationMarkLabel}
-      topRightControl={
-        canRevealFinished ? (
+      board={{
+        ...sharedBoard,
+        preferences: finishedPreferences,
+        // Nothing is hidden on a revealed board; in the as-played view the
+        // pieces the player could not see are drawn as faint ghosts, which
+        // reads as "you were blind to this" rather than as an empty square.
+        hiddenPieceStyle: finishedRevealed ? 'absent' : 'ghost',
+        terminationMark,
+        terminationMarkLabel,
+      }}
+      moveList={sharedMoveList}
+      navigation={sharedNavigation}
+      // A finished game is reviewed, not played: no mask, no peek.
+      visibility={{ kind: 'always' }}
+      slots={{
+        topRightControl: canRevealFinished ? (
           <BoardRevealToggle
             revealed={finishedRevealed}
             onToggle={() => setFinishedRevealed((prev) => !prev)}
           />
-        ) : undefined
-      }
+        ) : undefined,
+      }}
     />
   );
 

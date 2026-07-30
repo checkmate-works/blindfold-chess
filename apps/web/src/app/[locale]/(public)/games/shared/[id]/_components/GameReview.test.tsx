@@ -37,6 +37,7 @@ let mockFlip: { effectiveFlipped: boolean; toggleFlip: Mock };
 let mockStats: { totalMoves: number };
 let mockNotable: boolean;
 let mockEffectiveSettings: Record<string, unknown> | null;
+/** The `board` prop group GameReview handed InlineBoardView on the last render. */
 let inlineBoardProps: Record<string, unknown>;
 let boardViewModalProps: Record<string, unknown>;
 /** moves[] index the stubbed "By Move" strip opens the quick-peek modal at. */
@@ -83,8 +84,8 @@ vi.mock('@blindfold-chess/features/chess-core', async (orig) => {
 });
 
 vi.mock('@/app/[locale]/(public)/games/play/_components/InlineBoardView', () => ({
-  InlineBoardView: (props: Record<string, unknown>) => {
-    inlineBoardProps = props;
+  InlineBoardView: ({ board }: { board: Record<string, unknown> }) => {
+    inlineBoardProps = board;
     return <div data-testid="inline-board" />;
   },
 }));
