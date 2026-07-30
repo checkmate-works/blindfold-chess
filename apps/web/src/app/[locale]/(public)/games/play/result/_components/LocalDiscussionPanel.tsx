@@ -5,19 +5,15 @@ import { useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaBrain } from 'react-icons/fa';
 
-import type { GifPreviewSource } from '@/lib/games/gif/preview-frames';
-
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 
-import { ShareEnableModal } from './ShareEnableModal';
+import { PublishPromptModal } from './PublishPromptModal';
 
 type Props = {
   /** Publish this game (or open it if already published from this browser). */
   onShare: () => void;
   /** Whether this game was already published from this browser. */
   isShared: boolean;
-  /** Animated GIF teaser for the share prompt — see {@link ShareEnableModal}. */
-  gifPreview: GifPreviewSource | null;
   /**
    * Whether to offer the "suggest a chunk" CTA. False on the opening board:
    * chunks are per-move (`game_chunks.ply` is NOT NULL), so the published
@@ -37,14 +33,17 @@ type Props = {
  * - Anonymous / provisional click → the shared AuthPromptModal (sign in, or
  *   finish registration) via {@link JoinConversationToggle}'s own auth guard —
  *   discussion is members-only.
- * - Registered click → the share prompt modal (this game must be published
- *   before it can be discussed), surfaced via {@link JoinConversationToggle.onActivate}.
+ * - Registered click → {@link PublishPromptModal} in its `'discussion'` flavour
+ *   (this game must be published before it can be discussed), surfaced via
+ *   {@link JoinConversationToggle.onActivate}. That flavour argues the thread
+ *   alone — the GIF pitch belongs to the share actions in the footer, not to
+ *   someone who tapped "join the conversation".
  *
  * Publishing itself is open to everyone via the ungated share actions in the
  * footer below (see LocalGameSocial); this Discussion tab is specifically the
  * members-only *conversation* surface, so its gate is deliberate.
  */
-export function LocalDiscussionPanel({ onShare, isShared, showChunkCta, gifPreview }: Props) {
+export function LocalDiscussionPanel({ onShare, isShared, showChunkCta }: Props) {
   const t = useTranslations('sharedGames');
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
@@ -64,12 +63,15 @@ export function LocalDiscussionPanel({ onShare, isShared, showChunkCta, gifPrevi
         />
       )}
 
-      <ShareEnableModal
+      <PublishPromptModal
+        intent="discussion"
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
         onShare={onShare}
         isShared={isShared}
-        gifPreview={gifPreview}
+        // Mirrors the CTA gate above: no chunk CTA here means no chunk promise
+        // in the prompt either.
+        showChunks={showChunkCta}
       />
     </div>
   );

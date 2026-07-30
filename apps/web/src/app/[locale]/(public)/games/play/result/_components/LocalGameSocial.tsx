@@ -21,7 +21,7 @@ import {
 } from '@/app/[locale]/_components/EngagementCounter';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ShareEnableModal } from './ShareEnableModal';
+import { PublishPromptModal } from './PublishPromptModal';
 
 type Props = {
   locale: Locale;
@@ -35,7 +35,7 @@ type Props = {
   onShare: () => void;
   /** Whether this game was already published from this browser. */
   isShared: boolean;
-  /** Animated GIF teaser for the share prompt — see {@link ShareEnableModal}. */
+  /** Animated GIF teaser for the share prompt — see {@link PublishPromptModal}. */
   gifPreview: GifPreviewSource | null;
 };
 
@@ -47,10 +47,11 @@ type Props = {
  * None of the engagement actions can do their real job yet: an unpublished game
  * has no server-side record to like, and no URL to share. Rather than hide them
  * (which would make the two screens diverge) each one opens
- * {@link ShareEnableModal} — the same "publish first" gate the Discussion tab's
- * compose CTAs use, and the only place the share pitch is made now that the
- * inline CTA card is gone. Publishing is open to everyone, anonymous and
- * provisional players included, so nothing here is auth-gated.
+ * {@link PublishPromptModal} in its `'share'` flavour — the animated-replay
+ * pitch, and the only place that pitch is made now that the inline CTA card is
+ * gone. (The Discussion tab opens the same modal arguing the thread instead.)
+ * Publishing is open to everyone, anonymous and provisional players included,
+ * so nothing here is auth-gated.
  *
  * The "⋯" menu is Share + Delete (the shared game's is Edit + Delete): before
  * publication there is nothing to edit, and delete drops the game from this
@@ -147,7 +148,8 @@ export function LocalGameSocial({
         }
       />
 
-      <ShareEnableModal
+      <PublishPromptModal
+        intent="share"
         isOpen={shareOpen}
         onClose={() => setShareOpen(false)}
         onShare={onShare}

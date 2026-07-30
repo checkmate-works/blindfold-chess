@@ -2359,7 +2359,9 @@
         "columnDetail": "Detail"
       },
       "openFinishedGame": "Open finished game",
-      "shareTitle": "Publishing unlocks these",
+      "shareTitle": "Publish to share this game",
+      "discussionTitle": "Publish to open this game for comments",
+      "discussionPrompt": "Comments and chunk suggestions attach to a published game — including your own, so this one has to go up first.",
       "shareGifCaption": "The first few moves — publish to download the whole game as a GIF.",
       "shareGifPreviewLabel": "Animated preview of this game",
       "shareGifPlay": "Play the preview",
@@ -2368,7 +2370,8 @@
         "gif": "Download the replay as an animated GIF — including the \"as played\" version, with your peeks and takebacks drawn in",
         "discussion": "Get comments on any move, and add your own",
         "likes": "Collect likes from other players",
-        "link": "Share a link, or embed the replay in a blog post"
+        "link": "Share a link, or embed the replay in a blog post",
+        "chunks": "Suggest a chunk on any move, and see the ones others attach"
       },
       "publish": "Share this game",
       "viewShared": "View shared game",
