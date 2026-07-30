@@ -2,16 +2,21 @@
 
 import { useRef, useState } from 'react';
 
+import { useTranslations } from 'next-intl';
+
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
 import type { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
-import { validatePuzzlePosition } from '../_lib/validate-puzzle-form';
+import { type PuzzlePositionField, validatePuzzlePosition } from '../_lib/validate-puzzle-form';
 
 type BoardEditor = ReturnType<typeof useFenBoardEditor>;
 
 type Options = {
   board: BoardEditor;
+  /** Current title field value — the step's other hard requirement. */
+  title: string;
   /**
    * Solution moves/notes carried through this step untouched — seeded from
    * the edit flow's DB row, or the create flow's fork/injection payload.
@@ -43,6 +48,7 @@ type Options = {
  */
 export function usePuzzlePositionStep({
   board,
+  title,
   initialMoves = [],
   initialNotes = [],
   initialFen = '',
@@ -51,6 +57,9 @@ export function usePuzzlePositionStep({
   draftWriteFailedMessage,
 }: Options) {
   const router = useRouter();
+  // The field messages live beside the field labels, which
+  // `PuzzlePositionFields` reads from the `create` namespace in both flows.
+  const t = useTranslations('practice.puzzle.create');
 
   const [carriedMoves, setCarriedMoves] = useState<string[]>(initialMoves);
   const [carriedNotes, setCarriedNotes] = useState<string[]>(initialNotes);
@@ -59,10 +68,15 @@ export function usePuzzlePositionStep({
   // restored draft's fen/moves pair is never compared against a stale value.
   const originalFenRef = useRef(initialFen);
 
-  const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [positionChangedOpen, setPositionChangedOpen] = useState(false);
+
+  // A rejected position has no text control to focus while the board tab
+  // is showing, so it anchors on the position block instead.
+  const submitError = useSubmitError<PuzzlePositionField>((field) =>
+    field === 'title' ? 'title' : board.activeTab === 'board' ? 'position-editor' : 'fen'
+  );
 
   /**
    * Re-seed the carried moves/notes and the FEN they are valid against.
@@ -77,8 +91,8 @@ export function usePuzzlePositionStep({
   function writeAndContinue(moves: string[], notes: string[]) {
     const ok = writeDraft(moves, notes);
     if (!ok) {
-      setError(draftWriteFailedMessage);
       setPending(false);
+      submitError.report(null, draftWriteFailedMessage);
       return;
     }
     // flushSync ensures the re-render (isDirty -> false) completes before
@@ -89,8 +103,18 @@ export function usePuzzlePositionStep({
   }
 
   function handleContinue() {
-    setError(null);
-    if (!validatePuzzlePosition(board)) return;
+    submitError.clear();
+    board.setPositionError(false);
+
+    const invalid = validatePuzzlePosition({
+      trimmedFen: board.trimmedFen,
+      isFenValid: board.isFenValid,
+      title,
+    });
+    if (invalid) {
+      submitError.report(invalid.field, t(invalid.key));
+      return;
+    }
 
     setPending(true);
 
@@ -119,8 +143,7 @@ export function usePuzzlePositionStep({
     carriedMoves,
     carriedNotes,
     seedCarried,
-    error,
-    setError,
+    submitError,
     pending,
     submitted,
     positionChangedOpen,

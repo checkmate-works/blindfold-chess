@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button } from '@/app/_components';
+import { Button, FormErrorBanner } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -20,7 +20,6 @@ import { updatePuzzle } from '../_actions/updatePuzzle';
 import { draftToSolutionMoves } from '../_lib/draft-to-solution-moves';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { clearEditDraft, readEditDraft } from '../_lib/edit-draft-storage';
-import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePreviewTags } from './PuzzlePreviewTags';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
@@ -153,7 +152,7 @@ export function EditPuzzlePreviewClient({ positionId, availableThemes, available
 
         <PuzzlePreviewTags themes={selectedThemes} chunks={selectedChunks} />
 
-        <PuzzleFormErrorBanner message={error} />
+        <FormErrorBanner message={error} />
 
         <div className="flex flex-col gap-3 pt-2">
           <Button

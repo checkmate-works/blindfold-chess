@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
@@ -17,11 +18,19 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 
 import { useChunkDraftRecovery } from '../_hooks/use-chunk-draft-recovery';
 import { type ChunkFormInitial, useChunkFormState } from '../_hooks/use-chunk-form-state';
-import { validateChunkForm } from '../_lib/chunk-form-validation';
+import { type ChunkFormField, validateChunkForm } from '../_lib/chunk-form-validation';
 import { type ChunkDraftV1, clearChunkDraft, writeChunkDraft } from '../_lib/draft-storage';
 import { ChunkFormFields } from './ChunkFormFields';
 
 export type { ChunkFormInitial } from '../_hooks/use-chunk-form-state';
+
+/** DOM ids a rejected submit focuses, per field. */
+const FIELD_ANCHOR_IDS: Record<ChunkFormField, string> = {
+  fen: 'chunk-fen',
+  title: 'chunk-title',
+  slug: 'chunk-slug',
+  description: 'chunk-description',
+};
 
 type CreateProps = {
   mode: 'create';
@@ -126,9 +135,15 @@ export function ChunkForm(props: Props) {
     setFeedbackTopics,
   } = form;
 
-  const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
+
+  // The FEN rule can fail from either position tab, so on the board tab
+  // it anchors on the position section wrapper — the raw FEN textarea
+  // isn't mounted there.
+  const submitError = useSubmitError<ChunkFormField>((field) =>
+    field === 'fen' && board.activeTab === 'board' ? 'chunk-position' : FIELD_ANCHOR_IDS[field]
+  );
 
   const { hydratedFromDraft, setHydratedFromDraft } = useChunkDraftRecovery({
     mode,
@@ -149,7 +164,7 @@ export function ChunkForm(props: Props) {
     clearChunkDraft();
     board.resetBoard();
     form.resetFields();
-    setError(null);
+    submitError.clear();
     setHydratedFromDraft(false);
     setStartOverOpen(false);
   }
@@ -163,17 +178,17 @@ export function ChunkForm(props: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    submitError.clear();
 
-    const errorKey = validateChunkForm({
+    const invalid = validateChunkForm({
       isFenValid: board.isFenValid,
       title,
       slug,
       status,
       description,
     });
-    if (errorKey) {
-      setError(t(errorKey));
+    if (invalid) {
+      submitError.report(invalid.field, t(invalid.key));
       return;
     }
 
@@ -204,7 +219,7 @@ export function ChunkForm(props: Props) {
 
     const ok = writeChunkDraft(draft);
     if (!ok) {
-      setError(t('errors.draftWriteFailed'));
+      submitError.report(null, t('errors.draftWriteFailed'));
       return;
     }
 
@@ -213,16 +228,15 @@ export function ChunkForm(props: Props) {
     );
   }
 
-  const submitDisabled = !board.isFenValid || title.trim() === '' || slug.trim() === '';
-
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
-          </div>
-        )}
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        {/*
+         * Form-wide errors only — anything attributable to a control is
+         * rendered against that control instead, so the same sentence
+         * never appears twice.
+         */}
+        <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
         {hydratedFromDraft && mode === 'create' && !resumed && (
           <div
@@ -260,10 +274,17 @@ export function ChunkForm(props: Props) {
           onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
           pending={false}
+          messageFor={submitError.messageFor}
         />
 
         <div className="space-y-4">
-          <Button type="submit" variant="primary" size="lg" fullWidth disabled={submitDisabled}>
+          {/*
+           * Deliberately always enabled: a disabled submit is silent
+           * about *why* it won't move, which is the same dead-end as an
+           * off-screen error. Pressing it runs `validateChunkForm` and
+           * puts the author on the offending field with an explanation.
+           */}
+          <Button type="submit" variant="primary" size="lg" fullWidth>
             {t('actions.continueToPreview')}
           </Button>
 

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -139,14 +139,7 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div
-            role="alert"
-            className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm"
-          >
-            {error}
-          </div>
-        )}
+        <FormErrorBanner message={error} />
 
         <TagPicker
           selectedThemes={addedThemes}

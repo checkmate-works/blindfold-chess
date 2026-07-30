@@ -2,11 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 
+import { FormErrorBanner } from '@/app/_components';
+
 import { usePuzzleSolutionStep } from '../_hooks/use-puzzle-solution-step';
 import { readDraft, writeDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { validatePuzzleSolution } from '../_lib/validate-puzzle-form';
-import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzleSolutionFields } from './PuzzleSolutionFields';
 import { PuzzleSolutionSkeleton } from './PuzzleSolutionSkeleton';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
@@ -55,7 +56,7 @@ export function CreatePuzzleSolutionForm({ disableUnsavedGuard = false }: Props 
       <div className="space-y-6">
         {stepIndicator}
 
-        <PuzzleFormErrorBanner message={step.error} />
+        <FormErrorBanner message={step.error} />
 
         <PuzzleSolutionFields
           flipped={step.flipped}

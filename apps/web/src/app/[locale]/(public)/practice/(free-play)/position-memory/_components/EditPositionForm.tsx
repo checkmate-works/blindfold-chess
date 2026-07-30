@@ -4,8 +4,9 @@ import { useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -16,6 +17,7 @@ import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/
 import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 
 import { updatePosition } from '../_actions/updatePosition';
+import { type PositionFormField, validatePositionForm } from '../_lib/position-form-validation';
 import { PositionFormFields } from './PositionFormFields';
 
 type Props = {
@@ -36,6 +38,9 @@ type Props = {
 export function EditPositionForm({ positionId, initial, available }: Props) {
   const router = useRouter();
   const t = useTranslations('practice.positionMemory.edit');
+  // The field-level validation messages live alongside the field labels,
+  // which `PositionFormFields` reads from the `create` namespace.
+  const tCreate = useTranslations('practice.positionMemory.create');
   const tUnsaved = useTranslations('unsavedChanges');
 
   const initialDescription = initial.description ?? '';
@@ -46,9 +51,14 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
   const tags = useTagSelection({ initialThemes: initial.themes, initialChunks: initial.chunks });
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initialDescription);
-  const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  // A rejected position has no text control to focus while the board tab
+  // is showing, so it anchors on the position block instead.
+  const submitError = useSubmitError<PositionFormField>((field) =>
+    field === 'title' ? 'title' : board.activeTab === 'board' ? 'position-editor' : 'fen'
+  );
 
   const themeIds = useMemo(() => tags.selectedThemes.map((th) => th.id), [tags.selectedThemes]);
   const chunkIds = useMemo(() => tags.selectedChunks.map((c) => c.id), [tags.selectedChunks]);
@@ -74,11 +84,16 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    submitError.clear();
     board.setPositionError(false);
 
-    if (!board.trimmedFen || !board.isFenValid) {
-      board.setPositionError(true);
+    const invalid = validatePositionForm({
+      trimmedFen: board.trimmedFen,
+      isFenValid: board.isFenValid,
+      title,
+    });
+    if (invalid) {
+      submitError.report(invalid.field, tCreate(invalid.key));
       return;
     }
 
@@ -94,14 +109,14 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
       });
 
       if ('error' in result) {
-        setError(result.error);
+        submitError.report(null, result.error);
         return;
       }
 
       flushSync(() => setSubmitted(true));
       router.push(`/practice/position-memory/${positionId}?toast=position_updated`);
     } catch {
-      setError(t('saveError'));
+      submitError.report(null, t('saveError'));
     } finally {
       setPending(false);
     }
@@ -109,12 +124,13 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
-          </div>
-        )}
+      {/*
+       * `noValidate`: the browser's own bubble on `required` would fire
+       * first and speak the browser's locale, not the app's. The submit
+       * gate below owns the message and the focus move.
+       */}
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
         <PositionFormFields
           board={board}
@@ -126,15 +142,22 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
           pending={pending}
           availableThemes={available.themes}
           availableChunks={available.chunks}
+          messageFor={submitError.messageFor}
         />
 
         <div className="space-y-4">
+          {/*
+           * `!isDirty` still disables — "nothing to save" is a state, not
+           * an error to report. Invalid *content*, by contrast, stays
+           * clickable so `handleSubmit` can say what is wrong and put the
+           * cursor on it.
+           */}
           <Button
             type="submit"
             variant="primary"
             size="lg"
             fullWidth
-            disabled={pending || !board.isFenValid || title.trim() === '' || !isDirty}
+            disabled={pending || !isDirty}
           >
             {pending ? t('submitting') : t('submit')}
           </Button>

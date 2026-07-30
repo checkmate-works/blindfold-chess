@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { FormErrorBanner } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { FiInfo } from 'react-icons/fi';
 
@@ -25,7 +26,6 @@ import { clearDraft, writeDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { stringArraysEqual } from '../_lib/string-arrays-equal';
 import { PositionChangedModal } from './PositionChangedModal';
-import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
@@ -178,6 +178,7 @@ export function CreatePuzzlePositionForm({
 
   const step = usePuzzlePositionStep({
     board,
+    title,
     initialMoves: seedMoves,
     initialNotes: seedNotes,
     initialFen: seedFen,
@@ -267,7 +268,7 @@ export function CreatePuzzlePositionForm({
     // otherwise the next write would still pin to the old parent even
     // though the user has explicitly asked for a clean slate.
     setForkedFromId(undefined);
-    step.setError(null);
+    step.submitError.clear();
     resetHydrated();
     setStartOverOpen(false);
   }
@@ -277,7 +278,7 @@ export function CreatePuzzlePositionForm({
       <div className="space-y-6">
         <PuzzleStepIndicator flow="create" current="position" />
 
-        <PuzzleFormErrorBanner message={step.error} />
+        <FormErrorBanner ref={step.submitError.summaryRef} message={step.submitError.formMessage} />
 
         {hydratedFromDraft && !resumed && (
           <div
@@ -311,6 +312,7 @@ export function CreatePuzzlePositionForm({
           availableChunks={availableChunks}
           onContinue={step.handleContinue}
           continueLabel={t('continueToSolution')}
+          messageFor={step.submitError.messageFor}
         />
       </div>
 

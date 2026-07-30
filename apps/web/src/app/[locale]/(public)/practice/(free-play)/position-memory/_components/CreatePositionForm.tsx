@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { flushSync } from 'react-dom';
@@ -23,6 +24,7 @@ import {
 import { resolveOptionsByIds } from '@/app/[locale]/(public)/practice/(free-play)/_lib/resolve-options';
 
 import { readDraft, writeDraft } from '../_lib/draft-storage';
+import { type PositionFormField, validatePositionForm } from '../_lib/position-form-validation';
 import { PositionFormFields } from './PositionFormFields';
 import { PositionMemoryStepIndicator } from './PositionMemoryStepIndicator';
 
@@ -130,9 +132,14 @@ export function CreatePositionForm({
   // visits to `/new` arrive WITHOUT `?from=`, so `forkSeed` is undefined and
   // only the draft remembers the source.
   const [forkedFromId, setForkedFromId] = useState<string | undefined>(forkSeed?.sourceId);
-  const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  // A rejected position has no text control to focus while the board tab
+  // is showing, so it anchors on the position block instead.
+  const submitError = useSubmitError<PositionFormField>((field) =>
+    field === 'title' ? 'title' : board.activeTab === 'board' ? 'position-editor' : 'fen'
+  );
 
   // Once-on-mount draft hydration — silent by design. The draft only exists to
   // carry the form's fields across the `/new → /new/preview` hop, so restoring
@@ -181,11 +188,16 @@ export function CreatePositionForm({
   });
 
   function handleContinue() {
-    setError(null);
+    submitError.clear();
     board.setPositionError(false);
 
-    if (!board.trimmedFen || !board.isFenValid) {
-      board.setPositionError(true);
+    const invalid = validatePositionForm({
+      trimmedFen: board.trimmedFen,
+      isFenValid: board.isFenValid,
+      title,
+    });
+    if (invalid) {
+      submitError.report(invalid.field, t(invalid.key));
       return;
     }
 
@@ -203,8 +215,8 @@ export function CreatePositionForm({
       ...(forkedFromId ? { forkedFromId } : {}),
     });
     if (!ok) {
-      setError(t('draftWriteFailed'));
       setPending(false);
+      submitError.report(null, t('draftWriteFailed'));
       return;
     }
 
@@ -220,11 +232,7 @@ export function CreatePositionForm({
       <div className="space-y-6">
         <PositionMemoryStepIndicator current="position" />
 
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
-          </div>
-        )}
+        <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
         <PositionFormFields
           board={board}
@@ -236,14 +244,20 @@ export function CreatePositionForm({
           pending={pending}
           availableThemes={availableThemes}
           availableChunks={availableChunks}
+          messageFor={submitError.messageFor}
         />
 
+        {/*
+         * Only `pending` disables this. Blocking the click on an invalid
+         * position or an empty title would be silent about which of the
+         * two is missing; `handleContinue` says so and moves focus there.
+         */}
         <Button
           type="button"
           variant="primary"
           size="lg"
           fullWidth
-          disabled={pending || !board.isFenValid || title.trim() === ''}
+          disabled={pending}
           onClick={handleContinue}
         >
           {t('continueToPreview')}

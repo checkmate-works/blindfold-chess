@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react';
 
+import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
+
 import { BoardAnnotationEditor } from '@/lib/board-annotations/BoardAnnotationEditor';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
@@ -76,11 +78,7 @@ export function TermPositionEditor({ rowId, termSlug, fen, caption, initialAnnot
         />
       </div>
 
-      {error && (
-        <div className="p-2 rounded bg-destructive-soft text-destructive-soft-foreground text-xs">
-          {error}
-        </div>
-      )}
+      <FormErrorBanner message={error} />
       {!error && savedAt && !isDirty && (
         <p className="text-xs text-muted-foreground">Saved at {savedAt.toLocaleTimeString()}</p>
       )}

@@ -86,6 +86,17 @@ vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  FieldError: ({ id, message }: { id: string; message: string | null }) =>
+    message ? (
+      <p id={id} role="alert">
+        {message}
+      </p>
+    ) : null,
+  fieldErrorProps: (id: string, message: string | null) =>
+    message ? { 'aria-invalid': true, 'aria-describedby': id } : {},
+  fieldBorderClass: (message: string | null) => (message ? 'border-destructive' : 'border-border'),
+  FormErrorBanner: ({ message }: { message: string | null }) =>
+    message ? <div role="alert">{message}</div> : null,
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   UnsavedChangesDialog: () => null,
   Button: ({

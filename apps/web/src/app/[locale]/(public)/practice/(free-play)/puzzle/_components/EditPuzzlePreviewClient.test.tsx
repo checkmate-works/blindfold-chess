@@ -55,6 +55,8 @@ vi.mock('next-navigation-guard', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  FormErrorBanner: ({ message }: { message: string | null }) =>
+    message ? <div role="alert">{message}</div> : null,
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Button: ({
     children,
