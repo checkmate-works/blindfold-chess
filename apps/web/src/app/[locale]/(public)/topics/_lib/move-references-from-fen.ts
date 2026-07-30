@@ -1,10 +1,10 @@
 import { validateMoveSequence } from '@blindfold-chess/features/chess-core';
 
+import type { CandidateToken, LabelContext } from '@/lib/move-references/tokenizer';
+import { collectCandidates } from '@/lib/move-references/tokenizer';
+
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import {
-  computeMoveNumber,
-  plyFromMoveNumber,
-} from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
+import { plyFromMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * A slice of comment text: either plain text or a run of SAN moves
@@ -20,25 +20,19 @@ import {
  * the branch; any other number is left as plain text.
  */
 export type FenMoveSegment =
-  | { type: 'text'; value: string }
-  | { type: 'moveRef'; raw: string; sans: string[] };
-
-/**
- * SAN for any single move, including a bare pawn push ("b6") and promotions.
- * Used to EXTEND a run once it has opened. Mirrors the games parser's SAN_RE.
- */
-const SAN_RE = /^(?:O-O-O|O-O|(?:[KQRBN])?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[+#]?$/;
+  { type: 'text'; value: string } | { type: 'moveRef'; raw: string; sans: string[] };
 
 /**
  * A run OPENER: either a "N." / "N..." move-number anchor (digits and dots
- * captured separately, mirroring the games parser) or a "move-like" SAN — a
- * piece move (starts with KQRBN), a capture (contains `x`, including pawn
- * captures), or castling. A bare pawn push ("b6", "e4") is deliberately NOT
- * allowed to OPEN a run on its own: chunk comments routinely name squares in
- * prose ("the b6 square is weak"), and many such tokens are also a legal pawn
- * move from the position, so opening on one would linkify ordinary text. Bare
- * pawn pushes ARE linkable behind an anchor ("1. e4") or as CONTINUATIONS of
- * an open run, where the writer has already signalled a variation.
+ * captured separately) or a "move-like" SAN — a piece move (starts with
+ * KQRBN), a capture (contains `x`, including pawn captures), or castling. A
+ * bare pawn push ("b6", "e4") is deliberately NOT allowed to OPEN a run on its
+ * own: chunk comments routinely name squares in prose ("the b6 square is
+ * weak"), and many such tokens are also a legal pawn move from the position,
+ * so opening on one would linkify ordinary text. Bare pawn pushes ARE linkable
+ * behind an anchor ("1. e4") or as CONTINUATIONS of an open run, where the
+ * writer has already signalled a variation — which is why the shared
+ * tokenizer's `SAN_RE` is more permissive than this.
  *
  * The lookbehind confines the opener to a word start (start of text, after
  * whitespace, or after an opening bracket/quote or CJK delimiter) so a
@@ -49,98 +43,6 @@ const SAN_RE = /^(?:O-O-O|O-O|(?:[KQRBN])?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[
  */
 const RUN_OPENER_RE =
   /(?<=^|[\s([{'"「『（、。])(?:(\d+)(\.{1,3})|(?:O-O-O|O-O|[KQRBN][a-h]?[1-8]?x?[a-h][1-8]|[a-h]x[a-h][1-8](?:=[QRBN])?)[+#]?(?=[\s),.;:!?\]}'"、。）」』]|$))/g;
-
-const BARE_ANCHOR_RE = /^(\d+)(\.{1,3})$/;
-const LEADING_ANCHOR_RE = /^(\d+)(\.{1,3})/;
-const WORD_RE = /\S+/y;
-
-/**
- * Sentence punctuation and annotation glyphs tolerated after a SAN token
- * ("Bxa7!", "…was Nf3.", "(Nf3)"). Stripped before the SAN shape test and
- * excluded from the linked range, so the glyphs stay in the following
- * plain-text segment. `+`/`#` are deliberately absent — they are part of SAN
- * itself (check / mate suffixes).
- */
-const TRAILING_GLYPHS_RE = /[),.;:!?\]}'"、。）」』]+$/;
-
-type CandidateToken = { san: string; endOffset: number };
-
-type LabelContext = {
-  startsAsBlack: boolean;
-  /** The move number the run's FIRST move is labelled with (1 or FEN's own). */
-  startMoveNumber: number;
-};
-
-/**
- * Whether an interleaved "N." / "N..." label agrees with the move the run's
- * next token would occupy (`collected` moves in). A disagreeing label means
- * the writer started something else, so the current run must stop rather
- * than absorb it. Mirrors the games parser's labelAgrees with basePly = 0.
- */
-function labelAgrees(digits: string, dots: string, ctx: LabelContext, collected: number): boolean {
-  const { moveNumber, isWhiteMove } = computeMoveNumber(
-    collected,
-    ctx.startsAsBlack,
-    ctx.startMoveNumber
-  );
-  return parseInt(digits, 10) === moveNumber && (dots.length === 1) === isWhiteMove;
-}
-
-/**
- * Walk whitespace-separated words starting at `startOffset`, collecting SAN
- * tokens for as long as they keep looking like moves. Any SAN shape is
- * accepted here (including bare pawn pushes) — the opener guard already
- * confirmed a variation is being written. Tolerates an interleaved
- * move-number label before a later move ("2." or the glued "2.Nf3") since
- * numbered variations repeat that label per PGN convention — but only when
- * the label agrees with the position the run has reached (see
- * {@link labelAgrees}). Stops at the first word that is neither an agreeing
- * label nor a SAN-shaped token.
- *
- * `collected` counts the moves already in the run before `startOffset` (1
- * when a SAN opener was consumed, 0 when the run opened on a bare anchor).
- */
-function collectCandidates(
-  text: string,
-  startOffset: number,
-  ctx: LabelContext,
-  collected: number
-): CandidateToken[] {
-  const tokens: CandidateToken[] = [];
-  let cursor = startOffset;
-
-  while (cursor < text.length) {
-    while (cursor < text.length && /\s/.test(text[cursor])) cursor++;
-    if (cursor >= text.length) break;
-
-    WORD_RE.lastIndex = cursor;
-    const wordMatch = WORD_RE.exec(text);
-    if (!wordMatch) break;
-
-    const word = wordMatch[0];
-    const wordStart = cursor;
-
-    const bare = BARE_ANCHOR_RE.exec(word);
-    if (bare) {
-      if (!labelAgrees(bare[1], bare[2], ctx, collected + tokens.length)) break;
-      cursor = wordStart + word.length;
-      continue;
-    }
-
-    const glued = LEADING_ANCHOR_RE.exec(word);
-    if (glued && !labelAgrees(glued[1], glued[2], ctx, collected + tokens.length)) break;
-    const sanOffsetWithinWord = glued ? glued[0].length : 0;
-    const sanCandidate = glued ? word.slice(glued[0].length) : word;
-    const stripped = sanCandidate.replace(TRAILING_GLYPHS_RE, '');
-
-    if (!stripped || !SAN_RE.test(stripped)) break;
-
-    tokens.push({ san: stripped, endOffset: wordStart + sanOffsetWithinWord + stripped.length });
-    cursor = wordStart + word.length;
-  }
-
-  return tokens;
-}
 
 /**
  * Split free-form comment text into plain-text and move-reference segments,
@@ -187,12 +89,12 @@ export function parseMoveReferencesFromFen(text: string, fen: string): FenMoveSe
       );
       if (base === undefined) continue;
 
-      ctx = { startsAsBlack, startMoveNumber: base };
+      ctx = { basePly: 0, startsAsBlack, startMoveNumber: base };
       tokens = collectCandidates(text, match.index + match[0].length, ctx, 0);
       if (tokens.length === 0) continue;
     } else {
       // SAN opener: the opener itself is move 1 of the (unlabelled) branch.
-      ctx = { startsAsBlack, startMoveNumber: 1 };
+      ctx = { basePly: 0, startsAsBlack, startMoveNumber: 1 };
       const openerEnd = match.index + match[0].length;
       tokens = [
         { san: match[0], endOffset: openerEnd },

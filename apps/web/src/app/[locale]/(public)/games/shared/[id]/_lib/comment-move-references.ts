@@ -1,10 +1,9 @@
 import { replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 
+import { collectCandidates } from '@/lib/move-references/tokenizer';
+
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import {
-  computeMoveNumber,
-  plyFromMoveNumber,
-} from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
+import { plyFromMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * A slice of comment text: either plain text or a run of PGN-style move
@@ -15,9 +14,6 @@ export type CommentTextSegment =
   | { type: 'text'; value: string }
   | { type: 'moveRef'; raw: string; basePly: number; sans: string[]; baseFen: string };
 
-const SAN_RE = /^(?:O-O-O|O-O|(?:[KQRBN])?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[+#]?$/;
-const BARE_ANCHOR_RE = /^(\d+)(\.{1,3})$/;
-const LEADING_ANCHOR_RE = /^(\d+)(\.{1,3})/;
 /**
  * A run-opening "N." / "N..." label. The lookbehind confines matches to word
  * starts (start of text, after whitespace, or after an opening bracket/quote
@@ -27,88 +23,12 @@ const LEADING_ANCHOR_RE = /^(\d+)(\.{1,3})/;
  * surrounding text. Digits and dots are captured separately: deriving the dot
  * count from the matched length minus `String(parseInt(...)).length` breaks
  * on zero-padded numbers ("08." would count 2 dots and read as a black move).
+ *
+ * The SAN shape test, the trailing-glyph tolerance and the interleaved-label
+ * agreement check all live in `@/lib/move-references/tokenizer`, shared with
+ * the single-position parser.
  */
 const ANCHOR_RE = /(?<=^|[\s([{'"「『（、。])(\d+)(\.{1,3})/g;
-const WORD_RE = /\S+/y;
-/**
- * Sentence punctuation and annotation glyphs tolerated after a SAN token
- * ("8. Bd3!", "…was 3. Bc4.", "(3. Bc4)"). Stripped before the SAN shape
- * test and excluded from the linked range, so the glyphs stay in the
- * following plain-text segment. `+`/`#` are deliberately absent — they are
- * part of SAN itself (check / mate suffixes).
- */
-const TRAILING_GLYPHS_RE = /[),.;:!?\]}'"、。）」』]+$/;
-
-type CandidateToken = { san: string; endOffset: number };
-
-type LabelContext = {
-  basePly: number;
-  startsAsBlack: boolean;
-  startMoveNumber: number;
-};
-
-/**
- * Whether an interleaved "N." / "N..." label agrees with the move the run's
- * next token would occupy (`basePly + collected`). A label claiming a
- * different move number or color means the writer started a NEW reference
- * ("8. Bd3 Bb7 15. O-O"), so the current run must stop rather than absorb
- * it — a fused link would otherwise replay that move at a ply the text never
- * claimed. The stopped-at label is then re-scanned as its own anchor.
- */
-function labelAgrees(digits: string, dots: string, ctx: LabelContext, collected: number): boolean {
-  const { moveNumber, isWhiteMove } = computeMoveNumber(
-    ctx.basePly + collected,
-    ctx.startsAsBlack,
-    ctx.startMoveNumber
-  );
-  return parseInt(digits, 10) === moveNumber && (dots.length === 1) === isWhiteMove;
-}
-
-/**
- * Walk whitespace-separated words starting at `startOffset`, collecting SAN
- * tokens for as long as they keep looking like moves. Tolerates an
- * interleaved move-number label before a later move ("9." or the glued
- * "9.O-O") since consecutive-move references repeat that label per PGN
- * convention — but only when the label agrees with the ply the run has
- * reached (see {@link labelAgrees}). Stops at the first word that isn't an
- * agreeing move-number label nor a SAN-shaped token.
- */
-function collectCandidates(text: string, startOffset: number, ctx: LabelContext): CandidateToken[] {
-  const tokens: CandidateToken[] = [];
-  let cursor = startOffset;
-
-  while (cursor < text.length) {
-    while (cursor < text.length && /\s/.test(text[cursor])) cursor++;
-    if (cursor >= text.length) break;
-
-    WORD_RE.lastIndex = cursor;
-    const wordMatch = WORD_RE.exec(text);
-    if (!wordMatch) break;
-
-    const word = wordMatch[0];
-    const wordStart = cursor;
-
-    const bare = BARE_ANCHOR_RE.exec(word);
-    if (bare) {
-      if (!labelAgrees(bare[1], bare[2], ctx, tokens.length)) break;
-      cursor = wordStart + word.length;
-      continue;
-    }
-
-    const glued = LEADING_ANCHOR_RE.exec(word);
-    if (glued && !labelAgrees(glued[1], glued[2], ctx, tokens.length)) break;
-    const sanOffsetWithinWord = glued ? glued[0].length : 0;
-    const sanCandidate = glued ? word.slice(glued[0].length) : word;
-    const stripped = sanCandidate.replace(TRAILING_GLYPHS_RE, '');
-
-    if (!stripped || !SAN_RE.test(stripped)) break;
-
-    tokens.push({ san: stripped, endOffset: wordStart + sanOffsetWithinWord + stripped.length });
-    cursor = wordStart + word.length;
-  }
-
-  return tokens;
-}
 
 /**
  * Split free-form comment text into plain-text and move-reference segments.
