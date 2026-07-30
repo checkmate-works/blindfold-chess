@@ -3439,19 +3439,6 @@
         "toggleLabel": "Pedir sugestões primeiro",
         "toggleHint": "O chunk fica visível de qualquer forma. Pedir sugestões o mantém editável e convida outros jogadores a propor um título ou descrição mais precisos; você o fecha depois pela página de detalhes, o que o bloqueia."
       },
-      "referenceWarning": {
-        "body": "Você vai mudar {fields}, e já há {scope} apontando para este chunk. Esses vínculos continuam, mas o que eles afirmam muda junto.",
-        "hint": "Ninguém é notificado. Se o padrão passou a ser outro, considere criar um chunk separado em vez de reescrever este.",
-        "scopeBoth": "{positions, plural, =1 {1 posição} other {# posições}} e {games, plural, =1 {1 lance de partida} other {# lances de partidas}}",
-        "scopePositions": "{count, plural, =1 {1 posição} other {# posições}}",
-        "scopeGames": "{count, plural, =1 {1 lance de partida} other {# lances de partidas}}",
-        "separator": ", ",
-        "fields": {
-          "title": "o título",
-          "slug": "o slug",
-          "fen": "o tabuleiro"
-        }
-      },
       "feedbackTopics": {
         "legend": "Sobre o que você quer feedback?",
         "hint": "Os campos marcados são destacados na página de detalhes para que os outros saibam onde as sugestões deles seriam mais úteis.",
@@ -3495,7 +3482,20 @@
       "saveError": "Algo deu errado ao salvar o chunk. Tente novamente.",
       "statusLabel": "Status",
       "statusDraft": "Busca sugestões",
-      "statusPublished": "Publicado"
+      "statusPublished": "Publicado",
+      "referenceWarning": {
+        "body": "Você vai mudar {fields}, e já há {scope} apontando para este chunk. Esses vínculos continuam, mas o que eles afirmam muda junto.",
+        "hint": "Ninguém é notificado. Se o padrão passou a ser outro, considere criar um chunk separado em vez de reescrever este.",
+        "scopeBoth": "{positions, plural, =1 {1 posição} other {# posições}} e {games, plural, =1 {1 lance de partida} other {# lances de partidas}}",
+        "scopePositions": "{count, plural, =1 {1 posição} other {# posições}}",
+        "scopeGames": "{count, plural, =1 {1 lance de partida} other {# lances de partidas}}",
+        "separator": ", ",
+        "fields": {
+          "title": "o título",
+          "slug": "o slug",
+          "fen": "o tabuleiro"
+        }
+      }
     },
     "editRequests": {
       "linkLabel": "Sugestões de edição",

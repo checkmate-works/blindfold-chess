@@ -60,7 +60,7 @@ type Props = {
  * a notification per rename would be noisy out of proportion to the risk.
  */
 export function ChunkReferenceWarning({ references, changed }: Props) {
-  const t = useTranslations('chunks.form.referenceWarning');
+  const t = useTranslations('chunks.preview.referenceWarning');
   const total = references.positions + references.games;
 
   if (total === 0 || changed.length === 0) return null;

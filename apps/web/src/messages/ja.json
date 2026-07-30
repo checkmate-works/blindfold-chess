@@ -3439,19 +3439,6 @@
         "toggleLabel": "まず提案を募集する",
         "toggleHint": "どちらを選んでも他のユーザーには表示されます。提案を募集すると編集可能なままになり、より適切なタイトルや説明を他のプレイヤーが提案できます。内容が固まったら詳細ページから確定でき、確定すると編集はロックされます。"
       },
-      "referenceWarning": {
-        "body": "{fields}を変更しようとしていますが、すでに{scope}がこのチャンクを参照しています。紐付け自体は維持されますが、その参照が主張する内容も一緒に変わります。",
-        "hint": "参照している人には通知されません。パターン自体が別物になるのであれば、既存を書き換えるのではなく新しいチャンクを作成することも検討してください。",
-        "scopeBoth": "{positions, plural, other {# 件のポジション}}と{games, plural, other {# 件の対局の手}}",
-        "scopePositions": "{count, plural, other {# 件のポジション}}",
-        "scopeGames": "{count, plural, other {# 件の対局の手}}",
-        "separator": "・",
-        "fields": {
-          "title": "タイトル",
-          "slug": "スラッグ",
-          "fen": "盤面"
-        }
-      },
       "feedbackTopics": {
         "legend": "どの項目について意見が欲しいですか？",
         "hint": "チェックした項目は詳細ページで強調表示され、提案者にどこへの意見が歓迎されているかが伝わります。",
@@ -3495,7 +3482,20 @@
       "saveError": "チャンクの保存中にエラーが発生しました。もう一度お試しください。",
       "statusLabel": "ステータス",
       "statusDraft": "提案募集中",
-      "statusPublished": "公開済み"
+      "statusPublished": "公開済み",
+      "referenceWarning": {
+        "body": "{fields}を変更しようとしていますが、すでに{scope}がこのチャンクを参照しています。紐付け自体は維持されますが、その参照が主張する内容も一緒に変わります。",
+        "hint": "参照している人には通知されません。パターン自体が別物になるのであれば、既存を書き換えるのではなく新しいチャンクを作成することも検討してください。",
+        "scopeBoth": "{positions, plural, other {# 件のポジション}}と{games, plural, other {# 件の対局の手}}",
+        "scopePositions": "{count, plural, other {# 件のポジション}}",
+        "scopeGames": "{count, plural, other {# 件の対局の手}}",
+        "separator": "・",
+        "fields": {
+          "title": "タイトル",
+          "slug": "スラッグ",
+          "fen": "盤面"
+        }
+      }
     },
     "editRequests": {
       "linkLabel": "編集リクエスト",
