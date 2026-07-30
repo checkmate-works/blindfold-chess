@@ -5,8 +5,13 @@ const mockGetForDelete = vi.fn();
 const mockDelete = vi.fn();
 const mockIsLinkable = vi.fn();
 const mockInsert = vi.fn();
+const mockNotifyGameOwner = vi.fn();
 
 vi.mock('server-only', () => ({}));
+
+vi.mock('@/lib/notifications/game-chunk-link-notification', () => ({
+  notifyGameOwnerOfChunkLink: (...args: unknown[]) => mockNotifyGameOwner(...args),
+}));
 
 vi.mock('@/lib/auth', () => ({
   authenticateGuardAndRequireProfile: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
@@ -65,6 +70,22 @@ describe('addGameChunkAction', () => {
     });
   });
 
+  // The owner never asked for the link (no game-owner veto on `game_chunks`),
+  // so the notification is the only thing that tells them it happened. The
+  // action does not resolve the owner itself — that lookup, the self-link
+  // guard and the anonymous-game case all live in `notifyGameOwnerOfChunkLink`.
+  it("notifies the game's owner of a link that landed", async () => {
+    const { addGameChunkAction } = await import('./game-chunks');
+    await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
+
+    expect(mockNotifyGameOwner).toHaveBeenCalledWith({
+      actorId: CALLER,
+      gameId: GAME_ID,
+      ply: 3,
+      chunkId: CHUNK_ID,
+    });
+  });
+
   it('rejects a chunk the caller may not link, without inserting', async () => {
     mockIsLinkable.mockResolvedValue(false);
 
@@ -73,6 +94,7 @@ describe('addGameChunkAction', () => {
 
     expect(result).toEqual({ success: false, error: 'chunk_not_available' });
     expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockNotifyGameOwner).not.toHaveBeenCalled();
   });
 
   it('surfaces a duplicate link as already_linked rather than an error', async () => {
@@ -82,6 +104,8 @@ describe('addGameChunkAction', () => {
     const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
 
     expect(result).toEqual({ success: false, error: 'already_linked' });
+    // Re-submitting an existing pair must not re-ping the owner.
+    expect(mockNotifyGameOwner).not.toHaveBeenCalled();
   });
 
   it('never reaches the linkability check when auth fails', async () => {

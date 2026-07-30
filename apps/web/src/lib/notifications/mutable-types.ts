@@ -17,12 +17,20 @@
  * follow — muting them would mean missing something addressed to them
  * specifically.
  *
- * `new_comment_on_topic` is the one non-fan-out entry: "someone commented on
+ * `new_comment_on_topic` is a non-fan-out entry: "someone commented on
  * your content". Since 2026-07 it covers every commentable surface uniformly —
  * positions (memory/puzzle), repertoires (incl. move comments), chunks,
  * /topics posts (direct comments on your post; formerly typed 'reply'), and
  * shared games ('game_comment' target; see addGameCommentAction). 'reply'
  * remains the non-mutable type for replies deeper in a thread.
+ *
+ * `game_chunk_linked` is the other one, and is here for the same reason
+ * rather than because it is fan-out: it is unsolicited activity on the
+ * owner's game that any member can repeat per move, so it is closer to
+ * "comments on your posts" than to a one-time event addressed to the
+ * recipient (a follow, a fork). Note the mute silences the notification
+ * only — the link itself still lands, since `game_chunks` is a suggestion
+ * layer with no game-owner veto by construction.
  *
  * @design Removing a type from this list is safe with stale mute rows around
  *
@@ -39,6 +47,7 @@ export const MUTABLE_NOTIFICATION_TYPES = [
   'chunk_published',
   'new_game',
   'new_comment_on_topic',
+  'game_chunk_linked',
 ] as const;
 
 export type MutableNotificationType = (typeof MUTABLE_NOTIFICATION_TYPES)[number];

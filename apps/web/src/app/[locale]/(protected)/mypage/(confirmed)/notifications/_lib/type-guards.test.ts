@@ -4,6 +4,7 @@ import {
   getPositionTypeFromMetadata,
   isAnnouncementMetadata,
   isChunkEditRequestMetadata,
+  isGameChunkLinkMetadata,
   isPositionForkedMetadata,
   isPositionMetadata,
   isPostMetadata,
@@ -333,6 +334,41 @@ describe('isChunkEditRequestMetadata', () => {
     expect(isChunkEditRequestMetadata(undefined)).toBe(false);
     expect(isChunkEditRequestMetadata('foo')).toBe(false);
     expect(isChunkEditRequestMetadata(42)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isGameChunkLinkMetadata
+// ---------------------------------------------------------------------------
+
+describe('isGameChunkLinkMetadata', () => {
+  it('returns true with a gameId and an integer ply', () => {
+    expect(isGameChunkLinkMetadata({ gameId: 'g-1', ply: 16, chunkId: 'c-1' })).toBe(true);
+  });
+
+  // ply 0 is the game's first half-move — a truthiness check would reject the
+  // one move most likely to be tagged.
+  it('returns true at ply 0', () => {
+    expect(isGameChunkLinkMetadata({ gameId: 'g-1', ply: 0 })).toBe(true);
+  });
+
+  it('returns false when ply is missing (the deep link cannot be built)', () => {
+    expect(isGameChunkLinkMetadata({ gameId: 'g-1' })).toBe(false);
+  });
+
+  it('returns false when ply is not an integer', () => {
+    expect(isGameChunkLinkMetadata({ gameId: 'g-1', ply: 1.5 })).toBe(false);
+    expect(isGameChunkLinkMetadata({ gameId: 'g-1', ply: '3' })).toBe(false);
+  });
+
+  it('returns false when gameId is missing', () => {
+    expect(isGameChunkLinkMetadata({ ply: 3 })).toBe(false);
+  });
+
+  it('returns false for null / undefined / primitives', () => {
+    expect(isGameChunkLinkMetadata(null)).toBe(false);
+    expect(isGameChunkLinkMetadata(undefined)).toBe(false);
+    expect(isGameChunkLinkMetadata('foo')).toBe(false);
   });
 });
 

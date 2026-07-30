@@ -7,6 +7,7 @@ import { chunkFeedbackTopics, chunks, db, feedItems, topicPosts } from '@/lib/db
 import { diffFields } from '@/lib/db/diff-fields';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { linkNewChunkToGameMove } from '@/lib/db/game-chunks';
+import { notifyGameOwnerOfChunkLink } from '@/lib/notifications/game-chunk-link-notification';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
@@ -233,6 +234,19 @@ export async function createChunkEntry(
       slug: txResult.chunk.slug,
       initialStatus: initialFeedKind === 'published' ? 'published' : 'draft',
     });
+
+    // Authoring from a game position is the other way a chunk lands on
+    // someone's move, so it owes the game's owner the same notice the picker
+    // sends. Gated on the link having landed — `linkTarget` alone does not
+    // mean one did (see the best-effort note above).
+    if (txResult.linkedToGame && options?.linkTarget) {
+      notifyGameOwnerOfChunkLink({
+        actorId: user.id,
+        gameId: options.linkTarget.gameId,
+        ply: options.linkTarget.ply,
+        chunkId: txResult.chunk.id,
+      });
+    }
 
     const grant = txResult.grant;
     const coinCapped =

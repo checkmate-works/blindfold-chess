@@ -637,7 +637,8 @@
         "new_chunk_draft": "Nuevos borradores de chunk",
         "chunk_published": "Chunk publicado",
         "new_game": "Nuevas partidas",
-        "new_comment_on_topic": "Comentarios en tus publicaciones"
+        "new_comment_on_topic": "Comentarios en tus publicaciones",
+        "game_chunk_linked": "Chunks vinculados a tus partidas"
       }
     }
   },
@@ -3894,6 +3895,7 @@
     "newPostMessage": "{actor} compartió una nueva publicación",
     "newCommentOnTopicMessage": "{actor} comentó en tu publicación",
     "newCommentOnGameMessage": "{actor} comentó en tu partida",
+    "gameChunkLinkedMessage": "{actor} vinculó un chunk a una jugada de tu partida",
     "chunkEditRequestSubmittedMessage": "{actor} sugirió una edición para tu chunk",
     "chunkEditRequestAcceptedMessage": "{actor} aceptó tu sugerencia de edición",
     "newChunkDraftMessage": "{actor} publicó un borrador de chunk",
