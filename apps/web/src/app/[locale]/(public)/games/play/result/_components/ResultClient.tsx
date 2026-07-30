@@ -169,10 +169,13 @@ function ResultContent({
   // wording is first-person here and neutral on the shared game, which third
   // parties read.
   //
-  // The share pitch is made by the CTA modal every engagement action opens (see
-  // LocalGameSocial), not by an inline card — a card had no counterpart on the
-  // shared game and pushed the whole layout down. Nothing is rendered for a
-  // game with no moves: there is nothing to publish, discuss or delete.
+  // The publish pitch is made by the modal every engagement action opens, not by
+  // an inline card — a card had no counterpart on the shared game and pushed the
+  // whole layout down. Which pitch depends on where it was opened from: the
+  // footer's share/like actions get the animated-replay one (hence `gifPreview`
+  // goes only there), the Discussion tab's compose CTAs get the thread one.
+  // Nothing is rendered for a game with no moves: there is nothing to publish,
+  // discuss or delete.
   return (
     <div className="space-y-6">
       <GameReview
@@ -195,7 +198,6 @@ function ResultContent({
                   onShare={handleShare}
                   isShared={isShared}
                   showChunkCta={!isInitialPosition}
-                  gifPreview={gifPreview}
                 />
               )
             : null,

@@ -2359,7 +2359,9 @@
         "columnDetail": "Detalle"
       },
       "openFinishedGame": "Abrir partida terminada",
-      "shareTitle": "Al publicar desbloqueas esto",
+      "shareTitle": "Publica para compartir esta partida",
+      "discussionTitle": "Publica para abrir esta partida a comentarios",
+      "discussionPrompt": "Los comentarios y las sugerencias de chunk se asocian a una partida publicada — también los tuyos, así que esta tiene que publicarse primero.",
       "shareGifCaption": "Solo las primeras jugadas: publica para descargar la partida entera en GIF.",
       "shareGifPreviewLabel": "Vista previa animada de esta partida",
       "shareGifPlay": "Reproducir la vista previa",
@@ -2368,7 +2370,8 @@
         "gif": "Descarga la repetición como GIF animado, incluida la versión «tal como se jugó», con tus vistazos y retrocesos dibujados",
         "discussion": "Recibe comentarios en cualquier jugada y escribe los tuyos",
         "likes": "Consigue «me gusta» de otros jugadores",
-        "link": "Comparte un enlace o incrusta la repetición en un blog"
+        "link": "Comparte un enlace o incrusta la repetición en un blog",
+        "chunks": "Sugiere un chunk en cualquier jugada y mira los que añaden los demás"
       },
       "publish": "Compartir esta partida",
       "viewShared": "Ver partida compartida",
