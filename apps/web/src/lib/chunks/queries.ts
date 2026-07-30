@@ -1,12 +1,14 @@
 import { cache } from 'react';
 
-import { type SQL, and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { type SQL, and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import {
   AUTHOR_PROFILE_COLUMNS,
   chunkFeedbackTopics,
   chunks,
   db,
+  gameChunks,
+  games,
   liveProfileJoinOn,
   positionChunks,
   positions,
@@ -352,6 +354,42 @@ export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]
  * `getAllAvailableChunkOptions`, but reached through the same call site so
  * the page does not branch on auth just to pick a loader.
  */
+/**
+ * How many live things currently assert this chunk: positions that tag it
+ * (`position_chunks`) and game moves it is linked to (`game_chunks`).
+ *
+ * Used to warn the owner before they change what the chunk *means* — its
+ * title, slug, or board. Those assertions were made against the chunk as it
+ * reads today, by people who are not in the room for the edit, so the edit
+ * form surfaces the count rather than letting the change land silently.
+ * Deliberately a warning and not a lock: the whole point of the pre-publish
+ * state is that the name is still being worked out.
+ *
+ * Soft-deleted positions and games are excluded — a link from a row nobody
+ * can see is not an assertion anyone is relying on. The counts are separate
+ * (not summed) because the two read differently to an author: "3 positions"
+ * is their own catalog, "2 games" is other people's analysis.
+ */
+export async function countChunkReferences(
+  chunkId: string
+): Promise<{ positions: number; games: number }> {
+  const [positionCount, gameCount] = await Promise.all([
+    db
+      .select({ value: count() })
+      .from(positionChunks)
+      .innerJoin(positions, eq(positions.id, positionChunks.positionId))
+      .where(and(eq(positionChunks.chunkId, chunkId), isNull(positions.deletedAt)))
+      .then(([row]) => row?.value ?? 0),
+    db
+      .select({ value: count() })
+      .from(gameChunks)
+      .innerJoin(games, eq(games.id, gameChunks.gameId))
+      .where(and(eq(gameChunks.chunkId, chunkId), isNull(games.deletedAt)))
+      .then(([row]) => row?.value ?? 0),
+  ]);
+  return { positions: positionCount, games: gameCount };
+}
+
 export const getLinkableChunkOptionsForViewer = cache(
   async (viewerId: string | null): Promise<ChunkOption[]> => {
     const rows = await db

@@ -3435,6 +3435,19 @@
         "toggleLabel": "Pedir sugerencias primero",
         "toggleHint": "El chunk será visible en cualquier caso. Pedir sugerencias lo mantiene editable e invita a otros jugadores a proponer un título o una descripción más precisos; lo fijas más tarde desde la página de detalle, lo que lo bloquea."
       },
+      "referenceWarning": {
+        "body": "Vas a cambiar {fields}, y ya hay {scope} que apuntan a este chunk. Esos enlaces se mantienen, pero lo que afirman cambia con la edición.",
+        "hint": "No se notifica a nadie. Si el patrón pasa a ser otro distinto, plantéate crear un chunk aparte en lugar de reescribir este.",
+        "scopeBoth": "{positions, plural, =1 {1 posición} other {# posiciones}} y {games, plural, =1 {1 jugada de partida} other {# jugadas de partidas}}",
+        "scopePositions": "{count, plural, =1 {1 posición} other {# posiciones}}",
+        "scopeGames": "{count, plural, =1 {1 jugada de partida} other {# jugadas de partidas}}",
+        "separator": ", ",
+        "fields": {
+          "title": "el título",
+          "slug": "el slug",
+          "fen": "el tablero"
+        }
+      },
       "feedbackTopics": {
         "legend": "¿Sobre qué quieres comentarios?",
         "hint": "Los campos marcados se resaltan en la página de detalle para que los demás sepan dónde serían más útiles sus sugerencias.",
@@ -3550,6 +3563,7 @@
         "withdraw": "Retirar",
         "acceptConfirmTitle": "¿Aceptar esta sugerencia?",
         "acceptConfirmMessage": "Los campos propuestos se aplicarán a este chunk de inmediato.",
+        "acceptConfirmReferenceWarning": "Ya tiene {count, plural, =1 {1 enlace} other {# enlaces}} desde posiciones y jugadas de partidas; se mantienen, pero pasarán a apuntar al patrón renombrado.",
         "rejectConfirmTitle": "¿Rechazar esta sugerencia?",
         "rejectConfirmMessage": "No se notificará al autor de la sugerencia. Verá el estado de rechazo si vuelve a esta página.",
         "withdrawConfirmTitle": "¿Retirar tu sugerencia?",

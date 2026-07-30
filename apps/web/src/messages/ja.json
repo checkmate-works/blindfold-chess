@@ -3435,6 +3435,19 @@
         "toggleLabel": "まず提案を募集する",
         "toggleHint": "どちらを選んでも他のユーザーには表示されます。提案を募集すると編集可能なままになり、より適切なタイトルや説明を他のプレイヤーが提案できます。内容が固まったら詳細ページから確定でき、確定すると編集はロックされます。"
       },
+      "referenceWarning": {
+        "body": "{fields}を変更しようとしていますが、すでに{scope}がこのチャンクを参照しています。紐付け自体は維持されますが、その参照が主張する内容も一緒に変わります。",
+        "hint": "参照している人には通知されません。パターン自体が別物になるのであれば、既存を書き換えるのではなく新しいチャンクを作成することも検討してください。",
+        "scopeBoth": "{positions, plural, other {# 件のポジション}}と{games, plural, other {# 件の対局の手}}",
+        "scopePositions": "{count, plural, other {# 件のポジション}}",
+        "scopeGames": "{count, plural, other {# 件の対局の手}}",
+        "separator": "・",
+        "fields": {
+          "title": "タイトル",
+          "slug": "スラッグ",
+          "fen": "盤面"
+        }
+      },
       "feedbackTopics": {
         "legend": "どの項目について意見が欲しいですか？",
         "hint": "チェックした項目は詳細ページで強調表示され、提案者にどこへの意見が歓迎されているかが伝わります。",
@@ -3550,6 +3563,7 @@
         "withdraw": "取り下げ",
         "acceptConfirmTitle": "この提案を採用しますか？",
         "acceptConfirmMessage": "提案された内容が直ちにチャンクに反映されます。",
+        "acceptConfirmReferenceWarning": "このチャンクにはすでにポジションや対局の手から {count} 件の紐付けがあります。紐付け自体は維持されますが、改名後のパターンを指すことになります。",
         "rejectConfirmTitle": "この提案を却下しますか？",
         "rejectConfirmMessage": "提案者には通知されません。再訪したときに却下されたステータスが見えます。",
         "withdrawConfirmTitle": "この提案を取り下げますか？",

@@ -3435,6 +3435,19 @@
         "toggleLabel": "Ask for feedback first",
         "toggleHint": "The chunk goes live either way. Asking for feedback keeps it editable and invites other players to suggest a sharper title or description; you settle it later from the detail page, which locks it."
       },
+      "referenceWarning": {
+        "body": "You are changing the {fields}, and {scope} already point at this chunk. Those links stay attached, but what they claim changes with it.",
+        "hint": "Nobody is notified. If the pattern itself is now a different one, consider creating a separate chunk instead.",
+        "scopeBoth": "{positions, plural, =1 {1 position} other {# positions}} and {games, plural, =1 {1 game move} other {# game moves}}",
+        "scopePositions": "{count, plural, =1 {1 position} other {# positions}}",
+        "scopeGames": "{count, plural, =1 {1 game move} other {# game moves}}",
+        "separator": ", ",
+        "fields": {
+          "title": "title",
+          "slug": "slug",
+          "fen": "board"
+        }
+      },
       "feedbackTopics": {
         "legend": "What do you want feedback on?",
         "hint": "Ticked fields are highlighted on the detail page so others know where their suggestions would help most.",
@@ -3550,6 +3563,7 @@
         "withdraw": "Withdraw",
         "acceptConfirmTitle": "Accept this suggestion?",
         "acceptConfirmMessage": "The proposed fields will be applied to this chunk immediately.",
+        "acceptConfirmReferenceWarning": "It already has {count, plural, =1 {1 link} other {# links}} from positions and game moves; those stay attached, but they will now point at the renamed pattern.",
         "rejectConfirmTitle": "Reject this suggestion?",
         "rejectConfirmMessage": "The proposer will not be notified. They will see the rejected status if they revisit this page.",
         "withdrawConfirmTitle": "Withdraw your suggestion?",

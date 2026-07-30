@@ -42,6 +42,13 @@ type Props = {
   /** Viewer role flags resolved server-side. */
   viewerIsOwner: boolean;
   viewerIsProposer: boolean;
+  /**
+   * How many live positions / game moves already point at this chunk.
+   * Accepting a title proposal renames the chunk those references were
+   * made against, so the confirm step says so — the same warning the edit
+   * form raises for a hand-typed rename, at the other door into it.
+   */
+  referenceCount: number;
   locale: string;
 };
 
@@ -244,7 +251,16 @@ export function EditRequestItem(props: Props) {
       <ConfirmationModal
         isOpen={confirm === 'accept'}
         title={t('actions.acceptConfirmTitle')}
-        message={t('actions.acceptConfirmMessage')}
+        // A description-only proposal changes nothing an existing
+        // reference rests on, so it keeps the plain message however many
+        // links there are.
+        message={
+          props.proposedTitle !== null && props.referenceCount > 0
+            ? `${t('actions.acceptConfirmMessage')} ${t('actions.acceptConfirmReferenceWarning', {
+                count: props.referenceCount,
+              })}`
+            : t('actions.acceptConfirmMessage')
+        }
         confirmText={t('actions.accept')}
         cancelText={t('actions.cancel')}
         confirmVariant="primary"
