@@ -26,36 +26,52 @@ import type { PositionType } from '@/lib/positions/types';
 
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 
+/**
+ * The profile fields every feed card renders for whoever produced the entry —
+ * avatar, display name, and the flag / flair chips beside it. `null` where the
+ * entry has no registered author (an anonymous published game).
+ */
+export type FeedActor = {
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  country: string | null;
+  flair: string | null;
+};
+
+/** Like count plus whether the viewer is one of them, for the like button. */
+export type FeedLikeMeta = {
+  likeCount: number;
+  likedByMe: boolean;
+};
+
+/**
+ * Aggregate comment-thread meta for a feed entry: the reply count, when the
+ * thread was last touched, and a few repliers' avatars to stack on the card.
+ * Entries with no thread (a `sequence`-type position) get an empty block
+ * rather than an absent one, so cards need no per-type branching.
+ */
+export type FeedReplyMeta = {
+  replyCount: number;
+  latestReplyAt: Date | null;
+  repliers: { avatarUrl: string | null; displayName: string }[];
+  uniqueReplierCount: number;
+};
+
 export type PositionFeedData = {
   id: string;
   /** Used to route the card to the correct detail page. */
   type: PositionType;
   fen: string;
   createdAt: string; // ISO 8601
-  author: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    country: string | null;
-    flair: string | null;
-  } | null;
-  likeMeta: {
-    likeCount: number;
-    likedByMe: boolean;
-  };
+  author: FeedActor | null;
+  likeMeta: FeedLikeMeta;
   /**
-   * Aggregate comment-thread meta for the position. Comments live in
-   * `topic_posts` keyed by `(topicType, topicKey)` where `topicKey` is
-   * the position's id and `topicType` is `'position_memory'` or
-   * `'position_puzzle'`. `sequence`-type positions have no comment
-   * thread and receive an empty meta block.
+   * Comments live in `topic_posts` keyed by `(topicType, topicKey)` where
+   * `topicKey` is the position's id and `topicType` is `'position_memory'` or
+   * `'position_puzzle'`.
    */
-  replyMeta: {
-    replyCount: number;
-    latestReplyAt: Date | null;
-    repliers: { avatarUrl: string | null; displayName: string }[];
-    uniqueReplierCount: number;
-  };
+  replyMeta: FeedReplyMeta;
 };
 
 type FeedItemBase = {
@@ -82,13 +98,7 @@ export type ChallengeRankUpdateData = {
   isNewEntry: boolean;
   /** Previous rank before the improvement. Only present when isNewEntry is false. */
   previousRank?: number;
-  actor: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    country: string | null;
-    flair: string | null;
-  };
+  actor: FeedActor;
 };
 
 export type ChallengeRankUpdateFeedItem = FeedItemBase & {
@@ -124,23 +134,9 @@ export type ChunkFeedData = {
   /** Snapshot of the lifecycle event that produced this feed item. */
   kind: 'created' | 'published';
   createdAt: string; // ISO 8601
-  author: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    country: string | null;
-    flair: string | null;
-  } | null;
-  likeMeta: {
-    likeCount: number;
-    likedByMe: boolean;
-  };
-  replyMeta: {
-    replyCount: number;
-    latestReplyAt: Date | null;
-    repliers: { avatarUrl: string | null; displayName: string }[];
-    uniqueReplierCount: number;
-  };
+  author: FeedActor | null;
+  likeMeta: FeedLikeMeta;
+  replyMeta: FeedReplyMeta;
 };
 
 export type ChunkFeedItem = FeedItemBase & {
@@ -168,23 +164,9 @@ export type GameFeedData = {
   thumbnailDisplay: BlindfoldDisplaySettings | null;
   result: 'win' | 'loss' | 'draw';
   createdAt: string; // ISO 8601
-  author: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    country: string | null;
-    flair: string | null;
-  } | null;
-  likeMeta: {
-    likeCount: number;
-    likedByMe: boolean;
-  };
-  replyMeta: {
-    replyCount: number;
-    latestReplyAt: Date | null;
-    repliers: { avatarUrl: string | null; displayName: string }[];
-    uniqueReplierCount: number;
-  };
+  author: FeedActor | null;
+  likeMeta: FeedLikeMeta;
+  replyMeta: FeedReplyMeta;
 };
 
 export type GameFeedItem = FeedItemBase & {

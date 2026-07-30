@@ -6,12 +6,7 @@ import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '@/app/admin/ads/_
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
-import {
-  ALLOWED_MIME_TYPES,
-  MAX_FILE_SIZE,
-  MIME_TO_EXTENSION,
-  validateBinarySignature,
-} from '@/lib/admin-images/validation';
+import { MIME_TO_EXTENSION, parseAdminImageUpload } from '@/lib/admin-images/validation';
 import type { NativeCardPayload } from '@/lib/ads/payload';
 import { DEFAULT_NATIVE_THUMBNAIL_FEN, isNativeCardPayload } from '@/lib/ads/payload';
 import { checkMutationOrigin } from '@/lib/api-mutation-guard';
@@ -92,36 +87,17 @@ function withTargetImage(
   };
 }
 
+/** The shared admin-image gate, plus this endpoint's own `target` field. */
 async function parseAndValidateFile(request: Request) {
-  let formData: FormData;
-  try {
-    formData = await request.formData();
-  } catch {
-    return { error: NextResponse.json({ error: 'invalid_form_data' }, { status: 400 }) } as const;
-  }
+  const upload = await parseAdminImageUpload(request);
+  if (upload.error) return { error: upload.error } as const;
 
-  const file = formData.get('file');
-  if (!(file instanceof File)) {
-    return { error: NextResponse.json({ error: 'file_required' }, { status: 400 }) } as const;
-  }
-  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    return { error: NextResponse.json({ error: 'invalid_file_type' }, { status: 400 }) } as const;
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    return { error: NextResponse.json({ error: 'file_too_large' }, { status: 400 }) } as const;
-  }
-
-  const buffer = await file.arrayBuffer();
-  if (!validateBinarySignature(buffer, file.type)) {
-    return { error: NextResponse.json({ error: 'invalid_file_type' }, { status: 400 }) } as const;
-  }
-
-  const target = parseTarget(formData.get('target'));
+  const target = parseTarget(upload.formData.get('target'));
   if (!target) {
     return { error: NextResponse.json({ error: 'invalid_target' }, { status: 400 }) } as const;
   }
 
-  return { file, buffer, target } as const;
+  return { file: upload.file, buffer: upload.buffer, target } as const;
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {

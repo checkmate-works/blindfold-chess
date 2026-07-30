@@ -4,6 +4,7 @@ import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { MOVE_NAV_ROW_CLASS } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
+import { ReplyCardsSkeleton } from '@/app/[locale]/(public)/topics/_components/ReplyCardsSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 export default async function OpeningPostDetailLoading() {
@@ -79,29 +80,7 @@ export default async function OpeningPostDetailLoading() {
         </SectionTitle>
 
         {/* Reply cards */}
-        <div className="space-y-4">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div
-              key={i}
-              className="p-4 bg-card border border-border rounded-lg space-y-3 animate-pulse"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0" />
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div className="h-4 w-28 bg-muted rounded" />
-                  <div className="h-3 w-40 bg-muted rounded" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="h-4 bg-muted rounded w-full" />
-                <div className="h-4 bg-muted rounded w-3/4" />
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-6 w-16 bg-muted rounded" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <ReplyCardsSkeleton />
 
         {/* Breadcrumb (last item — readMore — is static; other items are dynamic) */}
         <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">

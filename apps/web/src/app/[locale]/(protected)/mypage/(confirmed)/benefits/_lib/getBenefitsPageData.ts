@@ -1,10 +1,11 @@
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import { getUserSubscription } from '@/lib/billing/subscription';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
-import { db, positions, topicPosts, userGrants } from '@/lib/db';
+import { db, userGrants } from '@/lib/db';
 import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
 
+import { resolveGrantSources } from './resolve-grant-sources';
 import { resolveGrantSourceMeta } from './source';
 
 export type RowStatus = 'active' | 'upcoming' | 'expired';
@@ -17,10 +18,7 @@ export type RowStatus = 'active' | 'upcoming' | 'expired';
  *   - others           → `t(`grantTypeLabel.${labelKey}`)`
  */
 export type EntitlementSourceLabelKey =
-  | 'subscription'
-  | 'admin_manual'
-  | 'topic_post'
-  | 'position_creation';
+  'subscription' | 'admin_manual' | 'topic_post' | 'position_creation';
 
 type EntitlementRow = {
   id: string;
@@ -105,34 +103,7 @@ export async function getBenefitsPageData(userId: string): Promise<BenefitsPageD
   // table can show "which submission earned me this" as a link. Batched into
   // two IN queries to avoid N+1, scoped to the 5 rows actually rendered.
   const recentGrants = allGrants.slice(0, 5);
-  const topicPostIds = recentGrants
-    .filter((g) => g.sourceType === 'topic_post' && g.sourceId)
-    .map((g) => g.sourceId as string);
-  const positionIds = recentGrants
-    .filter((g) => g.sourceType === 'position' && g.sourceId)
-    .map((g) => g.sourceId as string);
-
-  const [topicPostRows, positionRows] = await Promise.all([
-    topicPostIds.length
-      ? db
-          .select({
-            id: topicPosts.id,
-            topicType: topicPosts.topicType,
-            topicKey: topicPosts.topicKey,
-          })
-          .from(topicPosts)
-          .where(inArray(topicPosts.id, topicPostIds))
-      : Promise.resolve([] as Array<{ id: string; topicType: string; topicKey: string }>),
-    positionIds.length
-      ? db
-          .select({ id: positions.id, type: positions.type })
-          .from(positions)
-          .where(inArray(positions.id, positionIds))
-      : Promise.resolve([] as Array<{ id: string; type: string }>),
-  ]);
-
-  const topicPostMap = new Map(topicPostRows.map((r) => [r.id, r]));
-  const positionMap = new Map(positionRows.map((r) => [r.id, r]));
+  const { topicPostMap, positionMap } = await resolveGrantSources(recentGrants);
 
   const subscriptionRow: EntitlementRow | null =
     subscriptionActive && subscription && subscriptionExpiresAt
