@@ -19,10 +19,11 @@ import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 
 import { useRecallGame } from '../_hooks';
 import { useOpponentMoveAnnouncement } from '../_hooks/use-opponent-move-announcement';
+import { useRecallParentReporting } from '../_hooks/use-recall-parent-reporting';
 import { useRecallPreferences } from '../_hooks/use-recall-preferences';
 import type { MoveLogEntry } from '../_lib';
 import { computeRecallStats, resolveModalPosition } from '../_lib';
-import { formatMoveNumberPrefix } from '../_lib/recall-format';
+import { formatRecallFeedbackMessage, toRecallFeedbackTitleText } from '../_lib/recall-feedback';
 import { RecallMovesPanel } from './RecallMovesPanel';
 import { RecallOpponentMoveChip } from './RecallOpponentMoveChip';
 import { RecallSummary } from './RecallSummary';
@@ -261,40 +262,24 @@ export function RecallClient({
     />
   );
 
-  // Format feedback message from structured data
+  // The last move's result, as a localized sentence for the inline error slot
+  // and as the ⚠-prefixed page-title form (see recall-feedback).
   const feedback = moveInput.lastFeedback;
-  const movePrefix = feedback
-    ? formatMoveNumberPrefix(feedback.moveNumber, feedback.isWhiteMove)
-    : '';
-  const feedbackMessage = feedback
-    ? feedback.type === 'incorrect'
-      ? t('incorrectMoveError', { movePrefix, move: feedback.move })
-      : feedback.type === 'skipped'
-        ? t('skippedMoveMessage', { movePrefix, move: feedback.move })
-        : t('correctMoveMessage', { movePrefix, move: feedback.move })
-    : null;
+  const feedbackMessage = feedback ? formatRecallFeedbackMessage(feedback, t) : null;
   const feedbackIsError = feedback?.type === 'incorrect';
 
-  // Surface the feedback in the page title (the play screen does the same with
-  // its move status). Incorrect moves get a ⚠ prefix, matching the in-game
-  // "invalid move" title. The message persists until the next input clears it.
-  useEffect(() => {
-    if (!onFeedbackChange) return;
-    if (!feedback || !feedbackMessage) {
-      onFeedbackChange(null);
-      return;
-    }
-    onFeedbackChange({
-      tone: feedback.type,
-      text: feedback.type === 'incorrect' ? `⚠ ${feedbackMessage}` : feedbackMessage,
-    });
-  }, [onFeedbackChange, feedback, feedbackMessage]);
-
-  // Let the page owner react to completion (used to hide the help tour, whose
-  // targets disappear once the summary replaces the live review panels).
-  useEffect(() => {
-    onCompletedChange?.(isCompleted);
-  }, [onCompletedChange, isCompleted]);
+  // Report the feedback (for the PageTitle slot) and completion (to hide the
+  // help tour) up to the page owner.
+  useRecallParentReporting({
+    feedbackTone: feedback?.type ?? null,
+    feedbackText:
+      feedback && feedbackMessage
+        ? toRecallFeedbackTitleText(feedback.type, feedbackMessage)
+        : null,
+    isCompleted,
+    onFeedbackChange,
+    onCompletedChange,
+  });
 
   return (
     <div>
