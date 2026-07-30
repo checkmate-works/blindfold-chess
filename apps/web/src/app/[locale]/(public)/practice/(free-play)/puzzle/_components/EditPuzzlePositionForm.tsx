@@ -63,6 +63,7 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
 
   const step = usePuzzlePositionStep({
     board,
+    title,
     initialMoves,
     initialNotes,
     initialFen: initial.fen,
@@ -129,7 +130,11 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
       <div className="space-y-6">
         <PuzzleStepIndicator flow="edit" current="position" />
 
-        <FormErrorBanner variant="soft" message={step.error} />
+        <FormErrorBanner
+          ref={step.submitError.summaryRef}
+          variant="soft"
+          message={step.submitError.formMessage}
+        />
 
         <PuzzlePositionFields
           board={board}
@@ -145,6 +150,7 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
           continueLabel={t('continueToSolution')}
           onCancel={() => router.push(`/practice/puzzle/${positionId}`)}
           cancelLabel={t('cancel')}
+          messageFor={step.submitError.messageFor}
         />
       </div>
 

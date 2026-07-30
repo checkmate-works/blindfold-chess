@@ -178,6 +178,7 @@ export function CreatePuzzlePositionForm({
 
   const step = usePuzzlePositionStep({
     board,
+    title,
     initialMoves: seedMoves,
     initialNotes: seedNotes,
     initialFen: seedFen,
@@ -267,7 +268,7 @@ export function CreatePuzzlePositionForm({
     // otherwise the next write would still pin to the old parent even
     // though the user has explicitly asked for a clean slate.
     setForkedFromId(undefined);
-    step.setError(null);
+    step.submitError.clear();
     resetHydrated();
     setStartOverOpen(false);
   }
@@ -277,7 +278,11 @@ export function CreatePuzzlePositionForm({
       <div className="space-y-6">
         <PuzzleStepIndicator flow="create" current="position" />
 
-        <FormErrorBanner variant="soft" message={step.error} />
+        <FormErrorBanner
+          ref={step.submitError.summaryRef}
+          variant="soft"
+          message={step.submitError.formMessage}
+        />
 
         {hydratedFromDraft && !resumed && (
           <div
@@ -311,6 +316,7 @@ export function CreatePuzzlePositionForm({
           availableChunks={availableChunks}
           onContinue={step.handleContinue}
           continueLabel={t('continueToSolution')}
+          messageFor={step.submitError.messageFor}
         />
       </div>
 

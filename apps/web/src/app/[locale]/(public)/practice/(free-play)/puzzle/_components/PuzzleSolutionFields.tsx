@@ -183,8 +183,14 @@ export function PuzzleSolutionFields({
           />
         )}
 
+        {/*
+         * Sits directly above the Continue button that rejected the step,
+         * so it needs no focus move — only the announcement.
+         */}
         {solution.solutionError && (
-          <p className="text-sm text-destructive">{solution.solutionError}</p>
+          <p role="alert" className="text-sm text-destructive">
+            {solution.solutionError}
+          </p>
         )}
       </div>
 

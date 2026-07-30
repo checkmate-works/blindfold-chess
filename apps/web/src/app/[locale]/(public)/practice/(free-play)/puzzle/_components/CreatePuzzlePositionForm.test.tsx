@@ -117,6 +117,15 @@ vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  FieldError: ({ id, message }: { id: string; message: string | null }) =>
+    message ? (
+      <p id={id} role="alert">
+        {message}
+      </p>
+    ) : null,
+  fieldErrorProps: (id: string, message: string | null) =>
+    message ? { 'aria-invalid': true, 'aria-describedby': id } : {},
+  fieldBorderClass: (message: string | null) => (message ? 'border-destructive' : 'border-border'),
   FormErrorBanner: ({ message }: { message: string | null }) =>
     message ? <div role="alert">{message}</div> : null,
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -210,16 +219,25 @@ describe('CreatePuzzlePositionForm', () => {
       expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/solution');
     });
 
-    it('Continue is disabled until a valid FEN and a non-empty title are both set', () => {
+    it('stays clickable while incomplete and names the missing requirement', () => {
+      // A disabled Continue would be silent about WHICH requirement is
+      // unmet, so the button stays live and the gate reports per control.
       render(<CreatePuzzlePositionForm />);
-      expect(screen.getByRole('button', { name: 'continueToSolution' })).toBeDisabled();
+      const continueButton = screen.getByRole('button', { name: 'continueToSolution' });
+      expect(continueButton).not.toBeDisabled();
 
-      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Titled' } });
-      expect(screen.getByRole('button', { name: 'continueToSolution' })).toBeDisabled();
+      fireEvent.click(continueButton);
+      expect(screen.getByRole('alert')).toHaveTextContent('positionInvalid');
 
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
       fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
-      expect(screen.getByRole('button', { name: 'continueToSolution' })).not.toBeDisabled();
+      fireEvent.click(continueButton);
+      expect(screen.getByRole('alert')).toHaveTextContent('titleRequired');
+      expect(document.activeElement).toBe(screen.getByLabelText(/titleLabel/));
+
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Titled' } });
+      fireEvent.click(continueButton);
+      expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/solution');
     });
 
     it('clicking Continue with no title set does not navigate or write a draft', () => {

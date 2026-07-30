@@ -4,7 +4,13 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button, FlipBoardButton } from '@/app/_components';
+import {
+  Button,
+  FieldError,
+  FlipBoardButton,
+  fieldBorderClass,
+  fieldErrorProps,
+} from '@/app/_components';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -20,6 +26,7 @@ import type { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagPickerLabels } from '../../_hooks/use-tag-picker-labels';
 import type { useTagSelection } from '../../_hooks/use-tag-selection';
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
+import type { PuzzlePositionField } from '../_lib/validate-puzzle-form';
 import { SideToMoveIndicator } from './SideToMoveIndicator';
 
 type Props = {
@@ -41,6 +48,12 @@ type Props = {
    */
   onCancel?: () => void;
   cancelLabel?: string;
+  /**
+   * The submit gate's verdict per control (`useSubmitError.messageFor`).
+   * Drives the highlight, the `aria-invalid` / `aria-describedby` pair,
+   * and the message rendered directly under the control.
+   */
+  messageFor: (field: PuzzlePositionField) => string | null;
 };
 
 /**
@@ -68,6 +81,7 @@ export function PuzzlePositionFields({
   continueLabel,
   onCancel,
   cancelLabel,
+  messageFor,
 }: Props) {
   const t = useTranslations('practice.puzzle.create');
   const tagPickerLabels = useTagPickerLabels();
@@ -75,6 +89,9 @@ export function PuzzlePositionFields({
   const { preferences, isLoaded } = useGamePreferences();
 
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
+
+  const titleError = messageFor('title');
+  const fenError = messageFor('fen');
 
   return (
     <>
@@ -87,9 +104,11 @@ export function PuzzlePositionFields({
           type="text"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${fieldBorderClass(titleError)}`}
           required
+          {...fieldErrorProps('title-error', titleError)}
         />
+        <FieldError id="title-error" message={titleError} />
       </div>
 
       <div>
@@ -105,98 +124,124 @@ export function PuzzlePositionFields({
         />
       </div>
 
-      <BoardFenTabs
-        activeTab={board.activeTab}
-        onTabChange={board.setActiveTab}
-        boardLabel={t('tabBoard')}
-        fenLabel={t('tabFen')}
-      />
+      {/*
+       * `id` + `tabIndex` make the whole position block a focus target: a
+       * rejected position has no text input to focus while the board tab
+       * is active. See `useSubmitError`.
+       */}
+      <div
+        id="position-editor"
+        tabIndex={-1}
+        role="group"
+        aria-label={t('tabBoard')}
+        aria-describedby={fenError && board.activeTab === 'board' ? 'position-error' : undefined}
+        className="space-y-6"
+      >
+        <BoardFenTabs
+          activeTab={board.activeTab}
+          onTabChange={board.setActiveTab}
+          boardLabel={t('tabBoard')}
+          fenLabel={t('tabFen')}
+        />
 
-      {board.activeTab === 'board' && (
-        <>
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div
-              role="radiogroup"
-              aria-label={t('sideToMove')}
-              className="inline-flex rounded-md border border-border overflow-hidden text-sm"
-            >
+        {board.activeTab === 'board' && (
+          <>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div
+                role="radiogroup"
+                aria-label={t('sideToMove')}
+                className="inline-flex rounded-md border border-border overflow-hidden text-sm"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={board.sideToMove === 'w'}
+                  onClick={() => board.handleSideToMoveChange('w')}
+                  className={`px-3 py-1.5 transition-colors ${
+                    board.sideToMove === 'w'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t('sideWhite')}
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={board.sideToMove === 'b'}
+                  onClick={() => board.handleSideToMoveChange('b')}
+                  className={`px-3 py-1.5 transition-colors ${
+                    board.sideToMove === 'b'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t('sideBlack')}
+                </button>
+              </div>
+              <FlipBoardButton onClick={board.handleFlip} title={t('flipBoard')} />
+            </div>
+            {!isLoaded ? (
+              <EditableBoardSkeleton />
+            ) : (
+              <EditableChessBoard
+                fen={board.boardFen}
+                onFenChange={board.handleBoardChange}
+                labels={editableBoardLabels}
+                editable={true}
+                flipped={board.flipped}
+                showCoordinates={true}
+                boardTheme={preferences.boardTheme}
+              />
+            )}
+
+            {/*
+             * `fenError` is the submit gate's verdict; `positionError` is
+             * the board editor's own live complaint. Either renders here,
+             * right under the board that has to change.
+             */}
+            {(fenError || board.positionError) && (
+              <p id="position-error" role="alert" className="text-sm text-destructive text-center">
+                {fenError ?? t('positionInvalid')}
+              </p>
+            )}
+
+            <div className="flex justify-center">
               <button
                 type="button"
-                role="radio"
-                aria-checked={board.sideToMove === 'w'}
-                onClick={() => board.handleSideToMoveChange('w')}
-                className={`px-3 py-1.5 transition-colors ${
-                  board.sideToMove === 'w'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted'
-                }`}
+                onClick={() => setClearBoardOpen(true)}
+                className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
               >
-                {t('sideWhite')}
-              </button>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={board.sideToMove === 'b'}
-                onClick={() => board.handleSideToMoveChange('b')}
-                className={`px-3 py-1.5 transition-colors ${
-                  board.sideToMove === 'b'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted'
-                }`}
-              >
-                {t('sideBlack')}
+                {t('clearBoard')}
               </button>
             </div>
-            <FlipBoardButton onClick={board.handleFlip} title={t('flipBoard')} />
-          </div>
-          {!isLoaded ? (
-            <EditableBoardSkeleton />
-          ) : (
-            <EditableChessBoard
-              fen={board.boardFen}
-              onFenChange={board.handleBoardChange}
-              labels={editableBoardLabels}
-              editable={true}
-              flipped={board.flipped}
-              showCoordinates={true}
-              boardTheme={preferences.boardTheme}
+          </>
+        )}
+
+        {board.activeTab === 'fen' && (
+          <div>
+            <label htmlFor="fen" className="block text-sm font-medium mb-1">
+              {t('fenLabel')}
+            </label>
+            <textarea
+              id="fen"
+              value={board.fenInput}
+              onChange={board.handleFenInputChange}
+              placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+              rows={2}
+              className={`w-full px-3 py-2 rounded border bg-card text-foreground text-sm font-mono ${fieldBorderClass(fenError)}`}
+              {...fieldErrorProps('fen-error', fenError)}
             />
-          )}
-
-          {board.positionError && (
-            <p className="text-sm text-destructive text-center">{t('positionInvalid')}</p>
-          )}
-
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={() => setClearBoardOpen(true)}
-              className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
-            >
-              {t('clearBoard')}
-            </button>
+            <FieldError
+              id="fen-error"
+              message={
+                fenError ??
+                (board.fenInput.trim() !== '' && !board.isFenValid ? t('fenInvalid') : null)
+              }
+            />
           </div>
-        </>
-      )}
-
-      {board.activeTab === 'fen' && (
-        <div>
-          <label htmlFor="fen" className="block text-sm font-medium mb-1">
-            {t('fenLabel')}
-          </label>
-          <textarea
-            id="fen"
-            value={board.fenInput}
-            onChange={board.handleFenInputChange}
-            placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            rows={2}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground text-sm font-mono"
-          />
-          {board.fenInput.trim() && !board.isFenValid && (
-            <p className="text-sm text-destructive mt-1">{t('fenInvalid')}</p>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       {board.turnIndicator && (
         <p className="text-sm text-muted-foreground text-center">
@@ -215,12 +260,17 @@ export function PuzzlePositionFields({
       />
 
       <div className="space-y-4">
+        {/*
+         * Only `pending` disables this. Blocking the click on an invalid
+         * position or an empty title would be silent about which of the
+         * two is missing; `onContinue` says so and moves focus there.
+         */}
         <Button
           type="button"
           variant="primary"
           size="lg"
           fullWidth
-          disabled={pending || !board.isFenValid || title.trim() === ''}
+          disabled={pending}
           onClick={onContinue}
         >
           {continueLabel}
