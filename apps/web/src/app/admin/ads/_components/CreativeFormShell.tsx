@@ -5,6 +5,7 @@ import type { FormEvent, ReactNode } from 'react';
 import Link from 'next/link';
 
 import { CountrySelect } from '@/app/_components/CountrySelect';
+import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
 import { Button, Field, Input } from '@/app/admin/_components/forms';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
@@ -40,8 +41,8 @@ export function CreativeFormShell({
   return (
     <div>
       {error && (
-        <div className="mb-4 p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-          {error}
+        <div className="mb-4">
+          <FormErrorBanner variant="soft" message={error} />
         </div>
       )}
 

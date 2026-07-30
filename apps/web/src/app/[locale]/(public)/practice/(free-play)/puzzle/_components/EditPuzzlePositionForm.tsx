@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { FormErrorBanner } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -19,7 +20,6 @@ import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { readEditDraft, writeEditDraft } from '../_lib/edit-draft-storage';
 import { stringArraysEqual } from '../_lib/string-arrays-equal';
 import { PositionChangedModal } from './PositionChangedModal';
-import { PuzzleFormErrorBanner } from './PuzzleFormErrorBanner';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
@@ -129,7 +129,7 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
       <div className="space-y-6">
         <PuzzleStepIndicator flow="edit" current="position" />
 
-        <PuzzleFormErrorBanner message={step.error} />
+        <FormErrorBanner variant="soft" message={step.error} />
 
         <PuzzlePositionFields
           board={board}

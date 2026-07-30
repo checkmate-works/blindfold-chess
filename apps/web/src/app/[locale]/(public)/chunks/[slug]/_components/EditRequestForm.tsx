@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -232,14 +232,7 @@ export function EditRequestForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-xs text-muted-foreground">{t('formHint')}</p>
 
-        {error && (
-          <div
-            role="alert"
-            className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm"
-          >
-            {error}
-          </div>
-        )}
+        <FormErrorBanner variant="soft" message={error} />
 
         {titlePrimary && titleField}
         {descriptionPrimary && descriptionField}

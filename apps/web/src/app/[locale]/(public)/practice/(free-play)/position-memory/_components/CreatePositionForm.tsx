@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { flushSync } from 'react-dom';
@@ -220,11 +220,7 @@ export function CreatePositionForm({
       <div className="space-y-6">
         <PositionMemoryStepIndicator current="position" />
 
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
-          </div>
-        )}
+        <FormErrorBanner variant="soft" message={error} />
 
         <PositionFormFields
           board={board}

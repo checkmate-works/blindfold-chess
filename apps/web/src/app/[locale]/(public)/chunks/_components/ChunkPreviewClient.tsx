@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { BoardFrame, Button, UnsavedChangesDialog } from '@/app/_components';
+import { BoardFrame, Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -233,11 +233,7 @@ export function ChunkPreviewClient(props: Props) {
           </dd>
         </dl>
 
-        {error && (
-          <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
-            {error}
-          </div>
-        )}
+        <FormErrorBanner variant="soft" message={error} />
 
         <div className="flex flex-col gap-3 pt-2">
           <Button
