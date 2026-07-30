@@ -2669,7 +2669,7 @@
       "signIn": "Sign in",
       "remove": "Remove {title}",
       "badge": "Chunk",
-      "draftBadge": "Draft",
+      "draftBadge": "Feedback wanted",
       "submit": "Link {count}",
       "submitting": "Linking…",
       "errors": {
@@ -3329,7 +3329,7 @@
     "listTitle": "Chunks",
     "listSubtitle": "Chess piece-coordination patterns",
     "editCta": "Edit",
-    "statusDraft": "Draft",
+    "statusDraft": "Feedback wanted",
     "statusPublished": "Published",
     "actions": {
       "publish": "Publish",
@@ -3346,11 +3346,11 @@
     "list": {
       "newCta": "Create chunk",
       "empty": "No chunks yet.",
-      "emptyDrafts": "No drafts looking for feedback right now.",
+      "emptyDrafts": "No chunks are asking for feedback right now.",
       "filterAriaLabel": "Filter chunks by status",
       "filter": {
         "all": "All",
-        "drafts": "Looking for feedback",
+        "drafts": "Feedback wanted",
         "published": "Published"
       },
       "feedbackChip": {
@@ -3365,7 +3365,7 @@
         },
         "create": {
           "title": "Create your own chunk",
-          "description": "Spotted a pattern you keep seeing in your games? Anyone signed in can publish one from this button. Save it as a draft first to collect title/description suggestions from other players, then publish when it feels right."
+          "description": "Spotted a pattern you keep seeing in your games? Anyone signed in can publish one from this button. Ask for feedback first to collect title/description suggestions from other players, then publish when it feels right."
         }
       }
     },
@@ -3400,9 +3400,9 @@
       },
       "hints": {
         "fen": "A FEN that illustrates the pattern. Kingless boards are allowed.",
-        "slugCreate": "Lowercase ASCII letters / numbers with hyphens (e.g. \"rook-battery\"). Editable while the chunk is in draft; locked once published.",
+        "slugCreate": "Lowercase ASCII letters / numbers with hyphens (e.g. \"rook-battery\"). Editable while the chunk is unsettled; locked once published.",
         "slugLocked": "Slug is fixed once the chunk is published (used as a permanent catalog URL).",
-        "slugDraftEditable": "Editable while this chunk is in draft. Renaming updates the URL — any links you've shared will need to be re-shared."
+        "slugDraftEditable": "Editable while this chunk is unsettled. Renaming updates the URL — any links you've shared will need to be re-shared."
       },
       "actions": {
         "create": "Create chunk",
@@ -3432,8 +3432,8 @@
         "invalidFeedbackTopic": "Unknown feedback topic. Please refresh the page and try again."
       },
       "draft": {
-        "toggleLabel": "Save as draft",
-        "toggleHint": "Drafts are visible to others (so they can suggest names) but stay editable. You can publish later from the detail page when the title and description feel right."
+        "toggleLabel": "Ask for feedback first",
+        "toggleHint": "The chunk goes live either way. Asking for feedback keeps it editable and invites other players to suggest a sharper title or description; you settle it later from the detail page, which locks it."
       },
       "feedbackTopics": {
         "legend": "What do you want feedback on?",
@@ -3470,14 +3470,14 @@
     },
     "preview": {
       "title": "Preview chunk",
-      "createDraftCta": "Save as draft",
+      "createDraftCta": "Save and ask for feedback",
       "createPublishedCta": "Publish",
       "backToEditCta": "Back to edit",
       "createError": "Something went wrong creating the chunk. Please try again.",
       "saveCta": "Save changes",
       "saveError": "Something went wrong saving the chunk. Please try again.",
       "statusLabel": "Status",
-      "statusDraft": "Draft",
+      "statusDraft": "Feedback wanted",
       "statusPublished": "Published"
     },
     "editRequests": {
@@ -3487,7 +3487,7 @@
       "currentValuesTitle": "Current values",
       "currentValuesHint": "Tentative title and description the chunk currently shows. Submitted suggestions below are compared against these.",
       "callout": {
-        "body": "This chunk is still a draft and welcomes suggestions for a sharper title or description.",
+        "body": "The author is still settling this chunk and welcomes suggestions for a sharper title or description.",
         "ownerBodyWithPending": "{count, plural, one {# pending edit suggestion waiting for your review.} other {# pending edit suggestions waiting for your review.}}",
         "ownerBodyEmpty": "No edit suggestions yet.",
         "ctaOwner": "View edit suggestions",
@@ -3503,7 +3503,7 @@
       "help": {
         "label": "How edit suggestions work",
         "badge": {
-          "title": "This chunk is in draft",
+          "title": "This chunk is asking for feedback",
           "description": "Suggestions for the title and description are welcome."
         },
         "editRequests": {
@@ -3513,7 +3513,7 @@
       },
       "sectionTitle": "Edit suggestions",
       "submittedTitle": "Submitted suggestions",
-      "sectionHint": "Other players can suggest a sharper title or description while this chunk is in draft. The owner reviews each suggestion.",
+      "sectionHint": "Other players can suggest a sharper title or description while this chunk is unsettled. The owner reviews each suggestion.",
       "formWantedLabel": "Wanted",
       "otherFieldsToggle": "Also suggest changes to other fields",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
@@ -3563,7 +3563,7 @@
         "unauthorized": "You can't perform this action.",
         "alreadyResolved": "This suggestion has already been resolved.",
         "ownerCannotPropose": "You can't suggest edits to your own chunk — edit it directly instead.",
-        "chunkNotDraft": "This chunk is published and is not accepting suggestions right now.",
+        "chunkNotDraft": "This chunk is settled and is not accepting suggestions right now.",
         "alreadyHasPending": "You already have a pending suggestion for this chunk. Withdraw it first if you want to propose something different.",
         "blocked": "You can't suggest edits to this user's content."
       }
