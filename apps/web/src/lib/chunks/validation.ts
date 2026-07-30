@@ -25,8 +25,12 @@ export const CHUNK_SLUG_MAX_LENGTH = 50;
 /**
  * Valid slug pattern: lowercase alphanumeric segments separated by single
  * hyphens. No leading/trailing hyphens, no consecutive hyphens.
+ *
+ * Exported so the authoring form's submit gate can apply the identical
+ * rule client-side — a rule the client cannot see is one the author only
+ * learns about from the preview, in a language the server picked.
  */
-const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+export const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
  * Best-effort slug suggestion from a free-form title. Lowercases, collapses
@@ -51,7 +55,7 @@ export function deriveSlugFromTitle(title: string): string {
  * inputs. 5,000 chars comfortably covers long annotations while still being
  * safe to render in the admin UI.
  */
-const CHUNK_DESCRIPTION_MAX_LENGTH = 5000;
+export const CHUNK_DESCRIPTION_MAX_LENGTH = 5000;
 
 export type ChunkMutationMode = 'create' | 'update';
 

@@ -3418,7 +3418,10 @@
       "errors": {
         "invalidFen": "El FEN no es una disposición de tablero válida.",
         "titleRequired": "El título es obligatorio.",
+        "titleTooLong": "El título debe tener {max} caracteres o menos.",
         "slugRequired": "El slug es obligatorio.",
+        "slugInvalid": "El slug solo puede contener letras minúsculas, números y guiones simples (por ejemplo, rook-battery).",
+        "slugTooLong": "El slug debe tener {max} caracteres o menos.",
         "draftWriteFailed": "No se pudo guardar el borrador localmente. El almacenamiento del navegador puede estar lleno o no disponible.",
         "signInRequired": "Inicia sesión para continuar.",
         "banned": "Tu cuenta está suspendida.",
@@ -3429,6 +3432,7 @@
         "alreadyDeleted": "Este chunk ya se ha eliminado.",
         "cannotEditPublished": "Este chunk está publicado y ya no se puede editar. La publicación es irreversible: para modificarlo, elimina este chunk y crea uno nuevo.",
         "descriptionRequired": "Este chunk necesita una descripción antes de poder publicarse.",
+        "descriptionTooLong": "La descripción debe tener {max} caracteres o menos.",
         "invalidFeedbackTopic": "Tema de comentarios desconocido. Actualiza la página e inténtalo de nuevo."
       },
       "draft": {

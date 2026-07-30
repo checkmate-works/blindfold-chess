@@ -3418,7 +3418,10 @@
       "errors": {
         "invalidFen": "O FEN não é um layout de tabuleiro válido.",
         "titleRequired": "O título é obrigatório.",
+        "titleTooLong": "O título deve ter no máximo {max} caracteres.",
         "slugRequired": "O slug é obrigatório.",
+        "slugInvalid": "O slug pode conter apenas letras minúsculas, números e hifens simples (por exemplo, rook-battery).",
+        "slugTooLong": "O slug deve ter no máximo {max} caracteres.",
         "draftWriteFailed": "Não foi possível salvar o rascunho localmente. O armazenamento do navegador pode estar cheio ou indisponível.",
         "signInRequired": "Faça login para continuar.",
         "banned": "Sua conta está suspensa.",
@@ -3429,6 +3432,7 @@
         "alreadyDeleted": "Este chunk já foi excluído.",
         "cannotEditPublished": "Este chunk está publicado e não pode mais ser editado. A publicação é irreversível — para revisá-lo, exclua este chunk e crie um novo.",
         "descriptionRequired": "Este chunk precisa de uma descrição antes de poder ser publicado.",
+        "descriptionTooLong": "A descrição deve ter no máximo {max} caracteres.",
         "invalidFeedbackTopic": "Tópico de feedback desconhecido. Atualize a página e tente novamente."
       },
       "draft": {

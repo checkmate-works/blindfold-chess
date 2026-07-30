@@ -230,7 +230,7 @@ export function ChunkForm(props: Props) {
       description,
     });
     if (invalid) {
-      submitError.report(invalid.field, t(invalid.key));
+      submitError.report(invalid.field, t(invalid.key, invalid.values));
       return;
     }
 
