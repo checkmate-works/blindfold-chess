@@ -16,7 +16,7 @@ import type {
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { PlaySettingsIndicator } from '@/app/[locale]/(public)/games/shared/[id]/_components/PlaySettingsIndicator';
 import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
@@ -238,7 +238,9 @@ export function GameStatsOverview({
             {/* The position the game started from — only for games that did
                 not start at move one (custom FEN / seeded opening or PGN).
                 Clicking jumps the review to that position. Shown from the
-                player's perspective, like the board above. */}
+                player's perspective, like the board above — and themed from the
+                user's board preference, so it doesn't sit next to the replay
+                board in a different colour scheme. */}
             {startPosition && (
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">
@@ -250,7 +252,7 @@ export function GameStatsOverview({
                   className="block rounded-sm hover:opacity-80 transition-opacity"
                   title={t('operationLog.initialSettings.startingPosition')}
                 >
-                  <BoardThumbnail
+                  <ThemedBoardThumbnail
                     fen={startPosition.fen}
                     flipped={playerColor === 'black'}
                     className="w-28 h-28 sm:w-32 sm:h-32"
