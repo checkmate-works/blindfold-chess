@@ -7,15 +7,6 @@ import { ADS_HIDDEN_COOKIE_NAME } from '@/lib/ads/ads-hidden-cookie';
 import { ThemeScript } from './ThemeScript';
 import { THEME_STORAGE_KEY } from './constants';
 
-// `ThemeScript` is an async Server Component that calls `headers()` to read
-// the per-request CSP nonce. In vitest+jsdom there is no Next.js request
-// context, so we mock `next/headers` to return an empty header bag — the
-// component's only need is to read `x-nonce`, which is allowed to be absent
-// (the component falls back to `undefined`).
-vi.mock('next/headers', () => ({
-  headers: async () => new Headers(),
-}));
-
 const FILTER_FRAGMENT = 'Encountered a script tag while rendering';
 
 /**
@@ -51,8 +42,8 @@ describe('inline bootstrap scripts: structural invariant', () => {
     cleanup();
   });
 
-  it('ThemeScript renders exactly one inline <script> with theme bootstrap content', async () => {
-    const element = await ThemeScript();
+  it('ThemeScript renders exactly one inline <script> with theme bootstrap content', () => {
+    const element = ThemeScript();
     const { container } = render(element);
     const scripts = container.querySelectorAll('script');
     expect(scripts).toHaveLength(1);
@@ -105,7 +96,7 @@ describe('ThemeScript dev/prod filter branch', () => {
     vi.resetModules();
     const { ThemeScript: DevThemeScript } = await import('./ThemeScript');
 
-    const element = await DevThemeScript();
+    const element = DevThemeScript();
     const { container } = render(element);
     const body = container.querySelector('script')!.innerHTML;
     expect(body).toContain(FILTER_FRAGMENT);
@@ -118,7 +109,7 @@ describe('ThemeScript dev/prod filter branch', () => {
     vi.resetModules();
     const { ThemeScript: ProdThemeScript } = await import('./ThemeScript');
 
-    const element = await ProdThemeScript();
+    const element = ProdThemeScript();
     const { container } = render(element);
     const body = container.querySelector('script')!.innerHTML;
     expect(body).not.toContain(FILTER_FRAGMENT);

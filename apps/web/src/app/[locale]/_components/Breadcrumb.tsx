@@ -25,16 +25,6 @@ type BreadcrumbContentProps = {
   locale: string;
   brandName: string;
   /**
-   * Optional per-request CSP nonce. Server Component callers resolve this
-   * via `resolveCspNonce()` (`@/lib/security/nonce`) and pass it through so
-   * the emitted `<script type="application/ld+json">` passes the enforcing
-   * `script-src` policy. Client-reachable callers omit it; the script then
-   * renders without a nonce and may be blocked by strict CSP in the
-   * browser, but Google's crawler still parses the JSON-LD from the HTML
-   * source, so rich-result eligibility is preserved.
-   */
-  nonce?: string;
-  /**
    * `'default'` reserves a 40px tall band (CLS-safe for 2-line wraps on narrow
    * viewports — e.g. es `/games/play/recall`) and adds a 16px bottom margin.
    * `'compact'` halves that visible spacing for use inside `PageLayout`, where the
@@ -49,7 +39,6 @@ export function BreadcrumbContent({
   items,
   locale,
   brandName,
-  nonce,
   density = 'default',
 }: BreadcrumbContentProps) {
   const navClass =
@@ -57,7 +46,7 @@ export function BreadcrumbContent({
 
   return (
     <>
-      <JsonLd data={generateBreadcrumbListSchema(items, locale, brandName)} nonce={nonce} />
+      <JsonLd data={generateBreadcrumbListSchema(items, locale, brandName)} />
       <nav aria-label="Breadcrumb" className={navClass}>
         <ol className="flex flex-wrap items-center gap-x-1 text-sm">
           <li>
@@ -100,19 +89,9 @@ type BreadcrumbProps = {
   items: BreadcrumbItem[];
   /** See `BreadcrumbContentProps.locale` — required for the same reason. */
   locale: string;
-  /** See `BreadcrumbContentProps.nonce`. */
-  nonce?: string;
   density?: Density;
 };
 
-export function Breadcrumb({ items, locale, nonce, density }: BreadcrumbProps) {
-  return (
-    <BreadcrumbContent
-      items={items}
-      locale={locale}
-      brandName="Home"
-      nonce={nonce}
-      density={density}
-    />
-  );
+export function Breadcrumb({ items, locale, density }: BreadcrumbProps) {
+  return <BreadcrumbContent items={items} locale={locale} brandName="Home" density={density} />;
 }

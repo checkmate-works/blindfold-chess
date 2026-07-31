@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
@@ -193,8 +192,7 @@ async function OpeningsContent({ params, searchParams }: Props) {
  * Mirrors `OpeningsContent`'s resolved DOM to minimise CLS when the real
  * content swaps in.
  */
-async function OpeningsSkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function OpeningsSkeleton({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (
@@ -248,9 +246,10 @@ async function OpeningsSkeleton() {
  * here would also wrap the deeper `[slug]` and `[slug]/posts/[postId]`
  * detail routes, causing a double-skeleton flash on direct navigation.
  */
-export default function OpeningsPage({ params, searchParams }: Props) {
+export default async function OpeningsPage({ params, searchParams }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<OpeningsSkeleton />}>
+    <Suspense fallback={<OpeningsSkeleton locale={locale} />}>
       <OpeningsContent params={params} searchParams={searchParams} />
     </Suspense>
   );

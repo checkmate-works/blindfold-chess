@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { NavigationGuardProvider } from 'next-navigation-guard';
 import { Inter } from 'next/font/google';
-import { headers } from 'next/headers';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
@@ -54,7 +53,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   // Sidebar nav: grouped for scannability. Item labels come from i18n (resolved
   // here on the server); group headings are plain English by the admin
@@ -106,11 +104,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
-        <style
-          nonce={nonce}
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: generateThemeCSS() }}
-        />
+        <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />

@@ -14,11 +14,9 @@ type PaginationNavProps = {
 /**
  * Localised pagination bar for Server Component callers.
  *
- * Accepts `locale` as a prop rather than resolving it internally: this app
- * runs no next-intl middleware and never calls `setRequestLocale()`, so the
- * bare `getTranslations(namespace)` shorthand can resolve to the default
- * locale outside a page's own `params` (see getLocaleFromPathnameHeader's
- * TSDoc), and every caller already has `locale` in scope.
+ * Accepts `locale` as a prop rather than resolving it internally: every
+ * caller already has `locale` in scope, and the explicit-locale call form
+ * keeps this component free of request-scoped lookups.
  *
  * Async Server Component — must NOT be re-exported from the `_components`
  * barrel (see the barrel convention in apps/web/CLAUDE.md); import it

@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
@@ -131,8 +130,7 @@ async function SquaresContent({ params, searchParams }: Props) {
  * section sits below the fold, so the skeleton focuses on the lead
  * recent-posts feed.
  */
-async function SquaresSkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function SquaresSkeleton({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (
@@ -159,9 +157,10 @@ async function SquaresSkeleton() {
  * here would also wrap the deeper `[square]` and `[square]/posts/[postId]`
  * detail routes, causing a double-skeleton flash on direct navigation.
  */
-export default function SquaresPage({ params, searchParams }: Props) {
+export default async function SquaresPage({ params, searchParams }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<SquaresSkeleton />}>
+    <Suspense fallback={<SquaresSkeleton locale={locale} />}>
       <SquaresContent params={params} searchParams={searchParams} />
     </Suspense>
   );

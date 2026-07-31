@@ -13,22 +13,23 @@
  *
  * `JSON.stringify` alone does not escape any of these characters.
  *
- * The per-request CSP nonce is passed in as the `nonce` prop so
- * `<script type="application/ld+json">` passes the enforcing `script-src`
- * policy set by `src/proxy.ts`. While `application/ld+json` is not
- * executable JavaScript, browsers still match it against `script-src` and
- * will block unnonced tags under a strict policy.
+ * No CSP nonce is attached, deliberately. `application/ld+json` is a data
+ * block per the HTML spec: "prepare the script element" returns before any
+ * fetch, execution, or CSP inline-behavior check for script types that are
+ * not classic / module / importmap, so `script-src` never applies to this
+ * element. An earlier revision threaded a per-request nonce through every
+ * caller "just in case" -- that plumbing required a `headers()` read in each
+ * calling Server Component, which forced otherwise-static pages into
+ * dynamic rendering. Should some exotic browser ever diverge from the spec
+ * here, the report-only CSP (`/api/csp-report`, issue #89) would surface it
+ * as violation reports before any enforcement change could break rendering.
  *
- * `nonce` is accepted as a prop (rather than read inside this component via
- * `next/headers`) so the module does not statically depend on any
- * server-only API. Keeping that dependency out means `JsonLd` -- and the
- * components that compose it (notably `Breadcrumb`) -- stay importable from
- * Client Components without tripping Next.js' "This API is only available
- * in Server Components" error during `next build`. Server Components that
- * need a nonce read it via `resolveCspNonce()` from `@/lib/security/nonce`
- * and forward it here.
+ * Keeping the component free of `next/headers` also means `JsonLd` -- and
+ * the components that compose it (notably `Breadcrumb`) -- stay importable
+ * from Client Components without tripping Next.js' "This API is only
+ * available in Server Components" error during `next build`.
  */
-export function JsonLd({ data, nonce }: { data: object; nonce?: string }) {
+export function JsonLd({ data }: { data: object }) {
   const safe = JSON.stringify(data)
     .replace(/</g, '\\u003c')
     .replace(/\u2028/g, '\\u2028')
@@ -37,7 +38,6 @@ export function JsonLd({ data, nonce }: { data: object; nonce?: string }) {
   return (
     <script
       type="application/ld+json"
-      nonce={nonce}
       suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: safe }}
     />

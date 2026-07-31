@@ -1,4 +1,4 @@
-import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
+import { getPublicLeaderboard } from '@/app/[locale]/(public)/leaderboard/_lib/get-public-leaderboard';
 import type {
   LeaderboardModule,
   LeaderboardPeriod,
@@ -22,7 +22,7 @@ export async function resolveLeaderboardWithFallback(
   module: LeaderboardModule,
   key: string
 ): Promise<LeaderboardPreviewData | null> {
-  const weekly = await getLeaderboard(module, key, 'weekly', 1);
+  const weekly = await getPublicLeaderboard(module, key, 'weekly', 1);
   if (weekly.rows.length > 0) {
     return {
       rows: weekly.rows.slice(0, 3),
@@ -30,7 +30,7 @@ export async function resolveLeaderboardWithFallback(
       period: 'weekly',
     };
   }
-  const allTime = await getLeaderboard(module, key, 'all-time', 1);
+  const allTime = await getPublicLeaderboard(module, key, 'all-time', 1);
   if (allTime.rows.length === 0) return null;
   return {
     rows: allTime.rows.slice(0, 3),

@@ -24,7 +24,6 @@ import { ChallengeCard } from '@/app/_components';
 import { DailyPuzzleCard } from '@/app/_components/DailyPuzzleCard';
 import { SITE_URL } from '@/config';
 
-import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { BeltRankBadge } from '@/app/[locale]/(public)/practice/_components/BeltRankBadge';
@@ -167,11 +166,9 @@ export default async function PracticePage({ params }: Props) {
     }))
   );
 
-  const nonce = await resolveCspNonce();
-
   return (
     <>
-      <JsonLd data={generateItemListSchema(itemListItems)} nonce={nonce} />
+      <JsonLd data={generateItemListSchema(itemListItems)} />
       <PageLayout
         title={t('practice.title')}
         locale={locale}

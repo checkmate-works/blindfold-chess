@@ -3,8 +3,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
-
 import { resolveNativeAds } from '@/lib/ads/ad';
 import { FEED_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { createClient } from '@/lib/supabase/server';
@@ -95,8 +93,7 @@ async function TopicsContent({ params }: Props) {
  * TopicTabs → card-variant feed) to minimise CLS when the real content
  * swaps in.
  */
-async function TopicsSkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function TopicsSkeleton({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (
@@ -126,9 +123,10 @@ async function TopicsSkeleton() {
  * page's own JSX means it only exists in the render tree when this exact
  * route is the matched leaf.
  */
-export default function TopicsPage({ params }: Props) {
+export default async function TopicsPage({ params }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<TopicsSkeleton />}>
+    <Suspense fallback={<TopicsSkeleton locale={locale} />}>
       <TopicsContent params={params} />
     </Suspense>
   );

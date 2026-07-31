@@ -12,9 +12,8 @@ type Props = {
 export async function AuthErrorMessage({ namespace, locale }: Props) {
   // Accepts `locale` as a prop rather than resolving it internally via
   // `getTranslations(namespace)` (bare shorthand — no explicit locale): both
-  // callers already have `locale` from their own `params`, and the bare form
-  // resolves the same unreliable way `getLocale()` does outside a page's own
-  // params (see getLocaleFromPathnameHeader's TSDoc).
+  // callers already have `locale` from their own `params`, and the explicit
+  // form keeps this component free of request-scoped locale resolution.
   const t = await getTranslations({ locale, namespace });
 
   return (

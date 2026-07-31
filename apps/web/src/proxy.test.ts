@@ -4,25 +4,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * `proxy.ts` is the global edge middleware for the app. These tests pin
- * down three behaviors that must hold for every request that flows through
+ * down the behaviors that must hold for every request that flows through
  * it:
  *
- *   1. A per-request CSP nonce is generated and attached to the forwarded
- *      request via the `x-nonce` header, so downstream Server Components
- *      can read it through `headers()` and stamp it onto inline scripts.
- *   2. The response carries a `Content-Security-Policy-Report-Only` header
+ *   1. The response carries a `Content-Security-Policy-Report-Only` header
  *      (and NOT an enforcing `Content-Security-Policy` — sending both would
- *      make the browser honour the enforcing one) whose `script-src`
- *      contains the same nonce as `x-nonce`. The policy was downgraded to
- *      Report-Only in c6805b993; see the comment on `applyCspHeaders` in
+ *      make the browser honour the enforcing one). The policy was downgraded
+ *      to Report-Only in c6805b993; see the comment on `applyCspHeaders` in
  *      proxy.ts and GitHub issue #89 for the path back to enforcing.
+ *   2. Dynamic routes get the per-request-nonce `script-src` variant (a
+ *      fresh nonce per request); prerendered content routes get the
+ *      static-content variant, whose cached HTML cannot carry a nonce. Next
+ *      extracts the nonce from this response header to stamp its own
+ *      scripts during a dynamic render — no Server Component reads it, so
+ *      no `x-nonce` request header exists anymore.
  *   3. The response carries a `Report-To` header pointing at the
  *      `/api/csp-report` collector.
  *
  * `updateSession` is mocked so the tests do not require a live Supabase
  * instance. We echo back `requestHeaders` from the call so assertions can
- * verify the nonce actually reached Supabase/SSR (which is how RSCs later
- * see it via `headers()`).
+ * verify what the forwarded request carries.
  */
 
 let capturedRequestHeaders: Headers | undefined;
@@ -58,22 +59,19 @@ function makeRequest(path: string): NextRequest {
   return new NextRequest(new URL(path, 'https://example.test'));
 }
 
+function scriptSrcOf(response: Response): string | undefined {
+  return response.headers
+    .get('Content-Security-Policy-Report-Only')
+    ?.split('; ')
+    .find((d) => d.startsWith('script-src '));
+}
+
 describe('proxy', () => {
   beforeEach(() => {
     capturedRequestHeaders = undefined;
   });
 
-  it('generates a nonce and forwards it on the request as x-nonce', async () => {
-    await proxy(makeRequest('/en'));
-
-    expect(capturedRequestHeaders).toBeDefined();
-    const nonce = capturedRequestHeaders?.get('x-nonce');
-    expect(nonce).toBeTruthy();
-    // 16 random bytes -> 24-character base64 string (includes padding).
-    expect(nonce).toMatch(/^[A-Za-z0-9+/]{22,24}={0,2}$/);
-  });
-
-  it('sets a Report-Only CSP header whose script-src contains the forwarded nonce', async () => {
+  it('sets a Report-Only CSP header with the per-request-nonce variant on dynamic routes', async () => {
     const response = await proxy(makeRequest('/en'));
 
     // CSP is currently Report-Only on purpose — see the comment on
@@ -87,10 +85,52 @@ describe('proxy', () => {
     // honour the enforcing one, defeating the rollout strategy.
     expect(response.headers.get('Content-Security-Policy')).toBeNull();
 
-    const nonce = capturedRequestHeaders?.get('x-nonce');
-    expect(csp).toContain(`'nonce-${nonce}'`);
+    expect(csp).toMatch(/'nonce-[A-Za-z0-9+/]{22,24}={0,2}'/);
     expect(csp).toContain("'strict-dynamic'");
     expect(csp).not.toContain("script-src 'self' 'unsafe-inline'");
+  });
+
+  it('serves the static-content variant (no nonce) on prerendered content routes', async () => {
+    // /en/faq is SSG: its cached HTML cannot carry a per-request nonce, so
+    // the nonce variant would flag every framework script as a violation.
+    const scriptSrc = scriptSrcOf(await proxy(makeRequest('/en/faq')));
+
+    expect(scriptSrc).toBeDefined();
+    expect(scriptSrc).not.toContain("'nonce-");
+    expect(scriptSrc).not.toContain("'strict-dynamic'");
+    expect(scriptSrc).toContain("'unsafe-inline'");
+  });
+
+  it('keeps the nonce variant on auth-carrying surfaces', async () => {
+    for (const path of ['/en/topics', '/admin', '/en/games/play']) {
+      const scriptSrc = scriptSrcOf(await proxy(makeRequest(path)));
+      expect(scriptSrc, path).toContain("'nonce-");
+      expect(scriptSrc, path).not.toContain("'unsafe-inline'");
+    }
+  });
+
+  it('generates a different nonce on every request', async () => {
+    const cspA = (await proxy(makeRequest('/en'))).headers.get(
+      'Content-Security-Policy-Report-Only'
+    );
+    const cspB = (await proxy(makeRequest('/en'))).headers.get(
+      'Content-Security-Policy-Report-Only'
+    );
+    const nonceOf = (csp: string | null) => csp?.match(/'nonce-([^']+)'/)?.[1];
+
+    expect(nonceOf(cspA)).toBeTruthy();
+    expect(nonceOf(cspB)).toBeTruthy();
+    expect(nonceOf(cspA)).not.toBe(nonceOf(cspB));
+  });
+
+  it('no longer forwards an x-nonce request header (no Server Component reads it)', async () => {
+    // The old design threaded the nonce through `headers()` into layouts,
+    // which forced every route dynamic. The bootstrap scripts are hash-
+    // allowed now; reintroducing the header would invite that read back.
+    await proxy(makeRequest('/en'));
+
+    expect(capturedRequestHeaders).toBeDefined();
+    expect(capturedRequestHeaders?.get('x-nonce')).toBeNull();
   });
 
   it('sets a Report-To header pointing at /api/csp-report', async () => {
@@ -103,24 +143,10 @@ describe('proxy', () => {
     expect(parsed.endpoints).toEqual([{ url: '/api/csp-report' }]);
   });
 
-  it('generates a different nonce on every request', async () => {
-    await proxy(makeRequest('/en'));
-    const nonceA = capturedRequestHeaders?.get('x-nonce');
-    await proxy(makeRequest('/en'));
-    const nonceB = capturedRequestHeaders?.get('x-nonce');
-
-    expect(nonceA).toBeTruthy();
-    expect(nonceB).toBeTruthy();
-    expect(nonceA).not.toBe(nonceB);
-  });
-
   it('returns 404 for WP-probe paths without running the session refresh', async () => {
     const response = await proxy(makeRequest('/wp-login.php'));
 
     expect(response.status).toBe(404);
-    // Session update is skipped, so no nonce is forwarded on the request —
-    // but that is fine because the response body is empty JSON and no RSC
-    // renders below it.
     expect(capturedRequestHeaders).toBeUndefined();
   });
 });

@@ -5,7 +5,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { BoardFrame, BoardSkeleton } from '@/app/_components';
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -207,8 +206,7 @@ async function SquarePostsContent({ params, searchParams }: Props) {
  * openings-link heading are runtime values, so they render as placeholder
  * bars.
  */
-async function SquarePostsSkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function SquarePostsSkeleton({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (
@@ -259,9 +257,10 @@ async function SquarePostsSkeleton() {
  * here would also wrap the deeper `posts/[postId]` detail route, causing a
  * double-skeleton flash when a `PostCard` links straight into a post.
  */
-export default function SquarePostsPage({ params, searchParams }: Props) {
+export default async function SquarePostsPage({ params, searchParams }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<SquarePostsSkeleton />}>
+    <Suspense fallback={<SquarePostsSkeleton locale={locale} />}>
       <SquarePostsContent params={params} searchParams={searchParams} />
     </Suspense>
   );

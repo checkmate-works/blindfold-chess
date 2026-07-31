@@ -7,7 +7,6 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateArticleSchema } from '@/lib/seo/jsonld';
 
 import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -128,11 +127,9 @@ export default async function LearnArticlePage({ params }: Props) {
     locale,
   };
 
-  const nonce = await resolveCspNonce();
-
   return (
     <>
-      <JsonLd data={generateArticleSchema(articleSchemaData)} nonce={nonce} />
+      <JsonLd data={generateArticleSchema(articleSchemaData)} />
       <PageLayout
         title={article.metadata.title}
         locale={locale}

@@ -39,7 +39,7 @@ export async function renderChapterBody(
   // leave the door open for a chapter-last-page CTA later. Currently unused.
   void _requirements;
 
-  const { locale, rankSlug, rankName, beltColor, tRanks, tGuides, nonce } = ctx;
+  const { locale, rankSlug, rankName, beltColor, tRanks, tGuides } = ctx;
   const { chapterSlug, pageNumber } = props;
 
   const chapter = findChapter(guide, chapterSlug);
@@ -77,7 +77,7 @@ export async function renderChapterBody(
 
   return (
     <>
-      <JsonLd data={learningResourceSchema} nonce={nonce} />
+      <JsonLd data={learningResourceSchema} />
       <PageLayout title={rankName} locale={locale}>
         <RankHeader beltColor={beltColor}>{chapter.title}</RankHeader>
 

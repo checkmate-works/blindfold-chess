@@ -2,23 +2,44 @@
  * Content Security Policy helpers.
  *
  * CSP is constructed per-request in `src/proxy.ts` rather than via
- * `next.config.ts` because the `script-src` directive needs a per-request
- * `'nonce-<value>'` token — static headers defined in `next.config.ts` cannot
- * hold per-request values.
+ * `next.config.ts` because `script-src` varies per request: dynamic routes
+ * get a per-request `'nonce-<value>'` token, and the choice of policy
+ * variant depends on the request path — static headers defined in
+ * `next.config.ts` cannot express either.
  *
- * The policy uses the `'strict-dynamic'` + nonce pattern recommended by the
- * Next.js App Router CSP guide:
+ * ## Two `script-src` variants
+ *
+ * **Per-request-nonce variant** (default) — the `'strict-dynamic'` + nonce
+ * pattern recommended by the Next.js App Router CSP guide:
  * https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
  *
- * - Inline `<script>` tags in Server Components must carry the nonce via the
- *   `nonce={...}` prop. The nonce is read from the `x-nonce` request header
- *   (set by the proxy) through `headers()` in Server Components.
- * - Scripts injected by Next.js itself (hydration, RSC chunks, `next/script`)
- *   pick up the nonce automatically when `x-nonce` is present on the request.
+ * - Scripts injected by Next.js itself (hydration, RSC flight chunks,
+ *   `next/script`) pick up the nonce automatically: Next extracts it from the
+ *   `Content-Security-Policy(-Report-Only)` header visible to the renderer
+ *   and stamps it on every script it emits during a dynamic render.
+ * - The app's own three build-time-constant inline bootstrap scripts (theme,
+ *   ad-hide, announcement-dismiss) are allowed via `'sha256-...'` hash
+ *   sources (`./inline-script-hashes.ts`) rather than the nonce. Hashes are
+ *   honored alongside `'strict-dynamic'` (CSP3), and — critically — they need
+ *   no `headers()` read in Server Components. The previous design threaded
+ *   the nonce through `headers()` into every layout, which marked the whole
+ *   `[locale]/` tree dynamic and silently disabled static generation.
  * - With `'strict-dynamic'`, modern browsers trust scripts with the correct
- *   nonce and anything they subsequently load; host/scheme allow-lists
+ *   nonce/hash and anything they subsequently load; host/scheme allow-lists
  *   (`https:`, specific domains) become a fallback for browsers that do not
  *   understand `'strict-dynamic'`.
+ *
+ * **Static-content variant** — for prerendered (SSG/ISR) routes, selected by
+ * path in `src/proxy.ts` via `isStaticContentPath()`. Prerendered HTML is
+ * shared across requests, so it can never carry a per-request nonce; under
+ * the nonce variant every framework script in that HTML would violate. This
+ * variant drops nonce/hashes/`'strict-dynamic'` and falls back to
+ * `'unsafe-inline'` so cached HTML keeps working. The hash sources MUST stay
+ * out of this variant: per CSP2, the presence of any nonce or hash makes
+ * browsers ignore `'unsafe-inline'`, which would re-break the framework's
+ * inline flight scripts. See `./static-content-paths.ts` for the trade-off
+ * discussion. Every directive other than `script-src` is identical in both
+ * variants.
  *
  * In development, `'unsafe-eval'` is added to `script-src` because React Fast
  * Refresh / Turbopack HMR rely on `eval`. Production never allows
@@ -30,6 +51,7 @@
  * overhauling every CSS-in-JS / inline `<style>` usage in the app, which is
  * out of scope for the XSS hardening pass.
  */
+import { inlineScriptHashes } from './inline-script-hashes';
 
 const REPORT_GROUP = 'csp-endpoint';
 const REPORT_PATH = '/api/csp-report';
@@ -93,7 +115,15 @@ function wsOriginFromUrl(raw: string | undefined): string | null {
 }
 
 /**
- * Build the full `Content-Security-Policy` header value for a given nonce.
+ * The `script-src` strategy for a response — see the module doc above for
+ * what each variant means and when the proxy picks which.
+ */
+export type ScriptPolicy =
+  { mode: 'per-request-nonce'; nonce: string } | { mode: 'static-content' };
+
+/**
+ * Build the full `Content-Security-Policy` header value for a given
+ * `script-src` strategy.
  *
  * The directive list is intentionally kept in a single place so the proxy
  * and any future SSR-only code paths agree on the policy. When the hosting
@@ -108,7 +138,7 @@ function wsOriginFromUrl(raw: string | undefined): string | null {
  * `frame-ancestors` line below and the module doc in `./framing.ts`.
  */
 export function buildCspHeader(
-  nonce: string,
+  scriptPolicy: ScriptPolicy,
   options: { isDevelopment?: boolean; allowFraming?: boolean } = {}
 ): string {
   const isDevelopment = options.isDevelopment ?? process.env.NODE_ENV === 'development';
@@ -142,11 +172,19 @@ export function buildCspHeader(
   // Keep host allow-lists: they act as a fallback for browsers that do not
   // implement `'strict-dynamic'`. Modern browsers ignore host-based entries
   // in `script-src` once `'strict-dynamic'` is present, but older ones still
-  // rely on them.
+  // rely on them. In the static-content variant there is no
+  // `'strict-dynamic'`, so the hosts (and `'unsafe-inline'`) are what the
+  // browser actually evaluates.
   const scriptSrc = [
     "'self'",
-    `'nonce-${nonce}'`,
-    "'strict-dynamic'",
+    // Variant-specific sources — see the module doc. The hash sources for the
+    // app's constant bootstrap scripts belong ONLY to the nonce variant:
+    // adding any hash to the static variant would make browsers ignore its
+    // 'unsafe-inline' fallback and block the framework's inline scripts in
+    // prerendered HTML.
+    ...(scriptPolicy.mode === 'per-request-nonce'
+      ? [`'nonce-${scriptPolicy.nonce}'`, "'strict-dynamic'", ...inlineScriptHashes(isDevelopment)]
+      : ["'unsafe-inline'"]),
     // Required so Stockfish (public/stockfish.js + stockfish.wasm) can compile
     // WebAssembly on /[locale]/games/play. Unlike 'unsafe-eval', this keyword
     // ONLY permits WebAssembly.compile / WebAssembly.instantiate — it does NOT

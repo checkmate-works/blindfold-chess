@@ -38,7 +38,7 @@ export async function renderFlatBody(
   props: FlatBodyProps,
   requirements: RankRequirement[]
 ): Promise<ReactNode> {
-  const { locale, rankSlug, rankName, beltColor, tRanks, tGuides, nonce } = ctx;
+  const { locale, rankSlug, rankName, beltColor, tRanks, tGuides } = ctx;
   const { pageNumber } = props;
 
   const pages = guide.pages;
@@ -105,7 +105,7 @@ export async function renderFlatBody(
 
   return (
     <>
-      <JsonLd data={learningResourceSchema} nonce={nonce} />
+      <JsonLd data={learningResourceSchema} />
       <PageLayout title={rankName} locale={locale}>
         <RankHeader beltColor={beltColor}>{guideHeaderLabel}</RankHeader>
 

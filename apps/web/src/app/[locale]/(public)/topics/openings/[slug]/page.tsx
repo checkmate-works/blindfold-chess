@@ -5,7 +5,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { BoardFrame } from '@/app/_components';
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
@@ -276,8 +275,7 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
  * real content swaps in. Runtime-only values (opening name, post list)
  * render as placeholder bars.
  */
-async function OpeningDetailSkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function OpeningDetailSkeleton({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'topics.openings.detail' });
 
   return (
@@ -355,9 +353,10 @@ async function OpeningDetailSkeleton() {
  * here would also wrap the deeper `posts/[postId]` detail route, causing a
  * double-skeleton flash when a `TopicPostCard` links straight into a post.
  */
-export default function OpeningDetailPage({ params, searchParams }: Props) {
+export default async function OpeningDetailPage({ params, searchParams }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<OpeningDetailSkeleton />}>
+    <Suspense fallback={<OpeningDetailSkeleton locale={locale} />}>
       <OpeningDetailContent params={params} searchParams={searchParams} />
     </Suspense>
   );

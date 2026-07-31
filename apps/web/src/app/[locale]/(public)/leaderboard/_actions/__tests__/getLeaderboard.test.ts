@@ -392,7 +392,7 @@ describe('getLeaderboard', () => {
       expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
     });
 
-    it('returns empty result when user ranked row query throws', async () => {
+    it('keeps the public rows when only the user ranked row query throws', async () => {
       const currentUserId = 'current-user';
       setupAuthUser(currentUserId);
 
@@ -402,8 +402,12 @@ describe('getLeaderboard', () => {
 
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1);
 
-      // The entire try-catch catches both ranking and user row errors
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      // A failed per-viewer lookup degrades to "no own-rank row" instead of
+      // discarding the already-fetched public ranking (which the pre-split
+      // implementation did as a side effect of one enclosing try-catch).
+      expect(result.rows).toHaveLength(1);
+      expect(result.totalCount).toBe(100);
+      expect(result.currentUserRank).toBeNull();
     });
   });
 

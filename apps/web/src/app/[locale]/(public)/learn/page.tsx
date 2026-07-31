@@ -4,8 +4,6 @@ import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
-
 import {
   CardLink,
   Divider,
@@ -91,8 +89,7 @@ async function LearnContent({ params }: Props) {
  * because their bodies diverge from this index shape (ListLink rows and a
  * Markdown article body respectively).
  */
-async function LearnSkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function LearnSkeleton({ locale }: { locale: string }) {
   const [t, tNav] = await Promise.all([
     getTranslations({ locale, namespace: 'learn' }),
     getTranslations({ locale, namespace: 'navigation' }),
@@ -149,9 +146,10 @@ async function LearnSkeleton() {
  * boundary inside this page's own JSX means it only exists in the render
  * tree when this exact route is the matched leaf.
  */
-export default function LearnPage({ params }: Props) {
+export default async function LearnPage({ params }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<LearnSkeleton />}>
+    <Suspense fallback={<LearnSkeleton locale={locale} />}>
       <LearnContent params={params} />
     </Suspense>
   );

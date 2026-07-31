@@ -4,7 +4,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Button } from '@/app/_components';
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import { Link } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
@@ -285,8 +284,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
  * Mirrors `ChunksListContent` (PageTitle → listSubtitle SectionTitle →
  * TopicTabs → filter chips → CatalogListCard list) to minimise CLS.
  */
-async function ChunksListSkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function ChunksListSkeleton({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'chunks' });
 
   return (
@@ -327,9 +325,10 @@ async function ChunksListSkeleton() {
  * page's own JSX means it only exists in the render tree when this exact
  * route is the matched leaf.
  */
-export default function ChunksListPage({ params, searchParams }: Props) {
+export default async function ChunksListPage({ params, searchParams }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<ChunksListSkeleton />}>
+    <Suspense fallback={<ChunksListSkeleton locale={locale} />}>
       <ChunksListContent params={params} searchParams={searchParams} />
     </Suspense>
   );

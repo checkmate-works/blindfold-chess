@@ -25,8 +25,9 @@ import { FeedSkeleton } from './_components/FeedSkeleton';
  * list is non-empty) gets a same-size circular placeholder so that row
  * doesn't shift width once the real button mounts.
  *
- * Locale is read via {@link getLocaleFromPathnameHeader}, NOT `getLocale()` —
- * see that function's TSDoc for why `getLocale()` is unreliable here.
+ * Locale is read via {@link getLocaleFromPathnameHeader} — permitted here
+ * because the home feed is dynamically rendered regardless (per-user feed);
+ * see that helper's TSDoc before copying this into a static route's boundary.
  */
 export default async function HomeLoading() {
   const locale = await getLocaleFromPathnameHeader();
