@@ -147,15 +147,14 @@ export const RATE_LIMITS = {
   addRepertoireLine: { action: 'add_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
   deleteRepertoireLine: { action: 'delete_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
   /**
-   * Reordering a repertoire's lines. Looser than the other line limits for the
-   * same reason as {@link RATE_LIMITS.saveRepertoireShapes}: this is a direct
-   * manipulation surface, not a form. Every drop persists, and putting a
-   * freshly imported course of ~20 lines into a sensible order is a few dozen
-   * drops in one sitting.
+   * Reordering a repertoire's lines. Aligned with the other line limits rather
+   * than the drawing-surface ones: the arrange page buffers the whole
+   * rearrangement and writes once, on Save, so a session of dragging costs one
+   * attempt no matter how many rows moved.
    */
   reorderRepertoireLines: {
     action: 'reorder_repertoire_lines',
-    maxAttempts: 200,
+    maxAttempts: 20,
     windowMs: 3_600_000,
   },
   updateRepertoire: { action: 'update_repertoire', maxAttempts: 20, windowMs: 3_600_000 },

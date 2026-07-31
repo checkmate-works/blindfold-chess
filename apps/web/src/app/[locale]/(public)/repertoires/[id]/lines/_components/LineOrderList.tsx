@@ -1,8 +1,14 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useRef, useState } from 'react';
 
+import { useTranslations } from 'next-intl';
+
+import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { Button, FormErrorBanner } from '@/app/_components';
+import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
+import { flushSync } from 'react-dom';
 import { HiBars3, HiChevronDown, HiChevronUp } from 'react-icons/hi2';
 
 import { reorderLines } from '../../_actions/reorderLines';
@@ -20,11 +26,21 @@ export type LineOrderRow = {
 type Props = {
   repertoireId: string;
   rows: LineOrderRow[];
+  /** Where Save and Cancel both land — the course the owner came from. */
+  detailHref: string;
+  /**
+   * `data-tour-id`s the page's help tour points at. The tour targets live in
+   * here rather than on the page because both things it explains — the grip
+   * handle and the unchanging line number — are inside a row.
+   */
+  tourIds: { handle: string; lineNo: string };
   labels: {
-    hint: string;
     dragHandle: string;
     moveUp: string;
     moveDown: string;
+    save: string;
+    saving: string;
+    cancel: string;
     error: string;
   };
 };
@@ -40,6 +56,13 @@ const orderKey = (rows: LineOrderRow[]) => rows.map((r) => r.lineNo).join(',');
 
 /**
  * Drag-and-drop (and ▲▼) reordering of a repertoire's lines, for the owner.
+ *
+ * Edits are held in client state and committed by the Save button — the same
+ * submit-then-save contract as the metadata form next door, so the pair of
+ * actions under the list means what it means everywhere else in the app
+ * (Save commits, Cancel discards) and an arrangement can be tried out and
+ * backed away from. Leaving with an uncommitted order goes through the shared
+ * `useUnsavedChanges` guard rather than silently dropping it.
  *
  * Dragging is bound to the grip handle rather than the whole row, and the
  * handle alone carries `touch-action: none`. That is what makes the list work
@@ -57,31 +80,24 @@ const orderKey = (rows: LineOrderRow[]) => rows.map((r) => r.lineNo).join(',');
  * reordered list legitimately reads "3, 1, 2"; that is identity, not a stale
  * render.
  */
-export function LineOrderList({ repertoireId, rows: initialRows, labels }: Props) {
+export function LineOrderList({
+  repertoireId,
+  rows: initialRows,
+  detailHref,
+  tourIds,
+  labels,
+}: Props) {
   const router = useRouter();
+  const tUnsaved = useTranslations('unsavedChanges');
   const [rows, setRows] = useState(initialRows);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const rowRefs = useRef<(HTMLLIElement | null)[]>([]);
-  // Order when the gesture started, so a drag that ends where it began — or a
-  // press that never moved — doesn't spend a write.
-  const startOrderRef = useRef('');
 
-  function persist(ordered: LineOrderRow[]) {
-    setFailed(false);
-    startTransition(async () => {
-      const result = await reorderLines({
-        repertoireId,
-        orderedLineNos: ordered.map((r) => r.lineNo),
-      });
-      if (result.ok) return;
-      // Either the write failed or the client was stale (a line deleted in
-      // another tab). Both are resolved by re-reading the server's order.
-      setFailed(true);
-      router.refresh();
-    });
-  }
+  const isDirty = !submitted && orderKey(rows) !== orderKey(initialRows);
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   /** Which row the pointer is currently over, in the CURRENT display order. */
   function indexAtY(clientY: number): number | null {
@@ -100,7 +116,6 @@ export function LineOrderList({ repertoireId, rows: initialRows, labels }: Props
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
     setDragIndex(index);
-    startOrderRef.current = orderKey(rows);
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLButtonElement>) {
@@ -112,27 +127,42 @@ export function LineOrderList({ repertoireId, rows: initialRows, labels }: Props
   }
 
   function handlePointerUp() {
-    if (dragIndex === null) return;
     setDragIndex(null);
-    if (orderKey(rows) !== startOrderRef.current) persist(rows);
   }
 
   function step(index: number, delta: number) {
     const to = index + delta;
     if (to < 0 || to >= rows.length) return;
-    const next = move(rows, index, to);
-    setRows(next);
-    persist(next);
+    setRows(move(rows, index, to));
+  }
+
+  async function handleSave() {
+    setPending(true);
+    setError(null);
+
+    const result = await reorderLines({
+      repertoireId,
+      orderedLineNos: rows.map((r) => r.lineNo),
+    });
+    if (!result.ok) {
+      setPending(false);
+      setError(labels.error);
+      // The submitted set no longer matches the repertoire's live lines (a line
+      // deleted in another tab), or the write failed. Either way the list on
+      // screen is describing a course that no longer exists — re-read it.
+      router.refresh();
+      return;
+    }
+
+    // flushSync so the isDirty -> false re-render completes before
+    // router.push triggers the navigation guard (same as EditRepertoireForm).
+    flushSync(() => setSubmitted(true));
+    router.push(detailHref);
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">{labels.hint}</p>
-        {failed && <p className="text-xs text-destructive">{labels.error}</p>}
-      </div>
-
-      <ul className={`space-y-2 ${isPending ? 'opacity-70' : ''}`}>
+    <div className="space-y-6">
+      <ul className="space-y-2">
         {rows.map((row, index) => (
           <li
             key={row.lineNo}
@@ -146,6 +176,9 @@ export function LineOrderList({ repertoireId, rows: initialRows, labels }: Props
             <button
               type="button"
               aria-label={labels.dragHandle}
+              // Only the first row is a tour target — driver.js highlights one
+              // element per step, and the rows are identical.
+              data-tour-id={index === 0 ? tourIds.handle : undefined}
               onPointerDown={(e) => handlePointerDown(index, e)}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
@@ -153,7 +186,7 @@ export function LineOrderList({ repertoireId, rows: initialRows, labels }: Props
               // Without this the browser consumes a touch-drag as a scroll
               // before any pointermove reaches React.
               style={{ touchAction: 'none' }}
-              className="flex size-9 flex-shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex size-9 flex-shrink-0 cursor-grab items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <HiBars3 aria-hidden className="size-4" />
             </button>
@@ -163,7 +196,10 @@ export function LineOrderList({ repertoireId, rows: initialRows, labels }: Props
               <p className="truncate text-xs text-muted-foreground">{row.moves}</p>
             </div>
 
-            <span className="flex-shrink-0 text-xs tabular-nums text-foreground/40">
+            <span
+              data-tour-id={index === 0 ? tourIds.lineNo : undefined}
+              className="flex-shrink-0 text-xs tabular-nums text-foreground/40"
+            >
               #{row.lineNo}
             </span>
 
@@ -190,6 +226,40 @@ export function LineOrderList({ repertoireId, rows: initialRows, labels }: Props
           </li>
         ))}
       </ul>
+
+      <FormErrorBanner message={error} />
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirm}
+        onCancel={cancel}
+        title={tUnsaved('title')}
+        message={tUnsaved('message')}
+        confirmLabel={tUnsaved('confirm')}
+        cancelLabel={tUnsaved('cancel')}
+      />
+
+      <div className="space-y-4">
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={pending}
+          disabled={pending}
+          onClick={handleSave}
+        >
+          {pending ? labels.saving : labels.save}
+        </Button>
+        <button
+          type="button"
+          onClick={() => router.push(detailHref)}
+          disabled={pending}
+          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+        >
+          {labels.cancel}
+        </button>
+      </div>
     </div>
   );
 }

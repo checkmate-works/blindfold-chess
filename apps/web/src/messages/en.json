@@ -39,6 +39,14 @@
       "import": {
         "title": "Create your own kata",
         "description": "Have an opening you want to drill? Anyone signed in can create one from this button — play the moves on a board or paste a PGN with variations (a Lichess study or Chess.com export works as-is) and it becomes a kata you can review and share."
+      },
+      "arrange": {
+        "title": "Arranging the lines",
+        "description": "Drag a row by its grip handle to move it, or use ▲▼. Nothing is written until you save."
+      },
+      "lineNumbers": {
+        "title": "The numbers stay put",
+        "description": "A line's number is its address, not its position — it never changes when you rearrange the list. Links you have shared, and the comments left on each line, keep working."
       }
     },
     "importCta": "Create Kata",
@@ -201,12 +209,13 @@
       "title": "Arrange lines",
       "breadcrumb": "Arrange",
       "manageAction": "Arrange",
-      "hint": "Drag the handle, or use ▲▼. Line numbers don't change, so existing links keep working.",
       "dragHandle": "Drag to reorder",
       "moveUp": "Move up",
       "moveDown": "Move down",
       "error": "Couldn't save the order. The list has been reloaded.",
-      "done": "Done"
+      "cancel": "Cancel",
+      "save": "Save the order",
+      "saving": "Saving…"
     },
     "delete": {
       "button": "Delete",

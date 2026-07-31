@@ -9,18 +9,23 @@
  * order is writable.
  *
  * @flow owner opens it from the detail page's line panel (or the edit page) →
- * drags / ▲▼s the rows → every drop persists immediately → back to the course.
+ * drags / ▲▼s the rows → Save commits the arrangement and returns to the
+ * course; Cancel discards it. Same submit-then-save contract as the metadata
+ * form, so an arrangement can be tried out and backed away from.
  *
- * Kept off `/[id]/edit` on purpose: that page is a submit-then-save metadata
- * form, and an order that saves on drop inside it would put two different save
- * models on one screen.
+ * Still its own page rather than a section of `/[id]/edit`: reordering wants
+ * the full width for a title-plus-moves row per line, and bundling it into that
+ * form would make one Save button responsible for two unrelated edits.
+ *
+ * How to move a row, and why the numbers don't move with it, are a help tour
+ * rather than a line of body copy — both facts are about something inside a
+ * row, and the second is only convincing while looking at the number it is
+ * about.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 
@@ -29,7 +34,8 @@ import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -38,6 +44,10 @@ import { LineOrderList } from './_components/LineOrderList';
 
 /** Move pairs shown on a row's second line before truncating. */
 const PREVIEW_PAIRS = 6;
+
+/** `data-tour-id`s the help tour points at (see `helpSteps` below). */
+const HANDLE_HELP_TARGET = 'repertoire-lines-handle-help';
+const LINE_NO_HELP_TARGET = 'repertoire-lines-number-help';
 
 type Props = {
   params: Promise<{ locale: Locale; id: string }>;
@@ -87,11 +97,36 @@ export default async function RepertoireLinesPage({ params }: Props) {
     };
   });
 
+  // How to move a row, then why the numbers don't follow it. Both point INTO a
+  // row (the grip, then its "#N"), which is why they are a tour and not a line
+  // of help text: the second point in particular is only convincing when the
+  // reader is looking at the number it is about.
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: HANDLE_HELP_TARGET,
+      title: t('help.arrange.title'),
+      description: t('help.arrange.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: LINE_NO_HELP_TARGET,
+      title: t('help.lineNumbers.title'),
+      description: t('help.lineNumbers.description'),
+      side: 'bottom',
+      align: 'end',
+    },
+  ];
+
   return (
     <PageLayout
       // The course name, not "Arrange lines" — the SectionTitle right below
       // already says what the page is, and the owner needs to see WHICH kata.
       title={repertoire.name}
+      // Both steps target a row, so an empty course has nothing to tour.
+      titleAction={
+        rows.length > 0 ? <HelpTourButton steps={helpSteps} label={t('help.label')} /> : undefined
+      }
       locale={locale}
       breadcrumb={[
         { label: t('title'), href: '/repertoires' },
@@ -104,31 +139,27 @@ export default async function RepertoireLinesPage({ params }: Props) {
       {rows.length === 0 ? (
         <p className="py-8 text-center text-muted-foreground">{t('detail.noLines')}</p>
       ) : (
+        /* The list owns the Save / Cancel pair, since only it knows whether the
+           order is dirty. No "add a line" alongside them on purpose: this page
+           arranges what the course already has, and authoring a new line is a
+           different job with its own entry points (the line panel, a line's
+           branch affordance). */
         <LineOrderList
           repertoireId={id}
           rows={rows}
+          detailHref={`/repertoires/${id}`}
+          tourIds={{ handle: HANDLE_HELP_TARGET, lineNo: LINE_NO_HELP_TARGET }}
           labels={{
-            hint: t('lines.hint'),
             dragHandle: t('lines.dragHandle'),
             moveUp: t('lines.moveUp'),
             moveDown: t('lines.moveDown'),
+            save: t('lines.save'),
+            saving: t('lines.saving'),
+            cancel: t('lines.cancel'),
             error: t('lines.error'),
           }}
         />
       )}
-
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Link href={`/${locale}/repertoires/${id}/lines/new`} className="flex-1">
-          <Button asChild variant="outline" fullWidth>
-            {t('line.new.title')}
-          </Button>
-        </Link>
-        <Link href={`/${locale}/repertoires/${id}`} className="flex-1">
-          <Button asChild variant="primary" fullWidth>
-            {t('lines.done')}
-          </Button>
-        </Link>
-      </div>
     </PageLayout>
   );
 }

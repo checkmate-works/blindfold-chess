@@ -6,13 +6,13 @@ import { reorderRepertoireLines } from '@/lib/repertoires/mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
- * Owner-only: persist the order the owner arranged the lines in on the manage
- * page.
+ * Owner-only: commit the order the owner arranged the lines in on the manage
+ * page. Called once, from that page's Save button, with the whole list.
  *
- * No `revalidatePath`: the manage list owns the order in client state and is
- * the only surface that writes it, and every page that reads the order is
- * dynamic — so the next navigation renders the new order anyway. On failure
- * the list calls `router.refresh()` itself to snap back to the server's order.
+ * No `revalidatePath`: the page `router.push`es to the repertoire detail page
+ * on success, and every surface that renders the order is dynamic, so the new
+ * order is on screen without purging anything. On failure the list calls
+ * `router.refresh()` itself to re-read the server's order.
  */
 export async function reorderLines(input: {
   repertoireId: string;

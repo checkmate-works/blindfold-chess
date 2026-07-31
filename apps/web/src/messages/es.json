@@ -39,6 +39,14 @@
       "import": {
         "title": "Crea tu propio kata",
         "description": "¿Tienes una apertura que quieres practicar? Cualquiera con la sesión iniciada puede crear una desde este botón — juega los movimientos en un tablero o pega un PGN con variantes (una exportación de un estudio de Lichess o de Chess.com funciona tal cual) y se convierte en un kata que puedes repasar y compartir."
+      },
+      "arrange": {
+        "title": "Ordenar las líneas",
+        "description": "Arrastra una fila por su asa para moverla, o usa ▲▼. No se guarda nada hasta que pulses Guardar."
+      },
+      "lineNumbers": {
+        "title": "Los números no cambian",
+        "description": "El número de una línea es su dirección, no su posición: no cambia al reordenar la lista. Los enlaces que hayas compartido y los comentarios de cada línea siguen funcionando."
       }
     },
     "importCta": "Crear kata",
@@ -201,12 +209,13 @@
       "title": "Ordenar líneas",
       "breadcrumb": "Ordenar",
       "manageAction": "Ordenar",
-      "hint": "Arrastra el asa o usa ▲▼. Los números de línea no cambian, así que los enlaces existentes seguirán funcionando.",
       "dragHandle": "Arrastra para reordenar",
       "moveUp": "Subir",
       "moveDown": "Bajar",
       "error": "No se pudo guardar el orden. Se ha recargado la lista.",
-      "done": "Listo"
+      "cancel": "Cancelar",
+      "save": "Guardar el orden",
+      "saving": "Guardando..."
     },
     "delete": {
       "button": "Eliminar",
