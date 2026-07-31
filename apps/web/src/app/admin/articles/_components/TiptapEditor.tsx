@@ -116,6 +116,7 @@ export function TiptapEditor({
           if (file) {
             handleFiles([file]);
           }
+          // eslint-disable-next-line no-param-reassign -- standard DOM idiom: clearing the file input so re-selecting the same file re-fires change
           e.target.value = '';
         }}
         className="hidden"

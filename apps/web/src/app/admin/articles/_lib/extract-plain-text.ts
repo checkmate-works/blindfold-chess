@@ -15,13 +15,14 @@ export function extractPlainText(doc: TiptapJsonContent | null | undefined): str
   return parts.join('\n').trim();
 }
 
-function collectText(node: TiptapNode, parts: string[]) {
+function collectText(node: TiptapNode, acc: string[]) {
   if (node.type === 'text' && typeof node.text === 'string') {
-    // Append to the last part (inline text)
-    if (parts.length === 0) {
-      parts.push(node.text);
+    // Append to the last part (inline text). `acc` is a collector by
+    // contract (allow-listed accumulator name for no-param-reassign).
+    if (acc.length === 0) {
+      acc.push(node.text);
     } else {
-      parts[parts.length - 1] += node.text;
+      acc[acc.length - 1] += node.text;
     }
     return;
   }
@@ -32,10 +33,10 @@ function collectText(node: TiptapNode, parts: string[]) {
   for (const child of content) {
     const isBlock = child.type !== 'text' && Array.isArray(child.content);
 
-    if (isBlock && parts.length > 0 && parts[parts.length - 1] !== '') {
-      parts.push('');
+    if (isBlock && acc.length > 0 && acc[acc.length - 1] !== '') {
+      acc.push('');
     }
 
-    collectText(child, parts);
+    collectText(child, acc);
   }
 }

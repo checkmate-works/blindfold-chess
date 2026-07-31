@@ -54,10 +54,10 @@ export function isValidKnightMove(from: string, to: string): boolean {
  * (prioritize squares with fewer unvisited neighbors)
  */
 export function sortByWarnsdorff(
-  moves: string[],
+  moves: readonly string[],
   visitedSquares: Set<string> | Map<string, number>,
 ): string[] {
-  return moves.sort((a, b) => {
+  return [...moves].sort((a, b) => {
     const aNeighbors = getAvailableKnightMoves(a, visitedSquares).length;
     const bNeighbors = getAvailableKnightMoves(b, visitedSquares).length;
     return aNeighbors - bNeighbors;

@@ -186,7 +186,9 @@ export function usePointerDragGesture<TSource>({
   const floatingRef = useCallback((el: HTMLDivElement | null) => {
     dragLayerRef.current = el;
     if (el) {
+      // eslint-disable-next-line no-param-reassign -- imperative DOM positioning is this hook's point: styling the drag layer per frame without re-rendering the board
       el.style.left = `${dragPosRef.current.x}px`;
+      // eslint-disable-next-line no-param-reassign -- see above
       el.style.top = `${dragPosRef.current.y}px`;
     }
   }, []);

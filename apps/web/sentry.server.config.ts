@@ -25,6 +25,7 @@ Sentry.init({
   // attaches the request URL / headers / body to server-side exceptions, and
   // password-related Server Actions (changePassword, resetPassword, ...)
   // would otherwise leak plaintext credentials via `event.request.data`.
+  /* eslint-disable no-param-reassign -- Sentry's beforeSend contract is mutate-in-place: the hook edits the event it is handed (see scrubInPlace's docblock). */
   beforeSend(event, _hint) {
     if (event.request) {
       if (event.request.cookies) {

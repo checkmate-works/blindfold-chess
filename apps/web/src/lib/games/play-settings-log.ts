@@ -128,6 +128,15 @@ export function playSettingsAtHalfMove(
       case 'pawnHideMode':
         result.pawnHideMode = entry.to;
         break;
+      default: {
+        // Compile-time exhaustiveness: adding a key to `PlaySettingsChangeEntry` without
+        // extending this fold now fails the build instead of silently
+        // no-oping. Runtime stays tolerant — stored logs can carry keys
+        // written by a newer build, and those must be skipped, not thrown.
+        const _exhaustive: never = entry;
+        void _exhaustive;
+        break;
+      }
     }
   }
   return result;
@@ -226,6 +235,15 @@ export function resolvePlaySettingsChanges(
       case 'pawnHideMode':
         state.pawnHideMode = entry.to;
         break;
+      default: {
+        // Compile-time exhaustiveness: adding a key to `PlaySettingsChangeEntry` without
+        // extending this fold now fails the build instead of silently
+        // no-oping. Runtime stays tolerant — stored logs can carry keys
+        // written by a newer build, and those must be skipped, not thrown.
+        const _exhaustive: never = entry;
+        void _exhaustive;
+        break;
+      }
     }
   }
   return out;

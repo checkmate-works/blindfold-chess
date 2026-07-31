@@ -194,8 +194,8 @@ export function fenToPieceList(fen: string): {
     }
   }
 
-  const sortPieces = (pieces: string[]): string[] => {
-    return pieces.sort((a, b) => {
+  const sortPieces = (pieces: readonly string[]): string[] => {
+    return [...pieces].sort((a, b) => {
       const pieceA = a.length === 2 ? "P" : a[0];
       const pieceB = b.length === 2 ? "P" : b[0];
       const orderA = PIECE_ORDER[pieceA] ?? 99;

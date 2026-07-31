@@ -96,6 +96,7 @@ export function ImageAttachmentInput({ onChange, onModeChange, onValidationStatu
     const picked = e.target.files ? Array.from(e.target.files) : [];
     // Reset so re-picking a just-removed file fires `change` again. Read the
     // list first (above) — clearing the input discards `e.target.files`.
+    // eslint-disable-next-line no-param-reassign -- standard DOM idiom: clearing the file input so re-selecting the same file re-fires change
     e.target.value = '';
     if (picked.length === 0) return;
 

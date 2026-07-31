@@ -49,6 +49,15 @@ export function foldPreferences(
       case 'aiReplyDuration':
         result.aiReplyDuration = entry.to;
         break;
+      default: {
+        // Compile-time exhaustiveness: adding a key to `PreferenceChangeLogEntry` without
+        // extending this fold now fails the build instead of silently
+        // no-oping. Runtime stays tolerant — stored logs can carry keys
+        // written by a newer build, and those must be skipped, not thrown.
+        const _exhaustive: never = entry;
+        void _exhaustive;
+        break;
+      }
     }
   }
   return result;

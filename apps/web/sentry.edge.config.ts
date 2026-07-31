@@ -20,6 +20,7 @@ Sentry.init({
   // Strip PII before events leave the process. See sentry.server.config.ts
   // for the rationale — the edge runtime handles middleware and edge routes
   // and must scrub credentials identically.
+  /* eslint-disable no-param-reassign -- Sentry's beforeSend contract is mutate-in-place: the hook edits the event it is handed (see scrubInPlace's docblock). */
   beforeSend(event, _hint) {
     if (event.request) {
       if (event.request.cookies) {

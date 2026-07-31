@@ -1,6 +1,11 @@
+import { parsePgnTree } from '@blindfold-chess/features/chess-core';
 import { describe, expect, it } from 'vitest';
 
-import { isRepertoireApplicableFromFirstMove, matchGameToRepertoire } from './match';
+import {
+  isRepertoireApplicableFromFirstMove,
+  matchGameToRepertoire,
+  mergeLineTrees,
+} from './match';
 
 // Two stored lines sharing the 1. e4 c5 2. Nf3 prefix, as the import
 // decomposition would produce them from one PGN with a variation.
@@ -124,5 +129,32 @@ describe('isRepertoireApplicableFromFirstMove', () => {
         followedPlies: 0,
       })
     ).toBe(false);
+  });
+});
+
+describe('mergeLineTrees', () => {
+  it('merges shared-root trees without mutating the inputs', () => {
+    const a = parsePgnTree(NAJDORF_LINE);
+    const b = parsePgnTree(SVESHNIKOV_LINE);
+    const aSnapshot = JSON.parse(JSON.stringify(a));
+    const bSnapshot = JSON.parse(JSON.stringify(b));
+
+    const merged = mergeLineTrees([a, b]);
+
+    // One root, and the shared 1. e4 c5 2. Nf3 prefix collapses into a single
+    // path that branches at Black's third move.
+    expect(merged).toHaveLength(1);
+    let node = merged[0].children;
+    for (const san of ['e4', 'c5', 'Nf3']) {
+      expect(node).toHaveLength(1);
+      expect(node[0].san).toBe(san);
+      node = node[0].children;
+    }
+    expect(node.map((n) => n.san).sort()).toEqual(['Nc6', 'd6']);
+
+    // The merge is pure: a previous implementation grafted nodes into the
+    // inputs' children arrays, corrupting reused parsePgnTree results.
+    expect(a).toEqual(aSnapshot);
+    expect(b).toEqual(bSnapshot);
   });
 });

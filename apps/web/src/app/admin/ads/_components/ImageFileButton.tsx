@@ -31,6 +31,7 @@ export function ImageFileButton({ idleLabel, busyLabel, busy, onFile, inputId, c
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) onFile(file);
+          // eslint-disable-next-line no-param-reassign -- standard DOM idiom: clearing the file input so re-selecting the same file re-fires change
           e.target.value = '';
         }}
       />

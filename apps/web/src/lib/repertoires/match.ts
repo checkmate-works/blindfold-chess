@@ -47,32 +47,39 @@ const STATUS_RANK: Record<LineMatchStatus, number> = {
  * via a null-effect move pair), which is a bigger, separately-decided change
  * (checkmate-works/blindfold-chess#100).
  */
-function mergeChildren(target: MoveTreeNode[], source: MoveTreeNode[]): void {
-  for (const node of source) {
-    const existing = target.find((t) => toPositionKey(t.fen) === toPositionKey(node.fen));
-    if (existing) {
-      mergeChildren(existing.children, node.children);
+function mergedChildren(a: MoveTreeNode[], b: MoveTreeNode[]): MoveTreeNode[] {
+  const merged = [...a];
+  for (const node of b) {
+    const index = merged.findIndex((t) => toPositionKey(t.fen) === toPositionKey(node.fen));
+    if (index === -1) {
+      merged.push(node);
     } else {
-      target.push(node);
+      const existing = merged[index];
+      merged[index] = { ...existing, children: mergedChildren(existing.children, node.children) };
     }
   }
+  return merged;
 }
 
 /**
  * Merge line trees that share a root position into one tree per root, keyed by
  * position (first four FEN fields) so clock-only differences don't split
- * roots. Input trees are consumed — their nodes are grafted into the output.
+ * roots.
+ *
+ * Pure with structural sharing: the result references input subtrees where
+ * they need no merging, but never mutates them — a previous version grafted
+ * nodes into the inputs' `children` arrays in place, which corrupted any
+ * `parsePgnTree` result a caller reused after merging.
  */
 export function mergeLineTrees(trees: PgnTree[]): PgnTree[] {
   const byRoot = new Map<string, PgnTree>();
   for (const tree of trees) {
     const key = toPositionKey(tree.startingFen);
     const existing = byRoot.get(key);
-    if (existing) {
-      mergeChildren(existing.children, tree.children);
-    } else {
-      byRoot.set(key, { startingFen: tree.startingFen, children: [...tree.children] });
-    }
+    byRoot.set(
+      key,
+      existing ? { ...existing, children: mergedChildren(existing.children, tree.children) } : tree
+    );
   }
   return [...byRoot.values()];
 }
