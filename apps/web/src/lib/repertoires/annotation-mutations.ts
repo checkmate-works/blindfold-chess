@@ -10,12 +10,10 @@ import { REPERTOIRE_ANNOTATION_MAX } from './validation';
 export type AnnotationMutationError = 'unauthorized' | 'notFound' | 'empty' | 'tooLong';
 
 export type UpsertAnnotationResult =
-  | { ok: true; text: string; updatedAt: Date }
-  | { ok: false; error: AnnotationMutationError };
+  { ok: true; text: string; updatedAt: Date } | { ok: false; error: AnnotationMutationError };
 
 export type DeleteAnnotationResult =
-  | { ok: true }
-  | { ok: false; error: 'unauthorized' | 'notFound' };
+  { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' };
 
 export type SaveShapesResult = { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' };
 

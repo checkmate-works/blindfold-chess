@@ -39,6 +39,18 @@
       "import": {
         "title": "Crea tu propio kata",
         "description": "¿Tienes una apertura que quieres practicar? Cualquiera con la sesión iniciada puede crear una desde este botón — juega los movimientos en un tablero o pega un PGN con variantes (una exportación de un estudio de Lichess o de Chess.com funciona tal cual) y se convierte en un kata que puedes repasar y compartir."
+      },
+      "arrange": {
+        "title": "Ordenar las líneas",
+        "description": "Arrastra una fila por su asa para moverla, o usa ▲▼. No se guarda nada hasta que pulses Guardar."
+      },
+      "lineNumbers": {
+        "title": "Los números no cambian",
+        "description": "El número de una línea es su dirección, no su posición: no cambia al reordenar la lista. Los enlaces que hayas compartido y los comentarios de cada línea siguen funcionando."
+      },
+      "chapters": {
+        "title": "Capítulos",
+        "description": "Agrupa líneas relacionadas bajo un título. Una línea pertenece al título que tiene encima, así que arrastrarla bajo otro la mueve a ese capítulo. Al eliminar un título, sus líneas no se borran: vuelven a Sin clasificar."
       }
     },
     "importCta": "Crear kata",
@@ -196,6 +208,23 @@
           "generic": "Algo salió mal. Inténtalo de nuevo."
         }
       }
+    },
+    "lines": {
+      "title": "Ordenar líneas",
+      "breadcrumb": "Ordenar",
+      "manageAction": "Ordenar",
+      "dragHandle": "Arrastra para reordenar",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "error": "No se pudo guardar el orden. Se ha recargado la lista.",
+      "cancel": "Cancelar",
+      "save": "Guardar el orden",
+      "saving": "Guardando...",
+      "unfiled": "Sin clasificar",
+      "addChapter": "Añadir un capítulo",
+      "chapterName": "Nombre del capítulo",
+      "newChapterName": "Nombra este capítulo",
+      "removeChapter": "Eliminar este capítulo"
     },
     "delete": {
       "button": "Eliminar",
@@ -3972,6 +4001,7 @@
     "positionUpdated": "Cambios guardados",
     "lineUpdated": "Línea actualizada",
     "lineAdded": "Línea añadida",
+    "linesReordered": "Orden de las líneas guardado",
     "puzzleUpdated": "Cambios guardados",
     "puzzleDeleted": "Puzzle eliminado",
     "chunkUpdated": "Cambios guardados",

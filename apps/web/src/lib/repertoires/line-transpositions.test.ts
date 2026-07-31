@@ -4,15 +4,9 @@ import { describe, expect, it } from 'vitest';
 import type { LineForTransposition } from './line-transpositions';
 import { findLineTranspositions } from './line-transpositions';
 
-function line(
-  id: string,
-  seq: number,
-  moves: string[],
-  startingFen?: string
-): LineForTransposition {
+function line(id: string, moves: string[], startingFen?: string): LineForTransposition {
   return {
     id,
-    seq,
     positions: replayMoves(moves, startingFen).map((p) => ({ fen: p.fen })),
   };
 }
@@ -41,8 +35,8 @@ const L5_MOVES = [
 
 describe('findLineTranspositions', () => {
   it('reports nothing for a common opening prefix alone', () => {
-    const current = line('current', 0, ['Nf3', 'e5']);
-    const other = line('other', 1, ['Nf3', 'd5', 'g3', 'e6']);
+    const current = line('current', ['Nf3', 'e5']);
+    const other = line('other', ['Nf3', 'd5', 'g3', 'e6']);
 
     const result = findLineTranspositions(current, [other]);
 
@@ -51,8 +45,8 @@ describe('findLineTranspositions', () => {
   });
 
   it('finds a segment where two lines diverge then reconverge, with the tail as a continuation', () => {
-    const current = line('L3', 2, L3_MOVES);
-    const other = line('L5', 4, L5_MOVES);
+    const current = line('L3', L3_MOVES);
+    const other = line('L5', L5_MOVES);
 
     const result = findLineTranspositions(current, [other]);
 
@@ -63,8 +57,8 @@ describe('findLineTranspositions', () => {
   });
 
   it('treats a full-prefix line as a continuation even though it is suppressed from segments', () => {
-    const current = line('current', 0, L5_MOVES.slice(0, 3)); // 1. Nf3 d5 2. g3
-    const other = line('L5', 4, L5_MOVES);
+    const current = line('current', L5_MOVES.slice(0, 3)); // 1. Nf3 d5 2. g3
+    const other = line('L5', L5_MOVES);
 
     const result = findLineTranspositions(current, [other]);
 
@@ -76,8 +70,8 @@ describe('findLineTranspositions', () => {
 
   it('finds a segment with no continuation when the other line ends at the shared position', () => {
     // current (L5) is the longer line; other (L3) ends exactly where they meet.
-    const current = line('L5', 4, L5_MOVES);
-    const other = line('L3', 2, L3_MOVES);
+    const current = line('L5', L5_MOVES);
+    const other = line('L3', L3_MOVES);
 
     const result = findLineTranspositions(current, [other]);
 
@@ -91,8 +85,8 @@ describe('findLineTranspositions', () => {
     // current shuffles a knight out and back (Nf3 Nf6 Ng1 Ng8 Nf3): ply 4 is
     // the start position again, ply 5 is `other`'s ply 1 (just 1. Nf3) — a
     // two-ply run matched at other-side offset 0..1, not current-side 4..5.
-    const current = line('current', 0, ['Nf3', 'Nf6', 'Ng1', 'Ng8', 'Nf3']);
-    const other = line('other', 1, ['Nf3']);
+    const current = line('current', ['Nf3', 'Nf6', 'Ng1', 'Ng8', 'Nf3']);
+    const other = line('other', ['Nf3']);
 
     const result = findLineTranspositions(current, [other]);
 
@@ -106,7 +100,7 @@ describe('findLineTranspositions', () => {
   });
 
   it('does not self-match a line that repeats one of its own positions', () => {
-    const current = line('current', 0, ['Nf3', 'Nf6', 'Ng1', 'Ng8', 'Nf3']);
+    const current = line('current', ['Nf3', 'Nf6', 'Ng1', 'Ng8', 'Nf3']);
 
     const result = findLineTranspositions(current, []);
 
@@ -115,10 +109,9 @@ describe('findLineTranspositions', () => {
   });
 
   it('does not crash on a line whose PGN failed to parse (root position only)', () => {
-    const current = line('current', 0, L3_MOVES);
+    const current = line('current', L3_MOVES);
     const unparseable: LineForTransposition = {
       id: 'broken',
-      seq: 1,
       positions: replayMoves([]).map((p) => ({ fen: p.fen })),
     };
 
@@ -132,8 +125,8 @@ describe('findLineTranspositions', () => {
     const rootMoves = ['e4', 'e5', 'Nf3'];
     const customRootFen = replayMoves(rootMoves).at(-1)!.fen;
 
-    const current = line('current', 0, rootMoves);
-    const other = line('other', 1, ['Nc6', 'Bb5'], customRootFen);
+    const current = line('current', rootMoves);
+    const other = line('other', ['Nc6', 'Bb5'], customRootFen);
 
     const result = findLineTranspositions(current, [other]);
 
@@ -147,9 +140,9 @@ describe('findLineTranspositions', () => {
     // A second reconvergence, independent of L5's: b3/Bg2 swap order instead
     // of c5/e6, meeting L3 only at the final position, plus one extra ply.
     const e = [...L3_MOVES.slice(0, 4), 'b3', 'e6', 'Bg2', 'a6'];
-    const current = line('L3', 2, L3_MOVES);
-    const l5 = line('L5', 4, L5_MOVES);
-    const lineE = line('E', 5, e);
+    const current = line('L3', L3_MOVES);
+    const l5 = line('L5', L5_MOVES);
+    const lineE = line('E', e);
 
     const result = findLineTranspositions(current, [l5, lineE]);
 

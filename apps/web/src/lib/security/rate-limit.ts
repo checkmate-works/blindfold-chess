@@ -146,6 +146,17 @@ export const RATE_LIMITS = {
   updateRepertoireLine: { action: 'update_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
   addRepertoireLine: { action: 'add_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
   deleteRepertoireLine: { action: 'delete_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
+  /**
+   * Reordering a repertoire's lines. Aligned with the other line limits rather
+   * than the drawing-surface ones: the arrange page buffers the whole
+   * rearrangement and writes once, on Save, so a session of dragging costs one
+   * attempt no matter how many rows moved.
+   */
+  reorderRepertoireLines: {
+    action: 'reorder_repertoire_lines',
+    maxAttempts: 20,
+    windowMs: 3_600_000,
+  },
   updateRepertoire: { action: 'update_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   publishRepertoire: { action: 'publish_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   changeRepertoireVisibility: {

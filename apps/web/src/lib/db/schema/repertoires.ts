@@ -19,6 +19,7 @@
 //   repertoire_annotations— owner-authored "why" note per position.
 import { sql } from 'drizzle-orm';
 import {
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -139,9 +140,31 @@ export type NewRepertoire = typeof repertoires.$inferInsert;
 
 /**
  * Repertoire Chapters — optional Chessable-style section grouping ("Do's and
- * Don'ts", "Introduction", …). A line may belong to one chapter or none.
- * Lifecycle follows the parent (cascade); deleting a chapter ungroups its lines
- * rather than deleting them (see `repertoire_lines.chapter_id` SET NULL).
+ * Don'ts", "Introduction", …). A line may belong to one chapter or none;
+ * the lines belonging to none are the "unfiled" bucket, which sorts after
+ * every chapter. Lifecycle follows the parent (cascade).
+ *
+ * @design No stable number, unlike `repertoire_lines.line_no`
+ *
+ * A chapter is addressed by its `id` and has no URL of its own — nothing
+ * outside this table ever names a chapter by position — so `seq` here is pure
+ * ordering with none of the identity duty that forced the line_no split. Give a
+ * chapter its own route and that stops being true; add a stable number then,
+ * don't reuse `seq`.
+ *
+ * @design Deleting a chapter ungroups its lines, in the mutation, not the FK
+ *
+ * The obvious spelling is `ON DELETE SET NULL` on `repertoire_lines.chapter_id`,
+ * and that is what this was until chapters were first used. It cannot survive
+ * the composite FK that keeps a line and its chapter in the same repertoire:
+ * that FK spans `(chapter_id, repertoire_id)`, and a plain SET NULL would try to
+ * null `repertoire_id` too, which is NOT NULL. Postgres 15+ can say
+ * `SET NULL (chapter_id)`, but drizzle-kit cannot express the column list, so
+ * the generated snapshot would disagree with the database forever.
+ *
+ * So the FK is left at NO ACTION and `deleteRepertoireChapter` clears its
+ * lines' `chapter_id` first, in the same transaction. The behaviour is
+ * unchanged; it is just written where it can be read and tested.
  */
 export const repertoireChapters = pgTable(
   'repertoire_chapters',
@@ -160,7 +183,12 @@ export const repertoireChapters = pgTable(
       .notNull()
       .$onUpdateFn(() => new Date()),
   },
-  (table) => [index('idx_repertoire_chapters_repertoire').on(table.repertoireId, table.seq)]
+  (table) => [
+    index('idx_repertoire_chapters_repertoire').on(table.repertoireId, table.seq),
+    // Redundant on its own (`id` is already the PK) — it exists so
+    // `repertoire_lines` can point a composite FK at it. See below.
+    unique('uq_repertoire_chapter_scope').on(table.id, table.repertoireId),
+  ]
 );
 
 export type RepertoireChapter = typeof repertoireChapters.$inferSelect;
@@ -173,10 +201,35 @@ export type NewRepertoireChapter = typeof repertoireChapters.$inferInsert;
  * @design name — authored label, not derivable (Chessable line names). NULL
  * right after a bulk PGN import, before the user names the line.
  *
- * @design chapter_id — optional section grouping (SET NULL on chapter delete).
+ * @design chapter_id — optional section grouping; NULL is the "unfiled" bucket,
+ * which sorts after every chapter. The FK is composite —
+ * `(chapter_id, repertoire_id)` — so a line can only be filed under a chapter of
+ * its OWN repertoire; the single-column version let a bug or a forged request
+ * file a line under another course's chapter. See the chapter table's `@design`
+ * note for why it is NO ACTION rather than SET NULL.
  *
  * @design lifecycle follows the parent — no `status`; `deleted_at` allows
  * removing a single line; the repertoire FK cascades.
+ *
+ * @design line_no vs seq — identity and order are separate columns
+ *
+ * `line_no` is WHICH line ("Line 3", `/repertoires/{id}/lines/3`); `seq` is
+ * WHERE it sits in the list. They were one column until 2026-07-31, when `seq`
+ * did both jobs (`lineNo = seq + 1`), which made the two things it means
+ * mutually exclusive: any reordering renamed every line's URL, and a delete
+ * repacking `seq` to stay gapless silently moved every later line's URL onto a
+ * different line.
+ *
+ * So: `line_no` is assigned once at insert (`max(line_no) + 1` over ALL rows of
+ * the repertoire, soft-deleted included) and never rewritten — numbers are not
+ * dense, not reused after a delete, and a deleted line's URL stays a 404 rather
+ * than resolving to whichever line shuffled into its place. `seq` is free to be
+ * rewritten by a reorder and carries no meaning outside `ORDER BY`.
+ *
+ * Neither column addresses content — annotations and per-move comment threads
+ * are keyed by normalised FEN (see `repertoire_annotations.position_key` and
+ * `move-topic-key.ts`), so reordering, renumbering, and re-importing all leave
+ * the discussion attached to the position it is about.
  */
 export const repertoireLines = pgTable(
   'repertoire_lines',
@@ -187,14 +240,28 @@ export const repertoireLines = pgTable(
     repertoireId: uuid('repertoire_id')
       .notNull()
       .references(() => repertoires.id, { onDelete: 'cascade' }),
-    chapterId: uuid('chapter_id').references(() => repertoireChapters.id, {
-      onDelete: 'set null',
-    }),
+    chapterId: uuid('chapter_id'),
     name: varchar('name', { length: 255 }),
     /** This single line's moves as PGN. Source of truth. */
     pgn: text('pgn').notNull(),
     /** NULL = standard start; otherwise the line's root position. */
     startingFen: varchar('starting_fen', { length: 100 }),
+    /**
+     * Stable 1-based identity within the repertoire — the "Line N" label and
+     * the `[lineNo]` URL segment. Immutable once assigned; see the `@design`
+     * note above for why this is not `seq + 1`.
+     */
+    lineNo: integer('line_no').notNull(),
+    /**
+     * Display order WITHIN this line's chapter (0-based); the unfiled lines
+     * (`chapter_id IS NULL`) form their own bucket with its own 0-based run.
+     * Rewritten by a reorder. Repertoire-wide order is therefore
+     * `(chapter.seq NULLS LAST, line.seq)` — never `line.seq` alone.
+     *
+     * It was repertoire-wide until chapters shipped; no migration was needed
+     * because every line was unfiled at that point, so the existing values were
+     * already "the order within the unfiled bucket".
+     */
     seq: integer('seq').notNull().default(0),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -203,7 +270,17 @@ export const repertoireLines = pgTable(
       .notNull()
       .$onUpdateFn(() => new Date()),
   },
-  (table) => [index('idx_repertoire_lines_repertoire').on(table.repertoireId, table.seq)]
+  (table) => [
+    index('idx_repertoire_lines_repertoire').on(table.repertoireId, table.chapterId, table.seq),
+    // Covers soft-deleted rows too: a retired number must never be handed to a
+    // new line, or an old URL would silently resolve to different moves.
+    unique('uq_repertoire_line_no').on(table.repertoireId, table.lineNo),
+    foreignKey({
+      columns: [table.chapterId, table.repertoireId],
+      foreignColumns: [repertoireChapters.id, repertoireChapters.repertoireId],
+      name: 'fk_repertoire_lines_chapter_scope',
+    }),
+  ]
 );
 
 export type RepertoireLine = typeof repertoireLines.$inferSelect;

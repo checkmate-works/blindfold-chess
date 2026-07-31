@@ -39,6 +39,18 @@
       "import": {
         "title": "Create your own kata",
         "description": "Have an opening you want to drill? Anyone signed in can create one from this button — play the moves on a board or paste a PGN with variations (a Lichess study or Chess.com export works as-is) and it becomes a kata you can review and share."
+      },
+      "arrange": {
+        "title": "Arranging the lines",
+        "description": "Drag a row by its grip handle to move it, or use ▲▼. Nothing is written until you save."
+      },
+      "lineNumbers": {
+        "title": "The numbers stay put",
+        "description": "A line's number is its address, not its position — it never changes when you rearrange the list. Links you have shared, and the comments left on each line, keep working."
+      },
+      "chapters": {
+        "title": "Chapters",
+        "description": "Group related lines under a heading. A line belongs to the heading above it, so dragging it under another one moves it there. Removing a heading keeps its lines — they go back to Unfiled."
       }
     },
     "importCta": "Create Kata",
@@ -196,6 +208,23 @@
           "generic": "Something went wrong. Please try again."
         }
       }
+    },
+    "lines": {
+      "title": "Arrange lines",
+      "breadcrumb": "Arrange",
+      "manageAction": "Arrange",
+      "dragHandle": "Drag to reorder",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "error": "Couldn't save the order. The list has been reloaded.",
+      "cancel": "Cancel",
+      "save": "Save the order",
+      "saving": "Saving…",
+      "unfiled": "Unfiled",
+      "addChapter": "Add a chapter",
+      "chapterName": "Chapter name",
+      "newChapterName": "Name this chapter",
+      "removeChapter": "Remove this chapter"
     },
     "delete": {
       "button": "Delete",
@@ -3972,6 +4001,7 @@
     "positionUpdated": "Changes saved",
     "lineUpdated": "Line updated",
     "lineAdded": "Line added",
+    "linesReordered": "Line order saved",
     "puzzleUpdated": "Changes saved",
     "puzzleDeleted": "Puzzle deleted",
     "chunkUpdated": "Changes saved",

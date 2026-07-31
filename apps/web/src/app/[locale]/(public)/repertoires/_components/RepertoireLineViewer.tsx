@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -18,14 +18,17 @@ import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_component
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
+import { LineChapterHeading, chapterHeadings } from './LineChapterHeading';
 import { LineListPanel } from './LineListPanel';
 
 /** One line, pre-replayed + pre-formatted on the server (no chess.js client-side). */
 export type RepertoireViewerLine = {
   id: string;
   name: string | null;
-  /** 1-based line number within the repertoire (seq + 1); the detail-page key. */
+  /** Stable line number within the repertoire (`line_no`); the detail-page key. */
   lineNo: number;
+  /** Chapter this line is filed under; null = unfiled. Drives the headings. */
+  chapterName: string | null;
   /** Numbered move pairs, rendered like the in-game move list. */
   formatted: FormattedPgnMove[];
   /** Board position at each ply; index 0 is the start. */
@@ -93,6 +96,10 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
       setPly(0);
     }
   }
+
+  // Chapter separators, derived from the (display-ordered) lines: a heading
+  // appears wherever the chapter changes. Cheap enough to recompute per render.
+  const headings = chapterHeadings(lines, t('lines.unfiled'));
 
   // Resolved before the empty-state guard below: hooks cannot run conditionally.
   const display = useBoardDisplay(
@@ -171,67 +178,73 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
           heading={t('detail.linesHeading')}
           addLineHref={`/${locale}/repertoires/${repertoireId}/lines/new`}
           addLineLabel={isOwner ? t('line.new.title') : undefined}
+          manageHref={`/${locale}/repertoires/${repertoireId}/lines`}
+          manageLabel={isOwner && lines.length > 1 ? t('lines.manageAction') : undefined}
         >
           {lines.map((l, i) => {
             const isSelected = i === selectedIndex;
             const isExpanded = i === expandedIndex;
             const previewPairs = l.formatted.slice(0, PREVIEW_PAIRS);
             const truncated = l.formatted.length > PREVIEW_PAIRS;
+            const heading = headings[i];
             return (
-              <li key={l.id} className="border-b border-border last:border-b-0">
-                <div
-                  className={`flex items-center transition-colors ${isSelected ? 'bg-muted' : ''}`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleExpand(i)}
-                    aria-expanded={isExpanded}
-                    aria-label={t('detail.previewToggle')}
-                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              <Fragment key={l.id}>
+                {heading !== null && <LineChapterHeading name={heading} />}
+                <li className="border-b border-border last:border-b-0">
+                  <div
+                    className={`flex items-center transition-colors ${isSelected ? 'bg-muted' : ''}`}
                   >
-                    {isExpanded ? (
-                      <HiChevronUp aria-hidden className="size-4" />
-                    ) : (
-                      <HiChevronDown aria-hidden className="size-4" />
-                    )}
-                  </button>
-                  <Link
-                    href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
-                    className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 transition-colors hover:bg-muted"
-                  >
-                    <span
-                      className={`truncate text-sm text-foreground ${isSelected ? 'font-medium' : ''}`}
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(i)}
+                      aria-expanded={isExpanded}
+                      aria-label={t('detail.previewToggle')}
+                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     >
-                      {l.name ??
-                        lineFallbackTitle(l.formatted, t('detail.lineFallback', { n: i + 1 }))}
-                    </span>
-                    <HiChevronRight
-                      aria-hidden
-                      className="ml-auto size-4 flex-shrink-0 text-foreground/40"
-                    />
-                  </Link>
-                </div>
-
-                {isExpanded && (
-                  <Link
-                    href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
-                    className="flex flex-wrap items-center gap-x-1 gap-y-0.5 p-3 text-sm transition-colors hover:bg-muted"
-                  >
-                    {previewPairs.map((pair) => (
-                      <span key={pair.moveNumber} className="flex items-center gap-0.5">
-                        <span className="text-xs text-muted-foreground">{pair.moveNumber}.</span>
-                        {pair.whiteMove && (
-                          <span className="text-foreground">{pair.whiteMove}</span>
-                        )}
-                        {pair.blackMove && (
-                          <span className="text-foreground">{pair.blackMove}</span>
-                        )}
+                      {isExpanded ? (
+                        <HiChevronUp aria-hidden className="size-4" />
+                      ) : (
+                        <HiChevronDown aria-hidden className="size-4" />
+                      )}
+                    </button>
+                    <Link
+                      href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
+                      className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 transition-colors hover:bg-muted"
+                    >
+                      <span
+                        className={`truncate text-sm text-foreground ${isSelected ? 'font-medium' : ''}`}
+                      >
+                        {l.name ??
+                          lineFallbackTitle(l.formatted, t('detail.lineFallback', { n: i + 1 }))}
                       </span>
-                    ))}
-                    {truncated && <span className="text-muted-foreground">…</span>}
-                  </Link>
-                )}
-              </li>
+                      <HiChevronRight
+                        aria-hidden
+                        className="ml-auto size-4 flex-shrink-0 text-foreground/40"
+                      />
+                    </Link>
+                  </div>
+
+                  {isExpanded && (
+                    <Link
+                      href={`/${locale}/repertoires/${repertoireId}/lines/${l.lineNo}`}
+                      className="flex flex-wrap items-center gap-x-1 gap-y-0.5 p-3 text-sm transition-colors hover:bg-muted"
+                    >
+                      {previewPairs.map((pair) => (
+                        <span key={pair.moveNumber} className="flex items-center gap-0.5">
+                          <span className="text-xs text-muted-foreground">{pair.moveNumber}.</span>
+                          {pair.whiteMove && (
+                            <span className="text-foreground">{pair.whiteMove}</span>
+                          )}
+                          {pair.blackMove && (
+                            <span className="text-foreground">{pair.blackMove}</span>
+                          )}
+                        </span>
+                      ))}
+                      {truncated && <span className="text-muted-foreground">…</span>}
+                    </Link>
+                  )}
+                </li>
+              </Fragment>
             );
           })}
         </LineListPanel>

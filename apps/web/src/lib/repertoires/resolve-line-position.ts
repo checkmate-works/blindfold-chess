@@ -1,9 +1,10 @@
 import { parsePgn, replayMoves } from '@blindfold-chess/features/chess-core';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
-import { db, repertoireLines } from '@/lib/db';
+import { db, repertoireChapters, repertoireLines } from '@/lib/db';
 
 import { positionHash } from './position-topic-key';
+import { linesInDisplayOrder } from './queries';
 
 export type ResolvedLinePosition = { lineNo: number; ply: number };
 
@@ -18,15 +19,19 @@ export async function resolveLineForPosition(
   repertoireId: string,
   targetHash: string
 ): Promise<ResolvedLinePosition | null> {
+  // Display order (chapter, then within-chapter — `seq` alone would interleave
+  // chapters now that it is chapter-scoped), so "first match" here is the first
+  // line a reader scanning the sidebar would meet.
   const lines = await db
     .select({
       pgn: repertoireLines.pgn,
       startingFen: repertoireLines.startingFen,
-      seq: repertoireLines.seq,
+      lineNo: repertoireLines.lineNo,
     })
     .from(repertoireLines)
+    .leftJoin(repertoireChapters, eq(repertoireChapters.id, repertoireLines.chapterId))
     .where(and(eq(repertoireLines.repertoireId, repertoireId), isNull(repertoireLines.deletedAt)))
-    .orderBy(asc(repertoireLines.seq));
+    .orderBy(...linesInDisplayOrder);
 
   for (const line of lines) {
     let sans: string[] = [];
@@ -39,7 +44,7 @@ export async function resolveLineForPosition(
     // positions[0] is the start; positions[i] is the position after ply i.
     for (let ply = 1; ply < positions.length; ply++) {
       if (positionHash(positions[ply].fen) === targetHash) {
-        return { lineNo: line.seq + 1, ply };
+        return { lineNo: line.lineNo, ply };
       }
     }
   }

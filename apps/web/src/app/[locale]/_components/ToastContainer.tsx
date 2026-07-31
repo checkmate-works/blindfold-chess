@@ -30,6 +30,7 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   position_deleted: { messageKey: 'positionDeleted', type: 'success' },
   line_updated: { messageKey: 'lineUpdated', type: 'success' },
   line_added: { messageKey: 'lineAdded', type: 'success' },
+  lines_reordered: { messageKey: 'linesReordered', type: 'success' },
   position_updated: { messageKey: 'positionUpdated', type: 'success' },
   puzzle_updated: { messageKey: 'puzzleUpdated', type: 'success' },
   puzzle_deleted: { messageKey: 'puzzleDeleted', type: 'success' },
