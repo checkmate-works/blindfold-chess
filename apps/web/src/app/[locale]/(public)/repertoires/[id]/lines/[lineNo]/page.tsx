@@ -99,9 +99,9 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
       l.name ??
       lineFallbackTitle(
         formatMovesToPgn(replayed.sans, replayed.startsAsBlack, replayed.startMoveNumber),
-        t('detail.lineFallback', { n: l.seq + 1 })
+        t('detail.lineFallback', { n: l.lineNo })
       );
-    return { id: l.id, lineNo: l.seq + 1, label };
+    return { id: l.id, lineNo: l.lineNo, label };
   });
   const navProps = {
     navItems,
@@ -118,10 +118,10 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
     navItems.map((item) => [item.id, { lineNo: item.lineNo, label: item.label }])
   );
   const continuations = buildContinuationLinks(
-    { id: line.id, seq: line.seq, positions },
+    { id: line.id, positions },
     replayedLines
       .filter((rl) => rl.line.id !== line.id)
-      .map((rl) => ({ id: rl.line.id, seq: rl.line.seq, positions: rl.replayed.positions })),
+      .map((rl) => ({ id: rl.line.id, positions: rl.replayed.positions })),
     (lineId) => navLabelById.get(lineId)!
   );
 

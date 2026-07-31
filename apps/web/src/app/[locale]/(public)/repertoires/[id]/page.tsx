@@ -94,7 +94,7 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
   const viewerLines: RepertoireViewerLine[] = lines.map((line) => {
     const { sans, positions, startsAsBlack, startMoveNumber } = replayRepertoireLine(line);
     const formatted = formatMovesToPgn(sans, startsAsBlack, startMoveNumber);
-    return { id: line.id, name: line.name, lineNo: line.seq + 1, formatted, positions };
+    return { id: line.id, name: line.name, lineNo: line.lineNo, formatted, positions };
   });
 
   return (

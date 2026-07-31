@@ -3,7 +3,7 @@ import { findLineTranspositions } from '@/lib/repertoires/line-transpositions';
 
 /** A "the rest of this position lives elsewhere" link, resolved for display. */
 export type ContinuationLink = {
-  /** Target line's 1-based URL number (`seq + 1`). */
+  /** Target line's stable URL number (`repertoire_lines.line_no`). */
   lineNo: number;
   label: string;
   /** Ply to focus on arrival (`?move=`) — the position current just showed. */

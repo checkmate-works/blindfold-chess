@@ -6,8 +6,6 @@ import { toPositionKey } from '@blindfold-chess/features/chess-core';
  */
 export type LineForTransposition = {
   id: string;
-  /** 0-based display order (`repertoire_lines.seq`). URL conversion (+1) is the caller's job. */
-  seq: number;
   positions: { fen: string }[];
 };
 

@@ -177,6 +177,26 @@ export type NewRepertoireChapter = typeof repertoireChapters.$inferInsert;
  *
  * @design lifecycle follows the parent — no `status`; `deleted_at` allows
  * removing a single line; the repertoire FK cascades.
+ *
+ * @design line_no vs seq — identity and order are separate columns
+ *
+ * `line_no` is WHICH line ("Line 3", `/repertoires/{id}/lines/3`); `seq` is
+ * WHERE it sits in the list. They were one column until 2026-07-31, when `seq`
+ * did both jobs (`lineNo = seq + 1`), which made the two things it means
+ * mutually exclusive: any reordering renamed every line's URL, and a delete
+ * repacking `seq` to stay gapless silently moved every later line's URL onto a
+ * different line.
+ *
+ * So: `line_no` is assigned once at insert (`max(line_no) + 1` over ALL rows of
+ * the repertoire, soft-deleted included) and never rewritten — numbers are not
+ * dense, not reused after a delete, and a deleted line's URL stays a 404 rather
+ * than resolving to whichever line shuffled into its place. `seq` is free to be
+ * rewritten by a reorder and carries no meaning outside `ORDER BY`.
+ *
+ * Neither column addresses content — annotations and per-move comment threads
+ * are keyed by normalised FEN (see `repertoire_annotations.position_key` and
+ * `move-topic-key.ts`), so reordering, renumbering, and re-importing all leave
+ * the discussion attached to the position it is about.
  */
 export const repertoireLines = pgTable(
   'repertoire_lines',
@@ -195,6 +215,13 @@ export const repertoireLines = pgTable(
     pgn: text('pgn').notNull(),
     /** NULL = standard start; otherwise the line's root position. */
     startingFen: varchar('starting_fen', { length: 100 }),
+    /**
+     * Stable 1-based identity within the repertoire — the "Line N" label and
+     * the `[lineNo]` URL segment. Immutable once assigned; see the `@design`
+     * note above for why this is not `seq + 1`.
+     */
+    lineNo: integer('line_no').notNull(),
+    /** Display order within the repertoire (0-based). Rewritten by a reorder. */
     seq: integer('seq').notNull().default(0),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -203,7 +230,12 @@ export const repertoireLines = pgTable(
       .notNull()
       .$onUpdateFn(() => new Date()),
   },
-  (table) => [index('idx_repertoire_lines_repertoire').on(table.repertoireId, table.seq)]
+  (table) => [
+    index('idx_repertoire_lines_repertoire').on(table.repertoireId, table.seq),
+    // Covers soft-deleted rows too: a retired number must never be handed to a
+    // new line, or an old URL would silently resolve to different moves.
+    unique('uq_repertoire_line_no').on(table.repertoireId, table.lineNo),
+  ]
 );
 
 export type RepertoireLine = typeof repertoireLines.$inferSelect;

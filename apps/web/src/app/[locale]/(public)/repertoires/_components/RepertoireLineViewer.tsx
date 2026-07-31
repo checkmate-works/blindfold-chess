@@ -24,7 +24,7 @@ import { LineListPanel } from './LineListPanel';
 export type RepertoireViewerLine = {
   id: string;
   name: string | null;
-  /** 1-based line number within the repertoire (seq + 1); the detail-page key. */
+  /** Stable line number within the repertoire (`line_no`); the detail-page key. */
   lineNo: number;
   /** Numbered move pairs, rendered like the in-game move list. */
   formatted: FormattedPgnMove[];

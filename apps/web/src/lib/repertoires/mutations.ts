@@ -1,5 +1,5 @@
 import { toPositionKey } from '@blindfold-chess/features/chess-core';
-import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
@@ -53,19 +53,19 @@ function liveLinesOf(repertoireId: string) {
 }
 
 /**
- * Load one live line by its 1-based number (`seq + 1`, the form that appears in
+ * Load one live line by its stable number (`line_no`, the form that appears in
  * URLs and "Line N" labels), or undefined when the repertoire has no such line.
  *
  * Returns a single superset of columns rather than a per-caller column list —
  * same posture as `ownedPositionColumns` in `lib/positions/user-position-mutations`:
  * the edit path needs the root FEN to validate against, the delete path needs
- * only the id, and one shape keeps the seq→lineNo conversion in one place.
+ * only the id, and one shape keeps the lookup in one place.
  */
 async function loadLiveLineByNo(repertoireId: string, lineNo: number) {
   const [line] = await db
     .select({ id: repertoireLines.id, startingFen: repertoireLines.startingFen })
     .from(repertoireLines)
-    .where(and(liveLinesOf(repertoireId), eq(repertoireLines.seq, lineNo - 1)))
+    .where(and(liveLinesOf(repertoireId), eq(repertoireLines.lineNo, lineNo)))
     .limit(1);
   return line;
 }
@@ -123,7 +123,7 @@ async function pruneOrphanAnnotations(tx: DbTx, repertoireId: string): Promise<v
 
 /**
  * Owner-only: replace a single line's name + moves. The line is addressed by
- * its 1-based number (seq + 1); its root position is fixed (editing changes the
+ * its stable `line_no`; its root position is fixed (editing changes the
  * moves only). Position-keyed annotations / comments follow the surviving
  * positions automatically — and any note left attached to no line at all (a
  * position this edit removed and no sibling line reaches) is pruned in the same
@@ -163,13 +163,19 @@ export async function updateRepertoireLine(params: {
 export type DeleteLineResult = { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' };
 
 /**
- * Owner-only: soft-delete a single line, addressed by its 1-based number
- * (seq + 1). The surviving lines are repacked to a dense `0..n-1` `seq` so line
- * numbers stay contiguous (the same invariant the import / whole-tree paths
- * keep), and any note left attached to no remaining line is pruned — all in one
- * transaction (see {@link pruneOrphanAnnotations}). Deleting the last line
- * leaves an empty (still `building`-publishable-once-refilled) repertoire, the
- * same reachable-by-URL empty state the viewer already handles.
+ * Owner-only: soft-delete a single line, addressed by its stable `line_no`, and
+ * prune any note left attached to no remaining line — both in one transaction
+ * (see {@link pruneOrphanAnnotations}). Deleting the last line leaves an empty
+ * (still `building`-publishable-once-refilled) repertoire, the same
+ * reachable-by-URL empty state the viewer already handles.
+ *
+ * Nothing is renumbered. `line_no` is deliberately left with a hole where the
+ * deleted line was: the surviving lines keep the URLs they were linked to and
+ * discussed under, and the hole 404s instead of quietly resolving to whichever
+ * line moved up. (Until 2026-07-31 this repacked `seq` to stay gapless, which —
+ * back when the URL was `seq + 1` — shifted every later line's URL onto
+ * different moves.) `seq` also keeps its hole; it is an ordering key, and
+ * `ORDER BY` does not care about gaps.
  */
 export async function deleteRepertoireLine(params: {
   repertoireId: string;
@@ -188,19 +194,6 @@ export async function deleteRepertoireLine(params: {
       .set({ deletedAt: new Date() })
       .where(eq(repertoireLines.id, line.id));
 
-    // Repack the survivors to a gapless seq so "Line N" labels / URLs stay
-    // contiguous after the hole this delete left.
-    const remaining = await tx
-      .select({ id: repertoireLines.id, seq: repertoireLines.seq })
-      .from(repertoireLines)
-      .where(liveLinesOf(params.repertoireId))
-      .orderBy(asc(repertoireLines.seq));
-    for (const [index, row] of remaining.entries()) {
-      if (row.seq !== index) {
-        await tx.update(repertoireLines).set({ seq: index }).where(eq(repertoireLines.id, row.id));
-      }
-    }
-
     await pruneOrphanAnnotations(tx, params.repertoireId);
   });
 
@@ -216,12 +209,16 @@ export type AddLineResult =
  * fixed root position (`repertoires.starting_fen`) — a differently-rooted line
  * belongs to a different repertoire, not this one. Reuses
  * `validateRepertoireLineEdit` (same shape as editing a line: name + moves
- * against a fixed root), just an INSERT with the next `seq` instead of an
+ * against a fixed root), just an INSERT at the end of the list instead of an
  * UPDATE of an existing row.
  *
- * The max-seq read + insert run in one transaction so two concurrent adds
- * can't compute the same `seq` (ordering only — `seq` has no unique
- * constraint, so a collision would misorder lines rather than fail).
+ * The new row takes the next `seq` among LIVE lines (append to the display
+ * order) but the next `line_no` across ALL of them, soft-deleted included: a
+ * number that has been used once is retired with its line, so a URL that
+ * pointed at deleted moves stays a 404 instead of coming back as a different
+ * line. Both maxima are read inside the insert's transaction, so two concurrent
+ * adds can't land on the same values — and for `line_no` a race is a failed
+ * insert (UNIQUE `uq_repertoire_line_no`) rather than a silent duplicate.
  */
 export async function addRepertoireLine(params: {
   repertoireId: string;
@@ -246,23 +243,29 @@ export async function addRepertoireLine(params: {
   });
   if (!validated.ok) return { ok: false, error: validated.error };
 
-  const seq = await db.transaction(async (tx) => {
+  const lineNo = await db.transaction(async (tx) => {
     const [{ maxSeq }] = await tx
       .select({ maxSeq: sql<number>`coalesce(max(${repertoireLines.seq}), -1)` })
       .from(repertoireLines)
       .where(liveLinesOf(params.repertoireId));
-    const nextSeq = maxSeq + 1;
+    // Deliberately NOT scoped to live rows — see the TSDoc above.
+    const [{ maxLineNo }] = await tx
+      .select({ maxLineNo: sql<number>`coalesce(max(${repertoireLines.lineNo}), 0)` })
+      .from(repertoireLines)
+      .where(eq(repertoireLines.repertoireId, params.repertoireId));
+    const nextLineNo = maxLineNo + 1;
     await tx.insert(repertoireLines).values({
       repertoireId: params.repertoireId,
       pgn: validated.data.pgn,
       startingFen: repertoire.startingFen,
       name: validated.data.name,
-      seq: nextSeq,
+      lineNo: nextLineNo,
+      seq: maxSeq + 1,
     });
-    return nextSeq;
+    return nextLineNo;
   });
 
-  return { ok: true, lineNo: seq + 1 };
+  return { ok: true, lineNo };
 }
 
 export type UpdateRepertoireResult =
@@ -420,6 +423,7 @@ export async function createRepertoireEntry(
           repertoireId: repertoire.id,
           pgn: line.pgn,
           startingFen: line.startingFen,
+          lineNo: index + 1,
           seq: index,
         }))
       );

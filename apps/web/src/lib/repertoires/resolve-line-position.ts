@@ -22,7 +22,7 @@ export async function resolveLineForPosition(
     .select({
       pgn: repertoireLines.pgn,
       startingFen: repertoireLines.startingFen,
-      seq: repertoireLines.seq,
+      lineNo: repertoireLines.lineNo,
     })
     .from(repertoireLines)
     .where(and(eq(repertoireLines.repertoireId, repertoireId), isNull(repertoireLines.deletedAt)))
@@ -39,7 +39,7 @@ export async function resolveLineForPosition(
     // positions[0] is the start; positions[i] is the position after ply i.
     for (let ply = 1; ply < positions.length; ply++) {
       if (positionHash(positions[ply].fen) === targetHash) {
-        return { lineNo: line.seq + 1, ply };
+        return { lineNo: line.lineNo, ply };
       }
     }
   }

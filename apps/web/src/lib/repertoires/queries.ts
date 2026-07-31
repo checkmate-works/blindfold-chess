@@ -390,10 +390,10 @@ export async function getRepertoireForViewer(
 }
 
 /**
- * A single line of a viewable repertoire, addressed by its 1-based number
- * (seq + 1). Wraps `getRepertoireForViewer` + the seq lookup the line detail and
- * edit pages both did inline. Returns null when the repertoire isn't visible or
- * the line doesn't exist.
+ * A single line of a viewable repertoire, addressed by its stable `line_no`.
+ * Wraps `getRepertoireForViewer` + the lookup the line detail and edit pages
+ * both did inline. Returns null when the repertoire isn't visible or the line
+ * doesn't exist.
  *
  * `lines` carries the repertoire's full (seq-ordered) line set alongside the
  * addressed one, so the line detail page can render the same line-switching
@@ -415,7 +415,7 @@ export async function getRepertoireLineForViewer(
 } | null> {
   const data = await getRepertoireForViewer(id, viewerId);
   if (!data) return null;
-  const line = data.lines.find((l) => l.seq === lineNo - 1);
+  const line = data.lines.find((l) => l.lineNo === lineNo);
   if (!line) return null;
   return {
     repertoire: data.repertoire,
