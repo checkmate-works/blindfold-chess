@@ -130,12 +130,16 @@ export function LineDetailBoard({
   useEffect(() => {
     if (String(syncPly) === moveParam) return;
     const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams);
+      // Read the query off the live URL rather than the `searchParams`
+      // snapshot this effect closed over 400 ms ago: a param consumed and
+      // stripped in the meantime (`?toast=`, landed on by a line save) would
+      // otherwise be written straight back and re-fire its one-shot handler.
+      const params = new URLSearchParams(window.location.search);
       params.set('move', String(syncPly));
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }, 400);
     return () => clearTimeout(timer);
-  }, [syncPly, moveParam, pathname, router, searchParams]);
+  }, [syncPly, moveParam, pathname, router]);
   const current = positions[clampedPly];
   const lastMove = clampedPly > 0 ? current.lastMove : null;
   const display = useBoardDisplay(lastMove);

@@ -1,0 +1,92 @@
+import { cleanup, render } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { ToastContainer } from './ToastContainer';
+
+afterEach(() => {
+  cleanup();
+});
+
+const mockShowToast = vi.fn();
+const mockReplace = vi.fn();
+const mockPush = vi.fn();
+
+// Mirrors the App Router's own behaviour: the value's identity is tied to the
+// URL, so a re-render alone does not re-run effects that depend on it.
+let searchParamsCache = new URLSearchParams();
+function setUrl(url: string) {
+  window.history.replaceState(null, '', url);
+  searchParamsCache = new URLSearchParams(window.location.search);
+}
+
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ locale: 'en' }),
+  usePathname: () => window.location.pathname,
+  useSearchParams: () => searchParamsCache,
+  useRouter: () => ({ replace: mockReplace, push: mockPush }),
+}));
+
+// Pulled in by ToastItem; loading the real module would resolve next-intl's
+// client navigation against the mocked `next/navigation` above.
+vi.mock('@/i18n/routing', () => ({
+  useRouter: () => ({ replace: mockReplace, push: mockPush }),
+}));
+
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string) => key,
+}));
+
+vi.mock('../_contexts/ToastContext', () => ({
+  useToast: () => ({ toasts: [], hideToast: vi.fn(), showToast: mockShowToast }),
+}));
+
+describe('ToastContainer query-param toasts', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sessionStorage.clear();
+    setUrl('/en/repertoires/r1/lines/1');
+  });
+
+  it('shows the toast once and strips the param synchronously', () => {
+    setUrl('/en/repertoires/r1/lines/1?toast=line_updated');
+    render(<ToastContainer />);
+
+    expect(mockShowToast).toHaveBeenCalledTimes(1);
+    expect(mockShowToast).toHaveBeenCalledWith('lineUpdated', 'success');
+    // Synchronous — a component that rebuilds the URL right after this must not
+    // be able to read (and write back) the already-consumed param.
+    expect(window.location.search).toBe('');
+  });
+
+  it('keeps unrelated params while dropping the consumed ones', () => {
+    setUrl('/en/repertoires/r1/lines/1?move=3&toast=line_added&coinsCapped=1');
+    render(<ToastContainer />);
+
+    expect(mockShowToast).toHaveBeenCalledTimes(2);
+    expect(window.location.search).toBe('?move=3');
+  });
+
+  it('strips via history.replaceState, not a router soft navigation', () => {
+    const replaceState = vi.spyOn(window.history, 'replaceState');
+    setUrl('/en/repertoires/r1/lines/1?toast=line_updated');
+    replaceState.mockClear();
+
+    render(<ToastContainer />);
+
+    // `null` state, so the App Router's replaceState patch treats it as an
+    // external call and refreshes usePathname/useSearchParams.
+    expect(replaceState).toHaveBeenCalledWith(null, '', '/en/repertoires/r1/lines/1');
+    // A soft navigation would re-fetch the RSC payload and leave the param
+    // readable for the length of that round-trip.
+    expect(mockReplace).not.toHaveBeenCalled();
+    replaceState.mockRestore();
+  });
+
+  it('leaves the URL alone for an unknown toast key', () => {
+    setUrl('/en/repertoires/r1/lines/1?toast=not_a_real_key');
+    render(<ToastContainer />);
+
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(window.location.search).toBe('?toast=not_a_real_key');
+  });
+});

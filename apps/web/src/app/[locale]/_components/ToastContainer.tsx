@@ -104,12 +104,29 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
     if (!handled) return;
 
     // Strip the consumed params from the URL without adding a history entry.
+    //
+    // `history.replaceState` (App Router shallow update), NOT `router.replace`:
+    // the latter is an async soft navigation that re-fetches the RSC payload,
+    // so the params stayed readable for hundreds of milliseconds after the
+    // toast was shown. Any component that meanwhile rebuilt the URL from its
+    // own `useSearchParams()` snapshot — e.g. the line detail board mirroring
+    // the focused move into `?move=` on a 400 ms debounce — wrote the consumed
+    // `toast=` straight back, re-firing this effect and showing the toast a
+    // second time (irregular: it depended on which write landed first).
+    // Replacing state synchronously closes that window and skips a server
+    // round-trip that only ever existed to drop a query param.
+    //
+    // The state argument MUST be `null`, not `window.history.state`: App
+    // Router's `replaceState` patch treats a `__NA`-carrying state as one of
+    // its own internal calls and skips the `usePathname`/`useSearchParams`
+    // update, so passing the current state through would leave the hooks
+    // reporting the stale URL. `null` lets it copy its internals over itself.
     const url = new URL(window.location.href);
     url.searchParams.delete('toast');
     url.searchParams.delete('coinsEarned');
     url.searchParams.delete('coinsCapped');
-    router.replace(url.pathname + url.search, { scroll: false });
-  }, [searchParams, showToast, tToast, router]);
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }, [searchParams, showToast, tToast]);
 
   // Handle global notifications that need to be shown across page transitions
   useEffect(() => {
