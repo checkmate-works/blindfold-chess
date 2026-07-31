@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
-import { PuzzlePreviewTags } from './PuzzlePreviewTags';
+import { PreviewTags } from './PreviewTags';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
@@ -26,10 +26,10 @@ const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 afterEach(() => cleanup());
 
-describe('PuzzlePreviewTags', () => {
+describe('PreviewTags', () => {
   it('renders nothing when no tags are attached', () => {
     const { container } = render(
-      <PuzzlePreviewTags themes={[] as ThemeOption[]} chunks={[] as ChunkOption[]} />
+      <PreviewTags themes={[] as ThemeOption[]} chunks={[] as ChunkOption[]} />
     );
     expect(container).toBeEmptyDOMElement();
   });
@@ -40,7 +40,7 @@ describe('PuzzlePreviewTags', () => {
       { id: 't-concrete', label: 'Fork', previewFen: VALID_FEN, definition: null },
     ] as unknown as ThemeOption[];
 
-    render(<PuzzlePreviewTags themes={themes} chunks={[] as ChunkOption[]} />);
+    render(<PreviewTags themes={themes} chunks={[] as ChunkOption[]} />);
 
     // The abstract (positionless) theme falls back to the No Image placeholder.
     expect(screen.getByText('No Image')).toBeInTheDocument();
@@ -56,7 +56,7 @@ describe('PuzzlePreviewTags', () => {
       { id: 'c1', label: 'Greek gift', representativeFen: VALID_FEN, description: null },
     ] as unknown as ChunkOption[];
 
-    render(<PuzzlePreviewTags themes={[] as ThemeOption[]} chunks={chunks} />);
+    render(<PreviewTags themes={[] as ThemeOption[]} chunks={chunks} />);
 
     expect(screen.getByTestId('board')).toHaveAttribute('data-fen', VALID_FEN);
     expect(screen.getByText('Greek gift')).toBeInTheDocument();

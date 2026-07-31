@@ -19,7 +19,7 @@ import type { FenPieceChar } from './types';
 import type { EditableBoardDragSource } from './use-editable-board-drag-drop';
 import { useEditableBoardDragDrop } from './use-editable-board-drag-drop';
 
-type EditableChessBoardLabels = {
+export type EditableChessBoardLabels = {
   whitePieces: string;
   blackPieces: string;
   removePieceMode: string;

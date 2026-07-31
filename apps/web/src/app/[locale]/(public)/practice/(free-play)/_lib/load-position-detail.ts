@@ -18,7 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * for comment fetches and the `forkedFromId` filter applied to the
  * forks counter.
  */
-type PositionKind = 'memory' | 'puzzle';
+export type PositionKind = 'memory' | 'puzzle';
 
 /**
  * Minimal position-row shape the loader reads. Accepting a structural
