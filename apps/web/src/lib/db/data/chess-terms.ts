@@ -13,6 +13,9 @@ import { termsRZ } from './terms/r-z';
  * time (same as before the split), so in-source ordering of the sub-files
  * does not affect the public API.
  */
-export const chessTerms: ChessTerm[] = [...termsAC, ...termsDL, ...termsMP, ...termsRZ];
-
-chessTerms.sort((a, b) => a.term.localeCompare(b.term));
+export const chessTerms: readonly ChessTerm[] = [
+  ...termsAC,
+  ...termsDL,
+  ...termsMP,
+  ...termsRZ,
+].sort((a, b) => a.term.localeCompare(b.term));

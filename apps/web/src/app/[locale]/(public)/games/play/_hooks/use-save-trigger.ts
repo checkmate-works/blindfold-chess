@@ -39,10 +39,10 @@ export function useSaveTrigger({
   saveOnInitRef,
   hasInitialSaveExecuted,
   hasPlayerInteracted,
-  hasPendingChanges,
-  isInitialSyncSave,
-  lastSavedMovesLength,
-  lastSavedStatus,
+  hasPendingChanges: hasPendingChangesRef,
+  isInitialSyncSave: isInitialSyncSaveRef,
+  lastSavedMovesLength: lastSavedMovesLengthRef,
+  lastSavedStatus: lastSavedStatusRef,
   saveGame,
 }: UseSaveTriggerOptions) {
   const prevEnabled = useRef(enabled);
@@ -54,8 +54,8 @@ export function useSaveTrigger({
     // loaded and `enabled` flips true in the same render cycle).
     const justEnabled = !prevEnabled.current && enabled;
     if (!enabled || justEnabled) {
-      lastSavedMovesLength.current = moves.length;
-      lastSavedStatus.current = status;
+      lastSavedMovesLengthRef.current = moves.length;
+      lastSavedStatusRef.current = status;
       prevEnabled.current = enabled;
 
       // On the enabled transition with no moves loaded yet, the upcoming
@@ -65,7 +65,7 @@ export function useSaveTrigger({
       // before moves are set via setMovesTo, so moves.length is 0 here; the
       // guard also protects against future render-timing changes.
       if (justEnabled && moves.length === 0) {
-        isInitialSyncSave.current = true;
+        isInitialSyncSaveRef.current = true;
       }
       return;
     }
@@ -77,8 +77,8 @@ export function useSaveTrigger({
     }
 
     const lastSaved = {
-      movesLength: lastSavedMovesLength.current,
-      status: lastSavedStatus.current,
+      movesLength: lastSavedMovesLengthRef.current,
+      status: lastSavedStatusRef.current,
     };
 
     if (
@@ -93,7 +93,7 @@ export function useSaveTrigger({
     }
 
     if (shouldMarkPendingChanges(status, lastSaved)) {
-      hasPendingChanges.current = true;
+      hasPendingChangesRef.current = true;
     }
 
     // Save immediately so that both player and AI moves are persisted.

@@ -143,7 +143,7 @@ export function BoardThumbnail({
   const flipped = flippedOverride ?? isBlackToMove(fen);
 
   const ranks = parseFenPlacement(fen);
-  const board = flipped ? ranks.reverse().map((rank) => [...rank].reverse()) : ranks;
+  const board = flipped ? [...ranks].reverse().map((rank) => [...rank].reverse()) : ranks;
 
   return (
     <div className={className}>

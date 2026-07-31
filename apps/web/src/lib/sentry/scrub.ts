@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign -- Sentry's beforeSend contract is mutate-in-place: the hook edits the event it is handed (see `scrubInPlace`'s docblock); returning copies would silently drop fields Sentry attaches after our hook. */
 /**
  * PII scrubbing helpers shared by Sentry `beforeSend` hooks on both the
  * server and edge runtimes.
