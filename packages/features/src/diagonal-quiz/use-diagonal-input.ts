@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 type InputStep = "file1" | "rank1" | "file2" | "rank2" | "complete";
 
@@ -97,6 +97,18 @@ export function useDiagonalInput({
     allowSingleSquareAntiDiagonal,
   );
   const areBothComplete = isDiagonalComplete && isAntiDiagonalComplete;
+
+  // Auto-advance from diagonal to antiDiagonal when diagonal completes.
+  // Render-phase adjustment (not an effect): completion is itself computed
+  // during this render, and the effect version committed one frame with the
+  // focus still on the finished field before correcting itself.
+  if (
+    activeField === "diagonal" &&
+    isDiagonalComplete &&
+    !isAntiDiagonalComplete
+  ) {
+    setActiveField("antiDiagonal");
+  }
 
   const currentState = activeField === "diagonal" ? diagonal : antiDiagonal;
   const currentStep = currentState.step;
@@ -221,17 +233,6 @@ export function useDiagonalInput({
     setAntiDiagonal(INITIAL_STATE);
     setActiveField("diagonal");
   }, []);
-
-  // Auto-advance from diagonal to antiDiagonal when diagonal completes
-  useEffect(() => {
-    if (
-      activeField === "diagonal" &&
-      isDiagonalComplete &&
-      !isAntiDiagonalComplete
-    ) {
-      setActiveField("antiDiagonal");
-    }
-  }, [activeField, isDiagonalComplete, isAntiDiagonalComplete]);
 
   return {
     diagonalText,

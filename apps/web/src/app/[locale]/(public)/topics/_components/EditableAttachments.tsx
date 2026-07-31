@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
@@ -35,8 +35,8 @@ type Props = {
  *
  * Local state mirrors the server-side attachment: a successful remove
  * updates the mirror without a router round-trip, and after a successful
- * attach (which `router.refresh()`es) the sync effect swaps the fresh
- * `attachment` prop in.
+ * attach (which `router.refresh()`es) the render-phase adjustment below
+ * swaps the fresh `attachment` prop in.
  */
 export function EditableAttachments({
   postId,
@@ -49,9 +49,15 @@ export function EditableAttachments({
 }: Props) {
   const [local, setLocal] = useState<PostAttachment | null>(attachment);
 
-  useEffect(() => {
+  // Adopt a changed `attachment` prop during render (standard "derive state
+  // from props" adjustment) — the sync-effect version rendered one frame
+  // with the stale mirror first. A local remove (prop unchanged) is
+  // untouched, exactly as before.
+  const [prevAttachment, setPrevAttachment] = useState(attachment);
+  if (attachment !== prevAttachment) {
+    setPrevAttachment(attachment);
     setLocal(attachment);
-  }, [attachment]);
+  }
 
   const canAttach = !local && (attachPgnAction !== undefined || attachFenAction !== undefined);
 

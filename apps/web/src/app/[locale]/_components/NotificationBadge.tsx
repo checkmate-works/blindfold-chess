@@ -24,21 +24,33 @@ export function NotificationBadge() {
     if (previousPathname.current === pathname) return;
 
     previousPathname.current = pathname;
+    // Two rapid navigations fire two overlapping counts; without the flag the
+    // first (staler) response can resolve last and win.
+    let cancelled = false;
     getUnreadCount()
-      .then(setUnreadCount)
+      .then((count) => {
+        if (!cancelled) setUnreadCount(count);
+      })
       .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [pathname, user]);
 
   useEffect(() => {
+    let cancelled = false;
     const handleNotificationsRead = () => {
       getUnreadCount()
-        .then(setUnreadCount)
+        .then((count) => {
+          if (!cancelled) setUnreadCount(count);
+        })
         .catch(() => {});
     };
 
     window.addEventListener(NOTIFICATIONS_READ_EVENT, handleNotificationsRead);
 
     return () => {
+      cancelled = true;
       window.removeEventListener(NOTIFICATIONS_READ_EVENT, handleNotificationsRead);
     };
   }, []);

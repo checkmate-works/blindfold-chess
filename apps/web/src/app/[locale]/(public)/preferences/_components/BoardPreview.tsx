@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -26,10 +26,14 @@ export function BoardPreview({ settings, playerSide = 'white' }: Props) {
   const t = useTranslations('Preferences');
   const [previewPerspective, setPreviewPerspective] = useState<'white' | 'black'>(playerSide);
 
-  // Reset preview perspective when playerSide changes
-  useEffect(() => {
+  // Reset preview perspective when playerSide changes — render-phase
+  // adjustment (the standard "reset state on prop change" form) instead of a
+  // sync effect, which committed one frame in the stale perspective first.
+  const [prevPlayerSide, setPrevPlayerSide] = useState(playerSide);
+  if (playerSide !== prevPlayerSide) {
+    setPrevPlayerSide(playerSide);
     setPreviewPerspective(playerSide);
-  }, [playerSide]);
+  }
 
   return (
     <div>

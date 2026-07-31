@@ -22,7 +22,12 @@ export function HeaderRightSection() {
       return;
     }
 
-    fetch('/api/header-profile')
+    // Abort on user change/unmount: `user` genuinely changes at runtime
+    // (logout → login), and without cancellation a slow response for the
+    // PREVIOUS user could land after the fast one for the current user and
+    // display the wrong avatar/name.
+    const controller = new AbortController();
+    fetch('/api/header-profile', { signal: controller.signal })
       .then((res) => {
         if (!res.ok) return;
         return res.json();
@@ -32,8 +37,11 @@ export function HeaderRightSection() {
         setProfile(data);
       })
       .catch(() => {
-        // Silently fail — profile display will use fallback
+        // Silently fail (including aborts) — profile display will use fallback
       });
+    return () => {
+      controller.abort();
+    };
   }, [user]);
 
   if (isLoading) {
