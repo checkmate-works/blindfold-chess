@@ -322,9 +322,17 @@ export async function listRepertoiresWithLinesForSide(
   }));
 }
 
+/**
+ * A line plus the name of the chapter it is filed under, denormalised off the
+ * ordering join. NULL means the unfiled bucket — which is every line in a
+ * course that has no chapters, so a reader of such a course sees no headings
+ * at all rather than one called "Unfiled".
+ */
+export type RepertoireLineWithChapter = RepertoireLine & { chapterName: string | null };
+
 export type RepertoireWithLines = {
   repertoire: Repertoire;
-  lines: RepertoireLine[];
+  lines: RepertoireLineWithChapter[];
   profile: RepertoireAuthorProfile | null;
 };
 
@@ -392,16 +400,19 @@ export async function getRepertoireForViewer(
 
   if (!(await canViewRepertoire(repertoire, viewerId, isOwner))) return null;
 
-  const lines = (
+  // The chapter is joined for ordering anyway, so its name rides along rather
+  // than costing a second query: every read surface that lists lines wants to
+  // show the heading a line sits under.
+  const lines: RepertoireLineWithChapter[] = (
     await db
-      .select({ line: repertoireLines })
+      .select({ line: repertoireLines, chapterName: repertoireChapters.name })
       .from(repertoireLines)
       .leftJoin(repertoireChapters, eq(repertoireChapters.id, repertoireLines.chapterId))
       .where(
         and(eq(repertoireLines.repertoireId, repertoire.id), isNull(repertoireLines.deletedAt))
       )
       .orderBy(...linesInDisplayOrder)
-  ).map((row) => row.line);
+  ).map((row) => ({ ...row.line, chapterName: row.chapterName }));
 
   // A left join on a deleted author yields a row of nulls, not no row.
   const profile = row.profile?.username ? row.profile : null;
@@ -426,8 +437,8 @@ export async function getRepertoireLineForViewer(
   viewerId: string | null
 ): Promise<{
   repertoire: Repertoire;
-  line: RepertoireLine;
-  lines: RepertoireLine[];
+  line: RepertoireLineWithChapter;
+  lines: RepertoireLineWithChapter[];
   /** The repertoire author's live profile (null for anon/deleted), so the line
    *  page can show the same "Created by" attribution the detail page does. */
   profile: RepertoireAuthorProfile | null;

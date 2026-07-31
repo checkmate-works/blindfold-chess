@@ -50,6 +50,7 @@ type Props = {
   navHeading: string;
   navAddLineLabel?: string;
   navManageLabel?: string;
+  navUnfiledLabel: string;
   /**
    * Owner-only: per-ply prefix PGNs (`branchPgns[ply - 1]` = this line through
    * ply). Seeds the "branch from this position" link so a new line reuses the
@@ -89,6 +90,7 @@ export function LineDetailBoard({
   navHeading,
   navAddLineLabel,
   navManageLabel,
+  navUnfiledLabel,
   branchPgns,
   continuations,
 }: Props) {
@@ -265,6 +267,7 @@ export function LineDetailBoard({
           heading={navHeading}
           addLineLabel={navAddLineLabel}
           manageLabel={navManageLabel}
+          unfiledLabel={navUnfiledLabel}
         />
       </div>
     </div>

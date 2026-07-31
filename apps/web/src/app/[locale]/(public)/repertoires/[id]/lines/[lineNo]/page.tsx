@@ -101,13 +101,14 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
         formatMovesToPgn(replayed.sans, replayed.startsAsBlack, replayed.startMoveNumber),
         t('detail.lineFallback', { n: l.lineNo })
       );
-    return { id: l.id, lineNo: l.lineNo, label };
+    return { id: l.id, lineNo: l.lineNo, label, chapterName: l.chapterName };
   });
   const navProps = {
     navItems,
     navHeading: t('detail.linesHeading'),
     navAddLineLabel: isOwner ? t('line.new.title') : undefined,
     navManageLabel: isOwner ? t('lines.manageAction') : undefined,
+    navUnfiledLabel: t('lines.unfiled'),
   };
 
   // Transposition continuations: where this line's final position keeps
@@ -159,6 +160,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
             heading={t('detail.linesHeading')}
             addLineLabel={isOwner ? t('line.new.title') : undefined}
             manageLabel={isOwner ? t('lines.manageAction') : undefined}
+            unfiledLabel={t('lines.unfiled')}
           />
         </div>
       ) : (
