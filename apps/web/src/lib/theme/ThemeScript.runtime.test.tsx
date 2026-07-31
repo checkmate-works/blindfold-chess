@@ -19,14 +19,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
  * preserving the filter from the property slot.
  */
 
-// `ThemeScript` is an async Server Component that calls `headers()` to read
-// the per-request CSP nonce. In vitest+jsdom there is no Next.js request
-// context, so mock `next/headers` to return an empty header bag — the
-// component reads `x-nonce` which is allowed to be absent.
-vi.mock('next/headers', () => ({
-  headers: async () => new Headers(),
-}));
-
 const ORIGINAL_DESCRIPTOR = Object.getOwnPropertyDescriptor(console, 'error');
 
 function restoreConsoleError() {
@@ -51,7 +43,7 @@ describe('ThemeScript runtime: console.error filter behavior', () => {
 
   it('drops calls whose first arg contains the warning fragment, and passes through other calls', async () => {
     const { ThemeScript } = await import('./ThemeScript');
-    const element = await ThemeScript();
+    const element = ThemeScript();
     const { container } = render(element);
     const body = container.querySelector('script')!.innerHTML;
 
@@ -100,7 +92,7 @@ describe('ThemeScript runtime: console.error filter behavior', () => {
 
   it('survives a later reassignment of console.error (defineProperty setter forwards via inner target)', async () => {
     const { ThemeScript } = await import('./ThemeScript');
-    const element = await ThemeScript();
+    const element = ThemeScript();
     const { container } = render(element);
     const body = container.querySelector('script')!.innerHTML;
 

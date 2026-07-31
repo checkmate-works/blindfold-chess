@@ -10,6 +10,15 @@ import { ResetPasswordForm } from './_components';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
+/**
+ * Credential-entry surface: deliberately opted OUT of static generation so it
+ * keeps the per-request-nonce `'strict-dynamic'` CSP (`src/proxy.ts` serves
+ * prerendered content routes a weaker `'unsafe-inline'` script-src, which is
+ * the wrong trade for a page that handles account credentials). The
+ * `generateStaticParams` export above still feeds the `[locale]` layout.
+ */
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
     params,

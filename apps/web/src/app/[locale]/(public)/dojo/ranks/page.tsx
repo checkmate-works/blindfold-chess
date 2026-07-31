@@ -30,8 +30,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
-
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 
 import {
@@ -103,8 +101,7 @@ async function RanksContent({ params }: LocalePageProps) {
  * CLS. PageTitle / SectionTitle / subtitle are all static and resolve from
  * the `ranks` namespace; rank cards (DB-driven) stay as bar placeholders.
  */
-async function RanksSkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function RanksSkeleton({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'ranks' });
   const tDojo = await getTranslations({ locale, namespace: 'dojo' });
 
@@ -184,9 +181,10 @@ async function RanksSkeleton() {
  * boundary inside this page's own JSX means it only exists in the render
  * tree when this exact route is the matched leaf.
  */
-export default function RanksPage({ params }: LocalePageProps) {
+export default async function RanksPage({ params }: LocalePageProps) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<RanksSkeleton />}>
+    <Suspense fallback={<RanksSkeleton locale={locale} />}>
       <RanksContent params={params} />
     </Suspense>
   );

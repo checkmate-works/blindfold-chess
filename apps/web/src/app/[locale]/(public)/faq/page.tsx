@@ -5,7 +5,6 @@ import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
 import { DAILY_CREATION_POINT_CAP, POST_CREATION_POINTS } from '@/lib/points';
-import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -42,7 +41,6 @@ export default async function FAQPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'faq' });
-  const nonce = await resolveCspNonce();
 
   // Plain text answers for JSON-LD (strip XML-like tags for plain text)
   const stripTags = (text: string) => text.replace(/<[^>]+>([^<]*)<\/[^>]+>/g, '$1');
@@ -189,7 +187,7 @@ export default async function FAQPage({ params }: Props) {
     <>
       {/* NOTE: FAQPage rich results are limited to government/healthcare sites since Aug 2023.
           Keeping schema for semantic markup purposes, but no rich result expected. */}
-      <JsonLd data={generateFAQPageSchema(faqSchemaItems)} nonce={nonce} />
+      <JsonLd data={generateFAQPageSchema(faqSchemaItems)} />
       <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
         <SectionTitle>{t('title')}</SectionTitle>
         <FAQClient items={faqItems} />

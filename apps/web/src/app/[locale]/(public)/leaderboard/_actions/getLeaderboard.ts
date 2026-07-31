@@ -1,11 +1,9 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
-
-import { LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
+import { getPublicLeaderboard } from '../_lib/get-public-leaderboard';
 import { getQueriesForPeriod } from '../_lib/period-queries';
 import type {
   LeaderboardModule,
@@ -13,8 +11,6 @@ import type {
   LeaderboardResult,
   LeaderboardRow,
 } from '../_lib/types';
-import { PAGE_SIZE } from '../_lib/types';
-import { isValidKey, isValidModule, isValidPage, isValidPeriod } from '../_lib/validators';
 
 // ---------------------------------------------------------------------------
 // Auth helper
@@ -33,72 +29,44 @@ async function getCurrentUserId(): Promise<string | null> {
 }
 
 // ---------------------------------------------------------------------------
-// Cached ranking data (shared across all users)
-// ---------------------------------------------------------------------------
-
-const REVALIDATE_SECONDS = 60; // 1 minute
-
-function getCachedRanking(
-  module: LeaderboardModule,
-  key: string,
-  period: LeaderboardPeriod,
-  offset: number,
-  limit: number
-) {
-  return unstable_cache(
-    async () => {
-      const { getRanking } = getQueriesForPeriod(period);
-      return getRanking(module, key, offset, limit);
-    },
-    ['leaderboard-ranking', module, key, period, String(offset), String(limit)],
-    { revalidate: REVALIDATE_SECONDS, tags: [LEADERBOARD_CACHE_TAG] }
-  )();
-}
-
-// ---------------------------------------------------------------------------
 // Main entry point
 // ---------------------------------------------------------------------------
 
-const EMPTY_RESULT: LeaderboardResult = { rows: [], totalCount: 0, currentUserRank: null };
-
+/**
+ * Viewer-aware leaderboard page: the shared public ranking (see
+ * `getPublicLeaderboard` in `../_lib/get-public-leaderboard.ts` — validation
+ * and caching live there) plus the current user's own ranked row when they
+ * are signed in and not on the requested page.
+ *
+ * This is a Server Action because the interactive leaderboard UI pages it
+ * from the client. It reads the auth cookie, so calling it from a Server
+ * Component forces the route dynamic — static/ISR routes must call
+ * `getPublicLeaderboard` directly instead.
+ */
 export async function getLeaderboard(
   module: LeaderboardModule,
   key: string,
   period: LeaderboardPeriod,
   page: number
 ): Promise<LeaderboardResult> {
-  // Validate inputs from client
-  if (
-    !isValidModule(module) ||
-    !isValidPeriod(period) ||
-    !isValidKey(module, key) ||
-    !isValidPage(page)
-  ) {
-    return EMPTY_RESULT;
+  const { rows, totalCount } = await getPublicLeaderboard(module, key, period, page);
+  if (rows.length === 0 && totalCount === 0) {
+    return { rows, totalCount, currentUserRank: null };
   }
 
-  const offset = (page - 1) * PAGE_SIZE;
   const currentUserId = await getCurrentUserId();
 
-  try {
-    const { rows, total } = await getCachedRanking(module, key, period, offset, PAGE_SIZE);
-
-    // Map query rows to ranked rows for UI
-    const leaderboardRows: LeaderboardRow[] = rows.map((r, i) => ({
-      ...r,
-      rank: offset + i + 1,
-    }));
-
-    // Fetch current user's rank if they're not on the current page
-    let currentUserRank: LeaderboardRow | null = null;
-    if (currentUserId && !leaderboardRows.some((r) => r.userId === currentUserId)) {
+  // A failed per-viewer lookup degrades to "no own-rank row" rather than
+  // discarding the already-fetched public ranking.
+  let currentUserRank: LeaderboardRow | null = null;
+  if (currentUserId && !rows.some((r) => r.userId === currentUserId)) {
+    try {
       const { getUserRankedRow } = getQueriesForPeriod(period);
       currentUserRank = await getUserRankedRow(currentUserId, module, key);
+    } catch (error) {
+      handleServerActionError(error, '[getLeaderboard]');
     }
-
-    return { rows: leaderboardRows, totalCount: total, currentUserRank };
-  } catch (error) {
-    handleServerActionError(error, '[getLeaderboard]');
-    return EMPTY_RESULT;
   }
+
+  return { rows, totalCount, currentUserRank };
 }

@@ -6,7 +6,6 @@ import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import {
   Divider,
@@ -113,8 +112,7 @@ async function LearnCategoryContent({ params }: Props) {
  * a bar placeholder because the category label is data-driven and not known
  * to the skeleton; section title is static and renders the real string.
  */
-async function LearnCategorySkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function LearnCategorySkeleton({ locale }: { locale: string }) {
   const [t, tNav] = await Promise.all([
     getTranslations({ locale, namespace: 'learn' }),
     getTranslations({ locale, namespace: 'navigation' }),
@@ -174,9 +172,10 @@ async function LearnCategorySkeleton() {
  * here would also wrap the deeper `[slug]` article route, causing a
  * double-skeleton flash on direct navigation into a specific article.
  */
-export default function LearnCategoryPage({ params }: Props) {
+export default async function LearnCategoryPage({ params }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<LearnCategorySkeleton />}>
+    <Suspense fallback={<LearnCategorySkeleton locale={locale} />}>
       <LearnCategoryContent params={params} />
     </Suspense>
   );

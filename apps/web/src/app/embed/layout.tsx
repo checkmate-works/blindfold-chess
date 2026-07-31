@@ -45,7 +45,6 @@ export default async function EmbedLayout({ children }: { children: React.ReactN
   // back to a request-derived default when the header is absent.
   const { lang, bg } = parseEmbedParamsFromSearch(requestHeaders.get('x-search') ?? '');
   const locale = lang ?? negotiateLocale(requestHeaders.get('accept-language'));
-  const nonce = requestHeaders.get('x-nonce') ?? undefined;
 
   const forcedThemeClass =
     bg === 'dark' ? THEME_DARK_CLASS : bg === 'light' ? THEME_LIGHT_CLASS : '';
@@ -62,11 +61,7 @@ export default async function EmbedLayout({ children }: { children: React.ReactN
             reads localStorage and the OS setting, and would overwrite an
             explicit `?bg=` on the very first frame. */}
         {!bg && <ThemeScript />}
-        <style
-          nonce={nonce}
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: generateThemeCSS() }}
-        />
+        <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         {children}

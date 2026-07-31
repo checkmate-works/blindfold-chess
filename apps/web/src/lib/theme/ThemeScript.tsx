@@ -1,6 +1,4 @@
-import { headers } from 'next/headers';
-
-import { THEME_DARK_CLASS, THEME_LIGHT_CLASS, THEME_STORAGE_KEY } from './constants';
+import { THEME_BOOTSTRAP_SCRIPT_DEV, THEME_BOOTSTRAP_SCRIPT_PROD } from './theme-bootstrap-script';
 
 // Inline bootstrap script that applies the saved (or system) theme class on
 // <html> before first paint, preventing a flash of incorrect theme.
@@ -9,9 +7,13 @@ import { THEME_DARK_CLASS, THEME_LIGHT_CLASS, THEME_STORAGE_KEY } from './consta
 // script must actually execute. Keeping the element strictly in the server
 // tree is what makes this safe.
 //
-// The script carries the per-request CSP nonce (set on the request by
-// `src/proxy.ts`) so it passes the `'strict-dynamic'` + nonce script-src
-// directive without needing `'unsafe-inline'`.
+// The script text is a build-time constant (source of truth:
+// `./theme-bootstrap-script.ts`), so the CSP allows it via a `'sha256-...'`
+// source expression (`@/lib/security/inline-script-hashes.ts`) instead of a
+// per-request nonce. Reading the nonce here used to require `headers()`,
+// which marked every route under `[locale]/` dynamic and silently disabled
+// all static generation / ISR — the hash approach removes the last dynamic
+// API read from the always-mounted layout tree.
 //
 // This is intentionally a Server Component. The <script> must be present in
 // the SSR'd HTML so the browser executes it synchronously while parsing
@@ -78,19 +80,9 @@ import { THEME_DARK_CLASS, THEME_LIGHT_CLASS, THEME_STORAGE_KEY } from './consta
 // React tree shape: a Server Component that always renders one <script>
 // element, identical on server and client, which is what the unit tests in
 // `./ThemeScript.test.tsx` enforce.
-const WARNING_FRAGMENT = 'Encountered a script tag while rendering';
-const FILTER_SCRIPT =
-  process.env.NODE_ENV === 'production'
-    ? ''
-    : `(function(){var W=${JSON.stringify(WARNING_FRAGMENT)};var n=console.error;var i=n;var d=0;function f(){var a=arguments[0];if(typeof a==='string'&&a.indexOf(W)!==-1)return;if(d>0)return n.apply(console,arguments);d++;try{return i.apply(console,arguments);}finally{d--;}}try{Object.defineProperty(console,'error',{configurable:true,enumerable:true,get:function(){return f;},set:function(v){i=v;}});}catch(e){console.error=f;}})();`;
+const SCRIPT =
+  process.env.NODE_ENV === 'production' ? THEME_BOOTSTRAP_SCRIPT_PROD : THEME_BOOTSTRAP_SCRIPT_DEV;
 
-const THEME_SCRIPT = `(function(){try{var d=document.documentElement;var s=localStorage.getItem('${THEME_STORAGE_KEY}');var t=s==='${THEME_LIGHT_CLASS}'||s==='${THEME_DARK_CLASS}'?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'${THEME_DARK_CLASS}':'${THEME_LIGHT_CLASS}');d.classList.remove('${THEME_LIGHT_CLASS}','${THEME_DARK_CLASS}');d.classList.add(t);d.style.colorScheme=t;}catch(e){}})();`;
-
-const SCRIPT = FILTER_SCRIPT + THEME_SCRIPT;
-
-export async function ThemeScript() {
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
-  return (
-    <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: SCRIPT }} />
-  );
+export function ThemeScript() {
+  return <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: SCRIPT }} />;
 }

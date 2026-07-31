@@ -1,6 +1,6 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
 
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
+import { useTranslations } from 'next-intl';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
@@ -17,13 +17,17 @@ import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
  *
  * Replaces the inherited `learn/loading.tsx` (which reserved a single card
  * grid sized for the index page).
+ *
+ * Client Component on purpose: this route is statically generated, and a
+ * server-side locale read in a loading boundary (whether `headers()` or
+ * `getLocale()`, which falls through to a `headers()` probe here) taints the
+ * whole route as dynamic. `useTranslations` resolves the locale from the
+ * client provider instead — both namespaces are client-classified in
+ * `_lib/i18n-namespaces.ts`.
  */
-export default async function LearnArticleLoading() {
-  const locale = await getLocaleFromPathnameHeader();
-  const [t, tNav] = await Promise.all([
-    getTranslations({ locale, namespace: 'learn' }),
-    getTranslations({ locale, namespace: 'navigation' }),
-  ]);
+export default function LearnArticleLoading() {
+  const t = useTranslations('learn');
+  const tNav = useTranslations('navigation');
 
   return (
     <div className="space-y-8">

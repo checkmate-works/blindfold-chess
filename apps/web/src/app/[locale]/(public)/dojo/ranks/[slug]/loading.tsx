@@ -1,6 +1,6 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
 
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
+import { useTranslations } from 'next-intl';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
@@ -17,11 +17,17 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
  * page title and breadcrumb tail render as bar placeholders. Static section
  * titles (`Criteria`, `Score Requirements`) and the `Dojo` / `Ranks` parent
  * crumbs resolve from i18n and stay textual.
+ *
+ * Client Component on purpose: this route is statically generated, and a
+ * server-side locale read in a loading boundary (whether `headers()` or
+ * `getLocale()`, which falls through to a `headers()` probe here) taints the
+ * whole route as dynamic. `useTranslations` resolves the locale from the
+ * client provider instead — both namespaces are client-classified in
+ * `_lib/i18n-namespaces.ts`.
  */
-export default async function RankDetailLoading() {
-  const locale = await getLocaleFromPathnameHeader();
-  const t = await getTranslations({ locale, namespace: 'ranks' });
-  const tDojo = await getTranslations({ locale, namespace: 'dojo' });
+export default function RankDetailLoading() {
+  const t = useTranslations('ranks');
+  const tDojo = useTranslations('dojo');
 
   return (
     <div className="space-y-8">

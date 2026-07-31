@@ -7,9 +7,10 @@ import { createServerClient } from '@supabase/ssr';
  * a `NextResponse.next()` that forwards any updated cookies to the browser.
  *
  * The optional `requestHeaders` lets the caller (the proxy) inject headers
- * — notably `x-nonce` — that downstream Server Components need to read via
- * `headers()`. These headers are attached to the forwarded request (not
- * the response), so they are visible to RSCs without leaking to the client.
+ * — `x-pathname` / `x-search` — that downstream Server Components need to
+ * read via `headers()`. These headers are attached to the forwarded request
+ * (not the response), so they are visible to RSCs without leaking to the
+ * client.
  */
 export async function updateSession(
   request: NextRequest,

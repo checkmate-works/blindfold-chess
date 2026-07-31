@@ -20,7 +20,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
@@ -159,8 +158,7 @@ async function PlayContent({ params, searchParams }: Props) {
  * loading→hydration handoff CLS-free for 'never'-mode users (whose real
  * layout is ~64px, not ~576px).
  */
-async function PlaySkeleton() {
-  const locale = await getLocaleFromPathnameHeader();
+async function PlaySkeleton({ locale }: { locale: string }) {
   const [moveInputHint, boardVisibility, tPlay] = await Promise.all([
     readMoveInputPreferenceFromCookies(),
     readBoardVisibilityFromCookies(),
@@ -237,9 +235,10 @@ async function PlaySkeleton() {
  * Scoping the boundary inside this page's own JSX means it only exists in
  * the render tree when this exact route is the matched leaf.
  */
-export default function PlayPage({ params, searchParams }: Props) {
+export default async function PlayPage({ params, searchParams }: Props) {
+  const { locale } = await params;
   return (
-    <Suspense fallback={<PlaySkeleton />}>
+    <Suspense fallback={<PlaySkeleton locale={locale} />}>
       <PlayContent params={params} searchParams={searchParams} />
     </Suspense>
   );

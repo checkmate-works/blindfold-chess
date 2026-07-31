@@ -12,6 +12,7 @@ import {
   generateCspNonce,
 } from '@/lib/security/csp';
 import { isFramablePath } from '@/lib/security/framing';
+import { isStaticContentPath } from '@/lib/security/static-content-paths';
 import { updateSession } from '@/lib/supabase/proxy';
 
 const BLOCKED_PATHS = [
@@ -73,10 +74,15 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
  * Apply CSP + reporting endpoint headers to a response, given the request
  * nonce and path.
  *
- * The path decides `frame-ancestors`: the embed surface is meant to be put in
- * someone else's `<iframe>`, everything else must not be. See
- * `@/lib/security/framing`, which the static `X-Frame-Options` rule in
- * `next.config.ts` mirrors.
+ * The path decides two things:
+ * - `frame-ancestors`: the embed surface is meant to be put in someone
+ *   else's `<iframe>`, everything else must not be. See
+ *   `@/lib/security/framing`, which the static `X-Frame-Options` rule in
+ *   `next.config.ts` mirrors.
+ * - the `script-src` variant: prerendered (SSG/ISR) content routes cannot
+ *   carry a per-request nonce in their cached HTML, so they get the
+ *   static-content policy instead — see `@/lib/security/static-content-paths`
+ *   and the module doc in `@/lib/security/csp`.
  *
  * Extracted into a helper so every `return` branch below can stamp the
  * headers consistently. The CSP is currently emitted as `Report-Only` — the
@@ -92,9 +98,12 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
  * supporting browsers use the former while older ones keep working.
  */
 function applyCspHeaders(response: NextResponse, nonce: string, pathname: string): NextResponse {
+  const scriptPolicy = isStaticContentPath(pathname)
+    ? ({ mode: 'static-content' } as const)
+    : ({ mode: 'per-request-nonce', nonce } as const);
   response.headers.set(
     'Content-Security-Policy-Report-Only',
-    buildCspHeader(nonce, { allowFraming: isFramablePath(pathname) })
+    buildCspHeader(scriptPolicy, { allowFraming: isFramablePath(pathname) })
   );
   response.headers.set('Reporting-Endpoints', buildReportingEndpointsHeader());
   response.headers.set('Report-To', buildReportToHeader());
@@ -128,13 +137,15 @@ export async function proxy(request: NextRequest) {
     return redirect;
   }
 
-  // Generate a per-request nonce and expose it to downstream Server
-  // Components via an `x-nonce` request header. React Server Components read
-  // it through `headers()` and attach it to their inline `<script>` tags.
-  // Next.js itself also picks this up to nonce its own hydration chunks.
+  // Generate a per-request nonce for the CSP header on dynamic routes.
+  // Next.js extracts it from the `Content-Security-Policy(-Report-Only)`
+  // header (set in `applyCspHeaders` below) and stamps it on the scripts it
+  // emits during a dynamic render — no Server Component reads it. The app's
+  // own inline bootstrap scripts are allowed by `'sha256-...'` hash sources
+  // instead (see `@/lib/security/inline-script-hashes`), precisely so that
+  // no layout needs a `headers()` call that would force dynamic rendering.
   const nonce = generateCspNonce();
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-nonce', nonce);
   // Expose the request pathname to Server Components via `headers()`. Layouts
   // use it to pick a route-appropriate Suspense fallback (loading skeleton),
   // which a layout cannot otherwise derive (layouts only receive their own

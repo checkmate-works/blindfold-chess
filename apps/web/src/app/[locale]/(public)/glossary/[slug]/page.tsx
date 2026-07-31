@@ -9,7 +9,6 @@ import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import { chessTerms } from '@/lib/db/data/chess-terms';
 import { slugifyTerm } from '@/lib/glossary/slug';
 import { getPositionsForTerm } from '@/lib/glossary/term-positions';
-import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateDefinedTermSchema } from '@/lib/seo/jsonld';
 
 import { LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -90,7 +89,6 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
   if (!term) notFound();
 
   const t = await getTranslations({ locale, namespace: 'glossary' });
-  const nonce = await resolveCspNonce();
 
   const name = displayName(term, locale);
   const description = displayDefinition(term, locale);
@@ -149,7 +147,6 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
           termSetName: t('title'),
           termSetUrl: glossaryUrl,
         })}
-        nonce={nonce}
       />
       <PageLayout title={name} headerNote={headerNote} locale={locale} breadcrumb={breadcrumb}>
         <div className="space-y-3">

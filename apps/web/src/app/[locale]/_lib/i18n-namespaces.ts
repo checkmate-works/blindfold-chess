@@ -29,7 +29,6 @@ export const NAMESPACE_CLASSIFICATION = {
   glossary: 'server',
   manual: 'server',
   gettingStarted: 'server',
-  learn: 'server',
   privacy: 'server',
   terms: 'server',
   company: 'server',
@@ -46,6 +45,11 @@ export const NAMESPACE_CLASSIFICATION = {
   postVideoAttachmentRender: 'server',
 
   // --- Client-allowed (included in client payload) ------------------------
+  // learn: the `learn/[category]/[slug]` loading skeleton is a Client
+  // Component (a server-side locale read there would force the whole static
+  // route dynamic — see `@/i18n/get-locale-from-pathname-header`), and it
+  // renders three section titles from this namespace. ~0.7 KB.
+  learn: 'client',
   Achievements: 'client',
   Admin: 'client',
   AuthStatusDisplay: 'client',

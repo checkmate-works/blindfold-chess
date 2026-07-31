@@ -404,11 +404,15 @@ describe('proxy', () => {
       await proxy(request);
 
       // The proxy forwards the request plus a `requestHeaders` option holding
-      // the per-request CSP nonce (`x-nonce`) so downstream RSCs can read it.
+      // `x-pathname` / `x-search` for downstream RSCs. The CSP nonce is NOT
+      // forwarded as a request header anymore: no Server Component reads it
+      // (the bootstrap scripts are hash-allowed), and Next extracts it from
+      // the response CSP header instead — see src/proxy.test.ts.
       expect(mockUpdateSession).toHaveBeenCalledTimes(1);
       const [passedRequest, options] = mockUpdateSession.mock.calls[0];
       expect(passedRequest).toBe(request);
-      expect(options?.requestHeaders?.get('x-nonce')).toBeTruthy();
+      expect(options?.requestHeaders?.get('x-pathname')).toBe('/en/games/play');
+      expect(options?.requestHeaders?.get('x-nonce')).toBeNull();
     });
   });
 

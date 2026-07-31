@@ -5,7 +5,6 @@ import { ALL_RANK_SLUGS, isMukyuSlug, parseRequirements } from '@/lib/db/data/ra
 import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
 import { getRankGuide } from '@/lib/guides';
 import type { RankGuide } from '@/lib/guides';
-import { resolveCspNonce } from '@/lib/security/nonce';
 
 import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
 import { getRankBySlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
@@ -39,14 +38,6 @@ export type GuideContext = {
    */
   prevRank: RankNavigationNeighbour | null;
   nextRank: RankNavigationNeighbour | null;
-  /**
-   * Per-request CSP nonce (set by `src/proxy.ts` on the request headers).
-   * Resolved here once so each guide-body renderer can forward it to its
-   * `<JsonLd>` emitter without each having to import `next/headers`
-   * directly. `undefined` when the request did not traverse the proxy (e.g.
-   * unit tests, static generation paths).
-   */
-  nonce: string | undefined;
 };
 
 /**
@@ -83,7 +74,6 @@ export async function resolveGuideContext(
 ): Promise<GuideContext> {
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
   const tGuides = await getTranslations({ locale, namespace: 'guides' });
-  const nonce = await resolveCspNonce();
 
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
   const guide = getRankGuide(guidesPages, rankSlug);
@@ -99,7 +89,6 @@ export async function resolveGuideContext(
     tGuides,
     prevRank: findAdjacentGuidedRank(rankSlug, -1, guidesPages, tRanks),
     nextRank: findAdjacentGuidedRank(rankSlug, +1, guidesPages, tRanks),
-    nonce,
   };
 }
 

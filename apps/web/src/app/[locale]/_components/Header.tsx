@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -9,36 +8,17 @@ import type { NavigationItem } from '../_lib/types';
 import { AnnouncementBanner } from './AnnouncementBanner';
 import { HeaderNavigation } from './HeaderNavigation';
 import { HeaderRightSection } from './HeaderRightSection';
+import { ANNOUNCEMENT_DISMISS_SCRIPT } from './announcement-dismiss-script';
 
 type Props = {
   locale: string;
 };
 
-/**
- * Inline script that runs synchronously before the banner paints. It reads the
- * `dismissed-announcement` cookie on the client and, if it matches the
- * currently-rendered banner id, injects a `<style>` tag that hides the banner
- * before it becomes visible. This mirrors the classic "dark mode no-flash"
- * pattern and is required because the Header is in the [locale]/ layout tree:
- * calling `cookies()` here would mark the entire subtree dynamic and regress
- * previously-SSG pages (privacy, terms, preferences, practice tutorials).
- */
-function buildDismissScript(bannerId: string): string {
-  // Keep this tiny and self-contained; no external references. `bannerId` is a
-  // DB-generated uuid today, but escape `<` (as JSON.stringify does not) so a
-  // `</script>` sequence can never break out of this inline script even if the
-  // id ever becomes attacker-influenced — defense in depth, mirroring JsonLd.
-  const safeId = JSON.stringify(bannerId).replace(/</g, '\\u003c');
-  return `(function(){try{var m=document.cookie.match(/(?:^|;\\s*)dismissed-announcement=([^;]*)/);if(m&&decodeURIComponent(m[1])===${safeId}){var s=document.createElement('style');s.setAttribute('data-announcement-dismiss','1');s.textContent='[data-announcement-banner-id="'+${safeId}+'"]{display:none!important;}';document.head.appendChild(s);}}catch(e){}})();`;
-}
-
 export async function Header({ locale }: Props) {
-  const [t, bannerAnnouncement, requestHeaders] = await Promise.all([
+  const [t, bannerAnnouncement] = await Promise.all([
     getTranslations({ locale, namespace: 'Header' }),
     getLatestBannerAnnouncement(locale),
-    headers(),
   ]);
-  const nonce = requestHeaders.get('x-nonce') ?? undefined;
 
   const commonItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
@@ -81,10 +61,21 @@ export async function Header({ locale }: Props) {
     <>
       {bannerAnnouncement && (
         <>
+          {/*
+            No-flash dismiss script. Runs synchronously before the banner
+            paints: reads the `dismissed-announcement` cookie and, when it
+            matches this banner's id (carried on `data-announcement-id`,
+            read back via `document.currentScript`), injects a `<style>` tag
+            hiding the banner. The script text is a build-time constant so
+            the CSP allows it by hash — a `cookies()` read here (or a nonce
+            read via `headers()`) would mark the entire [locale]/ subtree
+            dynamic and regress SSG/ISR pages. See
+            `./announcement-dismiss-script.ts`.
+          */}
           <script
-            nonce={nonce}
+            data-announcement-id={bannerAnnouncement.id}
             suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: buildDismissScript(bannerAnnouncement.id) }}
+            dangerouslySetInnerHTML={{ __html: ANNOUNCEMENT_DISMISS_SCRIPT }}
           />
           <AnnouncementBanner
             id={bannerAnnouncement.id}

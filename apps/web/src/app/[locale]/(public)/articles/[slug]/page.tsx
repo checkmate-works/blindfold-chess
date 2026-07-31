@@ -9,7 +9,6 @@ import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
 import { SUPPORTED_LOCALES } from '@/config';
 import { routing } from '@/i18n/routing';
 
-import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -105,7 +104,6 @@ export default async function ArticlePage({ params }: Props) {
 
   const { article } = result;
   const isFallback = article.locale !== locale;
-  const nonce = await resolveCspNonce();
 
   const publishedDate = article.publishedAt
     ? new Date(article.publishedAt).toLocaleDateString(locale, {
@@ -125,7 +123,6 @@ export default async function ArticlePage({ params }: Props) {
           publishedAt: article.publishedAt,
           locale,
         })}
-        nonce={nonce}
       />
 
       <PageLayout

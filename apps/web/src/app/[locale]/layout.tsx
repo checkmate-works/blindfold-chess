@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
-import { getMessages, getTranslations } from 'next-intl/server';
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
-import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { DevGeoPicker } from '@/app/_components/DevGeoPicker';
@@ -58,6 +57,14 @@ export const generateStaticParams = generateLocaleStaticParams;
  * nested dynamic segments keep their default `dynamicParams = true`.
  */
 export const dynamicParams = false;
+
+/**
+ * Default ISR interval for every static route in this tree (pages may set a
+ * lower one; dynamic routes ignore it). Bounds the staleness of layout-level
+ * content baked into prerendered HTML — most visibly the announcement banner
+ * the Header renders — to one hour, instead of the build default of one day.
+ */
+export const revalidate = 3600;
 
 /**
  * Load the `metadata`-namespace translator, falling back to an identity
@@ -171,6 +178,17 @@ export default async function Layout({
   }
   const locale = rawLocale;
 
+  // Seed next-intl's request-scoped locale for the entire tree below,
+  // including contexts that receive no `params` of their own (`loading.tsx`
+  // boundaries, `not-found.tsx`, Suspense skeleton fallbacks). Those
+  // contexts read it back via `getLocale()` / bare `getTranslations()`.
+  // Without this seed they would have to fall back to a `headers()` read
+  // (the deleted `getLocaleFromPathnameHeader` helper), and any `headers()`
+  // call inside a loading/not-found boundary taints the WHOLE route as
+  // dynamic — the `[locale]/not-found.tsx` variant alone kept every route
+  // in this tree out of static generation.
+  setRequestLocale(locale);
+
   const t = await getMetadataTranslator(locale, 'layout');
 
   let allMessages: Awaited<ReturnType<typeof getMessages>>;
@@ -182,11 +200,6 @@ export default async function Layout({
     }
     allMessages = {};
   }
-
-  // Per-request CSP nonce (set by src/proxy.ts on the request headers).
-  // Attached to every inline <script> / <style> this layout emits so they
-  // pass the enforcing `script-src 'nonce-...' 'strict-dynamic'` policy.
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   // Namespaces used only by Server Components (via getTranslations()) are
   // excluded from the client-side dictionary payload. The classification lives
@@ -203,10 +216,9 @@ export default async function Layout({
     <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
-        <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} nonce={nonce} />
-        <JsonLd data={generateOrganizationSchema()} nonce={nonce} />
+        <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
+        <JsonLd data={generateOrganizationSchema()} />
         <style
-          nonce={nonce}
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper,\nhtml[data-ads-hidden='true'] .adsbygoogle{display:none!important;}`,
@@ -227,7 +239,7 @@ export default async function Layout({
           ThemeScript — the <script> must be in the SSR'd HTML to execute
           synchronously before first paint.
         */}
-        <AdHideBootstrapScript nonce={nonce} />
+        <AdHideBootstrapScript />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />

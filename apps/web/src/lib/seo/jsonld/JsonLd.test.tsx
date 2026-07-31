@@ -9,16 +9,14 @@ import { JsonLd } from './JsonLd';
  * permit arbitrary script injection. `JSON.stringify` does NOT escape `<`,
  * U+2028, or U+2029, so `JsonLd` must do so itself.
  *
- * `JsonLd` is a synchronous client-safe component: it accepts the per-request
- * CSP nonce as a prop (rather than reading `next/headers`) so Client
- * Components can import it without dragging `next/headers` into the client
- * bundle. Server Component callers resolve the nonce via `resolveCspNonce()`
- * (`@/lib/security/nonce`) and forward it here.
+ * `JsonLd` is a synchronous client-safe component with no `next/headers`
+ * dependency; JSON-LD data blocks are exempt from `script-src`, so it emits
+ * no `nonce` attribute (see the docblock in `./JsonLd.tsx`).
  */
 
 describe('JsonLd', () => {
   it('escapes `<` so a payload containing `</script>` cannot close the tag', () => {
-    const element = JsonLd({ data: { evil: '</script><img src=x>' }, nonce: 'n' });
+    const element = JsonLd({ data: { evil: '</script><img src=x>' } });
     const html = renderToStaticMarkup(element);
 
     // The raw `</script>` substring must not appear inside the script body;
@@ -33,7 +31,6 @@ describe('JsonLd', () => {
         ls: `before${String.fromCharCode(0x2028)}after`,
         ps: `before${String.fromCharCode(0x2029)}after`,
       },
-      nonce: 'n',
     });
     const html = renderToStaticMarkup(element);
 
@@ -44,7 +41,6 @@ describe('JsonLd', () => {
   it('preserves the structured data for normal payloads', () => {
     const element = JsonLd({
       data: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Shingan' },
-      nonce: 'n',
     });
     const html = renderToStaticMarkup(element);
 
@@ -53,14 +49,9 @@ describe('JsonLd', () => {
     expect(html).toContain('"name":"Shingan"');
   });
 
-  it('attaches the provided CSP nonce as the `nonce` attribute', () => {
-    const element = JsonLd({ data: { ok: true }, nonce: 'test-nonce' });
-    const html = renderToStaticMarkup(element);
-
-    expect(html).toContain('nonce="test-nonce"');
-  });
-
-  it('omits the `nonce` attribute when no nonce is supplied', () => {
+  it('emits no `nonce` attribute — data blocks are exempt from script-src', () => {
+    // Threading a nonce here would require a `headers()` read in every
+    // calling Server Component, forcing otherwise-static pages dynamic.
     const element = JsonLd({ data: { ok: true } });
     const html = renderToStaticMarkup(element);
 
