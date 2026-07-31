@@ -8,6 +8,7 @@ import {
   likes,
   liveProfileJoinOn,
   profiles,
+  repertoireChapters,
   repertoireOpenings,
   repertoires,
 } from '@/lib/db';
@@ -15,6 +16,17 @@ import { repertoireLines } from '@/lib/db';
 import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { guardOwnership } from '@/lib/ownership-guard';
 import { isFollowing } from '@/lib/social/follows';
+
+/**
+ * The repertoire-wide display order of lines: chapter by chapter, then within
+ * each chapter. `repertoire_lines.seq` is scoped to the chapter (see its
+ * schema TSDoc), so ordering by it alone would interleave chapters.
+ *
+ * Requires a LEFT JOIN onto `repertoire_chapters`. Unfiled lines join to NULL
+ * and land last for free — Postgres sorts NULLS LAST under ASC, which is
+ * exactly where the unfiled bucket belongs.
+ */
+const linesInDisplayOrder = [asc(repertoireChapters.seq), asc(repertoireLines.seq)] as const;
 
 /** Author subset joined onto a repertoire for catalog cards. */
 export type RepertoireAuthorProfile = {
@@ -281,19 +293,22 @@ export async function listRepertoiresWithLinesForSide(
     .orderBy(desc(repertoires.createdAt));
   if (reps.length === 0) return [];
 
-  const allLines = await db
-    .select()
-    .from(repertoireLines)
-    .where(
-      and(
-        inArray(
-          repertoireLines.repertoireId,
-          reps.map((r) => r.id)
-        ),
-        isNull(repertoireLines.deletedAt)
+  const allLines = (
+    await db
+      .select({ line: repertoireLines })
+      .from(repertoireLines)
+      .leftJoin(repertoireChapters, eq(repertoireChapters.id, repertoireLines.chapterId))
+      .where(
+        and(
+          inArray(
+            repertoireLines.repertoireId,
+            reps.map((r) => r.id)
+          ),
+          isNull(repertoireLines.deletedAt)
+        )
       )
-    )
-    .orderBy(asc(repertoireLines.seq));
+      .orderBy(...linesInDisplayOrder)
+  ).map((row) => row.line);
 
   const byRepertoire = new Map<string, RepertoireLine[]>();
   for (const line of allLines) {
@@ -377,11 +392,16 @@ export async function getRepertoireForViewer(
 
   if (!(await canViewRepertoire(repertoire, viewerId, isOwner))) return null;
 
-  const lines = await db
-    .select()
-    .from(repertoireLines)
-    .where(and(eq(repertoireLines.repertoireId, repertoire.id), isNull(repertoireLines.deletedAt)))
-    .orderBy(asc(repertoireLines.seq));
+  const lines = (
+    await db
+      .select({ line: repertoireLines })
+      .from(repertoireLines)
+      .leftJoin(repertoireChapters, eq(repertoireChapters.id, repertoireLines.chapterId))
+      .where(
+        and(eq(repertoireLines.repertoireId, repertoire.id), isNull(repertoireLines.deletedAt))
+      )
+      .orderBy(...linesInDisplayOrder)
+  ).map((row) => row.line);
 
   // A left join on a deleted author yields a row of nulls, not no row.
   const profile = row.profile?.username ? row.profile : null;
@@ -424,6 +444,22 @@ export async function getRepertoireLineForViewer(
     profile: data.profile,
     isOwner: data.isOwner,
   };
+}
+
+/**
+ * A repertoire's chapters in display order — the headings the arrange page
+ * lays out between the lines. Not folded into {@link getRepertoireForViewer}:
+ * every page loads that, and only this one needs the headings themselves (the
+ * others need chapters solely to ORDER the lines, which the join already does).
+ */
+export async function listChaptersForRepertoire(
+  repertoireId: string
+): Promise<{ id: string; name: string }[]> {
+  return db
+    .select({ id: repertoireChapters.id, name: repertoireChapters.name })
+    .from(repertoireChapters)
+    .where(eq(repertoireChapters.repertoireId, repertoireId))
+    .orderBy(asc(repertoireChapters.seq));
 }
 
 /**

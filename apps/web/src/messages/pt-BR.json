@@ -47,6 +47,10 @@
       "lineNumbers": {
         "title": "Os números não mudam",
         "description": "O número de uma linha é o endereço dela, não a posição — ele não muda quando você reordena a lista. Os links que você compartilhou e os comentários de cada linha continuam funcionando."
+      },
+      "chapters": {
+        "title": "Capítulos",
+        "description": "Agrupe linhas relacionadas sob um título. Uma linha pertence ao título acima dela, então arrastá-la para baixo de outro a move para aquele capítulo. Remover um título não apaga as linhas: elas voltam para Não classificadas."
       }
     },
     "importCta": "Criar kata",
@@ -215,7 +219,12 @@
       "error": "Não foi possível salvar a ordem. A lista foi recarregada.",
       "cancel": "Cancelar",
       "save": "Salvar a ordem",
-      "saving": "Salvando..."
+      "saving": "Salvando...",
+      "unfiled": "Não classificadas",
+      "addChapter": "Adicionar um capítulo",
+      "chapterName": "Nome do capítulo",
+      "newChapterName": "Dê um nome a este capítulo",
+      "removeChapter": "Remover este capítulo"
     },
     "delete": {
       "button": "Excluir",

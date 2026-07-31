@@ -7,6 +7,7 @@ import {
   chessOpenings,
   db,
   repertoireAnnotations,
+  repertoireChapters,
   repertoireLines,
   repertoireOpenings,
   repertoires,
@@ -21,7 +22,8 @@ import {
 } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
-import { isCompleteReorder } from './line-order';
+import type { ArrangementError, ArrangementItem } from './line-order';
+import { NEW_CHAPTER_KEY_PREFIX, resolveArrangement, validateArrangement } from './line-order';
 import { assertRepertoireOwner } from './queries';
 import { replayRepertoireLine } from './replay-line';
 import type {
@@ -201,55 +203,117 @@ export async function deleteRepertoireLine(params: {
   return { ok: true };
 }
 
-export type ReorderLinesResult =
-  { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' | 'staleOrder' };
+export type SaveArrangementResult =
+  { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' | ArrangementError };
 
 /**
- * Owner-only: rewrite the display order of a repertoire's lines. `orderedLineNos`
- * is the repertoire's live `line_no` set in the order the owner arranged them;
- * each line's `seq` becomes its index, so the order is positional and no line
- * carries an order number the owner has to keep consistent.
+ * Owner-only: commit the whole arrangement of a repertoire's lines — their
+ * chapters, which chapter each line sits in, and the order within each — from
+ * the single flat list the arrange page presents. One call, because on that
+ * page they are one edit: dragging a line under a different heading changes its
+ * chapter and its position in the same gesture, and there is no coherent
+ * half of that to save on its own.
  *
- * Only `seq` moves. `line_no` — the URL and the "Line N" label — is untouched
- * by design (see the `@design` note on the schema), so reordering never
- * rewrites a link anyone has saved, shared, or commented under. A reordered
- * list therefore reads "Line 3, Line 1, Line 2", which is the honest rendering:
- * the number identifies the line, the position is the owner's arrangement.
+ * Only `seq` and `chapter_id` move on a line. `line_no` — the URL and the
+ * "Line N" label — is untouched by design (see the `@design` note on the
+ * schema), so arranging never rewrites a link anyone has saved, shared, or
+ * commented under. An arranged list therefore reads "Line 3, Line 1, Line 2",
+ * which is the honest rendering: the number identifies the line, the position
+ * is the owner's arrangement.
  *
- * The submitted set must match the repertoire's live lines exactly — same
- * length, no duplicates, no unknown numbers. That makes a stale client
- * (someone reordering a list while the line they are dragging is deleted in
- * another tab) fail with `staleOrder` and re-read, rather than silently
- * dropping the missing line to the end or resurrecting a deleted one.
+ * Write order inside the transaction is load-bearing:
+ *   1. insert chapters the client invented, so lines have something to point at
+ *   2. rename / reorder the chapters that survive
+ *   3. re-file every line
+ *   4. only then delete the chapters that were dropped from the list
+ * Step 4 last because the composite FK is NO ACTION, not SET NULL (see the
+ * schema): a chapter still holding lines cannot be deleted, and step 3 is what
+ * empties it.
  */
-export async function reorderRepertoireLines(params: {
+export async function saveRepertoireArrangement(params: {
   repertoireId: string;
   viewerId: string;
-  orderedLineNos: number[];
-}): Promise<ReorderLinesResult> {
+  items: ArrangementItem[];
+}): Promise<SaveArrangementResult> {
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
   if (ownerError) return { ok: false, error: ownerError };
 
-  const live = await db
-    .select({ lineNo: repertoireLines.lineNo })
-    .from(repertoireLines)
-    .where(liveLinesOf(params.repertoireId));
+  const [liveLines, liveChapters] = await Promise.all([
+    db
+      .select({ lineNo: repertoireLines.lineNo })
+      .from(repertoireLines)
+      .where(liveLinesOf(params.repertoireId)),
+    db
+      .select({ id: repertoireChapters.id })
+      .from(repertoireChapters)
+      .where(eq(repertoireChapters.repertoireId, params.repertoireId)),
+  ]);
 
-  if (
-    !isCompleteReorder(
-      live.map((row) => row.lineNo),
-      params.orderedLineNos
-    )
-  ) {
-    return { ok: false, error: 'staleOrder' };
-  }
+  const invalid = validateArrangement(
+    params.items,
+    liveLines.map((row) => row.lineNo),
+    liveChapters.map((row) => row.id)
+  );
+  if (invalid) return { ok: false, error: invalid };
+
+  const resolved = resolveArrangement(params.items);
+  const keptChapterKeys = new Set(resolved.chapters.map((chapter) => chapter.key));
+  const removedChapterIds = liveChapters
+    .map((row) => row.id)
+    .filter((id) => !keptChapterKeys.has(id));
 
   await db.transaction(async (tx) => {
-    for (const [index, lineNo] of params.orderedLineNos.entries()) {
+    // 1. New chapters. Their ids are generated here, never accepted from the
+    //    client, so a request can't claim an id belonging to another course.
+    const chapterIdByKey = new Map<string, string>();
+    for (const chapter of resolved.chapters) {
+      if (!chapter.key.startsWith(NEW_CHAPTER_KEY_PREFIX)) {
+        chapterIdByKey.set(chapter.key, chapter.key);
+        continue;
+      }
+      const [inserted] = await tx
+        .insert(repertoireChapters)
+        .values({ repertoireId: params.repertoireId, name: chapter.name, seq: chapter.seq })
+        .returning({ id: repertoireChapters.id });
+      chapterIdByKey.set(chapter.key, inserted.id);
+    }
+
+    // 2. Surviving chapters: name and position.
+    for (const chapter of resolved.chapters) {
+      if (chapter.key.startsWith(NEW_CHAPTER_KEY_PREFIX)) continue;
+      await tx
+        .update(repertoireChapters)
+        .set({ name: chapter.name, seq: chapter.seq })
+        .where(
+          and(
+            eq(repertoireChapters.id, chapter.key),
+            eq(repertoireChapters.repertoireId, params.repertoireId)
+          )
+        );
+    }
+
+    // 3. Every line's chapter and its order within it.
+    for (const line of resolved.lines) {
       await tx
         .update(repertoireLines)
-        .set({ seq: index })
-        .where(and(liveLinesOf(params.repertoireId), eq(repertoireLines.lineNo, lineNo)));
+        .set({
+          chapterId:
+            line.chapterKey === null ? null : (chapterIdByKey.get(line.chapterKey) ?? null),
+          seq: line.seq,
+        })
+        .where(and(liveLinesOf(params.repertoireId), eq(repertoireLines.lineNo, line.lineNo)));
+    }
+
+    // 4. Chapters the owner removed. Empty by now, thanks to step 3.
+    if (removedChapterIds.length > 0) {
+      await tx
+        .delete(repertoireChapters)
+        .where(
+          and(
+            eq(repertoireChapters.repertoireId, params.repertoireId),
+            inArray(repertoireChapters.id, removedChapterIds)
+          )
+        );
     }
   });
 

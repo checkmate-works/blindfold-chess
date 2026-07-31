@@ -463,6 +463,13 @@
       "when": 1785485708094,
       "tag": "20260731081508_add_line_no_to_repertoire_lines",
       "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1785493077398,
+      "tag": "20260731101757_scope_repertoire_line_chapters",
+      "breakpoints": true
     }
   ]
 }

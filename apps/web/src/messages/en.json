@@ -47,6 +47,10 @@
       "lineNumbers": {
         "title": "The numbers stay put",
         "description": "A line's number is its address, not its position — it never changes when you rearrange the list. Links you have shared, and the comments left on each line, keep working."
+      },
+      "chapters": {
+        "title": "Chapters",
+        "description": "Group related lines under a heading. A line belongs to the heading above it, so dragging it under another one moves it there. Removing a heading keeps its lines — they go back to Unfiled."
       }
     },
     "importCta": "Create Kata",
@@ -215,7 +219,12 @@
       "error": "Couldn't save the order. The list has been reloaded.",
       "cancel": "Cancel",
       "save": "Save the order",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "unfiled": "Unfiled",
+      "addChapter": "Add a chapter",
+      "chapterName": "Chapter name",
+      "newChapterName": "Name this chapter",
+      "removeChapter": "Remove this chapter"
     },
     "delete": {
       "button": "Delete",
