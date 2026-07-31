@@ -12,18 +12,12 @@ import { countContentRevisionsForPosition } from '@/lib/positions/content-revisi
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
+import { PositionCommentSection } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionCommentSection';
 import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
-import { CommentTreeBatch } from '@/app/[locale]/(public)/topics/_components/CommentTreeBatch';
-import { CommentTreeLoadMore } from '@/app/[locale]/(public)/topics/_components/CommentTreeLoadMore';
-import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
-import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
-import {
-  COMMENT_TREE_PAGE_SIZE,
-  validateSort,
-} from '@/app/[locale]/(public)/topics/_lib/pagination';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import { ActionsMenu, type ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -82,8 +76,6 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tTags = await getTranslations({ locale, namespace: 'practice.tags' });
-  const tComments = await getTranslations({ locale, namespace: 'topics.positionPuzzle' });
-  const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
   const tPractice = await getTranslations({ locale, namespace: 'practice' });
@@ -296,46 +288,18 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
        */}
       {commentCount > 0 && <AdSlot slot="content-middle" />}
 
-      <SectionTitle id="comments">{tComments('commentsTitle')}</SectionTitle>
-
-      {currentUser && commentCount === 0 ? (
-        <NewPostForm locale={locale} positionId={position.id} />
-      ) : (
-        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
-          <NewPostForm locale={locale} positionId={position.id} />
-        </JoinConversationToggle>
-      )}
-
-      {comments.length > 0 && (
-        <>
-          <SortSelect
-            basePath={`/practice/puzzle/${position.id}`}
-            translationKey="topics.positionPuzzle.sort"
-            currentSort={sortBy}
-          />
-          <CommentTreeLoadMore
-            resetKey={sortBy}
-            initialHasMore={hasMoreComments}
-            initialOffset={COMMENT_TREE_PAGE_SIZE}
-            loadMoreAction={loadMorePuzzleComments.bind(null, position.id, locale, sortBy)}
-            labels={{
-              showMore: tTopics('loadMoreComments.showMore'),
-              loading: tTopics('loadMoreComments.loading'),
-              retry: tTopics('loadMoreComments.retry'),
-              error: tTopics('loadMoreComments.error'),
-            }}
-          >
-            <CommentTreeBatch
-              {...puzzleCommentThread(locale, position.id)}
-              locale={locale}
-              userId={currentUser?.id}
-              comments={comments}
-              attachments={attachments}
-              sortBy={sortBy}
-            />
-          </CommentTreeLoadMore>
-        </>
-      )}
+      <PositionCommentSection
+        locale={locale}
+        currentUserId={currentUser?.id}
+        detail={{ commentCount, comments, hasMoreComments, attachments }}
+        sortBy={sortBy}
+        basePath={`/practice/puzzle/${position.id}`}
+        sortTranslationKey="topics.positionPuzzle.sort"
+        commentsNamespace="topics.positionPuzzle"
+        loadMoreAction={loadMorePuzzleComments.bind(null, position.id, locale, sortBy)}
+        thread={puzzleCommentThread(locale, position.id)}
+        newPostForm={<NewPostForm locale={locale} positionId={position.id} />}
+      />
     </PositionDetailLayout>
   );
 }
