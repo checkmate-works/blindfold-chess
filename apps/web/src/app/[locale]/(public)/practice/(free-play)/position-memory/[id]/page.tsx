@@ -8,14 +8,12 @@ import { FaPlusCircle, FaPuzzlePiece } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
-import { countContentRevisionsForPosition } from '@/lib/positions/content-revision-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionCommentSection } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionCommentSection';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
@@ -25,16 +23,13 @@ import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { toggleLike } from '../../_actions/toggleLike';
 import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
 import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
+import { PositionEngagementRow } from '../../_components/PositionEngagementRow';
 import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
-import {
-  PositionEditRequestSuggestLink,
-  PositionEditRequestSummaryLink,
-} from '../../_components/edit-request/PositionEditRequestLinks';
-import { loadPositionDetail } from '../../_lib/load-position-detail';
+import { PositionEditRequestSuggestLink } from '../../_components/edit-request/PositionEditRequestLinks';
+import { loadPositionDetailPage } from '../../_lib/load-position-detail-page';
 import { DeletePositionButton } from '../_components/DeletePositionButton';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
 import { loadMorePositionMemoryComments } from './_actions/loadMorePositionMemoryComments';
@@ -92,37 +87,26 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
   const currentUser = await getOptionalUser();
-  const [
-    {
-      likeMeta,
-      relatedChunks,
-      relatedThemes,
-      commentCount,
-      comments,
-      hasMoreComments,
-      forkParent,
-      forkCount,
-      canFork,
-      attachments,
-    },
-    revisionCount,
-  ] = await Promise.all([
-    loadPositionDetail({
-      position,
-      kind: 'memory',
-      currentUserId: currentUser?.id,
-      locale,
-      sortBy,
-    }),
-    countContentRevisionsForPosition(position.id),
-  ]);
-
-  // See the puzzle detail page for why the tracked count takes priority
-  // over the timestamp heuristic (only fires on a genuine content change,
-  // and is the only signal that can link to `/history`).
-  const hasTrackedHistory = revisionCount > 0;
-  const editedByLegacyHeuristic =
-    position.updatedAt.getTime() - position.createdAt.getTime() > 1000;
+  const {
+    likeMeta,
+    relatedChunks,
+    relatedThemes,
+    commentCount,
+    comments,
+    hasMoreComments,
+    forkParent,
+    forkCount,
+    canFork,
+    attachments,
+    hasTrackedHistory,
+    edited,
+  } = await loadPositionDetailPage({
+    position,
+    kind: 'memory',
+    currentUserId: currentUser?.id,
+    locale,
+    sortBy,
+  });
 
   const forkedFromNote = (
     <ForkProvenanceNote
@@ -253,7 +237,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         createdByLabel={t('detail.createdBy')}
         locale={locale}
         createdAt={position.createdAt}
-        edited={hasTrackedHistory || editedByLegacyHeuristic}
+        edited={edited}
         editedLabel={t('detail.edited')}
         editedHref={
           hasTrackedHistory
@@ -269,22 +253,12 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         }
       />
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-        <LikeButton
-          postId={position.id}
-          locale={locale}
-          topicKey=""
-          initialLikeCount={likeMeta.likeCount}
-          initialLikedByMe={likeMeta.likedByMe}
-          toggleLikeAction={toggleLike}
-          i18nNamespace="practice.positionMemory"
-        />
-        <PositionEditRequestSummaryLink
-          positionId={position.id}
-          positionType="memory"
-          locale={locale}
-        />
-      </div>
+      <PositionEngagementRow
+        positionId={position.id}
+        kind="memory"
+        locale={locale}
+        likeMeta={likeMeta}
+      />
 
       {/*
        * Mid-page ad above the comment thread. Only when there are comments:

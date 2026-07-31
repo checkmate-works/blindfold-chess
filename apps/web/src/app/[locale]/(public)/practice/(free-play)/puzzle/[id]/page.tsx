@@ -8,14 +8,11 @@ import { FaBrain, FaPlay, FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
-import { countContentRevisionsForPosition } from '@/lib/positions/content-revision-queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
-import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PositionCommentSection } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionCommentSection';
 import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
@@ -28,12 +25,10 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
 import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
+import { PositionEngagementRow } from '../../_components/PositionEngagementRow';
 import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
-import {
-  PositionEditRequestSuggestLink,
-  PositionEditRequestSummaryLink,
-} from '../../_components/edit-request/PositionEditRequestLinks';
-import { loadPositionDetail } from '../../_lib/load-position-detail';
+import { PositionEditRequestSuggestLink } from '../../_components/edit-request/PositionEditRequestLinks';
+import { loadPositionDetailPage } from '../../_lib/load-position-detail-page';
 import { DeletePuzzleButton } from '../_components/DeletePuzzleButton';
 import { loadPuzzleWithSolutions } from '../_lib/load-puzzle';
 import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
@@ -91,39 +86,26 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const displayName = resolveAuthorName(profile, { fallback: tCommon('deletedUser') });
 
   const currentUser = await getOptionalUser();
-  const [
-    {
-      likeMeta,
-      relatedChunks,
-      relatedThemes,
-      commentCount,
-      comments,
-      hasMoreComments,
-      forkParent,
-      forkCount,
-      canFork,
-      attachments,
-    },
-    revisionCount,
-  ] = await Promise.all([
-    loadPositionDetail({
-      position,
-      kind: 'puzzle',
-      currentUserId: currentUser?.id,
-      locale,
-      sortBy,
-    }),
-    countContentRevisionsForPosition(position.id),
-  ]);
-
-  // Prefer the tracked revision count for both the "edited?" signal and the
-  // link target — it only fires on a genuine content change (unlike the
-  // timestamp heuristic, which also trips on a no-op save). Fall back to the
-  // heuristic (no link) for edits made before this feature shipped, so a
-  // pre-existing edited puzzle doesn't silently lose its "(edited)" marker.
-  const hasTrackedHistory = revisionCount > 0;
-  const editedByLegacyHeuristic =
-    position.updatedAt.getTime() - position.createdAt.getTime() > 1000;
+  const {
+    likeMeta,
+    relatedChunks,
+    relatedThemes,
+    commentCount,
+    comments,
+    hasMoreComments,
+    forkParent,
+    forkCount,
+    canFork,
+    attachments,
+    hasTrackedHistory,
+    edited,
+  } = await loadPositionDetailPage({
+    position,
+    kind: 'puzzle',
+    currentUserId: currentUser?.id,
+    locale,
+    sortBy,
+  });
 
   const forkedFromNote = (
     <ForkProvenanceNote
@@ -249,7 +231,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         createdByLabel={t('detail.createdBy')}
         locale={locale}
         createdAt={position.createdAt}
-        edited={hasTrackedHistory || editedByLegacyHeuristic}
+        edited={edited}
         editedLabel={t('detail.edited')}
         editedHref={
           hasTrackedHistory ? `/${locale}/practice/puzzle/${position.id}/history` : undefined
@@ -263,22 +245,12 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         }
       />
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-        <LikeButton
-          postId={position.id}
-          locale={locale}
-          topicKey=""
-          initialLikeCount={likeMeta.likeCount}
-          initialLikedByMe={likeMeta.likedByMe}
-          toggleLikeAction={toggleLike}
-          i18nNamespace="practice.puzzle"
-        />
-        <PositionEditRequestSummaryLink
-          positionId={position.id}
-          positionType="puzzle"
-          locale={locale}
-        />
-      </div>
+      <PositionEngagementRow
+        positionId={position.id}
+        kind="puzzle"
+        locale={locale}
+        likeMeta={likeMeta}
+      />
 
       {/*
        * Mid-page ad above the comment thread. Only when there are comments:
