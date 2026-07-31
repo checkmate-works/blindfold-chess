@@ -6,10 +6,17 @@
  * notes were silently orphaned. Phase stays fixed — it's not authorable
  * anywhere yet beyond `opening` (see `AUTHORABLE_PHASES` on the import form) —
  * but side is plain metadata and editable like the title.
+ *
+ * The line ORDER is likewise not edited here, only linked to: this form saves
+ * on submit, while reordering saves on drop, and one screen holding both save
+ * models is a reliable way to lose someone's changes. See `../lines/page.tsx`.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
+import { HiBars3 } from 'react-icons/hi2';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedOpeningIds, getOpeningOptions } from '@/lib/repertoires/opening-queries';
@@ -73,6 +80,16 @@ export default async function EditRepertoirePage({ params }: Props) {
         canLinkOpenings={canLinkOpenings}
         side={repertoire.side}
       />
+
+      {data.lines.length > 1 && (
+        <Link
+          href={`/${locale}/repertoires/${id}/lines`}
+          className="inline-flex items-center gap-1.5 text-sm text-link-primary transition-colors hover:underline"
+        >
+          <HiBars3 aria-hidden className="size-4" />
+          {t('lines.title')}
+        </Link>
+      )}
     </PageLayout>
   );
 }

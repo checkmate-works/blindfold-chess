@@ -146,6 +146,18 @@ export const RATE_LIMITS = {
   updateRepertoireLine: { action: 'update_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
   addRepertoireLine: { action: 'add_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
   deleteRepertoireLine: { action: 'delete_repertoire_line', maxAttempts: 20, windowMs: 3_600_000 },
+  /**
+   * Reordering a repertoire's lines. Looser than the other line limits for the
+   * same reason as {@link RATE_LIMITS.saveRepertoireShapes}: this is a direct
+   * manipulation surface, not a form. Every drop persists, and putting a
+   * freshly imported course of ~20 lines into a sensible order is a few dozen
+   * drops in one sitting.
+   */
+  reorderRepertoireLines: {
+    action: 'reorder_repertoire_lines',
+    maxAttempts: 200,
+    windowMs: 3_600_000,
+  },
   updateRepertoire: { action: 'update_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   publishRepertoire: { action: 'publish_repertoire', maxAttempts: 20, windowMs: 3_600_000 },
   changeRepertoireVisibility: {

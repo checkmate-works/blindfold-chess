@@ -171,6 +171,8 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
           heading={t('detail.linesHeading')}
           addLineHref={`/${locale}/repertoires/${repertoireId}/lines/new`}
           addLineLabel={isOwner ? t('line.new.title') : undefined}
+          manageHref={`/${locale}/repertoires/${repertoireId}/lines`}
+          manageLabel={isOwner && lines.length > 1 ? t('lines.manageAction') : undefined}
         >
           {lines.map((l, i) => {
             const isSelected = i === selectedIndex;

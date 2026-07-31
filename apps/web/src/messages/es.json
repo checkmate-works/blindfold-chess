@@ -197,6 +197,17 @@
         }
       }
     },
+    "lines": {
+      "title": "Ordenar líneas",
+      "breadcrumb": "Ordenar",
+      "manageAction": "Ordenar",
+      "hint": "Arrastra el asa o usa ▲▼. Los números de línea no cambian, así que los enlaces existentes seguirán funcionando.",
+      "dragHandle": "Arrastra para reordenar",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "error": "No se pudo guardar el orden. Se ha recargado la lista.",
+      "done": "Listo"
+    },
     "delete": {
       "button": "Eliminar",
       "title": "¿Eliminar este kata?",

@@ -17,6 +17,8 @@ type Props = {
   heading: string;
   /** Owner-only "add a line" row, mirroring the repertoire page's list. */
   addLineLabel?: string;
+  /** Owner-only "arrange" link, mirroring the repertoire page's list. */
+  manageLabel?: string;
 };
 
 /**
@@ -34,12 +36,15 @@ export function LineNavList({
   locale,
   heading,
   addLineLabel,
+  manageLabel,
 }: Props) {
   return (
     <LineListPanel
       heading={heading}
       addLineHref={`/${locale}/repertoires/${repertoireId}/lines/new`}
       addLineLabel={addLineLabel}
+      manageHref={`/${locale}/repertoires/${repertoireId}/lines`}
+      manageLabel={items.length > 1 ? manageLabel : undefined}
     >
       {items.map((item) => {
         const isCurrent = item.lineNo === currentLineNo;

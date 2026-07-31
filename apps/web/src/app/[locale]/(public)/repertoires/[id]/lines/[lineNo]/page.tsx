@@ -107,6 +107,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
     navItems,
     navHeading: t('detail.linesHeading'),
     navAddLineLabel: isOwner ? t('line.new.title') : undefined,
+    navManageLabel: isOwner ? t('lines.manageAction') : undefined,
   };
 
   // Transposition continuations: where this line's final position keeps
@@ -157,6 +158,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
             locale={locale}
             heading={t('detail.linesHeading')}
             addLineLabel={isOwner ? t('line.new.title') : undefined}
+            manageLabel={isOwner ? t('lines.manageAction') : undefined}
           />
         </div>
       ) : (

@@ -197,6 +197,17 @@
         }
       }
     },
+    "lines": {
+      "title": "Arrange lines",
+      "breadcrumb": "Arrange",
+      "manageAction": "Arrange",
+      "hint": "Drag the handle, or use ▲▼. Line numbers don't change, so existing links keep working.",
+      "dragHandle": "Drag to reorder",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "error": "Couldn't save the order. The list has been reloaded.",
+      "done": "Done"
+    },
     "delete": {
       "button": "Delete",
       "title": "Delete this kata?",

@@ -21,6 +21,7 @@ import {
 } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
+import { isCompleteReorder } from './line-order';
 import { assertRepertoireOwner } from './queries';
 import { replayRepertoireLine } from './replay-line';
 import type {
@@ -195,6 +196,61 @@ export async function deleteRepertoireLine(params: {
       .where(eq(repertoireLines.id, line.id));
 
     await pruneOrphanAnnotations(tx, params.repertoireId);
+  });
+
+  return { ok: true };
+}
+
+export type ReorderLinesResult =
+  { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' | 'staleOrder' };
+
+/**
+ * Owner-only: rewrite the display order of a repertoire's lines. `orderedLineNos`
+ * is the repertoire's live `line_no` set in the order the owner arranged them;
+ * each line's `seq` becomes its index, so the order is positional and no line
+ * carries an order number the owner has to keep consistent.
+ *
+ * Only `seq` moves. `line_no` — the URL and the "Line N" label — is untouched
+ * by design (see the `@design` note on the schema), so reordering never
+ * rewrites a link anyone has saved, shared, or commented under. A reordered
+ * list therefore reads "Line 3, Line 1, Line 2", which is the honest rendering:
+ * the number identifies the line, the position is the owner's arrangement.
+ *
+ * The submitted set must match the repertoire's live lines exactly — same
+ * length, no duplicates, no unknown numbers. That makes a stale client
+ * (someone reordering a list while the line they are dragging is deleted in
+ * another tab) fail with `staleOrder` and re-read, rather than silently
+ * dropping the missing line to the end or resurrecting a deleted one.
+ */
+export async function reorderRepertoireLines(params: {
+  repertoireId: string;
+  viewerId: string;
+  orderedLineNos: number[];
+}): Promise<ReorderLinesResult> {
+  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
+  if (ownerError) return { ok: false, error: ownerError };
+
+  const live = await db
+    .select({ lineNo: repertoireLines.lineNo })
+    .from(repertoireLines)
+    .where(liveLinesOf(params.repertoireId));
+
+  if (
+    !isCompleteReorder(
+      live.map((row) => row.lineNo),
+      params.orderedLineNos
+    )
+  ) {
+    return { ok: false, error: 'staleOrder' };
+  }
+
+  await db.transaction(async (tx) => {
+    for (const [index, lineNo] of params.orderedLineNos.entries()) {
+      await tx
+        .update(repertoireLines)
+        .set({ seq: index })
+        .where(and(liveLinesOf(params.repertoireId), eq(repertoireLines.lineNo, lineNo)));
+    }
   });
 
   return { ok: true };
