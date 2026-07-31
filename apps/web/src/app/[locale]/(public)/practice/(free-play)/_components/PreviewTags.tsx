@@ -13,14 +13,14 @@ type Props = {
 };
 
 /**
- * Read-only card list of the themes and chunks attached to a puzzle, shown on
+ * Read-only card list of the themes and chunks attached to a draft, shown on
  * the create/edit preview steps so the author can confirm the tags that will
  * ride along with the save. Reuses the detail page's `RelatedTagCard` for a
  * consistent look, but renders the cards static (non-navigable) since a click
  * mid-author would trip the unsaved-changes guard. Themes lead, chunks follow
  * — mirroring `RelatedTags`. Renders nothing when no tags are attached.
  */
-export function PuzzlePreviewTags({ themes, chunks }: Props) {
+export function PreviewTags({ themes, chunks }: Props) {
   const t = useTranslations('practice.tags');
 
   if (themes.length + chunks.length === 0) return null;

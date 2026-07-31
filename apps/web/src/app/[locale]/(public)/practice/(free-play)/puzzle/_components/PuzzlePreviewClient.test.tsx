@@ -175,7 +175,7 @@ describe('PuzzlePreviewClient', () => {
     });
 
     it('end-to-end: a board-less theme in the draft renders the "No Image" fallback', () => {
-      // Regression guard for the full client → PuzzlePreviewTags → RelatedTagCard
+      // Regression guard for the full client → PreviewTags → RelatedTagCard
       // chain: a theme whose resolved option has `previewFen: null` must show
       // the No Image placeholder rather than a blank thumbnail.
       seedDraft({ themeIds: ['t1'], chunkIds: [] });

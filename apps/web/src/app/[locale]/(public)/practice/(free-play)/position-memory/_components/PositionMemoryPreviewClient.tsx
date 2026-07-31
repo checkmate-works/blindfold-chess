@@ -1,23 +1,22 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
-import { useRouter } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
-import { flushSync } from 'react-dom';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
+import {
+  DraftPreviewLayout,
+  DraftPreviewSkeleton,
+} from '@/app/[locale]/(public)/practice/(free-play)/_components/DraftPreviewLayout';
+import { useDraftPreview } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-draft-preview';
 import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
-import { SectionTitle } from '@/app/[locale]/_components';
 
 import { resolveOptionsByIds } from '../../_lib/resolve-options';
-import { PuzzlePreviewTags } from '../../puzzle/_components/PuzzlePreviewTags';
 import { createPosition } from '../_actions/createPosition';
 import { clearDraft, readDraft } from '../_lib/draft-storage';
 import type { PositionMemoryDraftV1 } from '../_lib/draft-storage';
@@ -41,27 +40,13 @@ type Props = {
  */
 export function PositionMemoryPreviewClient({ availableThemes, availableChunks }: Props) {
   const t = useTranslations('practice.positionMemory.preview');
-  const tUnsaved = useTranslations('unsavedChanges');
-  const router = useRouter();
 
-  const [draft, setDraft] = useState<PositionMemoryDraftV1 | null>(null);
-  const [hydrated, setHydrated] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // `submitted` flips true in the intentional router.push after a successful
-  // create (and on "Back to edit"), letting the `isDirty` guard relax before
-  // the navigation fires so we don't trip UnsavedChangesDialog on our own push.
-  const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    const d = readDraft();
-    if (!d) {
-      router.replace('/practice/position-memory/new');
-      return;
-    }
-    setDraft(d);
-    setHydrated(true);
-  }, [router]);
+  const { draft, hydrated, pending, error, isBlocking, confirm, cancel, submit, leave } =
+    useDraftPreview<PositionMemoryDraftV1>({
+      readDraft,
+      fallbackPath: '/practice/position-memory/new',
+      submitErrorMessage: t('createError'),
+    });
 
   const selectedThemes = useMemo(
     () => resolveOptionsByIds(draft?.themeIds ?? [], availableThemes),
@@ -72,14 +57,14 @@ export function PositionMemoryPreviewClient({ availableThemes, availableChunks }
     [draft?.chunkIds, availableChunks]
   );
 
-  const isDirty = hydrated && !submitted;
-  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
+  const stepIndicator = <PositionMemoryStepIndicator current="preview" />;
 
-  async function handleCreate() {
-    if (!draft) return;
-    setPending(true);
-    setError(null);
-    try {
+  if (!hydrated || !draft) {
+    return <DraftPreviewSkeleton stepIndicator={stepIndicator} />;
+  }
+
+  const handleCreate = () =>
+    submit(async () => {
       const result = await createPosition({
         fen: draft.fen,
         title: draft.title,
@@ -88,15 +73,13 @@ export function PositionMemoryPreviewClient({ availableThemes, availableChunks }
         chunkIds: draft.chunkIds,
         forkedFromId: draft.forkedFromId ?? null,
       });
-      if ('error' in result) {
-        setError(result.error);
-        return;
-      }
+      if ('error' in result) return { error: result.error };
+
       // Stash any belt-rank grants triggered by this submission so the
       // RankAchievementModal on the destination page can pick them up.
       stashGrantedRanks(result.grantedRanks);
       clearDraft();
-      flushSync(() => setSubmitted(true));
+
       // Land straight on the created position so the author can verify it.
       // A point grant surfaces the coin reward as a toast on arrival
       // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast; a
@@ -108,86 +91,26 @@ export function PositionMemoryPreviewClient({ availableThemes, availableChunks }
         toastParams.set('toast', 'position_created');
       }
       if (result.coinCapped) toastParams.set('coinsCapped', '1');
-      router.push(`/practice/position-memory/${result.id}?${toastParams.toString()}`);
-    } catch {
-      setError(t('createError'));
-    } finally {
-      setPending(false);
-    }
-  }
-
-  function handleBackToEdit() {
-    // Draft stays in sessionStorage so `/new` silently rehydrates the form.
-    // Flip `submitted` so the isDirty guard doesn't intercept our own push.
-    flushSync(() => setSubmitted(true));
-    router.push('/practice/position-memory/new');
-  }
-
-  const stepIndicator = <PositionMemoryStepIndicator current="preview" />;
-
-  if (!hydrated || !draft) {
-    // Skeleton during SSR and the brief window before hydration reads
-    // sessionStorage. SSR always returns `null` (readDraft's window guard), so
-    // a lazy initial state would produce a hydration mismatch.
-    return (
-      <div className="space-y-6">
-        {stepIndicator}
-        <div className="h-32 animate-pulse rounded bg-muted/30" />
-      </div>
-    );
-  }
+      return { path: `/practice/position-memory/${result.id}?${toastParams.toString()}` };
+    });
 
   return (
-    <>
-      <div className="space-y-6">
-        <SectionTitle>{draft.title}</SectionTitle>
-
-        {stepIndicator}
-
-        {draft.description.trim() !== '' && (
-          <p className="text-foreground whitespace-pre-wrap">{draft.description}</p>
-        )}
-
-        <PositionDetailBoard fen={draft.fen} flipped={isBlackToMoveFromFen(draft.fen)} />
-
-        <PuzzlePreviewTags themes={selectedThemes} chunks={selectedChunks} />
-
-        <FormErrorBanner message={error} />
-
-        <div className="flex flex-col gap-3 pt-2">
-          <Button
-            type="button"
-            variant="primary"
-            size="lg"
-            fullWidth
-            disabled={pending}
-            loading={pending}
-            onClick={handleCreate}
-          >
-            {t('createCta')}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            fullWidth
-            disabled={pending}
-            onClick={handleBackToEdit}
-          >
-            {t('backToEditCta')}
-          </Button>
-        </div>
-      </div>
-
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
-    </>
+    <DraftPreviewLayout
+      stepIndicator={stepIndicator}
+      title={draft.title}
+      description={draft.description}
+      themes={selectedThemes}
+      chunks={selectedChunks}
+      error={error}
+      pending={pending}
+      submitLabel={t('createCta')}
+      onSubmit={handleCreate}
+      backLabel={t('backToEditCta')}
+      // Draft stays in sessionStorage so `/new` silently rehydrates the form.
+      onBack={() => leave('/practice/position-memory/new')}
+      guard={{ isBlocking, confirm, cancel }}
+    >
+      <PositionDetailBoard fen={draft.fen} flipped={isBlackToMoveFromFen(draft.fen)} />
+    </DraftPreviewLayout>
   );
 }
