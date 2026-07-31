@@ -157,7 +157,11 @@ export function LineOrderList({
     // flushSync so the isDirty -> false re-render completes before
     // router.push triggers the navigation guard (same as EditRepertoireForm).
     flushSync(() => setSubmitted(true));
-    router.push(detailHref);
+    // The confirmation lands on the course page, not here — the save's whole
+    // point is that it takes you back, and a toast on a page you're leaving
+    // would be gone before it was read. `ToastContainer` picks the param up
+    // there and strips it from the URL.
+    router.push(`${detailHref}?toast=lines_reordered` as typeof detailHref);
   }
 
   return (

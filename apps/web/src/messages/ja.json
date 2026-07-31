@@ -3992,6 +3992,7 @@
     "positionUpdated": "変更を保存しました",
     "lineUpdated": "ラインを更新しました",
     "lineAdded": "ラインを追加しました",
+    "linesReordered": "ラインの並び順を保存しました",
     "puzzleUpdated": "変更を保存しました",
     "puzzleDeleted": "パズルを削除しました",
     "chunkUpdated": "変更を保存しました",

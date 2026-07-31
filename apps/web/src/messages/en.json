@@ -3992,6 +3992,7 @@
     "positionUpdated": "Changes saved",
     "lineUpdated": "Line updated",
     "lineAdded": "Line added",
+    "linesReordered": "Line order saved",
     "puzzleUpdated": "Changes saved",
     "puzzleDeleted": "Puzzle deleted",
     "chunkUpdated": "Changes saved",
