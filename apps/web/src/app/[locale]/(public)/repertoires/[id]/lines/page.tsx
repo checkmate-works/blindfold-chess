@@ -151,9 +151,9 @@ export default async function RepertoireLinesPage({ params }: Props) {
       // The course name, not "Arrange lines" — the SectionTitle right below
       // already says what the page is, and the owner needs to see WHICH kata.
       title={repertoire.name}
-      // Both steps target a row, so an empty course has nothing to tour.
+      // Every step targets a line row, so a lineless course has nothing to tour.
       titleAction={
-        rows.length > 0 ? <HelpTourButton steps={helpSteps} label={t('help.label')} /> : undefined
+        lines.length > 0 ? <HelpTourButton steps={helpSteps} label={t('help.label')} /> : undefined
       }
       locale={locale}
       breadcrumb={[
@@ -164,7 +164,10 @@ export default async function RepertoireLinesPage({ params }: Props) {
     >
       <SectionTitle>{t('lines.title')}</SectionTitle>
 
-      {rows.length === 0 ? (
+      {/* `rows` always contains the unfiled divider, so emptiness is judged on
+          the content. Chapters alone (every line deleted since filing) still
+          render the list — it is the only place they can be removed. */}
+      {lines.length === 0 && chapters.length === 0 ? (
         <p className="py-8 text-center text-muted-foreground">{t('detail.noLines')}</p>
       ) : (
         /* The list owns the Save / Cancel pair, since only it knows whether the

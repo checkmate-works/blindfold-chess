@@ -224,11 +224,14 @@ export type SaveArrangementResult =
  * Write order inside the transaction is load-bearing:
  *   1. insert chapters the client invented, so lines have something to point at
  *   2. rename / reorder the chapters that survive
- *   3. re-file every line
+ *   3. re-file every line — including SOFT-DELETED ones still pointing at a
+ *      chapter being removed, which the arrange list never shows but the FK
+ *      still counts (`deleteRepertoireLine` keeps `chapter_id` on the deleted
+ *      row); without unfiling them the delete below would fail forever
  *   4. only then delete the chapters that were dropped from the list
  * Step 4 last because the composite FK is NO ACTION, not SET NULL (see the
- * schema): a chapter still holding lines cannot be deleted, and step 3 is what
- * empties it.
+ * schema): a chapter still referenced by any row cannot be deleted, and step 3
+ * is what empties it.
  */
 export async function saveRepertoireArrangement(params: {
   repertoireId: string;
@@ -304,8 +307,20 @@ export async function saveRepertoireArrangement(params: {
         .where(and(liveLinesOf(params.repertoireId), eq(repertoireLines.lineNo, line.lineNo)));
     }
 
-    // 4. Chapters the owner removed. Empty by now, thanks to step 3.
+    // 4. Chapters the owner removed. Step 3 re-filed every LIVE line, but a
+    //    soft-deleted line still carries the chapter_id it was filed under
+    //    when it died — invisible to the arrange list, fatal to the FK. Unfile
+    //    those rows too (deliberately NOT liveLinesOf), then delete.
     if (removedChapterIds.length > 0) {
+      await tx
+        .update(repertoireLines)
+        .set({ chapterId: null })
+        .where(
+          and(
+            eq(repertoireLines.repertoireId, params.repertoireId),
+            inArray(repertoireLines.chapterId, removedChapterIds)
+          )
+        );
       await tx
         .delete(repertoireChapters)
         .where(
@@ -332,13 +347,16 @@ export type AddLineResult =
  * against a fixed root), just an INSERT at the end of the list instead of an
  * UPDATE of an existing row.
  *
- * The new row takes the next `seq` among LIVE lines (append to the display
- * order) but the next `line_no` across ALL of them, soft-deleted included: a
- * number that has been used once is retired with its line, so a URL that
- * pointed at deleted moves stays a 404 instead of coming back as a different
- * line. Both maxima are read inside the insert's transaction, so two concurrent
- * adds can't land on the same values — and for `line_no` a race is a failed
- * insert (UNIQUE `uq_repertoire_line_no`) rather than a silent duplicate.
+ * The new row lands at the end of the UNFILED bucket — `chapter_id` NULL, next
+ * `seq` among the live unfiled lines (`seq` is chapter-scoped; a max over every
+ * bucket would still sort last but leave the bucket's numbering gapped for no
+ * reason). Filing it under a chapter is a separate, later act on the arrange
+ * page. `line_no` is the next across ALL rows, soft-deleted included: a number
+ * that has been used once is retired with its line, so a URL that pointed at
+ * deleted moves stays a 404 instead of coming back as a different line. Both
+ * maxima are read inside the insert's transaction, so two concurrent adds can't
+ * land on the same values — and for `line_no` a race is a failed insert
+ * (UNIQUE `uq_repertoire_line_no`) rather than a silent duplicate.
  */
 export async function addRepertoireLine(params: {
   repertoireId: string;
@@ -367,7 +385,7 @@ export async function addRepertoireLine(params: {
     const [{ maxSeq }] = await tx
       .select({ maxSeq: sql<number>`coalesce(max(${repertoireLines.seq}), -1)` })
       .from(repertoireLines)
-      .where(liveLinesOf(params.repertoireId));
+      .where(and(liveLinesOf(params.repertoireId), isNull(repertoireLines.chapterId)));
     // Deliberately NOT scoped to live rows — see the TSDoc above.
     const [{ maxLineNo }] = await tx
       .select({ maxLineNo: sql<number>`coalesce(max(${repertoireLines.lineNo}), 0)` })

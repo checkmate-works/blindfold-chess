@@ -26,7 +26,7 @@ import { isFollowing } from '@/lib/social/follows';
  * and land last for free — Postgres sorts NULLS LAST under ASC, which is
  * exactly where the unfiled bucket belongs.
  */
-const linesInDisplayOrder = [asc(repertoireChapters.seq), asc(repertoireLines.seq)] as const;
+export const linesInDisplayOrder = [asc(repertoireChapters.seq), asc(repertoireLines.seq)] as const;
 
 /** Author subset joined onto a repertoire for catalog cards. */
 export type RepertoireAuthorProfile = {

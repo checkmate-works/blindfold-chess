@@ -104,10 +104,31 @@ describe('resolveDropTarget', () => {
     ]);
   });
 
-  it('leaves a chapter block alone — dropping it on a heading means "go above"', () => {
-    const target = resolveDropTarget(rows, 2, 3, 0);
-    expect(target).toBe(0);
-    expect(shape(moveBlock(rows, 2, 3, target))).toEqual(['[Side]', '2', '[Op]', '1', '---', '3']);
+  it('hops a chapter over the previous chapter whole, even from mid-block', () => {
+    // Over the heading and over its line must land in the same place — before
+    // the whole block. The naive insert-at-index for over=1 would split Op and
+    // hand its line to Side.
+    for (const over of [0, 1]) {
+      const target = resolveDropTarget(rows, 2, 3, over);
+      expect(shape(moveBlock(rows, 2, 3, target))).toEqual([
+        '[Side]',
+        '2',
+        '[Op]',
+        '1',
+        '---',
+        '3',
+      ]);
+    }
+  });
+
+  it('hops a chapter over the next chapter whole — never absorbing its lines', () => {
+    // [A,a1,B,b1,---]: dragging A down onto B's heading (or ▼) must give
+    // [B,b1,A,a1], not [B,A,a1,b1] with b1 silently re-filed under A.
+    const two = [ch('A'), ln(1), ch('B'), ln(2), unfiled];
+    for (const over of [2, 3]) {
+      const target = resolveDropTarget(two, 0, 1, over);
+      expect(shape(moveBlock(two, 0, 1, target))).toEqual(['[B]', '2', '[A]', '1', '---']);
+    }
   });
 });
 

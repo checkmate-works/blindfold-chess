@@ -11,7 +11,7 @@ import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 import { HiBars3, HiChevronDown, HiChevronUp, HiPlus, HiXMark } from 'react-icons/hi2';
 
-import { REPERTOIRE_CHAPTER_NAME_MAX } from '@/lib/repertoires/line-order';
+import { REPERTOIRE_CHAPTERS_MAX, REPERTOIRE_CHAPTER_NAME_MAX } from '@/lib/repertoires/line-order';
 
 import { reorderLines } from '../../_actions/reorderLines';
 import type { ArrangeRow } from './arrangement-rows';
@@ -153,8 +153,13 @@ export function LineOrderList({
   function step(index: number, delta: number) {
     setRows((prev) => {
       const [start, end] = blockAt(prev, index);
-      const target = delta < 0 ? start - 1 : end + 1;
-      if (target < 0 || target >= prev.length) return prev;
+      const raw = delta < 0 ? start - 1 : end + 1;
+      if (raw < 0 || raw >= prev.length) return prev;
+      // A chapter hops the neighbouring block whole (same snap as dragging);
+      // a line keeps the raw one-slot move — routing it through the drop
+      // resolver would turn "▲ out of this chapter" into a no-op.
+      const target =
+        prev[start].kind === 'chapter' ? resolveDropTarget(prev, start, end, raw) : raw;
       const next = moveBlock(prev, start, end, target);
       return isArrangementValid(next) ? next : prev;
     });
@@ -324,7 +329,10 @@ export function LineOrderList({
       <button
         type="button"
         onClick={() => setRows((prev) => appendChapter(prev, ''))}
-        className="flex items-center gap-1.5 text-sm text-link-primary transition-colors hover:underline"
+        // Mirrors the server's REPERTOIRE_CHAPTERS_MAX so the cap reads as a
+        // disabled button, not a failed save.
+        disabled={rows.filter((row) => row.kind === 'chapter').length >= REPERTOIRE_CHAPTERS_MAX}
+        className="flex items-center gap-1.5 text-sm text-link-primary transition-colors hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:no-underline"
       >
         <HiPlus aria-hidden className="size-4" />
         {labels.addChapter}

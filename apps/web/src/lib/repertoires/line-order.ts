@@ -25,6 +25,14 @@ export function isCompleteReorder(live: readonly number[], ordered: readonly num
 /** Longest a chapter name may be — matches `repertoire_chapters.name`. */
 export const REPERTOIRE_CHAPTER_NAME_MAX = 255;
 
+/**
+ * Most chapters one repertoire may hold. Far above any real course (Chessable's
+ * own run tens, not hundreds) — this is a write-amplification guard, not a
+ * product decision: without it one Save inside the rate limit could insert an
+ * unbounded number of rows.
+ */
+export const REPERTOIRE_CHAPTERS_MAX = 50;
+
 /** Prefix marking a chapter the owner added but the database has not seen yet. */
 export const NEW_CHAPTER_KEY_PREFIX = 'new:';
 
@@ -106,6 +114,9 @@ export function validateArrangement(
 
   const live = new Set(liveChapterIds);
   const seen = new Set<string>();
+  if (items.filter((item) => item.kind === 'chapter').length > REPERTOIRE_CHAPTERS_MAX) {
+    return 'invalidChapter';
+  }
   for (const item of items) {
     if (item.kind !== 'chapter') continue;
     if (seen.has(item.key)) return 'invalidChapter';

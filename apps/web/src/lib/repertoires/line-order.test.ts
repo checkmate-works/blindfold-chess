@@ -168,4 +168,16 @@ describe('validateArrangement', () => {
       )
     ).toBe('invalidChapter');
   });
+
+  it('rejects more chapters than the cap', () => {
+    // Write-amplification guard: one Save must not insert unbounded rows.
+    const tooMany = Array.from({ length: 51 }, (_, i) => chapter(`new:${i}`, `C${i}`));
+    expect(validateArrangement([...tooMany, line(1), line(2), unfiled], live, liveChapters)).toBe(
+      'invalidChapter'
+    );
+    const justEnough = Array.from({ length: 50 }, (_, i) => chapter(`new:${i}`, `C${i}`));
+    expect(
+      validateArrangement([...justEnough, line(1), line(2), unfiled], live, liveChapters)
+    ).toBeNull();
+  });
 });

@@ -43,17 +43,35 @@ export function blockAt(rows: readonly ArrangeRow[], index: number): [number, nu
 }
 
 /**
+ * The whole block row `index` belongs to: a chapter heading or a line filed
+ * under one resolves to that chapter's full span; the divider and unfiled
+ * lines are blocks of one.
+ */
+function enclosingBlock(rows: readonly ArrangeRow[], index: number): [number, number] {
+  for (let i = index; i >= 0; i--) {
+    const row = rows[i];
+    if (row.kind === 'unfiled') break;
+    if (row.kind === 'chapter') return blockAt(rows, i);
+  }
+  return [index, index];
+}
+
+/**
  * Where a block being dragged over row `over` should actually land.
  *
- * Dropping a LINE on a heading means "put it in this chapter", but a plain
- * insert-at-index would place it above the heading — i.e. in the chapter before,
- * or unfiled if there is none. So a line dragged UPWARD onto a marker lands just
- * after it instead. Dragging downward needs no such nudge: removing the block
- * first already shifts everything below it up by one, so inserting at the
- * marker's old index puts the line under it.
+ * For a LINE: dropping it on a heading means "put it in this chapter", but a
+ * plain insert-at-index would place it above the heading — i.e. in the chapter
+ * before, or unfiled if there is none. So a line dragged UPWARD onto a marker
+ * lands just after it instead. Dragging downward needs no such nudge: removing
+ * the block first already shifts everything below it up by one, so inserting at
+ * the marker's old index puts the line under it.
  *
- * Chapter blocks are exempt — dropping a chapter on a heading means "go above
- * this chapter", which is what the plain insert already does.
+ * For a CHAPTER block: the landing spot must never be inside another chapter's
+ * span, or the tail of that chapter would end up below the dragged heading and
+ * be silently re-filed under it ([A,a1,B,b1] + "A past B's heading" must give
+ * [B,b1,A,a1], never [B,A,a1,b1]). So the target snaps to the far edge of
+ * whatever block `over` belongs to: its start when dragging up, its end when
+ * dragging down — chapters hop each other whole.
  */
 export function resolveDropTarget(
   rows: readonly ArrangeRow[],
@@ -61,9 +79,12 @@ export function resolveDropTarget(
   end: number,
   over: number
 ): number {
-  const draggingLine = rows[start]?.kind === 'line' && start === end;
+  if (rows[start]?.kind === 'chapter') {
+    const [blockStart, blockEnd] = enclosingBlock(rows, over);
+    return over < start ? blockStart : blockEnd;
+  }
   const ontoMarker = isMarker(rows[over]);
-  return draggingLine && ontoMarker && over < start ? over + 1 : over;
+  return ontoMarker && over < start ? over + 1 : over;
 }
 
 /** Move `rows[start..end]` so it begins at `target`, in the pre-move indexing. */
