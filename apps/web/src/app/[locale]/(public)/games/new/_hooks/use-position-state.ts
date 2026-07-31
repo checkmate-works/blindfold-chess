@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { Side } from '@blindfold-chess/types';
 
@@ -28,8 +28,15 @@ const EMPTY_CASTLING: CastlingRights = { K: false, Q: false, k: false, q: false 
  * exposes the composed `fullFen` derivation for the URL builder.
  *
  * The hook also owns three auto-sync rules that previously lived as
- * standalone `useEffect`s in the form. Co-locating them with the state
- * keeps the rules and the data they protect in one module:
+ * standalone `useEffect`s in the form. They are applied by *adjusting
+ * state during render* (React's documented pattern for state that must
+ * track other state/props), not in effects: the effect version committed
+ * one frame in which `fullFen` still contained an en-passant target or
+ * castling right the rule was about to remove, so anything reading
+ * `fullFen` in that frame captured a FEN the UI never intended. The
+ * render-phase adjustment converges before commit, so no such frame
+ * exists. Co-locating them with the state keeps the rules and the data
+ * they protect in one module:
  *
  *  1. En-passant resets on a color change. A pawn double-push that
  *     would create an en-passant target is invalidated the moment the
@@ -53,12 +60,61 @@ export function usePositionState({ color }: { color: Side }) {
   const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
   const [positionCastling, setPositionCastling] = useState<CastlingRights>(EMPTY_CASTLING);
   const [positionEnPassant, setPositionEnPassant] = useState('-');
-  const skipEnPassantResetRef = useRef(false);
+  // State (not a ref) so that consuming the one-shot flag during render is
+  // discarded together with the render if React throws the pass away.
+  const [skipColorReset, setSkipColorReset] = useState(false);
 
   // Derive turn from color selection.
   const positionTurn = useMemo<'w' | 'b'>(() => (color === 'white' ? 'w' : 'b'), [color]);
 
-  // Full FEN built from parts.
+  // Auto-sync 1: reset en passant when color changes (unless the parent
+  // explicitly suppressed this for a URL-init color set). Render-phase
+  // adjustment with the previous color tracked in state — the standard
+  // "reset some state when a prop changes" form.
+  const [prevColor, setPrevColor] = useState(color);
+  if (color !== prevColor) {
+    setPrevColor(color);
+    if (skipColorReset) {
+      setSkipColorReset(false);
+    } else {
+      setPositionEnPassant('-');
+    }
+  }
+
+  // Compute availability for the accordion's checkboxes & dropdown.
+  const castlingAvailability = useMemo(() => getCastlingAvailability(positionFen), [positionFen]);
+  const enPassantAvailability = useMemo(
+    () => getEnPassantAvailability(positionFen, positionTurn),
+    [positionFen, positionTurn]
+  );
+
+  // Auto-sync 2: clear en passant if the current selection is no longer
+  // a valid target given the pawns on the board. Persistent clear (not a
+  // pure derivation): a selection that momentarily became invalid must not
+  // resurrect if a later board edit makes that square available again.
+  if (positionEnPassant !== '-' && !enPassantAvailability[positionEnPassant[0]]) {
+    setPositionEnPassant('-');
+  }
+
+  // Auto-sync 3: un-check castling rights that no longer match the
+  // king/rook layout. Same persistent-clear rationale as auto-sync 2.
+  const clampedCastling = { ...positionCastling };
+  let castlingChanged = false;
+  for (const key of ['K', 'Q', 'k', 'q'] as const) {
+    if (clampedCastling[key] && !castlingAvailability[key]) {
+      clampedCastling[key] = false;
+      castlingChanged = true;
+    }
+  }
+  if (castlingChanged) {
+    setPositionCastling(clampedCastling);
+  }
+
+  // Full FEN built from parts. Computed AFTER the render-phase adjustments
+  // above so a just-cleared en-passant/castling value can never leak into
+  // the composed FEN — under the old effect-based sync it could, for one
+  // frame. (When an adjustment fires, React re-renders before committing,
+  // so this line only ever emits the converged value.)
   const fullFen = useMemo(
     () => buildFenFromParts(positionFen, positionTurn, positionCastling, positionEnPassant),
     [positionFen, positionTurn, positionCastling, positionEnPassant]
@@ -68,50 +124,6 @@ export function usePositionState({ color }: { color: Side }) {
   // color when the king-in-check rule contradicts the chosen side.
   const validity = useMemo(() => validatePosition(positionFen, fullFen), [positionFen, fullFen]);
 
-  // Compute availability for the accordion's checkboxes & dropdown.
-  const castlingAvailability = useMemo(() => getCastlingAvailability(positionFen), [positionFen]);
-  const enPassantAvailability = useMemo(
-    () => getEnPassantAvailability(positionFen, positionTurn),
-    [positionFen, positionTurn]
-  );
-
-  // Auto-sync 1: reset en passant when color changes (unless the parent
-  // explicitly suppressed this for a URL-init color set).
-  useEffect(() => {
-    if (skipEnPassantResetRef.current) {
-      skipEnPassantResetRef.current = false;
-      return;
-    }
-    setPositionEnPassant('-');
-  }, [color]);
-
-  // Auto-sync 2: clear en passant if the current selection is no longer
-  // a valid target given the pawns on the board.
-  useEffect(() => {
-    if (positionEnPassant !== '-') {
-      const file = positionEnPassant[0];
-      if (!enPassantAvailability[file]) {
-        setPositionEnPassant('-');
-      }
-    }
-  }, [enPassantAvailability, positionEnPassant]);
-
-  // Auto-sync 3: un-check castling rights that no longer match the
-  // king/rook layout.
-  useEffect(() => {
-    const updated = { ...positionCastling };
-    let changed = false;
-    for (const key of ['K', 'Q', 'k', 'q'] as const) {
-      if (updated[key] && !castlingAvailability[key]) {
-        updated[key] = false;
-        changed = true;
-      }
-    }
-    if (changed) {
-      setPositionCastling(updated);
-    }
-  }, [castlingAvailability, positionCastling]);
-
   /**
    * Suppress the next color-change → en-passant reset. Use when setting
    * color in the same tick as restoring an en-passant target from a URL
@@ -119,7 +131,7 @@ export function usePositionState({ color }: { color: Side }) {
    * by auto-sync 1 on the same render.
    */
   const skipNextColorReset = useCallback(() => {
-    skipEnPassantResetRef.current = true;
+    setSkipColorReset(true);
   }, []);
 
   return {

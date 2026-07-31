@@ -63,8 +63,14 @@ export function useGameState({
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
   const [playerResult, setPlayerResult] = useState<'win' | 'loss' | 'draw' | null>(null);
-  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  // Lazy-initialized from the URL-seeded moves: they are fixed for the life
+  // of the mount, so this needs no effect (the old mount effect committed a
+  // first frame with the highlight missing).
+  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(() =>
+    initialMovesFromUrl.length > 0
+      ? getLastMoveDetails(initialMovesFromUrl as string[], startingFen)
+      : null
+  );
 
   // `useGamePersistence` batches `loadedGameData` + `isLoadingFromStorage:
   // false` into one commit, but this hook applies `loadedGameData` in its
@@ -148,14 +154,6 @@ export function useGameState({
     restoreOperationTotals,
     restoreUndoneLogs,
   ]);
-
-  // Initialize on mount with initial moves
-  useEffect(() => {
-    if (!isInitialized && initialMovesFromUrl.length > 0) {
-      setLastMove(getLastMoveDetails(initialMovesFromUrl as string[], startingFen));
-      setIsInitialized(true);
-    }
-  }, [isInitialized, initialMovesFromUrl, startingFen]);
 
   const derivedGameState = useMemo(
     () => computeGameState(moves, playerSide, startingFen),

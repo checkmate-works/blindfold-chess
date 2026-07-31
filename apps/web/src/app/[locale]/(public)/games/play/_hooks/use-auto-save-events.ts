@@ -73,7 +73,7 @@ export function useAutoSaveEvents({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
 
       if (hasSaveableState() && !isCurrentGameFinished()) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: read latest ref at unmount
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- reading the ref at cleanup time is the point: the unmount-time (latest) pending flag decides the final save, not a value captured at mount
         if (hasPendingChanges.current) {
           saveGame(false);
         }

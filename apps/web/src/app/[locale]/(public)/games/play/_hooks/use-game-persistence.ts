@@ -66,16 +66,20 @@ export function useGamePersistence({
 
   // Load saved game status if gameId exists
   useEffect(() => {
+    let cancelled = false;
     const loadSavedGameStatus = async () => {
       if (initialGameId) {
         const gameRepository = new LocalStorageGameRepository();
         const savedGame = await gameRepository.load(initialGameId);
-        if (savedGame) {
+        if (savedGame && !cancelled) {
           setSavedGameStatus(savedGame.status);
         }
       }
     };
     loadSavedGameStatus();
+    return () => {
+      cancelled = true;
+    };
   }, [initialGameId]);
 
   // Clear save toast flag on mount when we have a gameId
@@ -87,6 +91,11 @@ export function useGamePersistence({
 
   // Load moves from localStorage on client-side
   useEffect(() => {
+    // Guards against the load resolving after this effect is obsolete: on a
+    // gameId switch (or unmount) the async chain would otherwise apply the
+    // PREVIOUS game's data over the new one — four setStates deep. The flag
+    // drops the whole stale batch.
+    let cancelled = false;
     const loadGame = async () => {
       if (initialGameId && typeof window !== 'undefined') {
         setIsLoadingFromStorage(true);
@@ -94,6 +103,9 @@ export function useGamePersistence({
 
         const gameRepository = new LocalStorageGameRepository();
         const savedGame = await gameRepository.load(initialGameId);
+        if (cancelled) {
+          return;
+        }
 
         if (savedGame) {
           const moves = (savedGame.moves ?? []) as AlgebraicNotation[];
@@ -143,6 +155,9 @@ export function useGamePersistence({
     };
 
     loadGame();
+    return () => {
+      cancelled = true;
+    };
   }, [initialGameId, initialStartingFen]);
 
   return {

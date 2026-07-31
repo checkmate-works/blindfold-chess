@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { BoardFrame, ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
@@ -104,9 +104,16 @@ export function EditableChessBoard({
     clearAnnotations,
   } = useBoardAnnotationDrawing({ annotations, onAnnotationsChange, flipped });
 
-  useEffect(() => {
+  // Re-derive the board when the `fen` prop changes externally (parent
+  // reset, URL restore). Render-phase adjustment instead of a sync effect:
+  // the effect version committed one frame showing the stale board first.
+  // Local edits keep their immediate `setBoard` in `applyBoard`; when the
+  // parent echoes the new fen back, this re-derivation is a no-op-equal.
+  const [prevFen, setPrevFen] = useState(fen);
+  if (fen !== prevFen) {
+    setPrevFen(fen);
     setBoard(fenToBoardFlat(fen) as FenPieceChar[]);
-  }, [fen]);
+  }
 
   const pieceAt = useCallback((index: number) => board[index] ?? '', [board]);
 
