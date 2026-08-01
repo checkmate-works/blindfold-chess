@@ -4789,6 +4789,8 @@
     "noAchievements": "No achievements yet.",
     "viewAllAchievements": "View all",
     "achievementsPageTitle": "All Achievements",
+    "achievementTimesEarned": "×{count}",
+    "achievementEarnedMonths": "Earned months",
     "achievementCategory": {
       "monthly_leaderboard": "Monthly Leaderboard",
       "cumulative": "Cumulative",

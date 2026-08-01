@@ -4789,6 +4789,8 @@
     "noAchievements": "Aún no hay logros.",
     "viewAllAchievements": "Ver todos",
     "achievementsPageTitle": "Todos los Logros",
+    "achievementTimesEarned": "×{count}",
+    "achievementEarnedMonths": "Meses obtenidos",
     "achievementCategory": {
       "monthly_leaderboard": "Clasificación Mensual",
       "cumulative": "Acumulativo",
