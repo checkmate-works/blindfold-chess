@@ -41,15 +41,19 @@ vi.mock('@/lib/supabase/admin', () => ({
  *   result array per `db.select()`/`db.selectDistinct()` call, in
  *   invocation order.
  * - `whereCalls`: records the `where` predicates each query passed in.
+ * - `innerJoinCalls`: records the (table, on) pair of each `innerJoin`.
  * - `selectSpy` / `selectDistinctSpy`: track how many times `db.select()` /
  *   `db.selectDistinct()` were invoked.
  */
-const { dbResultsQueue, whereCalls, selectSpy, selectDistinctSpy } = vi.hoisted(() => ({
-  dbResultsQueue: [] as Array<unknown[]>,
-  whereCalls: [] as unknown[][],
-  selectSpy: vi.fn(),
-  selectDistinctSpy: vi.fn(),
-}));
+const { dbResultsQueue, whereCalls, innerJoinCalls, selectSpy, selectDistinctSpy } = vi.hoisted(
+  () => ({
+    dbResultsQueue: [] as Array<unknown[]>,
+    whereCalls: [] as unknown[][],
+    innerJoinCalls: [] as Array<{ table: unknown; on: unknown }>,
+    selectSpy: vi.fn(),
+    selectDistinctSpy: vi.fn(),
+  })
+);
 
 vi.mock('drizzle-orm', async (importOriginal) => {
   const actual = await importOriginal<typeof import('drizzle-orm')>();
@@ -89,6 +93,10 @@ vi.mock('@/lib/db', () => {
    *   - `.from().where().groupBy().orderBy()`  (getUgcSourceCountsByDate)
    *   - `.from().where().groupBy()`            (getUgcSourceBreakdown)
    *   - `.from().where()`                      (countLikesInPeriod, selectDistinct in countActivePosters)
+   *
+   * `.innerJoin()` may appear after `.from()` for sources declaring a
+   * `parentJoin`; the joined table is recorded in `innerJoinCalls` so tests
+   * can assert the join happened.
    */
   const makeChain = () => {
     const dequeue = () => dbResultsQueue.shift() ?? [];
@@ -96,11 +104,16 @@ vi.mock('@/lib/db', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chain: any = {
       from: vi.fn(),
+      innerJoin: vi.fn(),
       where: vi.fn(),
       groupBy: vi.fn(),
       orderBy: vi.fn(),
     };
     chain.from.mockImplementation(() => chain);
+    chain.innerJoin.mockImplementation((table: unknown, on: unknown) => {
+      innerJoinCalls.push({ table, on });
+      return chain;
+    });
     chain.where.mockImplementation((predicate: unknown) => {
       whereCalls.push([predicate]);
       return chain;
@@ -156,6 +169,11 @@ vi.mock('@/lib/db', () => {
       deletedAt: { __col: 'repertoires.deleted_at' },
       userId: { __col: 'repertoires.user_id' },
       status: { __col: 'repertoires.status' },
+    },
+    repertoireLines: {
+      repertoireId: { __col: 'repertoire_lines.repertoire_id' },
+      createdAt: { __col: 'repertoire_lines.created_at' },
+      deletedAt: { __col: 'repertoire_lines.deleted_at' },
     },
     likes: {
       createdAt: { __col: 'likes.created_at' },
@@ -508,6 +526,7 @@ describe('getPostsPerDay', () => {
     vi.clearAllMocks();
     dbResultsQueue.length = 0;
     whereCalls.length = 0;
+    innerJoinCalls.length = 0;
   });
 
   /**
@@ -713,6 +732,41 @@ describe('getPostsPerDay', () => {
     expect(result.daily).toEqual([{ date: '2026-03-14', count: 8 }]);
   });
 
+  it('should include repertoire lines in the combined per-day total', async () => {
+    enqueueSourceResults(
+      [], // topicPosts
+      [], // positions
+      [], // chunks
+      [], // games
+      [{ date: '2026-03-14', count: 1 }], // repertoires (the course row)
+      [{ date: '2026-03-14', count: 9 }] // repertoire_lines (its variations)
+    );
+
+    const result = await getPostsPerDay('2026-03-14', '2026-03-14');
+
+    // A 9-line course contributes 10: the course row plus each line.
+    expect(result.total).toBe(10);
+  });
+
+  it('should join repertoire_lines to its course and exclude deleted-course lines', async () => {
+    // Deleting a kata stamps `repertoires.deleted_at` only — the line rows keep
+    // `deleted_at IS NULL` and hide behind the parent at the read path. Without
+    // the parent join + filter, a deleted course's lines would count forever.
+    enqueueSourceResults();
+
+    await getPostsPerDay('2026-03-14', '2026-03-16');
+
+    const lineSourceIndex = UGC_SOURCES.findIndex((s) => s.name === 'repertoire_lines');
+    const predicate = getWherePredicateAt(lineSourceIndex);
+    const isNullCols = predicate.conds
+      .filter((c) => c.__kind === 'isNull')
+      .map((c) => (c.col as { __col: string }).__col);
+
+    expect(isNullCols).toEqual(['repertoire_lines.deleted_at', 'repertoires.deleted_at']);
+    // Exactly one source joins a parent today.
+    expect(innerJoinCalls).toHaveLength(1);
+  });
+
   it('should have total equal to the sum of daily counts', async () => {
     enqueueSourceResults(
       [
@@ -741,6 +795,7 @@ describe('getKpiSummary', () => {
     vi.clearAllMocks();
     dbResultsQueue.length = 0;
     whereCalls.length = 0;
+    innerJoinCalls.length = 0;
   });
 
   /**
@@ -761,11 +816,13 @@ describe('getKpiSummary', () => {
     activePostersChunk?: Array<{ userId: string | null }>;
     activePostersGames?: Array<{ userId: string | null }>;
     activePostersRepertoire?: Array<{ userId: string | null }>;
+    activePostersRepertoireLine?: Array<{ userId: string | null }>;
     breakdownTopic?: Array<{ key: string; count: number }>;
     breakdownPosition?: Array<{ key: string; count: number }>;
     breakdownChunk?: Array<{ key: string; count: number }>;
     breakdownGames?: Array<{ key: string; count: number }>;
     breakdownRepertoire?: Array<{ key: string; count: number }>;
+    breakdownRepertoireLine?: Array<{ key: string; count: number }>;
     likes?: Array<{ total: number }>;
   }): void {
     const activePostersBySource: Record<string, unknown[] | undefined> = {
@@ -774,6 +831,7 @@ describe('getKpiSummary', () => {
       chunks: opts.activePostersChunk,
       games: opts.activePostersGames,
       repertoires: opts.activePostersRepertoire,
+      repertoire_lines: opts.activePostersRepertoireLine,
     };
     const breakdownBySource: Record<string, unknown[] | undefined> = {
       topic_posts: opts.breakdownTopic,
@@ -781,6 +839,7 @@ describe('getKpiSummary', () => {
       chunks: opts.breakdownChunk,
       games: opts.breakdownGames,
       repertoires: opts.breakdownRepertoire,
+      repertoire_lines: opts.breakdownRepertoireLine,
     };
 
     for (const source of UGC_SOURCES) {
@@ -1013,6 +1072,29 @@ describe('getKpiSummary', () => {
       count: 7,
     });
     // A user whose only contribution is a kata still counts as an active poster.
+    expect(result.ugcPosts.activePosters).toBe(1);
+  });
+
+  it('should attribute repertoire lines to the course owner and key them by the course status', async () => {
+    // `repertoire_lines` carries neither an author nor a status of its own —
+    // both come from the joined `repertoires` row.
+    enqueueKpiResults({
+      activePostersRepertoireLine: [{ userId: 'kata-author' }],
+      breakdownRepertoireLine: [{ key: 'public', count: 12 }],
+    });
+
+    const result = await getKpiSummary({
+      startDate: '2026-03-14',
+      endDate: '2026-03-14',
+      usersTotalInPeriod: 0,
+      ugcTotalInPeriod: 12,
+    });
+
+    expect(result.ugcPosts.breakdown).toContainEqual({
+      source: 'repertoire_lines',
+      key: 'public',
+      count: 12,
+    });
     expect(result.ugcPosts.activePosters).toBe(1);
   });
 

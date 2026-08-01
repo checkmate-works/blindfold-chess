@@ -111,6 +111,7 @@ export default async function AdminDashboardPage({
               chunks: t('dashboardKpi.summaryTable.sources.chunks'),
               games: t('dashboardKpi.summaryTable.sources.games'),
               repertoires: t('dashboardKpi.summaryTable.sources.repertoires'),
+              repertoire_lines: t('dashboardKpi.summaryTable.sources.repertoire_lines'),
             },
             breakdownLabels: {
               'topic_posts.opening': t('dashboardKpi.summaryTable.breakdowns.topic_posts.opening'),
@@ -128,6 +129,18 @@ export default async function AdminDashboardPage({
                 'dashboardKpi.summaryTable.breakdowns.repertoires.followers_only'
               ),
               'repertoires.private': t('dashboardKpi.summaryTable.breakdowns.repertoires.private'),
+              'repertoire_lines.building': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoire_lines.building'
+              ),
+              'repertoire_lines.public': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoire_lines.public'
+              ),
+              'repertoire_lines.followers_only': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoire_lines.followers_only'
+              ),
+              'repertoire_lines.private': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoire_lines.private'
+              ),
             },
           }}
         />

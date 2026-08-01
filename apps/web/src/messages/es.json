@@ -4196,7 +4196,8 @@
           "positions": "positions",
           "chunks": "chunks",
           "games": "games",
-          "repertoires": "repertoires"
+          "repertoires": "repertoires",
+          "repertoire_lines": "repertoire_lines"
         },
         "breakdowns": {
           "topic_posts": {
@@ -4215,6 +4216,12 @@
             "maia": "Maia"
           },
           "repertoires": {
+            "building": "borrador",
+            "public": "público",
+            "followers_only": "solo seguidores",
+            "private": "privado"
+          },
+          "repertoire_lines": {
             "building": "borrador",
             "public": "público",
             "followers_only": "solo seguidores",

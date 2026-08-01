@@ -1,7 +1,7 @@
-import { and, count, gte, isNull, lte, sql } from 'drizzle-orm';
+import { type SQL, and, count, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import { type PgColumn, type PgTable } from 'drizzle-orm/pg-core';
 
-import { chunks, db, games, positions, repertoires, topicPosts } from '@/lib/db';
+import { chunks, db, games, positions, repertoireLines, repertoires, topicPosts } from '@/lib/db';
 
 import { type DailyCount, fillDateRange } from './aggregate-by-day';
 
@@ -24,7 +24,7 @@ import { type DailyCount, fillDateRange } from './aggregate-by-day';
  */
 export type UgcSource = {
   /** Stable identifier used as a key in summary responses and i18n lookups. */
-  name: 'topic_posts' | 'positions' | 'chunks' | 'games' | 'repertoires';
+  name: 'topic_posts' | 'positions' | 'chunks' | 'games' | 'repertoires' | 'repertoire_lines';
   table: PgTable;
   createdAtColumn: PgColumn;
   deletedAtColumn: PgColumn | null;
@@ -43,6 +43,31 @@ export type UgcSource = {
    * nothing to attribute it to.
    */
   breakdownColumn: PgColumn | null;
+  /** Owning table to inner-join; omit for sources that stand alone. */
+  parentJoin?: UgcParentJoin;
+};
+
+/**
+ * Owning table joined into every aggregation of a child source.
+ *
+ * Needed when the child row's own columns do not carry the whole truth. Only
+ * `repertoire_lines` needs it today: a line has no author column, and its
+ * liveness depends on its course — `deleteRepertoireEntry` stamps
+ * `repertoires.deleted_at` and leaves the line rows' `deleted_at` NULL, because
+ * lines "cascade-hide behind the parent" at the read path. Filtering on the
+ * child's own `deleted_at` alone would therefore keep counting a deleted
+ * course's lines forever.
+ *
+ * The join is applied by all three aggregations (per-day counts, breakdown,
+ * active posters), so `userIdColumn` / `breakdownColumn` may name a column on
+ * this table rather than on `table`.
+ */
+export type UgcParentJoin = {
+  table: PgTable;
+  /** Join predicate, e.g. `eq(repertoireLines.repertoireId, repertoires.id)`. */
+  on: SQL;
+  /** Parent's soft-delete column; `IS NULL` is added to every query. */
+  deletedAtColumn: PgColumn | null;
 };
 
 export const UGC_SOURCES: readonly UgcSource[] = [
@@ -97,7 +122,47 @@ export const UGC_SOURCES: readonly UgcSource[] = [
     userIdColumn: repertoires.userId,
     breakdownColumn: repertoires.status,
   },
+  {
+    // The lines (variations) of a kata — the actual authoring volume. A course
+    // row is one click; its lines are the work, and a 50-line course is not
+    // comparable to a one-line one, so both layers are counted (a 50-line
+    // course contributes 51). Attributed to the owner and grouped by the
+    // PARENT's status, both of which live on `repertoires` — see `parentJoin`
+    // for why that join is also what keeps a deleted course's lines out.
+    name: 'repertoire_lines',
+    table: repertoireLines,
+    createdAtColumn: repertoireLines.createdAt,
+    deletedAtColumn: repertoireLines.deletedAt,
+    userIdColumn: repertoires.userId,
+    breakdownColumn: repertoires.status,
+    parentJoin: {
+      table: repertoires,
+      on: eq(repertoireLines.repertoireId, repertoires.id),
+      deletedAtColumn: repertoires.deletedAt,
+    },
+  },
 ];
+
+/**
+ * The predicate every aggregation of a source shares: the period window, the
+ * source's own soft-delete, and its parent's when one is joined.
+ *
+ * Shared with `kpi-summary.ts` so the three aggregations cannot drift into
+ * counting different row sets — which is exactly how a joined source would
+ * break, by having one query forget the parent's `deleted_at`.
+ */
+export function liveInPeriodConditions(source: UgcSource, start: Date, end: Date): SQL[] {
+  const { createdAtColumn, deletedAtColumn, parentJoin } = source;
+
+  const conditions = [gte(createdAtColumn, start), lte(createdAtColumn, end)];
+  if (deletedAtColumn) {
+    conditions.push(isNull(deletedAtColumn));
+  }
+  if (parentJoin?.deletedAtColumn) {
+    conditions.push(isNull(parentJoin.deletedAtColumn));
+  }
+  return conditions;
+}
 
 /**
  * Aggregate a single UGC source per day using Drizzle ORM.
@@ -111,21 +176,20 @@ async function getUgcSourceCountsByDate(
   start: Date,
   end: Date
 ): Promise<Map<string, number>> {
-  const { table, createdAtColumn, deletedAtColumn } = source;
+  const { table, createdAtColumn, parentJoin } = source;
 
   const dateExpr = sql<string>`DATE(${createdAtColumn} AT TIME ZONE 'UTC')`;
 
-  const conditions = [gte(createdAtColumn, start), lte(createdAtColumn, end)];
-  if (deletedAtColumn) {
-    conditions.push(isNull(deletedAtColumn));
-  }
+  const conditions = liveInPeriodConditions(source, start, end);
 
-  const rows = await db
+  const base = db
     .select({
       date: dateExpr.as('date'),
       count: count(),
     })
-    .from(table)
+    .from(table);
+
+  const rows = await (parentJoin ? base.innerJoin(parentJoin.table, parentJoin.on) : base)
     .where(and(...conditions))
     .groupBy(dateExpr)
     .orderBy(dateExpr);

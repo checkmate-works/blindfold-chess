@@ -1,8 +1,8 @@
-import { and, count, gte, isNull, lte } from 'drizzle-orm';
+import { and, count, gte, lte } from 'drizzle-orm';
 
 import { db, likes } from '@/lib/db';
 
-import { UGC_SOURCES, type UgcSource } from './ugc-aggregation';
+import { UGC_SOURCES, type UgcSource, liveInPeriodConditions } from './ugc-aggregation';
 
 /**
  * Number of whole days (inclusive) covered by [startDate, endDate].
@@ -60,15 +60,12 @@ export type KpiSummary = {
 async function countActivePosters(start: Date, end: Date): Promise<number> {
   const perSourceUsers = await Promise.all(
     UGC_SOURCES.map(async (source) => {
-      const { table, createdAtColumn, deletedAtColumn, userIdColumn } = source;
-      const conditions = [gte(createdAtColumn, start), lte(createdAtColumn, end)];
-      if (deletedAtColumn) {
-        conditions.push(isNull(deletedAtColumn));
-      }
-      const rows = await db
-        .selectDistinct({ userId: userIdColumn })
-        .from(table)
-        .where(and(...conditions));
+      const { table, userIdColumn, parentJoin } = source;
+      const conditions = liveInPeriodConditions(source, start, end);
+      const base = db.selectDistinct({ userId: userIdColumn }).from(table);
+      const rows = await (
+        parentJoin ? base.innerJoin(parentJoin.table, parentJoin.on) : base
+      ).where(and(...conditions));
       // Drop NULL authors (account-less `games` submissions) so they are not
       // unioned into the Set as a single phantom poster.
       return rows.map((r) => r.userId as string | null).filter((id): id is string => id != null);
@@ -91,20 +88,19 @@ async function getUgcSourceBreakdown(
   start: Date,
   end: Date
 ): Promise<UgcBreakdownRow[]> {
-  const { name, table, createdAtColumn, deletedAtColumn, breakdownColumn } = source;
+  const { name, table, breakdownColumn, parentJoin } = source;
   if (!breakdownColumn) return [];
 
-  const conditions = [gte(createdAtColumn, start), lte(createdAtColumn, end)];
-  if (deletedAtColumn) {
-    conditions.push(isNull(deletedAtColumn));
-  }
+  const conditions = liveInPeriodConditions(source, start, end);
 
-  const rows = await db
+  const base = db
     .select({
       key: breakdownColumn,
       count: count(),
     })
-    .from(table)
+    .from(table);
+
+  const rows = await (parentJoin ? base.innerJoin(parentJoin.table, parentJoin.on) : base)
     .where(and(...conditions))
     .groupBy(breakdownColumn);
 
