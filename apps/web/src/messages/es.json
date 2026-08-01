@@ -4195,15 +4195,23 @@
           "topic_posts": "topic_posts",
           "positions": "positions",
           "chunks": "chunks",
-          "games": "games"
+          "games": "games",
+          "repertoires": "repertoires",
+          "repertoire_lines": "repertoire_lines"
         },
         "breakdowns": {
           "topic_posts": {
             "opening": "apertura",
-            "square": "casilla"
+            "square": "casilla",
+            "chunk": "chunk",
+            "position_memory": "memoria de posiciones",
+            "position_puzzle": "puzzle",
+            "repertoire": "kata",
+            "repertoire_move": "jugada de kata"
           },
           "positions": {
-            "memory": "memoria"
+            "memory": "memoria",
+            "puzzle": "puzzle"
           },
           "chunks": {
             "draft": "borrador",
@@ -4212,6 +4220,18 @@
           "games": {
             "stockfish": "Stockfish",
             "maia": "Maia"
+          },
+          "repertoires": {
+            "building": "borrador",
+            "public": "público",
+            "followers_only": "solo seguidores",
+            "private": "privado"
+          },
+          "repertoire_lines": {
+            "building": "borrador",
+            "public": "público",
+            "followers_only": "solo seguidores",
+            "private": "privado"
           }
         },
         "help": {

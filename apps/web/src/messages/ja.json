@@ -4195,15 +4195,23 @@
           "topic_posts": "topic_posts",
           "positions": "positions",
           "chunks": "chunks",
-          "games": "games"
+          "games": "games",
+          "repertoires": "repertoires",
+          "repertoire_lines": "repertoire_lines"
         },
         "breakdowns": {
           "topic_posts": {
             "opening": "オープニング",
-            "square": "マス目"
+            "square": "マス目",
+            "chunk": "チャンク",
+            "position_memory": "ポジションの記憶",
+            "position_puzzle": "パズル",
+            "repertoire": "型",
+            "repertoire_move": "型の手"
           },
           "positions": {
-            "memory": "メモリー"
+            "memory": "メモリー",
+            "puzzle": "パズル"
           },
           "chunks": {
             "draft": "下書き",
@@ -4212,6 +4220,18 @@
           "games": {
             "stockfish": "Stockfish",
             "maia": "Maia"
+          },
+          "repertoires": {
+            "building": "下書き",
+            "public": "公開",
+            "followers_only": "フォロワー限定",
+            "private": "非公開"
+          },
+          "repertoire_lines": {
+            "building": "下書き",
+            "public": "公開",
+            "followers_only": "フォロワー限定",
+            "private": "非公開"
           }
         },
         "help": {

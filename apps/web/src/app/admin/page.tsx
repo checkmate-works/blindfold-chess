@@ -110,15 +110,51 @@ export default async function AdminDashboardPage({
               positions: t('dashboardKpi.summaryTable.sources.positions'),
               chunks: t('dashboardKpi.summaryTable.sources.chunks'),
               games: t('dashboardKpi.summaryTable.sources.games'),
+              repertoires: t('dashboardKpi.summaryTable.sources.repertoires'),
+              repertoire_lines: t('dashboardKpi.summaryTable.sources.repertoire_lines'),
             },
             breakdownLabels: {
               'topic_posts.opening': t('dashboardKpi.summaryTable.breakdowns.topic_posts.opening'),
               'topic_posts.square': t('dashboardKpi.summaryTable.breakdowns.topic_posts.square'),
+              'topic_posts.chunk': t('dashboardKpi.summaryTable.breakdowns.topic_posts.chunk'),
+              'topic_posts.position_memory': t(
+                'dashboardKpi.summaryTable.breakdowns.topic_posts.position_memory'
+              ),
+              'topic_posts.position_puzzle': t(
+                'dashboardKpi.summaryTable.breakdowns.topic_posts.position_puzzle'
+              ),
+              'topic_posts.repertoire': t(
+                'dashboardKpi.summaryTable.breakdowns.topic_posts.repertoire'
+              ),
+              'topic_posts.repertoire_move': t(
+                'dashboardKpi.summaryTable.breakdowns.topic_posts.repertoire_move'
+              ),
               'positions.memory': t('dashboardKpi.summaryTable.breakdowns.positions.memory'),
+              'positions.puzzle': t('dashboardKpi.summaryTable.breakdowns.positions.puzzle'),
               'chunks.draft': t('dashboardKpi.summaryTable.breakdowns.chunks.draft'),
               'chunks.published': t('dashboardKpi.summaryTable.breakdowns.chunks.published'),
               'games.stockfish': t('dashboardKpi.summaryTable.breakdowns.games.stockfish'),
               'games.maia': t('dashboardKpi.summaryTable.breakdowns.games.maia'),
+              'repertoires.building': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoires.building'
+              ),
+              'repertoires.public': t('dashboardKpi.summaryTable.breakdowns.repertoires.public'),
+              'repertoires.followers_only': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoires.followers_only'
+              ),
+              'repertoires.private': t('dashboardKpi.summaryTable.breakdowns.repertoires.private'),
+              'repertoire_lines.building': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoire_lines.building'
+              ),
+              'repertoire_lines.public': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoire_lines.public'
+              ),
+              'repertoire_lines.followers_only': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoire_lines.followers_only'
+              ),
+              'repertoire_lines.private': t(
+                'dashboardKpi.summaryTable.breakdowns.repertoire_lines.private'
+              ),
             },
           }}
         />
