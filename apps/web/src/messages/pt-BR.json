@@ -23,12 +23,13 @@
     "description": "Katas compartilhados pela comunidade — linhas de abertura, padrões de mate e sequências memorizadas.",
     "sectionTitle": "Katas da comunidade",
     "status": {
-      "building": "Em andamento",
+      "building": "Rascunho",
+      "buildingHint": "Só você pode ver este kata até publicá-lo.",
       "followersOnly": "Somente seguidores",
       "private": "Privado"
     },
     "building": {
-      "sectionTitle": "Seu kata em andamento"
+      "sectionTitle": "Seus katas em rascunho"
     },
     "help": {
       "label": "Sobre os katas",
@@ -237,12 +238,15 @@
       "cancel": "Cancelar"
     },
     "publish": {
-      "bannerTitle": "Este kata ainda está em andamento",
-      "bannerDescription": "Só você pode vê-lo até publicá-lo.",
-      "needsLine": "Adicione pelo menos uma linha antes de publicar.",
       "button": "Publicar",
+      "pending": "Publicando…",
+      "needsLineTitle": "Adicione uma linha antes de publicar",
+      "needsLineMessage": "Um kata é uma sequência de lances para ensaiar, então precisa de pelo menos uma linha para que outros possam segui-la. Adicione uma primeiro — você pode voltar e publicar depois de salvá-la.",
+      "needsLineCta": "Adicionar uma linha",
+      "draftToggleLabel": "Manter como rascunho",
+      "draftToggleHint": "Um rascunho só é visível para você. Desmarque para publicar este kata ao salvar — a publicação é irreversível, mas depois você pode torná-lo privado.",
       "confirmTitle": "Publicar este kata?",
-      "confirmMessage": "Depois de publicado, este kata ficará visível para todos e poderá ser comparado com suas partidas. Não será possível voltar para em andamento — depois só será possível torná-lo privado.",
+      "confirmMessage": "Depois de publicado, este kata ficará visível para todos e poderá ser comparado com suas partidas. Não será possível voltar para rascunho — depois só será possível torná-lo privado.",
       "confirm": "Publicar",
       "cancel": "Cancelar",
       "errors": {
@@ -4033,6 +4037,8 @@
     "positionCreated": "Posição criada com sucesso",
     "positionDeleted": "Problema excluído",
     "positionUpdated": "Alterações salvas",
+    "repertoireUpdated": "Alterações salvas",
+    "repertoirePublished": "Kata publicado",
     "lineUpdated": "Linha atualizada",
     "lineAdded": "Linha adicionada",
     "linesReordered": "Ordem das linhas salva",

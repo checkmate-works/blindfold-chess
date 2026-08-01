@@ -10,15 +10,26 @@ import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
+import type { Repertoire } from '@/lib/db';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { OpeningLinksField } from '../../_components/OpeningLinksField';
+import { publishRepertoire } from '../_actions/publishRepertoire';
 import { updateRepertoire } from '../_actions/updateRepertoire';
 
 type Props = {
   repertoireId: string;
+  locale: string;
+  /**
+   * Only `'building'` renders the draft toggle — publishing is one-way, so a
+   * published kata has no status left to change here (its visibility tier is
+   * changed from the detail page's `RepertoireVisibilityControl`).
+   */
+  status: Repertoire['status'];
+  /** Publishing needs at least one line; the toggle refuses below that. */
+  lineCount: number;
   initialName: string;
   /** The course-level description blurb (empty string when unset). */
   initialDescription: string;
@@ -33,7 +44,11 @@ type Props = {
 
 /**
  * Owner-only editor for a repertoire's METADATA: its title, description, side,
- * and opening links. The move tree is deliberately NOT edited here — lines are
+ * opening links, and — while it is still a draft — whether saving also
+ * publishes it (the same "keep as draft" checkbox the chunk form carries, so
+ * the two UGC flows change status the same way; the detail page's "⋯" menu
+ * keeps its own Publish entry for the case where nothing else needs editing).
+ * The move tree is deliberately NOT edited here — lines are
  * authored one at a time on each line's own page (edit / delete / branch), so a
  * whole-kata edit can't silently lose a line's identity or orphan its notes the
  * way a diff-the-whole-PGN save did. Phase stays fixed (it gates whether
@@ -43,6 +58,9 @@ type Props = {
  */
 export function EditRepertoireForm({
   repertoireId,
+  locale,
+  status,
+  lineCount,
   initialName,
   initialDescription,
   openings,
@@ -52,12 +70,17 @@ export function EditRepertoireForm({
 }: Props) {
   const t = useTranslations('Repertoires.edit');
   const tForm = useTranslations('Repertoires.form');
+  const tPublish = useTranslations('Repertoires.publish');
   const router = useRouter();
+
+  const isDraft = status === 'building';
 
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
   const [side, setSide] = useState<RepertoireSide>(initialSide);
   const [openingIds, setOpeningIds] = useState<string[]>(initialOpeningIds);
+  // Checked = stay a draft. Unchecking publishes on save (one-way).
+  const [keepDraft, setKeepDraft] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -69,6 +92,7 @@ export function EditRepertoireForm({
     (name !== initialName ||
       description !== initialDescription ||
       side !== initialSide ||
+      (isDraft && !keepDraft) ||
       JSON.stringify([...openingIds].sort()) !== JSON.stringify([...initialOpeningIds].sort()));
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
@@ -76,6 +100,16 @@ export function EditRepertoireForm({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+
+    // Publishing needs at least one line (`publishRepertoireEntry` enforces
+    // it server-side too). Say so before saving anything, so the author isn't
+    // told about it only after a successful metadata save.
+    const wantsPublish = isDraft && !keepDraft;
+    if (wantsPublish && lineCount < 1) {
+      setError(tPublish('needsLineTitle'));
+      return;
+    }
+
     setPending(true);
     setError(null);
 
@@ -93,10 +127,29 @@ export function EditRepertoireForm({
       return;
     }
 
+    // Publish only after the metadata save landed: a failed publish leaves the
+    // edits saved and the kata a draft, which is recoverable from either
+    // surface. The reverse order could publish text the author never saved.
+    if (wantsPublish) {
+      const published = await publishRepertoire({ id: repertoireId, locale });
+      if ('error' in published) {
+        setPending(false);
+        setError(tPublish('errors.generic'));
+        return;
+      }
+    }
+
     // flushSync so the isDirty -> false re-render completes before
     // router.push triggers the navigation guard (same as ChunkForm).
+    //
+    // The `?toast=` param is the app's post-navigation receipt (see
+    // `ToastContainer`): this form used to land on the detail page silently,
+    // which reads as "did my save go through?" — especially on a publish,
+    // where the only other signal is a badge that *disappeared*.
     flushSync(() => setSubmitted(true));
-    router.push(detailHref);
+    router.push(
+      `${detailHref}?toast=${wantsPublish ? 'repertoire_published' : 'repertoire_updated'}`
+    );
   }
 
   return (
@@ -152,6 +205,26 @@ export function EditRepertoireForm({
 
       {canLinkOpenings && (
         <OpeningLinksField openings={openings} selectedIds={openingIds} onChange={setOpeningIds} />
+      )}
+
+      {isDraft && (
+        <div className="rounded border border-border bg-card p-3">
+          <label className="flex cursor-pointer items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={keepDraft}
+              onChange={(e) => setKeepDraft(e.target.checked)}
+              disabled={pending}
+              className="mt-0.5"
+            />
+            <span className="space-y-1">
+              <span className="block font-medium">{tPublish('draftToggleLabel')}</span>
+              <span className="block text-xs text-muted-foreground">
+                {tPublish('draftToggleHint')}
+              </span>
+            </span>
+          </label>
+        </div>
       )}
 
       <FormErrorBanner message={error} />

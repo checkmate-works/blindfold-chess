@@ -4,11 +4,11 @@ import { Link } from '@/i18n/routing';
 
 import type { Repertoire } from '@/lib/db';
 
+import { RepertoireDraftBadge } from './RepertoireDraftBadge';
+
 const CHIP = 'rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground';
 /** The side chip doubles as a filter link, so it gets a hover affordance. */
 const SIDE_CHIP = `${CHIP} transition-colors hover:bg-muted-foreground/20 hover:text-foreground`;
-const BUILDING_CHIP =
-  'rounded-full bg-warning-soft px-2 py-0.5 text-xs text-warning-soft-foreground';
 
 type Props = {
   locale: string;
@@ -21,7 +21,7 @@ type Props = {
    */
   phase?: Repertoire['phase'];
   /**
-   * The visibility/lifecycle chip. `'building'` shows "in progress";
+   * The visibility/lifecycle chip. `'building'` shows the draft badge;
    * `'followers_only'` / `'private'` show their tier so the owner (and, on a
    * followers-only course, its viewers) can see it isn't public at a glance.
    * `'public'` shows no chip — public is the unremarkable default. Omit on
@@ -46,7 +46,15 @@ export async function RepertoireChips({ locale, side, phase, status }: Props) {
 
   return (
     <span className="flex flex-wrap gap-1">
-      {status === 'building' && <span className={BUILDING_CHIP}>{t('status.building')}</span>}
+      {/* The badge is the only "not published yet" signal left now that the
+          publish banner is gone (publish moved into the "⋯" menu), so it
+          carries the consequence — invisible to everyone else — as its tooltip
+          rather than as a block of copy above the board. On the detail page
+          the same badge sits next to the title instead (see `[id]/page.tsx`),
+          so `status` is not passed here for a draft. */}
+      {status === 'building' && (
+        <RepertoireDraftBadge label={t('status.building')} hint={t('status.buildingHint')} />
+      )}
       {status === 'followers_only' && <span className={CHIP}>{t('status.followersOnly')}</span>}
       {status === 'private' && <span className={CHIP}>{t('status.private')}</span>}
       <Link

@@ -23,12 +23,13 @@
     "description": "Kata shared by the community — opening lines, mate patterns, and memorized sequences.",
     "sectionTitle": "Community kata",
     "status": {
-      "building": "In progress",
+      "building": "Draft",
+      "buildingHint": "Only you can see this kata until you publish it.",
       "followersOnly": "Followers only",
       "private": "Private"
     },
     "building": {
-      "sectionTitle": "Your kata in progress"
+      "sectionTitle": "Your draft kata"
     },
     "help": {
       "label": "About Kata",
@@ -237,12 +238,15 @@
       "cancel": "Cancel"
     },
     "publish": {
-      "bannerTitle": "This kata is still in progress",
-      "bannerDescription": "It's only visible to you until you publish it.",
-      "needsLine": "Add at least one line before you can publish.",
       "button": "Publish",
+      "pending": "Publishing…",
+      "needsLineTitle": "Add a line before publishing",
+      "needsLineMessage": "A kata is a sequence of moves to rehearse, so it needs at least one line before anyone else can follow it. Add one first — you can come back and publish once it's saved.",
+      "needsLineCta": "Add a line",
+      "draftToggleLabel": "Keep as a draft",
+      "draftToggleHint": "A draft is only visible to you. Uncheck it to publish this kata when you save — publishing is one-way, though you can make it private afterward.",
       "confirmTitle": "Publish this kata?",
-      "confirmMessage": "Once published, this kata will be visible to everyone and can be checked against your games. You won't be able to move it back to in progress — you can only make it private afterward.",
+      "confirmMessage": "Once published, this kata will be visible to everyone and can be checked against your games. You won't be able to move it back to a draft — you can only make it private afterward.",
       "confirm": "Publish",
       "cancel": "Cancel",
       "errors": {
@@ -4033,6 +4037,8 @@
     "positionCreated": "Position created successfully",
     "positionDeleted": "Problem deleted",
     "positionUpdated": "Changes saved",
+    "repertoireUpdated": "Changes saved",
+    "repertoirePublished": "Kata published",
     "lineUpdated": "Line updated",
     "lineAdded": "Line added",
     "linesReordered": "Line order saved",

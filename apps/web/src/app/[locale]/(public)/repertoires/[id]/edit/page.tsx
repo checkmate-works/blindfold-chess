@@ -73,6 +73,9 @@ export default async function EditRepertoirePage({ params }: Props) {
 
       <EditRepertoireForm
         repertoireId={id}
+        locale={locale}
+        status={repertoire.status}
+        lineCount={data.lines.length}
         initialName={repertoire.name}
         initialDescription={repertoire.description ?? ''}
         openings={openings}
