@@ -4790,7 +4790,7 @@
     "viewAllAchievements": "Ver todos",
     "achievementsPageTitle": "Todos los Logros",
     "achievementTimesEarned": "×{count}",
-    "achievementEarnedMonths": "Meses obtenidos",
+    "achievementOtherMonths": "Otros meses",
     "achievementCategory": {
       "monthly_leaderboard": "Clasificación Mensual",
       "cumulative": "Acumulativo",

@@ -138,15 +138,16 @@ export async function ProfileAchievements({
                       <p className="text-xs text-muted-foreground mt-0.5">{monthLabels[0]}</p>
                     )}
 
-                    {/* Repeat wins collapse into a native disclosure so the
-                        card stays one line tall until the reader opens it. */}
-                    {isRepeat && monthLabels.length > 1 && (
+                    {/* The latest month stays visible above; the earlier wins
+                        collapse into a native disclosure so a long streak
+                        cannot stretch the card. */}
+                    {monthLabels.length > 1 && (
                       <details className="mt-1">
                         <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-                          {tRoot('publicProfile.achievementEarnedMonths')}
+                          {tRoot('publicProfile.achievementOtherMonths')}
                         </summary>
                         <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                          {monthLabels.map((label, index) => (
+                          {monthLabels.slice(1).map((label, index) => (
                             <li key={`${item.slug}-${label}-${index}`}>{label}</li>
                           ))}
                         </ul>

@@ -4790,7 +4790,7 @@
     "viewAllAchievements": "View all",
     "achievementsPageTitle": "All Achievements",
     "achievementTimesEarned": "×{count}",
-    "achievementEarnedMonths": "Earned months",
+    "achievementOtherMonths": "Other months",
     "achievementCategory": {
       "monthly_leaderboard": "Monthly Leaderboard",
       "cumulative": "Cumulative",
