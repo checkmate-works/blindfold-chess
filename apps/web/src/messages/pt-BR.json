@@ -4789,6 +4789,8 @@
     "noAchievements": "Ainda não há conquistas.",
     "viewAllAchievements": "Ver todas",
     "achievementsPageTitle": "Todas as Conquistas",
+    "achievementTimesEarned": "×{count}",
+    "achievementOtherMonths": "Outros meses",
     "achievementCategory": {
       "monthly_leaderboard": "Ranking Mensal",
       "cumulative": "Acumulativo",

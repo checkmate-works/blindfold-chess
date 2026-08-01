@@ -1,7 +1,7 @@
 import { and, count, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles, userFollows } from '@/lib/db';
-import { type UserAchievementRow, getUserAchievements } from '@/lib/db/achievement-queries';
+import { type UserAchievementGroup, getUserAchievementGroups } from '@/lib/db/achievement-queries';
 import { countGamesByAuthorId } from '@/lib/db/games-read';
 import { hasBlocked } from '@/lib/moderation/block';
 import { countPositions } from '@/lib/positions/queries';
@@ -26,7 +26,8 @@ export type ProfileShellData = {
   allPosts: ProfilePostWithReplyMeta[];
   problemsCount: number;
   gamesCount: number;
-  userAchievementRows: UserAchievementRow[];
+  /** One entry per badge definition, most recently earned first. */
+  userAchievementGroups: UserAchievementGroup[];
 };
 
 /**
@@ -95,7 +96,7 @@ export async function loadProfileShellData({
     [followerResult],
     [followingResult],
     allPosts,
-    userAchievementRows,
+    userAchievementGroups,
     problemsCount,
     gamesCount,
   ] = await Promise.all([
@@ -106,7 +107,7 @@ export async function loadProfileShellData({
     followerCountPromise,
     followingCountPromise,
     getPostsByUserId(profileId, currentUserId),
-    getUserAchievements(profileId),
+    getUserAchievementGroups(profileId),
     countPositions({ userId: profileId }),
     countGamesByAuthorId(profileId),
   ]);
@@ -121,6 +122,6 @@ export async function loadProfileShellData({
     allPosts,
     problemsCount,
     gamesCount,
-    userAchievementRows,
+    userAchievementGroups,
   };
 }

@@ -2,16 +2,10 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
-
 import { getAchievementCategoryNames } from '@/lib/achievements/display';
-import {
-  getUserAchievementCount,
-  getUserAchievementsPaginated,
-} from '@/lib/db/achievement-queries';
+import { countTotalEarned, getUserAchievementGroups } from '@/lib/db/achievement-queries';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -20,20 +14,13 @@ import { getProfileByUsername } from '../_lib/queries';
 import { redirectIfBlockedFromProfile } from '../_lib/redirect-if-blocked';
 
 // Per-user, per-locale URLs explode the on-demand ISR cache (one entry per
-// (locale, username, ?page=N)), and the 5-min revalidate cycle previously
-// triggered ISR Writes on every bot/user revisit. Render dynamically instead —
-// the parent /u/[username]/page.tsx already does the same.
+// (locale, username)), and the 5-min revalidate cycle previously triggered ISR
+// Writes on every bot/user revisit. Render dynamically instead — the parent
+// /u/[username]/page.tsx already does the same.
 export const dynamic = 'force-dynamic';
-
-const PAGE_SIZE = 10;
-
-const searchParamsCache = createSearchParamsCache({
-  page: parseAsInteger.withDefault(1),
-});
 
 type Props = {
   params: Promise<{ locale: Locale; username: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -56,7 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function AchievementsPage({ params, searchParams }: Props) {
+/**
+ * Every achievement a user holds, one card per badge definition.
+ *
+ * Deliberately unpaginated: the list is grouped by badge definition, so its
+ * length is bounded by the seeded definitions (42 as of writing) rather than
+ * by how many months the user has been placing on leaderboards.
+ */
+export default async function AchievementsPage({ params }: Props) {
   const { locale, username } = await params;
 
   const profile = await getProfileByUsername(username);
@@ -67,25 +61,11 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
 
   await redirectIfBlockedFromProfile({ locale, username, profileId: profile.id });
 
-  const { page } = await searchParamsCache.parse(searchParams);
-
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
-  const totalCount = await getUserAchievementCount(profile.id);
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-
-  const achievements = await getUserAchievementsPaginated(profile.id, {
-    limit: PAGE_SIZE,
-    offset: (currentPage - 1) * PAGE_SIZE,
-  });
+  const achievements = await getUserAchievementGroups(profile.id);
 
   const displayName = profile.displayName ?? username;
-
-  const buildHref = (p: number) => {
-    const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/u/${username}/achievements${qs}`;
-  };
 
   return (
     <PageLayout
@@ -99,19 +79,12 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
       <ProfileAchievements
         achievements={achievements}
         locale={locale}
-        totalCount={totalCount}
+        totalCount={countTotalEarned(achievements)}
         labels={{
           sectionTitle: t('achievementsSection'),
           noAchievements: t('noAchievements'),
           categoryNames: getAchievementCategoryNames(t),
         }}
-      />
-
-      <PaginationNav
-        locale={locale}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        buildHref={buildHref}
       />
     </PageLayout>
   );

@@ -27,7 +27,7 @@ export type PublicProfilePageData = {
   gamesTotalPages: number;
   gameLikeMetaMap: Map<string, LikeMeta>;
   gameReplyMetaMap: Map<string, ReplyMeta>;
-  userAchievementRows: ProfileShellData['userAchievementRows'];
+  userAchievementGroups: ProfileShellData['userAchievementGroups'];
 };
 
 /**
@@ -107,6 +107,6 @@ export async function loadPublicProfilePageData({
     gamesTotalPages,
     gameLikeMetaMap,
     gameReplyMetaMap,
-    userAchievementRows: shell.userAchievementRows,
+    userAchievementGroups: shell.userAchievementGroups,
   };
 }
