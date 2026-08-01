@@ -6,7 +6,7 @@
  * chess.js-free.
  */
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { formatMovesToPgn, getStartingFen } from '@blindfold-chess/features/chess-core';
@@ -17,6 +17,7 @@ import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getLinkedOpenings } from '@/lib/repertoires/opening-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
+import { truncate } from '@/lib/text';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/OpeningTag';
@@ -26,7 +27,7 @@ import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/Mov
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
@@ -43,14 +44,61 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+/**
+ * Cut-off for the meta description built from the author's free-text course
+ * description (`REPERTOIRE_DESCRIPTION_MAX` allows 2000 chars). Search results
+ * show roughly 150–160 characters; anything past that is dead weight.
+ */
+const META_DESCRIPTION_MAX = 160;
+
+/**
+ * The course description is a multi-line textarea; its newlines and blank
+ * lines survive into the `content` attribute verbatim, so collapse runs of
+ * whitespace into single spaces before truncating (otherwise the cut-off can
+ * also land inside a run of blank lines and spend the budget on nothing).
+ */
+function toMetaDescription(text: string | null): string | undefined {
+  return truncate(text?.replace(/\s+/g, ' ').trim(), META_DESCRIPTION_MAX) || undefined;
+}
+
+/**
+ * The course's own name is the title — kata names routinely carry the opening
+ * they cover ("London System", "クイーンズギャンビット"), which is the whole
+ * search value of this page; a shared static "Kata" title threw that away and
+ * made every course's tab/SERP entry indistinguishable. The canonical must
+ * likewise point at this course, not at the `/repertoires` list (which is what
+ * the shared static metadata emitted — telling Google every detail page was a
+ * duplicate of the index, i.e. not worth indexing at all).
+ *
+ * The row is fetched through the same viewer-gated query the page body uses
+ * (React-cached, so this costs no extra round-trip). A course the viewer can't
+ * see gets the generic title and `noindex` — the page body 404s anyway — and
+ * so do the non-`public` tiers, which are deliberately absent from the sitemap.
+ */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  return createPageMetadata({
-    params,
-    namespace: 'Repertoires',
-    path: 'repertoires',
-    titleKey: 'detail.title',
-    omitDescription: true,
-  });
+  const { locale, id } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'Repertoires' });
+
+  const currentUser = await getOptionalUser();
+  const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
+  if (!data) {
+    return {
+      title: resolveTitle(t('detail.title'), locale),
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const { repertoire } = data;
+  const title = repertoire.name;
+  const description = toMetaDescription(repertoire.description);
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: `repertoires/${id}`, title, description }),
+    title: resolveTitle(title, locale),
+    ...(description && { description }),
+    ...(repertoire.status !== 'public' && { robots: { index: false, follow: false } }),
+  };
 }
 
 export default async function RepertoireDetailPage({ params, searchParams }: Props) {
