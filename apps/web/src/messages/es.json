@@ -285,6 +285,30 @@
       "changeBodyFree": "¿Cambiar este Kata a «{tier}»? Ya has desbloqueado este nivel: no se necesitan monedas.",
       "changeConfirm": "Cambiar",
       "current": "Actual: {tier}"
+    },
+    "chunks": {
+      "title": "Chunks aplicables",
+      "empty": "Aún no hay chunks vinculados a esta posición.",
+      "placeholder": "Busca chunks para añadir…",
+      "suggest": "Sugerir un chunk",
+      "linkedAction": "{count, plural, =1 {vinculó un chunk} other {vinculó # chunks}}",
+      "delete": "Eliminar",
+      "confirmUnlinkTitle": "¿Desvincular este chunk?",
+      "confirmUnlinkBody": "Se quitará de esta posición.",
+      "confirmCancel": "Cancelar",
+      "noResults": "No hay chunks coincidentes",
+      "moreItemsHint": "+{count} más",
+      "remove": "Quitar {title}",
+      "badge": "Chunk",
+      "draftBadge": "Busca sugerencias",
+      "submit": "Vincular {count}",
+      "submitting": "Vinculando…",
+      "errors": {
+        "alreadyLinked": "Ese chunk ya está vinculado a esta posición.",
+        "chunkNotAvailable": "Ese chunk no está disponible.",
+        "rateLimited": "Demasiadas acciones. Inténtalo de nuevo más tarde.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
     }
   },
   "embed": {

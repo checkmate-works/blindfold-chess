@@ -285,6 +285,30 @@
       "changeBodyFree": "Change this Kata to “{tier}”? You’ve already unlocked this tier — no coins needed.",
       "changeConfirm": "Change",
       "current": "Currently: {tier}"
+    },
+    "chunks": {
+      "title": "Applicable chunks",
+      "empty": "No chunks linked to this position yet.",
+      "placeholder": "Search chunks to add…",
+      "suggest": "Suggest a chunk",
+      "linkedAction": "{count, plural, =1 {linked a chunk} other {linked # chunks}}",
+      "delete": "Delete",
+      "confirmUnlinkTitle": "Unlink this chunk?",
+      "confirmUnlinkBody": "It will be removed from this position.",
+      "confirmCancel": "Cancel",
+      "noResults": "No matching chunks",
+      "moreItemsHint": "+{count} more",
+      "remove": "Remove {title}",
+      "badge": "Chunk",
+      "draftBadge": "Feedback wanted",
+      "submit": "Link {count}",
+      "submitting": "Linking…",
+      "errors": {
+        "alreadyLinked": "That chunk is already linked to this position.",
+        "chunkNotAvailable": "That chunk isn't available.",
+        "rateLimited": "Too many actions. Please try again later.",
+        "generic": "Something went wrong. Please try again."
+      }
     }
   },
   "embed": {

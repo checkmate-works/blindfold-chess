@@ -12,9 +12,14 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { formatMovesToPgn, generatePgn } from '@blindfold-chess/features/chess-core';
+import { formatMovesToPgn, generatePgn, toPositionKey } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
+import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
+import type { ChunkOption } from '@/lib/chunks/types';
+import { getCommentUserProfile } from '@/lib/db/game-comments';
+import { listRepertoireChunks } from '@/lib/db/repertoire-chunks';
+import type { RepertoireChunkItem } from '@/lib/db/repertoire-chunks';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
 import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 import { buildPositionTopicKey } from '@/lib/repertoires/position-topic-key';
@@ -29,6 +34,7 @@ import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { LineChunksSection } from './_components/LineChunksSection';
 import { LineDetailBoard } from './_components/LineDetailBoard';
 import { LineNavList } from './_components/LineNavList';
 import { MoveCommentsSection } from './_components/MoveCommentsSection';
@@ -167,6 +173,24 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
     playerColor: repertoire.side,
   };
 
+  // Chunk links, grouped by position — fetched for the whole repertoire (not
+  // just the current position) so re-linking after the picker's optimistic
+  // update stays cheap; only the current position's bucket is ever rendered,
+  // since `router.replace` re-renders this Server Component on every move.
+  let currentPositionChunks: RepertoireChunkItem[] = [];
+  let currentPositionKey = '';
+  let availableChunks: ChunkOption[] = [];
+  if (sans.length > 0) {
+    const [allChunks, linkable] = await Promise.all([
+      listRepertoireChunks(id),
+      getLinkableChunkOptionsForViewer(currentUser?.id ?? null),
+    ]);
+    availableChunks = linkable;
+    currentPositionKey = toPositionKey(positions[initialPly].fen);
+    currentPositionChunks = allChunks.filter((c) => c.positionKey === currentPositionKey);
+  }
+  const currentUserProfile = currentUser ? await getCommentUserProfile(currentUser.id) : null;
+
   return (
     <PageLayout
       title={lineName}
@@ -231,6 +255,24 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           ) : undefined
         }
       />
+
+      {sans.length > 0 && (
+        // Keyed on the position so navigating to a different move (via
+        // `LineDetailBoard`'s `router.replace`) remounts the section instead
+        // of carrying stale staged/optimistic state across positions — see
+        // `useRepertoireChunkLinks`'s TSDoc.
+        <LineChunksSection
+          key={currentPositionKey}
+          repertoireId={id}
+          lineNo={lineNo}
+          ply={initialPly}
+          items={currentPositionChunks}
+          availableChunks={availableChunks}
+          currentUser={currentUserProfile}
+          isOwner={isOwner}
+          locale={locale}
+        />
+      )}
 
       {sans.length > 0 && (
         <MoveCommentsSection
