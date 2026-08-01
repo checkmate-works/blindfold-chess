@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Button, TextInput } from '@/app/_components';
+import { Button, FieldError, TextInput, fieldErrorProps } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateUsername } from '@blindfold-chess/features/username';
 
@@ -109,8 +109,14 @@ export function UsernameForm({ locale }: Props) {
           maxLength={20}
           autoFocus
           autoComplete="off"
+          invalid={error !== null}
+          {...fieldErrorProps('username-error', error)}
         />
-        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+        {/* Every rejection this form has is about the username (the display
+            name is optional and unvalidated), so it renders here rather than
+            in a banner — via FieldError, which announces it and ties it to
+            the input for screen readers. */}
+        <FieldError id="username-error" message={error} />
         <ul className="mt-2 list-disc list-inside space-y-0.5">
           <li className="text-xs text-destructive">{t('cannotChange')}</li>
           <li className="text-xs text-muted-foreground">{t('inappropriateWarning')}</li>

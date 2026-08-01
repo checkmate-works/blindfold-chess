@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { Button, FormErrorBanner } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { MAX_DESCRIPTION_LENGTH, MAX_TITLE_LENGTH } from '@/lib/games/publish-constants';
@@ -137,7 +137,9 @@ export function EditGameClient({
         />
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {/* Both verdicts here (not yours to edit / unexpected failure) belong
+          to the form, not to the title or description box. */}
+      <FormErrorBanner message={error} />
 
       <Button
         variant="primary"

@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { Button, FieldError, FormErrorBanner, fieldErrorProps } from '@/app/_components';
 
 import { type RedeemAdFreeResult, redeemAdFree } from '../_actions/redeemAdFree';
 
@@ -41,11 +41,19 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
   const t = useTranslations('MypagePoints');
   const router = useRouter();
   const [amount, setAmount] = useState<number>(Math.min(1, balance));
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const [success, setSuccess] = useState<{ days: number } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const days = amount * daysPerPoint;
+
+  // The two verdicts about the number typed in the box are shown at the box;
+  // the rest (not signed in, banned, rate-limited) belong to no control.
+  const amountError =
+    error?.code === 'invalid_amount' || error?.code === 'insufficient_balance'
+      ? error.message
+      : null;
+  const formError = error && amountError === null ? error.message : null;
 
   const handleAmountChange = (raw: string) => {
     const parsed = Number.parseInt(raw, 10);
@@ -62,7 +70,7 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
     startTransition(async () => {
       const result: RedeemAdFreeResult = await redeemAdFree(amount);
       if (!result.ok) {
-        setError(t(`redeem.errors.${result.error}`));
+        setError({ code: result.error, message: t(`redeem.errors.${result.error}`) });
         return;
       }
       setSuccess({ days: result.durationDays });
@@ -101,14 +109,19 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
 
       <div className="flex items-center gap-2">
         <input
+          id="redeem-amount"
           type="number"
           min={1}
           max={balance}
           step={1}
           value={amount}
           onChange={(e) => handleAmountChange(e.target.value)}
-          className="w-24 rounded-md border border-border bg-background px-3 py-1.5 text-sm"
+          aria-label={t('redeem.amountLabel')}
+          className={`w-24 rounded-md border bg-background px-3 py-1.5 text-sm ${
+            amountError ? 'border-destructive' : 'border-border'
+          }`}
           disabled={pending}
+          {...fieldErrorProps('redeem-amount-error', amountError)}
         />
         <span className="text-sm text-muted-foreground">{t('redeem.pointSuffix')}</span>
         <span className="text-sm text-muted-foreground">→</span>
@@ -117,11 +130,13 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
         </span>
       </div>
 
+      <FieldError id="redeem-amount-error" message={amountError} />
+
       <Button onClick={handleSubmit} disabled={pending} variant="primary">
         {pending ? t('redeem.submitting') : t('redeem.submit', { amount })}
       </Button>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      <FormErrorBanner message={formError} />
       {success && (
         <p className="text-sm text-foreground">
           {t('redeem.successMessage', { days: success.days })}

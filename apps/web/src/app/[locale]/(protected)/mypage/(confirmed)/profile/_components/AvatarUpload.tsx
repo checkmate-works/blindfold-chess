@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 
 import Image from 'next/image';
 
+import { FieldError } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import * as Sentry from '@sentry/nextjs';
 
@@ -116,11 +117,19 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
 
   return (
     <div className="flex flex-col items-center gap-3">
+      {/* The rejection is about the file just chosen, so it is described by
+          this button rather than the file input — that input is hidden (the
+          button opens the picker) and so can be neither focused nor
+          announced. */}
       <button
         type="button"
         onClick={handleClick}
         disabled={isUploading}
-        className="relative h-24 w-24 rounded-full overflow-hidden border-2 border-border hover:border-accent transition-colors focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-invalid={error !== null || undefined}
+        aria-describedby={error ? 'avatar-error' : undefined}
+        className={`relative h-24 w-24 rounded-full overflow-hidden border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed ${
+          error ? 'border-destructive' : 'border-border hover:border-accent'
+        }`}
       >
         {previewUrl ? (
           <Image
@@ -163,7 +172,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
         aria-label={t('avatarUploadLabel')}
       />
       <p className="text-xs text-muted-foreground">{t('avatarHint')}</p>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      <FieldError id="avatar-error" message={error} />
     </div>
   );
 }

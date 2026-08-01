@@ -3825,6 +3825,7 @@
     "redeem": {
       "title": "Resgatar moedas por tempo sem anúncios",
       "description": "Cada moeda vira um dia sem anúncios. Os dias são somados ao tempo sem anúncios que você já possui.",
+      "amountLabel": "Moedas a resgatar",
       "pointSuffix": "moedas",
       "daysReceived": "{days, plural, one {# dia} other {# dias}} sem anúncios",
       "submit": "Resgatar {amount} moedas",
