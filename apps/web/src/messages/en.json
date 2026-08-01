@@ -3650,7 +3650,13 @@
         "ownerCannotPropose": "You can't suggest edits to your own chunk — edit it directly instead.",
         "chunkNotDraft": "This chunk is settled and is not accepting suggestions right now.",
         "alreadyHasPending": "You already have a pending suggestion for this chunk. Withdraw it first if you want to propose something different.",
-        "blocked": "You can't suggest edits to this user's content."
+        "blocked": "You can't suggest edits to this user's content.",
+        "titleTooLong": "That title is too long.",
+        "titleUnchanged": "That's the title it already has — change it to suggest something.",
+        "descriptionTooLong": "That description is too long.",
+        "descriptionUnchanged": "That's the description it already has — change it to suggest something.",
+        "nothingProposed": "Change the title or the description before suggesting an edit.",
+        "commentTooLong": "That explanation is too long."
       }
     }
   },

@@ -3650,7 +3650,13 @@
         "ownerCannotPropose": "Você não pode sugerir edições no seu próprio chunk — edite-o diretamente.",
         "chunkNotDraft": "Este chunk já está definido e não está aceitando sugestões no momento.",
         "alreadyHasPending": "Você já tem uma sugestão pendente para este chunk. Retire-a primeiro se quiser propor algo diferente.",
-        "blocked": "Você não pode sugerir edições ao conteúdo deste usuário."
+        "blocked": "Você não pode sugerir edições ao conteúdo deste usuário.",
+        "titleTooLong": "Esse título é longo demais.",
+        "titleUnchanged": "É o título que ele já tem — altere-o para propor algo.",
+        "descriptionTooLong": "Essa descrição é longa demais.",
+        "descriptionUnchanged": "É a descrição que ele já tem — altere-a para propor algo.",
+        "nothingProposed": "Altere o título ou a descrição antes de propor uma edição.",
+        "commentTooLong": "Essa explicação é longa demais."
       }
     }
   },

@@ -44,6 +44,23 @@ function normalizeDescription(value: string | null | undefined): string | null {
   return trimmed.length === 0 ? null : trimmed;
 }
 
+/**
+ * Why a submission was rejected, as a code the UI translates.
+ *
+ * Codes rather than sentences: this validator's verdict travels through the
+ * mutation's `{ error }` to a client that has no way to translate a finished
+ * English string — it used to render one verbatim, so a Japanese proposer was
+ * told "Comment must be 2000 characters or fewer". A code also names which
+ * control is at fault, which is where the message belongs (see `FieldError`).
+ */
+export type ChunkEditRequestValidationError =
+  | 'titleTooLong'
+  | 'titleUnchanged'
+  | 'descriptionTooLong'
+  | 'descriptionUnchanged'
+  | 'nothingProposed'
+  | 'commentTooLong';
+
 export type ValidatedEditRequest = {
   /** Trimmed title when proposed; absent when the request targets only the description. */
   proposedTitle: string | null;
@@ -66,24 +83,23 @@ export type ValidatedEditRequest = {
  * keeps the UI honest — a no-op suggestion would just clutter the
  * owner's review queue.
  *
- * @returns A `ValidatedEditRequest` on success, or an error message
- *   string when the payload is invalid. The shape mirrors the
- *   `validateChunkMutationData` contract for consistency.
+ * @returns A `ValidatedEditRequest` on success, or a
+ *   {@link ChunkEditRequestValidationError} code when the payload is invalid.
  */
 export function validateSubmitEditRequest(
   payload: SubmitEditRequestPayload,
   current: CurrentChunkSnapshot
-): ValidatedEditRequest | string {
+): ValidatedEditRequest | ChunkEditRequestValidationError {
   const trimmedTitle =
     typeof payload.proposedTitle === 'string' ? payload.proposedTitle.trim() : '';
   const titleSupplied = typeof payload.proposedTitle === 'string' && trimmedTitle.length > 0;
 
   if (titleSupplied) {
     if (trimmedTitle.length > CHUNK_TITLE_MAX_LENGTH) {
-      return `Proposed title must be ${CHUNK_TITLE_MAX_LENGTH} characters or fewer`;
+      return 'titleTooLong';
     }
     if (trimmedTitle === current.title.trim()) {
-      return 'Proposed title is identical to the current title';
+      return 'titleUnchanged';
     }
   }
 
@@ -96,21 +112,21 @@ export function validateSubmitEditRequest(
       normalizedDescription !== null &&
       normalizedDescription.length > CHUNK_EDIT_REQUEST_DESCRIPTION_MAX_LENGTH
     ) {
-      return `Proposed description must be ${CHUNK_EDIT_REQUEST_DESCRIPTION_MAX_LENGTH} characters or fewer`;
+      return 'descriptionTooLong';
     }
     const currentNormalized = normalizeDescription(current.description);
     if (normalizedDescription === currentNormalized) {
-      return 'Proposed description is identical to the current description';
+      return 'descriptionUnchanged';
     }
   }
 
   if (!titleSupplied && !descriptionSupplied) {
-    return 'At least one of title or description must be proposed';
+    return 'nothingProposed';
   }
 
   const trimmedComment = typeof payload.comment === 'string' ? payload.comment.trim() : '';
   if (trimmedComment.length > EDIT_REQUEST_COMMENT_MAX_LENGTH) {
-    return `Comment must be ${EDIT_REQUEST_COMMENT_MAX_LENGTH} characters or fewer`;
+    return 'commentTooLong';
   }
 
   return {
