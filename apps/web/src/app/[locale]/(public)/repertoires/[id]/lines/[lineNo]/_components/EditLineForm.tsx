@@ -13,6 +13,10 @@ type Props = {
   repertoireId: string;
   lineNo: number;
   initialName: string;
+  /** The repertoire's chapters — the sections this line can be re-filed into. */
+  chapters: readonly { id: string; name: string }[];
+  /** The chapter the line is currently filed under; null is unfiled. */
+  initialChapterId: string | null;
   initialPgn: string;
   /** The repertoire's side — orients the board in board mode. */
   side: RepertoireSide;
@@ -44,8 +48,8 @@ export function EditLineForm({ repertoireId, lineNo, ...rest }: Props) {
       repertoireId={repertoireId}
       cancelHref={lineHref}
       submitLabels={{ idle: t('save'), saving: t('saving') }}
-      saveLine={async ({ name, pgn }) => {
-        const result = await updateLine({ repertoireId, lineNo, name, pgn });
+      saveLine={async ({ name, chapterId, pgn }) => {
+        const result = await updateLine({ repertoireId, lineNo, name, chapterId, pgn });
         return result.ok
           ? { ok: true, nextHref: `${lineHref}?toast=line_updated` }
           : { ok: false, error: result.error };

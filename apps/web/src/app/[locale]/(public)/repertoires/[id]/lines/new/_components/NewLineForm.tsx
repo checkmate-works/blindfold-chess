@@ -17,6 +17,8 @@ type Props = {
    * through the diverging move). Empty for a blank new line.
    */
   initialPgn: string;
+  /** The repertoire's chapters — the sections the new line can be filed into. */
+  chapters: readonly { id: string; name: string }[];
   /** Existing "why this move" notes, keyed by position key. */
   initialAnnotations: Record<string, string>;
   /** Existing board markup (arrows / circles), keyed by position key. */
@@ -38,10 +40,13 @@ export function NewLineForm({ repertoireId, ...rest }: Props) {
       {...rest}
       repertoireId={repertoireId}
       initialName=""
+      // Unfiled by default: a new line has no chapter until its author picks
+      // one, and the kata check's "add this line" lands here with only moves.
+      initialChapterId={null}
       cancelHref={`/repertoires/${repertoireId}`}
       submitLabels={{ idle: tNew('submit'), saving: tNew('saving') }}
-      saveLine={async ({ name, pgn }) => {
-        const result = await addLine({ repertoireId, name, pgn });
+      saveLine={async ({ name, chapterId, pgn }) => {
+        const result = await addLine({ repertoireId, name, chapterId, pgn });
         return result.ok
           ? {
               ok: true,

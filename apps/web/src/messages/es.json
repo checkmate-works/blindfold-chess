@@ -192,6 +192,8 @@
         "breadcrumb": "Editar",
         "nameLabel": "Título",
         "namePlaceholder": "Nombre opcional para esta línea",
+        "chapterLabel": "Capítulo",
+        "chapterUnfiled": "Sin clasificar",
         "pgnLabel": "Jugadas (PGN)",
         "pgnHelp": "Edita la secuencia de jugadas. Las anotaciones y los comentarios siguen asociados a sus posiciones.",
         "save": "Guardar",
@@ -200,6 +202,7 @@
         "errors": {
           "unauthorized": "Solo el propietario puede editar esta línea.",
           "notFound": "Esta línea ya no existe.",
+          "invalidChapter": "Ese capítulo ya no existe. Recarga la página.",
           "nameTooLong": "El título es demasiado largo.",
           "pgnRequired": "Introduce las jugadas.",
           "pgnTooLarge": "El PGN es demasiado grande.",

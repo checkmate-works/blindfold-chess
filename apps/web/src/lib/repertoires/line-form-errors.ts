@@ -15,9 +15,12 @@ import type { RepertoireLineEditError } from './validation';
 export const KNOWN_LINE_FORM_ERRORS: ReadonlySet<string> = new Set([
   'unauthorized',
   'notFound',
+  'invalidChapter',
   'nameTooLong',
   'pgnRequired',
   'pgnTooLarge',
   'invalidPgn',
   'noMoves',
-] as const satisfies readonly ('unauthorized' | 'notFound' | RepertoireLineEditError)[]);
+] as const satisfies readonly (
+  'unauthorized' | 'notFound' | 'invalidChapter' | RepertoireLineEditError
+)[]);

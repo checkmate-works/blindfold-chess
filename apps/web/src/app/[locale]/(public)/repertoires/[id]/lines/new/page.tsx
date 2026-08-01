@@ -11,7 +11,7 @@ import { notFound } from 'next/navigation';
 import { getOptionalUser } from '@/lib/auth';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
-import { getRepertoireForViewer } from '@/lib/repertoires/queries';
+import { getRepertoireForViewer, listChaptersForRepertoire } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -67,6 +67,10 @@ export default async function NewRepertoireLinePage({ params, searchParams }: Pr
       .map(([key, v]) => [key, v.shapes])
   );
 
+  // The sections the line can be filed into. Empty for a course with no
+  // chapters, which hides the picker rather than offering only "unfiled".
+  const chapters = await listChaptersForRepertoire(id);
+
   return (
     <PageLayout
       title={t('line.new.title')}
@@ -82,6 +86,7 @@ export default async function NewRepertoireLinePage({ params, searchParams }: Pr
       <NewLineForm
         repertoireId={id}
         side={repertoire.side}
+        chapters={chapters}
         initialPgn={initialPgn}
         initialAnnotations={initialAnnotations}
         initialShapes={initialShapes}

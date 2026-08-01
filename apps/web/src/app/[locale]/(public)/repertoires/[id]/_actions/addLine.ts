@@ -9,6 +9,7 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 export async function addLine(input: {
   repertoireId: string;
   name: string | null;
+  chapterId: string | null;
   pgn: string;
 }): Promise<AddLineResult | { ok: false; error: string }> {
   const guard = await authenticateAndGuard(RATE_LIMITS.addRepertoireLine);
@@ -17,6 +18,7 @@ export async function addLine(input: {
     repertoireId: input.repertoireId,
     viewerId: guard.user.id,
     name: input.name,
+    chapterId: input.chapterId,
     pgn: input.pgn,
   });
   return result;

@@ -14,6 +14,7 @@ export async function updateLine(input: {
   repertoireId: string;
   lineNo: number;
   name: string | null;
+  chapterId: string | null;
   pgn: string;
 }): Promise<UpdateLineResult | { ok: false; error: string }> {
   const guard = await authenticateAndGuard(RATE_LIMITS.updateRepertoireLine);
@@ -23,6 +24,7 @@ export async function updateLine(input: {
     lineNo: input.lineNo,
     viewerId: guard.user.id,
     name: input.name,
+    chapterId: input.chapterId,
     pgn: input.pgn,
   });
   return result;

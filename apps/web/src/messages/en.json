@@ -192,6 +192,8 @@
         "breadcrumb": "Edit",
         "nameLabel": "Title",
         "namePlaceholder": "Optional name for this line",
+        "chapterLabel": "Chapter",
+        "chapterUnfiled": "Unfiled",
         "pgnLabel": "Moves (PGN)",
         "pgnHelp": "Edit the move sequence. Annotations and comments stay attached to their positions.",
         "save": "Save",
@@ -200,6 +202,7 @@
         "errors": {
           "unauthorized": "Only the owner can edit this line.",
           "notFound": "This line no longer exists.",
+          "invalidChapter": "That chapter no longer exists. Please reload the page.",
           "nameTooLong": "The title is too long.",
           "pgnRequired": "Please enter the moves.",
           "pgnTooLarge": "The PGN is too large.",

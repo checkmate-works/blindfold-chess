@@ -14,7 +14,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
 import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
-import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
+import { getRepertoireLineForViewer, listChaptersForRepertoire } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -71,6 +71,10 @@ export default async function EditRepertoireLinePage({ params }: Props) {
       .map(([key, v]) => [key, v.shapes])
   );
 
+  // The sections this line can be re-filed into. Empty for a course with no
+  // chapters, which hides the picker rather than offering only "unfiled".
+  const chapters = await listChaptersForRepertoire(id);
+
   return (
     <PageLayout
       title={t('line.edit.title')}
@@ -88,6 +92,8 @@ export default async function EditRepertoireLinePage({ params }: Props) {
         repertoireId={id}
         lineNo={lineNo}
         initialName={line.name ?? ''}
+        chapters={chapters}
+        initialChapterId={line.chapterId}
         initialPgn={line.pgn}
         side={repertoire.side}
         initialAnnotations={initialAnnotations}
