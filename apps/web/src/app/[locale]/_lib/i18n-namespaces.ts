@@ -102,6 +102,7 @@ export const NAMESPACE_CLASSIFICATION = {
   onboardingProfile: 'client',
   onboardingWizard: 'client',
   openingSearch: 'client',
+  pgnDiagnosis: 'client',
   pgnInput: 'client',
   play: 'client',
   playError: 'client',

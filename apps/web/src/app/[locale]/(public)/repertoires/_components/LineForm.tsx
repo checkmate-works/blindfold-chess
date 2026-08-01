@@ -21,6 +21,7 @@ import { saveAnnotation } from '@/app/[locale]/(public)/repertoires/[id]/lines/[
 import { saveShapes } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/saveShapes';
 import { MoveAnnotationField } from '@/app/[locale]/(public)/repertoires/_components/MoveAnnotationField';
 import { RepertoireBoardBuilder } from '@/app/[locale]/(public)/repertoires/_components/RepertoireBoardBuilder';
+import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
 
 /**
  * Outcome of persisting the line row itself. On success the caller names the
@@ -272,6 +273,10 @@ export function LineForm({
             )}
           </>
         )}
+        {/* Outside the mode branch on purpose: board mode is where an
+            unreadable PGN is hardest to notice (the builder just shows the
+            starting position), so the reason has to be visible there too. */}
+        <PgnDiagnosisHint pgn={pgn} id="line-pgn-error" />
       </div>
 
       <FormErrorBanner message={error} />

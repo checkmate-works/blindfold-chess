@@ -853,13 +853,17 @@
     "completeSuggestion": "✨ Completar \"{suggestion}\"",
     "tabToComplete": "💡 Presiona Tab para completar \"{suggestion}\"",
     "validWithMoves": "{count, plural, one {✓ PGN válido con # movimiento} other {✓ PGN válido con # movimientos}}",
-    "invalidPgn": "Formato PGN inválido",
-    "invalidMove": "\"{move}\" es un movimiento inválido",
     "clear": "Borrar PGN",
     "clearConfirmTitle": "¿Borrar el PGN?",
     "clearConfirmMessage": "Esto borrará el texto pegado. Esta acción no se puede deshacer.",
     "clearConfirmButton": "Borrar",
     "clearConfirmCancel": "Cancelar"
+  },
+  "pgnDiagnosis": {
+    "illegalMove": "No se puede jugar {san} en la jugada {moveNumber}, ply {ply}",
+    "illegalMoveUnlocated": "\"{san}\" es un movimiento inválido",
+    "noMoves": "Este PGN no contiene jugadas.",
+    "unreadable": "No se pudo leer este PGN. Revisa la notación."
   },
   "error": {
     "title": "¡Algo salió mal!",

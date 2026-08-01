@@ -853,13 +853,17 @@
     "completeSuggestion": "✨ Complete \"{suggestion}\"",
     "tabToComplete": "💡 Press Tab to complete \"{suggestion}\"",
     "validWithMoves": "{count, plural, one {✓ Valid PGN with # move} other {✓ Valid PGN with # moves}}",
-    "invalidPgn": "Invalid PGN format",
-    "invalidMove": "\"{move}\" is an invalid move",
     "clear": "Clear PGN",
     "clearConfirmTitle": "Clear PGN?",
     "clearConfirmMessage": "This will erase the pasted text. This can't be undone.",
     "clearConfirmButton": "Clear",
     "clearConfirmCancel": "Cancel"
+  },
+  "pgnDiagnosis": {
+    "illegalMove": "Can't play {san} at move {moveNumber}, ply {ply}",
+    "illegalMoveUnlocated": "\"{san}\" is an invalid move",
+    "noMoves": "This PGN has no moves.",
+    "unreadable": "This PGN could not be read. Check the notation."
   },
   "error": {
     "title": "Something went wrong!",

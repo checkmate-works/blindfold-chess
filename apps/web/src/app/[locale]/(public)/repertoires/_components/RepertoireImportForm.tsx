@@ -23,6 +23,7 @@ import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoir
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
 
 import { createRepertoire } from '../_actions/createRepertoire';
 import { MoveAnnotationField } from './MoveAnnotationField';
@@ -326,6 +327,10 @@ export function RepertoireImportForm({
             )}
           </>
         )}
+        {/* Outside the mode branch on purpose: board mode is where an
+            unreadable PGN is hardest to notice (the builder just shows the
+            starting position), so the reason has to be visible there too. */}
+        <PgnDiagnosisHint pgn={pgn} id="repertoire-pgn-error" />
       </div>
 
       {phase === 'opening' && (

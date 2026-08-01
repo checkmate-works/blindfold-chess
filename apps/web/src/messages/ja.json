@@ -853,13 +853,17 @@
     "completeSuggestion": "✨ \"{suggestion}\" を補完",
     "tabToComplete": "💡 Tab キーで \"{suggestion}\" を補完",
     "validWithMoves": "{count, plural, other {✓ 有効なPGN（#手）}}",
-    "invalidPgn": "無効なPGN形式",
-    "invalidMove": "「{move}」は無効な手です",
     "clear": "PGNをクリア",
     "clearConfirmTitle": "PGNをクリアしますか?",
     "clearConfirmMessage": "貼り付けたテキストが消去されます。この操作は取り消せません。",
     "clearConfirmButton": "クリア",
     "clearConfirmCancel": "キャンセル"
+  },
+  "pgnDiagnosis": {
+    "illegalMove": "{san} は指せません（{moveNumber}手目 / ply {ply}）",
+    "illegalMoveUnlocated": "「{san}」は無効な手です",
+    "noMoves": "この PGN には手が含まれていません。",
+    "unreadable": "この PGN を読み取れませんでした。記譜を確認してください。"
   },
   "error": {
     "title": "エラーが発生しました",
