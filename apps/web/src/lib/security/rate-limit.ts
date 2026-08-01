@@ -119,6 +119,8 @@ export const RATE_LIMITS = {
   editGameComment: { action: 'edit_game_comment', maxAttempts: 30, windowMs: 3_600_000 },
   /** Per-user limit for linking a chunk to a shared game's move. */
   linkGameChunk: { action: 'link_game_chunk', maxAttempts: 30, windowMs: 3_600_000 },
+  /** Per-user limit for linking a chunk to a repertoire position. */
+  linkRepertoireChunk: { action: 'link_repertoire_chunk', maxAttempts: 30, windowMs: 3_600_000 },
   /**
    * Opening post limit is keyed per topicKey — use `createOpeningPostAction(slug)` to
    * build the action string (e.g., 'create_opening_post:french-defense').
