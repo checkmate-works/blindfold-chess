@@ -3444,6 +3444,7 @@
       "positionsDescription": "Problemas em que este padrão de chunk é eficaz.",
       "positionsEmpty": "Ainda não há posições que usem este chunk.",
       "relatedGamesDescription": "Partidas em que este chunk apareceu.",
+      "relatedRepertoiresDescription": "Kata cujas linhas usam este chunk.",
       "positionBadge": {
         "puzzle": "Problema",
         "memory": "Memória"
@@ -5202,10 +5203,16 @@
         "pageTitle": "Comentário do Chunk"
       },
       "relatedGames": {
-        "tabsLabel": "Posições, partidas relacionadas e comentários",
+        "tabsLabel": "Posições, partidas relacionadas, kata e comentários",
         "tab": "Partidas relacionadas",
         "empty": "Ainda não há partidas que usem este chunk.",
         "moveLabel": "Lance {n}"
+      },
+      "relatedRepertoires": {
+        "tab": "Kata",
+        "empty": "Ainda não há kata que usem este chunk.",
+        "browseCta": "Ver kata",
+        "lineMoveLabel": "Linha {line} · Lance {n}"
       },
       "postDetail": {
         "authorView": "Opinião de {author} sobre {name}",

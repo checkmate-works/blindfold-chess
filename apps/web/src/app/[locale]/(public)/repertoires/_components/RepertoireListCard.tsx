@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { getTranslations } from 'next-intl/server';
 
 import type { RepertoireCardMeta } from '@/lib/repertoires/card-meta';
@@ -23,6 +25,11 @@ type Props = {
    * choice in another flow (e.g. the kata check's picker).
    */
   detailHref?: string;
+  /**
+   * Extra context row rendered under the description (CatalogListCard's
+   * `meta` slot) — e.g. the chunk detail page's line/move deep-link chips.
+   */
+  metaRow?: ReactNode;
 };
 
 /**
@@ -39,6 +46,7 @@ export async function RepertoireListCard({
   locale,
   showPhase = true,
   detailHref,
+  metaRow,
 }: Props) {
   const { repertoire, profile, thumbnailFen } = card;
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
@@ -59,6 +67,7 @@ export async function RepertoireListCard({
       justNowLabel={t('justNow')}
       locale={locale}
       topicKey={repertoire.id}
+      meta={metaRow}
       badge={
         <RepertoireChips
           locale={locale}

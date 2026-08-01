@@ -3411,6 +3411,7 @@
       "positionsDescription": "このチャンクパターンが効果的な問題。",
       "positionsEmpty": "このチャンクを使ったポジションはまだありません。",
       "relatedGamesDescription": "このチャンクが出現した対局。",
+      "relatedRepertoiresDescription": "このチャンクをラインで使っている型。",
       "positionBadge": {
         "puzzle": "パズル",
         "memory": "記憶"
@@ -5202,10 +5203,16 @@
         "pageTitle": "チャンクコメント"
       },
       "relatedGames": {
-        "tabsLabel": "ポジション・関連ゲーム・コメント",
+        "tabsLabel": "ポジション・関連ゲーム・型・コメント",
         "tab": "関連ゲーム",
         "empty": "このチャンクを使っているゲームはまだありません。",
         "moveLabel": "{n}手目"
+      },
+      "relatedRepertoires": {
+        "tab": "型",
+        "empty": "このチャンクを使っている型はまだありません。",
+        "browseCta": "型を見る",
+        "lineMoveLabel": "ライン{line}・{n}手目"
       },
       "postDetail": {
         "authorView": "{author}さんの「{name}」についてのコメント",
