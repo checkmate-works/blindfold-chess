@@ -28,6 +28,8 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   account_deleted: { messageKey: 'accountDeleted', type: 'success' },
   position_created: { messageKey: 'positionCreated', type: 'success' },
   position_deleted: { messageKey: 'positionDeleted', type: 'success' },
+  repertoire_updated: { messageKey: 'repertoireUpdated', type: 'success' },
+  repertoire_published: { messageKey: 'repertoirePublished', type: 'success' },
   line_updated: { messageKey: 'lineUpdated', type: 'success' },
   line_added: { messageKey: 'lineAdded', type: 'success' },
   lines_reordered: { messageKey: 'linesReordered', type: 'success' },

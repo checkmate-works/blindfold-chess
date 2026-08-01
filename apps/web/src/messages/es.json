@@ -23,12 +23,13 @@
     "description": "Katas compartidos por la comunidad: líneas de apertura, patrones de mate y secuencias memorizadas.",
     "sectionTitle": "Katas de la comunidad",
     "status": {
-      "building": "En progreso",
+      "building": "Borrador",
+      "buildingHint": "Solo tú puedes ver este kata hasta que lo publiques.",
       "followersOnly": "Solo seguidores",
       "private": "Privado"
     },
     "building": {
-      "sectionTitle": "Tu kata en progreso"
+      "sectionTitle": "Tus katas en borrador"
     },
     "help": {
       "label": "Sobre los katas",
@@ -237,12 +238,15 @@
       "cancel": "Cancelar"
     },
     "publish": {
-      "bannerTitle": "Este kata todavía está en progreso",
-      "bannerDescription": "Solo tú puedes verlo hasta que lo publiques.",
-      "needsLine": "Agrega al menos una línea antes de poder publicarlo.",
       "button": "Publicar",
+      "pending": "Publicando…",
+      "needsLineTitle": "Agrega una línea antes de publicar",
+      "needsLineMessage": "Un kata es una secuencia de jugadas para ensayar, así que necesita al menos una línea para que otros puedan seguirla. Agrega una primero; podrás volver y publicar una vez guardada.",
+      "needsLineCta": "Agregar una línea",
+      "draftToggleLabel": "Mantener como borrador",
+      "draftToggleHint": "Un borrador solo lo ves tú. Desmárcalo para publicar este kata al guardar: la publicación es irreversible, aunque después puedes hacerlo privado.",
       "confirmTitle": "¿Publicar este kata?",
-      "confirmMessage": "Una vez publicado, este kata será visible para todos y podrá compararse con tus partidas. No podrás volver a marcarlo como en progreso — después solo podrás hacerlo privado.",
+      "confirmMessage": "Una vez publicado, este kata será visible para todos y podrá compararse con tus partidas. No podrás volver a marcarlo como borrador — después solo podrás hacerlo privado.",
       "confirm": "Publicar",
       "cancel": "Cancelar",
       "errors": {
@@ -4033,6 +4037,8 @@
     "positionCreated": "Posición creada con éxito",
     "positionDeleted": "Problema eliminado",
     "positionUpdated": "Cambios guardados",
+    "repertoireUpdated": "Cambios guardados",
+    "repertoirePublished": "Kata publicado",
     "lineUpdated": "Línea actualizada",
     "lineAdded": "Línea añadida",
     "linesReordered": "Orden de las líneas guardado",

@@ -33,10 +33,10 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { toggleLike } from '../_actions/toggleLike';
 import { RepertoireActionsMenu } from '../_components/RepertoireActionsMenu';
 import { RepertoireChips } from '../_components/RepertoireChips';
+import { RepertoireDraftBadge } from '../_components/RepertoireDraftBadge';
 import type { RepertoireViewerLine } from '../_components/RepertoireLineViewer';
 import { RepertoireLineViewer } from '../_components/RepertoireLineViewer';
 import { RepertoireVisibilityControl } from '../_components/RepertoireVisibilityControl';
-import { PublishRepertoireBanner } from './_components/PublishRepertoireBanner';
 import { RepertoireCommentsSection } from './_components/RepertoireCommentsSection';
 
 type Props = {
@@ -116,7 +116,8 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
 
   // Owner-only visibility control needs the coins already paid on this course
   // (to preview each tier's incremental cost) and the owner's balance. Only for
-  // a published tier — a `building` draft uses the publish banner instead.
+  // a published tier — a `building` draft publishes from the "⋯" menu (or the
+  // edit form's draft toggle) instead.
   const visibilityInfo =
     isOwner && currentUser && repertoire.status !== 'building'
       ? {
@@ -155,6 +156,15 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
   return (
     <PageLayout
       title={repertoire.name}
+      /* Draft state belongs next to the title, where the chunk detail page
+         also puts it — it qualifies the whole page, not the side/phase
+         metadata row further down (which keeps the visibility chips, since
+         those sit beside the control that changes them). */
+      titleAction={
+        repertoire.status === 'building' ? (
+          <RepertoireDraftBadge label={t('status.building')} hint={t('status.buildingHint')} />
+        ) : undefined
+      }
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: repertoire.name }]}
     >
@@ -164,10 +174,6 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
           a top-level heading — a panel that opens straight into the board reads
           as unlabelled. */}
       <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
-
-      {isOwner && repertoire.status === 'building' && (
-        <PublishRepertoireBanner id={repertoire.id} locale={locale} lineCount={lines.length} />
-      )}
 
       <RepertoireLineViewer
         lines={viewerLines}
@@ -207,7 +213,8 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
             locale={locale}
             side={repertoire.side}
             phase={repertoire.phase}
-            status={repertoire.status}
+            // The draft badge is rendered next to the page title instead.
+            status={repertoire.status === 'building' ? undefined : repertoire.status}
           />
           {visibilityInfo && repertoire.status !== 'building' && (
             <RepertoireVisibilityControl
@@ -243,7 +250,16 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         createdAt={repertoire.createdAt}
         edited={repertoire.updatedAt.getTime() - repertoire.createdAt.getTime() > 1000}
         editedLabel={t('detail.edited')}
-        menu={isOwner ? <RepertoireActionsMenu id={repertoire.id} locale={locale} /> : undefined}
+        menu={
+          isOwner ? (
+            <RepertoireActionsMenu
+              id={repertoire.id}
+              locale={locale}
+              status={repertoire.status}
+              lineCount={lines.length}
+            />
+          ) : undefined
+        }
       />
 
       <div className="flex items-center text-xs text-muted-foreground">

@@ -16,7 +16,7 @@ export async function publishRepertoire(input: {
   const result = await publishRepertoireEntry(input.id);
   if ('success' in result) {
     // No revalidatePath: both routes are dynamic, and
-    // `PublishRepertoireBanner` calls `router.refresh()` on success.
+    // `RepertoireLifecycleControls` calls `router.refresh()` on success.
   }
   return result;
 }

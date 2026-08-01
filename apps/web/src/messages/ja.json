@@ -23,12 +23,13 @@
     "description": "みんなが公開している型 — オープニング、詰みパターン、覚えておきたい手順。",
     "sectionTitle": "みんなの型",
     "status": {
-      "building": "作成中",
+      "building": "下書き",
+      "buildingHint": "公開するまでは自分にしか見えません。",
       "followersOnly": "フォロワー限定",
       "private": "非公開"
     },
     "building": {
-      "sectionTitle": "作成中の型"
+      "sectionTitle": "下書きの型"
     },
     "help": {
       "label": "型とは",
@@ -237,12 +238,15 @@
       "cancel": "キャンセル"
     },
     "publish": {
-      "bannerTitle": "この型はまだ作成中です",
-      "bannerDescription": "公開するまでは自分にしか見えません。",
-      "needsLine": "公開するには、ラインを1つ以上追加してください。",
       "button": "公開する",
+      "pending": "公開中…",
+      "needsLineTitle": "公開にはラインが必要です",
+      "needsLineMessage": "型は反復して覚える手順なので、他のプレイヤーがなぞれるようラインが1つ以上必要です。先にラインを追加し、保存できたら改めて公開してください。",
+      "needsLineCta": "ラインを追加する",
+      "draftToggleLabel": "下書きのままにする",
+      "draftToggleHint": "下書きは自分にしか見えません。チェックを外して保存すると公開されます。公開は一方通行ですが、公開後に非公開にすることはできます。",
       "confirmTitle": "この型を公開しますか？",
-      "confirmMessage": "公開すると誰でも閲覧でき、対局後の型チェックの対象にもなります。公開後に作成中へ戻すことはできません — 非公開にすることはできます。",
+      "confirmMessage": "公開すると誰でも閲覧でき、対局後の型チェックの対象にもなります。公開後に下書きへ戻すことはできません — 非公開にすることはできます。",
       "confirm": "公開する",
       "cancel": "キャンセル",
       "errors": {
@@ -4033,6 +4037,8 @@
     "positionCreated": "問題を作成しました",
     "positionDeleted": "問題を削除しました",
     "positionUpdated": "変更を保存しました",
+    "repertoireUpdated": "変更を保存しました",
+    "repertoirePublished": "型を公開しました",
     "lineUpdated": "ラインを更新しました",
     "lineAdded": "ラインを追加しました",
     "linesReordered": "ラインの並び順を保存しました",
