@@ -1,3 +1,4 @@
+import { FieldError, fieldErrorProps } from './FieldError';
 import { TextInput } from './TextInput';
 import { AUTH_FORM_LABEL_CLASSES, AUTH_SUBMIT_BUTTON_CLASSES } from './authFormStyles';
 
@@ -11,6 +12,12 @@ type AuthFieldProps = {
   /** Native `minLength` — set on new-password fields. */
   minLength?: number;
   placeholder?: string;
+  /**
+   * A rejection this field owns, rendered beneath it. Pass `null` when the
+   * form's error belongs to no single field (bad credentials name neither the
+   * email nor the password) — that one stays in the form-level banner.
+   */
+  error?: string | null;
 };
 
 /**
@@ -26,6 +33,7 @@ export function AuthField({
   autoComplete,
   minLength,
   placeholder,
+  error = null,
 }: AuthFieldProps) {
   return (
     <div>
@@ -42,7 +50,10 @@ export function AuthField({
         minLength={minLength}
         autoComplete={autoComplete}
         placeholder={placeholder}
+        invalid={error !== null}
+        {...fieldErrorProps(`${id}-error`, error)}
       />
+      <FieldError id={`${id}-error`} message={error} />
     </div>
   );
 }
