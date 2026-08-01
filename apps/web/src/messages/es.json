@@ -4202,10 +4202,16 @@
         "breakdowns": {
           "topic_posts": {
             "opening": "apertura",
-            "square": "casilla"
+            "square": "casilla",
+            "chunk": "chunk",
+            "position_memory": "memoria de posiciones",
+            "position_puzzle": "puzzle",
+            "repertoire": "kata",
+            "repertoire_move": "jugada de kata"
           },
           "positions": {
-            "memory": "memoria"
+            "memory": "memoria",
+            "puzzle": "puzzle"
           },
           "chunks": {
             "draft": "borrador",

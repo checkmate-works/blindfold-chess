@@ -4202,10 +4202,16 @@
         "breakdowns": {
           "topic_posts": {
             "opening": "オープニング",
-            "square": "マス目"
+            "square": "マス目",
+            "chunk": "チャンク",
+            "position_memory": "ポジションの記憶",
+            "position_puzzle": "パズル",
+            "repertoire": "型",
+            "repertoire_move": "型の手"
           },
           "positions": {
-            "memory": "メモリー"
+            "memory": "メモリー",
+            "puzzle": "パズル"
           },
           "chunks": {
             "draft": "下書き",

@@ -116,7 +116,21 @@ export default async function AdminDashboardPage({
             breakdownLabels: {
               'topic_posts.opening': t('dashboardKpi.summaryTable.breakdowns.topic_posts.opening'),
               'topic_posts.square': t('dashboardKpi.summaryTable.breakdowns.topic_posts.square'),
+              'topic_posts.chunk': t('dashboardKpi.summaryTable.breakdowns.topic_posts.chunk'),
+              'topic_posts.position_memory': t(
+                'dashboardKpi.summaryTable.breakdowns.topic_posts.position_memory'
+              ),
+              'topic_posts.position_puzzle': t(
+                'dashboardKpi.summaryTable.breakdowns.topic_posts.position_puzzle'
+              ),
+              'topic_posts.repertoire': t(
+                'dashboardKpi.summaryTable.breakdowns.topic_posts.repertoire'
+              ),
+              'topic_posts.repertoire_move': t(
+                'dashboardKpi.summaryTable.breakdowns.topic_posts.repertoire_move'
+              ),
               'positions.memory': t('dashboardKpi.summaryTable.breakdowns.positions.memory'),
+              'positions.puzzle': t('dashboardKpi.summaryTable.breakdowns.positions.puzzle'),
               'chunks.draft': t('dashboardKpi.summaryTable.breakdowns.chunks.draft'),
               'chunks.published': t('dashboardKpi.summaryTable.breakdowns.chunks.published'),
               'games.stockfish': t('dashboardKpi.summaryTable.breakdowns.games.stockfish'),

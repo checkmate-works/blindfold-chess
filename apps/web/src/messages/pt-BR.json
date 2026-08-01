@@ -4230,10 +4230,16 @@
         "breakdowns": {
           "topic_posts": {
             "opening": "abertura",
-            "square": "casa"
+            "square": "casa",
+            "chunk": "chunk",
+            "position_memory": "memória de posições",
+            "position_puzzle": "puzzle",
+            "repertoire": "kata",
+            "repertoire_move": "lance de kata"
           },
           "positions": {
-            "memory": "memória"
+            "memory": "memória",
+            "puzzle": "puzzle"
           },
           "chunks": {
             "draft": "rascunho",
