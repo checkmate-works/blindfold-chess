@@ -15,7 +15,7 @@ const IDLE_MAX = 10;
 
 type Props = {
   availableChunks: ChunkOption[];
-  /** Chunk ids already linked to this move — hidden from the suggestions. */
+  /** Chunk ids already linked to this move/position — hidden from the suggestions. */
   linkedChunkIds: Set<string>;
   disabled?: boolean;
   onSelect: (chunk: ChunkOption) => void;
@@ -29,12 +29,13 @@ type Props = {
 };
 
 /**
- * Searchable chunk selector for linking a chunk to a game's move.
- * A focused, chunk-only adaptation of the puzzle/position `TagPicker` combobox:
- * select a chunk → `onSelect` fires (the caller links it via a server action) →
- * the input clears for the next pick.
+ * Searchable chunk selector for linking a chunk to a position (a shared
+ * game's move, or a repertoire line's position). A focused, chunk-only
+ * adaptation of the puzzle/position `TagPicker` combobox: select a chunk →
+ * `onSelect` fires (the caller links it via a server action) → the input
+ * clears for the next pick.
  */
-export function GameChunkPicker({
+export function ChunkPicker({
   availableChunks,
   linkedChunkIds,
   disabled = false,

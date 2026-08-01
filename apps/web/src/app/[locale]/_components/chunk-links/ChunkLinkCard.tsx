@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { GameChunkItem } from '@/lib/db/game-chunks';
+import type { ChunkLinkCardItem } from '@/lib/chunks/types';
 
 import { formatAbsoluteDateTime } from '@/app/[locale]/(public)/topics/_lib/absolute-time';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -13,9 +11,9 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ChunkRefLink } from './ChunkRefLink';
 
-type Props = {
+type Props<T extends ChunkLinkCardItem> = {
   /** A run of consecutive links by the same suggester (non-empty). */
-  items: GameChunkItem[];
+  items: T[];
   badge: string;
   /**
    * Badge substituted for `badge` on links pointing at a draft chunk. A
@@ -25,9 +23,19 @@ type Props = {
   draftBadge: string;
   locale: Locale;
   /** Whether the viewer may unlink a given link (owner / the suggester). */
-  canRemove: (item: GameChunkItem) => boolean;
+  canRemove: (item: T) => boolean;
   /** Unlink a chunk; resolves with a localized `error` on failure. */
-  onRemove: (item: GameChunkItem) => Promise<{ error?: string }>;
+  onRemove: (item: T) => Promise<{ error?: string }>;
+  labels: {
+    /** "{actor} linked N chunks" system line, pluralized on `items.length`. */
+    linkedAction: (count: number) => string;
+    remove: (title: string) => string;
+    delete: string;
+    confirmUnlinkTitle: string;
+    confirmUnlinkBody: string;
+    confirmCancel: string;
+    deletedUser: string;
+  };
 };
 
 /**
@@ -40,20 +48,23 @@ type Props = {
  * below it, when permitted) sits where an attachment would. Like / reply do not
  * apply, so they are absent. Grouping keeps one person's batch of links to a
  * single header instead of repeating the avatar per link.
+ *
+ * Generic over `T extends ChunkLinkCardItem` (rather than a concrete game- or
+ * repertoire-scoped item type) and takes its copy via `labels` — the two
+ * features that use this card each source those strings from their own i18n
+ * namespace (`sharedGames.chunks.*` / `Repertoires.chunks.*`).
  */
-export function GameChunkLinkCard({
+export function ChunkLinkCard<T extends ChunkLinkCardItem>({
   items,
   badge,
   draftBadge,
   locale,
   canRemove,
   onRemove,
-}: Props) {
-  const t = useTranslations('sharedGames');
-  const tCommon = useTranslations('Common');
-
+  labels,
+}: Props<T>) {
   // The chunk pending unlink-confirmation, plus the modal's loading / error.
-  const [deleteTarget, setDeleteTarget] = useState<GameChunkItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<T | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -74,12 +85,11 @@ export function GameChunkLinkCard({
   // from the most recent link in the run.
   const head = items[0];
   const latest = items[items.length - 1];
-  const displayName =
-    head.suggester?.displayName || head.suggester?.username || tCommon('deletedUser');
+  const displayName = head.suggester?.displayName || head.suggester?.username || labels.deletedUser;
   const profileHref = head.suggester?.username ? `/u/${head.suggester.username}` : null;
 
   return (
-    <li id={`game-chunk-${head.id}`} className="scroll-mt-20">
+    <li id={`chunk-link-${head.id}`} className="scroll-mt-20">
       <div className="flex items-start gap-2">
         {/* Spacer matching a comment root's collapse (+/−) button, so the
             content column aligns with the comment thread. */}
@@ -102,7 +112,7 @@ export function GameChunkLinkCard({
           {/* System-generated line (not a user-authored body) — muted to
               distinguish it from an actual comment. */}
           <p className="text-sm text-muted-foreground italic leading-relaxed">
-            {t('chunks.linkedAction', { count: items.length })}
+            {labels.linkedAction(items.length)}
           </p>
 
           <ul className="space-y-3">
@@ -123,10 +133,10 @@ export function GameChunkLinkCard({
                       setDeleteError(null);
                       setDeleteTarget(item);
                     }}
-                    aria-label={t('chunks.remove', { title: item.title })}
+                    aria-label={labels.remove(item.title)}
                     className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                   >
-                    {t('chunks.delete')}
+                    {labels.delete}
                   </button>
                 )}
               </li>
@@ -137,10 +147,10 @@ export function GameChunkLinkCard({
 
       <ConfirmationModal
         isOpen={deleteTarget !== null}
-        title={t('chunks.confirmUnlinkTitle')}
-        message={t('chunks.confirmUnlinkBody')}
-        confirmText={t('chunks.delete')}
-        cancelText={t('chunks.confirmCancel')}
+        title={labels.confirmUnlinkTitle}
+        message={labels.confirmUnlinkBody}
+        confirmText={labels.delete}
+        cancelText={labels.confirmCancel}
         confirmVariant="danger"
         isLoading={deletePending}
         error={deleteError}

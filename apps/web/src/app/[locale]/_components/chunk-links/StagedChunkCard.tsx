@@ -20,9 +20,10 @@ type Props = {
  * A chunk in the staging list (before submit): the shared chunk-reference card
  * with a corner × to drop it from the staging set. The × is a sibling of the
  * link so it is not a button nested in an anchor. Posted (linked) chunks use
- * the comment-styled `GameChunkLinkCard` instead.
+ * the comment-styled `ChunkLinkCard` instead. Shared as-is by the shared-game
+ * and repertoire chunk-linking pickers.
  */
-export function GameChunkCard({
+export function StagedChunkCard({
   slug,
   title,
   description,

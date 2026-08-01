@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import type { GameChunkItem } from '@/lib/db/game-chunks';
-
 import { groupChunkLinksBySuggester } from './group-chunk-links';
+import type { ChunkLinkCardItem } from './types';
 
-function link(id: string, suggestedById: string | null): GameChunkItem {
+function link(id: string, suggestedById: string | null): ChunkLinkCardItem {
   return {
     id,
-    ply: 0,
     chunkId: `c-${id}`,
     slug: id,
     title: id,
@@ -20,7 +18,7 @@ function link(id: string, suggestedById: string | null): GameChunkItem {
   };
 }
 
-const ids = (groups: GameChunkItem[][]) => groups.map((g) => g.map((i) => i.id));
+const ids = (groups: ChunkLinkCardItem[][]) => groups.map((g) => g.map((i) => i.id));
 
 describe('groupChunkLinksBySuggester', () => {
   it('merges consecutive links by the same suggester into one group', () => {

@@ -26,3 +26,29 @@ export type ChunkOption = {
    */
   status: ChunkStatus;
 };
+
+/**
+ * The shape a "chunk linked to a position" list item needs to render as a
+ * `ChunkLinkCard` — shared by `GameChunkItem` (`db/game-chunks.ts`, keyed by
+ * `gameId` + `ply`) and `RepertoireChunkItem` (`db/repertoire-chunks.ts`,
+ * keyed by `repertoireId` + `positionKey`). The card itself only ever reads
+ * these fields, so it is written against this structural type rather than
+ * either concrete item — letting both features share one card without a
+ * union or a game/repertoire branch inside it.
+ */
+export type ChunkLinkCardItem = {
+  id: string;
+  chunkId: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  representativeFen: string;
+  status: ChunkStatus;
+  createdAt: Date;
+  suggestedById: string | null;
+  suggester: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  } | null;
+};

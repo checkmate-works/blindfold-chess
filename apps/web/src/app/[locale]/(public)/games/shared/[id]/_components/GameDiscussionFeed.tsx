@@ -6,18 +6,18 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 import { FiChevronRight } from 'react-icons/fi';
 
+import { groupChunkLinksBySuggester } from '@/lib/chunks/group-chunk-links';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+import { ChunkLinkCard } from '@/app/[locale]/_components/chunk-links/ChunkLinkCard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildDiscussionGroups } from '../_lib/build-discussion-groups';
 import { buildGameCommentTree } from '../_lib/game-comment-tree';
-import { groupChunkLinksBySuggester } from '../_lib/group-chunk-links';
 import { formatPlyLabel } from '../_lib/replay-derivations';
 import { DiscussionCommentRow } from './DiscussionCommentRow';
-import { GameChunkLinkCard } from './GameChunkLinkCard';
 
 type Props = {
   /** All comments for the game (every ply). */
@@ -57,6 +57,7 @@ export function GameDiscussionFeed({
   locale,
 }: Props) {
   const t = useTranslations('sharedGames');
+  const tCommon = useTranslations('Common');
 
   const groups = useMemo(
     () => buildDiscussionGroups(comments, gameChunks).filter((g) => g.ply !== null),
@@ -102,7 +103,7 @@ export function GameDiscussionFeed({
           {group.chunks.length > 0 && (
             <ul className="space-y-6">
               {groupChunkLinksBySuggester(group.chunks).map((run) => (
-                <GameChunkLinkCard
+                <ChunkLinkCard
                   key={run[0].id}
                   items={run}
                   badge={t('chunks.badge')}
@@ -110,6 +111,15 @@ export function GameDiscussionFeed({
                   locale={locale}
                   canRemove={() => false}
                   onRemove={NOOP_REMOVE}
+                  labels={{
+                    linkedAction: (count) => t('chunks.linkedAction', { count }),
+                    remove: (title) => t('chunks.remove', { title }),
+                    delete: t('chunks.delete'),
+                    confirmUnlinkTitle: t('chunks.confirmUnlinkTitle'),
+                    confirmUnlinkBody: t('chunks.confirmUnlinkBody'),
+                    confirmCancel: t('chunks.confirmCancel'),
+                    deletedUser: tCommon('deletedUser'),
+                  }}
                 />
               ))}
             </ul>

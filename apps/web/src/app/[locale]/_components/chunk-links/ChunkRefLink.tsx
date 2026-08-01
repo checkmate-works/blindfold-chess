@@ -20,8 +20,10 @@ type Props = {
  * The chunk-reference card: the shared `TagCardContent` (themed mini-board +
  * badge + title + description, same inner markup as the puzzle / position
  * "Useful patterns" `RelatedTagCard`) in a horizontal card linking to the
- * chunk page. Shared by the staged-preview card (`GameChunkCard`) and the
- * comment-styled linked-chunk row (`GameChunkLinkCard`).
+ * chunk page. Shared by the staged-preview card (`StagedChunkCard`) and the
+ * comment-styled linked-chunk row (`ChunkLinkCard`) — reused as-is by both
+ * the shared-game and repertoire chunk-linking features, since it has no
+ * dependency on either parent.
  */
 export function ChunkRefLink({
   slug,

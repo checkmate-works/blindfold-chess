@@ -5,20 +5,20 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 import { FaBrain } from 'react-icons/fa';
 
+import { groupChunkLinksBySuggester } from '@/lib/chunks/group-chunk-links';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
+import { ChunkLinkCard } from '@/app/[locale]/_components/chunk-links/ChunkLinkCard';
+import { ChunkPicker } from '@/app/[locale]/_components/chunk-links/ChunkPicker';
+import { StagedChunkCard } from '@/app/[locale]/_components/chunk-links/StagedChunkCard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameChunkLinks } from '../_hooks/use-game-chunk-links';
 import { useGameCommentThread } from '../_hooks/use-game-comment-thread';
 import { groupReplies } from '../_lib/game-comment-tree';
-import { groupChunkLinksBySuggester } from '../_lib/group-chunk-links';
-import { GameChunkCard } from './GameChunkCard';
-import { GameChunkLinkCard } from './GameChunkLinkCard';
-import { GameChunkPicker } from './GameChunkPicker';
 import { type CommentUser, GameCommentProvider } from './GameCommentContext';
 import { GameCommentForm } from './GameCommentForm';
 import { GameCommentNode } from './GameCommentNode';
@@ -78,6 +78,7 @@ export function GameMoveContributions({
   playerColor,
 }: Props) {
   const t = useTranslations('sharedGames');
+  const tCommon = useTranslations('Common');
   const currentUserId = currentUser?.id;
 
   const thread = useGameCommentThread({ gameId, currentPly, comments, currentUser });
@@ -129,7 +130,7 @@ export function GameMoveContributions({
             icon={<FaBrain aria-hidden="true" className="text-muted-foreground" />}
           >
             <div className="space-y-3">
-              <GameChunkPicker
+              <ChunkPicker
                 availableChunks={availableChunks}
                 linkedChunkIds={links.excludedChunkIds}
                 disabled={links.submitting}
@@ -146,7 +147,7 @@ export function GameMoveContributions({
                 <>
                   <ul className="space-y-2">
                     {links.staged.map((c) => (
-                      <GameChunkCard
+                      <StagedChunkCard
                         key={c.id}
                         slug={c.slug}
                         title={c.label}
@@ -209,7 +210,7 @@ export function GameMoveContributions({
       {links.forPly.length > 0 && (
         <ul className="space-y-6">
           {groupChunkLinksBySuggester(links.forPly).map((group) => (
-            <GameChunkLinkCard
+            <ChunkLinkCard
               key={group[0].id}
               items={group}
               badge={t('chunks.badge')}
@@ -217,6 +218,15 @@ export function GameMoveContributions({
               locale={locale}
               canRemove={links.canRemove}
               onRemove={(item) => links.handleRemoveSaved(item.id)}
+              labels={{
+                linkedAction: (count) => t('chunks.linkedAction', { count }),
+                remove: (title) => t('chunks.remove', { title }),
+                delete: t('chunks.delete'),
+                confirmUnlinkTitle: t('chunks.confirmUnlinkTitle'),
+                confirmUnlinkBody: t('chunks.confirmUnlinkBody'),
+                confirmCancel: t('chunks.confirmCancel'),
+                deletedUser: tCommon('deletedUser'),
+              }}
             />
           ))}
         </ul>
