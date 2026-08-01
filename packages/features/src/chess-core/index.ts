@@ -67,6 +67,9 @@ export {
   parsePgnMoveSequence,
 } from "./pgn";
 
+export type { PgnDiagnosis } from "./pgn-diagnosis";
+export { diagnosePgn, diagnoseChessJsPgnError } from "./pgn-diagnosis";
+
 export type { MoveTreeNode, PgnTree, PgnParseFailure } from "./pgn-tree";
 export {
   parsePgnTree,

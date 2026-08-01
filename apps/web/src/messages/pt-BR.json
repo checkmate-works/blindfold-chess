@@ -78,8 +78,6 @@
       "pgnLabel": "PGN",
       "pgnHelp": "Cole um PGN com variantes — exportações de estudos do Lichess ou do Chess.com funcionam como estão.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
-      "pgnErrorIllegalMove": "Não é possível jogar {san} no lance {moveNumber}, ply {ply}",
-      "pgnErrorUnreadable": "Não foi possível ler este PGN. Verifique a notação.",
       "submit": "Criar kata",
       "submitting": "Criando…",
       "inputModePgn": "PGN",
@@ -855,13 +853,17 @@
     "completeSuggestion": "✨ Completar \"{suggestion}\"",
     "tabToComplete": "💡 Pressione Tab para completar \"{suggestion}\"",
     "validWithMoves": "{count, plural, one {✓ PGN válido com # movimento} other {✓ PGN válido com # movimentos}}",
-    "invalidPgn": "Formato PGN inválido",
-    "invalidMove": "\"{move}\" é um movimento inválido",
     "clear": "Limpar PGN",
     "clearConfirmTitle": "Limpar o PGN?",
     "clearConfirmMessage": "Isso apagará o texto colado. Essa ação não pode ser desfeita.",
     "clearConfirmButton": "Limpar",
     "clearConfirmCancel": "Cancelar"
+  },
+  "pgnDiagnosis": {
+    "illegalMove": "Não é possível jogar {san} no lance {moveNumber}, ply {ply}",
+    "illegalMoveUnlocated": "\"{san}\" é um movimento inválido",
+    "noMoves": "Este PGN não contém lances.",
+    "unreadable": "Não foi possível ler este PGN. Verifique a notação."
   },
   "error": {
     "title": "Algo deu errado!",

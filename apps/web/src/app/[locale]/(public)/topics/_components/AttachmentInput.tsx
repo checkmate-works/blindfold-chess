@@ -6,6 +6,8 @@ import { Textarea } from '@/app/_components';
 
 import { detectAttachmentInput } from '@/lib/games/validation';
 
+import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
+
 import { pgnSubModeError, urlSubModeError } from '../_lib/attachment-sub-mode-error';
 
 /**
@@ -36,8 +38,7 @@ import { pgnSubModeError, urlSubModeError } from '../_lib/attachment-sub-mode-er
  *   - Free text that is neither a PGN body nor an accepted URL.
  */
 export type AttachmentInputMode =
-  | { kind: 'empty' }
-  | { kind: 'pgn'; pgn: string; anonymize: boolean };
+  { kind: 'empty' } | { kind: 'pgn'; pgn: string; anonymize: boolean };
 
 /**
  * Validation status surfaced to the parent so it can disable the
@@ -222,7 +223,16 @@ function PgnInput({ value, onChange, previewError }: PgnInputProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
-      {previewError && <p className="text-xs text-destructive">{previewError}</p>}
+      {previewError ? (
+        <p className="text-xs text-destructive">{previewError}</p>
+      ) : (
+        /* Only once the paste is PGN-*shaped*: the shape error already
+           explains a Lichess URL or free text, and two complaints about one
+           textarea help nobody. Best-effort — the server's `validateAttachedPgn`
+           (chess.js) remains the authority and Apply stays enabled, so a PGN
+           the two parsers disagree about is still attachable. */
+        <PgnDiagnosisHint pgn={value} id="attachmentPgn-error" />
+      )}
     </div>
   );
 }

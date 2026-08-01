@@ -1,8 +1,10 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { diagnoseChessJsPgnError, diagnosePgn } from '@blindfold-chess/features/chess-core';
+import type { PgnDiagnosis } from '@blindfold-chess/features/chess-core';
 
 import { validatePgnWithDetails } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
+import { usePgnDiagnosisMessage } from '@/app/[locale]/_hooks/use-pgn-diagnosis-message';
 
 type UsePgnValidationOptions = {
   /**
@@ -32,12 +34,19 @@ type UsePgnValidationOptions = {
  * This hook deliberately does NOT debounce internally. See
  * {@link UsePgnValidationOptions.debouncedValue} for the caller contract and
  * the reason (chess.js parsing cost on every render).
+ *
+ * Validity is chess.js's verdict, unchanged — this screen has always accepted
+ * exactly what `loadPgn` accepts, and narrowing that silently is not a message
+ * improvement. Only the *explanation* is upgraded: `diagnosePgn` re-parses the
+ * rejected text to locate the offending move ("Can't play d7 at move 8, ply
+ * 16"), and chess.js's own wording is consulted only when the two parsers
+ * disagree — from inside chess-core, where knowing that wording belongs.
  */
 export function usePgnValidation({
   debouncedValue,
   showValidation = true,
 }: UsePgnValidationOptions) {
-  const t = useTranslations('pgnInput');
+  const format = usePgnDiagnosisMessage();
 
   const validationResult =
     showValidation && debouncedValue.trim() ? validatePgnWithDetails(debouncedValue) : null;
@@ -45,41 +54,21 @@ export function usePgnValidation({
   const showSuccess = Boolean(showValidation && validationResult?.valid && debouncedValue.trim());
   const showError = Boolean(showValidation && validationResult && !validationResult.valid);
 
-  // Extract invalid move from error message
-  const getInvalidMove = (): string | null => {
-    if (!validationResult?.error) {
-      return null;
-    }
+  const diagnosis: PgnDiagnosis | null = showError
+    ? (diagnosePgn(debouncedValue) ?? diagnoseChessJsPgnError(validationResult?.error ?? ''))
+    : null;
 
-    // Parse "Invalid move in PGN: xyz" pattern (older chess.js)
-    const moveErrorMatch = validationResult.error.match(/Invalid move in PGN: (.+)/);
-    if (moveErrorMatch) {
-      return moveErrorMatch[1];
-    }
-
-    // Parse 'Expected ... but "X" found.' pattern (newer chess.js PGN parser)
-    const parserErrorMatch = validationResult.error.match(/but "(.+)" found/);
-    if (parserErrorMatch) {
-      return parserErrorMatch[1];
-    }
-
-    return null;
-  };
-
-  const invalidMove = getInvalidMove();
-
-  // Get translated error message
-  const getErrorMessage = (): string => {
-    if (invalidMove) {
-      return t('invalidMove', { move: invalidMove });
-    }
-    return t('invalidPgn');
-  };
+  // The move name, when we have one — `PgnInput` turns the message into a
+  // button that selects that text in the textarea.
+  const invalidMove =
+    diagnosis?.code === 'illegalMove' || diagnosis?.code === 'illegalMoveUnlocated'
+      ? diagnosis.san
+      : null;
 
   return {
     showSuccess,
     showError,
     invalidMove,
-    errorMessage: showError ? getErrorMessage() : null,
+    errorMessage: format(diagnosis),
   };
 }
