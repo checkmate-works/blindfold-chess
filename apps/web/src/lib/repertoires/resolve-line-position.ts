@@ -3,10 +3,31 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, repertoireChapters, repertoireLines } from '@/lib/db';
 
+import type { LinePosition, ScannableLine } from './line-position-scan';
+import { scanLinesForPositionKeys } from './line-position-scan';
 import { positionHash } from './position-topic-key';
 import { linesInDisplayOrder } from './queries';
 
 export type ResolvedLinePosition = { lineNo: number; ply: number };
+
+/**
+ * A repertoire's live lines in display order (chapter, then within-chapter —
+ * `seq` alone would interleave chapters now that it is chapter-scoped), so a
+ * "first match" over them is the first line a reader scanning the sidebar
+ * would meet.
+ */
+async function fetchScannableLines(repertoireId: string): Promise<ScannableLine[]> {
+  return db
+    .select({
+      pgn: repertoireLines.pgn,
+      startingFen: repertoireLines.startingFen,
+      lineNo: repertoireLines.lineNo,
+    })
+    .from(repertoireLines)
+    .leftJoin(repertoireChapters, eq(repertoireChapters.id, repertoireLines.chapterId))
+    .where(and(eq(repertoireLines.repertoireId, repertoireId), isNull(repertoireLines.deletedAt)))
+    .orderBy(...linesInDisplayOrder);
+}
 
 /**
  * Find a concrete (lineNo, ply) in a repertoire that reaches the position a
@@ -19,19 +40,7 @@ export async function resolveLineForPosition(
   repertoireId: string,
   targetHash: string
 ): Promise<ResolvedLinePosition | null> {
-  // Display order (chapter, then within-chapter — `seq` alone would interleave
-  // chapters now that it is chapter-scoped), so "first match" here is the first
-  // line a reader scanning the sidebar would meet.
-  const lines = await db
-    .select({
-      pgn: repertoireLines.pgn,
-      startingFen: repertoireLines.startingFen,
-      lineNo: repertoireLines.lineNo,
-    })
-    .from(repertoireLines)
-    .leftJoin(repertoireChapters, eq(repertoireChapters.id, repertoireLines.chapterId))
-    .where(and(eq(repertoireLines.repertoireId, repertoireId), isNull(repertoireLines.deletedAt)))
-    .orderBy(...linesInDisplayOrder);
+  const lines = await fetchScannableLines(repertoireId);
 
   for (const line of lines) {
     let sans: string[] = [];
@@ -49,4 +58,21 @@ export async function resolveLineForPosition(
     }
   }
   return null;
+}
+
+/**
+ * Batch sibling of {@link resolveLineForPosition}, keyed by full
+ * `position_key`s (not hashes): resolve each key to the first (lineNo, ply)
+ * that reaches it, in one replay pass over the repertoire's lines. Keys no
+ * live line reaches are absent from the result — the caller treats those
+ * links as orphaned (`repertoire_chunks` display contract: stop rendering,
+ * don't garbage-collect). Used by the chunk detail page's Kata tab to turn a
+ * position-keyed link into a `?move=` deep link.
+ */
+export async function resolveLinePositionsForKeys(
+  repertoireId: string,
+  positionKeys: Iterable<string>
+): Promise<Map<string, LinePosition>> {
+  const lines = await fetchScannableLines(repertoireId);
+  return scanLinesForPositionKeys(lines, positionKeys);
 }
