@@ -3544,9 +3544,9 @@
       "referenceWarning": {
         "body": "You are changing the {fields}, and {scope} already point at this chunk. Those links stay attached, but what they claim changes with it.",
         "hint": "Nobody is notified. If the pattern itself is now a different one, consider creating a separate chunk instead.",
-        "scopeBoth": "{positions, plural, =1 {1 position} other {# positions}} and {games, plural, =1 {1 game move} other {# game moves}}",
         "scopePositions": "{count, plural, =1 {1 position} other {# positions}}",
         "scopeGames": "{count, plural, =1 {1 game move} other {# game moves}}",
+        "scopeRepertoires": "{count, plural, =1 {1 kata} other {# kata}}",
         "separator": ", ",
         "fields": {
           "title": "title",

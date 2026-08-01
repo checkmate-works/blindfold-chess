@@ -133,7 +133,7 @@ export default async function ChunkEditRequestsPage({ params, searchParams }: Pr
         viewerId={user?.id ?? null}
         ownerId={chunk.userId}
         viewerHasPending={viewerPendingRequestId !== null}
-        referenceCount={references.positions + references.games}
+        referenceCount={references.positions + references.games + references.repertoires}
         focusTopic={focusTopic}
         locale={locale}
       />

@@ -3544,9 +3544,9 @@
       "referenceWarning": {
         "body": "Você vai mudar {fields}, e já há {scope} apontando para este chunk. Esses vínculos continuam, mas o que eles afirmam muda junto.",
         "hint": "Ninguém é notificado. Se o padrão passou a ser outro, considere criar um chunk separado em vez de reescrever este.",
-        "scopeBoth": "{positions, plural, =1 {1 posição} other {# posições}} e {games, plural, =1 {1 lance de partida} other {# lances de partidas}}",
         "scopePositions": "{count, plural, =1 {1 posição} other {# posições}}",
         "scopeGames": "{count, plural, =1 {1 lance de partida} other {# lances de partidas}}",
+        "scopeRepertoires": "{count, plural, =1 {1 kata} other {# kata}}",
         "separator": ", ",
         "fields": {
           "title": "o título",

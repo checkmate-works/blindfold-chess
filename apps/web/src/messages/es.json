@@ -3544,9 +3544,9 @@
       "referenceWarning": {
         "body": "Vas a cambiar {fields}, y ya hay {scope} que apuntan a este chunk. Esos enlaces se mantienen, pero lo que afirman cambia con la edición.",
         "hint": "No se notifica a nadie. Si el patrón pasa a ser otro distinto, plantéate crear un chunk aparte en lugar de reescribir este.",
-        "scopeBoth": "{positions, plural, =1 {1 posición} other {# posiciones}} y {games, plural, =1 {1 jugada de partida} other {# jugadas de partidas}}",
         "scopePositions": "{count, plural, =1 {1 posición} other {# posiciones}}",
         "scopeGames": "{count, plural, =1 {1 jugada de partida} other {# jugadas de partidas}}",
+        "scopeRepertoires": "{count, plural, =1 {1 kata} other {# kata}}",
         "separator": ", ",
         "fields": {
           "title": "el título",

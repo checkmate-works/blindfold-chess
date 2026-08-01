@@ -3544,9 +3544,9 @@
       "referenceWarning": {
         "body": "{fields}を変更しようとしていますが、すでに{scope}がこのチャンクを参照しています。紐付け自体は維持されますが、その参照が主張する内容も一緒に変わります。",
         "hint": "参照している人には通知されません。パターン自体が別物になるのであれば、既存を書き換えるのではなく新しいチャンクを作成することも検討してください。",
-        "scopeBoth": "{positions, plural, other {# 件のポジション}}と{games, plural, other {# 件の対局の手}}",
         "scopePositions": "{count, plural, other {# 件のポジション}}",
         "scopeGames": "{count, plural, other {# 件の対局の手}}",
+        "scopeRepertoires": "{count, plural, other {# 件の型}}",
         "separator": "・",
         "fields": {
           "title": "タイトル",

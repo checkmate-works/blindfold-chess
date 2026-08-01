@@ -7,6 +7,7 @@ import { ChunkPreviewClient } from './ChunkPreviewClient';
 // `body` + `hint`), exactly as the form-side tests used to do.
 vi.mock('next-intl', () => ({
   useTranslations: () => Object.assign((key: string) => key, { has: () => true }),
+  useLocale: () => 'en',
 }));
 
 vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
@@ -71,7 +72,7 @@ const EDIT_DRAFT = {
 
 function renderEdit(
   draft: Partial<typeof EDIT_DRAFT>,
-  references: { positions: number; games: number }
+  references: { positions: number; games: number; repertoires?: number }
 ) {
   readChunkDraft.mockReturnValue({ ...EDIT_DRAFT, ...draft });
   return render(
@@ -79,7 +80,7 @@ function renderEdit(
       mode="edit"
       editHref="/chunks/rook-battery/edit"
       saved={SAVED}
-      references={references}
+      references={{ repertoires: 0, ...references }}
     />
   );
 }
