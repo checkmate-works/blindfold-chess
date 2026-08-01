@@ -4223,7 +4223,8 @@
           "topic_posts": "topic_posts",
           "positions": "positions",
           "chunks": "chunks",
-          "games": "games"
+          "games": "games",
+          "repertoires": "repertoires"
         },
         "breakdowns": {
           "topic_posts": {
@@ -4240,6 +4241,12 @@
           "games": {
             "stockfish": "Stockfish",
             "maia": "Maia"
+          },
+          "repertoires": {
+            "building": "rascunho",
+            "public": "público",
+            "followers_only": "somente seguidores",
+            "private": "privado"
           }
         },
         "help": {

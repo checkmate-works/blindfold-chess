@@ -1,7 +1,7 @@
 import { and, count, gte, isNull, lte, sql } from 'drizzle-orm';
 import { type PgColumn, type PgTable } from 'drizzle-orm/pg-core';
 
-import { chunks, db, games, positions, topicPosts } from '@/lib/db';
+import { chunks, db, games, positions, repertoires, topicPosts } from '@/lib/db';
 
 import { type DailyCount, fillDateRange } from './aggregate-by-day';
 
@@ -24,7 +24,7 @@ import { type DailyCount, fillDateRange } from './aggregate-by-day';
  */
 export type UgcSource = {
   /** Stable identifier used as a key in summary responses and i18n lookups. */
-  name: 'topic_posts' | 'positions' | 'chunks' | 'games';
+  name: 'topic_posts' | 'positions' | 'chunks' | 'games' | 'repertoires';
   table: PgTable;
   createdAtColumn: PgColumn;
   deletedAtColumn: PgColumn | null;
@@ -34,7 +34,14 @@ export type UgcSource = {
    * anonymous post does not register as a phantom poster.
    */
   userIdColumn: PgColumn;
-  /** Categorical column used for per-source breakdown rows. */
+  /**
+   * Categorical column used for per-source breakdown rows.
+   *
+   * Prefer giving every source one. `KpiSummaryTable` renders no per-source
+   * total — the breakdown rows are a source's ONLY visible presence in the
+   * table — so a source with `null` here silently inflates the UGC total with
+   * nothing to attribute it to.
+   */
   breakdownColumn: PgColumn | null;
 };
 
@@ -74,6 +81,21 @@ export const UGC_SOURCES: readonly UgcSource[] = [
     deletedAtColumn: games.deletedAt,
     userIdColumn: games.authorId,
     breakdownColumn: games.engineKind,
+  },
+  {
+    // Kata (型): the course row itself. Counted from creation, not publication
+    // — the breakdown on `status` is what separates the workshop from the
+    // catalogue (`building` = the owner's draft; the other three are the
+    // visibility tiers). This mirrors chunks counting drafts and games counting
+    // every non-deleted row: the dashboard measures authoring activity, and a
+    // course written today but published next month is activity today.
+    // `created_at` (not `published_at`) is therefore the right bucket column.
+    name: 'repertoires',
+    table: repertoires,
+    createdAtColumn: repertoires.createdAt,
+    deletedAtColumn: repertoires.deletedAt,
+    userIdColumn: repertoires.userId,
+    breakdownColumn: repertoires.status,
   },
 ];
 
@@ -118,10 +140,9 @@ async function getUgcSourceCountsByDate(
 /**
  * Aggregate UGC posts per day across all configured UGC sources.
  *
- * Sums contributions from every entry in `UGC_SOURCES` (currently
- * `topic_posts` and `positions`) into a single combined series. Soft-deleted
- * rows are excluded. To add a new UGC entity, append it to `UGC_SOURCES` —
- * no changes are needed here.
+ * Sums contributions from every entry in `UGC_SOURCES` into a single combined
+ * series. Soft-deleted rows are excluded. To add a new UGC entity, append it
+ * to `UGC_SOURCES` — no changes are needed here.
  */
 export async function getPostsPerDay(
   startDate: string,
