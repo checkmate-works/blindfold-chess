@@ -4,8 +4,16 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import {
+  Button,
+  FieldError,
+  FormErrorBanner,
+  UnsavedChangesDialog,
+  fieldBorderClass,
+  fieldErrorProps,
+} from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -49,6 +57,29 @@ const WELL_KNOWN_ERRORS = new Set([
   'commentTooLong',
 ]);
 
+/** The controls a rejected submit can be anchored on. */
+type PositionEditRequestField = 'tags' | 'comment';
+
+/**
+ * Which control owns each rejection. The guard failures (`banned`,
+ * `alreadyHasPending`, `notFound`, …) own no control and stay in the
+ * form-level banner.
+ */
+const FIELD_BY_ERROR: Record<string, PositionEditRequestField> = {
+  invalidTheme: 'tags',
+  invalidChunk: 'tags',
+  invalidTagId: 'tags',
+  nothingToAdd: 'tags',
+  commentTooLong: 'comment',
+};
+
+const FIELD_ANCHOR_IDS: Record<PositionEditRequestField, string> = {
+  // The picker is a composite of comboboxes and chips with no single input to
+  // focus, so its section wrapper carries the anchor.
+  tags: 'position-edit-req-tags',
+  comment: 'position-edit-req-comment',
+};
+
 /**
  * Submitter-side form for the "Suggest tags for this position" flow,
  * covering both tag kinds the position detail page shows together in its
@@ -75,8 +106,11 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
   const [addedChunks, setAddedChunks] = useState<ChunkOption[]>([]);
   const [comment, setComment] = useState('');
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  const submitError = useSubmitError<PositionEditRequestField>((field) => FIELD_ANCHOR_IDS[field]);
+  const tagsError = submitError.messageFor('tags');
+  const commentError = submitError.messageFor('comment');
 
   const linkedThemeIds = new Set(current.themes.map((theme) => theme.id));
   const linkedChunkIds = new Set(current.chunks.map((chunk) => chunk.id));
@@ -105,7 +139,7 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    submitError.clear();
     setPending(true);
 
     const result = await submitPositionEditRequest({
@@ -117,7 +151,13 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
     setPending(false);
 
     if ('error' in result) {
-      setError(localizePositionEditRequestError(result.error, t, WELL_KNOWN_ERRORS));
+      // Shown against the control at fault — the comment cap is the reachable
+      // one (the box has no client-side limit), and it used to be reported at
+      // the top of the form, past the whole tag picker.
+      submitError.report(
+        FIELD_BY_ERROR[result.error] ?? null,
+        localizePositionEditRequestError(result.error, t, WELL_KNOWN_ERRORS)
+      );
       return;
     }
 
@@ -139,17 +179,30 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <FormErrorBanner message={error} />
+        {/* Form-wide errors only — a rejection attributable to a control is
+            rendered against that control instead. */}
+        <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
-        <TagPicker
-          selectedThemes={addedThemes}
-          selectedChunks={addedChunks}
-          availableThemes={pickableThemes}
-          availableChunks={pickableChunks}
-          disabled={pending}
-          onChange={handlePickerChange}
-          labels={pickerLabels}
-        />
+        {/* `id` + `tabIndex` make the picker block a focus target: it has no
+            single input a rejection about the chosen tags could land on. */}
+        <div
+          id="position-edit-req-tags"
+          tabIndex={-1}
+          role="group"
+          aria-label={pickerLabels.section}
+          aria-describedby={tagsError ? 'position-edit-req-tags-error' : undefined}
+        >
+          <TagPicker
+            selectedThemes={addedThemes}
+            selectedChunks={addedChunks}
+            availableThemes={pickableThemes}
+            availableChunks={pickableChunks}
+            disabled={pending}
+            onChange={handlePickerChange}
+            labels={pickerLabels}
+          />
+          <FieldError id="position-edit-req-tags-error" message={tagsError} />
+        </div>
 
         <div>
           <label htmlFor="position-edit-req-comment" className="block text-sm font-medium mb-1">
@@ -161,8 +214,10 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
             onChange={(e) => setComment(e.target.value)}
             rows={3}
             placeholder={t('fields.commentPlaceholder')}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+            className={`w-full px-3 py-2 rounded border bg-card text-foreground ${fieldBorderClass(commentError)}`}
+            {...fieldErrorProps('position-edit-req-comment-error', commentError)}
           />
+          <FieldError id="position-edit-req-comment-error" message={commentError} />
         </div>
 
         {/*
