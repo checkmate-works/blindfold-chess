@@ -21,6 +21,8 @@ import {
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
+import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
+import { listRepertoiresLinkingChunk } from '@/lib/repertoires/chunk-links';
 
 import { COMMENT_TREE_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
@@ -76,6 +78,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined, 
     viewerPendingRequestId,
     chunkLikeMeta,
     relatedGames,
+    relatedRepertoires,
   ] = await Promise.all([
     getLinkedPositionsForChunk(chunk.id),
     getPostCountByTopicKey('chunk', slug),
@@ -90,6 +93,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined, 
     getViewerPendingEditRequestForChunk(chunk.id, userId ?? null),
     getChunkLikeMeta(chunk.id, userId),
     listGamesLinkingChunk(chunk.id),
+    listRepertoiresLinkingChunk(chunk.id),
   ]);
 
   // Linked positions can mix puzzle and memory types. Reply meta is keyed by
@@ -114,6 +118,8 @@ export async function loadChunkDetail(slug: string, userId: string | undefined, 
     memoryReplyMetaMap,
     relatedGamesLikeMetaMap,
     relatedGamesReplyMetaMap,
+    // Same story for the kata cards (RepertoireListCard footer counters).
+    relatedRepertoiresCardMeta,
   ] = await Promise.all([
     linkedPositionIds.length > 0
       ? getPositionLikeMetaMap(linkedPositionIds, userId)
@@ -130,6 +136,10 @@ export async function loadChunkDetail(slug: string, userId: string | undefined, 
     relatedGameIds.length > 0
       ? getGameCommentMetaMap(relatedGameIds)
       : Promise.resolve(new Map<string, ReplyMeta>()),
+    getRepertoireCardMeta(
+      relatedRepertoires.map((r) => r.repertoire.id),
+      userId
+    ),
   ]);
   const linkedReplyMetaMap = new Map<string, ReplyMeta>([
     ...puzzleReplyMetaMap,
@@ -162,6 +172,8 @@ export async function loadChunkDetail(slug: string, userId: string | undefined, 
     relatedGames,
     relatedGamesLikeMetaMap,
     relatedGamesReplyMetaMap,
+    relatedRepertoires,
+    relatedRepertoiresCardMeta,
   };
 }
 

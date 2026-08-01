@@ -33,6 +33,7 @@ import { ChunkLifecycleControls } from '../_components/ChunkLifecycleControls';
 import { ChunkCommentsTab } from './_components/ChunkCommentsTab';
 import { ChunkGamesTab } from './_components/ChunkGamesTab';
 import { ChunkPositionsTab } from './_components/ChunkPositionsTab';
+import { ChunkRepertoiresTab } from './_components/ChunkRepertoiresTab';
 import { EditRequestCallout } from './_components/EditRequestCallout';
 import { buildDraftHelpSteps } from './_lib/build-draft-help-steps';
 import { loadChunkDetail } from './_lib/load-chunk-detail';
@@ -48,7 +49,7 @@ const searchParamsCache = createSearchParamsCache({
   tab: parseAsString,
 });
 
-const TAB_VALUES = ['positions', 'games', 'comments'] as const;
+const TAB_VALUES = ['positions', 'games', 'repertoires', 'comments'] as const;
 type ChunkTab = (typeof TAB_VALUES)[number];
 
 /**
@@ -65,10 +66,12 @@ type ChunkTab = (typeof TAB_VALUES)[number];
 function resolveDefaultChunkTab(counts: {
   positions: number;
   games: number;
+  repertoires: number;
   comments: number;
 }): ChunkTab {
   if (counts.positions > 0) return 'positions';
   if (counts.games > 0) return 'games';
+  if (counts.repertoires > 0) return 'repertoires';
   if (counts.comments > 0) return 'comments';
   return 'positions';
 }
@@ -132,6 +135,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     relatedGames,
     relatedGamesLikeMetaMap,
     relatedGamesReplyMetaMap,
+    relatedRepertoires,
+    relatedRepertoiresCardMeta,
   } = data;
 
   const tCommon = await getTranslations({ locale, namespace: 'Common' });
@@ -143,6 +148,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       : resolveDefaultChunkTab({
           positions: linkedPositions.length,
           games: relatedGames.length,
+          repertoires: relatedRepertoires.length,
           comments: commentCount,
         });
 
@@ -150,7 +156,11 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
   // sits just below the fold, so a mid-page ad above the (all-zero) tab bar
   // would only crowd the layout. Show it only when at least one tab has
   // content — the counts are already loaded, so this adds no query.
-  const hasTabContent = linkedPositions.length > 0 || relatedGames.length > 0 || commentCount > 0;
+  const hasTabContent =
+    linkedPositions.length > 0 ||
+    relatedGames.length > 0 ||
+    relatedRepertoires.length > 0 ||
+    commentCount > 0;
 
   const [t, tChunks, tEditRequests] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
@@ -332,17 +342,18 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       </div>
 
       {/*
-       * The chunk's three secondary surfaces — the positions that use this
-       * pattern, the games it shows up in, and the comment thread — each want
-       * the bottom of the page; tab between them (underline style, shared with
-       * the profile / games-list tabs) instead of stacking. The active tab is a
-       * `?tab=` query param so each panel is server-rendered on demand and a
-       * shared link reopens on the right tab — the same navigation style as the
-       * comment `?sort=` control below. With no `?tab=`, Positions opens by
-       * default (the chunk's primary training content), falling through to the
-       * first non-empty tab when Positions is empty (`resolveDefaultChunkTab`).
-       * All three tabs always render so the tab set is stable and the count
-       * tells you what's inside.
+       * The chunk's four secondary surfaces — the positions that use this
+       * pattern, the games it shows up in, the kata whose lines link it, and
+       * the comment thread — each want the bottom of the page; tab between
+       * them (underline style, shared with the profile / games-list tabs)
+       * instead of stacking. The active tab is a `?tab=` query param so each
+       * panel is server-rendered on demand and a shared link reopens on the
+       * right tab — the same navigation style as the comment `?sort=` control
+       * below. With no `?tab=`, Positions opens by default (the chunk's
+       * primary training content), falling through to the first non-empty tab
+       * when Positions is empty (`resolveDefaultChunkTab`). All four tabs
+       * always render so the tab set is stable and the count tells you what's
+       * inside.
        */}
       {/*
        * `id` + `scroll-mt-20`: lets a link from elsewhere (e.g. the home feed's
@@ -375,6 +386,11 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
               href: `/chunks/${slug}?tab=games`,
             },
             {
+              value: 'repertoires',
+              label: `${t('relatedRepertoires.tab')} (${relatedRepertoires.length})`,
+              href: `/chunks/${slug}?tab=repertoires`,
+            },
+            {
               value: 'comments',
               label: `${t('commentsTitle')} (${commentCount})`,
               href: `/chunks/${slug}?tab=comments`,
@@ -399,6 +415,14 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           games={relatedGames}
           likeMetaMap={relatedGamesLikeMetaMap}
           replyMetaMap={relatedGamesReplyMetaMap}
+        />
+      )}
+
+      {activeTab === 'repertoires' && (
+        <ChunkRepertoiresTab
+          locale={locale}
+          repertoires={relatedRepertoires}
+          cardMeta={relatedRepertoiresCardMeta}
         />
       )}
 

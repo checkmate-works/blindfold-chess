@@ -3444,6 +3444,7 @@
       "positionsDescription": "Problems where this chunk pattern is effective.",
       "positionsEmpty": "No positions use this chunk yet.",
       "relatedGamesDescription": "Games where this chunk appeared.",
+      "relatedRepertoiresDescription": "Kata whose lines use this chunk.",
       "positionBadge": {
         "puzzle": "Puzzle",
         "memory": "Memory"
@@ -5202,10 +5203,16 @@
         "pageTitle": "Chunk Comment"
       },
       "relatedGames": {
-        "tabsLabel": "Positions, related games, and comments",
+        "tabsLabel": "Positions, related games, kata, and comments",
         "tab": "Related games",
         "empty": "No games use this chunk yet.",
         "moveLabel": "Move {n}"
+      },
+      "relatedRepertoires": {
+        "tab": "Kata",
+        "empty": "No kata use this chunk yet.",
+        "browseCta": "Browse Kata",
+        "lineMoveLabel": "Line {line} · Move {n}"
       },
       "postDetail": {
         "authorView": "{author}'s thoughts on {name}",
