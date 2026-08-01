@@ -10,6 +10,7 @@ import { FaPaperclip } from 'react-icons/fa';
 
 import type { AttachAction } from '../_lib/action-types';
 import { applyAttachmentMode } from '../_lib/attachment-form-data';
+import { resolvePostFormError } from '../_lib/resolve-post-form-error';
 import { uploadPostImages } from '../_lib/upload-post-images';
 import type { AggregatedAttachmentMode } from './AttachmentModal';
 import { AttachmentModal } from './AttachmentModal';
@@ -56,6 +57,9 @@ export function AttachmentAddButton({
 }) {
   const tAdd = useTranslations('topics.addAttachment');
   const tImgErr = useTranslations('attachment.image.error');
+  // The attach actions answer with fully-qualified keys (`attachment.error.*`,
+  // `postFenAttachment.error.*`), which only the global translator can resolve.
+  const tGlobal = useTranslations();
   const router = useRouter();
 
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
@@ -109,11 +113,11 @@ export function AttachmentAddButton({
     setIsAttaching(false);
 
     if ('error' in result) {
-      // Try the page-local 'add' namespace first, then fall back to the
-      // dotted error keys the create flow uses for PGN attachments
-      // (`attachment.error.*`) and FEN attachments
-      // (`postFenAttachment.error.*`).
-      setAttachError(tAdd.has(result.error) ? tAdd(result.error) : tAdd('error'));
+      // Page-local 'add' keys first, then the dotted keys the create flow uses
+      // for PGN (`attachment.error.*`) and FEN (`postFenAttachment.error.*`)
+      // attachments — the same resolution `BasePostForm` gives the create
+      // side, so attaching later explains itself as well as attaching up front.
+      setAttachError(resolvePostFormError(result.error, tAdd, tGlobal) ?? tAdd('error'));
       return;
     }
 
