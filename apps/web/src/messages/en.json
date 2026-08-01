@@ -670,7 +670,8 @@
         "chunk_published": "Chunk published",
         "new_game": "New games",
         "new_comment_on_topic": "Comments on your posts",
-        "game_chunk_linked": "Chunks linked to your games"
+        "game_chunk_linked": "Chunks linked to your games",
+        "repertoire_chunk_linked": "Chunks linked to your Kata"
       }
     }
   },
@@ -3928,6 +3929,7 @@
     "newCommentOnTopicMessage": "{actor} commented on your post",
     "newCommentOnGameMessage": "{actor} commented on your game",
     "gameChunkLinkedMessage": "{actor} linked a chunk to a move in your game",
+    "repertoireChunkLinkedMessage": "{actor} linked a chunk to a position in your Kata",
     "chunkEditRequestSubmittedMessage": "{actor} suggested an edit to your chunk",
     "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
     "newChunkDraftMessage": "{actor} posted a chunk draft",

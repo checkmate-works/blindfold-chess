@@ -32,6 +32,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
       'notifications.types.new_game': 'New games',
       'notifications.types.new_comment_on_topic': 'Comments on your posts',
       'notifications.types.game_chunk_linked': 'Chunks linked to your games',
+      'notifications.types.repertoire_chunk_linked': 'Chunks linked to your Kata',
     };
     return labels[key] ?? key;
   },

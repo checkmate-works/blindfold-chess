@@ -64,6 +64,8 @@ export function buildNotificationMessage(
       return t('newCommentOnTopicMessage', { actor: actorName });
     case 'game_chunk_linked':
       return t('gameChunkLinkedMessage', { actor: actorName });
+    case 'repertoire_chunk_linked':
+      return t('repertoireChunkLinkedMessage', { actor: actorName });
     case 'chunk_edit_request_submitted':
       return t('chunkEditRequestSubmittedMessage', { actor: actorName });
     case 'chunk_edit_request_accepted':

@@ -282,6 +282,37 @@ describe('buildNotificationLink — games', () => {
     ).toBeNull();
   });
 
+  // Unlike game_chunk_linked's #<half-move> hash, lineNo/ply here are the
+  // 1-based values the line page's own `?move=` query param uses directly —
+  // no +1 adjustment.
+  it('deep-links a repertoire_chunk_linked to the tagged line and move', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'repertoire_chunk_linked',
+          targetType: 'repertoire',
+          targetId: 'rep-42',
+          metadata: { repertoireId: 'rep-42', lineNo: 3, ply: 5, chunkId: 'chunk-1' },
+        }),
+        {}
+      )
+    ).toBe('/repertoires/rep-42/lines/3?move=5');
+  });
+
+  it('degrades a repertoire_chunk_linked without a lineNo/ply to a non-link', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'repertoire_chunk_linked',
+          targetType: 'repertoire',
+          targetId: 'rep-42',
+          metadata: { repertoireId: 'rep-42' },
+        }),
+        {}
+      )
+    ).toBeNull();
+  });
+
   it('links a new_game to the shared game page', () => {
     expect(
       buildNotificationLink(

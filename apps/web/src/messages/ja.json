@@ -670,7 +670,8 @@
         "chunk_published": "チャンクの公開",
         "new_game": "対局の公開",
         "new_comment_on_topic": "投稿へのコメント",
-        "game_chunk_linked": "対局へのチャンク紐づけ"
+        "game_chunk_linked": "対局へのチャンク紐づけ",
+        "repertoire_chunk_linked": "型へのチャンク紐づけ"
       }
     }
   },
@@ -3928,6 +3929,7 @@
     "newCommentOnTopicMessage": "{actor} さんがあなたの投稿にコメントしました",
     "newCommentOnGameMessage": "{actor} さんがあなたの対局にコメントしました",
     "gameChunkLinkedMessage": "{actor} さんがあなたの対局の手にチャンクを紐づけました",
+    "repertoireChunkLinkedMessage": "{actor} さんがあなたの型の局面にチャンクを紐づけました",
     "chunkEditRequestSubmittedMessage": "{actor} さんがあなたのチャンクに編集リクエストを送信しました",
     "chunkEditRequestAcceptedMessage": "{actor} さんがあなたの編集リクエストを採用しました",
     "newChunkDraftMessage": "{actor} さんがチャンクの下書きを投稿しました",
