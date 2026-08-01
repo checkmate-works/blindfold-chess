@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { enumerateLines, generatePgnFromTree, parsePgnTree } from "../pgn-tree";
-import type { MoveTreeNode } from "../pgn-tree";
+import {
+  PgnParseError,
+  enumerateLines,
+  generatePgnFromTree,
+  parsePgnTree,
+} from "../pgn-tree";
+import type { MoveTreeNode, PgnParseFailure } from "../pgn-tree";
 
 const STANDARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -274,12 +279,49 @@ describe("parsePgnTree — errors", () => {
   });
 
   it("throws on an illegal move", () => {
-    expect(() => parsePgnTree("1. e4 e5 2. Bf8")).toThrow(/illegal move/);
+    expect(() => parsePgnTree("1. e4 e5 2. Bf8")).toThrow(
+      "Can't play Bf8 at move 2, ply 3",
+    );
   });
 
   it("throws on an illegal move inside a variation", () => {
     expect(() => parsePgnTree("1. e4 e5 (1... Ke7) 2. Nf3")).toThrow(
-      /illegal move/,
+      "Can't play Ke7 at move 1, ply 2",
     );
+  });
+
+  it("locates the offending move by fullmove number and ply", () => {
+    // 8. Bxa8 is legal; the "d7" that follows it is not a move at all.
+    const pgn =
+      "1. Nf3 d5 2. g3 d4 3. c3 dxc3 4. bxc3 Nc6 5. Bg2 e6 6. d4 b6 7. Ne5 Nxe5 8. Bxa8 d7 9. Bg2 Ng6";
+    let failure: PgnParseFailure | null = null;
+    try {
+      parsePgnTree(pgn);
+    } catch (error) {
+      failure = error instanceof PgnParseError ? error.failure : null;
+    }
+    expect(failure).toEqual({
+      reason: "illegalMove",
+      san: "d7",
+      moveNumber: 8,
+      ply: 16,
+    });
+  });
+
+  it("numbers plies from a non-standard [FEN] root", () => {
+    const pgn =
+      '[SetUp "1"]\n[FEN "8/8/8/4k3/8/8/4K3/8 w - - 0 20"]\n\n20. Qd4';
+    let failure: PgnParseFailure | null = null;
+    try {
+      parsePgnTree(pgn);
+    } catch (error) {
+      failure = error instanceof PgnParseError ? error.failure : null;
+    }
+    expect(failure).toEqual({
+      reason: "illegalMove",
+      san: "Qd4",
+      moveNumber: 20,
+      ply: 39,
+    });
   });
 });

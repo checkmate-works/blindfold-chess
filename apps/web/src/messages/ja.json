@@ -78,6 +78,8 @@
       "pgnLabel": "PGN",
       "pgnHelp": "変化手を含む PGN を貼り付けてください。Lichess スタディや Chess.com のエクスポートをそのまま使えます。",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
+      "pgnErrorIllegalMove": "{san} は指せません（{moveNumber}手目 / ply {ply}）",
+      "pgnErrorUnreadable": "この PGN を読み取れませんでした。記譜を確認してください。",
       "submit": "型を作成",
       "submitting": "作成中…",
       "inputModePgn": "PGN",

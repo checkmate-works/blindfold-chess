@@ -47,6 +47,64 @@ export type PgnTree = {
   children: MoveTreeNode[];
 };
 
+/**
+ * Why a PGN could not be parsed, in a form a UI can localize.
+ *
+ * `illegalMove` carries the offending SAN together with where it sits — the
+ * fullmove number and the 1-based ply — because "this PGN is broken" is not
+ * actionable on a 40-move line, whereas "move 8, ply 16" points straight at
+ * the typo. The numbers are read off the position the move was rejected from,
+ * so they stay correct inside variations and under a `[FEN]` root.
+ */
+export type PgnParseFailure =
+  | { reason: "empty" }
+  | { reason: "noMoves" }
+  | { reason: "badFen" }
+  | { reason: "danglingVariation" }
+  | { reason: "illegalMove"; san: string; moveNumber: number; ply: number };
+
+function describeFailure(failure: PgnParseFailure): string {
+  switch (failure.reason) {
+    case "empty":
+      return "Invalid PGN: empty";
+    case "noMoves":
+      return "Invalid PGN: no moves found";
+    case "badFen":
+      return "Invalid PGN: bad FEN header";
+    case "danglingVariation":
+      return "Invalid PGN: variation with no preceding move";
+    case "illegalMove":
+      // Mirrors Lichess' analysis-board wording, so a PGN rejected here reads
+      // the same as it does in the tool most authors paste from.
+      return `Can't play ${failure.san} at move ${failure.moveNumber}, ply ${failure.ply}`;
+  }
+}
+
+/**
+ * Thrown by {@link parsePgnTree}. Carries {@link PgnParseFailure} so callers can
+ * render a located, translated message instead of a bare "invalid PGN".
+ */
+export class PgnParseError extends Error {
+  readonly failure: PgnParseFailure;
+
+  constructor(failure: PgnParseFailure) {
+    super(describeFailure(failure));
+    this.name = "PgnParseError";
+    this.failure = failure;
+  }
+}
+
+/**
+ * Locate a move by the position it is played from: the fullmove number as the
+ * PGN writes it, and the 1-based ply counted from the game's first move.
+ */
+function locateMove(beforeFen: string): { moveNumber: number; ply: number } {
+  const fields = beforeFen.split(" ");
+  const moveNumber = Number(fields[5] ?? "1") || 1;
+  const ply = (moveNumber - 1) * 2 + (fields[1] === "w" ? 1 : 2);
+  return { moveNumber, ply };
+}
+
 const RESULT_MARKERS = new Set(["1-0", "0-1", "1/2-1/2", "*"]);
 
 /** Read a non-default starting position from a `[FEN "..."]` header, if any. */
@@ -114,7 +172,7 @@ function parseLine(
 
     if (raw === "(") {
       if (!prevNode) {
-        throw new Error("Invalid PGN: variation with no preceding move");
+        throw new PgnParseError({ reason: "danglingVariation" });
       }
       const variation = parseLine(fenBeforePrev, tokens, i + 1);
       for (const node of variation.nodes) {
@@ -135,10 +193,14 @@ function parseLine(
     try {
       result = chess.move(san);
     } catch {
-      throw new Error(`Invalid PGN: illegal move "${san}"`);
+      result = null;
     }
     if (!result) {
-      throw new Error(`Invalid PGN: illegal move "${san}"`);
+      throw new PgnParseError({
+        reason: "illegalMove",
+        san,
+        ...locateMove(currentFen),
+      });
     }
 
     const node: MoveTreeNode = {
@@ -162,11 +224,13 @@ function parseLine(
 /**
  * Parse a PGN (with optional variations) into a {@link PgnTree}.
  *
- * @throws if the PGN is empty, has no moves, or contains an illegal move.
+ * @throws {PgnParseError} if the PGN is empty, has no moves, or contains an
+ * illegal move — carrying the located {@link PgnParseFailure} so a form can say
+ * *which* move failed rather than only that something did.
  */
 export function parsePgnTree(pgn: string): PgnTree {
   if (!pgn.trim()) {
-    throw new Error("Invalid PGN: empty");
+    throw new PgnParseError({ reason: "empty" });
   }
 
   const startingFen = extractStartingFen(pgn);
@@ -176,14 +240,14 @@ export function parsePgnTree(pgn: string): PgnTree {
       const probe = new Chess(startingFen);
       void probe;
     } catch {
-      throw new Error("Invalid PGN: bad FEN header");
+      throw new PgnParseError({ reason: "badFen" });
     }
   }
 
   const tokens = tokenizeMovetext(pgn);
   const { nodes } = parseLine(startingFen, tokens, 0);
   if (nodes.length === 0) {
-    throw new Error("Invalid PGN: no moves found");
+    throw new PgnParseError({ reason: "noMoves" });
   }
 
   return { startingFen, children: nodes };

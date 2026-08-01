@@ -78,6 +78,8 @@
       "pgnLabel": "PGN",
       "pgnHelp": "Pega un PGN con variantes: las exportaciones de estudios de Lichess o de Chess.com funcionan tal cual.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
+      "pgnErrorIllegalMove": "No se puede jugar {san} en la jugada {moveNumber}, ply {ply}",
+      "pgnErrorUnreadable": "No se pudo leer este PGN. Revisa la notación.",
       "submit": "Crear kata",
       "submitting": "Creando…",
       "inputModePgn": "PGN",
