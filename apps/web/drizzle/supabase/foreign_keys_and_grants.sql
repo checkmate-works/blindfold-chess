@@ -643,6 +643,11 @@ GRANT SELECT ON TABLE public.repertoire_openings TO anon;
 GRANT SELECT ON TABLE public.repertoire_annotations TO authenticated;
 GRANT SELECT ON TABLE public.repertoire_annotations TO anon;
 
+-- repertoire_chunks (community chunk links on a repertoire position)
+SELECT public.ensure_auth_users_fk('repertoire_chunks', 'repertoire_chunks_suggested_by_id_fkey', 'suggested_by_id', 'SET NULL');
+GRANT SELECT ON TABLE public.repertoire_chunks TO authenticated;
+GRANT SELECT ON TABLE public.repertoire_chunks TO anon;
+
 -- Per-user learning state (reviews / deviations): user_id → auth.users
 -- ON DELETE CASCADE (the state is meaningless without its owner). These are
 -- private to the user — SELECT for authenticated only, never anon.

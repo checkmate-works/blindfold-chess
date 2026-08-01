@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { FiAlertTriangle } from 'react-icons/fi';
 
@@ -11,6 +11,8 @@ export type ChunkReferenceCounts = {
   positions: number;
   /** Live game moves linked to it via `game_chunks`. */
   games: number;
+  /** Live repertoire positions linked to it via `repertoire_chunks`. */
+  repertoires: number;
 };
 
 type Props = {
@@ -52,27 +54,31 @@ type Props = {
  *
  * @design what it does NOT do
  * The people who made those assertions are not notified. Their links survive
- * a rename untouched — `position_chunks` and `game_chunks` key on `chunk_id`,
- * and the discussion thread's `topic_posts.topic_key` is rewritten in the
- * same transaction — so nothing breaks structurally; what changes is what the
- * link means. Deciding whether that warrants telling every linker is a
- * separate question from telling the person about to make the change, and
- * a notification per rename would be noisy out of proportion to the risk.
+ * a rename untouched — `position_chunks`, `game_chunks`, and
+ * `repertoire_chunks` all key on `chunk_id`, and the discussion thread's
+ * `topic_posts.topic_key` is rewritten in the same transaction — so nothing
+ * breaks structurally; what changes is what the link means. Deciding whether
+ * that warrants telling every linker is a separate question from telling the
+ * person about to make the change, and a notification per rename would be
+ * noisy out of proportion to the risk.
  */
 export function ChunkReferenceWarning({ references, changed }: Props) {
   const t = useTranslations('chunks.preview.referenceWarning');
-  const total = references.positions + references.games;
+  const locale = useLocale();
+  const total = references.positions + references.games + references.repertoires;
 
   if (total === 0 || changed.length === 0) return null;
 
-  // Both counts are rendered only when both are non-zero, so the sentence
-  // never reads "0 games".
-  const scope =
-    references.positions > 0 && references.games > 0
-      ? t('scopeBoth', { positions: references.positions, games: references.games })
-      : references.positions > 0
-        ? t('scopePositions', { count: references.positions })
-        : t('scopeGames', { count: references.games });
+  // Each dimension renders only when non-zero (so the sentence never reads
+  // "0 kata"), joined with a locale-aware "and" via Intl.ListFormat — this
+  // scales to a 3rd dimension without a combinatorial key per possible mix
+  // (the 2-dimension version this replaced had a dedicated `scopeBoth`).
+  const parts = [
+    references.positions > 0 ? t('scopePositions', { count: references.positions }) : null,
+    references.games > 0 ? t('scopeGames', { count: references.games }) : null,
+    references.repertoires > 0 ? t('scopeRepertoires', { count: references.repertoires }) : null,
+  ].filter((part): part is string => part !== null);
+  const scope = new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' }).format(parts);
 
   return (
     <div

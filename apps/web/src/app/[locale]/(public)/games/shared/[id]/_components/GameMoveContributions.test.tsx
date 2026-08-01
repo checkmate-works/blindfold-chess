@@ -44,16 +44,16 @@ vi.mock('../_hooks/use-game-chunk-links', () => ({
 vi.mock('../_lib/game-comment-tree', () => ({ groupReplies: () => [] }));
 
 vi.mock('./GameCommentNode', () => ({ GameCommentNode: () => <div data-testid="comment-node" /> }));
-vi.mock('./GameChunkLinkCard', () => ({
-  GameChunkLinkCard: ({ items }: { items: { id: string; title: string }[] }) => (
+vi.mock('@/app/[locale]/_components/chunk-links/ChunkLinkCard', () => ({
+  ChunkLinkCard: ({ items }: { items: { id: string; title: string }[] }) => (
     <li data-testid="chunk-link-card">{items.map((i) => i.title).join(',')}</li>
   ),
 }));
-vi.mock('./GameChunkCard', () => ({
-  GameChunkCard: ({ title }: { title: string }) => <li data-testid="chunk-card">{title}</li>,
+vi.mock('@/app/[locale]/_components/chunk-links/StagedChunkCard', () => ({
+  StagedChunkCard: ({ title }: { title: string }) => <li data-testid="chunk-card">{title}</li>,
 }));
-vi.mock('./GameChunkPicker', () => ({
-  GameChunkPicker: () => <div data-testid="chunk-picker" />,
+vi.mock('@/app/[locale]/_components/chunk-links/ChunkPicker', () => ({
+  ChunkPicker: () => <div data-testid="chunk-picker" />,
 }));
 // Exposes the caller's `onSubmit` as a button so the post-then-collapse
 // wiring can be driven without the real textarea.

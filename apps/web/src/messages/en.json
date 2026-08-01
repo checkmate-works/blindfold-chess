@@ -285,6 +285,30 @@
       "changeBodyFree": "Change this Kata to “{tier}”? You’ve already unlocked this tier — no coins needed.",
       "changeConfirm": "Change",
       "current": "Currently: {tier}"
+    },
+    "chunks": {
+      "title": "Applicable chunks",
+      "empty": "No chunks linked to this position yet.",
+      "placeholder": "Search chunks to add…",
+      "suggest": "Suggest a chunk",
+      "linkedAction": "{count, plural, =1 {linked a chunk} other {linked # chunks}}",
+      "delete": "Delete",
+      "confirmUnlinkTitle": "Unlink this chunk?",
+      "confirmUnlinkBody": "It will be removed from this position.",
+      "confirmCancel": "Cancel",
+      "noResults": "No matching chunks",
+      "moreItemsHint": "+{count} more",
+      "remove": "Remove {title}",
+      "badge": "Chunk",
+      "draftBadge": "Feedback wanted",
+      "submit": "Link {count}",
+      "submitting": "Linking…",
+      "errors": {
+        "alreadyLinked": "That chunk is already linked to this position.",
+        "chunkNotAvailable": "That chunk isn't available.",
+        "rateLimited": "Too many actions. Please try again later.",
+        "generic": "Something went wrong. Please try again."
+      }
     }
   },
   "embed": {
@@ -670,7 +694,8 @@
         "chunk_published": "Chunk published",
         "new_game": "New games",
         "new_comment_on_topic": "Comments on your posts",
-        "game_chunk_linked": "Chunks linked to your games"
+        "game_chunk_linked": "Chunks linked to your games",
+        "repertoire_chunk_linked": "Chunks linked to your Kata"
       }
     }
   },
@@ -3519,9 +3544,9 @@
       "referenceWarning": {
         "body": "You are changing the {fields}, and {scope} already point at this chunk. Those links stay attached, but what they claim changes with it.",
         "hint": "Nobody is notified. If the pattern itself is now a different one, consider creating a separate chunk instead.",
-        "scopeBoth": "{positions, plural, =1 {1 position} other {# positions}} and {games, plural, =1 {1 game move} other {# game moves}}",
         "scopePositions": "{count, plural, =1 {1 position} other {# positions}}",
         "scopeGames": "{count, plural, =1 {1 game move} other {# game moves}}",
+        "scopeRepertoires": "{count, plural, =1 {1 kata} other {# kata}}",
         "separator": ", ",
         "fields": {
           "title": "title",
@@ -3928,6 +3953,7 @@
     "newCommentOnTopicMessage": "{actor} commented on your post",
     "newCommentOnGameMessage": "{actor} commented on your game",
     "gameChunkLinkedMessage": "{actor} linked a chunk to a move in your game",
+    "repertoireChunkLinkedMessage": "{actor} linked a chunk to a position in your Kata",
     "chunkEditRequestSubmittedMessage": "{actor} suggested an edit to your chunk",
     "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
     "newChunkDraftMessage": "{actor} posted a chunk draft",

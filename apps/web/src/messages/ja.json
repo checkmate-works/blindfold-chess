@@ -285,6 +285,30 @@
       "changeBodyFree": "この型を「{tier}」に変更しますか？すでに解放済みのためコインは不要です。",
       "changeConfirm": "変更する",
       "current": "現在：{tier}"
+    },
+    "chunks": {
+      "title": "適用できるチャンク",
+      "empty": "この局面にはまだチャンクが紐付けられていません。",
+      "placeholder": "チャンクを検索して追加…",
+      "suggest": "チャンクを提案する",
+      "linkedAction": "{count, plural, =1 {チャンクをリンクしました} other {チャンクを#個リンクしました}}",
+      "delete": "削除",
+      "confirmUnlinkTitle": "このチャンクの紐付けを解除しますか？",
+      "confirmUnlinkBody": "この局面から削除されます。",
+      "confirmCancel": "キャンセル",
+      "noResults": "該当するチャンクがありません",
+      "moreItemsHint": "他 {count} 件",
+      "remove": "{title} の紐付けを解除",
+      "badge": "チャンク",
+      "draftBadge": "提案募集中",
+      "submit": "{count}件を紐付ける",
+      "submitting": "保存中…",
+      "errors": {
+        "alreadyLinked": "このチャンクはすでにこの局面に紐付けられています。",
+        "chunkNotAvailable": "このチャンクは利用できません。",
+        "rateLimited": "操作が多すぎます。しばらくしてからお試しください。",
+        "generic": "エラーが発生しました。もう一度お試しください。"
+      }
     }
   },
   "embed": {
@@ -670,7 +694,8 @@
         "chunk_published": "チャンクの公開",
         "new_game": "対局の公開",
         "new_comment_on_topic": "投稿へのコメント",
-        "game_chunk_linked": "対局へのチャンク紐づけ"
+        "game_chunk_linked": "対局へのチャンク紐づけ",
+        "repertoire_chunk_linked": "型へのチャンク紐づけ"
       }
     }
   },
@@ -3519,9 +3544,9 @@
       "referenceWarning": {
         "body": "{fields}を変更しようとしていますが、すでに{scope}がこのチャンクを参照しています。紐付け自体は維持されますが、その参照が主張する内容も一緒に変わります。",
         "hint": "参照している人には通知されません。パターン自体が別物になるのであれば、既存を書き換えるのではなく新しいチャンクを作成することも検討してください。",
-        "scopeBoth": "{positions, plural, other {# 件のポジション}}と{games, plural, other {# 件の対局の手}}",
         "scopePositions": "{count, plural, other {# 件のポジション}}",
         "scopeGames": "{count, plural, other {# 件の対局の手}}",
+        "scopeRepertoires": "{count, plural, other {# 件の型}}",
         "separator": "・",
         "fields": {
           "title": "タイトル",
@@ -3928,6 +3953,7 @@
     "newCommentOnTopicMessage": "{actor} さんがあなたの投稿にコメントしました",
     "newCommentOnGameMessage": "{actor} さんがあなたの対局にコメントしました",
     "gameChunkLinkedMessage": "{actor} さんがあなたの対局の手にチャンクを紐づけました",
+    "repertoireChunkLinkedMessage": "{actor} さんがあなたの型の局面にチャンクを紐づけました",
     "chunkEditRequestSubmittedMessage": "{actor} さんがあなたのチャンクに編集リクエストを送信しました",
     "chunkEditRequestAcceptedMessage": "{actor} さんがあなたの編集リクエストを採用しました",
     "newChunkDraftMessage": "{actor} さんがチャンクの下書きを投稿しました",

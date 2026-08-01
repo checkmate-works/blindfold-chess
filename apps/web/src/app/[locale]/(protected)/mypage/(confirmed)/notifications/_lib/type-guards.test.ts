@@ -8,6 +8,7 @@ import {
   isPositionForkedMetadata,
   isPositionMetadata,
   isPostMetadata,
+  isRepertoireChunkLinkMetadata,
   isReplyMetadata,
 } from './type-guards';
 
@@ -369,6 +370,41 @@ describe('isGameChunkLinkMetadata', () => {
     expect(isGameChunkLinkMetadata(null)).toBe(false);
     expect(isGameChunkLinkMetadata(undefined)).toBe(false);
     expect(isGameChunkLinkMetadata('foo')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isRepertoireChunkLinkMetadata
+// ---------------------------------------------------------------------------
+
+describe('isRepertoireChunkLinkMetadata', () => {
+  it('returns true with repertoireId, an integer lineNo, and an integer ply', () => {
+    expect(
+      isRepertoireChunkLinkMetadata({ repertoireId: 'r-1', lineNo: 2, ply: 4, chunkId: 'c-1' })
+    ).toBe(true);
+  });
+
+  it('returns false when lineNo is missing (the deep link cannot be built)', () => {
+    expect(isRepertoireChunkLinkMetadata({ repertoireId: 'r-1', ply: 4 })).toBe(false);
+  });
+
+  it('returns false when ply is missing', () => {
+    expect(isRepertoireChunkLinkMetadata({ repertoireId: 'r-1', lineNo: 2 })).toBe(false);
+  });
+
+  it('returns false when lineNo or ply is not an integer', () => {
+    expect(isRepertoireChunkLinkMetadata({ repertoireId: 'r-1', lineNo: 1.5, ply: 4 })).toBe(false);
+    expect(isRepertoireChunkLinkMetadata({ repertoireId: 'r-1', lineNo: 2, ply: '4' })).toBe(false);
+  });
+
+  it('returns false when repertoireId is missing', () => {
+    expect(isRepertoireChunkLinkMetadata({ lineNo: 2, ply: 4 })).toBe(false);
+  });
+
+  it('returns false for null / undefined / primitives', () => {
+    expect(isRepertoireChunkLinkMetadata(null)).toBe(false);
+    expect(isRepertoireChunkLinkMetadata(undefined)).toBe(false);
+    expect(isRepertoireChunkLinkMetadata('foo')).toBe(false);
   });
 });
 

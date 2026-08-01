@@ -1162,6 +1162,26 @@ CREATE POLICY "repertoire_annotations_select" ON "repertoire_annotations"
     )
   );
 
+-- =============================================================================
+-- repertoire_chunks (community chunk links on a repertoire position — read
+-- gated by parent visibility, service-role write)
+-- =============================================================================
+-- Same parent-visibility gate as the repertoires table itself: public parent
+-- or owner. followers_only is NOT opened here — fail-closed for direct API
+-- reads, matching the parent's own policy (app reads go through service role).
+ALTER TABLE "repertoire_chunks" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "repertoire_chunks_select" ON "repertoire_chunks";
+CREATE POLICY "repertoire_chunks_select" ON "repertoire_chunks"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.repertoires r
+      WHERE r.id = repertoire_chunks.repertoire_id
+        AND r.deleted_at IS NULL
+        AND (r.status = 'public' OR auth.uid() = r.user_id)
+    )
+  );
+
 -- Reviews / deviations are per-user private learning state: owner-only, no
 -- public/anon read even when the repertoire itself is public.
 ALTER TABLE "repertoire_reviews" ENABLE ROW LEVEL SECURITY;

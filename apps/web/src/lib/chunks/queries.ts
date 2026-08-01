@@ -13,6 +13,8 @@ import {
   positionChunks,
   positions,
   profiles,
+  repertoireChunks,
+  repertoires,
 } from '@/lib/db';
 import { combineConditions, countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -356,7 +358,8 @@ export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]
  */
 /**
  * How many live things currently assert this chunk: positions that tag it
- * (`position_chunks`) and game moves it is linked to (`game_chunks`).
+ * (`position_chunks`), game moves it is linked to (`game_chunks`), and
+ * repertoire positions it is linked to (`repertoire_chunks`).
  *
  * Used to warn the owner before they change what the chunk *means* — its
  * title, slug, or board. Those assertions were made against the chunk as it
@@ -365,15 +368,19 @@ export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]
  * Deliberately a warning and not a lock: the whole point of the pre-publish
  * state is that the name is still being worked out.
  *
- * Soft-deleted positions and games are excluded — a link from a row nobody
- * can see is not an assertion anyone is relying on. The counts are separate
- * (not summed) because the two read differently to an author: "3 positions"
- * is their own catalog, "2 games" is other people's analysis.
+ * Soft-deleted positions / games / repertoires are excluded — a link from a
+ * row nobody can see is not an assertion anyone is relying on. The counts are
+ * separate (not summed) because each reads differently to an author: "3
+ * positions" is their own catalog, "2 games" and "1 kata" are other people's
+ * work. The repertoires count follows the same basis as the games count
+ * (existence + non-deleted only — not `status`, so a `building`/`private`
+ * course still counts): the number alone never leaks the course's content or
+ * visibility, only that something out there references this chunk.
  */
 export async function countChunkReferences(
   chunkId: string
-): Promise<{ positions: number; games: number }> {
-  const [positionCount, gameCount] = await Promise.all([
+): Promise<{ positions: number; games: number; repertoires: number }> {
+  const [positionCount, gameCount, repertoireCount] = await Promise.all([
     db
       .select({ value: count() })
       .from(positionChunks)
@@ -386,8 +393,14 @@ export async function countChunkReferences(
       .innerJoin(games, eq(games.id, gameChunks.gameId))
       .where(and(eq(gameChunks.chunkId, chunkId), isNull(games.deletedAt)))
       .then(([row]) => row?.value ?? 0),
+    db
+      .select({ value: count() })
+      .from(repertoireChunks)
+      .innerJoin(repertoires, eq(repertoires.id, repertoireChunks.repertoireId))
+      .where(and(eq(repertoireChunks.chunkId, chunkId), isNull(repertoires.deletedAt)))
+      .then(([row]) => row?.value ?? 0),
   ]);
-  return { positions: positionCount, games: gameCount };
+  return { positions: positionCount, games: gameCount, repertoires: repertoireCount };
 }
 
 export const getLinkableChunkOptionsForViewer = cache(

@@ -470,6 +470,13 @@
       "when": 1785493077398,
       "tag": "20260731101757_scope_repertoire_line_chapters",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1785553368533,
+      "tag": "20260801030248_create_repertoire_chunks_table",
+      "breakpoints": true
     }
   ]
 }

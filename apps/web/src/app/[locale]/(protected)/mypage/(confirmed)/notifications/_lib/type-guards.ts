@@ -129,6 +129,30 @@ export function isGameChunkLinkMetadata(m: unknown): m is GameChunkLinkMetadata 
   return typeof r.gameId === 'string' && typeof r.ply === 'number' && Number.isInteger(r.ply);
 }
 
+/**
+ * Metadata persisted with a `repertoire_chunk_linked` notification — a member
+ * linked a chunk to a position of the recipient's repertoire. `targetId` is
+ * the repertoire (it groups a burst of links into one notification; see
+ * `notifyRepertoireOwnerOfChunkLink`), so `lineNo` / `ply` ride in metadata to
+ * build the deep link `/repertoires/{repertoireId}/lines/{lineNo}?move={ply}`
+ * — a snapshot at link time that may drift after a later line edit (accepted,
+ * see that function's TSDoc). `chunkId` / `positionKey` are also persisted
+ * but not asserted here, matching `GameChunkLinkMetadata`.
+ */
+export type RepertoireChunkLinkMetadata = { repertoireId: string; lineNo: number; ply: number };
+
+export function isRepertoireChunkLinkMetadata(m: unknown): m is RepertoireChunkLinkMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return (
+    typeof r.repertoireId === 'string' &&
+    typeof r.lineNo === 'number' &&
+    Number.isInteger(r.lineNo) &&
+    typeof r.ply === 'number' &&
+    Number.isInteger(r.ply)
+  );
+}
+
 export function isAnnouncementMetadata(m: unknown): m is AnnouncementMetadata {
   if (typeof m !== 'object' || m === null) return false;
   const r = m as Record<string, unknown>;

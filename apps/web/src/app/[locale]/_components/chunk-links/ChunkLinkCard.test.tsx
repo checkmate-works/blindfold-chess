@@ -1,15 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { GameChunkItem } from '@/lib/db/game-chunks';
+import type { ChunkLinkCardItem } from '@/lib/chunks/types';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { GameChunkLinkCard } from './GameChunkLinkCard';
-
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => Object.assign((key: string) => key, { has: () => true }),
-}));
+import { ChunkLinkCard } from './ChunkLinkCard';
 
 // The avatar/name and the chunk-reference card have their own coverage — stub
 // them so this test focuses on the comment-card framing (name, action line,
@@ -47,10 +43,19 @@ vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
     ) : null,
 }));
 
-function link(id: string, title: string): GameChunkItem {
+const LABELS = {
+  linkedAction: (count: number) => (count === 1 ? 'linked a chunk' : `linked ${count} chunks`),
+  remove: (title: string) => `Remove ${title}`,
+  delete: 'Delete',
+  confirmUnlinkTitle: 'Unlink this chunk?',
+  confirmUnlinkBody: 'It will be removed.',
+  confirmCancel: 'Cancel',
+  deletedUser: 'Deleted user',
+};
+
+function link(id: string, title: string): ChunkLinkCardItem {
   return {
     id,
-    ply: 3,
     chunkId: `c-${id}`,
     slug: id,
     title,
@@ -64,28 +69,29 @@ function link(id: string, title: string): GameChunkItem {
 }
 
 function renderCard(
-  items: GameChunkItem[],
+  items: ChunkLinkCardItem[],
   canRemove = false,
   onRemove = vi.fn().mockResolvedValue({})
 ) {
   render(
-    <GameChunkLinkCard
+    <ChunkLinkCard
       items={items}
       badge="Chunk"
       draftBadge="Draft"
       locale={'en' as Locale}
       canRemove={() => canRemove}
       onRemove={onRemove}
+      labels={LABELS}
     />
   );
   return onRemove;
 }
 
-describe('GameChunkLinkCard', () => {
+describe('ChunkLinkCard', () => {
   it('reads like a comment: one suggester header + action line + the chunk reference', () => {
     renderCard([link('l1', 'Rook battery')]);
     expect(screen.getAllByTestId('avatar')).toHaveLength(1);
-    expect(screen.getByText('chunks.linkedAction')).toBeInTheDocument();
+    expect(screen.getByText('linked a chunk')).toBeInTheDocument();
     expect(screen.getByTestId('chunk-ref')).toHaveTextContent('Rook battery');
   });
 
@@ -95,18 +101,19 @@ describe('GameChunkLinkCard', () => {
     expect(screen.getAllByTestId('avatar')).toHaveLength(1);
     const refs = screen.getAllByTestId('chunk-ref');
     expect(refs.map((r) => r.textContent)).toEqual(['Rook battery', 'Fianchetto']);
+    expect(screen.getByText('linked 2 chunks')).toBeInTheDocument();
   });
 
   it('renders a Delete affordance per link when removal is permitted', () => {
     renderCard([link('l1', 'Rook battery'), link('l2', 'Fianchetto')], true);
-    expect(screen.getAllByRole('button', { name: /chunks\.remove/ })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: /Remove/ })).toHaveLength(2);
   });
 
   it('confirms via a modal before unlinking — onRemove fires only on confirm', () => {
     const onRemove = renderCard([link('l1', 'Rook battery'), link('l2', 'Fianchetto')], true);
 
     // Clicking Delete opens the modal but does not unlink yet.
-    fireEvent.click(screen.getAllByRole('button', { name: /chunks\.remove/ })[1]);
+    fireEvent.click(screen.getAllByRole('button', { name: /Remove/ })[1]);
     expect(onRemove).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
@@ -118,6 +125,6 @@ describe('GameChunkLinkCard', () => {
 
   it('hides the Delete affordance when removal is not permitted', () => {
     renderCard([link('l1', 'Rook battery')], false);
-    expect(screen.queryByRole('button', { name: /chunks\.remove/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Remove/ })).toBeNull();
   });
 });

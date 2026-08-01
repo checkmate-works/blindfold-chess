@@ -285,6 +285,30 @@
       "changeBodyFree": "Alterar este Kata para “{tier}”? Você já desbloqueou este nível — sem moedas.",
       "changeConfirm": "Alterar",
       "current": "Atual: {tier}"
+    },
+    "chunks": {
+      "title": "Chunks aplicáveis",
+      "empty": "Ainda não há chunks vinculados a esta posição.",
+      "placeholder": "Busque chunks para adicionar…",
+      "suggest": "Sugerir um chunk",
+      "linkedAction": "{count, plural, =1 {vinculou um chunk} other {vinculou # chunks}}",
+      "delete": "Excluir",
+      "confirmUnlinkTitle": "Desvincular este chunk?",
+      "confirmUnlinkBody": "Ele será removido desta posição.",
+      "confirmCancel": "Cancelar",
+      "noResults": "Nenhum chunk correspondente",
+      "moreItemsHint": "+{count} mais",
+      "remove": "Remover {title}",
+      "badge": "Chunk",
+      "draftBadge": "Busca sugestões",
+      "submit": "Vincular {count}",
+      "submitting": "Vinculando…",
+      "errors": {
+        "alreadyLinked": "Esse chunk já está vinculado a esta posição.",
+        "chunkNotAvailable": "Esse chunk não está disponível.",
+        "rateLimited": "Muitas ações. Tente novamente mais tarde.",
+        "generic": "Algo deu errado. Tente novamente."
+      }
     }
   },
   "embed": {
@@ -670,7 +694,8 @@
         "chunk_published": "Chunk publicado",
         "new_game": "Novas partidas",
         "new_comment_on_topic": "Comentários nas suas publicações",
-        "game_chunk_linked": "Chunks vinculados às suas partidas"
+        "game_chunk_linked": "Chunks vinculados às suas partidas",
+        "repertoire_chunk_linked": "Chunks vinculados ao seu Kata"
       }
     }
   },
@@ -3519,9 +3544,9 @@
       "referenceWarning": {
         "body": "Você vai mudar {fields}, e já há {scope} apontando para este chunk. Esses vínculos continuam, mas o que eles afirmam muda junto.",
         "hint": "Ninguém é notificado. Se o padrão passou a ser outro, considere criar um chunk separado em vez de reescrever este.",
-        "scopeBoth": "{positions, plural, =1 {1 posição} other {# posições}} e {games, plural, =1 {1 lance de partida} other {# lances de partidas}}",
         "scopePositions": "{count, plural, =1 {1 posição} other {# posições}}",
         "scopeGames": "{count, plural, =1 {1 lance de partida} other {# lances de partidas}}",
+        "scopeRepertoires": "{count, plural, =1 {1 kata} other {# kata}}",
         "separator": ", ",
         "fields": {
           "title": "o título",
@@ -3928,6 +3953,7 @@
     "newCommentOnTopicMessage": "{actor} comentou na sua publicação",
     "newCommentOnGameMessage": "{actor} comentou na sua partida",
     "gameChunkLinkedMessage": "{actor} vinculou um chunk a um lance da sua partida",
+    "repertoireChunkLinkedMessage": "{actor} vinculou um chunk a uma posição do seu Kata",
     "chunkEditRequestSubmittedMessage": "{actor} sugeriu uma edição para o seu chunk",
     "chunkEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de edição",
     "newChunkDraftMessage": "{actor} publicou um rascunho de chunk",

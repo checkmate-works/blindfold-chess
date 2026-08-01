@@ -37,6 +37,7 @@ import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { uuidv7 } from '@/lib/uuidv7';
 
+import { chunks } from './chunks';
 import { chessOpenings } from './openings';
 
 /**
@@ -448,3 +449,68 @@ export const repertoireAnnotations = pgTable(
 
 export type RepertoireAnnotation = typeof repertoireAnnotations.$inferSelect;
 export type NewRepertoireAnnotation = typeof repertoireAnnotations.$inferInsert;
+
+/**
+ * Repertoire Chunks — community-suggested chunk (piece-coordination pattern)
+ * links on a POSITION of a repertoire (型).
+ *
+ * Mirrors `game_chunks` (see its TSDoc for the suggestion-layer design: any
+ * member links, no owner veto, dedup via unique constraint) but is keyed by
+ * `position_key` (normalised FEN, same as `repertoire_annotations`) instead of
+ * a ply — so one link surfaces on every line that reaches the position
+ * (transpositions, shared prefixes) and survives line reorder / re-import.
+ *
+ * @design position_key is SERVER-DERIVED, never client-supplied
+ * Unlike `game_chunks.ply` (a mere index that renders nowhere if bogus),
+ * `position_key` is content. The write path derives it from
+ * (repertoireId, lineNo, ply) by replaying the line server-side, which
+ * simultaneously validates that the position is actually reachable in the
+ * repertoire and that the caller may view it. See
+ * `lines/[lineNo]/_actions/repertoire-chunks.ts`.
+ *
+ * @design ON DELETE RESTRICT on chunk_id — mirrors `position_chunks` /
+ * `game_chunks`: a referenced chunk cannot be hard-deleted (service-role
+ * only path anyway). Repertoire cascade drops its links. Rows whose
+ * position is no longer reached by any live line simply stop rendering
+ * (display is computed from current lines) — same as orphaned
+ * `repertoire_move` comment threads; they are not garbage-collected.
+ *
+ * @design one-directional only — no "used in these kata" list on the chunk
+ * page. `game_chunks` has no such backlink either (only an aggregate count,
+ * see `countChunkReferences`), and repertoires additionally have
+ * `building`/`private`/`followers_only` visibility tiers a game doesn't — a
+ * reverse-link list would leak the existence of a non-public course to
+ * anyone who can view the chunk. Matching the existing games behaviour
+ * (count only, no list) sidesteps that leak for free rather than requiring a
+ * visibility check per linked repertoire.
+ */
+export const repertoireChunks = pgTable(
+  'repertoire_chunks',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    repertoireId: uuid('repertoire_id')
+      .notNull()
+      .references(() => repertoires.id, { onDelete: 'cascade' }),
+    /** Normalised FEN (first four fields — `toPositionKey`), server-derived. */
+    positionKey: varchar('position_key', { length: 100 }).notNull(),
+    chunkId: uuid('chunk_id')
+      .notNull()
+      .references(() => chunks.id, { onDelete: 'restrict' }),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
+    suggestedById: uuid('suggested_by_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    // One link per (repertoire, position, chunk); a repeat link is a no-op
+    // (`already_linked`), not a duplicate. Leading (repertoire_id) prefix
+    // also serves the per-repertoire fetch, so no separate index needed.
+    unique('uq_repertoire_chunks').on(table.repertoireId, table.positionKey, table.chunkId),
+    // For the ON DELETE RESTRICT reference check on chunks.
+    index('idx_repertoire_chunks_chunk').on(table.chunkId),
+  ]
+);
+
+export type RepertoireChunk = typeof repertoireChunks.$inferSelect;
+export type NewRepertoireChunk = typeof repertoireChunks.$inferInsert;

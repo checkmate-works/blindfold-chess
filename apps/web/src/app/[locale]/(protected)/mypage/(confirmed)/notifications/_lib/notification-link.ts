@@ -14,6 +14,7 @@ import {
   isPositionMetadata,
   isPostMetadata,
   isRankGrantMetadata,
+  isRepertoireChunkLinkMetadata,
   isReplyMetadata,
 } from './type-guards';
 
@@ -226,6 +227,16 @@ export function buildNotificationLink(
     // `useReplayDeepLink`), hence the +1; an out-of-range value there simply
     // degrades to the overview board rather than 404ing.
     return `/games/shared/${notification.metadata.gameId}#${notification.metadata.ply + 1}`;
+  }
+  if (
+    notification.type === 'repertoire_chunk_linked' &&
+    isRepertoireChunkLinkMetadata(notification.metadata)
+  ) {
+    // lineNo / ply are the 1-based values the line page itself uses (`?move=`
+    // query param, not a #fragment — see `RepertoireLineDetailPage`), so no
+    // +1 adjustment is needed here (unlike the game_chunk_linked branch).
+    const { repertoireId, lineNo, ply } = notification.metadata;
+    return `/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}`;
   }
   if (
     (notification.type === 'like' ||

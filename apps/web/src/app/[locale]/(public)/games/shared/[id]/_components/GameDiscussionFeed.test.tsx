@@ -19,8 +19,8 @@ vi.mock('./DiscussionCommentRow', () => ({
     <div data-testid="comment-row">{node.id}</div>
   ),
 }));
-vi.mock('./GameChunkLinkCard', () => ({
-  GameChunkLinkCard: ({ items }: { items: { id: string }[] }) => (
+vi.mock('@/app/[locale]/_components/chunk-links/ChunkLinkCard', () => ({
+  ChunkLinkCard: ({ items }: { items: { id: string }[] }) => (
     <li data-testid="chunk-card">{items.map((i) => i.id).join(',')}</li>
   ),
 }));
