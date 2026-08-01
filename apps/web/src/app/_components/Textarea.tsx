@@ -3,12 +3,23 @@
 import { useState } from 'react';
 import type { Ref, TextareaHTMLAttributes } from 'react';
 
-import { INPUT_BASE_CLASSES, INPUT_SM_CLASSES, type InputSize } from './inputStyles';
+import {
+  INPUT_BASE_CLASSES,
+  INPUT_SM_CLASSES,
+  type InputSize,
+  invalidBorderClasses,
+} from './inputStyles';
 
 type Props = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   /** Show character counter. Defaults to true when maxLength is set. */
   showCount?: boolean;
   inputSize?: InputSize;
+  /**
+   * Holds a validation error: turns the border red. Pair it with `FieldError`
+   * and `fieldErrorProps` so the reason is stated, not just signalled by
+   * colour.
+   */
+  invalid?: boolean;
   ref?: Ref<HTMLTextAreaElement>;
 };
 
@@ -20,10 +31,14 @@ export function Textarea({
   value,
   onChange,
   inputSize = 'md',
+  invalid = false,
   ref,
   ...props
 }: Props) {
-  const baseClasses = inputSize === 'sm' ? INPUT_SM_CLASSES : INPUT_BASE_CLASSES;
+  const baseClasses = invalidBorderClasses(
+    inputSize === 'sm' ? INPUT_SM_CLASSES : INPUT_BASE_CLASSES,
+    invalid
+  );
   const [internalLength, setInternalLength] = useState(
     () => String(value ?? defaultValue ?? '').length
   );

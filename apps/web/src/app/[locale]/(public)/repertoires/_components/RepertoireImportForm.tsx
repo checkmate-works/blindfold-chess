@@ -4,8 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, TextInput, Textarea } from '@/app/_components';
+import {
+  Button,
+  FieldError,
+  FormErrorBanner,
+  TextInput,
+  Textarea,
+  fieldErrorProps,
+} from '@/app/_components';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
@@ -17,6 +25,8 @@ import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import { REPERTOIRE_VISIBILITIES, REPERTOIRE_VISIBILITY_COST } from '@/lib/points/spend-catalog';
 import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
+import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
+import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
 import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
@@ -41,6 +51,9 @@ const PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
  * position picker exists. Unlock by removing the disabled/overlay branch here.
  */
 const AUTHORABLE_PHASES: readonly RepertoirePhase[] = ['opening'];
+
+/** The controls this form renders a rejection against. */
+const FIELDS: readonly RepertoireFormField[] = ['name', 'moves'];
 
 /** RepertoireVisibility (snake) → its `Repertoires.visibility.*` i18n key (camel). */
 const VISIBILITY_I18N_KEY: Record<RepertoireVisibility, string> = {
@@ -102,7 +115,18 @@ export function RepertoireImportForm({
   const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>({});
   const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // A rejected submit is reported against the control at fault (see
+  // `repertoireErrorField`) and focuses it — this form is several screens tall,
+  // so a message rendered only next to the button leaves the author reading
+  // "Please paste a PGN" nowhere near the moves field it is about. The moves
+  // editor anchors on its section wrapper while the board tab is up, since the
+  // PGN textarea isn't mounted there.
+  const submitError = useSubmitError<RepertoireFormField>((field) => {
+    if (field === 'name') return 'repertoire-name';
+    return inputMode === 'board' ? 'repertoire-moves' : 'repertoire-pgn';
+  });
+  const nameError = submitError.messageFor('name');
+  const movesError = submitError.messageFor('moves');
   // Successful submit: flipped (synchronously) before router.push so the
   // navigation guard below doesn't challenge the redirect to the new kata.
   const [submitted, setSubmitted] = useState(false);
@@ -152,7 +176,7 @@ export function RepertoireImportForm({
   async function submit() {
     setConfirmOpen(false);
     setPending(true);
-    setError(null);
+    submitError.clear();
 
     const result = await createRepertoire({
       name,
@@ -168,9 +192,13 @@ export function RepertoireImportForm({
     if ('error' in result) {
       setPending(false);
       // An error the form has copy for is shown as itself; anything else (an
-      // unexpected server failure) falls back to the generic message.
+      // unexpected server failure) falls back to the generic message. Where it
+      // is shown is decided by which control the rejection belongs to.
       const key = `errors.${result.error}`;
-      setError(t.has(key) ? t(key) : t('errors.generic'));
+      submitError.report(
+        repertoireErrorField(result.error, FIELDS),
+        t.has(key) ? t(key) : t('errors.generic')
+      );
       return;
     }
     // flushSync so the isDirty -> false re-render completes before
@@ -202,7 +230,10 @@ export function RepertoireImportForm({
           placeholder={t('form.namePlaceholder')}
           maxLength={REPERTOIRE_NAME_MAX}
           className="mt-1"
+          invalid={nameError !== null}
+          {...fieldErrorProps('repertoire-name-error', nameError)}
         />
+        <FieldError id="repertoire-name-error" message={nameError} />
       </div>
 
       <div>
@@ -275,7 +306,17 @@ export function RepertoireImportForm({
         </div>
       </fieldset>
 
-      <div className="space-y-2">
+      {/* `id` + `tabIndex` make the whole moves block a focus target: a
+          rejection about the moves can land while the board tab is up, where
+          there is no textarea to focus. See `submitError` above. */}
+      <div
+        id="repertoire-moves"
+        tabIndex={-1}
+        role="group"
+        aria-label={t('form.movesLabel')}
+        aria-describedby={movesError && inputMode === 'board' ? 'repertoire-pgn-error' : undefined}
+        className="space-y-2"
+      >
         <span className="block text-sm font-medium text-foreground">
           {t('form.movesLabel')} <span className="text-destructive">*</span>
         </span>
@@ -299,6 +340,8 @@ export function RepertoireImportForm({
               inputSize="sm"
               className="font-mono"
               aria-label={t('form.pgnLabel')}
+              invalid={movesError !== null}
+              {...fieldErrorProps('repertoire-pgn-error', movesError)}
             />
           </>
         ) : (
@@ -329,8 +372,10 @@ export function RepertoireImportForm({
         )}
         {/* Outside the mode branch on purpose: board mode is where an
             unreadable PGN is hardest to notice (the builder just shows the
-            starting position), so the reason has to be visible there too. */}
-        <PgnDiagnosisHint pgn={pgn} id="repertoire-pgn-error" />
+            starting position), so the reason has to be visible there too. It
+            doubles as the moves editor's error slot — the submit rejection
+            shows here when the live diagnosis has nothing more specific. */}
+        <PgnDiagnosisHint pgn={pgn} id="repertoire-pgn-error" fallbackMessage={movesError} />
       </div>
 
       {phase === 'opening' && (
@@ -377,7 +422,10 @@ export function RepertoireImportForm({
         </p>
       </fieldset>
 
-      <FormErrorBanner message={error} />
+      {/* Form-wide errors only — anything attributable to a control is
+          rendered against that control instead, so the same sentence never
+          appears twice. */}
+      <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
       <ConfirmationModal
         isOpen={confirmOpen}

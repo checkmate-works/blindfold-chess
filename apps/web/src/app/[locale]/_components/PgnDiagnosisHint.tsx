@@ -22,6 +22,18 @@ type Props = {
   pgn: string;
   /** Ties the message to the control it describes (`aria-describedby`). */
   id: string;
+  /**
+   * A rejection the form itself holds against these moves (typically its
+   * server's verdict on the last submit), shown when the local diagnosis has
+   * nothing to say.
+   *
+   * Both belong under the moves editor, so they share one slot rather than
+   * stacking two red lines: the diagnosis wins because it is the more specific
+   * of the two (it names the move at fault), and this covers what it cannot
+   * see — an empty required field, an over-size paste, a disagreement between
+   * the two parsers.
+   */
+  fallbackMessage?: string | null;
 };
 
 /**
@@ -38,7 +50,7 @@ type Props = {
  * disagreement between this check and the server's leaves the author with the
  * server's answer rather than a button that refuses without explanation.
  */
-export function PgnDiagnosisHint({ pgn, id }: Props) {
+export function PgnDiagnosisHint({ pgn, id, fallbackMessage = null }: Props) {
   const format = usePgnDiagnosisMessage();
   const [diagnosis, setDiagnosis] = useState<PgnDiagnosis | null>(null);
 
@@ -47,5 +59,5 @@ export function PgnDiagnosisHint({ pgn, id }: Props) {
     return () => clearTimeout(timer);
   }, [pgn]);
 
-  return <FieldError id={id} message={format(diagnosis)} />;
+  return <FieldError id={id} message={format(diagnosis) ?? fallbackMessage} />;
 }

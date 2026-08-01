@@ -4,14 +4,24 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, TextInput, Textarea } from '@/app/_components';
+import {
+  Button,
+  FieldError,
+  FormErrorBanner,
+  TextInput,
+  Textarea,
+  fieldErrorProps,
+} from '@/app/_components';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
-import { INPUT_BASE_CLASSES } from '@/app/_components/inputStyles';
+import { INPUT_BASE_CLASSES, invalidBorderClasses } from '@/app/_components/inputStyles';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
+import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 
@@ -29,6 +39,14 @@ import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
  * only the action knows, so the destination cannot be derived up front.
  */
 export type SaveLineResult = { ok: true; nextHref: string } | { ok: false; error: string };
+
+/**
+ * The controls this form renders a rejection against. The chapter picker is
+ * only mounted when the course HAS chapters, so it is added conditionally —
+ * a message anchored to a control that never renders is a message never read.
+ */
+const FIELDS: readonly RepertoireFormField[] = ['name', 'moves'];
+const FIELDS_WITH_CHAPTER: readonly RepertoireFormField[] = [...FIELDS, 'chapter'];
 
 type Props = {
   repertoireId: string;
@@ -116,8 +134,22 @@ export function LineForm({
   // tab remains for raw editing.
   const [inputMode, setInputMode] = useState<'pgn' | 'board'>('board');
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  // A rejected save is reported against the control at fault and focuses it —
+  // same rule as the import / chunk forms, and it matters just as much here:
+  // the board editor alone is taller than a phone screen, so a message beside
+  // the button says nothing about the moves it is complaining about. The moves
+  // editor anchors on its section wrapper while the board tab is up, since the
+  // PGN textarea isn't mounted there.
+  const submitError = useSubmitError<RepertoireFormField>((field) => {
+    if (field === 'name') return 'line-name';
+    if (field === 'chapter') return 'line-chapter';
+    return inputMode === 'board' ? 'line-moves' : 'line-pgn';
+  });
+  const nameError = submitError.messageFor('name');
+  const chapterError = submitError.messageFor('chapter');
+  const movesError = submitError.messageFor('moves');
 
   // Note drafts that differ from what the server holds (trimmed comparison —
   // whitespace-only edits are not changes worth writing).
@@ -144,13 +176,17 @@ export function LineForm({
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setPending(true);
-    setError(null);
+    submitError.clear();
 
     const result = await saveLine({ name: name.trim() || null, chapterId: chapterId || null, pgn });
     if (!result.ok) {
       setPending(false);
-      setError(
-        KNOWN_LINE_FORM_ERRORS.has(result.error) ? t(`errors.${result.error}`) : t('errors.generic')
+      const known = KNOWN_LINE_FORM_ERRORS.has(result.error);
+      submitError.report(
+        known
+          ? repertoireErrorField(result.error, chapters.length > 0 ? FIELDS_WITH_CHAPTER : FIELDS)
+          : null,
+        known ? t(`errors.${result.error}`) : t('errors.generic')
       );
       return;
     }
@@ -171,7 +207,9 @@ export function LineForm({
     ]);
     if (noteResults.some((r) => !r.ok)) {
       setPending(false);
-      setError(t('errors.generic'));
+      // Note / markup writes belong to no single control (they span every
+      // annotated position), so this one stays form-level.
+      submitError.report(null, t('errors.generic'));
       return;
     }
 
@@ -194,7 +232,10 @@ export function LineForm({
           placeholder={t('namePlaceholder')}
           maxLength={120}
           className="mt-1 w-full"
+          invalid={nameError !== null}
+          {...fieldErrorProps('line-name-error', nameError)}
         />
+        <FieldError id="line-name-error" message={nameError} />
       </div>
 
       {/* Only once the course HAS chapters. Creating them stays on the arrange
@@ -211,7 +252,8 @@ export function LineForm({
             id="line-chapter"
             value={chapterId}
             onChange={(e) => setChapterId(e.target.value)}
-            className={`${INPUT_BASE_CLASSES} mt-1`}
+            className={`${invalidBorderClasses(INPUT_BASE_CLASSES, chapterError !== null)} mt-1`}
+            {...fieldErrorProps('line-chapter-error', chapterError)}
           >
             <option value="">{t('chapterUnfiled')}</option>
             {chapters.map((chapter) => (
@@ -220,10 +262,21 @@ export function LineForm({
               </option>
             ))}
           </select>
+          <FieldError id="line-chapter-error" message={chapterError} />
         </div>
       )}
 
-      <div className="space-y-2">
+      {/* `id` + `tabIndex` make the whole moves block a focus target: a
+          rejection about the moves can land while the board tab is up, where
+          there is no textarea to focus. See `submitError` above. */}
+      <div
+        id="line-moves"
+        tabIndex={-1}
+        role="group"
+        aria-label={tForm('movesLabel')}
+        aria-describedby={movesError && inputMode === 'board' ? 'line-pgn-error' : undefined}
+        className="space-y-2"
+      >
         <span className="block text-sm font-medium text-foreground">
           {tForm('movesLabel')} <span className="text-destructive">*</span>
         </span>
@@ -243,6 +296,8 @@ export function LineForm({
               rows={8}
               className="font-mono text-sm"
               aria-label={t('pgnLabel')}
+              invalid={movesError !== null}
+              {...fieldErrorProps('line-pgn-error', movesError)}
             />
           </>
         ) : (
@@ -275,11 +330,15 @@ export function LineForm({
         )}
         {/* Outside the mode branch on purpose: board mode is where an
             unreadable PGN is hardest to notice (the builder just shows the
-            starting position), so the reason has to be visible there too. */}
-        <PgnDiagnosisHint pgn={pgn} id="line-pgn-error" />
+            starting position), so the reason has to be visible there too. It
+            doubles as the moves editor's error slot — the submit rejection
+            shows here when the live diagnosis has nothing more specific. */}
+        <PgnDiagnosisHint pgn={pgn} id="line-pgn-error" fallbackMessage={movesError} />
       </div>
 
-      <FormErrorBanner message={error} />
+      {/* Form-wide errors only — anything attributable to a control is
+          rendered against that control instead. */}
+      <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
       <UnsavedChangesDialog
         open={isBlocking}
