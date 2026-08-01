@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, TextInput, Textarea } from '@/app/_components';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
+import { INPUT_BASE_CLASSES } from '@/app/_components/inputStyles';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -35,6 +36,14 @@ type Props = {
   /** Prefills the title field. Empty when appending a new line. */
   initialName: string;
   /**
+   * The repertoire's chapters, in display order. Empty when the course has
+   * none — the picker is then hidden rather than offered with "unfiled" as its
+   * only choice, since chapters are created on the arrange page.
+   */
+  chapters: readonly { id: string; name: string }[];
+  /** The chapter the line is filed under; null is the unfiled bucket. */
+  initialChapterId: string | null;
+  /**
    * Moves to start from — the stored line when editing, or a handed-in line
    * when appending (e.g. a kata check's uncovered line, via `?pgn=`).
    */
@@ -50,11 +59,16 @@ type Props = {
   cancelHref: string;
   submitLabels: { idle: string; saving: string };
   /** Persists the line row. Notes and markup are saved by this component. */
-  saveLine: (input: { name: string | null; pgn: string }) => Promise<SaveLineResult>;
+  saveLine: (input: {
+    name: string | null;
+    chapterId: string | null;
+    pgn: string;
+  }) => Promise<SaveLineResult>;
 };
 
 /**
- * Owner-only editor for a single repertoire line: its title and its moves.
+ * Owner-only editor for a single repertoire line: its title, the chapter it is
+ * filed under, and its moves.
  * The moves are editable two ways behind the same Board / PGN switcher as the
  * import form — an interactive board (in single-line mode a divergent move
  * replaces the tail, since a line holds no branches) or the raw PGN textbox.
@@ -71,6 +85,8 @@ export function LineForm({
   repertoireId,
   side,
   initialName,
+  chapters,
+  initialChapterId,
   initialPgn,
   initialAnnotations,
   initialShapes,
@@ -84,6 +100,9 @@ export function LineForm({
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
+  // '' is the unfiled bucket — <option value=""> cannot carry null, and the
+  // empty string is not a chapter id either way.
+  const [chapterId, setChapterId] = useState(initialChapterId ?? '');
   const [pgn, setPgn] = useState(initialPgn);
   // Per-position "why this move" drafts, edited inline under the board for
   // whichever move the cursor rests on, and persisted on Save alongside the
@@ -115,6 +134,7 @@ export function LineForm({
   const isDirty =
     !submitted &&
     (name !== initialName ||
+      chapterId !== (initialChapterId ?? '') ||
       pgn !== initialPgn ||
       changedAnnotations.length > 0 ||
       changedShapes.length > 0);
@@ -125,7 +145,7 @@ export function LineForm({
     setPending(true);
     setError(null);
 
-    const result = await saveLine({ name: name.trim() || null, pgn });
+    const result = await saveLine({ name: name.trim() || null, chapterId: chapterId || null, pgn });
     if (!result.ok) {
       setPending(false);
       setError(
@@ -175,6 +195,32 @@ export function LineForm({
           className="mt-1 w-full"
         />
       </div>
+
+      {/* Only once the course HAS chapters. Creating them stays on the arrange
+          page — this picker files a line among the sections that already
+          exist, which is the part the author knows while writing the line.
+          Where it sits INSIDE the chosen chapter is the arrange page's job
+          too; saving appends it to the end. */}
+      {chapters.length > 0 && (
+        <div>
+          <label htmlFor="line-chapter" className="block text-sm font-medium text-foreground">
+            {t('chapterLabel')}
+          </label>
+          <select
+            id="line-chapter"
+            value={chapterId}
+            onChange={(e) => setChapterId(e.target.value)}
+            className={`${INPUT_BASE_CLASSES} mt-1`}
+          >
+            <option value="">{t('chapterUnfiled')}</option>
+            {chapters.map((chapter) => (
+              <option key={chapter.id} value={chapter.id}>
+                {chapter.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="space-y-2">
         <span className="block text-sm font-medium text-foreground">

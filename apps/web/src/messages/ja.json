@@ -192,6 +192,8 @@
         "breadcrumb": "編集",
         "nameLabel": "タイトル",
         "namePlaceholder": "このラインの名前（任意）",
+        "chapterLabel": "章",
+        "chapterUnfiled": "未分類",
         "pgnLabel": "手順 (PGN)",
         "pgnHelp": "手順を編集します。アノテーションとコメントは局面に紐づいたまま保持されます。",
         "save": "保存",
@@ -200,6 +202,7 @@
         "errors": {
           "unauthorized": "このラインを編集できるのはオーナーのみです。",
           "notFound": "このラインは存在しません。",
+          "invalidChapter": "選択した章は存在しません。ページを再読み込みしてください。",
           "nameTooLong": "タイトルが長すぎます。",
           "pgnRequired": "手順を入力してください。",
           "pgnTooLarge": "PGN が大きすぎます。",

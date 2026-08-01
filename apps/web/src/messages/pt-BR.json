@@ -192,6 +192,8 @@
         "breadcrumb": "Editar",
         "nameLabel": "Título",
         "namePlaceholder": "Nome opcional para esta linha",
+        "chapterLabel": "Capítulo",
+        "chapterUnfiled": "Não classificadas",
         "pgnLabel": "Lances (PGN)",
         "pgnHelp": "Edite a sequência de lances. As anotações e os comentários permanecem vinculados às suas posições.",
         "save": "Salvar",
@@ -200,6 +202,7 @@
         "errors": {
           "unauthorized": "Apenas o proprietário pode editar esta linha.",
           "notFound": "Esta linha não existe mais.",
+          "invalidChapter": "Esse capítulo não existe mais. Recarregue a página.",
           "nameTooLong": "O título é muito longo.",
           "pgnRequired": "Digite os lances.",
           "pgnTooLarge": "O PGN é muito grande.",

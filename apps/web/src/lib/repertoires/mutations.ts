@@ -21,6 +21,7 @@ import {
   grantPointsForPost,
 } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { isValidUUID } from '@/lib/validations/uuid';
 
 import type { ArrangementError, ArrangementItem } from './line-order';
 import { NEW_CHAPTER_KEY_PREFIX, resolveArrangement, validateArrangement } from './line-order';
@@ -43,7 +44,8 @@ export type CreateRepertoireResult = ActionResult<{ id: string }>;
 export type DeleteRepertoireResult = ActionResult;
 
 export type UpdateLineResult =
-  { ok: true } | { ok: false; error: 'unauthorized' | 'notFound' | RepertoireLineEditError };
+  | { ok: true }
+  | { ok: false; error: 'unauthorized' | 'notFound' | 'invalidChapter' | RepertoireLineEditError };
 
 /**
  * "The lines this repertoire still has" — the live-rows predicate every line
@@ -66,11 +68,65 @@ function liveLinesOf(repertoireId: string) {
  */
 async function loadLiveLineByNo(repertoireId: string, lineNo: number) {
   const [line] = await db
-    .select({ id: repertoireLines.id, startingFen: repertoireLines.startingFen })
+    .select({
+      id: repertoireLines.id,
+      startingFen: repertoireLines.startingFen,
+      chapterId: repertoireLines.chapterId,
+    })
     .from(repertoireLines)
     .where(and(liveLinesOf(repertoireId), eq(repertoireLines.lineNo, lineNo)))
     .limit(1);
   return line;
+}
+
+/**
+ * Does `chapterId` name a chapter of THIS repertoire?
+ *
+ * The composite FK on `(chapter_id, repertoire_id)` already refuses a chapter
+ * belonging to another course, but it refuses it as a constraint violation —
+ * a 500 the form can say nothing useful about. Asking here turns the same
+ * mistake into the `invalidChapter` the arrange page already returns for it.
+ * The UUID shape is checked first because a malformed id is a cast error in
+ * Postgres rather than a miss.
+ */
+async function isChapterOfRepertoire(repertoireId: string, chapterId: string): Promise<boolean> {
+  if (!isValidUUID(chapterId)) return false;
+  const [chapter] = await db
+    .select({ id: repertoireChapters.id })
+    .from(repertoireChapters)
+    .where(
+      and(eq(repertoireChapters.id, chapterId), eq(repertoireChapters.repertoireId, repertoireId))
+    )
+    .limit(1);
+  return chapter !== undefined;
+}
+
+/**
+ * The `seq` that puts a line at the end of one bucket — a chapter, or the
+ * unfiled bucket when `chapterId` is null.
+ *
+ * Scoped to the bucket because `seq` is (see the schema): a max over every
+ * bucket would still sort the line last, but would leave this bucket's
+ * numbering gapped for no reason. Read inside the caller's transaction, so two
+ * concurrent writes into the same bucket cannot pick the same value.
+ */
+async function nextSeqInChapter(
+  tx: DbTx,
+  repertoireId: string,
+  chapterId: string | null
+): Promise<number> {
+  const [{ maxSeq }] = await tx
+    .select({ maxSeq: sql<number>`coalesce(max(${repertoireLines.seq}), -1)` })
+    .from(repertoireLines)
+    .where(
+      and(
+        liveLinesOf(repertoireId),
+        chapterId === null
+          ? isNull(repertoireLines.chapterId)
+          : eq(repertoireLines.chapterId, chapterId)
+      )
+    );
+  return maxSeq + 1;
 }
 
 /**
@@ -125,18 +181,34 @@ async function pruneOrphanAnnotations(tx: DbTx, repertoireId: string): Promise<v
 }
 
 /**
- * Owner-only: replace a single line's name + moves. The line is addressed by
- * its stable `line_no`; its root position is fixed (editing changes the
- * moves only). Position-keyed annotations / comments follow the surviving
- * positions automatically — and any note left attached to no line at all (a
- * position this edit removed and no sibling line reaches) is pruned in the same
- * transaction (see {@link pruneOrphanAnnotations}).
+ * Owner-only: replace a single line's name, chapter and moves. The line is
+ * addressed by its stable `line_no`; its root position is fixed (editing
+ * changes the moves only). Position-keyed annotations / comments follow the
+ * surviving positions automatically — and any note left attached to no line at
+ * all (a position this edit removed and no sibling line reaches) is pruned in
+ * the same transaction (see {@link pruneOrphanAnnotations}).
+ *
+ * @design Re-filing appends to the destination, and only when it changes
+ *
+ * `chapter_id` is line metadata like the name, so it belongs on the form that
+ * edits the line — but WHERE the line sits inside its bucket belongs to the
+ * arrange page, which is the only surface that can show the neighbours that
+ * choice is about. So a move to another chapter lands at the end of it, and a
+ * save that leaves the chapter alone must not touch `seq` at all: re-appending
+ * on every save would shuffle a line out of the position the owner arranged it
+ * into, as a side effect of fixing a typo.
+ *
+ * The vacated bucket keeps its hole in `seq`, for the same reason
+ * {@link deleteRepertoireLine} does: it is an ordering key and `ORDER BY` does
+ * not care about gaps.
  */
 export async function updateRepertoireLine(params: {
   repertoireId: string;
   lineNo: number;
   viewerId: string;
   name: string | null;
+  /** The chapter to file the line under; null is the unfiled bucket. */
+  chapterId: string | null;
   pgn: string;
 }): Promise<UpdateLineResult> {
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
@@ -152,10 +224,28 @@ export async function updateRepertoireLine(params: {
   });
   if (!validated.ok) return { ok: false, error: validated.error };
 
+  const refiled = params.chapterId !== line.chapterId;
+  if (
+    refiled &&
+    params.chapterId !== null &&
+    !(await isChapterOfRepertoire(params.repertoireId, params.chapterId))
+  ) {
+    return { ok: false, error: 'invalidChapter' };
+  }
+
   await db.transaction(async (tx) => {
     await tx
       .update(repertoireLines)
-      .set({ name: validated.data.name, pgn: validated.data.pgn })
+      .set({
+        name: validated.data.name,
+        pgn: validated.data.pgn,
+        ...(refiled
+          ? {
+              chapterId: params.chapterId,
+              seq: await nextSeqInChapter(tx, params.repertoireId, params.chapterId),
+            }
+          : {}),
+      })
       .where(eq(repertoireLines.id, line.id));
     await pruneOrphanAnnotations(tx, params.repertoireId);
   });
@@ -337,7 +427,7 @@ export async function saveRepertoireArrangement(params: {
 
 export type AddLineResult =
   | { ok: true; lineNo: number }
-  | { ok: false; error: 'unauthorized' | 'notFound' | RepertoireLineEditError };
+  | { ok: false; error: 'unauthorized' | 'notFound' | 'invalidChapter' | RepertoireLineEditError };
 
 /**
  * Owner-only: append a new line to an existing repertoire, at the repertoire's
@@ -347,21 +437,22 @@ export type AddLineResult =
  * against a fixed root), just an INSERT at the end of the list instead of an
  * UPDATE of an existing row.
  *
- * The new row lands at the end of the UNFILED bucket — `chapter_id` NULL, next
- * `seq` among the live unfiled lines (`seq` is chapter-scoped; a max over every
- * bucket would still sort last but leave the bucket's numbering gapped for no
- * reason). Filing it under a chapter is a separate, later act on the arrange
- * page. `line_no` is the next across ALL rows, soft-deleted included: a number
- * that has been used once is retired with its line, so a URL that pointed at
- * deleted moves stays a 404 instead of coming back as a different line. Both
- * maxima are read inside the insert's transaction, so two concurrent adds can't
- * land on the same values — and for `line_no` a race is a failed insert
- * (UNIQUE `uq_repertoire_line_no`) rather than a silent duplicate.
+ * The new row lands at the end of the bucket the author chose — the chapter
+ * named by `chapterId`, or the unfiled bucket when that is null, which is also
+ * what a course with no chapters yet always gets. `line_no` is the next across
+ * ALL rows, soft-deleted included: a number that has been used once is retired
+ * with its line, so a URL that pointed at deleted moves stays a 404 instead of
+ * coming back as a different line. Both maxima are read inside the insert's
+ * transaction, so two concurrent adds can't land on the same values — and for
+ * `line_no` a race is a failed insert (UNIQUE `uq_repertoire_line_no`) rather
+ * than a silent duplicate.
  */
 export async function addRepertoireLine(params: {
   repertoireId: string;
   viewerId: string;
   name: string | null;
+  /** The chapter to file the new line under; null is the unfiled bucket. */
+  chapterId: string | null;
   pgn: string;
 }): Promise<AddLineResult> {
   const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
@@ -381,11 +472,15 @@ export async function addRepertoireLine(params: {
   });
   if (!validated.ok) return { ok: false, error: validated.error };
 
+  if (
+    params.chapterId !== null &&
+    !(await isChapterOfRepertoire(params.repertoireId, params.chapterId))
+  ) {
+    return { ok: false, error: 'invalidChapter' };
+  }
+
   const lineNo = await db.transaction(async (tx) => {
-    const [{ maxSeq }] = await tx
-      .select({ maxSeq: sql<number>`coalesce(max(${repertoireLines.seq}), -1)` })
-      .from(repertoireLines)
-      .where(and(liveLinesOf(params.repertoireId), isNull(repertoireLines.chapterId)));
+    const seq = await nextSeqInChapter(tx, params.repertoireId, params.chapterId);
     // Deliberately NOT scoped to live rows — see the TSDoc above.
     const [{ maxLineNo }] = await tx
       .select({ maxLineNo: sql<number>`coalesce(max(${repertoireLines.lineNo}), 0)` })
@@ -397,8 +492,9 @@ export async function addRepertoireLine(params: {
       pgn: validated.data.pgn,
       startingFen: repertoire.startingFen,
       name: validated.data.name,
+      chapterId: params.chapterId,
       lineNo: nextLineNo,
-      seq: maxSeq + 1,
+      seq,
     });
     return nextLineNo;
   });
