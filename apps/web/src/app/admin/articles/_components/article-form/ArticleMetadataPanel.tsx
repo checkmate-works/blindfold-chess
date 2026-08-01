@@ -1,5 +1,6 @@
 'use client';
 
+import { fieldErrorProps } from '@/app/_components/FieldError';
 import { Field, Input, Select, Textarea } from '@/app/admin/_components/forms';
 import { LuX } from 'react-icons/lu';
 
@@ -26,6 +27,8 @@ type ArticleMetadataPanelProps = {
   onExcerptChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onIconChange: (value: string) => void;
+  /** A save rejection about the icon, shown at the icon input. */
+  iconError?: string | null;
   onClose: () => void;
 };
 
@@ -40,6 +43,7 @@ export function ArticleMetadataPanel({
   onExcerptChange,
   onDescriptionChange,
   onIconChange,
+  iconError = null,
   onClose,
 }: ArticleMetadataPanelProps) {
   return (
@@ -94,7 +98,7 @@ export function ArticleMetadataPanel({
           />
         </Field>
 
-        <Field label={labels.icon} htmlFor="icon">
+        <Field label={labels.icon} htmlFor="icon" error={iconError}>
           <Input
             id="icon"
             type="text"
@@ -102,6 +106,8 @@ export function ArticleMetadataPanel({
             onChange={(e) => onIconChange(e.target.value)}
             placeholder={labels.iconPlaceholder}
             maxLength={10}
+            invalid={iconError !== null}
+            {...fieldErrorProps('icon-error', iconError)}
           />
         </Field>
       </div>

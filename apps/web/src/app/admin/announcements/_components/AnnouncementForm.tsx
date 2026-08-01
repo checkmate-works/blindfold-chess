@@ -4,7 +4,9 @@ import { useRef, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { FieldError, fieldErrorProps } from '@/app/_components/FieldError';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { AdminFormTopBar } from '@/app/admin/_components/forms';
 
@@ -57,6 +59,14 @@ type AnnouncementFormProps = {
   };
 };
 
+/** Where a rejection lands, per field named by `validateAnnouncementData`. */
+const FIELD_ANCHOR_IDS: Record<string, string> = {
+  slug: 'announcement-slug',
+  title: 'announcement-title',
+  locale: 'announcement-locale',
+  content: 'announcement-content',
+};
+
 export function AnnouncementForm({
   defaultValues,
   defaultSlug,
@@ -70,9 +80,23 @@ export function AnnouncementForm({
   const router = useRouter();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
   const [isNavigatingToPreview, setIsNavigatingToPreview] = useState(false);
+
+  // Same full-height layout as ArticleForm, so the same rule: a rejection is
+  // shown at the input it names, not in a strip under the top bar.
+  const submitError = useSubmitError<string>((field) => FIELD_ANCHOR_IDS[field] ?? null);
+  const slugError = submitError.messageFor('slug');
+  const titleError = submitError.messageFor('title');
+  const localeError = submitError.messageFor('locale');
+  const contentError = submitError.messageFor('content');
+
+  function reportSaveError(result: { error: string; field?: string }) {
+    submitError.report(
+      result.field && FIELD_ANCHOR_IDS[result.field] ? result.field : null,
+      result.error
+    );
+  }
 
   const initialSlug = defaultValues?.slug ?? defaultSlug ?? '';
   const initialTitle = defaultValues?.title ?? '';
@@ -100,12 +124,12 @@ export function AnnouncementForm({
   } = useUnsavedChanges({ isDirty });
 
   const executeSave = () => {
-    setError(null);
+    submitError.clear();
     startTransition(async () => {
       const result = await onSaveDraft({ slug, title, content, locale });
 
       if ('error' in result) {
-        setError(result.error);
+        reportSaveError(result);
       } else {
         isSubmittedRef.current = true;
         showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
@@ -132,7 +156,7 @@ export function AnnouncementForm({
   };
 
   const handlePreview = () => {
-    setError(null);
+    submitError.clear();
     // Disable the unsaved-changes guard BEFORE the save fires. Setting state
     // synchronously here forces a re-render that propagates `enabled: false`
     // into next-navigation-guard before router.push is called below; otherwise
@@ -144,7 +168,7 @@ export function AnnouncementForm({
       const result = await onSaveDraft({ slug, title, content, locale });
 
       if ('error' in result) {
-        setError(result.error);
+        reportSaveError(result);
         setIsNavigatingToPreview(false);
       } else {
         isSubmittedRef.current = true;
@@ -171,63 +195,90 @@ export function AnnouncementForm({
         onCancel={() => router.push('/admin/announcements')}
       />
 
-      {error && (
+      {/* Only what no input owns (auth, a duplicate slug+locale, an
+          unexpected failure) — field rejections render at their field. */}
+      {submitError.formMessage && (
         <div className="px-4 py-2 shrink-0">
-          <p className="text-destructive text-sm">{error}</p>
+          <p
+            ref={submitError.summaryRef}
+            tabIndex={-1}
+            role="alert"
+            className="text-destructive text-sm"
+          >
+            {submitError.formMessage}
+          </p>
         </div>
       )}
 
       <div className="flex flex-1 min-h-0">
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex items-center gap-3 px-6 pt-4 pb-2">
-            <input
-              type="text"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              placeholder={labels.slugPlaceholder}
-              aria-label={labels.slug}
-              readOnly={lockSlug}
-              className={`flex-1 border border-border rounded px-3 py-1.5 text-sm text-foreground ${
-                lockSlug ? 'bg-muted cursor-not-allowed' : 'bg-card'
-              }`}
-              maxLength={255}
-            />
-            <select
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              aria-label={labels.locale}
-              disabled={lockLocale}
-              className={`border border-border rounded px-3 py-1.5 text-sm text-foreground ${
-                lockLocale ? 'bg-muted cursor-not-allowed' : 'bg-card'
-              }`}
-            >
-              <option value="en">en</option>
-              <option value="ja">ja</option>
-              <option value="es">es</option>
-              <option value="pt-BR">pt-BR</option>
-            </select>
+          <div className="px-6 pt-4 pb-2">
+            <div className="flex items-center gap-3">
+              <input
+                id="announcement-slug"
+                type="text"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder={labels.slugPlaceholder}
+                aria-label={labels.slug}
+                readOnly={lockSlug}
+                className={`flex-1 border rounded px-3 py-1.5 text-sm text-foreground ${
+                  slugError ? 'border-destructive' : 'border-border'
+                } ${lockSlug ? 'bg-muted cursor-not-allowed' : 'bg-card'}`}
+                maxLength={255}
+                {...fieldErrorProps('announcement-slug-error', slugError)}
+              />
+              <select
+                id="announcement-locale"
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                aria-label={labels.locale}
+                disabled={lockLocale}
+                className={`border rounded px-3 py-1.5 text-sm text-foreground ${
+                  localeError ? 'border-destructive' : 'border-border'
+                } ${lockLocale ? 'bg-muted cursor-not-allowed' : 'bg-card'}`}
+                {...fieldErrorProps('announcement-locale-error', localeError)}
+              >
+                <option value="en">en</option>
+                <option value="ja">ja</option>
+                <option value="es">es</option>
+                <option value="pt-BR">pt-BR</option>
+              </select>
+            </div>
+            <FieldError id="announcement-slug-error" message={slugError} />
+            <FieldError id="announcement-locale-error" message={localeError} />
           </div>
 
           <div className="px-6 pb-2">
             <input
+              id="announcement-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={labels.titlePlaceholder}
               aria-label={labels.title}
-              className="w-full text-2xl font-bold bg-card border-none outline-none placeholder:text-muted-foreground/50 rounded px-3 py-2"
+              className={`w-full text-2xl font-bold bg-card outline-none placeholder:text-muted-foreground/50 rounded px-3 py-2 ${
+                titleError ? 'border border-destructive' : 'border-none'
+              }`}
               maxLength={255}
+              {...fieldErrorProps('announcement-title-error', titleError)}
             />
+            <FieldError id="announcement-title-error" message={titleError} />
           </div>
 
           <div className="flex-1 px-6 pb-4 flex flex-col min-h-0">
             <textarea
+              id="announcement-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={labels.contentPlaceholder}
               aria-label={labels.content}
-              className="flex-1 w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
+              className={`flex-1 w-full border rounded px-3 py-2 text-sm bg-card text-foreground resize-none ${
+                contentError ? 'border-destructive' : 'border-border'
+              }`}
+              {...fieldErrorProps('announcement-content-error', contentError)}
             />
+            <FieldError id="announcement-content-error" message={contentError} />
           </div>
         </div>
       </div>

@@ -9,6 +9,8 @@ import { type FieldControlOptions, fieldControlClass } from './field-control-cla
  */
 type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & FieldControlOptions;
 
-export function Select({ className, surface, fullWidth, ...props }: SelectProps) {
-  return <select className={fieldControlClass({ surface, fullWidth, className })} {...props} />;
+export function Select({ className, surface, fullWidth, invalid, ...props }: SelectProps) {
+  return (
+    <select className={fieldControlClass({ surface, fullWidth, invalid, className })} {...props} />
+  );
 }

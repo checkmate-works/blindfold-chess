@@ -11,7 +11,30 @@ import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import { requireAdmin } from './auth';
 
 export type DeleteResult = ActionResult;
-export type MutationResult = ActionResult<{ id: string }>;
+/**
+ * Admin create/update outcome. The error branch is {@link AdminMutationError}
+ * rather than a bare `{ error }` so a validation rejection can name the input
+ * it is about; consumers that only read `.error` are unaffected.
+ */
+export type MutationResult = { success: true; id: string } | AdminMutationError;
+
+/**
+ * A validation rejection that knows which input it is about.
+ *
+ * The per-feature `validate*Data` functions compose the shared field checks in
+ * `_lib/validators.ts`, so they already know which field they were checking
+ * when one failed — this carries that knowledge to the form instead of
+ * discarding it. Admin forms are among the tallest in the app (a full-height
+ * editor with a metadata side panel), where a message stranded at the top says
+ * nothing about the input to fix. `field: null` means no input owns it.
+ *
+ * A validator that has nothing useful to attribute may still return a plain
+ * string; the guard accepts both.
+ */
+export type AdminValidationIssue = { field: string | null; message: string };
+
+/** An error result, carrying the offending input's name when one is known. */
+export type AdminMutationError = { error: string; field?: string };
 
 type DeleteConfig = {
   /** Drizzle table reference */
@@ -85,8 +108,8 @@ export async function adminFindOrFail(
  */
 export async function adminMutationGuard<T>(
   data: T,
-  validate: (data: T) => string | null
-): Promise<{ error: string } | null> {
+  validate: (data: T) => string | AdminValidationIssue | null
+): Promise<AdminMutationError | null> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;
@@ -94,7 +117,9 @@ export async function adminMutationGuard<T>(
 
   const validationError = validate(data);
   if (validationError) {
-    return { error: validationError };
+    return typeof validationError === 'string'
+      ? { error: validationError }
+      : { error: validationError.message, field: validationError.field ?? undefined };
   }
 
   return null;

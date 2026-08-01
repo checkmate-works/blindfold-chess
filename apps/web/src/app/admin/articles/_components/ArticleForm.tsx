@@ -4,8 +4,9 @@ import { useCallback, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/app/_components';
+import { FieldError, UnsavedChangesDialog, fieldErrorProps } from '@/app/_components';
 import { AdminFormTopBar } from '@/app/admin/_components/forms';
 import { LuSettings } from 'react-icons/lu';
 
@@ -88,6 +89,21 @@ type ArticleFormProps = {
  * - Plain text is extracted from the Tiptap JSON via `extractPlainText()`
  *   and stored in the `content` field for full-text search compatibility.
  */
+/**
+ * Where a rejection lands, per field named by `validateArticleData`. The
+ * editor is the one that isn't an input — it anchors on its wrapper.
+ */
+const FIELD_ANCHOR_IDS: Record<string, string> = {
+  slug: 'article-slug',
+  title: 'article-title',
+  locale: 'article-locale',
+  content: 'article-content',
+  icon: 'icon',
+};
+
+/** Fields that live in the metadata side panel, hidden until it is opened. */
+const METADATA_FIELDS = new Set(['icon']);
+
 export function ArticleForm({
   articleId,
   contentFormat = 'tiptap_json',
@@ -102,10 +118,29 @@ export function ArticleForm({
   const router = useRouter();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const [metadataOpen, setMetadataOpen] = useState(false);
   const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
   const [isNavigatingToPublish, setIsNavigatingToPublish] = useState(false);
+
+  // This form is a full-height editor with a side panel, so a rejection
+  // rendered in the strip under the top bar can sit a screen away from the
+  // input it names. Show it at that input and focus it instead.
+  const submitError = useSubmitError<string>((field) => FIELD_ANCHOR_IDS[field] ?? null);
+  const slugError = submitError.messageFor('slug');
+  const titleError = submitError.messageFor('title');
+  const localeError = submitError.messageFor('locale');
+  const contentError = submitError.messageFor('content');
+
+  /**
+   * Report a failed save at the field the server blamed. A metadata field is
+   * only rendered while the side panel is open, so open it first — otherwise
+   * the message would render into an unmounted panel and vanish.
+   */
+  function reportSaveError(result: { error: string; field?: string }) {
+    const field = result.field && FIELD_ANCHOR_IDS[result.field] ? result.field : null;
+    if (field && METADATA_FIELDS.has(field)) setMetadataOpen(true);
+    submitError.report(field, result.error);
+  }
 
   const formState = useArticleFormState({
     contentFormat,
@@ -175,12 +210,12 @@ export function ArticleForm({
   };
 
   const executeSave = () => {
-    setError(null);
+    submitError.clear();
     startTransition(async () => {
       const result = await onSaveDraft(buildFormData());
 
       if ('error' in result) {
-        setError(result.error);
+        reportSaveError(result);
       } else {
         showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
         // For new articles, redirect to edit page so subsequent saves are updates
@@ -205,13 +240,13 @@ export function ArticleForm({
   };
 
   const handlePublishSettings = () => {
-    setError(null);
+    submitError.clear();
     setIsNavigatingToPublish(true);
     startTransition(async () => {
       const result = await onSaveDraft(buildFormData());
 
       if ('error' in result) {
-        setError(result.error);
+        reportSaveError(result);
         setIsNavigatingToPublish(false);
       } else {
         router.push(`/admin/articles/${result.id}/publish`);
@@ -247,9 +282,19 @@ export function ArticleForm({
         }
       />
 
-      {error && (
+      {/* Only what no input owns — a failed auth check, a duplicate
+          slug+locale, an unexpected server error. Field rejections render at
+          their field below. */}
+      {submitError.formMessage && (
         <div className="px-4 py-2 shrink-0">
-          <p className="text-destructive text-sm">{error}</p>
+          <p
+            ref={submitError.summaryRef}
+            tabIndex={-1}
+            role="alert"
+            className="text-destructive text-sm"
+          >
+            {submitError.formMessage}
+          </p>
         </div>
       )}
 
@@ -257,42 +302,65 @@ export function ArticleForm({
       <div className="flex flex-1 min-h-0">
         <div className="flex-1 flex flex-col min-w-0">
           {/* Slug & Locale */}
-          <div className="flex items-center gap-3 px-6 pt-4 pb-2">
-            <input
-              type="text"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              placeholder={labels.slugPlaceholder}
-              aria-label={labels.slug}
-              className="flex-1 border border-border rounded px-3 py-1.5 text-sm bg-card text-foreground"
-              maxLength={255}
-            />
-            <select
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              aria-label={labels.locale}
-              className="border border-border rounded px-3 py-1.5 text-sm bg-card text-foreground"
-            >
-              <option value="en">en</option>
-              <option value="ja">ja</option>
-            </select>
+          <div className="px-6 pt-4 pb-2">
+            <div className="flex items-center gap-3">
+              <input
+                id="article-slug"
+                type="text"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder={labels.slugPlaceholder}
+                aria-label={labels.slug}
+                className={`flex-1 border rounded px-3 py-1.5 text-sm bg-card text-foreground ${
+                  slugError ? 'border-destructive' : 'border-border'
+                }`}
+                maxLength={255}
+                {...fieldErrorProps('article-slug-error', slugError)}
+              />
+              <select
+                id="article-locale"
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                aria-label={labels.locale}
+                className={`border rounded px-3 py-1.5 text-sm bg-card text-foreground ${
+                  localeError ? 'border-destructive' : 'border-border'
+                }`}
+                {...fieldErrorProps('article-locale-error', localeError)}
+              >
+                <option value="en">en</option>
+                <option value="ja">ja</option>
+              </select>
+            </div>
+            <FieldError id="article-slug-error" message={slugError} />
+            <FieldError id="article-locale-error" message={localeError} />
           </div>
 
           {/* Title input */}
           <div className="px-6 pb-2">
             <input
+              id="article-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={labels.titlePlaceholder}
               aria-label={labels.title}
-              className="w-full text-2xl font-bold bg-card border-none outline-none placeholder:text-muted-foreground/50 rounded px-3 py-2"
+              className={`w-full text-2xl font-bold bg-card outline-none placeholder:text-muted-foreground/50 rounded px-3 py-2 ${
+                titleError ? 'border border-destructive' : 'border-none'
+              }`}
               maxLength={255}
+              {...fieldErrorProps('article-title-error', titleError)}
             />
+            <FieldError id="article-title-error" message={titleError} />
           </div>
 
           {/* Editor */}
-          <div className="flex-1 px-6 pb-4 flex flex-col">
+          <div
+            id="article-content"
+            tabIndex={-1}
+            className="flex-1 px-6 pb-4 flex flex-col"
+            aria-describedby={contentError ? 'article-content-error' : undefined}
+          >
+            <FieldError id="article-content-error" message={contentError} />
             <div className="flex-1 flex flex-col rounded bg-card">
               <ArticleContentEditor
                 contentFormat={contentFormat}
@@ -355,6 +423,7 @@ export function ArticleForm({
             onExcerptChange={setExcerpt}
             onDescriptionChange={setDescription}
             onIconChange={setIcon}
+            iconError={submitError.messageFor('icon')}
             onClose={() => setMetadataOpen(false)}
           />
         )}

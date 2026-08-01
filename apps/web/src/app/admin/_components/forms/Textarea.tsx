@@ -9,6 +9,11 @@ import { type FieldControlOptions, fieldControlClass } from './field-control-cla
  */
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & FieldControlOptions;
 
-export function Textarea({ className, surface, fullWidth, ...props }: TextareaProps) {
-  return <textarea className={fieldControlClass({ surface, fullWidth, className })} {...props} />;
+export function Textarea({ className, surface, fullWidth, invalid, ...props }: TextareaProps) {
+  return (
+    <textarea
+      className={fieldControlClass({ surface, fullWidth, invalid, className })}
+      {...props}
+    />
+  );
 }

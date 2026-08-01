@@ -18,11 +18,17 @@ describe('validateArticleData', () => {
   });
 
   it('should return error when slug is empty', () => {
-    expect(validateArticleData({ ...validData, slug: '' })).toBe('invalid slug');
+    expect(validateArticleData({ ...validData, slug: '' })).toEqual({
+      field: 'slug',
+      message: 'invalid slug',
+    });
   });
 
   it('should return error when slug exceeds 255 characters', () => {
-    expect(validateArticleData({ ...validData, slug: 'a'.repeat(256) })).toBe('invalid slug');
+    expect(validateArticleData({ ...validData, slug: 'a'.repeat(256) })).toEqual({
+      field: 'slug',
+      message: 'invalid slug',
+    });
   });
 
   it('should accept slug of exactly 255 characters', () => {
@@ -30,11 +36,17 @@ describe('validateArticleData', () => {
   });
 
   it('should return error when title is empty', () => {
-    expect(validateArticleData({ ...validData, title: '' })).toBe('invalid title');
+    expect(validateArticleData({ ...validData, title: '' })).toEqual({
+      field: 'title',
+      message: 'invalid title',
+    });
   });
 
   it('should return error when title exceeds 255 characters', () => {
-    expect(validateArticleData({ ...validData, title: 'a'.repeat(256) })).toBe('invalid title');
+    expect(validateArticleData({ ...validData, title: 'a'.repeat(256) })).toEqual({
+      field: 'title',
+      message: 'invalid title',
+    });
   });
 
   it('should accept title of exactly 255 characters', () => {
@@ -42,15 +54,24 @@ describe('validateArticleData', () => {
   });
 
   it('should return error when content is empty', () => {
-    expect(validateArticleData({ ...validData, content: '' })).toBe('invalid content');
+    expect(validateArticleData({ ...validData, content: '' })).toEqual({
+      field: 'content',
+      message: 'invalid content',
+    });
   });
 
   it('should return error when locale is empty', () => {
-    expect(validateArticleData({ ...validData, locale: '' })).toBe('invalid locale');
+    expect(validateArticleData({ ...validData, locale: '' })).toEqual({
+      field: 'locale',
+      message: 'invalid locale',
+    });
   });
 
   it('should return error when locale exceeds 10 characters', () => {
-    expect(validateArticleData({ ...validData, locale: 'a'.repeat(11) })).toBe('invalid locale');
+    expect(validateArticleData({ ...validData, locale: 'a'.repeat(11) })).toEqual({
+      field: 'locale',
+      message: 'invalid locale',
+    });
   });
 
   it('should accept locale of exactly 10 characters', () => {
@@ -58,17 +79,24 @@ describe('validateArticleData', () => {
   });
 
   it('should return error when status is invalid', () => {
-    expect(validateArticleData({ ...validData, status: 'invalid' })).toBe('invalid status');
+    expect(validateArticleData({ ...validData, status: 'invalid' })).toEqual({
+      field: 'status',
+      message: 'invalid status',
+    });
   });
 
   it('should return error when status is empty', () => {
-    expect(validateArticleData({ ...validData, status: '' })).toBe('invalid status');
+    expect(validateArticleData({ ...validData, status: '' })).toEqual({
+      field: 'status',
+      message: 'invalid status',
+    });
   });
 
   it('should return error when published without publishedAt', () => {
-    expect(validateArticleData({ ...validData, status: 'published', publishedAt: null })).toBe(
-      'Published date is required when status is published'
-    );
+    expect(validateArticleData({ ...validData, status: 'published', publishedAt: null })).toEqual({
+      field: 'publishedAt',
+      message: 'Published date is required when status is published',
+    });
   });
 
   it('should accept published with publishedAt', () => {
@@ -82,7 +110,10 @@ describe('validateArticleData', () => {
   });
 
   it('should return error when icon exceeds 10 characters', () => {
-    expect(validateArticleData({ ...validData, icon: 'a'.repeat(11) })).toBe('invalid icon');
+    expect(validateArticleData({ ...validData, icon: 'a'.repeat(11) })).toEqual({
+      field: 'icon',
+      message: 'invalid icon',
+    });
   });
 
   it('should accept icon of exactly 10 characters', () => {
@@ -126,13 +157,16 @@ describe('validateArticleData', () => {
     });
 
     it('should return error when content is empty and contentFormat is markdown', () => {
-      expect(validateArticleData({ ...validData, content: '', contentFormat: 'markdown' })).toBe(
-        'invalid content'
+      expect(validateArticleData({ ...validData, content: '', contentFormat: 'markdown' })).toEqual(
+        { field: 'content', message: 'invalid content' }
       );
     });
 
     it('should return error when content is empty and contentFormat is undefined (default)', () => {
-      expect(validateArticleData({ ...validData, content: '' })).toBe('invalid content');
+      expect(validateArticleData({ ...validData, content: '' })).toEqual({
+        field: 'content',
+        message: 'invalid content',
+      });
     });
 
     it('should return error for invalid contentFormat value', () => {
@@ -141,7 +175,7 @@ describe('validateArticleData', () => {
           ...validData,
           contentFormat: 'html' as 'markdown',
         })
-      ).toBe('invalid content format');
+      ).toEqual({ field: null, message: 'invalid content format' });
     });
 
     it('should skip contentFormat validation when contentFormat is empty string (falsy)', () => {
