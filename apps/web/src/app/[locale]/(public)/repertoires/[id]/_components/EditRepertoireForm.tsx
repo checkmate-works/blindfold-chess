@@ -4,13 +4,23 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, TextInput, Textarea } from '@/app/_components';
+import {
+  Button,
+  FieldError,
+  FormErrorBanner,
+  TextInput,
+  Textarea,
+  fieldErrorProps,
+} from '@/app/_components';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
 import type { Repertoire } from '@/lib/db';
+import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
+import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoireSide } from '@/lib/repertoires/validation';
 import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
@@ -41,6 +51,9 @@ type Props = {
   /** The repertoire's side — plain metadata, editable like the title. */
   side: RepertoireSide;
 };
+
+/** The controls this form renders a rejection against (the moves live elsewhere). */
+const FIELDS: readonly RepertoireFormField[] = ['name', 'description'];
 
 /**
  * Owner-only editor for a repertoire's METADATA: its title, description, side,
@@ -82,8 +95,13 @@ export function EditRepertoireForm({
   // Checked = stay a draft. Unchecking publishes on save (one-way).
   const [keepDraft, setKeepDraft] = useState(true);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  // A rejected save is reported against the control at fault and focuses it —
+  // same rule as the import / line / chunk forms.
+  const submitError = useSubmitError<RepertoireFormField>((field) => `repertoire-${field}`);
+  const nameError = submitError.messageFor('name');
+  const descriptionError = submitError.messageFor('description');
 
   // Same leave-guard pieces as the import / line edit / chunk forms.
   const tUnsaved = useTranslations('unsavedChanges');
@@ -106,12 +124,14 @@ export function EditRepertoireForm({
     // told about it only after a successful metadata save.
     const wantsPublish = isDraft && !keepDraft;
     if (wantsPublish && lineCount < 1) {
-      setError(tPublish('needsLineTitle'));
+      // Owned by no control on this form — the lines it is missing are
+      // authored on their own pages.
+      submitError.report(null, tPublish('needsLineTitle'));
       return;
     }
 
     setPending(true);
-    setError(null);
+    submitError.clear();
 
     const result = await updateRepertoire({
       repertoireId,
@@ -123,7 +143,10 @@ export function EditRepertoireForm({
     if (!result.ok) {
       setPending(false);
       const key = `errors.${result.error}`;
-      setError(t.has(key) ? t(key) : t('errors.generic'));
+      submitError.report(
+        repertoireErrorField(result.error, FIELDS),
+        t.has(key) ? t(key) : t('errors.generic')
+      );
       return;
     }
 
@@ -134,7 +157,7 @@ export function EditRepertoireForm({
       const published = await publishRepertoire({ id: repertoireId, locale });
       if ('error' in published) {
         setPending(false);
-        setError(tPublish('errors.generic'));
+        submitError.report(null, tPublish('errors.generic'));
         return;
       }
     }
@@ -164,7 +187,10 @@ export function EditRepertoireForm({
           onChange={(e) => setName(e.target.value)}
           maxLength={REPERTOIRE_NAME_MAX}
           className="mt-1 w-full"
+          invalid={nameError !== null}
+          {...fieldErrorProps('repertoire-name-error', nameError)}
         />
+        <FieldError id="repertoire-name-error" message={nameError} />
       </div>
 
       <div>
@@ -182,7 +208,10 @@ export function EditRepertoireForm({
           maxLength={REPERTOIRE_DESCRIPTION_MAX}
           placeholder={t('descriptionPlaceholder')}
           className="mt-1 w-full"
+          invalid={descriptionError !== null}
+          {...fieldErrorProps('repertoire-description-error', descriptionError)}
         />
+        <FieldError id="repertoire-description-error" message={descriptionError} />
       </div>
 
       <fieldset>
@@ -227,7 +256,9 @@ export function EditRepertoireForm({
         </div>
       )}
 
-      <FormErrorBanner message={error} />
+      {/* Form-wide errors only — anything attributable to a control is
+          rendered against that control instead. */}
+      <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
       <UnsavedChangesDialog
         open={isBlocking}
