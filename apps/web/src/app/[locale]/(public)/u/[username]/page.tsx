@@ -23,6 +23,7 @@ import { notFound } from 'next/navigation';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAchievementCategoryNames } from '@/lib/achievements/display';
+import { countTotalEarned } from '@/lib/db/achievement-queries';
 import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 import { createClient } from '@/lib/supabase/server';
 
@@ -129,7 +130,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     gamesTotalPages,
     gameLikeMetaMap,
     gameReplyMetaMap,
-    userAchievementRows,
+    userAchievementGroups,
   } = pageData;
 
   const buildHref = (p: number) => {
@@ -224,12 +225,12 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             />
 
             {/* Achievements */}
-            {userAchievementRows.length > 0 && (
+            {userAchievementGroups.length > 0 && (
               <ProfileAchievements
-                achievements={userAchievementRows}
+                achievements={userAchievementGroups}
                 locale={locale}
                 limit={4}
-                totalCount={userAchievementRows.length}
+                totalCount={countTotalEarned(userAchievementGroups)}
                 username={username}
                 labels={{
                   sectionTitle: t('achievementsSection'),
