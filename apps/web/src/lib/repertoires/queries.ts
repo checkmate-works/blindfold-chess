@@ -88,12 +88,12 @@ async function getOpeningThumbnailFens(repertoireIds: string[]): Promise<Map<str
 }
 
 /** The columns every card list selects: the row itself plus its author. */
-const REPERTOIRE_CARD_COLUMNS = {
+export const REPERTOIRE_CARD_COLUMNS = {
   repertoire: repertoires,
   profile: AUTHOR_PROFILE_COLUMNS,
 };
 
-type RepertoireCardRow = {
+export type RepertoireCardRow = {
   repertoire: Repertoire;
   profile: RepertoireAuthorProfile | null;
 };
@@ -103,7 +103,7 @@ type RepertoireCardRow = {
  * whole page rather than a join, since the thumbnail needs the lowest-sorting
  * of possibly several linked openings.
  */
-async function toCards(rows: RepertoireCardRow[]): Promise<RepertoireWithProfile[]> {
+export async function toCards(rows: RepertoireCardRow[]): Promise<RepertoireWithProfile[]> {
   const openingFens = await getOpeningThumbnailFens(rows.map((r) => r.repertoire.id));
 
   return rows.map((row) => ({
@@ -128,7 +128,7 @@ export type RepertoireSort = 'new' | 'popular';
  * then becomes a UI change with no query to revisit — and, more importantly, a
  * repertoire that IS private must never appear in a public listing.
  */
-function publicRepertoiresOnly() {
+export function publicRepertoiresOnly() {
   return and(eq(repertoires.status, 'public'), isNull(repertoires.deletedAt));
 }
 
