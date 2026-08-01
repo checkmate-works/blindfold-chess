@@ -9,7 +9,7 @@
  * follow-up; this page is the board + annotation surface.
  */
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { formatMovesToPgn, generatePgn } from '@blindfold-chess/features/chess-core';
@@ -26,7 +26,7 @@ import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-pla
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LineDetailBoard } from './_components/LineDetailBoard';
@@ -41,14 +41,46 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+/**
+ * "<line> | <course>" — same reasoning as the repertoire detail page's
+ * metadata: the course name carries the opening this line belongs to, and the
+ * line name (or its moves-derived fallback) is what distinguishes one line's
+ * page from its twenty siblings. The canonical points at this line rather than
+ * at the `/repertoires` list, which is what the shared static metadata emitted.
+ */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  return createPageMetadata({
-    params,
-    namespace: 'Repertoires',
-    path: 'repertoires',
-    titleKey: 'line.title',
-    omitDescription: true,
-  });
+  const { locale, id, lineNo: lineNoParam } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'Repertoires' });
+
+  const lineNo = Number(lineNoParam);
+  const currentUser = await getOptionalUser();
+  const data =
+    Number.isInteger(lineNo) && lineNo >= 1
+      ? await getRepertoireLineForViewer(id, lineNo, currentUser?.id ?? null)
+      : null;
+  if (!data) {
+    return {
+      title: resolveTitle(t('line.title'), locale),
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const { repertoire, line } = data;
+  const replayed = replayRepertoireLine(line);
+  const lineName =
+    line.name ??
+    lineFallbackTitle(
+      formatMovesToPgn(replayed.sans, replayed.startsAsBlack, replayed.startMoveNumber),
+      t('detail.lineFallback', { n: lineNo })
+    );
+  const title = `${lineName} | ${repertoire.name}`;
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: `repertoires/${id}/lines/${lineNo}`, title }),
+    title: resolveTitle(title, locale),
+    ...(repertoire.status !== 'public' && { robots: { index: false, follow: false } }),
+  };
 }
 
 export default async function RepertoireLineDetailPage({ params, searchParams }: Props) {

@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { and, asc, count, desc, eq, inArray, isNull, ne } from 'drizzle-orm';
 
 import type { Repertoire, RepertoireLine } from '@/lib/db';
@@ -380,8 +382,12 @@ async function canViewRepertoire(
  * affordances (delete, annotate, publish, change visibility).
  *
  * `viewerId` is null for anonymous visitors.
+ *
+ * Wrapped in `React.cache` for per-request deduplication: `generateMetadata`
+ * and the page body both need the repertoire (the title/canonical come from
+ * the row itself), and without this each render would pay the queries twice.
  */
-export async function getRepertoireForViewer(
+export const getRepertoireForViewer = cache(async function getRepertoireForViewer(
   id: string,
   viewerId: string | null
 ): Promise<RepertoireForViewer | null> {
@@ -418,7 +424,7 @@ export async function getRepertoireForViewer(
   const profile = row.profile?.username ? row.profile : null;
 
   return { repertoire, lines, profile, isOwner };
-}
+});
 
 /**
  * A single line of a viewable repertoire, addressed by its stable `line_no`.
