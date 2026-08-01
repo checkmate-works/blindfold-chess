@@ -9,12 +9,12 @@ const CURRENT = { title: 'Fianchetto', description: 'Bishop on long diagonal' };
 describe('validateSubmitEditRequest', () => {
   it('rejects when neither field is supplied', () => {
     const result = validateSubmitEditRequest({}, CURRENT);
-    expect(result).toMatch(/at least one of title or description/i);
+    expect(result).toBe('nothingProposed');
   });
 
   it('rejects when proposed title is identical to current', () => {
     const result = validateSubmitEditRequest({ proposedTitle: 'Fianchetto' }, CURRENT);
-    expect(result).toMatch(/identical to the current title/i);
+    expect(result).toBe('titleUnchanged');
   });
 
   it('rejects when proposed description is identical to current', () => {
@@ -22,7 +22,7 @@ describe('validateSubmitEditRequest', () => {
       { proposedDescription: 'Bishop on long diagonal' },
       CURRENT
     );
-    expect(result).toMatch(/identical to the current description/i);
+    expect(result).toBe('descriptionUnchanged');
   });
 
   it('accepts a title-only change and leaves description absent', () => {
@@ -52,7 +52,7 @@ describe('validateSubmitEditRequest', () => {
 
   it('rejects an over-length proposed title', () => {
     const result = validateSubmitEditRequest({ proposedTitle: 'a'.repeat(256) }, CURRENT);
-    expect(result).toMatch(/characters or fewer/i);
+    expect(result).toBe('titleTooLong');
   });
 
   it('rejects an over-length proposed description', () => {
@@ -60,7 +60,7 @@ describe('validateSubmitEditRequest', () => {
       { proposedDescription: 'a'.repeat(CHUNK_EDIT_REQUEST_DESCRIPTION_MAX_LENGTH + 1) },
       CURRENT
     );
-    expect(result).toMatch(/characters or fewer/i);
+    expect(result).toBe('descriptionTooLong');
   });
 
   it('rejects an over-length comment even when other fields are valid', () => {
@@ -71,12 +71,12 @@ describe('validateSubmitEditRequest', () => {
       },
       CURRENT
     );
-    expect(result).toMatch(/comment must be/i);
+    expect(result).toBe('commentTooLong');
   });
 
   it('trims the proposed title and treats trimmed-equal-to-current as no-op', () => {
     const result = validateSubmitEditRequest({ proposedTitle: '  Fianchetto  ' }, CURRENT);
-    expect(result).toMatch(/identical to the current title/i);
+    expect(result).toBe('titleUnchanged');
   });
 
   it('normalizes whitespace-only description to null and rejects against a null current description', () => {
@@ -87,6 +87,6 @@ describe('validateSubmitEditRequest', () => {
       { proposedDescription: '   ' },
       { title: 'X', description: null }
     );
-    expect(result).toMatch(/identical to the current description/i);
+    expect(result).toBe('descriptionUnchanged');
   });
 });

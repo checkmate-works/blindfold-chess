@@ -4,11 +4,20 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import {
+  Button,
+  FieldError,
+  FormErrorBanner,
+  UnsavedChangesDialog,
+  fieldBorderClass,
+  fieldErrorProps,
+} from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
+import type { ChunkEditRequestValidationError } from '@/lib/chunk-edit-requests/validation';
 import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
 
 import { localizeChunkError } from '../../_lib/localize-error';
@@ -61,7 +70,39 @@ const WELL_KNOWN_ERRORS = new Set([
   'blocked',
   'chunkNotDraft',
   'alreadyHasPending',
+  // Validation verdicts. They were absent here until 2026-08, so
+  // `localizeChunkError` echoed the validator's raw English sentence into the
+  // banner — untranslated for every non-English proposer.
+  'titleTooLong',
+  'titleUnchanged',
+  'descriptionTooLong',
+  'descriptionUnchanged',
+  'nothingProposed',
+  'commentTooLong',
 ]);
+
+/** The controls a rejected submit can be anchored on. */
+type EditRequestField = 'title' | 'description' | 'comment';
+
+/**
+ * Which control owns each validation verdict. `nothingProposed` is absent on
+ * purpose: it is the "you changed neither field" rule, owned by the pair
+ * rather than by either one, so it stays in the form-level banner. So do the
+ * guard failures (`banned`, `alreadyHasPending`, …).
+ */
+const FIELD_BY_ERROR = {
+  titleTooLong: 'title',
+  titleUnchanged: 'title',
+  descriptionTooLong: 'description',
+  descriptionUnchanged: 'description',
+  commentTooLong: 'comment',
+} satisfies Partial<Record<ChunkEditRequestValidationError, EditRequestField>>;
+
+const FIELD_ANCHOR_IDS: Record<EditRequestField, string> = {
+  title: 'edit-req-title',
+  description: 'edit-req-description',
+  comment: 'edit-req-comment',
+};
 
 /**
  * Submitter-side form for the "Suggest an edit" flow.
@@ -119,9 +160,13 @@ export function EditRequestForm({
   const [proposedDescription, setProposedDescription] = useState(currentDescription ?? '');
   const [comment, setComment] = useState('');
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [otherOpen, setOtherOpen] = useState(focusIsSecondary);
   const [submitted, setSubmitted] = useState(false);
+
+  const submitError = useSubmitError<EditRequestField>((field) => FIELD_ANCHOR_IDS[field]);
+  const titleError = submitError.messageFor('title');
+  const descriptionError = submitError.messageFor('description');
+  const commentError = submitError.messageFor('comment');
 
   // Any real edit away from the prefill (or a typed comment) makes the
   // form dirty. `!submitted` drops the guard once we navigate away on a
@@ -150,12 +195,27 @@ export function EditRequestForm({
     setProposedTitle(currentTitle);
     setProposedDescription(currentDescription ?? '');
     setComment('');
-    setError(null);
+    submitError.clear();
+  }
+
+  /**
+   * Show a rejection at the control that owns it — and, when that control is
+   * one of the secondary fields tucked into the `<details>`, open the
+   * disclosure first: a message rendered inside a collapsed section is neither
+   * readable nor focusable, which is the failure this reporting exists to
+   * prevent.
+   */
+  function reportRejection(code: string) {
+    const field: EditRequestField | undefined = FIELD_BY_ERROR[code as keyof typeof FIELD_BY_ERROR];
+    const hidden =
+      (field === 'title' && !titlePrimary) || (field === 'description' && !descriptionPrimary);
+    if (hidden) flushSync(() => setOtherOpen(true));
+    submitError.report(field ?? null, localizeChunkError(code, t, WELL_KNOWN_ERRORS));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    submitError.clear();
     setPending(true);
 
     // Only send a field when the proposer actually changed it — keeps
@@ -173,7 +233,7 @@ export function EditRequestForm({
     setPending(false);
 
     if ('error' in result) {
-      setError(localizeChunkError(result.error, t, WELL_KNOWN_ERRORS));
+      reportRejection(result.error);
       return;
     }
 
@@ -202,9 +262,17 @@ export function EditRequestForm({
         value={proposedTitle}
         onChange={(e) => setProposedTitle(e.target.value)}
         className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
-          titleWanted ? 'border-amber-400 dark:border-amber-600' : 'border-border'
+          // A rejection outranks the "wanted" highlight: both colour the same
+          // border, and the one that blocks the submit is the one to show.
+          titleError
+            ? fieldBorderClass(titleError)
+            : titleWanted
+              ? 'border-amber-400 dark:border-amber-600'
+              : 'border-border'
         }`}
+        {...fieldErrorProps('edit-req-title-error', titleError)}
       />
+      <FieldError id="edit-req-title-error" message={titleError} />
     </div>
   );
 
@@ -221,9 +289,15 @@ export function EditRequestForm({
         onChange={(e) => setProposedDescription(e.target.value)}
         rows={4}
         className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
-          descriptionWanted ? 'border-amber-400 dark:border-amber-600' : 'border-border'
+          descriptionError
+            ? fieldBorderClass(descriptionError)
+            : descriptionWanted
+              ? 'border-amber-400 dark:border-amber-600'
+              : 'border-border'
         }`}
+        {...fieldErrorProps('edit-req-description-error', descriptionError)}
       />
+      <FieldError id="edit-req-description-error" message={descriptionError} />
     </div>
   );
 
@@ -232,7 +306,9 @@ export function EditRequestForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-xs text-muted-foreground">{t('formHint')}</p>
 
-        <FormErrorBanner message={error} />
+        {/* Form-wide errors only — a rejection attributable to one field is
+            rendered against that field instead. */}
+        <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
         {titlePrimary && titleField}
         {descriptionPrimary && descriptionField}
@@ -270,8 +346,10 @@ export function EditRequestForm({
             onChange={(e) => setComment(e.target.value)}
             rows={3}
             placeholder={t('fields.commentPlaceholder')}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+            className={`w-full px-3 py-2 rounded border bg-card text-foreground ${fieldBorderClass(commentError)}`}
+            {...fieldErrorProps('edit-req-comment-error', commentError)}
           />
+          <FieldError id="edit-req-comment-error" message={commentError} />
         </div>
 
         {/*

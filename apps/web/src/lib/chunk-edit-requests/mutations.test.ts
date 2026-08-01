@@ -251,7 +251,7 @@ describe('submitEditRequestEntry', () => {
       payload: { proposedTitle: 'Rook Battery' }, // identical to current
     });
 
-    expect(result).toMatchObject({ error: expect.stringMatching(/identical/i) });
+    expect(result).toEqual({ error: 'titleUnchanged' });
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
