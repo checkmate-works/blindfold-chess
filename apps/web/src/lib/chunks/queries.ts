@@ -375,7 +375,10 @@ export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]
  * work. The repertoires count follows the same basis as the games count
  * (existence + non-deleted only — not `status`, so a `building`/`private`
  * course still counts): the number alone never leaks the course's content or
- * visibility, only that something out there references this chunk.
+ * visibility, only that something out there references this chunk. This is a
+ * broader basis than the chunk page's Kata tab (`listRepertoiresLinkingChunk`,
+ * public courses only), so this count can legitimately exceed what that tab
+ * lists — the two answer different questions for different audiences.
  */
 export async function countChunkReferences(
   chunkId: string

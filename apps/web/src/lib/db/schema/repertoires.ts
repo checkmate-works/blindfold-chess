@@ -475,14 +475,20 @@ export type NewRepertoireAnnotation = typeof repertoireAnnotations.$inferInsert;
  * (display is computed from current lines) — same as orphaned
  * `repertoire_move` comment threads; they are not garbage-collected.
  *
- * @design one-directional only — no "used in these kata" list on the chunk
- * page. `game_chunks` has no such backlink either (only an aggregate count,
- * see `countChunkReferences`), and repertoires additionally have
- * `building`/`private`/`followers_only` visibility tiers a game doesn't — a
- * reverse-link list would leak the existence of a non-public course to
- * anyone who can view the chunk. Matching the existing games behaviour
- * (count only, no list) sidesteps that leak for free rather than requiring a
- * visibility check per linked repertoire.
+ * @design the reverse link (chunk page → kata) lists PUBLIC courses only.
+ * Repertoires have `building`/`private`/`followers_only` visibility tiers a
+ * game doesn't, so an *unconditional* backlink list would leak the existence
+ * of a non-public course to anyone who can view the chunk. Filtering the
+ * list to `status = 'public'` (see `listRepertoiresLinkingChunk`) removes
+ * the leak entirely — the list is viewer-independent, like the Games tab's
+ * `publiclyVisible()` rule. The trade-off: a member who links a chunk to
+ * their own private course cannot reach that course from the chunk page
+ * (only from the course side); showing viewer-visible non-public rows would
+ * need a per-viewer `canViewRepertoire`-equivalent predicate plus an
+ * unmistakable "only you can see this" marker, and is deliberately not done
+ * until wanted. Note `countChunkReferences` counts links in ALL live
+ * courses (it warns the chunk's owner about renames, where a private
+ * course's link is just as real), so its count can exceed the tab's.
  */
 export const repertoireChunks = pgTable(
   'repertoire_chunks',
