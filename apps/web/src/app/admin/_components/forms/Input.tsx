@@ -12,6 +12,8 @@ import { type FieldControlOptions, fieldControlClass } from './field-control-cla
  */
 type InputProps = InputHTMLAttributes<HTMLInputElement> & FieldControlOptions;
 
-export function Input({ className, surface, fullWidth, ...props }: InputProps) {
-  return <input className={fieldControlClass({ surface, fullWidth, className })} {...props} />;
+export function Input({ className, surface, fullWidth, invalid, ...props }: InputProps) {
+  return (
+    <input className={fieldControlClass({ surface, fullWidth, invalid, className })} {...props} />
+  );
 }

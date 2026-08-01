@@ -132,7 +132,7 @@ describe('updateAnnouncement', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateAnnouncement(announcementId, { ...validData, slug: '' });
-    expect(result).toEqual({ error: 'invalid slug' });
+    expect(result).toEqual({ error: 'invalid slug', field: 'slug' });
   });
 
   it('should return error when slug exceeds 255 characters', async () => {
@@ -143,7 +143,7 @@ describe('updateAnnouncement', () => {
       ...validData,
       slug: 'a'.repeat(256),
     });
-    expect(result).toEqual({ error: 'invalid slug' });
+    expect(result).toEqual({ error: 'invalid slug', field: 'slug' });
   });
 
   it('should return error when title is missing', async () => {
@@ -151,7 +151,7 @@ describe('updateAnnouncement', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateAnnouncement(announcementId, { ...validData, title: '' });
-    expect(result).toEqual({ error: 'invalid title' });
+    expect(result).toEqual({ error: 'invalid title', field: 'title' });
   });
 
   it('should return error when title exceeds 255 characters', async () => {
@@ -162,7 +162,7 @@ describe('updateAnnouncement', () => {
       ...validData,
       title: 'a'.repeat(256),
     });
-    expect(result).toEqual({ error: 'invalid title' });
+    expect(result).toEqual({ error: 'invalid title', field: 'title' });
   });
 
   it('should return error when content is missing', async () => {
@@ -170,7 +170,7 @@ describe('updateAnnouncement', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateAnnouncement(announcementId, { ...validData, content: '' });
-    expect(result).toEqual({ error: 'invalid content' });
+    expect(result).toEqual({ error: 'invalid content', field: 'content' });
   });
 
   it('should return error when locale is missing', async () => {
@@ -178,7 +178,7 @@ describe('updateAnnouncement', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateAnnouncement(announcementId, { ...validData, locale: '' });
-    expect(result).toEqual({ error: 'invalid locale' });
+    expect(result).toEqual({ error: 'invalid locale', field: 'locale' });
   });
 
   it('should return error when locale exceeds 10 characters', async () => {
@@ -189,7 +189,7 @@ describe('updateAnnouncement', () => {
       ...validData,
       locale: 'a'.repeat(11),
     });
-    expect(result).toEqual({ error: 'invalid locale' });
+    expect(result).toEqual({ error: 'invalid locale', field: 'locale' });
   });
 
   it('should return error when status is invalid', async () => {
@@ -197,7 +197,7 @@ describe('updateAnnouncement', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateAnnouncement(announcementId, { ...validData, status: 'invalid' });
-    expect(result).toEqual({ error: 'invalid status' });
+    expect(result).toEqual({ error: 'invalid status', field: 'status' });
   });
 
   it('should return error when status is empty', async () => {
@@ -205,7 +205,7 @@ describe('updateAnnouncement', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateAnnouncement(announcementId, { ...validData, status: '' });
-    expect(result).toEqual({ error: 'invalid status' });
+    expect(result).toEqual({ error: 'invalid status', field: 'status' });
   });
 
   it('should return error when visibility is invalid', async () => {
@@ -216,7 +216,7 @@ describe('updateAnnouncement', () => {
       ...validData,
       visibility: 'private',
     });
-    expect(result).toEqual({ error: 'invalid visibility' });
+    expect(result).toEqual({ error: 'invalid visibility', field: 'visibility' });
   });
 
   it('should return error when visibility is empty', async () => {
@@ -224,7 +224,7 @@ describe('updateAnnouncement', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateAnnouncement(announcementId, { ...validData, visibility: '' });
-    expect(result).toEqual({ error: 'invalid visibility' });
+    expect(result).toEqual({ error: 'invalid visibility', field: 'visibility' });
   });
 
   it('should return error when status is published and publishedAt is not set', async () => {
@@ -236,7 +236,10 @@ describe('updateAnnouncement', () => {
       status: 'published',
       publishedAt: null,
     });
-    expect(result).toEqual({ error: 'Published date is required when status is published' });
+    expect(result).toEqual({
+      error: 'Published date is required when status is published',
+      field: 'publishedAt',
+    });
   });
 
   it('should succeed when status is published and publishedAt is set', async () => {

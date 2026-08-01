@@ -135,7 +135,7 @@ describe('updateArticle', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateArticle(articleId, { ...validData, slug: '' });
-    expect(result).toEqual({ error: 'invalid slug' });
+    expect(result).toEqual({ error: 'invalid slug', field: 'slug' });
   });
 
   it('should return error when slug exceeds 255 characters', async () => {
@@ -146,7 +146,7 @@ describe('updateArticle', () => {
       ...validData,
       slug: 'a'.repeat(256),
     });
-    expect(result).toEqual({ error: 'invalid slug' });
+    expect(result).toEqual({ error: 'invalid slug', field: 'slug' });
   });
 
   it('should return error when title is missing', async () => {
@@ -154,7 +154,7 @@ describe('updateArticle', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateArticle(articleId, { ...validData, title: '' });
-    expect(result).toEqual({ error: 'invalid title' });
+    expect(result).toEqual({ error: 'invalid title', field: 'title' });
   });
 
   it('should return error when title exceeds 255 characters', async () => {
@@ -165,7 +165,7 @@ describe('updateArticle', () => {
       ...validData,
       title: 'a'.repeat(256),
     });
-    expect(result).toEqual({ error: 'invalid title' });
+    expect(result).toEqual({ error: 'invalid title', field: 'title' });
   });
 
   it('should return error when content is missing', async () => {
@@ -173,7 +173,7 @@ describe('updateArticle', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateArticle(articleId, { ...validData, content: '' });
-    expect(result).toEqual({ error: 'invalid content' });
+    expect(result).toEqual({ error: 'invalid content', field: 'content' });
   });
 
   it('should return error when locale is missing', async () => {
@@ -181,7 +181,7 @@ describe('updateArticle', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateArticle(articleId, { ...validData, locale: '' });
-    expect(result).toEqual({ error: 'invalid locale' });
+    expect(result).toEqual({ error: 'invalid locale', field: 'locale' });
   });
 
   it('should return error when locale exceeds 10 characters', async () => {
@@ -192,7 +192,7 @@ describe('updateArticle', () => {
       ...validData,
       locale: 'a'.repeat(11),
     });
-    expect(result).toEqual({ error: 'invalid locale' });
+    expect(result).toEqual({ error: 'invalid locale', field: 'locale' });
   });
 
   it('should return error when status is invalid', async () => {
@@ -200,7 +200,7 @@ describe('updateArticle', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateArticle(articleId, { ...validData, status: 'invalid' });
-    expect(result).toEqual({ error: 'invalid status' });
+    expect(result).toEqual({ error: 'invalid status', field: 'status' });
   });
 
   it('should return error when status is empty', async () => {
@@ -208,7 +208,7 @@ describe('updateArticle', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateArticle(articleId, { ...validData, status: '' });
-    expect(result).toEqual({ error: 'invalid status' });
+    expect(result).toEqual({ error: 'invalid status', field: 'status' });
   });
 
   it('should return error when status is published and publishedAt is not set', async () => {
@@ -220,7 +220,10 @@ describe('updateArticle', () => {
       status: 'published',
       publishedAt: null,
     });
-    expect(result).toEqual({ error: 'Published date is required when status is published' });
+    expect(result).toEqual({
+      error: 'Published date is required when status is published',
+      field: 'publishedAt',
+    });
   });
 
   it('should succeed when status is published and publishedAt is set', async () => {
@@ -261,7 +264,7 @@ describe('updateArticle', () => {
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await updateArticle(articleId, { ...validData, icon: 'a'.repeat(11) });
-    expect(result).toEqual({ error: 'invalid icon' });
+    expect(result).toEqual({ error: 'invalid icon', field: 'icon' });
   });
 
   it('should succeed when icon is exactly 10 characters', async () => {
