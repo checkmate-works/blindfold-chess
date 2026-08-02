@@ -6,6 +6,7 @@ import { TOPICS_FEED_ENTITY_TYPES, getFeedData } from '../_lib/queries';
 import type { FeedResponse } from '../_lib/types';
 
 const DEFAULT_FEED_LIMIT = 10;
+const MIN_FEED_LIMIT = 1;
 const MAX_FEED_LIMIT = 50;
 
 /**
@@ -30,7 +31,14 @@ export async function getFeed(
     return { items: [], nextCursor: null };
   }
 
-  const safeLimit = Math.min(limit ?? DEFAULT_FEED_LIMIT, MAX_FEED_LIMIT);
+  // Clamped at BOTH ends, and to a whole number. This is a Server Action, so
+  // `limit` is whatever the request body said — not what `FeedClient` passes.
+  // A ceiling alone let a negative value through to `LIMIT -N`, which Postgres
+  // rejects, turning a crafted request into a 500; a fractional or NaN value
+  // reached the driver just as unchecked.
+  const safeLimit = Number.isFinite(limit)
+    ? Math.min(Math.max(Math.trunc(limit as number), MIN_FEED_LIMIT), MAX_FEED_LIMIT)
+    : DEFAULT_FEED_LIMIT;
 
   const supabase = await createClient();
   const {

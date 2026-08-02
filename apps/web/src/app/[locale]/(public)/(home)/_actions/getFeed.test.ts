@@ -97,6 +97,53 @@ describe('getFeed', () => {
       });
     });
 
+    it.each([
+      ['a negative limit', -5],
+      ['zero', 0],
+    ])('should clamp %s up to 1 rather than reaching SQL', async (_label, limit) => {
+      // `LIMIT -4` is a Postgres error, so an unclamped negative turned a
+      // crafted request into a 500. The action is callable with any body.
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, limit);
+
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 1,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
+    });
+
+    it('should truncate a fractional limit to a whole number', async () => {
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, 7.9);
+
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 7,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
+    });
+
+    it.each([
+      ['NaN', NaN],
+      ['Infinity', Infinity],
+    ])('should fall back to the default limit for %s', async (_label, limit) => {
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, limit);
+
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
+    });
+
     it('should clamp limit to 50 when limit exceeds MAX_FEED_LIMIT', async () => {
       mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
 
