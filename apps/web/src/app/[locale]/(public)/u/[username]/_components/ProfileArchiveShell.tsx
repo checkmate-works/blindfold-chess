@@ -3,16 +3,16 @@ import { getTranslations } from 'next-intl/server';
 import { PageLayout } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { buildTabHref } from '../_lib/build-tab-href';
 import type { ProfileArchiveContext } from '../_lib/load-archive-context';
-import { ProfileIdentitySection } from './ProfileIdentitySection';
+import type { ProfileArchive } from '../_lib/profile-archive-href';
+import { ProfileIdentityHeader } from './ProfileIdentityHeader';
 import { ProfileTabBar } from './ProfileTabBar';
 
 type Props = {
   context: ProfileArchiveContext;
   locale: Locale;
   /** Which top-level tab this archive page represents. */
-  activeTab: 'topics' | 'problems' | 'games';
+  activeTab: ProfileArchive;
   children: React.ReactNode;
 };
 
@@ -27,43 +27,22 @@ type Props = {
  * layout shared with the timeline.
  */
 export async function ProfileArchiveShell({ context, locale, activeTab, children }: Props) {
-  const { profile, isOwnProfile, shell } = context;
+  const { profile, shell } = context;
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   return (
     <PageLayout title={t('pageTitle')} locale={locale}>
       <div className="space-y-6">
-        <ProfileIdentitySection
-          profile={profile}
-          locale={locale}
-          isOwnProfile={isOwnProfile}
-          isAuthenticated={!!context.currentUserId}
-          initialFollowing={shell.initialFollowing}
-          followedByProfile={shell.followedByProfile}
-          viewerHasBlocked={shell.viewerHasBlocked}
-          followerCount={shell.followerCount}
-          followingCount={shell.followingCount}
-          labels={{
-            editProfile: t('editProfile'),
-            followsYou: t('followsYou'),
-            followingCount: t('followingCount'),
-            followers: t('followers'),
-            bio: t('bio'),
-            moreActions: t('moreActions'),
-            block: t('block'),
-            unblock: t('unblock'),
-            blockedBadge: t('blockedBadge'),
-          }}
-        />
+        <ProfileIdentityHeader viewer={context} shell={shell} locale={locale} />
 
         <div>
           <ProfileTabBar
-            topicsCount={shell.allPosts.length}
+            username={profile.username}
+            topicsCount={shell.postsCount}
             problemsCount={shell.problemsCount}
             gamesCount={shell.gamesCount}
             activeTab={activeTab}
             locale={locale}
-            buildTabHref={(targetTab) => buildTabHref(profile.username, targetTab)}
             labels={{
               topicsTab: t('topicsTab'),
               problemsTab: t('problemsTab'),

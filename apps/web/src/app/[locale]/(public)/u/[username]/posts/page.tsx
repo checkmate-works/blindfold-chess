@@ -13,13 +13,13 @@ import { getTranslations } from 'next-intl/server';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
+import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileArchiveShell } from '../_components/ProfileArchiveShell';
+import { buildProfileArchiveMetadata } from '../_lib/archive-metadata';
 import { loadProfileArchiveContext } from '../_lib/load-archive-context';
-import { getProfileByUsername } from '../_lib/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,19 +37,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, username } = await params;
 
-  const profile = await getProfileByUsername(username);
-  if (!profile) {
-    return {};
-  }
-
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
-
-  return {
-    title: resolveTitle(`${t('topicsTab')} - ${profile.displayName ?? username}`, locale),
-    alternates: {
-      canonical: `/${locale}/u/${username}/posts`,
-    },
-  };
+  return buildProfileArchiveMetadata({ locale, username, labelKey: 'topicsTab', segment: 'posts' });
 }
 
 export default async function ProfilePostsPage({ params, searchParams }: Props) {
@@ -64,10 +52,18 @@ export default async function ProfilePostsPage({ params, searchParams }: Props) 
     getTranslations({ locale, namespace: 'topics.openings' }),
   ]);
 
-  const allPosts = context.shell.allPosts;
-  const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
+  const totalPages = Math.ceil(context.shell.postsCount / PAGE_SIZE);
   const currentPage = Math.max(1, Math.min(parsedParams.page, totalPages || 1));
-  const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const posts =
+    context.shell.postsCount > 0
+      ? await getPostsByUserId(
+          context.profile.id,
+          context.currentUserId,
+          PAGE_SIZE,
+          (currentPage - 1) * PAGE_SIZE
+        )
+      : [];
 
   const buildHref = (p: number) => `/${locale}/u/${username}/posts${p > 1 ? `?page=${p}` : ''}`;
 

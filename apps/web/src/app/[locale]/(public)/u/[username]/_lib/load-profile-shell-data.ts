@@ -6,8 +6,7 @@ import { countGamesByAuthorId } from '@/lib/db/games-read';
 import { hasBlocked } from '@/lib/moderation/block';
 import { countPositions } from '@/lib/positions/queries';
 
-import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
+import { getPostCountByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 
 export type ProfileShellData = {
   initialFollowing: boolean;
@@ -19,11 +18,13 @@ export type ProfileShellData = {
   followerCount: number;
   followingCount: number;
   /**
-   * Full post list, not just a count — there is no dedicated count query for
-   * `getPostsByUserId`. The main page slices this for the topics tab;
-   * `/problems/*` pages only need `allPosts.length` for the tab badge.
+   * Topic-post count only. Every page that renders the shell wants the number
+   * for a tab badge or a stats count; the posts archive is its own route and
+   * fetches the page it needs. Loading the full list here instead meant five
+   * queries and every post row (plus every reply to them) on four pages that
+   * called `.length` on the result.
    */
-  allPosts: ProfilePostWithReplyMeta[];
+  postsCount: number;
   problemsCount: number;
   gamesCount: number;
   /** One entry per badge definition, most recently earned first. */
@@ -95,7 +96,7 @@ export async function loadProfileShellData({
     blockedByProfile,
     [followerResult],
     [followingResult],
-    allPosts,
+    postsCount,
     userAchievementGroups,
     problemsCount,
     gamesCount,
@@ -106,7 +107,7 @@ export async function loadProfileShellData({
     blockedByProfilePromise,
     followerCountPromise,
     followingCountPromise,
-    getPostsByUserId(profileId, currentUserId),
+    getPostCountByUserId(profileId),
     getUserAchievementGroups(profileId),
     countPositions({ userId: profileId }),
     countGamesByAuthorId(profileId),
@@ -119,7 +120,7 @@ export async function loadProfileShellData({
     blockedByProfile,
     followerCount: followerResult.count,
     followingCount: followingResult.count,
-    allPosts,
+    postsCount,
     problemsCount,
     gamesCount,
     userAchievementGroups,
