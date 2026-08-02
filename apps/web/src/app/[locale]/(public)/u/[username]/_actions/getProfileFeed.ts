@@ -2,13 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server';
 
-import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
 import type { FeedResponse } from '@/app/[locale]/(public)/(home)/_lib/types';
 
-import {
-  parseProfileFeedFilter,
-  resolveProfileFeedEntityTypes,
-} from '../_lib/profile-feed-filters';
+import { loadProfileTimelinePage } from '../_lib/load-profile-timeline-page';
+import { parseProfileFeedFilter } from '../_lib/profile-feed-filters';
 
 const PROFILE_FEED_LIMIT = 10;
 
@@ -55,11 +52,11 @@ export async function getProfileFeed(
     data: { user },
   } = await supabase.auth.getUser();
 
-  return getFeedData({
-    cursor,
-    limit: PROFILE_FEED_LIMIT,
+  return loadProfileTimelinePage({
+    profileId,
+    filter: parseProfileFeedFilter(filter),
     currentUserId: user?.id,
-    entityTypes: resolveProfileFeedEntityTypes(parseProfileFeedFilter(filter)),
-    actorId: profileId,
+    limit: PROFILE_FEED_LIMIT,
+    cursor,
   });
 }

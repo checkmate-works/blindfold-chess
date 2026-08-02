@@ -1,14 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
-import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getProfileFeed } from '../_actions/getProfileFeed';
-import {
-  type ProfileFeedFilter,
-  resolveProfileFeedEntityTypes,
-} from '../_lib/profile-feed-filters';
+import { loadProfileTimelinePage } from '../_lib/load-profile-timeline-page';
+import { type ProfileFeedFilter } from '../_lib/profile-feed-filters';
 import { ProfileTimelineEmpty } from './ProfileTimelineEmpty';
 
 /** Items rendered server-side for SEO before the client takes over scrolling. */
@@ -50,17 +47,22 @@ export async function ProfileTimeline({
   filter,
 }: Props) {
   const [feed, tTopics, tSquares] = await Promise.all([
-    getFeedData({
-      limit: INITIAL_FEED_SIZE,
+    loadProfileTimelinePage({
+      profileId,
+      filter,
       currentUserId,
-      entityTypes: resolveProfileFeedEntityTypes(filter),
-      actorId: profileId,
+      limit: INITIAL_FEED_SIZE,
     }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
   ]);
 
-  if (feed.items.length === 0) {
+  // Only a page with nothing left behind it is genuinely empty. A page that
+  // rendered nothing but still carries a cursor is a run of feed rows whose
+  // entities are gone (see `loadProfileTimelinePage`); handing it to
+  // `FeedClient` lets the client keep paging, whereas the empty state would
+  // throw that cursor away and hide every older item the member still has.
+  if (feed.items.length === 0 && feed.nextCursor === null) {
     return <ProfileTimelineEmpty username={username} locale={locale} filter={filter} />;
   }
 
