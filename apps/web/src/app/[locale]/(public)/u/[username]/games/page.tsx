@@ -20,13 +20,12 @@ import {
 } from '@/lib/db/reply-meta-queries';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileArchiveShell } from '../_components/ProfileArchiveShell';
 import { ProfileGames } from '../_components/ProfileGames';
+import { buildProfileArchiveMetadata } from '../_lib/archive-metadata';
 import { loadProfileArchiveContext } from '../_lib/load-archive-context';
-import { getProfileByUsername } from '../_lib/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,19 +43,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, username } = await params;
 
-  const profile = await getProfileByUsername(username);
-  if (!profile) {
-    return {};
-  }
-
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
-
-  return {
-    title: resolveTitle(`${t('gamesTab')} - ${profile.displayName ?? username}`, locale),
-    alternates: {
-      canonical: `/${locale}/u/${username}/games`,
-    },
-  };
+  return buildProfileArchiveMetadata({ locale, username, labelKey: 'gamesTab', segment: 'games' });
 }
 
 export default async function ProfileGamesPage({ params, searchParams }: Props) {

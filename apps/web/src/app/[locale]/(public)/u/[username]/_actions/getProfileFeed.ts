@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { isValidUUID } from '@/lib/validations/uuid';
 
 import type { FeedResponse } from '@/app/[locale]/(public)/(home)/_lib/types';
 
@@ -8,8 +9,6 @@ import { loadProfileTimelinePage } from '../_lib/load-profile-timeline-page';
 import { parseProfileFeedFilter } from '../_lib/profile-feed-filters';
 
 const PROFILE_FEED_LIMIT = 10;
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Paginate one member's public profile timeline.
@@ -39,7 +38,7 @@ export async function getProfileFeed(
   filter: string | undefined,
   cursor?: string
 ): Promise<FeedResponse> {
-  if (!UUID_REGEX.test(profileId)) {
+  if (!isValidUUID(profileId)) {
     return { items: [], nextCursor: null };
   }
 

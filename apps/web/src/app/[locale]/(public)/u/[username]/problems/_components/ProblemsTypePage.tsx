@@ -5,12 +5,11 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileArchiveShell } from '../../_components/ProfileArchiveShell';
+import { buildProfileArchiveMetadata } from '../../_lib/archive-metadata';
 import { loadProfileArchiveContext, resolveProfileViewer } from '../../_lib/load-archive-context';
-import { getProfileByUsername } from '../../_lib/queries';
 import { loadProblemsPageData } from '../_lib/load-problems-page-data';
 import { ProblemPositionList } from './ProblemPositionList';
 import { ProblemTypeTabs } from './ProblemTypeTabs';
@@ -39,21 +38,12 @@ export async function generateProblemsTypeMetadata(
 ): Promise<Metadata> {
   const { locale, username } = await params;
 
-  const profile = await getProfileByUsername(username);
-  if (!profile) {
-    return {};
-  }
-
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
-  const displayName = profile.displayName ?? username;
-  const typeLabel = type === 'puzzle' ? t('problemTypePuzzle') : t('problemTypeMemory');
-
-  return {
-    title: resolveTitle(`${typeLabel} - ${displayName}`, locale),
-    alternates: {
-      canonical: `/${locale}/u/${username}/problems/${TYPE_ROUTE_SEGMENT[type]}`,
-    },
-  };
+  return buildProfileArchiveMetadata({
+    locale,
+    username,
+    labelKey: type === 'puzzle' ? 'problemTypePuzzle' : 'problemTypeMemory',
+    segment: `problems/${TYPE_ROUTE_SEGMENT[type]}`,
+  });
 }
 
 export async function ProblemsTypePage({
