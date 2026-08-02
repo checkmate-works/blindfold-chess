@@ -229,6 +229,25 @@ describe('getFeed', () => {
       });
     });
 
+    it.each([
+      ['a prototype key', 'constructor'],
+      ['a prototype chain key', '__proto__'],
+      ['an unknown scope', 'everything'],
+    ])('should fall back to the unfiltered feed for %s', async (_label, scope) => {
+      // Indexing the whitelist directly walked the prototype chain, and the
+      // truthy non-iterable that came back threw on spread inside the query.
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, undefined, scope as 'home');
+
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
+    });
+
     it('should scope to topic feed entity types for the topics scope', async () => {
       mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
 

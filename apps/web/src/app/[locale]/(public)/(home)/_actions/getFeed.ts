@@ -9,18 +9,34 @@ const DEFAULT_FEED_LIMIT = 10;
 const MIN_FEED_LIMIT = 1;
 const MAX_FEED_LIMIT = 50;
 
+const FEED_SCOPES = ['home', 'topics'] as const;
+
 /**
  * Feed scope selector. `'home'` fetches every entity type; `'topics'` scopes
  * the feed to discussion topics (see `TOPICS_FEED_ENTITY_TYPES`). The scope is
  * resolved to an entity-type whitelist server-side so the client cannot supply
  * an arbitrary filter.
  */
-export type FeedScope = 'home' | 'topics';
+export type FeedScope = (typeof FEED_SCOPES)[number];
 
 const SCOPE_ENTITY_TYPES: Record<FeedScope, readonly string[] | undefined> = {
   home: undefined,
   topics: TOPICS_FEED_ENTITY_TYPES,
 };
+
+/**
+ * Narrow before looking up, mirroring `parseProfileFeedFilter` on the profile
+ * timeline. This is a Server Action, so `scope` is whatever the request body
+ * said: indexing the map directly walked the prototype chain, and a scope of
+ * `'constructor'` resolved to a truthy non-iterable that threw on spread —
+ * the same crafted-request 500 as an unclamped `limit`. Unknown scopes fall
+ * back to the unfiltered home feed.
+ */
+function resolveScopeEntityTypes(scope: string): readonly string[] | undefined {
+  return FEED_SCOPES.includes(scope as FeedScope)
+    ? SCOPE_ENTITY_TYPES[scope as FeedScope]
+    : undefined;
+}
 
 export async function getFeed(
   cursor?: string,
@@ -49,6 +65,6 @@ export async function getFeed(
     cursor,
     limit: safeLimit,
     currentUserId: user?.id,
-    entityTypes: SCOPE_ENTITY_TYPES[scope],
+    entityTypes: resolveScopeEntityTypes(scope),
   });
 }

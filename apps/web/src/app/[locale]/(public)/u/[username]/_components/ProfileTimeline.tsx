@@ -68,6 +68,10 @@ export async function ProfileTimeline({
 
   return (
     <FeedClient
+      // Also keyed here, not only on the Suspense boundary in `page.tsx`:
+      // FeedClient seeds its list from `initialItems` once, so the remount is
+      // this component's invariant to keep, not its caller's to remember.
+      key={filter}
       initialItems={feed.items}
       initialCursor={feed.nextCursor}
       locale={locale}

@@ -46,24 +46,6 @@ type Props = {
    */
   nativeAdCreatives?: NativeAdView[];
   /**
-   * Which feed to paginate when loading more. Must match the scope used to
-   * build `initialItems` server-side. Defaults to `'home'` (all entity types).
-   * Ignored when `fetchPage` is supplied.
-   */
-  scope?: FeedScope;
-  /**
-   * Overrides how the next page is fetched. Pass a Server Action (bound to
-   * whatever the surface scopes by — e.g. the profile timeline binds a profile
-   * id and filter) when `scope` cannot express the query. Must return pages
-   * consistent with `initialItems`, since both land in the same list.
-   *
-   * Kept as an override rather than a required prop so the home and topics
-   * feeds keep their scope-based call untouched: those two resolve their
-   * whitelist inside `getFeed`, which is the guarantee that a client cannot
-   * pass an arbitrary entity-type list.
-   */
-  fetchPage?: (cursor: string) => Promise<FeedResponse>;
-  /**
    * Item layout. `'feed'` (default) renders a continuous divider list
    * (`border-b` between items) — the home feed. `'card'` renders each item as
    * a stand-alone bordered card spaced with `space-y-3` — matching the
@@ -75,6 +57,32 @@ type Props = {
   actionSize?: EngagementCounterSize;
   'data-tour-id'?: string;
 };
+
+/**
+ * Where the next page comes from — exactly one of the two, never both.
+ *
+ * `scope` names a feed whose entity-type whitelist is resolved inside
+ * `getFeed`, server-side; that is what stops a client from paginating an
+ * arbitrary entity-type list, so home and topics keep using it. `fetchPage`
+ * is for surfaces `scope` cannot express (the profile timeline, which pages
+ * within one member and one filter) and takes a Server Action already bound
+ * to that scope, so the client still only supplies the cursor. Either way the
+ * pages must be consistent with `initialItems` — they land in the same list.
+ *
+ * A union rather than an optional override: with both readable at once, one
+ * silently won, and `scope="topics" fetchPage={...}` type-checked while
+ * quietly paginating something else entirely.
+ */
+type PaginationSource =
+  | {
+      /** Must match the scope used to build `initialItems`. Defaults to `'home'`. */
+      scope?: FeedScope;
+      fetchPage?: never;
+    }
+  | {
+      scope?: never;
+      fetchPage: (cursor: string) => Promise<FeedResponse>;
+    };
 
 export function FeedClient({
   initialItems,
@@ -89,7 +97,7 @@ export function FeedClient({
   variant = 'feed',
   actionSize,
   ...rest
-}: Props) {
+}: Props & PaginationSource) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoading, setIsLoading] = useState(false);
