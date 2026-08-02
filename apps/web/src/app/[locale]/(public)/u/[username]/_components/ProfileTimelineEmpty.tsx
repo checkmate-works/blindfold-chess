@@ -13,6 +13,31 @@ type Props = {
   filter: ProfileFeedFilter;
 };
 
+type ArchiveKey = 'posts' | 'problems' | 'games';
+
+/**
+ * Which archives back each filter. `chunks` is the one filter with no archive
+ * of its own, and `all` offers every archive there is — a member whose only
+ * pre-feed content is problems would otherwise be told there is nothing while
+ * their problems archive is full.
+ *
+ * Exhaustive over {@link ProfileFeedFilter} on purpose: a new chip has to
+ * answer this question rather than silently fall through to "no archive".
+ */
+const ARCHIVES_BY_FILTER: Record<ProfileFeedFilter, readonly ArchiveKey[]> = {
+  all: ['posts', 'problems', 'games'],
+  topics: ['posts'],
+  problems: ['problems'],
+  games: ['games'],
+  chunks: [],
+};
+
+const ARCHIVE_PATHS: Record<ArchiveKey, (username: string) => string> = {
+  posts: (username) => `/u/${username}/posts`,
+  problems: (username) => `/u/${username}/problems/puzzles`,
+  games: (username) => `/u/${username}/games`,
+};
+
 /**
  * Empty state for the profile timeline.
  *
@@ -28,27 +53,12 @@ type Props = {
 export async function ProfileTimelineEmpty({ username, locale, filter }: Props) {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
-  // `chunks` has no archive page of its own; the rest each have one, and the
-  // unfiltered view points at posts and games together.
-  const archives: { key: string; href: string; label: string }[] =
-    filter === 'topics'
-      ? [{ key: 'posts', href: `/u/${username}/posts`, label: t('viewAllTopics') }]
-      : filter === 'problems'
-        ? [
-            {
-              key: 'problems',
-              href: `/u/${username}/problems/puzzles`,
-              label: t('viewAllProblems'),
-            },
-          ]
-        : filter === 'games'
-          ? [{ key: 'games', href: `/u/${username}/games`, label: t('viewAllGames') }]
-          : filter === 'all'
-            ? [
-                { key: 'posts', href: `/u/${username}/posts`, label: t('viewAllTopics') },
-                { key: 'games', href: `/u/${username}/games`, label: t('viewAllGames') },
-              ]
-            : [];
+  const labels: Record<ArchiveKey, string> = {
+    posts: t('viewAllTopics'),
+    problems: t('viewAllProblems'),
+    games: t('viewAllGames'),
+  };
+  const archives = ARCHIVES_BY_FILTER[filter];
 
   return (
     <div className="py-8 text-center">
@@ -57,12 +67,12 @@ export async function ProfileTimelineEmpty({ username, locale, filter }: Props) 
         <p className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
           {archives.map((archive) => (
             <Link
-              key={archive.key}
-              href={archive.href}
+              key={archive}
+              href={ARCHIVE_PATHS[archive](username)}
               locale={locale}
               className={TEXT_LINK_CLASSES}
             >
-              {archive.label}
+              {labels[archive]}
             </Link>
           ))}
         </p>
