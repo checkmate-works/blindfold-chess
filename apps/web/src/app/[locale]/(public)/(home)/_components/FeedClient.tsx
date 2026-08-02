@@ -10,7 +10,7 @@ import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { getFeed } from '../_actions/getFeed';
 import type { FeedScope } from '../_actions/getFeed';
 import { buildDisplayItems } from '../_lib/feed-display';
-import type { DisplayItem, FeedItem } from '../_lib/types';
+import type { DisplayItem, FeedItem, FeedResponse } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
 import { ResponsiveAdSlot } from './ResponsiveAdSlot';
@@ -40,8 +40,21 @@ type Props = {
   /**
    * Which feed to paginate when loading more. Must match the scope used to
    * build `initialItems` server-side. Defaults to `'home'` (all entity types).
+   * Ignored when `fetchPage` is supplied.
    */
   scope?: FeedScope;
+  /**
+   * Overrides how the next page is fetched. Pass a Server Action (bound to
+   * whatever the surface scopes by — e.g. the profile timeline binds a profile
+   * id and filter) when `scope` cannot express the query. Must return pages
+   * consistent with `initialItems`, since both land in the same list.
+   *
+   * Kept as an override rather than a required prop so the home and topics
+   * feeds keep their scope-based call untouched: those two resolve their
+   * whitelist inside `getFeed`, which is the guarantee that a client cannot
+   * pass an arbitrary entity-type list.
+   */
+  fetchPage?: (cursor: string) => Promise<FeedResponse>;
   /**
    * Item layout. `'feed'` (default) renders a continuous divider list
    * (`border-b` between items) — the home feed. `'card'` renders each item as
@@ -64,6 +77,7 @@ export function FeedClient({
   showAds = false,
   nativeAdCreatives,
   scope = 'home',
+  fetchPage,
   variant = 'feed',
   actionSize,
   ...rest
@@ -130,14 +144,14 @@ export function FeedClient({
     isLoadingRef.current = true;
     setIsLoading(true);
     try {
-      const result = await getFeed(cursor, undefined, scope);
+      const result = fetchPage ? await fetchPage(cursor) : await getFeed(cursor, undefined, scope);
       setItems((prev) => [...prev, ...result.items]);
       setCursor(result.nextCursor);
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);
     }
-  }, [cursor, scope]);
+  }, [cursor, scope, fetchPage]);
 
   useEffect(() => {
     const el = sentinelRef.current;
