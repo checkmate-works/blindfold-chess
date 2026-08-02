@@ -24,7 +24,6 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string) => {
     const labels: Record<string, string> = {
       'tabs.board': 'Game',
-      'tabs.controls': 'Controls',
       'tabs.appearance': 'Appearance',
       'tabs.privacy': 'Privacy',
       'tabs.notifications': 'Notifications',
@@ -35,9 +34,6 @@ vi.mock('@/i18n/use-safe-translations', () => ({
 
 vi.mock('./GameSettings', () => ({
   GameSettings: () => <div data-testid="game-settings" />,
-}));
-vi.mock('./ControlSettings', () => ({
-  ControlSettings: () => <div data-testid="control-settings" />,
 }));
 vi.mock('./AppearanceSettings', () => ({
   AppearanceSettings: () => <div data-testid="appearance-settings" />,
@@ -78,7 +74,6 @@ describe('PreferencesTabs', () => {
     const tabButtons = screen.getAllByRole('button');
     expect(tabButtons.map((btn) => btn.textContent)).toEqual([
       'Game',
-      'Controls',
       'Appearance',
       'Privacy',
       'Notifications',
@@ -135,6 +130,24 @@ describe('PreferencesTabs', () => {
   });
 
   it('defaults to the game tab when no tab param is present', () => {
+    mockUseAuth.mockReturnValue({ user: null, isLoading: false });
+    render(<PreferencesTabs locale="en" />);
+
+    expect(screen.getByTestId('game-settings')).toBeDefined();
+  });
+
+  it('falls back to the game tab for a retired tab param (?tab=controls)', () => {
+    // Move input moved into the Game tab; bookmarks and external links to the
+    // old Controls tab must not land on an empty pane.
+    mockTabParam = 'controls';
+    mockUseAuth.mockReturnValue({ user: null, isLoading: false });
+    render(<PreferencesTabs locale="en" />);
+
+    expect(screen.getByTestId('game-settings')).toBeDefined();
+  });
+
+  it('falls back to the game tab for an unknown tab param', () => {
+    mockTabParam = 'not-a-tab';
     mockUseAuth.mockReturnValue({ user: null, isLoading: false });
     render(<PreferencesTabs locale="en" />);
 

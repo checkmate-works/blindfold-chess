@@ -37,10 +37,12 @@ export function ControlSettingsContent({ settings, onSettingsChange }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* The Board Peek Mode picker used to live here, but it configures how the
-          board surfaces during play (gated on boardVisibility === 'peek'), so it
-          now sits next to the board-visibility picker in the "Game" tab /
-          new-game form / mid-game modal. This tab is move-input only. */}
+      {/* Move input only. The Board Peek Mode picker used to live alongside it,
+          but it configures how the board surfaces during play (gated on
+          boardVisibility === 'peek'), so it now sits next to the
+          board-visibility picker in the "Game" tab / new-game form / mid-game
+          modal. Losing that picker is what left this block small enough for its
+          own "Controls" tab to be folded into the Game tab. */}
       <div>
         <h4 className="text-sm text-foreground mb-4">{t('controls.moveInput')}</h4>
         <div className="space-y-2">
