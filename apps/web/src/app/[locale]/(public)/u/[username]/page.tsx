@@ -40,8 +40,6 @@ import { redirect } from 'next/navigation';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { countTotalEarned } from '@/lib/db/achievement-queries';
-
 import { FeedSkeleton } from '@/app/[locale]/(public)/(home)/_components/FeedSkeleton';
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
@@ -50,11 +48,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileBlockedNotice } from './_components/ProfileBlockedNotice';
 import { ProfileFeedFilterChips } from './_components/ProfileFeedFilterChips';
-import { ProfileIdentitySection } from './_components/ProfileIdentitySection';
+import { ProfileIdentityHeader } from './_components/ProfileIdentityHeader';
 import { ProfileStatsBand } from './_components/ProfileStatsBand';
 import { ProfileTimeline } from './_components/ProfileTimeline';
 import { resolveProfileViewer } from './_lib/load-archive-context';
 import { loadPublicProfilePageData } from './_lib/load-page-data';
+import { profileArchiveHref } from './_lib/profile-archive-href';
 import { parseProfileFeedFilter } from './_lib/profile-feed-filters';
 import { getProfileByUsername } from './_lib/queries';
 
@@ -102,16 +101,15 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
 
   // Back-compat with the tab-based profile: `?tab=games` and a bare `?page=N`
   // (which used to page the topics tab) now belong to the archive routes.
+  const pageQuery = parsedParams.page > 1 ? `?page=${parsedParams.page}` : '';
   if (parsedParams.tab === 'games') {
-    redirect(
-      `/${locale}/u/${username}/games${parsedParams.page > 1 ? `?page=${parsedParams.page}` : ''}`
-    );
+    redirect(`/${locale}${profileArchiveHref(username, 'games')}${pageQuery}`);
   }
   if (parsedParams.tab === 'problems') {
-    redirect(`/${locale}/u/${username}/problems/puzzles`);
+    redirect(`/${locale}${profileArchiveHref(username, 'problems')}`);
   }
   if (parsedParams.page > 1) {
-    redirect(`/${locale}/u/${username}/posts?page=${parsedParams.page}`);
+    redirect(`/${locale}${profileArchiveHref(username, 'topics')}${pageQuery}`);
   }
 
   const filter = parseProfileFeedFilter(parsedParams.filter);
@@ -151,28 +149,11 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
       titleAction={!restricted && <HelpTourButton steps={helpSteps} label={t('help.label')} />}
     >
       <div className="space-y-6">
-        <ProfileIdentitySection
-          profile={profile}
+        <ProfileIdentityHeader
+          viewer={viewer}
+          shell={pageData}
           locale={locale}
-          isOwnProfile={isOwnProfile}
-          isAuthenticated={!!currentUserId}
-          initialFollowing={pageData.initialFollowing}
-          followedByProfile={pageData.followedByProfile}
-          viewerHasBlocked={pageData.viewerHasBlocked}
           restricted={restricted}
-          followerCount={pageData.followerCount}
-          followingCount={pageData.followingCount}
-          labels={{
-            editProfile: t('editProfile'),
-            followsYou: t('followsYou'),
-            followingCount: t('followingCount'),
-            followers: t('followers'),
-            bio: t('bio'),
-            moreActions: t('moreActions'),
-            block: t('block'),
-            unblock: t('unblock'),
-            blockedBadge: t('blockedBadge'),
-          }}
         />
         {restricted ? (
           <ProfileBlockedNotice
@@ -185,8 +166,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
               locale={locale}
               rankSlug={pageData.rankSlug}
               achievements={pageData.userAchievementGroups}
-              achievementCount={countTotalEarned(pageData.userAchievementGroups)}
-              postsCount={pageData.allPosts.length}
+              postsCount={pageData.postsCount}
               problemsCount={pageData.problemsCount}
               gamesCount={pageData.gamesCount}
             />

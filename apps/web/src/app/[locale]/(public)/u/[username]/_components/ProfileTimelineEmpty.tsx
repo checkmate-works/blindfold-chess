@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { type ProfileArchive, profileArchiveHref } from '../_lib/profile-archive-href';
 import type { ProfileFeedFilter } from '../_lib/profile-feed-filters';
 
 type Props = {
@@ -12,8 +13,6 @@ type Props = {
   locale: Locale;
   filter: ProfileFeedFilter;
 };
-
-type ArchiveKey = 'posts' | 'problems' | 'games';
 
 /**
  * Which archives back each filter. `chunks` is the one filter with no archive
@@ -24,19 +23,19 @@ type ArchiveKey = 'posts' | 'problems' | 'games';
  * Exhaustive over {@link ProfileFeedFilter} on purpose: a new chip has to
  * answer this question rather than silently fall through to "no archive".
  */
-const ARCHIVES_BY_FILTER: Record<ProfileFeedFilter, readonly ArchiveKey[]> = {
-  all: ['posts', 'problems', 'games'],
-  topics: ['posts'],
+const ARCHIVES_BY_FILTER: Record<ProfileFeedFilter, readonly ProfileArchive[]> = {
+  all: ['topics', 'problems', 'games'],
+  topics: ['topics'],
   problems: ['problems'],
   games: ['games'],
   chunks: [],
 };
 
-const ARCHIVE_PATHS: Record<ArchiveKey, (username: string) => string> = {
-  posts: (username) => `/u/${username}/posts`,
-  problems: (username) => `/u/${username}/problems/puzzles`,
-  games: (username) => `/u/${username}/games`,
-};
+const ARCHIVE_LABEL_KEYS = {
+  topics: 'viewAllTopics',
+  problems: 'viewAllProblems',
+  games: 'viewAllGames',
+} as const satisfies Record<ProfileArchive, string>;
 
 /**
  * Empty state for the profile timeline.
@@ -53,11 +52,6 @@ const ARCHIVE_PATHS: Record<ArchiveKey, (username: string) => string> = {
 export async function ProfileTimelineEmpty({ username, locale, filter }: Props) {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
-  const labels: Record<ArchiveKey, string> = {
-    posts: t('viewAllTopics'),
-    problems: t('viewAllProblems'),
-    games: t('viewAllGames'),
-  };
   const archives = ARCHIVES_BY_FILTER[filter];
 
   return (
@@ -68,11 +62,11 @@ export async function ProfileTimelineEmpty({ username, locale, filter }: Props) 
           {archives.map((archive) => (
             <Link
               key={archive}
-              href={ARCHIVE_PATHS[archive](username)}
+              href={profileArchiveHref(username, archive)}
               locale={locale}
               className={TEXT_LINK_CLASSES}
             >
-              {labels[archive]}
+              {t(ARCHIVE_LABEL_KEYS[archive])}
             </Link>
           ))}
         </p>

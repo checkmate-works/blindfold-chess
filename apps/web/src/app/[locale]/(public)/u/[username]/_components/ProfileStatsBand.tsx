@@ -3,11 +3,14 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 
 import { getAchievementIconEmoji } from '@/lib/achievements/display';
-import type { UserAchievementGroup } from '@/lib/db/achievement-queries';
+import { type UserAchievementGroup, countTotalEarned } from '@/lib/db/achievement-queries';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
+import { FOCUS_RING_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { type ProfileArchive, profileArchiveHref } from '../_lib/profile-archive-href';
 
 type Props = {
   username: string;
@@ -16,8 +19,6 @@ type Props = {
   rankSlug: RankSlug | null;
   /** One entry per badge definition, most recently earned first. */
   achievements: UserAchievementGroup[];
-  /** Total badges earned, counting repeat wins. */
-  achievementCount: number;
   postsCount: number;
   problemsCount: number;
   gamesCount: number;
@@ -46,7 +47,6 @@ export async function ProfileStatsBand({
   locale,
   rankSlug,
   achievements,
-  achievementCount,
   postsCount,
   problemsCount,
   gamesCount,
@@ -58,16 +58,12 @@ export async function ProfileStatsBand({
 
   const beltColor = rankSlug ? getBeltColorHex(rankSlug) : null;
   const previewIcons = achievements.slice(0, ICON_PREVIEW_LIMIT);
+  const achievementCount = countTotalEarned(achievements);
 
-  const counts = [
-    { key: 'posts', label: t('topicsTab'), value: postsCount, href: `/u/${username}/posts` },
-    {
-      key: 'problems',
-      label: t('problemsTab'),
-      value: problemsCount,
-      href: `/u/${username}/problems/puzzles`,
-    },
-    { key: 'games', label: t('gamesTab'), value: gamesCount, href: `/u/${username}/games` },
+  const counts: { archive: ProfileArchive; label: string; value: number }[] = [
+    { archive: 'topics', label: t('topicsTab'), value: postsCount },
+    { archive: 'problems', label: t('problemsTab'), value: problemsCount },
+    { archive: 'games', label: t('gamesTab'), value: gamesCount },
   ];
 
   return (
@@ -113,10 +109,10 @@ export async function ProfileStatsBand({
       >
         {counts.map((count) => (
           <Link
-            key={count.key}
-            href={count.href}
+            key={count.archive}
+            href={profileArchiveHref(username, count.archive)}
             locale={locale}
-            className="transition-colors hover:text-foreground"
+            className={`rounded-sm transition-colors hover:text-foreground ${FOCUS_RING_CLASSES}`}
           >
             <span className="font-semibold text-foreground tabular-nums">{count.value}</span>{' '}
             {count.label}
