@@ -22,6 +22,13 @@ export type LeaderboardResult = {
   rows: LeaderboardRow[];
   totalCount: number;
   currentUserRank: LeaderboardRow | null;
+  /**
+   * True when the signed-in viewer has opted out via
+   * `profiles.hidden_from_leaderboard` — their own-rank row is deliberately
+   * absent, and the UI shows a "hidden by your settings" note instead so the
+   * missing row doesn't read as a bug.
+   */
+  viewerHidden: boolean;
 };
 
 export type LeaderboardEntry = {

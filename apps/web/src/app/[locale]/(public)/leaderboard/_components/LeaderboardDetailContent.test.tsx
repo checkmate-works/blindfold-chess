@@ -59,7 +59,7 @@ describe('LeaderboardDetailContent pagination labels', () => {
         moduleSlug="diagonal-quiz"
         currentUserId={null}
         // 3 pages (PAGE_SIZE = 20) so the pagination nav actually renders.
-        data={{ rows: [], totalCount: 60, currentUserRank: null }}
+        data={{ rows: [], totalCount: 60, currentUserRank: null, viewerHidden: false }}
         currentPage={2}
       />
     );

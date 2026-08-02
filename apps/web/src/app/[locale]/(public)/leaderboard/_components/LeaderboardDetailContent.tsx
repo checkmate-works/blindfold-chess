@@ -73,6 +73,7 @@ export function LeaderboardDetailContent({
           currentUserId={currentUserId}
           currentUserRank={data.currentUserRank}
           locale={locale}
+          viewerHidden={data.viewerHidden}
         />
         <PaginationNavView
           currentPage={currentPage}

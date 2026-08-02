@@ -559,7 +559,13 @@
       "board": "ゲーム",
       "controls": "コントロール",
       "appearance": "外観",
+      "privacy": "プライバシー",
       "notifications": "通知"
+    },
+    "privacy": {
+      "description": "自分の活動をどこまで公開するかを設定します。",
+      "hideFromLeaderboard": "ランキングに表示しない",
+      "hideFromLeaderboardHelp": "すべてのランキング（チャレンジ・Exp、全期間）に表示されなくなり、自分の順位表示も非表示になります。今後の月間ランキングバッジの対象からも除外されます。すでに獲得したバッジや過去のフィード投稿はそのまま残ります。設定は即時反映されます。"
     },
     "game": {
       "title": "ボード設定",
@@ -5708,6 +5714,7 @@
     },
     "emptyState": "まだスコアが記録されていません。最初の記録を作りましょう！",
     "yourRank": "あなた",
+    "hiddenNotice": "プライバシー設定により、ランキングに表示されていません。",
     "moduleFilterLabel": "モジュールフィルター",
     "moduleFilter": {
       "all": "全",

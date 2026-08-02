@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ADD COLUMN "hidden_from_leaderboard" boolean DEFAULT false NOT NULL;

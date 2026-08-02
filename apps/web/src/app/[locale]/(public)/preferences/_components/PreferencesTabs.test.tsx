@@ -26,6 +26,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
       'tabs.board': 'Game',
       'tabs.controls': 'Controls',
       'tabs.appearance': 'Appearance',
+      'tabs.privacy': 'Privacy',
       'tabs.notifications': 'Notifications',
     };
     return labels[key] ?? key;
@@ -44,6 +45,9 @@ vi.mock('./AppearanceSettings', () => ({
 vi.mock('./NotificationSettings', () => ({
   NotificationSettings: () => <div data-testid="notification-settings" />,
 }));
+vi.mock('./PrivacySettings', () => ({
+  PrivacySettings: () => <div data-testid="privacy-settings" />,
+}));
 
 describe('PreferencesTabs', () => {
   beforeEach(() => {
@@ -51,21 +55,23 @@ describe('PreferencesTabs', () => {
     mockTabParam = null;
   });
 
-  it('does not show the Notifications tab while auth state is still loading', () => {
+  it('does not show the account-level tabs while auth state is still loading', () => {
     mockUseAuth.mockReturnValue({ user: null, isLoading: true });
     render(<PreferencesTabs locale="en" />);
 
     expect(screen.queryByText('Notifications')).toBeNull();
+    expect(screen.queryByText('Privacy')).toBeNull();
   });
 
-  it('does not show the Notifications tab for a signed-out visitor', () => {
+  it('does not show the account-level tabs for a signed-out visitor', () => {
     mockUseAuth.mockReturnValue({ user: null, isLoading: false });
     render(<PreferencesTabs locale="en" />);
 
     expect(screen.queryByText('Notifications')).toBeNull();
+    expect(screen.queryByText('Privacy')).toBeNull();
   });
 
-  it('shows the Notifications tab as the rightmost tab for a signed-in user', () => {
+  it('shows the account-level tabs for a signed-in user, Notifications rightmost', () => {
     mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isLoading: false });
     render(<PreferencesTabs locale="en" />);
 
@@ -74,6 +80,7 @@ describe('PreferencesTabs', () => {
       'Game',
       'Controls',
       'Appearance',
+      'Privacy',
       'Notifications',
     ]);
   });
@@ -100,6 +107,22 @@ describe('PreferencesTabs', () => {
     render(<PreferencesTabs locale="en" />);
 
     expect(screen.getByTestId('notification-settings')).toBeDefined();
+  });
+
+  it('renders PrivacySettings when the privacy tab is active and the user is signed in', () => {
+    mockTabParam = 'privacy';
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isLoading: false });
+    render(<PreferencesTabs locale="en" />);
+
+    expect(screen.getByTestId('privacy-settings')).toBeDefined();
+  });
+
+  it('renders PrivacySettings on ?tab=privacy even while auth is still loading — the real gate is server-side', () => {
+    mockTabParam = 'privacy';
+    mockUseAuth.mockReturnValue({ user: null, isLoading: true });
+    render(<PreferencesTabs locale="en" />);
+
+    expect(screen.getByTestId('privacy-settings')).toBeDefined();
   });
 
   it('navigates to the notifications tab on click', () => {

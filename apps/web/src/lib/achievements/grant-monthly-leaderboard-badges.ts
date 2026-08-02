@@ -94,13 +94,19 @@ async function processAchievementDef(
   // Query top N users for this menu_type + leaderboard_key in the previous month.
   // Uses DISTINCT ON to get each user's best score, then ranks them.
   // Ranking: Score DESC -> Incorrect ASC -> Time ASC
+  //
+  // Users with `profiles.hidden_from_leaderboard` (checked at batch execution
+  // time — the flag's current value is the policy) are excluded BEFORE
+  // ROW_NUMBER, not by skipping the grant afterwards: skipping after ranking
+  // would let a hidden user absorb a placement, so the user shown at that
+  // placement on the public leaderboard would get no badge.
   const rankedRows = await db.execute<RankedRow>(sql`
     SELECT user_id, score, incorrect_answers, time_taken, rank::int
     FROM (
       SELECT
-        user_id, score, incorrect_answers, time_taken,
+        best.user_id, best.score, best.incorrect_answers, best.time_taken,
         ROW_NUMBER() OVER (
-          ORDER BY score DESC, incorrect_answers ASC, time_taken ASC
+          ORDER BY best.score DESC, best.incorrect_answers ASC, best.time_taken ASC
         ) AS rank
       FROM (
         SELECT DISTINCT ON (user_id)
@@ -112,6 +118,7 @@ async function processAchievementDef(
           AND created_at < ${range.end.toISOString()}
         ORDER BY user_id, score DESC, incorrect_answers ASC, time_taken ASC
       ) best
+      JOIN profiles p ON p.id = best.user_id AND NOT p.hidden_from_leaderboard
     ) ranked
     WHERE rank = ${placement}
   `);

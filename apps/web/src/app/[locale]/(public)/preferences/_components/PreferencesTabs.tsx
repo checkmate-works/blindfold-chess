@@ -10,6 +10,7 @@ import { AppearanceSettings } from './AppearanceSettings';
 import { ControlSettings } from './ControlSettings';
 import { GameSettings } from './GameSettings';
 import { NotificationSettings } from './NotificationSettings';
+import { PrivacySettings } from './PrivacySettings';
 
 type Props = {
   locale: string;
@@ -38,16 +39,23 @@ export function PreferencesTabs({ locale }: Props) {
     { id: 'game', label: t('tabs.board') },
     { id: 'controls', label: t('tabs.controls') },
     { id: 'appearance', label: t('tabs.appearance') },
-    // Rightmost, and only for signed-in users — this tab configures a
-    // per-account setting, not a local/device preference like the others.
-    ...(isAuthenticated ? [{ id: 'notifications', label: t('tabs.notifications') }] : []),
+    // Account-level tabs, only for signed-in users — these configure
+    // per-account settings, not local/device preferences like the others.
+    // Notifications stays rightmost by design.
+    ...(isAuthenticated
+      ? [
+          { id: 'privacy', label: t('tabs.privacy') },
+          { id: 'notifications', label: t('tabs.notifications') },
+        ]
+      : []),
   ];
 
   return (
     <div>
-      {/* Tab Navigation */}
+      {/* Tab Navigation. overflow-x-auto: with five tabs the es/pt-BR labels
+          (Partida … Notificações) exceed narrow-phone widths. */}
       <div className="border-b border-border">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="-mb-px flex space-x-8 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -69,6 +77,10 @@ export function PreferencesTabs({ locale }: Props) {
         {activeTab === 'game' && <GameSettings />}
         {activeTab === 'controls' && <ControlSettings />}
         {activeTab === 'appearance' && <AppearanceSettings />}
+        {/* Like notifications below: not gated on isAuthenticated — the pane
+            must mount so its skeleton shows while client auth resolves; the
+            server actions it calls enforce auth themselves. */}
+        {activeTab === 'privacy' && <PrivacySettings />}
         {/*
           Deliberately NOT gated on isAuthenticated (only the tab button
           above is): while auth is still resolving client-side — notably on

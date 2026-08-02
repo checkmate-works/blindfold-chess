@@ -57,31 +57,43 @@ const RANK_WINDOW_SQL = sql`ROW_NUMBER() OVER (ORDER BY ${BEST_SCORE_ORDER_SQL})
  * Derived table of every all-time best score for a menu/key, shaped as
  * `(user_id, score, incorrect_answers, time_taken)` — the score-source
  * contract expected by `lookupRank` / `lookupRankedRow`.
+ *
+ * Excludes users who opted out via `profiles.hidden_from_leaderboard`. The
+ * filter deliberately lives HERE (the score-source layer) rather than in the
+ * display queries: rank numbers are derived from row position over this
+ * source, so filtering here keeps a visible user's own rank (`lookupRank`)
+ * consistent with the public list, and makes a hidden user's rank resolve to
+ * null — which also suppresses their `challenge_rank_update` feed items
+ * (see `decideChallengeRankFeedItem`).
  */
 function allTimeBestScoresSql(menuType: string, leaderboardKey: string): SQL {
   return sql`(
-      SELECT user_id, score, incorrect_answers, time_taken
-      FROM challenge_best_scores
-      WHERE menu_type = ${menuType}
-        AND leaderboard_key = ${leaderboardKey}
+      SELECT b.user_id, b.score, b.incorrect_answers, b.time_taken
+      FROM challenge_best_scores b
+      JOIN profiles p ON p.id = b.user_id AND NOT p.hidden_from_leaderboard
+      WHERE b.menu_type = ${menuType}
+        AND b.leaderboard_key = ${leaderboardKey}
     ) all_time_best`;
 }
 
 /**
  * Derived table of each user's single best result within a period, same
  * shape as {@link allTimeBestScoresSql} (DISTINCT ON keeps the first row per
- * user under the tie-break ordering). Raw-SQL twin of the `bestPerUser`
- * Drizzle subquery in `getPeriodRanking`.
+ * user under the tie-break ordering; the 1:1 profiles join used for the
+ * hidden-from-leaderboard opt-out — see {@link allTimeBestScoresSql} — does
+ * not affect that semantics). Raw-SQL twin of the `bestPerUser` Drizzle
+ * subquery in `getPeriodRanking`.
  */
 function periodBestScoresSql(menuType: string, leaderboardKey: string, periodStart: Date): SQL {
   return sql`(
-      SELECT DISTINCT ON (user_id)
-        user_id, score, incorrect_answers, time_taken
-      FROM challenge_results
-      WHERE menu_type = ${menuType}
-        AND leaderboard_key = ${leaderboardKey}
-        AND created_at >= ${periodStart.toISOString()}
-      ORDER BY user_id, ${BEST_SCORE_ORDER_SQL}
+      SELECT DISTINCT ON (r.user_id)
+        r.user_id, r.score, r.incorrect_answers, r.time_taken
+      FROM challenge_results r
+      JOIN profiles p ON p.id = r.user_id AND NOT p.hidden_from_leaderboard
+      WHERE r.menu_type = ${menuType}
+        AND r.leaderboard_key = ${leaderboardKey}
+        AND r.created_at >= ${periodStart.toISOString()}
+      ORDER BY r.user_id, ${BEST_SCORE_ORDER_SQL}
     ) period_best`;
 }
 
@@ -111,19 +123,25 @@ export async function getAllTimeRanking(
       .where(
         and(
           eq(challengeBestScores.menuType, menuType),
-          eq(challengeBestScores.leaderboardKey, leaderboardKey)
+          eq(challengeBestScores.leaderboardKey, leaderboardKey),
+          eq(profiles.hiddenFromLeaderboard, false)
         )
       )
       .orderBy(...byBestScore(challengeBestScores))
       .offset(offset)
       .limit(limit),
+    // The count joins profiles for the same hidden-from-leaderboard filter as
+    // the rows query — diverging the two desyncs totalCount from the visible
+    // rows and produces empty trailing pages.
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(challengeBestScores)
+      .innerJoin(profiles, eq(challengeBestScores.userId, profiles.id))
       .where(
         and(
           eq(challengeBestScores.menuType, menuType),
-          eq(challengeBestScores.leaderboardKey, leaderboardKey)
+          eq(challengeBestScores.leaderboardKey, leaderboardKey),
+          eq(profiles.hiddenFromLeaderboard, false)
         )
       ),
   ]);
@@ -144,6 +162,8 @@ async function getPeriodRanking(
 ): Promise<LeaderboardPage> {
   // Use a subquery with DISTINCT ON to get each user's best score in the period.
   // Best = highest score, then fewest incorrect answers, then fastest time.
+  // The profiles join applies the hidden-from-leaderboard opt-out HERE (not in
+  // the outer display query) so the count(*) below inherits the same filter.
   const bestPerUser = db
     .selectDistinctOn([challengeResults.userId], {
       userId: challengeResults.userId,
@@ -152,11 +172,13 @@ async function getPeriodRanking(
       timeTaken: challengeResults.timeTaken,
     })
     .from(challengeResults)
+    .innerJoin(profiles, eq(challengeResults.userId, profiles.id))
     .where(
       and(
         eq(challengeResults.menuType, menuType),
         eq(challengeResults.leaderboardKey, leaderboardKey),
-        gte(challengeResults.createdAt, periodStart)
+        gte(challengeResults.createdAt, periodStart),
+        eq(profiles.hiddenFromLeaderboard, false)
       )
     )
     .orderBy(challengeResults.userId, ...byBestScore(challengeResults))
