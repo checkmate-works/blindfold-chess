@@ -37,5 +37,10 @@ export async function getFeed(
     data: { user },
   } = await supabase.auth.getUser();
 
-  return getFeedData(cursor, safeLimit, user?.id, SCOPE_ENTITY_TYPES[scope]);
+  return getFeedData({
+    cursor,
+    limit: safeLimit,
+    currentUserId: user?.id,
+    entityTypes: SCOPE_ENTITY_TYPES[scope],
+  });
 }

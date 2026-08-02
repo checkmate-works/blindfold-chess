@@ -53,7 +53,11 @@ async function TopicsContent({ params }: Props) {
   } = await supabase.auth.getUser();
 
   const [initialFeed, { showAds, creatives: nativeAdCreatives }] = await Promise.all([
-    getFeedData(undefined, INITIAL_FEED_SIZE, user?.id, TOPICS_FEED_ENTITY_TYPES),
+    getFeedData({
+      limit: INITIAL_FEED_SIZE,
+      currentUserId: user?.id,
+      entityTypes: TOPICS_FEED_ENTITY_TYPES,
+    }),
     resolveNativeAds(FEED_NATIVE_AD_SLOT, user?.id ?? null),
   ]);
 

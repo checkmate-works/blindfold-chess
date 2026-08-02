@@ -7,6 +7,23 @@ import { getFeedData } from './queries';
 const mockDbSelectResult = vi.fn();
 const mockDbSelectJoinResult = vi.fn();
 const mockAttachProfilePostMeta = vi.fn();
+const mockEq = vi.fn();
+
+// The db mock swallows the WHERE clause, so the only way to assert that a
+// filter reaches SQL is to spy on the operator that builds it. `eq` is used
+// exactly once in `queries.ts` — for the actor scope — and the tests that
+// assert on it use a feed row whose entity type matches no loader, so no
+// loader's own `eq` calls can leak into the spy.
+vi.mock('drizzle-orm', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('drizzle-orm')>();
+  return {
+    ...actual,
+    eq: (...args: Parameters<typeof actual.eq>) => {
+      mockEq(...args);
+      return actual.eq(...args);
+    },
+  };
+});
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -113,7 +130,7 @@ describe('getFeedData', () => {
     it('should return empty items and null nextCursor when no feed items exist', async () => {
       mockDbSelectResult.mockResolvedValue([]);
 
-      const result = await getFeedData(undefined, 10);
+      const result = await getFeedData({ limit: 10 });
 
       expect(result).toEqual({ items: [], nextCursor: null });
     });
@@ -128,7 +145,7 @@ describe('getFeedData', () => {
       mockDbSelectJoinResult.mockResolvedValue([]);
       mockAttachProfilePostMeta.mockResolvedValue([postMeta]);
 
-      const result = await getFeedData(undefined, 10);
+      const result = await getFeedData({ limit: 10 });
 
       expect(result.nextCursor).toBeNull();
     });
@@ -161,7 +178,7 @@ describe('getFeedData', () => {
       mockAttachProfilePostMeta.mockResolvedValue([post1, post2]);
 
       // limit=2, so 3 rows means hasMore=true
-      const result = await getFeedData(undefined, 2);
+      const result = await getFeedData({ limit: 2 });
 
       expect(result.nextCursor).toBe('2025-01-15T09:00:00.000Z');
       expect(result.items).toHaveLength(2);
@@ -180,7 +197,7 @@ describe('getFeedData', () => {
       mockDbSelectJoinResult.mockResolvedValue([]);
       mockAttachProfilePostMeta.mockResolvedValue([post1]);
 
-      const result = await getFeedData(undefined, 10);
+      const result = await getFeedData({ limit: 10 });
 
       expect(result.items).toHaveLength(1);
       expect(result.items[0].entityId).toBe('post-1');
@@ -204,7 +221,7 @@ describe('getFeedData', () => {
       mockDbSelectJoinResult.mockResolvedValue([]);
       mockAttachProfilePostMeta.mockResolvedValue([postMeta]);
 
-      const result = await getFeedData(undefined, 10);
+      const result = await getFeedData({ limit: 10 });
 
       expect(result.items).toHaveLength(1);
       expect(result.items[0]).toEqual({
@@ -222,7 +239,7 @@ describe('getFeedData', () => {
 
       mockDbSelectResult.mockResolvedValue([feedRow]);
 
-      const result = await getFeedData(undefined, 10);
+      const result = await getFeedData({ limit: 10 });
 
       expect(result.items).toHaveLength(0);
     });
@@ -234,11 +251,27 @@ describe('getFeedData', () => {
       const feedRow = createFeedRow({ entityType: 'some_future_type' });
       mockDbSelectResult.mockResolvedValue([feedRow]);
 
-      const result = await getFeedData(undefined, 10);
+      const result = await getFeedData({ limit: 10 });
 
       expect(mockDbSelectJoinResult).not.toHaveBeenCalled();
       expect(mockAttachProfilePostMeta).not.toHaveBeenCalled();
       expect(result.items).toHaveLength(0);
+    });
+
+    it('should not apply an actor filter when actorId is omitted', async () => {
+      mockDbSelectResult.mockResolvedValue([createFeedRow({ entityType: 'some_future_type' })]);
+
+      await getFeedData({ limit: 10 });
+
+      expect(mockEq).not.toHaveBeenCalled();
+    });
+
+    it('should apply an actor filter when actorId is provided', async () => {
+      mockDbSelectResult.mockResolvedValue([createFeedRow({ entityType: 'some_future_type' })]);
+
+      await getFeedData({ limit: 10, actorId: 'actor-1' });
+
+      expect(mockEq).toHaveBeenCalledWith('actor_id', 'actor-1');
     });
 
     it('should pass currentUserId to attachProfilePostMeta', async () => {
@@ -250,7 +283,7 @@ describe('getFeedData', () => {
       mockAttachProfilePostMeta.mockResolvedValue([postMeta]);
 
       const userId = 'user-00000000-0000-0000-0000-000000000001';
-      await getFeedData(undefined, 10, userId);
+      await getFeedData({ limit: 10, currentUserId: userId });
 
       expect(mockAttachProfilePostMeta).toHaveBeenCalledWith(expect.anything(), userId);
     });

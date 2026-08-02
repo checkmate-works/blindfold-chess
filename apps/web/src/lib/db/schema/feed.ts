@@ -56,7 +56,13 @@ export const feedItems = pgTable(
   },
   (table) => [
     index('idx_feed_items_created').on(table.createdAt),
-    index('idx_feed_items_actor').on(table.actorId),
+    // (actor_id, created_at DESC) — the public profile timeline pages one
+    // member's own activity with `WHERE actor_id = ? AND created_at < ?
+    // ORDER BY created_at DESC`. The composite covers both the equality and
+    // the ordering, so Postgres walks the index instead of sorting every row
+    // an actor ever produced. Replaced the actor-only index, which could
+    // serve the equality but left the sort to a heap read.
+    index('idx_feed_items_actor_created').on(table.actorId, table.createdAt.desc()),
     index('idx_feed_items_entity').on(table.entityType, table.entityId),
   ]
 );
