@@ -32,6 +32,8 @@
  * URL is now `/u/username`. A 301 redirect from `/@/` to `/u/` is configured in
  * next.config.ts for backwards compatibility.
  */
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
@@ -40,18 +42,17 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { countTotalEarned } from '@/lib/db/achievement-queries';
 
-import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
+import { FeedSkeleton } from '@/app/[locale]/(public)/(home)/_components/FeedSkeleton';
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getProfileFeed } from './_actions/getProfileFeed';
 import { ProfileBlockedNotice } from './_components/ProfileBlockedNotice';
 import { ProfileFeedFilterChips } from './_components/ProfileFeedFilterChips';
 import { ProfileIdentitySection } from './_components/ProfileIdentitySection';
 import { ProfileStatsBand } from './_components/ProfileStatsBand';
-import { ProfileTimelineEmpty } from './_components/ProfileTimelineEmpty';
+import { ProfileTimeline } from './_components/ProfileTimeline';
 import { resolveProfileViewer } from './_lib/load-archive-context';
 import { loadPublicProfilePageData } from './_lib/load-page-data';
 import { parseProfileFeedFilter } from './_lib/profile-feed-filters';
@@ -116,16 +117,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const filter = parseProfileFeedFilter(parsedParams.filter);
   const { profile, currentUserId, isOwnProfile } = viewer;
 
-  const [pageData, t, tTopics, tSquares] = await Promise.all([
-    loadPublicProfilePageData({
-      profileId: profile.id,
-      currentUserId,
-      isOwnProfile,
-      filter,
-    }),
+  const [pageData, t] = await Promise.all([
+    loadPublicProfilePageData({ profileId: profile.id, currentUserId, isOwnProfile }),
     getTranslations({ locale, namespace: 'publicProfile' }),
-    getTranslations({ locale, namespace: 'topics' }),
-    getTranslations({ locale, namespace: 'topics.squares' }),
   ]);
 
   // A block in either direction collapses the profile to its identity header
@@ -200,21 +194,19 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             <div className="space-y-4" data-tour-id="profile-timeline">
               <ProfileFeedFilterChips username={username} locale={locale} activeFilter={filter} />
 
-              {pageData.feed.items.length > 0 ? (
-                <FeedClient
-                  initialItems={pageData.feed.items}
-                  initialCursor={pageData.feed.nextCursor}
+              {/* Keyed by filter for two reasons, both load-bearing: it shows
+                  the skeleton on every filter switch (not just the first
+                  render), and it remounts FeedClient so the new page's items
+                  replace the old ones — see ProfileTimeline's TSDoc. */}
+              <Suspense key={filter} fallback={<FeedSkeleton />}>
+                <ProfileTimeline
+                  profileId={profile.id}
+                  username={username}
                   locale={locale}
-                  showMoreLabel={tTopics('showMore')}
-                  justNowLabel={tSquares('justNow')}
-                  // Bound server-side, so the client only ever supplies the
-                  // cursor — the actor and filter it pages within are not
-                  // parameters it can choose.
-                  fetchPage={getProfileFeed.bind(null, profile.id, filter)}
+                  currentUserId={currentUserId}
+                  filter={filter}
                 />
-              ) : (
-                <ProfileTimelineEmpty username={username} locale={locale} filter={filter} />
-              )}
+              </Suspense>
             </div>
           </>
         )}

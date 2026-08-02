@@ -22,6 +22,14 @@ type Props = {
    * so Googlebot receives real content while the browser hydrates into a
    * single scrolling list. Keeping SSR and infinite-scroll items in one
    * container lets `last:border-b-0` correctly target the visually-last item.
+   *
+   * SEEDS STATE ONCE — a later value for this prop is ignored, because the
+   * list it feeds is owned by `useState` from then on (infinite scroll appends
+   * to it). A surface that re-renders this component with a DIFFERENT feed
+   * (the profile timeline switching filters) must therefore force a remount
+   * with a `key`; otherwise the new items are fetched server-side and then
+   * silently discarded, leaving the previous feed on screen. Home and topics
+   * never change theirs in place, so they need no key.
    */
   initialItems: FeedItem[];
   initialCursor: string | null;
