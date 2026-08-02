@@ -5,7 +5,16 @@
 // the `app_role` enum, and per-user role assignments. The FK to `auth.users`
 // is defined in Supabase-side SQL (not Drizzle) — that's why `userId` columns
 // elsewhere are marked `.notNull()` without a `.references()` clause.
-import { pgEnum, pgTable, text, timestamp, unique, uuid, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 /**
  * @design updated_at update policy
@@ -55,6 +64,40 @@ export const profiles = pgTable('profiles', {
   xUsername: varchar('x_username', { length: 15 }),
   instagramUsername: varchar('instagram_username', { length: 30 }),
   youtubeHandle: varchar('youtube_handle', { length: 30 }),
+  /**
+   * Leaderboard opt-out (privacy setting, /preferences?tab=privacy).
+   *
+   * @design Scope: leaderboards only, deliberately
+   * This started as a broader "Incognito" idea — hide the public profile AND
+   * the leaderboard entry — and was narrowed on purpose. Hiding the profile
+   * forces a decision about the author name and profile link already attached
+   * to every published kata / game / topic the user has posted; the
+   * leaderboard-only cut needs no such decision, so it ships independently and
+   * the harder question stays open. Profile hiding is NOT implemented here;
+   * do not extend this flag to cover it without revisiting that question.
+   *
+   * @design Current value only, no history
+   * List queries, own-rank lookups, `challenge_rank_update` feed creation, and
+   * the monthly badge batch each read this flag at their own execution time —
+   * there is no per-period record of who was hidden when. The consequence is
+   * intentional: already-granted badges and feed cards posted while visible
+   * stay visible. This is a "stop appearing from now on" switch, not history
+   * scrubbing, and the settings copy says so.
+   *
+   * @design Filtered in the score-source layer
+   * The exclusion is applied where the ranked score set is built
+   * (`allTimeBestScoresSql` / `periodBestScoresSql` / the `bestPerUser`
+   * subquery in challenge-queries.ts), never in the display queries alone.
+   * Rank numbers are derived from row position over that set, so filtering
+   * there keeps a visible user's own rank consistent with the public list —
+   * and makes a hidden user's rank resolve to null, which is what suppresses
+   * their home-feed rank cards.
+   *
+   * Not indexed: a low-selectivity boolean that is always evaluated alongside
+   * an already-indexed menu_type / leaderboard_key lookup, never a lookup key
+   * on its own.
+   */
+  hiddenFromLeaderboard: boolean('hidden_from_leaderboard').notNull().default(false),
   bannedAt: timestamp('banned_at', { withTimezone: true }),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

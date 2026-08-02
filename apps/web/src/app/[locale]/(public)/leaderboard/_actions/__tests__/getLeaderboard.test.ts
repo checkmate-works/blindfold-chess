@@ -45,6 +45,30 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
+// The viewer's hidden_from_leaderboard flag read. The action only runs
+// `db.select(...).from(...).where(...).limit(1)` against profiles, so the
+// chain is stubbed down to this single resolver.
+const mockProfilesFlagQuery = vi.fn();
+
+vi.mock('@/lib/db', () => ({
+  db: {
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => mockProfilesFlagQuery(),
+        }),
+      }),
+    }),
+  },
+  profiles: {},
+}));
+
+// `eq(profiles.id, ...)` receives the stubbed (empty) profiles table above;
+// real drizzle eq would choke on the missing column objects.
+vi.mock('drizzle-orm', () => ({
+  eq: () => ({}),
+}));
+
 const { getLeaderboard } = await import('../getLeaderboard');
 
 // ---------------------------------------------------------------------------
@@ -97,6 +121,8 @@ describe('getLeaderboard', () => {
     mockGetUserAllTimeRankedRow.mockResolvedValue(null);
     mockGetUserWeeklyRankedRow.mockResolvedValue(null);
     mockGetUserMonthlyRankedRow.mockResolvedValue(null);
+    // Default: the viewer has not opted out of leaderboards
+    mockProfilesFlagQuery.mockResolvedValue([{ hiddenFromLeaderboard: false }]);
   });
 
   // -----------------------------------------------------------------------
@@ -111,7 +137,12 @@ describe('getLeaderboard', () => {
         'all-time',
         1
       );
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
       expect(mockGetAllTimeRanking).not.toHaveBeenCalled();
     });
 
@@ -122,28 +153,53 @@ describe('getLeaderboard', () => {
         'invalid-period' as LeaderboardPeriod,
         1
       );
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
 
     it('returns empty result for invalid key for given module', async () => {
       // 'king' is not a valid key for coordinate_quiz
       const result = await getLeaderboard('coordinate_quiz', 'king', 'all-time', 1);
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
 
     it('returns empty result for page 0', async () => {
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 0);
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
 
     it('returns empty result for negative page', async () => {
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', -1);
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
 
     it('returns empty result for non-integer page', async () => {
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1.5);
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
 
     it('accepts valid coordinate_quiz keys', async () => {
@@ -306,6 +362,35 @@ describe('getLeaderboard', () => {
       expect(result.currentUserRank).toBeNull();
     });
 
+    it('skips the ranked-row lookup and reports viewerHidden for an opted-out viewer', async () => {
+      const currentUserId = 'current-user';
+      setupAuthUser(currentUserId);
+      mockProfilesFlagQuery.mockResolvedValue([{ hiddenFromLeaderboard: true }]);
+
+      const rows = [makeLeaderboardRow({ userId: 'other-user', score: 100 })];
+      mockGetAllTimeRanking.mockResolvedValue(makeLeaderboardPage(rows, 100));
+
+      const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1);
+
+      expect(result.viewerHidden).toBe(true);
+      expect(result.currentUserRank).toBeNull();
+      expect(mockGetUserAllTimeRankedRow).not.toHaveBeenCalled();
+      // The public ranking itself is untouched by the viewer's own setting.
+      expect(result.rows).toHaveLength(1);
+    });
+
+    it('reports viewerHidden false for a visible signed-in viewer', async () => {
+      const currentUserId = 'current-user';
+      setupAuthUser(currentUserId);
+
+      const rows = [makeLeaderboardRow({ userId: 'other-user', score: 100 })];
+      mockGetAllTimeRanking.mockResolvedValue(makeLeaderboardPage(rows, 100));
+
+      const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1);
+
+      expect(result.viewerHidden).toBe(false);
+    });
+
     it('uses correct user ranked row function per period', async () => {
       const currentUserId = 'current-user';
       setupAuthUser(currentUserId);
@@ -389,7 +474,12 @@ describe('getLeaderboard', () => {
 
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1);
 
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
 
     it('keeps the public rows when only the user ranked row query throws', async () => {
@@ -418,17 +508,32 @@ describe('getLeaderboard', () => {
   describe('additional input validation', () => {
     it('returns empty result for NaN page', async () => {
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', NaN);
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
 
     it('returns empty result for Infinity page', async () => {
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', Infinity);
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
 
     it('returns empty result for empty key string', async () => {
       const result = await getLeaderboard('coordinate_quiz', '', 'all-time', 1);
-      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+      expect(result).toEqual({
+        rows: [],
+        totalCount: 0,
+        currentUserRank: null,
+        viewerHidden: false,
+      });
     });
   });
 });

@@ -559,7 +559,13 @@
       "board": "Game",
       "controls": "Controls",
       "appearance": "Appearance",
+      "privacy": "Privacy",
       "notifications": "Notifications"
+    },
+    "privacy": {
+      "description": "Control what other people can see about your activity.",
+      "hideFromLeaderboard": "Hide me from leaderboards",
+      "hideFromLeaderboardHelp": "You will no longer appear on any leaderboard (challenges and Exp, all periods), and your own rank display is hidden too. You are also excluded from future monthly leaderboard badges. Badges you already earned and past feed posts remain. Takes effect immediately."
     },
     "game": {
       "title": "Board Settings",
@@ -5708,6 +5714,7 @@
     },
     "emptyState": "No scores recorded yet. Be the first to set a record!",
     "yourRank": "You",
+    "hiddenNotice": "You're hidden from leaderboards by your privacy settings.",
     "moduleFilterLabel": "Module filter",
     "moduleFilter": {
       "all": "All",

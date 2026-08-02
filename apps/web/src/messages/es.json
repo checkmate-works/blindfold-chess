@@ -559,7 +559,13 @@
       "board": "Partida",
       "controls": "Controles",
       "appearance": "Apariencia",
+      "privacy": "Privacidad",
       "notifications": "Notificaciones"
+    },
+    "privacy": {
+      "description": "Controla qué pueden ver los demás sobre tu actividad.",
+      "hideFromLeaderboard": "Ocultarme de la clasificación",
+      "hideFromLeaderboardHelp": "Dejarás de aparecer en todas las clasificaciones (desafíos y Exp, todos los períodos) y tu propia posición también quedará oculta. Además, quedarás excluido de las futuras insignias mensuales de clasificación. Las insignias ya obtenidas y las publicaciones anteriores del feed se conservan. Se aplica de inmediato."
     },
     "game": {
       "title": "Configuración del Tablero",
@@ -5708,6 +5714,7 @@
     },
     "emptyState": "Aún no hay puntuaciones registradas. ¡Sé el primero en establecer un récord!",
     "yourRank": "Tú",
+    "hiddenNotice": "Tu configuración de privacidad te oculta de la clasificación.",
     "moduleFilterLabel": "Filtro de módulo",
     "moduleFilter": {
       "all": "Todos",

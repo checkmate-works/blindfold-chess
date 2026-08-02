@@ -134,6 +134,7 @@ vi.mock('@/lib/db', () => {
 
 // Mock drizzle-orm operators (used in query construction)
 vi.mock('drizzle-orm', () => ({
+  and: (...conds: unknown[]) => ({ __and: conds }),
   desc: (col: unknown) => ({ __desc: col }),
   eq: (a: unknown, b: unknown) => ({ __eq: { a, b } }),
   gte: (a: unknown, b: unknown) => ({ __gte: { a, b } }),

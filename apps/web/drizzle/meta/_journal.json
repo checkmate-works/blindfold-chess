@@ -477,6 +477,13 @@
       "when": 1785553368533,
       "tag": "20260801030248_create_repertoire_chunks_table",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1785636035162,
+      "tag": "20260802020035_add_hidden_from_leaderboard_to_profiles",
+      "breakpoints": true
     }
   ]
 }

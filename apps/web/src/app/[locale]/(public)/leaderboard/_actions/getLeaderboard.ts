@@ -1,5 +1,8 @@
 'use server';
 
+import { eq } from 'drizzle-orm';
+
+import { db, profiles } from '@/lib/db';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
@@ -51,7 +54,7 @@ export async function getLeaderboard(
 ): Promise<LeaderboardResult> {
   const { rows, totalCount } = await getPublicLeaderboard(module, key, period, page);
   if (rows.length === 0 && totalCount === 0) {
-    return { rows, totalCount, currentUserRank: null };
+    return { rows, totalCount, currentUserRank: null, viewerHidden: false };
   }
 
   const currentUserId = await getCurrentUserId();
@@ -59,14 +62,27 @@ export async function getLeaderboard(
   // A failed per-viewer lookup degrades to "no own-rank row" rather than
   // discarding the already-fetched public ranking.
   let currentUserRank: LeaderboardRow | null = null;
-  if (currentUserId && !rows.some((r) => r.userId === currentUserId)) {
+  let viewerHidden = false;
+  if (currentUserId) {
     try {
-      const { getUserRankedRow } = getQueriesForPeriod(period);
-      currentUserRank = await getUserRankedRow(currentUserId, module, key);
+      // A hidden viewer's ranked-row lookup would return null anyway (the
+      // score source filters them out); reading the flag lets the UI say
+      // "hidden by your settings" instead of silently showing nothing.
+      const [profile] = await db
+        .select({ hiddenFromLeaderboard: profiles.hiddenFromLeaderboard })
+        .from(profiles)
+        .where(eq(profiles.id, currentUserId))
+        .limit(1);
+      viewerHidden = profile?.hiddenFromLeaderboard ?? false;
+
+      if (!viewerHidden && !rows.some((r) => r.userId === currentUserId)) {
+        const { getUserRankedRow } = getQueriesForPeriod(period);
+        currentUserRank = await getUserRankedRow(currentUserId, module, key);
+      }
     } catch (error) {
       handleServerActionError(error, '[getLeaderboard]');
     }
   }
 
-  return { rows, totalCount, currentUserRank };
+  return { rows, totalCount, currentUserRank, viewerHidden };
 }
