@@ -17,12 +17,19 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 /**
  * Paginate one member's public profile timeline.
  *
- * `profileId` arrives from the client because `FeedClient` owns the cursor
- * loop; it is a public identifier (the profile it belongs to is already being
- * rendered) so no ownership check applies — but it is still shape-validated so
- * a malformed value fails as an empty page rather than as a Postgres cast
- * error. `filter` is likewise narrowed to the server-side whitelist, never
- * used as an entity-type list directly.
+ * @design Parameter order is bind order
+ * `profileId` and `filter` come first so the page can hand FeedClient a
+ * `getProfileFeed.bind(null, profileId, filter)` whose remaining parameter is
+ * exactly the cursor FeedClient passes. That keeps the scope out of the
+ * client's hands entirely — no inline action closure, and nothing for a
+ * caller to get wrong by omitting.
+ *
+ * Both scope values are still validated here rather than trusted: a bound
+ * argument travels through the client and comes back with the request. The
+ * profile id is a public identifier (its profile is already on screen), so
+ * the check is for shape only — a malformed value fails as an empty page
+ * instead of a Postgres cast error — while `filter` is narrowed to the
+ * server-side whitelist and never used as an entity-type list directly.
  *
  * Blocked viewers never reach this action: the profile page hides the timeline
  * behind its `restricted` branch, and the archive pages redirect. The action
@@ -32,8 +39,8 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
  */
 export async function getProfileFeed(
   profileId: string,
-  cursor?: string,
-  filter?: string
+  filter: string | undefined,
+  cursor?: string
 ): Promise<FeedResponse> {
   if (!UUID_REGEX.test(profileId)) {
     return { items: [], nextCursor: null };

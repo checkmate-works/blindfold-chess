@@ -7,6 +7,7 @@ import type { Rank } from '@/lib/db/schema';
 import {
   resolveDisplayAchievedSlugs,
   resolveEffectiveAchievedSlugs,
+  resolveHighestAchievedSlug,
   resolveNextRank,
   resolveRecommendedNextSlug,
 } from './rank-progression';
@@ -276,5 +277,33 @@ describe('resolveDisplayAchievedSlugs', () => {
     expect(resolveDisplayAchievedSlugs(achieved)).toEqual(
       new Set<RankSlug>(['5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan', 'mukyu'])
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveHighestAchievedSlug
+// ---------------------------------------------------------------------------
+
+describe('resolveHighestAchievedSlug', () => {
+  it('returns null when nothing is achieved', () => {
+    expect(resolveHighestAchievedSlug(new Set<RankSlug>())).toBeNull();
+  });
+
+  it('returns null when only mukyu is present — it is UI-only, never a held rank', () => {
+    expect(resolveHighestAchievedSlug(new Set<RankSlug>(['mukyu']))).toBeNull();
+  });
+
+  it('returns the highest rank across a sparse (skip-granted) set', () => {
+    // A profile must show 1dan, not 5kyu: with skip-grants the set below the
+    // top rank may have gaps, so only the highest held rank is defensible.
+    expect(resolveHighestAchievedSlug(new Set<RankSlug>(['5kyu', '1dan']))).toBe('1dan');
+  });
+
+  it('is insensitive to insertion order', () => {
+    expect(resolveHighestAchievedSlug(new Set<RankSlug>(['1dan', '5kyu']))).toBe('1dan');
+  });
+
+  it('returns the single held rank', () => {
+    expect(resolveHighestAchievedSlug(new Set<RankSlug>(['3kyu']))).toBe('3kyu');
   });
 });

@@ -4840,6 +4840,30 @@
       "one_shot": "One-Shot",
       "social": "Social",
       "ai_defeat": "AI Defeat"
+    },
+    "archivesAriaLabel": "Archives",
+    "filterAriaLabel": "Filter activity",
+    "filter": {
+      "all": "All",
+      "topics": "Topics",
+      "problems": "Problems",
+      "games": "Games",
+      "chunks": "Chunks"
+    },
+    "emptyTimeline": "No recent activity.",
+    "viewAllTopics": "View all posts",
+    "viewAllProblems": "View all problems",
+    "viewAllGames": "View all games",
+    "help": {
+      "label": "How this page works",
+      "stats": {
+        "title": "Rank and achievements",
+        "description": "Belt rank, achievement badges, and how much this member has posted. Tap a count to browse the full archive."
+      },
+      "timeline": {
+        "title": "Activity timeline",
+        "description": "Everything this member has posted, newest first. Use the chips to narrow it down. Leaderboard rank updates drop off after 30 days; the archives keep everything else."
+      }
     }
   },
   "interview": {

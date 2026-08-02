@@ -1,112 +1,61 @@
-import { type SharedGameListItem, listGamesByAuthorId } from '@/lib/db/games-read';
-import { GAME_LIKE_TARGET, type LikeMeta, getLikeMetaMap } from '@/lib/db/like-queries';
-import { type ReplyMeta, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
+import type { RankSlug } from '@/lib/db/data/ranks';
 
-import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
+import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
+import type { FeedResponse } from '@/app/[locale]/(public)/(home)/_lib/types';
+import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
+import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
 
 import { type ProfileShellData, loadProfileShellData } from './load-profile-shell-data';
+import { type ProfileFeedFilter, resolveProfileFeedEntityTypes } from './profile-feed-filters';
 
-type ProfileTab = 'topics' | 'games';
+/** Items rendered server-side for SEO before the client takes over scrolling. */
+const INITIAL_FEED_SIZE = 10;
 
-export type PublicProfilePageData = {
-  activeTab: ProfileTab;
-  initialFollowing: boolean;
-  followedByProfile: boolean;
-  viewerHasBlocked: boolean;
-  blockedByProfile: boolean;
-  followerCount: number;
-  followingCount: number;
-  posts: ProfilePostWithReplyMeta[];
-  topicsCount: number;
-  topicsCurrentPage: number;
-  topicsTotalPages: number;
-  problemsCount: number;
-  games: SharedGameListItem[];
-  gamesCount: number;
-  gamesCurrentPage: number;
-  gamesTotalPages: number;
-  gameLikeMetaMap: Map<string, LikeMeta>;
-  gameReplyMetaMap: Map<string, ReplyMeta>;
-  userAchievementGroups: ProfileShellData['userAchievementGroups'];
+export type PublicProfilePageData = ProfileShellData & {
+  /** Highest rank actually held; `null` for an unranked (mukyu) member. */
+  rankSlug: RankSlug | null;
+  /** First page of the timeline, matching `filter`. */
+  feed: FeedResponse;
 };
 
 /**
- * Load every server-side input the main public profile page needs to render
- * (topics tab and games tab — the problems tab now lives at
- * `/u/[username]/problems/{puzzles,position-memory}`, see
- * `problems/_lib/load-problems-page-data.ts`).
+ * Server-side inputs for the profile timeline: the shared shell, the member's
+ * belt rank, and the first page of their activity.
  *
- * Shell data (follow state, counts, achievements) is shared with the
- * `/problems/*` pages via `loadProfileShellData`. The games-tab slice is
- * fetched only when that tab is active, since it needs the post-pagination
- * math derived from the shell's counts.
+ * The rank lookup lives here rather than in {@link loadProfileShellData}
+ * because only this page renders it — the archive pages share the shell and
+ * would otherwise pay for two queries they never use.
+ *
+ * The feed is fetched even for a blocked viewer, whose page discards it in
+ * favour of the block notice. Skipping it would mean threading the block
+ * decision in ahead of the shell that produces it, to save one indexed read
+ * on a path almost nobody takes.
  */
 export async function loadPublicProfilePageData({
   profileId,
   currentUserId,
   isOwnProfile,
-  parsedParams,
-  pageSize,
+  filter,
 }: {
   profileId: string;
   currentUserId: string | undefined;
   isOwnProfile: boolean;
-  parsedParams: { page: number; tab: string };
-  pageSize: number;
+  filter: ProfileFeedFilter;
 }): Promise<PublicProfilePageData> {
-  const activeTab: ProfileTab = parsedParams.tab === 'games' ? 'games' : 'topics';
-
-  const shell = await loadProfileShellData({ profileId, currentUserId, isOwnProfile });
-
-  const topicsCount = shell.allPosts.length;
-  const topicsTotalPages = Math.ceil(topicsCount / pageSize);
-  const topicsCurrentPage =
-    activeTab === 'topics' ? Math.max(1, Math.min(parsedParams.page, topicsTotalPages || 1)) : 1;
-  const posts = shell.allPosts.slice(
-    (topicsCurrentPage - 1) * pageSize,
-    topicsCurrentPage * pageSize
-  );
-
-  const gamesTotalPages = Math.ceil(shell.gamesCount / pageSize);
-  const gamesCurrentPage =
-    activeTab === 'games' ? Math.max(1, Math.min(parsedParams.page, gamesTotalPages || 1)) : 1;
-
-  let games: SharedGameListItem[] = [];
-  let gameLikeMetaMap: Map<string, LikeMeta> = new Map();
-  let gameReplyMetaMap: Map<string, ReplyMeta> = new Map();
-
-  if (activeTab === 'games') {
-    games = await listGamesByAuthorId(profileId, pageSize, (gamesCurrentPage - 1) * pageSize);
-
-    const gameIds = games.map((g) => g.id);
-    const [likeMetaMap, commentMetaMap] = await Promise.all([
-      getLikeMetaMap(GAME_LIKE_TARGET, gameIds, currentUserId),
-      getGameCommentMetaMap(gameIds),
-    ]);
-
-    gameLikeMetaMap = likeMetaMap;
-    gameReplyMetaMap = commentMetaMap;
-  }
+  const [shell, achievedSlugs, feed] = await Promise.all([
+    loadProfileShellData({ profileId, currentUserId, isOwnProfile }),
+    getAchievedSlugsForUser(profileId),
+    getFeedData({
+      limit: INITIAL_FEED_SIZE,
+      currentUserId,
+      entityTypes: resolveProfileFeedEntityTypes(filter),
+      actorId: profileId,
+    }),
+  ]);
 
   return {
-    activeTab,
-    initialFollowing: shell.initialFollowing,
-    followedByProfile: shell.followedByProfile,
-    viewerHasBlocked: shell.viewerHasBlocked,
-    blockedByProfile: shell.blockedByProfile,
-    followerCount: shell.followerCount,
-    followingCount: shell.followingCount,
-    posts,
-    topicsCount,
-    topicsCurrentPage,
-    topicsTotalPages,
-    problemsCount: shell.problemsCount,
-    games,
-    gamesCount: shell.gamesCount,
-    gamesCurrentPage,
-    gamesTotalPages,
-    gameLikeMetaMap,
-    gameReplyMetaMap,
-    userAchievementGroups: shell.userAchievementGroups,
+    ...shell,
+    rankSlug: resolveHighestAchievedSlug(achievedSlugs),
+    feed,
   };
 }
