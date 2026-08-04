@@ -2,15 +2,13 @@ import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 
 import { db, feedItems } from '@/lib/db';
 
+import { liveFeedRow } from './feed-liveness';
 import { loadChunksForFeed } from './feed-queries/load-chunks';
 import { loadGamesForFeed } from './feed-queries/load-games';
 import { loadPositionsForFeed } from './feed-queries/load-positions';
 import { loadRankUpdateActors } from './feed-queries/load-rank-update-actors';
 import { loadTopicPostsForFeed } from './feed-queries/load-topic-posts';
 import type { ChallengeRankUpdateData, FeedItem, FeedResponse } from './types';
-
-/** Maximum rank shown in the timeline feed. Items beyond this are filtered out. */
-const FEED_RANK_THRESHOLD = 10;
 
 /**
  * Entity types surfaced by the `/topics` list feed. The topics list reuses the
@@ -31,14 +29,22 @@ export const TOPICS_FEED_ENTITY_TYPES = ['topic_post', 'chunk'] as const;
  * `WHERE created_at < cursor ORDER BY created_at DESC LIMIT N+1` (the
  * `+1` detects whether a next page exists).
  *
+ * @design A page of `limit` rows is `limit` renderable items
+ * The `WHERE` carries {@link liveFeedRow}, so rows whose subject has been
+ * deleted (or made private) never reach the page in the first place. Before
+ * that filter existed they were fetched, counted against the limit, and then
+ * dropped by the loaders — so a page could come back with a live cursor and
+ * nothing on it, which every caller then had to work around. Callers can now
+ * read an empty result as "the feed is exhausted".
+ *
  * @design Per-entity-type loaders
  * After fetching the `feed_items` rows, the four entity loaders run in
  * parallel — one per `entityType`. Each loader returns a
- * `Map<entityId, data>` and silently drops rows whose source entity
- * has been deleted; the orchestrator then walks the original feed rows
- * and skips any whose entity is missing from the map. Splitting one
- * loader per type makes each loader read like a focused query helper
- * instead of a branch inside a 200-line IIFE chain.
+ * `Map<entityId, data>`. Splitting one loader per type makes each loader read
+ * like a focused query helper instead of a branch inside a 200-line IIFE
+ * chain. They still skip a missing entity rather than assuming one, so a row
+ * deleted between this query and the loader's own is a dropped item, not a
+ * crash — that race is the only way a page can now come up short.
  *
  * @design Options object
  * Both filters below narrow the same query and are optional, and a positional
@@ -80,7 +86,8 @@ export async function getFeedData({
       and(
         cursor ? lt(feedItems.createdAt, new Date(cursor)) : undefined,
         entityTypes ? inArray(feedItems.entityType, [...entityTypes]) : undefined,
-        actorId ? eq(feedItems.actorId, actorId) : undefined
+        actorId ? eq(feedItems.actorId, actorId) : undefined,
+        liveFeedRow()
       )
     )
     .orderBy(desc(feedItems.createdAt))
@@ -166,7 +173,9 @@ export async function getFeedData({
       if (actor) {
         const metadata = row.metadata as Record<string, unknown>;
         const rank = metadata.rank as number;
-        if (rank > FEED_RANK_THRESHOLD) continue;
+        // The rank threshold is applied in SQL (see `liveFeedRow`), not here.
+        // Dropping a fetched row would put a hole back in the page and undo
+        // the guarantee that a page of `limit` rows is `limit` items.
         const data: ChallengeRankUpdateData = {
           menuType: metadata.menuType as string,
           leaderboardKey: metadata.leaderboardKey as string,

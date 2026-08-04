@@ -13,7 +13,9 @@ const mockEq = vi.fn();
 // filter reaches SQL is to spy on the operator that builds it. `eq` is used
 // exactly once in `queries.ts` — for the actor scope — and the tests that
 // assert on it use a feed row whose entity type matches no loader, so no
-// loader's own `eq` calls can leak into the spy.
+// loader's own `eq` calls can leak into the spy. `liveFeedRow` is stubbed
+// below for the same reason: it builds five more `eq`s of its own, and its
+// SQL is asserted directly in `feed-liveness.test.ts`.
 vi.mock('drizzle-orm', async (importOriginal) => {
   const actual = await importOriginal<typeof import('drizzle-orm')>();
   return {
@@ -66,6 +68,13 @@ vi.mock('@/lib/db', () => ({
     avatarUrl: 'avatar_url',
   },
   liveProfileJoinOn: (ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn],
+}));
+
+// Stubbed to a sentinel: what it compiles to is `feed-liveness.test.ts`'s
+// job; here we only need it not to build real subqueries against the db mock.
+const mockLiveFeedRow = vi.fn(() => 'LIVE_FEED_ROW');
+vi.mock('./feed-liveness', () => ({
+  liveFeedRow: () => mockLiveFeedRow(),
 }));
 
 vi.mock('@/app/[locale]/(public)/topics/_lib/post-meta', () => ({
@@ -256,6 +265,17 @@ describe('getFeedData', () => {
       expect(mockDbSelectJoinResult).not.toHaveBeenCalled();
       expect(mockAttachProfilePostMeta).not.toHaveBeenCalled();
       expect(result.items).toHaveLength(0);
+    });
+
+    it('should restrict the page to rows whose subject can still be rendered', async () => {
+      // Without this predicate in the WHERE, a dead row consumes one of the
+      // `limit` slots and the page comes back short — or empty behind a live
+      // cursor, which is what made the timeline loop.
+      mockDbSelectResult.mockResolvedValue([createFeedRow({ entityType: 'some_future_type' })]);
+
+      await getFeedData({ limit: 10 });
+
+      expect(mockLiveFeedRow).toHaveBeenCalled();
     });
 
     it('should not apply an actor filter when actorId is omitted', async () => {

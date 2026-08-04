@@ -1,10 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
+import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getProfileFeed } from '../_actions/getProfileFeed';
-import { loadProfileTimelinePage } from '../_lib/load-profile-timeline-page';
 import { ProfileTimelineEmpty } from './ProfileTimelineEmpty';
 
 /** Items rendered server-side for SEO before the client takes over scrolling. */
@@ -30,8 +30,8 @@ type Props = {
  */
 export async function ProfileTimeline({ profileId, username, locale, currentUserId }: Props) {
   const [feed, tTopics, tSquares, tPagination] = await Promise.all([
-    loadProfileTimelinePage({
-      profileId,
+    getFeedData({
+      actorId: profileId,
       currentUserId,
       limit: INITIAL_FEED_SIZE,
     }),
@@ -40,11 +40,11 @@ export async function ProfileTimeline({ profileId, username, locale, currentUser
     getTranslations({ locale, namespace: 'Common.pagination' }),
   ]);
 
-  // Only a page with nothing left behind it is genuinely empty. A page that
-  // rendered nothing but still carries a cursor is a run of feed rows whose
-  // entities are gone (see `loadProfileTimelinePage`); handing it to
-  // `FeedClient` lets the client keep paging, whereas the empty state would
-  // throw that cursor away and hide every older item the member still has.
+  // `getFeedData` filters unrenderable rows in SQL, so an empty page normally
+  // means an exhausted one. The cursor is still checked: an entity deleted
+  // between that query and its loader can leave a short page behind a live
+  // cursor, and handing that to `FeedClient` lets the client page on, whereas
+  // the empty state would throw the cursor away and hide everything older.
   if (feed.items.length === 0 && feed.nextCursor === null) {
     return <ProfileTimelineEmpty username={username} locale={locale} />;
   }
