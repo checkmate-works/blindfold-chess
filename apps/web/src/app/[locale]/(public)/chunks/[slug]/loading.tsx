@@ -22,7 +22,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { tabItemClass, tabsRowClass } from '@/app/[locale]/_components/tab-styles';
+import { tabItemClass, tabsRowClass, tabsScrollClass } from '@/app/[locale]/_components/tab-styles';
 
 export default async function ChunkDetailLoading() {
   const locale = await getLocaleFromPathnameHeader();
@@ -65,12 +65,14 @@ export default async function ChunkDetailLoading() {
 
         {/* Tab row — Positions is the default tab. Static labels (no counts yet)
             using the same underline classes as the real LinkTabs. */}
-        <div className={tabsRowClass.underline} role="tablist" aria-hidden="true">
-          <span className={tabItemClass('underline', true)}>
-            {tChunks('detail.positionsSection')}
-          </span>
-          <span className={tabItemClass('underline', false)}>{t('relatedGames.tab')}</span>
-          <span className={tabItemClass('underline', false)}>{t('commentsTitle')}</span>
+        <div className={tabsScrollClass.underline}>
+          <div className={tabsRowClass.underline} role="tablist" aria-hidden="true">
+            <span className={tabItemClass('underline', true)}>
+              {tChunks('detail.positionsSection')}
+            </span>
+            <span className={tabItemClass('underline', false)}>{t('relatedGames.tab')}</span>
+            <span className={tabItemClass('underline', false)}>{t('commentsTitle')}</span>
+          </div>
         </div>
 
         {/* Default tab content: linked positions (description line + cards) */}

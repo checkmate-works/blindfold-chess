@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
 
-import { tabItemClass, tabsRowClass } from './tab-styles';
+import { tabItemClass, tabsRowClass, tabsScrollClass } from './tab-styles';
 import type { TabsVariant } from './tab-styles';
 
 export type LinkTabItem = {
@@ -64,9 +64,11 @@ export function LinkTabs({
   scroll,
   variant = 'segmented',
 }: Props) {
-  return (
+  const scrollClass = tabsScrollClass[variant];
+
+  const row = (
     <nav
-      className={`${tabsRowClass[variant]} ${className ?? ''}`.trim()}
+      className={`${tabsRowClass[variant]} ${scrollClass ? '' : (className ?? '')}`.trim()}
       role="tablist"
       aria-label={ariaLabel}
     >
@@ -87,5 +89,13 @@ export function LinkTabs({
         );
       })}
     </nav>
+  );
+
+  // The caller's `className` goes on whichever element is outermost, so
+  // spacing utilities keep applying to the whole control.
+  return scrollClass ? (
+    <div className={`${scrollClass} ${className ?? ''}`.trim()}>{row}</div>
+  ) : (
+    row
   );
 }
