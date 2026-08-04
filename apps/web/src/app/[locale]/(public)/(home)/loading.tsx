@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { LoadingStallReporter } from '@/app/_components/LoadingStallReporter';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PageTitle } from '@/app/[locale]/_components';
@@ -28,6 +29,10 @@ import { FeedSkeleton } from './_components/FeedSkeleton';
  * Locale is read via {@link getLocaleFromPathnameHeader} — permitted here
  * because the home feed is dynamically rendered regardless (per-user feed);
  * see that helper's TSDoc before copying this into a static route's boundary.
+ *
+ * The {@link LoadingStallReporter} here watches for the navigation-stuck
+ * failure described in that component's TSDoc: a skeleton that never gets
+ * replaced is otherwise entirely silent.
  */
 export default async function HomeLoading() {
   const locale = await getLocaleFromPathnameHeader();
@@ -35,6 +40,7 @@ export default async function HomeLoading() {
 
   return (
     <>
+      <LoadingStallReporter boundary="home-feed" />
       <div className="mb-8 flex items-center justify-center gap-2">
         <PageTitle>{tHome('pageTitle')}</PageTitle>
         {/* HelpTourButton placeholder — see file TSDoc */}

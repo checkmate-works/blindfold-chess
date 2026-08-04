@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { LoadingStallReporter } from '@/app/_components/LoadingStallReporter';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { FeedSkeleton } from '@/app/[locale]/(public)/(home)/_components/FeedSkeleton';
@@ -34,6 +35,12 @@ import { ProfileShellSkeleton } from './_components/ProfileShellSkeleton';
  * `getLocale()` (which does not see the layout's `setRequestLocale()` seed in
  * a boundary) — permitted because these routes are dynamic regardless. See
  * that helper's TSDoc before copying this into a static route.
+ *
+ * @design Why a reporter lives in the skeleton
+ * This is the boundary where production was observed getting permanently
+ * stuck — see {@link LoadingStallReporter}. The skeleton outliving its
+ * threshold is the only signal the failure emits, so the detector has to sit
+ * inside the fallback that survives.
  */
 export default async function PublicProfileLoading() {
   const locale = await getLocaleFromPathnameHeader();
@@ -41,6 +48,7 @@ export default async function PublicProfileLoading() {
 
   return (
     <ProfileShellSkeleton title={t('pageTitle')} locale={locale}>
+      <LoadingStallReporter boundary="profile-shell" />
       <div className="mt-4">
         <FeedSkeleton count={3} />
       </div>
