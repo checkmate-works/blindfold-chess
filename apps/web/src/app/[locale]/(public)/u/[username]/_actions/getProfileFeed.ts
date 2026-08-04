@@ -3,9 +3,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { isValidUUID } from '@/lib/validations/uuid';
 
+import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
 import type { FeedResponse } from '@/app/[locale]/(public)/(home)/_lib/types';
-
-import { loadProfileTimelinePage } from '../_lib/load-profile-timeline-page';
 
 const PROFILE_FEED_LIMIT = 10;
 
@@ -45,8 +44,8 @@ export async function getProfileFeed(profileId: string, cursor?: string): Promis
     data: { user },
   } = await supabase.auth.getUser();
 
-  return loadProfileTimelinePage({
-    profileId,
+  return getFeedData({
+    actorId: profileId,
     currentUserId: user?.id,
     limit: PROFILE_FEED_LIMIT,
     cursor,
