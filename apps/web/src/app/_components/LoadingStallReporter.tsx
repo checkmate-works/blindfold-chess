@@ -4,39 +4,46 @@ import { useEffect } from 'react';
 
 import * as Sentry from '@sentry/nextjs';
 
-/** loading boundary がこの時間を超えて表示され続けたら 1 回だけ報告する。 */
+/** How long a loading boundary may stay on screen before it counts as stuck. */
 const STALL_THRESHOLD_MS = 15_000;
 
 type Props = {
-  /** どの boundary か（例: 'profile-shell'）。Sentry 側でグルーピングに使う。 */
+  /** Which boundary this is (e.g. 'profile-shell'). Used to group in Sentry. */
   boundary: string;
 };
 
 /**
- * loading.tsx に置く「ナビゲーション固着」検知器。
+ * Detects a navigation that commits and then never renders. Mount it in a
+ * `loading.tsx`.
  *
- * @design なぜタイマーが監視になるのか
- * 本番で「ソフトナビゲーションのコミット後、新ツリーの描画が React #310
- * (Next.js App Router 内部のフレームワークバグ) で死に、スケルトンが永久に
- * 残る」障害が観測された (2026-08-05)。この障害はユーザ操作(リロード)で
- * しか回復せず、自発的なエラー報告も出ない — Sentry に届いた #310 は偶然の
- * 副産物だった。スケルトンは正常なら数秒で unmount されるので、閾値を超えて
- * 生きていること自体が異常のシグナルになる。unmount でタイマーが破棄される
- * ため、正常なロードでは何も送られない。閾値は最悪ケースの正常ロード
- * (コールドスタート + 低速回線) より十分長く取ってある。
+ * @design Why a timer is the detector
+ * Production was observed (2026-08-05) getting permanently stuck after a soft
+ * navigation: the URL committed, the skeleton painted, and rendering the new
+ * tree then died with React #310 inside the App Router itself. Only a manual
+ * reload recovered it, and the failure reported nothing on its own — the #310
+ * that reached Sentry was incidental, so counting those cannot tell us whether
+ * the failure is still happening. A skeleton is only ever on screen for a few
+ * seconds, so outliving a threshold is itself the symptom. Unmount clears the
+ * timer, so a normal load sends nothing. The threshold is set well above the
+ * worst legitimate load (cold start on a slow connection).
  *
- * @design 何を判定するためのものか
- * この障害は本番の streaming 環境でしか再現しないので、Next.js 16.3.0 への
- * アップグレード (同 2026-08-05) が効いたかどうかをローカル検証では確かめ
- * られない。「直った」の判定はデプロイ後にこのイベント数がゼロになることで
- * 行う。ゼロにならなければ upstream 報告の材料になる。
+ * @design What this is here to decide
+ * The failure only reproduces in the production streaming environment, so no
+ * local check can confirm whether the Next.js 16.3.0 upgrade (same day) fixed
+ * it. The verdict is whether these events drop to zero after deploy; if they
+ * do not, they are the evidence for an upstream report.
  *
- * `deploymentId` は Vercel Skew Protection（または next.config の
- * `deploymentId`）が有効なときだけ値を持つ。有効化後は、レスポンスヘッダ
- * `x-nextjs-deployment-id` と突き合わせることで「古いバンドルを掴んだタブ」
- * (deployment skew) とフレームワークバグを事後に切り分けられる。現状は未設定
- * なので null が入る — 送信自体の意味は変わらないので、値がないことを理由に
- * 報告を止めない。
+ * Read a zero carefully. It means no stall *of the observed shape* — one where
+ * the skeleton stays mounted, which is what keeps this effect alive to fire. A
+ * failure that instead tears down the React root would take the timer with it
+ * and report nothing.
+ *
+ * `deploymentId` only carries a value once Vercel Skew Protection (or
+ * `deploymentId` in next.config) is enabled. After that it can be matched
+ * against the `x-nextjs-deployment-id` response header to tell a tab holding a
+ * stale bundle (deployment skew) apart from the framework bug. It is unset for
+ * now, hence null — that does not change what the report means, so a missing
+ * value is never a reason to withhold one.
  */
 export function LoadingStallReporter({ boundary }: Props) {
   useEffect(() => {
