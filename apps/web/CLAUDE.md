@@ -757,6 +757,58 @@ instead of changing the URL). Both are real design changes, not a quick
 patch — worth a deliberate decision (and testing with `next build && next
 start`, not just `next dev`) rather than a speculative attempt.
 
+### Client navigation can commit and then never render (production only)
+
+**Symptom** (production, 2026-08-05): a `<Link>` click to `/[locale]/u/[username]`
+changed the URL and painted `loading.tsx`, but the body never appeared — a
+reload always fixed it. `revalidatePath`-driven re-renders (the follow button)
+were likewise invisible until reload. Sentry showed React #310 (`Rendered more
+hooks than during the previous render`) thrown from inside the App Router's own
+Router component, not from app code. Same family as the `(protected)` Suspense
+entry above, and as [vercel/next.js#63121](https://github.com/vercel/next.js/issues/63121).
+
+**Ruled out, so don't re-investigate**: the server (the production RSC endpoint
+answers 200 / `text/x-component` with no redirect); app-level conditional hooks
+(`useSafeTranslations` never actually branches — its provider is always
+mounted); Service Workers (this app has none). The URL committing _before_ the
+freeze is what rules out deployment skew as the primary cause.
+
+Treated as a framework bug and addressed by upgrading to `next@16.3.0`
+(navigation lock fixes, soft-navigation work, updated bundled React canary).
+Note that the pinned `react`/`react-dom` in `package.json` are **not** what the
+App Router runs — the production bundle carried its own React canary — so only
+the `next` version can move this.
+
+**It cannot be verified locally.** The failure needs the production streaming
+environment; a green local battery proves absence of regression, nothing more.
+The verdict comes from `LoadingStallReporter` (`src/app/_components/`), which
+reports `loading-boundary-stalled:<boundary>` to Sentry when a skeleton
+outlives its threshold. Zero events after deploy = fixed. Non-zero = material
+for an upstream report (include the Next version, the #310 stack inside the
+Router component, and "URL commits, skeleton sticks, reload recovers").
+
+**Human task, not fixable in code**: enable Vercel **Skew Protection** (Project
+Settings → Advanced). A separate symptom — an old tab showing no skeleton at
+all — is deployment skew. Once enabled, `NEXT_DEPLOYMENT_ID` becomes non-null
+in the stall reports and can be matched against the `x-nextjs-deployment-id`
+response header to tell skew apart from the framework bug.
+
+### `next dev` rewrites CLAUDE.md and reformats build output (16.3.0)
+
+Two things 16.3.0 does that look like breakage but are not:
+
+- **`next dev` appends a `<!-- BEGIN:nextjs-agent-rules -->` block to
+  `CLAUDE.md`** (written by `node_modules/next/dist/server/lib/generate-agent-files.js`).
+  It reappears after every `next dev`, so a dirty `CLAUDE.md` right after
+  starting the dev server is expected, not a stray edit.
+- **The build's route table moved its `○ ● ƒ` markers from the parent route
+  line onto each generated child path.** Any script that scrapes markers with
+  `^[├└] ●` silently reports every SSG route as lost. When comparing route
+  tables across this version boundary, normalise both shapes first (collapse
+  children into the parent's effective marker) — the naive diff shows a
+  52-route SSG dropout that did not happen. This matters for keeping
+  `@/lib/security/static-content-paths.ts` in sync with the build's `●` routes.
+
 ## Important Notes
 
 - Prioritize performance and SEO in all decisions
