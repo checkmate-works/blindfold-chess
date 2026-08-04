@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
+import { HiTrophy } from 'react-icons/hi2';
 
-import { getAchievementIconEmoji } from '@/lib/achievements/display';
 import { type UserAchievementGroup, countTotalEarned } from '@/lib/db/achievement-queries';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
@@ -17,9 +17,6 @@ type Props = {
   /** One entry per badge definition, most recently earned first. */
   achievements: UserAchievementGroup[];
 };
-
-/** Achievement icons shown inline before the count spills into "view all". */
-const ICON_PREVIEW_LIMIT = 5;
 
 /**
  * The "what this member has earned" band: belt rank and achievement badges,
@@ -37,9 +34,12 @@ const ICON_PREVIEW_LIMIT = 5;
  * used to share the space, one as counts and one as tabs, which made the same
  * destinations look like two different controls.
  *
- * @design The rank badge is the one used elsewhere
- * `BeltRankBadge` is shared with the practice and games pages so a member's
- * belt looks the same wherever it appears.
+ * @design Both badges are the app's shared vocabulary
+ * The rank reuses `BeltRankBadge` so a member's belt looks the same here as on
+ * the practice and games pages. The achievements badge leads with the same
+ * trophy the achievement notification uses, and says what it is: a bare row of
+ * medal emoji read as decoration rather than as the way into the achievements
+ * page, which is where the link had effectively gone.
  */
 export async function ProfileStatsBand({ username, locale, rankSlug, achievements }: Props) {
   const [t, tRanks] = await Promise.all([
@@ -47,7 +47,6 @@ export async function ProfileStatsBand({ username, locale, rankSlug, achievement
     getTranslations({ locale, namespace: 'ranks' }),
   ]);
 
-  const previewIcons = achievements.slice(0, ICON_PREVIEW_LIMIT);
   const achievementCount = countTotalEarned(achievements);
 
   if (!rankSlug && achievementCount === 0) {
@@ -68,12 +67,10 @@ export async function ProfileStatsBand({ username, locale, rankSlug, achievement
         <Link
           href={`/u/${username}/achievements`}
           locale={locale}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-          aria-label={t('achievementsSection')}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold leading-none text-muted-foreground shadow-sm transition-colors hover:border-foreground/20 hover:text-foreground"
         >
-          <span aria-hidden>
-            {previewIcons.map((a) => getAchievementIconEmoji(a.iconKey)).join('')}
-          </span>
+          <HiTrophy className="size-3.5 text-amber-500" aria-hidden />
+          {t('achievementsSection')}
           <span className="tabular-nums">{achievementCount}</span>
         </Link>
       )}
