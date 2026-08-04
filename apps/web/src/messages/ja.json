@@ -4812,7 +4812,7 @@
     "block": "ブロック",
     "unblock": "ブロック解除",
     "blockedBadge": "ブロック中",
-    "blockedNoticeByYou": "このユーザーをブロックしています。ブロック中は投稿やゲームが非表示になります。",
+    "blockedNoticeByYou": "このユーザーをブロックしています。ブロック中は投稿や対局が非表示になります。",
     "blockedNoticeByThem": "このコンテンツは表示できません。",
     "blockPageTitle": "{displayName}をブロック",
     "blockSectionTitle": "確認",
@@ -4845,7 +4845,7 @@
     "emptyTimeline": "最近の活動はありません。",
     "viewAllTopics": "投稿をすべて見る",
     "viewAllProblems": "問題をすべて見る",
-    "viewAllGames": "ゲームをすべて見る",
+    "viewAllGames": "対局をすべて見る",
     "help": {
       "label": "このページの使い方",
       "archives": {
