@@ -266,6 +266,99 @@ describe('FeedClient', () => {
     });
   });
 
+  describe('initialItems seeds state once', () => {
+    it('ignores a new initialItems value on re-render, and picks it up when remounted via key', () => {
+      // The list is `useState`-owned after mount (infinite scroll appends to
+      // it), so a caller that swaps the feed in place gets the OLD one. This
+      // is why the profile timeline keys its Suspense boundary by filter:
+      // without the remount, clicking a filter chip fetched the new items
+      // server-side and then discarded them, leaving the previous filter's
+      // cards on screen while the chips showed the new selection.
+      const { rerender } = render(
+        <FeedClient
+          {...defaultProps}
+          key="filter-a"
+          initialItems={[makeTopicPostItem('from-filter-a')]}
+          initialCursor={null}
+        />
+      );
+      expect(screen.getByTestId('feed-card-from-filter-a')).toBeInTheDocument();
+
+      rerender(
+        <FeedClient
+          {...defaultProps}
+          key="filter-a"
+          initialItems={[makeTopicPostItem('from-filter-b')]}
+          initialCursor={null}
+        />
+      );
+      expect(screen.queryByTestId('feed-card-from-filter-b')).toBeNull();
+      expect(screen.getByTestId('feed-card-from-filter-a')).toBeInTheDocument();
+
+      rerender(
+        <FeedClient
+          {...defaultProps}
+          key="filter-b"
+          initialItems={[makeTopicPostItem('from-filter-b')]}
+          initialCursor={null}
+        />
+      );
+      expect(screen.getByTestId('feed-card-from-filter-b')).toBeInTheDocument();
+      expect(screen.queryByTestId('feed-card-from-filter-a')).toBeNull();
+    });
+  });
+
+  describe('fetchPage override', () => {
+    it('paginates through fetchPage instead of getFeed when supplied', async () => {
+      const nextPageItems = [makeTopicPostItem('profile-1')];
+      const fetchPage = vi.fn().mockResolvedValue({ items: nextPageItems, nextCursor: null });
+
+      render(
+        <FeedClient
+          {...defaultProps}
+          initialItems={[makeTopicPostItem('init-1')]}
+          initialCursor="2025-01-15T09:00:00.000Z"
+          fetchPage={fetchPage}
+        />
+      );
+
+      await act(async () => {
+        triggerIntersection();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('feed-card-profile-1')).toBeInTheDocument();
+      });
+
+      expect(fetchPage).toHaveBeenCalledWith('2025-01-15T09:00:00.000Z');
+      // The scope-based path must stay untouched for surfaces that override it,
+      // otherwise a profile timeline would silently splice home-feed items
+      // (other members' activity) into one member's page.
+      expect(getFeed).not.toHaveBeenCalled();
+    });
+
+    it('falls back to the scope-based getFeed when fetchPage is omitted', async () => {
+      vi.mocked(getFeed).mockResolvedValueOnce({ items: [], nextCursor: null });
+
+      render(
+        <FeedClient
+          {...defaultProps}
+          initialItems={[makeTopicPostItem('init-1')]}
+          initialCursor="2025-01-15T09:00:00.000Z"
+          scope="topics"
+        />
+      );
+
+      await act(async () => {
+        triggerIntersection();
+      });
+
+      await waitFor(() => {
+        expect(getFeed).toHaveBeenCalledWith('2025-01-15T09:00:00.000Z', undefined, 'topics');
+      });
+    });
+  });
+
   describe('ad-slot last-item edge case', () => {
     it('when initialItems.length % AD_INTERVAL === 0 and showAds is true, the ad wrapper is the visually-last block and shares the same per-item wrapper pattern', () => {
       // AD_INTERVAL is 10. Render exactly 10 items with showAds=true -> an ad

@@ -4819,6 +4819,7 @@
     "blockDescription": "Estás a punto de bloquear a {displayName}. No podrá seguirte ni enviarte notificaciones.",
     "blockedState": "Has bloqueado a {displayName}. No puede seguirte ni enviarte notificaciones.",
     "blockError": "Algo salió mal. Inténtalo de nuevo.",
+    "timelineTab": "Actividad reciente",
     "topicsTab": "Temas",
     "noTopicPosts": "Aún no hay publicaciones.",
     "problemsTab": "Problemas",
@@ -4840,6 +4841,21 @@
       "one_shot": "Única vez",
       "social": "Social",
       "ai_defeat": "Derrota a la IA"
+    },
+    "emptyTimeline": "Sin actividad reciente.",
+    "viewAllTopics": "Ver todas las publicaciones",
+    "viewAllProblems": "Ver todos los problemas",
+    "viewAllGames": "Ver todas las partidas",
+    "help": {
+      "label": "Cómo funciona esta página",
+      "archives": {
+        "title": "Archivos",
+        "description": "Usa las pestañas para ver todas las publicaciones, problemas y partidas de este miembro."
+      },
+      "timeline": {
+        "title": "Cronología de actividad",
+        "description": "La actividad reciente de este miembro, de lo más reciente a lo más antiguo. Las actualizaciones de posición en la clasificación desaparecen a los 30 días; los archivos conservan todo lo demás."
+      }
     }
   },
   "interview": {

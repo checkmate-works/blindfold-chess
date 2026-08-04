@@ -4812,13 +4812,14 @@
     "block": "ブロック",
     "unblock": "ブロック解除",
     "blockedBadge": "ブロック中",
-    "blockedNoticeByYou": "このユーザーをブロックしています。ブロック中は投稿やゲームが非表示になります。",
+    "blockedNoticeByYou": "このユーザーをブロックしています。ブロック中は投稿や対局が非表示になります。",
     "blockedNoticeByThem": "このコンテンツは表示できません。",
     "blockPageTitle": "{displayName}をブロック",
     "blockSectionTitle": "確認",
     "blockDescription": "{displayName}をブロックしようとしています。相手はあなたをフォローしたり通知を送ったりできなくなります。",
     "blockedState": "{displayName}をブロックしています。相手はあなたをフォローしたり通知を送ったりできません。",
     "blockError": "エラーが発生しました。もう一度お試しください。",
+    "timelineTab": "最近の活動",
     "topicsTab": "トピック",
     "noTopicPosts": "まだ投稿がありません。",
     "problemsTab": "問題",
@@ -4840,6 +4841,21 @@
       "one_shot": "一発達成",
       "social": "ソーシャル",
       "ai_defeat": "AI撃破"
+    },
+    "emptyTimeline": "最近の活動はありません。",
+    "viewAllTopics": "投稿をすべて見る",
+    "viewAllProblems": "問題をすべて見る",
+    "viewAllGames": "対局をすべて見る",
+    "help": {
+      "label": "このページの使い方",
+      "archives": {
+        "title": "アーカイブ",
+        "description": "タブからこのユーザーの投稿・問題・対局の完全な一覧に移動できます。"
+      },
+      "timeline": {
+        "title": "活動タイムライン",
+        "description": "このユーザーの最近の活動が新しい順に並びます。ランキング更新は30日で表示が終わりますが、アーカイブにはすべての投稿が残ります。"
+      }
     }
   },
   "interview": {

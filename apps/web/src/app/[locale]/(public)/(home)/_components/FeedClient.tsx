@@ -10,7 +10,7 @@ import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { getFeed } from '../_actions/getFeed';
 import type { FeedScope } from '../_actions/getFeed';
 import { buildDisplayItems } from '../_lib/feed-display';
-import type { DisplayItem, FeedItem } from '../_lib/types';
+import type { DisplayItem, FeedItem, FeedResponse } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
 import { ResponsiveAdSlot } from './ResponsiveAdSlot';
@@ -22,6 +22,15 @@ type Props = {
    * so Googlebot receives real content while the browser hydrates into a
    * single scrolling list. Keeping SSR and infinite-scroll items in one
    * container lets `last:border-b-0` correctly target the visually-last item.
+   *
+   * SEEDS STATE ONCE — a later value for this prop is ignored, because the
+   * list it feeds is owned by `useState` from then on (infinite scroll appends
+   * to it). A surface that re-renders this component with a DIFFERENT feed
+   * (one that swaps its feed in place, e.g. tabs over the same list) must
+   * therefore force a remount with a `key`; otherwise the new items are
+   * fetched server-side and then silently discarded, leaving the previous feed
+   * on screen. Home and topics never change theirs in place, so they need no
+   * key.
    */
   initialItems: FeedItem[];
   initialCursor: string | null;
@@ -38,11 +47,6 @@ type Props = {
    */
   nativeAdCreatives?: NativeAdView[];
   /**
-   * Which feed to paginate when loading more. Must match the scope used to
-   * build `initialItems` server-side. Defaults to `'home'` (all entity types).
-   */
-  scope?: FeedScope;
-  /**
    * Item layout. `'feed'` (default) renders a continuous divider list
    * (`border-b` between items) — the home feed. `'card'` renders each item as
    * a stand-alone bordered card spaced with `space-y-3` — matching the
@@ -55,6 +59,32 @@ type Props = {
   'data-tour-id'?: string;
 };
 
+/**
+ * Where the next page comes from — exactly one of the two, never both.
+ *
+ * `scope` names a feed whose entity-type whitelist is resolved inside
+ * `getFeed`, server-side; that is what stops a client from paginating an
+ * arbitrary entity-type list, so home and topics keep using it. `fetchPage`
+ * is for surfaces `scope` cannot express (the profile timeline, which pages
+ * within one member) and takes a Server Action already bound
+ * to that scope, so the client still only supplies the cursor. Either way the
+ * pages must be consistent with `initialItems` — they land in the same list.
+ *
+ * A union rather than an optional override: with both readable at once, one
+ * silently won, and `scope="topics" fetchPage={...}` type-checked while
+ * quietly paginating something else entirely.
+ */
+type PaginationSource =
+  | {
+      /** Must match the scope used to build `initialItems`. Defaults to `'home'`. */
+      scope?: FeedScope;
+      fetchPage?: never;
+    }
+  | {
+      scope?: never;
+      fetchPage: (cursor: string) => Promise<FeedResponse>;
+    };
+
 export function FeedClient({
   initialItems,
   initialCursor,
@@ -64,10 +94,11 @@ export function FeedClient({
   showAds = false,
   nativeAdCreatives,
   scope = 'home',
+  fetchPage,
   variant = 'feed',
   actionSize,
   ...rest
-}: Props) {
+}: Props & PaginationSource) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoading, setIsLoading] = useState(false);
@@ -130,14 +161,14 @@ export function FeedClient({
     isLoadingRef.current = true;
     setIsLoading(true);
     try {
-      const result = await getFeed(cursor, undefined, scope);
+      const result = fetchPage ? await fetchPage(cursor) : await getFeed(cursor, undefined, scope);
       setItems((prev) => [...prev, ...result.items]);
       setCursor(result.nextCursor);
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);
     }
-  }, [cursor, scope]);
+  }, [cursor, scope, fetchPage]);
 
   useEffect(() => {
     const el = sentinelRef.current;

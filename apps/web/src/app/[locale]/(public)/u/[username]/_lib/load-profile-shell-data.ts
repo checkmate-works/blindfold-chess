@@ -2,12 +2,14 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles, userFollows } from '@/lib/db';
 import { type UserAchievementGroup, getUserAchievementGroups } from '@/lib/db/achievement-queries';
+import type { RankSlug } from '@/lib/db/data/ranks';
 import { countGamesByAuthorId } from '@/lib/db/games-read';
 import { hasBlocked } from '@/lib/moderation/block';
 import { countPositions } from '@/lib/positions/queries';
 
-import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
+import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
+import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
+import { getPostCountByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 
 export type ProfileShellData = {
   initialFollowing: boolean;
@@ -19,23 +21,32 @@ export type ProfileShellData = {
   followerCount: number;
   followingCount: number;
   /**
-   * Full post list, not just a count — there is no dedicated count query for
-   * `getPostsByUserId`. The main page slices this for the topics tab;
-   * `/problems/*` pages only need `allPosts.length` for the tab badge.
+   * Topic-post count only. Every page that renders the shell wants the number
+   * for a tab badge or a stats count; the posts archive is its own route and
+   * fetches the page it needs. Loading the full list here instead meant five
+   * queries and every post row (plus every reply to them) on four pages that
+   * called `.length` on the result.
    */
-  allPosts: ProfilePostWithReplyMeta[];
+  postsCount: number;
   problemsCount: number;
   gamesCount: number;
   /** One entry per badge definition, most recently earned first. */
   userAchievementGroups: UserAchievementGroup[];
+  /** Highest rank actually held; `null` for an unranked (mukyu) member. */
+  rankSlug: RankSlug | null;
 };
 
 /**
  * Loads everything the profile "shell" needs regardless of which top-level
- * tab (topics/problems/games) is active: follow relationship, follower/
- * following counts, the tab-badge counts, and achievements. Shared by the
- * main profile page and the `/problems/{puzzles,position-memory}` pages so
- * the header, stats, and tab bar stay identical across all of them.
+ * tab (timeline/topics/problems/games) is active: follow relationship,
+ * follower/following counts, the tab-badge counts, achievements, and the
+ * member's belt rank. Shared by every page under `/u/[username]` that renders
+ * the shell, so the header, stats band, and tab bar stay identical across all
+ * of them.
+ *
+ * The rank lives here rather than only on the timeline page because the stats
+ * band is now part of the shared shell — every page draws the badge, so every
+ * page has to load what it shows.
  */
 export async function loadProfileShellData({
   profileId,
@@ -95,10 +106,11 @@ export async function loadProfileShellData({
     blockedByProfile,
     [followerResult],
     [followingResult],
-    allPosts,
+    postsCount,
     userAchievementGroups,
     problemsCount,
     gamesCount,
+    achievedSlugs,
   ] = await Promise.all([
     followCheckPromise,
     reverseFollowCheckPromise,
@@ -106,10 +118,11 @@ export async function loadProfileShellData({
     blockedByProfilePromise,
     followerCountPromise,
     followingCountPromise,
-    getPostsByUserId(profileId, currentUserId),
+    getPostCountByUserId(profileId),
     getUserAchievementGroups(profileId),
     countPositions({ userId: profileId }),
     countGamesByAuthorId(profileId),
+    getAchievedSlugsForUser(profileId),
   ]);
 
   return {
@@ -119,9 +132,10 @@ export async function loadProfileShellData({
     blockedByProfile,
     followerCount: followerResult.count,
     followingCount: followingResult.count,
-    allPosts,
+    postsCount,
     problemsCount,
     gamesCount,
     userAchievementGroups,
+    rankSlug: resolveHighestAchievedSlug(achievedSlugs),
   };
 }

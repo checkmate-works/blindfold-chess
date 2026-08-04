@@ -48,7 +48,12 @@ describe('getFeed', () => {
 
       await getFeed(validCursor);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(validCursor, 10, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: validCursor,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
 
     it('should call getFeedData when cursor is undefined (first page)', async () => {
@@ -56,7 +61,12 @@ describe('getFeed', () => {
 
       await getFeed(undefined);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
   });
 
@@ -66,7 +76,12 @@ describe('getFeed', () => {
 
       await getFeed(undefined, undefined);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
 
     it('should pass limit as-is when it is within range', async () => {
@@ -74,7 +89,59 @@ describe('getFeed', () => {
 
       await getFeed(undefined, 25);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 25, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 25,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
+    });
+
+    it.each([
+      ['a negative limit', -5],
+      ['zero', 0],
+    ])('should clamp %s up to 1 rather than reaching SQL', async (_label, limit) => {
+      // `LIMIT -4` is a Postgres error, so an unclamped negative turned a
+      // crafted request into a 500. The action is callable with any body.
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, limit);
+
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 1,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
+    });
+
+    it('should truncate a fractional limit to a whole number', async () => {
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, 7.9);
+
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 7,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
+    });
+
+    it.each([
+      ['NaN', NaN],
+      ['Infinity', Infinity],
+    ])('should fall back to the default limit for %s', async (_label, limit) => {
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, limit);
+
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
 
     it('should clamp limit to 50 when limit exceeds MAX_FEED_LIMIT', async () => {
@@ -82,7 +149,12 @@ describe('getFeed', () => {
 
       await getFeed(undefined, 100);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 50,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
 
     it('should clamp limit to 50 when limit is exactly 51', async () => {
@@ -90,7 +162,12 @@ describe('getFeed', () => {
 
       await getFeed(undefined, 51);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 50,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
 
     it('should use 50 when limit is exactly 50', async () => {
@@ -98,7 +175,12 @@ describe('getFeed', () => {
 
       await getFeed(undefined, 50);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 50,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
   });
 
@@ -110,7 +192,12 @@ describe('getFeed', () => {
 
       await getFeed(undefined);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, userId, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: userId,
+        entityTypes: undefined,
+      });
     });
 
     it('should pass undefined user id when user is not authenticated', async () => {
@@ -119,7 +206,12 @@ describe('getFeed', () => {
 
       await getFeed(undefined);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
   });
 
@@ -129,7 +221,31 @@ describe('getFeed', () => {
 
       await getFeed(undefined, undefined, 'home');
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
+    });
+
+    it.each([
+      ['a prototype key', 'constructor'],
+      ['a prototype chain key', '__proto__'],
+      ['an unknown scope', 'everything'],
+    ])('should fall back to the unfiltered feed for %s', async (_label, scope) => {
+      // Indexing the whitelist directly walked the prototype chain, and the
+      // truthy non-iterable that came back threw on spread inside the query.
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, undefined, scope as 'home');
+
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: undefined,
+      });
     });
 
     it('should scope to topic feed entity types for the topics scope', async () => {
@@ -137,12 +253,12 @@ describe('getFeed', () => {
 
       await getFeed(undefined, undefined, 'topics');
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(
-        undefined,
-        10,
-        undefined,
-        TOPICS_FEED_ENTITY_TYPES
-      );
+      expect(mockGetFeedData).toHaveBeenCalledWith({
+        cursor: undefined,
+        limit: 10,
+        currentUserId: undefined,
+        entityTypes: TOPICS_FEED_ENTITY_TYPES,
+      });
     });
   });
 

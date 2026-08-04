@@ -4819,6 +4819,7 @@
     "blockDescription": "You're about to block {displayName}. They won't be able to follow you or send you notifications.",
     "blockedState": "You've blocked {displayName}. They can't follow you or send you notifications.",
     "blockError": "Something went wrong. Please try again.",
+    "timelineTab": "Recent activity",
     "topicsTab": "Topics",
     "noTopicPosts": "No posts yet.",
     "problemsTab": "Problems",
@@ -4840,6 +4841,21 @@
       "one_shot": "One-Shot",
       "social": "Social",
       "ai_defeat": "AI Defeat"
+    },
+    "emptyTimeline": "No recent activity.",
+    "viewAllTopics": "View all posts",
+    "viewAllProblems": "View all problems",
+    "viewAllGames": "View all games",
+    "help": {
+      "label": "How this page works",
+      "archives": {
+        "title": "Archives",
+        "description": "Use the tabs to browse this member's complete posts, problems, and games."
+      },
+      "timeline": {
+        "title": "Activity timeline",
+        "description": "This member's recent activity, newest first. Leaderboard rank updates drop off after 30 days; the archives keep everything else."
+      }
     }
   },
   "interview": {

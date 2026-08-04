@@ -1,4 +1,4 @@
-import { and, desc, inArray, lt } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 
 import { db, feedItems } from '@/lib/db';
 
@@ -40,24 +40,47 @@ export const TOPICS_FEED_ENTITY_TYPES = ['topic_post', 'chunk'] as const;
  * loader per type makes each loader read like a focused query helper
  * instead of a branch inside a 200-line IIFE chain.
  *
- * @param entityTypes Optional whitelist of `feed_items.entityType` values to
- * include. Omit (the home feed) to fetch every entity type; pass a subset
- * (e.g. `TOPICS_FEED_ENTITY_TYPES`) to scope the feed. The filter is applied
- * in SQL so pagination/cursor math stays correct.
+ * @design Options object
+ * Both filters below narrow the same query and are optional, and a positional
+ * signature had already reached four parameters with two of them optional —
+ * every new caller had to pad with `undefined`. Naming them at the call site
+ * also makes `actorId` (a *scope*) hard to confuse with `currentUserId` (the
+ * *viewer*, used for like/reply meta); those two are different users whenever
+ * someone views another member's profile.
  */
-export async function getFeedData(
-  cursor: string | undefined,
-  limit: number,
-  currentUserId?: string,
-  entityTypes?: readonly string[]
-): Promise<FeedResponse> {
+export async function getFeedData({
+  cursor,
+  limit,
+  currentUserId,
+  entityTypes,
+  actorId,
+}: {
+  cursor?: string;
+  limit: number;
+  /** The viewer, for `likedByMe` and other per-viewer meta. */
+  currentUserId?: string;
+  /**
+   * Optional whitelist of `feed_items.entityType` values to include. Omit (the
+   * home feed) to fetch every entity type; pass a subset (e.g.
+   * `TOPICS_FEED_ENTITY_TYPES`) to scope the feed. The filter is applied in SQL
+   * so pagination/cursor math stays correct.
+   */
+  entityTypes?: readonly string[];
+  /**
+   * Optional author scope — restricts the feed to one member's own activity
+   * (the public profile timeline). Backed by `idx_feed_items_actor_created`,
+   * which covers this filter together with the cursor's ORDER BY.
+   */
+  actorId?: string;
+}): Promise<FeedResponse> {
   const feedRows = await db
     .select()
     .from(feedItems)
     .where(
       and(
         cursor ? lt(feedItems.createdAt, new Date(cursor)) : undefined,
-        entityTypes ? inArray(feedItems.entityType, [...entityTypes]) : undefined
+        entityTypes ? inArray(feedItems.entityType, [...entityTypes]) : undefined,
+        actorId ? eq(feedItems.actorId, actorId) : undefined
       )
     )
     .orderBy(desc(feedItems.createdAt))

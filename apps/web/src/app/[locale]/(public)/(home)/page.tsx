@@ -69,7 +69,7 @@ export default async function HomePage({ params }: Props) {
   } = await supabase.auth.getUser();
 
   const [initialFeed, { showAds, creatives: nativeAdCreatives }] = await Promise.all([
-    getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
+    getFeedData({ limit: INITIAL_FEED_SIZE, currentUserId: user?.id }),
     resolveNativeAds(FEED_NATIVE_AD_SLOT, user?.id ?? null),
   ]);
 

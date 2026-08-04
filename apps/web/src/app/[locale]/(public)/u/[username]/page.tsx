@@ -1,13 +1,32 @@
 /**
- * Public Profile
+ * Public Profile (公開プロフィール)
  *
- * @description Displays another user's public profile including avatar, display name, bio,
- * follow relationships, topic posts, and achievements. Shows edit link and following count for own profile.
+ * @description Another member's public profile: identity header, a standing
+ * band of rank / achievements, and a timeline of everything they have posted.
+ * The first of the four tabs the shell draws.
  *
  * @flow
  * 1. Fetch profile by `[username]` from URL (404 if not found)
- * 2. Determine relationship with logged-in user (follow state)
- * 3. Fetch posts and achievements in parallel, render with pagination
+ * 2. Determine relationship with logged-in user (follow / block state)
+ * 3. Load shell data, then the first timeline page inside `<Suspense>`
+ * 4. Render the timeline; the client pages further via `getProfileFeed`
+ *
+ * @design Timeline here, archives elsewhere
+ * This page shows recent activity and scrolls indefinitely, so it cannot also
+ * host a paginated archive — those live at `/posts`, `/games` and
+ * `/problems/*`, one tab away. Browsing by entity type is therefore the
+ * archives' job and the timeline carries no filter of its own: an archive is
+ * the complete record, whereas a filtered timeline would show only the slice
+ * of it that postdates the feed. It also means nothing may be rendered *after*
+ * the timeline: a section below an infinite scroll is unreachable, which is
+ * why achievements moved up into the band.
+ *
+ * @design Timeline completeness
+ * The timeline reads `feed_items`, which only has rows for activity since the
+ * feed shipped (there was deliberately no backfill), and whose
+ * `challenge_rank_update` rows are reaped after 30 days. The archives remain
+ * the complete record, so every empty timeline view links to them — see
+ * `ProfileTimelineEmpty`.
  *
  * NOTE: This route was originally located at `(public)/profile/[username]/` and served
  * under the URL `/@/username` via a rewrite rule. However, `@` is a reserved character
@@ -16,38 +35,34 @@
  * URL is now `/u/username`. A 301 redirect from `/@/` to `/u/` is configured in
  * next.config.ts for backwards compatibility.
  */
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { getAchievementCategoryNames } from '@/lib/achievements/display';
-import { countTotalEarned } from '@/lib/db/achievement-queries';
-import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
-import { createClient } from '@/lib/supabase/server';
-
-import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
-import { PageLayout } from '@/app/[locale]/_components';
+import { FeedSkeleton } from '@/app/[locale]/(public)/(home)/_components/FeedSkeleton';
+import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ProfileAchievements } from './_components/ProfileAchievements';
 import { ProfileBlockedNotice } from './_components/ProfileBlockedNotice';
-import { ProfileGames } from './_components/ProfileGames';
-import { ProfileIdentitySection } from './_components/ProfileIdentitySection';
-import { ProfilePosts } from './_components/ProfilePosts';
-import { buildTabHref } from './_lib/build-tab-href';
-import { loadPublicProfilePageData } from './_lib/load-page-data';
+import { ProfileIdentityHeader } from './_components/ProfileIdentityHeader';
+import { ProfileShell } from './_components/ProfileShell';
+import { ProfileTimeline } from './_components/ProfileTimeline';
+import { resolveProfileViewer } from './_lib/load-archive-context';
+import { loadProfileShellData } from './_lib/load-profile-shell-data';
+import { profileArchiveHref } from './_lib/profile-archive-href';
 import { getProfileByUsername } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
 
-const PAGE_SIZE = 5;
-
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
-  tab: parseAsString.withDefault('topics'),
+  tab: parseAsString.withDefault(''),
 });
 
 type Props = {
@@ -79,170 +94,85 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicProfilePage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
-  const supabase = await createClient();
-  const [profile, parsedParams, authResult] = await Promise.all([
-    getProfileByUsername(username),
+  const [viewer, parsedParams] = await Promise.all([
+    resolveProfileViewer(username),
     searchParamsCache.parse(searchParams),
-    supabase.auth.getUser(),
   ]);
 
-  if (!profile) {
-    notFound();
+  // Back-compat with the tab-based profile: `?tab=games` and a bare `?page=N`
+  // (which used to page the topics tab) now belong to the archive routes.
+  const pageQuery = parsedParams.page > 1 ? `?page=${parsedParams.page}` : '';
+  if (parsedParams.tab === 'games') {
+    redirect(`/${locale}${profileArchiveHref(username, 'games')}${pageQuery}`);
+  }
+  if (parsedParams.tab === 'problems') {
+    redirect(`/${locale}${profileArchiveHref(username, 'problems')}`);
+  }
+  if (parsedParams.page > 1) {
+    redirect(`/${locale}${profileArchiveHref(username, 'topics')}${pageQuery}`);
   }
 
-  const user = authResult.data.user;
-  const isOwnProfile = user?.id === profile.id;
+  const { profile, currentUserId, isOwnProfile } = viewer;
 
-  const [pageData, t, tTopics, tSquares, tOpenings, tPlay, tSharedGames, tOpeningNames] =
-    await Promise.all([
-      loadPublicProfilePageData({
-        profileId: profile.id,
-        currentUserId: user?.id,
-        isOwnProfile,
-        parsedParams,
-        pageSize: PAGE_SIZE,
-      }),
-      getTranslations({ locale, namespace: 'publicProfile' }),
-      getTranslations({ locale, namespace: 'topics' }),
-      getTranslations({ locale, namespace: 'topics.squares' }),
-      getTranslations({ locale, namespace: 'topics.openings' }),
-      getTranslations({ locale, namespace: 'play' }),
-      getTranslations({ locale, namespace: 'sharedGames' }),
-      getTranslations({ locale, namespace: 'topics.openings.names' }),
-    ]);
-
-  const {
-    activeTab,
-    initialFollowing,
-    followedByProfile,
-    viewerHasBlocked,
-    blockedByProfile,
-    followerCount,
-    followingCount,
-    posts,
-    topicsCount,
-    topicsCurrentPage,
-    topicsTotalPages,
-    problemsCount,
-    games,
-    gamesCount,
-    gamesCurrentPage,
-    gamesTotalPages,
-    gameLikeMetaMap,
-    gameReplyMetaMap,
-    userAchievementGroups,
-  } = pageData;
-
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    if (activeTab !== 'topics') params.set('tab', activeTab);
-    if (p > 1) params.set('page', String(p));
-    const qs = params.toString();
-    return `/${locale}/u/${username}${qs ? `?${qs}` : ''}`;
-  };
+  const [pageData, t] = await Promise.all([
+    loadProfileShellData({ profileId: profile.id, currentUserId, isOwnProfile }),
+    getTranslations({ locale, namespace: 'publicProfile' }),
+  ]);
 
   // A block in either direction collapses the profile to its identity header
-  // plus a notice — posts, games and achievements are hidden from the blocked
+  // plus a notice — the timeline and stats are hidden from the blocked
   // viewer's in-app view. (Direct URLs / SEO pages stay public by design.)
-  const restricted = !isOwnProfile && (viewerHasBlocked || blockedByProfile);
+  // The shell is skipped entirely rather than rendered without a body: its tab
+  // row would offer archives the viewer is only going to be redirected out of.
+  const restricted = !isOwnProfile && (pageData.viewerHasBlocked || pageData.blockedByProfile);
+
+  if (restricted) {
+    return (
+      <PageLayout title={t('pageTitle')} locale={locale}>
+        <div className="space-y-6">
+          <ProfileIdentityHeader viewer={viewer} shell={pageData} locale={locale} restricted />
+          <ProfileBlockedNotice
+            message={pageData.viewerHasBlocked ? t('blockedNoticeByYou') : t('blockedNoticeByThem')}
+          />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'profile-tabs',
+      title: t('help.archives.title'),
+      description: t('help.archives.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: 'profile-timeline',
+      title: t('help.timeline.title'),
+      description: t('help.timeline.description'),
+      side: 'top',
+      align: 'start',
+    },
+  ];
 
   return (
-    <PageLayout title={t('pageTitle')} locale={locale}>
-      <div className="space-y-6">
-        <ProfileIdentitySection
-          profile={profile}
-          locale={locale}
-          isOwnProfile={isOwnProfile}
-          isAuthenticated={!!user}
-          initialFollowing={initialFollowing}
-          followedByProfile={followedByProfile}
-          viewerHasBlocked={viewerHasBlocked}
-          restricted={restricted}
-          followerCount={followerCount}
-          followingCount={followingCount}
-          labels={{
-            editProfile: t('editProfile'),
-            followsYou: t('followsYou'),
-            followingCount: t('followingCount'),
-            followers: t('followers'),
-            bio: t('bio'),
-            moreActions: t('moreActions'),
-            block: t('block'),
-            unblock: t('unblock'),
-            blockedBadge: t('blockedBadge'),
-          }}
-        />
-        {restricted ? (
-          <ProfileBlockedNotice
-            message={viewerHasBlocked ? t('blockedNoticeByYou') : t('blockedNoticeByThem')}
+    <ProfileShell
+      context={{ ...viewer, shell: pageData }}
+      locale={locale}
+      activeTab="timeline"
+      titleAction={<HelpTourButton steps={helpSteps} label={t('help.label')} />}
+    >
+      <div className="mt-4" data-tour-id="profile-timeline">
+        <Suspense fallback={<FeedSkeleton />}>
+          <ProfileTimeline
+            profileId={profile.id}
+            username={username}
+            locale={locale}
+            currentUserId={currentUserId}
           />
-        ) : (
-          <>
-            {/* Topics / Problems / Games Tabs */}
-            <ProfilePosts
-              posts={posts}
-              totalCount={topicsCount}
-              problemsCount={problemsCount}
-              gamesCount={gamesCount}
-              activeTab={activeTab}
-              currentPage={topicsCurrentPage}
-              totalPages={topicsTotalPages}
-              locale={locale}
-              buildHref={buildHref}
-              buildTabHref={(targetTab) => buildTabHref(username, targetTab)}
-              labels={{
-                topicsTab: t('topicsTab'),
-                problemsTab: t('problemsTab'),
-                gamesTab: t('gamesTab'),
-                noTopicPosts: t('noTopicPosts'),
-                showMore: tTopics('showMore'),
-                justNow: (topicType) =>
-                  topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
-              }}
-              gamesSlot={
-                <ProfileGames
-                  games={games}
-                  likeMetaMap={gameLikeMetaMap}
-                  replyMetaMap={gameReplyMetaMap}
-                  emptyReplyMeta={EMPTY_REPLY_META}
-                  currentPage={gamesCurrentPage}
-                  totalPages={gamesTotalPages}
-                  locale={locale}
-                  buildHref={buildHref}
-                  justNowLabel={tSharedGames('detail.justNow')}
-                  colorLabels={{
-                    white: tPlay('playerColor.white'),
-                    black: tPlay('playerColor.black'),
-                  }}
-                  resolveOpeningName={(slug, fallbackName) =>
-                    getOpeningDisplayName(tOpeningNames, slug, fallbackName)
-                  }
-                  labels={{
-                    noGames: t('noGames'),
-                  }}
-                />
-              }
-            />
-
-            {/* Achievements */}
-            {userAchievementGroups.length > 0 && (
-              <ProfileAchievements
-                achievements={userAchievementGroups}
-                locale={locale}
-                limit={4}
-                totalCount={countTotalEarned(userAchievementGroups)}
-                username={username}
-                labels={{
-                  sectionTitle: t('achievementsSection'),
-                  noAchievements: t('noAchievements'),
-                  viewAll: t('viewAllAchievements'),
-                  categoryNames: getAchievementCategoryNames(t),
-                }}
-              />
-            )}
-          </>
-        )}
+        </Suspense>
       </div>
-    </PageLayout>
+    </ProfileShell>
   );
 }

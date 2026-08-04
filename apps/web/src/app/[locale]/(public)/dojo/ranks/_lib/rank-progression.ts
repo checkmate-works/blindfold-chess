@@ -70,6 +70,20 @@ export function resolveRecommendedNextSlug(achievedSlugs: ReadonlySet<RankSlug>)
 }
 
 /**
+ * The highest rank a user actually holds, or `null` when they hold none
+ * (mukyu — which is UI-only and never counted as achieved).
+ *
+ * This is what a profile shows as "their rank": with skip-grants, the highest
+ * held rank is the only defensible single answer, since the set below it may
+ * be sparse. Callers that need the whole ladder rendered want
+ * {@link resolveDisplayAchievedSlugs} instead.
+ */
+export function resolveHighestAchievedSlug(achievedSlugs: ReadonlySet<RankSlug>): RankSlug | null {
+  const highest = highestAchievedIndex(achievedSlugs);
+  return highest === -1 ? null : REAL_RANK_SLUGS[highest];
+}
+
+/**
  * Expand a literal (DB-row-backed) achieved-slugs set into "effective"
  * achievement for DISPLAY purposes: every real rank at or below the highest
  * actually-achieved rank's level counts as achieved too, even without its
