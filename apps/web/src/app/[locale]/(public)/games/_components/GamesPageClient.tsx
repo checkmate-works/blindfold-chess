@@ -10,7 +10,7 @@ import { FaExclamationTriangle, FaPlus } from 'react-icons/fa';
 
 import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
-import { BeltRankBadge } from '@/app/[locale]/(public)/practice/_components/BeltRankBadge';
+import { BeltRankBadge } from '@/app/[locale]/(public)/dojo/_components/BeltRankBadge';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { TEXT_LINK_CLASSES, TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
