@@ -4819,6 +4819,7 @@
     "blockDescription": "Estás a punto de bloquear a {displayName}. No podrá seguirte ni enviarte notificaciones.",
     "blockedState": "Has bloqueado a {displayName}. No puede seguirte ni enviarte notificaciones.",
     "blockError": "Algo salió mal. Inténtalo de nuevo.",
+    "timelineTab": "Actividad reciente",
     "topicsTab": "Temas",
     "noTopicPosts": "Aún no hay publicaciones.",
     "problemsTab": "Problemas",
@@ -4841,28 +4842,19 @@
       "social": "Social",
       "ai_defeat": "Derrota a la IA"
     },
-    "archivesAriaLabel": "Archivos",
-    "filterAriaLabel": "Filtrar actividad",
-    "filter": {
-      "all": "Todo",
-      "topics": "Temas",
-      "problems": "Problemas",
-      "games": "Partidas",
-      "chunks": "Chunks"
-    },
     "emptyTimeline": "Sin actividad reciente.",
     "viewAllTopics": "Ver todas las publicaciones",
     "viewAllProblems": "Ver todos los problemas",
     "viewAllGames": "Ver todas las partidas",
     "help": {
       "label": "Cómo funciona esta página",
-      "stats": {
-        "title": "Rango y logros",
-        "description": "Rango de cinturón, insignias de logros y cuánto ha publicado este miembro. Toca un número para ver el archivo completo."
+      "archives": {
+        "title": "Archivos",
+        "description": "Usa las pestañas para ver todas las publicaciones, problemas y partidas de este miembro."
       },
       "timeline": {
         "title": "Cronología de actividad",
-        "description": "Todo lo que ha publicado este miembro, de lo más reciente a lo más antiguo. Usa los filtros para acotar. Las actualizaciones de posición en la clasificación desaparecen a los 30 días; los archivos conservan todo lo demás."
+        "description": "La actividad reciente de este miembro, de lo más reciente a lo más antiguo. Las actualizaciones de posición en la clasificación desaparecen a los 30 días; los archivos conservan todo lo demás."
       }
     }
   },

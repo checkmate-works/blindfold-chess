@@ -17,7 +17,7 @@ import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ProfileArchiveShell } from '../_components/ProfileArchiveShell';
+import { ProfileShell } from '../_components/ProfileShell';
 import { buildProfileArchiveMetadata } from '../_lib/archive-metadata';
 import { loadProfileArchiveContext } from '../_lib/load-archive-context';
 
@@ -68,7 +68,7 @@ export default async function ProfilePostsPage({ params, searchParams }: Props) 
   const buildHref = (p: number) => `/${locale}/u/${username}/posts${p > 1 ? `?page=${p}` : ''}`;
 
   return (
-    <ProfileArchiveShell context={context} locale={locale} activeTab="topics">
+    <ProfileShell context={context} locale={locale} activeTab="topics">
       <div className="mt-4 space-y-3">
         {posts.length > 0 ? (
           posts.map((post) => (
@@ -94,6 +94,6 @@ export default async function ProfilePostsPage({ params, searchParams }: Props) 
         totalPages={totalPages}
         buildHref={buildHref}
       />
-    </ProfileArchiveShell>
+    </ProfileShell>
   );
 }

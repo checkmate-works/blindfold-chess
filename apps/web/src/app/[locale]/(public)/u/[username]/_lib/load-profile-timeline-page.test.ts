@@ -25,7 +25,6 @@ describe('loadProfileTimelinePage', () => {
     await expect(
       loadProfileTimelinePage({
         profileId: PROFILE_ID,
-        filter: 'all',
         currentUserId: undefined,
         limit: 10,
       })
@@ -33,12 +32,11 @@ describe('loadProfileTimelinePage', () => {
     expect(mockGetFeedData).toHaveBeenCalledTimes(1);
   });
 
-  it('should scope the query to the actor, the filter and the viewer', async () => {
+  it('should scope the query to the actor and the viewer, unfiltered', async () => {
     mockGetFeedData.mockResolvedValue({ items: [{ id: 'a' }], nextCursor: null });
 
     await loadProfileTimelinePage({
       profileId: PROFILE_ID,
-      filter: 'games',
       currentUserId: 'viewer-1',
       limit: 10,
       cursor: '2025-01-15T10:00:00.000Z',
@@ -48,7 +46,6 @@ describe('loadProfileTimelinePage', () => {
       cursor: '2025-01-15T10:00:00.000Z',
       limit: 10,
       currentUserId: 'viewer-1',
-      entityTypes: ['game'],
       actorId: PROFILE_ID,
     });
   });
@@ -65,7 +62,6 @@ describe('loadProfileTimelinePage', () => {
     await expect(
       loadProfileTimelinePage({
         profileId: PROFILE_ID,
-        filter: 'all',
         currentUserId: undefined,
         limit: 10,
       })
@@ -83,7 +79,6 @@ describe('loadProfileTimelinePage', () => {
     await expect(
       loadProfileTimelinePage({
         profileId: PROFILE_ID,
-        filter: 'all',
         currentUserId: undefined,
         limit: 10,
       })
@@ -98,7 +93,6 @@ describe('loadProfileTimelinePage', () => {
 
     const result = await loadProfileTimelinePage({
       profileId: PROFILE_ID,
-      filter: 'all',
       currentUserId: undefined,
       limit: 10,
     });

@@ -1,8 +1,6 @@
 import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
 import type { FeedResponse } from '@/app/[locale]/(public)/(home)/_lib/types';
 
-import { type ProfileFeedFilter, resolveProfileFeedEntityTypes } from './profile-feed-filters';
-
 /**
  * How many all-holes pages to walk past before handing what is left to the
  * caller. Bounded so one request cannot turn into an unbounded scan of a
@@ -35,19 +33,16 @@ const MAX_SKIPPED_PAGES = 5;
  */
 export async function loadProfileTimelinePage({
   profileId,
-  filter,
   currentUserId,
   limit,
   cursor,
 }: {
   profileId: string;
-  filter: ProfileFeedFilter;
   /** The viewer, for `likedByMe` and other per-viewer meta. */
   currentUserId: string | undefined;
   limit: number;
   cursor?: string;
 }): Promise<FeedResponse> {
-  const entityTypes = resolveProfileFeedEntityTypes(filter);
   let nextCursor = cursor;
 
   for (let skipped = 0; ; skipped++) {
@@ -55,7 +50,6 @@ export async function loadProfileTimelinePage({
       cursor: nextCursor,
       limit,
       currentUserId,
-      entityTypes,
       actorId: profileId,
     });
 

@@ -2,10 +2,13 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles, userFollows } from '@/lib/db';
 import { type UserAchievementGroup, getUserAchievementGroups } from '@/lib/db/achievement-queries';
+import type { RankSlug } from '@/lib/db/data/ranks';
 import { countGamesByAuthorId } from '@/lib/db/games-read';
 import { hasBlocked } from '@/lib/moderation/block';
 import { countPositions } from '@/lib/positions/queries';
 
+import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
+import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
 import { getPostCountByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 
 export type ProfileShellData = {
@@ -29,14 +32,21 @@ export type ProfileShellData = {
   gamesCount: number;
   /** One entry per badge definition, most recently earned first. */
   userAchievementGroups: UserAchievementGroup[];
+  /** Highest rank actually held; `null` for an unranked (mukyu) member. */
+  rankSlug: RankSlug | null;
 };
 
 /**
  * Loads everything the profile "shell" needs regardless of which top-level
- * tab (topics/problems/games) is active: follow relationship, follower/
- * following counts, the tab-badge counts, and achievements. Shared by the
- * main profile page and the `/problems/{puzzles,position-memory}` pages so
- * the header, stats, and tab bar stay identical across all of them.
+ * tab (timeline/topics/problems/games) is active: follow relationship,
+ * follower/following counts, the tab-badge counts, achievements, and the
+ * member's belt rank. Shared by every page under `/u/[username]` that renders
+ * the shell, so the header, stats band, and tab bar stay identical across all
+ * of them.
+ *
+ * The rank lives here rather than only on the timeline page because the stats
+ * band is now part of the shared shell — every page draws the badge, so every
+ * page has to load what it shows.
  */
 export async function loadProfileShellData({
   profileId,
@@ -100,6 +110,7 @@ export async function loadProfileShellData({
     userAchievementGroups,
     problemsCount,
     gamesCount,
+    achievedSlugs,
   ] = await Promise.all([
     followCheckPromise,
     reverseFollowCheckPromise,
@@ -111,6 +122,7 @@ export async function loadProfileShellData({
     getUserAchievementGroups(profileId),
     countPositions({ userId: profileId }),
     countGamesByAuthorId(profileId),
+    getAchievedSlugsForUser(profileId),
   ]);
 
   return {
@@ -124,5 +136,6 @@ export async function loadProfileShellData({
     problemsCount,
     gamesCount,
     userAchievementGroups,
+    rankSlug: resolveHighestAchievedSlug(achievedSlugs),
   };
 }

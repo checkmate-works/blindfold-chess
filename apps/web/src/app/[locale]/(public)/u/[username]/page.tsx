@@ -2,21 +2,24 @@
  * Public Profile (公開プロフィール)
  *
  * @description Another member's public profile: identity header, a standing
- * band of rank / achievements / archive counts, and a timeline of everything
- * they have posted, filterable by entity type.
+ * band of rank / achievements, and a timeline of everything they have posted.
+ * The first of the four tabs the shell draws.
  *
  * @flow
  * 1. Fetch profile by `[username]` from URL (404 if not found)
  * 2. Determine relationship with logged-in user (follow / block state)
- * 3. Load shell data, belt rank, and the first timeline page in parallel
+ * 3. Load shell data, then the first timeline page inside `<Suspense>`
  * 4. Render the timeline; the client pages further via `getProfileFeed`
  *
  * @design Timeline here, archives elsewhere
  * This page shows recent activity and scrolls indefinitely, so it cannot also
  * host a paginated archive — those live at `/posts`, `/games` and
- * `/problems/*`, reached from the stats band. It also means nothing may be
- * rendered *after* the timeline: a section below an infinite scroll is
- * unreachable, which is why achievements moved up into the band.
+ * `/problems/*`, one tab away. Browsing by entity type is therefore the
+ * archives' job and the timeline carries no filter of its own: an archive is
+ * the complete record, whereas a filtered timeline would show only the slice
+ * of it that postdates the feed. It also means nothing may be rendered *after*
+ * the timeline: a section below an infinite scroll is unreachable, which is
+ * why achievements moved up into the band.
  *
  * @design Timeline completeness
  * The timeline reads `feed_items`, which only has rows for activity since the
@@ -47,14 +50,12 @@ import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileBlockedNotice } from './_components/ProfileBlockedNotice';
-import { ProfileFeedFilterChips } from './_components/ProfileFeedFilterChips';
 import { ProfileIdentityHeader } from './_components/ProfileIdentityHeader';
-import { ProfileStatsBand } from './_components/ProfileStatsBand';
+import { ProfileShell } from './_components/ProfileShell';
 import { ProfileTimeline } from './_components/ProfileTimeline';
 import { resolveProfileViewer } from './_lib/load-archive-context';
-import { loadPublicProfilePageData } from './_lib/load-page-data';
+import { loadProfileShellData } from './_lib/load-profile-shell-data';
 import { profileArchiveHref } from './_lib/profile-archive-href';
-import { parseProfileFeedFilter } from './_lib/profile-feed-filters';
 import { getProfileByUsername } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
@@ -62,7 +63,6 @@ export const dynamic = 'force-dynamic';
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
   tab: parseAsString.withDefault(''),
-  filter: parseAsString.withDefault(''),
 });
 
 type Props = {
@@ -112,24 +112,38 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     redirect(`/${locale}${profileArchiveHref(username, 'topics')}${pageQuery}`);
   }
 
-  const filter = parseProfileFeedFilter(parsedParams.filter);
   const { profile, currentUserId, isOwnProfile } = viewer;
 
   const [pageData, t] = await Promise.all([
-    loadPublicProfilePageData({ profileId: profile.id, currentUserId, isOwnProfile }),
+    loadProfileShellData({ profileId: profile.id, currentUserId, isOwnProfile }),
     getTranslations({ locale, namespace: 'publicProfile' }),
   ]);
 
   // A block in either direction collapses the profile to its identity header
   // plus a notice — the timeline and stats are hidden from the blocked
   // viewer's in-app view. (Direct URLs / SEO pages stay public by design.)
+  // The shell is skipped entirely rather than rendered without a body: its tab
+  // row would offer archives the viewer is only going to be redirected out of.
   const restricted = !isOwnProfile && (pageData.viewerHasBlocked || pageData.blockedByProfile);
+
+  if (restricted) {
+    return (
+      <PageLayout title={t('pageTitle')} locale={locale}>
+        <div className="space-y-6">
+          <ProfileIdentityHeader viewer={viewer} shell={pageData} locale={locale} restricted />
+          <ProfileBlockedNotice
+            message={pageData.viewerHasBlocked ? t('blockedNoticeByYou') : t('blockedNoticeByThem')}
+          />
+        </div>
+      </PageLayout>
+    );
+  }
 
   const helpSteps: HelpStep[] = [
     {
-      targetId: 'profile-stats-band',
-      title: t('help.stats.title'),
-      description: t('help.stats.description'),
+      targetId: 'profile-tabs',
+      title: t('help.archives.title'),
+      description: t('help.archives.description'),
       side: 'bottom',
       align: 'start',
     },
@@ -143,54 +157,22 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   ];
 
   return (
-    <PageLayout
-      title={t('pageTitle')}
+    <ProfileShell
+      context={{ ...viewer, shell: pageData }}
       locale={locale}
-      titleAction={!restricted && <HelpTourButton steps={helpSteps} label={t('help.label')} />}
+      activeTab="timeline"
+      titleAction={<HelpTourButton steps={helpSteps} label={t('help.label')} />}
     >
-      <div className="space-y-6">
-        <ProfileIdentityHeader
-          viewer={viewer}
-          shell={pageData}
-          locale={locale}
-          restricted={restricted}
-        />
-        {restricted ? (
-          <ProfileBlockedNotice
-            message={pageData.viewerHasBlocked ? t('blockedNoticeByYou') : t('blockedNoticeByThem')}
+      <div className="mt-4" data-tour-id="profile-timeline">
+        <Suspense fallback={<FeedSkeleton />}>
+          <ProfileTimeline
+            profileId={profile.id}
+            username={username}
+            locale={locale}
+            currentUserId={currentUserId}
           />
-        ) : (
-          <>
-            <ProfileStatsBand
-              username={username}
-              locale={locale}
-              rankSlug={pageData.rankSlug}
-              achievements={pageData.userAchievementGroups}
-              postsCount={pageData.postsCount}
-              problemsCount={pageData.problemsCount}
-              gamesCount={pageData.gamesCount}
-            />
-
-            <div className="space-y-4" data-tour-id="profile-timeline">
-              <ProfileFeedFilterChips username={username} locale={locale} activeFilter={filter} />
-
-              {/* Keyed by filter for two reasons, both load-bearing: it shows
-                  the skeleton on every filter switch (not just the first
-                  render), and it remounts FeedClient so the new page's items
-                  replace the old ones — see ProfileTimeline's TSDoc. */}
-              <Suspense key={filter} fallback={<FeedSkeleton />}>
-                <ProfileTimeline
-                  profileId={profile.id}
-                  username={username}
-                  locale={locale}
-                  currentUserId={currentUserId}
-                  filter={filter}
-                />
-              </Suspense>
-            </div>
-          </>
-        )}
+        </Suspense>
       </div>
-    </PageLayout>
+    </ProfileShell>
   );
 }

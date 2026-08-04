@@ -22,8 +22,8 @@ import {
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ProfileArchiveShell } from '../_components/ProfileArchiveShell';
 import { ProfileGames } from '../_components/ProfileGames';
+import { ProfileShell } from '../_components/ProfileShell';
 import { buildProfileArchiveMetadata } from '../_lib/archive-metadata';
 import { loadProfileArchiveContext } from '../_lib/load-archive-context';
 
@@ -78,7 +78,7 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
   const buildHref = (p: number) => `/${locale}/u/${username}/games${p > 1 ? `?page=${p}` : ''}`;
 
   return (
-    <ProfileArchiveShell context={context} locale={locale} activeTab="games">
+    <ProfileShell context={context} locale={locale} activeTab="games">
       <ProfileGames
         games={games}
         likeMetaMap={likeMetaMap}
@@ -98,6 +98,6 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
         }
         labels={{ noGames: t('noGames') }}
       />
-    </ProfileArchiveShell>
+    </ProfileShell>
   );
 }

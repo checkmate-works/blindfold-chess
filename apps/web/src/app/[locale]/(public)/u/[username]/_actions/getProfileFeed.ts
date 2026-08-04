@@ -6,7 +6,6 @@ import { isValidUUID } from '@/lib/validations/uuid';
 import type { FeedResponse } from '@/app/[locale]/(public)/(home)/_lib/types';
 
 import { loadProfileTimelinePage } from '../_lib/load-profile-timeline-page';
-import { parseProfileFeedFilter } from '../_lib/profile-feed-filters';
 
 const PROFILE_FEED_LIMIT = 10;
 
@@ -14,18 +13,17 @@ const PROFILE_FEED_LIMIT = 10;
  * Paginate one member's public profile timeline.
  *
  * @design Parameter order is bind order
- * `profileId` and `filter` come first so the page can hand FeedClient a
- * `getProfileFeed.bind(null, profileId, filter)` whose remaining parameter is
- * exactly the cursor FeedClient passes. That keeps the scope out of the
- * client's hands entirely — no inline action closure, and nothing for a
- * caller to get wrong by omitting.
+ * `profileId` comes first so the page can hand FeedClient a
+ * `getProfileFeed.bind(null, profileId)` whose remaining parameter is exactly
+ * the cursor FeedClient passes. That keeps the scope out of the client's hands
+ * entirely — no inline action closure, and nothing for a caller to get wrong
+ * by omitting.
  *
- * Both scope values are still validated here rather than trusted: a bound
- * argument travels through the client and comes back with the request. The
- * profile id is a public identifier (its profile is already on screen), so
- * the check is for shape only — a malformed value fails as an empty page
- * instead of a Postgres cast error — while `filter` is narrowed to the
- * server-side whitelist and never used as an entity-type list directly.
+ * The scope is still validated here rather than trusted: a bound argument
+ * travels through the client and comes back with the request. The profile id
+ * is a public identifier (its profile is already on screen), so the check is
+ * for shape only — a malformed value fails as an empty page instead of a
+ * Postgres cast error.
  *
  * Blocked viewers never reach this action: the profile page hides the timeline
  * behind its `restricted` branch, and the archive pages redirect. The action
@@ -33,11 +31,7 @@ const PROFILE_FEED_LIMIT = 10;
  * the same rows on the home feed and the public detail pages (blocking is
  * best-effort in-app hiding, not access control; see `toggleBlock`).
  */
-export async function getProfileFeed(
-  profileId: string,
-  filter: string | undefined,
-  cursor?: string
-): Promise<FeedResponse> {
+export async function getProfileFeed(profileId: string, cursor?: string): Promise<FeedResponse> {
   if (!isValidUUID(profileId)) {
     return { items: [], nextCursor: null };
   }
@@ -53,7 +47,6 @@ export async function getProfileFeed(
 
   return loadProfileTimelinePage({
     profileId,
-    filter: parseProfileFeedFilter(filter),
     currentUserId: user?.id,
     limit: PROFILE_FEED_LIMIT,
     cursor,

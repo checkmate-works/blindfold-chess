@@ -4819,6 +4819,7 @@
     "blockDescription": "{displayName}をブロックしようとしています。相手はあなたをフォローしたり通知を送ったりできなくなります。",
     "blockedState": "{displayName}をブロックしています。相手はあなたをフォローしたり通知を送ったりできません。",
     "blockError": "エラーが発生しました。もう一度お試しください。",
+    "timelineTab": "最近の活動",
     "topicsTab": "トピック",
     "noTopicPosts": "まだ投稿がありません。",
     "problemsTab": "問題",
@@ -4841,28 +4842,19 @@
       "social": "ソーシャル",
       "ai_defeat": "AI撃破"
     },
-    "archivesAriaLabel": "アーカイブ",
-    "filterAriaLabel": "活動を絞り込む",
-    "filter": {
-      "all": "すべて",
-      "topics": "トピック",
-      "problems": "問題",
-      "games": "ゲーム",
-      "chunks": "チャンク"
-    },
     "emptyTimeline": "最近の活動はありません。",
     "viewAllTopics": "投稿をすべて見る",
     "viewAllProblems": "問題をすべて見る",
     "viewAllGames": "ゲームをすべて見る",
     "help": {
       "label": "このページの使い方",
-      "stats": {
-        "title": "段級位と実績",
-        "description": "段級位・実績バッジと、このユーザーの投稿数です。数字をタップするとアーカイブを一覧できます。"
+      "archives": {
+        "title": "アーカイブ",
+        "description": "タブからこのユーザーの投稿・問題・対局の完全な一覧に移動できます。"
       },
       "timeline": {
         "title": "活動タイムライン",
-        "description": "このユーザーの投稿を新しい順に表示します。チップで絞り込めます。リーダーボードの順位更新は30日で表示されなくなりますが、それ以外はアーカイブに残ります。"
+        "description": "このユーザーの最近の活動が新しい順に並びます。ランキング更新は30日で表示が終わりますが、アーカイブにはすべての投稿が残ります。"
       }
     }
   },

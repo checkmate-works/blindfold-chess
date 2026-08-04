@@ -9,9 +9,10 @@ type Props = {
   topicsCount: number;
   problemsCount: number;
   gamesCount: number;
-  activeTab: ProfileArchive;
+  activeTab: 'timeline' | ProfileArchive;
   locale: Locale;
   labels: {
+    timelineTab: string;
     topicsTab: string;
     problemsTab: string;
     gamesTab: string;
@@ -19,10 +20,14 @@ type Props = {
 };
 
 /**
- * Top-level Topics/Problems/Games tab row, shared by the three archive pages
- * so the tab row looks and behaves identically no matter which one renders it.
- * The timeline (the main profile page) deliberately does not carry it — see
- * `ProfileArchiveShell`.
+ * The single top-level tab row for every page under `/u/[username]`. The first
+ * tab is the timeline (the main profile page); the rest are the three
+ * archives.
+ *
+ * One row across all four pages is what makes them read as one profile: the
+ * timeline used to carry filter chips in the same position instead, so a
+ * reader who navigated from it to an archive saw a differently-shaped control
+ * in the same place and could not tell the pages apart.
  */
 export function ProfileTabBar({
   username,
@@ -34,6 +39,11 @@ export function ProfileTabBar({
   labels,
 }: Props) {
   const tabItems: LinkTabItem[] = [
+    {
+      value: 'timeline',
+      href: `/u/${username}`,
+      label: labels.timelineTab,
+    },
     {
       value: 'topics',
       href: profileArchiveHref(username, 'topics'),

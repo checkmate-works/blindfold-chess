@@ -7,7 +7,7 @@ import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ProfileArchiveShell } from '../../_components/ProfileArchiveShell';
+import { ProfileShell } from '../../_components/ProfileShell';
 import { buildProfileArchiveMetadata } from '../../_lib/archive-metadata';
 import { loadProfileArchiveContext, resolveProfileViewer } from '../../_lib/load-archive-context';
 import { loadProblemsPageData } from '../_lib/load-problems-page-data';
@@ -82,7 +82,7 @@ export async function ProblemsTypePage({
   };
 
   return (
-    <ProfileArchiveShell context={context} locale={locale} activeTab="problems">
+    <ProfileShell context={context} locale={locale} activeTab="problems">
       <ProblemTypeTabs
         username={username}
         activeType={type}
@@ -113,6 +113,6 @@ export async function ProblemsTypePage({
         justNowLabel={tType('justNow')}
         labels={{ noProblems: t('noProblems') }}
       />
-    </ProfileArchiveShell>
+    </ProfileShell>
   );
 }

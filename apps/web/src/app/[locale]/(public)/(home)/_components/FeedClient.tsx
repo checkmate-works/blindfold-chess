@@ -26,10 +26,11 @@ type Props = {
    * SEEDS STATE ONCE — a later value for this prop is ignored, because the
    * list it feeds is owned by `useState` from then on (infinite scroll appends
    * to it). A surface that re-renders this component with a DIFFERENT feed
-   * (the profile timeline switching filters) must therefore force a remount
-   * with a `key`; otherwise the new items are fetched server-side and then
-   * silently discarded, leaving the previous feed on screen. Home and topics
-   * never change theirs in place, so they need no key.
+   * (one that swaps its feed in place, e.g. tabs over the same list) must
+   * therefore force a remount with a `key`; otherwise the new items are
+   * fetched server-side and then silently discarded, leaving the previous feed
+   * on screen. Home and topics never change theirs in place, so they need no
+   * key.
    */
   initialItems: FeedItem[];
   initialCursor: string | null;
@@ -65,7 +66,7 @@ type Props = {
  * `getFeed`, server-side; that is what stops a client from paginating an
  * arbitrary entity-type list, so home and topics keep using it. `fetchPage`
  * is for surfaces `scope` cannot express (the profile timeline, which pages
- * within one member and one filter) and takes a Server Action already bound
+ * within one member) and takes a Server Action already bound
  * to that scope, so the client still only supplies the cursor. Either way the
  * pages must be consistent with `initialItems` — they land in the same list.
  *
