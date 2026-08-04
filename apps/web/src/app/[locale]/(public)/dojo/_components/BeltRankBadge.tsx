@@ -23,13 +23,16 @@ type Props = {
 };
 
 /**
- * Belt-colored pill link to a rank detail page (`/<locale>/ranks/<slug>`).
+ * Belt-colored pill link to a rank detail page (`/<locale>/dojo/ranks/<slug>`).
  *
- * Used on the practice list page below each card to surface the kyu/dan
- * rank a given practice module contributes toward, while also providing
- * a navigation affordance to the rank detail page. The trailing arrow
- * lives inside the anchor text on purpose — it's part of the link
- * affordance, not a decorative sibling.
+ * The one way a kyu/dan rank is shown anywhere: under each practice card, on
+ * the games page, and as a member's held rank on their public profile. The
+ * belt's colour has to be the pill's own fill rather than a swatch beside a
+ * neutral pill — a small dark dot on a white pill reads as a white belt, which
+ * is what 初段 looked like on the profile before this became shared.
+ *
+ * The trailing arrow lives inside the anchor text on purpose — it's part of
+ * the link affordance, not a decorative sibling.
  */
 export function BeltRankBadge({ slug, label, locale }: Props) {
   const beltColor = getBeltColorHex(slug);

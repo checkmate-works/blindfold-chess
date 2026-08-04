@@ -26,7 +26,7 @@ import { SITE_URL } from '@/config';
 
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
-import { BeltRankBadge } from '@/app/[locale]/(public)/practice/_components/BeltRankBadge';
+import { BeltRankBadge } from '@/app/[locale]/(public)/dojo/_components/BeltRankBadge';
 import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
