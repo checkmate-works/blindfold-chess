@@ -57,11 +57,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
-  const [tMetadata, tHome, tTopics, tSquares, supabase] = await Promise.all([
+  const [tMetadata, tHome, tTopics, tSquares, tPagination, supabase] = await Promise.all([
     getTranslations({ locale, namespace: 'metadata' }),
     getTranslations({ locale, namespace: 'home' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
+    getTranslations({ locale, namespace: 'Common.pagination' }),
     createClient(),
   ]);
   const {
@@ -113,6 +114,7 @@ export default async function HomePage({ params }: Props) {
             initialCursor={initialFeed.nextCursor}
             locale={locale}
             showMoreLabel={tTopics('showMore')}
+            loadMoreLabel={tPagination('loadMore')}
             justNowLabel={tSquares('justNow')}
             showAds={showAds}
             nativeAdCreatives={nativeAdCreatives}

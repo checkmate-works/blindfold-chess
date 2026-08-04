@@ -76,6 +76,7 @@ const defaultProps = {
   initialItems: [] as FeedItem[],
   locale: 'en',
   showMoreLabel: 'Show more',
+  loadMoreLabel: 'Load more',
   justNowLabel: 'Just now',
   showAds: true,
   // At least one creative must be present for ad slots to be inserted.
@@ -447,6 +448,116 @@ describe('FeedClient', () => {
       expect(only.matches(':last-child')).toBe(true);
       expect(only.className).toContain('last:border-b-0');
       expect(only.querySelector('[data-testid="feed-card-solo"]')).toBeTruthy();
+    });
+  });
+
+  describe('pages that render nothing', () => {
+    // A feed page can come back with zero items and a live cursor: `feed_items`
+    // rows outlive the entity they point at, and the loader drops them after
+    // they have counted against the page limit. Nothing is appended, so the
+    // sentinel stays in view and the observer re-fires — an unbounded request
+    // loop that never renders anything.
+    const emptyPage = { items: [] as FeedItem[], nextCursor: '2025-01-15T08:00:00.000Z' };
+
+    /**
+     * The sentinel is the bare `<div>` the observer watches — the only
+     * attribute-less, empty child of the feed root (item wrappers and ad slots
+     * all carry a className). Its presence is what proves auto-loading is on
+     * or off, and the check has to scan every child rather than just the
+     * trailing one: the manual button renders after the sentinel, so a version
+     * that wrongly kept both would still show the button last.
+     *
+     * Asserting on the DOM rather than on call counts is deliberate.
+     * `triggerIntersection()` invokes a captured callback directly, so it
+     * keeps firing after the real observer has been disconnected and can never
+     * demonstrate that the loop stopped.
+     */
+    function feedSentinel(container: HTMLElement): Element | null {
+      const root = container.firstElementChild;
+      if (!root) return null;
+      return (
+        Array.from(root.children).find(
+          (el) => el.tagName === 'DIV' && el.attributes.length === 0 && !el.firstChild
+        ) ?? null
+      );
+    }
+
+    it('keeps auto-loading after a single empty page', async () => {
+      vi.mocked(getFeed).mockResolvedValue(emptyPage);
+
+      const { container } = render(
+        <FeedClient {...defaultProps} initialCursor="2025-01-15T09:00:00.000Z" />
+      );
+
+      await act(async () => {
+        triggerIntersection();
+      });
+
+      // One empty page is a hiccup the next page usually clears — the sentinel
+      // must survive it, and no button should appear yet.
+      await waitFor(() => {
+        expect(vi.mocked(getFeed)).toHaveBeenCalledTimes(1);
+      });
+      expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
+      expect(feedSentinel(container)).toBeTruthy();
+    });
+
+    it('stops auto-loading and offers a button once two empty pages arrive in a row', async () => {
+      vi.mocked(getFeed).mockResolvedValue(emptyPage);
+
+      const { container } = render(
+        <FeedClient {...defaultProps} initialCursor="2025-01-15T09:00:00.000Z" />
+      );
+
+      await act(async () => {
+        triggerIntersection();
+      });
+      await act(async () => {
+        triggerIntersection();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Load more' })).toBeInTheDocument();
+      });
+
+      // The whole point: with the sentinel unmounted there is nothing left for
+      // a real IntersectionObserver to fire on, so the loop cannot continue
+      // without the reader asking it to.
+      expect(feedSentinel(container)).toBeNull();
+    });
+
+    it('resumes auto-loading when a manual page finally renders something', async () => {
+      vi.mocked(getFeed)
+        .mockResolvedValueOnce(emptyPage)
+        .mockResolvedValueOnce(emptyPage)
+        .mockResolvedValueOnce({
+          items: [makeTopicPostItem('live-1')],
+          nextCursor: '2025-01-15T07:00:00.000Z',
+        });
+
+      const { container } = render(
+        <FeedClient {...defaultProps} initialCursor="2025-01-15T09:00:00.000Z" />
+      );
+
+      await act(async () => {
+        triggerIntersection();
+      });
+      await act(async () => {
+        triggerIntersection();
+      });
+
+      const button = await screen.findByRole('button', { name: 'Load more' });
+      await act(async () => {
+        button.click();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('feed-card-live-1')).toBeInTheDocument();
+      });
+      // Back to a live run: the button is gone and the sentinel is back, so
+      // scrolling picks up where it left off.
+      expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
+      expect(feedSentinel(container)).toBeTruthy();
     });
   });
 });

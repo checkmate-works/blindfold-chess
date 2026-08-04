@@ -36,6 +36,12 @@ type Props = {
   initialCursor: string | null;
   locale: string;
   showMoreLabel: string;
+  /**
+   * Label for the manual "load the next page" button, shown only after
+   * auto-loading has paused itself — see {@link EMPTY_PAGE_LIMIT}. Distinct
+   * from `showMoreLabel`, which expands a truncated post body inside a card.
+   */
+  loadMoreLabel: string;
   justNowLabel: string;
   showAds?: boolean;
   /**
@@ -85,11 +91,30 @@ type PaginationSource =
       fetchPage: (cursor: string) => Promise<FeedResponse>;
     };
 
+/**
+ * How many consecutive pages may come back with nothing to render before
+ * auto-loading stops and hands the reader a button.
+ *
+ * A page can be empty while still carrying a cursor: `feed_items` rows outlive
+ * the entity they point at, and the loader drops those rows after they have
+ * already counted against the page limit. Since nothing is appended, the list
+ * does not grow, the sentinel stays inside the observer's root margin, and the
+ * next render re-fires it — an unbounded request loop that makes no progress.
+ * Measured before this guard: 24 requests in 20s, zero items rendered, still
+ * going.
+ *
+ * Two rather than one, because a single empty page is a normal hiccup that the
+ * next page usually clears, and pausing on it would put a button in front of
+ * readers who would never have noticed.
+ */
+const EMPTY_PAGE_LIMIT = 2;
+
 export function FeedClient({
   initialItems,
   initialCursor,
   locale,
   showMoreLabel,
+  loadMoreLabel,
   justNowLabel,
   showAds = false,
   nativeAdCreatives,
@@ -104,6 +129,9 @@ export function FeedClient({
   const [isLoading, setIsLoading] = useState(false);
   const isLoadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  /** Consecutive pages that rendered nothing; reset by any page that does. */
+  const emptyStreakRef = useRef(0);
+  const [autoLoadPaused, setAutoLoadPaused] = useState(false);
 
   const adCreatives = useMemo(
     () => (showAds ? (nativeAdCreatives ?? []) : []),
@@ -164,6 +192,20 @@ export function FeedClient({
       const result = fetchPage ? await fetchPage(cursor) : await getFeed(cursor, undefined, scope);
       setItems((prev) => [...prev, ...result.items]);
       setCursor(result.nextCursor);
+
+      // Stop auto-loading once enough pages in a row have rendered nothing —
+      // see `EMPTY_PAGE_LIMIT`. A page that renders something clears the
+      // streak and resumes scrolling, so a reader who presses the button back
+      // into live rows never sees it again.
+      if (result.items.length === 0) {
+        emptyStreakRef.current += 1;
+        if (emptyStreakRef.current >= EMPTY_PAGE_LIMIT) {
+          setAutoLoadPaused(true);
+        }
+      } else {
+        emptyStreakRef.current = 0;
+        setAutoLoadPaused(false);
+      }
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);
@@ -172,7 +214,7 @@ export function FeedClient({
 
   useEffect(() => {
     const el = sentinelRef.current;
-    if (!el || !cursor) return;
+    if (!el || !cursor || autoLoadPaused) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -185,13 +227,24 @@ export function FeedClient({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [cursor, loadMore]);
+  }, [cursor, loadMore, autoLoadPaused]);
 
   return (
     <div className={variant === 'card' ? 'space-y-3' : undefined} {...rest}>
       {displayItems.map((displayItem, index) => renderDisplayItem(index, displayItem))}
       {isLoading && <FeedSkeleton />}
-      {cursor && !isLoading && <div ref={sentinelRef} />}
+      {cursor && !isLoading && !autoLoadPaused && <div ref={sentinelRef} />}
+      {cursor && !isLoading && autoLoadPaused && (
+        <div className="flex justify-center py-4">
+          <button
+            type="button"
+            onClick={loadMore}
+            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {loadMoreLabel}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
