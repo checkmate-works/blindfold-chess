@@ -60,6 +60,7 @@ export async function ProfileStatsBand({ username, locale, rankSlug, achievement
           slug={rankSlug}
           label={tRanks(`rankNames.${rankSlug}` as 'rankNames.1dan')}
           locale={locale}
+          meaning="held"
         />
       )}
 

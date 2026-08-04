@@ -20,6 +20,18 @@ type Props = {
   slug: RankSlug;
   label: string;
   locale: string;
+  /**
+   * What the badge is saying about the rank.
+   *
+   * `'target'` (default) invites the reader toward a rank they could earn —
+   * under a practice card, or above the games list — and carries a trailing
+   * arrow, because there the badge is a call to action.
+   *
+   * `'held'` states a rank someone already holds, on their public profile.
+   * There is nowhere the reader is being sent, so the arrow is noise: it
+   * reads as an instruction attached to a fact.
+   */
+  meaning?: 'target' | 'held';
 };
 
 /**
@@ -31,10 +43,10 @@ type Props = {
  * neutral pill — a small dark dot on a white pill reads as a white belt, which
  * is what 初段 looked like on the profile before this became shared.
  *
- * The trailing arrow lives inside the anchor text on purpose — it's part of
- * the link affordance, not a decorative sibling.
+ * Every variant is still a link to the rank's page; `meaning` changes only
+ * whether the badge asks to be followed. See that prop.
  */
-export function BeltRankBadge({ slug, label, locale }: Props) {
+export function BeltRankBadge({ slug, label, locale, meaning = 'target' }: Props) {
   const beltColor = getBeltColorHex(slug);
   const useDarkText = LIGHT_BELT_COLORS.has(RANK_COLORS[slug]);
 
@@ -46,7 +58,7 @@ export function BeltRankBadge({ slug, label, locale }: Props) {
       } ${isWhiteBelt(beltColor) ? 'border border-border' : ''}`}
       style={{ backgroundColor: beltColor }}
     >
-      {label} →
+      {meaning === 'held' ? label : `${label} →`}
     </Link>
   );
 }
