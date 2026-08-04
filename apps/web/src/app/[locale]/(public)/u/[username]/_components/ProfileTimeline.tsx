@@ -29,7 +29,7 @@ type Props = {
  * should not wait on the one page's feed.
  */
 export async function ProfileTimeline({ profileId, username, locale, currentUserId }: Props) {
-  const [feed, tTopics, tSquares] = await Promise.all([
+  const [feed, tTopics, tSquares, tPagination] = await Promise.all([
     loadProfileTimelinePage({
       profileId,
       currentUserId,
@@ -37,6 +37,7 @@ export async function ProfileTimeline({ profileId, username, locale, currentUser
     }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
+    getTranslations({ locale, namespace: 'Common.pagination' }),
   ]);
 
   // Only a page with nothing left behind it is genuinely empty. A page that
@@ -54,6 +55,7 @@ export async function ProfileTimeline({ profileId, username, locale, currentUser
       initialCursor={feed.nextCursor}
       locale={locale}
       showMoreLabel={tTopics('showMore')}
+      loadMoreLabel={tPagination('loadMore')}
       justNowLabel={tSquares('justNow')}
       // Bound server-side, so the client only ever supplies the cursor — the
       // actor it pages within is not a parameter it can choose.

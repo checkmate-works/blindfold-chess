@@ -7,7 +7,8 @@
       "previous": "Anterior",
       "next": "Siguiente",
       "previousPage": "Página anterior",
-      "nextPage": "Página siguiente"
+      "nextPage": "Página siguiente",
+      "loadMore": "Cargar más"
     },
     "moveNavigation": {
       "goToStart": "Ir al inicio",

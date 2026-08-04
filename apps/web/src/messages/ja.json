@@ -7,7 +7,8 @@
       "previous": "前へ",
       "next": "次へ",
       "previousPage": "前のページ",
-      "nextPage": "次のページ"
+      "nextPage": "次のページ",
+      "loadMore": "さらに読み込む"
     },
     "moveNavigation": {
       "goToStart": "最初へ",

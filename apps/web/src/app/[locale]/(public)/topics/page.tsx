@@ -47,6 +47,7 @@ async function TopicsContent({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'topics' });
   const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
+  const tPagination = await getTranslations({ locale, namespace: 'Common.pagination' });
   const supabase = await createClient();
   const {
     data: { user },
@@ -79,6 +80,7 @@ async function TopicsContent({ params }: Props) {
           initialCursor={initialFeed.nextCursor}
           locale={locale}
           showMoreLabel={t('showMore')}
+          loadMoreLabel={tPagination('loadMore')}
           justNowLabel={tSquares('justNow')}
           showAds={showAds}
           nativeAdCreatives={nativeAdCreatives}
