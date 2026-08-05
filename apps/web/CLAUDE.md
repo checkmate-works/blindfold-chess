@@ -757,117 +757,87 @@ instead of changing the URL). Both are real design changes, not a quick
 patch — worth a deliberate decision (and testing with `next build && next
 start`, not just `next dev`) rather than a speculative attempt.
 
-### Client navigation can commit and then never render — the server render stalls (production only)
+### A follower count scanned the whole `profiles` table, stalling profile renders (resolved 2026-08-05)
 
-**Symptom** (production, 2026-08-05): a `<Link>` click to `/[locale]/u/[username]`
-changed the URL and painted `loading.tsx`, but the body never appeared — a
-reload always fixed it. `revalidatePath`-driven re-renders (the follow button)
-were likewise invisible until reload.
+**Symptom** (production, 2026-08): a `<Link>` click to `/[locale]/u/[username]`
+changed the URL and painted `loading.tsx`, but the body never appeared. A
+reload fixed it — but only after roughly half a minute; a fresh document
+request to the same URL inside that window stalled too. Profiles with no
+followers were always fine.
 
-**First reading (2026-08-05, morning), kept because the observation stands**:
-Sentry showed React #310 (`Rendered more hooks than during the previous
-render`) thrown from inside the App Router's own Router component, not from app
-code — same family as the `(protected)` Suspense entry above, and as
-[vercel/next.js#63121](https://github.com/vercel/next.js/issues/63121). That
-led to treating it as a client-side framework bug and upgrading to
-`next@16.3.0`. Note for any future upgrade: the pinned `react`/`react-dom` in
-`package.json` are **not** what the App Router runs — the production bundle
-carries its own React canary — so only the `next` version can move that class
-of bug.
+**Cause.** `loadProfileShellData` counted followers with
+`innerJoin(profiles, …).where(isNull(profiles.deletedAt))`. That condition
+matches nearly every row, so once the planner estimated enough followers it
+switched from a nested loop to a hash join and **sequentially scanned all of
+`profiles`** to build the hash — turning a count proportional to followers into
+one proportional to the whole user table, and explaining exactly why accounts
+with no followers stayed fast. The home feed prefetches every visible profile
+link, so a single page load fired dozens of these concurrently; together they
+blew past what the instance could cache, and the render never finished.
 
-**Second evidence set (2026-08-05, evening, on 16.3.0) points at the server
-instead.** It does not erase the #310 observation; it shows the stall has a
-different primary cause:
+Fixed by testing the rare side instead — `NOT EXISTS (… deleted_at IS NOT
+NULL)` against the partial `idx_profiles_deleted` index. Same result, measured
+at 300k profiles: **8,134 shared buffers to 84**. See `profileNotDeleted`
+(`src/lib/db/profile-not-deleted.ts`) and use it wherever the number of rows
+being filtered can grow; the `@design` notes there and on the index carry the
+reasoning.
 
-- `LoadingStallReporter` fired in production on 16.3.0
-  (`loading-boundary-stalled:profile-shell`, 15s after the navigation). The
-  earlier "zero events after deploy = fixed" reading is therefore rejected:
-  16.3.0 did not fix this.
-- While stuck, the user could click another link and leave, and the
-  destination rendered normally. The client React root was alive, so a
-  client-side crash does not explain this instance.
-- Exactly 300s after the last navigation, React #412 (`Connection closed.`)
-  fired — 300s is Vercel Fluid Compute's default `maxDuration`. That matches a
-  function killed by the platform mid-render. **The primary fault is that the
-  server never finishes rendering that route.**
-- Server-side Sentry's `The destination stream closed early.` is a postmortem,
-  not a cause: React only records it when a stream closes with tasks still
-  pending (verified against React's source). Whoever closed it — the user
-  navigating away, or the 300s kill — the count approximates "users who
-  escaped a stall, plus timeouts".
-- Other requests that could share the same warm instance during the stall
-  window (a Server Action POST, `/api/header-profile`) returned 200, so a
-  dead connection pool is not the picture. What remains is **one specific
-  `await` inside one render that never settles**. Suspects: a DB query with no
-  statement timeout, and the Supabase Auth fetch with no timeout — the profile
-  page's `resolveProfileViewer()` awaits both via
-  `Promise.all([getProfileByUsername(), getOptionalUser()])`. Both are now
-  fail-fast (see below).
+**The lesson worth keeping**: excluding soft-deleted rows by joining on
+`deleted_at IS NULL` looks free and is not. It asks the planner to match the
+majority of a table, and the plan it picks depends on the row estimate — so the
+query is fast in development and on small accounts, and quietly becomes a full
+table scan for exactly the users who matter most.
 
-**Third evidence set (2026-08-05, on the 60s cap).** The stall recurred, and
-this round settled two things:
+#### How it was found, and what stayed wrong for a long time
 
-- **The 60s cap works.** React #412 fired 60.5s after the navigation, where it
-  had been 300s. The `maxDuration = 60` deploy is live and a hang now costs one
-  minute, not five.
-- **Neither instrumented suspect fired.** No `57014`, no `TimeoutError`, and
-  the Server Action POST issued 30ms later on the same path completed its auth
-  round trip and DB query in 55ms. A slow DB query and a hung Supabase fetch
-  are both out.
-- **It is not specific to soft navigation.** A fresh document request to the
-  same URL, in a new tab, stalls too while the stall is on; the same request a
-  half-minute later renders instantly. So the wedge is transient and shared
-  between requests, but not global — other routes keep answering throughout,
-  which fits a single warm instance's pool going bad while others stay healthy.
+Three rounds of investigation blamed the wrong thing, so the sequence is worth
+recording:
 
-**Do not expect the platform to confirm any of this.** Every observer
-downstream of the failure dies with it, so their silence means nothing:
+1. **React #310 inside the App Router** was observed and read as a client-side
+   framework bug; `next@16.3.0` was deployed for it and did not help.
+2. **A server-side hang** was next, with the DB and Supabase Auth as suspects.
+   Both were given timeouts and both turned out innocent — no `57014`, no
+   `TimeoutError`.
+3. **A per-instance wedge** was inferred from "a document request works after
+   30 seconds". Also wrong; the recovery was just Postgres having cached the
+   pages the scan touched.
 
-- Vercel writes no duration for an invocation it killed, and the per-function
-  breakdown that might show one is behind Observability Plus.
-- A Sentry **transaction** is only sent when its span ends, so a killed render
-  is never reported regardless of `tracesSampleRate`.
-- React's `The destination stream closed early.` is not flushed when the
-  process is killed outright.
+What ended it was instrumenting the render itself. Everything else was blind:
+Vercel writes no duration for an invocation it killed and puts the per-function
+breakdown behind Observability Plus; a Sentry **transaction** is only sent when
+its span ends, so a killed render reports nothing regardless of
+`tracesSampleRate`; React's `The destination stream closed early.` is not
+flushed when the process is killed. **Their silence was never evidence.** The
+query deadline in `src/lib/db/query-deadline.ts` printed the offending SQL on
+the first occurrence after deploy.
 
-Hence the instrumentation reports from _inside_ the render, before the kill.
-
-**Reading the instrumentation.**
+**Still in place, and still worth reading if this recurs:**
 
 | What Sentry shows                                                                | Verdict                                                                                                                        |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `QueryDeadlineError` as the `cause` of Drizzle's `Failed query: <sql>`           | a query never answered, and the SQL names it — the leading theory confirmed (see `src/lib/db/query-deadline.ts`)               |
+| `QueryDeadlineError` as the `cause` of Drizzle's `Failed query: <sql>`           | a query never answered, and the SQL names it                                                                                   |
 | `render-watchdog:profile` with a stage before `timeline-loaded`                  | an `await` in this app's code never settled, and the stage says which                                                          |
 | `render-watchdog:profile` with stage `timeline-loaded`                           | everything this app awaits resolved and React never finished the stream — a framework bug, and the evidence to report upstream |
 | `loading-boundary-stalled` with **no** `render-watchdog` for the same navigation | the render never started; the hang is above this app, in routing or the proxy                                                  |
-| `loading-boundary-stalled` with `recovering: false` recurring                    | reloading is not buying anything, so the "transient and instance-scoped" reading above is wrong                                |
-| SQLSTATE `57014`                                                                 | a query that did reach a backend ran past 30s — distinct from the deadline above, which fires first at 10s                     |
 | `The destination stream closed early.` alone                                     | no action; a user navigating away from any slow render produces it                                                             |
 
-Note that `statement_timeout` is sent as a startup parameter through Supabase's
-transaction-mode pooler (Supavisor); whether it reaches the backend has never
-been confirmed, and the client-side deadline now fires first either way. See
-the comment in `src/lib/db/index.ts` for the contingency.
+`LoadingStallReporter` (`src/app/_components/`) reports a skeleton that
+outlives its threshold and then reloads, up to twice per path per tab — a bet
+on the wedge being transient, not a fix.
 
 **Ruled out, so don't re-investigate**: `NotificationBadge`'s per-navigation
 Server Action (Next 16 skips page rendering for actions that don't revalidate,
-via `skipPageRendering`, so the POST does not double-render); app-level
-conditional hooks (`useSafeTranslations` never actually branches — its provider
-is always mounted); Service Workers (this app has none).
-
-**It cannot be reproduced locally.** The failure needs the production streaming
-environment; a green local battery proves absence of regression, nothing more.
-Detection comes from `LoadingStallReporter` (`src/app/_components/`), which
-reports `loading-boundary-stalled:<boundary>` to Sentry when a skeleton
-outlives its threshold — and then reloads the page, up to twice, to get the
-user out. That reload is a bet on the wedge being transient, not a fix; the
-`recovering` flag on the report is what says whether the bet is paying off.
+via `skipPageRendering`, so the POST does not double-render — it is the POST
+that accompanies every navigation in Sentry breadcrumbs, and it is issue #106,
+not a bug); app-level conditional hooks (`useSafeTranslations` never actually
+branches — its provider is always mounted); Service Workers (this app has
+none).
 
 **Human task, not fixable in code**: enable Vercel **Skew Protection** (Project
 Settings → Advanced). A separate symptom — an old tab showing no skeleton at
 all — is deployment skew. Once enabled, `NEXT_DEPLOYMENT_ID` becomes non-null
 in the stall reports and can be matched against the `x-nextjs-deployment-id`
-response header to tell skew apart from this bug.
+response header to tell skew apart from a render fault.
 
 ### `next dev` rewrites CLAUDE.md and reformats build output (16.3.0)
 
