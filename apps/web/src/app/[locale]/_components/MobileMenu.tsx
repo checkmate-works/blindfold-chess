@@ -78,6 +78,13 @@ export function MobileMenu({ title, items }: Props) {
                 />
               </div>
 
+              {/*
+                Low-intent links: opt out of viewport prefetch. Opening the
+                panel puts every entry on screen at once, so the default would
+                prefetch the whole menu to serve the one link that gets
+                clicked — and each prefetch costs an Edge auth round trip plus
+                a partial dynamic render.
+              */}
               <nav className="px-4 py-6 space-y-2">
                 {items.map((item) => {
                   const icon = getIcon(item.iconName);
@@ -85,6 +92,7 @@ export function MobileMenu({ title, items }: Props) {
                     <Link
                       key={item.id}
                       href={item.href}
+                      prefetch={false}
                       onClick={() => setIsOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-accent rounded-md"
                     >

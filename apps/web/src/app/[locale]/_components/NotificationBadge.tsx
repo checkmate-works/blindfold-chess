@@ -56,8 +56,13 @@ export function NotificationBadge() {
   }, []);
 
   return (
+    // Low-intent link: opt out of viewport prefetch. The bell is mounted in
+    // the header on every page and is therefore always in view, but is rarely
+    // clicked — and the notifications page is dynamic, so each prefetch costs
+    // an Edge auth round trip plus a partial render.
     <Link
       href={`/${locale}/mypage/notifications`}
+      prefetch={false}
       className="relative flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
       aria-label="Notifications"
     >

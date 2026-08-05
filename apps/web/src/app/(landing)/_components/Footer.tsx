@@ -16,9 +16,15 @@ type Props = {
 export function Footer({ locale, t }: Props) {
   return (
     <footer className="py-12 bg-secondary/30 border-t border-border space-y-8 text-center">
-      {/* Getting Started CTA */}
+      {/*
+        Getting Started CTA. Sits at the very bottom of the landing page, so
+        viewport prefetch fires for every visitor who scrolls to the end
+        regardless of whether they head here — and each prefetch costs an Edge
+        auth round trip. The destination is prerendered, so a cold click is
+        cheap.
+      */}
       <div className="flex justify-center">
-        <Link href={`/${locale}/getting-started`}>
+        <Link href={`/${locale}/getting-started`} prefetch={false}>
           <Button
             variant="primary"
             size="lg"

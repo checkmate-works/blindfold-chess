@@ -69,9 +69,16 @@ export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: P
 
         {isOpen && (
           <div className="absolute right-0 top-full mt-2 z-50 w-48 rounded-lg border border-border bg-card">
+            {/*
+              Low-intent links: opt out of viewport prefetch. Opening the menu
+              puts both entries on screen at once, and both destinations are
+              dynamic — so the default prefetches two Edge auth round trips and
+              two partial renders to serve at most one click.
+            */}
             <div className="py-1">
               <Link
                 href={`/${locale}/mypage`}
+                prefetch={false}
                 className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent transition-colors"
                 onClick={() => setIsOpen(false)}
               >
@@ -80,6 +87,7 @@ export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: P
               </Link>
               <Link
                 href={`/${locale}/preferences`}
+                prefetch={false}
                 className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent transition-colors"
                 onClick={() => setIsOpen(false)}
               >
