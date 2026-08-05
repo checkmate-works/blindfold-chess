@@ -145,9 +145,26 @@ export function setWedgedQueryHandler(handler: WedgedQueryHandler | undefined): 
   wedgedQueryHandler = handler;
 }
 
+/**
+ * Register the callback fired whenever a query is dispatched or settles.
+ * `./index.ts` uses it to hold the instance out of Fluid Compute suspension
+ * until the pool's idle reaper has had a chance to run — see the pool-drain
+ * keepalive `@design` note there. One handler at a time — this is wiring,
+ * not an event bus (same contract as {@link setWedgedQueryHandler}).
+ */
+export function setQueryActivityHandler(handler: (() => void) | undefined): void {
+  queryActivityHandler = handler;
+}
+
+let queryActivityHandler: (() => void) | undefined;
+
 function trackInflight(query: PendingQuery, sql: string): void {
   inflightQueries.set(query, { sql, armedAt: performance.now(), deadlined: false });
-  const untrack = () => inflightQueries.delete(query);
+  queryActivityHandler?.();
+  const untrack = () => {
+    inflightQueries.delete(query);
+    queryActivityHandler?.();
+  };
   // Subscribing is safe here: the caller has already subscribed via the race.
   Promise.resolve(query).then(untrack, untrack);
 }
