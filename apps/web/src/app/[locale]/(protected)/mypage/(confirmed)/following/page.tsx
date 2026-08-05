@@ -5,6 +5,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
+import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -42,8 +43,7 @@ export default async function FollowingPage({ params, searchParams }: Props) {
   const [countResult] = await db
     .select({ count: count() })
     .from(userFollows)
-    .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
-    .where(and(eq(userFollows.followerId, user.id), isNull(profiles.deletedAt)));
+    .where(and(eq(userFollows.followerId, user.id), profileNotDeleted(userFollows.followingId)));
 
   const totalCount = countResult.count;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);

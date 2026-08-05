@@ -1,9 +1,10 @@
-import { and, count, eq, isNull } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 
-import { db, profiles, userFollows } from '@/lib/db';
+import { db, userFollows } from '@/lib/db';
 import { type UserAchievementGroup, getUserAchievementGroups } from '@/lib/db/achievement-queries';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { countGamesByAuthorId } from '@/lib/db/games-read';
+import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
 import { hasBlocked } from '@/lib/moderation/block';
 import { countPositions } from '@/lib/positions/queries';
 
@@ -88,15 +89,15 @@ export async function loadProfileShellData({
   const followerCountPromise = db
     .select({ count: count() })
     .from(userFollows)
-    .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
-    .where(and(eq(userFollows.followingId, profileId), isNull(profiles.deletedAt)));
+    .where(and(eq(userFollows.followingId, profileId), profileNotDeleted(userFollows.followerId)));
 
   const followingCountPromise = isOwnProfile
     ? db
         .select({ count: count() })
         .from(userFollows)
-        .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
-        .where(and(eq(userFollows.followerId, profileId), isNull(profiles.deletedAt)))
+        .where(
+          and(eq(userFollows.followerId, profileId), profileNotDeleted(userFollows.followingId))
+        )
     : Promise.resolve([{ count: 0 }]);
 
   const [
