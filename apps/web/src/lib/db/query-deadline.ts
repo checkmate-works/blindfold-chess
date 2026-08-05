@@ -136,6 +136,38 @@ type WedgedQueryHandler = (info: WedgedQueryInfo) => void;
 let wedgedQueryHandler: WedgedQueryHandler | undefined;
 
 /**
+ * Statements eligible for the transparent deadline retry: reads only. A
+ * deadlined write must never be re-issued — the first attempt may still be
+ * executing (the deadline proves silence, not failure), and running it twice
+ * is not idempotent. Re-running a SELECT is.
+ */
+const RETRYABLE_SQL = /^\s*select\b/i;
+
+export type DeadlineRetry = {
+  /**
+   * Re-dispatch the same `unsafe(...)` arguments, on a FRESH pool if one can
+   * be had (the caller is expected to rebuild first, debounced). Returns the
+   * raw pending query, or undefined when a retry is not possible right now.
+   */
+  dispatch: (unsafeArgs: unknown[]) => PendingQuery | undefined;
+  /** Outcome hook for logging/metrics. `retryMs` is the retry's own duration. */
+  report: (outcome: 'rescued' | 'failed', sql: string, retryMs: number) => void;
+};
+
+let deadlineRetry: DeadlineRetry | undefined;
+
+/**
+ * Register the retry performed when a SELECT hits its deadline. Production
+ * showed established connections whose queries silently black-hole (no answer,
+ * no error — see the navigation-stall entry in CLAUDE.md); the retry gives the
+ * render a second chance on a fresh connection instead of failing it outright.
+ * One handler at a time — same contract as {@link setWedgedQueryHandler}.
+ */
+export function setDeadlineRetry(retry: DeadlineRetry | undefined): void {
+  deadlineRetry = retry;
+}
+
+/**
  * Register the callback fired when a deadlined query fails to settle within
  * {@link WEDGE_GRACE_MS}. A wedged query means its connection is dead but
  * still occupying a pool slot; `./index.ts` responds by rebuilding the pool.
@@ -185,21 +217,46 @@ function snapshotInflight(self: PendingQuery) {
 }
 
 /**
- * Wrap one pending query so awaiting it rejects at the deadline.
+ * Wrap one pending query so awaiting it rejects at the deadline — or, for a
+ * SELECT dispatched on the top-level client, is transparently retried once on
+ * a fresh pool (see {@link setDeadlineRetry}).
  *
- * The race is built once and memoized: postgres.js only starts the query when
- * something reads `then`, and two races would mean two timers on one query.
+ * The orchestration is built once and memoized: postgres.js only starts the
+ * query when something reads `then`, and two subscriptions would mean two
+ * timers on one query. It is hand-rolled rather than a `Promise.race` because
+ * the retry path needs asymmetric behaviour after the deadline: a LATE answer
+ * from the original query should still win, but a late REJECTION must not —
+ * the retry's rebuild destroys the original's pool, and that induced
+ * `CONNECTION_DESTROYED` would otherwise beat the retry to the caller.
+ *
+ * `retryArgs` carries the original `unsafe(...)` arguments and is only set
+ * for queries where a retry is safe: top-level (not inside a transaction,
+ * whose state a retry cannot reproduce) and re-dispatchable by value.
  */
-function wrapQuery<T extends PendingQuery>(query: T, fallbackSql: string): T {
-  let raced: Promise<unknown> | undefined;
+function wrapQuery<T extends PendingQuery>(
+  query: T,
+  fallbackSql: string,
+  retryArgs?: unknown[]
+): T {
+  let orchestrated: Promise<unknown> | undefined;
+  const chained: string[] = [];
 
-  const race = () => {
-    if (!raced) {
-      let timer: ReturnType<typeof setTimeout>;
+  const orchestrate = () => {
+    if (!orchestrated) {
       const armedAt = performance.now();
       const sql = describeSql(query, fallbackSql);
-      const deadline = new Promise<never>((_resolve, reject) => {
-        timer = setTimeout(() => {
+      orchestrated = new Promise<unknown>((resolve, reject) => {
+        let settled = false;
+        let deadlineFired = false;
+        const settle = (finish: () => void) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          finish();
+        };
+
+        const timer = setTimeout(() => {
+          deadlineFired = true;
           // How late this callback runs past its schedule is the decisive
           // number: a blocked event loop delays the timer by the length of
           // the block. Clamped at 0 — fake-timer tests advance the clock
@@ -222,32 +279,85 @@ function wrapQuery<T extends PendingQuery>(query: T, fallbackSql: string): T {
               wedgedQueryHandler?.({ sql, ageMs: Math.round(performance.now() - armedAt) });
             }
           }, WEDGE_GRACE_MS);
-          reject(
-            new QueryDeadlineError(sql, {
-              overshootMs,
-              loopMeanMs: lag.meanMs,
-              loopP99Ms: lag.p99Ms,
-              loopMaxMs: lag.maxMs,
-              ...snapshotInflight(query),
-            })
+          const error = new QueryDeadlineError(sql, {
+            overshootMs,
+            loopMeanMs: lag.meanMs,
+            loopP99Ms: lag.p99Ms,
+            loopMaxMs: lag.maxMs,
+            ...snapshotInflight(query),
+          });
+
+          // Guard on the actual re-dispatch text, not the describeSql label:
+          // what matters for safety is the statement that would run again.
+          const retryQuery =
+            retryArgs && deadlineRetry && RETRYABLE_SQL.test(String(retryArgs[0]))
+              ? safeDispatchRetry(retryArgs)
+              : undefined;
+          if (!retryQuery) {
+            settle(() => reject(error));
+            return;
+          }
+
+          // Reproduce the original's chained shape (`.values()` etc.) before
+          // subscribing starts the retry.
+          for (const method of chained) {
+            (retryQuery[method as keyof PendingQuery] as () => unknown)();
+          }
+          const retryStart = performance.now();
+          const retryTimer = setTimeout(() => {
+            try {
+              retryQuery.cancel();
+            } catch {
+              // Same as above: a dead connection has nothing to cancel.
+            }
+            deadlineRetry?.report('failed', sql, Math.round(performance.now() - retryStart));
+            settle(() => reject(error));
+          }, QUERY_DEADLINE_MS);
+          // Tracking gives the retry the same observability and keepalive
+          // wiring as a first-class query (its settlement re-arms the
+          // pool-drain keepalive, so its connection is reaped before suspend).
+          trackInflight(retryQuery, sql);
+          Promise.resolve(retryQuery).then(
+            (rows) => {
+              clearTimeout(retryTimer);
+              deadlineRetry?.report('rescued', sql, Math.round(performance.now() - retryStart));
+              settle(() => resolve(rows));
+            },
+            () => {
+              clearTimeout(retryTimer);
+              deadlineRetry?.report('failed', sql, Math.round(performance.now() - retryStart));
+              // The original deadline error is the truthful failure; the
+              // retry's own error is usually the induced pool teardown.
+              settle(() => reject(error));
+            }
           );
         }, QUERY_DEADLINE_MS);
+
+        Promise.resolve(query).then(
+          (value) => settle(() => resolve(value)),
+          (queryError) => {
+            // Before the deadline this is a genuine query failure. After it,
+            // the rejection is (typically) induced by the retry's rebuild
+            // tearing down the original's pool — the retry outcome governs.
+            if (!deadlineFired) settle(() => reject(queryError));
+          }
+        );
       });
-      raced = Promise.race([query, deadline]).finally(() => clearTimeout(timer));
       trackInflight(query, sql);
     }
-    return raced;
+    return orchestrated;
   };
 
   const proxy = new Proxy(query, {
     get(target, property, receiver) {
       if (property === 'then' || property === 'catch' || property === 'finally') {
-        const promise = race();
-        return promise[property].bind(promise);
+        const promise = orchestrate();
+        return promise[property as 'then' | 'catch' | 'finally'].bind(promise);
       }
       if (typeof property === 'string' && CHAINABLE.has(property)) {
         return (...args: unknown[]) => {
           (target[property as keyof PendingQuery] as (...a: unknown[]) => unknown)(...args);
+          chained.push(property);
           return proxy;
         };
       }
@@ -257,6 +367,16 @@ function wrapQuery<T extends PendingQuery>(query: T, fallbackSql: string): T {
   });
 
   return proxy;
+}
+
+/** A retry must never be able to crash the deadline path that hosts it. */
+function safeDispatchRetry(retryArgs: unknown[]): PendingQuery | undefined {
+  try {
+    const retried = deadlineRetry?.dispatch(retryArgs);
+    return retried && isPendingQuery(retried) ? retried : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Whether a value looks like a pending postgres.js query. */
@@ -303,9 +423,15 @@ function isPendingQuery(value: unknown): value is PendingQuery {
  * the behaviour that existed before this wrapper.
  */
 export function withQueryDeadline(client: Sql): Sql {
-  const wrapClient = (target: Sql): Sql =>
+  // `withRetry` marks the top-level client: only statements dispatched there
+  // may be transparently retried on deadline. Inside a transaction a retry
+  // would re-run one statement outside its transaction's state, so inner
+  // clients never get retry powers.
+  const wrapClient = (target: Sql, withRetry: boolean): Sql =>
     new Proxy(target, {
-      // The client is itself callable, as the sql`...` tag.
+      // The client is itself callable, as the sql`...` tag. Template calls
+      // carry live fragment values that cannot be re-dispatched by value, so
+      // they never retry.
       apply(fn, thisArg, args: unknown[]) {
         const result = Reflect.apply(fn as unknown as (...a: unknown[]) => unknown, thisArg, args);
         return isPendingQuery(result) ? wrapQuery(result, String(args[0])) : result;
@@ -314,7 +440,9 @@ export function withQueryDeadline(client: Sql): Sql {
         if (property === 'unsafe') {
           return (...args: unknown[]) => {
             const query = (sql.unsafe as (...a: unknown[]) => unknown)(...args);
-            return isPendingQuery(query) ? wrapQuery(query, String(args[0])) : query;
+            return isPendingQuery(query)
+              ? wrapQuery(query, String(args[0]), withRetry ? args : undefined)
+              : query;
           };
         }
 
@@ -325,7 +453,7 @@ export function withQueryDeadline(client: Sql): Sql {
             const wrapped = args.map((arg) =>
               typeof arg === 'function'
                 ? (inner: Sql, ...rest: unknown[]) =>
-                    (arg as (...a: unknown[]) => unknown)(wrapClient(inner), ...rest)
+                    (arg as (...a: unknown[]) => unknown)(wrapClient(inner, false), ...rest)
                 : arg
             );
             // `savepoint` only exists on a transaction client, which this
@@ -340,5 +468,5 @@ export function withQueryDeadline(client: Sql): Sql {
       },
     });
 
-  return wrapClient(client);
+  return wrapClient(client, true);
 }

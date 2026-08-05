@@ -5,6 +5,8 @@ import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
 import {
+  type DeadlineRetry,
+  setDeadlineRetry,
   setQueryActivityHandler,
   setWedgedQueryHandler,
   withQueryDeadline,
@@ -116,9 +118,16 @@ let activeWrapped = withQueryDeadline(activeClient);
 const REBUILD_MIN_INTERVAL_MS = 30_000;
 let lastRebuildAt = 0;
 
-setWedgedQueryHandler(({ sql, ageMs }) => {
+/**
+ * Retire the current pool and start a fresh one, at most once per debounce
+ * window. Shared by the wedge handler and the deadline retry below — the
+ * debounce is what keeps the two from double-rebuilding over one incident
+ * (the retry rebuilds at deadline+0s; the same query's wedge check fires at
+ * deadline+5s and must then be a no-op).
+ */
+function rebuildPool(reason: string, detail: string): boolean {
   const now = Date.now();
-  if (now - lastRebuildAt < REBUILD_MIN_INTERVAL_MS) return;
+  if (now - lastRebuildAt < REBUILD_MIN_INTERVAL_MS) return false;
   lastRebuildAt = now;
 
   const retired = activeClient;
@@ -129,12 +138,49 @@ setWedgedQueryHandler(({ sql, ageMs }) => {
     // The sockets being torn down are the broken ones; errors here are noise.
   });
 
-  console.error(`[db] pool rebuilt: query wedged for ${ageMs}ms: ${sql}`);
+  console.error(`[db] pool rebuilt (${reason}): ${detail}`);
   Sentry.captureMessage('db-pool-rebuilt', {
     level: 'warning',
-    tags: { 'db_pool.wedged_age_ms': String(ageMs) },
-    extra: { 'db_pool.wedged_sql': sql },
+    tags: { 'db_pool.rebuild_reason': reason },
+    extra: { 'db_pool.rebuild_detail': detail },
   });
+  return true;
+}
+
+setWedgedQueryHandler(({ sql, ageMs }) => {
+  rebuildPool('wedged-query', `wedged for ${ageMs}ms: ${sql}`);
+});
+
+/**
+ * @design Transparent SELECT retry: a second chance on a fresh connection
+ *
+ * Production (2026-08-05, issue BLINDFOLD-CHESS-4K) showed sub-millisecond
+ * SELECTs going silent for 15s+ on established connections, on instances
+ * that had never been frozen (event-loop max delay under 500ms) — the
+ * connection path itself intermittently black-holes a query. The deadline
+ * turns that into a failed render; this retry turns it into a slow one.
+ *
+ * On a SELECT deadline, `./query-deadline` asks this dispatcher for a second
+ * attempt: retire the suspect pool (debounced — if another victim already
+ * rebuilt, the current pool is already fresh) and re-issue the statement on
+ * the CURRENT pool. Reads are safe to re-run; writes never take this path
+ * (see RETRYABLE_SQL there). Outcomes surface as `db-deadline-retry` —
+ * `rescued` means a user saw a slow page instead of an error page.
+ */
+setDeadlineRetry({
+  dispatch: (unsafeArgs) => {
+    rebuildPool('deadline-retry', `retrying: ${String(unsafeArgs[0]).slice(0, 300)}`);
+    const unsafe = activeClient.unsafe as (...a: unknown[]) => unknown;
+    return unsafe(...unsafeArgs) as ReturnType<DeadlineRetry['dispatch']>;
+  },
+  report: (outcome, sql, retryMs) => {
+    console.error(`[db] deadline retry ${outcome} in ${retryMs}ms: ${sql}`);
+    Sentry.captureMessage('db-deadline-retry', {
+      level: outcome === 'rescued' ? 'info' : 'warning',
+      tags: { 'db_retry.outcome': outcome, 'db_retry.ms': String(retryMs) },
+      extra: { 'db_retry.sql': sql },
+    });
+  },
 });
 
 /**
