@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
+import { withQueryDeadline } from './query-deadline';
 import * as schema from './schema';
 
 // POSTGRES_URL: Set by Vercel Marketplace Supabase integration
@@ -31,11 +32,11 @@ const connectionString =
 // chosen to fail fast enough that the failure lands in Sentry with a cause
 // attached, while staying far above any legitimate query.
 //
-// Known limitation: postgres.js has no timeout on *acquiring* a pooled
-// connection. Once all `max` connections are busy, further queries queue
-// unboundedly, and neither `statement_timeout` (server-side, only starts once
-// the query is running) nor `connect_timeout` (socket establishment) bounds
-// that wait. The route-segment `maxDuration` is the backstop for that case.
+// None of these options can bound a query that has already been dispatched:
+// `statement_timeout` is server-side and only starts once the backend begins
+// executing, `connect_timeout` covers the connect phase, and postgres.js has
+// no timeout on acquiring a pooled connection either. `withQueryDeadline`
+// below is what closes that gap — see its TSDoc.
 const globalForDb = globalThis as unknown as {
   postgresClient: ReturnType<typeof postgres> | undefined;
 };
@@ -48,6 +49,11 @@ const client =
     idle_timeout: 20, // seconds — release idle connections back to the pooler
     max_lifetime: 60 * 30, // seconds — recycle long-lived connections
     connect_timeout: 10, // seconds — fail fast instead of the 30s default
+    // seconds. Lowered from the 60s default so the OS surfaces a half-open
+    // socket well before the platform's 60s maxDuration would kill the render
+    // that is waiting on it — at 60s the two coincide and keepalive never gets
+    // to report anything.
+    keep_alive: 15,
     // Sent as a startup parameter. Caps server-side query execution so a
     // wedged query errors out (SQLSTATE 57014) instead of holding an RSC
     // stream open until the platform's maxDuration kill.
@@ -65,7 +71,10 @@ const client =
 
 globalForDb.postgresClient = client;
 
-export const db = drizzle(client, { schema });
+// The deadline wrapper is what actually bounds a query — see its TSDoc for why
+// none of the options above can. Applied here rather than to the cached client
+// so the wrapper is rebuilt with the module, never persisted across reloads.
+export const db = drizzle(withQueryDeadline(client), { schema });
 
 // Re-export schema for convenience
 export * from './schema';
