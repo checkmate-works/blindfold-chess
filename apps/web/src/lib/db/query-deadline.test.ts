@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   QueryDeadlineError,
   resetInflightRegistryForTests,
+  setWedgedQueryHandler,
   withQueryDeadline,
 } from './query-deadline';
 
@@ -47,6 +48,7 @@ function fakeClient(overrides: Partial<Record<string, unknown>> = {}): Sql {
 beforeEach(() => {
   vi.useFakeTimers();
   resetInflightRegistryForTests();
+  setWedgedQueryHandler(undefined);
 });
 
 afterEach(() => {
@@ -149,6 +151,40 @@ describe('withQueryDeadline', () => {
     await Promise.all([first, second]);
 
     expect(query.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('declares a query wedged when it stays unsettled past the grace period', async () => {
+    const handler = vi.fn();
+    setWedgedQueryHandler(handler);
+    const db = withQueryDeadline(fakeClient());
+
+    const settled = (db.unsafe('select 1') as Promise<unknown>).catch(() => {});
+    await vi.advanceTimersByTimeAsync(10_000);
+    await settled;
+    // The awaiter has its rejection, but the query itself never settled.
+    expect(handler).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler.mock.calls[0][0]).toMatchObject({ sql: 'select 1' });
+  });
+
+  it('does not flag a query whose late answer arrives within the grace period', async () => {
+    const handler = vi.fn();
+    setWedgedQueryHandler(handler);
+    let answerLate!: (value: unknown) => void;
+    const query = new FakeQuery((resolve) => {
+      answerLate = resolve;
+    });
+    const db = withQueryDeadline(fakeClient({ unsafe: () => query }));
+
+    const settled = (db.unsafe('select 1') as Promise<unknown>).catch(() => {});
+    await vi.advanceTimersByTimeAsync(10_000);
+    await settled;
+
+    answerLate([{ id: 1 }]);
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(handler).not.toHaveBeenCalled();
   });
 
   it('gives the transaction client a deadline too', async () => {

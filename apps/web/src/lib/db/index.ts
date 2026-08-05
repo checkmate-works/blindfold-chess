@@ -1,7 +1,9 @@
+import * as Sentry from '@sentry/nextjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
-import { withQueryDeadline } from './query-deadline';
+import { setWedgedQueryHandler, withQueryDeadline } from './query-deadline';
 import * as schema from './schema';
 
 // POSTGRES_URL: Set by Vercel Marketplace Supabase integration
@@ -37,13 +39,8 @@ const connectionString =
 // executing, `connect_timeout` covers the connect phase, and postgres.js has
 // no timeout on acquiring a pooled connection either. `withQueryDeadline`
 // below is what closes that gap — see its TSDoc.
-const globalForDb = globalThis as unknown as {
-  postgresClient: ReturnType<typeof postgres> | undefined;
-};
-
-const client =
-  globalForDb.postgresClient ??
-  postgres(connectionString, {
+function createPooledClient(): ReturnType<typeof postgres> {
+  return postgres(connectionString, {
     prepare: false, // required for Supabase transaction-mode pooler (port 6543)
     max: 10, // postgres.js default, made explicit — shared budget under Fluid Compute
     idle_timeout: 20, // seconds — release idle connections back to the pooler
@@ -67,13 +64,87 @@ const client =
       statement_timeout: 30_000, // milliseconds — a bare number is what Postgres reads this unit as
     },
   });
+}
 
-globalForDb.postgresClient = client;
+const globalForDb = globalThis as unknown as {
+  postgresClient: ReturnType<typeof postgres> | undefined;
+};
+
+let activeClient = globalForDb.postgresClient ?? createPooledClient();
+globalForDb.postgresClient = activeClient;
 
 // The deadline wrapper is what actually bounds a query — see its TSDoc for why
 // none of the options above can. Applied here rather than to the cached client
 // so the wrapper is rebuilt with the module, never persisted across reloads.
-export const db = drizzle(withQueryDeadline(client), { schema });
+let activeWrapped = withQueryDeadline(activeClient);
+
+/**
+ * @design Self-healing pool: rebuild when a query wedges
+ *
+ * On Fluid Compute an instance is frozen between requests. While frozen, the
+ * pool's sockets can silently lose their path (no RST arrives, so the client
+ * cannot tell), and postgres.js's own idle reaper cannot run because its
+ * timers are frozen with the process. The first query dispatched on such a
+ * socket after thaw never settles: production on 2026-08-05 showed five of
+ * them accumulated on one instance, the oldest 702 seconds — held until TCP
+ * itself gave up — each occupying one of the `max: 10` pool slots. Enough of
+ * those and the instance can no longer reach the database at all, which is
+ * the "skeleton forever" navigation stall.
+ *
+ * The wedge handler (see `setWedgedQueryHandler` in `./query-deadline`) fires
+ * when a deadlined query stays unsettled past a grace period. Response:
+ * retire the whole pool and start a fresh one. Healthy in-flight queries get
+ * five seconds to finish before the retired pool's sockets are destroyed;
+ * destruction also rejects the wedged queries, which finally frees their
+ * awaiters' resources. The debounce keeps a burst of wedges (several stale
+ * sockets burned by one render) from rebuilding the pool once per victim.
+ *
+ * Each rebuild is a Sentry warning (`db-pool-rebuilt`) — frequent occurrences
+ * mean the staleness source needs attacking, not just the symptom.
+ */
+const REBUILD_MIN_INTERVAL_MS = 30_000;
+let lastRebuildAt = 0;
+
+setWedgedQueryHandler(({ sql, ageMs }) => {
+  const now = Date.now();
+  if (now - lastRebuildAt < REBUILD_MIN_INTERVAL_MS) return;
+  lastRebuildAt = now;
+
+  const retired = activeClient;
+  activeClient = createPooledClient();
+  globalForDb.postgresClient = activeClient;
+  activeWrapped = withQueryDeadline(activeClient);
+  retired.end({ timeout: 5 }).catch(() => {
+    // The sockets being torn down are the broken ones; errors here are noise.
+  });
+
+  console.error(`[db] pool rebuilt: query wedged for ${ageMs}ms: ${sql}`);
+  Sentry.captureMessage('db-pool-rebuilt', {
+    level: 'warning',
+    tags: { 'db_pool.wedged_age_ms': String(ageMs) },
+    extra: { 'db_pool.wedged_sql': sql },
+  });
+});
+
+/**
+ * Stable identity over the swappable client, so the Drizzle instance created
+ * once below always reaches the CURRENT pool. Function calls and property
+ * reads both delegate; `withQueryDeadline`'s own proxy already returns
+ * methods bound to the live client, so no extra binding is needed here.
+ */
+const clientFacade = new Proxy((() => {}) as unknown as Sql, {
+  apply(_target, thisArg, args) {
+    return Reflect.apply(activeWrapped as unknown as (...a: unknown[]) => unknown, thisArg, args);
+  },
+  get(_target, property) {
+    return Reflect.get(activeWrapped as object, property);
+  },
+  has(_target, property) {
+    return property in (activeWrapped as object);
+  },
+});
+
+export const db = drizzle(clientFacade, { schema });
 
 // Re-export schema for convenience
 export * from './schema';
