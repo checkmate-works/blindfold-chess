@@ -58,12 +58,11 @@ const client =
     // wedged query errors out (SQLSTATE 57014) instead of holding an RSC
     // stream open until the platform's maxDuration kill.
     //
-    // Production points at Supabase's transaction-mode pooler (Supavisor);
-    // whether it forwards this startup parameter to the backend can only be
-    // confirmed after deploy, by whether hangs start surfacing as 57014
-    // ("canceling statement due to statement timeout") in Sentry. Contingency
-    // if it does not forward: set it with `ALTER DATABASE ... SET
-    // statement_timeout` and reset it to 0 for the session in `migrate.ts`.
+    // Production points at Supabase's transaction-mode pooler (Supavisor),
+    // and forwarding of this startup parameter is CONFIRMED: a 57014
+    // ("canceling statement due to statement timeout") reached Sentry on
+    // 2026-08-05 from the admin dashboard's topic_posts aggregation
+    // (issue #107). No fallback via `ALTER DATABASE` is needed.
     connection: {
       statement_timeout: 30_000, // milliseconds — a bare number is what Postgres reads this unit as
     },
