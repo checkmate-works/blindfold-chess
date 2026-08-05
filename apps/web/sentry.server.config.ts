@@ -57,6 +57,16 @@ Sentry.init({
         'query_deadline.overshoot_ms': String(Math.round(diagnostics.overshootMs)),
         'query_deadline.loop_max_ms': String(Math.round(diagnostics.loopMaxMs)),
         'query_deadline.loop_p99_ms': String(Math.round(diagnostics.loopP99Ms)),
+        'query_deadline.inflight_count': String(diagnostics.inflightCount),
+        // Age of the oldest other unsettled query. Far past the 10s deadline
+        // means a wedged pool slot; the full list is in the extra below.
+        'query_deadline.oldest_inflight_ms': String(diagnostics.inflightOldest[0]?.ageMs ?? 0),
+      };
+      event.extra = {
+        ...event.extra,
+        // SQL text only, never parameters — same privacy line as the error
+        // message itself.
+        'query_deadline.inflight_oldest': diagnostics.inflightOldest,
       };
     }
 
