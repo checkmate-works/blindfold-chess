@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
-import Link from 'next/link';
-
 import { createPortal } from 'react-dom';
 
 import { useScrollLock } from '../_hooks/use-scroll-lock';
 import { getIcon } from '../_lib/icon-mapping';
 import type { NavigationItem } from '../_lib/types';
 import { CloseButton } from './CloseButton';
+import { HoverPrefetchLink } from './HoverPrefetchLink';
 
 type Props = {
   title: string;
@@ -79,26 +78,27 @@ export function MobileMenu({ title, items }: Props) {
               </div>
 
               {/*
-                Low-intent links: opt out of viewport prefetch. Opening the
-                panel puts every entry on screen at once, so the default would
-                prefetch the whole menu to serve the one link that gets
-                clicked — and each prefetch costs an Edge auth round trip plus
-                a partial dynamic render.
+                This panel is the app's only navigation menu (the desktop nav
+                was folded into it), and it stays mounted off-screen — so with
+                Next's default every entry is prefetched on every page load,
+                whether or not the menu is ever opened, each costing an Edge
+                auth round trip plus a partial dynamic render. Prefetch on
+                pointer intent instead: the per-load burst goes away while the
+                link the user is actually reaching for still warms up.
               */}
               <nav className="px-4 py-6 space-y-2">
                 {items.map((item) => {
                   const icon = getIcon(item.iconName);
                   return (
-                    <Link
+                    <HoverPrefetchLink
                       key={item.id}
                       href={item.href}
-                      prefetch={false}
                       onClick={() => setIsOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-accent rounded-md"
                     >
                       {icon}
                       {item.label}
-                    </Link>
+                    </HoverPrefetchLink>
                   );
                 })}
               </nav>
