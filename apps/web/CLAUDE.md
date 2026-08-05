@@ -757,41 +757,88 @@ instead of changing the URL). Both are real design changes, not a quick
 patch — worth a deliberate decision (and testing with `next build && next
 start`, not just `next dev`) rather than a speculative attempt.
 
-### Client navigation can commit and then never render (production only)
+### Client navigation can commit and then never render — the server render stalls (production only)
 
 **Symptom** (production, 2026-08-05): a `<Link>` click to `/[locale]/u/[username]`
 changed the URL and painted `loading.tsx`, but the body never appeared — a
 reload always fixed it. `revalidatePath`-driven re-renders (the follow button)
-were likewise invisible until reload. Sentry showed React #310 (`Rendered more
-hooks than during the previous render`) thrown from inside the App Router's own
-Router component, not from app code. Same family as the `(protected)` Suspense
-entry above, and as [vercel/next.js#63121](https://github.com/vercel/next.js/issues/63121).
+were likewise invisible until reload.
 
-**Ruled out, so don't re-investigate**: the server (the production RSC endpoint
-answers 200 / `text/x-component` with no redirect); app-level conditional hooks
-(`useSafeTranslations` never actually branches — its provider is always
-mounted); Service Workers (this app has none). The URL committing _before_ the
-freeze is what rules out deployment skew as the primary cause.
+**First reading (2026-08-05, morning), kept because the observation stands**:
+Sentry showed React #310 (`Rendered more hooks than during the previous
+render`) thrown from inside the App Router's own Router component, not from app
+code — same family as the `(protected)` Suspense entry above, and as
+[vercel/next.js#63121](https://github.com/vercel/next.js/issues/63121). That
+led to treating it as a client-side framework bug and upgrading to
+`next@16.3.0`. Note for any future upgrade: the pinned `react`/`react-dom` in
+`package.json` are **not** what the App Router runs — the production bundle
+carries its own React canary — so only the `next` version can move that class
+of bug.
 
-Treated as a framework bug and addressed by upgrading to `next@16.3.0`
-(navigation lock fixes, soft-navigation work, updated bundled React canary).
-Note that the pinned `react`/`react-dom` in `package.json` are **not** what the
-App Router runs — the production bundle carried its own React canary — so only
-the `next` version can move this.
+**Second evidence set (2026-08-05, evening, on 16.3.0) points at the server
+instead.** It does not erase the #310 observation; it shows the stall has a
+different primary cause:
 
-**It cannot be verified locally.** The failure needs the production streaming
+- `LoadingStallReporter` fired in production on 16.3.0
+  (`loading-boundary-stalled:profile-shell`, 15s after the navigation). The
+  earlier "zero events after deploy = fixed" reading is therefore rejected:
+  16.3.0 did not fix this.
+- While stuck, the user could click another link and leave, and the
+  destination rendered normally. The client React root was alive, so a
+  client-side crash does not explain this instance.
+- Exactly 300s after the last navigation, React #412 (`Connection closed.`)
+  fired — 300s is Vercel Fluid Compute's default `maxDuration`. That matches a
+  function killed by the platform mid-render. **The primary fault is that the
+  server never finishes rendering that route.**
+- Server-side Sentry's `The destination stream closed early.` is a postmortem,
+  not a cause: React only records it when a stream closes with tasks still
+  pending (verified against React's source). Whoever closed it — the user
+  navigating away, or the 300s kill — the count approximates "users who
+  escaped a stall, plus timeouts".
+- Other requests that could share the same warm instance during the stall
+  window (a Server Action POST, `/api/header-profile`) returned 200, so a
+  dead connection pool is not the picture. What remains is **one specific
+  `await` inside one render that never settles**. Suspects: a DB query with no
+  statement timeout, and the Supabase Auth fetch with no timeout — the profile
+  page's `resolveProfileViewer()` awaits both via
+  `Promise.all([getProfileByUsername(), getOptionalUser()])`. Both are now
+  fail-fast (see below).
+
+**Reading the instrumentation.** The timeouts added in 2026-08 (`statement_timeout`
+/ `connect_timeout` in `src/lib/db/index.ts`, `fetchWithTimeout` on every
+Supabase client, `maxDuration = 60` on the `[locale]` and `admin` layouts) exist
+to make the next occurrence name its own cause rather than burn 300 silent
+seconds:
+
+| What Sentry shows                                                 | Verdict                                                                                                                                                                                      |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SQLSTATE `57014` / "canceling statement due to statement timeout" | a DB query is the culprit                                                                                                                                                                    |
+| `TimeoutError` from an aborted Supabase fetch                     | the Auth fetch is the culprit                                                                                                                                                                |
+| Only `loading-boundary-stalled`, with neither of the above        | either pool-acquisition queueing (postgres.js has no timeout for it) or an `await` not yet instrumented — check the invocation's duration in Vercel logs, which should now be killed at ~60s |
+| `The destination stream closed early.` alone                      | no action; a user navigating away from any slow render produces it                                                                                                                           |
+
+Note that `statement_timeout` is sent as a startup parameter through Supabase's
+transaction-mode pooler (Supavisor); whether it reaches the backend can only be
+confirmed by seeing `57014` in production. See the comment in
+`src/lib/db/index.ts` for the contingency.
+
+**Ruled out, so don't re-investigate**: `NotificationBadge`'s per-navigation
+Server Action (Next 16 skips page rendering for actions that don't revalidate,
+via `skipPageRendering`, so the POST does not double-render); app-level
+conditional hooks (`useSafeTranslations` never actually branches — its provider
+is always mounted); Service Workers (this app has none).
+
+**It cannot be reproduced locally.** The failure needs the production streaming
 environment; a green local battery proves absence of regression, nothing more.
-The verdict comes from `LoadingStallReporter` (`src/app/_components/`), which
+Detection comes from `LoadingStallReporter` (`src/app/_components/`), which
 reports `loading-boundary-stalled:<boundary>` to Sentry when a skeleton
-outlives its threshold. Zero events after deploy = fixed. Non-zero = material
-for an upstream report (include the Next version, the #310 stack inside the
-Router component, and "URL commits, skeleton sticks, reload recovers").
+outlives its threshold.
 
 **Human task, not fixable in code**: enable Vercel **Skew Protection** (Project
 Settings → Advanced). A separate symptom — an old tab showing no skeleton at
 all — is deployment skew. Once enabled, `NEXT_DEPLOYMENT_ID` becomes non-null
 in the stall reports and can be matched against the `x-nextjs-deployment-id`
-response header to tell skew apart from the framework bug.
+response header to tell skew apart from this bug.
 
 ### `next dev` rewrites CLAUDE.md and reformats build output (16.3.0)
 
@@ -813,3 +860,13 @@ Two things 16.3.0 does that look like breakage but are not:
 
 - Prioritize performance and SEO in all decisions
 - **Database schema** is defined in `src/lib/db/schema.ts` (Drizzle ORM). See TSDoc `@design` tags on each table for design rationale.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
