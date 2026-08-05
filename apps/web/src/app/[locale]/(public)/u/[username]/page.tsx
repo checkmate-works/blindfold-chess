@@ -43,6 +43,8 @@ import { redirect } from 'next/navigation';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { markRenderStage, startRenderWatchdog } from '@/lib/sentry/render-watchdog';
+
 import { FeedSkeleton } from '@/app/[locale]/(public)/(home)/_components/FeedSkeleton';
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
@@ -94,10 +96,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicProfilePage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
+  // This is the route production was observed stalling on. See the watchdog's
+  // TSDoc for what each stage rules in or out.
+  startRenderWatchdog('profile', { username });
+
   const [viewer, parsedParams] = await Promise.all([
     resolveProfileViewer(username),
     searchParamsCache.parse(searchParams),
   ]);
+  markRenderStage('viewer-resolved');
 
   // Back-compat with the tab-based profile: `?tab=games` and a bare `?page=N`
   // (which used to page the topics tab) now belong to the archive routes.
@@ -118,6 +125,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     loadProfileShellData({ profileId: profile.id, currentUserId, isOwnProfile }),
     getTranslations({ locale, namespace: 'publicProfile' }),
   ]);
+  markRenderStage('shell-loaded');
 
   // A block in either direction collapses the profile to its identity header
   // plus a notice — the timeline and stats are hidden from the blocked
@@ -155,6 +163,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
       align: 'start',
     },
   ];
+
+  markRenderStage('page-returned');
 
   return (
     <ProfileShell
