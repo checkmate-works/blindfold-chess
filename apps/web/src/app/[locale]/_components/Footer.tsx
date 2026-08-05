@@ -47,7 +47,13 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
   return (
     <footer className="bg-card border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Category columns */}
+        {/*
+          Category columns. Low-intent links: opt out of viewport prefetch —
+          the footer is mounted on nearly every page, so its links all enter
+          the viewport on any scroll to the bottom, and each prefetch costs an
+          Edge auth round trip plus a partial dynamic render for a link that is
+          rarely clicked.
+        */}
         <nav className="grid grid-cols-2 gap-8 md:grid-cols-3">
           {/* Resources */}
           <div>
@@ -56,6 +62,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
               <li>
                 <Link
                   href={`/${locale}/manual`}
+                  prefetch={false}
                   className="hover:text-foreground transition-colors"
                 >
                   {tManual('title')}
@@ -64,6 +71,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
               <li>
                 <Link
                   href={`/${locale}/glossary`}
+                  prefetch={false}
                   className="hover:text-foreground transition-colors"
                 >
                   {tGlossary('title')}
@@ -72,6 +80,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
               <li>
                 <Link
                   href={`/${locale}/announcements`}
+                  prefetch={false}
                   className="hover:text-foreground transition-colors"
                 >
                   {tAnnouncements('pageTitle')}
@@ -85,12 +94,20 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
             <h3 className="text-sm font-semibold text-foreground">{tFooter('support')}</h3>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href={`/${locale}/faq`} className="hover:text-foreground transition-colors">
+                <Link
+                  href={`/${locale}/faq`}
+                  prefetch={false}
+                  className="hover:text-foreground transition-colors"
+                >
                   {tFaq('title')}
                 </Link>
               </li>
               <li>
-                <Link href={`/${locale}/coin`} className="hover:text-foreground transition-colors">
+                <Link
+                  href={`/${locale}/coin`}
+                  prefetch={false}
+                  className="hover:text-foreground transition-colors"
+                >
                   {tCoin('title')}
                 </Link>
               </li>
@@ -98,6 +115,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
                 <li>
                   <Link
                     href={`/${locale}/contact`}
+                    prefetch={false}
                     className="hover:text-foreground transition-colors"
                   >
                     {tContact('title')}
@@ -112,13 +130,18 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
             <h3 className="text-sm font-semibold text-foreground">{tFooter('legal')}</h3>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href={`/${locale}/terms`} className="hover:text-foreground transition-colors">
+                <Link
+                  href={`/${locale}/terms`}
+                  prefetch={false}
+                  className="hover:text-foreground transition-colors"
+                >
                   {tTerms('title')}
                 </Link>
               </li>
               <li>
                 <Link
                   href={`/${locale}/privacy`}
+                  prefetch={false}
                   className="hover:text-foreground transition-colors"
                 >
                   {tPrivacy('title')}
@@ -127,6 +150,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
               <li>
                 <Link
                   href={`/${locale}/company`}
+                  prefetch={false}
                   className="hover:text-foreground transition-colors"
                 >
                   {tCompany('title')}
@@ -135,6 +159,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
               <li>
                 <Link
                   href={`/${locale}/affiliate-disclosure`}
+                  prefetch={false}
                   className="hover:text-foreground transition-colors"
                 >
                   {tAffiliate('title')}
@@ -143,6 +168,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
               <li>
                 <Link
                   href={`/${locale}/licenses`}
+                  prefetch={false}
                   className="hover:text-foreground transition-colors"
                 >
                   {tLicenses('title')}
