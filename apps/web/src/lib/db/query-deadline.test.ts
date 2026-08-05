@@ -59,6 +59,24 @@ describe('withQueryDeadline', () => {
     await pending;
   });
 
+  it('attaches where-did-the-time-go diagnostics to the rejection', async () => {
+    const db = withQueryDeadline(fakeClient());
+
+    const settled = (db.unsafe('select 1') as Promise<unknown>).catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(10_000);
+    const error = (await settled) as QueryDeadlineError;
+
+    expect(error).toBeInstanceOf(QueryDeadlineError);
+    expect(error.message).toContain('timer overshoot');
+    // Fake timers advance the clock without advancing performance.now(), so
+    // the measured overshoot clamps to zero; the loop stats are real readings.
+    expect(error.diagnostics.overshootMs).toBe(0);
+    for (const value of Object.values(error.diagnostics)) {
+      expect(Number.isFinite(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(0);
+    }
+  });
+
   it('cancels the query server-side when the deadline passes', async () => {
     const query = neverSettles();
     const db = withQueryDeadline(fakeClient({ unsafe: () => query }));
