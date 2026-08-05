@@ -32,6 +32,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/** Cap admin renders well below the platform's 300s default so a hung one fails visibly. */
+export const maxDuration = 60;
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const {

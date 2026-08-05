@@ -67,6 +67,15 @@ export const dynamicParams = false;
 export const revalidate = 3600;
 
 /**
+ * Route segment config, inherited by every page below. The platform default
+ * under Fluid Compute is 300s; nothing under `[locale]` legitimately renders
+ * for a minute, so a hung render (see the navigation-stall entry in CLAUDE.md's
+ * Known Issues) now dies visibly at 60s instead of silently burning five
+ * minutes per hang.
+ */
+export const maxDuration = 60;
+
+/**
  * Load the `metadata`-namespace translator, falling back to an identity
  * function (dev-warned) if next-intl fails to resolve messages. Shared by
  * `generateMetadata` and the default `Layout` export below, which both need it.
