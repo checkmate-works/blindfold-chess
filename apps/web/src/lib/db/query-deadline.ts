@@ -120,6 +120,31 @@ export function resetInflightRegistryForTests(): void {
   inflightQueries.clear();
 }
 
+/**
+ * How long after its deadline a query may still settle before it is declared
+ * wedged. Covers the cases that resolve themselves: a cancel that worked, or
+ * an answer that was merely very late. What it deliberately does NOT wait out
+ * is a dead socket — production showed those stay unsettled for 700+ seconds,
+ * until TCP gives up on the peer.
+ */
+const WEDGE_GRACE_MS = 5_000;
+
+export type WedgedQueryInfo = { sql: string; ageMs: number };
+
+type WedgedQueryHandler = (info: WedgedQueryInfo) => void;
+
+let wedgedQueryHandler: WedgedQueryHandler | undefined;
+
+/**
+ * Register the callback fired when a deadlined query fails to settle within
+ * {@link WEDGE_GRACE_MS}. A wedged query means its connection is dead but
+ * still occupying a pool slot; `./index.ts` responds by rebuilding the pool.
+ * One handler at a time — this is wiring, not an event bus.
+ */
+export function setWedgedQueryHandler(handler: WedgedQueryHandler | undefined): void {
+  wedgedQueryHandler = handler;
+}
+
 function trackInflight(query: PendingQuery, sql: string): void {
   inflightQueries.set(query, { sql, armedAt: performance.now(), deadlined: false });
   const untrack = () => inflightQueries.delete(query);
@@ -172,6 +197,14 @@ function wrapQuery<T extends PendingQuery>(query: T, fallbackSql: string): T {
           } catch {
             // Nothing to cancel; the rejection below is what matters.
           }
+          // If neither the cancel nor a very late answer settles the query
+          // within the grace period, its connection is a dead socket holding a
+          // pool slot — hand it to the wedge handler (which rebuilds the pool).
+          setTimeout(() => {
+            if (inflightQueries.has(query)) {
+              wedgedQueryHandler?.({ sql, ageMs: Math.round(performance.now() - armedAt) });
+            }
+          }, WEDGE_GRACE_MS);
           reject(
             new QueryDeadlineError(sql, {
               overshootMs,
