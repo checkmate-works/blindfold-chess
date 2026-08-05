@@ -1,7 +1,11 @@
 import type { Sql } from 'postgres';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { QueryDeadlineError, withQueryDeadline } from './query-deadline';
+import {
+  QueryDeadlineError,
+  resetInflightRegistryForTests,
+  withQueryDeadline,
+} from './query-deadline';
 
 /**
  * Stand-in for postgres.js's `Query`: a Promise subclass that `values()` and
@@ -42,6 +46,7 @@ function fakeClient(overrides: Partial<Record<string, unknown>> = {}): Sql {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  resetInflightRegistryForTests();
 });
 
 afterEach(() => {
@@ -71,10 +76,36 @@ describe('withQueryDeadline', () => {
     // Fake timers advance the clock without advancing performance.now(), so
     // the measured overshoot clamps to zero; the loop stats are real readings.
     expect(error.diagnostics.overshootMs).toBe(0);
-    for (const value of Object.values(error.diagnostics)) {
+    const { inflightOldest, ...numericDiagnostics } = error.diagnostics;
+    for (const value of Object.values(numericDiagnostics)) {
       expect(Number.isFinite(value)).toBe(true);
       expect(value).toBeGreaterThanOrEqual(0);
     }
+    expect(Array.isArray(inflightOldest)).toBe(true);
+  });
+
+  it('lists other unsettled queries in the diagnostics, oldest first', async () => {
+    const wedged = neverSettles();
+    wedged.string = 'select pg_sleep(3600)';
+    const victim = neverSettles();
+    victim.string = 'select 1';
+    const queries = [wedged, victim];
+    const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
+
+    // The wedged query is subscribed first, times out, and its awaiter walks
+    // away — but it never settles, so it must stay visible to later victims.
+    const wedgedSettled = (db.unsafe('a') as Promise<unknown>).catch(() => {});
+    const victimSettled = (db.unsafe('b') as Promise<unknown>).catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(10_000);
+    await wedgedSettled;
+    const error = (await victimSettled) as QueryDeadlineError;
+
+    expect(error).toBeInstanceOf(QueryDeadlineError);
+    expect(error.diagnostics.inflightCount).toBe(1);
+    expect(error.diagnostics.inflightOldest[0]).toMatchObject({
+      sql: 'select pg_sleep(3600)',
+      deadlined: true,
+    });
   });
 
   it('cancels the query server-side when the deadline passes', async () => {

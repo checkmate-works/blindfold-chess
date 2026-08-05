@@ -40,6 +40,14 @@ export type QueryDeadlineDiagnostics = {
   loopMeanMs: number;
   loopP99Ms: number;
   loopMaxMs: number;
+  /** How many OTHER queries were started and still unsettled at this moment. */
+  inflightCount: number;
+  /**
+   * The oldest of those, oldest first. An entry aged far past the deadline is
+   * a wedged pool slot: its awaiter got a rejection long ago, but postgres.js
+   * still holds the connection because the query never actually settled.
+   */
+  inflightOldest: Array<{ sql: string; ageMs: number; deadlined: boolean }>;
 };
 
 /** Coarse duration label — whole seconds, so Sentry grouping stays stable. */
@@ -82,6 +90,59 @@ function describeSql(query: PendingQuery, fallback: string): string {
 }
 
 /**
+ * Every started-but-unsettled query, keyed by the query object itself.
+ *
+ * @design Why entries outlive the deadline
+ * An entry is removed when the UNDERLYING postgres.js query settles — not when
+ * our raced wrapper rejects. A deadline rejection abandons the awaiter, but
+ * postgres.js keeps the connection occupied until the query really answers,
+ * errors, or is cancelled; that zombie window is precisely what this registry
+ * exists to expose. The 2026-08-05 stalls showed sub-millisecond queries
+ * starving for 10s with a healthy event loop (overshoot 0) and an idle
+ * database — pool slots held by never-settling queries are the remaining
+ * suspect, and `inflightOldest` ages far past the deadline would convict them.
+ * Wedged entries persist until the instance dies, which is the signal, not a
+ * leak: their count is bounded by the pool size plus the queue.
+ */
+const inflightQueries = new Map<
+  PendingQuery,
+  { sql: string; armedAt: number; deadlined: boolean }
+>();
+
+/** How many of the oldest in-flight queries a deadline error carries. */
+const INFLIGHT_REPORT_LIMIT = 5;
+
+/**
+ * Test-only. The registry is module state, and a test file's never-settling
+ * fake queries would otherwise accumulate across its tests.
+ */
+export function resetInflightRegistryForTests(): void {
+  inflightQueries.clear();
+}
+
+function trackInflight(query: PendingQuery, sql: string): void {
+  inflightQueries.set(query, { sql, armedAt: performance.now(), deadlined: false });
+  const untrack = () => inflightQueries.delete(query);
+  // Subscribing is safe here: the caller has already subscribed via the race.
+  Promise.resolve(query).then(untrack, untrack);
+}
+
+function snapshotInflight(self: PendingQuery) {
+  const now = performance.now();
+  const entry = inflightQueries.get(self);
+  if (entry) entry.deadlined = true;
+  const others = [...inflightQueries.entries()]
+    .filter(([query]) => query !== self)
+    .map(([, { sql, armedAt, deadlined }]) => ({
+      sql,
+      ageMs: Math.max(0, Math.round(now - armedAt)),
+      deadlined,
+    }))
+    .sort((a, b) => b.ageMs - a.ageMs);
+  return { inflightCount: others.length, inflightOldest: others.slice(0, INFLIGHT_REPORT_LIMIT) };
+}
+
+/**
  * Wrap one pending query so awaiting it rejects at the deadline.
  *
  * The race is built once and memoized: postgres.js only starts the query when
@@ -94,6 +155,7 @@ function wrapQuery<T extends PendingQuery>(query: T, fallbackSql: string): T {
     if (!raced) {
       let timer: ReturnType<typeof setTimeout>;
       const armedAt = performance.now();
+      const sql = describeSql(query, fallbackSql);
       const deadline = new Promise<never>((_resolve, reject) => {
         timer = setTimeout(() => {
           // How late this callback runs past its schedule is the decisive
@@ -111,16 +173,18 @@ function wrapQuery<T extends PendingQuery>(query: T, fallbackSql: string): T {
             // Nothing to cancel; the rejection below is what matters.
           }
           reject(
-            new QueryDeadlineError(describeSql(query, fallbackSql), {
+            new QueryDeadlineError(sql, {
               overshootMs,
               loopMeanMs: lag.meanMs,
               loopP99Ms: lag.p99Ms,
               loopMaxMs: lag.maxMs,
+              ...snapshotInflight(query),
             })
           );
         }, QUERY_DEADLINE_MS);
       });
       raced = Promise.race([query, deadline]).finally(() => clearTimeout(timer));
+      trackInflight(query, sql);
     }
     return raced;
   };
