@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { markRenderStage } from '@/lib/sentry/render-watchdog';
+
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
 import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -39,6 +41,11 @@ export async function ProfileTimeline({ profileId, username, locale, currentUser
     getTranslations({ locale, namespace: 'topics.squares' }),
     getTranslations({ locale, namespace: 'Common.pagination' }),
   ]);
+
+  // Last stage of the profile render: everything this app awaits has settled.
+  // A stall reported from here means React never finished the stream — see
+  // `startRenderWatchdog`.
+  markRenderStage('timeline-loaded');
 
   // `getFeedData` filters unrenderable rows in SQL, so an empty page normally
   // means an exhausted one. The cursor is still checked: an entity deleted
