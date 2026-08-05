@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   QueryDeadlineError,
   resetInflightRegistryForTests,
+  setDeadlineRetry,
   setQueryActivityHandler,
   setWedgedQueryHandler,
   withQueryDeadline,
@@ -51,6 +52,7 @@ beforeEach(() => {
   resetInflightRegistryForTests();
   setWedgedQueryHandler(undefined);
   setQueryActivityHandler(undefined);
+  setDeadlineRetry(undefined);
 });
 
 afterEach(() => {
@@ -212,6 +214,121 @@ describe('withQueryDeadline', () => {
     answerLate([{ id: 1 }]);
     await vi.advanceTimersByTimeAsync(5_000);
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  describe('deadline retry', () => {
+    it('rescues a deadlined select with the retry result, transparently', async () => {
+      const retryQuery = resolvesWith([{ count: 42 }]);
+      const dispatch = vi.fn(() => retryQuery);
+      const report = vi.fn();
+      setDeadlineRetry({ dispatch, report });
+      const db = withQueryDeadline(fakeClient({ unsafe: () => neverSettles() }));
+
+      const pending = db.unsafe('select count(*) from x', ['p1']) as Promise<unknown>;
+      const result = pending.then((rows) => rows);
+      await vi.advanceTimersByTimeAsync(10_000);
+
+      await expect(result).resolves.toEqual([{ count: 42 }]);
+      expect(dispatch).toHaveBeenCalledWith(['select count(*) from x', ['p1']]);
+      expect(report).toHaveBeenCalledWith('rescued', 'select 1', expect.any(Number));
+    });
+
+    it('rejects with the ORIGINAL deadline error when the retry also never answers', async () => {
+      const retryQuery = neverSettles();
+      setDeadlineRetry({ dispatch: () => retryQuery, report: vi.fn() });
+      const db = withQueryDeadline(fakeClient());
+
+      const settled = expect(db.unsafe('select 1') as Promise<unknown>).rejects.toBeInstanceOf(
+        QueryDeadlineError
+      );
+      await vi.advanceTimersByTimeAsync(20_000);
+      await settled;
+
+      expect(retryQuery.cancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects with the original deadline error when the retry itself rejects', async () => {
+      const retryQuery = new FakeQuery((_resolve, reject) =>
+        reject(new Error('CONNECTION_DESTROYED'))
+      );
+      // Mark handled: nothing subscribes until the deadline dispatches it.
+      retryQuery.catch(() => {});
+      const report = vi.fn();
+      setDeadlineRetry({ dispatch: () => retryQuery, report });
+      const db = withQueryDeadline(fakeClient());
+
+      const settled = expect(db.unsafe('select 1') as Promise<unknown>).rejects.toBeInstanceOf(
+        QueryDeadlineError
+      );
+      await vi.advanceTimersByTimeAsync(10_000);
+      await settled;
+
+      expect(report).toHaveBeenCalledWith('failed', 'select 1', expect.any(Number));
+    });
+
+    it('never retries a write', async () => {
+      const dispatch = vi.fn();
+      setDeadlineRetry({ dispatch, report: vi.fn() });
+      const db = withQueryDeadline(fakeClient());
+
+      const settled = expect(
+        db.unsafe('insert into x values (1)') as Promise<unknown>
+      ).rejects.toBeInstanceOf(QueryDeadlineError);
+      await vi.advanceTimersByTimeAsync(10_000);
+      await settled;
+
+      expect(dispatch).not.toHaveBeenCalled();
+    });
+
+    it('never retries inside a transaction', async () => {
+      const dispatch = vi.fn();
+      setDeadlineRetry({ dispatch, report: vi.fn() });
+      let innerPromise!: Promise<unknown>;
+      const begin = vi.fn((callback: (tx: Sql) => unknown) => {
+        const inner = fakeClient();
+        return Promise.resolve(callback(inner));
+      });
+      const db = withQueryDeadline(fakeClient({ begin }));
+
+      await db.begin(async (tx) => {
+        innerPromise = expect(tx.unsafe('select 1') as Promise<unknown>).rejects.toBeInstanceOf(
+          QueryDeadlineError
+        );
+        await vi.advanceTimersByTimeAsync(10_000);
+        await innerPromise;
+      });
+
+      expect(dispatch).not.toHaveBeenCalled();
+    });
+
+    it('replays chained `.values()` onto the retry query', async () => {
+      const retryQuery = resolvesWith([['a']]);
+      setDeadlineRetry({ dispatch: () => retryQuery, report: vi.fn() });
+      const db = withQueryDeadline(fakeClient({ unsafe: () => neverSettles() }));
+
+      const wrapped = db.unsafe('select 1') as unknown as FakeQuery;
+      const result = wrapped.values().then((rows: unknown) => rows);
+      await vi.advanceTimersByTimeAsync(10_000);
+
+      await expect(result).resolves.toEqual([['a']]);
+      expect(retryQuery.isRaw).toBe('values');
+    });
+
+    it('still lets a genuinely late original answer win before the retry settles', async () => {
+      let answerLate!: (value: unknown) => void;
+      const original = new FakeQuery((resolve) => {
+        answerLate = resolve;
+      });
+      const retryQuery = neverSettles();
+      setDeadlineRetry({ dispatch: () => retryQuery, report: vi.fn() });
+      const db = withQueryDeadline(fakeClient({ unsafe: () => original }));
+
+      const result = (db.unsafe('select 1') as Promise<unknown>).then((rows) => rows);
+      await vi.advanceTimersByTimeAsync(12_000);
+      answerLate([{ id: 7 }]);
+
+      await expect(result).resolves.toEqual([{ id: 7 }]);
+    });
   });
 
   it('gives the transaction client a deadline too', async () => {
