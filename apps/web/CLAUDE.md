@@ -804,23 +804,50 @@ different primary cause:
   `Promise.all([getProfileByUsername(), getOptionalUser()])`. Both are now
   fail-fast (see below).
 
-**Reading the instrumentation.** The timeouts added in 2026-08 (`statement_timeout`
-/ `connect_timeout` in `src/lib/db/index.ts`, `fetchWithTimeout` on every
-Supabase client, `maxDuration = 60` on the `[locale]` and `admin` layouts) exist
-to make the next occurrence name its own cause rather than burn 300 silent
-seconds:
+**Third evidence set (2026-08-05, on the 60s cap).** The stall recurred, and
+this round settled two things:
 
-| What Sentry shows                                                 | Verdict                                                                                                                                                                                      |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SQLSTATE `57014` / "canceling statement due to statement timeout" | a DB query is the culprit                                                                                                                                                                    |
-| `TimeoutError` from an aborted Supabase fetch                     | the Auth fetch is the culprit                                                                                                                                                                |
-| Only `loading-boundary-stalled`, with neither of the above        | either pool-acquisition queueing (postgres.js has no timeout for it) or an `await` not yet instrumented — check the invocation's duration in Vercel logs, which should now be killed at ~60s |
-| `The destination stream closed early.` alone                      | no action; a user navigating away from any slow render produces it                                                                                                                           |
+- **The 60s cap works.** React #412 fired 60.5s after the navigation, where it
+  had been 300s. The `maxDuration = 60` deploy is live and a hang now costs one
+  minute, not five.
+- **Neither instrumented suspect fired.** No `57014`, no `TimeoutError`, and
+  the Server Action POST issued 30ms later on the same path completed its auth
+  round trip and DB query in 55ms. A slow DB query and a hung Supabase fetch
+  are both out.
+- **It is not specific to soft navigation.** A fresh document request to the
+  same URL, in a new tab, stalls too while the stall is on; the same request a
+  half-minute later renders instantly. So the wedge is transient and shared
+  between requests, but not global — other routes keep answering throughout,
+  which fits a single warm instance's pool going bad while others stay healthy.
+
+**Do not expect the platform to confirm any of this.** Every observer
+downstream of the failure dies with it, so their silence means nothing:
+
+- Vercel writes no duration for an invocation it killed, and the per-function
+  breakdown that might show one is behind Observability Plus.
+- A Sentry **transaction** is only sent when its span ends, so a killed render
+  is never reported regardless of `tracesSampleRate`.
+- React's `The destination stream closed early.` is not flushed when the
+  process is killed outright.
+
+Hence the instrumentation reports from _inside_ the render, before the kill.
+
+**Reading the instrumentation.**
+
+| What Sentry shows                                                                | Verdict                                                                                                                        |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `QueryDeadlineError` as the `cause` of Drizzle's `Failed query: <sql>`           | a query never answered, and the SQL names it — the leading theory confirmed (see `src/lib/db/query-deadline.ts`)               |
+| `render-watchdog:profile` with a stage before `timeline-loaded`                  | an `await` in this app's code never settled, and the stage says which                                                          |
+| `render-watchdog:profile` with stage `timeline-loaded`                           | everything this app awaits resolved and React never finished the stream — a framework bug, and the evidence to report upstream |
+| `loading-boundary-stalled` with **no** `render-watchdog` for the same navigation | the render never started; the hang is above this app, in routing or the proxy                                                  |
+| `loading-boundary-stalled` with `recovering: false` recurring                    | reloading is not buying anything, so the "transient and instance-scoped" reading above is wrong                                |
+| SQLSTATE `57014`                                                                 | a query that did reach a backend ran past 30s — distinct from the deadline above, which fires first at 10s                     |
+| `The destination stream closed early.` alone                                     | no action; a user navigating away from any slow render produces it                                                             |
 
 Note that `statement_timeout` is sent as a startup parameter through Supabase's
-transaction-mode pooler (Supavisor); whether it reaches the backend can only be
-confirmed by seeing `57014` in production. See the comment in
-`src/lib/db/index.ts` for the contingency.
+transaction-mode pooler (Supavisor); whether it reaches the backend has never
+been confirmed, and the client-side deadline now fires first either way. See
+the comment in `src/lib/db/index.ts` for the contingency.
 
 **Ruled out, so don't re-investigate**: `NotificationBadge`'s per-navigation
 Server Action (Next 16 skips page rendering for actions that don't revalidate,
@@ -832,7 +859,9 @@ is always mounted); Service Workers (this app has none).
 environment; a green local battery proves absence of regression, nothing more.
 Detection comes from `LoadingStallReporter` (`src/app/_components/`), which
 reports `loading-boundary-stalled:<boundary>` to Sentry when a skeleton
-outlives its threshold.
+outlives its threshold — and then reloads the page, up to twice, to get the
+user out. That reload is a bet on the wedge being transient, not a fix; the
+`recovering` flag on the report is what says whether the bet is paying off.
 
 **Human task, not fixable in code**: enable Vercel **Skew Protection** (Project
 Settings → Advanced). A separate symptom — an old tab showing no skeleton at
