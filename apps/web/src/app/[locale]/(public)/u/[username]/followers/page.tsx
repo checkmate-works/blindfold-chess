@@ -6,6 +6,7 @@ import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
+import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
 
 import { PageLayout, UserCard } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -78,8 +79,7 @@ export default async function FollowersPage({ params, searchParams }: Props) {
   const [countResult] = await db
     .select({ count: count() })
     .from(userFollows)
-    .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
-    .where(and(eq(userFollows.followingId, profile.id), isNull(profiles.deletedAt)));
+    .where(and(eq(userFollows.followingId, profile.id), profileNotDeleted(userFollows.followerId)));
 
   const totalCount = countResult.count;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);

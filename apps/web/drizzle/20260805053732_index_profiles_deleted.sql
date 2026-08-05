@@ -1,0 +1,1 @@
+CREATE INDEX "idx_profiles_deleted" ON "profiles" USING btree ("id") WHERE "profiles"."deleted_at" is not null;
