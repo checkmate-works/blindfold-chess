@@ -3,7 +3,25 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 import * as Sentry from '@sentry/nextjs';
 
+import type { QueryDeadlineDiagnostics } from '@/lib/db/query-deadline';
 import { scrubInPlace } from '@/lib/sentry/scrub';
+
+/**
+ * Find a `QueryDeadlineError`'s diagnostics anywhere in an error's `cause`
+ * chain. Drizzle wraps the deadline rejection in its own `Failed query` error,
+ * so the interesting object is usually one `cause` deep. Matched by name, not
+ * `instanceof` — bundling can duplicate the class across chunks.
+ */
+function findQueryDeadlineDiagnostics(error: unknown): QueryDeadlineDiagnostics | undefined {
+  for (let cursor = error, depth = 0; cursor && depth < 5; depth += 1) {
+    const candidate = cursor as { name?: unknown; diagnostics?: unknown; cause?: unknown };
+    if (candidate.name === 'QueryDeadlineError' && typeof candidate.diagnostics === 'object') {
+      return candidate.diagnostics as QueryDeadlineDiagnostics;
+    }
+    cursor = candidate.cause;
+  }
+  return undefined;
+}
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -26,7 +44,22 @@ Sentry.init({
   // password-related Server Actions (changePassword, resetPassword, ...)
   // would otherwise leak plaintext credentials via `event.request.data`.
   /* eslint-disable no-param-reassign -- Sentry's beforeSend contract is mutate-in-place: the hook edits the event it is handed (see scrubInPlace's docblock). */
-  beforeSend(event, _hint) {
+  beforeSend(event, hint) {
+    // Surface a query deadline's where-did-the-time-go numbers as searchable
+    // tags: overshoot in the seconds = this instance's event loop was blocked
+    // (the DB is innocent); overshoot ≈ 0 = the query truly went unanswered
+    // (pool queue / pooler / network / execution). See
+    // `@/lib/db/query-deadline` for the full decision table.
+    const diagnostics = findQueryDeadlineDiagnostics(hint?.originalException);
+    if (diagnostics) {
+      event.tags = {
+        ...event.tags,
+        'query_deadline.overshoot_ms': String(Math.round(diagnostics.overshootMs)),
+        'query_deadline.loop_max_ms': String(Math.round(diagnostics.loopMaxMs)),
+        'query_deadline.loop_p99_ms': String(Math.round(diagnostics.loopP99Ms)),
+      };
+    }
+
     if (event.request) {
       if (event.request.cookies) {
         event.request.cookies = { scrubbed: true } as unknown as typeof event.request.cookies;

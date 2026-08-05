@@ -1,5 +1,7 @@
 import type { Sql } from 'postgres';
 
+import { snapshotEventLoopLag } from '@/lib/sentry/event-loop-lag';
+
 /**
  * How long a single query may take before it is abandoned.
  *
@@ -16,16 +18,52 @@ const QUERY_DEADLINE_MS = 10_000;
 const SQL_EXCERPT_LENGTH = 300;
 
 /**
+ * Diagnostics captured at the moment the deadline fires, to tell WHERE the ten
+ * seconds went. A deadline can mean two very different things:
+ *
+ * - The query truly went unanswered (slow execution, pool queue, pooler,
+ *   network). The timer then fires on schedule: `overshootMs ≈ 0`.
+ * - This process's event loop was blocked, so the query's protocol bytes were
+ *   never flushed (production showed Postgres in `wait_event = ClientRead`
+ *   waiting on us) and the answer may even be sitting unread in the socket
+ *   buffer — Node runs expired timers before pending I/O. The timer then fires
+ *   LATE by however long the loop was blocked: `overshootMs` in the seconds,
+ *   corroborated by the event-loop histogram.
+ *
+ * See the docblock in `@/lib/sentry/event-loop-lag` for the investigation that
+ * motivated this. `sentry.server.config.ts` lifts these fields into tags.
+ */
+export type QueryDeadlineDiagnostics = {
+  /** How late the deadline timer fired past its scheduled time, in ms. */
+  overshootMs: number;
+  /** Event-loop delay stats since the previous deadline error (or boot). */
+  loopMeanMs: number;
+  loopP99Ms: number;
+  loopMaxMs: number;
+};
+
+/** Coarse duration label — whole seconds, so Sentry grouping stays stable. */
+function coarseSeconds(ms: number): string {
+  return ms < 1000 ? '<1s' : `~${Math.round(ms / 1000)}s`;
+}
+
+/**
  * Thrown when a query passes {@link QUERY_DEADLINE_MS}. Carries the SQL — but
  * never the parameters, which hold user data.
  */
 export class QueryDeadlineError extends Error {
   readonly sql: string;
+  readonly diagnostics: QueryDeadlineDiagnostics;
 
-  constructor(sql: string) {
-    super(`Query exceeded the ${QUERY_DEADLINE_MS}ms deadline: ${sql}`);
+  constructor(sql: string, diagnostics: QueryDeadlineDiagnostics) {
+    super(
+      `Query exceeded the ${QUERY_DEADLINE_MS}ms deadline ` +
+        `(timer overshoot ${coarseSeconds(diagnostics.overshootMs)}, ` +
+        `event-loop max delay ${coarseSeconds(diagnostics.loopMaxMs)}): ${sql}`
+    );
     this.name = 'QueryDeadlineError';
     this.sql = sql;
+    this.diagnostics = diagnostics;
   }
 }
 
@@ -55,8 +93,15 @@ function wrapQuery<T extends PendingQuery>(query: T, fallbackSql: string): T {
   const race = () => {
     if (!raced) {
       let timer: ReturnType<typeof setTimeout>;
+      const armedAt = performance.now();
       const deadline = new Promise<never>((_resolve, reject) => {
         timer = setTimeout(() => {
+          // How late this callback runs past its schedule is the decisive
+          // number: a blocked event loop delays the timer by the length of
+          // the block. Clamped at 0 — fake-timer tests advance the clock
+          // without advancing performance.now().
+          const overshootMs = Math.max(0, performance.now() - armedAt - QUERY_DEADLINE_MS);
+          const lag = snapshotEventLoopLag();
           // Ask the server to abort too, so a query that IS running does not
           // outlive the request that wanted it. Cancelling can throw when the
           // connection is already gone — which is the case we are here for.
@@ -65,7 +110,14 @@ function wrapQuery<T extends PendingQuery>(query: T, fallbackSql: string): T {
           } catch {
             // Nothing to cancel; the rejection below is what matters.
           }
-          reject(new QueryDeadlineError(describeSql(query, fallbackSql)));
+          reject(
+            new QueryDeadlineError(describeSql(query, fallbackSql), {
+              overshootMs,
+              loopMeanMs: lag.meanMs,
+              loopP99Ms: lag.p99Ms,
+              loopMaxMs: lag.maxMs,
+            })
+          );
         }, QUERY_DEADLINE_MS);
       });
       raced = Promise.race([query, deadline]).finally(() => clearTimeout(timer));
