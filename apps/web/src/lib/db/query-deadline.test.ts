@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   QueryDeadlineError,
   resetInflightRegistryForTests,
+  setQueryActivityHandler,
   setWedgedQueryHandler,
   withQueryDeadline,
 } from './query-deadline';
@@ -49,6 +50,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   resetInflightRegistryForTests();
   setWedgedQueryHandler(undefined);
+  setQueryActivityHandler(undefined);
 });
 
 afterEach(() => {
@@ -167,6 +169,31 @@ describe('withQueryDeadline', () => {
     await vi.advanceTimersByTimeAsync(5_000);
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler.mock.calls[0][0]).toMatchObject({ sql: 'select 1' });
+  });
+
+  it('reports activity on dispatch and again on settlement', async () => {
+    const activity = vi.fn();
+    setQueryActivityHandler(activity);
+    const db = withQueryDeadline(fakeClient({ unsafe: () => resolvesWith([{ id: 1 }]) }));
+
+    // A query only dispatches when first awaited — subscribe to trigger it.
+    const pending = (db.unsafe('select 1') as Promise<unknown>).then((rows) => rows);
+    expect(activity).toHaveBeenCalledTimes(1); // dispatch
+
+    await pending;
+    expect(activity).toHaveBeenCalledTimes(2); // settlement
+  });
+
+  it('reports dispatch activity even for a query that never settles', async () => {
+    const activity = vi.fn();
+    setQueryActivityHandler(activity);
+    const db = withQueryDeadline(fakeClient());
+
+    const settled = (db.unsafe('select 1') as Promise<unknown>).catch(() => {});
+    expect(activity).toHaveBeenCalledTimes(1); // dispatch, and never again:
+    await vi.advanceTimersByTimeAsync(15_000);
+    await settled;
+    expect(activity).toHaveBeenCalledTimes(1); // the deadline rejection is not a settlement
   });
 
   it('does not flag a query whose late answer arrives within the grace period', async () => {

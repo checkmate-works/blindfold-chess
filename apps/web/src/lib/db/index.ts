@@ -1,9 +1,14 @@
 import * as Sentry from '@sentry/nextjs';
+import { waitUntil } from '@vercel/functions';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
-import { setWedgedQueryHandler, withQueryDeadline } from './query-deadline';
+import {
+  setQueryActivityHandler,
+  setWedgedQueryHandler,
+  withQueryDeadline,
+} from './query-deadline';
 import * as schema from './schema';
 
 // POSTGRES_URL: Set by Vercel Marketplace Supabase integration
@@ -39,11 +44,17 @@ const connectionString =
 // executing, `connect_timeout` covers the connect phase, and postgres.js has
 // no timeout on acquiring a pooled connection either. `withQueryDeadline`
 // below is what closes that gap — see its TSDoc.
+/**
+ * Seconds a pooled connection may sit idle before postgres.js closes it.
+ * Extracted because the pool-drain keepalive below must outlast it.
+ */
+const IDLE_TIMEOUT_SECONDS = 20;
+
 function createPooledClient(): ReturnType<typeof postgres> {
   return postgres(connectionString, {
     prepare: false, // required for Supabase transaction-mode pooler (port 6543)
     max: 10, // postgres.js default, made explicit — shared budget under Fluid Compute
-    idle_timeout: 20, // seconds — release idle connections back to the pooler
+    idle_timeout: IDLE_TIMEOUT_SECONDS, // release idle connections back to the pooler
     max_lifetime: 60 * 30, // seconds — recycle long-lived connections
     connect_timeout: 10, // seconds — fail fast instead of the 30s default
     // seconds. Lowered from the 60s default so the OS surfaces a half-open
@@ -124,6 +135,65 @@ setWedgedQueryHandler(({ sql, ageMs }) => {
     tags: { 'db_pool.wedged_age_ms': String(ageMs) },
     extra: { 'db_pool.wedged_sql': sql },
   });
+});
+
+/**
+ * @design Pool-drain keepalive: hold the instance awake until the pool is empty
+ *
+ * The wedges handled above exist because Fluid Compute suspends the instance
+ * the moment no request is active, freezing postgres.js's idle-reaper timers
+ * with it: connections that would have been closed `idle_timeout` seconds
+ * after going idle instead sleep inside the frozen process, silently lose
+ * their network path (no RST reaches a frozen process), and wedge the first
+ * post-thaw query dispatched on them. The rebuild above cures that symptom;
+ * this block removes its cause by making sure the instance is never suspended
+ * while the pool still holds connections.
+ *
+ * Vercel's own remedy for this exact failure class is `attachDatabasePool`
+ * from `@vercel/functions` — but its duck-typing recognises pg/mysql/mongo/
+ * redis pool shapes only and THROWS `Unsupported database pool type` for a
+ * postgres.js client (verified against @vercel/functions 3.7.7 source), so
+ * this reimplements the same mechanism on the public `waitUntil` API: every
+ * query dispatch or settlement (re)arms a keepalive promise that resolves
+ * once the pool has been quiet for the idle timeout plus a margin. By then
+ * the reaper has closed every idle connection on a live event loop, and the
+ * instance suspends with an empty pool — nothing left to go stale.
+ *
+ * Arming on dispatch (not just settlement) matters for two windows the
+ * settle-side arm cannot cover: a query in flight for a render whose client
+ * already disconnected can no longer be frozen mid-flight, and a wedged
+ * query's deadline-plus-grace sequence (10s + 5s, see ./query-deadline) now
+ * always runs on a live instance, so the pool rebuild fires promptly instead
+ * of on the next thaw (production 2026-08-05: a 5s grace timer fired 11.6s
+ * after its deadline because the instance froze in between).
+ *
+ * Outside Vercel (local dev, tests, `next build` prerendering) `waitUntil`
+ * is a no-op because no request context exists; the timer is unref'd so it
+ * never holds a dev server or test runner open.
+ */
+const POOL_DRAIN_KEEPALIVE_MS = IDLE_TIMEOUT_SECONDS * 1000 + 500;
+
+let drainTimer: ReturnType<typeof setTimeout> | undefined;
+let resolveDrained: (() => void) | undefined;
+
+setQueryActivityHandler(() => {
+  if (drainTimer) clearTimeout(drainTimer);
+  // Settle the previous promise and register a fresh one so the keepalive is
+  // anchored to the newest request's context — the same per-event re-arm
+  // attachDatabasePool performs for the pools it supports.
+  resolveDrained?.();
+  const drained = new Promise<void>((resolve) => {
+    resolveDrained = resolve;
+  });
+  waitUntil(drained);
+  drainTimer = setTimeout(() => {
+    drainTimer = undefined;
+    resolveDrained?.();
+    resolveDrained = undefined;
+  }, POOL_DRAIN_KEEPALIVE_MS);
+  // Node-only API, typed loosely because this file compiles under the DOM lib
+  // too. Without it a pending keepalive would hold local processes open.
+  (drainTimer as { unref?: () => void }).unref?.();
 });
 
 /**
