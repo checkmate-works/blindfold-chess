@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerClient } from '@supabase/ssr';
 
+import { fetchWithTimeout } from './fetch-with-timeout';
+
 /**
  * Refresh the Supabase session cookie for the incoming request and return
  * a `NextResponse.next()` that forwards any updated cookies to the browser.
@@ -29,6 +31,10 @@ export async function updateSession(
   }
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    // The JWKS fetch behind `getClaims()` runs on every request that reaches
+    // the proxy; without a deadline a hung one stalls the whole request. See
+    // fetch-with-timeout.ts.
+    global: { fetch: fetchWithTimeout },
     cookies: {
       getAll() {
         return request.cookies.getAll();
