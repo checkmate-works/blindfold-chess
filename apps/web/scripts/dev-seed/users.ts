@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
-import { profiles } from '../../src/lib/db/schema';
+import { profiles, userRoles } from '../../src/lib/db/schema';
 
 export type SeedUser = {
   email: string;
@@ -15,9 +15,27 @@ export type SeedUser = {
    * Parking a user one rung short lets that condition be exercised on its own.
    */
   rankUpTo?: string;
+  /**
+   * Insert an `admin` row in `user_roles` for this user.
+   *
+   * The admin panel authorises off that table directly (see
+   * `admin/layout.tsx`), so seeding the row is all a local `/admin` session
+   * needs — the Custom Access Token Hook only matters for RLS in a deployed
+   * Supabase project. Safe to automate because this script refuses to run
+   * against anything but a localhost DB + Supabase URL.
+   */
+  isAdmin?: boolean;
 };
 
 export const SEED_USERS: SeedUser[] = [
+  // Admin panel account. Kept separate from the players below so the 404-for
+  // non-admins path stays testable with a normal seed user in the same run.
+  {
+    email: 'admin@example.local',
+    username: 'seed-admin',
+    displayName: 'Admin (seed)',
+    isAdmin: true,
+  },
   // Sits at 2kyu, so the next thing they earn is 1kyu: publishing one won game
   // played under a blindfold constraint promotes them, with nothing else in the
   // way.
@@ -76,6 +94,10 @@ export async function ensureSeedUser(
       displayName: u.displayName,
     })
     .onConflictDoNothing();
+
+  if (u.isAdmin) {
+    await db.insert(userRoles).values({ userId, role: 'admin' }).onConflictDoNothing();
+  }
 
   return userId;
 }
