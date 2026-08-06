@@ -1,3 +1,5 @@
+import { StrictMode } from 'react';
+
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -88,5 +90,22 @@ describe('ToastContainer query-param toasts', () => {
 
     expect(mockShowToast).not.toHaveBeenCalled();
     expect(window.location.search).toBe('?toast=not_a_real_key');
+  });
+
+  // StrictMode runs every effect twice on mount, against the same render's
+  // `searchParams` — so an effect that trusts that snapshot re-shows a toast
+  // it already consumed. This was visible on every `?toast=` navigation in
+  // `next dev`; production React never double-invokes, which is the only
+  // reason it stayed a local-only symptom.
+  it('shows the toast once when the effect runs twice on mount', () => {
+    setUrl('/en/mypage?toast=login_success');
+    render(
+      <StrictMode>
+        <ToastContainer />
+      </StrictMode>
+    );
+
+    expect(mockShowToast).toHaveBeenCalledTimes(1);
+    expect(window.location.search).toBe('');
   });
 });
