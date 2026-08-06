@@ -75,7 +75,12 @@ async function main() {
   for (const u of SEED_USERS) {
     const id = await ensureSeedUser(admin, db, u);
     userIds.push(id);
-    console.log(`  ${u.username.padEnd(12)} → ${id}`);
+    console.log(`  ${u.username.padEnd(12)} → ${id}${u.isAdmin ? ' (admin role granted)' : ''}`);
+  }
+
+  const adminUser = SEED_USERS.find((u) => u.isAdmin);
+  if (adminUser) {
+    console.log(`  /admin: sign in as ${adminUser.email} / ${SEED_PASSWORD}`);
   }
 
   console.log('dev-seed: reseeding challenge data...');

@@ -72,7 +72,9 @@ This is a **one-time setup**. Updating the function via `CREATE OR REPLACE` does
 
 ### 5. Grant Admin Role
 
-Find your user ID and insert an admin role:
+**Local**: `pnpm db:seed:dev` creates `admin@example.local` / `dev-password` with the `admin` role already inserted (see `SEED_USERS` in `scripts/dev-seed/users.ts`). The script refuses to run against a non-localhost DB or Supabase URL, so this shortcut cannot leak into a deployed environment. Nothing below is needed locally unless you want a _different_ account to be admin.
+
+**Remote**: find your user ID and insert an admin role:
 
 ```sql
 -- Find your user ID
@@ -107,9 +109,9 @@ For local development, only steps 1, 2, and 5 are required:
 
 1. Add `SUPABASE_SERVICE_ROLE_KEY` to `.env.local`
 2. `pnpm db:run-migrate` to apply migrations and create the `user_roles` table locally
-3. Insert your admin role into the local database
+3. `pnpm db:seed` then `pnpm db:seed:dev` — the dev seed creates the admin account (`admin@example.local` / `dev-password`) along with the non-admin players needed to check the 404 path
 
-Steps 3-4 (hook setup) are Supabase-only. The admin panel's authorization works without the hook because `admin/layout.tsx` queries the `user_roles` table directly via Drizzle.
+Steps 3-4 of the setup above (hook setup) are Supabase-only. The admin panel's authorization works without the hook because `admin/layout.tsx` queries the `user_roles` table directly via Drizzle.
 
 ## Available Scripts
 
