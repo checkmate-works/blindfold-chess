@@ -6,7 +6,12 @@ import { useRouter } from 'next/navigation';
 
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { FieldError, UnsavedChangesDialog, fieldErrorProps } from '@/app/_components';
+import {
+  FieldError,
+  GenerateSlugButton,
+  UnsavedChangesDialog,
+  fieldErrorProps,
+} from '@/app/_components';
 import { AdminFormTopBar } from '@/app/admin/_components/forms';
 import { LuSettings } from 'react-icons/lu';
 
@@ -34,6 +39,7 @@ type ArticleFormProps = {
     formTitle: string;
     slug: string;
     slugPlaceholder: string;
+    generateSlugFromTitle: string;
     title: string;
     titlePlaceholder: string;
     content: string;
@@ -316,6 +322,13 @@ export function ArticleForm({
                 }`}
                 maxLength={255}
                 {...fieldErrorProps('article-slug-error', slugError)}
+              />
+              <GenerateSlugButton
+                title={title}
+                onSlugChange={setSlug}
+                label={labels.generateSlugFromTitle}
+                disabled={isPending}
+                size="sm"
               />
               <select
                 id="article-locale"

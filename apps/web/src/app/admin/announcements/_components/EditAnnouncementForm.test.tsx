@@ -33,6 +33,7 @@ const defaultLabels = {
   formTitle: 'Edit Announcement',
   slug: 'Slug',
   slugPlaceholder: 'e.g. new-feature-release',
+  generateSlugFromTitle: 'Generate from title',
   title: 'Title',
   titlePlaceholder: 'Announcement title',
   content: 'Content',

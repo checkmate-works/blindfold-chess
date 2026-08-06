@@ -13,6 +13,7 @@ export function getAnnouncementFormLabels(t: TranslationFn, formTitle: string) {
     formTitle,
     slug: t('form.slug'),
     slugPlaceholder: t('form.slugPlaceholder'),
+    generateSlugFromTitle: t('form.generateSlugFromTitle'),
     title: t('form.title'),
     titlePlaceholder: t('form.titlePlaceholder'),
     content: t('form.content'),

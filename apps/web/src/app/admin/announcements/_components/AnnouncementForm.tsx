@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { FieldError, fieldErrorProps } from '@/app/_components/FieldError';
+import { GenerateSlugButton } from '@/app/_components/GenerateSlugButton';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { AdminFormTopBar } from '@/app/admin/_components/forms';
 
@@ -35,6 +36,7 @@ type AnnouncementFormProps = {
     formTitle: string;
     slug: string;
     slugPlaceholder: string;
+    generateSlugFromTitle: string;
     title: string;
     titlePlaceholder: string;
     content: string;
@@ -228,6 +230,15 @@ export function AnnouncementForm({
                 maxLength={255}
                 {...fieldErrorProps('announcement-slug-error', slugError)}
               />
+              {!lockSlug && (
+                <GenerateSlugButton
+                  title={title}
+                  onSlugChange={setSlug}
+                  label={labels.generateSlugFromTitle}
+                  disabled={isPending}
+                  size="sm"
+                />
+              )}
               <select
                 id="announcement-locale"
                 value={locale}

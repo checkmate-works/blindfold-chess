@@ -33,23 +33,6 @@ export const CHUNK_SLUG_MAX_LENGTH = 50;
 export const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
- * Best-effort slug suggestion from a free-form title. Lowercases, collapses
- * whitespace and any non-`[a-z0-9-]` characters into hyphens, then trims
- * stray delimiters. The output may still fail `CHUNK_SLUG_PATTERN` for
- * pathological inputs (e.g. an all-symbol title yields `""`), so callers
- * MUST treat the result as a *suggestion* and re-run the form's own
- * validation before submission.
- */
-export function deriveSlugFromTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-/**
  * Practical upper bound for `chunks.description`. The DB column is `text`
  * (no length constraint), but the admin form should still refuse pathological
  * inputs. 5,000 chars comfortably covers long annotations while still being

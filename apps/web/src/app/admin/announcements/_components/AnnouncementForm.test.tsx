@@ -41,6 +41,7 @@ const defaultLabels = {
   formTitle: 'Create Announcement',
   slug: 'Slug',
   slugPlaceholder: 'e.g. new-feature-release',
+  generateSlugFromTitle: 'Generate from title',
   title: 'Title',
   titlePlaceholder: 'Announcement title',
   content: 'Content',
@@ -84,6 +85,35 @@ describe('AnnouncementForm', () => {
     expect(screen.getByLabelText('Title')).toBeInTheDocument();
     expect(screen.getByLabelText('Content')).toBeInTheDocument();
     expect(screen.getByLabelText('Locale')).toBeInTheDocument();
+  });
+
+  it('should fill the slug from the title when "Generate from title" is clicked', () => {
+    render(<AnnouncementForm onSaveDraft={vi.fn()} labels={defaultLabels} />);
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'New Feature Release' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Generate from title' }));
+
+    expect(screen.getByLabelText('Slug')).toHaveValue('new-feature-release');
+  });
+
+  it('should keep "Generate from title" disabled when the title derives to no slug', () => {
+    render(<AnnouncementForm onSaveDraft={vi.fn()} labels={defaultLabels} />);
+
+    const button = screen.getByRole('button', { name: 'Generate from title' });
+    expect(button).toBeDisabled();
+
+    // A Japanese title has nothing to derive from — the button must stay
+    // disabled rather than wipe a slug the admin typed by hand.
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: '新機能のお知らせ' } });
+    expect(button).toBeDisabled();
+  });
+
+  it('should hide "Generate from title" when the slug is locked', () => {
+    render(
+      <AnnouncementForm onSaveDraft={vi.fn()} labels={defaultLabels} defaultSlug="fixed" lockSlug />
+    );
+
+    expect(screen.queryByRole('button', { name: 'Generate from title' })).not.toBeInTheDocument();
   });
 
   it('should render Save Draft, Preview, and Cancel buttons', () => {
