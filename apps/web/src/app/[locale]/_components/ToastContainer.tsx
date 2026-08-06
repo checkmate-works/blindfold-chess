@@ -70,9 +70,22 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
   // All are consumed and stripped from the URL in a single history-neutral
   // replace so the reward isn't re-shown on refresh or back-navigation.
   useEffect(() => {
-    const toastParam = searchParams.get('toast');
-    const coinsParam = searchParams.get('coinsEarned');
-    const cappedParam = searchParams.get('coinsCapped');
+    // Read the live URL, NOT the `searchParams` snapshot this effect closed
+    // over. The snapshot belongs to the render that scheduled the effect, so
+    // any second run against the same commit still sees the params this run
+    // already consumed and shows the toast twice. StrictMode does exactly
+    // that in development — it invokes every effect twice on mount — and the
+    // duplicate was visible on every `?toast=` navigation locally. Reading
+    // `window.location` means "already stripped" is observable to the second
+    // run, which also covers a re-run caused by any future dependency whose
+    // identity changes before the router propagates the new URL.
+    //
+    // `searchParams` stays in the dependency list: it is what makes this
+    // effect run again when a later navigation brings new params.
+    const liveParams = new URLSearchParams(window.location.search);
+    const toastParam = liveParams.get('toast');
+    const coinsParam = liveParams.get('coinsEarned');
+    const cappedParam = liveParams.get('coinsCapped');
     if (!toastParam && !coinsParam && !cappedParam) return;
 
     let handled = false;

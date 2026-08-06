@@ -47,6 +47,21 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
+/**
+ * Monotonic id source.
+ *
+ * `Date.now()` used to fill this role and collided whenever two toasts were
+ * raised in the same millisecond — the routine case for a single navigation
+ * carrying several params (`?coinsEarned=3&coinsCapped=1`), which the
+ * container consumes in one pass. Two toasts sharing an id duplicate a React
+ * key, and every removal path filters by id, so dismissing (or auto-hiding)
+ * either one silently took the other's message down with it.
+ *
+ * Module scope, not a ref: ids must not repeat across provider instances
+ * either, and a counter is enough — nothing persists a toast id.
+ */
+let nextToastId = 0;
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timerIdsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -64,7 +79,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const showToast = useCallback(
     (message: string, type: ToastType = 'info', options?: ToastOptions) => {
-      const id = Date.now().toString();
+      const id = (++nextToastId).toString();
       const newToast: Toast = {
         id,
         message,
