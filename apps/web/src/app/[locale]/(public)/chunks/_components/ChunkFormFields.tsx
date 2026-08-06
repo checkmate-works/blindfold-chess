@@ -9,6 +9,7 @@ import {
   BoardSkeleton,
   FieldError,
   FlipBoardButton,
+  GenerateSlugButton,
   fieldBorderClass,
   fieldErrorProps,
 } from '@/app/_components';
@@ -18,7 +19,6 @@ import {
   CHUNK_FEEDBACK_TOPICS,
   type ChunkFeedbackTopic,
   type ChunkStatus,
-  deriveSlugFromTitle,
 } from '@/lib/chunks/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
@@ -300,14 +300,12 @@ export function ChunkFormFields({
             required={mode === 'create'}
             {...fieldErrorProps('chunk-slug-error', slugError)}
           />
-          <button
-            type="button"
-            onClick={() => onSlugChange(deriveSlugFromTitle(title))}
-            disabled={pending || !title.trim()}
-            className="px-3 py-2 text-sm rounded border border-border bg-muted text-foreground hover:opacity-80 disabled:opacity-50 transition-opacity whitespace-nowrap"
-          >
-            {t('actions.generateFromTitle')}
-          </button>
+          <GenerateSlugButton
+            title={title}
+            onSlugChange={onSlugChange}
+            label={t('actions.generateFromTitle')}
+            disabled={pending}
+          />
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {mode === 'create' ? t('hints.slugCreate') : t('hints.slugDraftEditable')}

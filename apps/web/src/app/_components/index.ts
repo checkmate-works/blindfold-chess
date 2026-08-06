@@ -1,6 +1,7 @@
 export { Button } from './Button';
 export { FieldError, fieldBorderClass, fieldErrorProps } from './FieldError';
 export { FormErrorBanner } from './FormErrorBanner';
+export { GenerateSlugButton } from './GenerateSlugButton';
 export { ChallengeCard } from './ChallengeCard';
 export { TextInput } from './TextInput';
 export { Textarea } from './Textarea';

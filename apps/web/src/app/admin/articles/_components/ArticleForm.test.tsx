@@ -90,6 +90,7 @@ const defaultLabels = {
   formTitle: 'Create Article',
   slug: 'Slug',
   slugPlaceholder: 'e.g. new-feature-release',
+  generateSlugFromTitle: 'Generate from title',
   title: 'Title',
   titlePlaceholder: 'Article title',
   content: 'Content',
@@ -170,6 +171,31 @@ describe('ArticleForm', () => {
 
     expect(screen.getByLabelText('Slug')).toBeInTheDocument();
     expect(screen.getByLabelText('Locale')).toBeInTheDocument();
+  });
+
+  it('should fill the slug from the title when "Generate from title" is clicked', () => {
+    render(<ArticleForm onSaveDraft={vi.fn()} labels={defaultLabels} />);
+
+    fireEvent.change(screen.getByPlaceholderText('Article title'), {
+      target: { value: 'Getting Started with Chess' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Generate from title' }));
+
+    expect(screen.getByLabelText('Slug')).toHaveValue('getting-started-with-chess');
+  });
+
+  it('should keep "Generate from title" disabled when the title derives to no slug', () => {
+    render(<ArticleForm onSaveDraft={vi.fn()} labels={defaultLabels} />);
+
+    const button = screen.getByRole('button', { name: 'Generate from title' });
+    expect(button).toBeDisabled();
+
+    // A Japanese title has nothing to derive from — the button must stay
+    // disabled rather than wipe a slug the admin typed by hand.
+    fireEvent.change(screen.getByPlaceholderText('Article title'), {
+      target: { value: 'チェスの始め方' },
+    });
+    expect(button).toBeDisabled();
   });
 
   it('should render metadata fields in the side panel when opened', () => {

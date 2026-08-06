@@ -95,6 +95,7 @@ const defaultLabels = {
   formTitle: 'Edit Article',
   slug: 'Slug',
   slugPlaceholder: 'e.g. new-feature-release',
+  generateSlugFromTitle: 'Generate from title',
   title: 'Title',
   titlePlaceholder: 'Article title',
   content: 'Content',
