@@ -511,20 +511,18 @@ describe("getCornerInfo", () => {
 describe("generateRandomSquare (diagonal-quiz)", () => {
   const cornerSquares = new Set(["a1", "a8", "h1", "h8"]);
 
-  it("never returns a corner square", () => {
-    // Use a deterministic sequence that would hit corners with the common version
-    let callIndex = 0;
-    // Craft rng to produce a1 (file=0, rank=0) then d4
-    const rngValues = [
-      0 / 8,
-      0 / 8, // a1 (should be skipped)
-      3 / 8,
-      3 / 8, // d4
-    ];
-    const rng = () => rngValues[callIndex++];
-    const square = generateRandomSquare(rng, EXCLUDED_QUIZ_SQUARES);
-    expect(square).toBe("d4");
-    expect(cornerSquares.has(square)).toBe(false);
+  it("never returns a corner square for any rng value", () => {
+    // With an exclude set, sampling indexes once into the 60-square eligible
+    // list (file-major order), so sweeping the whole index range proves the
+    // corners are structurally unreachable — not merely skipped by luck.
+    const seen = new Set<string>();
+    for (let i = 0; i < 60; i++) {
+      const square = generateRandomSquare(() => i / 60, EXCLUDED_QUIZ_SQUARES);
+      expect(cornerSquares.has(square)).toBe(false);
+      seen.add(square);
+    }
+    // Every eligible square is reachable exactly once across the sweep.
+    expect(seen.size).toBe(60);
   });
 
   it("returns valid non-corner squares over many calls", () => {
@@ -536,11 +534,9 @@ describe("generateRandomSquare (diagonal-quiz)", () => {
   });
 
   it("allows non-corner edge squares", () => {
-    // Force rng to produce a2 (file=0, rank=1/8)
-    let callIndex = 0;
-    const rngValues = [0 / 8, 1 / 8]; // a2
-    const rng = () => rngValues[callIndex++];
-    const square = generateRandomSquare(rng, EXCLUDED_QUIZ_SQUARES);
+    // rng = 0 picks the first eligible square in file-major order: a1 is a
+    // corner (excluded), so the draw lands on the edge square a2.
+    const square = generateRandomSquare(() => 0, EXCLUDED_QUIZ_SQUARES);
     expect(square).toBe("a2");
   });
 });

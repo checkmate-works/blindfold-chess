@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -31,6 +31,7 @@ import type {
   RoutePlannerPieceType,
   RoutePlannerResult,
 } from "../../../../features/route-planner/lib/types";
+import { parseIntParam } from "../../../../lib/route-params";
 import { useTheme, fontSize, spacing } from "../../../../theme";
 
 export default function RoutePlannerSessionScreen() {
@@ -42,15 +43,27 @@ export default function RoutePlannerSessionScreen() {
     pieces: string;
   }>();
 
-  const problemCount = parseInt(params.problemCount || "5", 10);
+  const problemCount = parseIntParam(params.problemCount, {
+    min: 1,
+    fallback: 5,
+  });
   const piecesParam = params.pieces || "";
-  const selectedPieces: RoutePlannerPieceType[] = piecesParam
-    .split("")
-    .filter((p): p is RoutePlannerPieceType =>
-      ROUTE_PLANNER_PIECES.includes(p as RoutePlannerPieceType),
-    );
-  const allowedPieces =
-    selectedPieces.length > 0 ? selectedPieces : [...ROUTE_PLANNER_PIECES];
+  // Memoized: a fresh array identity every render would re-trigger any
+  // downstream hook keyed on `selectedPieces`.
+  const selectedPieces: RoutePlannerPieceType[] = useMemo(
+    () =>
+      piecesParam
+        .split("")
+        .filter((p): p is RoutePlannerPieceType =>
+          ROUTE_PLANNER_PIECES.includes(p as RoutePlannerPieceType),
+        ),
+    [piecesParam],
+  );
+  const allowedPieces = useMemo(
+    () =>
+      selectedPieces.length > 0 ? selectedPieces : [...ROUTE_PLANNER_PIECES],
+    [selectedPieces],
+  );
 
   // Result-presentation state; the input state machine and the attempt
   // scoring live in @blindfold-chess/features/route-planner.
@@ -125,7 +138,7 @@ export default function RoutePlannerSessionScreen() {
       message: attempt.message,
     });
     setIsShowingResult(true);
-    handleAnswer(attempt.success);
+    handleAnswer(attempt.success, attempt.finalMoves);
   }, [currentProblem, moves, isDisabled, handleAnswer, replaceMoves]);
 
   const handleSkip = useCallback(() => {

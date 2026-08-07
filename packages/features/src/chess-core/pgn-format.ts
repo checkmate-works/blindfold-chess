@@ -125,19 +125,14 @@ export function getPgnSuggestion(pgn: string): string | null {
   }
 
   const movePattern = /(\d+)\.\s*(\S+)(?:\s+(\S+))?/g;
-  let lastMoveNumber = 0;
-  let hasWhiteMove = false;
-  let hasBlackMove = false;
+  const last = [...trimmed.matchAll(movePattern)].at(-1);
 
-  let match;
-  while ((match = movePattern.exec(trimmed)) !== null) {
-    lastMoveNumber = parseInt(match[1], 10);
-    hasWhiteMove = !!match[2];
-    hasBlackMove = !!match[3];
-  }
-
-  if (lastMoveNumber > 0 && hasWhiteMove && hasBlackMove) {
-    return ` ${lastMoveNumber + 1}. `;
+  if (last) {
+    const lastMoveNumber = parseInt(last[1], 10);
+    const pairComplete = !!last[2] && !!last[3];
+    if (lastMoveNumber > 0 && pairComplete) {
+      return ` ${lastMoveNumber + 1}. `;
+    }
   }
 
   return null;

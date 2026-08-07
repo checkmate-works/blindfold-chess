@@ -51,10 +51,14 @@ export type ReplaySocial =
       discussionContent: ((ctx: { isInitialPosition: boolean }) => ReactNode) | null;
     };
 
-/** Stable empty collections for `local` mode, so hook deps never churn. */
-const NO_COMMENTS: GameCommentItem[] = [];
-const NO_CHUNKS: GameChunkItem[] = [];
-const NO_AVAILABLE_CHUNKS: ChunkOption[] = [];
+/**
+ * Stable empty collections for `local` mode, so hook deps never churn.
+ * Frozen (same idiom as EMPTY_BOARD_ANNOTATIONS): these are shared across
+ * every consumer, so an accidental push would corrupt all of them at once.
+ */
+const NO_COMMENTS = Object.freeze([] as GameCommentItem[]) as unknown as GameCommentItem[];
+const NO_CHUNKS = Object.freeze([] as GameChunkItem[]) as unknown as GameChunkItem[];
+const NO_AVAILABLE_CHUNKS = Object.freeze([] as ChunkOption[]) as unknown as ChunkOption[];
 
 export type NormalizedReplaySocial = {
   isLive: boolean;

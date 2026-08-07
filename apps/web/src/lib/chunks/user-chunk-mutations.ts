@@ -175,7 +175,13 @@ export async function createChunkEntry(
     return { error: 'descriptionRequired' };
   }
 
-  const slug = dataWithAuthor.slug!.trim();
+  // The validator guarantees a slug in create mode; the local guard keeps
+  // that invariant visible to the type system instead of a non-null
+  // assertion that would turn a relaxed validator into a runtime TypeError.
+  const slug = dataWithAuthor.slug?.trim();
+  if (!slug) {
+    return { error: 'Slug is required' };
+  }
   if (await isSlugTaken(slug)) {
     return { error: 'slugTaken' };
   }
@@ -316,10 +322,12 @@ export async function updateChunkEntry(
   // Slug rename is a draft-only opt-in. Skipping the cascade when
   // the payload's slug matches the current one (or is omitted) keeps
   // the topic_posts UPDATE off the hot path for ordinary
-  // title/description edits.
+  // title/description edits. `newSlug` is non-null exactly when a rename
+  // was requested — carrying the narrowed value (instead of a boolean flag
+  // plus non-null assertions) keeps every downstream use typed.
   const requestedSlug = dataWithAuthor.slug?.trim();
-  const slugChanging = !!requestedSlug && requestedSlug !== chunk.slug;
-  if (slugChanging && (await isSlugTaken(requestedSlug))) {
+  const newSlug = requestedSlug && requestedSlug !== chunk.slug ? requestedSlug : null;
+  if (newSlug !== null && (await isSlugTaken(newSlug))) {
     return { error: 'slugTaken' };
   }
 
@@ -336,10 +344,10 @@ export async function updateChunkEntry(
       // every reply that's been left on the draft. Doing the rewrite
       // inside the same transaction keeps the slug + the discussion
       // pointer atomic for any concurrent reader.
-      if (slugChanging) {
+      if (newSlug !== null) {
         await tx
           .update(topicPosts)
-          .set({ topicKey: requestedSlug! })
+          .set({ topicKey: newSlug })
           .where(and(eq(topicPosts.topicType, 'chunk'), eq(topicPosts.topicKey, chunk.slug)));
       }
 
@@ -354,13 +362,13 @@ export async function updateChunkEntry(
     // Race-window backstop for the chunks.slug UNIQUE — another
     // chunk could claim `requestedSlug` between the preflight and
     // the UPDATE. Same translation as the create path.
-    if (slugChanging && isUniqueViolation(err)) {
+    if (newSlug !== null && isUniqueViolation(err)) {
       return { error: 'slugTaken' };
     }
     throw err;
   }
 
-  const finalSlug = slugChanging ? requestedSlug! : chunk.slug;
+  const finalSlug = newSlug ?? chunk.slug;
 
   // Preserve the overwritten values for the activity log (chunks keep no
   // revision history), compared against the same normalized values written
@@ -370,8 +378,8 @@ export async function updateChunkEntry(
     'description',
     'representativeFen',
   ]);
-  if (slugChanging) {
-    changes.slug = { from: chunk.slug, to: requestedSlug! };
+  if (newSlug !== null) {
+    changes.slug = { from: chunk.slug, to: newSlug };
   }
 
   dispatchChunkEvent({
@@ -379,7 +387,7 @@ export async function updateChunkEntry(
     actorId: user.id,
     chunkId: id,
     slug: finalSlug,
-    ...(slugChanging ? { previousSlug: chunk.slug } : {}),
+    ...(newSlug !== null ? { previousSlug: chunk.slug } : {}),
     changes,
   });
 

@@ -133,7 +133,7 @@ export const feedbackColors = {
 // Board theme colors (moved from @blindfold-chess/types to keep that package type-only)
 import type { BoardTheme, BoardThemeColors } from "@blindfold-chess/types";
 
-export const boardThemeColors: Record<BoardTheme, BoardThemeColors> = {
+export const boardThemeColors = {
   monotone: {
     light: "#e6e3de",
     dark: "#78716c",
@@ -152,4 +152,4 @@ export const boardThemeColors: Record<BoardTheme, BoardThemeColors> = {
     lightText: "#769656",
     darkText: "#eeeed2",
   },
-};
+} as const satisfies Record<BoardTheme, BoardThemeColors>;

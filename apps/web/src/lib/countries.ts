@@ -2,9 +2,10 @@
  * Re-export from @blindfold-chess/types for backward compatibility.
  * The canonical source is now in packages/types.
  */
-import { COUNTRY_CODES } from '@blindfold-chess/types';
+import { COUNTRY_CODES, type CountryCode } from '@blindfold-chess/types';
 
 export { COUNTRY_CODES, countryCodeToFlag } from '@blindfold-chess/types';
+export type { CountryCode } from '@blindfold-chess/types';
 
 /**
  * True when `code` is a real ISO 3166-1 alpha-2 country code.
@@ -15,6 +16,6 @@ export { COUNTRY_CODES, countryCodeToFlag } from '@blindfold-chess/types';
  * would let a non-canonical code into the DB, where country matching
  * compares `===` against the uppercase geo header.
  */
-export function isValidCountryCode(code: string): boolean {
-  return COUNTRY_CODES.includes(code);
+export function isValidCountryCode(code: string): code is CountryCode {
+  return (COUNTRY_CODES as readonly string[]).includes(code);
 }

@@ -46,9 +46,8 @@ export type GrantMonthlyLeaderboardBadgesResult = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Returns the previous month's year and month based on the current date. */
-function getPreviousMonth(): { year: number; month: number } {
-  const now = new Date();
+/** Returns the previous month's year and month relative to `now`. */
+function getPreviousMonth(now: Date): { year: number; month: number } {
   const year = now.getUTCMonth() === 0 ? now.getUTCFullYear() - 1 : now.getUTCFullYear();
   const month = now.getUTCMonth() === 0 ? 12 : now.getUTCMonth(); // getUTCMonth() is 0-based
   return { year, month };
@@ -222,8 +221,12 @@ async function sendGrantNotifications(
 // Main logic
 // ---------------------------------------------------------------------------
 
-export async function grantMonthlyLeaderboardBadges(): Promise<GrantMonthlyLeaderboardBadgesResult> {
-  const { year, month } = getPreviousMonth();
+export async function grantMonthlyLeaderboardBadges(
+  // Injectable so the month-boundary derivation is testable deterministically,
+  // matching the `now` convention used across lib/ (uuidv7, utcDayKey, …).
+  now: Date = new Date()
+): Promise<GrantMonthlyLeaderboardBadgesResult> {
+  const { year, month } = getPreviousMonth(now);
   const range = getMonthRange(year, month);
 
   const achievementDefs = await db

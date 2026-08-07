@@ -131,12 +131,21 @@ export function removeChapter(rows: readonly ArrangeRow[], key: string): Arrange
 
 /** Append a new, still-unsaved chapter directly above the unfiled divider. */
 export function appendChapter(rows: readonly ArrangeRow[], name: string): ArrangeRow[] {
-  const used = rows.filter((row) => row.kind === 'chapter').length;
+  // Deterministic key: the smallest `new:<n>` not already present in `rows`.
+  // (This used to salt with Date.now(), which made an otherwise pure
+  // transform non-deterministic; collision-freedom only ever needed to hold
+  // within the current row set.)
+  const usedKeys = new Set(rows.flatMap((row) => (row.kind === 'chapter' ? [row.key] : [])));
+  let n = usedKeys.size;
+  while (usedKeys.has(`${NEW_CHAPTER_KEY_PREFIX}${n}`)) {
+    n += 1;
+  }
+
   const unfiled = rows.findIndex((row) => row.kind === 'unfiled');
   const next = [...rows];
   next.splice(unfiled === -1 ? next.length : unfiled, 0, {
     kind: 'chapter',
-    key: `${NEW_CHAPTER_KEY_PREFIX}${used}${Date.now()}`,
+    key: `${NEW_CHAPTER_KEY_PREFIX}${n}`,
     name,
   });
   return next;

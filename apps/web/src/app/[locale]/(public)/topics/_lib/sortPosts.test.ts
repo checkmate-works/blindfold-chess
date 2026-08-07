@@ -51,10 +51,11 @@ describe('sortPosts', () => {
       expect(result.map((p) => p.id)).toEqual(['a', 'b', 'c']);
     });
 
-    it('should return the same array reference', () => {
+    it('should return a copy, never the input reference (pure contract)', () => {
       const posts = [makePost()];
       const result = sortPosts(posts, 'new');
-      expect(result).toBe(posts);
+      expect(result).toEqual(posts);
+      expect(result).not.toBe(posts);
     });
   });
 

@@ -52,16 +52,14 @@ type PieceCapture =
   | `${PieceSymbol}${File}${Rank}x${File}${Rank}${CheckSuffix}`; // e.g., Nb1xe5 (full specification)
 
 export type AlgebraicNotation =
-  | CastlingMove
-  | PawnMove
-  | PawnCapture
-  | EnPassant
-  | PieceMove
-  | PieceCapture;
+  CastlingMove | PawnMove | PawnCapture | EnPassant | PieceMove | PieceCapture;
 
 export type Square = `${File}${Rank}`;
 
 export type Side = "white" | "black";
+
+/** Runtime list of {@link Side} members, for validating untyped input. */
+export const SIDES: readonly Side[] = ["white", "black"];
 
 export type UciMove =
   | `${File}${Rank}${File}${Rank}`

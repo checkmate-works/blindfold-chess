@@ -25,25 +25,36 @@ export function isLegalMove(
 // Get a mix of legal and illegal moves for better distribution
 export function generateBalancedMoveQuestions(
   count: number,
-  allowedPieces: PieceType[] = ["b", "n", "r", "q", "k"],
+  allowedPieces: readonly PieceType[] = ["b", "n", "r", "q", "k"],
   rng: RandomSource = Math.random,
 ): MoveQuestion[] {
   const questions: MoveQuestion[] = [];
   const targetLegalCount = Math.floor(count * 0.5); // Aim for 50% legal moves
   let legalCount = 0;
 
-  while (questions.length < count) {
+  // Both generators are themselves bounded (200 attempts each) and return
+  // null only when a piece/rng combination cannot produce a question. The
+  // outer bound turns that pathological case into a short batch instead of
+  // an unbounded spin; with a real RNG it is never approached.
+  const maxAttempts = count * 4;
+  for (
+    let attempts = 0;
+    questions.length < count && attempts < maxAttempts;
+    attempts++
+  ) {
     const piece = allowedPieces[Math.floor(rng() * allowedPieces.length)];
-    const question =
-      legalCount < targetLegalCount
-        ? generateLegalMoveQuestion(piece, rng)
-        : generateIllegalMoveQuestion(piece, rng);
+    const wantLegal = legalCount < targetLegalCount;
+    const question = wantLegal
+      ? generateLegalMoveQuestion(piece, rng)
+      : generateIllegalMoveQuestion(piece, rng);
 
     if (question) {
       questions.push(question);
-      if (isLegalMove(question.from, question.to, question.piece)) {
-        legalCount++;
-      }
+      // The generator's `accept` predicate already guarantees the legality of
+      // what it returns — re-deriving it here (as this loop once did via a
+      // second chess.js legality check) could only ever disagree with the
+      // branch that produced the question.
+      if (wantLegal) legalCount++;
     }
   }
 

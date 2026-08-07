@@ -91,24 +91,26 @@ export function createContentManager<TMetadata>(
 
   const getAllArticles = async (locale: Locale): Promise<TMetadata[]> => {
     const slugs = getAvailableSlugs();
-    const articles: TMetadata[] = [];
 
-    for (const slug of slugs) {
-      try {
-        const metadataLoader = metadataRegistry[slug]?.[locale];
-        if (metadataLoader) {
-          const metadataModule = await metadataLoader();
-          articles.push(metadataModule.metadata);
+    // Loaders are independent dynamic imports — run them concurrently; a
+    // failed loader drops that article (logged) without hiding the rest.
+    // Modules (not the bare TMetadata) are collected because `Awaited<T>`
+    // does not collapse for an unconstrained type parameter.
+    const loaded = await Promise.all(
+      slugs.map(async (slug) => {
+        try {
+          const metadataLoader = metadataRegistry[slug]?.[locale];
+          if (!metadataLoader) return null;
+          return await metadataLoader();
+        } catch (error) {
+          console.error(`Error loading metadata for ${slug}:`, error);
+          return null;
         }
-      } catch (error) {
-        console.error(`Error loading metadata for ${slug}:`, error);
-      }
-    }
+      })
+    );
+    const articles = loaded.flatMap((module) => (module ? [module.metadata] : []));
 
-    if (sort) {
-      return articles.sort(sort);
-    }
-    return articles;
+    return sort ? articles.toSorted(sort) : articles;
   };
 
   const getAvailableLocales = (slug: string): Locale[] => {

@@ -5,7 +5,7 @@ export type {
   AiGameSettings,
   AiGameResult,
 } from "./types";
-export { DEFAULT_AI_GAME_SETTINGS } from "./types";
+export { DEFAULT_AI_GAME_SETTINGS, PLAYER_RESULTS } from "./types";
 export type { GameState } from "./game-state-service";
 export { computeGameState, validateGameMove } from "./game-state-service";
 export {

@@ -102,6 +102,39 @@ describe('LocalStorageGameRepository', () => {
     });
   });
 
+  describe('cache isolation', () => {
+    it('loadAll returns a copy — mutating it must not corrupt the cache', async () => {
+      await repository.create({
+        moves: ['e4'],
+        playerColor: 'white',
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
+        status: 'in_progress',
+      });
+
+      const first = await repository.loadAll();
+      first.length = 0; // caller mutates the returned array
+
+      const second = await repository.loadAll();
+      expect(second.length).toBe(1);
+    });
+
+    it('a previously returned array is not mutated by later writes', async () => {
+      const before = await repository.loadAll();
+      expect(before.length).toBe(0);
+
+      await repository.create({
+        moves: [],
+        playerColor: 'white',
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
+        status: 'in_progress',
+      });
+
+      // The snapshot the caller took before the write must be unchanged.
+      expect(before.length).toBe(0);
+      expect((await repository.loadAll()).length).toBe(1);
+    });
+  });
+
   describe('create', () => {
     it('should create a new game and return its ID', async () => {
       const gameId = await repository.create({

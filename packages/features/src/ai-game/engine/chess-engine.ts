@@ -116,6 +116,12 @@ export class ChessEngine {
         }
       }
     }
+    // Terminal failure: allow a future `ensureInitialized()` to start a fresh
+    // retry chain. This must only happen HERE — clearing the promise on every
+    // failed attempt (as `initializeEngine` once did) opens a window during
+    // the backoff sleep where a concurrent caller sees `null` and spawns a
+    // second, overlapping retry chain with its own channel.
+    this.initializationPromise = null;
     throw lastError;
   }
 
@@ -148,7 +154,6 @@ export class ChessEngine {
         }
         this.transport = null;
       }
-      this.initializationPromise = null;
       console.error("Failed to initialize chess engine:", error);
       throw new Error(
         `Chess engine initialization failed: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -240,58 +245,48 @@ export class ChessEngine {
       throw new Error("Engine not initialized");
     }
 
+    const transport = this.transport;
     this.isProcessing = true;
 
-    // Set position
-    try {
-      this.transport.send(buildPositionCommand(fen));
-    } catch (error) {
-      this.isProcessing = false;
-      throw error;
-    }
-
-    const transport = this.transport;
-
     // Get evaluation with depth. Score interpretation lives in the
-    // accumulator; this promise only owns the subscription/timeout plumbing.
-    return new Promise((resolve, reject) => {
+    // accumulator; this method only owns the subscription/timeout plumbing.
+    // `isProcessing` is released in exactly one place (the outer `finally`)
+    // regardless of which of the three exits (result, timeout, transport
+    // error) is taken.
+    try {
+      transport.send(buildPositionCommand(fen));
+
       const evaluation = createEvaluationAccumulator();
       const unsubscribe = transport.subscribeInfo(evaluation.onInfo);
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-      const timeoutId = setTimeout(() => {
+      try {
+        const bestMoveUci = await Promise.race([
+          transport.waitForBestMove(buildGoCommand({ depth }), 20000),
+          new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => {
+              transport.clearBestMoveResolver();
+              reject(new Error("Evaluation timeout"));
+            }, 20000); // 20s for background tab scenarios
+          }),
+        ]);
+
+        if (evaluation.score === null) {
+          throw new Error("No evaluation score received");
+        }
+        return toWhitePerspectiveEvaluation(
+          fen,
+          evaluation.score,
+          evaluation.mate,
+          bestMoveUci,
+        );
+      } finally {
+        clearTimeout(timeoutId);
         unsubscribe();
-        transport.clearBestMoveResolver();
-        this.isProcessing = false;
-        reject(new Error("Evaluation timeout"));
-      }, 20000); // 20s for background tab scenarios
-
-      transport
-        .waitForBestMove(buildGoCommand({ depth }), 20000)
-        .then((bestMoveUci) => {
-          clearTimeout(timeoutId);
-          unsubscribe();
-          this.isProcessing = false;
-
-          if (evaluation.score !== null) {
-            resolve(
-              toWhitePerspectiveEvaluation(
-                fen,
-                evaluation.score,
-                evaluation.mate,
-                bestMoveUci,
-              ),
-            );
-          } else {
-            reject(new Error("No evaluation score received"));
-          }
-        })
-        .catch((error) => {
-          clearTimeout(timeoutId);
-          unsubscribe();
-          this.isProcessing = false;
-          reject(error);
-        });
-    });
+      }
+    } finally {
+      this.isProcessing = false;
+    }
   }
 
   private convertMovesToUci(

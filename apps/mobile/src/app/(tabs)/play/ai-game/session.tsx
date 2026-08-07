@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import type { Side } from "@blindfold-chess/types";
+import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
+import { SIDES, type Side } from "@blindfold-chess/types";
 
 import { StockfishWebView } from "../../../../features/ai-game/engine";
 import {
@@ -18,6 +19,7 @@ import {
   useGameSession,
 } from "../../../../features/ai-game/hooks";
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
+import { parseEnumParam } from "../../../../lib/route-params";
 import {
   useTheme,
   fontSize,
@@ -37,10 +39,11 @@ export default function AiGameSession() {
 
   const [isBoardVisible, setIsBoardVisible] = useState(false);
 
-  const playerColor = (params.playerColor || "white") as Side;
-  const skillLevel = (
-    params.skillLevel ? parseInt(params.skillLevel, 10) : 5
-  ) as SkillLevel;
+  const playerColor = parseEnumParam<Side>(params.playerColor, SIDES, "white");
+  const parsedSkillLevel = Number(params.skillLevel);
+  const skillLevel: SkillLevel = isValidSkillLevel(parsedSkillLevel)
+    ? parsedSkillLevel
+    : 5;
 
   const ai = useAiVersus(skillLevel);
 
@@ -54,11 +57,14 @@ export default function AiGameSession() {
   // Navigate to result when game is over
   useEffect(() => {
     if (game.gameStatus !== "in_progress" && game.playerResult) {
+      // Capture the narrowed value: the `!` it replaces was real — narrowing
+      // is lost across the property access inside the setTimeout closure.
+      const playerResult = game.playerResult;
       const timer = setTimeout(() => {
         router.replace({
           pathname: "/(tabs)/play/ai-game/result",
           params: {
-            result: game.playerResult!,
+            result: playerResult,
             playerColor: game.playerColor,
             skillLevel: game.skillLevel.toString(),
             moveCount: game.moves.length.toString(),

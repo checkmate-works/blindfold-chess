@@ -10,7 +10,7 @@ import type { PieceType, Square } from "@blindfold-chess/types";
 // TODO: Consider limiting to knight and bishop only (rook/queen removed from web app as too easy)
 export type RoutePlannerPieceType = Extract<PieceType, "n" | "b" | "r" | "q">;
 
-export const ROUTE_PLANNER_PIECES: RoutePlannerPieceType[] = [
+export const ROUTE_PLANNER_PIECES: readonly RoutePlannerPieceType[] = [
   "n",
   "b",
   "r",

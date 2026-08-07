@@ -13,11 +13,16 @@ import {
   FeedbackOverlay,
 } from "../../../../features/coordinate-quiz/components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
+import {
+  BOARD_ORIENTATIONS,
+  FEEDBACK_SPEEDS,
+} from "../../../../features/coordinate-quiz/lib/types";
 import type {
   QuizResult,
   BoardOrientation,
   FeedbackSpeed,
 } from "../../../../features/coordinate-quiz/lib/types";
+import { parseEnumParam, parseIntParam } from "../../../../lib/route-params";
 
 export default function CoordinateQuizSession() {
   const { t } = useTranslation();
@@ -29,9 +34,17 @@ export default function CoordinateQuizSession() {
     feedbackSpeed: string;
   }>();
 
-  const timeLimit = parseInt(params.duration || "60", 10);
-  const orientation = (params.orientation || "white") as BoardOrientation;
-  const feedbackSpeed = (params.feedbackSpeed || "normal") as FeedbackSpeed;
+  const timeLimit = parseIntParam(params.duration, { min: 1, fallback: 60 });
+  const orientation = parseEnumParam<BoardOrientation>(
+    params.orientation,
+    BOARD_ORIENTATIONS,
+    "white",
+  );
+  const feedbackSpeed = parseEnumParam<FeedbackSpeed>(
+    params.feedbackSpeed,
+    FEEDBACK_SPEEDS,
+    "normal",
+  );
 
   const handleComplete = useCallback(
     (result: QuizResult) => {

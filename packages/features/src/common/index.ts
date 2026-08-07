@@ -30,6 +30,7 @@ export {
 } from "./practice-result";
 export {
   type RandomSource,
+  ALL_SQUARES,
   squareToFileIndex,
   squareToRankIndex,
   fileRankToSquare,

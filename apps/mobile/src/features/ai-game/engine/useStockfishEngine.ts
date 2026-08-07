@@ -36,38 +36,18 @@ export function useStockfishEngine() {
   }, []);
 
   const handleMessage = useCallback((message: string) => {
-    const callbacks = pendingCallbacksRef.current;
     const parsed = parseUciResponse(message);
     if (!parsed) return;
 
-    switch (parsed.type) {
-      case "readyok": {
-        const pending = callbacks.get("readyok");
-        if (pending) {
-          callbacks.delete("readyok");
-          clearTimeout(pending.timeoutId);
-          pending.resolve(message);
-        }
-        break;
-      }
-      case "bestmove": {
-        const pending = callbacks.get("bestmove");
-        if (pending) {
-          callbacks.delete("bestmove");
-          clearTimeout(pending.timeoutId);
-          pending.resolve(message);
-        }
-        break;
-      }
-      case "uciok": {
-        const pending = callbacks.get("uciok");
-        if (pending) {
-          callbacks.delete("uciok");
-          clearTimeout(pending.timeoutId);
-          pending.resolve(message);
-        }
-        break;
-      }
+    // The pending-callback map is keyed by response type, so every branch of
+    // the old per-type switch was the same settle step; a fourth message type
+    // now needs no copy-paste.
+    const callbacks = pendingCallbacksRef.current;
+    const pending = callbacks.get(parsed.type);
+    if (pending) {
+      callbacks.delete(parsed.type);
+      clearTimeout(pending.timeoutId);
+      pending.resolve(message);
     }
   }, []);
 

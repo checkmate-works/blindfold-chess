@@ -4,17 +4,13 @@ const VIEWBOX = "0 0 24 24";
 const FACE_FILL = "#9CA3AF";
 const DETAIL_COLOR = "#4B5563";
 
-/**
- * The head. MUST stay first in `elements` — `getRatingFaceData` recolors
- * element 0 when a caller passes `faceColor`.
- */
-const HEAD: SvgElement = {
+/** The head, sans fill — `buildFace` applies the (possibly custom) color. */
+const HEAD = {
   type: "circle",
   cx: "12",
   cy: "12",
   r: "10",
-  fill: FACE_FILL,
-};
+} as const;
 
 /** Stroke treatment shared by every drawn line (brows, mouths). */
 const STROKE = {
@@ -54,12 +50,15 @@ const MOUTHS: Record<RatingFaceLevel, { d: string; curved: boolean }> = {
 /** Only the unhappiest face uses brows instead of dot eyes. */
 const BROWED_LEVEL: RatingFaceLevel = 1;
 
-function buildFace(level: RatingFaceLevel): RatingFaceSvgData {
+function buildFace(
+  level: RatingFaceLevel,
+  faceColor: string,
+): RatingFaceSvgData {
   const mouth = MOUTHS[level];
   return {
     viewBox: VIEWBOX,
     elements: [
-      HEAD,
+      { ...HEAD, fill: faceColor },
       ...(level === BROWED_LEVEL ? BROWS : EYES),
       {
         type: "path",
@@ -75,18 +74,11 @@ function buildFace(level: RatingFaceLevel): RatingFaceSvgData {
  * SVG data for the rating face at `level`, optionally recolored.
  *
  * `faceColor` replaces the head's fill only, leaving the features in their
- * fixed detail color — which is why the head is element 0 by contract.
+ * fixed detail color.
  */
 export function getRatingFaceData(
   level: RatingFaceLevel,
-  faceColor?: string,
+  faceColor: string = FACE_FILL,
 ): RatingFaceSvgData {
-  const data = buildFace(level);
-  if (!faceColor) return data;
-  return {
-    ...data,
-    elements: data.elements.map((el, i) =>
-      i === 0 ? { ...el, fill: faceColor } : el,
-    ),
-  };
+  return buildFace(level, faceColor);
 }

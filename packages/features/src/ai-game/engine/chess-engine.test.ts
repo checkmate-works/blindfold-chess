@@ -217,6 +217,58 @@ describe("ChessEngine init retry loop", () => {
     expect(move).toBe("e2e4");
   });
 
+  it("does not spawn a second retry chain when a concurrent call arrives during the backoff", async () => {
+    // Regression: the failure path used to clear `initializationPromise` on
+    // EVERY failed attempt, so a caller arriving during the backoff sleep saw
+    // `null` and kicked off an overlapping retry chain with its own channel.
+    const { factory, created } = makeChannelFactory(
+      { kind: "uciOkFails", reason: "transient" },
+      { kind: "success" },
+    );
+    vi.useFakeTimers();
+    const engine = new ChessEngine(factory);
+    const firstP = engine.getBestMove(STARTING_FEN);
+
+    // Let attempt 1 fail; the backoff timer is now pending.
+    await vi.advanceTimersByTimeAsync(0);
+    expect(created).toHaveLength(1);
+
+    // A concurrent caller mid-backoff must join the in-flight init. It then
+    // hits the single-flight `isProcessing` guard — that rejection is the
+    // pre-existing contract; the point of this test is the channel count.
+    const secondP = engine
+      .getBestMove(STARTING_FEN)
+      .catch(() => "single-flight-guard");
+
+    await vi.advanceTimersByTimeAsync(INIT_RETRY_DELAYS_MS[0]);
+
+    await expect(firstP).resolves.toBe("e2e4");
+    await secondP;
+    expect(created).toHaveLength(2);
+  });
+
+  it("starts a fresh retry chain on the next call after the loop is exhausted", async () => {
+    const { factory, created } = makeChannelFactory(
+      { kind: "uciOkFails" },
+      { kind: "uciOkFails" },
+      { kind: "uciOkFails" },
+      { kind: "success" },
+    );
+    vi.useFakeTimers();
+    const engine = new ChessEngine(factory);
+    const firstP = engine.getBestMove(STARTING_FEN).catch((e: unknown) => e);
+
+    for (const delay of INIT_RETRY_DELAYS_MS.slice(0, MAX_INIT_ATTEMPTS - 1)) {
+      await vi.advanceTimersByTimeAsync(delay);
+    }
+    expect(await firstP).toBeInstanceOf(Error);
+    expect(created).toHaveLength(MAX_INIT_ATTEMPTS);
+
+    // Terminal failure must not brick the engine: the next call re-inits.
+    await expect(engine.getBestMove(STARTING_FEN)).resolves.toBe("e2e4");
+    expect(created).toHaveLength(MAX_INIT_ATTEMPTS + 1);
+  });
+
   it("retries when readyok fails, not just uciok (both are init-phase failures)", async () => {
     const { factory, created } = makeChannelFactory(
       { kind: "readyOkFails", reason: "readyok-transient" },

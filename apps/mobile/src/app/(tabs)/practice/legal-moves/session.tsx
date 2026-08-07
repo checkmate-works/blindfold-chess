@@ -12,7 +12,12 @@ import {
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
 import { useLegalMovesSession } from "@blindfold-chess/features/legal-moves/client";
 import { useTheme, spacing } from "../../../../theme";
+import { PIECE_TYPES } from "../../../../features/legal-moves/lib/types";
 import type { PieceType } from "../../../../features/legal-moves/lib/types";
+import {
+  parseEnumListParam,
+  parseIntParam,
+} from "../../../../lib/route-params";
 import type { LegalMovesResult } from "../../../../features/legal-moves/hooks";
 
 export default function LegalMovesSession() {
@@ -23,10 +28,12 @@ export default function LegalMovesSession() {
     pieces: string;
   }>();
 
-  const duration = parseInt(params.duration || "60", 10);
-  const selectedPieces = (params.pieces || "b,n,r,q,k").split(
-    ",",
-  ) as PieceType[];
+  const duration = parseIntParam(params.duration, { min: 1, fallback: 60 });
+  const selectedPieces: PieceType[] = parseEnumListParam(
+    params.pieces,
+    PIECE_TYPES,
+    PIECE_TYPES,
+  );
 
   const handleComplete = useCallback(
     (result: LegalMovesResult) => {

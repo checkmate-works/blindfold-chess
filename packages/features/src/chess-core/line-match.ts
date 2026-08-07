@@ -1,4 +1,4 @@
-import { getTurnFromFen, toPositionKey } from "./fen";
+import { isBlackToMoveFromFen, toPositionKey } from "./fen";
 import { replayMoves } from "./moves";
 import type { PgnTree } from "./pgn-tree";
 
@@ -67,8 +67,12 @@ export type GameForMatch = {
 /** The position-identity key: the first four FEN fields (clocks dropped). */
 const positionKey = toPositionKey;
 
+// The non-throwing turn probe keeps this classifier total: the FENs here are
+// replay-produced (well-formed), but a throwing accessor would let a malformed
+// input escape as an exception from a function whose contract is
+// "not-applicable, never throw".
 function sideToMove(fen: string): Side {
-  return getTurnFromFen(fen) === "w" ? "white" : "black";
+  return isBlackToMoveFromFen(fen) ? "black" : "white";
 }
 
 /**

@@ -26,6 +26,9 @@ export type GameStatus = "in_progress" | "checkmate" | "stalemate" | "draw";
 
 export type PlayerResult = "win" | "loss" | "draw";
 
+/** Runtime list of {@link PlayerResult} members, for validating untyped input. */
+export const PLAYER_RESULTS: readonly PlayerResult[] = ["win", "loss", "draw"];
+
 export type AiGameSettings = {
   playerColor: Side;
   skillLevel: SkillLevel;
