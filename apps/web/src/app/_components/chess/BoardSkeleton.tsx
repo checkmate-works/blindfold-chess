@@ -1,5 +1,3 @@
-'use client';
-
 type Props = {
   className?: string;
   rounded?: boolean;

@@ -5,6 +5,7 @@ import { useCallback, useRef } from "react";
 import type { Square } from "@blindfold-chess/types";
 
 import { flashFeedbackDuration } from "../common/flash-policy";
+import { useLatestRef } from "../common/use-latest-ref";
 import { usePracticeCompletion } from "../practice-session/use-practice-completion";
 import {
   type TimedQuizSessionConfig,
@@ -45,8 +46,7 @@ export function useRoutePlannerSession({
   onSkipEffect,
 }: UseRoutePlannerSessionConfig): UseRoutePlannerSessionReturn {
   const problemResultsRef = useRef<RoutePlannerProblemResult[]>([]);
-  const onSkipEffectRef = useRef(onSkipEffect);
-  onSkipEffectRef.current = onSkipEffect;
+  const onSkipEffectRef = useLatestRef(onSkipEffect);
 
   const generateQuestion = useCallback(
     (): RoutePlannerProblem => generateProblem(selectedPieces),
@@ -94,8 +94,7 @@ export function useRoutePlannerSession({
     (problem: RoutePlannerProblem, success: boolean, skipped = false) => {
       const shortestPath =
         (findShortestPath(problem.piece, problem.start, problem.end) as
-          | Square[]
-          | null) ?? [];
+          Square[] | null) ?? [];
 
       problemResultsRef.current = [
         ...problemResultsRef.current,

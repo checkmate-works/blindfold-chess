@@ -1,5 +1,3 @@
-'use client';
-
 import { QuadrantGridBoard } from './QuadrantGridBoard';
 
 const FILES = ['a', 'b', 'c', 'd'];

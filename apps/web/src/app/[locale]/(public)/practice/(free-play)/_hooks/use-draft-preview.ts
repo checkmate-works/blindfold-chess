@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { useRouter } from '@/i18n/routing';
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 import { flushSync } from 'react-dom';
 
 /**
@@ -55,8 +56,7 @@ export function useDraftPreview<TDraft>({
 
   // Held in a ref so an inline `() => readEditDraft(id)` does not re-run the
   // effect on every render; `fallbackPath` carries any id it depends on.
-  const readDraftRef = useRef(readDraft);
-  readDraftRef.current = readDraft;
+  const readDraftRef = useLatestRef(readDraft);
 
   useEffect(() => {
     const d = readDraftRef.current();
@@ -66,7 +66,7 @@ export function useDraftPreview<TDraft>({
     }
     setDraft(d);
     setHydrated(true);
-  }, [router, fallbackPath]);
+  }, [router, fallbackPath, readDraftRef]);
 
   const isDirty = hydrated && !submitted;
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useLatestRef } from "../common/use-latest-ref";
+
 export type UseBatchTrainingSessionConfig<TQuestion, TAnswerData> = {
   batchSize?: number;
   generateBatch: (size: number) => TQuestion[];
@@ -73,10 +75,8 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
   >(null);
 
   const hasStarted = useRef(false);
-  const generateBatchRef = useRef(generateBatch);
-  generateBatchRef.current = generateBatch;
-  const batchSizeRef = useRef(batchSize);
-  batchSizeRef.current = batchSize;
+  const generateBatchRef = useLatestRef(generateBatch);
+  const batchSizeRef = useLatestRef(batchSize);
 
   useEffect(() => {
     if (hasStarted.current) return;

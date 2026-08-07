@@ -20,8 +20,7 @@ export type SavePuzzleResultInput = {
 };
 
 export type SavePuzzleResultResponse =
-  | { success: true; expEventId?: string }
-  | { success: false; error: string };
+  { success: true; expEventId?: string } | { success: false; error: string };
 
 /**
  * Server Action: grant EXP for a solved puzzle run.

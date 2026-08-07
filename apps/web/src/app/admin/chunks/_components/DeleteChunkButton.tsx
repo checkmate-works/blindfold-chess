@@ -1,5 +1,3 @@
-'use client';
-
 import { AdminDeleteButton } from '../../_components/AdminDeleteButton';
 import { deleteChunk } from '../_actions/deleteChunk';
 

@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { BoardFrame } from '@/app/_components/chess/BoardFrame';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import { FlipBoardButton } from '@/app/_components/chess/FlipBoardButton';
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 import { FaTrash } from 'react-icons/fa';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
@@ -75,12 +76,11 @@ export function RepertoireBoardBuilder({
 
   // Report cursor movement to the parent (ref'd so a new callback identity per
   // parent render doesn't re-fire the effect).
-  const onCursorChangeRef = useRef(onCursorChange);
-  onCursorChangeRef.current = onCursorChange;
+  const onCursorChangeRef = useLatestRef(onCursorChange);
   const { positionKey, label } = builder.currentMove ?? { positionKey: null, label: null };
   useEffect(() => {
     onCursorChangeRef.current?.(positionKey && label ? { positionKey, label } : null);
-  }, [positionKey, label]);
+  }, [positionKey, label, onCursorChangeRef]);
 
   // Orientation defaults to the author's side and re-follows it when the side
   // radio changes; the flip button then adjusts freely from that base.

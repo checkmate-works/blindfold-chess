@@ -1,5 +1,3 @@
-'use client';
-
 type Step = {
   /** Stable identity for the step; compared against `current` and used as the React key. */
   key: string;

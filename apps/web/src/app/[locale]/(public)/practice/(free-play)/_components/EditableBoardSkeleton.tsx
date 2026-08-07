@@ -1,5 +1,3 @@
-'use client';
-
 import { BoardFrame, BoardSkeleton } from '@/app/_components';
 
 // Remove ("×") button + 6 piece types (K Q R B N P) — matches the palette

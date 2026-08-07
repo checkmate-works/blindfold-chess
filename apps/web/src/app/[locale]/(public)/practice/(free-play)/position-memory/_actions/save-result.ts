@@ -18,8 +18,7 @@ export type SavePositionMemoryResultInput = {
 };
 
 export type SavePositionMemoryResultResponse =
-  | { success: true; expEventId?: string }
-  | { success: false; error: string };
+  { success: true; expEventId?: string } | { success: false; error: string };
 
 /**
  * Server Action: grant EXP for a completed single-position position-memory run.

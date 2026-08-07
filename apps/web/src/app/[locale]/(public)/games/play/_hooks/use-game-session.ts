@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
@@ -203,8 +204,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   });
 
   // Keep moves in a ref for callbacks that don't need to re-create on every move change
-  const movesRef = useRef(moves);
-  movesRef.current = moves;
+  const movesRef = useLatestRef(moves);
 
   // Internal helper to reduce duplicated state updates
   const updateLastMove = useCallback(
@@ -229,7 +229,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       // for AI moves, never for player moves, undo, or game restore.
       setAiMoveSignal((n) => n + 1);
     },
-    [pushMove, updateLastMove]
+    [movesRef, pushMove, updateLastMove]
   );
 
   // AI-move failure + retry state machine, kept separate from the generic

@@ -18,8 +18,7 @@ export type SaveGameResultInput = {
 };
 
 export type SaveGameResultResponse =
-  | { success: true; exp?: ExpInfo }
-  | { success: false; error: string };
+  { success: true; exp?: ExpInfo } | { success: false; error: string };
 
 const VALID_RESULTS: readonly GameExpOutcome[] = ['win', 'loss', 'draw'];
 

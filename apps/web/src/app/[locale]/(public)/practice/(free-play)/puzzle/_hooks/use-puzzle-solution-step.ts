@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { useRouter } from '@/i18n/routing';
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 import { flushSync } from 'react-dom';
 
 import { stringArraysEqual } from '../_lib/string-arrays-equal';
@@ -71,8 +72,7 @@ export function usePuzzleSolutionStep<T extends SolutionStepDraft>({
   // (same rationale as usePuzzleDraftHydration): remounts or `router`
   // identity changes must not re-hydrate over in-progress edits.
   const didHydrate = useRef(false);
-  const readRef = useRef(read);
-  readRef.current = read;
+  const readRef = useLatestRef(read);
 
   useEffect(() => {
     if (didHydrate.current) return;
