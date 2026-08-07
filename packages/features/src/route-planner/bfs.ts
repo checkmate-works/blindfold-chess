@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import { getPossibleMoves } from "./moves";
 import type { RoutePlannerPieceType } from "./types";
 
@@ -10,24 +12,25 @@ import type { RoutePlannerPieceType } from "./types";
  */
 export function findShortestPath(
   piece: RoutePlannerPieceType,
-  start: string,
-  end: string,
-): string[] | null {
+  start: Square,
+  end: Square,
+): Square[] | null {
   if (start === end) return [start];
 
-  const parent = new Map<string, string>();
-  const queue: string[] = [start];
+  // `null` marks the BFS root (no parent).
+  const parent = new Map<Square, Square | null>();
+  const queue: Square[] = [start];
   let head = 0;
-  parent.set(start, "");
+  parent.set(start, null);
 
   while (head < queue.length) {
     const current = queue[head++];
 
     if (current === end) {
       // Reconstruct path from parent map
-      const path: string[] = [];
-      let node: string | undefined = end;
-      while (node !== undefined && node !== "") {
+      const path: Square[] = [];
+      let node: Square | null | undefined = end;
+      while (node !== undefined && node !== null) {
         path.push(node);
         node = parent.get(node);
       }

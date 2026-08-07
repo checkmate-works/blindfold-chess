@@ -4,6 +4,8 @@ import { useCallback, useState } from "react";
 
 import type { Square } from "@blindfold-chess/types";
 
+import { isValidSquare } from "../common";
+
 export type UseRoutePlannerInputConfig = {
   /** Freeze input (while the result is showing or during the countdown). */
   disabled: boolean;
@@ -45,7 +47,8 @@ export function useRoutePlannerInput({
   const handleRankPress = useCallback(
     (rank: string) => {
       if (disabled || !selectedFile) return;
-      const square = `${selectedFile}${rank}` as Square;
+      const square = `${selectedFile}${rank}`;
+      if (!isValidSquare(square)) return;
       setMoves((prev) => [...prev, square]);
       setSelectedFile(null);
     },

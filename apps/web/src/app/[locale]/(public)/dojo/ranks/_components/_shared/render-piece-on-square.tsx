@@ -2,9 +2,7 @@
 
 import type { SquareRenderInfo } from '@/app/_components';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
-
-type PieceType = 'k' | 'q' | 'r' | 'b' | 'n' | 'p';
-type PieceColor = 'w' | 'b';
+import type { PieceColor, PieceType } from '@blindfold-chess/types';
 
 /**
  * Helper that creates a `renderSquare` function placing a single piece icon

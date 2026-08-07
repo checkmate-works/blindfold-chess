@@ -159,9 +159,9 @@ export function isValidDiagonalAnswer(answer: string): boolean {
  * Diagonal: a1-h8 direction (file - rank = constant)
  * Anti-diagonal: h1-a8 direction (file + rank = constant)
  */
-export function getDiagonalSquares(square: string): {
-  diagonal: string[];
-  antiDiagonal: string[];
+export function getDiagonalSquares(square: Square): {
+  diagonal: Square[];
+  antiDiagonal: Square[];
 } {
   const f = squareToFileIndex(square);
   const r = squareToRankIndex(square);
@@ -174,12 +174,12 @@ export function getDiagonalSquares(square: string): {
     antiLength,
   } = computeDiagonalParams(f, r);
 
-  const diagonal: string[] = [];
+  const diagonal: Square[] = [];
   for (let i = 0; i <= diagLength; i++) {
     diagonal.push(fileRankToSquare(diagStartF + i, diagStartR + i));
   }
 
-  const antiDiagonal: string[] = [];
+  const antiDiagonal: Square[] = [];
   for (let i = 0; i <= antiLength; i++) {
     antiDiagonal.push(fileRankToSquare(antiStartF - i, antiStartR + i));
   }
@@ -191,7 +191,7 @@ export function getDiagonalSquares(square: string): {
  * Check if a square has a single-square diagonal or anti-diagonal.
  * Corner squares (a1, a8, h1, h8) have one single-square diagonal.
  */
-export function getCornerInfo(square: string): {
+export function getCornerInfo(square: Square): {
   singleDiagonal: boolean;
   singleAntiDiagonal: boolean;
 } {

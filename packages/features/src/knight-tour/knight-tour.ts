@@ -1,6 +1,8 @@
 /**
  * Utility functions for Knight's Tour puzzle
  */
+import type { Square } from "@blindfold-chess/types";
+
 import { KNIGHT_OFFSETS } from "../common/piece-moves";
 import {
   fileRankToSquare,
@@ -12,13 +14,13 @@ import {
 /**
  * Get all legal knight moves from a given square
  */
-export function getKnightMoves(square: string): string[] {
+export function getKnightMoves(square: string): Square[] {
   if (!isValidSquare(square)) return [];
 
   const fileIndex = squareToFileIndex(square);
   const rankIndex = squareToRankIndex(square);
 
-  const moves: string[] = [];
+  const moves: Square[] = [];
   for (const [df, dr] of KNIGHT_OFFSETS) {
     const newFile = fileIndex + df;
     const newRank = rankIndex + dr;
@@ -45,7 +47,7 @@ export function getAvailableKnightMoves(
  * Check if a move is a valid knight move
  */
 export function isValidKnightMove(from: string, to: string): boolean {
-  const moves = getKnightMoves(from);
+  const moves: readonly string[] = getKnightMoves(from);
   return moves.includes(to);
 }
 

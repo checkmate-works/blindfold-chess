@@ -21,6 +21,7 @@ export {
   boardFlatToFen,
   getTurnFromFen,
   isBlackToMoveFromFen,
+  fullmoveNumberFromFen,
   toPositionKey,
   getFenAfterMoves,
   getStartingFen,
@@ -102,6 +103,7 @@ export type {
 export { validateAttachedPgn } from "./pgn-attachment";
 
 export { validatePosition } from "./position";
+export type { PositionErrorKey, PositionValidation } from "./position";
 
 export { formatLastMove } from "./format";
 

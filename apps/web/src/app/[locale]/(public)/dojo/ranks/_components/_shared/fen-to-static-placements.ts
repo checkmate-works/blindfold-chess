@@ -1,5 +1,4 @@
-type PieceType = 'k' | 'q' | 'r' | 'b' | 'n' | 'p';
-type PieceColor = 'w' | 'b';
+import type { PieceColor, PieceType } from '@blindfold-chess/types';
 
 export type StaticPiecePlacement = {
   square: string;

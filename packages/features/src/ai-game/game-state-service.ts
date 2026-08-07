@@ -73,7 +73,7 @@ export function computeGameState(
     currentFen: manager.fen(),
     isCheck: manager.isCheck(),
     isGameOver: manager.isGameOver(),
-    legalMoves: manager.moves() as AlgebraicNotation[],
+    legalMoves: manager.moves(),
     currentTurn: currentTurn === "w" ? "white" : "black",
     lastMoveDetails,
   };

@@ -65,12 +65,12 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
 
     if (parsedMoves.length > 0 && !gameId) {
       const fen = startingFen ?? getStartingFen();
-      const result = validateMoveSequence(fen, parsedMoves as string[]);
+      const result = validateMoveSequence(fen, parsedMoves);
 
       if (result.valid) {
-        initialMovesFromUrl = result.validMoves as AlgebraicNotation[];
+        initialMovesFromUrl = result.validMoves;
       } else {
-        const validMoves = result.validMoves as AlgebraicNotation[];
+        const validMoves = result.validMoves;
         const invalidIndex = validMoves.length;
         const invalidMove = parsedMoves[invalidIndex];
 

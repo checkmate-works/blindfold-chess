@@ -1,11 +1,12 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Square } from '@blindfold-chess/types';
 
 import { DiagonalQuizResultLayout } from './DiagonalQuizResultLayout';
 
 type Props = {
-  question: string;
+  question: Square;
   correctDiagonal: string;
   correctAntiDiagonal: string;
   correctCount: number;

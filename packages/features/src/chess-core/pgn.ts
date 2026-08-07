@@ -2,9 +2,10 @@ import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
 import { getTurnFromFen, validateFen } from "./fen";
+import type { MoveSequenceValidation } from "./moves";
 import { validateMoveSequence } from "./moves";
 import type { MoveResult } from "./types";
-import { toMoveResult } from "./types";
+import { asEngineSan, toMoveResult } from "./types";
 
 // Re-export pure formatting types and functions from pgn-format
 export type {
@@ -45,18 +46,18 @@ export function validatePgn(pgn: string): boolean {
   }
 }
 
-export function parsePgn(pgn: string): string[] {
+export function parsePgn(pgn: string): AlgebraicNotation[] {
   try {
     const chess = new Chess();
     chess.loadPgn(pgn);
-    return chess.history();
+    return chess.history().map(asEngineSan);
   } catch {
     throw new Error("Invalid PGN format");
   }
 }
 
 export function parsePgnWithFen(pgn: string): {
-  moves: string[];
+  moves: AlgebraicNotation[];
   startingFen?: string;
 } {
   try {
@@ -68,7 +69,7 @@ export function parsePgnWithFen(pgn: string): {
     const isCustomPosition = startingFen && startingFen !== DEFAULT_POSITION;
 
     return {
-      moves: chess.history(),
+      moves: chess.history().map(asEngineSan),
       startingFen: isCustomPosition ? startingFen : undefined,
     };
   } catch {
@@ -92,11 +93,9 @@ export function generatePgn(moves: string[], startingFen?: string): string {
   }
 }
 
-export function validatePgnWithDetails(pgn: string): {
-  valid: boolean;
-  error?: string;
-  moveCount?: number;
-} {
+export function validatePgnWithDetails(
+  pgn: string,
+): { valid: true; moveCount: number } | { valid: false; error: string } {
   if (!pgn.trim()) {
     return { valid: false, error: "PGN cannot be empty" };
   }
@@ -130,14 +129,14 @@ export function getPgnHeaders(pgn: string): Record<string, string> {
 export function getPgnHistory(
   pgn: string,
   options?: { verbose?: boolean },
-): string[] | MoveResult[] {
+): AlgebraicNotation[] | MoveResult[] {
   try {
     const chess = new Chess();
     chess.loadPgn(pgn);
     if (options?.verbose) {
       return chess.history({ verbose: true }).map(toMoveResult);
     }
-    return chess.history();
+    return chess.history().map(asEngineSan);
   } catch {
     return [];
   }
@@ -153,19 +152,19 @@ export function getPgnHistory(
 export function validatePgnMoves(
   fen: string,
   moves: string[],
-): { valid: boolean; error?: string; validMoves: AlgebraicNotation[] } {
+): MoveSequenceValidation {
   try {
     const result = validateMoveSequence(fen, moves);
     if (!result.valid) {
       return {
         valid: false,
         error: result.error,
-        validMoves: result.validMoves as AlgebraicNotation[],
+        validMoves: result.validMoves,
       };
     }
     return {
       valid: true,
-      validMoves: result.validMoves as AlgebraicNotation[],
+      validMoves: result.validMoves,
     };
   } catch {
     return {

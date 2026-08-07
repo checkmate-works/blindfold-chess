@@ -47,7 +47,14 @@
  * change the semantics there consciously, not incidentally.
  */
 import type { SkillLevel as AiGameSkillLevel } from '@blindfold-chess/features/ai-game';
-import type { AlgebraicNotation, GameOutcome, Side } from '@blindfold-chess/types';
+import type {
+  AlgebraicNotation,
+  GameOutcome,
+  PawnHideMode,
+  PieceColorMode,
+  PieceShapeMode,
+  Side,
+} from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
 
@@ -66,9 +73,9 @@ export type GamePlaySettings = {
   boardVisibility: BoardVisibility;
   showOwnPieces: boolean;
   showOpponentPieces: boolean;
-  pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
-  pieceColors: 'normal' | 'white-only' | 'black-only';
-  pawnHideMode: 'none' | 'all' | 'own' | 'opponent';
+  pieceShapeMode: PieceShapeMode;
+  pieceColors: PieceColorMode;
+  pawnHideMode: PawnHideMode;
 };
 
 /**

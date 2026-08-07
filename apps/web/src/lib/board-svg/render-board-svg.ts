@@ -6,6 +6,7 @@ import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import type { SvgElement } from '@blindfold-chess/icons/data';
 import { flagData, getPieceData, undoData } from '@blindfold-chess/icons/data';
+import type { PieceColor } from '@blindfold-chess/types';
 import type { BoardTheme } from '@blindfold-chess/types';
 import type { PieceType } from '@blindfold-chess/types';
 import { boardThemeColors } from '@blindfold-chess/ui';
@@ -55,7 +56,7 @@ const LAST_MOVE_HIGHLIGHT = 'rgba(155,199,0,0.41)';
 /** Opacity marking "the player could not see this" — ghosts and faint stones alike. */
 const HIDDEN_OPACITY = 0.4;
 
-type Color = 'w' | 'b';
+type Color = PieceColor;
 
 /**
  * Go-stone gradient stops, mirrored from `src/lib/games/go-stone-style.ts`'s

@@ -94,7 +94,7 @@ function endExclusions(
  */
 function meetsPathConstraint(
   piece: RoutePlannerPieceType,
-  path: string[],
+  path: readonly Square[],
 ): boolean {
   const strategy = RouteStrategies[piece];
   return strategy ? strategy.meetsConstraint(path.length) : false;

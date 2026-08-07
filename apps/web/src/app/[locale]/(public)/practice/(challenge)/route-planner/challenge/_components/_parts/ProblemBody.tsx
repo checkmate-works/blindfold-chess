@@ -2,6 +2,9 @@
 
 import { useCallback, useState } from 'react';
 
+import { isValidSquare } from '@blindfold-chess/features/common';
+import type { Square } from '@blindfold-chess/types';
+
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
 import { useStagedCoordinate } from '../../../_hooks/use-staged-coordinate';
@@ -12,15 +15,15 @@ import { SubmitArea } from './SubmitArea';
 
 export type ProblemResult = {
   piece: PieceType;
-  start: string;
-  end: string;
+  start: Square;
+  end: Square;
   success: boolean;
-  userPath: string[];
-  shortestPath: string[];
+  userPath: Square[];
+  shortestPath: Square[];
 };
 
 type Props = {
-  currentProblem: { piece: PieceType; start: string; end: string };
+  currentProblem: { piece: PieceType; start: Square; end: Square };
   isDisabled: boolean;
   showFeedback: boolean;
   isPaused: boolean;
@@ -44,12 +47,14 @@ export function ProblemBody({
   onAnswer,
   onRecordResult,
 }: Props) {
-  const [moves, setMoves] = useState<string[]>([]);
+  const [moves, setMoves] = useState<Square[]>([]);
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
 
   const staged = useStagedCoordinate({ disabled: isDisabled });
 
   const addMove = useCallback((square: string) => {
+    // Keypad input arrives as a raw string; this is the parse boundary.
+    if (!isValidSquare(square)) return;
     setMoves((prev) => [...prev, square]);
   }, []);
 

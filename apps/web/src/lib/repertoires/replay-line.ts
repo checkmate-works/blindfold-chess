@@ -24,7 +24,7 @@ export function replayRepertoireLine(line: {
 }): ReplayedLine {
   let sans: AlgebraicNotation[] = [];
   try {
-    sans = parsePgn(line.pgn) as AlgebraicNotation[];
+    sans = parsePgn(line.pgn);
   } catch {
     sans = [];
   }

@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import {
   type BasePracticeSettings,
   type PracticeResultWithMistakes,
@@ -16,7 +18,7 @@ export const DEFAULT_DIAGONAL_QUIZ_SETTINGS: DiagonalQuizSettings = {
 };
 
 export type DiagonalQuestionResult = {
-  square: string;
+  square: Square;
   isCorrect: boolean;
   isDiagonalCorrect: boolean;
   isAntiDiagonalCorrect: boolean;

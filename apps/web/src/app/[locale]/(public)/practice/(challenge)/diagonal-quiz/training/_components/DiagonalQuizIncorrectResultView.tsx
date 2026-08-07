@@ -1,12 +1,13 @@
 'use client';
 
 import { normalizeDiagonal } from '@blindfold-chess/features/diagonal-quiz';
+import type { Square } from '@blindfold-chess/types';
 
 import { DiagonalAnswerComparison } from '../../_components/DiagonalAnswerComparison';
 import { DiagonalQuizResultLayout } from './DiagonalQuizResultLayout';
 
 type Props = {
-  question: string;
+  question: Square;
   correctDiagonal: string;
   correctAntiDiagonal: string;
   userDiagonal: string;

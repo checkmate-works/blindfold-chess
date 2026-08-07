@@ -1,8 +1,9 @@
+import type { AlgebraicNotation } from "@blindfold-chess/types";
 import type { Color, PieceSymbol, Square } from "chess.js";
 import { Chess } from "chess.js";
 
 import type { BoardPiece, MoveResult } from "./types";
-import { toMoveResult } from "./types";
+import { asEngineSan, toMoveResult } from "./types";
 
 export class ChessGameManager {
   private chess: Chess;
@@ -27,14 +28,14 @@ export class ChessGameManager {
     return this.chess.turn();
   }
 
-  moves(): string[];
+  moves(): AlgebraicNotation[];
   moves(options: { verbose: true }): MoveResult[];
-  moves(options: { verbose: false }): string[];
-  moves(options?: { verbose?: boolean }): string[] | MoveResult[] {
+  moves(options: { verbose: false }): AlgebraicNotation[];
+  moves(options?: { verbose?: boolean }): AlgebraicNotation[] | MoveResult[] {
     if (options?.verbose) {
       return this.chess.moves({ verbose: true }).map(toMoveResult);
     }
-    return this.chess.moves();
+    return this.chess.moves().map(asEngineSan);
   }
 
   isCheckmate(): boolean {
@@ -69,13 +70,13 @@ export class ChessGameManager {
     return this.chess.pgn();
   }
 
-  history(): string[];
+  history(): AlgebraicNotation[];
   history(options: { verbose: true }): MoveResult[];
-  history(options?: { verbose?: boolean }): string[] | MoveResult[] {
+  history(options?: { verbose?: boolean }): AlgebraicNotation[] | MoveResult[] {
     if (options?.verbose) {
       return this.chess.history({ verbose: true }).map(toMoveResult);
     }
-    return this.chess.history();
+    return this.chess.history().map(asEngineSan);
   }
 
   header(): Record<string, string> {

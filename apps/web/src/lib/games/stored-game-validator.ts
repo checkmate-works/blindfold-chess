@@ -1,4 +1,5 @@
 import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
+import { PAWN_HIDE_MODES, PIECE_COLOR_MODES, PIECE_SHAPE_MODES } from '@blindfold-chess/types';
 
 import { isEngineConfig } from '@/lib/engines';
 import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
@@ -36,15 +37,15 @@ export function isValidPreferenceChangeEntry(entry: unknown): boolean {
     case 'showOpponentPieces':
       return typeof e.from === 'boolean' && typeof e.to === 'boolean';
     case 'pieceShapeMode': {
-      const shapes = ['normal', 'circles-all', 'circles-own', 'circles-opponent'];
+      const shapes: readonly string[] = PIECE_SHAPE_MODES;
       return shapes.includes(e.from as string) && shapes.includes(e.to as string);
     }
     case 'pieceColors': {
-      const colors = ['normal', 'white-only', 'black-only'];
+      const colors: readonly string[] = PIECE_COLOR_MODES;
       return colors.includes(e.from as string) && colors.includes(e.to as string);
     }
     case 'pawnHideMode': {
-      const modes = ['none', 'all', 'own', 'opponent'];
+      const modes: readonly string[] = PAWN_HIDE_MODES;
       return modes.includes(e.from as string) && modes.includes(e.to as string);
     }
     case 'peekMode': {

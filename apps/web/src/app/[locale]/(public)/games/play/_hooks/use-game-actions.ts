@@ -61,7 +61,7 @@ export function useGameActions({
     markPlayerInteraction();
     removeMoves(2);
     clearInputError();
-    const newMoves = moves.slice(0, -2) as AlgebraicNotation[];
+    const newMoves = moves.slice(0, -2);
     updateLastMove(newMoves);
     // handleUndoLog removes the last player's log entry and resets peek/undo counters.
     // Any peeks accumulated before this undo are intentionally discarded (the move "never happened").
@@ -88,7 +88,7 @@ export function useGameActions({
       if (movesToRemove > 0) {
         removeMoves(movesToRemove);
       }
-      const newMoves = moves.slice(0, position + 1) as AlgebraicNotation[];
+      const newMoves = moves.slice(0, position + 1);
       updateLastMove(newMoves);
 
       // Truncate operation logs to match the number of player moves remaining.

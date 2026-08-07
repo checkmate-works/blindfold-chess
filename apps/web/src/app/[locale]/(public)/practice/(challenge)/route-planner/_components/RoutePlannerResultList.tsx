@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
+import type { Square } from '@blindfold-chess/types';
 import { FaArrowRight, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -12,11 +13,11 @@ import { RoutePlannerProblemFeedback } from './RoutePlannerProblemFeedback';
 
 export type RoutePlannerResult = {
   piece: PieceType;
-  start: string;
-  end: string;
+  start: Square;
+  end: Square;
   success: boolean;
-  userPath: string[];
-  shortestPath: string[];
+  userPath: Square[];
+  shortestPath: Square[];
   skipped?: boolean;
 };
 

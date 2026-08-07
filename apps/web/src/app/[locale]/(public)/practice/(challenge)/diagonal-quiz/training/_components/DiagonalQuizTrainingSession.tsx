@@ -10,6 +10,7 @@ import {
   normalizeDiagonal,
 } from '@blindfold-chess/features/diagonal-quiz';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
+import type { Square } from '@blindfold-chess/types';
 
 import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -35,7 +36,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     handleSkip,
     handleNextAfterSkip,
     handleNextAfterIncorrect,
-  } = useBatchTrainingSession<string, { diagonalAnswer: string; antiDiagonalAnswer: string }>({
+  } = useBatchTrainingSession<Square, { diagonalAnswer: string; antiDiagonalAnswer: string }>({
     batchSize: BATCH_SIZE,
     generateBatch: () => generateSquareSequence(BATCH_SIZE, Math.random, EXCLUDED_QUIZ_SQUARES),
     checkAnswer: (square, { diagonalAnswer, antiDiagonalAnswer }) => {

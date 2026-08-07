@@ -128,7 +128,7 @@ export function useStockfishEngine() {
 
   const convertUciToAlgebraic = useCallback(
     (uciMove: UciMove, fen: Fen): AlgebraicNotation => {
-      return uciToAlgebraic(uciMove, fen) as AlgebraicNotation;
+      return uciToAlgebraic(uciMove, fen);
     },
     [],
   );

@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
 import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz/client';
+import type { Square } from '@blindfold-chess/types';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
@@ -21,11 +22,11 @@ import { DiagonalQuizSkipResultView } from './DiagonalQuizSkipResultView';
 
 type Props = {
   locale: Locale;
-  currentSquare: string;
+  currentSquare: Square;
   showResult: boolean;
   lastAnswer: {
     correct: boolean;
-    question: string;
+    question: Square;
     correctDiagonal: string;
     correctAntiDiagonal: string;
     skipped: boolean;

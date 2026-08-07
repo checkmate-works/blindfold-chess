@@ -20,12 +20,12 @@ export function resolveOrientation(
 }
 
 /** Extract 0-based file index (a=0, h=7) from algebraic square name */
-export function squareToFileIndex(square: string): number {
+export function squareToFileIndex(square: Square): number {
   return square.charCodeAt(0) - "a".charCodeAt(0);
 }
 
 /** Extract 0-based rank index (1=0, 8=7) from algebraic square name */
-export function squareToRankIndex(square: string): number {
+export function squareToRankIndex(square: Square): number {
   return parseInt(square[1], 10) - 1;
 }
 
@@ -39,11 +39,11 @@ export function isLightSquare(fileIndex: number, rankIndex: number): boolean {
   return (fileIndex + rankIndex) % 2 === 0;
 }
 
-export function isValidSquare(square: string): boolean {
+export function isValidSquare(square: string): square is Square {
   return /^[a-h][1-8]$/.test(square);
 }
 
-export function computeSquareColor(square: string): "light" | "dark" {
+export function computeSquareColor(square: Square): "light" | "dark" {
   const file = squareToFileIndex(square);
   const rank = squareToRankIndex(square);
   return (file + rank) % 2 === 0 ? "dark" : "light";

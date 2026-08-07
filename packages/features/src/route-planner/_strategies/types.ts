@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import type { RoutePlannerPieceType } from "../types";
 
 /**
@@ -8,7 +10,7 @@ import type { RoutePlannerPieceType } from "../types";
  * start square, so `pathLength === 3` means 2 moves (start -> intermediate -> end).
  */
 export interface RoutePlannerStrategy {
-  getMoves(file: number, rank: number): string[];
+  getMoves(file: number, rank: number): Square[];
   meetsConstraint(pathLength: number): boolean;
 }
 

@@ -3,7 +3,13 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ChessPiece } from '@/app/_components';
-import type { BoardClickAction, PieceColor } from '@blindfold-chess/features/board-display';
+import type {
+  BoardClickAction,
+  PawnHideMode,
+  PieceColor,
+  PieceColorMode,
+  PieceShapeMode,
+} from '@blindfold-chess/features/board-display';
 import {
   areDestinationsObscured,
   classifyBoardClick,
@@ -18,6 +24,7 @@ import {
   fenToBoard,
   findLegalMovesByCoords,
   getLegalMoves,
+  isBlackToMoveFromFen,
 } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 import { createPortal } from 'react-dom';
@@ -78,8 +85,8 @@ type Props = {
    * keeps the shapes, so dots still show there.
    */
   showPieceDestinations?: boolean;
-  pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
-  pieceColors?: 'normal' | 'white-only' | 'black-only';
+  pieceShapeMode?: PieceShapeMode;
+  pieceColors?: PieceColorMode;
   /**
    * Partial blindfold: which pawns are hidden entirely (rendered as empty
    * squares). `'none'` (default) shows every pawn; `'all'` hides both sides';
@@ -88,7 +95,7 @@ type Props = {
    * shape / color obfuscation — a hidden side already hides its pawns, so this
    * only bites on a side that is otherwise shown.
    */
-  pawnHideMode?: 'none' | 'all' | 'own' | 'opponent';
+  pawnHideMode?: PawnHideMode;
   /**
    * How pieces hidden by the blindfold settings (`showOwnPieces` /
    * `showOpponentPieces` / `pawnHideMode`) are drawn:
@@ -264,7 +271,7 @@ export const ChessBoard = memo(function ChessBoard({
   // default 'own' mode, so real games are entirely unaffected.
   const ownColorChar: PieceColor = playerSide === 'black' ? 'b' : 'w';
   const movableColorChar: PieceColor =
-    movablePieces === 'side-to-move' ? (fen.split(' ')[1] === 'b' ? 'b' : 'w') : ownColorChar;
+    movablePieces === 'side-to-move' ? (isBlackToMoveFromFen(fen) ? 'b' : 'w') : ownColorChar;
 
   // The blindfold visibility settings, bundled for the pure display rules in
   // @blindfold-chess/features/board-display (see that module for the policy

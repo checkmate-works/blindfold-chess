@@ -1,4 +1,4 @@
-import type { PieceType as AllPieceType } from "@blindfold-chess/types";
+import type { PieceType as AllPieceType, Square } from "@blindfold-chess/types";
 
 import {
   type BasePracticeSettings,
@@ -16,8 +16,8 @@ export const PIECE_TYPES: readonly PieceType[] = [
 ] as const;
 
 export type MoveQuestion = {
-  from: string;
-  to: string;
+  from: Square;
+  to: Square;
   piece: PieceType;
 };
 

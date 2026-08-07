@@ -4,6 +4,7 @@ import { Fragment, useMemo, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getPossibleMoves } from '@blindfold-chess/features/route-planner';
+import type { Square } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -16,12 +17,12 @@ type Scrub = { source: 'yours' | 'shortest'; index: number };
 
 type Props = {
   piece: PieceType;
-  start: string;
-  end: string;
+  start: Square;
+  end: Square;
   /** User's moves from start (excluding the start square). */
-  moves: string[];
+  moves: Square[];
   /** Shortest path including both endpoints. */
-  shortestPath: string[];
+  shortestPath: Square[];
   success: boolean;
   skipped?: boolean;
   boardTheme: BoardTheme;

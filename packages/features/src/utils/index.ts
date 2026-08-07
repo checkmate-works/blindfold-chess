@@ -1,4 +1,5 @@
 export { escapeHtml } from "./escape-html";
+export { type Result, err, ok } from "./result";
 export { type PaginatedResult, paginateItems } from "./pagination";
 export {
   type DatePeriod,

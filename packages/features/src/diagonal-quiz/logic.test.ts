@@ -119,12 +119,12 @@ describe("getDiagonals", () => {
   });
 
   describe("all 64 squares produce valid outputs", () => {
-    const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-    const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+    const files = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+    const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
 
     for (const file of files) {
       for (const rank of ranks) {
-        const square = `${file}${rank}`;
+        const square = `${file}${rank}` as const;
         it(`produces valid output for ${square}`, () => {
           const result = getDiagonals(square);
           expect(result).toHaveProperty("diagonal");
@@ -239,8 +239,8 @@ describe("isValidDiagonalAnswer", () => {
     });
 
     it("accepts all file-rank combinations for single squares", () => {
-      const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-      const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+      const files = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+      const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
       for (const f of files) {
         for (const r of ranks) {
           expect(isValidDiagonalAnswer(`${f}${r}`)).toBe(true);
@@ -353,11 +353,11 @@ describe("getDiagonalSquares", () => {
   });
 
   it("includes the target square in both diagonals", () => {
-    const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-    const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+    const files = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+    const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
     for (const file of files) {
       for (const rank of ranks) {
-        const square = `${file}${rank}`;
+        const square = `${file}${rank}` as const;
         const result = getDiagonalSquares(square);
         expect(result.diagonal).toContain(square);
         expect(result.antiDiagonal).toContain(square);
@@ -470,11 +470,11 @@ describe("getCornerInfo", () => {
 
   describe("consistency with getDiagonals", () => {
     it("singleDiagonal matches when getDiagonals returns a single-square diagonal", () => {
-      const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-      const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+      const files = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+      const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
       for (const file of files) {
         for (const rank of ranks) {
-          const square = `${file}${rank}`;
+          const square = `${file}${rank}` as const;
           const cornerInfo = getCornerInfo(square);
           const diags = getDiagonals(square);
           const diagIsSingle = !diags.diagonal.includes("-");
@@ -488,12 +488,12 @@ describe("getCornerInfo", () => {
 
   describe("only corners have single-square diagonals", () => {
     it("exactly a8, h8, a1, h1 have a single-square diagonal or anti-diagonal", () => {
-      const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-      const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+      const files = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+      const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
       const squaresWithSingle: string[] = [];
       for (const file of files) {
         for (const rank of ranks) {
-          const square = `${file}${rank}`;
+          const square = `${file}${rank}` as const;
           const info = getCornerInfo(square);
           if (info.singleDiagonal || info.singleAntiDiagonal) {
             squaresWithSingle.push(square);
@@ -589,15 +589,15 @@ describe("EXCLUDED_QUIZ_SQUARES (generalized exclusion rule)", () => {
     // The rule is: a square is excluded iff it sits on a length-1 diagonal
     // or a length-1 anti-diagonal. Verify this holds for all 64 squares
     // rather than relying on a hardcoded corner list.
-    const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-    const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+    const files = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+    const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
     for (const file of files) {
       for (const rank of ranks) {
-        const square = `${file}${rank}`;
+        const square = `${file}${rank}` as const;
         const { diagonal, antiDiagonal } = getDiagonalSquares(square);
         const hasSingleLine =
           diagonal.length === 1 || antiDiagonal.length === 1;
-        expect(EXCLUDED_QUIZ_SQUARES.has(square as never)).toBe(hasSingleLine);
+        expect(EXCLUDED_QUIZ_SQUARES.has(square)).toBe(hasSingleLine);
       }
     }
   });
@@ -622,7 +622,7 @@ describe("EXCLUDED_QUIZ_SQUARES (generalized exclusion rule)", () => {
       EXCLUDED_QUIZ_SQUARES,
     );
     for (const square of squares) {
-      expect(EXCLUDED_QUIZ_SQUARES.has(square as never)).toBe(false);
+      expect(EXCLUDED_QUIZ_SQUARES.has(square)).toBe(false);
     }
   });
 

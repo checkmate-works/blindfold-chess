@@ -1,3 +1,8 @@
+import {
+  fullmoveNumberFromFen,
+  isBlackToMoveFromFen,
+} from '@blindfold-chess/features/chess-core/fen';
+
 /**
  * Parse FEN metadata to determine starting side and move number.
  */
@@ -9,10 +14,9 @@ export function parseFenMeta(fen: string | undefined | null): {
     return { startsAsBlack: false, startMoveNumber: 1 };
   }
 
-  const parts = fen.split(' ');
   return {
-    startsAsBlack: parts[1] === 'b',
-    startMoveNumber: parseInt(parts[5]) || 1,
+    startsAsBlack: isBlackToMoveFromFen(fen),
+    startMoveNumber: fullmoveNumberFromFen(fen),
   };
 }
 

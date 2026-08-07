@@ -3,6 +3,12 @@ import {
   validateFen,
   validateMoveSequence,
 } from '@blindfold-chess/features/chess-core';
+import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
+import {
+  PAWN_HIDE_MODES,
+  PIECE_COLOR_MODES as PIECE_COLORS,
+  PIECE_SHAPE_MODES,
+} from '@blindfold-chess/types';
 
 import { engineApproxElo, isEngineConfig } from '@/lib/engines';
 import type { EngineConfig } from '@/lib/engines';
@@ -35,8 +41,13 @@ import type {
 
 export { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
 
-export type GameOutcome = 'win' | 'loss' | 'draw';
-export type PlayerColor = 'white' | 'black';
+// Aliases of the canonical @blindfold-chess/types unions, kept as this
+// module's exported names. A published game is always finished, so the
+// outcome here is FinalGameOutcome — previously a same-named local
+// `GameOutcome` that silently disagreed with the shared one about
+// `"in_progress"`.
+export type GameOutcome = FinalGameOutcome;
+export type PlayerColor = Side;
 
 /** Validated, normalized snapshot ready to persist. */
 export type ValidatedGame = {
@@ -79,10 +90,6 @@ export type ValidatePublishResult =
 
 const OUTCOMES: readonly GameOutcome[] = ['win', 'loss', 'draw'];
 const COLORS: readonly PlayerColor[] = ['white', 'black'];
-
-const PIECE_SHAPE_MODES = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
-const PIECE_COLORS = ['normal', 'white-only', 'black-only'] as const;
-const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
 
 /**
  * Normalize the self-reported play settings into the validated display subset,

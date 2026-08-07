@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import {
   type RandomSource,
   generateRandomSquare,
@@ -18,7 +20,7 @@ import type { BoardOrientation, QuadrantId, QuadrantQuestion } from "./types";
  * Files a-d = Queen-side, Files e-h = King-side
  * Ranks 1-4 = Your side, Ranks 5-8 = Opponent side
  */
-export function getCorrectQuadrant(square: string): QuadrantId {
+export function getCorrectQuadrant(square: Square): QuadrantId {
   // BOARD_SIZE / 2 partitions the 8 files into two 4-file halves
   // (a-d = queen-side, e-h = king-side) and the 8 ranks into two 4-rank halves.
   const halfBoard = BOARD_SIZE / 2;
@@ -65,7 +67,7 @@ export function generateQuadrantQuestionBatch(
  * Check if the user's answer is correct.
  */
 export function checkQuadrantAnswer(
-  square: string,
+  square: Square,
   selectedQuadrant: QuadrantId,
 ): boolean {
   return getCorrectQuadrant(square) === selectedQuadrant;

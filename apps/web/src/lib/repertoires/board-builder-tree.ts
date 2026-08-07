@@ -1,7 +1,9 @@
 import type { MoveTreeNode } from '@blindfold-chess/features/chess-core';
 import {
   executeMove,
+  fullmoveNumberFromFen,
   generatePgnFromTree,
+  isBlackToMoveFromFen,
   parsePgnTree,
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -101,7 +103,7 @@ export function playMoveAtPath(
   }
 
   const node: BuilderNode = {
-    san: result.moveResult.san as AlgebraicNotation,
+    san: result.moveResult.san,
     fen: result.fen,
     from: result.moveResult.from,
     to: result.moveResult.to,
@@ -195,10 +197,8 @@ export type MoveListToken =
 
 /** `"12."` for White, `"12..."` for a Black line opener, `null` otherwise. */
 function moveNumberIndicator(beforeFen: string, needsNumber: boolean): string | null {
-  const fields = beforeFen.split(' ');
-  const turn = fields[1];
-  const fullmove = fields[5] ?? '1';
-  if (turn === 'w') return `${fullmove}.`;
+  const fullmove = fullmoveNumberFromFen(beforeFen);
+  if (!isBlackToMoveFromFen(beforeFen)) return `${fullmove}.`;
   if (needsNumber) return `${fullmove}...`;
   return null;
 }

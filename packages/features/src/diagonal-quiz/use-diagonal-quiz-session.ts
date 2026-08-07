@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import type { Square } from "@blindfold-chess/types";
+
 import { flashFeedbackDuration } from "../common/flash-policy";
 import { generateSquareSequence } from "../common/utils";
 import { useBufferedQuestions } from "../practice-session/use-buffered-questions";
@@ -24,7 +26,7 @@ export type UseDiagonalQuizSessionConfig =
   TimedQuizSessionConfig<DiagonalQuizResult>;
 
 export type UseDiagonalQuizSessionReturn = TimedSessionFacade & {
-  currentSquare: string | null;
+  currentSquare: Square | null;
   lastAnswer: {
     correct: boolean;
     isDiagonalCorrect: boolean;
@@ -57,7 +59,7 @@ export function useDiagonalQuizSession({
     correctAntiDiagonal: string;
   } | null>(null);
 
-  const session = useTimedSession<string>({
+  const session = useTimedSession<Square>({
     timeLimit,
     generateQuestion,
     onAnswerEffect,

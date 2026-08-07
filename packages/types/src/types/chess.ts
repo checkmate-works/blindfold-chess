@@ -61,6 +61,13 @@ export type Side = "white" | "black";
 /** Runtime list of {@link Side} members, for validating untyped input. */
 export const SIDES: readonly Side[] = ["white", "black"];
 
+/**
+ * Piece/side color in chess.js notation. The canonical home of the
+ * `"w" | "b"` union — modules that historically declared their own copy
+ * (`Color`, `SideToMove`, …) alias this one.
+ */
+export type PieceColor = "w" | "b";
+
 export type UciMove =
   | `${File}${Rank}${File}${Rank}`
   | `${File}${Rank}${File}${Rank}${"q" | "r" | "b" | "n"}`;

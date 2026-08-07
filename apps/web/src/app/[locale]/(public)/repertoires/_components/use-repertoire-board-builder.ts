@@ -3,8 +3,10 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import {
+  fullmoveNumberFromFen,
   getStartingFen,
   getTurnFromFen,
+  isBlackToMoveFromFen,
   toPositionKey,
 } from '@blindfold-chess/features/chess-core';
 import { useLatestRef } from '@blindfold-chess/features/common/client';
@@ -91,8 +93,8 @@ export function useRepertoireBoardBuilder({
   const currentMove = useMemo(() => {
     if (!currentNode) return null;
     const beforeFen = fenAtPath(children, path.slice(0, -1), rootFen);
-    const fields = beforeFen.split(' ');
-    const indicator = fields[1] === 'w' ? `${fields[5] ?? '1'}.` : `${fields[5] ?? '1'}...`;
+    const fullmove = fullmoveNumberFromFen(beforeFen);
+    const indicator = isBlackToMoveFromFen(beforeFen) ? `${fullmove}...` : `${fullmove}.`;
     return {
       positionKey: toPositionKey(currentNode.fen),
       label: `${indicator} ${currentNode.san}`,

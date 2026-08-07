@@ -70,7 +70,7 @@ export function useRecallInit({
 
       const fen = startingFen ?? getStartingFen();
       const result = validateMoveSequence(fen, moves);
-      const validMoves = result.validMoves as AlgebraicNotation[];
+      const validMoves = result.validMoves;
 
       setOriginalMoves(validMoves);
 

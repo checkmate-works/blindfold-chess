@@ -15,10 +15,7 @@
  * directly from `./index.ts`.
  */
 
-export interface FenStructureResult {
-  ok: boolean;
-  error?: string;
-}
+export type FenStructureResult = { ok: true } | { ok: false; error: string };
 
 const VALID_RANK_CHARS = /^[PNBRQKpnbrqk1-8]+$/;
 const CASTLING_RE = /^[KQkq]+$/;

@@ -1,7 +1,13 @@
-import type { PieceType, Square } from "@blindfold-chess/types";
+import type {
+  AlgebraicNotation,
+  PieceColor,
+  PieceType,
+  Square,
+} from "@blindfold-chess/types";
 import type { Move } from "chess.js";
 
-export type Color = "w" | "b";
+/** Alias of the canonical {@link PieceColor}, kept for existing importers. */
+export type Color = PieceColor;
 
 export type BoardPiece = {
   square: Square;
@@ -10,7 +16,7 @@ export type BoardPiece = {
 } | null;
 
 export type MoveResult = {
-  san: string;
+  san: AlgebraicNotation;
   from: Square;
   to: Square;
   color: Color;
@@ -22,15 +28,25 @@ export type MoveResult = {
   after: string;
 };
 
+/**
+ * Trust boundary for SAN produced BY chess.js (never for user input).
+ * chess.js emits canonical SAN, which the template-literal
+ * {@link AlgebraicNotation} type describes; this is the single place that
+ * guarantee is asserted, so everything downstream stays cast-free.
+ */
+export function asEngineSan(san: string): AlgebraicNotation {
+  return san as AlgebraicNotation;
+}
+
 export function toMoveResult(m: Move): MoveResult {
   return {
-    san: m.san,
-    from: m.from as Square,
-    to: m.to as Square,
-    color: m.color as Color,
-    piece: m.piece as PieceType,
-    captured: m.captured as PieceType | undefined,
-    promotion: m.promotion as PieceType | undefined,
+    san: asEngineSan(m.san),
+    from: m.from,
+    to: m.to,
+    color: m.color,
+    piece: m.piece,
+    captured: m.captured,
+    promotion: m.promotion,
     flags: m.flags,
     before: m.before,
     after: m.after,
