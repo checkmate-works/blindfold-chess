@@ -1,13 +1,18 @@
 import { StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import type { Side } from "@blindfold-chess/types";
+import {
+  PLAYER_RESULTS,
+  isValidSkillLevel,
+} from "@blindfold-chess/features/ai-game";
+import { SIDES, type Side } from "@blindfold-chess/types";
 
 import { ResultCard } from "../../../../features/ai-game/components";
 import type {
   PlayerResult,
   SkillLevel,
 } from "../../../../features/ai-game/lib/types";
+import { parseEnumParam, parseIntParam } from "../../../../lib/route-params";
 import { useTheme, spacing } from "../../../../theme";
 
 export default function AiGameResult() {
@@ -20,12 +25,17 @@ export default function AiGameResult() {
     moveCount: string;
   }>();
 
-  const result = (params.result || "draw") as PlayerResult;
-  const playerColor = (params.playerColor || "white") as Side;
-  const skillLevel = (
-    params.skillLevel ? parseInt(params.skillLevel, 10) : 5
-  ) as SkillLevel;
-  const moveCount = params.moveCount ? parseInt(params.moveCount, 10) : 0;
+  const result = parseEnumParam<PlayerResult>(
+    params.result,
+    PLAYER_RESULTS,
+    "draw",
+  );
+  const playerColor = parseEnumParam<Side>(params.playerColor, SIDES, "white");
+  const parsedSkillLevel = Number(params.skillLevel);
+  const skillLevel: SkillLevel = isValidSkillLevel(parsedSkillLevel)
+    ? parsedSkillLevel
+    : 5;
+  const moveCount = parseIntParam(params.moveCount, { fallback: 0 });
 
   const handlePlayAgain = () => {
     router.replace({

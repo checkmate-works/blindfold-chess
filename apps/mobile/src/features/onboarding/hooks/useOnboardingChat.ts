@@ -22,10 +22,13 @@ export const useOnboardingChat = (onComplete: () => void) => {
 
     setIsThinking(true);
     const timer = setTimeout(() => {
+      // Messages are append-only, so `prev.length` is a collision-free id.
+      // (Date.now() was not: a user bubble and the system reply produced in
+      // the same millisecond shared a React key.)
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now().toString(),
+          id: `msg-${prev.length}`,
           text: t(currentStep.textKey),
           isSystem: true,
         },
@@ -52,7 +55,7 @@ export const useOnboardingChat = (onComplete: () => void) => {
     // Add user response bubble
     setMessages((prev) => [
       ...prev,
-      { id: Date.now().toString(), text: label, isSystem: false },
+      { id: `msg-${prev.length}`, text: label, isSystem: false },
     ]);
 
     // Move to next step
