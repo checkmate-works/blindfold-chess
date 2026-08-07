@@ -850,10 +850,17 @@ response header to tell skew apart from a render fault.
 
 Two things 16.3.0 does that look like breakage but are not:
 
-- **`next dev` appends a `<!-- BEGIN:nextjs-agent-rules -->` block to
+- **`next dev` appends an agent-rules block — fenced by
+  `BEGIN:nextjs-agent-rules` / `END:nextjs-agent-rules` HTML comments — to
   `CLAUDE.md`** (written by `node_modules/next/dist/server/lib/generate-agent-files.js`).
   It reappears after every `next dev`, so a dirty `CLAUDE.md` right after
-  starting the dev server is expected, not a stray edit.
+  starting the dev server is expected, not a stray edit. The generator finds
+  the block with a plain `indexOf` of the FIRST occurrence of the full marker
+  comment, so this file must never spell either marker out verbatim outside
+  the real block: prose that does becomes the "start of the block" and
+  everything from it down to the real block is deleted on the next `next dev`
+  (reproduced 2026-08-07 — this bullet used to quote the opening marker and
+  lost the two sections below it).
 - **The build's route table moved its `○ ● ƒ` markers from the parent route
   line onto each generated child path.** Any script that scrapes markers with
   `^[├└] ●` silently reports every SSG route as lost. When comparing route
