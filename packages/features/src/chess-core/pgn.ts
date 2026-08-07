@@ -2,6 +2,7 @@ import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
 import { getTurnFromFen, validateFen } from "./fen";
+import type { MoveSequenceValidation } from "./moves";
 import { validateMoveSequence } from "./moves";
 import type { MoveResult } from "./types";
 import { asEngineSan, toMoveResult } from "./types";
@@ -92,11 +93,9 @@ export function generatePgn(moves: string[], startingFen?: string): string {
   }
 }
 
-export function validatePgnWithDetails(pgn: string): {
-  valid: boolean;
-  error?: string;
-  moveCount?: number;
-} {
+export function validatePgnWithDetails(
+  pgn: string,
+): { valid: true; moveCount: number } | { valid: false; error: string } {
   if (!pgn.trim()) {
     return { valid: false, error: "PGN cannot be empty" };
   }
@@ -153,7 +152,7 @@ export function getPgnHistory(
 export function validatePgnMoves(
   fen: string,
   moves: string[],
-): { valid: boolean; error?: string; validMoves: AlgebraicNotation[] } {
+): MoveSequenceValidation {
   try {
     const result = validateMoveSequence(fen, moves);
     if (!result.valid) {

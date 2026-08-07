@@ -68,13 +68,13 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
   } = usePositionState({ color });
 
   const positionValidation = useMemo((): { valid: boolean; error?: string } => {
-    if (!positionResult.valid && positionResult.errorKey) {
+    if (!positionResult.valid) {
       return { valid: false, error: t(positionResult.errorKey) };
     }
     if (positionResult.correctedColor && positionResult.correctedColor !== color) {
       return { valid: false, error: t('positionCheckCorrected') };
     }
-    return { valid: positionResult.valid };
+    return { valid: true };
   }, [positionResult, t, color]);
 
   // Initialize from FEN URL parameter. Sets color/flipped (owned here, not

@@ -148,19 +148,21 @@ describe("validatePgnWithDetails", () => {
   it("returns valid with move count for a valid PGN", () => {
     const result = validatePgnWithDetails(SIMPLE_PGN);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.moveCount).toBe(4);
-    expect(result.error).toBeUndefined();
   });
 
   it("returns invalid with error message for empty PGN", () => {
     const result = validatePgnWithDetails("");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("PGN cannot be empty");
   });
 
   it("returns invalid with error message for whitespace PGN", () => {
     const result = validatePgnWithDetails("   ");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("PGN cannot be empty");
   });
 
@@ -168,6 +170,7 @@ describe("validatePgnWithDetails", () => {
     // e5 is not a legal first move for white
     const result = validatePgnWithDetails("1. e5");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBeDefined();
   });
 });
@@ -369,12 +372,14 @@ describe("validatePgnMoves", () => {
     const moves = ["e4", "e5", "Nc3", "Ke2"];
     const result = validatePgnMoves(STANDARD_FEN, moves);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBeDefined();
   });
 
   it("returns invalid for bad FEN", () => {
     const result = validatePgnMoves("invalid-fen", ["e4"]);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("Invalid FEN position");
   });
 });
@@ -565,6 +570,7 @@ describe("validatePgnWithDetails - edge cases", () => {
       "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. d3 Nf6 5. Nc3 d6 6. Be3 Bxe3 7. fxe3 O-O 8. O-O Be6 9. Bb3 Bxb3 10. axb3";
     const result = validatePgnWithDetails(longPgn);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     // moveCount counts half-moves (individual ply), not full moves
     expect(result.moveCount).toBe(19);
   });
@@ -572,12 +578,14 @@ describe("validatePgnWithDetails - edge cases", () => {
   it("returns valid for PGN with result markers", () => {
     const result = validatePgnWithDetails("1. e4 e5 1-0");
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.moveCount).toBe(2);
   });
 
   it("returns valid for a single move", () => {
     const result = validatePgnWithDetails("1. e4");
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.moveCount).toBe(1);
   });
 });

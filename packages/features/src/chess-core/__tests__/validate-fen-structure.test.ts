@@ -91,6 +91,7 @@ describe("validateFenStructure — rejected cases", () => {
   it("rejects an empty string", () => {
     const result = validateFenStructure("");
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBeDefined();
   });
 
@@ -108,6 +109,7 @@ describe("validateFenStructure — rejected cases", () => {
   it("rejects a garbage string", () => {
     const result = validateFenStructure("garbage");
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("FEN must have 6 space-separated fields");
   });
 
@@ -118,6 +120,7 @@ describe("validateFenStructure — rejected cases", () => {
       "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0",
     );
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("FEN must have 6 space-separated fields");
   });
 
@@ -126,6 +129,7 @@ describe("validateFenStructure — rejected cases", () => {
       "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 extra",
     );
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("FEN must have 6 space-separated fields");
   });
 
@@ -134,12 +138,14 @@ describe("validateFenStructure — rejected cases", () => {
   it("rejects board with only 7 ranks", () => {
     const result = validateFenStructure("8/8/8/8/8/8/8 w - - 0 1");
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("Board must have exactly 8 ranks");
   });
 
   it("rejects board with 9 ranks", () => {
     const result = validateFenStructure("8/8/8/8/8/8/8/8/8 w - - 0 1");
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("Board must have exactly 8 ranks");
   });
 
@@ -148,6 +154,7 @@ describe("validateFenStructure — rejected cases", () => {
   it("rejects a rank that sums to 7 squares", () => {
     const result = validateFenStructure("7/8/8/8/8/8/8/8 w - - 0 1");
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toMatch(/does not sum to 8/);
   });
 
@@ -186,6 +193,7 @@ describe("validateFenStructure — rejected cases", () => {
   it("rejects castling rights containing an invalid character", () => {
     const result = validateFenStructure("8/8/8/8/8/8/8/8 w KQkX - 0 1");
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("Castling rights are malformed");
   });
 
@@ -205,6 +213,7 @@ describe("validateFenStructure — rejected cases", () => {
   ])("rejects en passant square %s (%s)", (ep) => {
     const result = validateFenStructure(`8/8/8/8/8/8/8/8 w - ${ep} 0 1`);
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("En passant square is malformed");
   });
 
@@ -213,6 +222,7 @@ describe("validateFenStructure — rejected cases", () => {
   it("rejects negative halfmove clock", () => {
     const result = validateFenStructure("8/8/8/8/8/8/8/8 w - - -1 1");
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("Halfmove clock must be a non-negative integer");
   });
 
@@ -226,6 +236,7 @@ describe("validateFenStructure — rejected cases", () => {
   it("rejects fullmove number of 0", () => {
     const result = validateFenStructure("8/8/8/8/8/8/8/8 w - - 0 0");
     expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected invalid result");
     expect(result.error).toBe("Fullmove number must be a positive integer");
   });
 

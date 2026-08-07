@@ -5,6 +5,9 @@ import { isValidSquare } from "../common";
 import { getPossibleMoves } from "./moves";
 import type { RoutePlannerPieceType } from "./types";
 
+export type UserPathValidation =
+  { valid: true; fullPath: Square[] } | { valid: false; error: string };
+
 /**
  * Validate a user-provided path for a route planner problem.
  *
@@ -25,7 +28,7 @@ export function validateUserPath(
   start: Square,
   userPath: readonly string[],
   goal: Square,
-): { valid: boolean; error?: string; fullPath?: Square[] } {
+): UserPathValidation {
   if (userPath.length === 0) return { valid: false, error: "Empty path" };
 
   const lastUserSquare = userPath[userPath.length - 1];

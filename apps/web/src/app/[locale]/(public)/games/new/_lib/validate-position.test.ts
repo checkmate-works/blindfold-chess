@@ -81,6 +81,7 @@ describe('validatePosition', () => {
       const result = validatePosition('4k3/4Q3/8/8/8/8/8/4K3', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBe('black');
     });
 
@@ -90,6 +91,7 @@ describe('validatePosition', () => {
       const result = validatePosition('4k3/8/8/8/8/8/4q3/4K3', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBe('white');
     });
 
@@ -99,6 +101,7 @@ describe('validatePosition', () => {
       const result = validatePosition('4k3/4Q3/8/8/8/8/8/4K3', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBeUndefined();
     });
 
@@ -107,6 +110,7 @@ describe('validatePosition', () => {
       const result = validatePosition('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBeUndefined();
     });
 
@@ -125,6 +129,7 @@ describe('validatePosition', () => {
       const result = validatePosition('k3r3/8/8/8/8/8/8/4K3', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBeUndefined();
     });
 
@@ -134,6 +139,7 @@ describe('validatePosition', () => {
       const result = validatePosition('k3r3/8/8/8/8/8/8/4K3', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBe('white');
     });
   });
@@ -145,6 +151,7 @@ describe('validatePosition', () => {
       const result = validatePosition('4k3/8/8/1B6/8/8/8/4R1K1', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBeUndefined();
     });
 
@@ -154,6 +161,7 @@ describe('validatePosition', () => {
       const result = validatePosition('4k3/8/8/1B6/8/8/8/4R1K1', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBe('black');
     });
 
@@ -174,6 +182,7 @@ describe('validatePosition', () => {
       const result = validatePosition('4k3/8/8/8/8/3B4/8/4R1K1', fen);
 
       expect(result.valid).toBe(true);
+      if (!result.valid) throw new Error('expected valid result');
       expect(result.correctedColor).toBeUndefined();
     });
   });

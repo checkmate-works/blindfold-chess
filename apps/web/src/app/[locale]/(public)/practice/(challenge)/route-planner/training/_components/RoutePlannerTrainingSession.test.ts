@@ -129,18 +129,21 @@ describe('RoutePlannerTrainingSession logic', () => {
       // Knight on a1 cannot go directly to a2
       const result = validateUserPath('n', 'a1', ['a2'], 'a2');
       expect(result.valid).toBe(false);
+      if (result.valid) throw new Error('expected invalid result');
       expect(result.error).toBe('Invalid move');
     });
 
     it('rejects a path that does not end at the goal', () => {
       const result = validateUserPath('n', 'a1', ['b3'], 'c5');
       expect(result.valid).toBe(false);
+      if (result.valid) throw new Error('expected invalid result');
       expect(result.error).toBe('Path does not end at goal');
     });
 
     it('rejects an empty path', () => {
       const result = validateUserPath('n', 'a1', [], 'c5');
       expect(result.valid).toBe(false);
+      if (result.valid) throw new Error('expected invalid result');
       expect(result.error).toBe('Empty path');
     });
 

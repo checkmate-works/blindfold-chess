@@ -18,6 +18,7 @@ describe("validatePosition", () => {
     const emptyFen = "8/8/8/8/8/8/8/8 w - - 0 1";
     const result = validatePosition(emptyFen, emptyFen);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.errorKey).toBe("positionEmpty");
   });
 
@@ -26,6 +27,7 @@ describe("validatePosition", () => {
       "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3";
     const result = validatePosition(checkmateFen, checkmateFen);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.errorKey).toBe("positionAlreadyCheckmate");
   });
 
@@ -33,6 +35,7 @@ describe("validatePosition", () => {
     const stalemateFen = "k7/8/1Q6/8/8/8/8/2K5 b - - 0 1";
     const result = validatePosition(stalemateFen, stalemateFen);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.errorKey).toBe("positionAlreadyStalemate");
   });
 
@@ -40,6 +43,7 @@ describe("validatePosition", () => {
     const kvkFen = "k7/8/8/8/8/8/8/K7 w - - 0 1";
     const result = validatePosition(kvkFen, kvkFen);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.errorKey).toBe("positionInsufficientMaterial");
   });
 
@@ -60,12 +64,14 @@ describe("validatePosition", () => {
     // The opponent (black) king is in check while it's white's turn — validatePosition should detect this
     const result = validatePosition(correctedFen, correctedFen);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.correctedColor).toBe("black");
   });
 
   it("returns invalid for a position with invalid FEN", () => {
     const result = validatePosition("invalid", "invalid");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.errorKey).toBe("positionInvalid");
   });
 });

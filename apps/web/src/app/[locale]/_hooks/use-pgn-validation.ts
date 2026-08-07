@@ -55,7 +55,10 @@ export function usePgnValidation({
   const showError = Boolean(showValidation && validationResult && !validationResult.valid);
 
   const diagnosis: PgnDiagnosis | null = showError
-    ? (diagnosePgn(debouncedValue) ?? diagnoseChessJsPgnError(validationResult?.error ?? ''))
+    ? (diagnosePgn(debouncedValue) ??
+      diagnoseChessJsPgnError(
+        validationResult && !validationResult.valid ? validationResult.error : ''
+      ))
     : null;
 
   // The move name, when we have one — `PgnInput` turns the message into a

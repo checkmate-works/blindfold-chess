@@ -6,6 +6,15 @@ import type { MoveResult } from "./types";
 import { asEngineSan, toMoveResult } from "./types";
 
 /**
+ * Result of validating a raw move sequence. `validMoves` carries the legal
+ * prefix as canonical SAN in both branches (on failure: every move before
+ * the offending one).
+ */
+export type MoveSequenceValidation =
+  | { valid: true; validMoves: AlgebraicNotation[] }
+  | { valid: false; error: string; validMoves: AlgebraicNotation[] };
+
+/**
  * Validate a raw move sequence against a position. Accepts unvalidated
  * strings; `validMoves` carries the legal prefix as canonical SAN emitted
  * by chess.js (not the raw input spelling).
@@ -13,7 +22,7 @@ import { asEngineSan, toMoveResult } from "./types";
 export function validateMoveSequence(
   fen: string,
   moves: string[],
-): { valid: boolean; error?: string; validMoves: AlgebraicNotation[] } {
+): MoveSequenceValidation {
   const chess = new Chess(fen);
   const validMoves: AlgebraicNotation[] = [];
 

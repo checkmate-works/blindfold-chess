@@ -1,13 +1,30 @@
+import type { Side } from "@blindfold-chess/types";
 import type { Color, Square } from "chess.js";
 import { Chess } from "chess.js";
 
 import { validateFen } from "./fen";
 
+export type PositionErrorKey =
+  | "positionEmpty"
+  | "positionInvalid"
+  | "positionAlreadyCheckmate"
+  | "positionAlreadyStalemate"
+  | "positionInsufficientMaterial";
+
+export type PositionValidation =
+  /**
+   * `correctedColor` is set when the position is only legal with the OTHER
+   * side to move (the opponent king is attackable as given); the caller is
+   * expected to flip the player color to it.
+   */
+  | { valid: true; correctedColor?: Side }
+  | { valid: false; errorKey: PositionErrorKey };
+
 // Ported from apps/web/src/app/[locale]/games/new/_lib/validate-position.ts
 export function validatePosition(
   boardFen: string,
   fullFen: string,
-): { valid: boolean; errorKey?: string; correctedColor?: string } {
+): PositionValidation {
   const boardPart = boardFen.split(" ")[0];
   if (boardPart === "8/8/8/8/8/8/8/8") {
     return { valid: false, errorKey: "positionEmpty" };
@@ -44,7 +61,7 @@ export function validatePosition(
       return { valid: false, errorKey: "positionInvalid" };
     }
     const turn = fullFen.split(" ")[1];
-    const correctedColor = turn === "w" ? "black" : "white";
+    const correctedColor: Side = turn === "w" ? "black" : "white";
     return { valid: true, correctedColor };
   }
 

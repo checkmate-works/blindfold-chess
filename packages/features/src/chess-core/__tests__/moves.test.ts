@@ -35,6 +35,7 @@ describe("validateMoveSequence", () => {
   it("returns invalid with the correct error for a bad move", () => {
     const result = validateMoveSequence(STARTING_FEN, ["e4", "Nf3"]);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toContain("Nf3");
     expect(result.error).toContain("index 1");
     expect(result.validMoves).toEqual(["e4"]);
@@ -43,6 +44,7 @@ describe("validateMoveSequence", () => {
   it("returns invalid for a completely illegal move", () => {
     const result = validateMoveSequence(STARTING_FEN, ["Ke2"]);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toContain("Ke2");
   });
 
@@ -72,6 +74,7 @@ describe("validateMoveSequence", () => {
       "r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16";
     const result = validateMoveSequence(fen, ["h5", "Nh2", "Bg3"]);
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toContain("Bg3");
     expect(result.error).toContain("index 2");
     expect(result.validMoves).toEqual(["h5", "Nh2"]);

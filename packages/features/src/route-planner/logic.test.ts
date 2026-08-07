@@ -355,12 +355,14 @@ describe("validateUserPath", () => {
   it("returns invalid for empty path", () => {
     const result = validateUserPath("n", "a1", [], "b3");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("Empty path");
   });
 
   it("returns invalid when path does not end at goal", () => {
     const result = validateUserPath("n", "a1", ["c2"], "b3");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("Path does not end at goal");
   });
 
@@ -369,6 +371,7 @@ describe("validateUserPath", () => {
     // userPath (the goal parameter is typed Square).
     const result = validateUserPath("n", "a1", ["z9", "b3"], "b3");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("Invalid square: z9");
   });
 
@@ -376,48 +379,56 @@ describe("validateUserPath", () => {
     // Knight from a1 cannot go to a2
     const result = validateUserPath("n", "a1", ["a2", "b3"], "b3");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("Invalid move");
   });
 
   it("validates a correct knight path", () => {
     const result = validateUserPath("n", "a1", ["b3"], "b3");
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.fullPath).toEqual(["a1", "b3"]);
   });
 
   it("validates a correct multi-step knight path", () => {
     const result = validateUserPath("n", "a1", ["c2", "e3"], "e3");
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.fullPath).toEqual(["a1", "c2", "e3"]);
   });
 
   it("validates a correct rook path", () => {
     const result = validateUserPath("r", "a1", ["a8"], "a8");
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.fullPath).toEqual(["a1", "a8"]);
   });
 
   it("validates a correct bishop path", () => {
     const result = validateUserPath("b", "a1", ["d4", "g7"], "g7");
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.fullPath).toEqual(["a1", "d4", "g7"]);
   });
 
   it("validates a correct queen path", () => {
     const result = validateUserPath("q", "a1", ["h8"], "h8");
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error("expected valid result");
     expect(result.fullPath).toEqual(["a1", "h8"]);
   });
 
   it("rejects a rook moving diagonally", () => {
     const result = validateUserPath("r", "a1", ["b2"], "b2");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("Invalid move");
   });
 
   it("rejects a bishop moving along a rank", () => {
     const result = validateUserPath("b", "a1", ["b1"], "b1");
     expect(result.valid).toBe(false);
+    if (result.valid) throw new Error("expected invalid result");
     expect(result.error).toBe("Invalid move");
   });
 });

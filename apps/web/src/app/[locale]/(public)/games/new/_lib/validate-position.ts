@@ -1,18 +1,5 @@
-import { validatePosition as chessCoreValidatePosition } from '@blindfold-chess/features/chess-core';
-import type { Side } from '@blindfold-chess/types';
-
-export type PositionValidationResult = {
-  valid: boolean;
-  errorKey?: string;
-  correctedColor?: Side;
-};
-
-export function validatePosition(boardFen: string, fullFen: string): PositionValidationResult {
-  const result = chessCoreValidatePosition(boardFen, fullFen);
-
-  return {
-    valid: result.valid,
-    errorKey: result.errorKey,
-    correctedColor: result.correctedColor as Side | undefined,
-  };
-}
+// The chess-core validator now returns a discriminated union with a typed
+// `correctedColor: Side`, so the wrapper that existed only to re-type that
+// field is a plain re-export.
+export type { PositionValidation as PositionValidationResult } from '@blindfold-chess/features/chess-core';
+export { validatePosition } from '@blindfold-chess/features/chess-core';
