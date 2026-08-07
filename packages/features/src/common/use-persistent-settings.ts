@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { PersistentStorage } from "./persistent-storage";
+import { useLatestRef } from "./use-latest-ref";
 
 export type UsePersistentSettingsOptions<T extends Record<string, unknown>> = {
   storageKey: string;
@@ -46,11 +47,9 @@ export function usePersistentSettings<T extends Record<string, unknown>>({
   // across renders so callers don't need to memoise the defaults object. The
   // ref is also used by the load effect below to seed the merge without
   // re-running when the defaults identity changes.
-  const defaultsRef = useRef(defaults);
-  defaultsRef.current = defaults;
+  const defaultsRef = useLatestRef(defaults);
 
-  const storageRef = useRef(storage);
-  storageRef.current = storage;
+  const storageRef = useLatestRef(storage);
 
   useEffect(() => {
     let cancelled = false;

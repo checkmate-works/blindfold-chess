@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useLatestRef } from "../common/use-latest-ref";
 import { useCountdown } from "./use-countdown";
 import { useGameTimer } from "./use-game-timer";
 
@@ -85,17 +86,10 @@ export function useTimedSession<TQuestion>(
     onAdvance,
   } = config;
 
-  const generateQuestionRef = useRef(generateQuestion);
-  generateQuestionRef.current = generateQuestion;
-
-  const feedbackDurationRef = useRef(feedbackDuration);
-  feedbackDurationRef.current = feedbackDuration;
-
-  const onAnswerEffectRef = useRef(onAnswerEffect);
-  onAnswerEffectRef.current = onAnswerEffect;
-
-  const onAdvanceRef = useRef(onAdvance);
-  onAdvanceRef.current = onAdvance;
+  const generateQuestionRef = useLatestRef(generateQuestion);
+  const feedbackDurationRef = useLatestRef(feedbackDuration);
+  const onAnswerEffectRef = useLatestRef(onAnswerEffect);
+  const onAdvanceRef = useLatestRef(onAdvance);
 
   const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(
     null,
@@ -116,17 +110,23 @@ export function useTimedSession<TQuestion>(
   );
 
   // Per-question timing lives here so quiz hooks don't each reimplement it.
-  const questionTimesRef = useRef<number[]>([]);
+  // State rather than a ref: the array is part of the return value, so pushing
+  // into a ref during callbacks and handing out `ref.current` would expose an
+  // array that mutates in place under a `number[]` type that promises a plain
+  // snapshot (and reading a ref during render is itself disallowed).
+  const [questionTimes, setQuestionTimes] = useState<number[]>([]);
   const questionStartRef = useRef<number>(Date.now());
 
   // Records how long the previous question was shown, then generates the next.
   const advanceQuestion = useCallback((): TQuestion => {
-    questionTimesRef.current.push(
-      (Date.now() - questionStartRef.current) / 1000,
-    );
-    questionStartRef.current = Date.now();
+    const now = Date.now();
+    setQuestionTimes((prev) => [
+      ...prev,
+      (now - questionStartRef.current) / 1000,
+    ]);
+    questionStartRef.current = now;
     return generateQuestionRef.current();
-  }, []);
+  }, [generateQuestionRef]);
 
   const { countdown } = useCountdown();
 
@@ -264,7 +264,7 @@ export function useTimedSession<TQuestion>(
     showFeedback,
     lastAnswerCorrect,
     isFinished,
-    questionTimes: questionTimesRef.current,
+    questionTimes,
     handleAnswer,
     togglePause,
     finishSession,

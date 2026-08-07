@@ -2,6 +2,8 @@
 
 import { useCallback, useRef } from "react";
 
+import { useLatestRef } from "../common/use-latest-ref";
+
 export type UseBufferedQuestionsOptions = {
   /** Size of the batch generated on first use. Default 200. */
   initialCount?: number;
@@ -35,11 +37,13 @@ export function useBufferedQuestions<T>(
     refillThreshold = 10,
   }: UseBufferedQuestionsOptions = {},
 ): () => T {
-  const makeBatchRef = useRef(makeBatch);
-  makeBatchRef.current = makeBatch;
+  const makeBatchRef = useLatestRef(makeBatch);
 
-  const optionsRef = useRef({ initialCount, refillCount, refillThreshold });
-  optionsRef.current = { initialCount, refillCount, refillThreshold };
+  const optionsRef = useLatestRef({
+    initialCount,
+    refillCount,
+    refillThreshold,
+  });
 
   const batchRef = useRef<T[] | null>(null);
   const indexRef = useRef(0);

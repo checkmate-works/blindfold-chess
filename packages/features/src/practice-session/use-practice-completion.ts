@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import { computePracticeResult } from "../common/practice-result";
 import type { PracticeResultWithMistakes } from "../common/types";
+import { useLatestRef } from "../common/use-latest-ref";
 
 /**
  * Fires `onComplete` exactly once, with a freshly computed result, when a
@@ -18,10 +19,8 @@ export function usePracticeCompletion<TResult>(
   computeResult: () => TResult,
   onComplete: ((result: TResult) => void) | undefined,
 ): void {
-  const computeResultRef = useRef(computeResult);
-  computeResultRef.current = computeResult;
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+  const computeResultRef = useLatestRef(computeResult);
+  const onCompleteRef = useLatestRef(onComplete);
 
   useEffect(() => {
     if (!isFinished) return;
