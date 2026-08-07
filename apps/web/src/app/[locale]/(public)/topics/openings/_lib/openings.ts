@@ -5,6 +5,7 @@
  * (unlike squares which are validated statically). The format check
  * is applied first to reject obviously invalid input before hitting the DB.
  */
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -23,5 +24,5 @@ export function isValidOpeningSlugFormat(value: string): boolean {
  * and the board should be displayed flipped.
  */
 export function isBlackOpening(fen: string): boolean {
-  return fen.split(' ')[1] === 'w';
+  return !isBlackToMoveFromFen(fen);
 }

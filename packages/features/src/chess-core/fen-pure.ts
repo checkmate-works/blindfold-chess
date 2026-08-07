@@ -108,6 +108,16 @@ export function isBlackToMoveFromFen(fen: string): boolean {
 }
 
 /**
+ * Fullmove-number field of a FEN. Like {@link isBlackToMoveFromFen} this is
+ * the tolerant accessor: a missing or malformed field falls back to `1`, so
+ * display code (move-number labels, replay indicators) can use it without a
+ * separate validity check.
+ */
+export function fullmoveNumberFromFen(fen: string): number {
+  return Number(fen.split(" ")[5]) || 1;
+}
+
+/**
  * The position-identity key: the first four FEN fields (placement, side to
  * move, castling rights, en-passant square), dropping the halfmove/fullmove
  * clocks. Two FENs that differ only in their clocks denote the same position

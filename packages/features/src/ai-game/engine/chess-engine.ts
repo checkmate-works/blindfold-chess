@@ -1,4 +1,9 @@
-import { getStartingFen, movesToUci, uciToAlgebraic } from "../../chess-core";
+import {
+  getStartingFen,
+  isBlackToMoveFromFen,
+  movesToUci,
+  uciToAlgebraic,
+} from "../../chess-core";
 import type { AlgebraicNotation, Fen, UciMove } from "@blindfold-chess/types";
 
 import { buildGoCommand, buildPositionCommand } from "../uci-protocol";
@@ -32,7 +37,7 @@ export function toWhitePerspectiveEvaluation(
   mate: number | undefined,
   bestMove: string | undefined,
 ): EvaluationResult {
-  const isWhiteToMove = fen.split(" ")[1] === "w";
+  const isWhiteToMove = !isBlackToMoveFromFen(fen);
   return {
     score: isWhiteToMove ? score : -score,
     mate: mate === undefined ? undefined : isWhiteToMove ? mate : -mate,

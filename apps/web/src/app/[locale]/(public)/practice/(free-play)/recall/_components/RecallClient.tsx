@@ -4,6 +4,7 @@ import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaArrowRight, FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
@@ -157,7 +158,7 @@ export function RecallClient({
   );
 
   const boardFen = displayFen || currentFen;
-  const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
+  const sideToMove = isBlackToMoveFromFen(boardFen) ? 'black' : 'white';
   // Recall now mirrors play's blindfold semantics exactly: `boardVisibility`
   // (always/peek/never) drives the same mask/peek overlay as the play
   // screen, and `showOwnPieces` / `showOpponentPieces` / `pawnHideMode` pass

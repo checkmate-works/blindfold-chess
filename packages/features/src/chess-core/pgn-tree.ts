@@ -1,6 +1,7 @@
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
+import { fullmoveNumberFromFen, isBlackToMoveFromFen } from "./fen-pure";
 import { asEngineSan } from "./types";
 
 /**
@@ -101,9 +102,8 @@ export class PgnParseError extends Error {
  * PGN writes it, and the 1-based ply counted from the game's first move.
  */
 function locateMove(beforeFen: string): { moveNumber: number; ply: number } {
-  const fields = beforeFen.split(" ");
-  const moveNumber = Number(fields[5] ?? "1") || 1;
-  const ply = (moveNumber - 1) * 2 + (fields[1] === "w" ? 1 : 2);
+  const moveNumber = fullmoveNumberFromFen(beforeFen);
+  const ply = (moveNumber - 1) * 2 + (isBlackToMoveFromFen(beforeFen) ? 2 : 1);
   return { moveNumber, ply };
 }
 
@@ -265,10 +265,8 @@ function writeMoveToken(
   beforeFen: string,
   needsNumber: boolean,
 ): string {
-  const fields = beforeFen.split(" ");
-  const turn = fields[1];
-  const fullmove = fields[5] ?? "1";
-  if (turn === "w") return `${fullmove}. ${san}`;
+  const fullmove = fullmoveNumberFromFen(beforeFen);
+  if (!isBlackToMoveFromFen(beforeFen)) return `${fullmove}. ${san}`;
   if (needsNumber) return `${fullmove}... ${san}`;
   return san;
 }

@@ -2,6 +2,7 @@ import type { LineMatchResult } from '@blindfold-chess/features/chess-core';
 import {
   formatMovesToPgn,
   formatPgnToText,
+  fullmoveNumberFromFen,
   replayMoves,
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -77,7 +78,7 @@ export function buildReplayModel(args: {
     ? {
         status,
         // The FEN before the diverging move carries the full-move number directly.
-        moveNo: Number(result.divergence.fen.split(' ')[5]) || 1,
+        moveNo: fullmoveNumberFromFen(result.divergence.fen),
         played: result.divergence.played,
         expected: result.divergence.expected.join(' / '),
       }

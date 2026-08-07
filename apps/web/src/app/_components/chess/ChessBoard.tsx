@@ -24,6 +24,7 @@ import {
   fenToBoard,
   findLegalMovesByCoords,
   getLegalMoves,
+  isBlackToMoveFromFen,
 } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 import { createPortal } from 'react-dom';
@@ -270,7 +271,7 @@ export const ChessBoard = memo(function ChessBoard({
   // default 'own' mode, so real games are entirely unaffected.
   const ownColorChar: PieceColor = playerSide === 'black' ? 'b' : 'w';
   const movableColorChar: PieceColor =
-    movablePieces === 'side-to-move' ? (fen.split(' ')[1] === 'b' ? 'b' : 'w') : ownColorChar;
+    movablePieces === 'side-to-move' ? (isBlackToMoveFromFen(fen) ? 'b' : 'w') : ownColorChar;
 
   // The blindfold visibility settings, bundled for the pure display rules in
   // @blindfold-chess/features/board-display (see that module for the policy

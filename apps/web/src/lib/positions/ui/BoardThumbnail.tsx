@@ -1,5 +1,6 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceColor, PieceType } from '@blindfold-chess/types';
 
@@ -81,13 +82,12 @@ function renderThumbnailPiece(
   }
 }
 
-// The helpers below intentionally avoid `fenToBoard` / `isBlackToMoveFromFen`
-// from `@blindfold-chess/features/chess-core`: those implementations depend on
-// `chess.js`, which would defeat the purpose of keeping this file a
-// chess-core-free React Server Component (we do not want chess.js pulled into
-// any client bundle that imports this thumbnail transitively). If a
-// chess.js-free alternative ever lands in `@blindfold-chess/features/chess-core/fen`,
-// replace these inline helpers with imports from that subentry.
+// The placement parser below intentionally avoids `fenToBoard` from the
+// chess-core barrel: that implementation depends on `chess.js`, which would
+// defeat the purpose of keeping this file a chess-core-free React Server
+// Component (we do not want chess.js pulled into any client bundle that
+// imports this thumbnail transitively). Side-to-move comes from the
+// chess.js-free `@blindfold-chess/features/chess-core/fen` subentry instead.
 function parseFenChar(ch: string): { type: PieceType; color: Color } | null {
   if (ch >= 'A' && ch <= 'Z') {
     const lower = ch.toLowerCase();
@@ -117,10 +117,6 @@ function parseFenPlacement(fen: string): (string | null)[][] {
   });
 }
 
-function isBlackToMove(fen: string): boolean {
-  return fen.split(' ')[1] === 'b';
-}
-
 /**
  * Purely presentational, non-interactive chess board rendered entirely as a
  * React Server Component. Intentionally does NOT depend on
@@ -140,7 +136,7 @@ export function BoardThumbnail({
   displaySettings = null,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
-  const flipped = flippedOverride ?? isBlackToMove(fen);
+  const flipped = flippedOverride ?? isBlackToMoveFromFen(fen);
 
   const ranks = parseFenPlacement(fen);
   const board = flipped ? [...ranks].reverse().map((rank) => [...rank].reverse()) : ranks;

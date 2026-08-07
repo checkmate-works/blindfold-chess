@@ -2,7 +2,7 @@ import type { Side } from "@blindfold-chess/types";
 import type { Color, Square } from "chess.js";
 import { Chess } from "chess.js";
 
-import { validateFen } from "./fen";
+import { isBlackToMoveFromFen, validateFen } from "./fen";
 
 export type PositionErrorKey =
   | "positionEmpty"
@@ -60,8 +60,9 @@ export function validatePosition(
     } catch {
       return { valid: false, errorKey: "positionInvalid" };
     }
-    const turn = fullFen.split(" ")[1];
-    const correctedColor: Side = turn === "w" ? "black" : "white";
+    const correctedColor: Side = isBlackToMoveFromFen(fullFen)
+      ? "white"
+      : "black";
     return { valid: true, correctedColor };
   }
 
