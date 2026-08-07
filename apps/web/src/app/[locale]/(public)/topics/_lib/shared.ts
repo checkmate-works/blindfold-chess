@@ -62,14 +62,15 @@ export type ProfilePostWithReplyMeta = PostWithReplyMeta & {
 export type SortMode = 'new' | 'popular' | 'active';
 
 /**
- * Sort posts by the given mode. Mutates and returns the array.
- * - 'new': no-op (assumes posts are already sorted by createdAt DESC from the DB query)
+ * Sort posts by the given mode. Pure: returns a new array, `posts` is not
+ * mutated (it may be a cached row set the caller must not disturb).
+ * - 'new': no reordering (assumes posts are already sorted by createdAt DESC from the DB query)
  * - 'popular': by likeCount DESC, then createdAt DESC
  * - 'active': by latestReplyAt DESC, then createdAt DESC
  */
-export function sortPosts<T extends PostWithReplyMeta>(posts: T[], sortBy: SortMode): T[] {
+export function sortPosts<T extends PostWithReplyMeta>(posts: readonly T[], sortBy: SortMode): T[] {
   if (sortBy === 'popular') {
-    return posts.sort((a, b) => {
+    return posts.toSorted((a, b) => {
       const likeDiff = b.likeMeta.likeCount - a.likeMeta.likeCount;
       if (likeDiff !== 0) return likeDiff;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -77,7 +78,7 @@ export function sortPosts<T extends PostWithReplyMeta>(posts: T[], sortBy: SortM
   }
 
   if (sortBy === 'active') {
-    return posts.sort((a, b) => {
+    return posts.toSorted((a, b) => {
       const aLatest = a.replyMeta.latestReplyAt ? new Date(a.replyMeta.latestReplyAt).getTime() : 0;
       const bLatest = b.replyMeta.latestReplyAt ? new Date(b.replyMeta.latestReplyAt).getTime() : 0;
       const replyDiff = bLatest - aLatest;
@@ -87,5 +88,5 @@ export function sortPosts<T extends PostWithReplyMeta>(posts: T[], sortBy: SortM
   }
 
   // 'new' — already sorted by createdAt DESC from the DB query
-  return posts;
+  return [...posts];
 }

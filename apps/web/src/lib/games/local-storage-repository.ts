@@ -44,7 +44,7 @@ export class LocalStorageGameRepository implements IGameRepository {
       // Validate moves before creating (with custom starting FEN if provided)
       this.validateMoves(game.moves, game.startingFen);
 
-      const games = await this.loadAll();
+      const games = await this.ensureCache();
 
       // Check game limit before creating new game
       if (games.length >= MAX_GAMES) {
@@ -55,9 +55,9 @@ export class LocalStorageGameRepository implements IGameRepository {
       const now = new Date().toISOString();
 
       const newGame: Game = { ...game, id: gameId, date: now, lastPlayed: now };
-      games.push(newGame);
-      this.saveToStorage(games);
-      this.cachedGames = games;
+      const next = [...games, newGame];
+      this.saveToStorage(next);
+      this.cachedGames = next;
 
       return gameId;
     } catch (error) {
@@ -82,7 +82,7 @@ export class LocalStorageGameRepository implements IGameRepository {
       // Validate moves before updating (with custom starting FEN if provided)
       this.validateMoves(game.moves, game.startingFen);
 
-      const games = await this.loadAll();
+      const games = await this.ensureCache();
       const index = games.findIndex((g) => g.id === id);
 
       if (index === -1) {
@@ -93,10 +93,11 @@ export class LocalStorageGameRepository implements IGameRepository {
       const lastPlayed = updateLastPlayed
         ? new Date().toISOString()
         : (games[index].lastPlayed ?? games[index].date);
-      games[index] = { ...game, id, date: games[index].date, lastPlayed };
+      const next = [...games];
+      next[index] = { ...game, id, date: games[index].date, lastPlayed };
 
-      this.saveToStorage(games);
-      this.cachedGames = games;
+      this.saveToStorage(next);
+      this.cachedGames = next;
     } catch (error) {
       console.error('Failed to update game:', error);
       throw error;
@@ -105,7 +106,7 @@ export class LocalStorageGameRepository implements IGameRepository {
 
   async load(id: string): Promise<Game | null> {
     try {
-      const games = await this.loadAll();
+      const games = await this.ensureCache();
       return games.find((game) => game.id === id) || null;
     } catch (error) {
       console.error('Failed to load game:', error);
@@ -114,6 +115,14 @@ export class LocalStorageGameRepository implements IGameRepository {
   }
 
   async loadAll(): Promise<Game[]> {
+    // Copy on the way out: handing callers the live cache array would let
+    // them mutate the cache (silently diverging from localStorage) and let
+    // our own writes mutate arrays callers are still holding.
+    return [...(await this.ensureCache())];
+  }
+
+  /** The live cache array — internal use only; must never escape this class. */
+  private async ensureCache(): Promise<Game[]> {
     if (this.cachedGames !== null) {
       return this.cachedGames;
     }
@@ -149,7 +158,7 @@ export class LocalStorageGameRepository implements IGameRepository {
 
   async loadAllSorted(sortBy: GameSortOption, direction: SortDirection = 'desc'): Promise<Game[]> {
     try {
-      const games = await this.loadAll();
+      const games = await this.ensureCache();
 
       // Return a sorted copy so we don't mutate the cached array
       const sortedGames = [...games];
@@ -181,7 +190,7 @@ export class LocalStorageGameRepository implements IGameRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      const games = await this.loadAll();
+      const games = await this.ensureCache();
       const filteredGames = games.filter((game) => game.id !== id);
       this.saveToStorage(filteredGames);
       this.cachedGames = filteredGames;
