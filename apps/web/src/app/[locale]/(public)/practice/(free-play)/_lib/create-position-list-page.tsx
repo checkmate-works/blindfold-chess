@@ -97,14 +97,16 @@ export function createPositionListPage(config: PositionListPageConfig) {
 
   async function Page({ params, searchParams }: Props) {
     const { locale } = await params;
-    const { page, sort } = await searchParamsCache.parse(searchParams);
-    const sortBy = validateSort(sort);
-    const t = await getTranslations({ locale, namespace });
-    const tNav = await getTranslations({ locale, namespace: 'navigation' });
-
     // TODO: Consider a composite index on (type, deleted_at, created_at DESC)
-    // if this query becomes slow with large data volumes.
-    const totalCount = await countPositions({ type: positionType });
+    // if the count query becomes slow with large data volumes.
+    const [{ page, sort }, t, tNav, totalCount, currentUser] = await Promise.all([
+      searchParamsCache.parse(searchParams),
+      getTranslations({ locale, namespace }),
+      getTranslations({ locale, namespace: 'navigation' }),
+      countPositions({ type: positionType }),
+      getOptionalUser(),
+    ]);
+    const sortBy = validateSort(sort);
 
     const { currentPage, totalPages, limit, offset } = getPaginationParams(
       page,
@@ -119,11 +121,11 @@ export function createPositionListPage(config: PositionListPageConfig) {
       offset,
     });
 
-    const currentUser = await getOptionalUser();
     const positionIds = rows.map((r) => r.position.id);
-    const [likeMetaMap, replyMetaMap] = await Promise.all([
+    const [likeMetaMap, replyMetaMap, resolvedNativeAds] = await Promise.all([
       getPositionLikeMetaMap(positionIds, currentUser?.id),
       getReplyMetaMap(replyMetaType, positionIds),
+      nativeAdSlot ? resolveNativeAds(nativeAdSlot, currentUser?.id ?? null) : null,
     ]);
 
     const buildHref = (p: number) => {
@@ -140,9 +142,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
     // entitlement by `resolveNativeAds` — ad-free users get no node; the
     // component-owned `.ad-slot-wrapper` CSS-hide is the un-forgettable
     // second layer.
-    const nativeAd = nativeAdSlot
-      ? ((await resolveNativeAds(nativeAdSlot, currentUser?.id ?? null)).creatives[0] ?? null)
-      : null;
+    const nativeAd = resolvedNativeAds?.creatives[0] ?? null;
 
     // Help-tour steps: explain what the module is and — only when the create
     // CTA is rendered (signed-in users) — point at it. When `tutorialPath` is

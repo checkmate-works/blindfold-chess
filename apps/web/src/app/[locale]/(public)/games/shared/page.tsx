@@ -57,27 +57,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SharedGamesPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'sharedGames' });
-
-  const sp = await searchParams;
+  const [t, openingNameT, tPlay, sp, totalCount, currentUser] = await Promise.all([
+    getTranslations({ locale, namespace: 'sharedGames' }),
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
+    getTranslations({ locale, namespace: 'play' }),
+    searchParams,
+    countSharedGames(),
+    getOptionalUser(),
+  ]);
   const sort = parseSharedGamesSort(sp.sort);
   const page = Number(sp.page) || 1;
 
-  const totalCount = await countSharedGames();
   const { currentPage, totalPages, limit, offset } = getPaginationParams(page, totalCount);
   const items = await listSharedGames(sort, limit, offset);
 
-  const currentUser = await getOptionalUser();
   const ids = items.map((g) => g.id);
   const [likeMetaMap, commentMetaMap] = await Promise.all([
     getLikeMetaMap(GAME_LIKE_TARGET, ids, currentUser?.id),
     getGameCommentMetaMap(ids),
   ]);
   const justNowLabel = t('detail.justNow');
-  const [openingNameT, tPlay] = await Promise.all([
-    getTranslations({ locale, namespace: 'topics.openings.names' }),
-    getTranslations({ locale, namespace: 'play' }),
-  ]);
 
   return (
     <PageLayout title={t('list.title')} locale={locale}>

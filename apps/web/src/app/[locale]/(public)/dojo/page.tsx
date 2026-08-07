@@ -63,10 +63,16 @@ export async function generateMetadata({ params }: LocalePageProps): Promise<Met
 
 export default async function DojoPage({ params }: LocalePageProps) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'dojo' });
-  const tHelp = await getTranslations({ locale, namespace: 'dojo.help' });
-  const tRanks = await getTranslations({ locale, namespace: 'ranks' });
-  const tGuides = await getTranslations({ locale, namespace: 'guides' });
+  // The rank master is viewer-independent, so it loads with the translations
+  // and the supabase client instead of waiting behind the session lookup.
+  const [t, tHelp, tRanks, tGuides, supabase, dbRanks] = await Promise.all([
+    getTranslations({ locale, namespace: 'dojo' }),
+    getTranslations({ locale, namespace: 'dojo.help' }),
+    getTranslations({ locale, namespace: 'ranks' }),
+    getTranslations({ locale, namespace: 'guides' }),
+    createClient(),
+    getAllRanks(),
+  ]);
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
 
   // Precompute per-rank guide hrefs for the curriculum list. Ranks without a
@@ -78,12 +84,10 @@ export default async function DojoPage({ params }: LocalePageProps) {
       : null;
   }
 
-  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const dbRanks = await getAllRanks();
   const achievedRankIds = user ? await getUserAchievedRankIds(user.id) : new Set<string>();
   const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
   // The curriculum TOC's checkmarks use the DISPLAY set (expanded + mukyu):
