@@ -55,21 +55,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function OpeningsContent({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { page, first_move } = await searchParamsCache.parse(searchParams);
-  const t = await getTranslations({ locale, namespace: 'topics' });
-  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
-  const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
-  const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [{ page, first_move }, t, tSquares, tOpenings, nameT, supabase] = await Promise.all([
+    searchParamsCache.parse(searchParams),
+    getTranslations({ locale, namespace: 'topics' }),
+    getTranslations({ locale, namespace: 'topics.squares' }),
+    getTranslations({ locale, namespace: 'topics.openings' }),
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
+    createClient(),
+  ]);
 
   const firstMoveSquare = first_move && isValidSquare(first_move) ? first_move : null;
 
-  const totalCount = firstMoveSquare
-    ? await getPostCountByFirstMoveSquare(firstMoveSquare)
-    : await getPostCountAcrossOpenings();
+  // The viewer lookup, the post count, and the openings tree are keyed on
+  // three different things (session / filter / filter) — one round for all.
+  const [
+    {
+      data: { user },
+    },
+    totalCount,
+    openings,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    firstMoveSquare ? getPostCountByFirstMoveSquare(firstMoveSquare) : getPostCountAcrossOpenings(),
+    firstMoveSquare ? getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare) : getOpeningsAsTree(),
+  ]);
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     totalCount,
@@ -84,13 +93,11 @@ async function OpeningsContent({ params, searchParams }: Props) {
   // TopicPostCard is a client component and `getAttachmentsForPosts`
   // is server-only. Posts with no attachment row drop out of the map.
   const postIds = recentPosts.map((p) => p.id);
-  const attachments = postIds.length > 0 ? await getAttachmentsForPosts(postIds) : new Map();
-  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const [attachments, tVideo] = await Promise.all([
+    postIds.length > 0 ? getAttachmentsForPosts(postIds) : new Map(),
+    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
+  ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
-
-  const openings = firstMoveSquare
-    ? await getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare)
-    : await getOpeningsAsTree();
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
