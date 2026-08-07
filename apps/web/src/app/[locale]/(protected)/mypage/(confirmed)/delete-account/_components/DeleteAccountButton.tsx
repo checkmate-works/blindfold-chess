@@ -10,6 +10,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
+import { deleteOwnAccount } from '../_actions/deleteOwnAccount';
+
 type Props = {
   locale: string;
 };
@@ -31,9 +33,9 @@ export function DeleteAccountButton({ locale }: Props) {
     setError(null);
 
     try {
-      const res = await fetch('/api/account', { method: 'DELETE' });
+      const result = await deleteOwnAccount();
 
-      if (!res.ok) {
+      if ('error' in result) {
         setError(t('error'));
         setIsDeleting(false);
         setIsModalOpen(false);
