@@ -1,5 +1,3 @@
-'use client';
-
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
 import type { PuzzleFeedbackKind } from '../_hooks/use-puzzle-board-feedback';

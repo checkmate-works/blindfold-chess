@@ -1,5 +1,3 @@
-'use client';
-
 import type { ChessOpening } from '@/lib/db';
 
 import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components/OpeningCard';

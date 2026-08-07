@@ -1,5 +1,3 @@
-'use client';
-
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FenSetup } from './FenSetup';
