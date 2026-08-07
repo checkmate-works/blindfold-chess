@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 
 import { shouldIgnoreKeyEvent } from '@/lib/keyboard-guards';
 
@@ -57,8 +59,7 @@ export function useAlgebraicKeyboardInput({
 }: UseAlgebraicKeyboardInputOptions) {
   // Keep callbacks in a ref so the effect only re-runs when `enabled` toggles.
   // This avoids churning the window listener on every render of the caller.
-  const callbacksRef = useRef({ onFile, onRank, onBackspace });
-  callbacksRef.current = { onFile, onRank, onBackspace };
+  const callbacksRef = useLatestRef({ onFile, onRank, onBackspace });
 
   useEffect(() => {
     if (!enabled) return;
@@ -88,5 +89,5 @@ export function useAlgebraicKeyboardInput({
     return () => {
       window.removeEventListener('keydown', handler);
     };
-  }, [enabled]);
+  }, [enabled, callbacksRef]);
 }

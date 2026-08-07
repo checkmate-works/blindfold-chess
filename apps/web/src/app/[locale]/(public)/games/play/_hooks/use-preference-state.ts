@@ -1,6 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 
 import { foldPreferences } from '@/lib/games/fold-preferences';
 import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
@@ -95,8 +97,7 @@ export function usePreferenceState({
   // read the latest snapshot without taking `preferenceChangeLog` as a
   // dependency — that would rebuild the callback on every edit and churn
   // child memoization.
-  const preferenceChangeLogRef = useRef(preferenceChangeLog);
-  preferenceChangeLogRef.current = preferenceChangeLog;
+  const preferenceChangeLogRef = useLatestRef(preferenceChangeLog);
 
   /**
    * Append one entry to `preferenceChangeLog` for a mid-game preference
@@ -135,7 +136,7 @@ export function usePreferenceState({
       setPreferenceChangeLog((prev) => [...prev, entry]);
       return true;
     },
-    [initialPerGamePrefs]
+    [initialPerGamePrefs, preferenceChangeLogRef]
   );
 
   return {

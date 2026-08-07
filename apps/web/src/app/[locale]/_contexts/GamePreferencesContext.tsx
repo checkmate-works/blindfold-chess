@@ -1,14 +1,8 @@
 'use client';
 
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 
 import type { AiReplyDuration } from '@/lib/games/ai-reply-duration';
 import { DEFAULT_AI_REPLY_DURATION } from '@/lib/games/ai-reply-duration';
@@ -161,8 +155,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   // Mirror `preferences` into a ref so `updatePreferences` can read the
   // current value without being re-created (and invalidating consumer
   // memoization) on every preference change.
-  const preferencesRef = useRef(preferences);
-  preferencesRef.current = preferences;
+  const preferencesRef = useLatestRef(preferences);
 
   // Load preferences from localStorage on mount.
   //
@@ -216,12 +209,15 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   // The cookie is a server-facing hint only — localStorage remains the source
   // of truth for the full preferences object. See the single-writer rule on
   // `game-preferences-persistence`.
-  const updatePreferences = useCallback((updates: Partial<GamePreferences>) => {
-    const prev = preferencesRef.current;
-    const next = { ...prev, ...updates };
-    syncChangedPreferenceCookies(prev, updates, next);
-    setPreferences(next);
-  }, []);
+  const updatePreferences = useCallback(
+    (updates: Partial<GamePreferences>) => {
+      const prev = preferencesRef.current;
+      const next = { ...prev, ...updates };
+      syncChangedPreferenceCookies(prev, updates, next);
+      setPreferences(next);
+    },
+    [preferencesRef]
+  );
 
   const resetPreferences = useCallback(() => {
     // Write the cookies synchronously so a reset user's next navigation sees

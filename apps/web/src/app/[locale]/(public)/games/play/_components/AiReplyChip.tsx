@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 import { FaRobot, FaSpinner } from 'react-icons/fa';
 
 import { STATUS_PILL_CLASSES } from '../_lib';
@@ -44,8 +45,7 @@ export function useAiReplyChip({
   // new `aiMoveSignal` should (re)show the chip. If `durationMs` were a dep,
   // changing the AI-display-time setting would re-run the effect and re-show a
   // move that had already been dismissed (e.g. by a board reveal) or expired.
-  const durationRef = useRef(durationMs);
-  durationRef.current = durationMs;
+  const durationRef = useLatestRef(durationMs);
 
   useEffect(() => {
     if (!aiMoveSignal) return;
@@ -56,7 +56,7 @@ export function useAiReplyChip({
     if (ms <= 0) return;
     const id = setTimeout(() => setMoveVisible(false), ms);
     return () => clearTimeout(id);
-  }, [aiMoveSignal]);
+  }, [aiMoveSignal, durationRef]);
 
   const dismiss = useCallback(() => setMoveVisible(false), []);
 

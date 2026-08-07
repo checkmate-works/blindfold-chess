@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   getStartingFen,
   getTurnFromFen,
   toPositionKey,
 } from '@blindfold-chess/features/chess-core';
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 
 import type { BuilderNode, BuilderPath } from '@/lib/repertoires/board-builder-tree';
 import {
@@ -76,8 +77,7 @@ export function useRepertoireBoardBuilder({
   const { rootFen, children, path } = state;
 
   // Kept in a ref so the action callbacks stay stable across parent renders.
-  const onPgnChangeRef = useRef(onPgnChange);
-  onPgnChangeRef.current = onPgnChange;
+  const onPgnChangeRef = useLatestRef(onPgnChange);
 
   const currentNode = nodeAtPath(children, path);
   const currentFen = currentNode?.fen ?? rootFen;
@@ -110,7 +110,7 @@ export function useRepertoireBoardBuilder({
         onPgnChangeRef.current(builderTreeToPgn(result.children, rootFen));
       }
     },
-    [children, path, rootFen, singleLine]
+    [children, path, rootFen, singleLine, onPgnChangeRef]
   );
 
   const deleteCurrent = useCallback(() => {
@@ -118,7 +118,7 @@ export function useRepertoireBoardBuilder({
     const result = deleteAtPath(children, path);
     setState({ rootFen, children: result.children, path: result.path });
     onPgnChangeRef.current(builderTreeToPgn(result.children, rootFen));
-  }, [children, path, rootFen]);
+  }, [children, path, rootFen, onPgnChangeRef]);
 
   const jumpTo = useCallback((target: BuilderPath) => {
     setState((s) => ({ ...s, path: target }));

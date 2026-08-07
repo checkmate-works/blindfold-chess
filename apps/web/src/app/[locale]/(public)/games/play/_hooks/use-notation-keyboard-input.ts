@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import type { NotationChar } from '@blindfold-chess/features/ai-game/notation-input';
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 
 import { shouldIgnoreKeyEvent } from '@/lib/keyboard-guards';
 
@@ -86,8 +87,7 @@ export function useNotationKeyboardInput({
 }: UseNotationKeyboardInputOptions) {
   // Keep callbacks in a ref so the effect only re-runs when `enabled` toggles.
   // This avoids churning the window listener on every render of the caller.
-  const callbacksRef = useRef({ onChar, onBackspace, onSubmit });
-  callbacksRef.current = { onChar, onBackspace, onSubmit };
+  const callbacksRef = useLatestRef({ onChar, onBackspace, onSubmit });
 
   useEffect(() => {
     if (!enabled) return;
@@ -123,5 +123,5 @@ export function useNotationKeyboardInput({
     };
     // containerRef is a stable ref object; reading .current inside the
     // handler always sees the latest element.
-  }, [enabled, containerRef]);
+  }, [callbacksRef, enabled, containerRef]);
 }

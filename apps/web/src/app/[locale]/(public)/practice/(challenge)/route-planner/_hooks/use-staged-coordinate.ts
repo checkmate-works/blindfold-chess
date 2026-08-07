@@ -1,9 +1,10 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import {
   type StagedCoordinateSelection,
   applyCoordinateBackspace,
 } from '@blindfold-chess/features/common';
+import { useLatestRef } from '@blindfold-chess/features/common/client';
 
 type StagedCoordinateState = StagedCoordinateSelection;
 
@@ -49,11 +50,7 @@ export function useStagedCoordinate(options: UseStagedCoordinateOptions = {}): S
 
   // Mirror the latest state into a ref so callbacks can read synchronously
   // without re-creating themselves on every state change.
-  const stateRef = useRef<StagedCoordinateState>({
-    selectedFile: null,
-    selectedRank: null,
-  });
-  stateRef.current = { selectedFile, selectedRank };
+  const stateRef = useLatestRef<StagedCoordinateState>({ selectedFile, selectedRank });
 
   const pressFile = useCallback(
     (file: string): StagedCoordinateState => {
@@ -68,7 +65,7 @@ export function useStagedCoordinate(options: UseStagedCoordinateOptions = {}): S
       setSelectedFile(nextFile);
       return next;
     },
-    [disabled]
+    [disabled, stateRef]
   );
 
   const pressRank = useCallback(
@@ -84,7 +81,7 @@ export function useStagedCoordinate(options: UseStagedCoordinateOptions = {}): S
       setSelectedRank(nextRank);
       return next;
     },
-    [disabled]
+    [disabled, stateRef]
   );
 
   const clearStage = useCallback((): boolean => {
@@ -95,18 +92,18 @@ export function useStagedCoordinate(options: UseStagedCoordinateOptions = {}): S
     setSelectedFile(next.selectedFile);
     setSelectedRank(next.selectedRank);
     return true;
-  }, [disabled]);
+  }, [disabled, stateRef]);
 
   const hasStage = useCallback((): boolean => {
     const { selectedFile: f, selectedRank: r } = stateRef.current;
     return f !== null || r !== null;
-  }, []);
+  }, [stateRef]);
 
   const resetStage = useCallback(() => {
     stateRef.current = { selectedFile: null, selectedRank: null };
     setSelectedFile(null);
     setSelectedRank(null);
-  }, []);
+  }, [stateRef]);
 
   return {
     selectedFile,

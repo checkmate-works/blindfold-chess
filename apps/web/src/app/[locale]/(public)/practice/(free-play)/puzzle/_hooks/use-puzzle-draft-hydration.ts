@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { useLatestRef } from '@blindfold-chess/features/common/client';
+
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { readDraft } from '../_lib/draft-storage';
 
@@ -58,10 +60,8 @@ export function usePuzzleDraftHydration<T = PuzzleDraftV1>({
 
   // Mirror callbacks into refs so the once-on-mount effect can call the
   // latest closures without listing them in deps and re-firing every render.
-  const applyRef = useRef(apply);
-  applyRef.current = apply;
-  const readRef = useRef(read);
-  readRef.current = read;
+  const applyRef = useLatestRef(apply);
+  const readRef = useLatestRef(read);
 
   useEffect(() => {
     if (!enabled) return;
@@ -71,7 +71,7 @@ export function usePuzzleDraftHydration<T = PuzzleDraftV1>({
     if (!draft) return;
     applyRef.current(draft);
     setHydratedFromDraft(true);
-  }, [enabled]);
+  }, [enabled, applyRef, readRef]);
 
   return {
     hydratedFromDraft,
