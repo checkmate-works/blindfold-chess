@@ -1,5 +1,3 @@
-'use client';
-
 import { MarkdownRenderer } from '@/app/_components/MarkdownRenderer';
 
 const FORMULA = `$$|file_1 - file_2| = |rank_1 - rank_2|$$`;

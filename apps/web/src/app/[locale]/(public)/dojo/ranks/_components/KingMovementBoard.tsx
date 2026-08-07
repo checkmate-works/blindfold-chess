@@ -1,5 +1,3 @@
-'use client';
-
 import { PieceMovementBoard } from './_shared/PieceMovementBoard';
 
 const KING_SQUARE = 'd4';

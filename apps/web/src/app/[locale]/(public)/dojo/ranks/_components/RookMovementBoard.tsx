@@ -1,5 +1,3 @@
-'use client';
-
 import { PieceMovementBoard } from './_shared/PieceMovementBoard';
 
 const ROOK_SQUARE = 'd4';

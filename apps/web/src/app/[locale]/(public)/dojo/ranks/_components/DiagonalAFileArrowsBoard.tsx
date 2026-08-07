@@ -1,5 +1,3 @@
-'use client';
-
 import { HighlightedBoard, type Overlay } from './_shared/HighlightedBoard';
 import { ArrowMarker } from './_shared/arrow-marker';
 

@@ -1,5 +1,3 @@
-'use client';
-
 import { QuadrantGridBoard } from './QuadrantGridBoard';
 
 type Quadrant = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';

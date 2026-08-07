@@ -1,5 +1,3 @@
-'use client';
-
 import { PieceMovementBoard } from './_shared/PieceMovementBoard';
 
 const BISHOP_SQUARE = 'd4';

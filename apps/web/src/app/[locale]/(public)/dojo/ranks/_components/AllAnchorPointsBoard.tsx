@@ -1,5 +1,3 @@
-'use client';
-
 import { AnchorPointsBoard } from './AnchorPointsBoard';
 
 const ALL_ANCHOR_SQUARES = [

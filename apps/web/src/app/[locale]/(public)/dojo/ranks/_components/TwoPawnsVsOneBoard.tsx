@@ -1,6 +1,5 @@
-'use client';
-
-import { StaticPositionBoard, fenToStaticPlacements } from './_shared/StaticPositionBoard';
+import { StaticPositionBoard } from './_shared/StaticPositionBoard';
+import { fenToStaticPlacements } from './_shared/fen-to-static-placements';
 import { TWO_PAWNS_VS_ONE_FEN } from './two-pawns-vs-one-fen';
 
 /**
