@@ -32,7 +32,12 @@ export type UseRoutePlannerSessionConfig =
 
 export type UseRoutePlannerSessionReturn = TimedSessionFacade & {
   currentProblem: RoutePlannerProblem | null;
-  handleAnswer: (success: boolean) => void;
+  /**
+   * Record an answer. `userPath` is the square sequence the user entered;
+   * when omitted (callers that track their own per-problem results) the
+   * recorded entry carries an empty path.
+   */
+  handleAnswer: (success: boolean, userPath?: readonly Square[]) => void;
   handleSkip: () => void;
 };
 
@@ -91,7 +96,12 @@ export function useRoutePlannerSession({
   // appends a problem-result entry. `skipped` is only written when true so
   // answered entries keep their shape (no `skipped: false` key).
   const recordProblem = useCallback(
-    (problem: RoutePlannerProblem, success: boolean, skipped = false) => {
+    (
+      problem: RoutePlannerProblem,
+      success: boolean,
+      userPath: readonly Square[],
+      skipped = false,
+    ) => {
       const shortestPath =
         (findShortestPath(problem.piece, problem.start, problem.end) as
           Square[] | null) ?? [];
@@ -103,7 +113,7 @@ export function useRoutePlannerSession({
           start: problem.start,
           end: problem.end,
           success,
-          userPath: [],
+          userPath: [...userPath],
           shortestPath,
           ...(skipped ? { skipped: true } : {}),
         },
@@ -113,10 +123,10 @@ export function useRoutePlannerSession({
   );
 
   const handleAnswer = useCallback(
-    (success: boolean) => {
+    (success: boolean, userPath: readonly Square[] = []) => {
       if (isBlocked || !currentQuestion) return;
 
-      recordProblem(currentQuestion, success);
+      recordProblem(currentQuestion, success, userPath);
       sessionHandleAnswer(success);
     },
     [isBlocked, currentQuestion, recordProblem, sessionHandleAnswer],
@@ -126,7 +136,7 @@ export function useRoutePlannerSession({
     if (isBlocked || !currentQuestion) return;
 
     onSkipEffectRef.current?.();
-    recordProblem(currentQuestion, false, true);
+    recordProblem(currentQuestion, false, [], true);
     sessionHandleAnswer(false);
   }, [isBlocked, currentQuestion, recordProblem, sessionHandleAnswer]);
 

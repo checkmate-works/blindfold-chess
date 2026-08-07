@@ -1,4 +1,5 @@
 import {
+  type RandomSource,
   generateRandomSquare,
   resolveOrientation,
   squareToFileIndex,
@@ -32,25 +33,31 @@ export function getCorrectQuadrant(square: string): QuadrantId {
 
 /**
  * Generate a single quadrant question with a random square and resolved orientation.
+ *
+ * @param rng Random number source for deterministic testing
  */
 export function generateQuadrantQuestion(
   orientation: BoardOrientation,
+  rng: RandomSource = Math.random,
 ): QuadrantQuestion {
   return {
-    square: generateRandomSquare(),
-    orientation: resolveOrientation(orientation),
+    square: generateRandomSquare(rng),
+    orientation: resolveOrientation(orientation, rng),
   };
 }
 
 /**
  * Generate a batch of quadrant questions.
+ *
+ * @param rng Random number source for deterministic testing
  */
 export function generateQuadrantQuestionBatch(
   size: number,
   orientation: BoardOrientation,
+  rng: RandomSource = Math.random,
 ): QuadrantQuestion[] {
   return Array.from({ length: size }, () =>
-    generateQuadrantQuestion(orientation),
+    generateQuadrantQuestion(orientation, rng),
   );
 }
 

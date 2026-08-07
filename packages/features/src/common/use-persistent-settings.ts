@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { PersistentStorage } from "./persistent-storage";
 import { useLatestRef } from "./use-latest-ref";
@@ -51,6 +51,31 @@ export function usePersistentSettings<T extends Record<string, unknown>>({
 
   const storageRef = useLatestRef(storage);
 
+  // Event-time mirror of `settings`, written synchronously wherever state is
+  // set. It exists so `updateSettings` can compute the merged object OUTSIDE
+  // the `setSettings` updater: React updaters must be pure (StrictMode and
+  // interrupted renders may invoke them twice), so the storage write that
+  // used to live inside the updater could fire twice per update. A
+  // `useLatestRef` (commit-time write) would not do here — two
+  // `updateSettings` calls in the same tick must see each other's result.
+  const settingsRef = useRef(settings);
+
+  const applySettings = useCallback(
+    (next: T, { persist }: { persist: boolean }) => {
+      settingsRef.current = next;
+      setSettings(next);
+      if (persist) {
+        void Promise.resolve(
+          storageRef.current.set(storageKey, JSON.stringify(next)),
+        ).catch(() => {
+          // Swallow persistence errors; state is still updated so the UI
+          // can proceed.
+        });
+      }
+    },
+    [storageKey],
+  );
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -60,7 +85,10 @@ export function usePersistentSettings<T extends Record<string, unknown>>({
         if (raw) {
           try {
             const parsed = JSON.parse(raw) as Partial<T>;
-            setSettings({ ...defaultsRef.current, ...parsed });
+            applySettings(
+              { ...defaultsRef.current, ...parsed },
+              { persist: false },
+            );
           } catch {
             // Invalid JSON — keep defaults.
           }
@@ -76,33 +104,18 @@ export function usePersistentSettings<T extends Record<string, unknown>>({
     return () => {
       cancelled = true;
     };
-  }, [storageKey]);
+  }, [storageKey, applySettings]);
 
   const updateSettings = useCallback(
     (partial: Partial<T>) => {
-      setSettings((prev) => {
-        const next = { ...prev, ...partial };
-        void Promise.resolve(
-          storageRef.current.set(storageKey, JSON.stringify(next)),
-        ).catch(() => {
-          // Swallow persistence errors; state is still updated so the UI
-          // can proceed.
-        });
-        return next;
-      });
+      applySettings({ ...settingsRef.current, ...partial }, { persist: true });
     },
-    [storageKey],
+    [applySettings],
   );
 
   const resetSettings = useCallback(() => {
-    const fresh = defaultsRef.current;
-    setSettings(fresh);
-    void Promise.resolve(
-      storageRef.current.set(storageKey, JSON.stringify(fresh)),
-    ).catch(() => {
-      // Swallow; state is reset regardless.
-    });
-  }, [storageKey]);
+    applySettings(defaultsRef.current, { persist: true });
+  }, [applySettings]);
 
   return { settings, updateSettings, resetSettings, isLoaded };
 }

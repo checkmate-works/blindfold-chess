@@ -125,7 +125,7 @@ export default function RoutePlannerSessionScreen() {
       message: attempt.message,
     });
     setIsShowingResult(true);
-    handleAnswer(attempt.success);
+    handleAnswer(attempt.success, attempt.finalMoves);
   }, [currentProblem, moves, isDisabled, handleAnswer, replaceMoves]);
 
   const handleSkip = useCallback(() => {
