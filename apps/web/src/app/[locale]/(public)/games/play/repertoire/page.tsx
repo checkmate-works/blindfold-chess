@@ -111,8 +111,11 @@ function CtaLink({
 export default async function RepertoireCheckPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'play' });
-  const sp = await searchParams;
+  const [t, sp, user] = await Promise.all([
+    getTranslations({ locale, namespace: 'play' }),
+    searchParams,
+    getOptionalUser(),
+  ]);
 
   const {
     moves,
@@ -144,8 +147,6 @@ export default async function RepertoireCheckPage({ params, searchParams }: Prop
       gameId,
       repertoireId,
     })}`;
-
-  const user = await getOptionalUser();
 
   let content: React.ReactNode;
   if (!moves) {
@@ -228,10 +229,11 @@ export default async function RepertoireCheckPage({ params, searchParams }: Prop
         // just pointed at this page's replay view instead of the detail
         // page. The verdict stays unrevealed until the replay arrives at it.
         const applicableIds = new Set(report.entries.map((entry) => entry.repertoire.id));
-        const cards = (await listRepertoiresForUser(user.id)).filter((card) =>
-          applicableIds.has(card.repertoire.id)
-        );
-        const cardMeta = await getRepertoireCardMeta([...applicableIds], user.id);
+        const [userCards, cardMeta] = await Promise.all([
+          listRepertoiresForUser(user.id),
+          getRepertoireCardMeta([...applicableIds], user.id),
+        ]);
+        const cards = userCards.filter((card) => applicableIds.has(card.repertoire.id));
         body = (
           <div className="space-y-3">
             {cards.map((card) => (

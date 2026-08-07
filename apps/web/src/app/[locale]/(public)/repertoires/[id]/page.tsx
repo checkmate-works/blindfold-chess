@@ -103,10 +103,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RepertoireDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
-  const t = await getTranslations({ locale, namespace: 'Repertoires' });
-  const tCommon = await getTranslations({ locale, namespace: 'Common' });
-  const currentUser = await getOptionalUser();
-  const sortParam = (await searchParams).sort;
+  const [t, tCommon, currentUser, { sort: sortParam }] = await Promise.all([
+    getTranslations({ locale, namespace: 'Repertoires' }),
+    getTranslations({ locale, namespace: 'Common' }),
+    getOptionalUser(),
+    searchParams,
+  ]);
 
   // Public (or owned) repertoires are viewable without login; only the owner
   // sees owner-only affordances (delete). Comments are read-only for anon.
@@ -117,24 +119,26 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
   // Owner-only visibility control needs the coins already paid on this course
   // (to preview each tier's incremental cost) and the owner's balance. Only for
   // a published tier — a `building` draft publishes from the "⋯" menu (or the
-  // edit form's draft toggle) instead.
-  const visibilityInfo =
+  // edit form's draft toggle) instead. The linked openings (n:n; empty for a
+  // non-opening phase, rendered as compact tag links out to each opening's
+  // topic page) and the like meta are independent of it, so all of these
+  // resolve in one round.
+  const [visibilityPair, linkedOpenings, tOpeningNames, likeMetaMap] = await Promise.all([
     isOwner && currentUser && repertoire.status !== 'building'
-      ? {
-          paid: await getRepertoireVisibilityPaid(currentUser.id, repertoire.id),
-          balance: (await getPointBalanceSummary(currentUser.id)).total,
-        }
-      : null;
+      ? Promise.all([
+          getRepertoireVisibilityPaid(currentUser.id, repertoire.id),
+          getPointBalanceSummary(currentUser.id),
+        ])
+      : null,
+    getLinkedOpenings(repertoire.id),
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
+    getRepertoireLikeMetaMap([repertoire.id], currentUser?.id),
+  ]);
+  const visibilityInfo = visibilityPair
+    ? { paid: visibilityPair[0], balance: visibilityPair[1].total }
+    : null;
 
-  // The openings this repertoire is linked to (n:n; empty for a non-opening
-  // phase). Rendered as compact tag links (the game-card pill) out to each
-  // opening's topic page.
-  const linkedOpenings = await getLinkedOpenings(repertoire.id);
-  const tOpeningNames = await getTranslations({ locale, namespace: 'topics.openings.names' });
-
-  const likeMeta = (await getRepertoireLikeMetaMap([repertoire.id], currentUser?.id)).get(
-    repertoire.id
-  ) ?? {
+  const likeMeta = likeMetaMap.get(repertoire.id) ?? {
     likeCount: 0,
     likedByMe: false,
   };

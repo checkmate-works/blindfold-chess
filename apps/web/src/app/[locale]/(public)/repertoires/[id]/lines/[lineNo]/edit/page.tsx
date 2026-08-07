@@ -40,8 +40,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EditRepertoireLinePage({ params }: Props) {
   const { locale, id, lineNo: lineNoParam } = await params;
-  const t = await getTranslations({ locale, namespace: 'Repertoires' });
-  const currentUser = await getOptionalUser();
+  const [t, currentUser] = await Promise.all([
+    getTranslations({ locale, namespace: 'Repertoires' }),
+    getOptionalUser(),
+  ]);
 
   const lineNo = Number(lineNoParam);
   if (!Number.isInteger(lineNo) || lineNo < 1) notFound();
@@ -60,8 +62,13 @@ export default async function EditRepertoireLinePage({ params }: Props) {
 
   // Existing "why this move" notes and board markup — prefill the per-move
   // note editor and the board's drawing surface. Repertoire-wide by design:
-  // both are keyed by position, so a transposing line shares them.
-  const annotationViews = await getAnnotationsForRepertoire(id);
+  // both are keyed by position, so a transposing line shares them. Fetched
+  // together with the chapter list below — both are keyed on the repertoire
+  // only.
+  const [annotationViews, chapters] = await Promise.all([
+    getAnnotationsForRepertoire(id),
+    listChaptersForRepertoire(id),
+  ]);
   const initialAnnotations = Object.fromEntries(
     [...annotationViews].filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
   );
@@ -71,9 +78,9 @@ export default async function EditRepertoireLinePage({ params }: Props) {
       .map(([key, v]) => [key, v.shapes])
   );
 
-  // The sections this line can be re-filed into. Empty for a course with no
-  // chapters, which hides the picker rather than offering only "unfiled".
-  const chapters = await listChaptersForRepertoire(id);
+  // `chapters`: the sections this line can be re-filed into. Empty for a
+  // course with no chapters, which hides the picker rather than offering only
+  // "unfiled".
 
   return (
     <PageLayout

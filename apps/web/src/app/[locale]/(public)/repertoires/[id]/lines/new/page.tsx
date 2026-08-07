@@ -37,8 +37,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewRepertoireLinePage({ params, searchParams }: Props) {
   const { locale, id } = await params;
-  const t = await getTranslations({ locale, namespace: 'Repertoires' });
-  const currentUser = await getOptionalUser();
+  const [t, currentUser] = await Promise.all([
+    getTranslations({ locale, namespace: 'Repertoires' }),
+    getOptionalUser(),
+  ]);
 
   const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
   // Adding lines is owner-only — don't even reveal the page to others.
@@ -56,8 +58,13 @@ export default async function NewRepertoireLinePage({ params, searchParams }: Pr
       : rawPgn;
 
   // Existing notes / markup: positions the new line shares with existing
-  // lines (the matched prefix) show what's already written there.
-  const annotationViews = await getAnnotationsForRepertoire(id);
+  // lines (the matched prefix) show what's already written there. Fetched
+  // together with the chapter list below — both are keyed on the repertoire
+  // only.
+  const [annotationViews, chapters] = await Promise.all([
+    getAnnotationsForRepertoire(id),
+    listChaptersForRepertoire(id),
+  ]);
   const initialAnnotations = Object.fromEntries(
     [...annotationViews].filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
   );
@@ -67,9 +74,9 @@ export default async function NewRepertoireLinePage({ params, searchParams }: Pr
       .map(([key, v]) => [key, v.shapes])
   );
 
-  // The sections the line can be filed into. Empty for a course with no
-  // chapters, which hides the picker rather than offering only "unfiled".
-  const chapters = await listChaptersForRepertoire(id);
+  // `chapters`: the sections the line can be filed into. Empty for a course
+  // with no chapters, which hides the picker rather than offering only
+  // "unfiled".
 
   return (
     <PageLayout
