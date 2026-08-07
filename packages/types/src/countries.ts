@@ -1,4 +1,4 @@
-export const COUNTRY_CODES: string[] = [
+export const COUNTRY_CODES = [
   "AD",
   "AE",
   "AF",
@@ -248,7 +248,9 @@ export const COUNTRY_CODES: string[] = [
   "ZA",
   "ZM",
   "ZW",
-];
+] as const;
+
+export type CountryCode = (typeof COUNTRY_CODES)[number];
 
 export function countryCodeToFlag(code: string): string {
   return [...code.toUpperCase()]
