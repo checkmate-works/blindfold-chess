@@ -1,11 +1,13 @@
 import type {
   AlgebraicNotation,
+  PieceColor,
   PieceType,
   Square,
 } from "@blindfold-chess/types";
 import type { Move } from "chess.js";
 
-export type Color = "w" | "b";
+/** Alias of the canonical {@link PieceColor}, kept for existing importers. */
+export type Color = PieceColor;
 
 export type BoardPiece = {
   square: Square;

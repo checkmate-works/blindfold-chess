@@ -20,7 +20,11 @@ import type { PgnTree } from "./pgn-tree";
  * attach at whatever ply the game first reaches that position.
  */
 
-export type Side = "white" | "black";
+import type { Side } from "@blindfold-chess/types";
+
+// Re-exported so existing importers keep working; the canonical union lives
+// in `@blindfold-chess/types`.
+export type { Side };
 
 export type LineMatchStatus =
   /** Player left their own prepared line (a mistake to correct). */

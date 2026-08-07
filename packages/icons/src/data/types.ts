@@ -31,7 +31,9 @@ export type SvgElement =
   | ({ type: "circle" } & SvgCircleData)
   | ({ type: "group"; children: SvgElement[] } & SvgGroupData);
 
-export type PieceColor = "w" | "b";
+// Re-exported so existing importers keep working; the canonical `"w" | "b"`
+// union lives in `@blindfold-chess/types`.
+export type { PieceColor } from "@blindfold-chess/types";
 
 export type PieceSvgData = {
   viewBox: string;

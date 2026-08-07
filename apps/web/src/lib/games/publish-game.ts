@@ -3,6 +3,7 @@ import {
   validateFen,
   validateMoveSequence,
 } from '@blindfold-chess/features/chess-core';
+import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import {
   PAWN_HIDE_MODES,
   PIECE_COLOR_MODES as PIECE_COLORS,
@@ -40,8 +41,13 @@ import type {
 
 export { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
 
-export type GameOutcome = 'win' | 'loss' | 'draw';
-export type PlayerColor = 'white' | 'black';
+// Aliases of the canonical @blindfold-chess/types unions, kept as this
+// module's exported names. A published game is always finished, so the
+// outcome here is FinalGameOutcome — previously a same-named local
+// `GameOutcome` that silently disagreed with the shared one about
+// `"in_progress"`.
+export type GameOutcome = FinalGameOutcome;
+export type PlayerColor = Side;
 
 /** Validated, normalized snapshot ready to persist. */
 export type ValidatedGame = {

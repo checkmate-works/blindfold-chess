@@ -1,5 +1,6 @@
 import type {
   PawnHideMode,
+  PieceColor,
   PieceColorMode,
   PieceShapeMode,
   PieceType,
@@ -8,9 +9,7 @@ import type {
 // Re-exported so existing importers of `@blindfold-chess/features/board-display`
 // keep working; the canonical source (types + runtime arrays) is
 // `@blindfold-chess/types`.
-export type { PawnHideMode, PieceColorMode, PieceShapeMode };
-
-export type PieceColor = "w" | "b";
+export type { PawnHideMode, PieceColor, PieceColorMode, PieceShapeMode };
 
 /** The minimal piece shape the display rules need (structurally compatible
  * with chess-core's non-null `BoardPiece`). */

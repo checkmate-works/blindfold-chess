@@ -197,7 +197,7 @@ export function EditableChessBoard({
     if (!piece) return null;
 
     const isWhite = piece === piece.toUpperCase();
-    const color: Color = (isWhite ? 'w' : 'b') as Color;
+    const color: Color = isWhite ? 'w' : 'b';
     const type: PieceType = piece.toLowerCase() as PieceType;
     const grabClass = editable ? 'cursor-grab active:cursor-grabbing touch-none' : '';
     const fadeClass = faded ? 'opacity-30' : '';
@@ -239,7 +239,7 @@ export function EditableChessBoard({
         </button>
         {pieces.map((piece) => {
           const isWhite = piece === piece.toUpperCase();
-          const color: Color = (isWhite ? 'w' : 'b') as Color;
+          const color: Color = isWhite ? 'w' : 'b';
           const type: PieceType = piece.toLowerCase() as PieceType;
 
           return (

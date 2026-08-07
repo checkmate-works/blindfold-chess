@@ -1,3 +1,5 @@
+import type { PieceColor } from '@blindfold-chess/types';
+
 /**
  * Empty-board FEN sentinel used by editable-board flows to reset the
  * editor. Note: this fails `validateFen`'s king-count check, so the
@@ -7,4 +9,5 @@
 export const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
 export type EditorTab = 'board' | 'fen';
-export type SideToMove = 'w' | 'b';
+/** Alias of the canonical {@link PieceColor}, kept for existing importers. */
+export type SideToMove = PieceColor;

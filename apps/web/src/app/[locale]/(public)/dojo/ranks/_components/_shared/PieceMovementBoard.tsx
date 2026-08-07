@@ -5,13 +5,11 @@ import { useCallback } from 'react';
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
+import type { PieceColor, PieceType } from '@blindfold-chess/types';
 
 import { useBoardTheme } from '../useBoardTheme';
 
 const DEFAULT_CLASS_NAME = 'mx-auto max-w-xs sm:max-w-sm';
-
-type PieceType = 'k' | 'q' | 'r' | 'b' | 'n' | 'p';
-type PieceColor = 'w' | 'b';
 
 type PieceMovementBoardProps = {
   /** Square the piece is placed on (e.g. 'd4'). */

@@ -1,7 +1,7 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
-import type { PieceType } from '@blindfold-chess/types';
+import type { PieceColor, PieceType } from '@blindfold-chess/types';
 
 import { BoardAnnotationOverlay } from '@/lib/board-annotations/BoardAnnotationOverlay';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
@@ -39,7 +39,7 @@ type Props = {
   displaySettings?: BlindfoldDisplaySettings | null;
 };
 
-type Color = 'w' | 'b';
+type Color = PieceColor;
 
 /**
  * Render one occupied square's piece. With no `displaySettings` this is the
