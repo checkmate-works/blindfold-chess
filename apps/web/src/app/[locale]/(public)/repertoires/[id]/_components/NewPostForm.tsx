@@ -1,5 +1,3 @@
-'use client';
-
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
 import { createRepertoirePostForImageAttach } from '../_actions/createRepertoirePostForImageAttach';

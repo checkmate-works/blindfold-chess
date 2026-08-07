@@ -1,5 +1,3 @@
-'use client';
-
 import { AdminDeleteButton } from '@/app/admin/_components/AdminDeleteButton';
 
 import { deletePuzzle } from '../_actions/deletePuzzle';
