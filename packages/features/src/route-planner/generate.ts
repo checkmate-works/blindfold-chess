@@ -1,12 +1,24 @@
 import type { Square } from "@blindfold-chess/types";
 
-import { type RandomSource, generateRandomSquare } from "../common";
+import {
+  type RandomSource,
+  ALL_SQUARES,
+  generateRandomSquare,
+} from "../common";
 
 import { RouteStrategies } from "./_strategies";
 import { findShortestPath } from "./bfs";
 import { isSameColor } from "./coords";
 import type { RoutePlannerPieceType, RoutePlannerProblem } from "./types";
 import { ROUTE_PLANNER_PIECES } from "./types";
+
+/**
+ * Bound on generate-and-test attempts. Every piece's difficulty constraint is
+ * satisfied by a large fraction of random square pairs (worst case roughly
+ * half), so with a real RNG a handful of attempts suffice; the cap exists so
+ * a stubbed or degenerate rng fails fast instead of hanging the process.
+ */
+const MAX_GENERATION_ATTEMPTS = 200;
 
 /**
  * Generate a route planner problem with per-piece difficulty constraints.
@@ -30,37 +42,51 @@ import { ROUTE_PLANNER_PIECES } from "./types";
  * @param rng Random number source for deterministic testing
  */
 export function generateProblem(
-  allowedPieces: RoutePlannerPieceType[] = ROUTE_PLANNER_PIECES,
+  allowedPieces: readonly RoutePlannerPieceType[] = ROUTE_PLANNER_PIECES,
   rng: RandomSource = Math.random,
 ): RoutePlannerProblem {
   const pool = allowedPieces.length > 0 ? allowedPieces : ROUTE_PLANNER_PIECES;
 
-  let piece: RoutePlannerPieceType;
-  let start: string;
-  let end: string;
-  let path: string[] | null;
+  for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt++) {
+    const problem = attemptProblem(pool, rng);
+    if (problem) return problem;
+  }
+  throw new Error(
+    `Failed to generate a route planner problem in ${MAX_GENERATION_ATTEMPTS} attempts`,
+  );
+}
 
-  do {
-    piece = pool[Math.floor(rng() * pool.length)];
-    start = generateRandomSquare(rng);
-    end = generateRandomSquare(rng);
+/**
+ * One generate-and-test attempt. Returns null when the drawn pair fails the
+ * piece's difficulty constraint (the caller re-rolls).
+ */
+function attemptProblem(
+  pool: readonly RoutePlannerPieceType[],
+  rng: RandomSource,
+): RoutePlannerProblem | null {
+  const piece = pool[Math.floor(rng() * pool.length)];
+  const start = generateRandomSquare(rng);
+  const end = generateRandomSquare(rng, endExclusions(piece, start));
 
-    // Ensure start !== end
-    while (start === end) {
-      end = generateRandomSquare(rng);
-    }
+  const path = findShortestPath(piece, start, end);
+  if (!path || !meetsPathConstraint(piece, path)) return null;
 
-    // Bishop: start and end must be on the same color
-    if (piece === "b") {
-      while (!isSameColor(start, end) || start === end) {
-        end = generateRandomSquare(rng);
-      }
-    }
+  return { piece, start, end };
+}
 
-    path = findShortestPath(piece, start, end);
-  } while (!path || !meetsPathConstraint(piece, path));
-
-  return { piece, start: start as Square, end: end as Square };
+/**
+ * Squares `end` may never land on: the start square itself, and for a bishop
+ * every square of the opposite color (unreachable, so drawing one would only
+ * waste an attempt).
+ */
+function endExclusions(
+  piece: RoutePlannerPieceType,
+  start: Square,
+): ReadonlySet<Square> {
+  if (piece !== "b") return new Set([start]);
+  return new Set(
+    ALL_SQUARES.filter((sq) => sq === start || !isSameColor(start, sq)),
+  );
 }
 
 /**

@@ -123,16 +123,17 @@ describe("generateRandomSquare", () => {
     );
   });
 
-  it("skips excluded squares and returns the next valid one", () => {
+  it("samples only from the eligible list, so an excluded square is unreachable", () => {
     const exclude = new Set(["a1"] as const) as ReadonlySet<
       import("@blindfold-chess/types").Square
     >;
-    let callIndex = 0;
-    // First call produces a1 (excluded), second produces b2
-    const rngValues = [0 / 8, 0 / 8, 1 / 8, 1 / 8];
-    const rng = () => rngValues[callIndex++];
-    const square = generateRandomSquare(rng, exclude);
-    expect(square).toBe("b2");
+    // With an exclude set the draw indexes once into the eligible list
+    // (file-major order): a1 is excluded, so index 0 is a2.
+    expect(generateRandomSquare(() => 0, exclude)).toBe("a2");
+    // Sweeping every index proves a1 is structurally unreachable.
+    for (let i = 0; i < 63; i++) {
+      expect(generateRandomSquare(() => i / 63, exclude)).not.toBe("a1");
+    }
   });
 });
 

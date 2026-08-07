@@ -55,21 +55,36 @@ export function formatTime(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 }
 
+/**
+ * All 64 squares in file-major order (a1, a2, …, a8, b1, …, h8).
+ * `generateRandomSquare` / `generateSquareSequence` sample eligible squares
+ * from this list, which makes both functions total — one rng draw per
+ * square, no rejection loop that a stubbed rng could spin forever.
+ */
+export const ALL_SQUARES: readonly Square[] = FILES.flatMap((file) =>
+  RANKS.map((rank) => `${file}${rank}` as Square),
+);
+
+/** Uniformly pick one element; `pool` must be non-empty. */
+function pickFrom(pool: readonly Square[], rng: RandomSource): Square {
+  return pool[Math.floor(rng() * pool.length)];
+}
+
 export function generateRandomSquare(
   rng: RandomSource = Math.random,
   exclude?: ReadonlySet<Square>,
 ): Square {
-  if (exclude && exclude.size >= 64) {
+  if (!exclude || exclude.size === 0) {
+    return (FILES[Math.floor(rng() * FILES.length)] +
+      RANKS[Math.floor(rng() * RANKS.length)]) as Square;
+  }
+  const eligible = ALL_SQUARES.filter((square) => !exclude.has(square));
+  if (eligible.length === 0) {
     throw new Error(
       "Cannot generate a random square: all squares are excluded",
     );
   }
-  let square: Square;
-  do {
-    square = (FILES[Math.floor(rng() * FILES.length)] +
-      RANKS[Math.floor(rng() * RANKS.length)]) as Square;
-  } while (exclude?.has(square));
-  return square;
+  return pickFrom(eligible, rng);
 }
 
 export function generateSquareSequence(
@@ -77,24 +92,33 @@ export function generateSquareSequence(
   rng: RandomSource = Math.random,
   exclude?: ReadonlySet<Square>,
 ): Square[] {
-  const squares: Square[] = [];
-  const usedSquares = new Set<Square>();
-  const resetThreshold = Math.floor((64 - (exclude?.size ?? 0)) / 2);
+  if (count <= 0) return [];
 
-  while (squares.length < count) {
-    const square = generateRandomSquare(rng, exclude);
-    if (!usedSquares.has(square)) {
-      usedSquares.add(square);
-      squares.push(square);
-    }
-
-    // Reset after using half the eligible squares to allow re-use
-    // while maintaining variety in consecutive questions
-    if (usedSquares.size >= resetThreshold && squares.length < count) {
-      usedSquares.clear();
-    }
+  const eligible = ALL_SQUARES.filter((square) => !exclude?.has(square));
+  if (eligible.length === 0) {
+    throw new Error(
+      "Cannot generate a random square: all squares are excluded",
+    );
   }
 
+  // Re-allow re-use once half the eligible squares have been consumed, so
+  // consecutive questions stay varied without ever exhausting the pool.
+  // Clamped to >= 1 so a single-square pool still terminates.
+  const resetThreshold = Math.max(1, Math.floor(eligible.length / 2));
+
+  const squares: Square[] = [];
+  const used = new Set<Square>();
+  while (squares.length < count) {
+    const square = pickFrom(
+      eligible.filter((sq) => !used.has(sq)),
+      rng,
+    );
+    used.add(square);
+    squares.push(square);
+    if (used.size >= resetThreshold) {
+      used.clear();
+    }
+  }
   return squares;
 }
 

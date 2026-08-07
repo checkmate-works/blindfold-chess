@@ -22,18 +22,16 @@ import type { DiagonalPair } from "./types";
  * so the intent is explicit at the call site. On an 8x8 board the resulting
  * set is always {a1, a8, h1, h8}, but the rule is the source of truth.
  */
-const SINGLE_DIAGONAL_SQUARES: ReadonlySet<Square> = (() => {
-  const set = new Set<Square>();
-  for (let f = 0; f < FILES.length; f++) {
-    for (let r = 0; r < RANKS.length; r++) {
+const SINGLE_DIAGONAL_SQUARES: ReadonlySet<Square> = new Set(
+  FILES.flatMap((_, f) =>
+    RANKS.flatMap((_, r) => {
       const { diagLength, antiLength } = computeDiagonalParams(f, r);
-      if (diagLength === 0 || antiLength === 0) {
-        set.add(fileRankToSquare(f, r));
-      }
-    }
-  }
-  return set;
-})();
+      return diagLength === 0 || antiLength === 0
+        ? [fileRankToSquare(f, r)]
+        : [];
+    }),
+  ),
+);
 
 /**
  * Compute the start position and length of both diagonals for a square.
