@@ -1,105 +1,112 @@
-import { NextResponse } from 'next/server';
+'use server';
 
 import { eq } from 'drizzle-orm';
 
-import { guardApiMutation, parseJsonBody } from '@/lib/api-mutation-guard';
+import { authenticateAndGuard } from '@/lib/auth';
 import { isLameName } from '@/lib/content/lame-name';
 import { db, profiles } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
-export async function PUT(request: Request) {
-  const guardResult = await guardApiMutation(request, RATE_LIMITS.updateProfile);
-  if ('response' in guardResult) {
-    return guardResult.response;
+export type UpdateProfileInput = {
+  displayName?: string;
+  bio?: string;
+  country?: string;
+  flair?: string;
+  fideId?: string;
+  chesscomUsername?: string;
+  lichessUsername?: string;
+  xUsername?: string;
+  instagramUsername?: string;
+  youtubeHandle?: string;
+};
+
+export type UpdateProfileResult = { success: true } | { error: string };
+
+/**
+ * Full-overwrite update of the caller's own profile: every field it does not
+ * receive is nulled out. Partial editors (e.g. onboarding) must not reuse it —
+ * see `saveOnboardingProfile` for the column-scoped alternative.
+ *
+ * Error codes are the keys of `SERVER_ERROR_MAP` in
+ * `../_lib/profile-validation.ts`; unknown codes fall back to a generic
+ * message on the client.
+ */
+export async function updateProfile(input: UpdateProfileInput): Promise<UpdateProfileResult> {
+  const guardResult = await authenticateAndGuard(RATE_LIMITS.updateProfile);
+  if ('error' in guardResult) {
+    return { error: guardResult.error };
   }
   const { user } = guardResult;
 
-  const parseResult = await parseJsonBody<{
-    displayName?: string;
-    bio?: string;
-    country?: string;
-    flair?: string;
-    fideId?: string;
-    chesscomUsername?: string;
-    lichessUsername?: string;
-    xUsername?: string;
-    instagramUsername?: string;
-    youtubeHandle?: string;
-  }>(request);
-  if ('response' in parseResult) {
-    return parseResult.response;
-  }
-  const { body } = parseResult;
-
   // Display name does not require uniqueness (same approach as X/Instagram).
   // Username serves as the unique identifier.
-  const displayName = body.displayName?.trim();
+  const displayName = input.displayName?.trim();
   if (!displayName) {
-    return NextResponse.json({ error: 'display_name_required' }, { status: 400 });
+    return { error: 'display_name_required' };
   }
   if (displayName.length > 50) {
-    return NextResponse.json({ error: 'display_name_too_long' }, { status: 400 });
+    return { error: 'display_name_too_long' };
   }
   if (isLameName(displayName)) {
-    return NextResponse.json({ error: 'display_name_inappropriate' }, { status: 400 });
+    return { error: 'display_name_inappropriate' };
   }
 
-  const bio = body.bio?.trim() || null;
+  const bio = input.bio?.trim() || null;
   if (bio && bio.length > 500) {
-    return NextResponse.json({ error: 'bio_too_long' }, { status: 400 });
+    return { error: 'bio_too_long' };
   }
 
-  const country = body.country?.trim().toUpperCase() || null;
+  const country = input.country?.trim().toUpperCase() || null;
   if (country && !/^[A-Z]{2}$/.test(country)) {
-    return NextResponse.json({ error: 'invalid_country' }, { status: 400 });
+    return { error: 'invalid_country' };
   }
 
-  const flair = body.flair?.trim() || null;
+  const flair = input.flair?.trim() || null;
   if (flair && flair.length > 50) {
-    return NextResponse.json({ error: 'flair_too_long' }, { status: 400 });
+    return { error: 'flair_too_long' };
   }
-  const fideId = body.fideId?.trim() || null;
+  const fideId = input.fideId?.trim() || null;
   if (fideId && fideId.length > 50) {
-    return NextResponse.json({ error: 'fide_id_too_long' }, { status: 400 });
+    return { error: 'fide_id_too_long' };
   }
   if (fideId && !/^\d+$/.test(fideId)) {
-    return NextResponse.json({ error: 'fide_id_invalid_format' }, { status: 400 });
+    return { error: 'fide_id_invalid_format' };
   }
-  const chesscomUsername = body.chesscomUsername?.trim() || null;
+  const chesscomUsername = input.chesscomUsername?.trim() || null;
   if (chesscomUsername && chesscomUsername.length > 255) {
-    return NextResponse.json({ error: 'chesscom_username_too_long' }, { status: 400 });
+    return { error: 'chesscom_username_too_long' };
   }
   if (chesscomUsername && !/^[a-zA-Z0-9_-]+$/.test(chesscomUsername)) {
-    return NextResponse.json({ error: 'chesscom_username_invalid_format' }, { status: 400 });
+    return { error: 'chesscom_username_invalid_format' };
   }
-  const lichessUsername = body.lichessUsername?.trim() || null;
+  const lichessUsername = input.lichessUsername?.trim() || null;
   if (lichessUsername && lichessUsername.length > 255) {
-    return NextResponse.json({ error: 'lichess_username_too_long' }, { status: 400 });
+    return { error: 'lichess_username_too_long' };
   }
   if (lichessUsername && !/^[a-zA-Z0-9_-]+$/.test(lichessUsername)) {
-    return NextResponse.json({ error: 'lichess_username_invalid_format' }, { status: 400 });
+    return { error: 'lichess_username_invalid_format' };
   }
-  const xUsername = body.xUsername?.trim() || null;
+  const xUsername = input.xUsername?.trim() || null;
   if (xUsername && xUsername.length > 15) {
-    return NextResponse.json({ error: 'x_username_too_long' }, { status: 400 });
+    return { error: 'x_username_too_long' };
   }
   if (xUsername && !/^[a-zA-Z0-9_]+$/.test(xUsername)) {
-    return NextResponse.json({ error: 'x_username_invalid_format' }, { status: 400 });
+    return { error: 'x_username_invalid_format' };
   }
-  const instagramUsername = body.instagramUsername?.trim() || null;
+  const instagramUsername = input.instagramUsername?.trim() || null;
   if (instagramUsername && instagramUsername.length > 30) {
-    return NextResponse.json({ error: 'instagram_username_too_long' }, { status: 400 });
+    return { error: 'instagram_username_too_long' };
   }
   if (instagramUsername && !/^[a-zA-Z0-9._]+$/.test(instagramUsername)) {
-    return NextResponse.json({ error: 'instagram_username_invalid_format' }, { status: 400 });
+    return { error: 'instagram_username_invalid_format' };
   }
-  const youtubeHandle = body.youtubeHandle?.trim() || null;
+  const youtubeHandle = input.youtubeHandle?.trim() || null;
   if (youtubeHandle && youtubeHandle.length > 30) {
-    return NextResponse.json({ error: 'youtube_handle_too_long' }, { status: 400 });
+    return { error: 'youtube_handle_too_long' };
   }
   if (youtubeHandle && !/^[a-zA-Z0-9._-]+$/.test(youtubeHandle)) {
-    return NextResponse.json({ error: 'youtube_handle_invalid_format' }, { status: 400 });
+    return { error: 'youtube_handle_invalid_format' };
   }
 
   const nextValues = {
@@ -165,5 +172,5 @@ export async function PUT(request: Request) {
     });
   }
 
-  return NextResponse.json({ success: true });
+  return { success: true };
 }

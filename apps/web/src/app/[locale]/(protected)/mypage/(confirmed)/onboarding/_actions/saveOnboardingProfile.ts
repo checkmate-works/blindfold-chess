@@ -20,12 +20,13 @@ const BIO_MAX_LENGTH = 500;
  * Persist the optional profile fields collected on the post-registration
  * onboarding step (country + bio).
  *
- * The general profile editor uses `PUT /api/profile`, which is a *full
- * overwrite* (it requires `displayName` and nulls out every field it does not
- * receive). Reusing it from onboarding — where we only collect a subset —
- * would wipe the rest of the profile. This action updates just those columns
- * instead. The avatar is saved separately and immediately by `AvatarUpload`
- * via `POST /api/profile/avatar`, so it is intentionally not touched here.
+ * The general profile editor uses the `updateProfile` Server Action, which is
+ * a *full overwrite* (it requires `displayName` and nulls out every field it
+ * does not receive). Reusing it from onboarding — where we only collect a
+ * subset — would wipe the rest of the profile. This action updates just those
+ * columns instead. The avatar is saved separately and immediately by
+ * `AvatarUpload` via `POST /api/profile/avatar`, so it is intentionally not
+ * touched here.
  */
 export async function saveOnboardingProfile(
   input: SaveOnboardingProfileInput

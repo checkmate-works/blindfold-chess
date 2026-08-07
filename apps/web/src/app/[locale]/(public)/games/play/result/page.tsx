@@ -3,8 +3,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import type { ExpInfo } from '@blindfold-chess/features/exp';
-
 import { getCommentUserProfile } from '@/lib/db/game-comments';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { AI_GAME_RESULT_SOURCE } from '@/lib/db/save-exp';
@@ -48,37 +46,41 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ResultPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
-  const tPlay = await getTranslations({ locale, namespace: 'play' });
-  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
-  const tShared = await getTranslations({ locale, namespace: 'sharedGames' });
+  // The result game lives only in the browser's localStorage, so the opening
+  // is detected client-side; ship the (cached, ~100-row) opening master for
+  // it. It is viewer-independent, so it loads alongside the session lookup.
+  const [tMetadata, tPlay, tGames, tShared, supabase, sp, openingEntries] = await Promise.all([
+    getTranslations({ locale, namespace: 'metadata' }),
+    getTranslations({ locale, namespace: 'play' }),
+    getTranslations({ locale, namespace: 'gamesPage' }),
+    getTranslations({ locale, namespace: 'sharedGames' }),
+    createClient(),
+    searchParams,
+    getOpeningEntries(),
+  ]);
 
-  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Resolve any already-granted AI-game Exp server-side from ?gameId=<id> (the
-  // grant's source_id), so the "Exp gained" display survives reloads and direct
-  // URL access. On the first visit after finishing, the grant has not happened
-  // yet, so this is null and the client triggers the grant; on a revisit it is
-  // populated and the client shows it without re-granting.
-  const sp = await searchParams;
   const gameIdRaw = sp.gameId;
   const gameId = typeof gameIdRaw === 'string' ? gameIdRaw : undefined;
-  let initialExp: ExpInfo | null = null;
-  if (user && gameId) {
-    initialExp = await getExpInfoBySource(user.id, AI_GAME_RESULT_SOURCE, gameId);
-  }
 
-  // The result game lives only in the browser's localStorage, so the opening is
-  // detected client-side; ship the (cached, ~100-row) opening master for it.
-  const openingEntries = await getOpeningEntries();
-
-  // The player of a local game is whoever is looking at it. Resolved here so
-  // the "Played by" header matches the shared game's, which reads the author
-  // row from the DB; signed-out players get the same guest fallback.
-  const playerProfile = user ? await getCommentUserProfile(user.id) : null;
+  // `initialExp` resolves any already-granted AI-game Exp server-side from
+  // ?gameId=<id> (the grant's source_id), so the "Exp gained" display survives
+  // reloads and direct URL access. On the first visit after finishing, the
+  // grant has not happened yet, so this is null and the client triggers the
+  // grant; on a revisit it is populated and the client shows it without
+  // re-granting.
+  //
+  // `playerProfile`: the player of a local game is whoever is looking at it.
+  // Resolved here so the "Played by" header matches the shared game's, which
+  // reads the author row from the DB; signed-out players get the same guest
+  // fallback.
+  const [initialExp, playerProfile] = await Promise.all([
+    user && gameId ? getExpInfoBySource(user.id, AI_GAME_RESULT_SOURCE, gameId) : null,
+    user ? getCommentUserProfile(user.id) : null,
+  ]);
   const player = {
     profile: playerProfile,
     displayName: playerProfile ? resolveDisplayName(playerProfile) : tShared('detail.guest'),

@@ -91,14 +91,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RepertoireLineDetailPage({ params, searchParams }: Props) {
   const { locale, id, lineNo: lineNoParam } = await params;
-  const t = await getTranslations({ locale, namespace: 'Repertoires' });
-  const tCommon = await getTranslations({ locale, namespace: 'Common' });
-  const currentUser = await getOptionalUser();
+  const [t, tCommon, currentUser] = await Promise.all([
+    getTranslations({ locale, namespace: 'Repertoires' }),
+    getTranslations({ locale, namespace: 'Common' }),
+    getOptionalUser(),
+  ]);
 
   const lineNo = Number(lineNoParam);
   if (!Number.isInteger(lineNo) || lineNo < 1) notFound();
 
-  const data = await getRepertoireLineForViewer(id, lineNo, currentUser?.id ?? null);
+  // Annotations are repertoire-wide (keyed by position, shared across lines),
+  // so the fetch does not depend on the line lookup and runs alongside it.
+  const [data, annotations] = await Promise.all([
+    getRepertoireLineForViewer(id, lineNo, currentUser?.id ?? null),
+    getAnnotationsForRepertoire(id),
+  ]);
   if (!data) notFound();
   const { repertoire, line, lines, profile, isOwner } = data;
 
@@ -110,7 +117,6 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
   )!.replayed;
   const formatted = formatMovesToPgn(sans, startsAsBlack, startMoveNumber);
 
-  const annotations = await getAnnotationsForRepertoire(id);
   const moves = buildLineMoves({ sans, positions, startsAsBlack, startMoveNumber, annotations });
 
   // Per-ply prefix PGNs for the owner's "branch from this position" affordance:
@@ -180,16 +186,21 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
   let currentPositionChunks: RepertoireChunkItem[] = [];
   let currentPositionKey = '';
   let availableChunks: ChunkOption[] = [];
-  if (sans.length > 0) {
-    const [allChunks, linkable] = await Promise.all([
-      listRepertoireChunks(id),
-      getLinkableChunkOptionsForViewer(currentUser?.id ?? null),
-    ]);
+  const [chunkData, currentUserProfile] = await Promise.all([
+    sans.length > 0
+      ? Promise.all([
+          listRepertoireChunks(id),
+          getLinkableChunkOptionsForViewer(currentUser?.id ?? null),
+        ])
+      : null,
+    currentUser ? getCommentUserProfile(currentUser.id) : null,
+  ]);
+  if (chunkData) {
+    const [allChunks, linkable] = chunkData;
     availableChunks = linkable;
     currentPositionKey = toPositionKey(positions[initialPly].fen);
     currentPositionChunks = allChunks.filter((c) => c.positionKey === currentPositionKey);
   }
-  const currentUserProfile = currentUser ? await getCommentUserProfile(currentUser.id) : null;
 
   return (
     <PageLayout

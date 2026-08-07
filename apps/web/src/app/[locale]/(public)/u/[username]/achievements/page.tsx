@@ -59,11 +59,13 @@ export default async function AchievementsPage({ params }: Props) {
     notFound();
   }
 
-  await redirectIfBlockedFromProfile({ locale, username, profileId: profile.id });
-
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
-
-  const achievements = await getUserAchievementGroups(profile.id);
+  // The block check and the achievement groups are both keyed on the profile
+  // row only; a redirect thrown by the check wins over the discarded groups.
+  const [, t, achievements] = await Promise.all([
+    redirectIfBlockedFromProfile({ locale, username, profileId: profile.id }),
+    getTranslations({ locale, namespace: 'publicProfile' }),
+    getUserAchievementGroups(profile.id),
+  ]);
 
   const displayName = profile.displayName ?? username;
 

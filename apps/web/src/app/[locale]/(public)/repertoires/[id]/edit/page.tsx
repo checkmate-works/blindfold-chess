@@ -45,8 +45,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EditRepertoirePage({ params }: Props) {
   const { locale, id } = await params;
-  const t = await getTranslations({ locale, namespace: 'Repertoires' });
-  const currentUser = await getOptionalUser();
+  const [t, currentUser] = await Promise.all([
+    getTranslations({ locale, namespace: 'Repertoires' }),
+    getOptionalUser(),
+  ]);
 
   const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
   // Editing is owner-only — don't even reveal the page to others.
@@ -56,8 +58,9 @@ export default async function EditRepertoirePage({ params }: Props) {
   // Opening links only exist for an opening-phase repertoire; skip both queries
   // (the whole master + the link rows) for the other phases.
   const canLinkOpenings = repertoire.phase === 'opening';
-  const openings = canLinkOpenings ? await getOpeningOptions(locale) : [];
-  const initialOpeningIds = canLinkOpenings ? await getLinkedOpeningIds(id) : [];
+  const [openings, initialOpeningIds] = canLinkOpenings
+    ? await Promise.all([getOpeningOptions(locale), getLinkedOpeningIds(id)])
+    : [[], []];
 
   return (
     <PageLayout

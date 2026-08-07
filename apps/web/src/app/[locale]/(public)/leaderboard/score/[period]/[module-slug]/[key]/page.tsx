@@ -102,13 +102,20 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
   const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The viewer is only used to highlight their own row — independent of the
+  // leaderboard query itself.
+  const [
+    {
+      data: { user },
+    },
+    data,
+    t,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    getLeaderboard(validated.module, validated.key, validated.period, page),
+    getTranslations({ locale, namespace: 'leaderboard' }),
+  ]);
   const currentUserId = user?.id ?? null;
-
-  const data = await getLeaderboard(validated.module, validated.key, validated.period, page);
-  const t = await getTranslations({ locale, namespace: 'leaderboard' });
 
   // ---------------------------------------------------------------------
   // Breadcrumb construction

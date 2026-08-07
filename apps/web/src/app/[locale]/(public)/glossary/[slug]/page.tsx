@@ -85,10 +85,15 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const term = await getGlossaryTermBySlug(slug, locale);
+  // The related problems are slug-keyed like the term row itself, so both
+  // queries run in one round (the empty result on a miss is discarded by the
+  // notFound below).
+  const [term, t, problems] = await Promise.all([
+    getGlossaryTermBySlug(slug, locale),
+    getTranslations({ locale, namespace: 'glossary' }),
+    getPositionsForTerm(slug),
+  ]);
   if (!term) notFound();
-
-  const t = await getTranslations({ locale, namespace: 'glossary' });
 
   const name = displayName(term, locale);
   const description = displayDefinition(term, locale);
@@ -121,7 +126,6 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
 
   // Related-content tabs (chunk-detail style, URL-driven via `?tab=`). Only
   // "problems" today; future collections (e.g. related games) append here.
-  const problems = await getPositionsForTerm(slug);
   const relatedTabs: LinkTabItem[] = [];
   if (problems.length > 0) {
     relatedTabs.push({

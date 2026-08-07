@@ -11,6 +11,8 @@ import { validateUsername } from '@blindfold-chess/features/username';
 
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
+import { setUsername as setUsernameAction } from '../_actions/setUsername';
+
 type Props = {
   locale: string;
 };
@@ -71,18 +73,13 @@ export function UsernameForm({ locale }: Props) {
     setError(null);
 
     try {
-      const res = await fetch('/api/username', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: trimmedUsername,
-          displayName: displayName.trim() || undefined,
-        }),
+      const result = await setUsernameAction({
+        username: trimmedUsername,
+        displayName: displayName.trim() || undefined,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        setError(getValidationMessage(data.error));
+      if ('error' in result) {
+        setError(getValidationMessage(result.error));
         setIsSubmitting(false);
         return;
       }

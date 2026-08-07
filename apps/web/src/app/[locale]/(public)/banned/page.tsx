@@ -21,31 +21,32 @@ export default async function BannedPage({ params }: LocalePageProps) {
     redirect(`/${locale}/sign-in`);
   }
 
-  const [profile] = await db
-    .select({ bannedAt: profiles.bannedAt })
-    .from(profiles)
-    .where(eq(profiles.id, user.id))
-    .limit(1);
+  // The ban flag and the ban reason (moderation_actions audit log) are both
+  // keyed on the user; a non-banned visitor redirects and discards the reason.
+  const [[profile], [latestBan], t] = await Promise.all([
+    db
+      .select({ bannedAt: profiles.bannedAt })
+      .from(profiles)
+      .where(eq(profiles.id, user.id))
+      .limit(1),
+    db
+      .select({ reason: moderationActions.reason })
+      .from(moderationActions)
+      .where(
+        and(
+          eq(moderationActions.action, 'ban'),
+          eq(moderationActions.targetType, 'user'),
+          eq(moderationActions.targetId, user.id)
+        )
+      )
+      .orderBy(desc(moderationActions.createdAt))
+      .limit(1),
+    getTranslations({ locale, namespace: 'banned' }),
+  ]);
 
   if (!profile?.bannedAt) {
     redirect(`/${locale}`);
   }
-
-  // Fetch ban reason from moderation_actions audit log
-  const [latestBan] = await db
-    .select({ reason: moderationActions.reason })
-    .from(moderationActions)
-    .where(
-      and(
-        eq(moderationActions.action, 'ban'),
-        eq(moderationActions.targetType, 'user'),
-        eq(moderationActions.targetId, user.id)
-      )
-    )
-    .orderBy(desc(moderationActions.createdAt))
-    .limit(1);
-
-  const t = await getTranslations({ locale, namespace: 'banned' });
 
   return (
     <div className="max-w-lg mx-auto py-16 text-center">

@@ -66,60 +66,58 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
   const typedKey = questionKey as InterviewQuestionKey;
   const config = QUESTION_CONFIG[typedKey];
 
-  const t = await getTranslations({ locale, namespace: 'interview' });
-  const tDetail = await getTranslations({ locale, namespace: 'interview.detail' });
-  const tOpeningNames = await getTranslations({ locale, namespace: 'topics.openings.names' });
+  const [t, tDetail, tOpeningNames, supabase] = await Promise.all([
+    getTranslations({ locale, namespace: 'interview' }),
+    getTranslations({ locale, namespace: 'interview.detail' }),
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
+    createClient(),
+  ]);
 
-  // Check auth state without requiring login
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The viewer lookup (auth is optional here) and the openings master for
+  // master_ref questions are independent — fetch both in one round.
+  const [
+    {
+      data: { user },
+    },
+    allOpenings,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    config.answerType === 'master_ref'
+      ? db
+          .select({
+            slug: chessOpenings.slug,
+            name: chessOpenings.name,
+            fen: chessOpenings.fen,
+            ecoCode: chessOpenings.ecoCode,
+            pgn: chessOpenings.pgn,
+          })
+          .from(chessOpenings)
+          .orderBy(asc(chessOpenings.sortOrder))
+      : null,
+  ]);
 
   // Fetch existing answer for authenticated users
   const answer = user ? await getInterviewAnswer(user.id, questionKey) : null;
 
-  // Fetch openings for master_ref type questions
-  let openings: {
-    slug: string;
-    name: string;
-    fen: string;
-    ecoCode: string;
-    pgn: string;
-    translatedName: string;
-  }[] = [];
-  if (config.answerType === 'master_ref') {
-    const allOpenings = await db
-      .select({
-        slug: chessOpenings.slug,
-        name: chessOpenings.name,
-        fen: chessOpenings.fen,
-        ecoCode: chessOpenings.ecoCode,
-        pgn: chessOpenings.pgn,
-      })
-      .from(chessOpenings)
-      .orderBy(asc(chessOpenings.sortOrder));
-
-    openings = allOpenings.map((o) => {
-      const translatedName = tOpeningNames.has(o.slug as never)
-        ? tOpeningNames(o.slug as never)
-        : o.name;
-      return { ...o, translatedName };
-    });
-  }
+  const openings = (allOpenings ?? []).map((o) => {
+    const translatedName = tOpeningNames.has(o.slug as never)
+      ? tOpeningNames(o.slug as never)
+      : o.name;
+    return { ...o, translatedName };
+  });
 
   // Fetch full opening record and resolve display name for current answer
   let answerOpening: Awaited<ReturnType<typeof getOpeningBySlug>> = null;
   let answerDisplayName: string | null = null;
   let alreadyPosted = false;
   if (answer && config.answerType === 'master_ref') {
-    answerOpening = await getOpeningBySlug(answer.answerValue);
+    [answerOpening, alreadyPosted] = await Promise.all([
+      getOpeningBySlug(answer.answerValue),
+      user ? hasUserPostedForOpening(user.id, answer.answerValue) : false,
+    ]);
     answerDisplayName = tOpeningNames.has(answer.answerValue as never)
       ? tOpeningNames(answer.answerValue as never)
       : (answer.openingName ?? answer.answerValue);
-    if (user) {
-      alreadyPosted = await hasUserPostedForOpening(user.id, answer.answerValue);
-    }
   }
 
   return (

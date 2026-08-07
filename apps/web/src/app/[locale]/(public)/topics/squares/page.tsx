@@ -39,13 +39,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function SquaresContent({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { page } = await searchParamsCache.parse(searchParams);
-  const t = await getTranslations({ locale, namespace: 'topics' });
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const totalCount = await getPostCountAcrossSquares();
+  const [{ page }, t, supabase] = await Promise.all([
+    searchParamsCache.parse(searchParams),
+    getTranslations({ locale, namespace: 'topics' }),
+    createClient(),
+  ]);
+  const [
+    {
+      data: { user },
+    },
+    totalCount,
+  ] = await Promise.all([supabase.auth.getUser(), getPostCountAcrossSquares()]);
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     totalCount,

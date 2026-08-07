@@ -85,36 +85,47 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function OpeningDetailContent({ params, searchParams }: Props) {
   const { locale, slug } = await params;
-  const opening = await getOpeningBySlug(slug);
+  const [opening, { page, sort, tab }, t, dt, nameT, tRepertoires, supabase, repertoireCount] =
+    await Promise.all([
+      getOpeningBySlug(slug),
+      searchParamsCache.parse(searchParams),
+      getTranslations({ locale, namespace: 'topics' }),
+      getTranslations({ locale, namespace: 'topics.openings.detail' }),
+      getTranslations({ locale, namespace: 'topics.openings.names' }),
+      getTranslations({ locale, namespace: 'Repertoires' }),
+      createClient(),
+      countPublicRepertoiresForOpening(slug),
+    ]);
 
   if (!opening) {
     notFound();
   }
 
-  const { page, sort, tab } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
   const activeTab = parseTab(tab);
   const isRepertoiresTab = activeTab === 'repertoires';
 
-  const t = await getTranslations({ locale, namespace: 'topics' });
-  const dt = await getTranslations({ locale, namespace: 'topics.openings.detail' });
-  const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
-  const tRepertoires = await getTranslations({ locale, namespace: 'Repertoires' });
-
   const displayName = getOpeningDisplayName(nameT, slug, opening.name);
 
-  // Fetch parent opening for breadcrumb if this is a child variation
-  const parentOpening = opening.parentSlug ? await getOpeningBySlug(opening.parentSlug) : null;
+  // The parent opening (breadcrumb, child variations only) is keyed on the
+  // opening row; the viewer lookup is keyed on the session — independent.
+  const [
+    {
+      data: { user },
+    },
+    parentOpening,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    opening.parentSlug ? getOpeningBySlug(opening.parentSlug) : null,
+  ]);
   const parentDisplayName = parentOpening
     ? getOpeningDisplayName(nameT, parentOpening.slug, parentOpening.name)
     : null;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const allPosts = await getOpeningPostsWithReplyMeta(slug, user?.id, sortBy);
+  const [allPosts, rateLimited] = await Promise.all([
+    getOpeningPostsWithReplyMeta(slug, user?.id, sortBy),
+    user ? isRateLimited(user.id, createOpeningPostRateLimit(slug)) : false,
+  ]);
   const { totalCount, totalPages, currentPage, paginatedItems } = paginateItems(
     allPosts,
     TOPIC_PAGE_SIZE,
@@ -131,16 +142,16 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
   // is server-only. The OpeningPostCard composes this with the
   // optional rating display in its `extraContent` slot.
   const postIds = posts.map((p) => p.id);
-  const attachments = postIds.length > 0 ? await getAttachmentsForPosts(postIds) : new Map();
-  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const [attachments, tVideo] = await Promise.all([
+    postIds.length > 0 ? getAttachmentsForPosts(postIds) : new Map(),
+    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
+  ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
 
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);
 
-  const canPost = !!user && !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));
-
-  const repertoireCount = await countPublicRepertoiresForOpening(slug);
+  const canPost = !!user && !rateLimited;
 
   const newPostForm = <NewOpeningPostForm locale={locale} slug={slug} />;
 
