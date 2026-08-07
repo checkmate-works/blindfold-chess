@@ -52,7 +52,7 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
     };
   }, []);
 
-  const handleSelect = (move: string) => {
+  const handleSelect = (move: AlgebraicNotation | '') => {
     setSelectedMove(move);
     setIsOpen(false);
 
@@ -62,7 +62,7 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
     // submit — otherwise the real correct/incorrect result from `onSubmit`
     // is the sole source of truth for feedback state.
     if (move && !disabled) {
-      onSubmit(move as AlgebraicNotation);
+      onSubmit(move);
       setSelectedMove('');
     } else if (onChange) {
       onChange();

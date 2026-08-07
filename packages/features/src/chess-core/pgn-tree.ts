@@ -1,6 +1,8 @@
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
+import { asEngineSan } from "./types";
+
 /**
  * pgn-tree: parse a PGN *with variations (RAV)* into a move tree.
  *
@@ -204,7 +206,7 @@ function parseLine(
     }
 
     const node: MoveTreeNode = {
-      san: result.san as AlgebraicNotation,
+      san: asEngineSan(result.san),
       fen: chess.fen(),
       children: [],
     };

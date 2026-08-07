@@ -13,7 +13,7 @@
  * Within each group, moves are sorted alphabetically.
  * Captures (x) and checks (+, #) do not affect the sort order.
  */
-export function sortMoves(moves: string[]): string[] {
+export function sortMoves<T extends string>(moves: readonly T[]): T[] {
   return [...moves].sort((a, b) => {
     const priorityA = getPiecePriority(a);
     const priorityB = getPiecePriority(b);

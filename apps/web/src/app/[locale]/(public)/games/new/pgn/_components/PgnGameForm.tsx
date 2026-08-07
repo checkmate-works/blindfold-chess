@@ -70,7 +70,7 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
     try {
       const result = parsePgnWithFen(pgn);
       return {
-        pgnMoves: result.moves as AlgebraicNotation[],
+        pgnMoves: result.moves,
         startingFen: result.startingFen,
       };
     } catch {

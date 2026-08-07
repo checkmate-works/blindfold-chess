@@ -10,7 +10,10 @@ type UseAiMoveOrchestrationOptions = {
   moves: AlgebraicNotation[];
   playerSide: Side;
   startingFen: string | undefined;
-  getAiMove: (moves: AlgebraicNotation[], startingFen?: string) => Promise<string | null>;
+  getAiMove: (
+    moves: AlgebraicNotation[],
+    startingFen?: string
+  ) => Promise<AlgebraicNotation | null>;
   onAiMoveSuccess: (move: AlgebraicNotation) => void;
   onAiMoveError: () => void;
 };
@@ -62,7 +65,7 @@ export function useAiMoveOrchestration({
       const maxRetries = 10;
       const retryDelay = 200; // ms
 
-      let aiMove: string | null = null;
+      let aiMove: AlgebraicNotation | null = null;
       let lastError: Error | null = null;
 
       for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -91,7 +94,7 @@ export function useAiMoveOrchestration({
       }
 
       if (aiMove) {
-        onAiMoveSuccess(aiMove as AlgebraicNotation);
+        onAiMoveSuccess(aiMove);
       } else if (lastError) {
         console.error('Failed to get AI move:', lastError);
         onAiMoveError();

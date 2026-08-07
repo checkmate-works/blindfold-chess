@@ -93,7 +93,7 @@ export function useAiVersus(engineConfig: EngineConfig) {
       if (!result.ok) {
         throwOpponentError(result.error);
       }
-      return uciToAlgebraic(result.value.move, fen) as AlgebraicNotation;
+      return uciToAlgebraic(result.value.move, fen);
     },
     []
   );

@@ -101,7 +101,7 @@ export function playMoveAtPath(
   }
 
   const node: BuilderNode = {
-    san: result.moveResult.san as AlgebraicNotation,
+    san: result.moveResult.san,
     fen: result.fen,
     from: result.moveResult.from,
     to: result.moveResult.to,

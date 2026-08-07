@@ -293,12 +293,12 @@ export class ChessEngine {
     moves: AlgebraicNotation[],
     startingFen?: string,
   ): string[] {
-    return movesToUci(moves as string[], startingFen);
+    return movesToUci(moves, startingFen);
   }
 
   convertUciToAlgebraic(uciMove: UciMove, fen: Fen): AlgebraicNotation {
     try {
-      return uciToAlgebraic(uciMove, fen) as AlgebraicNotation;
+      return uciToAlgebraic(uciMove, fen);
     } catch (error) {
       console.error("Failed to convert UCI to algebraic:", uciMove, error);
       throw new Error(`Invalid UCI move: ${uciMove}`);
