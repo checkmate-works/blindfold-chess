@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
+import { derivePoolerMode } from './pooler-mode';
 import {
   type DeadlineRetry,
   setDeadlineRetry,
@@ -13,13 +14,29 @@ import {
 } from './query-deadline';
 import * as schema from './schema';
 
+// DB_RUNTIME_URL: Runtime-only override, wins over the integration-managed
+//   POSTGRES_URL. Exists so the pooler mode can be switched (e.g. to the
+//   Supavisor session pooler on port 5432) from the Vercel dashboard without
+//   touching integration-managed variables. Build-time scripts (migrate/seed,
+//   drizzle-kit) do NOT read it — they prefer POSTGRES_URL_NON_POOLING — so
+//   setting it never changes what migrations run against.
 // POSTGRES_URL: Set by Vercel Marketplace Supabase integration
 // DATABASE_URL: For manual configuration
 // Default: Supabase local PostgreSQL for development
 const connectionString =
+  process.env.DB_RUNTIME_URL ||
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
   'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+
+/**
+ * Stamped on every server-side Sentry event so black-hole incident rates
+ * (`db-pool-rebuilt`, `db-deadline-retry`, `QueryDeadlineError`) can be
+ * compared across pooler modes — the 2026-08 investigation's next experiment
+ * is exactly that comparison (transaction pooler vs session pooler).
+ */
+const poolerMode = derivePoolerMode(connectionString);
+Sentry.getGlobalScope().setTag('db.pooler_mode', poolerMode);
 
 // Reuse the same postgres client across reloads/invocations.
 // - In development: avoids a new pool per HMR hot-reload (would exhaust
@@ -54,8 +71,17 @@ const IDLE_TIMEOUT_SECONDS = 20;
 
 function createPooledClient(): ReturnType<typeof postgres> {
   return postgres(connectionString, {
-    prepare: false, // required for Supabase transaction-mode pooler (port 6543)
-    max: 10, // postgres.js default, made explicit — shared budget under Fluid Compute
+    // Required for the transaction-mode pooler (port 6543). Kept false in
+    // session mode too, deliberately: the pooler experiment must change one
+    // variable at a time. Revisit as a perf follow-up if session mode sticks.
+    prepare: false,
+    // Shared budget under Fluid Compute. In session mode each client
+    // connection pins a dedicated Postgres backend for its lifetime, and the
+    // per-tenant backend budget (dashboard "Pool Size") is shared across ALL
+    // concurrently-warm instances — so the per-instance cap is halved there.
+    // Check the dashboard budget covers max × expected warm instances before
+    // switching modes.
+    max: poolerMode === 'session' ? 5 : 10,
     idle_timeout: IDLE_TIMEOUT_SECONDS, // release idle connections back to the pooler
     max_lifetime: 60 * 30, // seconds — recycle long-lived connections
     connect_timeout: 10, // seconds — fail fast instead of the 30s default
