@@ -182,14 +182,17 @@ export function validateChunkMutationData(
     return `Title must be ${CHUNK_TITLE_MAX_LENGTH} characters or fewer`;
   }
 
-  const slugSupplied = typeof data.slug === 'string' && data.slug.trim().length > 0;
+  // Inline narrowing (rather than a boolean flag) so `data.slug` stays
+  // narrowed to `string` inside the branch — no non-null assertion needed.
+  const suppliedSlug =
+    typeof data.slug === 'string' && data.slug.trim().length > 0 ? data.slug : null;
 
-  if (mode === 'create' && !slugSupplied) {
+  if (mode === 'create' && suppliedSlug === null) {
     return 'Slug is required';
   }
 
-  if (slugSupplied) {
-    const trimmedSlug = data.slug!.trim();
+  if (suppliedSlug !== null) {
+    const trimmedSlug = suppliedSlug.trim();
     if (trimmedSlug.length > CHUNK_SLUG_MAX_LENGTH) {
       return `Slug must be ${CHUNK_SLUG_MAX_LENGTH} characters or fewer`;
     }
