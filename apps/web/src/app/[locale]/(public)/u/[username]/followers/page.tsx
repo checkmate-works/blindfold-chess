@@ -70,16 +70,19 @@ export default async function FollowersPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  await redirectIfBlockedFromProfile({ locale, username, profileId: profile.id });
-
-  const { page } = await searchParamsCache.parse(searchParams);
-
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
-
-  const [countResult] = await db
-    .select({ count: count() })
-    .from(userFollows)
-    .where(and(eq(userFollows.followingId, profile.id), profileNotDeleted(userFollows.followerId)));
+  // The block check and the follower count are both keyed on the profile row
+  // only; a redirect thrown by the check wins over the discarded count.
+  const [, { page }, t, [countResult]] = await Promise.all([
+    redirectIfBlockedFromProfile({ locale, username, profileId: profile.id }),
+    searchParamsCache.parse(searchParams),
+    getTranslations({ locale, namespace: 'publicProfile' }),
+    db
+      .select({ count: count() })
+      .from(userFollows)
+      .where(
+        and(eq(userFollows.followingId, profile.id), profileNotDeleted(userFollows.followerId))
+      ),
+  ]);
 
   const totalCount = countResult.count;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);

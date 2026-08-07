@@ -76,13 +76,19 @@ async function SquarePostsContent({ params, searchParams }: Props) {
   const { page, sort } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
 
-  const t = await getTranslations({ locale, namespace: 'topics' });
-  const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const [totalCount, openingsForSquare] = await Promise.all([
+  const [t, nameT, supabase] = await Promise.all([
+    getTranslations({ locale, namespace: 'topics' }),
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
+    createClient(),
+  ]);
+  const [
+    {
+      data: { user },
+    },
+    totalCount,
+    openingsForSquare,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
     getPostCountForSquare(square),
     getOpeningsByFirstMoveSquare(square),
   ]);

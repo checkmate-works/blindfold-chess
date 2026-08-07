@@ -53,9 +53,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ChunkEditRequestsPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
-  const { topic } = await searchParams;
+  const [{ topic }, chunk, user, t, tChunks] = await Promise.all([
+    searchParams,
+    getChunkBySlug(slug),
+    getOptionalUser(),
+    getTranslations({ locale, namespace: 'chunks.editRequests' }),
+    getTranslations({ locale, namespace: 'chunks' }),
+  ]);
   const focusTopic = isChunkFeedbackTopic(topic) ? topic : undefined;
-  const chunk = await getChunkBySlug(slug);
 
   if (!chunk) {
     notFound();
@@ -65,12 +70,6 @@ export default async function ChunkEditRequestsPage({ params, searchParams }: Pr
   if (status !== 'draft') {
     notFound();
   }
-
-  const [user, t, tChunks] = await Promise.all([
-    getOptionalUser(),
-    getTranslations({ locale, namespace: 'chunks.editRequests' }),
-    getTranslations({ locale, namespace: 'chunks' }),
-  ]);
 
   const [viewerPendingRequestId, references] = await Promise.all([
     getViewerPendingEditRequestForChunk(chunk.id, user?.id ?? null),

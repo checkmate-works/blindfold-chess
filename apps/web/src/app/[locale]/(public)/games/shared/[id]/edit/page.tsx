@@ -45,13 +45,15 @@ export default async function EditSharedGamePage({ params }: Props) {
 
   if (!UUID_RE.test(id)) notFound();
 
-  const detail = await getGameById(id);
+  const [detail, t, supabase] = await Promise.all([
+    getGameById(id),
+    getTranslations({ locale, namespace: 'sharedGames' }),
+    createClient(),
+  ]);
   if (!detail) notFound();
 
-  const t = await getTranslations({ locale, namespace: 'sharedGames' });
   const { game } = detail;
 
-  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

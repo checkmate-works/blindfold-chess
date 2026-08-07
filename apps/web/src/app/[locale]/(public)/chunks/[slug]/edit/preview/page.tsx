@@ -41,8 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EditChunkPreviewPage({ params }: Props) {
   const { locale, slug } = await params;
-  const user = await getAuthenticatedUser();
-  const chunk = await getChunkBySlug(slug);
+  const [user, chunk] = await Promise.all([getAuthenticatedUser(), getChunkBySlug(slug)]);
 
   if (!chunk || chunk.userId !== user.id) {
     notFound();
