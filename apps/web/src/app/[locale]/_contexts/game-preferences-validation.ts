@@ -1,3 +1,5 @@
+import { PAWN_HIDE_MODES, PIECE_COLOR_MODES, PIECE_SHAPE_MODES } from '@blindfold-chess/types';
+
 import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { isBoardVisibility, legacyToBoardVisibility } from '@/lib/games/board-visibility';
@@ -35,19 +37,19 @@ export function validatePreferences(parsed: unknown): Partial<GamePreferences> {
   if (typeof p.showOpponentPieces === 'boolean') result.showOpponentPieces = p.showOpponentPieces;
   if (
     typeof p.pieceShapeMode === 'string' &&
-    ['normal', 'circles-all', 'circles-own', 'circles-opponent'].includes(p.pieceShapeMode)
+    (PIECE_SHAPE_MODES as readonly string[]).includes(p.pieceShapeMode)
   ) {
     result.pieceShapeMode = p.pieceShapeMode as GamePreferences['pieceShapeMode'];
   }
   if (
     typeof p.pieceColors === 'string' &&
-    ['normal', 'white-only', 'black-only'].includes(p.pieceColors)
+    (PIECE_COLOR_MODES as readonly string[]).includes(p.pieceColors)
   ) {
     result.pieceColors = p.pieceColors as GamePreferences['pieceColors'];
   }
   if (
     typeof p.pawnHideMode === 'string' &&
-    ['none', 'all', 'own', 'opponent'].includes(p.pawnHideMode)
+    (PAWN_HIDE_MODES as readonly string[]).includes(p.pawnHideMode)
   ) {
     result.pawnHideMode = p.pawnHideMode as GamePreferences['pawnHideMode'];
   }

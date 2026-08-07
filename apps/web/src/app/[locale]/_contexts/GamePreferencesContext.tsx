@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useLatestRef } from '@blindfold-chess/features/common/client';
+import type { PawnHideMode, PieceColorMode, PieceShapeMode } from '@blindfold-chess/types';
 
 import type { AiReplyDuration } from '@/lib/games/ai-reply-duration';
 import { DEFAULT_AI_REPLY_DURATION } from '@/lib/games/ai-reply-duration';
@@ -42,8 +43,8 @@ export type PerGamePreferences = {
   showPieceDestinations: boolean;
   showOwnPieces: boolean;
   showOpponentPieces: boolean;
-  pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
-  pieceColors: 'normal' | 'white-only' | 'black-only';
+  pieceShapeMode: PieceShapeMode;
+  pieceColors: PieceColorMode;
   /**
    * Which pawns are hidden during play — a partial-blindfold mode orthogonal to
    * the all/own/opponent piece-visibility axis above. `'none'` (default) hides
@@ -53,7 +54,7 @@ export type PerGamePreferences = {
    * that is otherwise shown. Per-game (mirroring `pieceShapeMode`) because the
    * blindfold intensity is dialled per session.
    */
-  pawnHideMode: 'none' | 'all' | 'own' | 'opponent';
+  pawnHideMode: PawnHideMode;
   /**
    * Active move-input mode for this game. Per-game so mid-game switches
    * (text → button → select) accumulate in the preference change log
@@ -86,9 +87,9 @@ export type GamePreferences = {
   showOwnPieces: boolean; // Show player's own pieces
   showOpponentPieces: boolean; // Show opponent's pieces
   // Piece appearance
-  pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent'; // Piece shape mode
-  pieceColors: 'normal' | 'white-only' | 'black-only'; // Piece color mode
-  pawnHideMode: 'none' | 'all' | 'own' | 'opponent'; // Hide pawns (none / both / own / opponent)
+  pieceShapeMode: PieceShapeMode; // Piece shape mode
+  pieceColors: PieceColorMode; // Piece color mode
+  pawnHideMode: PawnHideMode; // Hide pawns (none / both / own / opponent)
   // Move input
   moveInputMode: 'text' | 'select' | 'button'; // Move input mode
   enabledMoveInputModes: ('text' | 'select' | 'button')[]; // Which move input modes are available

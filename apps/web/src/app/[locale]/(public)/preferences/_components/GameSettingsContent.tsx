@@ -7,6 +7,7 @@ import { DiscPiece } from '@/app/_components/chess/DiscPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { Side } from '@blindfold-chess/types';
+import { PIECE_COLOR_MODES } from '@blindfold-chess/types';
 
 import {
   PAWN_HIDE_SIDE_MODES,
@@ -245,7 +246,7 @@ export function GameSettingsContent({
                 >
                   <span className="text-sm text-foreground">{t('game.pieceColor')}</span>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                    {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
+                    {PIECE_COLOR_MODES.map((colors) => (
                       <label
                         key={colors}
                         className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"

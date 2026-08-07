@@ -1,4 +1,5 @@
-import type { Side } from '@blindfold-chess/types';
+import type { PieceColorMode, Side } from '@blindfold-chess/types';
+import { PIECE_SHAPE_MODES } from '@blindfold-chess/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -22,7 +23,7 @@ export type PieceAppearanceSettings = Pick<
 
 export type PieceShapeMode = GamePreferences['pieceShapeMode'];
 
-const ALL_SHAPE_OPTIONS = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
+const ALL_SHAPE_OPTIONS = PIECE_SHAPE_MODES;
 
 // Piece visibility is exposed as a single-choice radio rather than two
 // independent checkboxes: the would-be fourth combination (neither side shown)
@@ -63,10 +64,7 @@ export const PAWN_HIDE_SIDE_MODES = ['all', 'own', 'opponent'] as const satisfie
 >;
 
 // Which colours to sample for each Piece Color option.
-export const PIECE_COLOR_SAMPLES: Record<
-  'normal' | 'white-only' | 'black-only',
-  ReadonlyArray<'w' | 'b'>
-> = {
+export const PIECE_COLOR_SAMPLES: Record<PieceColorMode, ReadonlyArray<'w' | 'b'>> = {
   normal: ['w', 'b'],
   'white-only': ['w'],
   'black-only': ['b'],

@@ -1,10 +1,3 @@
-import { isBoardVisibility } from './board-visibility';
-import type {
-  GamePlaySettings,
-  PlaySettingsChangeEntry,
-  PreferenceChangeLogEntry,
-} from './saved-game-types';
-
 /**
  * Per-position blindfold settings for a published game: the start-of-game
  * snapshot ({@link GamePlaySettings}) plus the timeline of mid-game edits
@@ -19,9 +12,18 @@ import type {
  * needs and nothing the play surface does.
  */
 
-const PIECE_SHAPE_MODES = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
-const PIECE_COLORS = ['normal', 'white-only', 'black-only'] as const;
-const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
+import {
+  PAWN_HIDE_MODES,
+  PIECE_COLOR_MODES as PIECE_COLORS,
+  PIECE_SHAPE_MODES,
+} from '@blindfold-chess/types';
+
+import { isBoardVisibility } from './board-visibility';
+import type {
+  GamePlaySettings,
+  PlaySettingsChangeEntry,
+  PreferenceChangeLogEntry,
+} from './saved-game-types';
 
 function isPieceShapeMode(v: unknown): v is GamePlaySettings['pieceShapeMode'] {
   return PIECE_SHAPE_MODES.includes(v as (typeof PIECE_SHAPE_MODES)[number]);

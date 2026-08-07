@@ -1,4 +1,14 @@
-import type { PieceType } from "@blindfold-chess/types";
+import type {
+  PawnHideMode,
+  PieceColorMode,
+  PieceShapeMode,
+  PieceType,
+} from "@blindfold-chess/types";
+
+// Re-exported so existing importers of `@blindfold-chess/features/board-display`
+// keep working; the canonical source (types + runtime arrays) is
+// `@blindfold-chess/types`.
+export type { PawnHideMode, PieceColorMode, PieceShapeMode };
 
 export type PieceColor = "w" | "b";
 
@@ -8,18 +18,6 @@ export type DisplayablePiece = {
   type: PieceType;
   color: PieceColor;
 };
-
-export type PieceShapeMode =
-  "normal" | "circles-all" | "circles-own" | "circles-opponent";
-
-export type PieceColorMode = "normal" | "white-only" | "black-only";
-
-/**
- * Partial blindfold: which pawns are hidden entirely. `'none'` shows every
- * pawn; `'all'` hides both sides'; `'own'` / `'opponent'` hide only that
- * side's pawns.
- */
-export type PawnHideMode = "none" | "all" | "own" | "opponent";
 
 /**
  * How pieces hidden by the blindfold settings are drawn:

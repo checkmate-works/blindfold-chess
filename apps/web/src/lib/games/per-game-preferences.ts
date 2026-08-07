@@ -1,3 +1,9 @@
+import {
+  PAWN_HIDE_MODES,
+  PIECE_COLOR_MODES as PIECE_COLORS,
+  PIECE_SHAPE_MODES,
+} from '@blindfold-chess/types';
+
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { DEFAULT_AI_REPLY_DURATION, isAiReplyDuration } from './ai-reply-duration';
@@ -29,23 +35,6 @@ export const DEFAULT_PER_GAME_PREFERENCES: PerGamePreferences = {
   aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
 };
 
-const PIECE_SHAPE_MODES = [
-  'normal',
-  'circles-all',
-  'circles-own',
-  'circles-opponent',
-] as const satisfies readonly PerGamePreferences['pieceShapeMode'][];
-const PIECE_COLORS = [
-  'normal',
-  'white-only',
-  'black-only',
-] as const satisfies readonly PerGamePreferences['pieceColors'][];
-const PAWN_HIDE_MODES = [
-  'none',
-  'all',
-  'own',
-  'opponent',
-] as const satisfies readonly PerGamePreferences['pawnHideMode'][];
 const MOVE_INPUT_MODES = [
   'text',
   'select',

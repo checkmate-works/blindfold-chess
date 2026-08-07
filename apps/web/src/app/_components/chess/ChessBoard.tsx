@@ -3,7 +3,13 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ChessPiece } from '@/app/_components';
-import type { BoardClickAction, PieceColor } from '@blindfold-chess/features/board-display';
+import type {
+  BoardClickAction,
+  PawnHideMode,
+  PieceColor,
+  PieceColorMode,
+  PieceShapeMode,
+} from '@blindfold-chess/features/board-display';
 import {
   areDestinationsObscured,
   classifyBoardClick,
@@ -78,8 +84,8 @@ type Props = {
    * keeps the shapes, so dots still show there.
    */
   showPieceDestinations?: boolean;
-  pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
-  pieceColors?: 'normal' | 'white-only' | 'black-only';
+  pieceShapeMode?: PieceShapeMode;
+  pieceColors?: PieceColorMode;
   /**
    * Partial blindfold: which pawns are hidden entirely (rendered as empty
    * squares). `'none'` (default) shows every pawn; `'all'` hides both sides';
@@ -88,7 +94,7 @@ type Props = {
    * shape / color obfuscation — a hidden side already hides its pawns, so this
    * only bites on a side that is otherwise shown.
    */
-  pawnHideMode?: 'none' | 'all' | 'own' | 'opponent';
+  pawnHideMode?: PawnHideMode;
   /**
    * How pieces hidden by the blindfold settings (`showOwnPieces` /
    * `showOpponentPieces` / `pawnHideMode`) are drawn:

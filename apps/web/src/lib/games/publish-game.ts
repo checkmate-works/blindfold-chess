@@ -3,6 +3,11 @@ import {
   validateFen,
   validateMoveSequence,
 } from '@blindfold-chess/features/chess-core';
+import {
+  PAWN_HIDE_MODES,
+  PIECE_COLOR_MODES as PIECE_COLORS,
+  PIECE_SHAPE_MODES,
+} from '@blindfold-chess/types';
 
 import { engineApproxElo, isEngineConfig } from '@/lib/engines';
 import type { EngineConfig } from '@/lib/engines';
@@ -79,10 +84,6 @@ export type ValidatePublishResult =
 
 const OUTCOMES: readonly GameOutcome[] = ['win', 'loss', 'draw'];
 const COLORS: readonly PlayerColor[] = ['white', 'black'];
-
-const PIECE_SHAPE_MODES = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
-const PIECE_COLORS = ['normal', 'white-only', 'black-only'] as const;
-const PAWN_HIDE_MODES = ['none', 'all', 'own', 'opponent'] as const;
 
 /**
  * Normalize the self-reported play settings into the validated display subset,
