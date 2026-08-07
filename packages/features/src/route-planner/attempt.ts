@@ -25,7 +25,7 @@ export function getShortestPathOrEmpty(
   start: Square,
   end: Square,
 ): Square[] {
-  return (findShortestPath(piece, start, end) as Square[] | null) ?? [];
+  return findShortestPath(piece, start, end) ?? [];
 }
 
 export type RoutePlannerAttempt = {

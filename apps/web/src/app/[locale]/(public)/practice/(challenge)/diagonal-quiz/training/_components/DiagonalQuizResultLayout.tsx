@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Square } from '@blindfold-chess/types';
 import { FaRedo } from 'react-icons/fa';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
@@ -14,7 +15,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { DiagonalBoard } from '../../_components/DiagonalQuizProblemList';
 
 type Props = {
-  question: string;
+  question: Square;
   correctCount: number;
   incorrectCount: number;
   challengeHref: string;

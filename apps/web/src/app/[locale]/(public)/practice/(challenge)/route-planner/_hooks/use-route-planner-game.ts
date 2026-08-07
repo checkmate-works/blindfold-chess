@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { isValidSquare } from '@blindfold-chess/features/common';
+import type { Square } from '@blindfold-chess/types';
 
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
@@ -15,17 +17,17 @@ type GameState = 'playing' | 'result';
 
 type RoutePlannerResult = {
   piece: PieceType;
-  start: string;
-  end: string;
+  start: Square;
+  end: Square;
   success: boolean;
-  userPath: string[];
-  shortestPath: string[];
+  userPath: Square[];
+  shortestPath: Square[];
   skipped?: boolean;
 };
 
 type ResultState = {
   success: boolean;
-  shortestPath: string[];
+  shortestPath: Square[];
   message?: string;
   skipped?: boolean;
 };
@@ -49,10 +51,10 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
 
   const [problem, setProblem] = useState<{
     piece: PieceType;
-    start: string;
-    end: string;
+    start: Square;
+    end: Square;
   } | null>(null);
-  const [moves, setMoves] = useState<string[]>([]);
+  const [moves, setMoves] = useState<Square[]>([]);
   const [result, setResult] = useState<ResultState | null>(null);
 
   const { resetStage } = stagedCoordinate;
@@ -77,7 +79,8 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
 
   const addMove = useCallback(
     (square: string) => {
-      if (!problem) return;
+      // Keypad input arrives as a raw string; this is the parse boundary.
+      if (!problem || !isValidSquare(square)) return;
       setMoves((prev) => [...prev, square]);
     },
     [problem]

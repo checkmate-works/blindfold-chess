@@ -7,33 +7,33 @@ import {
   getCorrectQuadrant,
 } from "./logic";
 
-const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"];
+const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
 
 describe("getCorrectQuadrant", () => {
   it("identifies q1 (king side upper): e-h files, ranks 5-8", () => {
-    const q1Squares = ["e5", "f6", "g7", "h8", "e8", "h5"];
+    const q1Squares = ["e5", "f6", "g7", "h8", "e8", "h5"] as const;
     for (const square of q1Squares) {
       expect(getCorrectQuadrant(square)).toBe("q1");
     }
   });
 
   it("identifies q2 (queen side upper): a-d files, ranks 5-8", () => {
-    const q2Squares = ["a5", "b6", "c7", "d8", "a8", "d5"];
+    const q2Squares = ["a5", "b6", "c7", "d8", "a8", "d5"] as const;
     for (const square of q2Squares) {
       expect(getCorrectQuadrant(square)).toBe("q2");
     }
   });
 
   it("identifies q3 (queen side lower): a-d files, ranks 1-4", () => {
-    const q3Squares = ["a1", "b2", "c3", "d4", "a4", "d1"];
+    const q3Squares = ["a1", "b2", "c3", "d4", "a4", "d1"] as const;
     for (const square of q3Squares) {
       expect(getCorrectQuadrant(square)).toBe("q3");
     }
   });
 
   it("identifies q4 (king side lower): e-h files, ranks 1-4", () => {
-    const q4Squares = ["e1", "f2", "g3", "h4", "e4", "h1"];
+    const q4Squares = ["e1", "f2", "g3", "h4", "e4", "h1"] as const;
     for (const square of q4Squares) {
       expect(getCorrectQuadrant(square)).toBe("q4");
     }
@@ -42,7 +42,7 @@ describe("getCorrectQuadrant", () => {
   it("correctly classifies all 64 squares", () => {
     for (const file of FILES) {
       for (const rank of RANKS) {
-        const square = `${file}${rank}`;
+        const square = `${file}${rank}` as const;
         const quadrant = getCorrectQuadrant(square);
         const rankNum = parseInt(rank);
         const isKingSide = ["e", "f", "g", "h"].includes(file);

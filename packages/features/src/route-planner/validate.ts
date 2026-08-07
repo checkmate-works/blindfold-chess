@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import { isValidSquare } from "../common";
 
 import { getPossibleMoves } from "./moves";
@@ -10,6 +12,9 @@ import type { RoutePlannerPieceType } from "./types";
  * and that the path ends at the goal square. The `userPath` should not include
  * the start square (it is prepended automatically in the returned `fullPath`).
  *
+ * `userPath` accepts raw strings: this function is the parse boundary that
+ * turns untrusted user input into `Square`s (via `isValidSquare` narrowing).
+ *
  * @param piece The piece type
  * @param start The starting square (e.g. 'f6')
  * @param userPath The sequence of squares entered by user (e.g. ['e4', 'd2'])
@@ -17,10 +22,10 @@ import type { RoutePlannerPieceType } from "./types";
  */
 export function validateUserPath(
   piece: RoutePlannerPieceType,
-  start: string,
-  userPath: string[],
-  goal: string,
-): { valid: boolean; error?: string; fullPath?: string[] } {
+  start: Square,
+  userPath: readonly string[],
+  goal: Square,
+): { valid: boolean; error?: string; fullPath?: Square[] } {
   if (userPath.length === 0) return { valid: false, error: "Empty path" };
 
   const lastUserSquare = userPath[userPath.length - 1];

@@ -8,6 +8,7 @@ import {
   type DiagonalQuestionResult as QuestionResult,
   getDiagonalSquares,
 } from '@blindfold-chess/features/diagonal-quiz';
+import type { Square as SquareName } from '@blindfold-chess/types';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import {
@@ -22,14 +23,14 @@ import { DiagonalAnswerComparison } from './DiagonalAnswerComparison';
 
 export type { QuestionResult };
 
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
+const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
+const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'] as const;
 
 export function DiagonalBoard({
   targetSquare,
   boardTheme = DEFAULT_BOARD_THEME,
 }: {
-  targetSquare: string;
+  targetSquare: SquareName;
   boardTheme?: BoardTheme;
 }) {
   const themeColors = getBoardThemeColors(boardTheme);
@@ -42,7 +43,7 @@ export function DiagonalBoard({
   const diagonalSet = useMemo(() => new Set(diagonal), [diagonal]);
   const antiDiagonalSet = useMemo(() => new Set(antiDiagonal), [antiDiagonal]);
 
-  const getOverlayClass = (square: string) => {
+  const getOverlayClass = (square: SquareName) => {
     if (square === targetSquare) return 'bg-primary/50';
     const onDiag = diagonalSet.has(square);
     const onAntiDiag = antiDiagonalSet.has(square);
@@ -58,7 +59,7 @@ export function DiagonalBoard({
         <div className="grid grid-cols-8 gap-0 w-full h-full">
           {RANKS.map((rank, rankIndex) =>
             FILES.map((file, fileIndex) => {
-              const square = file + rank;
+              const square = `${file}${rank}` as const;
               const isLight = (fileIndex + rankIndex) % 2 === 0;
               const overlay = getOverlayClass(square);
               const isBishopSquare = square === targetSquare;

@@ -72,13 +72,13 @@ describe("isLightSquare", () => {
 // isLightSquare consistency with computeSquareColor
 // ============================================================
 describe("isLightSquare consistency with computeSquareColor", () => {
-  const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-  const displayRanks = ["8", "7", "6", "5", "4", "3", "2", "1"];
+  const files = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+  const displayRanks = ["8", "7", "6", "5", "4", "3", "2", "1"] as const;
 
   it("agrees with computeSquareColor for all 64 squares", () => {
     for (let rankIndex = 0; rankIndex < 8; rankIndex++) {
       for (let fileIndex = 0; fileIndex < 8; fileIndex++) {
-        const square = files[fileIndex] + displayRanks[rankIndex];
+        const square = `${files[fileIndex]}${displayRanks[rankIndex]}` as const;
         const colorFromCompute = computeSquareColor(square);
         const isLight = isLightSquare(fileIndex, rankIndex);
 

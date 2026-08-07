@@ -330,10 +330,10 @@ describe("findShortestPath", () => {
   describe("path validity", () => {
     it("every step in the path is a valid move", () => {
       const testCases = [
-        { piece: "n" as const, start: "a1", end: "h8" },
-        { piece: "b" as const, start: "a1", end: "h8" },
-        { piece: "r" as const, start: "a1", end: "h8" },
-        { piece: "q" as const, start: "a1", end: "h8" },
+        { piece: "n", start: "a1", end: "h8" } as const,
+        { piece: "b", start: "a1", end: "h8" } as const,
+        { piece: "r", start: "a1", end: "h8" } as const,
+        { piece: "q", start: "a1", end: "h8" } as const,
       ];
       for (const { piece, start, end } of testCases) {
         const path = findShortestPath(piece, start, end);
@@ -365,7 +365,9 @@ describe("validateUserPath", () => {
   });
 
   it("returns invalid for an invalid square in the path", () => {
-    const result = validateUserPath("n", "a1", ["z9"], "z9");
+    // "z9" is not a legal square; it can only appear via the raw-string
+    // userPath (the goal parameter is typed Square).
+    const result = validateUserPath("n", "a1", ["z9", "b3"], "b3");
     expect(result.valid).toBe(false);
     expect(result.error).toBe("Invalid square: z9");
   });

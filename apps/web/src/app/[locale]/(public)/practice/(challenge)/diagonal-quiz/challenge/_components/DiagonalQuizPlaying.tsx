@@ -1,6 +1,7 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Square } from '@blindfold-chess/types';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeCountdownOverlay';
@@ -16,7 +17,7 @@ import { DiagonalInputField } from '../../_components/DiagonalInputField';
 import { useKeypadInput } from '../_hooks/use-keypad-input';
 
 type Props = {
-  currentSquare: string;
+  currentSquare: Square;
   timeRemaining: number;
   timeLimit: number;
   showResult: boolean;

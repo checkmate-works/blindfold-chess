@@ -2,6 +2,7 @@
 
 import { BoardSkeleton, Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Square } from '@blindfold-chess/types';
 import { FaRedo } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -10,9 +11,9 @@ import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerProblemFeedback } from './RoutePlannerProblemFeedback';
 
 type Props = {
-  problem: { piece: PieceType; start: string; end: string };
-  result: { success: boolean; shortestPath: string[]; message?: string; skipped?: boolean };
-  moves: string[];
+  problem: { piece: PieceType; start: Square; end: Square };
+  result: { success: boolean; shortestPath: Square[]; message?: string; skipped?: boolean };
+  moves: Square[];
   onNextProblem: () => void;
   isTraining: boolean;
   isLastProblem: boolean;

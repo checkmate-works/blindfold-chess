@@ -1,15 +1,12 @@
-import {
-  computeSquareColor,
-  isValidSquare as isValidSquareBase,
-} from '@blindfold-chess/features/common';
+import { computeSquareColor } from '@blindfold-chess/features/common';
 import type { Square } from '@blindfold-chess/types';
 import { FILES, RANKS } from '@blindfold-chess/types';
 
 export type { Square } from '@blindfold-chess/types';
 
-export function isValidSquare(value: string): value is Square {
-  return isValidSquareBase(value);
-}
+// The shared predicate already narrows to `Square`; re-exported so existing
+// importers of this module keep working.
+export { isValidSquare } from '@blindfold-chess/features/common';
 
 export function getAllSquares(): Square[] {
   const squares: Square[] = [];

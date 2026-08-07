@@ -1,9 +1,10 @@
+import type { Square } from "@blindfold-chess/types";
+
 import { isLegalPieceMove } from "../chess-core";
 
 import {
   type RandomSource,
-  FILES,
-  RANKS,
+  fileRankToSquare,
   getMovesForPiece,
   shuffleArray,
   squareToFileIndex,
@@ -15,8 +16,8 @@ import type { MoveQuestion, PieceType } from "./types";
 
 // Check if a move is legal for a given piece
 export function isLegalMove(
-  from: string,
-  to: string,
+  from: Square,
+  to: Square,
   pieceType: PieceType,
 ): boolean {
   return isLegalPieceMove(from, to, pieceType);
@@ -126,7 +127,7 @@ function findMoveQuestion(
   for (let attempts = 0; attempts < 200; attempts++) {
     const fromFile = Math.floor(rng() * BOARD_SIZE);
     const fromRank = Math.floor(rng() * BOARD_SIZE);
-    const fromSquare = FILES[fromFile] + RANKS[fromRank];
+    const fromSquare = fileRankToSquare(fromFile, fromRank);
 
     const target = pickTarget(strategy, fromFile, fromRank, rng);
     // No target produced from this origin (e.g. a knight cornered with the RNG
@@ -142,7 +143,7 @@ function findMoveQuestion(
     )
       continue;
 
-    const toSquare = FILES[toFile] + RANKS[toRank];
+    const toSquare = fileRankToSquare(toFile, toRank);
     if (toSquare === fromSquare) continue;
 
     if (accept(isLegalMove(fromSquare, toSquare, pieceType))) {
