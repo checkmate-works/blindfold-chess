@@ -69,9 +69,8 @@ export const revalidate = 3600;
 /**
  * Route segment config, inherited by every page below. The platform default
  * under Fluid Compute is 300s; nothing under `[locale]` legitimately renders
- * for a minute, so a hung render (see the navigation-stall entry in CLAUDE.md's
- * Known Issues) now dies visibly at 60s instead of silently burning five
- * minutes per hang.
+ * for a minute, so a hung render now dies visibly at 60s instead of silently
+ * burning five minutes per hang.
  */
 export const maxDuration = 60;
 

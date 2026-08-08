@@ -13,8 +13,9 @@ import { profiles } from './schema';
  * whole table. A follower count, logically proportional to the follower count,
  * then costs one full scan of `profiles` regardless. At 300k profiles that
  * measured 8,134 shared buffers, versus 84 for the form below, and running one
- * per prefetched profile link was enough to stall renders in production. See
- * the navigation-stall entry in CLAUDE.md's Known Issues.
+ * per prefetched profile link was enough to stall renders in production. The
+ * trap is that it stays fast in development and on small accounts: the plan
+ * flips only once the row estimate grows, i.e. for the busiest users.
  *
  * Testing the rare side instead — "no deleted profile with this id" — probes
  * the partial `idx_profiles_deleted` index, which covers a few percent of the

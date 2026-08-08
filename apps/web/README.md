@@ -114,7 +114,7 @@ supabase stop
 
 ## Deployment
 
-Deployment guide for Vercel and Supabase, including monorepo Root Directory configuration and region selection.
+Deployment guide for Vercel and Supabase: monorepo Root Directory configuration, region selection, connecting the Supabase-Vercel integration (which owns the production database credentials — they are never set by hand), and which pooler each context connects through.
 
 See [docs/deployment.md](docs/deployment.md) for details.
 

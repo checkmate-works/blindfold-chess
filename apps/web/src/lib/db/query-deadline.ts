@@ -1,7 +1,5 @@
 import type { Sql } from 'postgres';
 
-import { snapshotEventLoopLag } from '@/lib/sentry/event-loop-lag';
-
 /**
  * How long a single query may take before it is abandoned.
  *
@@ -24,22 +22,17 @@ const SQL_EXCERPT_LENGTH = 300;
  * - The query truly went unanswered (slow execution, pool queue, pooler,
  *   network). The timer then fires on schedule: `overshootMs ≈ 0`.
  * - This process's event loop was blocked, so the query's protocol bytes were
- *   never flushed (production showed Postgres in `wait_event = ClientRead`
- *   waiting on us) and the answer may even be sitting unread in the socket
+ *   never flushed and the answer may even be sitting unread in the socket
  *   buffer — Node runs expired timers before pending I/O. The timer then fires
- *   LATE by however long the loop was blocked: `overshootMs` in the seconds,
- *   corroborated by the event-loop histogram.
+ *   LATE by however long the loop was blocked, which `overshootMs` measures.
  *
- * See the docblock in `@/lib/sentry/event-loop-lag` for the investigation that
- * motivated this. `sentry.server.config.ts` lifts these fields into tags.
+ * Everything here is computed only when a deadline has already fired, so it
+ * costs nothing in the normal case. `sentry.server.config.ts` lifts these
+ * fields into tags.
  */
 export type QueryDeadlineDiagnostics = {
   /** How late the deadline timer fired past its scheduled time, in ms. */
   overshootMs: number;
-  /** Event-loop delay stats since the previous deadline error (or boot). */
-  loopMeanMs: number;
-  loopP99Ms: number;
-  loopMaxMs: number;
   /** How many OTHER queries were started and still unsettled at this moment. */
   inflightCount: number;
   /**
@@ -66,8 +59,7 @@ export class QueryDeadlineError extends Error {
   constructor(sql: string, diagnostics: QueryDeadlineDiagnostics) {
     super(
       `Query exceeded the ${QUERY_DEADLINE_MS}ms deadline ` +
-        `(timer overshoot ${coarseSeconds(diagnostics.overshootMs)}, ` +
-        `event-loop max delay ${coarseSeconds(diagnostics.loopMaxMs)}): ${sql}`
+        `(timer overshoot ${coarseSeconds(diagnostics.overshootMs)}): ${sql}`
     );
     this.name = 'QueryDeadlineError';
     this.sql = sql;
@@ -97,12 +89,10 @@ function describeSql(query: PendingQuery, fallback: string): string {
  * our raced wrapper rejects. A deadline rejection abandons the awaiter, but
  * postgres.js keeps the connection occupied until the query really answers,
  * errors, or is cancelled; that zombie window is precisely what this registry
- * exists to expose. The 2026-08-05 stalls showed sub-millisecond queries
- * starving for 10s with a healthy event loop (overshoot 0) and an idle
- * database — pool slots held by never-settling queries are the remaining
- * suspect, and `inflightOldest` ages far past the deadline would convict them.
- * Wedged entries persist until the instance dies, which is the signal, not a
- * leak: their count is bounded by the pool size plus the queue.
+ * exists to expose, and `inflightOldest` ages far past the deadline are how a
+ * starving pool is told apart from a slow database. Wedged entries persist
+ * until the instance dies, which is the signal, not a leak: their count is
+ * bounded by the pool size plus the queue.
  */
 const inflightQueries = new Map<
   PendingQuery,
@@ -157,10 +147,10 @@ export type DeadlineRetry = {
 let deadlineRetry: DeadlineRetry | undefined;
 
 /**
- * Register the retry performed when a SELECT hits its deadline. Production
- * showed established connections whose queries silently black-hole (no answer,
- * no error — see the navigation-stall entry in CLAUDE.md); the retry gives the
- * render a second chance on a fresh connection instead of failing it outright.
+ * Register the retry performed when a SELECT hits its deadline. Established
+ * connections have been seen swallowing queries whole — no answer, no error —
+ * so the retry gives the render a second chance on a fresh connection instead
+ * of failing it outright.
  * One handler at a time — same contract as {@link setWedgedQueryHandler}.
  */
 export function setDeadlineRetry(retry: DeadlineRetry | undefined): void {
@@ -262,7 +252,6 @@ function wrapQuery<T extends PendingQuery>(
           // the block. Clamped at 0 — fake-timer tests advance the clock
           // without advancing performance.now().
           const overshootMs = Math.max(0, performance.now() - armedAt - QUERY_DEADLINE_MS);
-          const lag = snapshotEventLoopLag();
           // Ask the server to abort too, so a query that IS running does not
           // outlive the request that wanted it. Cancelling can throw when the
           // connection is already gone — which is the case we are here for.
@@ -281,9 +270,6 @@ function wrapQuery<T extends PendingQuery>(
           }, WEDGE_GRACE_MS);
           const error = new QueryDeadlineError(sql, {
             overshootMs,
-            loopMeanMs: lag.meanMs,
-            loopP99Ms: lag.p99Ms,
-            loopMaxMs: lag.maxMs,
             ...snapshotInflight(query),
           });
 
@@ -407,8 +393,8 @@ function isPendingQuery(value: unknown): value is PendingQuery {
  *
  * That is the shape production kept hitting: a render that never finished, no
  * DB error, no auth error, killed at `maxDuration` with nothing to show for
- * it. See the navigation-stall entry in CLAUDE.md's Known Issues. This wrapper
- * turns that silence into a named error that identifies the query.
+ * it. This wrapper turns that silence into a named error that identifies the
+ * query.
  *
  * In Sentry the failure arrives as Drizzle's `Failed query: <sql>` with the
  * {@link QueryDeadlineError} as its `cause` — look at the linked exception to
