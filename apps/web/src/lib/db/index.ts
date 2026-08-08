@@ -14,17 +14,37 @@ import {
 } from './query-deadline';
 import * as schema from './schema';
 
-// DB_RUNTIME_URL: Runtime-only override, wins over the integration-managed
-//   POSTGRES_URL. Exists so the pooler mode can be switched (e.g. to the
-//   Supavisor session pooler on port 5432) from the Vercel dashboard without
-//   touching integration-managed variables. Build-time scripts (migrate/seed,
-//   drizzle-kit) do NOT read it — they prefer POSTGRES_URL_NON_POOLING — so
-//   setting it never changes what migrations run against.
-// POSTGRES_URL: Set by Vercel Marketplace Supabase integration
+/**
+ * The 2026-08 black-hole experiment switch: route RUNTIME queries through the
+ * Supavisor SESSION pooler (port 5432) instead of the transaction pooler
+ * (port 6543) that `POSTGRES_URL` points at.
+ *
+ * `POSTGRES_URL_NON_POOLING` is the session-pooler URL and is synced by the
+ * same Vercel Marketplace integration as `POSTGRES_URL` — no manually
+ * maintained connection string is involved, and this exact URL already
+ * carries every deploy's migrations (`migrate.ts` / `prebuild-db.ts` /
+ * `drizzle.config.ts` all prefer it), so it is battle-tested in this project.
+ *
+ * Flip to `false` and redeploy to return to the transaction pooler — the
+ * experiment is a one-line revert, not an environment change. Every Sentry
+ * event carries the resulting mode as the `db.pooler_mode` tag, so incident
+ * rates (`db-pool-rebuilt` / `db-deadline-retry`) can be compared across the
+ * flip. Locally the variable is unset and the loopback default applies.
+ */
+const USE_SESSION_POOLER = true;
+
+// DB_RUNTIME_URL: Optional runtime-only override, wins over everything.
+//   Escape hatch for one-off experiments (e.g. the direct connection);
+//   normally unset. Build-time scripts (migrate/seed, drizzle-kit) do NOT
+//   read it — they prefer POSTGRES_URL_NON_POOLING — so setting it never
+//   changes what migrations run against.
+// POSTGRES_URL / POSTGRES_URL_NON_POOLING: Set by the Vercel Marketplace
+//   Supabase integration (transaction pooler / session pooler respectively).
 // DATABASE_URL: For manual configuration
 // Default: Supabase local PostgreSQL for development
 const connectionString =
   process.env.DB_RUNTIME_URL ||
+  (USE_SESSION_POOLER ? process.env.POSTGRES_URL_NON_POOLING : undefined) ||
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
   'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
