@@ -55,8 +55,6 @@ Sentry.init({
       event.tags = {
         ...event.tags,
         'query_deadline.overshoot_ms': String(Math.round(diagnostics.overshootMs)),
-        'query_deadline.loop_max_ms': String(Math.round(diagnostics.loopMaxMs)),
-        'query_deadline.loop_p99_ms': String(Math.round(diagnostics.loopP99Ms)),
         'query_deadline.inflight_count': String(diagnostics.inflightCount),
         // Age of the oldest other unsettled query. Far past the 10s deadline
         // means a wedged pool slot; the full list is in the extra below.

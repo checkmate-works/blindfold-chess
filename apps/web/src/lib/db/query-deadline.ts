@@ -1,7 +1,5 @@
 import type { Sql } from 'postgres';
 
-import { snapshotEventLoopLag } from '@/lib/sentry/event-loop-lag';
-
 /**
  * How long a single query may take before it is abandoned.
  *
@@ -24,22 +22,17 @@ const SQL_EXCERPT_LENGTH = 300;
  * - The query truly went unanswered (slow execution, pool queue, pooler,
  *   network). The timer then fires on schedule: `overshootMs ≈ 0`.
  * - This process's event loop was blocked, so the query's protocol bytes were
- *   never flushed (production showed Postgres in `wait_event = ClientRead`
- *   waiting on us) and the answer may even be sitting unread in the socket
+ *   never flushed and the answer may even be sitting unread in the socket
  *   buffer — Node runs expired timers before pending I/O. The timer then fires
- *   LATE by however long the loop was blocked: `overshootMs` in the seconds,
- *   corroborated by the event-loop histogram.
+ *   LATE by however long the loop was blocked, which `overshootMs` measures.
  *
- * See the docblock in `@/lib/sentry/event-loop-lag` for the investigation that
- * motivated this. `sentry.server.config.ts` lifts these fields into tags.
+ * Everything here is computed only when a deadline has already fired, so it
+ * costs nothing in the normal case. `sentry.server.config.ts` lifts these
+ * fields into tags.
  */
 export type QueryDeadlineDiagnostics = {
   /** How late the deadline timer fired past its scheduled time, in ms. */
   overshootMs: number;
-  /** Event-loop delay stats since the previous deadline error (or boot). */
-  loopMeanMs: number;
-  loopP99Ms: number;
-  loopMaxMs: number;
   /** How many OTHER queries were started and still unsettled at this moment. */
   inflightCount: number;
   /**
@@ -66,8 +59,7 @@ export class QueryDeadlineError extends Error {
   constructor(sql: string, diagnostics: QueryDeadlineDiagnostics) {
     super(
       `Query exceeded the ${QUERY_DEADLINE_MS}ms deadline ` +
-        `(timer overshoot ${coarseSeconds(diagnostics.overshootMs)}, ` +
-        `event-loop max delay ${coarseSeconds(diagnostics.loopMaxMs)}): ${sql}`
+        `(timer overshoot ${coarseSeconds(diagnostics.overshootMs)}): ${sql}`
     );
     this.name = 'QueryDeadlineError';
     this.sql = sql;
@@ -260,7 +252,6 @@ function wrapQuery<T extends PendingQuery>(
           // the block. Clamped at 0 — fake-timer tests advance the clock
           // without advancing performance.now().
           const overshootMs = Math.max(0, performance.now() - armedAt - QUERY_DEADLINE_MS);
-          const lag = snapshotEventLoopLag();
           // Ask the server to abort too, so a query that IS running does not
           // outlive the request that wanted it. Cancelling can throw when the
           // connection is already gone — which is the case we are here for.
@@ -279,9 +270,6 @@ function wrapQuery<T extends PendingQuery>(
           }, WEDGE_GRACE_MS);
           const error = new QueryDeadlineError(sql, {
             overshootMs,
-            loopMeanMs: lag.meanMs,
-            loopP99Ms: lag.p99Ms,
-            loopMaxMs: lag.maxMs,
             ...snapshotInflight(query),
           });
 
