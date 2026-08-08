@@ -97,12 +97,10 @@ function describeSql(query: PendingQuery, fallback: string): string {
  * our raced wrapper rejects. A deadline rejection abandons the awaiter, but
  * postgres.js keeps the connection occupied until the query really answers,
  * errors, or is cancelled; that zombie window is precisely what this registry
- * exists to expose. The 2026-08-05 stalls showed sub-millisecond queries
- * starving for 10s with a healthy event loop (overshoot 0) and an idle
- * database — pool slots held by never-settling queries are the remaining
- * suspect, and `inflightOldest` ages far past the deadline would convict them.
- * Wedged entries persist until the instance dies, which is the signal, not a
- * leak: their count is bounded by the pool size plus the queue.
+ * exists to expose, and `inflightOldest` ages far past the deadline are how a
+ * starving pool is told apart from a slow database. Wedged entries persist
+ * until the instance dies, which is the signal, not a leak: their count is
+ * bounded by the pool size plus the queue.
  */
 const inflightQueries = new Map<
   PendingQuery,
@@ -157,10 +155,10 @@ export type DeadlineRetry = {
 let deadlineRetry: DeadlineRetry | undefined;
 
 /**
- * Register the retry performed when a SELECT hits its deadline. Production
- * showed established connections whose queries silently black-hole (no answer,
- * no error — see the navigation-stall entry in CLAUDE.md); the retry gives the
- * render a second chance on a fresh connection instead of failing it outright.
+ * Register the retry performed when a SELECT hits its deadline. Established
+ * connections have been seen swallowing queries whole — no answer, no error —
+ * so the retry gives the render a second chance on a fresh connection instead
+ * of failing it outright.
  * One handler at a time — same contract as {@link setWedgedQueryHandler}.
  */
 export function setDeadlineRetry(retry: DeadlineRetry | undefined): void {
@@ -407,8 +405,8 @@ function isPendingQuery(value: unknown): value is PendingQuery {
  *
  * That is the shape production kept hitting: a render that never finished, no
  * DB error, no auth error, killed at `maxDuration` with nothing to show for
- * it. See the navigation-stall entry in CLAUDE.md's Known Issues. This wrapper
- * turns that silence into a named error that identifies the query.
+ * it. This wrapper turns that silence into a named error that identifies the
+ * query.
  *
  * In Sentry the failure arrives as Drizzle's `Failed query: <sql>` with the
  * {@link QueryDeadlineError} as its `cause` — look at the linked exception to

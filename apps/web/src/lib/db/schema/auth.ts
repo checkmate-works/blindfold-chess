@@ -124,8 +124,8 @@ export const profiles = pgTable(
      * Inverting the test to `NOT EXISTS (... deleted_at IS NOT NULL)` lets it
      * probe this index instead. Same result, 84 buffers. Write the exclusion
      * that way — not as a join on the null side — wherever the row count can
-     * grow. See the navigation-stall entry in CLAUDE.md's Known Issues for how
-     * this surfaced.
+     * grow; `profileNotDeleted()` (`src/lib/db/profile-not-deleted.ts`) is the
+     * shared helper.
      */
     index('idx_profiles_deleted').on(table.id).where(isNotNull(table.deletedAt)),
   ]

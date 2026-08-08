@@ -15,21 +15,36 @@ import {
 import * as schema from './schema';
 
 /**
- * The 2026-08 black-hole experiment switch: route RUNTIME queries through the
- * Supavisor SESSION pooler (port 5432) instead of the transaction pooler
- * (port 6543) that `POSTGRES_URL` points at.
+ * Route runtime queries through Supavisor's SESSION pooler (port 5432)
+ * instead of the transaction pooler (port 6543) that `POSTGRES_URL` names.
  *
- * `POSTGRES_URL_NON_POOLING` is the session-pooler URL and is synced by the
- * same Vercel Marketplace integration as `POSTGRES_URL` — no manually
- * maintained connection string is involved, and this exact URL already
- * carries every deploy's migrations (`migrate.ts` / `prebuild-db.ts` /
- * `drizzle.config.ts` all prefer it), so it is battle-tested in this project.
+ * @design Why session mode, and why this is not a preference
+ * Under the transaction pooler this app hit queries that vanished: on a
+ * connection that had completed TCP, TLS and auth, a SELECT would return no
+ * answer and no error, while the Postgres backend sat in `wait_event =
+ * ClientRead` and the same statement re-issued on a fresh connection answered
+ * in milliseconds. It struck roughly twenty times a day, concentrated on the
+ * page that opens the most connections at once, and left users staring at a
+ * skeleton. Switching to session mode — where a backend is pinned to the
+ * client connection for its lifetime instead of being assigned per statement
+ * — ended it immediately and completely. What exactly failed inside the
+ * transaction-mode path is Supabase-side and was never determined; this
+ * setting avoids that path rather than fixing it.
  *
- * Flip to `false` and redeploy to return to the transaction pooler — the
- * experiment is a one-line revert, not an environment change. Every Sentry
- * event carries the resulting mode as the `db.pooler_mode` tag, so incident
- * rates (`db-pool-rebuilt` / `db-deadline-retry`) can be compared across the
- * flip. Locally the variable is unset and the loopback default applies.
+ * The cost of pinning is that concurrent connections are capped by the
+ * pooler's "Pool Size" (Supabase dashboard → Database → Connection pooling);
+ * exceeding it fails fast with `EMAXCONNSESSION` instead of queuing, so that
+ * budget must cover `max` below times the number of concurrently warm
+ * instances.
+ *
+ * `POSTGRES_URL_NON_POOLING` is the session-pooler URL, synced by the same
+ * Vercel Marketplace integration as `POSTGRES_URL` — no hand-maintained
+ * connection string is involved, and every deploy's migrations already run
+ * through it (`migrate.ts` / `prebuild-db.ts` / `drizzle.config.ts` prefer
+ * it). Flipping this to `false` returns to the transaction pooler with no
+ * environment change; the `db.pooler_mode` Sentry tag records which mode any
+ * given event came from. Locally the variable is unset and the loopback
+ * default below applies.
  */
 const USE_SESSION_POOLER = true;
 
@@ -50,10 +65,9 @@ const connectionString =
   'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 
 /**
- * Stamped on every server-side Sentry event so black-hole incident rates
- * (`db-pool-rebuilt`, `db-deadline-retry`, `QueryDeadlineError`) can be
- * compared across pooler modes — the 2026-08 investigation's next experiment
- * is exactly that comparison (transaction pooler vs session pooler).
+ * Stamped on every server-side Sentry event, so a connection-level failure
+ * (`db-pool-rebuilt`, `db-deadline-retry`, `QueryDeadlineError`) says which
+ * pooler mode produced it without having to reconstruct what a deploy used.
  */
 const poolerMode = derivePoolerMode(connectionString);
 Sentry.getGlobalScope().setTag('db.pooler_mode', poolerMode);
@@ -73,10 +87,9 @@ Sentry.getGlobalScope().setTag('db.pooler_mode', poolerMode);
 // The timeouts below exist so a wedged query fails loudly instead of silently.
 // A server render that awaits a query with no deadline holds its RSC stream
 // open until the platform kills the function (300s under Fluid Compute), which
-// the user sees as a navigation whose skeleton never resolves — see the
-// navigation-stall entry in CLAUDE.md's Known Issues. Every value here is
-// chosen to fail fast enough that the failure lands in Sentry with a cause
-// attached, while staying far above any legitimate query.
+// the user sees as a navigation whose skeleton never resolves. Every value
+// here is chosen to fail fast enough that the failure lands in Sentry with a
+// cause attached, while staying far above any legitimate query.
 //
 // None of these options can bound a query that has already been dispatched:
 // `statement_timeout` is server-side and only starts once the backend begins
@@ -91,16 +104,14 @@ const IDLE_TIMEOUT_SECONDS = 20;
 
 function createPooledClient(): ReturnType<typeof postgres> {
   return postgres(connectionString, {
-    // Required for the transaction-mode pooler (port 6543). Kept false in
-    // session mode too, deliberately: the pooler experiment must change one
-    // variable at a time. Revisit as a perf follow-up if session mode sticks.
+    // Mandatory under the transaction pooler, which cannot carry prepared
+    // statements across its per-statement backend assignment. Session mode
+    // could use them; enabling it there is an unexplored perf follow-up.
     prepare: false,
-    // Shared budget under Fluid Compute. In session mode each client
-    // connection pins a dedicated Postgres backend for its lifetime, and the
-    // per-tenant backend budget (dashboard "Pool Size") is shared across ALL
-    // concurrently-warm instances — so the per-instance cap is halved there.
-    // Check the dashboard budget covers max × expected warm instances before
-    // switching modes.
+    // Shared budget under Fluid Compute. In session mode each connection pins
+    // a Postgres backend for its lifetime and the pooler's "Pool Size" is
+    // shared across ALL concurrently-warm instances, so the per-instance cap
+    // is halved — raise the dashboard budget before raising this.
     max: poolerMode === 'session' ? 5 : 10,
     idle_timeout: IDLE_TIMEOUT_SECONDS, // release idle connections back to the pooler
     max_lifetime: 60 * 30, // seconds — recycle long-lived connections
@@ -114,11 +125,10 @@ function createPooledClient(): ReturnType<typeof postgres> {
     // wedged query errors out (SQLSTATE 57014) instead of holding an RSC
     // stream open until the platform's maxDuration kill.
     //
-    // Production points at Supabase's transaction-mode pooler (Supavisor),
-    // and forwarding of this startup parameter is CONFIRMED: a 57014
-    // ("canceling statement due to statement timeout") reached Sentry on
-    // 2026-08-05 from the admin dashboard's topic_posts aggregation
-    // (issue #107). No fallback via `ALTER DATABASE` is needed.
+    // Supavisor does forward this startup parameter to the backend —
+    // confirmed by 57014s ("canceling statement due to statement timeout")
+    // arriving in Sentry from genuinely slow queries. No `ALTER DATABASE`
+    // fallback is needed.
     connection: {
       statement_timeout: 30_000, // milliseconds — a bare number is what Postgres reads this unit as
     },
@@ -144,11 +154,11 @@ let activeWrapped = withQueryDeadline(activeClient);
  * pool's sockets can silently lose their path (no RST arrives, so the client
  * cannot tell), and postgres.js's own idle reaper cannot run because its
  * timers are frozen with the process. The first query dispatched on such a
- * socket after thaw never settles: production on 2026-08-05 showed five of
- * them accumulated on one instance, the oldest 702 seconds — held until TCP
- * itself gave up — each occupying one of the `max: 10` pool slots. Enough of
- * those and the instance can no longer reach the database at all, which is
- * the "skeleton forever" navigation stall.
+ * socket after thaw never settles, and holds its pool slot until TCP itself
+ * gives up — observed in production at eleven minutes. Wedges accumulate one
+ * per stale socket, and once they outnumber the pool the instance can no
+ * longer reach the database at all: every route it serves fails, not just the
+ * one that burned the socket.
  *
  * The wedge handler (see `setWedgedQueryHandler` in `./query-deadline`) fires
  * when a deadlined query stays unsettled past a grace period. Response:
@@ -200,11 +210,11 @@ setWedgedQueryHandler(({ sql, ageMs }) => {
 /**
  * @design Transparent SELECT retry: a second chance on a fresh connection
  *
- * Production (2026-08-05, issue BLINDFOLD-CHESS-4K) showed sub-millisecond
- * SELECTs going silent for 15s+ on established connections, on instances
- * that had never been frozen (event-loop max delay under 500ms) — the
- * connection path itself intermittently black-holes a query. The deadline
- * turns that into a failed render; this retry turns it into a slow one.
+ * A connection can swallow a query whole: no answer, no error, on a socket
+ * that is otherwise established and on an instance that was never frozen.
+ * That was endemic under the transaction pooler (see `USE_SESSION_POOLER`
+ * above) and is why this exists — the deadline alone turns such a query into
+ * a failed render, whereas the retry turns it into a slow one.
  *
  * On a SELECT deadline, `./query-deadline` asks this dispatcher for a second
  * attempt: retire the suspect pool (debounced — if another victim already
@@ -256,8 +266,8 @@ setDeadlineRetry({
  * already disconnected can no longer be frozen mid-flight, and a wedged
  * query's deadline-plus-grace sequence (10s + 5s, see ./query-deadline) now
  * always runs on a live instance, so the pool rebuild fires promptly instead
- * of on the next thaw (production 2026-08-05: a 5s grace timer fired 11.6s
- * after its deadline because the instance froze in between).
+ * of on the next thaw (a grace timer was once observed firing 6.6s late for
+ * exactly that reason).
  *
  * Outside Vercel (local dev, tests, `next build` prerendering) `waitUntil`
  * is a no-op because no request context exists; the timer is unref'd so it

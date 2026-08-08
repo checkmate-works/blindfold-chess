@@ -5,9 +5,8 @@
  * Every Supabase HTTP call made during a server render (`auth.getUser()` in
  * `getOptionalUser`, JWKS fetches in the proxy) sits on the critical path of
  * an RSC stream. `fetch` has no default timeout, so a hung connection holds
- * the stream open — observed in production (2026-08) as a navigation whose
- * skeleton never resolves until the platform's maxDuration kill at 300s. See
- * the navigation-stall entry in CLAUDE.md's Known Issues.
+ * the stream open — which the user sees as a navigation whose skeleton never
+ * resolves, until the platform's maxDuration kill.
  *
  * The factory exists so tests can use a short deadline; production callers
  * use the pre-configured {@link fetchWithTimeout}.

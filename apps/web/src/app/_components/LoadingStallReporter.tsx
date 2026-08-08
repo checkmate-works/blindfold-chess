@@ -75,8 +75,7 @@ type Props = {
  * that survived a reload — a run of `recovering: false` means reloading is not
  * buying anything and the assumption above is wrong. The server-side
  * `render-watchdog:*` event for the same navigation names the stage the render
- * died at. See `startRenderWatchdog` and the navigation-stall entry in
- * CLAUDE.md's Known Issues.
+ * died at — see `startRenderWatchdog`.
  *
  * Read a zero carefully. It means no stall *of the observed shape* — one where
  * the skeleton stays mounted, which is what keeps this effect alive to fire. A

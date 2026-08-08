@@ -4,24 +4,20 @@ import { type IntervalHistogram, monitorEventLoopDelay } from 'node:perf_hooks';
  * Event-loop delay monitor for the Node.js server process.
  *
  * @design Why this exists
- * The 2026-08-05 profile-page stalls produced `QueryDeadlineError`s naming
- * queries that EXPLAIN proves execute in well under a millisecond, while
- * `pg_stat_activity` showed the backend in `wait_event = ClientRead` — the
- * database waiting on THIS process to finish sending its protocol bytes. That
- * combination indicts the app side of the wire, and the leading suspect is the
- * event loop: postgres.js flushes its protocol messages from JS, so a loop
- * blocked by CPU work (many concurrent SSR renders sharing one Fluid Compute
- * instance) leaves the message half-sent, stalls every in-flight query, and —
- * because Node runs expired timers before pending I/O when the loop resumes —
- * then fires the 10s query deadline against answers that are already sitting
- * in the socket buffer.
+ * A query deadline on its own cannot say whether the query went unanswered or
+ * whether this process simply stopped listening: postgres.js flushes protocol
+ * bytes from JS, so a loop blocked by CPU work leaves a message half-sent, and
+ * — because Node runs expired timers before pending I/O when the loop resumes
+ * — can fire the deadline against an answer already sitting in the socket
+ * buffer.
  *
- * This module is the measurement that decides it. `query-deadline.ts` attaches
- * a snapshot (plus the timer's own measured overshoot) to every
+ * This module is what tells the two apart. `query-deadline.ts` attaches a
+ * snapshot (plus the timer's own measured overshoot) to every
  * `QueryDeadlineError`, and `sentry.server.config.ts` lifts the numbers into
- * searchable tags. Delay in the seconds while a deadline fires confirms the
- * blocked-loop mechanism; a flat histogram with on-schedule timers moves the
- * suspicion to the connection path (pool queue, Supavisor, network) instead.
+ * searchable tags. Delay in the seconds while a deadline fires means a blocked
+ * loop and an innocent database; a flat histogram with on-schedule timers
+ * points at the connection path (pool queue, pooler, network) instead — which
+ * is what production readings have actually shown.
  *
  * @design Window semantics
  * The histogram is reset on every {@link snapshotEventLoopLag} call, so a

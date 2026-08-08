@@ -39,8 +39,7 @@ export function markRenderStage(stage: string): void {
  *
  * @design Why a watchdog inside the render is the only instrument left
  * Production stalls where a `<Link>` navigation commits, paints `loading.tsx`,
- * and never renders (see the navigation-stall entry in CLAUDE.md's Known
- * Issues) leave no evidence anywhere else:
+ * and never renders leave no evidence anywhere else:
  *
  * - Vercel does not record a duration for an invocation it killed, and the
  *   per-function breakdown that might show one is a paid add-on.
