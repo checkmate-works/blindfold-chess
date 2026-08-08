@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
+import { derivePoolerMode } from './pooler-mode';
 import {
   type DeadlineRetry,
   setDeadlineRetry,
@@ -13,13 +14,49 @@ import {
 } from './query-deadline';
 import * as schema from './schema';
 
-// POSTGRES_URL: Set by Vercel Marketplace Supabase integration
+/**
+ * The 2026-08 black-hole experiment switch: route RUNTIME queries through the
+ * Supavisor SESSION pooler (port 5432) instead of the transaction pooler
+ * (port 6543) that `POSTGRES_URL` points at.
+ *
+ * `POSTGRES_URL_NON_POOLING` is the session-pooler URL and is synced by the
+ * same Vercel Marketplace integration as `POSTGRES_URL` — no manually
+ * maintained connection string is involved, and this exact URL already
+ * carries every deploy's migrations (`migrate.ts` / `prebuild-db.ts` /
+ * `drizzle.config.ts` all prefer it), so it is battle-tested in this project.
+ *
+ * Flip to `false` and redeploy to return to the transaction pooler — the
+ * experiment is a one-line revert, not an environment change. Every Sentry
+ * event carries the resulting mode as the `db.pooler_mode` tag, so incident
+ * rates (`db-pool-rebuilt` / `db-deadline-retry`) can be compared across the
+ * flip. Locally the variable is unset and the loopback default applies.
+ */
+const USE_SESSION_POOLER = true;
+
+// DB_RUNTIME_URL: Optional runtime-only override, wins over everything.
+//   Escape hatch for one-off experiments (e.g. the direct connection);
+//   normally unset. Build-time scripts (migrate/seed, drizzle-kit) do NOT
+//   read it — they prefer POSTGRES_URL_NON_POOLING — so setting it never
+//   changes what migrations run against.
+// POSTGRES_URL / POSTGRES_URL_NON_POOLING: Set by the Vercel Marketplace
+//   Supabase integration (transaction pooler / session pooler respectively).
 // DATABASE_URL: For manual configuration
 // Default: Supabase local PostgreSQL for development
 const connectionString =
+  process.env.DB_RUNTIME_URL ||
+  (USE_SESSION_POOLER ? process.env.POSTGRES_URL_NON_POOLING : undefined) ||
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
   'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+
+/**
+ * Stamped on every server-side Sentry event so black-hole incident rates
+ * (`db-pool-rebuilt`, `db-deadline-retry`, `QueryDeadlineError`) can be
+ * compared across pooler modes — the 2026-08 investigation's next experiment
+ * is exactly that comparison (transaction pooler vs session pooler).
+ */
+const poolerMode = derivePoolerMode(connectionString);
+Sentry.getGlobalScope().setTag('db.pooler_mode', poolerMode);
 
 // Reuse the same postgres client across reloads/invocations.
 // - In development: avoids a new pool per HMR hot-reload (would exhaust
@@ -54,8 +91,17 @@ const IDLE_TIMEOUT_SECONDS = 20;
 
 function createPooledClient(): ReturnType<typeof postgres> {
   return postgres(connectionString, {
-    prepare: false, // required for Supabase transaction-mode pooler (port 6543)
-    max: 10, // postgres.js default, made explicit — shared budget under Fluid Compute
+    // Required for the transaction-mode pooler (port 6543). Kept false in
+    // session mode too, deliberately: the pooler experiment must change one
+    // variable at a time. Revisit as a perf follow-up if session mode sticks.
+    prepare: false,
+    // Shared budget under Fluid Compute. In session mode each client
+    // connection pins a dedicated Postgres backend for its lifetime, and the
+    // per-tenant backend budget (dashboard "Pool Size") is shared across ALL
+    // concurrently-warm instances — so the per-instance cap is halved there.
+    // Check the dashboard budget covers max × expected warm instances before
+    // switching modes.
+    max: poolerMode === 'session' ? 5 : 10,
     idle_timeout: IDLE_TIMEOUT_SECONDS, // release idle connections back to the pooler
     max_lifetime: 60 * 30, // seconds — recycle long-lived connections
     connect_timeout: 10, // seconds — fail fast instead of the 30s default
