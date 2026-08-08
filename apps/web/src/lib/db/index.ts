@@ -7,6 +7,7 @@ import postgres from 'postgres';
 import { derivePoolerMode } from './pooler-mode';
 import {
   type DeadlineRetry,
+  setCapacityRetry,
   setDeadlineRetry,
   setQueryActivityHandler,
   setWedgedQueryHandler,
@@ -235,6 +236,45 @@ setDeadlineRetry({
       level: outcome === 'rescued' ? 'info' : 'warning',
       tags: { 'db_retry.outcome': outcome, 'db_retry.ms': String(retryMs) },
       extra: { 'db_retry.sql': sql },
+    });
+  },
+});
+
+/**
+ * @design Waiting out a full pooler instead of failing the render
+ *
+ * Session mode caps concurrent client connections at the pooler's Pool Size,
+ * and going over it is refused immediately rather than queued — so without
+ * this a burst (a deploy rollover, where old and new instances briefly share
+ * the budget) turns straight into error pages. Production hit exactly that.
+ *
+ * The refusal is not a pool fault, so unlike the wedge and deadline paths this
+ * one deliberately does NOT rebuild: the existing connections are healthy and
+ * discarding them would free nothing while costing reconnects. It simply
+ * re-issues on the current pool after a short jittered backoff, by which time
+ * some other client has usually returned a connection.
+ *
+ * Re-issuing is safe for writes here, which is what makes it worth doing —
+ * see the `setCapacityRetry` TSDoc in `./query-deadline` for why a capacity
+ * refusal can be retried when a deadline cannot.
+ */
+setCapacityRetry({
+  dispatch: (unsafeArgs) => {
+    const unsafe = activeClient.unsafe as (...a: unknown[]) => unknown;
+    return unsafe(...unsafeArgs) as ReturnType<DeadlineRetry['dispatch']>;
+  },
+  report: (outcome, sql, attempts, waitedMs) => {
+    console.error(
+      `[db] pooler-at-capacity retry ${outcome} after ${attempts} in ${waitedMs}ms: ${sql}`
+    );
+    Sentry.captureMessage('db-capacity-retry', {
+      level: outcome === 'rescued' ? 'info' : 'warning',
+      tags: {
+        'db_capacity.outcome': outcome,
+        'db_capacity.attempts': String(attempts),
+        'db_capacity.waited_ms': String(waitedMs),
+      },
+      extra: { 'db_capacity.sql': sql },
     });
   },
 });

@@ -147,6 +147,77 @@ export type DeadlineRetry = {
 let deadlineRetry: DeadlineRetry | undefined;
 
 /**
+ * How long to wait before each successive attempt after the pooler has refused
+ * a connection for being at capacity. The condition clears as soon as any
+ * other client returns a connection, which is a matter of milliseconds — these
+ * delays are chosen to step over a burst (a deploy rollover, where old and new
+ * instances briefly coexist) while staying far below anything a user reads as
+ * slow. Jitter is added per attempt so that a set of victims refused in the
+ * same instant does not march back in lockstep and collide again.
+ */
+const CAPACITY_RETRY_BACKOFF_MS = [150, 450];
+
+export type CapacityRetry = {
+  /**
+   * Re-dispatch the same `unsafe(...)` arguments on the CURRENT pool. Unlike
+   * {@link DeadlineRetry.dispatch} this must NOT rebuild: the pool is not at
+   * fault, the pooler is full, and discarding working connections would make
+   * that worse.
+   */
+  dispatch: (unsafeArgs: unknown[]) => PendingQuery | undefined;
+  /** Outcome hook for logging/metrics. `waitedMs` is the total added latency. */
+  report: (outcome: 'rescued' | 'failed', sql: string, attempts: number, waitedMs: number) => void;
+};
+
+let capacityRetry: CapacityRetry | undefined;
+
+/**
+ * Register the retry performed when the pooler refuses a connection because it
+ * is at capacity. One handler at a time — same contract as
+ * {@link setWedgedQueryHandler}.
+ *
+ * @design Why this retry may re-issue writes, when the deadline retry may not
+ * The two failures look similar and are opposites. A deadline proves only
+ * silence: the statement may be executing right now, so re-running anything
+ * that is not a SELECT could apply it twice. A capacity refusal is the
+ * pooler declining the CONNECTION — nothing was ever sent to Postgres, and
+ * there is no first attempt to duplicate. Re-issuing is therefore safe for
+ * any statement, which matters because this is the one failure mode that
+ * would otherwise turn a write into an error page.
+ *
+ * Consequently {@link isPoolerAtCapacity} must stay narrow enough that it can
+ * only match a refusal at connection setup. Widening it to cover errors that
+ * a server might have already acted on would break that guarantee.
+ */
+export function setCapacityRetry(retry: CapacityRetry | undefined): void {
+  capacityRetry = retry;
+}
+
+/**
+ * Whether an error is the pooler saying it has no room for another client.
+ *
+ * Supavisor reports this as a Postgres error on the wire, so there is no
+ * distinct SQLSTATE to key on — every one of these arrives as `XX000`, which
+ * is also what unrelated internal errors use. The message text is the only
+ * discriminator, and matching it exactly is what keeps the write-safety
+ * argument in {@link setCapacityRetry} true.
+ *
+ * Both wordings are covered: session mode ("max clients reached in session
+ * mode — max clients are limited to pool_size: N") and transaction mode
+ * ("max client connections reached"), so this keeps working if the pooler
+ * mode is ever switched back.
+ */
+export function isPoolerAtCapacity(error: unknown): boolean {
+  const message = (error as { message?: unknown } | null)?.message;
+  if (typeof message !== 'string') return false;
+  return (
+    message.includes('EMAXCONNSESSION') ||
+    message.includes('max clients reached') ||
+    message.includes('max client connections reached')
+  );
+}
+
+/**
  * Register the retry performed when a SELECT hits its deadline. Established
  * connections have been seen swallowing queries whole — no answer, no error —
  * so the retry gives the render a second chance on a fresh connection instead
@@ -277,7 +348,7 @@ function wrapQuery<T extends PendingQuery>(
           // what matters for safety is the statement that would run again.
           const retryQuery =
             retryArgs && deadlineRetry && RETRYABLE_SQL.test(String(retryArgs[0]))
-              ? safeDispatchRetry(retryArgs)
+              ? safeDispatch(() => deadlineRetry?.dispatch(retryArgs))
               : undefined;
           if (!retryQuery) {
             settle(() => reject(error));
@@ -319,13 +390,66 @@ function wrapQuery<T extends PendingQuery>(
           );
         }, QUERY_DEADLINE_MS);
 
+        /**
+         * Walk {@link CAPACITY_RETRY_BACKOFF_MS}, re-issuing until the pooler
+         * has room. Only a capacity refusal is retried; any other error from
+         * an attempt is the real answer and is handed straight to the caller.
+         */
+        const retryWhilePoolerIsFull = async (originalError: unknown) => {
+          const startedAt = performance.now();
+          let attempts = 0;
+          for (const backoffMs of CAPACITY_RETRY_BACKOFF_MS) {
+            await new Promise<void>((wake) => {
+              const t = setTimeout(wake, backoffMs + Math.random() * backoffMs);
+              // Node-only, and typed loosely because this file also compiles
+              // under the DOM lib: a pending backoff must not hold a local
+              // process open.
+              (t as { unref?: () => void }).unref?.();
+            });
+            if (settled) return;
+
+            const attempt = safeDispatch(() => capacityRetry?.dispatch(retryArgs!));
+            if (!attempt) break;
+            attempts += 1;
+            for (const method of chained) {
+              (attempt[method as keyof PendingQuery] as () => unknown)();
+            }
+            trackInflight(attempt, sql);
+            try {
+              const rows = await Promise.resolve(attempt);
+              capacityRetry?.report(
+                'rescued',
+                sql,
+                attempts,
+                Math.round(performance.now() - startedAt)
+              );
+              settle(() => resolve(rows));
+              return;
+            } catch (attemptError) {
+              if (!isPoolerAtCapacity(attemptError)) {
+                settle(() => reject(attemptError));
+                return;
+              }
+            }
+          }
+          capacityRetry?.report('failed', sql, attempts, Math.round(performance.now() - startedAt));
+          settle(() => reject(originalError));
+        };
+
         Promise.resolve(query).then(
           (value) => settle(() => resolve(value)),
           (queryError) => {
-            // Before the deadline this is a genuine query failure. After it,
-            // the rejection is (typically) induced by the retry's rebuild
-            // tearing down the original's pool — the retry outcome governs.
-            if (!deadlineFired) settle(() => reject(queryError));
+            // After the deadline the rejection is (typically) induced by the
+            // retry's rebuild tearing down the original's pool — the retry
+            // outcome governs, so ignore it.
+            if (deadlineFired) return;
+            // A pooler at capacity refused the connection, so nothing reached
+            // Postgres and waiting for room is both safe and usually enough.
+            if (retryArgs && capacityRetry && isPoolerAtCapacity(queryError)) {
+              void retryWhilePoolerIsFull(queryError);
+              return;
+            }
+            settle(() => reject(queryError));
           }
         );
       });
@@ -355,11 +479,11 @@ function wrapQuery<T extends PendingQuery>(
   return proxy;
 }
 
-/** A retry must never be able to crash the deadline path that hosts it. */
-function safeDispatchRetry(retryArgs: unknown[]): PendingQuery | undefined {
+/** A retry must never be able to crash the path that hosts it. */
+function safeDispatch(dispatch: () => PendingQuery | undefined): PendingQuery | undefined {
   try {
-    const retried = deadlineRetry?.dispatch(retryArgs);
-    return retried && isPendingQuery(retried) ? retried : undefined;
+    const dispatched = dispatch();
+    return dispatched && isPendingQuery(dispatched) ? dispatched : undefined;
   } catch {
     return undefined;
   }

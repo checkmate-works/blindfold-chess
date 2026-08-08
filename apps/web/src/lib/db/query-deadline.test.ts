@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   QueryDeadlineError,
+  isPoolerAtCapacity,
   resetInflightRegistryForTests,
+  setCapacityRetry,
   setDeadlineRetry,
   setQueryActivityHandler,
   setWedgedQueryHandler,
@@ -53,7 +55,22 @@ beforeEach(() => {
   setWedgedQueryHandler(undefined);
   setQueryActivityHandler(undefined);
   setDeadlineRetry(undefined);
+  setCapacityRetry(undefined);
 });
+
+/** The refusal Supavisor sends once its session-mode client budget is full. */
+function poolerFullError(): Error {
+  return new Error(
+    '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 30'
+  );
+}
+
+function rejectsWith(error: Error): FakeQuery {
+  const q = new FakeQuery((_resolve, rejectQuery) => rejectQuery(error));
+  // The rejection is handled by the wrapper, not by this reference.
+  q.catch(() => {});
+  return q;
+}
 
 afterEach(() => {
   vi.useRealTimers();
@@ -351,5 +368,80 @@ describe('withQueryDeadline', () => {
     db.end();
 
     expect(end).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('pooler-at-capacity retry', () => {
+  it('recognises both pooler wordings and nothing else', () => {
+    expect(isPoolerAtCapacity(poolerFullError())).toBe(true);
+    expect(isPoolerAtCapacity(new Error('max client connections reached, limit: 200'))).toBe(true);
+    expect(isPoolerAtCapacity(new Error('Tenant or user not found'))).toBe(false);
+    expect(isPoolerAtCapacity(new Error('duplicate key value violates unique constraint'))).toBe(
+      false
+    );
+    expect(isPoolerAtCapacity(undefined)).toBe(false);
+  });
+
+  it('waits out a full pooler and resolves the caller transparently', async () => {
+    const queries = [rejectsWith(poolerFullError()), resolvesWith([{ id: 1 }])];
+    const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
+    const report = vi.fn();
+    setCapacityRetry({ dispatch: () => queries.shift(), report });
+
+    // Subscribing is what dispatches the query, so it must precede the clock.
+    const settled = (db.unsafe('insert into likes values (1)') as Promise<unknown>).then((r) => r);
+    await vi.advanceTimersByTimeAsync(400);
+
+    await expect(settled).resolves.toEqual([{ id: 1 }]);
+    expect(report).toHaveBeenCalledWith('rescued', expect.any(String), 1, expect.any(Number));
+  });
+
+  it('re-issues writes, which the deadline retry must never do', async () => {
+    const queries = [rejectsWith(poolerFullError()), resolvesWith([])];
+    const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
+    const dispatch = vi.fn(() => queries.shift());
+    setCapacityRetry({ dispatch, report: vi.fn() });
+
+    const settled = (
+      db.unsafe('update profiles set display_name = $1', ['x']) as Promise<unknown>
+    ).then((r) => r);
+    await vi.advanceTimersByTimeAsync(400);
+    await settled;
+
+    expect(dispatch).toHaveBeenCalledWith(['update profiles set display_name = $1', ['x']]);
+  });
+
+  it('gives up after the backoff list and reports the original refusal', async () => {
+    const alwaysFull = () => rejectsWith(poolerFullError());
+    const db = withQueryDeadline(fakeClient({ unsafe: alwaysFull }));
+    const report = vi.fn();
+    setCapacityRetry({ dispatch: alwaysFull, report });
+
+    const settled = (db.unsafe('select 1') as Promise<unknown>).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(2_000);
+    const error = (await settled) as Error;
+
+    expect(error.message).toContain('EMAXCONNSESSION');
+    expect(report).toHaveBeenCalledWith('failed', expect.any(String), 2, expect.any(Number));
+  });
+
+  it('hands back a non-capacity error from a retry instead of masking it', async () => {
+    const queries = [rejectsWith(poolerFullError()), rejectsWith(new Error('syntax error'))];
+    const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
+    setCapacityRetry({ dispatch: () => queries.shift(), report: vi.fn() });
+
+    const settled = (db.unsafe('select bogus') as Promise<unknown>).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(400);
+
+    expect((await settled) as Error).toHaveProperty('message', 'syntax error');
+  });
+
+  it('leaves ordinary query errors alone', async () => {
+    const db = withQueryDeadline(fakeClient({ unsafe: () => rejectsWith(new Error('boom')) }));
+    const dispatch = vi.fn();
+    setCapacityRetry({ dispatch, report: vi.fn() });
+
+    await expect(db.unsafe('select 1')).rejects.toThrow('boom');
+    expect(dispatch).not.toHaveBeenCalled();
   });
 });
