@@ -157,6 +157,20 @@ let deadlineRetry: DeadlineRetry | undefined;
  */
 const CAPACITY_RETRY_BACKOFF_MS = [150, 450];
 
+/**
+ * How long a single capacity-retry attempt may run before it is abandoned.
+ *
+ * An attempt is only dispatched after the pooler refused a connection, so a
+ * healthy outcome is an answer within milliseconds; one that hangs has hit
+ * something worse than a full pooler and is not worth waiting out. The bound
+ * must also stay well under {@link QUERY_DEADLINE_MS}: if a hung attempt were
+ * left to the ORIGINAL query's deadline timer, that path would respond by
+ * rebuilding the pool — pointless against a full pooler (rebuilding frees no
+ * budget) — and would leave the attempt itself uncancelled, quietly holding a
+ * slot the pooler cannot spare.
+ */
+const CAPACITY_ATTEMPT_TIMEOUT_MS = 2_000;
+
 export type CapacityRetry = {
   /**
    * Re-dispatch the same `unsafe(...)` arguments on the CURRENT pool. Unlike
@@ -415,8 +429,31 @@ function wrapQuery<T extends PendingQuery>(
               (attempt[method as keyof PendingQuery] as () => unknown)();
             }
             trackInflight(attempt, sql);
+            let attemptTimedOut = false;
+            const attemptTimer = setTimeout(() => {
+              attemptTimedOut = true;
+              try {
+                attempt.cancel();
+              } catch {
+                // A dead connection has nothing to cancel.
+              }
+              if (settled) return;
+              capacityRetry?.report(
+                'failed',
+                sql,
+                attempts,
+                Math.round(performance.now() - startedAt)
+              );
+              settle(() => reject(originalError));
+            }, CAPACITY_ATTEMPT_TIMEOUT_MS);
+            (attemptTimer as { unref?: () => void }).unref?.();
             try {
               const rows = await Promise.resolve(attempt);
+              clearTimeout(attemptTimer);
+              // An answer that arrives after something else settled the caller
+              // (the attempt timeout, or the original deadline) is not a
+              // rescue — reporting it as one would falsify the metrics.
+              if (settled) return;
               capacityRetry?.report(
                 'rescued',
                 sql,
@@ -426,12 +463,15 @@ function wrapQuery<T extends PendingQuery>(
               settle(() => resolve(rows));
               return;
             } catch (attemptError) {
+              clearTimeout(attemptTimer);
+              if (attemptTimedOut || settled) return;
               if (!isPoolerAtCapacity(attemptError)) {
                 settle(() => reject(attemptError));
                 return;
               }
             }
           }
+          if (settled) return;
           capacityRetry?.report('failed', sql, attempts, Math.round(performance.now() - startedAt));
           settle(() => reject(originalError));
         };

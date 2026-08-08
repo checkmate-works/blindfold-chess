@@ -425,6 +425,26 @@ describe('pooler-at-capacity retry', () => {
     expect(report).toHaveBeenCalledWith('failed', expect.any(String), 2, expect.any(Number));
   });
 
+  it('abandons a hung attempt: cancels it, fails the caller, never reports rescued', async () => {
+    const hungAttempt = neverSettles();
+    const queries = [rejectsWith(poolerFullError())];
+    const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
+    const report = vi.fn();
+    setCapacityRetry({ dispatch: () => hungAttempt, report });
+
+    const settled = (db.unsafe('select 1') as Promise<unknown>).catch((e: unknown) => e);
+    // Backoff (≤300ms jittered) + the 2s attempt timeout, well before the 10s
+    // deadline — the caller must be answered by the attempt timer, not by the
+    // original query's deadline path.
+    await vi.advanceTimersByTimeAsync(3_000);
+    const error = (await settled) as Error;
+
+    expect(error.message).toContain('EMAXCONNSESSION');
+    expect(hungAttempt.cancel).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledWith('failed', expect.any(String), 1, expect.any(Number));
+  });
+
   it('hands back a non-capacity error from a retry instead of masking it', async () => {
     const queries = [rejectsWith(poolerFullError()), rejectsWith(new Error('syntax error'))];
     const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
