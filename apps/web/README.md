@@ -39,6 +39,18 @@ cp .env.example .env.local
 
 > **Tip:** These values are also visible in the `supabase start` output under "Authentication Keys" (Publishable / Secret) and "APIs" (Project URL).
 
+The database connection strings need no editing — copying `.env.example` is
+enough. Note what they set up, though: the app's **runtime** queries go through
+the local Supavisor **session** pooler on port 54329
+(`POSTGRES_URL_NON_POOLING`), which is the same pooler and the same mode
+production runs on, while migrations and `drizzle-kit` talk to Postgres
+directly on 54322. Keeping local on the same pooler mode is deliberate — its
+behaviour differs from a direct connection (prepared statements are disabled,
+connections pin a backend, and exhausting the pool fails rather than queues),
+and those differences should surface here rather than on deploy. `supabase
+status` does not print the pooler URL; the username is tenant-qualified as
+`postgres.pooler-dev`.
+
 ```bash
 # Apply database schema
 pnpm db:run-migrate

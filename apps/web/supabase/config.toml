@@ -33,12 +33,18 @@ health_timeout = "2m"
 major_version = 17
 
 [db.pooler]
-enabled = false
+# Enabled so local development goes through a pooler at all, as production
+# does. Without it the app talks straight to Postgres and no pooler-specific
+# behaviour (session pinning, client-connection limits, the prepared-statement
+# restriction) is exercised until deploy.
+enabled = true
 # Port to use for the local connection pooler.
 port = 54329
 # Specifies when a server connection can be reused by other clients.
 # Configure one of the supported pooler modes: `transaction`, `session`.
-pool_mode = "transaction"
+# `session` mirrors production: runtime queries there go through Supavisor's
+# session pooler — see USE_SESSION_POOLER in src/lib/db/index.ts.
+pool_mode = "session"
 # How many server connections to allow per user/database pair.
 default_pool_size = 20
 # Maximum number of client connections allowed.
