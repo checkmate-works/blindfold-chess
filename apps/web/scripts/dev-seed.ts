@@ -1,13 +1,15 @@
 /**
  * Local-only dev seed.
  *
- * Populates auth users, profiles, challenge_results / challenge_best_scores, and
- * belt ranks with predictable test data so the practice leaderboards have
- * entries — and so rank conditions can be exercised from a known rung — during
- * local development. Refuses to run against any non-local DB or Supabase URL
- * (host check) — the master-data seed (`pnpm db:seed`) remains the prod path.
+ * Populates auth users, profiles, challenge_results / challenge_best_scores,
+ * belt ranks, and a published kata (型) with predictable test data so the
+ * practice leaderboards and the /repertoires catalog have entries — and so rank
+ * conditions can be exercised from a known rung — during local development.
+ * Refuses to run against any non-local DB or Supabase URL (host check) — the
+ * master-data seed (`pnpm db:seed`) remains the prod path.
  *
- * Run `pnpm db:seed` first: the rank grants look up `ranks` by slug.
+ * Run `pnpm db:seed` first: the rank grants look up `ranks` by slug, and the
+ * kata's opening links look up `chess_openings` by position.
  *
  * Required env in apps/web/.env.local:
  *   - NEXT_PUBLIC_SUPABASE_URL  (defaults to http://127.0.0.1:54321 if unset)
@@ -21,6 +23,7 @@ import postgres from 'postgres';
 
 import { reseedChallenges } from './dev-seed/challenges';
 import { grantRanksUpTo } from './dev-seed/ranks';
+import { reseedRepertoires } from './dev-seed/repertoires';
 import { SEED_PASSWORD, SEED_USERS, ensureSeedUser } from './dev-seed/users';
 
 dotenv.config({ path: ['.env.local', '.env'] });
@@ -93,6 +96,15 @@ async function main() {
     const granted = await grantRanksUpTo(db, userIds[index], u.rankUpTo);
     console.log(`  ${u.username.padEnd(12)} → ${granted.join(', ')}`);
     console.log(`  ${''.padEnd(12)}   sign in as ${u.email} / ${SEED_PASSWORD}`);
+  }
+
+  // Alice authors the kata: the catalog is public UGC, so it reads more like
+  // production coming from a player account than from the admin one.
+  const kataOwner = SEED_USERS.findIndex((u) => u.username === 'seed-alice');
+  console.log('dev-seed: seeding kata (repertoires)...');
+  for (const kata of await reseedRepertoires(db, userIds[kataOwner])) {
+    const openings = kata.openingSlugs.join(', ') || 'no opening links (run `pnpm db:seed`)';
+    console.log(`  ${kata.name} → ${kata.lineCount} lines, ${openings}`);
   }
 }
 

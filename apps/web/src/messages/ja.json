@@ -155,6 +155,8 @@
       "breadcrumb": "ライン {n}",
       "empty": "このラインには手がありません。",
       "branchFromHere": "この局面から分岐を追加",
+      "positionActions": "この局面の操作",
+      "memorizeUpToHere": "ここまでを記憶する",
       "transposition": {
         "continuesIn": "この局面の続きが<link>{lineLabel}</link>にあります（+{count}手）"
       },
