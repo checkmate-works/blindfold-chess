@@ -10,6 +10,7 @@ import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 import { FaCodeBranch } from 'react-icons/fa';
+import { FiRepeat } from 'react-icons/fi';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 
@@ -20,6 +21,7 @@ import {
 } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
+import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
@@ -43,7 +45,10 @@ type Props = {
   locale: string;
   /** 1-based ply to focus initially (deep-link / default). */
   initialPly: number;
-  /** The line's moves + root, for move references written inside a note. */
+  /**
+   * The line's moves + root. Resolves move references written inside a note,
+   * and seeds the "memorize up to here" link with the moves themselves.
+   */
   moveNotation: MoveNotationLine;
   /** Sibling lines of the repertoire, for the line-switching list. */
   navItems: LineNavItem[];
@@ -160,9 +165,46 @@ export function LineDetailBoard({
   //
   // Presented behind the strip's "⋯" rather than as a bare icon: a code-branch
   // glyph alone never said what it did, and the menu gives the action its
-  // words. The menu is therefore absent, not empty, when there is nothing to
-  // branch from.
+  // words.
   const branchPgn = isOwner && clampedPly >= 1 ? branchPgns[clampedPly - 1] : undefined;
+
+  // Rehearse the moves read so far from memory, in Recall (感想戦) — the kata's
+  // own drill loop reuses the practice module rather than growing a second one.
+  // Open to every reader, not just the owner: studying someone else's kata is
+  // what the public catalog is for. Cut at the position in focus, so a reader
+  // partway down a long line drills what they have actually read.
+  //
+  // Built here rather than server-side: a prefix per ply would put the whole
+  // move list in the payload once for every ply, and slicing an array the
+  // client already holds costs nothing.
+  const recallMoves = moveNotation.moves.slice(0, clampedPly);
+  const recallHref =
+    recallMoves.length > 0
+      ? `/${locale}/practice/recall/session?${new URLSearchParams({
+          color: side,
+          moves: JSON.stringify(recallMoves),
+          ...(moveNotation.startingFen ? { fen: moveNotation.startingFen } : {}),
+        }).toString()}`
+      : undefined;
+
+  // The menu is absent, not empty, when the position in focus offers neither.
+  const positionActions: ActionsMenuItem[] = [];
+  if (branchPgn) {
+    positionActions.push({
+      key: 'branch',
+      label: tLine('branchFromHere'),
+      href: `/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(branchPgn)}`,
+      icon: <FaCodeBranch className="h-4 w-4" aria-hidden />,
+    });
+  }
+  if (recallHref) {
+    positionActions.push({
+      key: 'recall',
+      label: tLine('memorizeUpToHere'),
+      href: recallHref,
+      icon: <FiRepeat className="h-4 w-4" aria-hidden />,
+    });
+  }
 
   return (
     // One grid holds all three blocks so their order can differ per breakpoint.
@@ -203,17 +245,10 @@ export function LineDetailBoard({
               isNextDisabled={clampedPly === maxPly}
               flip={{ onClick: () => setFlipped((f) => !f), label: tCommon('flipBoard') }}
               trailingAction={
-                branchPgn ? (
+                positionActions.length > 0 ? (
                   <ActionsMenu
                     ariaLabel={tLine('positionActions')}
-                    items={[
-                      {
-                        key: 'branch',
-                        label: tLine('branchFromHere'),
-                        href: `/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(branchPgn)}`,
-                        icon: <FaCodeBranch className="h-4 w-4" aria-hidden />,
-                      },
-                    ]}
+                    items={positionActions}
                     triggerClassName={MOVE_NAV_SIDE_BUTTON_CLASS}
                     // The strip sits at the bottom edge of a card that clips
                     // its descendants, so the popup has to grow upward.

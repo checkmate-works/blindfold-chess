@@ -156,6 +156,7 @@
       "empty": "Esta linha não tem lances.",
       "branchFromHere": "Adicionar uma variante a partir daqui",
       "positionActions": "Ações da posição",
+      "memorizeUpToHere": "Memorizar até aqui",
       "transposition": {
         "continuesIn": "Esta posição continua em <link>{lineLabel}</link> (+{count, plural, one {# lance} other {# lances}} a mais)"
       },

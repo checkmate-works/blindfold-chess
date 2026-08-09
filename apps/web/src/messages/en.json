@@ -156,6 +156,7 @@
       "empty": "This line has no moves.",
       "branchFromHere": "Add a branch from here",
       "positionActions": "Position actions",
+      "memorizeUpToHere": "Memorize up to here",
       "transposition": {
         "continuesIn": "This position continues in <link>{lineLabel}</link> (+{count, plural, one {# move} other {# moves}} more)"
       },
