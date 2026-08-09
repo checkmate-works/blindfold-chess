@@ -25,8 +25,8 @@
  * The timeline reads `feed_items`, which only has rows for activity since the
  * feed shipped (there was deliberately no backfill), and whose
  * `challenge_rank_update` rows are reaped after 30 days. The archives remain
- * the complete record, so every empty timeline view links to them — see
- * `ProfileTimelineEmpty`.
+ * the complete record, and the tab row is what hands the reader over to them —
+ * an empty timeline says only that it is empty (see `ProfileTimelineEmpty`).
  *
  * NOTE: This route was originally located at `(public)/profile/[username]/` and served
  * under the URL `/@/username` via a rewrite rule. However, `@` is a reserved character
@@ -165,12 +165,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     >
       <div className="mt-4" data-tour-id="profile-timeline">
         <Suspense fallback={<FeedSkeleton />}>
-          <ProfileTimeline
-            profileId={profile.id}
-            username={username}
-            locale={locale}
-            currentUserId={currentUserId}
-          />
+          <ProfileTimeline profileId={profile.id} locale={locale} currentUserId={currentUserId} />
         </Suspense>
       </div>
     </ProfileShell>

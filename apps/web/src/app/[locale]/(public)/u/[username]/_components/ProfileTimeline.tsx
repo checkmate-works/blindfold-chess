@@ -12,7 +12,6 @@ const INITIAL_FEED_SIZE = 10;
 
 type Props = {
   profileId: string;
-  username: string;
   locale: Locale;
   /** The viewer, for `likedByMe` and other per-viewer meta. */
   currentUserId: string | undefined;
@@ -28,7 +27,7 @@ type Props = {
  * row immediately — the shell is the same on all four profile pages, so it
  * should not wait on the one page's feed.
  */
-export async function ProfileTimeline({ profileId, username, locale, currentUserId }: Props) {
+export async function ProfileTimeline({ profileId, locale, currentUserId }: Props) {
   const [feed, tTopics, tSquares, tPagination] = await Promise.all([
     getFeedData({
       actorId: profileId,
@@ -46,7 +45,7 @@ export async function ProfileTimeline({ profileId, username, locale, currentUser
   // cursor, and handing that to `FeedClient` lets the client page on, whereas
   // the empty state would throw the cursor away and hide everything older.
   if (feed.items.length === 0 && feed.nextCursor === null) {
-    return <ProfileTimelineEmpty username={username} locale={locale} />;
+    return <ProfileTimelineEmpty locale={locale} />;
   }
 
   return (
