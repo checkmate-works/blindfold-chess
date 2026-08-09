@@ -10,9 +10,12 @@ export type SeedUser = {
   /**
    * Grant every rank up to this slug, bypassing the conditions.
    *
-   * Belt progression is linear — `checkAndGrantRanks` stops at the first unmet
-   * rank — so testing any condition means first satisfying every one below it.
-   * Parking a user one rung short lets that condition be exercised on its own.
+   * NOT a prerequisite for testing higher ranks: `checkAndGrantRanks` evaluates
+   * every unachieved rank independently, so a rank-less user can be promoted
+   * straight to 1kyu/1dan by one qualifying game. What this gives instead is a
+   * user with a known, non-empty achievement history — the state everything
+   * that reads `user_ranks` (next-rank recommendation, the ranks grid, rank-up
+   * notifications, dan-tier ad-free) needs in order to be exercised at all.
    */
   rankUpTo?: string;
   /**
@@ -36,9 +39,9 @@ export const SEED_USERS: SeedUser[] = [
     displayName: 'Admin (seed)',
     isAdmin: true,
   },
-  // Sits at 2kyu, so the next thing they earn is 1kyu: publishing one won game
-  // played under a blindfold constraint promotes them, with nothing else in the
-  // way.
+  // Holds 5kyu through 2kyu, so the recommended next rank is 1kyu and one
+  // published won game promotes them to exactly that (a blindfold-constrained
+  // win would additionally jump them to 1dan — skip-grants are allowed).
   {
     email: 'alice@example.local',
     username: 'seed-alice',

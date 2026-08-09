@@ -7,9 +7,10 @@ import { ranks, userRanks } from '../../src/lib/db/schema';
  * Grants a seed user every rank up to and including `targetSlug`.
  *
  * Exists so the belt progression can be exercised from a known rung without
- * grinding the prior ranks: `checkAndGrantRanks` stops at the first unmet rank,
- * so a fresh user is always blocked far below whichever condition you actually
- * want to test.
+ * grinding the prior ranks. Not a prerequisite for reaching higher ranks —
+ * `checkAndGrantRanks` evaluates every unachieved rank independently, so an
+ * unmet lower rank never blocks a higher one — but a fresh user holds nothing,
+ * and every surface that reads achievement history needs some to show.
  *
  * Writes `user_ranks` directly rather than going through `checkAndGrantRanks` —
  * the point is to arrive at the rung WITHOUT satisfying the conditions. The
