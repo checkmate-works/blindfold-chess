@@ -12,10 +12,16 @@ import { profiles } from './schema';
  * rows on the other side it switches to a hash join and sequentially scans the
  * whole table. A follower count, logically proportional to the follower count,
  * then costs one full scan of `profiles` regardless. At 300k profiles that
- * measured 8,134 shared buffers, versus 84 for the form below, and running one
- * per prefetched profile link was enough to stall renders in production. The
- * trap is that it stays fast in development and on small accounts: the plan
- * flips only once the row estimate grows, i.e. for the busiest users.
+ * measured 8,134 shared buffers, versus 84 for the form below — issued once
+ * per profile-shell render (so once more on every `/u/[username]` tab switch),
+ * concurrently with the shell's ten sibling queries, which under production
+ * traffic was enough to stall renders. (An earlier version of this note blamed
+ * link prefetching for firing dozens at once; that was wrong — `/u/[username]`
+ * has a `loading.tsx`, so a default prefetch stops at that boundary and never
+ * runs the page or this query. Corrected 2026-08-09; the fix commit's message
+ * still carries the wrong claim.) The trap is that it stays fast in
+ * development and on small accounts: the plan flips only once the row estimate
+ * grows, i.e. for the busiest users.
  *
  * Testing the rare side instead — "no deleted profile with this id" — probes
  * the partial `idx_profiles_deleted` index, which covers a few percent of the
