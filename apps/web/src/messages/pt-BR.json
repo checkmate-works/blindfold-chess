@@ -155,6 +155,7 @@
       "breadcrumb": "Linha {n}",
       "empty": "Esta linha não tem lances.",
       "branchFromHere": "Adicionar uma variante a partir daqui",
+      "positionActions": "Ações da posição",
       "transposition": {
         "continuesIn": "Esta posição continua em <link>{lineLabel}</link> (+{count, plural, one {# lance} other {# lances}} a mais)"
       },

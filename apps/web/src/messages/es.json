@@ -155,6 +155,7 @@
       "breadcrumb": "Línea {n}",
       "empty": "Esta línea no tiene jugadas.",
       "branchFromHere": "Añadir una variante desde aquí",
+      "positionActions": "Acciones de la posición",
       "transposition": {
         "continuesIn": "Esta posición continúa en <link>{lineLabel}</link> (+{count, plural, one {# jugada} other {# jugadas}} más)"
       },

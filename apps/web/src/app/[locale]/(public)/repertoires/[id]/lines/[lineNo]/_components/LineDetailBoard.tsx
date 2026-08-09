@@ -20,6 +20,7 @@ import {
 } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
+import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import type { ContinuationLink } from '../_lib/line-continuations';
@@ -156,6 +157,11 @@ export function LineDetailBoard({
   // in the board's control strip because "here" IS the position on the board,
   // and it steps with it; nothing at the start position (ply 0), where "add a
   // line" already covers a blank line from the root.
+  //
+  // Presented behind the strip's "⋯" rather than as a bare icon: a code-branch
+  // glyph alone never said what it did, and the menu gives the action its
+  // words. The menu is therefore absent, not empty, when there is nothing to
+  // branch from.
   const branchPgn = isOwner && clampedPly >= 1 ? branchPgns[clampedPly - 1] : undefined;
 
   return (
@@ -198,14 +204,21 @@ export function LineDetailBoard({
               flip={{ onClick: () => setFlipped((f) => !f), label: tCommon('flipBoard') }}
               trailingAction={
                 branchPgn ? (
-                  <Link
-                    href={`/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(branchPgn)}`}
-                    title={tLine('branchFromHere')}
-                    aria-label={tLine('branchFromHere')}
-                    className={MOVE_NAV_SIDE_BUTTON_CLASS}
-                  >
-                    <FaCodeBranch size={14} aria-hidden />
-                  </Link>
+                  <ActionsMenu
+                    ariaLabel={tLine('positionActions')}
+                    items={[
+                      {
+                        key: 'branch',
+                        label: tLine('branchFromHere'),
+                        href: `/${locale}/repertoires/${repertoireId}/lines/new?pgn=${encodeURIComponent(branchPgn)}`,
+                        icon: <FaCodeBranch className="h-4 w-4" aria-hidden />,
+                      },
+                    ]}
+                    triggerClassName={MOVE_NAV_SIDE_BUTTON_CLASS}
+                    // The strip sits at the bottom edge of a card that clips
+                    // its descendants, so the popup has to grow upward.
+                    placement="top"
+                  />
                 ) : undefined
               }
             />

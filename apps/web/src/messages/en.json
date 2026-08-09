@@ -155,6 +155,7 @@
       "breadcrumb": "Line {n}",
       "empty": "This line has no moves.",
       "branchFromHere": "Add a branch from here",
+      "positionActions": "Position actions",
       "transposition": {
         "continuesIn": "This position continues in <link>{lineLabel}</link> (+{count, plural, one {# move} other {# moves}} more)"
       },
