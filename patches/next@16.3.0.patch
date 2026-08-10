@@ -1,0 +1,52 @@
+diff --git a/dist/esm/server/app-render/create-component-styles-and-scripts.js b/dist/esm/server/app-render/create-component-styles-and-scripts.js
+index 171b5fb11dbb7922cb39de5cf7867d526c31cab4..951e8c19a0ab9cb326a78b1dad317cbc13206cfb 100644
+--- a/dist/esm/server/app-render/create-component-styles-and-scripts.js
++++ b/dist/esm/server/app-render/create-component-styles-and-scripts.js
+@@ -11,9 +11,20 @@ export async function createComponentStylesAndScripts({ filePath, getComponent,
+     let scriptIndex = 0;
+     for (const href of jsHrefs){
+         scripts.push(createElement('script', {
++        // PATCHED (blindfold-chess): pass the CSP nonce, which upstream omits
++        // here. Sibling `get-layer-assets.ts` stamps `nonce: ctx.nonce` on the
++        // <script> tags it emits for a layout/page, but this function -- which
++        // emits them for `loading` / `error` / `template` / `not-found` --
++        // does not. Under our `script-src 'nonce-...' 'strict-dynamic'` policy
++        // the host/scheme fallbacks are ignored, so a nonce-less framework
++        // chunk is blocked outright: every view of a route whose loading.tsx
++        // pulls its own JS chunk logged a `script-src-elem` violation against
++        // our own origin (Sentry BLINDFOLD-CHESS-33). Remove this patch once
++        // upstream ships the same fix.
+             src: `${ctx.assetPrefix}/_next/${encodeURIPath(href)}${getAssetQueryString(ctx, true)}`,
+             async: true,
+-            key: `script-${scriptIndex}`
++            key: `script-${scriptIndex}`,
++            nonce: ctx.nonce
+         }));
+         scriptIndex++;
+     }
+diff --git a/dist/server/app-render/create-component-styles-and-scripts.js b/dist/server/app-render/create-component-styles-and-scripts.js
+index 4fdf4851040e42d98172d618a6ce85c60bb63439..97f5030a29caefdc9671287e8005a7347d81a6a5 100644
+--- a/dist/server/app-render/create-component-styles-and-scripts.js
++++ b/dist/server/app-render/create-component-styles-and-scripts.js
+@@ -21,9 +21,20 @@ async function createComponentStylesAndScripts({ filePath, getComponent, injecte
+     let scriptIndex = 0;
+     for (const href of jsHrefs){
+         scripts.push(createElement('script', {
++        // PATCHED (blindfold-chess): pass the CSP nonce, which upstream omits
++        // here. Sibling `get-layer-assets.ts` stamps `nonce: ctx.nonce` on the
++        // <script> tags it emits for a layout/page, but this function -- which
++        // emits them for `loading` / `error` / `template` / `not-found` --
++        // does not. Under our `script-src 'nonce-...' 'strict-dynamic'` policy
++        // the host/scheme fallbacks are ignored, so a nonce-less framework
++        // chunk is blocked outright: every view of a route whose loading.tsx
++        // pulls its own JS chunk logged a `script-src-elem` violation against
++        // our own origin (Sentry BLINDFOLD-CHESS-33). Remove this patch once
++        // upstream ships the same fix.
+             src: `${ctx.assetPrefix}/_next/${(0, _encodeuripath.encodeURIPath)(href)}${(0, _getassetquerystring.getAssetQueryString)(ctx, true)}`,
+             async: true,
+-            key: `script-${scriptIndex}`
++            key: `script-${scriptIndex}`,
++            nonce: ctx.nonce
+         }));
+         scriptIndex++;
+     }

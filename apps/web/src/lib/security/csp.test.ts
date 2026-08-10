@@ -171,6 +171,54 @@ describe('buildCspHeader', () => {
     expect(connectSrc).toContain('fundingchoicesmessages.google.com');
   });
 
+  it('allow-lists the AdSense RUM and conversion endpoints in connect-src', () => {
+    // rum.js (loaded from pagead2) beacons csi.gstatic.com; gtag/AdSense
+    // conversion pings go to the bare www.google.com host. `'strict-dynamic'`
+    // covers loading those scripts but not where they connect.
+    const connectSrc = buildCspHeader(
+      { mode: 'per-request-nonce', nonce: 'n' },
+      { isDevelopment: false }
+    )
+      .split('; ')
+      .find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toContain('csi.gstatic.com');
+    expect(connectSrc).toContain('www.google.com');
+  });
+
+  it('allow-lists the GA4 image-beacon host in img-src (googletagmanager)', () => {
+    // gtag.js sends some measurement hits as `<img>` beacons (`/td?id=G-...`),
+    // so naming the host in script-src alone leaves img-src violations behind.
+    const imgSrc = buildCspHeader(
+      { mode: 'per-request-nonce', nonce: 'n' },
+      { isDevelopment: false }
+    )
+      .split('; ')
+      .find((d) => d.startsWith('img-src '));
+    expect(imgSrc).toContain('www.googletagmanager.com');
+  });
+
+  it("allows AdSense's data: placeholder iframes in frame-src, but never in script-src", () => {
+    // AdSense seeds each slot with `<iframe src="data:text/html,...">`. A
+    // data: document has an opaque origin so it cannot reach into this page;
+    // `data:` in script-src, by contrast, would be a straight XSS bypass and
+    // must stay out of every variant.
+    const header = buildCspHeader(
+      { mode: 'per-request-nonce', nonce: 'n' },
+      { isDevelopment: false }
+    );
+    const tokensOf = (name: string) =>
+      (header.split('; ').find((d) => d.startsWith(`${name} `)) ?? '').split(/\s+/).slice(1);
+
+    expect(tokensOf('frame-src')).toContain('data:');
+    expect(tokensOf('script-src')).not.toContain('data:');
+    expect(
+      buildCspHeader({ mode: 'static-content' }, { isDevelopment: false })
+        .split('; ')
+        .find((d) => d.startsWith('script-src '))
+        ?.split(/\s+/)
+    ).not.toContain('data:');
+  });
+
   it('allow-lists the AdSense iframe host in frame-src (pagead2)', () => {
     // Some AdSense ad iframes are served from pagead2.googlesyndication.com.
     const header = buildCspHeader(

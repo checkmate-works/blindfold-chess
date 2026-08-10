@@ -28,6 +28,13 @@
  *   nonce/hash and anything they subsequently load; host/scheme allow-lists
  *   (`https:`, specific domains) become a fallback for browsers that do not
  *   understand `'strict-dynamic'`.
+ * - Next.js 16.3.0 stamps the nonce on the `<script>` tags it emits for a
+ *   layout/page but NOT on those it emits for a `loading` / `error` /
+ *   `template` / `not-found` boundary — the two live in different modules and
+ *   only the former reads `ctx.nonce`. Under `'strict-dynamic'` the host
+ *   fallbacks above are ignored, so that one chunk is blocked outright. Fixed
+ *   by `patches/next@16.3.0.patch`; the patch comment carries the details, and
+ *   `./csp-loading-chunk-nonce.test.ts` fails if the patch goes missing.
  *
  * **Static-content variant** — for prerendered (SSG/ISR) routes, selected by
  * path in `src/proxy.ts` via `isStaticContentPath()`. Prerendered HTML is
@@ -223,9 +230,15 @@ export function buildCspHeader(
     // `ep1.adtrafficquality.google`: the Ad Traffic Quality endpoint is not
     // only an XHR beacon target (see `connect-src` below) — it is also fetched
     // as a tracking pixel via `<img>`, so it must be named in BOTH directives.
+    //
+    // `www.googletagmanager.com`: GA4 delivers some measurement hits as image
+    // beacons (`/td?id=G-...`) rather than XHR — gtag.js picks the transport
+    // itself depending on browser and payload size, so the host is needed in
+    // `img-src` as well as `script-src`.
     "img-src 'self' data: blob: *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
-      ' pagead2.googlesyndication.com *.doubleclick.net ep1.adtrafficquality.google',
+      ' pagead2.googlesyndication.com *.doubleclick.net ep1.adtrafficquality.google' +
+      ' www.googletagmanager.com',
     // `fonts.gstatic.com`: woff2 files for the Google Sans font that AdSense's
     // in-page UI pulls in (the app's own Inter is self-hosted via next/font).
     "font-src 'self' data: fonts.gstatic.com",
@@ -250,11 +263,21 @@ export function buildCspHeader(
     // Google-side load balancing / data residency. This is an internal
     // Google implementation detail outside our control, so the wildcard is
     // required to avoid a flood of connect-src violation reports.
+    //
+    // `csi.gstatic.com`: AdSense's RUM script (`pagead2.googlesyndication.com
+    // /pagead/js/rum.js`) posts its client-side instrumentation to Google's
+    // CSI collector. Same situation as the CMP above — `'strict-dynamic'`
+    // covers loading rum.js but says nothing about where it may connect.
+    //
+    // `www.google.com`: AdSense / gtag conversion and user-list pings
+    // (`/pagead/...`, `/ccm/collect`) go to the bare google.com host, which is
+    // covered by neither `*.google-analytics.com` nor the syndication hosts.
+    // Already present in `frame-src` for the same ad stack.
     "connect-src 'self' *.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
       ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google' +
-      ' fundingchoicesmessages.google.com',
+      ' fundingchoicesmessages.google.com csi.gstatic.com www.google.com',
     // `'self'`: the share dialog previews the embeddable replay by framing our
     // own `/embed/g/<code>` — without this the preview is a blank box the
     // moment the policy is enforced (issue #89), which is the one thing that
@@ -264,7 +287,16 @@ export function buildCspHeader(
     //
     // `pagead2.googlesyndication.com`: AdSense also renders some ad iframes from
     // this host (in addition to googleads.g.doubleclick.net / tpc.googlesyndication.com).
-    "frame-src 'self' googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com",
+    //
+    // `data:`: AdSense seeds every ad slot with a placeholder
+    // `<iframe src="data:text/html,...">` before swapping in the real creative.
+    // Reported from every ad-bearing page across Chrome/Firefox/Edge; the app
+    // itself renders no `data:` frame (nor any `srcDoc`), so this entry exists
+    // solely for the ad stack. The relaxation is narrow: a `data:` document
+    // gets an opaque origin, so it cannot read this page's DOM, storage, or
+    // cookies — unlike `data:` in `script-src`, which would be an XSS bypass
+    // and stays forbidden. Drop this the day the site stops serving ads.
+    "frame-src 'self' data: googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com",
     // `'self'` covers the host that served the document; `siteOrigin` covers the
     // absolute canonical manifest URL emitted by `metadataBase` when the request
     // was served on a non-canonical host. See `siteOrigin` derivation above.

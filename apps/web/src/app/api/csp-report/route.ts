@@ -22,6 +22,9 @@ import * as Sentry from '@sentry/nextjs';
  *     names a directive; payloads without one are empty Safari reports or junk
  *     POSTed by bots, carry no actionable data, and were ~half the volume.
  *   - Reports from crawlers are dropped (see `isCrawlerUserAgent`).
+ *   - Reports blamed on a browser extension's own assets are dropped (see
+ *     `EXTENSION_INJECTED_HOSTS`) — they describe the visitor's software, not
+ *     this site, and no code change here could ever resolve them.
  *   - The remainder is probabilistically sampled (see `cspReportSampleRate`)
  *     so the forwarded volume is bounded regardless of report content or abuse.
  *
@@ -69,6 +72,34 @@ function isCrawlerUserAgent(userAgent: string | null): boolean {
   return userAgent !== null && CRAWLER_UA_PATTERN.test(userAgent);
 }
 
+/**
+ * Hosts that only ever appear in a violation because a browser extension
+ * injected its own markup/CSS into our page.
+ *
+ * These are unfixable from our side and must NOT be allow-listed: the asset
+ * belongs to software the visitor installed, not to anything this app ships,
+ * and naming it in the policy would widen the allow-list for a third party we
+ * neither vet nor control. Dropping the report is the only action available,
+ * so drop it here rather than let it masquerade as a live site defect.
+ *
+ * Observed 2026-08 as `font-src` violations for the web-font each extension
+ * pulls in with its overlay UI:
+ * - `aceify.ai` — KaTeX fonts for an answer-overlay extension.
+ * - `migaku-public-data.migaku.com` — Migaku (language-learning) reader UI.
+ * - `themes.googleusercontent.com` — a legacy Google Fonts mirror, seen over
+ *   plain `http:` from an extension's stylesheet; the app's own fonts are
+ *   self-hosted via `next/font` and never touch this host.
+ *
+ * Keep the list short and evidence-based: add a host only after confirming in
+ * Sentry that the app itself never requests it. An entry that turns out to be
+ * ours would silently hide a real violation.
+ */
+const EXTENSION_INJECTED_HOSTS = new Set([
+  'aceify.ai',
+  'migaku-public-data.migaku.com',
+  'themes.googleusercontent.com',
+]);
+
 export async function POST(request: Request): Promise<NextResponse> {
   const contentType = request.headers.get('content-type') ?? '';
 
@@ -105,11 +136,16 @@ export async function POST(request: Request): Promise<NextResponse> {
       // are unactionable and were roughly half the flood.
       if (!directive) continue;
 
+      const blockedUri = toStringOrUndefined(violation['blocked-uri'] ?? violation.blockedURL);
+
+      // Drop violations caused by extension-injected content (see the host
+      // list above) — nothing in this repo can fix them.
+      const blockedHost = hostOf(blockedUri);
+      if (blockedHost !== undefined && EXTENSION_INJECTED_HOSTS.has(blockedHost)) continue;
+
       // Bound the forwarded volume so this open endpoint can never exhaust the
       // Sentry quota again, independent of report content or abuse.
       if (Math.random() >= sampleRate) continue;
-
-      const blockedUri = toStringOrUndefined(violation['blocked-uri'] ?? violation.blockedURL);
 
       Sentry.captureMessage('CSP violation', {
         level: 'warning',

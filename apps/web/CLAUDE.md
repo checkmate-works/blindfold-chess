@@ -757,6 +757,18 @@ instead of changing the URL). Both are real design changes, not a quick
 patch — worth a deliberate decision (and testing with `next build && next
 start`, not just `next dev`) rather than a speculative attempt.
 
+### Next.js is pnpm-patched for a CSP nonce bug (16.3.0)
+
+`patches/next@16.3.0.patch` (repo root) makes Next stamp the CSP nonce on the
+`<script>` tags it emits for a `loading` / `error` / `template` / `not-found`
+boundary. Upstream only does this for layout/page assets, so under this app's
+`'nonce-…' 'strict-dynamic'` policy that one chunk was blocked on every view of
+a dynamic route with a `loading.tsx`. **When upgrading Next, expect the patch to
+fail to apply**; check whether upstream fixed it (the emitter is
+`server/app-render/create-component-styles-and-scripts`) and either drop the
+patch or re-derive it. `src/lib/security/csp-loading-chunk-nonce.test.ts` fails
+if the patch silently stops being installed.
+
 ### `next dev` rewrites CLAUDE.md and reformats build output (16.3.0)
 
 Two things 16.3.0 does that look like breakage but are not:
