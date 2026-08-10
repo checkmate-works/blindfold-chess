@@ -12,7 +12,7 @@ import { useMoveSubmitLabels } from './use-move-submit-labels';
 import { usePuzzleSolutionMoves } from './use-puzzle-solution-moves';
 
 /** The draft fields the solution step itself reads and edits. */
-type SolutionStepDraft = {
+export type SolutionStepDraft = {
   fen: string;
   moves: string[];
   notes: string[];
@@ -144,3 +144,11 @@ export function usePuzzleSolutionStep<T extends SolutionStepDraft>({
     finishNavigation,
   };
 }
+
+/**
+ * What a solution-step form consumes from this hook, with the draft widened
+ * to the fields the step itself touches. Lets `PuzzleSolutionFormBody` accept
+ * the create and edit hooks interchangeably without being generic over a
+ * draft shape it never reads.
+ */
+export type PuzzleSolutionStepApi = ReturnType<typeof usePuzzleSolutionStep<SolutionStepDraft>>;

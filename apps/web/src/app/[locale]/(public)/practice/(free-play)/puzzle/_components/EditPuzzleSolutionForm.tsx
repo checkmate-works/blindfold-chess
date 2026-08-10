@@ -2,16 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
-import { FormErrorBanner } from '@/app/_components';
-
 import { usePuzzleSolutionStep } from '../_hooks/use-puzzle-solution-step';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { readEditDraft, writeEditDraft } from '../_lib/edit-draft-storage';
 import { validatePuzzleSolution } from '../_lib/validate-puzzle-form';
-import { PuzzleSolutionFields } from './PuzzleSolutionFields';
-import { PuzzleSolutionSkeleton } from './PuzzleSolutionSkeleton';
-import { PuzzleStepIndicator } from './PuzzleStepIndicator';
-import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
+import { PuzzleSolutionFormBody } from './PuzzleSolutionFormBody';
 
 type Props = {
   positionId: string;
@@ -36,42 +31,7 @@ export function EditPuzzleSolutionForm({ positionId }: Props) {
     step.persistAndNavigate(`/practice/puzzle/${positionId}/edit/preview`);
   }
 
-  const stepIndicator = <PuzzleStepIndicator flow="edit" current="solution" />;
-
-  if (!step.ready) {
-    return (
-      <div className="space-y-6">
-        {stepIndicator}
-        <PuzzleSolutionSkeleton />
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="space-y-6">
-        {stepIndicator}
-
-        <FormErrorBanner message={step.error} />
-
-        <PuzzleSolutionFields
-          flipped={step.flipped}
-          onFlip={step.toggleFlip}
-          solution={step.solution}
-          pending={false}
-          onBack={step.handleBack}
-          backLabel={t('backToPosition')}
-          onPrimaryAction={handleContinueToPreview}
-          primaryActionLabel={t('continueToPreview')}
-          primaryActionDisabled={step.solution.moves.length === 0}
-        />
-      </div>
-
-      <PuzzleUnsavedChangesDialog
-        open={step.isBlocking}
-        onConfirm={step.confirmLeave}
-        onCancel={step.cancelLeave}
-      />
-    </>
+    <PuzzleSolutionFormBody flow="edit" step={step} onContinueToPreview={handleContinueToPreview} />
   );
 }
