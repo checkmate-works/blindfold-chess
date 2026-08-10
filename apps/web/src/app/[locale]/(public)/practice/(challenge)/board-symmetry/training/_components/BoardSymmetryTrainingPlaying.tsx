@@ -5,11 +5,9 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symme
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
-import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
-import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
-import { SectionTitle } from '@/app/[locale]/_components';
-import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { BoardSymmetryQuestionPanel } from '../../_components/BoardSymmetryQuestionPanel';
 
 type Props = {
   problem: BoardSymmetryProblem;
@@ -40,54 +38,24 @@ export function BoardSymmetryTrainingPlaying({
   onEndTraining,
   locale,
 }: Props) {
-  const t = useTranslations('practice.boardSymmetry');
   const tp = useTranslations('practice');
   const isDisabled = isProcessing;
-
-  useAlgebraicKeyboardInput({
-    onFile: onFileToggle,
-    onRank: onRankToggle,
-    onBackspace,
-    enabled: !isDisabled,
-  });
-
-  const getFeedbackColor = () => {
-    if (isCorrect === true) return 'text-success';
-    if (isCorrect === false) return 'text-destructive';
-    return 'text-muted-foreground';
-  };
 
   return (
     <div className="max-w-md mx-auto">
       <div className="p-8 text-center relative overflow-hidden">
         <div>
-          <SectionTitle className="mb-8">
-            {t('question', {
-              type: t(`types.${problem.type}`),
-              square: problem.square,
-            })}
-          </SectionTitle>
-
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-4 text-6xl font-bold text-foreground mb-4 font-mono select-none">
-              {problem.square}
-              <span className="text-muted-foreground">→</span>
-              <span className={`min-w-[2ch] ${getFeedbackColor()}`}>
-                {selectedFile && selectedRank ? `${selectedFile}${selectedRank}` : '?'}
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-4 -mx-8 sm:mx-0">
-            <CoordinateInput
-              selectedFiles={selectedFile ? new Set([selectedFile]) : new Set()}
-              selectedRanks={selectedRank ? new Set([selectedRank]) : new Set()}
-              onFileToggle={onFileToggle}
-              onRankToggle={onRankToggle}
-              className={`max-w-md mx-auto ${isProcessing ? 'pointer-events-none opacity-50' : ''}`}
-            />
-            <AlgebraicKeyboardHint disabled={isDisabled} />
-          </div>
+          <BoardSymmetryQuestionPanel
+            problem={problem}
+            selectedFile={selectedFile}
+            selectedRank={selectedRank}
+            isCorrect={isCorrect}
+            onFileToggle={onFileToggle}
+            onRankToggle={onRankToggle}
+            onBackspace={onBackspace}
+            inputLocked={isDisabled}
+            inputDimmed={isProcessing}
+          />
         </div>
       </div>
 

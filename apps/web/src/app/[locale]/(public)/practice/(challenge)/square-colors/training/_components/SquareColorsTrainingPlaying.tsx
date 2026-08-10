@@ -7,11 +7,9 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
-import { ArrowKeyAnswer } from '@/app/[locale]/(public)/practice/_components/ArrowKeyAnswer';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { SquareColorAnswerButtons } from '../../_components/SquareColorAnswerButtons';
-import { SquareColorQuestionDisplay } from '../../_components/SquareColorQuestionDisplay';
+import { SquareColorsQuestionPanel } from '../../_components/SquareColorsQuestionPanel';
 
 type Props = {
   currentSquare: string;
@@ -36,7 +34,6 @@ export function SquareColorsTrainingPlaying({
   onEndTraining,
   locale,
 }: Props) {
-  const t = useTranslations('practice.squareColors');
   const tp = useTranslations('practice');
   const inputDisabled = showResult;
 
@@ -44,22 +41,13 @@ export function SquareColorsTrainingPlaying({
     <div className="max-w-md mx-auto">
       <div className="p-8 text-center relative overflow-hidden">
         <div>
-          <SquareColorQuestionDisplay currentSquare={currentSquare} lastAnswer={lastAnswer} />
-
-          <ArrowKeyAnswer
+          <SquareColorsQuestionPanel
+            currentSquare={currentSquare}
+            lastAnswer={lastAnswer}
+            onAnswer={onAnswer}
+            boardTheme={boardTheme}
             disabled={inputDisabled}
-            bindings={{
-              ArrowLeft: { label: t('white'), onTrigger: () => onAnswer('light') },
-              ArrowRight: { label: t('black'), onTrigger: () => onAnswer('dark') },
-            }}
-          >
-            <SquareColorAnswerButtons
-              onAnswer={onAnswer}
-              disabled={inputDisabled}
-              labels={{ white: t('white'), black: t('black') }}
-              boardTheme={boardTheme}
-            />
-          </ArrowKeyAnswer>
+          />
         </div>
       </div>
 

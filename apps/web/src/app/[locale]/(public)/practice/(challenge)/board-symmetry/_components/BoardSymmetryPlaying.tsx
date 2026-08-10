@@ -1,6 +1,5 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
@@ -8,10 +7,8 @@ import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(cha
 import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
-import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
-import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
-import { SectionTitle } from '@/app/[locale]/_components';
-import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
+
+import { BoardSymmetryQuestionPanel } from './BoardSymmetryQuestionPanel';
 
 type Props = {
   problem: BoardSymmetryProblem;
@@ -60,22 +57,7 @@ export function BoardSymmetryPlaying({
   onQuitConfirm,
   onQuitCancel,
 }: Props) {
-  const t = useTranslations('practice.boardSymmetry');
   const isDisabled = isProcessing || countdown !== null || isPaused;
-
-  useAlgebraicKeyboardInput({
-    onFile: onFileToggle,
-    onRank: onRankToggle,
-    onBackspace,
-    enabled: !isDisabled,
-  });
-
-  // Helper for conditional classes since cn might be missing
-  const getFeedbackColor = () => {
-    if (isCorrect === true) return 'text-success';
-    if (isCorrect === false) return 'text-destructive';
-    return 'text-muted-foreground';
-  };
 
   return (
     <div className="max-w-md mx-auto">
@@ -87,46 +69,29 @@ export function BoardSymmetryPlaying({
         <div
           className={`transition-all duration-300 ${isPaused || countdown !== null ? 'blur-sm' : ''}`}
         >
-          <SectionTitle className="mb-8">
-            {t('question', {
-              type: t(`types.${problem.type}`),
-              square: problem.square,
-            })}
-          </SectionTitle>
-
-          <ChallengeStatusHeader
-            className="mb-6 flex justify-between items-center"
-            remainingLives={remainingLives}
-            maxLives={maxLives}
-            isPaused={isPaused}
-            onTogglePause={onTogglePause}
-            pauseDisabled={countdown !== null || isProcessing}
-            timeRemaining={timeRemaining}
-            timeLimit={timeLimit}
+          <BoardSymmetryQuestionPanel
+            problem={problem}
+            statusHeader={
+              <ChallengeStatusHeader
+                className="mb-6 flex justify-between items-center"
+                remainingLives={remainingLives}
+                maxLives={maxLives}
+                isPaused={isPaused}
+                onTogglePause={onTogglePause}
+                pauseDisabled={countdown !== null || isProcessing}
+                timeRemaining={timeRemaining}
+                timeLimit={timeLimit}
+              />
+            }
+            selectedFile={selectedFile}
+            selectedRank={selectedRank}
+            isCorrect={isCorrect}
+            onFileToggle={onFileToggle}
+            onRankToggle={onRankToggle}
+            onBackspace={onBackspace}
+            inputLocked={isDisabled}
+            inputDimmed={isProcessing || isPaused}
           />
-
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-4 text-6xl font-bold text-foreground mb-4 font-mono select-none">
-              {problem.square}
-              <span className="text-muted-foreground">→</span>
-              <span className={`min-w-[2ch] ${getFeedbackColor()}`}>
-                {selectedFile && selectedRank ? `${selectedFile}${selectedRank}` : '?'}
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-4 -mx-8 sm:mx-0">
-            <CoordinateInput
-              selectedFiles={selectedFile ? new Set([selectedFile]) : new Set()}
-              selectedRanks={selectedRank ? new Set([selectedRank]) : new Set()}
-              onFileToggle={onFileToggle}
-              onRankToggle={onRankToggle}
-              className={`max-w-md mx-auto ${
-                isProcessing || isPaused ? 'pointer-events-none opacity-50' : ''
-              }`}
-            />
-            <AlgebraicKeyboardHint disabled={isDisabled} />
-          </div>
         </div>
       </div>
 
