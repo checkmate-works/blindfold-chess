@@ -7,6 +7,7 @@ import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
@@ -42,11 +43,7 @@ type Props = {
    * Author profile, or `null` if the row's `user_id` did not join. Subset
    * of the `profiles` columns the calling list query selects.
    */
-  profile: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  profile: AuthorProfile | null;
   likeMeta: LikeMeta;
   replyMeta: ReplyMeta;
   /**

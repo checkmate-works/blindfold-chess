@@ -4,16 +4,13 @@ import { useOptimistic, useState, useTransition } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { IdentifiedAuthorProfile } from '@/lib/users/author-profile';
+
 import { toggleFollow } from '@/app/[locale]/(public)/u/[username]/_actions/toggleFollow';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { UserCard } from '@/app/[locale]/_components/UserCard';
 
-type FollowingUser = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
+type FollowingUser = IdentifiedAuthorProfile;
 
 type Props = {
   initialList: FollowingUser[];

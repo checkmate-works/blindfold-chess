@@ -5,14 +5,8 @@ import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core';
 
 import { AUTHOR_PROFILE_COLUMNS, db, profiles } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 import { UUID_RE } from '@/lib/validations/uuid';
-
-/** Shape of the proposer profile joined onto each request row. */
-export type EditRequestProposer = {
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
 
 type EditRequestTable = PgTable & {
   id: AnyPgColumn;
@@ -50,7 +44,7 @@ export function makeEditRequestQueries<TTable extends EditRequestTable>({
   const listForParent = cache(
     async (
       parentId: string
-    ): Promise<Array<{ request: RequestRow; proposer: EditRequestProposer | null }>> => {
+    ): Promise<Array<{ request: RequestRow; proposer: AuthorProfile | null }>> => {
       if (!UUID_RE.test(parentId)) return [];
 
       const rows = await db
@@ -63,7 +57,7 @@ export function makeEditRequestQueries<TTable extends EditRequestTable>({
         .where(eq(parentIdColumn, parentId))
         .orderBy(desc(table.createdAt));
 
-      return rows as Array<{ request: RequestRow; proposer: EditRequestProposer | null }>;
+      return rows as Array<{ request: RequestRow; proposer: AuthorProfile | null }>;
     }
   );
 

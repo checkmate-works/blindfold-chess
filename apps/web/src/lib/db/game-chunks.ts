@@ -9,6 +9,7 @@ import 'server-only';
 
 import { linkableChunkPredicate } from '@/lib/chunks/linkability';
 import { type ChunkStatus, isChunkStatus } from '@/lib/chunks/validation';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { db } from './index';
 import { liveProfileJoinOn } from './profile-select';
@@ -31,11 +32,7 @@ export type GameChunkItem = {
   status: ChunkStatus;
   createdAt: Date;
   suggestedById: string | null;
-  suggester: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  suggester: AuthorProfile | null;
 };
 
 /**

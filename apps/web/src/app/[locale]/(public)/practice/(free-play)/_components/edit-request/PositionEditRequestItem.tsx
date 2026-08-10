@@ -8,6 +8,7 @@ import { Button } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -19,18 +20,12 @@ import { rejectPositionEditRequest } from '../../_actions/rejectPositionEditRequ
 import { withdrawPositionEditRequest } from '../../_actions/withdrawPositionEditRequest';
 import { localizePositionEditRequestError } from './localize-error';
 
-type ProposerProfile = {
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-} | null;
-
 type Props = {
   requestId: string;
   status: EditRequestStatus;
   createdAt: Date;
   /** Proposer profile, or null when the proposer's account was hard-deleted. */
-  proposer: ProposerProfile;
+  proposer: AuthorProfile | null;
   proposerId: string | null;
   /** Detail-page path (no locale prefix) the accept / reject flow redirects to. */
   detailHref: string;

@@ -11,6 +11,8 @@
 import { asc, eq } from 'drizzle-orm';
 import 'server-only';
 
+import type { AuthorProfile } from '@/lib/users/author-profile';
+
 import { db } from './index';
 import { getLikeMetaMap } from './like-queries';
 import { AUTHOR_PROFILE_COLUMNS, liveProfileJoinOn } from './profile-select';
@@ -27,11 +29,7 @@ export type GameCommentItem = {
   updatedAt: Date;
   deletedAt: Date | null;
   authorId: string | null;
-  author: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  author: AuthorProfile | null;
   likeCount: number;
   likedByMe: boolean;
 };

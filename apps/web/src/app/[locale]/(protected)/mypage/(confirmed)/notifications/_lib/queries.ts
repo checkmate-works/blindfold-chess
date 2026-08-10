@@ -2,6 +2,7 @@ import { and, count, desc, eq } from 'drizzle-orm';
 
 import { db, notifications, profiles } from '@/lib/db';
 import { resolvePagination } from '@/lib/pagination';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 const PAGE_SIZE = 20;
 
@@ -14,11 +15,7 @@ export type NotificationWithActor = {
   metadata: unknown;
   isRead: boolean;
   createdAt: Date;
-  actor: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  actor: AuthorProfile | null;
 };
 
 export async function getNotifications(

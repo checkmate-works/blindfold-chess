@@ -6,18 +6,14 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { RepertoireChunkItem } from '@/lib/db/repertoire-chunks';
+import type { IdentifiedAuthorProfile } from '@/lib/users/author-profile';
 
 import {
   addRepertoireChunkAction,
   deleteRepertoireChunkAction,
 } from '../_actions/repertoire-chunks';
 
-export type LineChunksUser = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
+export type LineChunksUser = IdentifiedAuthorProfile;
 
 type Params = {
   repertoireId: string;

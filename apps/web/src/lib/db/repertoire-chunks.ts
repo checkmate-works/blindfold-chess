@@ -11,6 +11,7 @@ import { and, asc, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { type ChunkStatus, isChunkStatus } from '@/lib/chunks/validation';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { isLinkableChunkForViewer } from './game-chunks';
 import { db } from './index';
@@ -40,11 +41,7 @@ export type RepertoireChunkItem = {
   status: ChunkStatus;
   createdAt: Date;
   suggestedById: string | null;
-  suggester: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  suggester: AuthorProfile | null;
 };
 
 /**

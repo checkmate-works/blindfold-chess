@@ -7,6 +7,9 @@ import { profiles } from './schema';
  * Canonical author-profile columns selected alongside user-generated content.
  * Spread additional columns on top for callers that need more
  * (e.g. `{ ...AUTHOR_PROFILE_COLUMNS, country: profiles.country }`).
+ *
+ * The row shape these produce is `AuthorProfile` in `@/lib/users/author-profile`
+ * — declare results with that type rather than re-listing the three fields.
  */
 export const AUTHOR_PROFILE_COLUMNS = {
   username: profiles.username,
