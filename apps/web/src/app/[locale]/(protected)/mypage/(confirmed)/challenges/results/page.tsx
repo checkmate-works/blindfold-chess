@@ -6,6 +6,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { getMissColorClass } from '@/lib/challenge/ui';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
+import { clampPage } from '@/lib/pagination';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -53,7 +54,7 @@ export default async function ChallengeResultsPage({ params, searchParams }: Pro
     getAvailableMenuTypes(),
   ]);
 
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const currentPage = clampPage(page, totalPages);
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();

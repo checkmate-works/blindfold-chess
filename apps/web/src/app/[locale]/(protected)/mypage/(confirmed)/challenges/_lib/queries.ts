@@ -3,6 +3,7 @@ import { and, count, desc, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { challengeResults } from '@/lib/db/schema';
+import { resolvePagination } from '@/lib/pagination';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 
@@ -34,9 +35,7 @@ export async function getChallengeResultsPaginated(
     .from(challengeResults)
     .where(whereClause);
 
-  const totalCount = countResult.count;
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const { totalPages, offset } = resolvePagination(page, countResult.count, PAGE_SIZE);
 
   const items = await db
     .select({
@@ -52,7 +51,7 @@ export async function getChallengeResultsPaginated(
     .where(whereClause)
     .orderBy(desc(challengeResults.createdAt))
     .limit(PAGE_SIZE)
-    .offset((currentPage - 1) * PAGE_SIZE);
+    .offset(offset);
 
   return { items, totalPages };
 }

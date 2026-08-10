@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_PAGE_SIZE, getPaginationParams, paginateItems } from './pagination';
+import {
+  DEFAULT_PAGE_SIZE,
+  clampPage,
+  getPaginationParams,
+  paginateItems,
+  resolvePagination,
+} from './pagination';
 
 describe('paginateItems', () => {
   const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -161,6 +167,64 @@ describe('getPaginationParams', () => {
       totalPages: 3,
       limit: 20,
       offset: 20,
+    });
+  });
+});
+
+describe('clampPage', () => {
+  it('returns the requested page when it is in range', () => {
+    expect(clampPage(3, 5)).toBe(3);
+  });
+
+  it('clamps to 1 when the requested page is below range', () => {
+    expect(clampPage(0, 5)).toBe(1);
+    expect(clampPage(-7, 5)).toBe(1);
+  });
+
+  it('clamps to totalPages when the requested page is above range', () => {
+    expect(clampPage(999, 3)).toBe(3);
+  });
+
+  it('collapses an empty list (0 pages) to page 1', () => {
+    expect(clampPage(1, 0)).toBe(1);
+    expect(clampPage(42, 0)).toBe(1);
+  });
+});
+
+describe('resolvePagination', () => {
+  it('returns the requested page and its offset', () => {
+    expect(resolvePagination(3, 50, 10)).toEqual({
+      currentPage: 3,
+      totalPages: 5,
+      offset: 20,
+    });
+  });
+
+  it('rounds totalPages up for non-even division', () => {
+    expect(resolvePagination(1, 11, 5).totalPages).toBe(3);
+  });
+
+  it('clamps an over-range page down to the last page', () => {
+    expect(resolvePagination(100, 50, 10)).toEqual({
+      currentPage: 5,
+      totalPages: 5,
+      offset: 40,
+    });
+  });
+
+  it('clamps an under-range page up to the first page', () => {
+    expect(resolvePagination(0, 50, 10)).toEqual({
+      currentPage: 1,
+      totalPages: 5,
+      offset: 0,
+    });
+  });
+
+  it('reports 0 totalPages for an empty list but still lands on page 1', () => {
+    expect(resolvePagination(1, 0, 10)).toEqual({
+      currentPage: 1,
+      totalPages: 0,
+      offset: 0,
     });
   });
 });

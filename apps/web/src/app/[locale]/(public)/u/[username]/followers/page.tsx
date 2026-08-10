@@ -7,6 +7,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
 import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
+import { resolvePagination } from '@/lib/pagination';
 
 import { PageLayout, UserCard } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -85,8 +86,7 @@ export default async function FollowersPage({ params, searchParams }: Props) {
   ]);
 
   const totalCount = countResult.count;
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const { currentPage, totalPages, offset } = resolvePagination(page, totalCount, PAGE_SIZE);
 
   const followerList = await db
     .select({
@@ -98,7 +98,7 @@ export default async function FollowersPage({ params, searchParams }: Props) {
     .where(and(eq(userFollows.followingId, profile.id), isNull(profiles.deletedAt)))
     .orderBy(desc(userFollows.createdAt))
     .limit(PAGE_SIZE)
-    .offset((currentPage - 1) * PAGE_SIZE);
+    .offset(offset);
 
   const displayName = profile.displayName ?? username;
 
