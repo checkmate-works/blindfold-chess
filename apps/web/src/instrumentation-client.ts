@@ -44,8 +44,7 @@ if (process.env.NODE_ENV === 'development') {
         options?: Record<string, unknown>
       ) {
         const userOnRecoverableError = options?.onRecoverableError as
-          | ((error: unknown, errorInfo: unknown) => void)
-          | undefined;
+          ((error: unknown, errorInfo: unknown) => void) | undefined;
 
         const patchedOptions = {
           ...options,
@@ -136,6 +135,33 @@ Sentry.init({
       typeof hint.originalException === 'object' &&
       'name' in hint.originalException &&
       hint.originalException.name === 'AbortError'
+    ) {
+      return null;
+    }
+
+    // Ignore reason-less promise rejections fired while the page is being torn
+    // down. WebKit rejects the promises of in-flight requests when a document
+    // is discarded, and does so with no reason at all — so the global
+    // `unhandledrejection` handler sees `event.reason === undefined` and Sentry
+    // reports `Non-Error promise rejection captured with value: undefined` with
+    // no stacktrace and nothing to act on. Chrome and Firefox drop those
+    // promises silently instead, which is why the issue is WebKit-exclusive.
+    //
+    // Observed as BLINDFOLD-CHESS-29: 17/17 events on Mobile Safari / Chrome
+    // iOS / WKWebView / macOS Safari, every one of them fired within a second
+    // of a `ui.click` breadcrumb on a navigation control, zero users impacted.
+    // The most frequent trigger is the landing page's "Get Started" CTA, which
+    // crosses from the `(landing)` root layout into the `[locale]` one and so
+    // navigates as an MPA (a real unload) with the AdSense loader, GA
+    // `/g/collect` and RSC prefetches still in flight.
+    //
+    // Both conditions are required. Matching on the mechanism keeps a future
+    // `captureException(undefined)` from our own code visible, and the strict
+    // `undefined` check keeps `Promise.reject(null)` — a shape we do not
+    // currently produce, and would want to see if we started — reportable.
+    if (
+      hint.originalException === undefined &&
+      event.exception?.values?.[0]?.mechanism?.type === 'onunhandledrejection'
     ) {
       return null;
     }
