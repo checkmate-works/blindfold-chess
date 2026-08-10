@@ -49,3 +49,29 @@ Why: a single mixed barrel forces every Server Component that touches one helper
 - **Build orchestration**: Turborepo
 - **Node.js**: >=24.0.0 <25
 - **Scripts**: `pnpm build`, `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`
+
+### TypeScript versions are not uniform across the workspace
+
+Three different compilers are installed on purpose. Before changing any of
+them, know which constraint you are about to break.
+
+| Where                                            | Version                          | Why                                                                      |
+| ------------------------------------------------ | -------------------------------- | ------------------------------------------------------------------------ |
+| `apps/web`, `packages/{features,icons,types,ui}` | `^7.0.2`                         | The default. TypeScript 7, the Go compiler.                              |
+| `packages/eslint-config`                         | `npm:@typescript/typescript6@^6` | typescript-eslint hard-errors under TS7. See the TSDoc in its `base.js`. |
+| `apps/mobile`                                    | `~5.9.3`                         | Expo needs the TypeScript **JS API**, which TS7 does not ship.           |
+
+The mobile pin is the one that is easy to "fix" by mistake. TypeScript 7's npm
+package exports exactly two things — `version` and `versionMajorMinor` — and no
+compiler API. `@expo/cli` resolves the project's `typescript` and calls
+`ts.sys` / `readConfigFile` / `parseJsonConfigFileContent` to read `paths` out
+of `tsconfig.json` for Metro (`utils/tsconfig/evaluateTsConfig`). Under TS7
+that is `TypeError: Cannot read properties of undefined (reading
+'getCurrentDirectory')` and **`expo start` never reaches Metro** — `tsc
+--noEmit` on `apps/mobile` passes clean, so typecheck alone will not catch it.
+Revisit when Expo stops loading the compiler in-process, or when TS7 ships the
+API (verified against expo ~54.0.33 / expo-router ~6.0.23 / RN 0.81.5).
+
+`apps/web` is unaffected because Next 16.3 defaults
+`experimental.useTypeScriptCli` to true and shells out to `typescript/bin/tsc`
+rather than loading the API.
