@@ -18,10 +18,7 @@ import { Chess, DEFAULT_POSITION } from "chess.js";
  * values so the consuming UI can switch-exhaustively on them.
  */
 export type AttachedPgnError =
-  | "empty"
-  | "too_large"
-  | "invalid_pgn"
-  | "no_moves";
+  "empty" | "too_large" | "invalid_pgn" | "no_moves";
 
 /**
  * Result of validating a PGN string for use as a topic post attachment.
@@ -60,20 +57,17 @@ function getUtf8ByteLength(value: string): number {
   // Buffer when available because it's slightly cheaper for long strings,
   // but fall back to TextEncoder unconditionally so this stays
   // platform-pure and works under Edge / Metro.
-  if (
-    typeof globalThis !== "undefined" &&
-    typeof (
-      globalThis as {
-        Buffer?: { byteLength: (s: string, enc: string) => number };
-      }
-    ).Buffer !== "undefined"
-  ) {
-    const B = (
-      globalThis as {
-        Buffer: { byteLength: (s: string, enc: string) => number };
-      }
-    ).Buffer;
-    return B.byteLength(value, "utf8");
+  //
+  // The optional property is what keeps this honest: `@types/node` is
+  // deliberately out of this package's `types`, so `globalThis` has no Buffer
+  // to narrow and a cast to a required one would not overlap.
+  const buffer = (
+    globalThis as {
+      Buffer?: { byteLength: (s: string, enc: string) => number };
+    }
+  ).Buffer;
+  if (buffer) {
+    return buffer.byteLength(value, "utf8");
   }
   return new TextEncoder().encode(value).byteLength;
 }

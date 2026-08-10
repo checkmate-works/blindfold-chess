@@ -1,3 +1,8 @@
+// This suite walks the barrel files on disk, so it is the one place in this
+// platform-independent package that may touch Node APIs. Pulling the types in
+// per file rather than via `types` in tsconfig.json keeps them out of the
+// source tree, where a stray `process` or `Buffer` would break Edge / Metro.
+/// <reference types="node" />
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
