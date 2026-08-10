@@ -142,6 +142,43 @@ describe('POST /api/csp-report', () => {
     expect(captureMessage).toHaveBeenCalledTimes(1);
   });
 
+  it.each([
+    'https://aceify.ai/assets/fonts/KaTeX_Main-Regular.ttf',
+    'https://migaku-public-data.migaku.com/fonts/x.woff2',
+    'http://themes.googleusercontent.com/static/fonts/x.woff',
+  ])('drops violations caused by extension-injected assets (%s)', async (blockedUri) => {
+    // These hosts belong to software the visitor installed. Forwarding them
+    // would file an unfixable defect against this app; allow-listing them
+    // would widen the policy for a third party we do not control.
+    const body = JSON.stringify({
+      'csp-report': {
+        'violated-directive': 'font-src',
+        'effective-directive': 'font-src',
+        'blocked-uri': blockedUri,
+      },
+    });
+
+    const res = await POST(makeRequest(body, 'application/csp-report'));
+
+    expect(res.status).toBe(204);
+    expect(captureMessage).not.toHaveBeenCalled();
+  });
+
+  it('still forwards font-src violations for hosts the app itself uses', async () => {
+    // Guard against the drop list swallowing a real regression.
+    const body = JSON.stringify({
+      'csp-report': {
+        'violated-directive': 'font-src',
+        'effective-directive': 'font-src',
+        'blocked-uri': 'https://fonts.gstatic.com/s/x.woff2',
+      },
+    });
+
+    await POST(makeRequest(body, 'application/csp-report'));
+
+    expect(captureMessage).toHaveBeenCalledTimes(1);
+  });
+
   it('forwards nothing when CSP_REPORT_SAMPLE_RATE is 0', async () => {
     vi.stubEnv('CSP_REPORT_SAMPLE_RATE', '0');
     try {
