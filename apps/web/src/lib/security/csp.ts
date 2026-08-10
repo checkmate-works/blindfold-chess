@@ -33,8 +33,12 @@
  *   `template` / `not-found` boundary — the two live in different modules and
  *   only the former reads `ctx.nonce`. Under `'strict-dynamic'` the host
  *   fallbacks above are ignored, so that one chunk is blocked outright. Fixed
- *   by `patches/next@16.3.0.patch`; the patch comment carries the details, and
- *   `./csp-loading-chunk-nonce.test.ts` fails if the patch goes missing.
+ *   by `patches/next@16.3.0.patch`, which must patch the prebuilt
+ *   `dist/compiled/next-server/app-page*.runtime.prod.js` bundles and not only
+ *   the readable `dist/server/app-render/*` sources — Node page rendering loads
+ *   the former and reaches the latter only on the edge runtime. See the
+ *   CLAUDE.md note and `./csp-loading-chunk-nonce.test.ts`, which fails if the
+ *   patch goes missing from the bundles the server actually loads.
  *
  * **Static-content variant** — for prerendered (SSG/ISR) routes, selected by
  * path in `src/proxy.ts` via `isStaticContentPath()`. Prerendered HTML is
