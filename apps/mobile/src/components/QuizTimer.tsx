@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
-import { useTheme, fontSize, fontWeight } from "../../../theme";
+import { useTheme, fontSize, fontWeight } from "../theme";
 import { formatTime } from "@blindfold-chess/features/coordinate-quiz";
 
 type QuizTimerProps = {
