@@ -8,32 +8,14 @@ import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { linkableChunkPredicate } from '@/lib/chunks/linkability';
-import { type ChunkStatus, isChunkStatus } from '@/lib/chunks/validation';
-import type { AuthorProfile } from '@/lib/users/author-profile';
 
+import { CHUNK_LINK_COLUMNS, type ChunkLink, mapChunkLinkRow } from './chunk-link-row';
 import { db } from './index';
 import { liveProfileJoinOn } from './profile-select';
 import { chunks, gameChunks, games, profiles } from './schema';
 
-export type GameChunkItem = {
-  id: string;
-  ply: number;
-  chunkId: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  representativeFen: string;
-  /**
-   * Lifecycle state of the linked chunk. A link may point at a draft (the
-   * author's own — see `linkableChunkPredicate`), whose title is still
-   * open to renegotiation, so the UI marks those rows rather than letting
-   * them read as settled catalog entries.
-   */
-  status: ChunkStatus;
-  createdAt: Date;
-  suggestedById: string | null;
-  suggester: AuthorProfile | null;
-};
+/** A chunk link anchored to a move. */
+export type GameChunkItem = ChunkLink & { ply: number };
 
 /**
  * All chunk links for a game (across moves), oldest first per move, joined to
@@ -46,16 +28,9 @@ export async function listGameChunks(gameId: string): Promise<GameChunkItem[]> {
       id: gameChunks.id,
       ply: gameChunks.ply,
       chunkId: gameChunks.chunkId,
-      slug: chunks.slug,
-      title: chunks.title,
-      description: chunks.description,
-      representativeFen: chunks.representativeFen,
-      status: chunks.status,
       createdAt: gameChunks.createdAt,
       suggestedById: gameChunks.suggestedById,
-      suggesterUsername: profiles.username,
-      suggesterDisplayName: profiles.displayName,
-      suggesterAvatarUrl: profiles.avatarUrl,
+      ...CHUNK_LINK_COLUMNS,
     })
     .from(gameChunks)
     .innerJoin(chunks, eq(chunks.id, gameChunks.chunkId))
@@ -63,27 +38,7 @@ export async function listGameChunks(gameId: string): Promise<GameChunkItem[]> {
     .where(and(eq(gameChunks.gameId, gameId), isNull(chunks.deletedAt)))
     .orderBy(asc(gameChunks.ply), asc(gameChunks.createdAt));
 
-  return rows.map((r) => ({
-    id: r.id,
-    ply: r.ply,
-    chunkId: r.chunkId,
-    slug: r.slug,
-    title: r.title,
-    description: r.description,
-    representativeFen: r.representativeFen,
-    // Unknown values fall back to 'published' — an unrecognized lifecycle
-    // state must not render as "still being workshopped".
-    status: isChunkStatus(r.status) ? r.status : 'published',
-    createdAt: r.createdAt,
-    suggestedById: r.suggestedById,
-    suggester: r.suggesterUsername
-      ? {
-          username: r.suggesterUsername,
-          displayName: r.suggesterDisplayName,
-          avatarUrl: r.suggesterAvatarUrl,
-        }
-      : null,
-  }));
+  return rows.map((r) => ({ ...mapChunkLinkRow(r), ply: r.ply }));
 }
 
 /**

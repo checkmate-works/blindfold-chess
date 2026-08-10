@@ -10,9 +10,7 @@
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
-import { type ChunkStatus, isChunkStatus } from '@/lib/chunks/validation';
-import type { AuthorProfile } from '@/lib/users/author-profile';
-
+import { CHUNK_LINK_COLUMNS, type ChunkLink, mapChunkLinkRow } from './chunk-link-row';
 import { isLinkableChunkForViewer } from './game-chunks';
 import { db } from './index';
 import { liveProfileJoinOn } from './profile-select';
@@ -24,25 +22,8 @@ import { chunks, profiles, repertoireChunks, repertoires } from './schema';
 // the rule itself.
 export { isLinkableChunkForViewer };
 
-export type RepertoireChunkItem = {
-  id: string;
-  positionKey: string;
-  chunkId: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  representativeFen: string;
-  /**
-   * Lifecycle state of the linked chunk. A link may point at a draft (the
-   * author's own — see `linkableChunkPredicate`), whose title is still
-   * open to renegotiation, so the UI marks those rows rather than letting
-   * them read as settled catalog entries.
-   */
-  status: ChunkStatus;
-  createdAt: Date;
-  suggestedById: string | null;
-  suggester: AuthorProfile | null;
-};
+/** A chunk link anchored to a position rather than a single ply. */
+export type RepertoireChunkItem = ChunkLink & { positionKey: string };
 
 /**
  * All chunk links for a repertoire (across every position), joined to the
@@ -55,16 +36,9 @@ export async function listRepertoireChunks(repertoireId: string): Promise<Repert
       id: repertoireChunks.id,
       positionKey: repertoireChunks.positionKey,
       chunkId: repertoireChunks.chunkId,
-      slug: chunks.slug,
-      title: chunks.title,
-      description: chunks.description,
-      representativeFen: chunks.representativeFen,
-      status: chunks.status,
       createdAt: repertoireChunks.createdAt,
       suggestedById: repertoireChunks.suggestedById,
-      suggesterUsername: profiles.username,
-      suggesterDisplayName: profiles.displayName,
-      suggesterAvatarUrl: profiles.avatarUrl,
+      ...CHUNK_LINK_COLUMNS,
     })
     .from(repertoireChunks)
     .innerJoin(chunks, eq(chunks.id, repertoireChunks.chunkId))
@@ -72,27 +46,7 @@ export async function listRepertoireChunks(repertoireId: string): Promise<Repert
     .where(and(eq(repertoireChunks.repertoireId, repertoireId), isNull(chunks.deletedAt)))
     .orderBy(asc(repertoireChunks.positionKey), asc(repertoireChunks.createdAt));
 
-  return rows.map((r) => ({
-    id: r.id,
-    positionKey: r.positionKey,
-    chunkId: r.chunkId,
-    slug: r.slug,
-    title: r.title,
-    description: r.description,
-    representativeFen: r.representativeFen,
-    // Unknown values fall back to 'published' — an unrecognized lifecycle
-    // state must not render as "still being workshopped".
-    status: isChunkStatus(r.status) ? r.status : 'published',
-    createdAt: r.createdAt,
-    suggestedById: r.suggestedById,
-    suggester: r.suggesterUsername
-      ? {
-          username: r.suggesterUsername,
-          displayName: r.suggesterDisplayName,
-          avatarUrl: r.suggesterAvatarUrl,
-        }
-      : null,
-  }));
+  return rows.map((r) => ({ ...mapChunkLinkRow(r), positionKey: r.positionKey }));
 }
 
 /**
