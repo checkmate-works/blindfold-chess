@@ -1,12 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../../../theme";
+import { OptionsField, TIME_LIMIT_OPTIONS } from "../../../components";
+import { spacing } from "../../../theme";
 import type { QuizSettings } from "../lib/types";
 import { BOARD_ORIENTATIONS, FEEDBACK_SPEEDS } from "../lib/types";
 
@@ -18,95 +13,40 @@ type SettingsFormProps = {
   ) => void;
 };
 
-const DURATION_OPTIONS = [30, 60, 90, 120];
-
 export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
-
-  const renderOptionButton = <T extends string>(
-    value: T,
-    isSelected: boolean,
-    onPress: () => void,
-    label: string,
-  ) => (
-    <TouchableOpacity
-      key={value}
-      onPress={onPress}
-      style={[
-        styles.optionButton,
-        {
-          borderColor: isSelected ? colors.primary : colors.border,
-          backgroundColor: isSelected ? colors.primary : colors.card,
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.optionText,
-          {
-            color: isSelected ? colors.primaryForeground : colors.foreground,
-            fontWeight: isSelected ? fontWeight.medium : fontWeight.normal,
-          },
-        ]}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles.container}>
-      {/* Duration */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {t("coordinateQuiz.setup.duration")}
-        </Text>
-        <View style={styles.optionsRow}>
-          {DURATION_OPTIONS.map((duration) =>
-            renderOptionButton(
-              duration.toString(),
-              settings.timeLimit === duration,
-              () => onUpdateSetting("timeLimit", duration),
-              t("coordinateQuiz.setup.durationSeconds", { seconds: duration }),
-            ),
-          )}
-        </View>
-      </View>
+      <OptionsField
+        label={t("coordinateQuiz.setup.duration")}
+        options={TIME_LIMIT_OPTIONS}
+        value={settings.timeLimit}
+        onChange={(duration) => onUpdateSetting("timeLimit", duration)}
+        formatOption={(duration) =>
+          t("coordinateQuiz.setup.durationSeconds", { seconds: duration })
+        }
+      />
 
-      {/* Orientation */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {t("coordinateQuiz.setup.orientation")}
-        </Text>
-        <View style={styles.optionsRow}>
-          {BOARD_ORIENTATIONS.map((orientation) =>
-            renderOptionButton(
-              orientation,
-              settings.orientation === orientation,
-              () => onUpdateSetting("orientation", orientation),
-              t(`coordinateQuiz.setup.orientation${capitalize(orientation)}`),
-            ),
-          )}
-        </View>
-      </View>
+      <OptionsField
+        label={t("coordinateQuiz.setup.orientation")}
+        options={BOARD_ORIENTATIONS}
+        value={settings.orientation}
+        onChange={(orientation) => onUpdateSetting("orientation", orientation)}
+        formatOption={(orientation) =>
+          t(`coordinateQuiz.setup.orientation${capitalize(orientation)}`)
+        }
+      />
 
-      {/* Feedback Speed */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {t("coordinateQuiz.setup.feedbackSpeed")}
-        </Text>
-        <View style={styles.optionsRow}>
-          {FEEDBACK_SPEEDS.map((speed) =>
-            renderOptionButton(
-              speed,
-              settings.feedbackSpeed === speed,
-              () => onUpdateSetting("feedbackSpeed", speed),
-              t(`coordinateQuiz.setup.feedback${capitalize(speed)}`),
-            ),
-          )}
-        </View>
-      </View>
+      <OptionsField
+        label={t("coordinateQuiz.setup.feedbackSpeed")}
+        options={FEEDBACK_SPEEDS}
+        value={settings.feedbackSpeed}
+        onChange={(speed) => onUpdateSetting("feedbackSpeed", speed)}
+        formatOption={(speed) =>
+          t(`coordinateQuiz.setup.feedback${capitalize(speed)}`)
+        }
+      />
     </View>
   );
 }
@@ -118,26 +58,5 @@ function capitalize(str: string): string {
 const styles = StyleSheet.create({
   container: {
     gap: spacing.lg,
-  },
-  section: {
-    gap: spacing.sm,
-  },
-  label: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-  },
-  optionsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  optionButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-  },
-  optionText: {
-    fontSize: fontSize.sm,
   },
 });

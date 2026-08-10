@@ -1,11 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../theme";
+import { View, StyleSheet } from "react-native";
+import { spacing } from "../theme";
+import { OptionsField } from "./OptionsField";
 
 type TimeLimitSettingsFormProps = {
   timeLimit: number;
@@ -14,55 +9,31 @@ type TimeLimitSettingsFormProps = {
   formatSeconds: (seconds: number) => string;
 };
 
-const TIME_LIMIT_OPTIONS = [30, 60, 90, 120];
+/** The durations every timed practice module offers, in seconds. */
+export const TIME_LIMIT_OPTIONS = [30, 60, 90, 120];
 
+/**
+ * The whole settings form for a module whose only setting is a time limit
+ * (square-colors, board-symmetry, diagonal-quiz).
+ *
+ * Modules with further settings compose `OptionsField` directly rather than
+ * nesting this — see `legal-moves` and `coordinate-quiz`.
+ */
 export function TimeLimitSettingsForm({
   timeLimit,
   onUpdateTimeLimit,
   timeLimitLabel,
   formatSeconds,
 }: TimeLimitSettingsFormProps) {
-  const { colors } = useTheme();
-
   return (
     <View style={styles.container}>
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {timeLimitLabel}
-        </Text>
-        <View style={styles.optionsRow}>
-          {TIME_LIMIT_OPTIONS.map((d) => (
-            <TouchableOpacity
-              key={d}
-              onPress={() => onUpdateTimeLimit(d)}
-              style={[
-                styles.optionButton,
-                {
-                  borderColor: timeLimit === d ? colors.primary : colors.border,
-                  backgroundColor:
-                    timeLimit === d ? colors.primary : colors.card,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  {
-                    color:
-                      timeLimit === d
-                        ? colors.primaryForeground
-                        : colors.foreground,
-                    fontWeight:
-                      timeLimit === d ? fontWeight.medium : fontWeight.normal,
-                  },
-                ]}
-              >
-                {formatSeconds(d)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      <OptionsField
+        label={timeLimitLabel}
+        options={TIME_LIMIT_OPTIONS}
+        value={timeLimit}
+        onChange={onUpdateTimeLimit}
+        formatOption={formatSeconds}
+      />
     </View>
   );
 }
@@ -70,26 +41,5 @@ export function TimeLimitSettingsForm({
 const styles = StyleSheet.create({
   container: {
     gap: spacing.lg,
-  },
-  section: {
-    gap: spacing.sm,
-  },
-  label: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-  },
-  optionsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  optionButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-  },
-  optionText: {
-    fontSize: fontSize.sm,
   },
 });

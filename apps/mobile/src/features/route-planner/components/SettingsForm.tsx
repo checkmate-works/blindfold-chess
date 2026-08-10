@@ -1,12 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../../../theme";
+import { OptionsField, SelectableChip } from "../../../components";
+import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
 import type { RoutePlannerPieceType } from "../lib/types";
 import { ROUTE_PLANNER_PIECES, PIECE_DISPLAY_MAP } from "../lib/types";
 
@@ -30,84 +25,30 @@ export function SettingsForm({
 
   return (
     <View style={styles.container}>
-      {/* Problem Count */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {t("routePlanner.setup.problemCount")}
-        </Text>
-        <View style={styles.optionsRow}>
-          {PROBLEM_COUNT_OPTIONS.map((count) => (
-            <TouchableOpacity
-              key={count}
-              onPress={() => onUpdateProblemCount(count)}
-              style={[
-                styles.optionButton,
-                {
-                  borderColor:
-                    problemCount === count ? colors.primary : colors.border,
-                  backgroundColor:
-                    problemCount === count ? colors.primary : colors.card,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  {
-                    color:
-                      problemCount === count
-                        ? colors.primaryForeground
-                        : colors.foreground,
-                    fontWeight:
-                      problemCount === count
-                        ? fontWeight.medium
-                        : fontWeight.normal,
-                  },
-                ]}
-              >
-                {t("routePlanner.setup.problemUnit", { count })}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      <OptionsField
+        label={t("routePlanner.setup.problemCount")}
+        options={PROBLEM_COUNT_OPTIONS}
+        value={problemCount}
+        onChange={onUpdateProblemCount}
+        formatOption={(count) => t("routePlanner.setup.problemUnit", { count })}
+      />
 
-      {/* Piece Selection */}
+      {/* Not an `OptionsField`: pieces are a multi-select, so every chip
+          carries its own selected state rather than one value winning. */}
       <View style={styles.section}>
         <Text style={[styles.label, { color: colors.foreground }]}>
           {t("routePlanner.setup.pieceSelection")}
         </Text>
         <View style={styles.optionsRow}>
-          {ROUTE_PLANNER_PIECES.map((piece) => {
-            const isSelected = selectedPieces.includes(piece);
-            return (
-              <TouchableOpacity
-                key={piece}
-                onPress={() => onTogglePiece(piece)}
-                style={[
-                  styles.pieceButton,
-                  {
-                    borderColor: isSelected ? colors.primary : colors.border,
-                    backgroundColor: isSelected ? colors.primary : colors.card,
-                  },
-                ]}
-              >
-                <Text style={styles.pieceIcon}>{PIECE_DISPLAY_MAP[piece]}</Text>
-                <Text
-                  style={[
-                    styles.pieceLabel,
-                    {
-                      color: isSelected
-                        ? colors.primaryForeground
-                        : colors.foreground,
-                    },
-                  ]}
-                >
-                  {t(`routePlanner.pieces.${piece}`)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          {ROUTE_PLANNER_PIECES.map((piece) => (
+            <SelectableChip
+              key={piece}
+              icon={PIECE_DISPLAY_MAP[piece]}
+              label={t(`routePlanner.pieces.${piece}`)}
+              selected={selectedPieces.includes(piece)}
+              onPress={() => onTogglePiece(piece)}
+            />
+          ))}
         </View>
       </View>
     </View>
@@ -129,29 +70,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
-  },
-  optionButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-  },
-  optionText: {
-    fontSize: fontSize.sm,
-  },
-  pieceButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: "center",
-    minWidth: 56,
-  },
-  pieceIcon: {
-    fontSize: 24,
-    marginBottom: 2,
-  },
-  pieceLabel: {
-    fontSize: fontSize.xs,
   },
 });

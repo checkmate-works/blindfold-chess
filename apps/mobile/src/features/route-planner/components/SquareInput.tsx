@@ -1,16 +1,12 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-  touchTarget,
-} from "../../../theme";
-
-const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"];
+  CoordinateKeyRow,
+  FILE_KEYS,
+  RANK_KEYS,
+  coordinateKeypadStyles,
+} from "../../../components";
+import { useTheme, spacing } from "../../../theme";
 
 type SquareInputProps = {
   selectedFile: string | null;
@@ -28,92 +24,34 @@ export function SquareInput({
   const { t } = useTranslation();
   const { colors } = useTheme();
 
-  const fileEnabled = !disabled;
-  const rankEnabled = !disabled && selectedFile !== null;
-
   return (
     <View style={styles.container}>
-      {/* Step indicator */}
       {!disabled && (
-        <Text style={[styles.stepIndicator, { color: colors.mutedForeground }]}>
+        <Text
+          style={[
+            coordinateKeypadStyles.stepIndicator,
+            { color: colors.mutedForeground },
+          ]}
+        >
           {selectedFile === null
             ? t("routePlanner.session.selectFile")
             : t("routePlanner.session.selectRank")}
         </Text>
       )}
 
-      {/* File buttons */}
-      <View style={styles.buttonRow}>
-        {FILES.map((file) => {
-          const isActive = selectedFile === file;
-          return (
-            <TouchableOpacity
-              key={file}
-              onPress={() => onFilePress(file)}
-              disabled={!fileEnabled}
-              activeOpacity={0.7}
-              style={[
-                styles.button,
-                {
-                  borderColor: isActive ? colors.primary : colors.border,
-                  backgroundColor: isActive
-                    ? colors.primary
-                    : colors.background,
-                  opacity: fileEnabled ? 1 : 0.3,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  {
-                    color: isActive
-                      ? colors.primaryForeground
-                      : fileEnabled
-                        ? colors.foreground
-                        : colors.mutedForeground,
-                  },
-                ]}
-              >
-                {file}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {/* The chosen file stays highlighted while the rank is picked. */}
+      <CoordinateKeyRow
+        keys={FILE_KEYS}
+        enabled={!disabled}
+        activeKey={selectedFile}
+        onPress={onFilePress}
+      />
 
-      {/* Rank buttons */}
-      <View style={styles.buttonRow}>
-        {RANKS.map((rank) => (
-          <TouchableOpacity
-            key={rank}
-            onPress={() => onRankPress(rank)}
-            disabled={!rankEnabled}
-            activeOpacity={0.7}
-            style={[
-              styles.button,
-              {
-                borderColor: colors.border,
-                backgroundColor: colors.background,
-                opacity: rankEnabled ? 1 : 0.3,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.buttonText,
-                {
-                  color: rankEnabled
-                    ? colors.foreground
-                    : colors.mutedForeground,
-                },
-              ]}
-            >
-              {rank}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <CoordinateKeyRow
+        keys={RANK_KEYS}
+        enabled={!disabled && selectedFile !== null}
+        onPress={onRankPress}
+      />
     </View>
   );
 }
@@ -121,28 +59,5 @@ export function SquareInput({
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
-  },
-  stepIndicator: {
-    fontSize: fontSize.sm,
-    textAlign: "center",
-    minHeight: 20,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    gap: 4,
-    justifyContent: "center",
-  },
-  button: {
-    flex: 1,
-    minHeight: touchTarget.minSize,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.medium,
-    fontVariant: ["tabular-nums"],
   },
 });
