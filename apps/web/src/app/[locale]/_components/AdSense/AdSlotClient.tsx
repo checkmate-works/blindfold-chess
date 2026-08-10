@@ -42,7 +42,16 @@ export function AdSlotClient({ slot, selection }: { slot: BannerSlot; selection?
     let cancelled = false;
     const query = selection ? `?selection=${selection}` : '';
     fetch(`/api/ad-slot/${slot}${query}`)
-      .then((r) => (r.ok ? (r.json() as Promise<AdSlotResolution>) : Promise.reject()))
+      // Reject with a real Error, never a bare `Promise.reject()`. The `.catch`
+      // below swallows it either way, but the client Sentry config drops
+      // reason-less unhandled rejections wholesale (see `beforeSend` in
+      // `src/instrumentation-client.ts`) — so a rejection carrying `undefined`
+      // would become invisible if this chain ever lost its handler.
+      .then((r) =>
+        r.ok
+          ? (r.json() as Promise<AdSlotResolution>)
+          : Promise.reject(new Error(`ad-slot ${slot} resolution failed with ${r.status}`))
+      )
       .then((data) => {
         if (cancelled) return;
         setRes(
