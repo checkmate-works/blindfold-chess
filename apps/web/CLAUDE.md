@@ -765,9 +765,33 @@ boundary. Upstream only does this for layout/page assets, so under this app's
 `'nonce-…' 'strict-dynamic'` policy that one chunk was blocked on every view of
 a dynamic route with a `loading.tsx`. **When upgrading Next, expect the patch to
 fail to apply**; check whether upstream fixed it (the emitter is
-`server/app-render/create-component-styles-and-scripts`) and either drop the
-patch or re-derive it. `src/lib/security/csp-loading-chunk-nonce.test.ts` fails
-if the patch silently stops being installed.
+`server/app-render/create-component-styles-and-scripts`; still unfixed as of
+16.3.1-canary.10) and either drop the patch or re-derive it.
+`src/lib/security/csp-loading-chunk-nonce.test.ts` fails if the patch silently
+stops being installed.
+
+**Patch the compiled bundle, not just the readable source.** The emitter ships
+twice, and Node page rendering loads only the prebuilt copy:
+`dist/server/route-modules/app-page/module.compiled.js` requires
+`dist/compiled/next-server/app-page*.runtime.<mode>.js` and falls back to the
+unbundled `dist/server/app-render/*` sources solely when `NEXT_RUNTIME` is
+`'edge'`. The first version of this patch (3bd3cf834) edited the readable
+sources alone and was therefore inert in production for two months while its
+unit test stayed green — the violations in Sentry BLINDFOLD-CHESS-33 never
+stopped. The patch now also covers `app-page-turbo.runtime.prod.js` (what this
+build loads) and `app-page.runtime.prod.js` (a non-Turbopack build); the
+`-experimental` pair stays un-patched because it needs
+`__NEXT_EXPERIMENTAL_REACT`.
+
+Those hunks are ~230 KB of minified text — the emitter sits inside a single
+49 KB line — and they hard-code the minifier's identifier for the render
+context (`a`). That is deliberate: a Next.js bump makes them fail to apply
+loudly instead of dropping the fix silently. Re-derive them by editing the
+bundles under `pnpm patch next@<version>` and re-running `pnpm patch-commit`.
+**Verify against a real build, not only the unit test**: `next build && next
+start`, fetch a dynamic route, and confirm no `<script src>` in the HTML lacks
+the `nonce` from the response's CSP header (the hash-allowed inline bootstraps
+and `application/ld+json` blocks legitimately have none).
 
 ### `next dev` rewrites CLAUDE.md and reformats build output (16.3.0)
 
