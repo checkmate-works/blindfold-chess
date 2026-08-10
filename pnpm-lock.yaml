@@ -19,7 +19,7 @@ patchedDependencies:
     hash: b33e14f450ce9cb67fd1f355f0abaa0c0e0f3225acfdca32a790c098e8e43f08
     path: patches/next-navigation-guard@0.2.0.patch
   next@16.3.0:
-    hash: 1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d
+    hash: d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14
     path: patches/next@16.3.0.patch
 
 importers:
@@ -173,10 +173,10 @@ importers:
         version: 1.1.1(emoji-mart@5.6.0)(react@19.2.8)
       '@next/third-parties':
         specifier: ^16.2.11
-        version: 16.2.11(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
+        version: 16.2.11(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       '@sentry/nextjs':
         specifier: ^10.67.0
-        version: 10.67.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(webpack@5.101.3(lightningcss@1.32.0))
+        version: 10.67.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(webpack@5.101.3(lightningcss@1.32.0))
       '@supabase/ssr':
         specifier: ^0.8.0
         version: 0.8.0(@supabase/supabase-js@2.110.8)
@@ -236,16 +236,16 @@ importers:
         version: 0.16.45
       next:
         specifier: 16.3.0
-        version: 16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       next-intl:
         specifier: ^4.13.4
-        version: 4.13.4(@swc/helpers@0.5.23)(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(typescript@7.0.2)
+        version: 4.13.4(@swc/helpers@0.5.23)(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(typescript@7.0.2)
       next-navigation-guard:
         specifier: 0.2.0
-        version: 0.2.0(patch_hash=b33e14f450ce9cb67fd1f355f0abaa0c0e0f3225acfdca32a790c098e8e43f08)(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
+        version: 0.2.0(patch_hash=b33e14f450ce9cb67fd1f355f0abaa0c0e0f3225acfdca32a790c098e8e43f08)(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       nuqs:
         specifier: ^2.9.1
-        version: 2.9.1(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
+        version: 2.9.1(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       onnxruntime-web:
         specifier: ^1.27.0
         version: 1.27.0
@@ -10167,9 +10167,9 @@ snapshots:
   '@next/swc-win32-x64-msvc@16.3.0':
     optional: true
 
-  '@next/third-parties@16.2.11(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)':
+  '@next/third-parties@16.2.11(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)':
     dependencies:
-      next: 16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      next: 16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react: 19.2.8
       third-party-capital: 1.0.20
 
@@ -10910,7 +10910,7 @@ snapshots:
     dependencies:
       '@sentry/core': 10.67.0
 
-  '@sentry/nextjs@10.67.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(webpack@5.101.3(lightningcss@1.32.0))':
+  '@sentry/nextjs@10.67.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(webpack@5.101.3(lightningcss@1.32.0))':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@rollup/plugin-commonjs': 28.0.1(rollup@4.62.2)
@@ -10924,7 +10924,7 @@ snapshots:
       '@sentry/server-utils': 10.67.0
       '@sentry/vercel-edge': 10.67.0
       '@sentry/webpack-plugin': 5.4.0(rollup@4.62.2)(webpack@5.101.3(lightningcss@1.32.0))
-      next: 16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      next: 16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       rollup: 4.62.2
       stacktrace-parser: 0.1.11
     transitivePeerDependencies:
@@ -15110,14 +15110,14 @@ snapshots:
 
   next-intl-swc-plugin-extractor@4.13.4: {}
 
-  next-intl@4.13.4(@swc/helpers@0.5.23)(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(typescript@7.0.2):
+  next-intl@4.13.4(@swc/helpers@0.5.23)(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(typescript@7.0.2):
     dependencies:
       '@formatjs/intl-localematcher': 0.8.13
       '@parcel/watcher': 2.6.0
       '@swc/core': 1.15.46(@swc/helpers@0.5.23)
       icu-minify: 4.13.4
       negotiator: 1.0.0
-      next: 16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      next: 16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       next-intl-swc-plugin-extractor: 4.13.4
       po-parser: 2.1.1
       react: 19.2.8
@@ -15127,12 +15127,12 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  next-navigation-guard@0.2.0(patch_hash=b33e14f450ce9cb67fd1f355f0abaa0c0e0f3225acfdca32a790c098e8e43f08)(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8):
+  next-navigation-guard@0.2.0(patch_hash=b33e14f450ce9cb67fd1f355f0abaa0c0e0f3225acfdca32a790c098e8e43f08)(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8):
     dependencies:
-      next: 16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      next: 16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react: 19.2.8
 
-  next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       '@next/env': 16.3.0
       '@swc/helpers': 0.5.15
@@ -15200,12 +15200,12 @@ snapshots:
 
   nullthrows@1.1.1: {}
 
-  nuqs@2.9.1(next@16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8):
+  nuqs@2.9.1(next@16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8):
     dependencies:
       '@standard-schema/spec': 1.1.0
       react: 19.2.8
     optionalDependencies:
-      next: 16.3.0(patch_hash=1c91f30275a7880149aa459f665598e3f2ddd64ee508649fee36e53f51227b7d)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      next: 16.3.0(patch_hash=d1e1e570cb06c228ea94cb523e5981df83f94374fc012343377b8698ee91dd14)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@24.12.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
 
   ob1@0.83.3:
     dependencies:
