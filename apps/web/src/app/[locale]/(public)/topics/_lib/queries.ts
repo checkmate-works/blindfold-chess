@@ -13,19 +13,60 @@ import type { PostWithReplyMeta, SortMode, TopicPostWithAuthor } from './shared'
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
+ * The `topic_posts` + author SELECT every read in this module starts from.
+ *
+ * LEFT JOIN via `liveProfileJoinOn` so a post whose author deleted their
+ * account still surfaces, with a null author. Chain `.where()` / `.orderBy()`
+ * / `.limit()` on the result as usual.
+ */
+function selectPostsWithAuthor() {
+  return db
+    .select({
+      post: topicPosts,
+      author: authorSelect,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId));
+}
+
+type PostAuthorJoinRow = {
+  post: typeof topicPosts.$inferSelect;
+  author: TopicPostWithAuthor['author'];
+};
+
+/** Flatten the `{ post, author }` join rows into the domain shape. */
+function toPostsWithAuthor(rows: PostAuthorJoinRow[]): TopicPostWithAuthor[] {
+  return rows.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+}
+
+/**
+ * Live top-level posts of `topicType`, optionally narrowed to one `topicKey`.
+ *
+ * "Top-level" means no parent, "live" means not soft-deleted. The list reads
+ * and the counts below have to agree on this predicate exactly — a count that
+ * drifts from its list is a pagination bug that only shows up at the last
+ * page.
+ */
+function liveTopLevelPosts(topicType: TopicType, topicKey?: string) {
+  return and(
+    eq(topicPosts.topicType, topicType),
+    topicKey === undefined ? undefined : eq(topicPosts.topicKey, topicKey),
+    isNull(topicPosts.parentId),
+    isNull(topicPosts.deletedAt)
+  );
+}
+
+/**
  * Get the count of top-level posts for a specific topic type ('square' or 'opening').
  */
 export async function getPostCountByTopicType(topicType: TopicType): Promise<number> {
   const [result] = await db
     .select({ count: count() })
     .from(topicPosts)
-    .where(
-      and(
-        eq(topicPosts.topicType, topicType),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    );
+    .where(liveTopLevelPosts(topicType));
   return result.count;
 }
 
@@ -37,27 +78,11 @@ async function getTopLevelPostsByTopicKey(
   topicType: TopicType,
   topicKey: string
 ): Promise<TopicPostWithAuthor[]> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
-    .where(
-      and(
-        eq(topicPosts.topicType, topicType),
-        eq(topicPosts.topicKey, topicKey),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+  const results = await selectPostsWithAuthor()
+    .where(liveTopLevelPosts(topicType, topicKey))
     .orderBy(desc(topicPosts.createdAt));
 
-  return results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
+  return toPostsWithAuthor(results);
 }
 
 /**
@@ -81,13 +106,7 @@ export const getPostByIdAndTopicKey = cache(
       return null;
     }
 
-    const results = await db
-      .select({
-        post: topicPosts,
-        author: authorSelect,
-      })
-      .from(topicPosts)
-      .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
+    const results = await selectPostsWithAuthor()
       .where(
         and(
           eq(topicPosts.id, postId),
@@ -135,14 +154,7 @@ export async function getPostCountByTopicKey(
   const [result] = await db
     .select({ count: count() })
     .from(topicPosts)
-    .where(
-      and(
-        eq(topicPosts.topicType, topicType),
-        eq(topicPosts.topicKey, topicKey),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    );
+    .where(liveTopLevelPosts(topicType, topicKey));
   return result.count;
 }
 
@@ -172,29 +184,13 @@ export async function getPostsWithReplyMetaPaginatedByTopicKey(
   }
 
   // For 'new' sort, use SQL-level pagination (posts already ordered by createdAt DESC)
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
-    .where(
-      and(
-        eq(topicPosts.topicType, topicType),
-        eq(topicPosts.topicKey, topicKey),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+  const results = await selectPostsWithAuthor()
+    .where(liveTopLevelPosts(topicType, topicKey))
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit)
     .offset(offset);
 
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
+  const posts = toPostsWithAuthor(results);
 
   return attachPostMeta(posts, currentUserId);
 }
@@ -209,28 +205,13 @@ export async function getPostsByTopicTypePaginated(
   offset: number,
   currentUserId?: string
 ): Promise<PostWithReplyMeta[]> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
-    .where(
-      and(
-        eq(topicPosts.topicType, topicType),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+  const results = await selectPostsWithAuthor()
+    .where(liveTopLevelPosts(topicType))
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit)
     .offset(offset);
 
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
+  const posts = toPostsWithAuthor(results);
 
   return attachPostMeta(posts, currentUserId);
 }
@@ -260,20 +241,11 @@ export async function getCommentTreeForTopic(
   topicKey: string,
   currentUserId?: string
 ): Promise<PostWithReplyMeta[]> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
+  const results = await selectPostsWithAuthor()
     .where(and(eq(topicPosts.topicType, topicType), eq(topicPosts.topicKey, topicKey)))
     .orderBy(asc(topicPosts.createdAt));
 
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
+  const posts = toPostsWithAuthor(results);
 
   return attachPostMeta(posts, currentUserId);
 }
@@ -358,19 +330,9 @@ export async function getCommentTreePageForTopic(
     hasMore = rows.length > limit;
     pageRootIds = rows.slice(0, limit).map((r) => r.id);
   } else {
-    const rootRows = await db
-      .select({
-        post: topicPosts,
-        author: authorSelect,
-      })
-      .from(topicPosts)
-      .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
-      .where(rootFilter);
+    const rootRows = await selectPostsWithAuthor().where(rootFilter);
 
-    const rootsWithMeta = await attachPostMeta(
-      rootRows.map((r) => ({ ...r.post, author: r.author })),
-      currentUserId
-    );
+    const rootsWithMeta = await attachPostMeta(toPostsWithAuthor(rootRows), currentUserId);
     const sorted = sortRoots(rootsWithMeta, sortBy);
 
     hasMore = sorted.length > offset + limit;
@@ -383,13 +345,7 @@ export async function getCommentTreePageForTopic(
 
   // Fetch the page roots AND all their descendants in one pass so a single
   // `attachPostMeta` round covers the whole batch.
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
+  const results = await selectPostsWithAuthor()
     .where(
       and(
         eq(topicPosts.topicType, topicType),
@@ -399,10 +355,7 @@ export async function getCommentTreePageForTopic(
     )
     .orderBy(asc(topicPosts.createdAt));
 
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
+  const posts = toPostsWithAuthor(results);
 
   return { posts: await attachPostMeta(posts, currentUserId), hasMore };
 }
@@ -419,20 +372,11 @@ export async function getRepliesByPostId(
   postId: string,
   currentUserId?: string
 ): Promise<PostWithReplyMeta[]> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
+  const results = await selectPostsWithAuthor()
     .where(eq(topicPosts.rootPostId, postId))
     .orderBy(asc(topicPosts.createdAt));
 
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
+  const posts = toPostsWithAuthor(results);
 
   return attachPostMeta(posts, currentUserId);
 }
