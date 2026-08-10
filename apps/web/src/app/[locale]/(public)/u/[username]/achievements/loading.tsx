@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Overrides the profile shell skeleton (`../loading.tsx`) for a page that does
@@ -20,10 +21,10 @@ export default async function ProfileAchievementsLoading() {
         <SectionTitle>{t('achievementsSection')}</SectionTitle>
         {Array.from({ length: 2 }, (_, section) => (
           <div key={section} className="space-y-3">
-            <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+            <Skeleton className="h-5 w-32 rounded" />
             <div className="flex flex-wrap gap-3">
               {Array.from({ length: 4 }, (_, badge) => (
-                <div key={badge} className="h-16 w-16 animate-pulse rounded-full bg-muted" />
+                <Skeleton key={badge} className="h-16 w-16 rounded-full" />
               ))}
             </div>
           </div>

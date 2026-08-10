@@ -12,6 +12,8 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { resolvePagination } from '@/lib/pagination';
+
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -52,17 +54,15 @@ export default async function ProfilePostsPage({ params, searchParams }: Props) 
     getTranslations({ locale, namespace: 'topics.openings' }),
   ]);
 
-  const totalPages = Math.ceil(context.shell.postsCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(parsedParams.page, totalPages || 1));
+  const { currentPage, totalPages, offset } = resolvePagination(
+    parsedParams.page,
+    context.shell.postsCount,
+    PAGE_SIZE
+  );
 
   const posts =
     context.shell.postsCount > 0
-      ? await getPostsByUserId(
-          context.profile.id,
-          context.currentUserId,
-          PAGE_SIZE,
-          (currentPage - 1) * PAGE_SIZE
-        )
+      ? await getPostsByUserId(context.profile.id, context.currentUserId, PAGE_SIZE, offset)
       : [];
 
   const buildHref = (p: number) => `/${locale}/u/${username}/posts${p > 1 ? `?page=${p}` : ''}`;

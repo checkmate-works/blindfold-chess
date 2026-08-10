@@ -1,3 +1,4 @@
+import { resolvePagination } from '@/lib/pagination';
 import {
   type DailyCreationCapStatus,
   type PointBalanceSummary,
@@ -44,14 +45,13 @@ export async function getPointsPageData(userId: string, page: number = 1): Promi
     getDailyCreationCapStatus(userId),
   ]);
 
-  const totalPages = Math.ceil(totalCount / HISTORY_PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-
-  const historyRows = await getPointHistory(
-    userId,
-    HISTORY_PAGE_SIZE,
-    (currentPage - 1) * HISTORY_PAGE_SIZE
+  const { currentPage, totalPages, offset } = resolvePagination(
+    page,
+    totalCount,
+    HISTORY_PAGE_SIZE
   );
+
+  const historyRows = await getPointHistory(userId, HISTORY_PAGE_SIZE, offset);
 
   // Attach a deep link to the earning UGC for each live creation grant.
   const links = await resolveHistoryLinks(historyRows);

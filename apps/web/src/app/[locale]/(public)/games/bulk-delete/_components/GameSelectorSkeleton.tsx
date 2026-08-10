@@ -1,3 +1,5 @@
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+
 export function GameSelectorSkeleton() {
   return (
     <div className="space-y-6">
@@ -6,7 +8,7 @@ export function GameSelectorSkeleton() {
         {/* Header Skeleton */}
         <div className="px-4 sm:px-6 py-3 border-b border-border bg-muted/30 flex items-center gap-3">
           <div className="w-5 h-5 rounded border-2 border-muted-foreground/20 bg-muted/50"></div>
-          <div className="h-4 w-20 bg-muted rounded animate-pulse"></div>
+          <Skeleton className="h-4 w-20 rounded" />
         </div>
 
         {/* List Items Skeleton */}
@@ -19,20 +21,20 @@ export function GameSelectorSkeleton() {
               <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {/* Status Icon */}
-                  <div className="w-8 h-8 rounded-md bg-muted animate-pulse flex-shrink-0"></div>
+                  <Skeleton className="w-8 h-8 rounded-md flex-shrink-0" />
 
                   {/* Game Details */}
                   <div className="flex flex-col gap-1.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-24 bg-muted rounded animate-pulse"></div>
-                      <div className="h-4 w-16 bg-muted rounded animate-pulse hidden sm:block"></div>
+                      <Skeleton className="h-4 w-24 rounded" />
+                      <Skeleton className="h-4 w-16 rounded hidden sm:block" />
                     </div>
-                    <div className="h-3 w-32 bg-muted rounded animate-pulse"></div>
+                    <Skeleton className="h-3 w-32 rounded" />
                   </div>
                 </div>
 
                 {/* Date */}
-                <div className="h-3 w-20 bg-muted rounded animate-pulse hidden sm:block"></div>
+                <Skeleton className="h-3 w-20 rounded hidden sm:block" />
               </div>
             </div>
           ))}

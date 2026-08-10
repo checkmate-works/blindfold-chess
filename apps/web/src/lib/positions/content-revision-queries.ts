@@ -9,6 +9,7 @@ import {
   positionContentRevisions,
   profiles,
 } from '@/lib/db';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 /**
@@ -18,7 +19,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
  */
 export type PositionContentRevisionWithProfile = {
   revision: typeof positionContentRevisions.$inferSelect;
-  profile: { username: string; displayName: string | null; avatarUrl: string | null } | null;
+  profile: AuthorProfile | null;
 };
 
 /**

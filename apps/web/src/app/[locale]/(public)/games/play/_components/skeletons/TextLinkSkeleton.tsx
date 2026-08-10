@@ -8,7 +8,7 @@ import { Skeleton } from '@/app/[locale]/_components';
 export function TextLinkSkeleton() {
   return (
     <div aria-hidden className="min-h-[20px] text-center">
-      <Skeleton disableAnimation className="inline-block h-4 w-40" />
+      <Skeleton disableAnimation className="inline-block h-4 w-40 rounded-md" />
     </div>
   );
 }

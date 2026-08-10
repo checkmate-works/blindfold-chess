@@ -29,15 +29,15 @@ export function LegalMovesPlaySkeleton({ showHeader = false }: Props) {
         {/* Lives (left) + pause/timer (right) header — challenge only */}
         {showHeader && (
           <div className="mb-8 flex items-center justify-between">
-            <Skeleton className="h-5 w-28" disableAnimation />
+            <Skeleton className="h-5 w-28 rounded-md" disableAnimation />
             <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
           </div>
         )}
 
         {/* Question prompt + piece glyph */}
         <div className="mb-8 min-h-[160px] flex flex-col items-center justify-center">
-          <Skeleton className="mb-6 h-7 w-3/4" disableAnimation />
-          <Skeleton className="h-[72px] w-16" />
+          <Skeleton className="mb-6 h-7 w-3/4 rounded-md" disableAnimation />
+          <Skeleton className="h-[72px] w-16 rounded-md" />
         </div>
 
         {/* Legal / illegal answer buttons */}
@@ -49,13 +49,13 @@ export function LegalMovesPlaySkeleton({ showHeader = false }: Props) {
 
       {/* Score counter */}
       <div className="mt-8 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16" />
-        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-16 rounded-md" />
+        <Skeleton className="h-8 w-16 rounded-md" />
       </div>
 
       {/* Quit / end-training link */}
       <div className="mt-6 flex justify-center">
-        <Skeleton className="h-5 w-24" disableAnimation />
+        <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
       </div>
     </div>
   );

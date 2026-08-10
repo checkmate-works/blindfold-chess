@@ -1,5 +1,6 @@
 import { type ReplyMeta, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import type { Position } from '@/lib/db/schema';
+import { resolvePagination } from '@/lib/pagination';
 import { type PositionLikeMeta, getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositions } from '@/lib/positions/queries';
 
@@ -40,14 +41,13 @@ export async function loadProblemsPageData({
   ]);
 
   const totalForType = type === 'puzzle' ? puzzleCount : memoryCount;
-  const totalPages = Math.ceil(totalForType / pageSize);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const { currentPage, totalPages, offset } = resolvePagination(page, totalForType, pageSize);
 
   const positions = await listPositions({
     userId: profileId,
     type,
     limit: pageSize,
-    offset: (currentPage - 1) * pageSize,
+    offset,
   });
 
   const ids = positions.map((p) => p.id);

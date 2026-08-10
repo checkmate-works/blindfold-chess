@@ -31,7 +31,7 @@ export function QuadrantsPlaySkeleton({ showHeader = false }: Props) {
         {/* Lives (left) + pause/timer (right) header — challenge only */}
         {showHeader && (
           <div className="flex justify-between items-center">
-            <Skeleton className="h-5 w-28" disableAnimation />
+            <Skeleton className="h-5 w-28 rounded-md" disableAnimation />
             <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
           </div>
         )}
@@ -39,11 +39,11 @@ export function QuadrantsPlaySkeleton({ showHeader = false }: Props) {
         {/* Orientation indicator (dot + label) */}
         <div className="flex justify-center items-center gap-2">
           <Skeleton className="h-5 w-5 rounded-full" disableAnimation />
-          <Skeleton className="h-5 w-24" disableAnimation />
+          <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
         </div>
 
         {/* Question prompt */}
-        <Skeleton className="h-8 w-48 mx-auto" disableAnimation />
+        <Skeleton className="h-8 w-48 mx-auto rounded-md" disableAnimation />
 
         {/* Quadrant board */}
         <div className="-mx-6 sm:mx-0">
@@ -55,13 +55,13 @@ export function QuadrantsPlaySkeleton({ showHeader = false }: Props) {
 
       {/* Score counter */}
       <div className="mt-8 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16" />
-        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-16 rounded-md" />
+        <Skeleton className="h-8 w-16 rounded-md" />
       </div>
 
       {/* Quit / end-training link */}
       <div className="mt-6 flex justify-center">
-        <Skeleton className="h-5 w-24" disableAnimation />
+        <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
       </div>
     </div>
   );

@@ -1,7 +1,5 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
@@ -10,9 +8,7 @@ import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(cha
 import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
-import { SquareColorAnswerButtons } from '@/app/[locale]/(public)/practice/(challenge)/square-colors/_components/SquareColorAnswerButtons';
-import { SquareColorQuestionDisplay } from '@/app/[locale]/(public)/practice/(challenge)/square-colors/_components/SquareColorQuestionDisplay';
-import { ArrowKeyAnswer } from '@/app/[locale]/(public)/practice/_components/ArrowKeyAnswer';
+import { SquareColorsQuestionPanel } from '@/app/[locale]/(public)/practice/(challenge)/square-colors/_components/SquareColorsQuestionPanel';
 
 type Props = {
   currentSquare: string;
@@ -55,7 +51,6 @@ export function SquareColorsPlaying({
   onQuitConfirm,
   onQuitCancel,
 }: Props) {
-  const t = useTranslations('practice.squareColors');
   const inputDisabled = showResult || countdown !== null || isPaused;
 
   return (
@@ -81,22 +76,13 @@ export function SquareColorsPlaying({
         <div
           className={`transition-all duration-300 ${isPaused ? 'blur-md grayscale opacity-50 pointer-events-none' : ''}`}
         >
-          <SquareColorQuestionDisplay currentSquare={currentSquare} lastAnswer={lastAnswer} />
-
-          <ArrowKeyAnswer
+          <SquareColorsQuestionPanel
+            currentSquare={currentSquare}
+            lastAnswer={lastAnswer}
+            onAnswer={onAnswer}
+            boardTheme={boardTheme}
             disabled={inputDisabled}
-            bindings={{
-              ArrowLeft: { label: t('white'), onTrigger: () => onAnswer('light') },
-              ArrowRight: { label: t('black'), onTrigger: () => onAnswer('dark') },
-            }}
-          >
-            <SquareColorAnswerButtons
-              onAnswer={onAnswer}
-              disabled={inputDisabled}
-              labels={{ white: t('white'), black: t('black') }}
-              boardTheme={boardTheme}
-            />
-          </ArrowKeyAnswer>
+          />
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { BoardFrame, BoardSkeleton } from '@/app/_components';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 type Props = {
   /**
@@ -52,13 +53,13 @@ export function SinglePositionResultPanelSkeleton({
 
       {/* Accuracy heading — dynamic % → bar. */}
       <div className="flex justify-center">
-        <div className="h-8 w-48 bg-muted rounded animate-pulse" />
+        <Skeleton className="h-8 w-48 rounded" />
       </div>
 
       {/* SegmentedProgressBar (common, non-skipped case). */}
       <div>
-        <div className="h-4 w-40 bg-muted rounded mb-2 animate-pulse" />
-        <div className="h-3 w-full bg-muted rounded-full animate-pulse" />
+        <Skeleton className="h-4 w-40 rounded mb-2" />
+        <Skeleton className="h-3 w-full rounded-full" />
       </div>
 
       {/* Board comparison: Original | Your Recreation. */}
@@ -90,7 +91,7 @@ export function SinglePositionResultPanelSkeleton({
               <span className="inline-block h-3 w-8 bg-muted rounded animate-pulse" />
             </div>
             <div className="w-full bg-secondary rounded-full h-2">
-              <div className="bg-muted h-2 w-1/3 rounded-full animate-pulse" />
+              <Skeleton className="h-2 w-1/3 rounded-full" />
             </div>
           </div>
         </div>
@@ -99,19 +100,19 @@ export function SinglePositionResultPanelSkeleton({
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
             <div className="w-full">
-              <div className="h-5 w-40 bg-muted rounded animate-pulse" />
-              <div className="mt-2 h-4 w-56 max-w-full bg-muted rounded animate-pulse" />
+              <Skeleton className="h-5 w-40 rounded" />
+              <Skeleton className="mt-2 h-4 w-56 max-w-full rounded" />
             </div>
-            <div className="h-9 w-28 flex-shrink-0 bg-muted rounded-md animate-pulse" />
+            <Skeleton className="h-9 w-28 flex-shrink-0 rounded-md" />
           </div>
         </div>
       )}
 
       {/* Action buttons: Try Again / Back to List / Analyze on Lichess. */}
       <div className="space-y-3">
-        <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-        <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-        <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
+        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-12 w-full rounded-lg" />
       </div>
 
       {/* Required Knowledge — SectionTitle + 2-card grid. */}

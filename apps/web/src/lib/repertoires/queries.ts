@@ -18,6 +18,7 @@ import { repertoireLines } from '@/lib/db';
 import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { guardOwnership } from '@/lib/ownership-guard';
 import { isFollowing } from '@/lib/social/follows';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 /**
  * The repertoire-wide display order of lines: chapter by chapter, then within
@@ -30,16 +31,9 @@ import { isFollowing } from '@/lib/social/follows';
  */
 export const linesInDisplayOrder = [asc(repertoireChapters.seq), asc(repertoireLines.seq)] as const;
 
-/** Author subset joined onto a repertoire for catalog cards. */
-export type RepertoireAuthorProfile = {
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
-
 export type RepertoireWithProfile = {
   repertoire: Repertoire;
-  profile: RepertoireAuthorProfile | null;
+  profile: AuthorProfile | null;
   /**
    * FEN to render as the card thumbnail: the (primary) linked opening's
    * characteristic position when one is linked, else the repertoire's own
@@ -95,7 +89,7 @@ export const REPERTOIRE_CARD_COLUMNS = {
 
 export type RepertoireCardRow = {
   repertoire: Repertoire;
-  profile: RepertoireAuthorProfile | null;
+  profile: AuthorProfile | null;
 };
 
 /**
@@ -335,7 +329,7 @@ export type RepertoireLineWithChapter = RepertoireLine & { chapterName: string |
 export type RepertoireWithLines = {
   repertoire: Repertoire;
   lines: RepertoireLineWithChapter[];
-  profile: RepertoireAuthorProfile | null;
+  profile: AuthorProfile | null;
 };
 
 export type RepertoireForViewer = RepertoireWithLines & {
@@ -447,7 +441,7 @@ export async function getRepertoireLineForViewer(
   lines: RepertoireLineWithChapter[];
   /** The repertoire author's live profile (null for anon/deleted), so the line
    *  page can show the same "Created by" attribution the detail page does. */
-  profile: RepertoireAuthorProfile | null;
+  profile: AuthorProfile | null;
   isOwner: boolean;
 } | null> {
   const data = await getRepertoireForViewer(id, viewerId);

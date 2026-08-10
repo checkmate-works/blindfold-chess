@@ -1,23 +1,22 @@
 import { useCallback } from "react";
-import { View, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 
 import { useSquareColorsSession } from "@blindfold-chess/features/square-colors/client";
 import type { SquareColorsResult } from "@blindfold-chess/features/square-colors";
 
-import { CountdownOverlay, ScoreFooter } from "../../../../components";
+import {
+  PracticeSessionScreen,
+  practiceSessionStyles,
+} from "../../../../components";
 import {
   SquareQuestion,
   ColorButtons,
 } from "../../../../features/square-colors/components";
-import { QuizTimer } from "../../../../features/coordinate-quiz/components";
-import { useTheme, spacing } from "../../../../theme";
 
 export default function SquareColorsSession() {
   const router = useRouter();
-  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     timeLimit: string;
   }>();
@@ -67,69 +66,25 @@ export default function SquareColorsSession() {
   const progress = timeRemaining / duration;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <PracticeSessionScreen
+      countdown={countdown}
+      timeRemaining={timeRemaining}
+      progress={progress}
+      correctCount={correctCount}
+      incorrectCount={incorrectCount}
     >
-      <CountdownOverlay countdown={countdown} />
-
-      {/* Main content */}
-      {countdown === null && (
-        <>
-          {/* Timer */}
-          <View style={styles.timerRow}>
-            <View style={styles.spacer} />
-            <QuizTimer
-              timeRemaining={timeRemaining}
-              progress={progress}
-              size={50}
-            />
-          </View>
-
-          {/* Question */}
-          <View style={styles.questionContainer}>
-            {currentSquare && (
-              <SquareQuestion
-                square={currentSquare}
-                isCorrect={showFeedback ? lastAnswerCorrect : null}
-              />
-            )}
-          </View>
-
-          {/* Color Buttons */}
-          <View style={styles.buttonsContainer}>
-            <ColorButtons onAnswer={handleAnswer} disabled={showFeedback} />
-          </View>
-
-          <ScoreFooter
-            correctCount={correctCount}
-            incorrectCount={incorrectCount}
+      <View style={practiceSessionStyles.questionContainer}>
+        {currentSquare && (
+          <SquareQuestion
+            square={currentSquare}
+            isCorrect={showFeedback ? lastAnswerCorrect : null}
           />
-        </>
-      )}
-    </SafeAreaView>
+        )}
+      </View>
+
+      <View style={practiceSessionStyles.bottomSection}>
+        <ColorButtons onAnswer={handleAnswer} disabled={showFeedback} />
+      </View>
+    </PracticeSessionScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  timerRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-  spacer: {
-    flex: 1,
-  },
-  questionContainer: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
-  },
-  buttonsContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-});

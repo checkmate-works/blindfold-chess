@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { Position } from '@/lib/db/schema';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 
@@ -14,11 +15,7 @@ type ToggleLikeAction = (
 
 type Props = {
   position: Position;
-  profile: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  profile: AuthorProfile | null;
   likeMeta: LikeMeta;
   replyMeta: ReplyMeta;
   detailHref: string;

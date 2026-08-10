@@ -2,16 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
-import { FormErrorBanner } from '@/app/_components';
-
 import { usePuzzleSolutionStep } from '../_hooks/use-puzzle-solution-step';
 import { readDraft, writeDraft } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { validatePuzzleSolution } from '../_lib/validate-puzzle-form';
-import { PuzzleSolutionFields } from './PuzzleSolutionFields';
-import { PuzzleSolutionSkeleton } from './PuzzleSolutionSkeleton';
-import { PuzzleStepIndicator } from './PuzzleStepIndicator';
-import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
+import { PuzzleSolutionFormBody } from './PuzzleSolutionFormBody';
 
 type Props = {
   /** Mirrors CreatePuzzlePositionForm's — disabled behind the guest gate. */
@@ -37,45 +32,11 @@ export function CreatePuzzleSolutionForm({ disableUnsavedGuard = false }: Props 
     step.persistAndNavigate('/practice/puzzle/new/preview');
   }
 
-  const stepIndicator = <PuzzleStepIndicator flow="create" current="solution" />;
-
-  if (!step.ready) {
-    // Same SSR/hydration-mismatch rationale as PuzzlePreviewClient: a lazy
-    // `useState(() => readDraft())` initializer would mismatch since
-    // `readDraft()` always returns null during SSR.
-    return (
-      <div className="space-y-6">
-        {stepIndicator}
-        <PuzzleSolutionSkeleton />
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="space-y-6">
-        {stepIndicator}
-
-        <FormErrorBanner message={step.error} />
-
-        <PuzzleSolutionFields
-          flipped={step.flipped}
-          onFlip={step.toggleFlip}
-          solution={step.solution}
-          pending={false}
-          onBack={step.handleBack}
-          backLabel={t('backToPosition')}
-          onPrimaryAction={handleContinueToPreview}
-          primaryActionLabel={t('continueToPreview')}
-          primaryActionDisabled={step.solution.moves.length === 0}
-        />
-      </div>
-
-      <PuzzleUnsavedChangesDialog
-        open={step.isBlocking}
-        onConfirm={step.confirmLeave}
-        onCancel={step.cancelLeave}
-      />
-    </>
+    <PuzzleSolutionFormBody
+      flow="create"
+      step={step}
+      onContinueToPreview={handleContinueToPreview}
+    />
   );
 }

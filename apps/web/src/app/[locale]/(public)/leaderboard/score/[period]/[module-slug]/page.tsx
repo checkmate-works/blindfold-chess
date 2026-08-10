@@ -148,7 +148,7 @@ async function ScoreLeaderboardModuleHubContent({ params }: Props) {
 function ScoreLeaderboardModuleHubSkeleton() {
   return (
     <PagePanel>
-      <div className="h-8 w-56 animate-pulse rounded bg-muted" />
+      <Skeleton className="h-8 w-56 rounded" />
 
       <div
         data-banner-placeholder

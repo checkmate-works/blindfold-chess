@@ -135,7 +135,7 @@ async function ScoreLeaderboardPeriodContent({ params }: Props) {
 function ScoreLeaderboardPeriodSkeleton() {
   return (
     <PagePanel>
-      <div className="h-8 w-56 animate-pulse rounded bg-muted" />
+      <Skeleton className="h-8 w-56 rounded" />
 
       {/*
         SignUpBanner fallback — fixed height matching SignUpBannerUI's

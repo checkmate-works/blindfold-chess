@@ -20,7 +20,7 @@ export function InlineBoardHeaderSkeleton() {
       <div className={`${INLINE_BOARD_HEADER_CHROME} ${INLINE_BOARD_HEADER_MIN_H}`}>
         <div className="flex items-center gap-2">
           <Skeleton disableAnimation className="h-4 w-4 rounded-sm" />
-          <Skeleton disableAnimation className="h-4 w-24" />
+          <Skeleton disableAnimation className="h-4 w-24 rounded-md" />
         </div>
         <Skeleton disableAnimation className="h-3 w-3 rounded-sm" />
       </div>

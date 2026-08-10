@@ -1,17 +1,17 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
-import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
-import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { EditRequestHeader } from '@/app/[locale]/_components/edit-request/EditRequestHeader';
+import { EditRequestResolutionControls } from '@/app/[locale]/_components/edit-request/EditRequestResolutionControls';
+import { useEditRequestResolution } from '@/app/[locale]/_components/edit-request/use-edit-request-resolution';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { acceptPositionEditRequest } from '../../_actions/acceptPositionEditRequest';
@@ -19,18 +19,12 @@ import { rejectPositionEditRequest } from '../../_actions/rejectPositionEditRequ
 import { withdrawPositionEditRequest } from '../../_actions/withdrawPositionEditRequest';
 import { localizePositionEditRequestError } from './localize-error';
 
-type ProposerProfile = {
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-} | null;
-
 type Props = {
   requestId: string;
   status: EditRequestStatus;
   createdAt: Date;
   /** Proposer profile, or null when the proposer's account was hard-deleted. */
-  proposer: ProposerProfile;
+  proposer: AuthorProfile | null;
   proposerId: string | null;
   /** Detail-page path (no locale prefix) the accept / reject flow redirects to. */
   detailHref: string;
@@ -58,80 +52,49 @@ const WELL_KNOWN_ERRORS = new Set([
   'alreadyResolved',
 ]);
 
-const STATUS_BADGE_CLASS: Record<EditRequestStatus, string> = {
-  pending: 'bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100',
-  accepted: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100',
-  rejected: 'bg-rose-100 text-rose-900 dark:bg-rose-900 dark:text-rose-100',
-  withdrawn: 'bg-muted text-muted-foreground',
-};
-
 export function PositionEditRequestItem(props: Props) {
   const t = useTranslations('practice.positionEditRequests');
   const tToast = useTranslations('toast');
   const router = useRouter();
   const { showToast } = useToast();
 
-  const [pending, setPending] = useState<null | 'accept' | 'reject' | 'withdraw'>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [confirm, setConfirm] = useState<null | 'accept' | 'reject' | 'withdraw'>(null);
-
-  async function runResolution(kind: 'accept' | 'reject' | 'withdraw') {
-    setError(null);
-    setPending(kind);
-    let result;
-    if (kind === 'accept') result = await acceptPositionEditRequest(props.requestId);
-    else if (kind === 'reject') result = await rejectPositionEditRequest(props.requestId);
-    else result = await withdrawPositionEditRequest(props.requestId);
-    setPending(null);
-    setConfirm(null);
-
-    if ('error' in result) {
-      setError(localizePositionEditRequestError(result.error, t, WELL_KNOWN_ERRORS));
-      return;
-    }
-
-    // Accept / reject are owner resolutions: send the owner back to the
-    // position page with a toast confirming the outcome (the linked chunks
-    // there reflect an accepted change). Withdraw is the proposer dropping
-    // their own row — keep them on the list so they can submit a fresh one,
-    // and surface a direct toast since there's no navigation to carry a
-    // `?toast=` param.
-    if (kind === 'withdraw') {
-      showToast(tToast('editRequestWithdrawn'), 'success');
-      router.refresh();
-      return;
-    }
-    const toast = kind === 'accept' ? 'edit_request_accepted' : 'edit_request_rejected';
-    router.push(`${props.detailHref}?toast=${toast}` as '/practice/position-memory/[id]');
-  }
-
-  const proposerName =
-    props.proposer?.displayName ?? props.proposer?.username ?? t('deletedProposer');
-  const profileHref = props.proposer?.username ? `/u/${props.proposer.username}` : null;
+  const resolution = useEditRequestResolution({
+    resolve: (action) => {
+      if (action === 'accept') return acceptPositionEditRequest(props.requestId);
+      if (action === 'reject') return rejectPositionEditRequest(props.requestId);
+      return withdrawPositionEditRequest(props.requestId);
+    },
+    localizeError: (code) => localizePositionEditRequestError(code, t, WELL_KNOWN_ERRORS),
+    onResolved: (action) => {
+      // Accept / reject are owner resolutions: send the owner back to the
+      // position page with a toast confirming the outcome (the linked chunks
+      // there reflect an accepted change). Withdraw is the proposer dropping
+      // their own row — keep them on the list so they can submit a fresh one,
+      // and surface a direct toast since there's no navigation to carry a
+      // `?toast=` param.
+      if (action === 'withdraw') {
+        showToast(tToast('editRequestWithdrawn'), 'success');
+        router.refresh();
+        return;
+      }
+      const toast = action === 'accept' ? 'edit_request_accepted' : 'edit_request_rejected';
+      router.push(`${props.detailHref}?toast=${toast}` as '/practice/position-memory/[id]');
+    },
+  });
 
   return (
     <div className="space-y-3 rounded-md border border-border bg-card p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <UserAvatar
-            profileHref={profileHref}
-            avatarUrl={props.proposer?.avatarUrl ?? null}
-            displayName={proposerName}
-            locale={props.locale}
-            size="sm"
-          />
-          <span className="text-xs text-muted-foreground">
-            <time dateTime={props.createdAt.toISOString()}>
-              {formatRelativeTime(props.createdAt, props.locale, t('justNow'))}
-            </time>
-          </span>
-        </div>
-        <span
-          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASS[props.status]}`}
-        >
-          {t(`status.${props.status}` as 'status.pending')}
-        </span>
-      </div>
+      <EditRequestHeader
+        proposer={props.proposer}
+        createdAt={props.createdAt}
+        status={props.status}
+        locale={props.locale}
+        labels={{
+          deletedProposer: t('deletedProposer'),
+          justNow: t('justNow'),
+          status: t(`status.${props.status}` as 'status.pending'),
+        }}
+      />
 
       {props.diff}
 
@@ -142,84 +105,41 @@ export function PositionEditRequestItem(props: Props) {
         </div>
       )}
 
-      {error && (
+      {resolution.error && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {resolution.error}
         </p>
       )}
 
-      {props.status === 'pending' && (props.viewerIsOwner || props.viewerIsProposer) && (
-        <div className="flex flex-col gap-2">
-          {props.viewerIsOwner && (
-            <>
-              <Button
-                type="button"
-                variant="primary"
-                fullWidth
-                disabled={pending !== null}
-                loading={pending === 'accept'}
-                onClick={() => setConfirm('accept')}
-              >
-                {t('actions.accept')}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                fullWidth
-                disabled={pending !== null}
-                loading={pending === 'reject'}
-                onClick={() => setConfirm('reject')}
-              >
-                {t('actions.reject')}
-              </Button>
-            </>
-          )}
-          {props.viewerIsProposer && (
-            <Button
-              type="button"
-              variant="destructive"
-              fullWidth
-              disabled={pending !== null}
-              loading={pending === 'withdraw'}
-              onClick={() => setConfirm('withdraw')}
-            >
-              {t('actions.withdraw')}
-            </Button>
-          )}
-        </div>
-      )}
-
-      <ConfirmationModal
-        isOpen={confirm === 'accept'}
-        title={t('actions.acceptConfirmTitle')}
-        message={t('actions.acceptConfirmMessage')}
-        confirmText={t('actions.accept')}
-        cancelText={t('actions.cancel')}
-        confirmVariant="primary"
-        onConfirm={() => runResolution('accept')}
-        onCancel={() => setConfirm(null)}
-      />
-
-      <ConfirmationModal
-        isOpen={confirm === 'reject'}
-        title={t('actions.rejectConfirmTitle')}
-        message={t('actions.rejectConfirmMessage')}
-        confirmText={t('actions.reject')}
-        cancelText={t('actions.cancel')}
-        confirmVariant="danger"
-        onConfirm={() => runResolution('reject')}
-        onCancel={() => setConfirm(null)}
-      />
-
-      <ConfirmationModal
-        isOpen={confirm === 'withdraw'}
-        title={t('actions.withdrawConfirmTitle')}
-        message={t('actions.withdrawConfirmMessage')}
-        confirmText={t('actions.withdraw')}
-        cancelText={t('actions.cancel')}
-        confirmVariant="danger"
-        onConfirm={() => runResolution('withdraw')}
-        onCancel={() => setConfirm(null)}
+      <EditRequestResolutionControls
+        resolution={resolution}
+        viewerIsOwner={props.viewerIsOwner}
+        viewerIsProposer={props.viewerIsProposer}
+        isPending={props.status === 'pending'}
+        // Positions frame rejecting a proposal as destructive; chunks do not.
+        // Pre-existing divergence, preserved verbatim — see the prop's TSDoc.
+        rejectVariant="destructive"
+        labels={{
+          accept: t('actions.accept'),
+          reject: t('actions.reject'),
+          withdraw: t('actions.withdraw'),
+          cancel: t('actions.cancel'),
+          acceptConfirm: {
+            title: t('actions.acceptConfirmTitle'),
+            message: t('actions.acceptConfirmMessage'),
+            confirmText: t('actions.accept'),
+          },
+          rejectConfirm: {
+            title: t('actions.rejectConfirmTitle'),
+            message: t('actions.rejectConfirmMessage'),
+            confirmText: t('actions.reject'),
+          },
+          withdrawConfirm: {
+            title: t('actions.withdrawConfirmTitle'),
+            message: t('actions.withdrawConfirmMessage'),
+            confirmText: t('actions.withdraw'),
+          },
+        }}
       />
     </div>
   );

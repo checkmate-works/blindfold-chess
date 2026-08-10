@@ -6,6 +6,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Knight-tour result loading skeleton.
@@ -50,7 +51,7 @@ export async function KnightTourResultLoadingSkeleton() {
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             {/* "Squares visited: N / 64" heading (centered). */}
-            <div className="mx-auto mb-6 h-8 w-56 bg-muted rounded animate-pulse" />
+            <Skeleton className="mx-auto mb-6 h-8 w-56 rounded" />
 
             {/* Final tour board. */}
             <div className="flex justify-center mb-6">
@@ -66,21 +67,21 @@ export async function KnightTourResultLoadingSkeleton() {
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
                   <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
                     <div className="w-full">
-                      <div className="h-5 w-40 bg-muted rounded animate-pulse" />
-                      <div className="mt-2 h-4 w-56 max-w-full bg-muted rounded animate-pulse" />
+                      <Skeleton className="h-5 w-40 rounded" />
+                      <Skeleton className="mt-2 h-4 w-56 max-w-full rounded" />
                     </div>
-                    <div className="h-9 w-28 flex-shrink-0 bg-muted rounded-md animate-pulse" />
+                    <Skeleton className="h-9 w-28 flex-shrink-0 rounded-md" />
                   </div>
                 </div>
               )}
 
               {/* Try Again (primary) + More Practice (secondary) */}
-              <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-              <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
+              <Skeleton className="h-12 w-full rounded-lg" />
+              <Skeleton className="h-12 w-full rounded-lg" />
 
               {/* "Do other practice" link */}
               <div className="flex justify-center pt-2">
-                <div className="h-4 w-40 bg-muted rounded animate-pulse" />
+                <Skeleton className="h-4 w-40 rounded" />
               </div>
             </div>
           </div>
@@ -114,7 +115,7 @@ export async function KnightTourResultLoadingSkeleton() {
           <nav aria-label="Breadcrumb" className="flex min-h-6 items-center">
             <ol className="flex flex-wrap items-center gap-x-1 text-sm">
               <li>
-                <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+                <Skeleton className="w-6 h-6 rounded-sm" />
               </li>
               <li className="flex items-center">
                 <span className="mx-1 text-muted-foreground">/</span>

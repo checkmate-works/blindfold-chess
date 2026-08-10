@@ -1,3 +1,5 @@
+import type { AuthorProfile } from '@/lib/users/author-profile';
+
 import type { ChunkStatus } from './validation';
 
 /**
@@ -46,9 +48,5 @@ export type ChunkLinkCardItem = {
   status: ChunkStatus;
   createdAt: Date;
   suggestedById: string | null;
-  suggester: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  suggester: AuthorProfile | null;
 };

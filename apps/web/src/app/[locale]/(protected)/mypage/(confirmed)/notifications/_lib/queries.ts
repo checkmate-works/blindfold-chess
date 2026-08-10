@@ -1,6 +1,8 @@
 import { and, count, desc, eq } from 'drizzle-orm';
 
 import { db, notifications, profiles } from '@/lib/db';
+import { resolvePagination } from '@/lib/pagination';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 const PAGE_SIZE = 20;
 
@@ -13,11 +15,7 @@ export type NotificationWithActor = {
   metadata: unknown;
   isRead: boolean;
   createdAt: Date;
-  actor: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  actor: AuthorProfile | null;
 };
 
 export async function getNotifications(
@@ -30,8 +28,7 @@ export async function getNotifications(
     .where(eq(notifications.userId, userId));
 
   const totalCount = countResult.count;
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const { totalPages, offset } = resolvePagination(page, totalCount, PAGE_SIZE);
 
   const rows = await db
     .select({
@@ -52,7 +49,7 @@ export async function getNotifications(
     .where(eq(notifications.userId, userId))
     .orderBy(desc(notifications.createdAt))
     .limit(PAGE_SIZE)
-    .offset((currentPage - 1) * PAGE_SIZE);
+    .offset(offset);
 
   const items: NotificationWithActor[] = rows.map((row) => ({
     id: row.id,

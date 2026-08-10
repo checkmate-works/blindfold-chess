@@ -5,6 +5,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 import { PracticeResultPanelSkeleton } from './PracticeResultPanelSkeleton';
 
@@ -90,7 +91,7 @@ export async function PracticeResultLoadingSkeleton({
           <nav aria-label="Breadcrumb" className="flex min-h-6 items-center">
             <ol className="flex flex-wrap items-center gap-x-1 text-sm">
               <li>
-                <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+                <Skeleton className="w-6 h-6 rounded-sm" />
               </li>
               <li className="flex items-center">
                 <span className="mx-1 text-muted-foreground">/</span>
@@ -98,7 +99,7 @@ export async function PracticeResultLoadingSkeleton({
               </li>
               <li className="flex items-center">
                 <span className="mx-1 text-muted-foreground">/</span>
-                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+                <Skeleton className="h-4 w-32 rounded" />
               </li>
               <li className="flex items-center">
                 <span className="mx-1 text-muted-foreground">/</span>

@@ -1,3 +1,5 @@
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+
 /**
  * Loading placeholder for {@link TopicTabs}. Mirrors LinkTabs' segmented tab
  * row (a `bg-secondary` track with four equal pills) so the real tabs swap in
@@ -7,7 +9,7 @@ export function TopicTabsSkeleton() {
   return (
     <div className="flex gap-1 rounded-lg bg-secondary p-1" aria-hidden="true">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-9 flex-1 animate-pulse rounded-md bg-muted" />
+        <Skeleton key={i} className="h-9 flex-1 rounded-md" />
       ))}
     </div>
   );

@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PageTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 import { FeedSkeleton } from './_components/FeedSkeleton';
 
@@ -38,7 +39,7 @@ export default async function HomeLoading() {
       <div className="mb-8 flex items-center justify-center gap-2">
         <PageTitle>{tHome('pageTitle')}</PageTitle>
         {/* HelpTourButton placeholder — see file TSDoc */}
-        <div className="h-5 w-5 rounded-full bg-muted animate-pulse" aria-hidden="true" />
+        <Skeleton className="h-5 w-5 rounded-full" />
       </div>
 
       <div className="space-y-6">

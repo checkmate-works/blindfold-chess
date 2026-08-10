@@ -18,6 +18,7 @@ import {
   type ReplyMeta,
   getGameCommentMetaMap,
 } from '@/lib/db/reply-meta-queries';
+import { resolvePagination } from '@/lib/pagination';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -58,15 +59,18 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
     getTranslations({ locale, namespace: 'topics.openings.names' }),
   ]);
 
-  const totalPages = Math.ceil(context.shell.gamesCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(parsedParams.page, totalPages || 1));
+  const { currentPage, totalPages, offset } = resolvePagination(
+    parsedParams.page,
+    context.shell.gamesCount,
+    PAGE_SIZE
+  );
 
   let games: SharedGameListItem[] = [];
   let likeMetaMap: Map<string, LikeMeta> = new Map();
   let replyMetaMap: Map<string, ReplyMeta> = new Map();
 
   if (context.shell.gamesCount > 0) {
-    games = await listGamesByAuthorId(context.profile.id, PAGE_SIZE, (currentPage - 1) * PAGE_SIZE);
+    games = await listGamesByAuthorId(context.profile.id, PAGE_SIZE, offset);
 
     const gameIds = games.map((g) => g.id);
     [likeMetaMap, replyMetaMap] = await Promise.all([

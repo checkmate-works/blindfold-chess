@@ -6,10 +6,13 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useCoordinateQuizSession } from "@blindfold-chess/features/coordinate-quiz/client";
 
-import { CountdownOverlay, ScoreFooter } from "../../../../components";
+import {
+  CountdownOverlay,
+  QuizTimer,
+  ScoreFooter,
+} from "../../../../components";
 import {
   ChessBoard,
-  QuizTimer,
   FeedbackOverlay,
 } from "../../../../features/coordinate-quiz/components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";

@@ -1,22 +1,21 @@
 import { useCallback, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useBoardSymmetrySession } from "@blindfold-chess/features/board-symmetry/client";
 
-import { CountdownOverlay, ScoreFooter } from "../../../../components";
+import {
+  PracticeSessionScreen,
+  practiceSessionStyles,
+} from "../../../../components";
 import {
   SymmetryQuestion,
   CoordinateSelector,
 } from "../../../../features/board-symmetry/components";
-import { QuizTimer } from "../../../../features/coordinate-quiz/components";
-import { useTheme, spacing } from "../../../../theme";
 import type { BoardSymmetryResult } from "@blindfold-chess/features/board-symmetry";
 
 export default function BoardSymmetrySession() {
   const router = useRouter();
-  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     timeLimit: string;
   }>();
@@ -75,78 +74,34 @@ export default function BoardSymmetrySession() {
   }, [selectedFile, selectedRank, showFeedback, countdown, handleAnswer]);
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <PracticeSessionScreen
+      countdown={countdown}
+      timeRemaining={timeRemaining}
+      progress={timeRemaining / duration}
+      correctCount={correctCount}
+      incorrectCount={incorrectCount}
     >
-      <CountdownOverlay countdown={countdown} />
-
-      {/* Main content */}
-      {countdown === null && (
-        <>
-          {/* Timer */}
-          <View style={styles.timerRow}>
-            <View style={styles.spacer} />
-            <QuizTimer
-              timeRemaining={timeRemaining}
-              progress={timeRemaining / duration}
-              size={50}
-            />
-          </View>
-
-          {/* Question */}
-          <View style={styles.questionContainer}>
-            {currentProblem && (
-              <SymmetryQuestion
-                problem={currentProblem}
-                selectedFile={selectedFile}
-                selectedRank={selectedRank}
-                isCorrect={isCorrect}
-                correctSolution={correctSolution}
-              />
-            )}
-          </View>
-
-          {/* Coordinate Selector */}
-          <View style={styles.selectorContainer}>
-            <CoordinateSelector
-              selectedFile={selectedFile}
-              selectedRank={selectedRank}
-              onFileToggle={handleFileToggle}
-              onRankToggle={handleRankToggle}
-              disabled={showFeedback}
-            />
-          </View>
-
-          <ScoreFooter
-            correctCount={correctCount}
-            incorrectCount={incorrectCount}
+      <View style={practiceSessionStyles.questionContainer}>
+        {currentProblem && (
+          <SymmetryQuestion
+            problem={currentProblem}
+            selectedFile={selectedFile}
+            selectedRank={selectedRank}
+            isCorrect={isCorrect}
+            correctSolution={correctSolution}
           />
-        </>
-      )}
-    </SafeAreaView>
+        )}
+      </View>
+
+      <View style={practiceSessionStyles.bottomSection}>
+        <CoordinateSelector
+          selectedFile={selectedFile}
+          selectedRank={selectedRank}
+          onFileToggle={handleFileToggle}
+          onRankToggle={handleRankToggle}
+          disabled={showFeedback}
+        />
+      </View>
+    </PracticeSessionScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  timerRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-  spacer: {
-    flex: 1,
-  },
-  questionContainer: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
-  },
-  selectorContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-});

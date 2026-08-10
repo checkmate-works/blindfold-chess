@@ -1,22 +1,17 @@
 import { getTranslations } from 'next-intl/server';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { formatSolutionMovesForDisplay } from './format-solution-moves';
 
-type EditorProfile = {
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-} | null;
-
 type Props = {
   changes: Record<string, { from: unknown; to: unknown }>;
   createdAt: Date;
-  editor: EditorProfile;
+  editor: AuthorProfile | null;
   locale: string;
 };
 

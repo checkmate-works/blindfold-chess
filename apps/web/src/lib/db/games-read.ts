@@ -11,6 +11,7 @@ import 'server-only';
 
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
+import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { db } from './index';
 import { countRows } from './list-query';
@@ -26,17 +27,10 @@ import { gameChunks, games, profiles } from './schema';
  */
 const VISIBLE_STATUSES = ['public'] as const;
 
-/** Public author profile for attribution (avatar + name + profile link). */
-export type SharedGameAuthor = {
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
-
 export type SharedGameDetail = {
   game: GameRecord;
   /** Author profile, or null for account-less / hard-deleted authors. */
-  author: SharedGameAuthor | null;
+  author: AuthorProfile | null;
 };
 
 /**
@@ -65,7 +59,7 @@ export const getGameById = cache(async (id: string): Promise<SharedGameDetail | 
 
   // username is NOT NULL on profiles, so its presence means the join matched a
   // real author; null means an account-less (anonymous) game.
-  const author: SharedGameAuthor | null = row.authorUsername
+  const author: AuthorProfile | null = row.authorUsername
     ? {
         username: row.authorUsername,
         displayName: row.authorDisplayName,
@@ -102,11 +96,7 @@ export type SharedGameListItem = {
   moveCount: number;
   cleanRate: number | null;
   /** Author profile for the card avatar; null for an account-less author. */
-  author: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  } | null;
+  author: AuthorProfile | null;
   /**
    * The deepest named opening the game played, derived from its moves against
    * the opening master; null for custom-start games or unrecognised lines. The

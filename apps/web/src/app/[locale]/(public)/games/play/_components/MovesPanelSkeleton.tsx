@@ -27,8 +27,8 @@ export function MovesPanelSkeleton({ className = '' }: Props) {
   return (
     <div aria-hidden="true" className={`border border-border rounded-lg ${className}`.trim()}>
       <div className="w-full px-4 py-3 bg-muted/30 rounded-lg flex items-center justify-between min-h-[48px]">
-        <Skeleton disableAnimation className="h-5 w-16" />
-        <Skeleton disableAnimation className="h-5 w-5" />
+        <Skeleton disableAnimation className="h-5 w-16 rounded-md" />
+        <Skeleton disableAnimation className="h-5 w-5 rounded-md" />
       </div>
     </div>
   );

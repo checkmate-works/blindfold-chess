@@ -1,5 +1,7 @@
 import { BoardFrame, BoardSkeleton } from '@/app/_components';
 
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+
 // Remove ("×") button + 6 piece types (K Q R B N P) — matches the palette
 // rendered by EditableChessBoard's `renderPalette`.
 const PALETTE_SLOTS = 7;
@@ -13,12 +15,12 @@ function PaletteSkeleton() {
   return (
     <div className="flex flex-col items-center gap-2">
       {/* Label (h3 text-xs) placeholder. */}
-      <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+      <Skeleton className="h-4 w-20 rounded" />
       <div className="flex gap-1 sm:gap-2 p-2 sm:p-3 border border-border rounded-lg">
         {Array.from({ length: PALETTE_SLOTS }, (_, i) => (
-          <div
+          <Skeleton
             key={i}
-            className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 animate-pulse rounded border-2 border-border bg-muted"
+            className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded border-2 border-border"
           />
         ))}
       </div>
@@ -42,7 +44,7 @@ export function EditableBoardSkeleton() {
         <BoardSkeleton />
       </BoardFrame>
       {/* Mode indicator (text-sm) placeholder. */}
-      <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+      <Skeleton className="h-5 w-40 rounded" />
       <PaletteSkeleton />
     </div>
   );

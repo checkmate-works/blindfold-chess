@@ -15,10 +15,10 @@ export function MypageDashboardSkeleton() {
     <>
       {/* Profile card */}
       <div className="flex items-center gap-4">
-        <Skeleton className="h-16 w-16 !rounded-full flex-shrink-0" />
+        <Skeleton className="h-16 w-16 rounded-full flex-shrink-0" />
         <div className="min-w-0">
-          <Skeleton className="h-7 w-40" />
-          <Skeleton className="mt-1 h-4 w-28" />
+          <Skeleton className="h-7 w-40 rounded-md" />
+          <Skeleton className="mt-1 h-4 w-28 rounded-md" />
           <div className="mt-1.5 flex flex-wrap gap-2">
             <Skeleton className="h-8 w-36 rounded-lg" />
             <Skeleton className="h-8 w-20 rounded-lg" />
@@ -29,13 +29,13 @@ export function MypageDashboardSkeleton() {
       {/* Level progress */}
       <div className="mt-4">
         <div className="mb-1.5 flex items-center gap-2">
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-4 w-16 rounded-md" />
+          <Skeleton className="h-3 w-20 rounded-md" />
         </div>
         <Skeleton className="h-2 w-full rounded-full" />
-        <Skeleton className="mt-1 h-3 w-40" />
+        <Skeleton className="mt-1 h-3 w-40 rounded-md" />
         <div className="mt-2 flex justify-center">
-          <Skeleton className="h-3 w-28" />
+          <Skeleton className="h-3 w-28 rounded-md" />
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export function MypageDashboardSkeleton() {
 
       {/* Activity heatmap card */}
       <section className="rounded-lg border border-border bg-card p-4">
-        <Skeleton className="mb-2 h-5 w-28" />
+        <Skeleton className="mb-2 h-5 w-28 rounded-md" />
         <Skeleton className="h-[120px] w-full rounded-md" />
       </section>
 
@@ -59,7 +59,7 @@ export function MypageDashboardSkeleton() {
           <DashboardSection key={i}>
             <div className="flex items-center gap-2">
               <Skeleton className="h-6 w-6 rounded-md" />
-              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-5 w-28 rounded-md" />
             </div>
             <div className="mt-3 flex flex-wrap gap-3">
               {Array.from({ length: chips }, (_, j) => (

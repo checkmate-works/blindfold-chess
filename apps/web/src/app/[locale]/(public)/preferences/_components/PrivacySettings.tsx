@@ -17,7 +17,7 @@ function PrivacySettingsSkeleton() {
   return (
     <ul className="divide-y divide-border">
       <li className="flex items-center justify-between gap-3 py-3">
-        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-4 w-48 rounded-md" />
         <Skeleton className="h-5 w-9 shrink-0 rounded-full" />
       </li>
     </ul>

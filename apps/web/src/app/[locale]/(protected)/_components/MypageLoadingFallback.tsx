@@ -16,18 +16,18 @@ export function MypageLoadingFallback() {
       <div className="motion-safe:animate-pulse rounded-md bg-muted h-7 md:h-8 w-40 mx-auto mb-8" />
       <PagePanel>
         <div className="space-y-4">
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-6 w-40 rounded-md" />
+          <Skeleton className="h-4 w-full rounded-md" />
+          <Skeleton className="h-4 w-5/6 rounded-md" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Skeleton className="h-20 rounded-lg" />
           <Skeleton className="h-20 rounded-lg" />
         </div>
         <div className="space-y-4">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-6 w-32 rounded-md" />
+          <Skeleton className="h-4 w-full rounded-md" />
+          <Skeleton className="h-4 w-2/3 rounded-md" />
         </div>
       </PagePanel>
     </div>

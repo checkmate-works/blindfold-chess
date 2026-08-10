@@ -4,18 +4,15 @@ import { type ReactNode, createContext, useContext } from 'react';
 
 import type { Side } from '@blindfold-chess/types';
 
+import type { IdentifiedAuthorProfile } from '@/lib/users/author-profile';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /** Result of a mutating handler — `error` is already localized for display. */
 export type MutationResult = { error?: string };
 
 /** The signed-in viewer's comment-author identity (mirrors `getCommentUserProfile`). */
-export type CommentUser = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
+export type CommentUser = IdentifiedAuthorProfile;
 
 /**
  * Thread-wide values every `GameCommentNode` needs, carried via context so the

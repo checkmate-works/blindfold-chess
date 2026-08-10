@@ -18,8 +18,7 @@ import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
  * its submit-time switch can stay exhaustively type-checked.
  */
 export type FenAttachmentMode =
-  | { kind: 'empty' }
-  | { kind: 'fen'; fen: string; caption: string | null; valid: boolean };
+  { kind: 'empty' } | { kind: 'fen'; fen: string; caption: string | null; valid: boolean };
 
 /**
  * Validation status surfaced to the parent. See AttachmentInput.tsx

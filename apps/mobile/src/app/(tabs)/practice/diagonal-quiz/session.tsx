@@ -1,24 +1,24 @@
 import { useCallback } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useDiagonalQuiz } from "@blindfold-chess/features/diagonal-quiz/client";
 
-import { CountdownOverlay, ScoreFooter } from "../../../../components";
+import {
+  PracticeSessionScreen,
+  practiceSessionStyles,
+} from "../../../../components";
 import {
   QuestionCard,
   DiagonalInputFields,
   FileRankButtons,
 } from "../../../../features/diagonal-quiz/components";
-import { QuizTimer } from "../../../../features/coordinate-quiz/components";
 import type { ActiveField } from "../../../../features/diagonal-quiz/hooks";
-import { useTheme, spacing } from "../../../../theme";
+import { spacing } from "../../../../theme";
 import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
 
 export default function DiagonalQuizSession() {
   const router = useRouter();
-  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     timeLimit: string;
   }>();
@@ -89,104 +89,67 @@ export default function DiagonalQuizSession() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <PracticeSessionScreen
+      countdown={countdown}
+      timeRemaining={timeRemaining}
+      progress={timeRemaining / duration}
+      correctCount={correctCount}
+      incorrectCount={incorrectCount}
+      // Tighter footer spacing than the other quizzes: the file/rank button
+      // grid above already carries its own bottom padding.
+      footerStyle={styles.footer}
     >
-      <CountdownOverlay countdown={countdown} />
-
-      {/* Main content */}
-      {countdown === null && (
-        <>
-          {/* Timer */}
-          <View style={styles.timerRow}>
-            <View style={styles.spacer} />
-            <QuizTimer
-              timeRemaining={timeRemaining}
-              progress={timeRemaining / duration}
-              size={50}
-            />
-          </View>
-
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Question */}
-            {currentSquare && (
-              <QuestionCard
-                square={currentSquare}
-                isCorrect={lastAnswer?.correct ?? null}
-                lastAnswer={lastAnswer}
-              />
-            )}
-
-            {/* Input Fields */}
-            <View style={styles.inputSection}>
-              <DiagonalInputFields
-                diagonalStartText={diagonalStartText}
-                diagonalEndText={diagonalEndText}
-                antiDiagonalStartText={antiDiagonalStartText}
-                antiDiagonalEndText={antiDiagonalEndText}
-                activeField={activeField}
-                isDiagonalComplete={isDiagonalComplete}
-                isAntiDiagonalComplete={isAntiDiagonalComplete}
-                isInputtingStart={isInputtingStart}
-                isInputtingEnd={isInputtingEnd}
-                singleDiagonal={singleDiagonal}
-                singleAntiDiagonal={singleAntiDiagonal}
-                disabled={isDisabled}
-                onFieldPress={handleFieldPress}
-              />
-            </View>
-
-            {/* File/Rank Buttons */}
-            <View style={styles.buttonsSection}>
-              <FileRankButtons
-                expectingFile={expectingFile}
-                expectingRank={expectingRank}
-                disabled={isDisabled}
-                onFilePress={handleFilePress}
-                onRankPress={handleRankPress}
-                onBackspace={handleBackspace}
-                onClear={handleClear}
-              />
-            </View>
-          </ScrollView>
-
-          {/* Tighter footer spacing than the other quizzes: the file/rank
-              button grid above already carries its own bottom padding. */}
-          <ScoreFooter
-            correctCount={correctCount}
-            incorrectCount={incorrectCount}
-            style={styles.footer}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={practiceSessionStyles.bottomSection}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {currentSquare && (
+          <QuestionCard
+            square={currentSquare}
+            isCorrect={lastAnswer?.correct ?? null}
+            lastAnswer={lastAnswer}
           />
-        </>
-      )}
-    </SafeAreaView>
+        )}
+
+        <View style={styles.inputSection}>
+          <DiagonalInputFields
+            diagonalStartText={diagonalStartText}
+            diagonalEndText={diagonalEndText}
+            antiDiagonalStartText={antiDiagonalStartText}
+            antiDiagonalEndText={antiDiagonalEndText}
+            activeField={activeField}
+            isDiagonalComplete={isDiagonalComplete}
+            isAntiDiagonalComplete={isAntiDiagonalComplete}
+            isInputtingStart={isInputtingStart}
+            isInputtingEnd={isInputtingEnd}
+            singleDiagonal={singleDiagonal}
+            singleAntiDiagonal={singleAntiDiagonal}
+            disabled={isDisabled}
+            onFieldPress={handleFieldPress}
+          />
+        </View>
+
+        <View style={styles.buttonsSection}>
+          <FileRankButtons
+            expectingFile={expectingFile}
+            expectingRank={expectingRank}
+            disabled={isDisabled}
+            onFilePress={handleFilePress}
+            onRankPress={handleRankPress}
+            onBackspace={handleBackspace}
+            onClear={handleClear}
+          />
+        </View>
+      </ScrollView>
+    </PracticeSessionScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  timerRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-  spacer: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
   },
   inputSection: {
     marginTop: spacing.lg,

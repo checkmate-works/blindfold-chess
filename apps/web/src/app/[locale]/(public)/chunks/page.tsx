@@ -33,6 +33,7 @@ import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { CATALOG_MIN_CARDS_FOR_MID_AD } from '@/app/[locale]/_components/AdSense/mid-ad-threshold';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -292,7 +293,7 @@ async function ChunksListSkeleton({ locale }: { locale: string }) {
       <div className="flex items-center justify-center gap-2">
         <PageTitle>{t('listTitle')}</PageTitle>
         {/* HelpTourButton placeholder — the real page always renders it here */}
-        <div className="h-5 w-5 rounded-full bg-muted animate-pulse" aria-hidden="true" />
+        <Skeleton className="h-5 w-5 rounded-full" />
       </div>
 
       <PagePanel>
@@ -305,7 +306,7 @@ async function ChunksListSkeleton({ locale }: { locale: string }) {
         {/* Filter chips (all / drafts / published) */}
         <div className="flex flex-wrap gap-2" aria-hidden="true">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-7 w-24 animate-pulse rounded-full bg-muted" />
+            <Skeleton key={i} className="h-7 w-24 rounded-full" />
           ))}
         </div>
 

@@ -1,4 +1,5 @@
 import { PagePanel } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Loading skeleton for the canonical exp leaderboard page. Mirrors the
@@ -9,7 +10,7 @@ export default function ExpLeaderboardPeriodLoading() {
   return (
     <PagePanel>
       {/* SectionTitle */}
-      <div className="h-8 w-56 animate-pulse rounded bg-muted" />
+      <Skeleton className="h-8 w-56 rounded" />
 
       {/* LeaderboardTabs */}
       <div className="flex rounded-lg bg-secondary p-1">

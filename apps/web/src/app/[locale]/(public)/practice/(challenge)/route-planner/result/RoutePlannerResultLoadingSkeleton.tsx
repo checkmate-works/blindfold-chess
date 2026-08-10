@@ -5,6 +5,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 import { RoutePlannerResultPanelSkeleton } from './RoutePlannerResultPanelSkeleton';
 
@@ -86,7 +87,7 @@ export async function RoutePlannerResultLoadingSkeleton() {
           <nav aria-label="Breadcrumb" className="flex min-h-6 items-center">
             <ol className="flex flex-wrap items-center gap-x-1 text-sm">
               <li>
-                <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+                <Skeleton className="w-6 h-6 rounded-sm" />
               </li>
               <li className="flex items-center">
                 <span className="mx-1 text-muted-foreground">/</span>

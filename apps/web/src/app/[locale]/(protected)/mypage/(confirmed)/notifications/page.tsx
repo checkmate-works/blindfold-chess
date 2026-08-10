@@ -8,6 +8,7 @@ import { FiSettings } from 'react-icons/fi';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 import { getMutedNotificationTypes } from '@/lib/notifications/mutes';
+import { clampPage } from '@/lib/pagination';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -53,7 +54,7 @@ export default async function NotificationsPage({ params, searchParams }: Props)
   ]);
   const mutedTypeSet = new Set<string>(mutedTypes);
 
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const currentPage = clampPage(page, totalPages);
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
