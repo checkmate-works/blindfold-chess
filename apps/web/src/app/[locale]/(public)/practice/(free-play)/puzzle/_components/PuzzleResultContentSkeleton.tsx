@@ -6,6 +6,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 import { createClient } from '@/lib/supabase/server';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Inner-content skeleton for the puzzle result, shaped like the part of
@@ -54,7 +55,7 @@ export async function PuzzleResultContentSkeleton() {
             shape closely enough that swapping in the real content does
             not jolt the page. */}
         <div className="flex justify-center">
-          <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+          <Skeleton className="h-4 w-48 rounded" />
         </div>
       </div>
 
@@ -73,7 +74,7 @@ export async function PuzzleResultContentSkeleton() {
               <span className="inline-block h-3 w-8 bg-muted rounded animate-pulse" />
             </div>
             <div className="w-full bg-secondary rounded-full h-2">
-              <div className="bg-muted h-2 w-1/3 rounded-full animate-pulse" />
+              <Skeleton className="h-2 w-1/3 rounded-full" />
             </div>
           </div>
         </div>
@@ -81,10 +82,10 @@ export async function PuzzleResultContentSkeleton() {
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
             <div className="w-full">
-              <div className="h-5 w-40 bg-muted rounded animate-pulse" />
-              <div className="mt-2 h-4 w-56 max-w-full bg-muted rounded animate-pulse" />
+              <Skeleton className="h-5 w-40 rounded" />
+              <Skeleton className="mt-2 h-4 w-56 max-w-full rounded" />
             </div>
-            <div className="h-9 w-28 flex-shrink-0 bg-muted rounded-md animate-pulse" />
+            <Skeleton className="h-9 w-28 flex-shrink-0 rounded-md" />
           </div>
         </div>
       )}
@@ -93,9 +94,9 @@ export async function PuzzleResultContentSkeleton() {
           three full-width buttons, matching the real `flex flex-col gap-3 pt-4`
           block. */}
       <div className="flex flex-col gap-3 pt-4">
-        <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-        <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
-        <div className="h-12 w-full bg-muted rounded-lg animate-pulse" />
+        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-12 w-full rounded-lg" />
       </div>
     </div>
   );

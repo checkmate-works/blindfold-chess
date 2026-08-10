@@ -88,7 +88,7 @@ export function MoveInputSkeleton({ mode, hasModeSwitch = false }: Props) {
     return (
       <div className={`flex w-full flex-col gap-6 ${MIN_HEIGHT_SELECT}`} {...ariaProps}>
         <div className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3.5 md:py-3">
-          <Skeleton disableAnimation className="h-5 w-32" />
+          <Skeleton disableAnimation className="h-5 w-32 rounded-md" />
           <Skeleton disableAnimation className="ml-2 h-4 w-4 rounded-sm" />
         </div>
         {hasModeSwitch && <ModeSwitchSkeleton />}
@@ -124,28 +124,28 @@ export function MoveInputSkeleton({ mode, hasModeSwitch = false }: Props) {
         {/* Row 1: K / Q / R / B / N / × (6 cells) */}
         <div className="flex gap-2 justify-center">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} disableAnimation className="w-9 h-9" />
+            <Skeleton key={i} disableAnimation className="w-9 h-9 rounded-md" />
           ))}
         </div>
 
         {/* Row 2: files */}
-        <Skeleton disableAnimation className="h-9 w-full" />
+        <Skeleton disableAnimation className="h-9 w-full rounded-md" />
 
         {/* Row 3: ranks */}
-        <Skeleton disableAnimation className="h-9 w-full" />
+        <Skeleton disableAnimation className="h-9 w-full rounded-md" />
 
         {/* Row 4: annotations + castling */}
         <div className="flex gap-6 items-center justify-center">
-          <Skeleton disableAnimation className="h-9 w-32" />
-          <Skeleton disableAnimation className="h-9 w-24" />
+          <Skeleton disableAnimation className="h-9 w-32 rounded-md" />
+          <Skeleton disableAnimation className="h-9 w-24 rounded-md" />
         </div>
 
         {/* Row 5: preview + 3 action buttons */}
         <div className="flex gap-2 mt-2 items-center">
-          <Skeleton disableAnimation className="h-14 flex-1" />
-          <Skeleton disableAnimation className="h-14 w-14" />
-          <Skeleton disableAnimation className="h-14 w-14" />
-          <Skeleton disableAnimation className="h-14 w-14" />
+          <Skeleton disableAnimation className="h-14 flex-1 rounded-md" />
+          <Skeleton disableAnimation className="h-14 w-14 rounded-md" />
+          <Skeleton disableAnimation className="h-14 w-14 rounded-md" />
+          <Skeleton disableAnimation className="h-14 w-14 rounded-md" />
         </div>
       </div>
       {hasModeSwitch && <ModeSwitchSkeleton />}

@@ -25,6 +25,7 @@ import {
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, LinkTabs, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -295,7 +296,7 @@ async function OpeningDetailSkeleton({ locale }: { locale: string }) {
 
       <PagePanel>
         <SectionTitle>
-          <div className="h-6 w-48 bg-muted rounded animate-pulse inline-block align-middle" />
+          <Skeleton className="h-6 w-48 rounded inline-block align-middle" />
         </SectionTitle>
 
         {/* OpeningBoardWithMoves skeleton: move list + board + nav row + CTA */}
@@ -303,37 +304,37 @@ async function OpeningDetailSkeleton({ locale }: { locale: string }) {
           <BoardFrame expandOnMobile>
             <div className="flex items-center gap-1 px-2 py-1.5">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-5 w-16 bg-muted rounded animate-pulse" />
+                <Skeleton key={i} className="h-5 w-16 rounded" />
               ))}
             </div>
 
-            <div className="aspect-square bg-muted rounded animate-pulse" />
+            <Skeleton className="aspect-square rounded" />
 
             {/* Same reserved height as the real strip, which is touch-sized
                 below `sm` — a fixed 40px row would shift the page on hydrate. */}
             <div className={`flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
-              <div className="h-12 w-52 bg-muted rounded animate-pulse" />
+              <Skeleton className="h-12 w-52 rounded" />
             </div>
           </BoardFrame>
 
           <div className="flex justify-center">
-            <div className="h-9 w-48 bg-muted rounded-md animate-pulse" />
+            <Skeleton className="h-9 w-48 rounded-md" />
           </div>
         </div>
 
         {/* Tab row (Community thoughts / Repertoires) — underline variant, so a
             border under the row and two left-aligned labels. */}
         <div className="mt-8 mb-4 flex gap-6 border-b border-border pb-2">
-          <div className="h-6 w-44 bg-muted rounded animate-pulse" />
-          <div className="h-6 w-40 bg-muted rounded animate-pulse" />
+          <Skeleton className="h-6 w-44 rounded" />
+          <Skeleton className="h-6 w-40 rounded" />
         </div>
 
         {/* JoinConversationToggle, then the sort control (label + select). */}
-        <div className="mb-4 h-9 w-48 bg-muted rounded-md animate-pulse" />
+        <Skeleton className="mb-4 h-9 w-48 rounded-md" />
 
         <div className="mb-6 flex items-center gap-2">
-          <div className="h-5 w-14 bg-muted rounded animate-pulse" />
-          <div className="h-9 w-28 bg-muted rounded-md animate-pulse" />
+          <Skeleton className="h-5 w-14 rounded" />
+          <Skeleton className="h-9 w-28 rounded-md" />
         </div>
 
         <div className="space-y-3">
@@ -352,7 +353,7 @@ async function OpeningDetailSkeleton({ locale }: { locale: string }) {
 
         <Divider />
 
-        <div className="h-4 w-64 bg-muted rounded animate-pulse" />
+        <Skeleton className="h-4 w-64 rounded" />
       </PagePanel>
     </div>
   );

@@ -32,7 +32,7 @@ export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
         {/* Lives (left) + pause/timer (right) header — challenge only */}
         {showHeader && (
           <div className="flex justify-between items-center mb-4">
-            <Skeleton className="h-5 w-28" disableAnimation />
+            <Skeleton className="h-5 w-28 rounded-md" disableAnimation />
             <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
           </div>
         )}
@@ -46,13 +46,13 @@ export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
           <Skeleton className="h-14 w-14 rounded-lg" />
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-center gap-1">
-              <Skeleton className="h-4 w-12" disableAnimation />
-              <Skeleton className="h-6 w-10" />
+              <Skeleton className="h-4 w-12 rounded-md" disableAnimation />
+              <Skeleton className="h-6 w-10 rounded-md" />
             </div>
             <Skeleton className="h-4 w-4 rounded-full" disableAnimation />
             <div className="flex flex-col items-center gap-1">
-              <Skeleton className="h-4 w-12" disableAnimation />
-              <Skeleton className="h-6 w-10" />
+              <Skeleton className="h-4 w-12 rounded-md" disableAnimation />
+              <Skeleton className="h-6 w-10 rounded-md" />
             </div>
           </div>
         </div>
@@ -70,9 +70,9 @@ export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
               ))}
             </div>
             {/* File row */}
-            <Skeleton className="h-11 sm:h-9 w-full" />
+            <Skeleton className="h-11 sm:h-9 w-full rounded-md" />
             {/* Rank row */}
-            <Skeleton className="h-11 sm:h-9 w-full" />
+            <Skeleton className="h-11 sm:h-9 w-full rounded-md" />
             {/* Submit button */}
             <Skeleton className="mt-2 h-12 w-full rounded-lg" />
           </div>
@@ -81,8 +81,8 @@ export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
 
       {/* Score counter */}
       <div className="mt-8 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16" />
-        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-16 rounded-md" />
+        <Skeleton className="h-8 w-16 rounded-md" />
       </div>
     </div>
   );

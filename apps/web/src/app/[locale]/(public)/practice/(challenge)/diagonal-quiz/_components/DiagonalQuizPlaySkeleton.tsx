@@ -27,26 +27,26 @@ export function DiagonalQuizPlaySkeleton({ showHeader = false }: Props) {
     <div className="max-w-md mx-auto">
       <div className="text-center">
         {/* Question prompt */}
-        <Skeleton className="h-7 w-3/4 mx-auto mb-4" />
+        <Skeleton className="h-7 w-3/4 mx-auto mb-4 rounded-md" />
 
         {/* Lives (left) + timer (right) header */}
         {showHeader && (
           <div className="flex justify-between items-center mb-4 min-h-[40px]">
-            <Skeleton className="h-5 w-20" disableAnimation />
+            <Skeleton className="h-5 w-20 rounded-md" disableAnimation />
             <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
           </div>
         )}
 
         {/* Target square */}
         <div className="mb-6">
-          <Skeleton className="h-16 w-24 mx-auto" />
+          <Skeleton className="h-16 w-24 mx-auto rounded-md" />
         </div>
 
         {/* Two diagonal input fields (left-aligned label + full-width input) */}
         <div className="space-y-3 mb-6">
           {[0, 1].map((i) => (
             <div key={i}>
-              <Skeleton className="h-4 w-24 mb-1" disableAnimation />
+              <Skeleton className="h-4 w-24 mb-1 rounded-md" disableAnimation />
               <Skeleton className="h-[52px] w-full rounded-lg" />
             </div>
           ))}
@@ -54,16 +54,16 @@ export function DiagonalQuizPlaySkeleton({ showHeader = false }: Props) {
 
         {/* Coordinate keypad: file row, rank row, action row */}
         <div className="flex flex-col gap-2">
-          <Skeleton className="h-11 w-full" />
-          <Skeleton className="h-11 w-full" />
-          <Skeleton className="mt-1 h-11 w-full" />
+          <Skeleton className="h-11 w-full rounded-md" />
+          <Skeleton className="h-11 w-full rounded-md" />
+          <Skeleton className="mt-1 h-11 w-full rounded-md" />
         </div>
       </div>
 
       {/* Score counter */}
       <div className="mt-8 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16" />
-        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-16 rounded-md" />
+        <Skeleton className="h-8 w-16 rounded-md" />
       </div>
     </div>
   );

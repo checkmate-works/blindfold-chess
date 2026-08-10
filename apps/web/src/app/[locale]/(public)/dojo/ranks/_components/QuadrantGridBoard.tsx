@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 
 import { isLightSquare } from '@blindfold-chess/features/common';
 
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+
 import { useBoardTheme } from './useBoardTheme';
 
 type QuadrantGridBoardProps = {
@@ -28,7 +30,7 @@ export function QuadrantGridBoard({
   if (!isLoaded) {
     return (
       <div className="mx-auto max-w-xs sm:max-w-sm">
-        <div className="aspect-square w-full animate-pulse rounded-md bg-muted" />
+        <Skeleton className="aspect-square w-full rounded-md" />
       </div>
     );
   }

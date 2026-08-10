@@ -17,6 +17,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -149,7 +150,7 @@ async function LearnCategorySkeleton({ locale }: { locale: string }) {
         <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
           <ol className="flex flex-wrap items-center gap-x-1 text-sm">
             <li>
-              <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+              <Skeleton className="w-6 h-6 rounded-sm" />
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>
@@ -157,7 +158,7 @@ async function LearnCategorySkeleton({ locale }: { locale: string }) {
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>
-              <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+              <Skeleton className="h-4 w-24 rounded" />
             </li>
           </ol>
         </nav>

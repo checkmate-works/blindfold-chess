@@ -19,6 +19,7 @@ import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squar
 import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -218,13 +219,13 @@ async function OpeningsSkeleton({ locale }: { locale: string }) {
 
         <div className="mt-8 mb-6">
           <SectionTitle>
-            <div className="h-6 w-32 bg-muted rounded animate-pulse inline-block align-middle" />
+            <Skeleton className="h-6 w-32 rounded inline-block align-middle" />
           </SectionTitle>
         </div>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="h-5 w-16 bg-muted rounded animate-pulse" />
-          <div className="h-9 w-40 bg-muted rounded-md animate-pulse" />
+          <Skeleton className="h-5 w-16 rounded" />
+          <Skeleton className="h-9 w-40 rounded-md" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

@@ -34,36 +34,36 @@ export function ResultSkeleton() {
         {/* Tab row (underline style): two text tabs over a bottom border. */}
         <div className="flex border-b border-border">
           <div className="px-4 py-2">
-            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-5 w-16 rounded-md" />
           </div>
           <div className="px-4 py-2">
-            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-5 w-20 rounded-md" />
           </div>
         </div>
 
         {/* Game Stats overview */}
         <div className="space-y-4">
           {/* Section title (underlined h2). */}
-          <Skeleton className="h-6 w-28" />
+          <Skeleton className="h-6 w-28 rounded-md" />
 
           {/* Win/loss/draw outcome label (icon + text), directly under the title. */}
           <div className="flex items-center gap-2">
             <Skeleton className="h-5 w-5 rounded-full" />
-            <Skeleton className="h-6 w-28" />
+            <Skeleton className="h-6 w-28 rounded-md" />
           </div>
 
           {/* Initial settings: heading, engine badge line, colour chip + opening. */}
           <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-24 rounded-md" />
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-1.5">
                 <Skeleton className="h-[18px] w-[18px] rounded" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-4 w-16 rounded-md" />
+                <Skeleton className="h-3 w-12 rounded-md" />
               </div>
               <div className="flex items-center gap-2">
                 <Skeleton className="h-5 w-5 rounded-full" />
-                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-4 w-12 rounded-md" />
                 <Skeleton className="h-5 w-28 rounded-full" />
               </div>
             </div>
@@ -72,8 +72,8 @@ export function ResultSkeleton() {
           {/* Per-move effort strip: title + hint, cells, legend. */}
           <div className="space-y-2">
             <div className="flex items-baseline justify-between gap-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-4 w-20 rounded-md" />
+              <Skeleton className="h-3 w-24 rounded-md" />
             </div>
             <div className="flex flex-wrap gap-1">
               {Array.from({ length: 20 }).map((_, i) => (
@@ -82,7 +82,7 @@ export function ResultSkeleton() {
             </div>
             <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1">
               {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-3 w-16" />
+                <Skeleton key={i} className="h-3 w-16 rounded-md" />
               ))}
             </div>
           </div>
@@ -93,13 +93,13 @@ export function ResultSkeleton() {
           menu on the right, then the like/share engagement row. */}
       <div className="space-y-6">
         <div className="space-y-2">
-          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-3 w-20 rounded-md" />
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Skeleton className="h-8 w-8 rounded-full" />
               <div className="space-y-1">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-28 rounded-md" />
+                <Skeleton className="h-3 w-24 rounded-md" />
               </div>
             </div>
             <Skeleton className="h-8 w-8 rounded-full" />
@@ -107,7 +107,7 @@ export function ResultSkeleton() {
         </div>
         <div className="flex items-center gap-4">
           <Skeleton className="h-5 w-5 rounded-full" />
-          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-5 w-16 rounded-md" />
         </div>
       </div>
     </div>

@@ -3,9 +3,9 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 function StatsCardSkeleton() {
   return (
     <div className="bg-card border border-border rounded-lg p-4">
-      <Skeleton className="h-3 w-20 mb-3" />
-      <Skeleton className="h-8 w-16 mb-2" />
-      <Skeleton className="h-3 w-28" />
+      <Skeleton className="h-3 w-20 mb-3 rounded-md" />
+      <Skeleton className="h-8 w-16 mb-2 rounded-md" />
+      <Skeleton className="h-3 w-28 rounded-md" />
     </div>
   );
 }
@@ -21,13 +21,13 @@ function SessionHistoryTableSkeleton() {
         <thead>
           <tr className="border-b border-border">
             <th className="text-left py-2 px-2 sm:px-3">
-              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16 rounded-md" />
             </th>
             <th className="text-right py-2 px-2 sm:px-3">
-              <Skeleton className="h-4 w-12 ml-auto" />
+              <Skeleton className="h-4 w-12 ml-auto rounded-md" />
             </th>
             <th className="text-right py-2 px-2 sm:px-3">
-              <Skeleton className="h-4 w-12 ml-auto" />
+              <Skeleton className="h-4 w-12 ml-auto rounded-md" />
             </th>
           </tr>
         </thead>
@@ -35,13 +35,13 @@ function SessionHistoryTableSkeleton() {
           {Array.from({ length: 5 }, (_, i) => (
             <tr key={i} className="border-b border-border/50">
               <td className="py-2 px-2 sm:px-3">
-                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-32 rounded-md" />
               </td>
               <td className="py-2 px-2 sm:px-3">
-                <Skeleton className="h-4 w-8 ml-auto" />
+                <Skeleton className="h-4 w-8 ml-auto rounded-md" />
               </td>
               <td className="py-2 px-2 sm:px-3">
-                <Skeleton className="h-4 w-8 ml-auto" />
+                <Skeleton className="h-4 w-8 ml-auto rounded-md" />
               </td>
             </tr>
           ))}
@@ -64,7 +64,7 @@ export function DashboardContentSkeleton() {
   return (
     <>
       <div>
-        <Skeleton className="h-6 w-24 mb-4" />
+        <Skeleton className="h-6 w-24 mb-4 rounded-md" />
         <div className="grid grid-cols-2 gap-4 mt-4">
           <StatsCardSkeleton />
           <StatsCardSkeleton />
@@ -72,14 +72,14 @@ export function DashboardContentSkeleton() {
       </div>
 
       <div className="min-w-0">
-        <Skeleton className="h-6 w-32 mb-4" />
+        <Skeleton className="h-6 w-32 mb-4 rounded-md" />
         <div className="mt-4">
           <ScoreChartSkeleton />
         </div>
       </div>
 
       <div>
-        <Skeleton className="h-6 w-28 mb-4" />
+        <Skeleton className="h-6 w-28 mb-4 rounded-md" />
         <div className="mt-4">
           <SessionHistoryTableSkeleton />
         </div>

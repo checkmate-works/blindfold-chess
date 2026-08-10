@@ -1,4 +1,5 @@
 import { PagePanel } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Loading skeleton for the score leaderboard detail page. Mirrors the
@@ -11,7 +12,7 @@ export default function ScoreLeaderboardDetailLoading() {
     <PagePanel>
       <div className="space-y-8">
         {/* SectionTitle (module + period label) */}
-        <div className="h-8 w-72 animate-pulse rounded bg-muted" />
+        <Skeleton className="h-8 w-72 rounded" />
 
         {/* PeriodSelector (visible label + select box) */}
         <div className="flex items-center gap-2">

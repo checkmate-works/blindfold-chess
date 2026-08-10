@@ -6,6 +6,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 import { MOVE_NAV_ROW_CLASS } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import { ReplyCardsSkeleton } from '@/app/[locale]/(public)/topics/_components/ReplyCardsSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 export default async function OpeningPostDetailLoading() {
   const locale = await getLocaleFromPathnameHeader();
@@ -27,24 +28,24 @@ export default async function OpeningPostDetailLoading() {
           <BoardFrame expandOnMobile>
             <div className="flex items-center gap-1 px-2 py-1.5">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-5 w-16 bg-muted rounded animate-pulse" />
+                <Skeleton key={i} className="h-5 w-16 rounded" />
               ))}
             </div>
             <BoardSkeleton />
             {/* Same reserved height as the real strip, which is touch-sized
                 below `sm` — a fixed 40px row would shift the page on hydrate. */}
             <div className={`flex items-center justify-center ${MOVE_NAV_ROW_CLASS}`}>
-              <div className="h-12 w-52 bg-muted rounded animate-pulse" />
+              <Skeleton className="h-12 w-52 rounded" />
             </div>
           </BoardFrame>
           <div className="flex justify-center">
-            <div className="h-9 w-40 bg-muted rounded animate-pulse" />
+            <Skeleton className="h-9 w-40 rounded" />
           </div>
         </div>
 
         {/* Back link — dynamic (opening name) */}
         <div>
-          <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+          <Skeleton className="h-4 w-48 rounded" />
         </div>
 
         {/* Post card: avatar + name/date + rating + body + actions */}
@@ -86,7 +87,7 @@ export default async function OpeningPostDetailLoading() {
         <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
           <ol className="flex flex-wrap items-center gap-x-1 text-sm">
             <li>
-              <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+              <Skeleton className="w-6 h-6 rounded-sm" />
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>
@@ -98,7 +99,7 @@ export default async function OpeningPostDetailLoading() {
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>
-              <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+              <Skeleton className="h-4 w-32 rounded" />
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>

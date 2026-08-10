@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Rank detail page loading skeleton.
@@ -37,10 +38,10 @@ export default function RankDetailLoading() {
 
       <PagePanel>
         {/* RankHeader skeleton: belt color bar + rounded badge + h2 placeholder */}
-        <div className="-mx-4 -mt-4 mb-6 h-2 sm:-mx-6 sm:-mt-6 bg-muted animate-pulse" />
+        <Skeleton className="-mx-4 -mt-4 mb-6 h-2 sm:-mx-6 sm:-mt-6" />
         <div className="flex items-center gap-3">
           <span className="inline-block size-5 shrink-0 rounded-full bg-muted animate-pulse" />
-          <div className="h-7 w-40 rounded bg-muted animate-pulse" />
+          <Skeleton className="h-7 w-40 rounded" />
         </div>
 
         {/* Criteria section — grouped in one wrapper (matches the real
@@ -49,8 +50,8 @@ export default function RankDetailLoading() {
             inter-section gap. */}
         <div className="space-y-2">
           <SectionTitle>{t('detail.criteria')}</SectionTitle>
-          <div className="h-4 w-full rounded bg-muted animate-pulse" />
-          <div className="h-4 w-5/6 rounded bg-muted animate-pulse" />
+          <Skeleton className="h-4 w-full rounded" />
+          <Skeleton className="h-4 w-5/6 rounded" />
         </div>
 
         {/* Tips callout card — included because most ranks (mukyu/5kyu/4kyu/3kyu)
@@ -97,7 +98,7 @@ export default function RankDetailLoading() {
           <nav aria-label="Breadcrumb" className="flex min-h-6 items-center">
             <ol className="flex flex-wrap items-center gap-x-1 text-sm">
               <li>
-                <div className="size-6 rounded-sm bg-muted animate-pulse" />
+                <Skeleton className="size-6 rounded-sm" />
               </li>
               <li className="flex items-center">
                 <span className="mx-1 text-muted-foreground">/</span>
@@ -109,7 +110,7 @@ export default function RankDetailLoading() {
               </li>
               <li className="flex items-center">
                 <span className="mx-1 text-muted-foreground">/</span>
-                <div className="h-4 w-20 rounded bg-muted animate-pulse" />
+                <Skeleton className="h-4 w-20 rounded" />
               </li>
             </ol>
           </nav>

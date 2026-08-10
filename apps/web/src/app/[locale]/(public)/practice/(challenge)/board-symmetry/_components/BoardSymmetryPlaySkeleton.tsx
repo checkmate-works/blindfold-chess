@@ -28,40 +28,40 @@ export function BoardSymmetryPlaySkeleton({ showHeader = false }: Props) {
     <div className="max-w-md mx-auto">
       <div className="p-8 text-center overflow-hidden">
         {/* Question heading */}
-        <Skeleton className="mx-auto mb-8 h-8 w-3/4" disableAnimation />
+        <Skeleton className="mx-auto mb-8 h-8 w-3/4 rounded-md" disableAnimation />
 
         {/* Lives (left) + pause/timer (right) header — challenge only */}
         {showHeader && (
           <div className="mb-6 flex justify-between items-center">
-            <Skeleton className="h-5 w-28" disableAnimation />
+            <Skeleton className="h-5 w-28 rounded-md" disableAnimation />
             <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
           </div>
         )}
 
         {/* `square → ?` transform display */}
         <div className="mb-8">
-          <Skeleton className="mx-auto mb-4 h-[60px] w-48" />
+          <Skeleton className="mx-auto mb-4 h-[60px] w-48 rounded-md" />
         </div>
 
         {/* File/rank coordinate keypad + keyboard hint */}
         <div className="space-y-4 -mx-8 sm:mx-0">
           <div className="flex flex-col gap-2 max-w-md mx-auto">
-            <Skeleton className="h-9 w-full" />
-            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full rounded-md" />
+            <Skeleton className="h-9 w-full rounded-md" />
           </div>
-          <Skeleton className="mx-auto h-4 w-40" disableAnimation />
+          <Skeleton className="mx-auto h-4 w-40 rounded-md" disableAnimation />
         </div>
       </div>
 
       {/* Score counter */}
       <div className="mt-4 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16" />
-        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-16 rounded-md" />
+        <Skeleton className="h-8 w-16 rounded-md" />
       </div>
 
       {/* Quit / end-training link */}
       <div className="mt-4 flex justify-center">
-        <Skeleton className="h-5 w-24" disableAnimation />
+        <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
       </div>
     </div>
   );

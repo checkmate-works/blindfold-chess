@@ -22,6 +22,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { tabItemClass, tabsRowClass, tabsScrollClass } from '@/app/[locale]/_components/tab-styles';
 
 export default async function ChunkDetailLoading() {
@@ -42,8 +43,8 @@ export default async function ChunkDetailLoading() {
         {/* Description */}
         <SectionTitle>{tChunks('detail.descriptionSection')}</SectionTitle>
         <div className="space-y-2" aria-hidden="true">
-          <div className="h-4 w-full animate-pulse rounded bg-muted" />
-          <div className="h-4 w-4/5 animate-pulse rounded bg-muted" />
+          <Skeleton className="h-4 w-full rounded" />
+          <Skeleton className="h-4 w-4/5 rounded" />
         </div>
 
         {/* Representative board (ThemedBoardThumbnail) */}
@@ -53,14 +54,14 @@ export default async function ChunkDetailLoading() {
 
         {/* Author attribution */}
         <div className="flex items-center gap-2" aria-hidden="true">
-          <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
-          <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="h-4 w-32 rounded" />
         </div>
 
         {/* Metadata row (like affordance + timestamp) */}
         <div className="flex flex-wrap items-center justify-between gap-4" aria-hidden="true">
-          <div className="h-6 w-16 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+          <Skeleton className="h-6 w-16 rounded" />
+          <Skeleton className="h-4 w-28 rounded" />
         </div>
 
         {/* Tab row — Positions is the default tab. Static labels (no counts yet)
@@ -76,7 +77,7 @@ export default async function ChunkDetailLoading() {
         </div>
 
         {/* Default tab content: linked positions (description line + cards) */}
-        <div className="h-3 w-2/3 animate-pulse rounded bg-muted" aria-hidden="true" />
+        <Skeleton className="h-3 w-2/3 rounded" />
         <TopicCardSkeleton count={2} />
       </PagePanel>
     </div>

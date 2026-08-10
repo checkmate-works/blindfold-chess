@@ -30,7 +30,7 @@ export function SquareColorsPlaySkeleton({ showHeader = false }: Props) {
         {showHeader && (
           <div className="mb-6">
             <div className="mt-2 flex justify-between items-center">
-              <Skeleton className="h-5 w-28" disableAnimation />
+              <Skeleton className="h-5 w-28 rounded-md" disableAnimation />
               <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
             </div>
           </div>
@@ -38,7 +38,7 @@ export function SquareColorsPlaySkeleton({ showHeader = false }: Props) {
 
         {/* Square-name prompt */}
         <div className="mb-8">
-          <Skeleton className="mx-auto mb-4 h-[60px] w-28" />
+          <Skeleton className="mx-auto mb-4 h-[60px] w-28 rounded-md" />
         </div>
 
         {/* Light / dark answer buttons */}
@@ -50,13 +50,13 @@ export function SquareColorsPlaySkeleton({ showHeader = false }: Props) {
 
       {/* Score counter */}
       <div className="mt-8 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16" />
-        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-16 rounded-md" />
+        <Skeleton className="h-8 w-16 rounded-md" />
       </div>
 
       {/* Quit / end-training link */}
       <div className="mt-6 flex justify-center">
-        <Skeleton className="h-5 w-24" disableAnimation />
+        <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
       </div>
     </div>
   );

@@ -26,6 +26,7 @@ import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -222,7 +223,7 @@ async function SquarePostsSkeleton({ locale }: { locale: string }) {
       <PagePanel>
         {/* Square name */}
         <SectionTitle>
-          <div className="inline-block h-6 w-16 animate-pulse rounded bg-muted align-middle" />
+          <Skeleton className="inline-block h-6 w-16 rounded align-middle" />
         </SectionTitle>
 
         {/* SquareHighlightBoard (renders BoardSkeleton until preferences load) */}
@@ -233,7 +234,7 @@ async function SquarePostsSkeleton({ locale }: { locale: string }) {
         {/* Openings whose first move lands on this square (up to 3 cards) */}
         <div className="space-y-3">
           <SectionTitle>
-            <div className="inline-block h-5 w-40 animate-pulse rounded bg-muted align-middle" />
+            <Skeleton className="inline-block h-5 w-40 rounded align-middle" />
           </SectionTitle>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -245,7 +246,7 @@ async function SquarePostsSkeleton({ locale }: { locale: string }) {
         {/* Community thoughts */}
         <section className="mt-8 space-y-4">
           <SectionTitle>{t('communityThoughts')}</SectionTitle>
-          <div className="h-10 w-full animate-pulse rounded-md bg-muted" aria-hidden="true" />
+          <Skeleton className="h-10 w-full rounded-md" />
         </section>
 
         {/* Posts (BaseTopicPostCard — no thumbnail) */}

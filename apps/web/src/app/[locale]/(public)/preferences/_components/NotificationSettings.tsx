@@ -21,7 +21,7 @@ function NotificationSettingsSkeleton() {
     <ul className="divide-y divide-border">
       {MUTABLE_NOTIFICATION_TYPES.map((type) => (
         <li key={type} className="flex items-center justify-between gap-3 py-3">
-          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-32 rounded-md" />
           <Skeleton className="h-5 w-9 shrink-0 rounded-full" />
         </li>
       ))}

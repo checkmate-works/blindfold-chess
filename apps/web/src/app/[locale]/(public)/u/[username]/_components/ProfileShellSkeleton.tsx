@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { PageLayout } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { tabItemClass, tabsRowClass, tabsScrollClass } from '@/app/[locale]/_components/tab-styles';
 
 type Props = {
@@ -39,34 +40,30 @@ export function ProfileShellSkeleton({ title, locale, titleAction = true, childr
     <PageLayout
       title={title}
       locale={locale}
-      titleAction={
-        titleAction ? (
-          <div className="h-5 w-5 animate-pulse rounded-full bg-muted" aria-hidden="true" />
-        ) : undefined
-      }
+      titleAction={titleAction ? <Skeleton className="h-5 w-5 rounded-full" /> : undefined}
     >
       <div className="space-y-6" aria-hidden="true">
         {/* ProfileHeader: avatar (UserAvatar size="lg" = 64px) + name/handle,
             with the follow control and "⋯" menu on the right. */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4">
-            <div className="h-16 w-16 shrink-0 animate-pulse rounded-full bg-muted" />
+            <Skeleton className="h-16 w-16 shrink-0 rounded-full" />
             <div className="min-w-0 space-y-2">
-              <div className="h-6 w-40 max-w-full animate-pulse rounded bg-muted" />
-              <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+              <Skeleton className="h-6 w-40 max-w-full rounded" />
+              <Skeleton className="h-5 w-24 rounded" />
             </div>
           </div>
-          <div className="h-9 w-24 shrink-0 animate-pulse rounded-md bg-muted" />
+          <Skeleton className="h-9 w-24 shrink-0 rounded-md" />
         </div>
 
         {/* Follower count line. Social links and bio are optional per member,
             so they are left out rather than reserved for everyone. */}
-        <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+        <Skeleton className="h-5 w-32 rounded" />
 
         {/* Stats band: belt rank pill + achievements pill. */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="h-8 w-24 animate-pulse rounded-full bg-muted" />
-          <div className="h-8 w-28 animate-pulse rounded-full bg-muted" />
+          <Skeleton className="h-8 w-24 rounded-full" />
+          <Skeleton className="h-8 w-28 rounded-full" />
         </div>
 
         <div>

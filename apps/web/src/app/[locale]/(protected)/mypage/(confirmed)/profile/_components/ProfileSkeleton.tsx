@@ -17,16 +17,16 @@ function FieldSkeleton({
 }) {
   return (
     <div>
-      <Skeleton className={`mb-1 h-5 ${labelW}`} />
+      <Skeleton className={`mb-1 h-5 ${labelW} rounded-md`} />
       <Skeleton className={`w-full rounded-lg ${control}`} />
-      {hint && <Skeleton className="mt-2 h-3 w-28" />}
+      {hint && <Skeleton className="mt-2 h-3 w-28 rounded-md" />}
     </div>
   );
 }
 
 /** Section heading (`<h2 class="text-lg font-semibold">`, ~28px tall). */
 function HeadingSkeleton({ w }: { w: string }) {
-  return <Skeleton className={`h-7 ${w}`} />;
+  return <Skeleton className={`h-7 ${w} rounded-md`} />;
 }
 
 /**
@@ -40,7 +40,7 @@ export function ProfileSkeleton() {
     <>
       {/* "View public profile" pill */}
       <div className="mb-4">
-        <Skeleton className="h-[31px] w-64 !rounded-full" />
+        <Skeleton className="h-[31px] w-64 rounded-full" />
       </div>
 
       {/* Profile form (space-y-8 between avatar / sections / save button) */}
@@ -48,8 +48,8 @@ export function ProfileSkeleton() {
         {/* Avatar + upload caption, centered */}
         <div className="flex justify-center">
           <div className="flex flex-col items-center gap-3">
-            <Skeleton className="h-24 w-24 !rounded-full" />
-            <Skeleton className="h-4 w-44" />
+            <Skeleton className="h-24 w-24 rounded-full" />
+            <Skeleton className="h-4 w-44 rounded-md" />
           </div>
         </div>
 
@@ -94,7 +94,7 @@ export function ProfileSkeleton() {
 
       {/* Delete-account link */}
       <Divider />
-      <Skeleton className="h-5 w-12" />
+      <Skeleton className="h-5 w-12 rounded-md" />
     </>
   );
 }

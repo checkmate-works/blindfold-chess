@@ -2,6 +2,8 @@
 
 import { BoardFrame, BoardSkeleton } from '@/app/_components';
 
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+
 /**
  * Loading placeholder for the solution step's {@link PuzzleSolutionFields},
  * shown while the sessionStorage draft hydrates (`!step.ready`). Mirrors that
@@ -16,8 +18,8 @@ export function PuzzleSolutionSkeleton() {
     <>
       {/* Side-to-move indicator + flip button. */}
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="h-5 w-28 animate-pulse rounded bg-muted" />
-        <div className="h-9 w-9 animate-pulse rounded bg-muted" />
+        <Skeleton className="h-5 w-28 rounded" />
+        <Skeleton className="h-9 w-9 rounded" />
       </div>
 
       {/* Board. */}
@@ -28,16 +30,16 @@ export function PuzzleSolutionSkeleton() {
       {/* Solution section: label row + move-input placeholder. */}
       <div className="space-y-3">
         <div className="flex items-baseline justify-between">
-          <div className="h-5 w-24 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+          <Skeleton className="h-5 w-24 rounded" />
+          <Skeleton className="h-4 w-10 rounded" />
         </div>
         <div className="h-11 w-full animate-pulse rounded bg-muted/40" />
       </div>
 
       {/* Primary / secondary button stack. */}
       <div className="flex flex-col gap-3 pt-2">
-        <div className="h-12 w-full animate-pulse rounded bg-muted" />
-        <div className="h-12 w-full animate-pulse rounded bg-muted" />
+        <Skeleton className="h-12 w-full rounded" />
+        <Skeleton className="h-12 w-full rounded" />
       </div>
     </>
   );

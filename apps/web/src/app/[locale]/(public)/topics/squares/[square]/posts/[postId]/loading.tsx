@@ -5,6 +5,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 
 import { ReplyCardsSkeleton } from '@/app/[locale]/(public)/topics/_components/ReplyCardsSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 export default async function SquarePostDetailLoading() {
   const locale = await getLocaleFromPathnameHeader();
@@ -28,7 +29,7 @@ export default async function SquarePostDetailLoading() {
 
         {/* Back link — dynamic (square name) */}
         <div>
-          <div className="h-4 w-40 bg-muted rounded animate-pulse" />
+          <Skeleton className="h-4 w-40 rounded" />
         </div>
 
         {/* Post card: avatar + name/date + body + actions */}
@@ -65,7 +66,7 @@ export default async function SquarePostDetailLoading() {
         <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
           <ol className="flex flex-wrap items-center gap-x-1 text-sm">
             <li>
-              <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+              <Skeleton className="w-6 h-6 rounded-sm" />
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>
@@ -77,7 +78,7 @@ export default async function SquarePostDetailLoading() {
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>
-              <div className="h-4 w-12 bg-muted rounded animate-pulse" />
+              <Skeleton className="h-4 w-12 rounded" />
             </li>
             <li className="flex items-center">
               <span className="mx-1 text-muted-foreground">/</span>

@@ -13,7 +13,7 @@ export function ActionButtonSkeleton() {
       className="flex min-h-[42px] items-center justify-center gap-2 rounded-md border border-border px-4 py-2"
     >
       <Skeleton disableAnimation className="h-4 w-4 rounded-sm" />
-      <Skeleton disableAnimation className="hidden h-4 w-14 md:block" />
+      <Skeleton disableAnimation className="hidden h-4 w-14 md:block rounded-md" />
     </div>
   );
 }

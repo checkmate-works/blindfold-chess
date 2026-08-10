@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PageLayout } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Overrides the profile shell skeleton (`../loading.tsx`) for a page that does
@@ -23,8 +24,8 @@ export default async function ProfileFollowersLoading() {
       <div className="space-y-3" aria-hidden="true">
         {Array.from({ length: 5 }, (_, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted" />
-            <div className="h-5 w-40 max-w-full animate-pulse rounded bg-muted" />
+            <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+            <Skeleton className="h-5 w-40 max-w-full rounded" />
           </div>
         ))}
       </div>

@@ -6,6 +6,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { useTheme } from '@/lib/theme/ThemeProvider';
 
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+
 import { PreferenceOption } from './PreferenceOption';
 
 export function ThemeSelector() {
@@ -22,7 +24,7 @@ export function ThemeSelector() {
     return (
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-muted animate-pulse rounded-md" />
+          <Skeleton key={i} className="h-16 rounded-md" />
         ))}
       </div>
     );
