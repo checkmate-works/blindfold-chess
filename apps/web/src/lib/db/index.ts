@@ -1,10 +1,12 @@
+import { PHASE_PRODUCTION_BUILD } from 'next/constants';
+
 import * as Sentry from '@sentry/nextjs';
 import { waitUntil } from '@vercel/functions';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
-import { derivePoolerMode } from './pooler-mode';
+import { derivePoolerMode, resolvePoolMax } from './pooler-mode';
 import {
   type DeadlineRetry,
   setCapacityRetry,
@@ -109,11 +111,15 @@ function createPooledClient(): ReturnType<typeof postgres> {
     // statements across its per-statement backend assignment. Session mode
     // could use them; enabling it there is an unexplored perf follow-up.
     prepare: false,
-    // Shared budget under Fluid Compute. In session mode each connection pins
-    // a Postgres backend for its lifetime and the pooler's "Pool Size" is
-    // shared across ALL concurrently-warm instances, so the per-instance cap
-    // is halved — raise the dashboard budget before raising this.
-    max: poolerMode === 'session' ? 5 : 10,
+    // Shared budget under Fluid Compute (runtime), clamped hard during
+    // `next build` — static-export workers each own a pool of this size and
+    // nothing else bounds (workers × max) against the shared connection
+    // ceiling. Sizing rationale, the measured local exhaustion (SQLSTATE
+    // 53300) and its Data-Cache trigger live on `resolvePoolMax`'s TSDoc.
+    // `NEXT_PHASE` reaches the export workers because Next's worker wrapper
+    // (`next/dist/lib/worker.js`) spreads the parent's `process.env` into
+    // every fork, and the phase is set before workers spawn.
+    max: resolvePoolMax(poolerMode, process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD),
     idle_timeout: IDLE_TIMEOUT_SECONDS, // release idle connections back to the pooler
     max_lifetime: 60 * 30, // seconds — recycle long-lived connections
     connect_timeout: 10, // seconds — fail fast instead of the 30s default

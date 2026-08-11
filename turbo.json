@@ -5,6 +5,7 @@
     "CI",
     "NODE_OPTIONS",
     "NEXT_RUNTIME",
+    "NEXT_PHASE",
     "VERCEL",
     "VERCEL_ENV",
     "VERCEL_URL",
