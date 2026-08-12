@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
-import { sanitizeNext } from '@/lib/safe-next';
+import { resolveReturnPath } from '@/lib/auth-return-path';
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PageLayout } from '@/app/[locale]/_components';
@@ -51,7 +51,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
   const { error, next: nextRaw } = await searchParams;
   // Where to land after signing up (a CTA-gated page passes its own URL).
   // Validated to an internal path to prevent open redirects.
-  const next = sanitizeNext(nextRaw);
+  const next = resolveReturnPath(nextRaw);
 
   const supabase = await createClient();
   const {

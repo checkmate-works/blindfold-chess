@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/client';
 type Props = {
   namespace: 'signIn' | 'signUp';
   /**
-   * Internal path to return to after auth (validated upstream by `sanitizeNext`).
+   * Internal path to return to after auth (validated upstream by `resolveReturnPath`).
    * Forwarded to `/auth/callback` so a CTA-gated page can round-trip the user
    * back. Omitted → the callback falls back to its default (mypage).
    */
