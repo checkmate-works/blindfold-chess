@@ -13,7 +13,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { ThemeProvider } from '@/lib/theme/ThemeProvider';
 
-import { NullHistoryStateRecovery } from '../_components/NullHistoryStateRecovery';
+import { HistoryTraversalRecovery } from '../_components/HistoryTraversalRecovery';
 import { ToastContainer } from '../_components/ToastContainer';
 import { AuthProvider } from '../_contexts/AuthContext';
 import { ToastProvider } from '../_contexts/ToastContext';
@@ -47,7 +47,7 @@ export function Providers({ children, locale, messages }: Props) {
                           effect must run before NavigationGuardProvider's, see
                           the component TSDoc. `useSearchParams` needs the same
                           Suspense boundary as ToastContainer. */}
-                      <NullHistoryStateRecovery />
+                      <HistoryTraversalRecovery />
                     </Suspense>
                   </ToastProvider>
                 </AuthProvider>
