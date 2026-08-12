@@ -3,6 +3,8 @@ import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { withReturnPath } from '@/lib/auth-return-path';
+import { getCurrentReturnTarget } from '@/lib/current-return-target';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { createClient } from '@/lib/supabase/server';
 
@@ -64,7 +66,13 @@ async function ProtectedGate({ children, params }: Props) {
   const { locale } = await params;
 
   if (!user) {
-    redirect(`/${locale}/sign-in?toast=sign_in_required`);
+    // Normally unreachable — the proxy's `/mypage` guard redirects first, and
+    // it is the one that carries the return target in practice. Kept in sync
+    // with it so this fallback does not silently drop the destination if the
+    // proxy's path list ever stops covering a protected route.
+    redirect(
+      withReturnPath(`/${locale}/sign-in?toast=sign_in_required`, await getCurrentReturnTarget())
+    );
   }
 
   if (await isUserBanned(user.id)) {

@@ -5,7 +5,7 @@ import { negotiateLocale } from '@/i18n/negotiate-locale';
 import * as Sentry from '@sentry/nextjs';
 
 import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
-import { resolveReturnPath, withReturnPath } from '@/lib/auth-return-path';
+import { resolveReturnPath, returnTargetFor, withReturnPath } from '@/lib/auth-return-path';
 import {
   buildCspHeader,
   buildReportToHeader,
@@ -64,21 +64,6 @@ function isAdminPath(pathname: string): boolean {
 function isSignInPath(pathname: string): boolean {
   const pattern = new RegExp(`^/[^/]+${SIGN_IN_PATH}(/.*)?$`);
   return pattern.test(pathname);
-}
-
-/**
- * The current URL as a post-auth return target, minus `_rsc`.
- *
- * Next.js appends `_rsc=<hash>` when a soft navigation fetches a route's RSC
- * payload, and a guard redirect fires on that request too. Carrying the
- * parameter into `?next=` would make the post-sign-in landing request the RSC
- * payload of the page instead of the page.
- */
-function returnTargetFor(pathname: string, search: string): string {
-  const params = new URLSearchParams(search);
-  params.delete('_rsc');
-  const query = params.toString();
-  return query ? `${pathname}?${query}` : pathname;
 }
 
 function isAdsCookieRefreshPath(pathname: string): boolean {
