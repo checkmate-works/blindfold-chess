@@ -27,7 +27,7 @@ type Props = {
   data: LeaderboardResult;
   currentPage: number;
   // Optional slot rendered immediately below the SectionTitle. Accepts a
-  // pre-constructed React element (e.g., <PeriodSelector ... />) so the host
+  // pre-constructed React element (e.g., <PeriodTabs ... />) so the host
   // page owns the href data and the nested component stays presentational.
   periodSelector?: ReactNode;
 };

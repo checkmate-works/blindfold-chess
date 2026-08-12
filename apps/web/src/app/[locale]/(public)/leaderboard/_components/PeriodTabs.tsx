@@ -16,10 +16,16 @@ type Props = {
  * and the page stays SSR-friendly. This is an async server component so it
  * can await `getTranslations` directly.
  *
- * Use this variant on pages where the period switch is a primary navigation
- * affordance (e.g., the score top page). For secondary pages where the
- * switch is a discreet utility control, use the client `<PeriodSelector>`
- * dropdown instead.
+ * This is the ONLY period switcher — a discreet client `<select>` variant
+ * (`PeriodSelector`) used to exist for the detail pages and was removed on
+ * purpose, not for looks: on iOS the native picker's `change` event carries
+ * no page-level user activation, so the `history.pushState` Next.js later
+ * issues for the `router.push` is classed as a JS "dummy" entry by WebKit's
+ * swipe-back hardening (WebKit bug 248303, iOS 16 regression), and the
+ * swipe-back gesture then skips or silently ignores the entry. Real `<a>`
+ * taps keep their activation. Do not resurrect a select-driven
+ * `router.push` period switcher while that WebKit behaviour is in the
+ * field.
  */
 export async function PeriodTabs({ currentPeriod, hrefs, locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
