@@ -54,8 +54,8 @@ vi.mock('@/app/[locale]/(public)/leaderboard/_components', () => ({
 vi.mock('@/app/[locale]/(public)/leaderboard/_components/ChallengeLink', () => ({
   ChallengeLink: () => null,
 }));
-vi.mock('@/app/[locale]/(public)/leaderboard/_components/PeriodSelector', () => ({
-  PeriodSelector: () => null,
+vi.mock('@/app/[locale]/(public)/leaderboard/_components/PeriodTabs', () => ({
+  PeriodTabs: () => null,
 }));
 
 // Capture whatever `items` prop the page hands to <Breadcrumb>. The real

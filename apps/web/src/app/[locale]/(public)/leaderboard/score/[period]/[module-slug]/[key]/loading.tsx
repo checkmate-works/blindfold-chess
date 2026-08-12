@@ -3,7 +3,7 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Loading skeleton for the score leaderboard detail page. Mirrors the
- * resolved DOM: SectionTitle + PeriodSelector (labeled select) + table
+ * resolved DOM: SectionTitle + PeriodTabs (3-pill segmented control) + table
  * (header + 20 rows) + pagination + full-width Try This Challenge CTA +
  * back link.
  */
@@ -14,10 +14,11 @@ export default function ScoreLeaderboardDetailLoading() {
         {/* SectionTitle (module + period label) */}
         <Skeleton className="h-8 w-72 rounded" />
 
-        {/* PeriodSelector (visible label + select box) */}
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-20 rounded bg-muted" />
-          <div className="h-9 w-32 rounded-md border border-border bg-card" />
+        {/* PeriodTabs */}
+        <div className="flex rounded-lg bg-secondary p-1">
+          <div className="h-10 flex-1 rounded-md" />
+          <div className="h-10 flex-1 rounded-md" />
+          <div className="h-10 flex-1 rounded-md" />
         </div>
 
         {/* Table: header + 20 rows */}

@@ -8,8 +8,18 @@
  *
  * @flow
  * - SectionTitle (module + period label)
- * - PeriodSelector (select dropdown — this is the one surface where the
- *   discreet dropdown is kept; the two top-level pages use PeriodTabs instead)
+ * - PeriodTabs (link-based segmented control, same as the top-level pages).
+ *   This surface used to keep a discreet `<select>` dropdown
+ *   (`PeriodSelector`) instead; it was dropped on purpose. On iOS the native
+ *   picker's `change` event carries no page-level user activation, so the
+ *   `history.pushState` Next.js later issues for the navigation is classed
+ *   as a JS "dummy" entry by WebKit's swipe-back hardening (WebKit bug
+ *   248303, iOS 16 regression) — swiping back then skips or silently
+ *   ignores the entry and the screen freezes on the old period. Real `<a>`
+ *   taps keep their activation, so link tabs do not trigger the bug. Do not
+ *   reintroduce a select-driven `router.push` here (or elsewhere) while
+ *   that WebKit behaviour is in the field; see `HistoryTraversalRecovery`
+ *   for the runtime mitigation covering the remaining cases.
  * - Paginated leaderboard table
  * - Full-width Try This Challenge CTA
  * - Back link to the middle hub `/leaderboard/score/[period]/[module-slug]`
@@ -24,7 +34,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { LeaderboardDetailContent } from '@/app/[locale]/(public)/leaderboard/_components';
 import { ChallengeLink } from '@/app/[locale]/(public)/leaderboard/_components/ChallengeLink';
-import { PeriodSelector } from '@/app/[locale]/(public)/leaderboard/_components/PeriodSelector';
+import { PeriodTabs } from '@/app/[locale]/(public)/leaderboard/_components/PeriodTabs';
 import {
   type LeaderboardModule,
   type LeaderboardPeriod,
@@ -166,8 +176,9 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
         data={data}
         currentPage={page}
         periodSelector={
-          <PeriodSelector
+          <PeriodTabs
             currentPeriod={validated.period}
+            locale={locale}
             hrefs={{
               'all-time': `/${locale}/leaderboard/score/all-time/${validated.moduleSlug}/${validated.key}`,
               weekly: `/${locale}/leaderboard/score/weekly/${validated.moduleSlug}/${validated.key}`,
