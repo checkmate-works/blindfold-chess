@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { asc } from 'drizzle-orm';
 
+import { withReturnPath } from '@/lib/auth-return-path';
+import { getCurrentReturnTarget } from '@/lib/current-return-target';
 import { chessOpenings, db } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -98,6 +100,7 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
 
   // Fetch existing answer for authenticated users
   const answer = user ? await getInterviewAnswer(user.id, questionKey) : null;
+  const returnTarget = user ? null : await getCurrentReturnTarget();
 
   const openings = (allOpenings ?? []).map((o) => {
     const translatedName = tOpeningNames.has(o.slug as never)
@@ -135,14 +138,14 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">{tDetail('signInRequired')}</p>
           <Link
-            href="/sign-in"
+            href={withReturnPath('/sign-in', returnTarget)}
             locale={locale}
             className="flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             {tDetail('signIn')}
           </Link>
           <Link
-            href="/sign-up"
+            href={withReturnPath('/sign-up', returnTarget)}
             locale={locale}
             className="flex w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
