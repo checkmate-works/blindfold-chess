@@ -2,9 +2,9 @@
 
 import type { ReactNode } from 'react';
 
-import { Link } from '@/i18n/routing';
-import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+
+import { AuthCtaLink } from './AuthCtaLink';
 
 type Props = {
   children: ReactNode;
@@ -23,7 +23,6 @@ type Props = {
  */
 export function GuestCreateGate({ children }: Props) {
   const t = useTranslations('authPrompt');
-  const locale = useLocale();
 
   return (
     <div className="relative grid">
@@ -37,20 +36,18 @@ export function GuestCreateGate({ children }: Props) {
             <h2 className="text-xl font-bold text-foreground">{t('title')}</h2>
             <p className="text-muted-foreground">{t('createDescription')}</p>
             <div className="flex flex-col gap-3 pt-2">
-              <Link
-                href="/sign-up"
-                locale={locale}
+              <AuthCtaLink
+                to="/sign-up"
                 className="block w-full rounded-md px-4 py-2 text-center font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 {t('signUpButton')}
-              </Link>
-              <Link
-                href="/sign-in"
-                locale={locale}
+              </AuthCtaLink>
+              <AuthCtaLink
+                to="/sign-in"
                 className="block w-full rounded-md px-4 py-2 text-center font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
               >
                 {t('signInButton')}
-              </Link>
+              </AuthCtaLink>
             </div>
           </div>
         </div>
