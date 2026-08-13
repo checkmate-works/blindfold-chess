@@ -7,12 +7,10 @@ import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_comp
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
-import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
 
-import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
-import { DiagonalInputField } from '../../_components/DiagonalInputField';
+import { DiagonalAnswerPanel } from '../../_components/DiagonalAnswerPanel';
 import { useKeypadInput } from '../_hooks/use-keypad-input';
 
 type Props = {
@@ -75,26 +73,7 @@ export function DiagonalQuizPlaying({
   const antiDiagonalResult =
     showResult && lastAnswer ? (lastAnswer.isAntiDiagonalCorrect ? 'correct' : 'incorrect') : null;
 
-  const {
-    singleDiagonal,
-    singleAntiDiagonal,
-    diagonalStartText,
-    diagonalEndText,
-    antiDiagonalStartText,
-    antiDiagonalEndText,
-    activeField,
-    isDiagonalComplete,
-    isAntiDiagonalComplete,
-    expectingFile,
-    expectingRank,
-    isInputtingStart,
-    isInputtingEnd,
-    handleFilePress,
-    handleRankPress,
-    handleBackspace,
-    handleClear,
-    handleFieldClick,
-  } = useKeypadInput({
+  const input = useKeypadInput({
     currentSquare,
     showResult,
     isDisabled,
@@ -102,9 +81,9 @@ export function DiagonalQuizPlaying({
   });
 
   useAlgebraicKeyboardInput({
-    onFile: handleFilePress,
-    onRank: handleRankPress,
-    onBackspace: handleBackspace,
+    onFile: input.handleFilePress,
+    onRank: input.handleRankPress,
+    onBackspace: input.handleBackspace,
     enabled: !isDisabled,
   });
 
@@ -129,72 +108,29 @@ export function DiagonalQuizPlaying({
           timeLimit={timeLimit}
         />
 
-        <div className="mb-6">
-          <div className="text-6xl font-bold text-foreground mb-4 select-none">{currentSquare}</div>
-
-          {showResult && lastAnswer && (
-            <p className="sr-only" role="status">
-              {lastAnswer.correct
+        <DiagonalAnswerPanel
+          currentSquare={currentSquare}
+          input={input}
+          isDisabled={isDisabled}
+          srResultText={
+            showResult && lastAnswer
+              ? lastAnswer.correct
                 ? tPractice('correct')
                 : t('correctAnswer', {
                     diagonal: lastAnswer.correctDiagonal,
                     antiDiagonal: lastAnswer.correctAntiDiagonal,
-                  })}
-            </p>
-          )}
-        </div>
-
-        {/* Diagonal Input Display Fields */}
-        <div className="space-y-3 mb-6">
-          <DiagonalInputField
-            label={t('diagonalLabel')}
-            isSingleSquare={singleDiagonal}
-            activeField={activeField}
-            fieldType="diagonal"
-            startText={diagonalStartText}
-            endText={diagonalEndText}
-            isComplete={isDiagonalComplete}
-            isDisabled={isDisabled}
-            isInputtingStart={isInputtingStart}
-            isInputtingEnd={isInputtingEnd}
-            onFieldClick={handleFieldClick}
-            result={diagonalResult}
-          />
-
-          <DiagonalInputField
-            label={t('antiDiagonalLabel')}
-            isSingleSquare={singleAntiDiagonal}
-            activeField={activeField}
-            fieldType="antiDiagonal"
-            startText={antiDiagonalStartText}
-            endText={antiDiagonalEndText}
-            isComplete={isAntiDiagonalComplete}
-            isDisabled={isDisabled}
-            isInputtingStart={isInputtingStart}
-            isInputtingEnd={isInputtingEnd}
-            onFieldClick={handleFieldClick}
-            result={antiDiagonalResult}
-          />
-        </div>
-
-        {/* Step indicator — height reserved so the keypad stays put when the
-              hint clears on result (no layout shift). */}
-        <div className="text-sm text-muted-foreground mb-4 min-h-5">
-          {!isDisabled && (expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : '')}
-        </div>
-
-        {/* Button Input Area */}
-        <ChessCoordinateKeypad
-          expectingFile={expectingFile}
-          expectingRank={expectingRank}
-          isDisabled={isDisabled}
-          onFilePress={handleFilePress}
-          onRankPress={handleRankPress}
-          onBackspace={handleBackspace}
-          onClear={handleClear}
+                  })
+              : null
+          }
+          labels={{
+            diagonal: t('diagonalLabel'),
+            antiDiagonal: t('antiDiagonalLabel'),
+            selectFile: t('selectFile'),
+            selectRank: t('selectRank'),
+          }}
+          diagonalResult={diagonalResult}
+          antiDiagonalResult={antiDiagonalResult}
         />
-
-        <AlgebraicKeyboardHint disabled={isDisabled} />
 
         {showStats && (
           <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
