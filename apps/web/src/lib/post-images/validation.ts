@@ -2,24 +2,18 @@
  * Validation constants and helpers for post image uploads.
  *
  * @description
- * Intentionally separate from `apps/web/src/app/api/admin/articles/[id]/images/image-validation.ts`:
- * - Article images are admin-only and currently allow SVG (admin-only context,
- *   isolated Storage domain). Post images are user-uploaded UGC, so SVG is a
- *   hard reject (XSS / script-injection vector via inline `<script>`).
- * - Article images cap at 5 MB; post images cap at 2 MB.
- * - The MIME allow-list is therefore narrower here.
+ * Intentionally separate from the admin upload policy in
+ * `@/lib/admin-images/validation`: post images are user-uploaded UGC and cap
+ * at 2 MB, admin images at 5 MB, and only this path owns the storage-path
+ * layout that RLS and a DB CHECK pin. Merging the two would force one set of
+ * constants on both and risk a future relaxation on either side leaking to
+ * the other.
  *
- * Mixing the two via a shared module would force one set of constants on
- * both paths and risk a future relaxation on either side leaking to the
- * other. Keeping them separate is the safer default.
- *
- * @design Magic-byte verification (`validatePostImageBinarySignature`)
- *
- * The handler also checks the file's binary signature against the declared
- * `Content-Type`, so a request with `Content-Type: image/jpeg` but a payload
- * that doesn't start with `FF D8 FF` is rejected. This mitigates "MIME
- * spoofing" attacks where a uploader claims an image MIME but uploads a
- * different file type.
+ * What is NOT duplicated across the two is the magic-byte check: both import
+ * `validateImageBinarySignature` from `@/lib/images/binary-signature`. That
+ * one is a fact about image formats rather than a per-surface policy, and
+ * when it did exist twice the admin copy silently drifted weaker. See that
+ * module's TSDoc.
  *
  * @design Module location
  *
@@ -89,50 +83,6 @@ export function buildPostImageStoragePath(args: {
   }
   const ext = POST_IMAGES_MIME_TO_EXTENSION[contentType];
   return `${userId}/${postId}/${randomUuid}.${ext}`;
-}
-
-/**
- * Validate a binary signature ("magic bytes") against the declared MIME.
- * Returns true only when the buffer starts with the expected bytes for
- * the declared type. SVG is intentionally NOT supported.
- */
-export function validatePostImageBinarySignature(
-  buffer: ArrayBuffer,
-  declaredType: string
-): boolean {
-  const header = new Uint8Array(buffer.slice(0, 12));
-
-  if (declaredType === 'image/jpeg') {
-    return header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
-  }
-  if (declaredType === 'image/png') {
-    return (
-      header[0] === 0x89 &&
-      header[1] === 0x50 &&
-      header[2] === 0x4e &&
-      header[3] === 0x47 &&
-      header[4] === 0x0d &&
-      header[5] === 0x0a &&
-      header[6] === 0x1a &&
-      header[7] === 0x0a
-    );
-  }
-  if (declaredType === 'image/webp') {
-    // WebP files start with "RIFF" + 4 bytes size + "WEBP"
-    return (
-      header[0] === 0x52 &&
-      header[1] === 0x49 &&
-      header[2] === 0x46 &&
-      header[3] === 0x46 &&
-      header[8] === 0x57 &&
-      header[9] === 0x45 &&
-      header[10] === 0x42 &&
-      header[11] === 0x50
-    );
-  }
-
-  // SVG / image/svg+xml / unknown: reject.
-  return false;
 }
 
 export function isAllowedPostImageMimeType(value: unknown): value is PostImageMimeType {

@@ -5,10 +5,8 @@ import sharp from 'sharp';
 
 import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { db, profiles } from '@/lib/db';
-import {
-  POST_IMAGES_MAX_MEGAPIXELS,
-  validatePostImageBinarySignature,
-} from '@/lib/post-images/validation';
+import { parseImageUpload } from '@/lib/images/parse-upload';
+import { POST_IMAGES_MAX_MEGAPIXELS } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -34,35 +32,17 @@ export async function POST(request: Request) {
 
   const supabase = await createClient();
 
-  let formData: FormData;
-  try {
-    formData = await request.formData();
-  } catch {
-    return NextResponse.json({ error: 'invalid_form_data' }, { status: 400 });
+  // Parse + allow-list + size cap + magic-byte check, in that order. Shared
+  // with the admin image endpoints so the avatar path cannot quietly lose a
+  // step; only the allow-list and cap are ours.
+  const upload = await parseImageUpload(request, {
+    allowedMimeTypes: ALLOWED_TYPES,
+    maxFileSize: MAX_SIZE,
+  });
+  if (upload.error) {
+    return upload.error;
   }
-
-  const file = formData.get('file');
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: 'file_required' }, { status: 400 });
-  }
-
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
-  }
-
-  if (file.size > MAX_SIZE) {
-    return NextResponse.json({ error: 'file_too_large' }, { status: 400 });
-  }
-
-  const buffer = await file.arrayBuffer();
-
-  // Magic-byte check against the declared MIME — rejects a payload whose
-  // binary signature does not match its Content-Type (MIME spoofing).
-  // Shares the post-image signature validator; the avatar allow-list
-  // (jpeg/png/webp) is a subset of what it recognizes.
-  if (!validatePostImageBinarySignature(buffer, file.type)) {
-    return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
-  }
+  const { buffer } = upload;
 
   // Resize to a square WebP. `.rotate()` bakes in EXIF orientation and then
   // strips ALL EXIF / GPS metadata (Sharp's documented default for

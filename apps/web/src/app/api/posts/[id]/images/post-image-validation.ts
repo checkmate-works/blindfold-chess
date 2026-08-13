@@ -8,6 +8,10 @@
  * folder keep working.
  *
  * New imports should reference `@/lib/post-images/validation` directly.
+ *
+ * The magic-byte validator is no longer re-exported here: it moved to
+ * `@/lib/images/binary-signature` when the post and admin upload paths were
+ * collapsed onto one implementation.
  */
 export {
   MAX_IMAGES_PER_POST,
@@ -19,6 +23,5 @@ export {
   POST_IMAGE_STORAGE_PATH_REGEX,
   buildPostImageStoragePath,
   isAllowedPostImageMimeType,
-  validatePostImageBinarySignature,
 } from '@/lib/post-images/validation';
 export type { PostImageMimeType } from '@/lib/post-images/validation';
