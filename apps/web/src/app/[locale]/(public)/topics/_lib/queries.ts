@@ -2,13 +2,13 @@ import { cache } from 'react';
 
 import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 
-import { db, liveProfileJoinOn, profiles, topicPosts } from '@/lib/db';
+import { SOCIAL_AUTHOR_COLUMNS, db, liveProfileJoinOn, profiles, topicPosts } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
 
 import { sortRoots } from './comment-tree';
 import type { TopicType } from './constants';
 import { attachPostMeta } from './post-meta';
-import { authorSelect, sortPosts } from './shared';
+import { sortPosts } from './shared';
 import type { PostWithReplyMeta, SortMode, TopicPostWithAuthor } from './shared';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -24,7 +24,7 @@ function selectPostsWithAuthor() {
   return db
     .select({
       post: topicPosts,
-      author: authorSelect,
+      author: SOCIAL_AUTHOR_COLUMNS,
     })
     .from(topicPosts)
     .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId));

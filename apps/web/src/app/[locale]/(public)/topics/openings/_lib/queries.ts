@@ -4,6 +4,7 @@ import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
 import {
+  SOCIAL_AUTHOR_COLUMNS,
   chessOpenings,
   db,
   liveProfileJoinOn,
@@ -22,7 +23,6 @@ import {
 } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import { getPostCountByTopicType } from '@/app/[locale]/(public)/topics/_lib/queries';
 import {
-  authorSelect,
   normalizeRating,
   ratingSelect,
   sortPosts,
@@ -57,7 +57,7 @@ async function getPostsForOpening(slug: string): Promise<OpeningPostWithAuthor[]
   const results = await db
     .select({
       post: topicPosts,
-      author: authorSelect,
+      author: SOCIAL_AUTHOR_COLUMNS,
       rating: ratingSelect,
     })
     .from(topicPosts)
@@ -105,7 +105,7 @@ export const getOpeningPostById = cache(
     const results = await db
       .select({
         post: topicPosts,
-        author: authorSelect,
+        author: SOCIAL_AUTHOR_COLUMNS,
         rating: ratingSelect,
       })
       .from(topicPosts)

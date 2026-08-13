@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import {
+  SOCIAL_AUTHOR_COLUMNS,
   chessOpenings,
   db,
   liveProfileJoinOn,
@@ -9,7 +10,7 @@ import {
   topicPosts,
 } from '@/lib/db';
 
-import { authorSelect, ratingSelect } from './shared';
+import { ratingSelect } from './shared';
 
 /**
  * Build the common base query for ProfilePostWithReplyMeta-style results.
@@ -20,7 +21,7 @@ export function buildProfilePostQuery() {
   return db
     .select({
       post: topicPosts,
-      author: authorSelect,
+      author: SOCIAL_AUTHOR_COLUMNS,
       rating: ratingSelect,
       openingName: chessOpenings.name,
       openingFen: chessOpenings.fen,

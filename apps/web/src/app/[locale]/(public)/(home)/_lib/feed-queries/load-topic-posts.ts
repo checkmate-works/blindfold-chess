@@ -1,6 +1,7 @@
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 
 import {
+  SOCIAL_AUTHOR_COLUMNS,
   chessOpenings,
   db,
   liveProfileJoinOn,
@@ -11,7 +12,7 @@ import {
 
 import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { authorSelect, ratingSelect } from '@/app/[locale]/(public)/topics/_lib/shared';
+import { ratingSelect } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 /**
  * Bulk-load the `topic_post` entities referenced by a slice of feed
@@ -35,7 +36,7 @@ export async function loadTopicPostsForFeed(
   const results = await db
     .select({
       post: topicPosts,
-      author: authorSelect,
+      author: SOCIAL_AUTHOR_COLUMNS,
       rating: ratingSelect,
       openingName: chessOpenings.name,
       openingFen: chessOpenings.fen,

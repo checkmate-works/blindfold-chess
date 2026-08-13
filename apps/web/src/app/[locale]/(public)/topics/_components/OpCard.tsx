@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FiEdit2 } from 'react-icons/fi';
 
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
+import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
@@ -25,13 +26,7 @@ import { EditableAttachments } from './EditableAttachments';
 import { EditedIndicator } from './EditedIndicator';
 import { LikeButton } from './LikeButton';
 
-type Author = {
-  username: string | null;
-  displayName: string | null;
-  avatarUrl: string | null;
-  flair: string | null;
-  country: string | null;
-} | null;
+type Author = SocialAuthorProfile | null;
 
 type Props = {
   postId: string;

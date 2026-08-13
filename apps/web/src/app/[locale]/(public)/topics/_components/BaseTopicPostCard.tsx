@@ -9,6 +9,7 @@ import { FaEyeSlash } from 'react-icons/fa';
 import { truncateContent } from '@/lib/content/truncate-content';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
+import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
 import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
@@ -31,13 +32,7 @@ type Props = {
   commentHref?: string;
   content: string;
   createdAt: Date;
-  author: {
-    username: string | null;
-    displayName: string | null;
-    avatarUrl: string | null;
-    flair: string | null;
-    country: string | null;
-  } | null;
+  author: SocialAuthorProfile | null;
   locale: string;
   topicKey: string;
   likeMeta: LikeMeta;
