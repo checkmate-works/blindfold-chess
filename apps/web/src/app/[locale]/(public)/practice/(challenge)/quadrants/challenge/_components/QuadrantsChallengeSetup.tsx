@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { BoardOrientation } from '@blindfold-chess/features/quadrants';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
+import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/(challenge)/_components/BoardOrientationSelector';
@@ -44,7 +44,7 @@ export function QuadrantsChallengeSetup({ locale }: Props) {
       onStart={handleStart}
       rules={
         <>
-          <li>{t('challengeSetup.timeLimit', { seconds: 60 })}</li>
+          <li>{t('challengeSetup.timeLimit', { seconds: CHALLENGE_TIME_LIMIT })}</li>
           <li>{t('challengeSetup.mistakeLimit', { count: MISTAKE_LIMIT })}</li>
           <li className="text-destructive">{tQa('challengeSetupNoLeaderboard')}</li>
         </>
