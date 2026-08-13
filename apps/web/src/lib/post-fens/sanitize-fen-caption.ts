@@ -21,7 +21,7 @@
  */
 import { sanitizeUserText } from '@/lib/security/sanitize-user-text';
 
-const FEN_CAPTION_MAX_LENGTH = 200;
+import { FEN_CAPTION_MAX_LENGTH } from './constants';
 
 export function sanitizeFenCaption(value: string | null | undefined): string | null {
   return sanitizeUserText(value, { maxLength: FEN_CAPTION_MAX_LENGTH });
