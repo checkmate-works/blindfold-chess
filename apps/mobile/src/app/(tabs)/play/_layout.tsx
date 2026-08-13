@@ -1,51 +1,25 @@
 import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
+
+import type { ModuleRoute } from "../../../navigation/module-stack-screens";
+import {
+  moduleStackScreenOptions,
+  moduleStackScreens,
+} from "../../../navigation/module-stack-screens";
 import { useTheme } from "../../../theme";
+
+const PLAY_MODULES: readonly ModuleRoute[] = [
+  { route: "ai-game", i18nKey: "aiGame" },
+];
 
 export default function PlayLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.card,
-        },
-        headerTintColor: colors.primary,
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
-        headerBackTitle: t("common.back"),
-      }}
-    >
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="ai-game/setup"
-        options={{
-          title: t("aiGame.setup.title"),
-        }}
-      />
-      <Stack.Screen
-        name="ai-game/session"
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="ai-game/result"
-        options={{
-          title: t("aiGame.result.title"),
-          headerBackVisible: false,
-          gestureEnabled: false,
-        }}
-      />
+    <Stack screenOptions={moduleStackScreenOptions(colors, t)}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      {moduleStackScreens(t, PLAY_MODULES)}
     </Stack>
   );
 }
