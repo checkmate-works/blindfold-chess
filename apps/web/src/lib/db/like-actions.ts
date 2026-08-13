@@ -1,6 +1,7 @@
-import { and, count, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
+import { countRows } from '@/lib/db/list-query';
 import { isBlockedBetween } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -49,12 +50,12 @@ export async function toggleLikeForTarget(params: {
     targetId,
   });
 
-  const [result] = await db
-    .select({ count: count() })
-    .from(likes)
-    .where(and(eq(likes.targetType, targetType), eq(likes.targetId, targetId)));
+  const likeCount = await countRows(
+    likes,
+    and(eq(likes.targetType, targetType), eq(likes.targetId, targetId))
+  );
 
-  return { liked, likeCount: result.count };
+  return { liked, likeCount };
 }
 
 /**

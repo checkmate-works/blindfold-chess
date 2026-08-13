@@ -1,8 +1,8 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import { desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
+import { desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 
 import { db, profiles, topicPosts } from '@/lib/db';
-import { combineConditions } from '@/lib/db/list-query';
+import { combineConditions, countRows } from '@/lib/db/list-query';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
@@ -67,14 +67,8 @@ export async function getAdminTopicPostsPageData({
 
   const whereClause = combineConditions(conditions);
 
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(topicPosts)
-    .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
-    page,
-    Number(countResult.count)
-  );
+  const totalCount = await countRows(topicPosts, whereClause);
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(page, totalCount);
 
   const posts =
     filteredUserIds?.length === 0

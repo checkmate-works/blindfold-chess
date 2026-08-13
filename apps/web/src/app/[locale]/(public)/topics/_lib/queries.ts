@@ -1,8 +1,9 @@
 import { cache } from 'react';
 
-import { and, asc, count, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 
 import { db, liveProfileJoinOn, profiles, topicPosts } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 
 import { sortRoots } from './comment-tree';
 import type { TopicType } from './constants';
@@ -63,11 +64,7 @@ function liveTopLevelPosts(topicType: TopicType, topicKey?: string) {
  * Get the count of top-level posts for a specific topic type ('square' or 'opening').
  */
 export async function getPostCountByTopicType(topicType: TopicType): Promise<number> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(topicPosts)
-    .where(liveTopLevelPosts(topicType));
-  return result.count;
+  return countRows(topicPosts, liveTopLevelPosts(topicType));
 }
 
 /**
@@ -151,11 +148,7 @@ export async function getPostCountByTopicKey(
   topicType: TopicType,
   topicKey: string
 ): Promise<number> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(topicPosts)
-    .where(liveTopLevelPosts(topicType, topicKey));
-  return result.count;
+  return countRows(topicPosts, liveTopLevelPosts(topicType, topicKey));
 }
 
 /**

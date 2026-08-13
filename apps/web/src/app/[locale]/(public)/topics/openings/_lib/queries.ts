@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
 import {
@@ -12,6 +12,7 @@ import {
   topicPosts,
 } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 
 import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
 import {
@@ -219,18 +220,15 @@ export async function getPostCountByFirstMoveSquare(square: string): Promise<num
 
   if (slugs.length === 0) return 0;
 
-  const [result] = await db
-    .select({ count: count() })
-    .from(topicPosts)
-    .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        inArray(topicPosts.topicKey, slugs),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    );
-  return result.count;
+  return countRows(
+    topicPosts,
+    and(
+      eq(topicPosts.topicType, 'opening'),
+      inArray(topicPosts.topicKey, slugs),
+      isNull(topicPosts.parentId),
+      isNull(topicPosts.deletedAt)
+    )
+  );
 }
 
 /**

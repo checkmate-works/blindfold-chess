@@ -1,7 +1,8 @@
-import { count, desc, eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 
 import {
   ADMIN_GRANT_SOURCE,
@@ -77,12 +78,7 @@ export async function getPointHistory(
  * because it renders a numbered pagination bar rather than a "load more".
  */
 export async function countPointHistory(userId: string): Promise<number> {
-  const [row] = await db
-    .select({ count: count() })
-    .from(pointEvents)
-    .where(eq(pointEvents.userId, userId));
-
-  return row?.count ?? 0;
+  return countRows(pointEvents, eq(pointEvents.userId, userId));
 }
 
 export function classifyKind(

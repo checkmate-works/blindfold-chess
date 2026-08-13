@@ -1,6 +1,7 @@
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { db, notifications, profiles } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 import { resolvePagination } from '@/lib/pagination';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
@@ -22,12 +23,7 @@ export async function getNotifications(
   userId: string,
   page: number = 1
 ): Promise<{ items: NotificationWithActor[]; totalPages: number }> {
-  const [countResult] = await db
-    .select({ count: count() })
-    .from(notifications)
-    .where(eq(notifications.userId, userId));
-
-  const totalCount = countResult.count;
+  const totalCount = await countRows(notifications, eq(notifications.userId, userId));
   const { totalPages, offset } = resolvePagination(page, totalCount, PAGE_SIZE);
 
   const rows = await db
@@ -73,10 +69,8 @@ export async function getNotifications(
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(notifications)
-    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
-
-  return result.count;
+  return countRows(
+    notifications,
+    and(eq(notifications.userId, userId), eq(notifications.isRead, false))
+  );
 }

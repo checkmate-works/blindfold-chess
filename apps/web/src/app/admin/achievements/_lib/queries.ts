@@ -1,6 +1,7 @@
 import { asc, desc, eq, sql } from 'drizzle-orm';
 
 import { achievements, db, profiles, userAchievements } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 
 export type AchievementWithHolderCount = {
   id: string;
@@ -47,8 +48,7 @@ export async function listAchievementsWithHolderCount({
 
 /** Total number of rows in the achievements master table. */
 export async function countAchievements(): Promise<number> {
-  const [row] = await db.select({ count: sql<number>`count(*)::int` }).from(achievements);
-  return row?.count ?? 0;
+  return countRows(achievements);
 }
 
 /** Fetch a single achievement by id (for the detail page header). */
@@ -96,9 +96,5 @@ export async function listAchievementHolders(
 
 /** Count holders (including duplicates for repeatable achievements). */
 export async function countAchievementHolders(achievementId: string): Promise<number> {
-  const [row] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(userAchievements)
-    .where(eq(userAchievements.achievementId, achievementId));
-  return row?.count ?? 0;
+  return countRows(userAchievements, eq(userAchievements.achievementId, achievementId));
 }

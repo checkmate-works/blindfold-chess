@@ -19,8 +19,10 @@
  * The window is calculated as `NOW() - windowMs`. This is a fixed-window counter,
  * which is simpler and sufficient for the use cases in this application.
  */
-import { and, count, eq, gt, sql } from 'drizzle-orm';
+import { and, eq, gt, sql } from 'drizzle-orm';
 import 'server-only';
+
+import { countRows } from '@/lib/db/list-query';
 
 import { db, rateLimitEvents } from '../db';
 
@@ -269,18 +271,14 @@ export function createOpeningPostRateLimit(slug: string): RateLimitConfig {
 async function countEventsInWindow(userId: string, config: RateLimitConfig): Promise<number> {
   const windowStart = sql`now() - ${config.windowMs / 1000.0}::double precision * interval '1 second'`;
 
-  const [result] = await db
-    .select({ count: count() })
-    .from(rateLimitEvents)
-    .where(
-      and(
-        eq(rateLimitEvents.userId, userId),
-        eq(rateLimitEvents.action, config.action),
-        gt(rateLimitEvents.createdAt, windowStart)
-      )
-    );
-
-  return result.count;
+  return countRows(
+    rateLimitEvents,
+    and(
+      eq(rateLimitEvents.userId, userId),
+      eq(rateLimitEvents.action, config.action),
+      gt(rateLimitEvents.createdAt, windowStart)
+    )
+  );
 }
 
 /**
