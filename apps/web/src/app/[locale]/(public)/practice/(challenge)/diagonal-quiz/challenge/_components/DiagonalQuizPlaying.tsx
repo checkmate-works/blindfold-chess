@@ -119,7 +119,7 @@ export function DiagonalQuizPlaying({
         <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 
         <ChallengeStatusHeader
-          className="flex justify-between items-center mb-4 min-h-[40px] relative"
+          className="flex justify-between items-center mb-4 min-h-[40px]"
           remainingLives={remainingLives}
           maxLives={maxLives}
           isPaused={isPaused}

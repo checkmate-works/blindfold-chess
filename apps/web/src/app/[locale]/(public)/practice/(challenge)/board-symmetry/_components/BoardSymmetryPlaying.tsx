@@ -64,13 +64,13 @@ export function BoardSymmetryPlaying({
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={onTogglePause}
-        className="p-8 text-center"
+        className="py-2 text-center"
       >
         <BoardSymmetryQuestionPanel
           problem={problem}
           statusHeader={
             <ChallengeStatusHeader
-              className="mb-6 flex justify-between items-center"
+              className="flex justify-between items-center mb-4 min-h-[40px]"
               remainingLives={remainingLives}
               maxLives={maxLives}
               isPaused={isPaused}
@@ -90,11 +90,11 @@ export function BoardSymmetryPlaying({
           inputDimmed={isProcessing || isPaused}
         />
 
-        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-4" />
+        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
       </ChallengeSessionVeil>
 
       <ChallengeQuitControl
-        className="flex flex-col items-center gap-2 mt-4"
+        className="mt-6 text-center"
         onQuitRequest={onQuitRequest}
         showQuitModal={showQuitModal}
         onQuitConfirm={onQuitConfirm}
