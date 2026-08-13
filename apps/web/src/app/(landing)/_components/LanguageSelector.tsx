@@ -5,21 +5,9 @@ import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, SUPPORTED_LOCALES } from '@/config';
+import { LOCALE_LABELS } from '@/i18n/locale-labels';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-/**
- * Human-readable label for each supported locale, shown in the landing-page
- * language selector. Typed as `Record<Locale, string>` so that adding a new
- * locale to `SUPPORTED_LOCALES` without adding a label here is a
- * compile-time error — the selector can never render an empty option.
- */
-const LOCALE_LABELS: Record<Locale, string> = {
-  en: 'English',
-  es: 'Español',
-  'pt-BR': 'Português (Brasil)',
-  ja: '日本語',
-};
 
 type Props = {
   currentLocale: Locale;
