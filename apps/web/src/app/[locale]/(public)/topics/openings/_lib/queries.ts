@@ -12,6 +12,7 @@ import {
   topicPosts,
 } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
+import type { LikeMeta } from '@/lib/db/like-queries';
 import { countRows } from '@/lib/db/list-query';
 
 import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
@@ -27,7 +28,6 @@ import {
   sortPosts,
 } from '@/app/[locale]/(public)/topics/_lib/shared';
 import type {
-  LikeMeta,
   PostWithReplyMeta,
   ProfilePostWithReplyMeta,
   SortMode,

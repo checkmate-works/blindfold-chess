@@ -1,5 +1,7 @@
 import { AUTHOR_PROFILE_COLUMNS, profiles, topicPostRatings } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
+import type { LikeMeta } from '@/lib/db/like-queries';
+import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 
 /**
  * Normalize a rating value: returns the rating if at least one field is non-null,
@@ -28,23 +30,6 @@ export const ratingSelect = {
 
 export type TopicPostWithAuthor = TopicPost & {
   author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl' | 'flair' | 'country'> | null;
-};
-
-export type Replier = {
-  avatarUrl: string | null;
-  displayName: string;
-};
-
-export type ReplyMeta = {
-  replyCount: number;
-  latestReplyAt: Date | null;
-  repliers: Replier[];
-  uniqueReplierCount: number;
-};
-
-export type LikeMeta = {
-  likeCount: number;
-  likedByMe: boolean;
 };
 
 export type PostWithReplyMeta = TopicPostWithAuthor & {

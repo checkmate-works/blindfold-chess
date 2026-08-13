@@ -7,6 +7,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaEyeSlash } from 'react-icons/fa';
 
 import { truncateContent } from '@/lib/content/truncate-content';
+import type { LikeMeta } from '@/lib/db/like-queries';
+import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 
 import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
@@ -14,7 +16,6 @@ import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import type { ToggleLikeAction } from '../_lib/action-types';
 import { formatRelativeTime } from '../_lib/relative-time';
-import type { LikeMeta, ReplyMeta } from '../_lib/shared';
 import { PostFooter } from './PostFooter';
 
 type Props = {

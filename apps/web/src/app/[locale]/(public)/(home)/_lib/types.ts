@@ -23,6 +23,8 @@ import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-d
 import type { FinalGameOutcome } from '@blindfold-chess/types';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import type { LikeMeta } from '@/lib/db/like-queries';
+import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { PositionType } from '@/lib/positions/types';
 
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
@@ -40,25 +42,6 @@ export type FeedActor = {
   flair: string | null;
 };
 
-/** Like count plus whether the viewer is one of them, for the like button. */
-export type FeedLikeMeta = {
-  likeCount: number;
-  likedByMe: boolean;
-};
-
-/**
- * Aggregate comment-thread meta for a feed entry: the reply count, when the
- * thread was last touched, and a few repliers' avatars to stack on the card.
- * Entries with no thread (a `sequence`-type position) get an empty block
- * rather than an absent one, so cards need no per-type branching.
- */
-export type FeedReplyMeta = {
-  replyCount: number;
-  latestReplyAt: Date | null;
-  repliers: { avatarUrl: string | null; displayName: string }[];
-  uniqueReplierCount: number;
-};
-
 export type PositionFeedData = {
   id: string;
   /** Used to route the card to the correct detail page. */
@@ -66,13 +49,13 @@ export type PositionFeedData = {
   fen: string;
   createdAt: string; // ISO 8601
   author: FeedActor | null;
-  likeMeta: FeedLikeMeta;
+  likeMeta: LikeMeta;
   /**
    * Comments live in `topic_posts` keyed by `(topicType, topicKey)` where
    * `topicKey` is the position's id and `topicType` is `'position_memory'` or
    * `'position_puzzle'`.
    */
-  replyMeta: FeedReplyMeta;
+  replyMeta: ReplyMeta;
 };
 
 type FeedItemBase = {
@@ -136,8 +119,8 @@ export type ChunkFeedData = {
   kind: 'created' | 'published';
   createdAt: string; // ISO 8601
   author: FeedActor | null;
-  likeMeta: FeedLikeMeta;
-  replyMeta: FeedReplyMeta;
+  likeMeta: LikeMeta;
+  replyMeta: ReplyMeta;
 };
 
 export type ChunkFeedItem = FeedItemBase & {
@@ -166,8 +149,8 @@ export type GameFeedData = {
   result: FinalGameOutcome;
   createdAt: string; // ISO 8601
   author: FeedActor | null;
-  likeMeta: FeedLikeMeta;
-  replyMeta: FeedReplyMeta;
+  likeMeta: LikeMeta;
+  replyMeta: ReplyMeta;
 };
 
 export type GameFeedItem = FeedItemBase & {

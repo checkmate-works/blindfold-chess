@@ -14,7 +14,8 @@ import {
 import { db, gameComments, profiles, topicPosts } from './index';
 import { AUTHOR_PROFILE_COLUMNS, liveProfileJoinOn } from './profile-select';
 
-type Replier = {
+/** One commenter's avatar-stack entry, as rendered beside a reply count. */
+export type Replier = {
   avatarUrl: string | null;
   displayName: string;
 };
