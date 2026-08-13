@@ -1,3 +1,4 @@
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { shuffleArray } from '@blindfold-chess/features/common';
 
 import { FEN_STRINGS } from '../_data/positions';
@@ -8,9 +9,7 @@ export { calculateAccuracy, calculateSquareDifferences } from '@blindfold-chess/
 
 // Parse FEN positions
 const PRACTICE_POSITIONS: PositionData[] = FEN_STRINGS.map((fen) => {
-  const parts = fen.split(' ');
-  const isBlackToMove = parts[1] === 'b';
-  return { fen, isBlackToMove };
+  return { fen, isBlackToMove: isBlackToMoveFromFen(fen) };
 });
 
 export function getRandomPositions(count: number, shuffle: boolean = true): PositionData[] {
@@ -25,9 +24,8 @@ export function getCustomPositions(
   shuffle: boolean = true
 ): PositionData[] {
   const parsed = fenStrings.map((fen) => {
-    const parts = fen.trim().split(' ');
-    const isBlackToMove = parts[1] === 'b';
-    return { fen: fen.trim(), isBlackToMove };
+    const trimmed = fen.trim();
+    return { fen: trimmed, isBlackToMove: isBlackToMoveFromFen(trimmed) };
   });
 
   const positions = shuffle ? shuffleArray(parsed) : parsed;

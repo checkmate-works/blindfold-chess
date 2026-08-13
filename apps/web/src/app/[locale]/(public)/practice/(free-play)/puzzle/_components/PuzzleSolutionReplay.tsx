@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { BoardFrame, ChessBoard } from '@/app/_components';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { fullmoveNumberFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
@@ -15,7 +16,6 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import { buildSolutionPairs } from '../_lib/solution-pairs';
-import { getFullmoveFromFen } from './AttemptHistoryPanel';
 import { CircleMarker } from './CircleMarker';
 
 /**
@@ -85,7 +85,7 @@ export function PuzzleSolutionReplay({
 
   const solutionFirstMove = solutionMoves[0]?.san ?? '';
   const solutionPairs = useMemo(
-    () => buildSolutionPairs(solutionMoves, firstTurn, getFullmoveFromFen(fen)),
+    () => buildSolutionPairs(solutionMoves, firstTurn, fullmoveNumberFromFen(fen)),
     [solutionMoves, firstTurn, fen]
   );
 

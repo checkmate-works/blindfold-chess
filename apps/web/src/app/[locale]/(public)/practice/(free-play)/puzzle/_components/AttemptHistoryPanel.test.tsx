@@ -7,7 +7,6 @@ import {
   buildCells,
   buildRows,
   computeAttemptStatus,
-  getFullmoveFromFen,
   groupAttemptsByPlayerStep,
 } from './AttemptHistoryPanel';
 
@@ -52,17 +51,6 @@ describe('groupAttemptsByPlayerStep', () => {
 
   it('returns an empty array for no attempts', () => {
     expect(groupAttemptsByPlayerStep([])).toEqual([]);
-  });
-});
-
-describe('getFullmoveFromFen', () => {
-  it('reads the 6th FEN field', () => {
-    expect(getFullmoveFromFen('8/8/8/8/8/8/8/8 w - - 0 23')).toBe(23);
-  });
-
-  it('falls back to 1 when the field is missing or malformed', () => {
-    expect(getFullmoveFromFen('8/8/8/8/8/8/8/8 w - -')).toBe(1);
-    expect(getFullmoveFromFen('8/8/8/8/8/8/8/8 w - - 0 zero')).toBe(1);
   });
 });
 
