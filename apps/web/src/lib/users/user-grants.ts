@@ -70,3 +70,26 @@ export async function calcGrantStartsAt(
   const latestExpires = latest?.maxExpires;
   return latestExpires && latestExpires > now ? latestExpires : now;
 }
+
+/** Where a grant's validity window sits relative to `now`. */
+export type GrantPeriodStatus = 'active' | 'upcoming' | 'expired';
+
+/**
+ * Classify a grant's validity window against `now`.
+ *
+ * The boundaries are the point: `expiresAt` is exclusive (a grant expiring
+ * exactly now is over) and `startsAt` is inclusive (one starting exactly now
+ * has begun), matching `hasActiveGrant`'s SQL — `startsAt <= now AND expiresAt
+ * > now`. The two `/mypage/benefits` loaders each re-derived that from the
+ * comparison operators, so a correction to either boundary would have had to
+ * be made in three places to keep the list view, the history view, and the
+ * entitlement check telling the user the same thing.
+ *
+ * Revocation is deliberately not handled here — a revoked grant still has a
+ * window, and only the history view distinguishes the two.
+ */
+export function classifyGrantPeriod(now: Date, startsAt: Date, expiresAt: Date): GrantPeriodStatus {
+  if (expiresAt <= now) return 'expired';
+  if (startsAt > now) return 'upcoming';
+  return 'active';
+}
