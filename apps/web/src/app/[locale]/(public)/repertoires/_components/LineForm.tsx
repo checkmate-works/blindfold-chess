@@ -17,13 +17,13 @@ import {
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { INPUT_BASE_CLASSES, invalidBorderClasses } from '@/app/_components/inputStyles';
 import { useRouter } from '@/i18n/routing';
+import type { Side } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
 import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
-import type { RepertoireSide } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 import { deleteAnnotation } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/deleteAnnotation';
@@ -51,7 +51,7 @@ const FIELDS_WITH_CHAPTER: readonly RepertoireFormField[] = [...FIELDS, 'chapter
 type Props = {
   repertoireId: string;
   /** The repertoire's side — orients the board in board mode. */
-  side: RepertoireSide;
+  side: Side;
   /** Prefills the title field. Empty when appending a new line. */
   initialName: string;
   /**

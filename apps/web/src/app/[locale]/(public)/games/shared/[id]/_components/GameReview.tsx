@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
@@ -72,7 +72,7 @@ type Props = {
    * drives the Summary's starting-position board. Null/absent = no prefix.
    */
   setupPlies?: number | null;
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   /**
    * How the game ended, from `playerColor`'s point of view. Drives the
    * end-of-game badge on the losing king (see `resolveTerminationMark`); the
@@ -90,7 +90,7 @@ type Props = {
   playSettingsLog: PlaySettingsChangeEntry[] | null;
   locale: Locale;
   /** Side at the bottom of the board, from the `?color=white|black` URL param. */
-  orientation?: 'white' | 'black';
+  orientation?: Side;
   /** Rendered between the board/move-list and the stats overview (e.g. the description). */
   children?: ReactNode;
   /**

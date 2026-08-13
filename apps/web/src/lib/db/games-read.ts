@@ -6,6 +6,7 @@
 import { cache } from 'react';
 
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
+import type { Side } from '@blindfold-chess/types';
 import { type SQL, and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
@@ -83,7 +84,7 @@ export type SharedGameListItem = {
   engineElo: number;
   result: 'win' | 'loss' | 'draw';
   /** Side the author played — shown with a colour icon on the card. */
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   /**
    * Blindfold "as played" treatment for the card thumbnail, folded from the
    * game's start-of-game play-settings snapshot, or null for a legacy /

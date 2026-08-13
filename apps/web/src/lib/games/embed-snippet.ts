@@ -1,3 +1,5 @@
+import type { Side } from '@blindfold-chess/types';
+
 import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { encodeGameShortId } from './short-id';
@@ -13,7 +15,7 @@ export type EmbedOptions = {
   /** `'played'` reproduces the blindfold; `'plain'` shows the revealed board. */
   view: 'played' | 'plain';
   /** `'player'` = the game's own player at the bottom, i.e. no `color` param. */
-  orientation: 'player' | 'white' | 'black';
+  orientation: 'player' | Side;
   /** `'auto'` follows the reader's OS setting rather than pinning a scheme. */
   bg: 'auto' | 'light' | 'dark';
   /** `null` negotiates the reader's own language; a locale pins the widget. */

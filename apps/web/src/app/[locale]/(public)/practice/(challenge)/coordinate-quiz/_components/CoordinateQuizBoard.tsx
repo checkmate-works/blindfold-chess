@@ -4,14 +4,14 @@ import type { ReactNode } from 'react';
 
 import { BoardSkeleton } from '@/app/_components';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
-import type { Square } from '@blindfold-chess/types';
+import type { Side, Square } from '@blindfold-chess/types';
 
 import { getBoardThemeColors } from '@/lib/games/board-themes';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Props = {
-  orientation: 'white' | 'black';
+  orientation: Side;
   onSquareClick: (square: Square) => void;
   highlightedSquares?: Record<string, 'correct' | 'incorrect' | 'target'>;
   children?: ReactNode;

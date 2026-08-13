@@ -2,6 +2,7 @@ import {
   fullmoveNumberFromFen,
   isBlackToMoveFromFen,
 } from '@blindfold-chess/features/chess-core/fen';
+import type { Side } from '@blindfold-chess/types';
 
 /**
  * Parse FEN metadata to determine starting side and move number.
@@ -24,10 +25,10 @@ export function parseFenMeta(fen: string | undefined | null): {
  * Determine which side made the move at the given index, considering the starting FEN.
  * Returns 'white' or 'black'.
  */
-export function getMovingSide(moveIndex: number, startingFen?: string | null): 'white' | 'black' {
+export function getMovingSide(moveIndex: number, startingFen?: string | null): Side {
   const { startsAsBlack } = parseFenMeta(startingFen);
   const isStartingSideMove = moveIndex % 2 === 0;
-  const startingSide: 'white' | 'black' = startsAsBlack ? 'black' : 'white';
+  const startingSide: Side = startsAsBlack ? 'black' : 'white';
   return isStartingSideMove ? startingSide : startingSide === 'white' ? 'black' : 'white';
 }
 
@@ -41,7 +42,7 @@ export function getMovingSide(moveIndex: number, startingFen?: string | null): '
  */
 export function countPlayerMoves(
   upToIndex: number,
-  playerSide: 'white' | 'black',
+  playerSide: Side,
   startingFen?: string | null,
   fromIndex = 0
 ): number {

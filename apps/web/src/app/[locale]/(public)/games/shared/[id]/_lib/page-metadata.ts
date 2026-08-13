@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import type { Side } from '@blindfold-chess/types';
+
 import { getGameById } from '@/lib/db/games-read';
 import type { GameRecord } from '@/lib/db/schema';
 import { formatEngineConfigLabel } from '@/lib/engines/format-label';
@@ -16,9 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * label); kept here too since the OG card and its meta description need the
  * same fact and neither renders `GameOutcomeLabel` (a client component).
  */
-function resolveWinnerSide(
-  game: Pick<GameRecord, 'result' | 'playerColor'>
-): 'white' | 'black' | null {
+function resolveWinnerSide(game: Pick<GameRecord, 'result' | 'playerColor'>): Side | null {
   if (game.result === 'draw') return null;
   if (game.result === 'win') return game.playerColor;
   return game.playerColor === 'white' ? 'black' : 'white';

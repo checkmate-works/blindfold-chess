@@ -1,4 +1,5 @@
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
+import type { Side } from '@blindfold-chess/types';
 
 /** Why the losing side's king is marked. */
 export type TerminationMarkKind = 'checkmate' | 'resignation';
@@ -53,7 +54,7 @@ export function isFinalPosition(currentPosition: number, movesLength: number): b
  */
 export function resolveLosingColor(
   playerResult: 'win' | 'loss' | 'draw' | null,
-  playerSide: 'white' | 'black'
+  playerSide: Side
 ): 'w' | 'b' | null {
   if (playerResult !== 'win' && playerResult !== 'loss') return null;
   const playerColor = playerSide === 'white' ? 'w' : 'b';

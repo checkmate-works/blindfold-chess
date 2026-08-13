@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
+import type { Side } from '@blindfold-chess/types';
 
 import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
@@ -36,7 +37,7 @@ type Props = {
   /** `?comment=<id>` deep-link from a like notification. */
   highlightCommentId?: string;
   /** Side at the bottom of the board, from the `?color=white|black` URL param. */
-  orientation?: 'white' | 'black';
+  orientation?: Side;
 };
 
 /**

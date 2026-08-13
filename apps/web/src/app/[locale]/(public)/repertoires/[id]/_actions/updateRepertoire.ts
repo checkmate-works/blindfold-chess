@@ -1,9 +1,10 @@
 'use server';
 
+import type { Side } from '@blindfold-chess/types';
+
 import { authenticateAndGuard } from '@/lib/auth';
 import { updateRepertoireDetails } from '@/lib/repertoires/mutations';
 import type { UpdateRepertoireResult } from '@/lib/repertoires/mutations';
-import type { RepertoireSide } from '@/lib/repertoires/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
@@ -17,7 +18,7 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 export async function updateRepertoire(input: {
   repertoireId: string;
   name: string;
-  side: RepertoireSide;
+  side: Side;
   /** Course-level blurb; trimmed to null server-side when blank. */
   description: string | null;
   openingIds: string[];

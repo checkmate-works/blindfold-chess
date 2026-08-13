@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Side } from '@blindfold-chess/types';
 import { FaClipboardList } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
@@ -72,7 +73,7 @@ type Props = {
    */
   playSettings?: GamePlaySettings;
   /** Player's side — needed by {@link PlaySettingsIndicator} for the piece sample. */
-  playerColor?: 'white' | 'black';
+  playerColor?: Side;
   /**
    * The opening the player reached, shown (with a player-colour icon) on its own
    * row under the engine badge and linked to its topic page. Passing this prop —

@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
+import type { Side } from '@blindfold-chess/types';
 
 import type { RepertoireCheckEntry } from '@/lib/repertoires/check-report';
 
@@ -19,7 +20,7 @@ type Props = {
   moves: string[];
   /** The game's move pairs, for the viewer's move strip. */
   formatted: FormattedPgnMove[];
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   /** The game's starting position; undefined for the standard start. */
   startingFen?: string;
   gameId?: string;

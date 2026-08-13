@@ -1,5 +1,7 @@
+import type { Side } from '@blindfold-chess/types';
+
 type Props = {
-  color: 'white' | 'black';
+  color: Side;
   className?: string;
 };
 

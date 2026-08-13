@@ -17,6 +17,7 @@
 //   repertoire_reviews    — per-user spaced-repetition state (FSRS-shaped).
 //   repertoire_deviations — mistakes found in finished games → the review queue.
 //   repertoire_annotations— owner-authored "why" note per position.
+import type { Side } from '@blindfold-chess/types';
 import { sql } from 'drizzle-orm';
 import {
   foreignKey,
@@ -68,7 +69,7 @@ export const repertoires = pgTable(
     // references auth.users — FK + RLS in custom SQL (ON DELETE SET NULL).
     userId: uuid('user_id'),
     name: varchar('name', { length: 255 }).notNull(),
-    side: varchar('side', { length: 5 }).$type<'white' | 'black'>().notNull(),
+    side: varchar('side', { length: 5 }).$type<Side>().notNull(),
     phase: varchar('phase', { length: 20 })
       .$type<'opening' | 'middlegame' | 'endgame'>()
       .notNull()

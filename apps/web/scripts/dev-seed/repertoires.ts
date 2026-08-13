@@ -1,3 +1,4 @@
+import type { Side } from '@blindfold-chess/types';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
@@ -14,7 +15,7 @@ type SeedLine = { name: string; moves: string };
 
 type SeedRepertoire = {
   name: string;
-  side: 'white' | 'black';
+  side: Side;
   description: string;
   lines: SeedLine[];
 };

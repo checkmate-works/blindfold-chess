@@ -1,5 +1,7 @@
 import { type ReactNode, useMemo, useState } from 'react';
 
+import type { Side } from '@blindfold-chess/types';
+
 import { foldBoardVisibility } from '@/lib/games/play-settings-log';
 import { hidesAnyPiece, revealPieces } from '@/lib/games/reveal-preferences';
 import type { TerminationMark } from '@/lib/games/termination-mark';
@@ -68,7 +70,7 @@ export function usePlayBoardViews({
 }: {
   displayFen: string | null;
   currentFen: string;
-  playerSide: 'white' | 'black';
+  playerSide: Side;
   effectiveFlipped: boolean;
   preferences: GamePreferences;
   lastMove: InlineBoardChessProps['lastMove'];

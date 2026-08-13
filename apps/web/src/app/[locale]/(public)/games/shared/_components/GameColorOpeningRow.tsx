@@ -1,3 +1,4 @@
+import type { Side } from '@blindfold-chess/types';
 import { FaChessKing } from 'react-icons/fa';
 
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
@@ -8,7 +9,7 @@ import { OpeningTag } from './OpeningTag';
 
 type Props = {
   /** Side the player had. */
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   /** Localized "White" / "Black" (resolved by the caller — server or client). */
   colorLabel: string;
   /** The opening reached, or null when none was detected. */

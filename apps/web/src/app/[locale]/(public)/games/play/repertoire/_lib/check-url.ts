@@ -1,3 +1,5 @@
+import type { Side } from '@blindfold-chess/types';
+
 /**
  * The kata check page's URL contract, in one place: the route path, the
  * search-param names, and the parse/build pair over them. The deep-link
@@ -16,7 +18,7 @@ export const REPERTOIRE_CHECK_PATH = '/games/play/repertoire';
 export type RepertoireCheckParams = {
   /** SAN moves of the finished game; null when absent or malformed. */
   moves: string[] | null;
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   /** Custom starting position; undefined for the standard start. */
   startingFen?: string;
   gameId?: string;

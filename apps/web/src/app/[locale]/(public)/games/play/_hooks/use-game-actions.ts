@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
 
@@ -35,7 +35,7 @@ export function useGameActions({
 }: {
   locale: Locale;
   moves: AlgebraicNotation[];
-  playerSide: 'white' | 'black';
+  playerSide: Side;
   startingFen: string | undefined;
   /** Seeded setup-prefix length — pre-played moves have no operation log. */
   setupPlies: number | undefined;

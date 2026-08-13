@@ -16,13 +16,13 @@ import {
 } from '@/app/_components';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
+import type { Side } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
 
 import type { Repertoire } from '@/lib/db';
 import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
 import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
-import type { RepertoireSide } from '@/lib/repertoires/validation';
 import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { OpeningLinksField } from '../../_components/OpeningLinksField';
@@ -49,7 +49,7 @@ type Props = {
   /** Opening links only exist for an `opening`-phase repertoire. */
   canLinkOpenings: boolean;
   /** The repertoire's side — plain metadata, editable like the title. */
-  side: RepertoireSide;
+  side: Side;
 };
 
 /** The controls this form renders a rejection against (the moves live elsewhere). */
@@ -90,7 +90,7 @@ export function EditRepertoireForm({
 
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
-  const [side, setSide] = useState<RepertoireSide>(initialSide);
+  const [side, setSide] = useState<Side>(initialSide);
   const [openingIds, setOpeningIds] = useState<string[]>(initialOpeningIds);
   // Checked = stay a draft. Unchecking publishes on save (one-way).
   const [keepDraft, setKeepDraft] = useState(true);

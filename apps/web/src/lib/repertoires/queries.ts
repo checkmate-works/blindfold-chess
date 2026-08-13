@@ -1,5 +1,6 @@
 import { cache } from 'react';
 
+import type { Side } from '@blindfold-chess/types';
 import { and, asc, count, desc, eq, inArray, isNull, ne } from 'drizzle-orm';
 
 import type { Repertoire, RepertoireLine } from '@/lib/db';
@@ -52,7 +53,7 @@ const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
  * static board, so this only affects orientation (BoardThumbnail flips when
  * black is to move), never the rendered pieces.
  */
-function orientFenForSide(fen: string, side: 'white' | 'black'): string {
+function orientFenForSide(fen: string, side: Side): string {
   const parts = fen.split(' ');
   if (parts.length < 2) return fen;
   parts[1] = side === 'white' ? 'w' : 'b';
@@ -127,7 +128,7 @@ export function publicRepertoiresOnly() {
 }
 
 /** {@link publicRepertoiresOnly}, optionally narrowed to one side (catalog filter). */
-function publicRepertoiresForSide(side?: 'white' | 'black') {
+function publicRepertoiresForSide(side?: Side) {
   return side ? and(eq(repertoires.side, side), publicRepertoiresOnly()) : publicRepertoiresOnly();
 }
 
@@ -201,7 +202,7 @@ export async function countPublicRepertoiresForOpening(openingSlug: string): Pro
 export async function listPublicRepertoires(
   limit: number,
   offset: number,
-  side?: 'white' | 'black'
+  side?: Side
 ): Promise<RepertoireWithProfile[]> {
   const rows = await runPaginatedSelect(
     db
@@ -221,7 +222,7 @@ export async function listPublicRepertoires(
 }
 
 /** Total live public repertoires (optionally for one side) — pagination denominator. */
-export async function countPublicRepertoires(side?: 'white' | 'black'): Promise<number> {
+export async function countPublicRepertoires(side?: Side): Promise<number> {
   return countRows(repertoires, publicRepertoiresForSide(side));
 }
 
@@ -273,7 +274,7 @@ export async function listBuildingRepertoiresForUser(
  */
 export async function listRepertoiresWithLinesForSide(
   userId: string,
-  side: 'white' | 'black'
+  side: Side
 ): Promise<{ repertoire: Repertoire; lines: RepertoireLine[] }[]> {
   const reps = await db
     .select()

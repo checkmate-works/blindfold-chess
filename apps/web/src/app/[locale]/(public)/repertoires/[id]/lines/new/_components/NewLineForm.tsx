@@ -2,8 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
+import type { Side } from '@blindfold-chess/types';
+
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
-import type { RepertoireSide } from '@/lib/repertoires/validation';
 
 import { addLine } from '@/app/[locale]/(public)/repertoires/[id]/_actions/addLine';
 import { LineForm } from '@/app/[locale]/(public)/repertoires/_components/LineForm';
@@ -11,7 +12,7 @@ import { LineForm } from '@/app/[locale]/(public)/repertoires/_components/LineFo
 type Props = {
   repertoireId: string;
   /** The repertoire's side — orients the board in board mode. */
-  side: RepertoireSide;
+  side: Side;
   /**
    * Moves to start from — e.g. the kata check's uncovered line (matched prefix
    * through the diverging move). Empty for a blank new line.
