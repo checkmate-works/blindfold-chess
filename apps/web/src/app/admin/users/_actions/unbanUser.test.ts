@@ -169,6 +169,8 @@ describe('unbanUser', () => {
       action: 'unban',
       targetType: 'user',
       targetId: targetUserId,
+      // `logModerationAction` normalizes an absent reason to null.
+      reason: null,
       ipAddress: '127.0.0.1',
     });
   });

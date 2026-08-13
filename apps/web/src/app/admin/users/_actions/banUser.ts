@@ -6,7 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions, profiles } from '@/lib/db';
+import { db, profiles } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { getClientIp } from '@/lib/security/client-ip';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -52,7 +53,7 @@ export async function banUser(targetUserId: string, reason: string): Promise<Act
         })
         .where(eq(profiles.id, targetUserId));
 
-      await tx.insert(moderationActions).values({
+      await logModerationAction(tx, {
         actorId: auth.userId,
         action: 'ban',
         targetType: 'user',

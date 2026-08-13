@@ -7,7 +7,8 @@ import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions, profiles } from '@/lib/db';
+import { db, profiles } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
 import { captureError } from '@/lib/sentry/capture-error';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -51,7 +52,7 @@ export async function unbanUser(targetUserId: string): Promise<ActionResult> {
         })
         .where(eq(profiles.id, targetUserId));
 
-      await tx.insert(moderationActions).values({
+      await logModerationAction(tx, {
         actorId: auth.userId,
         action: 'unban',
         targetType: 'user',

@@ -5,9 +5,10 @@ import { revalidateTag } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions, ranks, userRanks } from '@/lib/db';
+import { db, ranks, userRanks } from '@/lib/db';
 import { ALL_RANK_SLUGS, RANK_STATUS_CACHE_TAG, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { createNotification } from '@/lib/notifications/notification';
 import { getClientIp } from '@/lib/security/client-ip';
@@ -74,7 +75,7 @@ export async function grantRank(
         throw new RankAlreadyGrantedError();
       }
 
-      await tx.insert(moderationActions).values({
+      await logModerationAction(tx, {
         actorId: auth.userId,
         action: 'grant_rank',
         targetType: 'user',
