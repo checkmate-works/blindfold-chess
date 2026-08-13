@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import * as Sentry from '@sentry/nextjs';
 import { timingSafeEqual } from 'node:crypto';
+
+import { captureError } from '@/lib/sentry/capture-error';
 
 /**
  * Verify a Vercel Cron request's `Bearer ${CRON_SECRET}` header.
@@ -42,8 +43,7 @@ export async function runCronJob(
   try {
     return await job();
   } catch (error) {
-    console.error(`${label} failed:`, error instanceof Error ? error.message : 'Unknown error');
-    Sentry.captureException(error);
+    captureError(error, `${label} failed`);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/nextjs';
+import { captureError } from '@/lib/sentry/capture-error';
 
 /**
  * Handles unexpected errors in Server Action catch blocks.
@@ -15,10 +15,6 @@ export function handleServerActionError(
   context: string,
   errorCode = 'unexpected_error'
 ): { success: false; error: string } {
-  console.error(
-    `${context}: unexpected error:`,
-    error instanceof Error ? error.message : 'Unknown error'
-  );
-  Sentry.captureException(error);
+  captureError(error, `${context}: unexpected error`);
   return { success: false, error: errorCode };
 }

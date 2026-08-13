@@ -4,6 +4,7 @@ import 'server-only';
 
 import { db, profiles } from '@/lib/db';
 import { startRetentionRun } from '@/lib/retention-run';
+import { captureError } from '@/lib/sentry/capture-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
@@ -171,8 +172,7 @@ async function hardDeleteAccount(
   try {
     const { error } = await adminClient.auth.admin.deleteUser(userId);
     if (error) {
-      console.error(`[purgeDeletedAccounts] hard delete failed for ${userId}:`, error.message);
-      Sentry.captureException(error);
+      captureError(error, `[purgeDeletedAccounts] hard delete failed for ${userId}`);
       return false;
     }
     return true;

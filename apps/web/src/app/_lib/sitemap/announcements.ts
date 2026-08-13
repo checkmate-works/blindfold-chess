@@ -1,17 +1,14 @@
 import type { MetadataRoute } from 'next';
 
-import * as Sentry from '@sentry/nextjs';
-
 import type { Announcement } from '@/lib/db/schema';
 
 import { getPublishedAnnouncements } from '@/app/[locale]/(public)/announcements/_lib/queries';
 
-import { BASE_URL, generateAlternates } from './shared';
+import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
 export async function buildAnnouncementEntries(now: Date): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [];
-
-  try {
+  return buildSitemapSection('Error fetching announcements for sitemap', async () => {
+    const entries: MetadataRoute.Sitemap = [];
     const allAnnouncements = await getPublishedAnnouncements();
 
     // Group rows by slug so each entry can emit sitemap alternates only for
@@ -40,10 +37,6 @@ export async function buildAnnouncementEntries(now: Date): Promise<MetadataRoute
         });
       }
     }
-  } catch (error) {
-    console.error('Error fetching announcements for sitemap:', error);
-    Sentry.captureException(error);
-  }
-
-  return entries;
+    return entries;
+  });
 }

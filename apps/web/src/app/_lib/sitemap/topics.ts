@@ -1,17 +1,15 @@
 import type { MetadataRoute } from 'next';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import * as Sentry from '@sentry/nextjs';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, topicPosts } from '@/lib/db';
 
-import { BASE_URL, generateAlternates } from './shared';
+import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
 export async function buildOpeningTopicEntries(now: Date): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [];
-
-  try {
+  return buildSitemapSection('Error fetching opening topics for sitemap', async () => {
+    const entries: MetadataRoute.Sitemap = [];
     const openingTopics = await db
       .selectDistinct({ topicKey: topicPosts.topicKey })
       .from(topicPosts)
@@ -33,18 +31,13 @@ export async function buildOpeningTopicEntries(now: Date): Promise<MetadataRoute
         });
       }
     }
-  } catch (error) {
-    console.error('Error fetching opening topics for sitemap:', error);
-    Sentry.captureException(error);
-  }
-
-  return entries;
+    return entries;
+  });
 }
 
 export async function buildSquareTopicEntries(now: Date): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [];
-
-  try {
+  return buildSitemapSection('Error fetching square topics for sitemap', async () => {
+    const entries: MetadataRoute.Sitemap = [];
     const squareTopics = await db
       .selectDistinct({ topicKey: topicPosts.topicKey })
       .from(topicPosts)
@@ -66,10 +59,6 @@ export async function buildSquareTopicEntries(now: Date): Promise<MetadataRoute.
         });
       }
     }
-  } catch (error) {
-    console.error('Error fetching square topics for sitemap:', error);
-    Sentry.captureException(error);
-  }
-
-  return entries;
+    return entries;
+  });
 }

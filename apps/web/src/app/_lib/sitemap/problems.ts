@@ -1,12 +1,11 @@
 import type { MetadataRoute } from 'next';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import * as Sentry from '@sentry/nextjs';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, positions, profiles } from '@/lib/db';
 
-import { BASE_URL, generateAlternates } from './shared';
+import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
 /**
  * `/u/[username]/problems/{puzzles,position-memory}` is gated to authors who
@@ -21,9 +20,8 @@ async function buildProblemAuthorEntries(
   type: 'puzzle' | 'memory',
   routeSegment: 'puzzles' | 'position-memory'
 ): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [];
-
-  try {
+  return buildSitemapSection(`Error fetching ${type} problem authors for sitemap`, async () => {
+    const entries: MetadataRoute.Sitemap = [];
     const authors = await db
       .selectDistinct({ username: profiles.username })
       .from(positions)
@@ -42,12 +40,8 @@ async function buildProblemAuthorEntries(
         });
       }
     }
-  } catch (error) {
-    console.error(`Error fetching ${type} problem authors for sitemap:`, error);
-    Sentry.captureException(error);
-  }
-
-  return entries;
+    return entries;
+  });
 }
 
 export async function buildPuzzleProfileEntries(now: Date): Promise<MetadataRoute.Sitemap> {

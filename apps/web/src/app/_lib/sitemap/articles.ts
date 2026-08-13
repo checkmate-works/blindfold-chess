@@ -1,15 +1,12 @@
 import type { MetadataRoute } from 'next';
 
-import * as Sentry from '@sentry/nextjs';
-
 import { getPublishedArticlesForSitemap } from '@/app/[locale]/(public)/articles/_lib/queries';
 
-import { BASE_URL, generateAlternates } from './shared';
+import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
 export async function buildArticleEntries(now: Date): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [];
-
-  try {
+  return buildSitemapSection('Error fetching articles for sitemap', async () => {
+    const entries: MetadataRoute.Sitemap = [];
     const publishedArticles = await getPublishedArticlesForSitemap();
 
     // Group rows by slug so each entry can emit hreflang alternates only for
@@ -36,10 +33,6 @@ export async function buildArticleEntries(now: Date): Promise<MetadataRoute.Site
         alternates: generateAlternates(path, availableLocales),
       });
     }
-  } catch (error) {
-    console.error('Error fetching articles for sitemap:', error);
-    Sentry.captureException(error);
-  }
-
-  return entries;
+    return entries;
+  });
 }
