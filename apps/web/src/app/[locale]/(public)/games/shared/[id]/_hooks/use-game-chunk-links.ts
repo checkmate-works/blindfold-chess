@@ -1,14 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { ChunkOption } from '@/lib/chunks/types';
+import { useChunkLinkStaging } from '@/lib/chunks/use-chunk-link-staging';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 
 import { addGameChunkAction, deleteGameChunkAction } from '../_actions/game-chunks';
 import type { CommentUser } from '../_components/GameCommentContext';
+
+async function noop() {}
 
 type Params = {
   gameId: string;
@@ -29,40 +32,19 @@ type Params = {
 };
 
 /**
- * Optimistic state + mutation handlers for the per-move chunk links. Holds
- * every link for the game (filtered to `currentPly`), a per-move staging list
- * (search-select then submit), and the link / unlink actions. Extracted from
- * the former `GameChunkSection` so the list and the picker can be placed in
- * separate regions by `GameMoveContributions`.
+ * Per-move chunk links for a shared game. The staging list and its optimistic
+ * mutations live in {@link useChunkLinkStaging}; what is specific here is that
+ * this hook holds every link for the game and narrows to `currentPly`, so the
+ * exclusion set and the staging reset are keyed on the move.
  */
 export function useGameChunkLinks({
   gameId,
   currentPly,
-  chunks: initialChunks,
+  chunks,
   currentUser,
   isGameOwner,
 }: Params) {
-  const currentUserId = currentUser?.id;
   const t = useTranslations('sharedGames.chunks');
-  const [chunks, setChunks] = useState(initialChunks);
-  const [staged, setStaged] = useState<ChunkOption[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Staging is per-move; discard it when the board moves to a different ply.
-  useEffect(() => {
-    setStaged([]);
-    setError(null);
-  }, [currentPly]);
-
-  const forPly = useMemo(() => chunks.filter((c) => c.ply === currentPly), [chunks, currentPly]);
-  const excludedChunkIds = useMemo(
-    () => new Set([...forPly.map((c) => c.chunkId), ...staged.map((c) => c.id)]),
-    [forPly, staged]
-  );
-
-  const canRemove = (item: GameChunkItem) =>
-    isGameOwner || (currentUserId !== undefined && item.suggestedById === currentUserId);
 
   const localizeError = (code: string): string => {
     if (code === 'already_linked') return t('errors.alreadyLinked');
@@ -71,82 +53,69 @@ export function useGameChunkLinks({
     return t('errors.generic');
   };
 
-  async function handleSubmit() {
-    // currentPly is null only where the chunk UI is hidden; belt-and-braces.
-    if (staged.length === 0 || submitting || currentPly === null) return;
-    setSubmitting(true);
+  const staging = useChunkLinkStaging<GameChunkItem>({
+    items: chunks,
+    currentUserId: currentUser?.id,
+    canRemoveAny: isGameOwner,
+    // Unreachable while `currentPly` is null — `handleSubmit` below is a
+    // no-op there — but expressed rather than asserted, so a future caller
+    // that submits without a move gets a rejection instead of a crash.
+    addAction: (chunk: ChunkOption) =>
+      currentPly === null
+        ? Promise.resolve({ success: false as const, error: 'invalid_input' })
+        : addGameChunkAction({ gameId, ply: currentPly, chunkId: chunk.id }),
+    buildItem: (chunk, accepted) => ({
+      id: accepted.id,
+      // Only reached via a successful add, which requires a non-null ply.
+      ply: currentPly ?? 0,
+      chunkId: chunk.id,
+      slug: chunk.slug,
+      title: chunk.label,
+      description: chunk.description,
+      representativeFen: chunk.representativeFen,
+      status: chunk.status,
+      createdAt: new Date(accepted.createdAt),
+      suggestedById: currentUser?.id ?? null,
+      // Seed the suggester from the viewer so the freshly-linked card shows
+      // the same avatar / name as it will after a reload.
+      suggester: currentUser
+        ? {
+            username: currentUser.username,
+            displayName: currentUser.displayName,
+            avatarUrl: currentUser.avatarUrl,
+          }
+        : null,
+    }),
+    deleteAction: deleteGameChunkAction,
+    localizeError,
+  });
+
+  const { items, staged, setStaged, setError } = staging;
+
+  // Staging is per-move; discard it when the board moves to a different ply.
+  useEffect(() => {
+    setStaged([]);
     setError(null);
-    const results = await Promise.all(
-      staged.map((chunk) =>
-        addGameChunkAction({ gameId, ply: currentPly, chunkId: chunk.id }).then((res) => ({
-          chunk,
-          res,
-        }))
-      )
-    );
-    setSubmitting(false);
+  }, [currentPly, setStaged, setError]);
 
-    const linked: GameChunkItem[] = [];
-    const stillStaged: ChunkOption[] = [];
-    let firstError: string | null = null;
-    for (const { chunk, res } of results) {
-      if (res.success) {
-        linked.push({
-          id: res.id,
-          ply: currentPly,
-          chunkId: chunk.id,
-          slug: chunk.slug,
-          title: chunk.label,
-          description: chunk.description,
-          representativeFen: chunk.representativeFen,
-          status: chunk.status,
-          createdAt: new Date(res.createdAt),
-          suggestedById: currentUser?.id ?? null,
-          // Seed the suggester from the viewer so the freshly-linked card shows
-          // the same avatar / name as it will after a reload.
-          suggester: currentUser
-            ? {
-                username: currentUser.username,
-                displayName: currentUser.displayName,
-                avatarUrl: currentUser.avatarUrl,
-              }
-            : null,
-        });
-      } else {
-        stillStaged.push(chunk);
-        firstError ??= localizeError(res.error);
-      }
-    }
-    if (linked.length > 0) setChunks((prev) => [...prev, ...linked]);
-    setStaged(stillStaged);
-    if (firstError) setError(firstError);
-  }
-
-  // Returns a localized error (rather than setting the shared `error`, which is
-  // for the staging area) so the caller's confirmation modal can show loading /
-  // error inline — mirroring the comment thread's `remove`.
-  async function handleRemoveSaved(id: string): Promise<{ error?: string }> {
-    const res = await deleteGameChunkAction(id);
-    if (!res.success) {
-      return { error: localizeError(res.error) };
-    }
-    setChunks((prev) => prev.filter((c) => c.id !== id));
-    return {};
-  }
-
-  const stage = (chunk: ChunkOption) => setStaged((prev) => [...prev, chunk]);
-  const unstage = (id: string) => setStaged((prev) => prev.filter((s) => s.id !== id));
+  const forPly = useMemo(() => items.filter((c) => c.ply === currentPly), [items, currentPly]);
+  const excludedChunkIds = useMemo(
+    () => new Set([...forPly.map((c) => c.chunkId), ...staged.map((c) => c.id)]),
+    [forPly, staged]
+  );
 
   return {
     forPly,
     staged,
     excludedChunkIds,
-    submitting,
-    error,
-    canRemove,
-    handleSubmit,
-    handleRemoveSaved,
-    stage,
-    unstage,
+    submitting: staging.submitting,
+    error: staging.error,
+    canRemove: staging.canRemove,
+    // Linking is unavailable on the whole-game thread (no ply to anchor to);
+    // the consumer hides the UI there and this keeps submit inert regardless.
+    handleSubmit: currentPly === null ? noop : staging.handleSubmit,
+    handleRemoveSaved: staging.handleRemoveSaved,
+    stage: staging.stage,
+    unstage: staging.unstage,
   };
 }

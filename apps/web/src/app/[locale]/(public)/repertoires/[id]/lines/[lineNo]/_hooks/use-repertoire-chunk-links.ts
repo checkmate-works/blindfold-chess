@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { ChunkOption } from '@/lib/chunks/types';
+import { useChunkLinkStaging } from '@/lib/chunks/use-chunk-link-staging';
 import type { RepertoireChunkItem } from '@/lib/db/repertoire-chunks';
 import type { IdentifiedAuthorProfile } from '@/lib/users/author-profile';
 
@@ -31,14 +32,11 @@ type Params = {
 };
 
 /**
- * Optimistic state + mutation handlers for a single position's chunk links.
- * Mirrors `useGameChunkLinks`, minus the per-move filtering / reset-on-ply
- * effect: the game hook holds links for the WHOLE game and filters to the
- * current ply client-side, whereas here the caller passes only the current
- * position's links (already grouped server-side by `positionKey`), and the
- * owning component is keyed on `positionKey` (see `LineChunksSection`'s call
- * site) — a full remount, not an effect, resets staging when the board moves
- * to a different position.
+ * Chunk links for one repertoire position. The staging list and its optimistic
+ * mutations live in {@link useChunkLinkStaging}; this hook is handed a single
+ * position's links, and the owning component is keyed on `positionKey` (see
+ * `LineChunksSection`'s call site), so a full remount — not an effect — resets
+ * staging when the board moves.
  */
 export function useRepertoireChunkLinks({
   repertoireId,
@@ -48,20 +46,7 @@ export function useRepertoireChunkLinks({
   currentUser,
   isOwner,
 }: Params) {
-  const currentUserId = currentUser?.id;
   const t = useTranslations('Repertoires.chunks');
-  const [items, setItems] = useState(initialItems);
-  const [staged, setStaged] = useState<ChunkOption[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const excludedChunkIds = useMemo(
-    () => new Set([...items.map((c) => c.chunkId), ...staged.map((c) => c.id)]),
-    [items, staged]
-  );
-
-  const canRemove = (item: RepertoireChunkItem) =>
-    isOwner || (currentUserId !== undefined && item.suggestedById === currentUserId);
 
   const localizeError = (code: string): string => {
     if (code === 'already_linked') return t('errors.alreadyLinked');
@@ -70,83 +55,55 @@ export function useRepertoireChunkLinks({
     return t('errors.generic');
   };
 
-  async function handleSubmit() {
-    if (staged.length === 0 || submitting) return;
-    setSubmitting(true);
-    setError(null);
-    const results = await Promise.all(
-      staged.map((chunk) =>
-        addRepertoireChunkAction({ repertoireId, lineNo, ply, chunkId: chunk.id }).then((res) => ({
-          chunk,
-          res,
-        }))
-      )
-    );
-    setSubmitting(false);
+  const staging = useChunkLinkStaging<RepertoireChunkItem>({
+    items: initialItems,
+    currentUserId: currentUser?.id,
+    canRemoveAny: isOwner,
+    addAction: (chunk: ChunkOption) =>
+      addRepertoireChunkAction({ repertoireId, lineNo, ply, chunkId: chunk.id }),
+    buildItem: (chunk, accepted) => ({
+      id: accepted.id,
+      // Never read by the display — the page already scoped `items` to
+      // one position, so nothing here needs to know which one.
+      positionKey: '',
+      chunkId: chunk.id,
+      slug: chunk.slug,
+      title: chunk.label,
+      description: chunk.description,
+      representativeFen: chunk.representativeFen,
+      status: chunk.status,
+      createdAt: new Date(accepted.createdAt),
+      suggestedById: currentUser?.id ?? null,
+      // Seed the suggester from the viewer so the freshly-linked card shows
+      // the same avatar / name as it will after a reload.
+      suggester: currentUser
+        ? {
+            username: currentUser.username,
+            displayName: currentUser.displayName,
+            avatarUrl: currentUser.avatarUrl,
+          }
+        : null,
+    }),
+    deleteAction: deleteRepertoireChunkAction,
+    localizeError,
+  });
 
-    const linked: RepertoireChunkItem[] = [];
-    const stillStaged: ChunkOption[] = [];
-    let firstError: string | null = null;
-    for (const { chunk, res } of results) {
-      if (res.success) {
-        linked.push({
-          id: res.id,
-          // Never read by the display — the page already scoped `items` to
-          // one position, so nothing here needs to know which one.
-          positionKey: '',
-          chunkId: chunk.id,
-          slug: chunk.slug,
-          title: chunk.label,
-          description: chunk.description,
-          representativeFen: chunk.representativeFen,
-          status: chunk.status,
-          createdAt: new Date(res.createdAt),
-          suggestedById: currentUser?.id ?? null,
-          // Seed the suggester from the viewer so the freshly-linked card shows
-          // the same avatar / name as it will after a reload.
-          suggester: currentUser
-            ? {
-                username: currentUser.username,
-                displayName: currentUser.displayName,
-                avatarUrl: currentUser.avatarUrl,
-              }
-            : null,
-        });
-      } else {
-        stillStaged.push(chunk);
-        firstError ??= localizeError(res.error);
-      }
-    }
-    if (linked.length > 0) setItems((prev) => [...prev, ...linked]);
-    setStaged(stillStaged);
-    if (firstError) setError(firstError);
-  }
-
-  // Returns a localized error (rather than setting the shared `error`, which is
-  // for the staging area) so the caller's confirmation modal can show loading /
-  // error inline — mirroring the move comment thread's `remove`.
-  async function handleRemoveSaved(id: string): Promise<{ error?: string }> {
-    const res = await deleteRepertoireChunkAction(id);
-    if (!res.success) {
-      return { error: localizeError(res.error) };
-    }
-    setItems((prev) => prev.filter((c) => c.id !== id));
-    return {};
-  }
-
-  const stage = (chunk: ChunkOption) => setStaged((prev) => [...prev, chunk]);
-  const unstage = (id: string) => setStaged((prev) => prev.filter((s) => s.id !== id));
+  const { items, staged } = staging;
+  const excludedChunkIds = useMemo(
+    () => new Set([...items.map((c) => c.chunkId), ...staged.map((c) => c.id)]),
+    [items, staged]
+  );
 
   return {
     items,
     staged,
     excludedChunkIds,
-    submitting,
-    error,
-    canRemove,
-    handleSubmit,
-    handleRemoveSaved,
-    stage,
-    unstage,
+    submitting: staging.submitting,
+    error: staging.error,
+    canRemove: staging.canRemove,
+    handleSubmit: staging.handleSubmit,
+    handleRemoveSaved: staging.handleRemoveSaved,
+    stage: staging.stage,
+    unstage: staging.unstage,
   };
 }
