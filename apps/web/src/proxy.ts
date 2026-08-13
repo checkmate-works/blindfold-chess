@@ -5,6 +5,7 @@ import { negotiateLocale } from '@/i18n/negotiate-locale';
 import * as Sentry from '@sentry/nextjs';
 
 import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
+import { resolveReturnPath, returnTargetFor, withReturnPath } from '@/lib/auth-return-path';
 import {
   buildCspHeader,
   buildReportToHeader,
@@ -165,18 +166,30 @@ export async function proxy(request: NextRequest) {
     return applyCspHeaders(new NextResponse(null, { status: 404 }), nonce, pathname);
   }
 
-  // Redirect unauthenticated users away from auth-required pages
+  // Redirect unauthenticated users away from auth-required pages, remembering
+  // where they were headed so signing in resumes it. This guard runs ahead of
+  // the equivalent ones in `(protected)/layout.tsx` and `getAuthenticatedUser`,
+  // so for `/mypage/*` it is the only one that actually fires.
   if (isAuthRequiredPath(pathname) && !authenticated) {
     const locale = pathname.split('/')[1] || 'en';
-    const signInUrl = new URL(`/${locale}/sign-in`, request.url);
+    const signInUrl = new URL(
+      withReturnPath(`/${locale}/sign-in`, returnTargetFor(pathname, request.nextUrl.search)),
+      request.url
+    );
     return applyCspHeaders(NextResponse.redirect(signInUrl), nonce, pathname);
   }
 
-  // Redirect authenticated users away from the sign-in page
+  // Redirect authenticated users away from the sign-in page — to their return
+  // target when they carry one (a second tab signed in while this one sat on
+  // `/sign-in?next=…`), otherwise to mypage. Without the `next` branch this
+  // redirect would swallow the return target before the page ever renders,
+  // which is what made `sign-in/page.tsx`'s own `next` handling unreachable.
   if (isSignInPath(pathname) && authenticated) {
     const locale = pathname.split('/')[1] || 'en';
-    const mypageUrl = new URL(`/${locale}/mypage?toast=already_logged_in`, request.url);
-    return applyCspHeaders(NextResponse.redirect(mypageUrl), nonce, pathname);
+    // `resolveReturnPath` rejects `/sign-in` itself, so this cannot loop.
+    const next = resolveReturnPath(request.nextUrl.searchParams.get('next'));
+    const destination = new URL(next ?? `/${locale}/mypage?toast=already_logged_in`, request.url);
+    return applyCspHeaders(NextResponse.redirect(destination), nonce, pathname);
   }
 
   // Refresh the `bfc_ads_hidden` cookie on the response when the user is

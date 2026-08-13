@@ -7,6 +7,8 @@ import { NextResponse } from 'next/server';
 import type { User } from '@supabase/supabase-js';
 import { eq } from 'drizzle-orm';
 
+import { withReturnPath } from '@/lib/auth-return-path';
+import { getCurrentReturnTarget } from '@/lib/current-return-target';
 import { db, profiles } from '@/lib/db';
 import { isUserBanned } from '@/lib/moderation/ban';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
@@ -16,11 +18,13 @@ import { createClient } from '@/lib/supabase/server';
 /**
  * Returns the authenticated user or redirects to sign-in.
  *
- * For `(protected)/` routes the parent layout already performs an auth
- * guard, so the redirect here is normally unreachable. It is also reached
- * directly from a few `(public)/` pages that gate their own access (e.g.
- * `practice/puzzle/new`); the locale prefix on the redirect target is
- * required so those callers don't land on an unlocalized 404.
+ * For `(protected)/` routes the proxy's own guard fires first, so the
+ * redirect here is normally unreachable. It is also reached directly from a
+ * few `(public)/` pages that gate their own access (e.g. `practice/puzzle/new`,
+ * `chunks/[slug]/edit`) — those are the calls that matter, since no earlier
+ * guard covers them. The locale prefix on the redirect target is required so
+ * those callers don't land on an unlocalized 404, and `?next=` carries the
+ * page they were denied so signing in resumes it.
  */
 export const getAuthenticatedUser = cache(async () => {
   const supabase = await createClient();
@@ -29,7 +33,9 @@ export const getAuthenticatedUser = cache(async () => {
   } = await supabase.auth.getUser();
   if (!user) {
     const locale = await getLocale();
-    redirect(`/${locale}/sign-in?toast=sign_in_required`);
+    redirect(
+      withReturnPath(`/${locale}/sign-in?toast=sign_in_required`, await getCurrentReturnTarget())
+    );
   }
   return user;
 });

@@ -38,6 +38,7 @@ vi.mock('next/image', () => ({
 }));
 
 const mockPush = vi.fn();
+let mockPathname = '/en';
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
@@ -45,12 +46,14 @@ vi.mock('next/navigation', () => ({
     prefetch: vi.fn(),
     back: vi.fn(),
   }),
+  usePathname: () => mockPathname,
 }));
 
 describe('AuthStatusDisplay', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLocale = 'en';
+    mockPathname = '/en';
     mockPush.mockClear();
   });
 
@@ -62,12 +65,40 @@ describe('AuthStatusDisplay', () => {
       });
     });
 
-    it('should display sign-up and sign-in links', () => {
+    it('should display sign-up and sign-in links carrying the current page as the return target', () => {
+      mockPathname = '/en/articles/some-post';
       render(<AuthStatusDisplay isAuthenticated={false} />);
       const signUpLink = screen.getByText('signUp').closest('a');
       const signInLink = screen.getByText('signIn').closest('a');
-      expect(signUpLink).toHaveAttribute('href', '/en/sign-up');
-      expect(signInLink).toHaveAttribute('href', '/en/sign-in');
+      expect(signUpLink).toHaveAttribute('href', '/en/sign-up?next=%2Fen%2Farticles%2Fsome-post');
+      expect(signInLink).toHaveAttribute('href', '/en/sign-in?next=%2Fen%2Farticles%2Fsome-post');
+    });
+
+    it('does not offer to return to an auth screen', () => {
+      // The header renders on `/sign-in` too; `?next=/en/sign-in` would make
+      // the proxy's authenticated-visitor redirect bounce in a loop.
+      mockPathname = '/en/sign-in';
+      render(<AuthStatusDisplay isAuthenticated={false} />);
+      expect(screen.getByText('signIn').closest('a')).toHaveAttribute('href', '/en/sign-in');
+    });
+
+    it('adds the query string on click, not during render', () => {
+      // Reading `useSearchParams()` during render would bail the ISR pages
+      // this header sits on out of static rendering.
+      mockPathname = '/en/leaderboard/score/all';
+      window.history.replaceState({}, '', '/en/leaderboard/score/all?page=3');
+      render(<AuthStatusDisplay isAuthenticated={false} />);
+
+      const signInLink = screen.getByText('signIn').closest('a') as HTMLAnchorElement;
+      expect(signInLink).toHaveAttribute(
+        'href',
+        '/en/sign-in?next=%2Fen%2Fleaderboard%2Fscore%2Fall'
+      );
+
+      fireEvent.click(signInLink, { button: 0 });
+      expect(mockPush).toHaveBeenCalledWith(
+        '/en/sign-in?next=%2Fen%2Fleaderboard%2Fscore%2Fall%3Fpage%3D3'
+      );
     });
   });
 

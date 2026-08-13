@@ -5,9 +5,9 @@ import { eq } from 'drizzle-orm';
 
 import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from '@/lib/ads/ads-hidden-cookie';
 import { computeAdsHiddenValueForUser } from '@/lib/ads/ads-hidden-cookie-compute';
+import { resolveReturnPath } from '@/lib/auth-return-path';
 import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
-import { sanitizeNext } from '@/lib/safe-next';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -102,7 +102,7 @@ export async function GET(request: Request) {
   const type = searchParams.get('type');
   const locale = await getLocaleFromRequest();
   const defaultNext = `/${locale}/mypage`;
-  const safeNext = sanitizeNext(searchParams.get('next')) ?? defaultNext;
+  const safeNext = resolveReturnPath(searchParams.get('next')) ?? defaultNext;
 
   const supabase = await createClient();
 

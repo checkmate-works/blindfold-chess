@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import * as Sentry from '@sentry/nextjs';
 import { FiCheck } from 'react-icons/fi';
 
+import { withReturnPath } from '@/lib/auth-return-path';
+
 import { createCheckoutSession } from '@/app/[locale]/(protected)/mypage/(confirmed)/subscription/_actions/createCheckoutSession';
 
 type BaseProps = {
@@ -38,7 +40,10 @@ export function PricingCard(props: Props) {
   async function handleSubscribe() {
     if (props.variant !== 'paid') return;
     if (!props.isAuthenticated) {
-      router.push(`/${props.locale}/sign-in?returnTo=/${props.locale}/pricing`);
+      // `?returnTo=` was never read by anything; the parameter the sign-in
+      // flow acts on is `?next=`. A guest tapping "subscribe" used to be
+      // dropped on mypage and had to find their way back to pricing.
+      router.push(withReturnPath(`/${props.locale}/sign-in`, `/${props.locale}/pricing`));
       return;
     }
     const result = await createCheckoutSession(props.locale);

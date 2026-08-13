@@ -16,7 +16,7 @@ import { signIn } from '../_actions/signIn';
 type Props = {
   /**
    * Internal path to return to after signing in (validated upstream by
-   * `sanitizeNext`). Omitted → the default mypage landing.
+   * `resolveReturnPath`). Omitted → the default mypage landing.
    */
   next?: string;
 };

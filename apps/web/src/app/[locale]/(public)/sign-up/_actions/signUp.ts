@@ -3,7 +3,7 @@
 import { SITE_URL } from '@/config';
 
 import type { ActionResult } from '@/lib/action-types';
-import { sanitizeNext } from '@/lib/safe-next';
+import { resolveReturnPath } from '@/lib/auth-return-path';
 import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { getPasswordValidationError } from '@/lib/validations/password';
@@ -27,7 +27,7 @@ export async function signUp(
 
   // Carry a validated `next` into the confirmation link so the callback lands
   // the new user back on the CTA-gated page after they confirm their email.
-  const safeNext = sanitizeNext(next);
+  const safeNext = resolveReturnPath(next);
   const callback = new URL('/auth/callback', SITE_URL);
   if (safeNext) callback.searchParams.set('next', safeNext);
 

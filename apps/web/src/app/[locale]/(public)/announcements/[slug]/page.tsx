@@ -8,6 +8,8 @@ import { notFound } from 'next/navigation';
 import { Link, routing } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
+import { withReturnPath } from '@/lib/auth-return-path';
+import { getCurrentReturnTarget } from '@/lib/current-return-target';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -105,7 +107,11 @@ export default async function AnnouncementPage({ params }: Props) {
         >
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">{t('membersOnly')}</p>
-            <Link href="/sign-in" locale={locale} className={`font-medium ${TEXT_LINK_CLASSES}`}>
+            <Link
+              href={withReturnPath('/sign-in', await getCurrentReturnTarget())}
+              locale={locale}
+              className={`font-medium ${TEXT_LINK_CLASSES}`}
+            >
               {t('signInToView')}
             </Link>
           </div>

@@ -26,6 +26,8 @@ import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/che
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getOptionalUser } from '@/lib/auth';
+import { withReturnPath } from '@/lib/auth-return-path';
+import { getCurrentReturnTarget } from '@/lib/current-return-target';
 import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
 import { getRepertoireCheckReport } from '@/lib/repertoires/check-report';
 import { listRepertoiresForUser } from '@/lib/repertoires/queries';
@@ -156,9 +158,13 @@ export default async function RepertoireCheckPage({ params, searchParams }: Prop
       </EmptyState>
     );
   } else if (!user) {
+    // The moves being checked live entirely in this page's query string, so
+    // dropping the return target here would lose the game the visitor just
+    // finished — they would have to replay it to get back to this check.
+    const signInHref = withReturnPath(`/${locale}/sign-in`, await getCurrentReturnTarget());
     content = (
       <EmptyState message={t('repertoireCheck.signInRequired')}>
-        <CtaLink href={`/${locale}/sign-in`}>{t('repertoireCheck.signIn')}</CtaLink>
+        <CtaLink href={signInHref}>{t('repertoireCheck.signIn')}</CtaLink>
       </EmptyState>
     );
   } else {

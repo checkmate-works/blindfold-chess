@@ -13,6 +13,7 @@ import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useAuth } from '../_contexts/AuthContext';
+import { AuthCtaLink } from './AuthCtaLink';
 
 type Props = {
   isAuthenticated: boolean;
@@ -115,12 +116,12 @@ export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: P
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <Link href={`/${locale}/sign-up`} className={TEXT_LINK_CLASSES}>
+      <AuthCtaLink to="/sign-up" className={TEXT_LINK_CLASSES}>
         {t('signUp')}
-      </Link>
-      <Link href={`/${locale}/sign-in`} className={TEXT_LINK_CLASSES}>
+      </AuthCtaLink>
+      <AuthCtaLink to="/sign-in" className={TEXT_LINK_CLASSES}>
         {t('signIn')}
-      </Link>
+      </AuthCtaLink>
     </div>
   );
 }

@@ -19,7 +19,7 @@ import { signUp } from '../_actions/signUp';
 type Props = {
   /**
    * Internal path to return to after the email is confirmed (validated upstream
-   * by `sanitizeNext`). Threaded into the confirmation link's `emailRedirectTo`
+   * by `resolveReturnPath`). Threaded into the confirmation link's `emailRedirectTo`
    * so `/auth/callback` lands the new user back on the CTA-gated page.
    */
   next?: string;

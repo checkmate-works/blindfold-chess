@@ -27,6 +27,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  */
 
 let capturedRequestHeaders: Headers | undefined;
+let mockAuthenticated = false;
 
 vi.mock('@/lib/supabase/proxy', () => ({
   updateSession: vi.fn(
@@ -35,7 +36,7 @@ vi.mock('@/lib/supabase/proxy', () => ({
       const init = options.requestHeaders
         ? { request: { headers: options.requestHeaders } }
         : undefined;
-      return { response: NextResponse.next(init), authenticated: false, userId: null };
+      return { response: NextResponse.next(init), authenticated: mockAuthenticated, userId: null };
     }
   ),
 }));
@@ -69,6 +70,7 @@ function scriptSrcOf(response: Response): string | undefined {
 describe('proxy', () => {
   beforeEach(() => {
     capturedRequestHeaders = undefined;
+    mockAuthenticated = false;
   });
 
   it('sets a Report-Only CSP header with the per-request-nonce variant on dynamic routes', async () => {
@@ -148,5 +150,53 @@ describe('proxy', () => {
 
     expect(response.status).toBe(404);
     expect(capturedRequestHeaders).toBeUndefined();
+  });
+
+  describe('post-auth return target', () => {
+    const locationOf = (response: Response) => new URL(response.headers.get('location') as string);
+
+    it('remembers the blocked destination when sending a guest to sign-in', async () => {
+      const location = locationOf(await proxy(makeRequest('/en/mypage/coins?page=2')));
+
+      expect(location.pathname).toBe('/en/sign-in');
+      expect(location.searchParams.get('next')).toBe('/en/mypage/coins?page=2');
+    });
+
+    it('drops the RSC payload parameter from the return target', async () => {
+      // A soft navigation fetches `?_rsc=<hash>`; carrying it through would
+      // make the post-sign-in landing request the payload, not the page.
+      const location = locationOf(await proxy(makeRequest('/en/mypage?_rsc=1a2b3c')));
+
+      expect(location.searchParams.get('next')).toBe('/en/mypage');
+    });
+
+    it('honours the return target when an already-authenticated visitor lands on sign-in', async () => {
+      mockAuthenticated = true;
+
+      const location = locationOf(
+        await proxy(makeRequest('/en/sign-in?next=%2Fen%2Fgames%2Fplay%2Fresult%3FgameId%3Dabc'))
+      );
+
+      expect(location.pathname).toBe('/en/games/play/result');
+      expect(location.searchParams.get('gameId')).toBe('abc');
+    });
+
+    it('falls back to mypage rather than looping when the return target is sign-in itself', async () => {
+      mockAuthenticated = true;
+
+      const location = locationOf(await proxy(makeRequest('/en/sign-in?next=%2Fen%2Fsign-in')));
+
+      expect(location.pathname).toBe('/en/mypage');
+      expect(location.searchParams.get('toast')).toBe('already_logged_in');
+    });
+
+    it('refuses an off-origin return target', async () => {
+      mockAuthenticated = true;
+
+      const location = locationOf(await proxy(makeRequest('/en/sign-in?next=%2F%2Fevil.com')));
+
+      expect(location.host).toBe('example.test');
+      expect(location.pathname).toBe('/en/mypage');
+    });
   });
 });
