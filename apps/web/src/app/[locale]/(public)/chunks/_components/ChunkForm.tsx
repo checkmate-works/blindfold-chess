@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormActionFooter, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
@@ -324,7 +324,20 @@ export function ChunkForm(props: Props) {
           messageFor={submitError.messageFor}
         />
 
-        <div className="space-y-4">
+        <FormActionFooter
+          cancel={
+            // Abandon editing and return to the detail page. A plain
+            // `router.push` (not a <Link>) so the unsaved-changes guard
+            // still intercepts when there are pending edits. Create mode has
+            // nothing to return to, so it renders no cancel at all.
+            mode === 'edit'
+              ? {
+                  label: t('actions.cancel'),
+                  onClick: () => router.push(`/chunks/${props.initial.slug}` as '/chunks/[slug]'),
+                }
+              : undefined
+          }
+        >
           {/*
            * Deliberately never disabled *by validation state*: a disabled
            * submit is silent about *why* it won't move, which is the same
@@ -343,21 +356,7 @@ export function ChunkForm(props: Props) {
           >
             {t('actions.continueToPreview')}
           </Button>
-
-          {mode === 'edit' && (
-            // Abandon editing and return to the detail page. A plain
-            // `router.push` (not a <Link>) so the unsaved-changes guard
-            // still intercepts when there are pending edits. Mirrors the
-            // repertoire / line edit forms' cancel affordance.
-            <button
-              type="button"
-              onClick={() => router.push(`/chunks/${props.initial.slug}` as '/chunks/[slug]')}
-              className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-            >
-              {t('actions.cancel')}
-            </button>
-          )}
-        </div>
+        </FormActionFooter>
       </form>
 
       <ConfirmationModal

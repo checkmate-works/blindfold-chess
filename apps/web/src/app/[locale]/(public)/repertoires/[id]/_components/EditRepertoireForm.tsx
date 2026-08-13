@@ -9,6 +9,7 @@ import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import {
   Button,
   FieldError,
+  FormActionFooter,
   FormErrorBanner,
   TextInput,
   Textarea,
@@ -270,7 +271,9 @@ export function EditRepertoireForm({
         cancelLabel={tUnsaved('cancel')}
       />
 
-      <div className="space-y-4">
+      <FormActionFooter
+        cancel={{ label: t('cancel'), onClick: () => router.push(detailHref), disabled: pending }}
+      >
         <Button
           type="submit"
           variant="primary"
@@ -281,15 +284,7 @@ export function EditRepertoireForm({
         >
           {pending ? t('saving') : t('save')}
         </Button>
-        <button
-          type="button"
-          onClick={() => router.push(detailHref)}
-          disabled={pending}
-          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-        >
-          {t('cancel')}
-        </button>
-      </div>
+      </FormActionFooter>
     </form>
   );
 }

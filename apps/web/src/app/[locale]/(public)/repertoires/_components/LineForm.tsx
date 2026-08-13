@@ -9,6 +9,7 @@ import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import {
   Button,
   FieldError,
+  FormActionFooter,
   FormErrorBanner,
   TextInput,
   Textarea,
@@ -350,7 +351,9 @@ export function LineForm({
         cancelLabel={tUnsaved('cancel')}
       />
 
-      <div className="space-y-4">
+      <FormActionFooter
+        cancel={{ label: t('cancel'), onClick: () => router.push(cancelHref), disabled: pending }}
+      >
         <Button
           type="submit"
           variant="primary"
@@ -361,15 +364,7 @@ export function LineForm({
         >
           {pending ? submitLabels.saving : submitLabels.idle}
         </Button>
-        <button
-          type="button"
-          onClick={() => router.push(cancelHref)}
-          disabled={pending}
-          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-        >
-          {t('cancel')}
-        </button>
-      </div>
+      </FormActionFooter>
     </form>
   );
 }

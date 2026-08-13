@@ -29,6 +29,22 @@ vi.mock('@/_hooks/useUnsavedChanges', () => ({
 // banner keeps its ref + role — the error-routing tests below assert on
 // the real submit path and on where focus lands.
 vi.mock('@/app/_components', () => ({
+  FormActionFooter: ({
+    children,
+    cancel,
+  }: {
+    children: ReactNode;
+    cancel?: { label: ReactNode; onClick: () => void; disabled?: boolean };
+  }) => (
+    <div>
+      {children}
+      {cancel && (
+        <button type="button" onClick={cancel.onClick} disabled={cancel.disabled}>
+          {cancel.label}
+        </button>
+      )}
+    </div>
+  ),
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Button: ({ children, type }: { children: React.ReactNode; type?: 'button' | 'submit' }) => (
     <button type={type}>{children}</button>

@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner } from '@/app/_components';
+import { Button, FormActionFooter, FormErrorBanner } from '@/app/_components';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
@@ -350,7 +350,9 @@ export function LineOrderList({
         cancelLabel={tUnsaved('cancel')}
       />
 
-      <div className="space-y-4">
+      <FormActionFooter
+        cancel={{ label: labels.cancel, onClick: () => router.push(detailHref), disabled: pending }}
+      >
         <Button
           type="button"
           variant="primary"
@@ -362,15 +364,7 @@ export function LineOrderList({
         >
           {pending ? labels.saving : labels.save}
         </Button>
-        <button
-          type="button"
-          onClick={() => router.push(detailHref)}
-          disabled={pending}
-          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-        >
-          {labels.cancel}
-        </button>
-      </div>
+      </FormActionFooter>
     </div>
   );
 }

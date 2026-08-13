@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components';
+import { Button, FormActionFooter } from '@/app/_components';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -134,7 +134,9 @@ export function PuzzlePositionFields({
         )
       }
     >
-      <div className="space-y-4">
+      <FormActionFooter
+        cancel={onCancel ? { label: cancelLabel, onClick: onCancel, disabled: pending } : undefined}
+      >
         {/*
          * Only `pending` disables this. Blocking the click on an invalid
          * position or an empty title would be silent about which of the
@@ -150,17 +152,7 @@ export function PuzzlePositionFields({
         >
           {continueLabel}
         </Button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={pending}
-            className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-          >
-            {cancelLabel}
-          </button>
-        )}
-      </div>
+      </FormActionFooter>
     </PositionEditorFields>
   );
 }

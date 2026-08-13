@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormActionFooter, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -145,7 +145,13 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
           messageFor={submitError.messageFor}
         />
 
-        <div className="space-y-4">
+        <FormActionFooter
+          cancel={{
+            label: t('cancel'),
+            onClick: () => router.push(`/practice/position-memory/${positionId}`),
+            disabled: pending,
+          }}
+        >
           {/*
            * `!isDirty` still disables — "nothing to save" is a state, not
            * an error to report. Invalid *content*, by contrast, stays
@@ -161,19 +167,7 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
           >
             {pending ? t('submitting') : t('submit')}
           </Button>
-          {/* Abandon editing and return to the detail page. A plain
-              `router.push` (not a <Link>) so the unsaved-changes navigation
-              guard still intercepts when there are pending edits. Mirrors the
-              chunk / repertoire / line edit forms' cancel affordance. */}
-          <button
-            type="button"
-            onClick={() => router.push(`/practice/position-memory/${positionId}`)}
-            disabled={pending}
-            className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-          >
-            {t('cancel')}
-          </button>
-        </div>
+        </FormActionFooter>
       </form>
 
       <UnsavedChangesDialog

@@ -9,6 +9,7 @@ import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import {
   Button,
   FieldError,
+  FormActionFooter,
   FormErrorBanner,
   UnsavedChangesDialog,
   fieldBorderClass,
@@ -227,7 +228,9 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
          * review page via the locale-aware router (not <Link>/back) to stay
          * consistent with those siblings.
          */}
-        <div className="space-y-4">
+        <FormActionFooter
+          cancel={{ label: t('actions.cancel'), onClick: requestDiscard, disabled: pending }}
+        >
           <Button
             type="submit"
             variant="primary"
@@ -238,15 +241,7 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
           >
             {t('actions.submit')}
           </Button>
-          <button
-            type="button"
-            onClick={requestDiscard}
-            disabled={pending}
-            className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-          >
-            {t('actions.cancel')}
-          </button>
-        </div>
+        </FormActionFooter>
       </form>
 
       <UnsavedChangesDialog
