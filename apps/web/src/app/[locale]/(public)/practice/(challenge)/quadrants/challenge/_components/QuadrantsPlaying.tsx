@@ -7,9 +7,8 @@ import type { QuadrantId, QuadrantQuestion } from '@blindfold-chess/features/qua
 import { getCorrectQuadrant } from '@blindfold-chess/features/quadrants';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeCountdownOverlay';
-import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
+import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
 
 import QuadrantBoard from '../../_components/QuadrantBoard';
@@ -71,7 +70,12 @@ export function QuadrantsPlaying({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="p-6 text-center relative overflow-hidden space-y-4">
+      <ChallengeSessionVeil
+        countdown={countdown}
+        isPaused={isPaused}
+        onTogglePause={onTogglePause}
+        className="p-6 text-center space-y-4"
+      >
         <div>
           <ChallengeStatusHeader
             className="flex justify-between items-center"
@@ -85,13 +89,8 @@ export function QuadrantsPlaying({
           />
         </div>
 
-        <ChallengeCountdownOverlay countdown={countdown} />
-        <ChallengePauseOverlay isPaused={isPaused} onTogglePause={onTogglePause} />
-
         {/* Content */}
-        <div
-          className={`transition-all duration-300 space-y-4 ${isPaused ? 'blur-md grayscale opacity-50 pointer-events-none' : ''}`}
-        >
+        <div className="space-y-4">
           {/* Orientation Indicator */}
           <div className="flex justify-center">
             <div className="flex items-center gap-2">
@@ -128,9 +127,9 @@ export function QuadrantsPlaying({
             </div>
           </div>
         </div>
-      </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+      </ChallengeSessionVeil>
 
       <ChallengeQuitControl
         className="mt-6 text-center"
