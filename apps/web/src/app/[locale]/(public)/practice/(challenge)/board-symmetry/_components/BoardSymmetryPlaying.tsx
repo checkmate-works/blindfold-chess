@@ -3,9 +3,8 @@
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeCountdownOverlay';
-import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
+import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
 
 import { BoardSymmetryQuestionPanel } from './BoardSymmetryQuestionPanel';
@@ -61,44 +60,41 @@ export function BoardSymmetryPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="p-8 text-center relative overflow-hidden">
-        <ChallengeCountdownOverlay countdown={countdown} />
-        <ChallengePauseOverlay isPaused={isPaused} onTogglePause={onTogglePause} />
+      <ChallengeSessionVeil
+        countdown={countdown}
+        isPaused={isPaused}
+        onTogglePause={onTogglePause}
+        className="py-2 text-center"
+      >
+        <BoardSymmetryQuestionPanel
+          problem={problem}
+          statusHeader={
+            <ChallengeStatusHeader
+              className="flex justify-between items-center mb-4 min-h-[40px]"
+              remainingLives={remainingLives}
+              maxLives={maxLives}
+              isPaused={isPaused}
+              onTogglePause={onTogglePause}
+              pauseDisabled={countdown !== null || isProcessing}
+              timeRemaining={timeRemaining}
+              timeLimit={timeLimit}
+            />
+          }
+          selectedFile={selectedFile}
+          selectedRank={selectedRank}
+          isCorrect={isCorrect}
+          onFileToggle={onFileToggle}
+          onRankToggle={onRankToggle}
+          onBackspace={onBackspace}
+          inputLocked={isDisabled}
+          inputDimmed={isProcessing || isPaused}
+        />
 
-        {/* Content with Blur when Paused */}
-        <div
-          className={`transition-all duration-300 ${isPaused || countdown !== null ? 'blur-sm' : ''}`}
-        >
-          <BoardSymmetryQuestionPanel
-            problem={problem}
-            statusHeader={
-              <ChallengeStatusHeader
-                className="mb-6 flex justify-between items-center"
-                remainingLives={remainingLives}
-                maxLives={maxLives}
-                isPaused={isPaused}
-                onTogglePause={onTogglePause}
-                pauseDisabled={countdown !== null || isProcessing}
-                timeRemaining={timeRemaining}
-                timeLimit={timeLimit}
-              />
-            }
-            selectedFile={selectedFile}
-            selectedRank={selectedRank}
-            isCorrect={isCorrect}
-            onFileToggle={onFileToggle}
-            onRankToggle={onRankToggle}
-            onBackspace={onBackspace}
-            inputLocked={isDisabled}
-            inputDimmed={isProcessing || isPaused}
-          />
-        </div>
-      </div>
-
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-4" />
+        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+      </ChallengeSessionVeil>
 
       <ChallengeQuitControl
-        className="flex flex-col items-center gap-2 mt-4"
+        className="mt-6 text-center"
         onQuitRequest={onQuitRequest}
         showQuitModal={showQuitModal}
         onQuitConfirm={onQuitConfirm}

@@ -7,9 +7,8 @@ import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner/
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeCountdownOverlay';
-import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
+import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/(challenge)/route-planner/_actions/save-result';
@@ -143,39 +142,37 @@ export default function RoutePlannerChallengeSession({
 
   return (
     <div id="route-planner-challenge-session" className="min-h-screen max-w-2xl mx-auto space-y-4">
-      <div className="space-y-6 relative overflow-hidden">
-        <ChallengeCountdownOverlay countdown={countdown} />
-        <ChallengePauseOverlay isPaused={isPaused} onTogglePause={togglePause} />
+      <ChallengeSessionVeil
+        countdown={countdown}
+        isPaused={isPaused}
+        onTogglePause={togglePause}
+        className="py-2 space-y-6"
+      >
+        <SessionHeader
+          incorrectCount={incorrectCount}
+          currentProblem={currentProblem}
+          initialTimeLimit={initialTimeLimit}
+          timeRemaining={timeRemaining}
+          timeElapsed={timeElapsed}
+          isPaused={isPaused}
+          showFeedback={showFeedback}
+          countdown={countdown}
+          onTogglePause={togglePause}
+        />
 
-        <div
-          className={`transition-all duration-300 ${isPaused || countdown !== null ? 'blur-sm' : ''}`}
-        >
-          <SessionHeader
-            incorrectCount={incorrectCount}
-            currentProblem={currentProblem}
-            initialTimeLimit={initialTimeLimit}
-            timeRemaining={timeRemaining}
-            timeElapsed={timeElapsed}
-            isPaused={isPaused}
-            showFeedback={showFeedback}
-            countdown={countdown}
-            onTogglePause={togglePause}
-          />
+        <ProblemBody
+          key={problemKey}
+          currentProblem={currentProblem}
+          isDisabled={isDisabled}
+          showFeedback={showFeedback}
+          isPaused={isPaused}
+          countdown={countdown}
+          onAnswer={hookHandleAnswer}
+          onRecordResult={recordProblemResult}
+        />
 
-          <ProblemBody
-            key={problemKey}
-            currentProblem={currentProblem}
-            isDisabled={isDisabled}
-            showFeedback={showFeedback}
-            isPaused={isPaused}
-            countdown={countdown}
-            onAnswer={hookHandleAnswer}
-            onRecordResult={recordProblemResult}
-          />
-        </div>
-      </div>
-
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} />
+        <ScoreCounter correct={correctCount} incorrect={incorrectCount} />
+      </ChallengeSessionVeil>
 
       {/* Quit section (no Skip in challenge mode) */}
       <ChallengeQuitControl

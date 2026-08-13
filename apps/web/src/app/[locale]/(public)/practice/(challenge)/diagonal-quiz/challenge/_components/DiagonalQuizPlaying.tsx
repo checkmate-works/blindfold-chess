@@ -4,9 +4,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Square } from '@blindfold-chess/types';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeCountdownOverlay';
-import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
+import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
@@ -111,105 +110,96 @@ export function DiagonalQuizPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="text-center relative overflow-hidden">
-        <ChallengeCountdownOverlay countdown={countdown} />
-        <ChallengePauseOverlay isPaused={isPaused} onTogglePause={onTogglePause} />
+      <ChallengeSessionVeil
+        countdown={countdown}
+        isPaused={isPaused}
+        onTogglePause={onTogglePause}
+        className="py-2 text-center"
+      >
+        <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 
-        <div
-          className={
-            isPaused || countdown !== null
-              ? 'blur-sm transition-all duration-300'
-              : 'transition-all duration-300'
-          }
-        >
-          <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
+        <ChallengeStatusHeader
+          className="flex justify-between items-center mb-4 min-h-[40px]"
+          remainingLives={remainingLives}
+          maxLives={maxLives}
+          isPaused={isPaused}
+          onTogglePause={onTogglePause}
+          pauseDisabled={countdown !== null}
+          timeRemaining={timeRemaining}
+          timeLimit={timeLimit}
+        />
 
-          <ChallengeStatusHeader
-            className="flex justify-between items-center mb-4 min-h-[40px] relative"
-            remainingLives={remainingLives}
-            maxLives={maxLives}
-            isPaused={isPaused}
-            onTogglePause={onTogglePause}
-            pauseDisabled={countdown !== null}
-            timeRemaining={timeRemaining}
-            timeLimit={timeLimit}
-          />
+        <div className="mb-6">
+          <div className="text-6xl font-bold text-foreground mb-4 select-none">{currentSquare}</div>
 
-          <div className="mb-6">
-            <div className="text-6xl font-bold text-foreground mb-4 select-none">
-              {currentSquare}
-            </div>
-
-            {showResult && lastAnswer && (
-              <p className="sr-only" role="status">
-                {lastAnswer.correct
-                  ? tPractice('correct')
-                  : t('correctAnswer', {
-                      diagonal: lastAnswer.correctDiagonal,
-                      antiDiagonal: lastAnswer.correctAntiDiagonal,
-                    })}
-              </p>
-            )}
-          </div>
-
-          {/* Diagonal Input Display Fields */}
-          <div className="space-y-3 mb-6">
-            <DiagonalInputField
-              label={t('diagonalLabel')}
-              isSingleSquare={singleDiagonal}
-              activeField={activeField}
-              fieldType="diagonal"
-              startText={diagonalStartText}
-              endText={diagonalEndText}
-              isComplete={isDiagonalComplete}
-              isDisabled={isDisabled}
-              isInputtingStart={isInputtingStart}
-              isInputtingEnd={isInputtingEnd}
-              onFieldClick={handleFieldClick}
-              result={diagonalResult}
-            />
-
-            <DiagonalInputField
-              label={t('antiDiagonalLabel')}
-              isSingleSquare={singleAntiDiagonal}
-              activeField={activeField}
-              fieldType="antiDiagonal"
-              startText={antiDiagonalStartText}
-              endText={antiDiagonalEndText}
-              isComplete={isAntiDiagonalComplete}
-              isDisabled={isDisabled}
-              isInputtingStart={isInputtingStart}
-              isInputtingEnd={isInputtingEnd}
-              onFieldClick={handleFieldClick}
-              result={antiDiagonalResult}
-            />
-          </div>
-
-          {/* Step indicator — height reserved so the keypad stays put when the
-              hint clears on result (no layout shift). */}
-          <div className="text-sm text-muted-foreground mb-4 min-h-5">
-            {!isDisabled &&
-              (expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : '')}
-          </div>
-
-          {/* Button Input Area */}
-          <ChessCoordinateKeypad
-            expectingFile={expectingFile}
-            expectingRank={expectingRank}
-            isDisabled={isDisabled}
-            onFilePress={handleFilePress}
-            onRankPress={handleRankPress}
-            onBackspace={handleBackspace}
-            onClear={handleClear}
-          />
-
-          <AlgebraicKeyboardHint disabled={isDisabled} />
+          {showResult && lastAnswer && (
+            <p className="sr-only" role="status">
+              {lastAnswer.correct
+                ? tPractice('correct')
+                : t('correctAnswer', {
+                    diagonal: lastAnswer.correctDiagonal,
+                    antiDiagonal: lastAnswer.correctAntiDiagonal,
+                  })}
+            </p>
+          )}
         </div>
-      </div>
 
-      {showStats && (
-        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-      )}
+        {/* Diagonal Input Display Fields */}
+        <div className="space-y-3 mb-6">
+          <DiagonalInputField
+            label={t('diagonalLabel')}
+            isSingleSquare={singleDiagonal}
+            activeField={activeField}
+            fieldType="diagonal"
+            startText={diagonalStartText}
+            endText={diagonalEndText}
+            isComplete={isDiagonalComplete}
+            isDisabled={isDisabled}
+            isInputtingStart={isInputtingStart}
+            isInputtingEnd={isInputtingEnd}
+            onFieldClick={handleFieldClick}
+            result={diagonalResult}
+          />
+
+          <DiagonalInputField
+            label={t('antiDiagonalLabel')}
+            isSingleSquare={singleAntiDiagonal}
+            activeField={activeField}
+            fieldType="antiDiagonal"
+            startText={antiDiagonalStartText}
+            endText={antiDiagonalEndText}
+            isComplete={isAntiDiagonalComplete}
+            isDisabled={isDisabled}
+            isInputtingStart={isInputtingStart}
+            isInputtingEnd={isInputtingEnd}
+            onFieldClick={handleFieldClick}
+            result={antiDiagonalResult}
+          />
+        </div>
+
+        {/* Step indicator — height reserved so the keypad stays put when the
+              hint clears on result (no layout shift). */}
+        <div className="text-sm text-muted-foreground mb-4 min-h-5">
+          {!isDisabled && (expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : '')}
+        </div>
+
+        {/* Button Input Area */}
+        <ChessCoordinateKeypad
+          expectingFile={expectingFile}
+          expectingRank={expectingRank}
+          isDisabled={isDisabled}
+          onFilePress={handleFilePress}
+          onRankPress={handleRankPress}
+          onBackspace={handleBackspace}
+          onClear={handleClear}
+        />
+
+        <AlgebraicKeyboardHint disabled={isDisabled} />
+
+        {showStats && (
+          <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+        )}
+      </ChallengeSessionVeil>
 
       {/* Training mode reuses this component without the quit affordance —
           there is no run to abandon, so none of the handlers are passed. */}

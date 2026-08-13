@@ -79,7 +79,7 @@ export function BoardSymmetryQuestionPanel({
 
   return (
     <>
-      <SectionTitle className="mb-8">
+      <SectionTitle className="mb-4">
         {t('question', {
           type: t(`types.${problem.type}`),
           square: problem.square,
@@ -88,7 +88,7 @@ export function BoardSymmetryQuestionPanel({
 
       {statusHeader}
 
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center justify-center gap-4 text-6xl font-bold text-foreground mb-4 font-mono select-none">
           {problem.square}
           <span className="text-muted-foreground">→</span>
@@ -98,7 +98,11 @@ export function BoardSymmetryQuestionPanel({
         </div>
       </div>
 
-      <div className="space-y-4 -mx-8 sm:mx-0">
+      {/* No negative inset: both callers lay this panel out edge-to-edge, so the
+          pad already spans the full column. The `-mx-8 sm:mx-0` that used to be
+          here existed only to cancel a `p-8` container both of them have since
+          dropped, and would now bleed the pad past the column on mobile. */}
+      <div className="space-y-4">
         <CoordinateInput
           selectedFiles={selectedFile ? new Set([selectedFile]) : new Set()}
           selectedRanks={selectedRank ? new Set([selectedRank]) : new Set()}

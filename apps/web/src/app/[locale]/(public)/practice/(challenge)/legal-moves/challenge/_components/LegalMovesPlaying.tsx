@@ -1,9 +1,8 @@
 'use client';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { ChallengeCountdownOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeCountdownOverlay';
-import { ChallengePauseOverlay } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengePauseOverlay';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
+import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
 
 import { LegalMovesQuestionPanel } from '../../_components/LegalMovesQuestionPanel';
@@ -60,38 +59,34 @@ export function LegalMovesPlaying({
 
   return (
     <div>
-      <div className="relative p-8 text-center overflow-hidden">
-        <ChallengeCountdownOverlay countdown={countdown} />
-        <ChallengePauseOverlay isPaused={isPaused} onTogglePause={onTogglePause} />
+      <ChallengeSessionVeil
+        countdown={countdown}
+        isPaused={isPaused}
+        onTogglePause={onTogglePause}
+        className="p-8 text-center"
+      >
+        <ChallengeStatusHeader
+          className="mb-8 flex items-center justify-between"
+          remainingLives={remainingLives}
+          maxLives={maxLives}
+          isPaused={isPaused}
+          onTogglePause={onTogglePause}
+          pauseDisabled={countdown !== null || showResult}
+          timeRemaining={timeRemaining}
+          timeLimit={timeLimit}
+          timeElapsed={timeElapsed}
+        />
 
-        <div
-          className={`transition-all duration-300 ${
-            isPaused || countdown !== null ? 'blur-md grayscale opacity-50 pointer-events-none' : ''
-          }`}
-        >
-          <ChallengeStatusHeader
-            className="mb-8 flex items-center justify-between"
-            remainingLives={remainingLives}
-            maxLives={maxLives}
-            isPaused={isPaused}
-            onTogglePause={onTogglePause}
-            pauseDisabled={countdown !== null || showResult}
-            timeRemaining={timeRemaining}
-            timeLimit={timeLimit}
-            timeElapsed={timeElapsed}
-          />
+        <LegalMovesQuestionPanel
+          currentQuestion={currentQuestion}
+          lastAnswer={lastAnswer}
+          onAnswer={onAnswer}
+          getQuestion={getQuestion}
+          disabled={inputDisabled}
+        />
 
-          <LegalMovesQuestionPanel
-            currentQuestion={currentQuestion}
-            lastAnswer={lastAnswer}
-            onAnswer={onAnswer}
-            getQuestion={getQuestion}
-            disabled={inputDisabled}
-          />
-        </div>
-      </div>
-
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+      </ChallengeSessionVeil>
 
       <ChallengeQuitControl
         className="mt-6 text-center"

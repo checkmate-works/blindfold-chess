@@ -43,7 +43,7 @@ export function BoardSymmetryTrainingPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="p-8 text-center relative overflow-hidden">
+      <div className="py-2 text-center">
         <div>
           <BoardSymmetryQuestionPanel
             problem={problem}
@@ -59,7 +59,7 @@ export function BoardSymmetryTrainingPlaying({
         </div>
       </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-4" />
+      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
 
       <div className="mt-6 text-center">
         <button
