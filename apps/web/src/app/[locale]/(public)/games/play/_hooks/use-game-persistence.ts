@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, FinalGameOutcome, GameOutcome } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type {
@@ -22,7 +22,7 @@ type SavedGameData = {
   setupPlies?: number;
   lastMove: { from: string; to: string } | null;
   gameStatus: GameStatus;
-  playerResult: 'win' | 'loss' | 'draw' | null;
+  playerResult: FinalGameOutcome | null;
   shouldMakeAiMove: boolean;
   gamePreferences?: PerGamePreferences;
   preferenceChangeLog?: PreferenceChangeLogEntry[];
@@ -38,7 +38,7 @@ type UseGamePersistenceOptions = {
 
 type UseGamePersistenceReturn = {
   isLoadingFromStorage: boolean;
-  savedGameStatus: 'in_progress' | 'win' | 'loss' | 'draw' | null;
+  savedGameStatus: GameOutcome | null;
   loadedGameData: SavedGameData | null;
   gameNotFound: boolean;
 };
@@ -58,9 +58,7 @@ export function useGamePersistence({
   initialStartingFen,
 }: UseGamePersistenceOptions): UseGamePersistenceReturn {
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(!!initialGameId);
-  const [savedGameStatus, setSavedGameStatus] = useState<
-    'in_progress' | 'win' | 'loss' | 'draw' | null
-  >(null);
+  const [savedGameStatus, setSavedGameStatus] = useState<GameOutcome | null>(null);
   const [loadedGameData, setLoadedGameData] = useState<SavedGameData | null>(null);
   const [gameNotFound, setGameNotFound] = useState(false);
 
@@ -114,7 +112,7 @@ export function useGamePersistence({
             moves.length > 0 ? getLastMoveDetails(moves as string[], savedGame.startingFen) : null;
 
           let gameStatus: GameStatus = 'in_progress';
-          let playerResult: 'win' | 'loss' | 'draw' | null = null;
+          let playerResult: FinalGameOutcome | null = null;
           let shouldMakeAiMove = true;
 
           if (savedGame.status && savedGame.status !== 'in_progress') {

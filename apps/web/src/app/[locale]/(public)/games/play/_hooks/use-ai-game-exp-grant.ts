@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 
+import type { FinalGameOutcome } from '@blindfold-chess/types';
+
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
@@ -16,7 +18,7 @@ type Params = {
   gameId: string | undefined;
   /** Whether the viewer is signed in — guests trigger no grant. */
   isAuthenticated: boolean;
-  playerResult: 'win' | 'loss' | 'draw' | null;
+  playerResult: FinalGameOutcome | null;
   operationLogs: MoveOperationLog[] | null;
   engineConfig: EngineConfig;
 };

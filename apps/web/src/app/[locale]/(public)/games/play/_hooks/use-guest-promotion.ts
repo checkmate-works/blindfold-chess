@@ -1,5 +1,7 @@
 'use client';
 
+import type { FinalGameOutcome } from '@blindfold-chess/types';
+
 import type { GuestPromotionQualification } from '@/lib/games/guest-promotion';
 import { classifyGuestPromotionQualification } from '@/lib/games/guest-promotion';
 import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
@@ -9,7 +11,7 @@ import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreference
 
 type Args = {
   /** The player's terminal result. Only a win can qualify. */
-  result: 'win' | 'loss' | 'draw' | null;
+  result: FinalGameOutcome | null;
   /** The START-OF-GAME settings snapshot — what publish would persist. */
   initialPerGamePrefs: PerGamePreferences | undefined;
   /** Mid-game preference edits, as the play surface records them. */

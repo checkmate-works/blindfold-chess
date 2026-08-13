@@ -6,7 +6,7 @@
 import { cache } from 'react';
 
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
-import type { Side } from '@blindfold-chess/types';
+import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { type SQL, and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
@@ -82,7 +82,7 @@ export type SharedGameListItem = {
   createdAt: Date;
   engineKind: 'stockfish' | 'maia';
   engineElo: number;
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
   /** Side the author played — shown with a colour icon on the card. */
   playerColor: Side;
   /**

@@ -1,12 +1,12 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import type { Side } from '@blindfold-chess/types';
+import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaMinus, FaTrophy } from 'react-icons/fa';
 
 type Props = {
   /** Result from the author's (player's) perspective. */
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
   /** Side the author played, used to name the winner neutrally. */
   playerColor: Side;
 };

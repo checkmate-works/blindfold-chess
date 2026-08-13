@@ -1,4 +1,5 @@
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
+import type { FinalGameOutcome } from '@blindfold-chess/types';
 
 import type { GameOutcome } from '@/lib/games/saved-game-types';
 
@@ -11,7 +12,7 @@ import type { GameOutcome } from '@/lib/games/saved-game-types';
  */
 export function mapGameStatusToOutcome(
   gameStatus: GameStatus,
-  playerResult: 'win' | 'loss' | 'draw' | null
+  playerResult: FinalGameOutcome | null
 ): GameOutcome {
   if (gameStatus === 'in_progress') return 'in_progress';
   if (playerResult === 'win') return 'win';

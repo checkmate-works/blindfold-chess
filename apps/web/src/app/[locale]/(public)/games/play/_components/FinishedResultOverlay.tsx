@@ -2,12 +2,13 @@
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { FinalGameOutcome } from '@blindfold-chess/types';
 
 import { RESULT_LABEL_KEY, ResultIcon } from '../_lib/result-visuals';
 
 type Props = {
   /** Terminal result labelling the overlay; null renders the draw label. */
-  result?: 'win' | 'loss' | 'draw' | null;
+  result?: FinalGameOutcome | null;
   /**
    * Reopen the game-finished "next action" modal. When provided, a trigger
    * button sits in the overlay (pointer-events re-enabled just for it).

@@ -41,14 +41,6 @@ import type {
 
 export { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
 
-// Aliases of the canonical @blindfold-chess/types unions, kept as this
-// module's exported names. A published game is always finished, so the
-// outcome here is FinalGameOutcome — previously a same-named local
-// `GameOutcome` that silently disagreed with the shared one about
-// `"in_progress"`.
-export type GameOutcome = FinalGameOutcome;
-export type PlayerColor = Side;
-
 /** Validated, normalized snapshot ready to persist. */
 export type ValidatedGame = {
   title: string;
@@ -57,9 +49,9 @@ export type ValidatedGame = {
   startingFen: string | null;
   /** Seeded setup-prefix length ({@link Game.setupPlies}); null = no prefix. */
   setupPlies: number | null;
-  playerColor: PlayerColor;
+  playerColor: Side;
   engineConfig: EngineConfig;
-  result: GameOutcome;
+  result: FinalGameOutcome;
   operationLogs: MoveOperationLog[] | null;
   /**
    * Monotonic game-lifetime aid counters — the undo-proof companion to
@@ -88,8 +80,8 @@ export type GameColumns = {
 export type ValidatePublishResult =
   { ok: true; game: ValidatedGame } | { ok: false; error: string };
 
-const OUTCOMES: readonly GameOutcome[] = ['win', 'loss', 'draw'];
-const COLORS: readonly PlayerColor[] = ['white', 'black'];
+const OUTCOMES: readonly FinalGameOutcome[] = ['win', 'loss', 'draw'];
+const COLORS: readonly Side[] = ['white', 'black'];
 
 /**
  * Normalize the self-reported play settings into the validated display subset,
@@ -152,10 +144,10 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
     return { ok: false, error: 'invalid_moves' };
   }
 
-  if (!COLORS.includes(v.playerColor as PlayerColor)) {
+  if (!COLORS.includes(v.playerColor as Side)) {
     return { ok: false, error: 'invalid_player_color' };
   }
-  if (!OUTCOMES.includes(v.result as GameOutcome)) {
+  if (!OUTCOMES.includes(v.result as FinalGameOutcome)) {
     return { ok: false, error: 'invalid_result' };
   }
   if (!isEngineConfig(v.engineConfig)) {
@@ -212,9 +204,9 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       moves,
       startingFen,
       setupPlies,
-      playerColor: v.playerColor as PlayerColor,
+      playerColor: v.playerColor as Side,
       engineConfig: v.engineConfig,
-      result: v.result as GameOutcome,
+      result: v.result as FinalGameOutcome,
       // Self-reported aid records. Bounded, never rejected — see
       // `sanitize-published-logs` for why these carry the opposite failure
       // policy from everything validated above.

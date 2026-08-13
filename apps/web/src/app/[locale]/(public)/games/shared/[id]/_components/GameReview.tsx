@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
+import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
@@ -79,7 +79,7 @@ type Props = {
    * first-person / neutral wording of the result itself is the caller's job
    * (`statsHeader`).
    */
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
   /** Opening detected from the moves (server-side); shown above the stats block. */
   detectedOpening: DetectedOpening | null;
   engineConfig: EngineConfig;

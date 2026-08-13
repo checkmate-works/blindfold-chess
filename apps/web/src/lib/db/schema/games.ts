@@ -10,7 +10,7 @@
 //    hashed capability secret held client-side that lets them delete / unpublish
 //    without an account, and claim the game on later sign-up. Losing the secret
 //    leaves an orphan (admin-moderatable only) — accepted by design.
-import type { Side } from '@blindfold-chess/types';
+import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import {
@@ -144,7 +144,7 @@ export const games = pgTable(
      * common case) and for games published before this column.
      */
     playSettingsLog: jsonb('play_settings_log').$type<PlaySettingsChangeEntry[]>(),
-    result: varchar('result', { length: 4 }).$type<'win' | 'loss' | 'draw'>().notNull(),
+    result: varchar('result', { length: 4 }).$type<FinalGameOutcome>().notNull(),
 
     // --- Denormalized for gallery filter / sort ---
     engineKind: varchar('engine_kind', { length: 20 }).$type<'stockfish' | 'maia'>().notNull(),

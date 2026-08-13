@@ -20,6 +20,7 @@
  * `false` when an existing best score is surpassed.
  */
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
+import type { FinalGameOutcome } from '@blindfold-chess/types';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { PositionType } from '@/lib/positions/types';
@@ -162,7 +163,7 @@ export type GameFeedData = {
    * (plain thumbnail). See {@link playSettingsToThumbnailDisplay}.
    */
   thumbnailDisplay: BlindfoldDisplaySettings | null;
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
   createdAt: string; // ISO 8601
   author: FeedActor | null;
   likeMeta: FeedLikeMeta;

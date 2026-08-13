@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, FinalGameOutcome } from '@blindfold-chess/types';
 import { FaClipboardList } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
@@ -61,7 +61,7 @@ type Props = {
    * The player's terminal result, used to label the finished-review overlay
    * (win / loss / draw). Only read when `finished` is true.
    */
-  finishedResult?: 'win' | 'loss' | 'draw' | null;
+  finishedResult?: FinalGameOutcome | null;
   /**
    * Content rendered directly below the (frozen) mutating controls in
    * `finished` mode — used for the earned-Exp display. Ignored while the game

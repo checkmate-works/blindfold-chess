@@ -1,6 +1,6 @@
 'use server';
 
-import type { Side } from '@blindfold-chess/types';
+import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 
 import { userHasProfile } from '@/lib/auth';
 import type { GrantedRank } from '@/lib/db/data/ranks';
@@ -31,7 +31,7 @@ export type PublishGameActionInput = {
   setupPlies?: number | null;
   playerColor: Side;
   engineConfig: EngineConfig;
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
   operationLogs?: MoveOperationLog[] | null;
   /** Monotonic lifetime aid counters (undo-proof); validated on the server. */
   operationTotals?: OperationTotals | null;
