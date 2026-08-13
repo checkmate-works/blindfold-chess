@@ -1,5 +1,6 @@
 'use client';
 
+import { CHART_TOOLTIP_STYLE } from '@/app/_components/chartStyles';
 import {
   CartesianGrid,
   Legend,
@@ -76,15 +77,7 @@ export function DailyTrendChart({ newUsersData, postsData, labels }: Props) {
           tick={{ fill: 'var(--color-muted-foreground)', fontSize: 12 }}
           stroke="var(--color-border)"
         />
-        <Tooltip
-          labelFormatter={(label) => String(label)}
-          contentStyle={{
-            backgroundColor: 'var(--color-card)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '8px',
-            color: 'var(--color-foreground)',
-          }}
-        />
+        <Tooltip labelFormatter={(label) => String(label)} contentStyle={CHART_TOOLTIP_STYLE} />
         <Legend />
         <Line
           type="monotone"

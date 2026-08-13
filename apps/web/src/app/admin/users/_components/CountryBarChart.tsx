@@ -1,6 +1,7 @@
 'use client';
 
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { HorizontalCountBarChart } from '@/app/admin/_components/HorizontalCountBarChart';
+import { Tooltip, YAxis } from 'recharts';
 
 import { countryCodeToFlag } from '@/lib/countries';
 
@@ -9,9 +10,6 @@ import type { CountryStat } from '../_lib/queries';
 // modules (admin Supabase client), which would be pulled into this client
 // component's bundle. `country-stats` itself is pure (type-only imports).
 import { UNKNOWN_COUNTRY } from '../_lib/queries/country-stats';
-
-const BAR_HEIGHT = 40;
-const MIN_HEIGHT = 200;
 
 // Admin UI is rendered in English only (see `getTranslations({ locale: 'en' })`
 // in the admin layout / page), so a fixed-locale resolver is sufficient here.
@@ -74,16 +72,6 @@ function CountryTooltip({
 }
 
 export function CountryBarChart({ data, labels, onBarClick }: Props) {
-  if (data.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
-        {labels.noData}
-      </div>
-    );
-  }
-
-  const chartHeight = Math.max(data.length * BAR_HEIGHT, MIN_HEIGHT);
-
   // Compact axis label: flag + ISO code (e.g. "🇯🇵 JP"). The unknown bucket has
   // no real code, so render a globe + the localized label instead of feeding
   // the sentinel string to `countryCodeToFlag`. The full country name lives in
@@ -92,27 +80,20 @@ export function CountryBarChart({ data, labels, onBarClick }: Props) {
     code === UNKNOWN_COUNTRY ? `🌐 ${labels.unknown}` : `${countryCodeToFlag(code)} ${code}`;
 
   return (
-    <ResponsiveContainer width="100%" height={chartHeight}>
-      <BarChart data={data} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 10 }}>
-        <XAxis type="number" allowDecimals={false} />
-        <YAxis type="category" dataKey="country" width={96} tickFormatter={tickLabel} />
+    <HorizontalCountBarChart
+      data={data}
+      isEmpty={data.length === 0}
+      noDataLabel={labels.noData}
+      yAxis={<YAxis type="category" dataKey="country" width={96} tickFormatter={tickLabel} />}
+      tooltip={
         <Tooltip
           cursor={{ fill: 'var(--color-accent)' }}
           content={<CountryTooltip labels={labels} />}
         />
-        <Bar
-          dataKey="count"
-          fill="var(--color-primary)"
-          radius={[0, 4, 4, 0]}
-          cursor={onBarClick ? 'pointer' : undefined}
-          onClick={(_data, _index, _event) => {
-            const entry = _data as unknown as CountryStat;
-            if (onBarClick && entry?.country) {
-              onBarClick(entry.country);
-            }
-          }}
-        />
-      </BarChart>
-    </ResponsiveContainer>
+      }
+      onBarClick={
+        onBarClick && ((entry: CountryStat) => entry.country && onBarClick(entry.country))
+      }
+    />
   );
 }
