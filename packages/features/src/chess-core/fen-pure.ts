@@ -14,6 +14,8 @@
  * this file.
  */
 
+import type { PieceColor, PieceType } from "@blindfold-chess/types";
+
 /**
  * Parse FEN piece placement into a flat 64-element array of piece characters.
  * Index 0 = a8, index 1 = b8, ..., index 63 = h1.
@@ -37,6 +39,54 @@ export function fenToBoardFlat(fen: string): string[] {
   }
 
   return board;
+}
+
+/** A piece read off a FEN, with the square it stands on. */
+export type FenPlacement = {
+  /** Algebraic square, e.g. `"e4"`. */
+  square: string;
+  type: PieceType;
+  color: PieceColor;
+};
+
+/**
+ * Read one FEN piece character. Upper case is White, lower case is Black;
+ * anything that is not a piece letter (a digit, a `/`, junk) returns null.
+ *
+ * Every board renderer needs this and four of them had written their own —
+ * with four different rejection styles (a regex on the lower-cased char, two
+ * regexes, an `A`–`Z` range check, a Set membership test). They agreed, but
+ * only by luck: the rule is "these six letters, case carries the colour", and
+ * it belongs in one place.
+ */
+export function fenCharToPiece(
+  ch: string,
+): { type: PieceType; color: PieceColor } | null {
+  const lower = ch.toLowerCase();
+  if (!/^[kqrbnp]$/.test(lower)) return null;
+  return { type: lower as PieceType, color: ch === lower ? "b" : "w" };
+}
+
+/**
+ * Every piece in a FEN's placement field, with its square.
+ *
+ * Built on {@link fenToBoardFlat} so the rank/file scan — the `/` separators,
+ * the run-length digits, rank 8 coming first — exists once. Callers that want
+ * a different shape (a `Map` keyed by square, rows of characters) should map
+ * over this or over `fenToBoardFlat` rather than re-walking the string.
+ */
+export function fenToPlacements(fen: string): FenPlacement[] {
+  const placements: FenPlacement[] = [];
+
+  fenToBoardFlat(fen).forEach((ch, index) => {
+    const piece = fenCharToPiece(ch);
+    if (!piece) return;
+    const file = String.fromCharCode("a".charCodeAt(0) + (index % 8));
+    const rank = 8 - Math.floor(index / 8);
+    placements.push({ square: `${file}${rank}`, ...piece });
+  });
+
+  return placements;
 }
 
 /**

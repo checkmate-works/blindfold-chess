@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { BoardLayout } from '@/app/_components/chess/BoardLayout';
 import type { Color } from '@blindfold-chess/features/chess-core';
-import { FILES } from '@blindfold-chess/features/common';
+import { fenToPlacements } from '@blindfold-chess/features/chess-core/fen';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceType } from '@blindfold-chess/types';
 
@@ -12,36 +12,9 @@ import { getBoardThemeColors } from '@/lib/games/board-themes';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-function parseFenChar(ch: string): { type: PieceType; color: Color } | null {
-  if (/^[KQRBNP]$/.test(ch)) {
-    return { type: ch.toLowerCase() as PieceType, color: 'w' };
-  }
-  if (/^[kqrbnp]$/.test(ch)) {
-    return { type: ch as PieceType, color: 'b' };
-  }
-  return null;
-}
-
 /** FEN placement → square-keyed pieces ("e4" → white pawn). */
 function parseFenPlacement(fen: string): Map<string, { type: PieceType; color: Color }> {
-  const pieces = new Map<string, { type: PieceType; color: Color }>();
-  fen
-    .split(' ')[0]
-    .split('/')
-    .forEach((row, rowIndex) => {
-      const rank = 8 - rowIndex;
-      let fileIndex = 0;
-      for (const ch of row) {
-        if (ch >= '1' && ch <= '8') {
-          fileIndex += Number(ch);
-          continue;
-        }
-        const piece = parseFenChar(ch);
-        if (piece && fileIndex < FILES.length) pieces.set(`${FILES[fileIndex]}${rank}`, piece);
-        fileIndex += 1;
-      }
-    });
-  return pieces;
+  return new Map(fenToPlacements(fen).map(({ square, type, color }) => [square, { type, color }]));
 }
 
 type Props = {

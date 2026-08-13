@@ -3,12 +3,11 @@ import type {
   PieceDisplay,
 } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
-import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
+import { fenCharToPiece, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import type { SvgElement } from '@blindfold-chess/icons/data';
 import { flagData, getPieceData, undoData } from '@blindfold-chess/icons/data';
 import type { PieceColor } from '@blindfold-chess/types';
 import type { BoardTheme } from '@blindfold-chess/types';
-import type { PieceType } from '@blindfold-chess/types';
 import { boardThemeColors } from '@blindfold-chess/ui';
 
 import type { TerminationMark } from '@/lib/games/termination-mark';
@@ -70,12 +69,6 @@ const STONE_GRADIENT_STOPS: Record<Color, readonly [string, string, string]> = {
   w: ['#ffffff', '#e8e8e8', '#d0d0d0'],
   b: ['#4a4a4a', '#2a2a2a', '#1a1a1a'],
 };
-
-function parseFenChar(ch: string): { type: PieceType; color: Color } | null {
-  const lower = ch.toLowerCase();
-  if (!/^[kqrbnp]$/.test(lower)) return null;
-  return { type: lower as PieceType, color: ch === lower ? 'b' : 'w' };
-}
 
 /**
  * Maps a (rankFromTop, fileIdx) pair — both 0-based and counted from a8 at
@@ -327,7 +320,7 @@ export function renderBoardSvg({
 
     const fenChar = board[idx];
     if (!fenChar) continue;
-    const piece = parseFenChar(fenChar);
+    const piece = fenCharToPiece(fenChar);
     if (!piece) continue;
 
     const display: PieceDisplay = displaySettings
