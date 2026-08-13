@@ -5,7 +5,9 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 
 import { createClient } from '@/lib/supabase/server';
 
+import { SignUpBannerSkeleton } from '@/app/[locale]/(public)/practice/_components/skeletons';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CardLinkSkeleton } from '@/app/[locale]/_components/CardLinkSkeleton';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
@@ -63,17 +65,7 @@ export async function KnightTourResultLoadingSkeleton() {
             {/* Actions */}
             <div className="mt-6 space-y-4">
               {/* SignUpBanner — anonymous players only. */}
-              {!isAuthed && (
-                <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
-                  <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-                    <div className="w-full">
-                      <Skeleton className="h-5 w-40 rounded" />
-                      <Skeleton className="mt-2 h-4 w-56 max-w-full rounded" />
-                    </div>
-                    <Skeleton className="h-9 w-28 flex-shrink-0 rounded-md" />
-                  </div>
-                </div>
-              )}
+              {!isAuthed && <SignUpBannerSkeleton />}
 
               {/* Try Again (primary) + More Practice (secondary) */}
               <Skeleton className="h-12 w-full rounded-lg" />
@@ -94,15 +86,7 @@ export async function KnightTourResultLoadingSkeleton() {
             <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="p-6 bg-card rounded-md border border-border animate-pulse">
-                  <div className="flex items-start gap-4">
-                    <div className="w-9 h-9 bg-muted rounded flex-shrink-0" />
-                    <div className="flex-1">
-                      <div className="h-5 bg-muted rounded w-1/3 mb-2" />
-                      <div className="h-4 bg-muted rounded w-2/3" />
-                    </div>
-                  </div>
-                </div>
+                <CardLinkSkeleton key={i} />
               ))}
             </div>
           </div>

@@ -5,6 +5,10 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 
 import { createClient } from '@/lib/supabase/server';
 
+import {
+  ExpGainSkeleton,
+  SignUpBannerSkeleton,
+} from '@/app/[locale]/(public)/practice/_components/skeletons';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
@@ -62,33 +66,7 @@ export async function PuzzleResultContentSkeleton() {
       {/* ExpGainDisplay (authenticated) / SignUpBanner (anonymous) — same slot,
           mutually exclusive. Reserve the matching full-height block so the real
           content does not push the buttons down on hydrate. */}
-      {isAuthed ? (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">EXP</span>
-            <span className="inline-block h-5 w-20 bg-muted rounded animate-pulse" />
-          </div>
-          <div className="mt-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="inline-block h-4 w-12 bg-muted rounded animate-pulse" />
-              <span className="inline-block h-3 w-8 bg-muted rounded animate-pulse" />
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <Skeleton className="h-2 w-1/3 rounded-full" />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-            <div className="w-full">
-              <Skeleton className="h-5 w-40 rounded" />
-              <Skeleton className="mt-2 h-4 w-56 max-w-full rounded" />
-            </div>
-            <Skeleton className="h-9 w-28 flex-shrink-0 rounded-md" />
-          </div>
-        </div>
-      )}
+      {isAuthed ? <ExpGainSkeleton /> : <SignUpBannerSkeleton />}
 
       {/* Action buttons (Try Again / Back to Puzzles / Analyze on Lichess) —
           three full-width buttons, matching the real `flex flex-col gap-3 pt-4`
