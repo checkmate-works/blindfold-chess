@@ -36,13 +36,17 @@ type Props = {
  * and two of them with no padding at all. Consolidating them here is what
  * makes the invariants below enforceable in one place.
  *
- * @design **The two curtains veil for different reasons, so they veil by
- * different amounts.** Pause must genuinely obscure the board — a paused timer
- * with a readable position is free study time — hence the heavy
- * `blur-md grayscale opacity-50`. The countdown is a 3.5s "get ready" beat
- * with nothing to protect, so it uses a light `blur-xs`; blurring it as hard
- * as pause erases the content's position entirely and makes the reveal read as
- * the layout jumping.
+ * @design **Both curtains veil to the same strength, because both are hiding
+ * something.** Pause is the obvious one: a stopped timer over a readable board
+ * is free study time. The countdown is the easy one to get wrong — it looks
+ * like a decorative "get ready" beat, but the first question is already
+ * mounted behind it, so a legible question during "3 · 2 · 1" is a three-second
+ * head start on a timed run that lands on a leaderboard. The bar for both is
+ * therefore the same: the question must not be recoverable through the veil.
+ * `blur-md grayscale opacity-50` clears it — the 60px question glyph reduces
+ * to a smudge with no character shapes left at 3× magnification, verified
+ * against this exact combination. Weakening any one of the three (notably to a
+ * bare `blur-xs`, which was tried) puts the question back on screen.
  *
  * @design **The veil never animates.** `BoardOverlay` mounts and unmounts in a
  * single frame, so a `transition` on the blur would keep resolving for 300ms
@@ -69,11 +73,8 @@ export function ChallengeSessionVeil({
   className = '',
   children,
 }: Props) {
-  const veilClass = isPaused
-    ? 'blur-md grayscale opacity-50 pointer-events-none'
-    : countdown !== null
-      ? 'blur-xs'
-      : '';
+  const veilClass =
+    isPaused || countdown !== null ? 'blur-md grayscale opacity-50 pointer-events-none' : '';
 
   return (
     <div className={`relative overflow-hidden ${className}`}>

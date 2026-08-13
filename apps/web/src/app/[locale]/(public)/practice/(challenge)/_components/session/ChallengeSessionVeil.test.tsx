@@ -36,34 +36,25 @@ describe('ChallengeSessionVeil', () => {
     expect(veilOf(container).className).not.toMatch(/transition|duration/);
   });
 
-  it('veils the countdown lightly and the pause heavily', () => {
-    const { container: counting } = render(
-      <ChallengeSessionVeil countdown={3} isPaused={false}>
-        <p>content</p>
-      </ChallengeSessionVeil>
-    );
-    // Light enough that the content stays a positional anchor through the reveal.
-    expect(veilOf(counting).className).toContain('blur-xs');
-    expect(veilOf(counting).className).not.toContain('grayscale');
-
-    const { container: paused } = render(
-      <ChallengeSessionVeil countdown={null} isPaused>
-        <p>content</p>
-      </ChallengeSessionVeil>
-    );
-    // A paused timer with a readable position is free study time.
-    expect(veilOf(paused).className).toContain('blur-md');
-    expect(veilOf(paused).className).toContain('grayscale');
-  });
-
-  it('applies the pause veil when a session is paused mid-countdown', () => {
+  // The countdown is the one that looks decorative and is not: the first
+  // question is already mounted behind it, so a legible question during
+  // "3 · 2 · 1" is a head start on a timed run. Both curtains hide to the same
+  // bar, and all three parts are load-bearing — dropping any one of them puts
+  // the question back on screen.
+  it.each([
+    ['counting down', 3, false],
+    ['paused', null, true],
+    ['paused mid-countdown', 1, true],
+  ])('hides the question while %s', (_label, countdown, isPaused) => {
     const { container } = render(
-      <ChallengeSessionVeil countdown={1} isPaused>
+      <ChallengeSessionVeil countdown={countdown} isPaused={isPaused}>
         <p>content</p>
       </ChallengeSessionVeil>
     );
 
     expect(veilOf(container).className).toContain('blur-md');
+    expect(veilOf(container).className).toContain('grayscale');
+    expect(veilOf(container).className).toContain('opacity-50');
   });
 
   it('leaves the content unveiled once neither curtain is up', () => {
@@ -83,8 +74,9 @@ describe('ChallengeSessionVeil', () => {
       </ChallengeSessionVeil>
     );
 
-    // The veil owns the one and only blur; a backdrop filter here composes with
-    // it and erases the content underneath.
+    // Hiding is the veil's single responsibility. A backdrop filter here splits
+    // it across two components, which is how three sessions ended up relying on
+    // this one instead of the veil and drifting out of sync with it.
     expect(screen.getByTestId('countdown-overlay').className).not.toContain('backdrop-blur');
   });
 });

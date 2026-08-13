@@ -14,12 +14,12 @@ type Props = {
  * `BoardOverlay` already emits `z-50`, so the `z-50` several call sites used to
  * pass alongside the backdrop filter was a no-op and is not reproduced here.
  *
- * @design **No `backdrop-blur`.** {@link ChallengeSessionVeil} already blurs
- * the content this curtain covers, and a backdrop filter on top of it composed
- * to roughly √(4² + 12²) ≈ 12.6px of effective blur. Measured against the
- * un-veiled render, that left 2% of the keypad's ink and 26% of the input
- * fields' — the content stopped being a positional anchor, so the reveal read
- * as everything arriving in new places. One blur, owned by the veil.
+ * @design **No `backdrop-blur`.** Hiding the question is
+ * {@link ChallengeSessionVeil}'s job and it already clears that bar on its own;
+ * a backdrop filter here only composed a second blur over the first. Splitting
+ * one requirement across two components is what let them drift apart in the
+ * first place — three of the seven sessions had leaned on this filter as their
+ * only countdown veil, so tuning the veil silently did nothing for them.
  */
 export function ChallengeCountdownOverlay({ countdown, rounded }: Props) {
   return (
