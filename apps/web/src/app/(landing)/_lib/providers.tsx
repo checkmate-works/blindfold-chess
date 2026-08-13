@@ -3,13 +3,7 @@
 import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 
-import { NextIntlClientProvider } from 'next-intl';
-
-import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
-import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
-import { getMessageFallback, handleIntlError } from '@/i18n/error-handling';
-
-import { ThemeProvider } from '@/lib/theme/ThemeProvider';
+import { IntlThemeShell } from '@/app/_components/IntlThemeShell';
 
 import { ToastContainer } from '@/app/[locale]/_components/ToastContainer';
 import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -23,32 +17,20 @@ type Props = {
 
 export function Providers({ children, locale, messages }: Props) {
   return (
-    <ErrorBoundary autoRecover>
-      <NextIntlClientProvider
-        locale={locale}
-        messages={messages}
-        timeZone="UTC"
-        onError={handleIntlError}
-        getMessageFallback={getMessageFallback}
-      >
-        <IntlAvailableContext.Provider value={true}>
-          <ThemeProvider disableTransitionOnChange>
-            {/*
-              The landing route (`/`) is its own root layout, so it needs its
-              own toast plumbing — toasts deferred via sessionStorage when
-              leaving a `/[locale]/…` page (e.g. the "game saved" toast) are
-              otherwise never consumed here. `locale` is passed explicitly
-              because `/` has no `[locale]` URL segment for `useParams`.
-            */}
-            <ToastProvider>
-              <GamePreferencesProvider>{children}</GamePreferencesProvider>
-              <Suspense>
-                <ToastContainer locale={locale} />
-              </Suspense>
-            </ToastProvider>
-          </ThemeProvider>
-        </IntlAvailableContext.Provider>
-      </NextIntlClientProvider>
-    </ErrorBoundary>
+    <IntlThemeShell locale={locale} messages={messages}>
+      {/*
+        The landing route (`/`) is its own root layout, so it needs its
+        own toast plumbing — toasts deferred via sessionStorage when
+        leaving a `/[locale]/…` page (e.g. the "game saved" toast) are
+        otherwise never consumed here. `locale` is passed explicitly
+        because `/` has no `[locale]` URL segment for `useParams`.
+      */}
+      <ToastProvider>
+        <GamePreferencesProvider>{children}</GamePreferencesProvider>
+        <Suspense>
+          <ToastContainer locale={locale} />
+        </Suspense>
+      </ToastProvider>
+    </IntlThemeShell>
   );
 }
