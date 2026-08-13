@@ -40,6 +40,9 @@ vi.mock('@/lib/db', () => ({
           leftJoin: () => ({
             leftJoin: () => ({
               where: () => mockDbSelectJoinResult(),
+              // `buildProfilePostQuery` returns a $dynamic() builder so callers
+              // can add their own .where(); the shape is otherwise the same.
+              $dynamic: () => ({ where: () => mockDbSelectJoinResult() }),
             }),
           }),
         }),
