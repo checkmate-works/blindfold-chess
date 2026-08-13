@@ -4,13 +4,13 @@ import { useMemo } from 'react';
 
 import { ChessBoard } from '@/app/_components';
 import { formatMovesToPgn, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { computeMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks';
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 import { BoardModal } from '@/app/[locale]/_components/BoardModal';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 

@@ -11,6 +11,7 @@
     "./ai-game/notation-input/client": "./src/ai-game/notation-input/client.ts",
     "./chess-core": "./src/chess-core/index.ts",
     "./chess-core/fen": "./src/chess-core/fen-pure.ts",
+    "./chess-core/move-numbering": "./src/chess-core/move-numbering.ts",
     "./board-display": "./src/board-display/index.ts",
     "./board-symmetry": "./src/board-symmetry/index.ts",
     "./board-symmetry/client": "./src/board-symmetry/client.ts",

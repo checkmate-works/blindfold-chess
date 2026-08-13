@@ -1,4 +1,8 @@
 import { toPositionKey } from '@blindfold-chess/features/chess-core';
+import {
+  computeMoveNumber,
+  formatMoveAnchor,
+} from '@blindfold-chess/features/chess-core/move-numbering';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
@@ -23,11 +27,8 @@ function moveLabel(
   startsAsBlack: boolean,
   startMoveNumber: number
 ): string {
-  const blackToMove = startsAsBlack ? ply % 2 === 1 : ply % 2 === 0;
-  const fullMove = startsAsBlack
-    ? startMoveNumber + Math.floor(ply / 2)
-    : startMoveNumber + Math.floor((ply - 1) / 2);
-  return blackToMove ? `${fullMove}... ${san}` : `${fullMove}. ${san}`;
+  const { moveNumber, isWhiteMove } = computeMoveNumber(ply - 1, startsAsBlack, startMoveNumber);
+  return `${formatMoveAnchor(moveNumber, isWhiteMove)} ${san}`;
 }
 
 /**

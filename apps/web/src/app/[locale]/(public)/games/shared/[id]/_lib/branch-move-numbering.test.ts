@@ -1,8 +1,8 @@
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
+import { computeMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
 import { describe, expect, it } from 'vitest';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * `MoveReferencePreviewModal` renumbers a quoted branch against the game's

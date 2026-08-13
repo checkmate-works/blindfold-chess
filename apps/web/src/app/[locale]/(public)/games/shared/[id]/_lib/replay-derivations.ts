@@ -1,8 +1,8 @@
+import { computeMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
 import type { Side } from '@blindfold-chess/types';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { getPlayerMoveIndices } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * Pure derivations mapping the replay's navigation position (the

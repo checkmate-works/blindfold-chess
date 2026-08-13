@@ -1,9 +1,9 @@
 import { replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
+import { plyFromMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
 
 import { collectCandidates } from '@/lib/move-references/tokenizer';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { plyFromMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * A slice of comment text: either plain text or a run of PGN-style move

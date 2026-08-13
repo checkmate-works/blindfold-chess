@@ -1,4 +1,4 @@
-import { formatMoveNumberPrefix } from './recall-format';
+import { formatMoveAnchor } from '@blindfold-chess/features/chess-core/move-numbering';
 
 /** The structured move result `useRecallActions` reports for the last submission. */
 export type RecallMoveFeedback = {
@@ -29,7 +29,7 @@ const MESSAGE_KEYS: Record<RecallMoveFeedback['type'], string> = {
  */
 export function formatRecallFeedbackMessage(feedback: RecallMoveFeedback, t: Translate): string {
   return t(MESSAGE_KEYS[feedback.type], {
-    movePrefix: formatMoveNumberPrefix(feedback.moveNumber, feedback.isWhiteMove),
+    movePrefix: formatMoveAnchor(feedback.moveNumber, feedback.isWhiteMove),
     move: feedback.move,
   });
 }

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { computeMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveLogEntry } from '../_lib';
-import { computeMoveNumber } from '../_lib';
 
 type Props = {
   originalMoves: AlgebraicNotation[];

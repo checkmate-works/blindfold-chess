@@ -1,3 +1,7 @@
+import {
+  computeMoveNumber,
+  formatMoveAnchor,
+} from '@blindfold-chess/features/chess-core/move-numbering';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { getMovingSide, parseFenMeta } from './fen-utils';
@@ -31,18 +35,9 @@ export function findLastAiMoveNotation(
     const isAiMove = getMovingSide(i, startingFen) !== playerSide;
     if (!isAiMove) continue;
 
-    let moveNumber: number;
-    let isWhiteMove: boolean;
+    const { moveNumber, isWhiteMove } = computeMoveNumber(i, startsAsBlack, startMoveNumber);
 
-    if (startsAsBlack) {
-      moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
-      isWhiteMove = i % 2 === 1;
-    } else {
-      moveNumber = startMoveNumber + Math.floor(i / 2);
-      isWhiteMove = i % 2 === 0;
-    }
-
-    return `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
+    return `${formatMoveAnchor(moveNumber, isWhiteMove)} ${moves[i]}`;
   }
 
   return null;
