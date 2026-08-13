@@ -5,10 +5,8 @@ import sharp from 'sharp';
 
 import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { db, profiles } from '@/lib/db';
-import {
-  POST_IMAGES_MAX_MEGAPIXELS,
-  validatePostImageBinarySignature,
-} from '@/lib/post-images/validation';
+import { validateImageBinarySignature } from '@/lib/images/binary-signature';
+import { POST_IMAGES_MAX_MEGAPIXELS } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -58,9 +56,9 @@ export async function POST(request: Request) {
 
   // Magic-byte check against the declared MIME — rejects a payload whose
   // binary signature does not match its Content-Type (MIME spoofing).
-  // Shares the post-image signature validator; the avatar allow-list
-  // (jpeg/png/webp) is a subset of what it recognizes.
-  if (!validatePostImageBinarySignature(buffer, file.type)) {
+  // The avatar allow-list (jpeg/png/webp) is a subset of what the shared
+  // validator recognizes.
+  if (!validateImageBinarySignature(buffer, file.type)) {
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 

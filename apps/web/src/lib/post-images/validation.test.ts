@@ -8,7 +8,6 @@ import {
   POST_IMAGE_STORAGE_PATH_REGEX,
   buildPostImageStoragePath,
   isAllowedPostImageMimeType,
-  validatePostImageBinarySignature,
 } from './validation';
 
 describe('POST_IMAGES_* constants', () => {
@@ -52,53 +51,8 @@ describe('isAllowedPostImageMimeType', () => {
   });
 });
 
-describe('validatePostImageBinarySignature', () => {
-  function bufferOf(bytes: number[]): ArrayBuffer {
-    return new Uint8Array(bytes).buffer;
-  }
-
-  it('accepts a JPEG starting with FF D8 FF', () => {
-    const buf = bufferOf([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0]);
-    expect(validatePostImageBinarySignature(buf, 'image/jpeg')).toBe(true);
-  });
-
-  it('rejects a JPEG-claimed buffer that does not start with FF D8 FF', () => {
-    const buf = bufferOf([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 0, 0, 0, 0, 0]);
-    expect(validatePostImageBinarySignature(buf, 'image/jpeg')).toBe(false);
-  });
-
-  it('accepts a full PNG signature (8 bytes)', () => {
-    const buf = bufferOf([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
-    expect(validatePostImageBinarySignature(buf, 'image/png')).toBe(true);
-  });
-
-  it('rejects a PNG-claimed buffer with only a partial signature', () => {
-    // Only the first 4 bytes (PNG \r\n missing 1A 0A): an old-style check
-    // would accept; the current full-8-byte check must reject.
-    const buf = bufferOf([0x89, 0x50, 0x4e, 0x47, 0x00, 0x00, 0x00, 0x00, 0, 0, 0, 0]);
-    expect(validatePostImageBinarySignature(buf, 'image/png')).toBe(false);
-  });
-
-  it('accepts a WebP that starts with RIFF...WEBP', () => {
-    const buf = bufferOf([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]);
-    expect(validatePostImageBinarySignature(buf, 'image/webp')).toBe(true);
-  });
-
-  it('rejects a WebP-claimed buffer that lacks RIFF', () => {
-    const buf = bufferOf([0x00, 0x00, 0x00, 0x00, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]);
-    expect(validatePostImageBinarySignature(buf, 'image/webp')).toBe(false);
-  });
-
-  it('rejects a buffer claiming SVG (the function has no SVG branch)', () => {
-    const svg = new TextEncoder().encode('<?xml version="1.0"?><svg></svg>').buffer;
-    expect(validatePostImageBinarySignature(svg, 'image/svg+xml')).toBe(false);
-  });
-
-  it('rejects a JPEG payload declared as PNG (cross-MIME spoofing)', () => {
-    const jpegBytes = bufferOf([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0]);
-    expect(validatePostImageBinarySignature(jpegBytes, 'image/png')).toBe(false);
-  });
-});
+// The magic-byte cases moved to `lib/images/binary-signature.test.ts` when
+// the post and admin upload paths were collapsed onto one implementation.
 
 describe('buildPostImageStoragePath', () => {
   const userId = '11111111-1111-1111-1111-111111111111';

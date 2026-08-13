@@ -112,7 +112,7 @@ const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 
 // Valid magic bytes for each supported image format. PNG carries its full
 // 8-byte signature (89 50 4E 47 0D 0A 1A 0A) — the shared
-// validatePostImageBinarySignature checks all eight, not just the first four.
+// validateImageBinarySignature checks all eight, not just the first four.
 const JPEG_MAGIC = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, ...new Array(8).fill(0)]);
 const PNG_MAGIC = new Uint8Array([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x00,

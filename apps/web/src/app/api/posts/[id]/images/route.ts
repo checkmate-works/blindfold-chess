@@ -6,6 +6,7 @@ import 'server-only';
 
 import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { db, postImageAttachments } from '@/lib/db';
+import { validateImageBinarySignature } from '@/lib/images/binary-signature';
 import {
   AnimatedImageNotSupportedError,
   POST_IMAGE_OUTPUT_MIME,
@@ -19,7 +20,6 @@ import {
   POST_IMAGES_MAX_FILE_SIZE,
   buildPostImageStoragePath,
   isAllowedPostImageMimeType,
-  validatePostImageBinarySignature,
 } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -115,7 +115,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const arrayBuffer = await file.arrayBuffer();
 
-  if (!validatePostImageBinarySignature(arrayBuffer, file.type)) {
+  if (!validateImageBinarySignature(arrayBuffer, file.type)) {
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 
