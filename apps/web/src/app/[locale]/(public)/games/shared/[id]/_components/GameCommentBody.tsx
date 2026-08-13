@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 
 import type { Side } from '@blindfold-chess/types';
 
-import { LinkedText } from '@/app/[locale]/_components/LinkedText';
+import { MoveSegmentText } from '@/app/[locale]/_components/MoveSegmentText';
 
 import type { CommentTextSegment } from '../_lib/comment-move-references';
 import { parseCommentMoveReferences } from '../_lib/comment-move-references';
@@ -39,26 +39,9 @@ export function GameCommentBody({ text, locale, moves, startingFen, playerColor 
     [text, moves, startingFen]
   );
 
-  if (segments.length === 1 && segments[0].type === 'text') {
-    return <LinkedText text={text} locale={locale} />;
-  }
-
   return (
     <>
-      {segments.map((segment, i) =>
-        segment.type === 'text' ? (
-          <LinkedText key={i} text={segment.value} locale={locale} />
-        ) : (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setOpenRef(segment)}
-            className="underline decoration-dotted underline-offset-2 hover:text-primary transition-colors"
-          >
-            {segment.raw}
-          </button>
-        )
-      )}
+      <MoveSegmentText text={text} segments={segments} locale={locale} onSelect={setOpenRef} />
 
       {openRef && (
         <MoveReferencePreviewModal
