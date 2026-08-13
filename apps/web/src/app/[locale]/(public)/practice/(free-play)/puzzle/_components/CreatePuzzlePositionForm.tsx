@@ -8,12 +8,12 @@ import { useSearchParams } from 'next/navigation';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { FormErrorBanner } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
-import { FiInfo } from 'react-icons/fi';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { DraftRestoredBanner } from '@/app/[locale]/_components/DraftRestoredBanner';
 
 import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagSelection } from '../../_hooks/use-tag-selection';
@@ -281,23 +281,11 @@ export function CreatePuzzlePositionForm({
         <FormErrorBanner ref={step.submitError.summaryRef} message={step.submitError.formMessage} />
 
         {hydratedFromDraft && !resumed && (
-          <div
-            role="status"
-            aria-live="polite"
-            className="flex items-center justify-between gap-3 rounded-md border border-border bg-secondary px-3 py-2 text-sm"
-          >
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
-              <span>{t('draftRestoredBanner')}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setStartOverOpen(true)}
-              className="rounded border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
-            >
-              {t('draftRestoredDiscard')}
-            </button>
-          </div>
+          <DraftRestoredBanner
+            message={t('draftRestoredBanner')}
+            discardLabel={t('draftRestoredDiscard')}
+            onDiscard={() => setStartOverOpen(true)}
+          />
         )}
 
         <PuzzlePositionFields
