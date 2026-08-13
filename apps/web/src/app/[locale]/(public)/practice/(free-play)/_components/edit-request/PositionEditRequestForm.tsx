@@ -19,6 +19,7 @@ import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
 import type { ChunkOption } from '@/lib/chunks/types';
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 import type { PositionTagBundle } from '@/lib/positions/tag-loader';
 import type { ThemeOption } from '@/lib/themes/types';
 
@@ -27,7 +28,6 @@ import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import { submitPositionEditRequest } from '../../_actions/submitPositionEditRequest';
 import { useTagPickerLabels } from '../../_hooks/use-tag-picker-labels';
 import { TagPicker } from '../TagPicker';
-import { localizePositionEditRequestError } from './localize-error';
 
 type Props = {
   positionId: string;
@@ -157,7 +157,7 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
       // the top of the form, past the whole tag picker.
       submitError.report(
         FIELD_BY_ERROR[result.error] ?? null,
-        localizePositionEditRequestError(result.error, t, WELL_KNOWN_ERRORS)
+        localizeActionError(result.error, t, WELL_KNOWN_ERRORS)
       );
       return;
     }

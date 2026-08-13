@@ -22,6 +22,7 @@ import { FaPlus } from 'react-icons/fa';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
+import { localizeActionErrorOrGeneric } from '@/lib/i18n/localize-action-error';
 // Pure catalog leaf (not the '@/lib/points' barrel) — client-safe, no server-only.
 import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import { REPERTOIRE_VISIBILITIES, REPERTOIRE_VISIBILITY_COST } from '@/lib/points/spend-catalog';
@@ -195,10 +196,9 @@ export function RepertoireImportForm({
       // An error the form has copy for is shown as itself; anything else (an
       // unexpected server failure) falls back to the generic message. Where it
       // is shown is decided by which control the rejection belongs to.
-      const key = `errors.${result.error}`;
       submitError.report(
         repertoireErrorField(result.error, FIELDS),
-        t.has(key) ? t(key) : t('errors.generic')
+        localizeActionErrorOrGeneric(result.error, t)
       );
       return;
     }

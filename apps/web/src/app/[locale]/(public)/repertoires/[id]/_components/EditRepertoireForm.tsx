@@ -21,6 +21,7 @@ import type { Side } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
 
 import type { Repertoire } from '@/lib/db';
+import { localizeActionErrorOrGeneric } from '@/lib/i18n/localize-action-error';
 import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
 import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
@@ -143,10 +144,9 @@ export function EditRepertoireForm({
     });
     if (!result.ok) {
       setPending(false);
-      const key = `errors.${result.error}`;
       submitError.report(
         repertoireErrorField(result.error, FIELDS),
-        t.has(key) ? t(key) : t('errors.generic')
+        localizeActionErrorOrGeneric(result.error, t)
       );
       return;
     }

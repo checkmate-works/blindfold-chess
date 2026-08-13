@@ -7,11 +7,12 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { FiTrash2 } from 'react-icons/fi';
 
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
+
 import { ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deleteChunk } from '../_actions/deleteChunk';
-import { localizeChunkError } from '../_lib/localize-error';
 
 const DELETE_ERROR_CODES = new Set([
   'signInRequired',
@@ -53,7 +54,7 @@ export function ChunkDeleteButton({ chunkId }: Props) {
     setPending(false);
 
     if ('error' in result) {
-      setError(localizeChunkError(result.error, t, DELETE_ERROR_CODES, 'form.errors'));
+      setError(localizeActionError(result.error, t, DELETE_ERROR_CODES, 'form.errors'));
       return;
     }
     setConfirmOpen(false);

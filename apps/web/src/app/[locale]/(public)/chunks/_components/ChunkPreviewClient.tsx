@@ -9,6 +9,7 @@ import { BoardFrame, Button, FormErrorBanner, UnsavedChangesDialog } from '@/app
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -17,7 +18,6 @@ import { createChunk } from '../_actions/createChunk';
 import { saveChunkEdit, submitChunkPublish } from '../_lib/chunk-form-actions';
 import { type ChunkDraftV1, clearChunkDraft, readChunkDraft } from '../_lib/draft-storage';
 import { type ChunkIdentity, diffChunkIdentity } from '../_lib/identity-changes';
-import { localizeChunkError } from '../_lib/localize-error';
 import { type ChunkReferenceCounts, ChunkReferenceWarning } from './ChunkReferenceWarning';
 
 const PREVIEW_ERROR_CODES = new Set([
@@ -174,7 +174,7 @@ export function ChunkPreviewClient(props: Props) {
         linkTarget: draft.linkTarget,
       });
       if ('error' in result) {
-        setError(localizeChunkError(result.error, tForm, PREVIEW_ERROR_CODES));
+        setError(localizeActionError(result.error, tForm, PREVIEW_ERROR_CODES));
         return;
       }
       clearChunkDraft();

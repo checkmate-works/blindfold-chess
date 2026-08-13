@@ -2,14 +2,14 @@ import type { useTranslations } from 'next-intl';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 
 import { publishChunk } from '../_actions/publishChunk';
 import { updateChunk } from '../_actions/updateChunk';
-import { localizeChunkError } from './localize-error';
 
 /**
  * Set of server-side error codes the chunk form knows how to translate.
- * Codes outside this set fall through `localizeChunkError`'s default
+ * Codes outside this set fall through `localizeActionError`'s default
  * branch (currently a passthrough) so a server-side change that adds a
  * new code degrades to the raw key in the UI instead of throwing.
  */
@@ -85,7 +85,7 @@ export async function saveChunkEdit({
   });
 
   if ('error' in result) {
-    return { ok: false, error: localizeChunkError(result.error, t, CHUNK_FORM_ERROR_CODES) };
+    return { ok: false, error: localizeActionError(result.error, t, CHUNK_FORM_ERROR_CODES) };
   }
   return { ok: true, targetSlug: slugChanged ? payload.slug.trim() : initialSlug };
 }
@@ -102,7 +102,7 @@ export async function submitChunkPublish({
 }): Promise<VoidResult> {
   const result = await publishChunk(chunkId);
   if ('error' in result) {
-    return { ok: false, error: localizeChunkError(result.error, t, CHUNK_FORM_ERROR_CODES) };
+    return { ok: false, error: localizeActionError(result.error, t, CHUNK_FORM_ERROR_CODES) };
   }
   return { ok: true };
 }

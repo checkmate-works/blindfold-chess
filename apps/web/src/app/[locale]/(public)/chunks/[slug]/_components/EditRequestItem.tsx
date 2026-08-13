@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { EditRequestHeader } from '@/app/[locale]/_components/edit-request/EditRequestHeader';
@@ -12,7 +13,6 @@ import { EditRequestResolutionControls } from '@/app/[locale]/_components/edit-r
 import { useEditRequestResolution } from '@/app/[locale]/_components/edit-request/use-edit-request-resolution';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
-import { localizeChunkError } from '../../_lib/localize-error';
 import { acceptEditRequest } from '../_actions/acceptEditRequest';
 import { rejectEditRequest } from '../_actions/rejectEditRequest';
 import { withdrawEditRequest } from '../_actions/withdrawEditRequest';
@@ -100,7 +100,7 @@ export function EditRequestItem(props: Props) {
       if (action === 'reject') return rejectEditRequest(props.requestId);
       return withdrawEditRequest(props.requestId);
     },
-    localizeError: (code) => localizeChunkError(code, t, WELL_KNOWN_ERRORS),
+    localizeError: (code) => localizeActionError(code, t, WELL_KNOWN_ERRORS),
     onResolved: (action) => {
       // Withdraw keeps the proposer on the list (so they can submit a fresh
       // one), so there's no navigation to carry a `?toast=` param — fire the

@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { EditRequestHeader } from '@/app/[locale]/_components/edit-request/EditRequestHeader';
@@ -17,7 +18,6 @@ import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import { acceptPositionEditRequest } from '../../_actions/acceptPositionEditRequest';
 import { rejectPositionEditRequest } from '../../_actions/rejectPositionEditRequest';
 import { withdrawPositionEditRequest } from '../../_actions/withdrawPositionEditRequest';
-import { localizePositionEditRequestError } from './localize-error';
 
 type Props = {
   requestId: string;
@@ -64,7 +64,7 @@ export function PositionEditRequestItem(props: Props) {
       if (action === 'reject') return rejectPositionEditRequest(props.requestId);
       return withdrawPositionEditRequest(props.requestId);
     },
-    localizeError: (code) => localizePositionEditRequestError(code, t, WELL_KNOWN_ERRORS),
+    localizeError: (code) => localizeActionError(code, t, WELL_KNOWN_ERRORS),
     onResolved: (action) => {
       // Accept / reject are owner resolutions: send the owner back to the
       // position page with a toast confirming the outcome (the linked chunks
