@@ -19,6 +19,14 @@ import { createClient as createServerSupabaseClient } from '@/lib/supabase/serve
 export type SessionUser = {
   user: User | null;
   hasProfile: boolean;
+  /**
+   * Header display fields from the same profile lookup that decides
+   * `hasProfile` — two extra columns on an already-issued PK query, so the
+   * header does not need a second round-trip (the former
+   * `/api/header-profile` route) after auth resolves. `null` for anonymous
+   * and provisional viewers alike.
+   */
+  profile: { avatarUrl: string | null; displayName: string | null } | null;
 };
 
 /**
@@ -61,7 +69,7 @@ export async function getSessionUser(): Promise<SessionUser> {
     user = resolvedUser;
   } catch (error) {
     Sentry.captureException(error);
-    return { user: null, hasProfile: false };
+    return { user: null, hasProfile: false, profile: null };
   }
 
   // Whether this signed-in user has completed registration (has a profile row).
@@ -69,16 +77,25 @@ export async function getSessionUser(): Promise<SessionUser> {
   // "finish registration" prompt is the safe default, and the server-side
   // profile guard is the real gate for content mutations.
   let hasProfile = false;
+  let profile: SessionUser['profile'] = null;
   if (user) {
     try {
       const [row] = await db
-        .select({ id: profiles.id })
+        .select({
+          id: profiles.id,
+          avatarUrl: profiles.avatarUrl,
+          displayName: profiles.displayName,
+        })
         .from(profiles)
         .where(eq(profiles.id, user.id))
         .limit(1);
       hasProfile = row != null;
+      profile = row
+        ? { avatarUrl: row.avatarUrl ?? null, displayName: row.displayName ?? null }
+        : null;
     } catch {
       hasProfile = false;
+      profile = null;
     }
   }
 
@@ -90,5 +107,5 @@ export async function getSessionUser(): Promise<SessionUser> {
     // on the next page load. The cookie's 7-day TTL also bounds the lag.
   }
 
-  return { user, hasProfile };
+  return { user, hasProfile, profile };
 }
