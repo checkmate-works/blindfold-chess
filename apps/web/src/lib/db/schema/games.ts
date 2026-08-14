@@ -25,6 +25,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+import type { AiReviewContent, AnalysisSummaryStats, ReviewMoment } from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
 import type {
   GamePlaySettings,
@@ -314,3 +315,65 @@ export const gameChunks = pgTable(
 
 export type GameChunk = typeof gameChunks.$inferSelect;
 export type NewGameChunk = typeof gameChunks.$inferInsert;
+
+/**
+ * Game AI Reviews — cached LLM coach commentary on a shared game.
+ *
+ * @description
+ * One review per (game, locale): the game snapshot is immutable, so its
+ * review is generated once and served from here forever — the cache IS the
+ * cost control (the LLM is only ever paid once per game+locale). Generated
+ * from a browser-side Stockfish sweep whose numbers the server re-derives
+ * (see `@/lib/games/analysis`), then narrated by the LLM (`@/lib/ai-review`).
+ *
+ * @design content / moments split (engine vs LLM authorship)
+ * `moments` holds the server-derived engine facts (evals, cp loss, best
+ * moves, judgments); `content` holds the LLM's validated prose, which
+ * references moments by ply only. Keeping them in separate columns preserves
+ * the authorship boundary end-to-end: nothing the LLM emitted can be
+ * mistaken for (or overwrite) an engine number. See `@/lib/ai-review/types`.
+ *
+ * @design Immutable, no regeneration
+ * Like the parent `games` row, a review never changes once written (no
+ * `updated_at`). The `(game_id, locale)` UNIQUE is simultaneously the cache
+ * key, the concurrent-generation guard (losers of the race read the winner's
+ * row), and the natural idempotency anchor for a future coin charge
+ * (`ai_review:<userId>:<gameId>:<locale>`, mirroring `maia_game:*`).
+ *
+ * @design generated_by_id
+ * Who triggered (and, once coin-charged, paid for) the generation — audit
+ * only, never authorization: reading is public like the game itself. FK to
+ * auth.users is defined Supabase-side with ON DELETE SET NULL so the shared
+ * cache survives its generator's account deletion.
+ */
+export const gameAiReviews = pgTable(
+  'game_ai_reviews',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    /** BCP 47 tag from `SUPPORTED_LOCALES` — the language the prose is in. */
+    locale: varchar('locale', { length: 10 }).notNull(),
+    /** Validated LLM prose ({@link AiReviewContent}) — never engine numbers. */
+    content: jsonb('content').$type<AiReviewContent>().notNull(),
+    /** Server-derived critical moments ({@link ReviewMoment}) — engine facts. */
+    moments: jsonb('moments').$type<ReviewMoment[]>().notNull(),
+    /** Aggregate player stats the review was based on. */
+    summaryStats: jsonb('summary_stats').$type<AnalysisSummaryStats>().notNull(),
+    /** LLM model id that wrote `content` (e.g. "gpt-5-mini"). */
+    model: varchar('model', { length: 100 }).notNull(),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
+    generatedById: uuid('generated_by_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    // Cache key + race guard + future charge-idempotency anchor (see TSDoc).
+    unique('uq_game_ai_reviews_game_locale').on(table.gameId, table.locale),
+  ]
+);
+
+export type GameAiReviewRecord = typeof gameAiReviews.$inferSelect;
+export type NewGameAiReviewRecord = typeof gameAiReviews.$inferInsert;

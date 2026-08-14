@@ -1097,6 +1097,25 @@ CREATE POLICY "game_chunks_select" ON "game_chunks"
   );
 
 -- =============================================================================
+-- game_ai_reviews (cached AI coach commentary — public read, service-role write)
+-- =============================================================================
+-- Same parent-visibility gate as comments/chunks: a review is only exposed
+-- while its parent game is publicly visible. Writes (generation) go through a
+-- members-only, rate-limited server action → service role only.
+ALTER TABLE "game_ai_reviews" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "game_ai_reviews_select" ON "game_ai_reviews";
+CREATE POLICY "game_ai_reviews_select" ON "game_ai_reviews"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.games g
+      WHERE g.id = game_ai_reviews.game_id
+        AND g.deleted_at IS NULL
+        AND g.status = 'public'
+    )
+  );
+
+-- =============================================================================
 -- repertoires (型 — UGC course) + lines + opening links
 -- =============================================================================
 -- Visibility mirrors games: a repertoire is readable when it is live and shared
