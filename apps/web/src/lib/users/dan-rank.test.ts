@@ -27,8 +27,6 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock('server-only', () => ({}));
-
 const { hasDanTierRank } = await import('./dan-rank');
 
 describe('hasDanTierRank', () => {

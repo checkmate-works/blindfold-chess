@@ -28,8 +28,6 @@ const mockEvaluateRanksAfterCreate = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockRevalidatePath = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
 }));

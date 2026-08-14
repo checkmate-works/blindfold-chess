@@ -6,8 +6,6 @@ const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockUpdateWhere = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
 }));

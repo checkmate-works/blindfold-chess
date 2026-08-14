@@ -23,8 +23,6 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 
-vi.mock('server-only', () => ({}));
-
 const { notifyAllUsersOfAnnouncement } = await import('./announcement-notification');
 
 describe('notifyAllUsersOfAnnouncement', () => {

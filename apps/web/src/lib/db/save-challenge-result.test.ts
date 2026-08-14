@@ -23,8 +23,6 @@ const mockGrantChallengeExp = vi.fn().mockResolvedValue({
   levelUp: false,
 });
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('next/cache', () => ({
   revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));

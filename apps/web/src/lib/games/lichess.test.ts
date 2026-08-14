@@ -2,8 +2,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createLichessThrottle, fetchLichessGamePgn } from './lichess';
 
-vi.mock('server-only', () => ({}));
-
 describe('createLichessThrottle', () => {
   it('starts full and decrements on each acquire', () => {
     const now = 1_000;

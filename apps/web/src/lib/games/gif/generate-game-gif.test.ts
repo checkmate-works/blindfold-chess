@@ -1,9 +1,7 @@
 import sharp from 'sharp';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { GameRecord } from '@/lib/db/schema';
-
-vi.mock('server-only', () => ({}));
 
 const { generateGameGif } = await import('./generate-game-gif');
 

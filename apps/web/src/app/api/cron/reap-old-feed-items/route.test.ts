@@ -2,8 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GET } from './route';
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
 }));

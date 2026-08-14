@@ -8,8 +8,6 @@ const mockCookieRefresh = vi.fn();
 const mockGameLookup = vi.fn();
 const mockLogActivityEvent = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));

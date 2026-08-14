@@ -23,8 +23,6 @@ vi.mock('next/cache', () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
 }));
 
-vi.mock('server-only', () => ({}));
-
 const mockHasActiveSubscription = vi.fn();
 vi.mock('@/lib/billing/subscription', () => ({
   hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),

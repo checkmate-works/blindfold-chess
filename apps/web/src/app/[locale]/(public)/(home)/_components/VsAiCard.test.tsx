@@ -10,8 +10,6 @@ import { VsAiCard } from './VsAiCard';
 // `ads-hidden-cookie-compute` (which imports `server-only`). Mock the
 // `server-only` sentinel so the barrel evaluation does not explode in
 // jsdom. Nothing in this test actually exercises the auth/ads path.
-vi.mock('server-only', () => ({}));
-
 afterEach(() => {
   cleanup();
 });

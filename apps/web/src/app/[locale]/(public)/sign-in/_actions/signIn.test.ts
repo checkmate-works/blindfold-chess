@@ -7,8 +7,6 @@ const mockLogActivityEvent = vi.fn();
 const mockGetClientIp = vi.fn();
 const mockGetLocaleFromRequest = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
     Promise.resolve({

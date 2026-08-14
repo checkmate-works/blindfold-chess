@@ -18,8 +18,6 @@ const mockAuthenticateAndGuard = vi.fn();
 const mockSaveFreePlayResult = vi.fn();
 const mockHandleServerActionError = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
 }));

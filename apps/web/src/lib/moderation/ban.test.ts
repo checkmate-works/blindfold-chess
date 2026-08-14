@@ -15,8 +15,6 @@ vi.mock('@/lib/db', () => ({
   profiles: { id: 'id', bannedAt: 'banned_at' },
 }));
 
-vi.mock('server-only', () => ({}));
-
 // Import after mocks are set up
 const { isUserBanned } = await import('./ban');
 

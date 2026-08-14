@@ -11,8 +11,6 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('server-only', () => ({}));
-
 const mockNotFound = vi.fn(() => {
   throw new Error('NEXT_NOT_FOUND');
 });

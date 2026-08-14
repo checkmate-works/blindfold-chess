@@ -21,8 +21,6 @@ const mockSelectWhere = vi.fn(() => 'owned-content-subquery');
 const mockSelectFrom = vi.fn(() => ({ where: mockSelectWhere }));
 const mockSelect = vi.fn((..._args: unknown[]) => ({ from: mockSelectFrom }));
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
 }));

@@ -12,8 +12,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockTransaction = vi.fn();
 const mockGrantPracticeExp = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('./index', () => ({
   db: {
     transaction: (cb: (tx: unknown) => unknown) => mockTransaction(cb),

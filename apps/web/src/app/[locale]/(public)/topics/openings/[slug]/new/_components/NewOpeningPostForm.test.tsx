@@ -3,8 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NewOpeningPostForm } from './NewOpeningPostForm';
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
   usePathname: () => '/en/topics/openings/italian-game',

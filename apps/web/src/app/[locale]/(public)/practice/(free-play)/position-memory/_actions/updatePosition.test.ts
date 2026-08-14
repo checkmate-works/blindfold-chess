@@ -8,8 +8,6 @@ const mockTxDeleteWhere = vi.fn();
 const mockTxInsertValues = vi.fn();
 const mockTxRevisionInsertValues = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
 }));

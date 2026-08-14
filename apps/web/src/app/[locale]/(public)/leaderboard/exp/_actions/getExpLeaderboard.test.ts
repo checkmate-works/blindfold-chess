@@ -42,8 +42,6 @@ const hoisted = vi.hoisted(() => {
 });
 
 // Mock server-only (imported transitively)
-vi.mock('server-only', () => ({}));
-
 // Mock next/cache — unstable_cache should just call the function directly
 vi.mock('next/cache', () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown, _keys?: string[], _opts?: object) => fn,

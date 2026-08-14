@@ -15,8 +15,6 @@ const mockCheckRateLimit = vi.fn();
 const mockSaveChallengeResult = vi.fn();
 const mockDeriveLeaderboardKey = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));

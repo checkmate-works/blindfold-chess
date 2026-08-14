@@ -31,8 +31,6 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock('server-only', () => ({}));
-
 const { calcGrantStartsAt } = await import('./user-grants');
 
 describe('calcGrantStartsAt', () => {

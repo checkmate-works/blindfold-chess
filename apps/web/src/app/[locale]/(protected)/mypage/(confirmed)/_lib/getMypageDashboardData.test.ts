@@ -38,8 +38,6 @@ const hoisted = vi.hoisted(() => {
   };
 });
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/db', () => {
   // Track which table is being queried in a chain to return the correct rows.
   const db = {

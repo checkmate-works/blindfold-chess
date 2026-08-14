@@ -14,8 +14,6 @@ vi.mock('next/headers', () => ({
     }),
 }));
 
-vi.mock('server-only', () => ({}));
-
 // Dynamic import to ensure mocks are in place
 const { getLocaleFromRequest } = await import('./locale');
 

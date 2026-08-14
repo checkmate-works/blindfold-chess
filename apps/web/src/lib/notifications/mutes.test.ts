@@ -32,8 +32,6 @@ vi.mock('@/lib/db', () => ({
   notificationMutes: 'notificationMutes_table',
 }));
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('drizzle-orm', () => ({
   and: (...args: unknown[]) => args,
   eq: (a: unknown, b: unknown) => [a, b],

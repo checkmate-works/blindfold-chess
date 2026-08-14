@@ -4,8 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/users/activity-log';
 
-vi.mock('server-only', () => ({}));
-
 const mockSentryCaptureException = vi.fn();
 vi.mock('@sentry/nextjs', () => ({
   captureException: (...args: unknown[]) => mockSentryCaptureException(...args),

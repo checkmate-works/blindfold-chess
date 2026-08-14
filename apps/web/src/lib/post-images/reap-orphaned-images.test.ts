@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { REAP_RETENTION_MS, reapOrphanedPostImages } from './reap-orphaned-images';
 
-vi.mock('server-only', () => ({}));
-
 /**
  * Pure-logic unit tests for the reaper. The DB and Storage layers are
  * stubbed; we exercise the function's branching, batching, and report

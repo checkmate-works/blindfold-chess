@@ -6,8 +6,6 @@ import {
   reapOldRankUpdateFeedItems,
 } from './reap-old-rank-updates';
 
-vi.mock('server-only', () => ({}));
-
 /**
  * Pure-logic unit tests for the rank-update reaper.
  *

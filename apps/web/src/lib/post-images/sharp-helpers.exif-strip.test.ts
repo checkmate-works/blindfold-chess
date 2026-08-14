@@ -1,9 +1,7 @@
 import sharp from 'sharp';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { normalizePostImageBuffer } from './sharp-helpers';
-
-vi.mock('server-only', () => ({}));
 
 /**
  * Regression test for the EXIF-GPS-leak bug fixed in this PR.

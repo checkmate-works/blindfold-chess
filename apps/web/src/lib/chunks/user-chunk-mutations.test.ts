@@ -21,8 +21,6 @@ const mockRevalidatePath = vi.fn();
 const mockIsUniqueViolation = vi.fn();
 const mockLinkNewChunkToGameMove = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
 }));

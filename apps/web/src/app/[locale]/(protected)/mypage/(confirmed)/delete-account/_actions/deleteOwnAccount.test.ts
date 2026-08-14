@@ -8,8 +8,6 @@ const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockDeleteAccount = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
     Promise.resolve({

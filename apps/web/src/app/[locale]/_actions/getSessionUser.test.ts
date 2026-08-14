@@ -1,8 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('server-only', () => ({}));
-
 const mockSentryCaptureException = vi.fn();
 vi.mock('@sentry/nextjs', () => ({
   captureException: (...args: unknown[]) => mockSentryCaptureException(...args),
