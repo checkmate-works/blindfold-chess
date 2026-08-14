@@ -17,7 +17,22 @@
       "goToEnd": "Go to end"
     },
     "flipBoard": "Flip board",
-    "close": "Close"
+    "close": "Close",
+    "promotionPicker": {
+      "cancel": "Cancel promotion",
+      "promoteTo": {
+        "queen": "Promote to queen",
+        "rook": "Promote to rook",
+        "bishop": "Promote to bishop",
+        "knight": "Promote to knight"
+      }
+    },
+    "termination": {
+      "checkmate": "Checkmate",
+      "draw": "Draw",
+      "resignation": "Resignation",
+      "stalemate": "Stalemate"
+    }
   },
   "Repertoires": {
     "title": "Kata",
@@ -2403,15 +2418,6 @@
         "columnChange": "Change"
       }
     },
-    "promotionPicker": {
-      "cancel": "Cancel promotion",
-      "promoteTo": {
-        "queen": "Promote to queen",
-        "rook": "Promote to rook",
-        "bishop": "Promote to bishop",
-        "knight": "Promote to knight"
-      }
-    },
     "settings": {
       "title": "Game Settings"
     },
@@ -2481,12 +2487,6 @@
       "heading": "This game has ended",
       "revealPosition": "Reveal the position",
       "showAsPlayed": "Show as you played it",
-      "termination": {
-        "checkmate": "Checkmate",
-        "draw": "Draw",
-        "resignation": "Resignation",
-        "stalemate": "Stalemate"
-      },
       "viewResult": "View result"
     },
     "finishModal": {

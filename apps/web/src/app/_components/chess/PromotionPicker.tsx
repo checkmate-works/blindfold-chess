@@ -48,7 +48,11 @@ export function PromotionPicker({
   onSelect,
   onCancel,
 }: Props) {
-  const t = useTranslations('play');
+  // `Common`, not `play`: this picker mounts under every board-rendering
+  // surface (glossary previews, learn articles, practice, games), so its
+  // strings live in the always-shipped Common namespace instead of dragging
+  // the whole game-play dictionary into every one of those pages.
+  const t = useTranslations('Common');
 
   // Esc dismisses the picker. Listener is window-scoped so it works without
   // requiring focus on a specific element.

@@ -89,10 +89,10 @@ export default async function EmbedGamePage({ params, searchParams }: Props) {
   const options = parseEmbedParams(rawSearchParams);
   const locale = options.lang ?? negotiateLocale(requestHeaders.get('accept-language'));
 
-  const [messages, tMetadata, tPlay] = await Promise.all([
+  const [messages, tMetadata, tCommon] = await Promise.all([
     getMessages({ locale }),
     getTranslations({ locale, namespace: 'metadata' }),
-    getTranslations({ locale, namespace: 'play' }),
+    getTranslations({ locale, namespace: 'Common' }),
   ]);
 
   const moves = game.moves as AlgebraicNotation[];
@@ -144,9 +144,7 @@ export default async function EmbedGamePage({ params, searchParams }: Props) {
         reproduceByDefault={options.view === 'played' && canReproduce}
         canReproduce={canReproduce}
         terminationMark={terminationMark}
-        terminationMarkLabel={
-          terminationMark ? tPlay(`finishedGame.termination.${terminationMark.kind}`) : ''
-        }
+        terminationMarkLabel={terminationMark ? tCommon(`termination.${terminationMark.kind}`) : ''}
         attribution={{
           title: game.title,
           author: author ? resolveDisplayName(author) : null,
