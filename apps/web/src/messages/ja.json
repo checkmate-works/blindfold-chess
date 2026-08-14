@@ -2782,6 +2782,45 @@
       "summaryTab": "サマリー",
       "discussionTab": "ディスカッション"
     },
+    "aiReview": {
+      "tab": "AIレビュー",
+      "disclaimer": "Stockfishの解析に基づいてAIが生成したレビューです（モデル: {model}）。誤りを含む可能性があります。",
+      "generateTitle": "AIコーチのレビューを見る",
+      "generateDescription": "ブラウザ上でStockfishが全局面を解析し、AIコーチが重要局面・良かった点・改善点を解説します。",
+      "generateButton": "AIレビューを生成",
+      "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
+      "generating": "レビューを執筆中…",
+      "cancel": "キャンセル",
+      "retry": "もう一度試す",
+      "signInPrompt": "AIレビューの生成にはサインインが必要です。生成されたレビューは全員に公開されます。",
+      "signInLink": "サインイン",
+      "notEligible": "このゲームは短すぎるか長すぎるため、自動レビューの対象外です。",
+      "bestMoveLabel": "最善手",
+      "sections": {
+        "summary": "ゲーム総評",
+        "keyMoments": "重要局面",
+        "strengths": "良かった点",
+        "weaknesses": "改善ポイント",
+        "advice": "次のゲームへのアドバイス"
+      },
+      "judgments": {
+        "best": "最善",
+        "good": "好手",
+        "inaccuracy": "疑問手",
+        "mistake": "悪手",
+        "blunder": "大悪手"
+      },
+      "errors": {
+        "not_authenticated": "サインインしてから再度お試しください。",
+        "invalid_input": "解析データが不正でした。もう一度お試しください。",
+        "not_found": "このゲームは利用できなくなりました。",
+        "game_not_eligible": "このゲームは短すぎるか長すぎるため、自動レビューの対象外です。",
+        "rate_limited": "本日のAIレビュー生成回数の上限に達しました。明日以降にお試しください。",
+        "llm_error": "AIコーチがレビューを生成できませんでした。時間をおいてお試しください。",
+        "unexpected_error": "エラーが発生しました。時間をおいてお試しください。",
+        "analysis_failed": "エンジン解析に失敗しました。ページを再読み込みしてお試しください。"
+      }
+    },
     "discussion": {
       "wholeGame": "全体",
       "startPosition": "開始局面",

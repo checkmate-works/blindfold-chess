@@ -9,6 +9,7 @@ import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-co
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
+import type { AiReview } from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type {
@@ -53,6 +54,7 @@ import {
   formatMoveLabel,
   formatSetupMovesLine,
 } from '../_lib/replay-derivations';
+import { AiReviewPanel } from './AiReviewPanel';
 import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 import { GameDiscussionFeed } from './GameDiscussionFeed';
 import { GameMoveContributions } from './GameMoveContributions';
@@ -101,6 +103,18 @@ type Props = {
   statsHeader?: ReactNode;
   /** Social layer — live (published) or local (unshared result screen). */
   social: ReplaySocial;
+  /**
+   * AI Review tab wiring — live (shared) page only; omitted on the local
+   * result screen, whose game has no server-side identity to cache a review
+   * under. `initial` is the cached review resolved server-side (null = offer
+   * generation); the two flags are resolved by the caller so the panel does
+   * not re-derive auth/eligibility policy.
+   */
+  aiReview?: {
+    initial: AiReview | null;
+    viewerCanGenerate: boolean;
+    gameIsEligible: boolean;
+  };
 };
 
 /**
@@ -142,6 +156,7 @@ export function GameReview({
   children,
   statsHeader,
   social,
+  aiReview,
 }: Props) {
   const t = useTranslations('sharedGames');
   const router = useRouter();
@@ -534,10 +549,27 @@ export function GameReview({
                       ? `${t('overview.discussionTab')} (${overview.discussionCount})`
                       : t('overview.discussionTab')
                   }
+                  aiReviewLabel={aiReview ? t('aiReview.tab') : undefined}
                 />
               )}
 
               {overview.activeOverviewView === 'summary' && gatedStats}
+
+              {overview.activeOverviewView === 'aiReview' && aiReview && (
+                <AiReviewPanel
+                  gameId={gameId}
+                  locale={locale}
+                  moves={moves}
+                  startingFen={startingFen}
+                  initialReview={aiReview.initial}
+                  viewerCanGenerate={aiReview.viewerCanGenerate}
+                  gameIsEligible={aiReview.gameIsEligible}
+                  // Preview in the quick-peek modal (like the By Move strip),
+                  // so reading the review never disturbs the live replay —
+                  // and never navigates this very tab away.
+                  onJumpToPly={quickPeek.openAtMove}
+                />
+              )}
 
               {overview.activeOverviewView === 'discussion' && (
                 <div className="space-y-8">

@@ -2782,6 +2782,45 @@
       "summaryTab": "Summary",
       "discussionTab": "Discussion"
     },
+    "aiReview": {
+      "tab": "AI Review",
+      "disclaimer": "AI-generated review based on Stockfish analysis (model: {model}). It may contain mistakes.",
+      "generateTitle": "Get an AI coach review",
+      "generateDescription": "Your browser analyzes every position with Stockfish, then an AI coach explains the key moments, your strengths, and what to work on.",
+      "generateButton": "Generate AI review",
+      "analyzing": "Analyzing with Stockfish… ({done}/{total} positions)",
+      "generating": "Writing the review…",
+      "cancel": "Cancel",
+      "retry": "Try again",
+      "signInPrompt": "Sign in to generate an AI review of this game. Once generated, it becomes visible to everyone.",
+      "signInLink": "Sign in",
+      "notEligible": "This game is too short or too long for an automatic review.",
+      "bestMoveLabel": "Best move",
+      "sections": {
+        "summary": "Game summary",
+        "keyMoments": "Key moments",
+        "strengths": "Strengths",
+        "weaknesses": "Areas to improve",
+        "advice": "Advice for your next game"
+      },
+      "judgments": {
+        "best": "Best",
+        "good": "Good",
+        "inaccuracy": "Inaccuracy",
+        "mistake": "Mistake",
+        "blunder": "Blunder"
+      },
+      "errors": {
+        "not_authenticated": "Please sign in and try again.",
+        "invalid_input": "The analysis data was invalid. Please try again.",
+        "not_found": "This game is no longer available.",
+        "game_not_eligible": "This game is too short or too long for an automatic review.",
+        "rate_limited": "You've reached today's AI review limit. Please try again tomorrow.",
+        "llm_error": "The AI coach couldn't produce a review. Please try again later.",
+        "unexpected_error": "Something went wrong. Please try again later.",
+        "analysis_failed": "The engine analysis failed. Please reload the page and try again."
+      }
+    },
     "discussion": {
       "wholeGame": "Whole game",
       "startPosition": "Start position",

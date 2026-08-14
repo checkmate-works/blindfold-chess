@@ -31,6 +31,8 @@
         "CONTACT_FROM_EMAIL",
         "CONTACT_TO_EMAIL",
         "STRIPE_SECRET_KEY",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
         "CRON_SECRET",
         "CSP_REPORT_SAMPLE_RATE"
       ]

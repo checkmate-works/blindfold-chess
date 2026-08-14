@@ -7,17 +7,23 @@ import type { GameCommentItem } from '@/lib/db/game-comments';
 
 import { type DiscussionGroup, buildDiscussionGroups } from '../_lib/build-discussion-groups';
 
+/**
+ * The overview block's tab set. `aiReview` participates only on the live
+ * (shared) page and only when the caller offers it — see `ReviewOverviewTabs`.
+ */
+export type OverviewView = 'summary' | 'discussion' | 'aiReview';
+
 export type UseReviewOverviewReturn = {
   discussionGroups: DiscussionGroup[];
   discussionCount: number;
   hasDiscussion: boolean;
-  /** Whether the [Summary | Discussion] segmented switch is shown. */
+  /** Whether the segmented tab switch is shown. */
   showOverviewTabs: boolean;
-  /** The user's tab choice (only honored while both tabs exist). */
-  overviewView: 'summary' | 'discussion';
-  setOverviewView: (view: 'summary' | 'discussion') => void;
+  /** The user's tab choice (only honored while the tabs exist). */
+  overviewView: OverviewView;
+  setOverviewView: (view: OverviewView) => void;
   /** The tab actually rendered — falls back to whichever side is non-empty. */
-  activeOverviewView: 'summary' | 'discussion';
+  activeOverviewView: OverviewView;
 };
 
 /**
@@ -52,7 +58,7 @@ export function useReviewOverview({
   // discussion side alone.
   const showOverviewTabs = hasSummary;
 
-  const [overviewView, setOverviewView] = useState<'summary' | 'discussion'>(
+  const [overviewView, setOverviewView] = useState<OverviewView>(
     hasDiscussion ? 'discussion' : 'summary'
   );
   const activeOverviewView = showOverviewTabs ? overviewView : 'discussion';
