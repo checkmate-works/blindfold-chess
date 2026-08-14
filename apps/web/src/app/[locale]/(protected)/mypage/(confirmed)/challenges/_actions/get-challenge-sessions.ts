@@ -79,14 +79,98 @@ export async function getChallengeSessions(
     const currentRange = { start: new Date(currentRangeStart), end: new Date(currentRangeEnd) };
     const previousRange = { start: new Date(previousRangeStart), end: new Date(previousRangeEnd) };
 
-    const sessions = await querySessionsByRange(userId, menu, currentRange);
-    const previousSessions = await querySessionsByRange(userId, menu, previousRange);
+    const [sessions, previousSessions] = await Promise.all([
+      querySessionsByRange(userId, menu, currentRange),
+      querySessionsByRange(userId, menu, previousRange),
+    ]);
 
     return { success: true, sessions, previousSessions };
   } catch (error) {
     handleServerActionError(error, '[getChallengeSessions]');
     return { success: false, sessions: [], previousSessions: [] };
   }
+}
+
+export type GetChallengeDashboardDataResponse = {
+  success: boolean;
+  /** Menu types with at least one record in the current range, registry-ordered. */
+  availableMenuTypes: ChallengeMenuType[];
+  /**
+   * The menu the sessions below belong to: `preferredMenu` when it is still
+   * available in this range, otherwise the first available type, otherwise
+   * `null` (empty period).
+   */
+  selectedMenu: ChallengeMenuType | null;
+  sessions: ChallengeResultRow[];
+  previousSessions: ChallengeResultRow[];
+};
+
+/**
+ * One-round-trip payload for the dashboard: the available menu types for the
+ * period AND the sessions of the (reconciled) selected menu. The client used
+ * to chain `getAvailableMenuTypes` → `getChallengeSessions` from two effects,
+ * paying two sequential server round trips on mount and on every period
+ * change; menu reconciliation lives here now so one call answers both.
+ *
+ * Ranges are computed client-side on purpose: `getPeriodRange` anchors to the
+ * viewer's local timezone, which the server does not know.
+ */
+export async function getChallengeDashboardData(
+  preferredMenu: ChallengeMenuType | undefined,
+  currentRangeStart: string,
+  currentRangeEnd: string,
+  previousRangeStart: string,
+  previousRangeEnd: string
+): Promise<GetChallengeDashboardDataResponse> {
+  const empty = { availableMenuTypes: [], selectedMenu: null, sessions: [], previousSessions: [] };
+  try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return { success: false, ...empty };
+    }
+
+    const currentRange = { start: new Date(currentRangeStart), end: new Date(currentRangeEnd) };
+    const previousRange = { start: new Date(previousRangeStart), end: new Date(previousRangeEnd) };
+
+    const availableMenuTypes = await listAvailableMenuTypes(userId, currentRange);
+    const selectedMenu =
+      preferredMenu && availableMenuTypes.includes(preferredMenu)
+        ? preferredMenu
+        : (availableMenuTypes[0] ?? null);
+
+    if (!selectedMenu) {
+      return { success: true, ...empty, availableMenuTypes };
+    }
+
+    const [sessions, previousSessions] = await Promise.all([
+      querySessionsByRange(userId, selectedMenu, currentRange),
+      querySessionsByRange(userId, selectedMenu, previousRange),
+    ]);
+
+    return { success: true, availableMenuTypes, selectedMenu, sessions, previousSessions };
+  } catch (error) {
+    handleServerActionError(error, '[getChallengeDashboardData]');
+    return { success: false, ...empty };
+  }
+}
+
+async function listAvailableMenuTypes(
+  userId: string,
+  range?: { start: Date; end: Date }
+): Promise<ChallengeMenuType[]> {
+  const conditions = [eq(challengeResults.userId, userId)];
+  if (range) {
+    conditions.push(gte(challengeResults.createdAt, range.start));
+    conditions.push(lt(challengeResults.createdAt, range.end));
+  }
+
+  const rows = await db
+    .selectDistinct({ menuType: challengeResults.menuType })
+    .from(challengeResults)
+    .where(and(...conditions));
+
+  const present = new Set(rows.map((r) => r.menuType));
+  return CHALLENGE_MENU_TYPES.filter((m) => present.has(m));
 }
 
 /**
@@ -107,19 +191,9 @@ export async function getAvailableMenuTypes(
     const userId = await getSessionUserId();
     if (!userId) return [];
 
-    const conditions = [eq(challengeResults.userId, userId)];
-    if (rangeStart && rangeEnd) {
-      conditions.push(gte(challengeResults.createdAt, new Date(rangeStart)));
-      conditions.push(lt(challengeResults.createdAt, new Date(rangeEnd)));
-    }
-
-    const rows = await db
-      .selectDistinct({ menuType: challengeResults.menuType })
-      .from(challengeResults)
-      .where(and(...conditions));
-
-    const present = new Set(rows.map((r) => r.menuType));
-    return CHALLENGE_MENU_TYPES.filter((m) => present.has(m));
+    const range =
+      rangeStart && rangeEnd ? { start: new Date(rangeStart), end: new Date(rangeEnd) } : undefined;
+    return await listAvailableMenuTypes(userId, range);
   } catch (error) {
     Sentry.captureException(error);
     return [];

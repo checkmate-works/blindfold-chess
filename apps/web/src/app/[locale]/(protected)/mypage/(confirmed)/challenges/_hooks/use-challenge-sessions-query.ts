@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
-import { getAvailableMenuTypes, getChallengeSessions } from '../_actions/get-challenge-sessions';
+import { getChallengeDashboardData } from '../_actions/get-challenge-sessions';
 import type { DatePeriod } from '../_lib/period-utils';
 import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
 
@@ -17,17 +17,24 @@ export type ChallengeSessionsQueryResult = {
 };
 
 /**
- * Owns the data-fetching lifecycle for the mypage challenges dashboard:
+ * Owns the data-fetching lifecycle for the mypage challenges dashboard.
  *
- *   1. Whenever `selectedPeriod` changes (including on mount), fetch the menu
- *      types that have records in that period to populate the dropdown, then
- *      reconcile `selectedMenu`: keep it if still available, otherwise select
- *      the first (or clear it when the period has no records at all).
- *   2. Whenever `selectedMenu` or `selectedPeriod` changes, fetch the current
- *      and previous period's sessions.
- *   3. Callers are notified via `onSessionsLoaded` when a successful fetch
- *      completes, so they can derive piece-filter defaults without this
- *      hook needing to know about them.
+ * Every (period, menu) combination resolves with ONE `getChallengeDashboardData`
+ * call: the action returns the period's available menu types AND the sessions
+ * of the reconciled selection together. This replaced a two-effect chain
+ * (fetch menu types → set selection → fetch sessions) that cost two
+ * sequential server round trips on mount and on every period change.
+ *
+ * Menu reconciliation happens server-side (keep `preferredMenu` if it still
+ * has records in the period, else first available, else null). When the
+ * server's reconciled menu differs from the client state, adopting it via
+ * `setSelectedMenu` re-fires the effect — `lastAppliedKey` marks the
+ * (period, menu) pair the applied response already covers, so that re-run
+ * is a no-op instead of a duplicate fetch.
+ *
+ * Callers are notified via `onSessionsLoaded` when a successful fetch
+ * completes, so they can derive piece-filter defaults without this hook
+ * needing to know about them.
  */
 export function useChallengeSessionsQuery(
   selectedPeriod: DatePeriod,
@@ -38,33 +45,14 @@ export function useChallengeSessionsQuery(
   const [selectedMenu, setSelectedMenu] = useState<ChallengeMenuType | null>(null);
   const [availableMenuTypes, setAvailableMenuTypes] = useState<ChallengeMenuType[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const lastAppliedKey = useRef<string | null>(null);
 
-  // Refetch the available menu types whenever the period changes so the
-  // dropdown only lists categories that have records in the selected period.
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const range = getPeriodRange(selectedPeriod);
-      const types = await getAvailableMenuTypes(range.start.toISOString(), range.end.toISOString());
-      if (cancelled) return;
-      setAvailableMenuTypes(types);
-      // Keep the current selection if it still has records in this period;
-      // otherwise fall back to the first available (or clear when empty).
-      setSelectedMenu((prev) => (prev && types.includes(prev) ? prev : (types[0] ?? null)));
-      if (types.length === 0) {
-        setAllSessions([]);
-        setPreviousSessions([]);
-        setIsLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedPeriod]);
-
-  // Fetch sessions when menu or period changes
-  useEffect(() => {
-    if (!selectedMenu) return;
+    const key = `${selectedPeriod}:${selectedMenu ?? ''}`;
+    // The response that set the current state already covered this exact
+    // (period, menu) pair — this run is the echo of adopting the server's
+    // reconciled menu, not a user action.
+    if (lastAppliedKey.current === key) return;
 
     let cancelled = false;
     (async () => {
@@ -72,19 +60,24 @@ export function useChallengeSessionsQuery(
       const currentRange = getPeriodRange(selectedPeriod);
       const previousRange = getPreviousPeriodRange(selectedPeriod);
 
-      const response = await getChallengeSessions(
-        selectedMenu,
+      const response = await getChallengeDashboardData(
+        selectedMenu ?? undefined,
         currentRange.start.toISOString(),
         currentRange.end.toISOString(),
         previousRange.start.toISOString(),
         previousRange.end.toISOString()
       );
-      if (!cancelled && response.success) {
-        setAllSessions(response.sessions);
-        setPreviousSessions(response.previousSessions);
-        onSessionsLoaded?.(selectedMenu, response.sessions);
+      if (cancelled) return;
+
+      lastAppliedKey.current = `${selectedPeriod}:${response.selectedMenu ?? ''}`;
+      setAvailableMenuTypes(response.availableMenuTypes);
+      setSelectedMenu(response.selectedMenu);
+      setAllSessions(response.sessions);
+      setPreviousSessions(response.previousSessions);
+      if (response.success && response.selectedMenu) {
+        onSessionsLoaded?.(response.selectedMenu, response.sessions);
       }
-      if (!cancelled) setIsLoading(false);
+      setIsLoading(false);
     })();
     return () => {
       cancelled = true;
