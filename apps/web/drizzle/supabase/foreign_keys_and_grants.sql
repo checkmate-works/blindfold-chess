@@ -118,11 +118,21 @@ END;
 $$;
 
 -- Grant necessary permissions
--- UPDATE matches the "topic_posts_update" RLS policy (own rows only): post
--- editing exists (editPost soft-edits, delete-core soft-deletes), so the
--- PostgREST surface mirrors what the app's privileged connection allows.
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.topic_posts TO authenticated;
+--
+-- No UPDATE for `authenticated`. Mirroring the app's privileged connection here
+-- was the mistake: the app reaches this table only through Server Actions that
+-- validate input, enforce rate limits, and refuse to touch a row an admin has
+-- soft-deleted, while a PostgREST UPDATE carries none of that. Because the RLS
+-- policy could only express "own row" and not "these columns", an author could
+-- PATCH `deleted_at` back to NULL and undo a moderation delete. Writes go
+-- through the service-role path (`@/lib/topic-posts/*`), which bypasses RLS, so
+-- dropping the grant costs the app nothing. Same posture as games / repertoires.
+GRANT SELECT, INSERT, DELETE ON TABLE public.topic_posts TO authenticated;
 GRANT SELECT ON TABLE public.topic_posts TO anon;
+-- GRANT is additive and this file is re-applied on every deploy, so narrowing
+-- the statement above does not withdraw a privilege an earlier deploy handed
+-- out. Revoke it explicitly.
+REVOKE UPDATE ON TABLE public.topic_posts FROM authenticated;
 
 -- =============================================================================
 -- moderation_actions
@@ -387,9 +397,22 @@ GRANT SELECT ON TABLE public.user_exp TO anon;
 SELECT public.ensure_auth_users_fk('positions', 'positions_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions (public read for catalog listings; authenticated
--- users create and edit their own positions; physical DELETE is service-role only)
-GRANT SELECT, INSERT, UPDATE ON TABLE public.positions TO authenticated;
+-- users create their own positions; UPDATE and physical DELETE are
+-- service-role only)
+--
+-- Editing is deliberately NOT granted here even though owners can edit their
+-- own positions in the app. An owner edit runs through
+-- `@/lib/positions/user-position-mutations`, which re-validates the FEN, keeps
+-- the revision history in `position_content_revisions`, and refuses rows an
+-- admin has soft-deleted. A PostgREST UPDATE has none of that, and RLS can only
+-- say "own row" — not "not the `deleted_at` column" — so the grant let an author
+-- clear `deleted_at` and restore a position an admin had removed, with no
+-- revision row and no audit-log entry for the restore.
+GRANT SELECT, INSERT ON TABLE public.positions TO authenticated;
 GRANT SELECT ON TABLE public.positions TO anon;
+-- See the topic_posts note: narrowing the GRANT does not revoke what earlier
+-- deploys already granted.
+REVOKE UPDATE ON TABLE public.positions FROM authenticated;
 
 -- =============================================================================
 -- chunks
@@ -404,9 +427,13 @@ GRANT SELECT ON TABLE public.positions TO anon;
 SELECT public.ensure_auth_users_fk('chunks', 'chunks_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions (public read for catalog listing; authenticated
--- users create and edit their own chunks; physical DELETE is service-role only)
-GRANT SELECT, INSERT, UPDATE ON TABLE public.chunks TO authenticated;
+-- users create their own chunks; UPDATE and physical DELETE are service-role
+-- only). Same reasoning as positions above: owner edits go through
+-- `@/lib/chunks/user-chunk-mutations`, and a column-blind RLS UPDATE let an
+-- author clear `deleted_at` to undo an admin soft-delete.
+GRANT SELECT, INSERT ON TABLE public.chunks TO authenticated;
 GRANT SELECT ON TABLE public.chunks TO anon;
+REVOKE UPDATE ON TABLE public.chunks FROM authenticated;
 
 -- =============================================================================
 -- chunk_edit_requests

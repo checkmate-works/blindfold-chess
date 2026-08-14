@@ -144,11 +144,13 @@ DROP POLICY IF EXISTS "topic_posts_delete" ON "topic_posts";
 CREATE POLICY "topic_posts_delete" ON "topic_posts"
   FOR DELETE USING (auth.uid() = user_id);
 
+-- No UPDATE policy: `authenticated` has no UPDATE grant on this table (see
+-- foreign_keys_and_grants.sql). Dropped rather than left in place so that
+-- re-adding the grant by mistake fails closed (RLS enabled + no matching policy
+-- = deny) instead of restoring the "own row, any column" hole that let an author
+-- clear `deleted_at` and undo a moderation delete. Owner edits run through the
+-- service-role Server Actions, which bypass RLS.
 DROP POLICY IF EXISTS "topic_posts_update" ON "topic_posts";
-CREATE POLICY "topic_posts_update" ON "topic_posts"
-  FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- user_activity_log
@@ -379,14 +381,15 @@ CREATE POLICY "user_exp_select_policy" ON "user_exp"
   FOR SELECT USING (true);
 
 -- =============================================================================
--- positions (UGC — public read for catalog, owner write, logical delete)
+-- positions (UGC — public read for catalog, owner INSERT, service-role edit)
 -- =============================================================================
 -- Positions are user-submitted chess boards used across multiple practice
 -- modules. SELECT is open (catalog listings filter `deleted_at IS NULL` at
--- the application layer). INSERT/UPDATE are restricted to the owner; UPDATE
--- also carries a WITH CHECK so the `user_id` cannot be reassigned to
--- another account during an edit. Physical DELETE is service-role only
--- (owners deprecate via `deleted_at`).
+-- the application layer). INSERT is restricted to the owner. UPDATE and
+-- physical DELETE are service-role only: owners DO edit and deprecate their own
+-- positions, but only through the Server Actions, which re-validate and keep
+-- the revision history. RLS cannot express "own row except `deleted_at`", so an
+-- owner-writable UPDATE policy would let an author undo an admin soft-delete.
 ALTER TABLE "positions" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "positions_select" ON "positions";
@@ -397,18 +400,17 @@ DROP POLICY IF EXISTS "positions_insert" ON "positions";
 CREATE POLICY "positions_insert" ON "positions"
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- No UPDATE policy — see the topic_posts note above. Deny-by-default keeps a
+-- future re-grant from reopening the `deleted_at` restore path.
 DROP POLICY IF EXISTS "positions_update" ON "positions";
-CREATE POLICY "positions_update" ON "positions"
-  FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
--- chunks (UGC public catalog — open read, owner write, logical delete)
+-- chunks (UGC public catalog — open read, owner INSERT, service-role edit)
 -- =============================================================================
 -- Chunks are user-submitted but function as a global public catalog: anyone
--- can SELECT, but only the creator may INSERT / UPDATE (which includes
--- logical delete via `deleted_at`). Physical DELETE is service-role only.
+-- can SELECT, but only the creator may INSERT. Editing and logical delete via
+-- `deleted_at` are owner-initiated yet service-role-executed, for the same
+-- reason as positions above. Physical DELETE is service-role only.
 -- Filtering out soft-deleted rows is done at the application layer so that
 -- admin tooling via the service role can still see them.
 ALTER TABLE "chunks" ENABLE ROW LEVEL SECURITY;
@@ -421,11 +423,8 @@ DROP POLICY IF EXISTS "chunks_insert" ON "chunks";
 CREATE POLICY "chunks_insert" ON "chunks"
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- No UPDATE policy — see the topic_posts note above.
 DROP POLICY IF EXISTS "chunks_update" ON "chunks";
-CREATE POLICY "chunks_update" ON "chunks"
-  FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- chunk_edit_requests (Qiita-style suggestions on a draft chunk)
@@ -658,10 +657,11 @@ CREATE POLICY "puzzle_solutions_select_policy" ON "puzzle_solutions"
 -- featured_puzzles (admin-curated Daily Puzzle pool; deny-by-default)
 -- =============================================================================
 -- No policies and no grants: all reads/writes go through server-side Drizzle
--- (BYPASSRLS role). Deny-by-default is load-bearing here, not just posture —
--- `positions` has an owner-writable UPDATE policy, so pool membership must
--- live where the puzzle's author cannot reach it via PostgREST, or authors
--- could feature their own puzzles.
+-- (BYPASSRLS role). Deny-by-default is load-bearing here, not just posture: pool
+-- membership must live where a puzzle's author cannot reach it via PostgREST, or
+-- authors could feature their own puzzles. (`positions` itself no longer has an
+-- owner-writable UPDATE policy either, but keeping this table unreachable is the
+-- guarantee that does not depend on that.)
 ALTER TABLE "featured_puzzles" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "featured_puzzles" FORCE ROW LEVEL SECURITY;
 
@@ -692,19 +692,22 @@ ALTER TABLE "articles" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "articles" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
--- positions (admin-only write; deny-by-default)
+-- positions (UGC public catalog — open read, owner INSERT; FORCE RLS)
 -- =============================================================================
+-- NOT admin-only write, despite what this header used to claim: the per-action
+-- policies above grant the owner INSERT. This pair is the belt-and-suspenders
+-- half — see the chunks entry below for what FORCE buys.
 ALTER TABLE "positions" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "positions" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
--- chunks (UGC public catalog — open read, owner write; FORCE RLS)
+-- chunks (UGC public catalog — open read, owner INSERT; FORCE RLS)
 -- =============================================================================
 -- Belt-and-suspenders pair on top of the per-action policies defined above
--- (chunks_select / chunks_insert / chunks_update). FORCE makes owners and
+-- (chunks_select / chunks_insert). FORCE makes owners and
 -- superusers also obey RLS when they connect via the standard pooler — only
 -- BYPASSRLS roles (service_role, supabase_admin) can write outside the
--- per-action policies. Mirrors the `positions` deny-by-default entry.
+-- per-action policies. Mirrors the `positions` entry.
 ALTER TABLE "chunks" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "chunks" FORCE ROW LEVEL SECURITY;
 
