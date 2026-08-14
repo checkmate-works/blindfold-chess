@@ -43,6 +43,13 @@ export const NAMESPACE_CLASSIFICATION = {
   MypagePuzzles: 'server',
   // Chunk post rendering (server-rendered post bodies).
   postVideoAttachmentRender: 'server',
+  // Admin: the /admin tree lives OUTSIDE the [locale] tree (no
+  // NextIntlClientProvider is mounted there) and reads this namespace only
+  // via server-side getTranslations in its own layout/pages. Classifying it
+  // 'client' shipped ~16.6 KB of admin-only strings in the RSC payload of
+  // every public page for nothing — verified 2026-08-15: zero
+  // useTranslations('Admin') call sites exist anywhere in src/.
+  Admin: 'server',
 
   // --- Client-allowed (included in client payload) ------------------------
   // learn: the `learn/[category]/[slug]` loading skeleton is a Client
@@ -51,7 +58,6 @@ export const NAMESPACE_CLASSIFICATION = {
   // renders three section titles from this namespace. ~0.7 KB.
   learn: 'client',
   Achievements: 'client',
-  Admin: 'client',
   AuthStatusDisplay: 'client',
   // Common: deletedUser (feed/comment cards) and pagination
   // (LeaderboardDetailContent) are read via useTranslations in Client
@@ -97,6 +103,11 @@ export const NAMESPACE_CLASSIFICATION = {
   interview: 'client',
   largeDownloadConsent: 'client',
   leaderboard: 'client',
+  // moderation: Server Actions return the error CODE 'moderation.blocked'
+  // (createPost/createReply/toggleLike, like-actions); client forms resolve
+  // it against the global translator in `resolvePostFormError`, so the
+  // namespace must reach the client dictionary. ~50 bytes.
+  moderation: 'client',
   navigation: 'client',
   newGame: 'client',
   onboardingProfile: 'client',
