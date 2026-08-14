@@ -330,9 +330,24 @@ REVOKE INSERT, UPDATE ON TABLE public.challenge_best_scores FROM authenticated;
 -- FK constraint: feed_items.actor_id → auth.users(id) ON DELETE CASCADE
 SELECT public.ensure_auth_users_fk('feed_items', 'feed_items_actor_id_fkey', 'actor_id', 'CASCADE');
 
--- Grant necessary permissions (public read for timeline, server-side INSERT)
-GRANT SELECT, INSERT ON TABLE public.feed_items TO authenticated;
+-- Grant necessary permissions (public read for timeline; INSERT is server-side
+-- only, which is what "server-side INSERT" was always meant to say).
+--
+-- Every feed row is produced inside the transaction that created the thing being
+-- announced (see `@/lib/db/games-write`,
+-- `@/lib/positions/user-position-mutations`), on the Drizzle connection that
+-- bypasses RLS — so the client grant was never used, only exposed. The old
+-- policy checked `auth.uid() = actor_id` and nothing else, leaving
+-- `entity_type`, `entity_id`, `metadata` and `created_at` free-form. That is
+-- enough to post an arbitrary card to everyone's home timeline: the
+-- `challenge_rank_update` card renders its rank/score straight out of
+-- `metadata` without joining back to the source row, and `created_at` is
+-- caller-supplied, so a fabricated "national #1" pins itself to the top. Naming
+-- someone else's `entity_id` also reattributes their work to the forger. There
+-- was no DB-level rate limit either, so the volume was unbounded.
+GRANT SELECT ON TABLE public.feed_items TO authenticated;
 GRANT SELECT ON TABLE public.feed_items TO anon;
+REVOKE INSERT ON TABLE public.feed_items FROM authenticated;
 
 -- =============================================================================
 -- stripe_customers

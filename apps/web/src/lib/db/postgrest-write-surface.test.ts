@@ -104,12 +104,20 @@ function policyCommandsFor(table: string): Set<string> {
 const SOFT_DELETABLE_UGC_TABLES = ['topic_posts', 'positions', 'chunks'] as const;
 
 /**
- * Tables recording something the user is claimed to have achieved. RLS can
- * verify the row belongs to the caller but not that the achievement happened, so
- * a client write is an unbounded self-report. These feed the public leaderboards,
- * the `challenge_score` belt-rank requirement, and the monthly badge cron.
+ * Tables that are publicly readable but must be written only by the service
+ * role, because the thing RLS can check (does this row name me?) is not the
+ * thing that matters (is what this row asserts true?).
  */
-const SELF_REPORTABLE_ACHIEVEMENT_TABLES = ['challenge_results', 'challenge_best_scores'] as const;
+const READ_ONLY_FOR_AUTHENTICATED = [
+  // Self-reported achievement: feeds the public leaderboards, the
+  // `challenge_score` belt-rank requirement, and the monthly badge cron.
+  'challenge_results',
+  'challenge_best_scores',
+  // Public timeline: the payload columns (`entity_type` / `entity_id` /
+  // `metadata` / `created_at`) are what a forger controls, and RLS cannot
+  // constrain them.
+  'feed_items',
+] as const;
 
 describe('PostgREST write surface for `authenticated`', () => {
   describe.each(SOFT_DELETABLE_UGC_TABLES)('%s', (table) => {
@@ -127,17 +135,16 @@ describe('PostgREST write surface for `authenticated`', () => {
     });
   });
 
-  describe.each(SELF_REPORTABLE_ACHIEVEMENT_TABLES)('%s', (table) => {
-    it('grants no write privilege at all (scores are service-role written)', () => {
-      const privileges = effectivePrivileges(grantsSql, table, 'authenticated');
-      expect([...privileges]).toEqual(['SELECT']);
+  describe.each(READ_ONLY_FOR_AUTHENTICATED)('%s', (table) => {
+    it('grants SELECT and nothing else', () => {
+      expect([...effectivePrivileges(grantsSql, table, 'authenticated')]).toEqual(['SELECT']);
     });
 
-    it('has no INSERT or UPDATE policy, so a re-added grant fails closed', () => {
+    it('has no write policy at all, so a re-added grant fails closed', () => {
       const commands = policyCommandsFor(table);
-      expect(commands).not.toContain('INSERT');
-      expect(commands).not.toContain('UPDATE');
-      expect(commands).not.toContain('ALL');
+      for (const write of ['INSERT', 'UPDATE', 'DELETE', 'ALL']) {
+        expect(commands, `${table} must have no ${write} policy`).not.toContain(write);
+      }
     });
   });
 

@@ -281,9 +281,12 @@ DROP POLICY IF EXISTS "feed_items_select" ON "feed_items";
 CREATE POLICY "feed_items_select" ON "feed_items"
   FOR SELECT USING (true);
 
+-- No INSERT policy: feed rows are emitted by the service role alongside the
+-- entity they announce. A per-row owner check is not a meaningful guard here
+-- because the damage lives in the other columns (`entity_type` / `entity_id` /
+-- `metadata` / `created_at`), which RLS cannot constrain. Dropped so a re-added
+-- grant denies instead of reopening timeline forgery.
 DROP POLICY IF EXISTS "feed_items_insert" ON "feed_items";
-CREATE POLICY "feed_items_insert" ON "feed_items"
-  FOR INSERT WITH CHECK (auth.uid() = actor_id);
 
 -- =============================================================================
 -- stripe_customers (server-side only writes, user can read own)
