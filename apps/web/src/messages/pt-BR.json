@@ -2782,6 +2782,45 @@
       "summaryTab": "Resumo",
       "discussionTab": "Discussão"
     },
+    "aiReview": {
+      "tab": "Revisão IA",
+      "disclaimer": "Revisão gerada por IA com base na análise do Stockfish (modelo: {model}). Pode conter erros.",
+      "generateTitle": "Receba uma revisão do treinador IA",
+      "generateDescription": "Seu navegador analisa cada posição com o Stockfish e um treinador IA explica os momentos-chave, seus pontos fortes e o que melhorar.",
+      "generateButton": "Gerar revisão IA",
+      "analyzing": "Analisando com o Stockfish… ({done}/{total} posições)",
+      "generating": "Escrevendo a revisão…",
+      "cancel": "Cancelar",
+      "retry": "Tentar novamente",
+      "signInPrompt": "Faça login para gerar uma revisão IA desta partida. Depois de gerada, ela fica visível para todos.",
+      "signInLink": "Fazer login",
+      "notEligible": "Esta partida é curta ou longa demais para uma revisão automática.",
+      "bestMoveLabel": "Melhor lance",
+      "sections": {
+        "summary": "Resumo da partida",
+        "keyMoments": "Momentos-chave",
+        "strengths": "Pontos fortes",
+        "weaknesses": "Pontos a melhorar",
+        "advice": "Conselhos para a próxima partida"
+      },
+      "judgments": {
+        "best": "Melhor",
+        "good": "Boa",
+        "inaccuracy": "Imprecisão",
+        "mistake": "Erro",
+        "blunder": "Erro grave"
+      },
+      "errors": {
+        "not_authenticated": "Faça login e tente novamente.",
+        "invalid_input": "Os dados da análise eram inválidos. Tente novamente.",
+        "not_found": "Esta partida não está mais disponível.",
+        "game_not_eligible": "Esta partida é curta ou longa demais para uma revisão automática.",
+        "rate_limited": "Você atingiu o limite diário de revisões IA. Tente novamente amanhã.",
+        "llm_error": "O treinador IA não conseguiu gerar a revisão. Tente mais tarde.",
+        "unexpected_error": "Algo deu errado. Tente mais tarde.",
+        "analysis_failed": "A análise do motor falhou. Recarregue a página e tente novamente."
+      }
+    },
     "discussion": {
       "wholeGame": "Jogo inteiro",
       "startPosition": "Posição inicial",

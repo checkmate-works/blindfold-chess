@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
+import { canGenerateAiReview } from '@/lib/ai-review/authorize';
+import { getAiReview } from '@/lib/ai-review/queries';
 import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
@@ -69,16 +71,19 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
 
   // Advice comments (per-move) plus the viewer's profile, which enables posting
   // and rendering their own comment optimistically.
-  const [comments, currentUser, likeMeta, gameChunks, availableChunks] = await Promise.all([
-    listGameComments(game.id, user?.id),
-    user ? getCommentUserProfile(user.id) : Promise.resolve(null),
-    getLikeMeta(GAME_LIKE_TARGET, game.id, user?.id),
-    listGameChunks(game.id),
-    // Published catalog + the viewer's own drafts, so a chunk just authored
-    // from a position on this very board can be linked back to it without a
-    // publish round-trip. See `linkableChunkPredicate`.
-    getLinkableChunkOptionsForViewer(user?.id ?? null),
-  ]);
+  const [comments, currentUser, likeMeta, gameChunks, availableChunks, aiReview] =
+    await Promise.all([
+      listGameComments(game.id, user?.id),
+      user ? getCommentUserProfile(user.id) : Promise.resolve(null),
+      getLikeMeta(GAME_LIKE_TARGET, game.id, user?.id),
+      listGameChunks(game.id),
+      // Published catalog + the viewer's own drafts, so a chunk just authored
+      // from a position on this very board can be linked back to it without a
+      // publish round-trip. See `linkableChunkPredicate`.
+      getLinkableChunkOptionsForViewer(user?.id ?? null),
+      // Cached AI coach review for this locale (null = the tab offers generation).
+      getAiReview(game.id, locale),
+    ]);
 
   // Whether to offer the "as played" GIF — shared with the pre-publish teaser
   // on the result screen, so the two never disagree about which variant exists.
@@ -123,6 +128,12 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           statsHeader={
             <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
           }
+          aiReview={{
+            initial: aiReview,
+            // Generation is members-only; viewing a cached review is not.
+            viewerCanGenerate: user != null,
+            gameIsEligible: canGenerateAiReview(game).ok,
+          }}
           social={{
             mode: 'live',
             // Real auth state — distinct from `currentUser` (the comment

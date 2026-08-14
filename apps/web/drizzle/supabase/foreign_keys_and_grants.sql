@@ -708,6 +708,19 @@ GRANT SELECT ON TABLE public.game_comments TO anon;
 -- anonymous). FKs to games (cascade) / chunks (restrict) are managed by Drizzle.
 SELECT public.ensure_auth_users_fk('game_chunks', 'game_chunks_suggested_by_id_fkey', 'suggested_by_id', 'SET NULL');
 
+-- =============================================================================
+-- game_ai_reviews (cached AI coach commentary — public read)
+-- =============================================================================
+-- FK constraint: game_ai_reviews.generated_by_id → auth.users(id) ON DELETE SET NULL
+-- Audit-only attribution of who triggered the generation; the shared cache
+-- must survive its generator's account deletion. FK to games (cascade) is
+-- managed by Drizzle. Writes go through a members-only, rate-limited server
+-- action, so service-role only.
+SELECT public.ensure_auth_users_fk('game_ai_reviews', 'game_ai_reviews_generated_by_id_fkey', 'generated_by_id', 'SET NULL');
+
+GRANT SELECT ON TABLE public.game_ai_reviews TO authenticated;
+GRANT SELECT ON TABLE public.game_ai_reviews TO anon;
+
 -- Writes go through a members-only, rate-limited server action, so service-role
 -- only; reads are public.
 GRANT SELECT ON TABLE public.game_chunks TO authenticated;

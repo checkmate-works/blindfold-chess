@@ -2782,6 +2782,45 @@
       "summaryTab": "Resumen",
       "discussionTab": "Discusión"
     },
+    "aiReview": {
+      "tab": "Revisión IA",
+      "disclaimer": "Revisión generada por IA a partir del análisis de Stockfish (modelo: {model}). Puede contener errores.",
+      "generateTitle": "Obtén una revisión del entrenador IA",
+      "generateDescription": "Tu navegador analiza cada posición con Stockfish y luego un entrenador IA explica los momentos clave, tus fortalezas y qué mejorar.",
+      "generateButton": "Generar revisión IA",
+      "analyzing": "Analizando con Stockfish… ({done}/{total} posiciones)",
+      "generating": "Escribiendo la revisión…",
+      "cancel": "Cancelar",
+      "retry": "Intentar de nuevo",
+      "signInPrompt": "Inicia sesión para generar una revisión IA de esta partida. Una vez generada, será visible para todos.",
+      "signInLink": "Iniciar sesión",
+      "notEligible": "Esta partida es demasiado corta o demasiado larga para una revisión automática.",
+      "bestMoveLabel": "Mejor jugada",
+      "sections": {
+        "summary": "Resumen de la partida",
+        "keyMoments": "Momentos clave",
+        "strengths": "Fortalezas",
+        "weaknesses": "Aspectos a mejorar",
+        "advice": "Consejos para tu próxima partida"
+      },
+      "judgments": {
+        "best": "Mejor",
+        "good": "Buena",
+        "inaccuracy": "Imprecisión",
+        "mistake": "Error",
+        "blunder": "Error grave"
+      },
+      "errors": {
+        "not_authenticated": "Inicia sesión e inténtalo de nuevo.",
+        "invalid_input": "Los datos del análisis no eran válidos. Inténtalo de nuevo.",
+        "not_found": "Esta partida ya no está disponible.",
+        "game_not_eligible": "Esta partida es demasiado corta o demasiado larga para una revisión automática.",
+        "rate_limited": "Has alcanzado el límite diario de revisiones IA. Inténtalo mañana.",
+        "llm_error": "El entrenador IA no pudo generar la revisión. Inténtalo más tarde.",
+        "unexpected_error": "Algo salió mal. Inténtalo más tarde.",
+        "analysis_failed": "El análisis del motor falló. Recarga la página e inténtalo de nuevo."
+      }
+    },
     "discussion": {
       "wholeGame": "Toda la partida",
       "startPosition": "Posición inicial",

@@ -2,37 +2,49 @@
 
 import { tabItemClass, tabsRowClass, tabsScrollClass } from '@/app/[locale]/_components/tab-styles';
 
+import type { OverviewView } from '../_hooks/use-review-overview';
+
 /**
- * The [Summary | Discussion] segmented switch shown above the review's
- * overview block (shared by the live opening-board branch and the local
- * result-screen branch, which differ only in the discussion label).
+ * The segmented switch shown above the review's overview block —
+ * [Summary | Discussion], plus an [AI Review] tab when the surface offers it
+ * (the live shared page passes `aiReviewLabel`; the local result screen does
+ * not, since an unpublished game has no server-side review to anchor).
  */
 export function ReviewOverviewTabs({
   active,
   onChange,
   summaryLabel,
   discussionLabel,
+  aiReviewLabel,
 }: {
-  active: 'summary' | 'discussion';
-  onChange: (view: 'summary' | 'discussion') => void;
+  active: OverviewView;
+  onChange: (view: OverviewView) => void;
   summaryLabel: string;
   discussionLabel: string;
+  /** When set, renders the AI Review tab with this label. */
+  aiReviewLabel?: string;
 }) {
+  const views: Array<{ key: OverviewView; label: string }> = [
+    { key: 'summary', label: summaryLabel },
+    { key: 'discussion', label: discussionLabel },
+    ...(aiReviewLabel ? [{ key: 'aiReview' as const, label: aiReviewLabel }] : []),
+  ];
+
   return (
     <div className={tabsScrollClass.underline}>
       <div role="tablist" className={tabsRowClass.underline}>
-        {(['summary', 'discussion'] as const).map((view) => {
-          const isActive = active === view;
+        {views.map(({ key, label }) => {
+          const isActive = active === key;
           return (
             <button
-              key={view}
+              key={key}
               type="button"
               role="tab"
               aria-selected={isActive}
-              onClick={() => onChange(view)}
+              onClick={() => onChange(key)}
               className={tabItemClass('underline', isActive)}
             >
-              {view === 'summary' ? summaryLabel : discussionLabel}
+              {label}
             </button>
           );
         })}

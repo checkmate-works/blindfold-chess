@@ -498,6 +498,13 @@
       "when": 1785908252585,
       "tag": "20260805053732_index_profiles_deleted",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1786707090143,
+      "tag": "20260814113130_create_game_ai_reviews",
+      "breakpoints": true
     }
   ]
 }

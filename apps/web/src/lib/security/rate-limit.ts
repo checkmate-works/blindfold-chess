@@ -115,6 +115,14 @@ export const RATE_LIMITS = {
    * farming guard is the per-day Exp cap inside `grantGameExp`, not this.
    */
   saveGameResult: { action: 'save_game_result', maxAttempts: 60, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for AI review generation. This is the ONLY spend guard on
+   * the paid LLM call (results are cached per (game, locale), so repeat views
+   * are free) — keep it tight. 5 / day covers a normal player's daily games
+   * with room for one retry; a future coin price replaces this as the primary
+   * economic control but the cap stays as an abuse backstop.
+   */
+  generateAiReview: { action: 'generate_ai_review', maxAttempts: 5, windowMs: 86_400_000 },
   /** Per-user limit for posting advice comments on a shared game. Matches createReply. */
   createGameComment: { action: 'create_game_comment', maxAttempts: 20, windowMs: 3_600_000 },
   /** Per-user limit for editing one's own shared-game comment. Matches editPost. */

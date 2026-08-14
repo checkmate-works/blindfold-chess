@@ -141,6 +141,12 @@ vi.mock('./PlaySettingsIndicator', () => ({
   PlaySettingsIndicator: () => <div data-testid="play-settings" />,
 }));
 
+// Pulls in next-intl routing (Link) and the Stockfish generation hook; its
+// own behaviour is covered by AiReviewPanel.test.tsx.
+vi.mock('./AiReviewPanel', () => ({
+  AiReviewPanel: () => <div data-testid="ai-review-panel" />,
+}));
+
 type ReplayProps = Parameters<typeof GameReview>[0];
 type LiveSocial = Extract<ReplayProps['social'], { mode: 'live' }>;
 type LocalSocial = Extract<ReplayProps['social'], { mode: 'local' }>;
