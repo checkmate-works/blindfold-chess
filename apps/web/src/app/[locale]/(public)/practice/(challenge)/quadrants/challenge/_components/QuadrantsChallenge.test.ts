@@ -59,37 +59,6 @@ describe('QuadrantsChallenge timed mode logic', () => {
     });
   });
 
-  describe('answer tracking', () => {
-    it('tracks correct answers', () => {
-      const answers = [true, true, false, true, false];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(3);
-      expect(incorrect).toBe(2);
-    });
-
-    it('handles empty answers array', () => {
-      const answers: boolean[] = [];
-      expect(answers.filter((a) => a).length).toBe(0);
-      expect(answers.filter((a) => !a).length).toBe(0);
-    });
-  });
-
-  describe('timer behavior', () => {
-    it('uses 60 second timeLimit', () => {
-      const timeLimit = 60;
-      expect(timeLimit).toBe(60);
-    });
-
-    it('timeRemaining does not go below 0', () => {
-      const timeLimit = 60;
-      const timeElapsed = 70;
-      const timeRemaining = Math.max(0, timeLimit - timeElapsed);
-      expect(timeRemaining).toBe(0);
-    });
-  });
-
   describe('rush mode - remaining lives calculation', () => {
     it('calculates remaining lives correctly', () => {
       expect(MISTAKE_LIMIT - 0).toBe(3);
@@ -99,25 +68,6 @@ describe('QuadrantsChallenge timed mode logic', () => {
       expect(MISTAKE_LIMIT - 1).toBe(2);
       expect(MISTAKE_LIMIT - 2).toBe(1);
       expect(MISTAKE_LIMIT - 3).toBe(0);
-    });
-  });
-
-  describe('result page redirect logic', () => {
-    it('builds correct result URL params', () => {
-      const correctCount = 25;
-      const incorrectCount = 3;
-      const totalTime = 45;
-      const total = correctCount + incorrectCount;
-
-      const params = new URLSearchParams({
-        score: correctCount.toString(),
-        total: total.toString(),
-        time: totalTime.toString(),
-      });
-
-      expect(params.get('score')).toBe('25');
-      expect(params.get('total')).toBe('28');
-      expect(params.get('time')).toBe('45');
     });
   });
 });
