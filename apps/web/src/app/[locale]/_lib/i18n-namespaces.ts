@@ -50,6 +50,19 @@ export const NAMESPACE_CLASSIFICATION = {
   // every public page for nothing — verified 2026-08-15: zero
   // useTranslations('Admin') call sites exist anywhere in src/.
   Admin: 'server',
+  // The eight below were audited 2026-08-15 (import-graph reachability over
+  // all client entry points): each is read exclusively through server-side
+  // getTranslations — Footer/affiliateDisclosure by the server-rendered
+  // Footer, the rest by their own Server Component pages. No client file
+  // reaches any of them.
+  Footer: 'server',
+  MypageChallenges: 'server',
+  MypageLikes: 'server',
+  MypagePosts: 'server',
+  affiliateDisclosure: 'server',
+  articles: 'server',
+  banned: 'server',
+  gamesPage: 'server',
 
   // --- Client-allowed (included in client payload) ------------------------
   // learn: the `learn/[category]/[slug]` loading skeleton is a Client
@@ -66,24 +79,17 @@ export const NAMESPACE_CLASSIFICATION = {
   // Repertoires: Delete/Import/LineViewer client components read it via
   // useTranslations.
   Repertoires: 'client',
-  Footer: 'client',
   MobileTabBar: 'client',
   Mypage: 'client',
   MypageChallengeResults: 'client',
-  MypageChallenges: 'client',
   MypageFollowing: 'client',
-  MypageLikes: 'client',
   MypageNotifications: 'client',
   MypagePoints: 'client',
-  MypagePosts: 'client',
   MypageSubscription: 'client',
   Preferences: 'client',
-  affiliateDisclosure: 'client',
   announcements: 'client',
-  articles: 'client',
   attachment: 'client',
   authPrompt: 'client',
-  banned: 'client',
   bulkDelete: 'client',
   buttonInput: 'client',
   chunks: 'client',
@@ -97,7 +103,6 @@ export const NAMESPACE_CLASSIFICATION = {
   error: 'client',
   expLeaderboard: 'client',
   forgotPassword: 'client',
-  gamesPage: 'client',
   guides: 'client',
   home: 'client',
   interview: 'client',
