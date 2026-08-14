@@ -10,9 +10,7 @@ const mockSelectLimit = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockBuildValues = vi.fn();
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>

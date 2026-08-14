@@ -19,9 +19,7 @@ const mockUserId = 'test-user-id-12345678';
 const mockExchangeCodeForSession = vi.fn();
 const mockVerifyOtp = vi.fn();
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>

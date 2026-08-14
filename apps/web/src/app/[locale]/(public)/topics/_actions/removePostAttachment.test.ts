@@ -13,9 +13,7 @@ const mockDeleteWhere = vi.fn();
 const mockDeleteReturning = vi.fn();
 const mockStorageRemove = vi.fn();
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>

@@ -8,9 +8,7 @@ const mockResetPasswordForEmail = vi.fn();
 const mockGetUser = vi.fn();
 const mockGuardByIpRateLimit = vi.fn();
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>

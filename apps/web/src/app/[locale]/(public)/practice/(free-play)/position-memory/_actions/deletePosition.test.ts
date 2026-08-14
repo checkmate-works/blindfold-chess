@@ -10,9 +10,7 @@ vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
 }));
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/db', () => {
   const updateChain = {

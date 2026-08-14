@@ -35,9 +35,7 @@ const mockSelectCount = vi.fn();
 const mockSelectPostAuthor = vi.fn();
 const mockSelectProfile = vi.fn();
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
