@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { LeaderboardCard } from '.';
 import { getUserRanks } from '../_actions/getUserRanks';
@@ -21,10 +21,8 @@ function entryKey(entry: LeaderboardEntry): string {
 }
 
 export async function LeaderboardTopContent({ locale, period, moduleFilter }: Props) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Shares the leaderboard layout's Auth round-trip via React.cache.
+  const user = await getOptionalUser();
   const currentUserId = user?.id ?? null;
 
   let userRanks: UserRankInfo[] = [];
