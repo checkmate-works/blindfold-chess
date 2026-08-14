@@ -90,9 +90,31 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 -- retention window and is released only when the account is finally purged.
 SELECT public.ensure_auth_users_fk('profiles', 'profiles_id_fkey', 'id', 'CASCADE');
 
--- Grant necessary permissions
-GRANT SELECT, INSERT, UPDATE ON TABLE public.profiles TO authenticated;
+-- Grant necessary permissions (public read; profile edits are service-role only)
+--
+-- No UPDATE for `authenticated`. The old grant was table-wide, and the policy
+-- behind it could only check `auth.uid() = id` — so "edit your own profile"
+-- silently meant "write any column of your own row" over PostgREST, including
+-- three that are not the user's to set:
+--
+--   * `username` — bypasses the format, reserved-word and impersonation checks in
+--     `updateProfile`, and releases the ban-evasion hold that the account-deletion
+--     flow depends on holding for the whole retention window (see the
+--     profiles_id_fkey note above).
+--   * `banned_at` — every in-app ban check reads this column (`@/lib/moderation/ban`),
+--     so clearing it neutralises them. Sign-in stays blocked because `banUser`
+--     also sets GoTrue's `ban_duration`, which is why this is a partial rather
+--     than a total ban escape, but the app-side checks are defeated for the life
+--     of an already-issued token.
+--   * `deleted_at` / `hidden_from_leaderboard` — deletion state and the
+--     leaderboard opt-out become client-toggled.
+--
+-- All profile writes run through Server Actions on the Drizzle connection
+-- (`updateProfile`, `@/lib/users/delete-account`), which bypasses RLS and
+-- validates every field first, so the client never needed this privilege.
+GRANT SELECT, INSERT ON TABLE public.profiles TO authenticated;
 GRANT SELECT ON TABLE public.profiles TO anon;
+REVOKE UPDATE ON TABLE public.profiles FROM authenticated;
 
 -- =============================================================================
 -- topic_posts

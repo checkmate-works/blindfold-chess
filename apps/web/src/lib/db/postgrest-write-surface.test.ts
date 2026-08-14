@@ -98,10 +98,19 @@ function policyCommandsFor(table: string): Set<string> {
 }
 
 /**
- * Tables whose rows a moderator can soft-delete and whose author must not be
- * able to un-delete them over PostgREST.
+ * Tables where a client may create its own row but must never update one,
+ * because "your own row" (all RLS can say) is not "your own row except the
+ * columns an admin or the system owns" (what is actually required).
  */
-const SOFT_DELETABLE_UGC_TABLES = ['topic_posts', 'positions', 'chunks'] as const;
+const OWNER_INSERT_NEVER_UPDATE = [
+  // A moderator soft-deletes via `deleted_at`; the author must not clear it.
+  'topic_posts',
+  'positions',
+  'chunks',
+  // `username` (ban-evasion hold), `banned_at`, `deleted_at` and
+  // `hidden_from_leaderboard` are not the user's to set.
+  'profiles',
+] as const;
 
 /**
  * Tables that are publicly readable but must be written only by the service
@@ -120,7 +129,7 @@ const READ_ONLY_FOR_AUTHENTICATED = [
 ] as const;
 
 describe('PostgREST write surface for `authenticated`', () => {
-  describe.each(SOFT_DELETABLE_UGC_TABLES)('%s', (table) => {
+  describe.each(OWNER_INSERT_NEVER_UPDATE)('%s', (table) => {
     it('does not grant UPDATE (a column-blind RLS policy cannot protect `deleted_at`)', () => {
       expect(effectivePrivileges(grantsSql, table, 'authenticated')).not.toContain('UPDATE');
     });
@@ -128,9 +137,10 @@ describe('PostgREST write surface for `authenticated`', () => {
     it('has no UPDATE policy, so a re-added grant fails closed instead of open', () => {
       expect(policyCommandsFor(table)).not.toContain('UPDATE');
       expect(createdPoliciesFor(table)).not.toContain(`${table}_update`);
+      expect(createdPoliciesFor(table)).not.toContain(`${table}_update_policy`);
     });
 
-    it('still allows public reads (the catalog is public by design)', () => {
+    it('still allows public reads (these rows are public by design)', () => {
       expect(effectivePrivileges(grantsSql, table, 'anon')).toContain('SELECT');
     });
   });

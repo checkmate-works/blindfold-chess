@@ -29,11 +29,13 @@ DROP POLICY IF EXISTS "profiles_insert_policy" ON "profiles";
 CREATE POLICY "profiles_insert_policy" ON "profiles"
   FOR INSERT WITH CHECK (auth.uid() = id);
 
+-- No UPDATE policy: `auth.uid() = id` reads like "your own profile" but grants
+-- "any column of your own row", and the columns that matter here (`username`,
+-- `banned_at`, `deleted_at`, `hidden_from_leaderboard`) are not the user's to
+-- set. See foreign_keys_and_grants.sql for the full list. Profile edits go
+-- through the validating Server Actions on the service-role connection; dropping
+-- the policy makes a re-added grant deny instead of reopening this.
 DROP POLICY IF EXISTS "profiles_update_policy" ON "profiles";
-CREATE POLICY "profiles_update_policy" ON "profiles"
-  FOR UPDATE
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
 
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
