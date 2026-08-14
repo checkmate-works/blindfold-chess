@@ -90,9 +90,31 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 -- retention window and is released only when the account is finally purged.
 SELECT public.ensure_auth_users_fk('profiles', 'profiles_id_fkey', 'id', 'CASCADE');
 
--- Grant necessary permissions
-GRANT SELECT, INSERT, UPDATE ON TABLE public.profiles TO authenticated;
+-- Grant necessary permissions (public read; profile edits are service-role only)
+--
+-- No UPDATE for `authenticated`. The old grant was table-wide, and the policy
+-- behind it could only check `auth.uid() = id` — so "edit your own profile"
+-- silently meant "write any column of your own row" over PostgREST, including
+-- three that are not the user's to set:
+--
+--   * `username` — bypasses the format, reserved-word and impersonation checks in
+--     `updateProfile`, and releases the ban-evasion hold that the account-deletion
+--     flow depends on holding for the whole retention window (see the
+--     profiles_id_fkey note above).
+--   * `banned_at` — every in-app ban check reads this column (`@/lib/moderation/ban`),
+--     so clearing it neutralises them. Sign-in stays blocked because `banUser`
+--     also sets GoTrue's `ban_duration`, which is why this is a partial rather
+--     than a total ban escape, but the app-side checks are defeated for the life
+--     of an already-issued token.
+--   * `deleted_at` / `hidden_from_leaderboard` — deletion state and the
+--     leaderboard opt-out become client-toggled.
+--
+-- All profile writes run through Server Actions on the Drizzle connection
+-- (`updateProfile`, `@/lib/users/delete-account`), which bypasses RLS and
+-- validates every field first, so the client never needed this privilege.
+GRANT SELECT, INSERT ON TABLE public.profiles TO authenticated;
 GRANT SELECT ON TABLE public.profiles TO anon;
+REVOKE UPDATE ON TABLE public.profiles FROM authenticated;
 
 -- =============================================================================
 -- topic_posts
@@ -118,11 +140,28 @@ END;
 $$;
 
 -- Grant necessary permissions
--- UPDATE matches the "topic_posts_update" RLS policy (own rows only): post
--- editing exists (editPost soft-edits, delete-core soft-deletes), so the
--- PostgREST surface mirrors what the app's privileged connection allows.
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.topic_posts TO authenticated;
+--
+-- No UPDATE for `authenticated`. Mirroring the app's privileged connection here
+-- was the mistake: the app reaches this table only through Server Actions that
+-- validate input, enforce rate limits, and refuse to touch a row an admin has
+-- soft-deleted, while a PostgREST UPDATE carries none of that. Because the RLS
+-- policy could only express "own row" and not "these columns", an author could
+-- PATCH `deleted_at` back to NULL and undo a moderation delete. Writes go
+-- through the service-role path (`@/lib/topic-posts/*`), which bypasses RLS, so
+-- dropping the grant costs the app nothing. Same posture as games / repertoires.
+--
+-- No DELETE either. Deleting a post is not just removing a row: `deletePostCore`
+-- soft-deletes, revokes the grants the post earned, and claws back the coins it
+-- was paid for — all in one transaction, all in application code, with no DB
+-- trigger behind it. A physical `DELETE /rest/v1/topic_posts?id=eq.<own>`
+-- therefore let an author keep the coins for content they had removed. Physical
+-- deletion is service-role only (the account-purge cron).
+GRANT SELECT, INSERT ON TABLE public.topic_posts TO authenticated;
 GRANT SELECT ON TABLE public.topic_posts TO anon;
+-- GRANT is additive and this file is re-applied on every deploy, so narrowing
+-- the statement above does not withdraw a privilege an earlier deploy handed
+-- out. Revoke it explicitly.
+REVOKE UPDATE, DELETE ON TABLE public.topic_posts FROM authenticated;
 
 -- =============================================================================
 -- moderation_actions
@@ -274,9 +313,20 @@ GRANT SELECT ON TABLE public.likes TO anon;
 -- FK constraint: challenge_results.user_id → auth.users(id) ON DELETE CASCADE
 SELECT public.ensure_auth_users_fk('challenge_results', 'challenge_results_user_id_fkey', 'user_id', 'CASCADE');
 
--- Grant necessary permissions (public read for leaderboard display)
-GRANT SELECT, INSERT ON TABLE public.challenge_results TO authenticated;
+-- Grant necessary permissions (public read for leaderboard display; writes are
+-- service-role only).
+--
+-- No INSERT for `authenticated`: a score row is a claim about something the user
+-- did, and the only evidence that it happened is that the server wrote it. RLS
+-- can check `auth.uid() = user_id` but cannot check that the score is real, so a
+-- client INSERT is an unbounded self-report. This table feeds the monthly
+-- leaderboard badge grant (`@/lib/achievements/grant-monthly-leaderboard-badges`
+-- ranks the previous month's rows), so fabricated rows win real badges.
+GRANT SELECT ON TABLE public.challenge_results TO authenticated;
 GRANT SELECT ON TABLE public.challenge_results TO anon;
+-- Explicit REVOKE: see the topic_posts note — narrowing the GRANT above does not
+-- withdraw what earlier deploys granted.
+REVOKE INSERT ON TABLE public.challenge_results FROM authenticated;
 
 -- =============================================================================
 -- challenge_best_scores
@@ -285,9 +335,22 @@ GRANT SELECT ON TABLE public.challenge_results TO anon;
 -- FK constraint: challenge_best_scores.user_id → auth.users(id) ON DELETE CASCADE
 SELECT public.ensure_auth_users_fk('challenge_best_scores', 'challenge_best_scores_user_id_fkey', 'user_id', 'CASCADE');
 
--- Grant necessary permissions (public read for leaderboard display, UPDATE for UPSERT)
-GRANT SELECT, INSERT, UPDATE ON TABLE public.challenge_best_scores TO authenticated;
+-- Grant necessary permissions (public read for leaderboard display; writes are
+-- service-role only).
+--
+-- The UPSERT this used to grant INSERT/UPDATE for runs in
+-- `@/lib/db/save-challenge-result` on the Drizzle connection, which bypasses
+-- RLS — the client never needed these privileges. Granting them meant a
+-- signed-in user could `PATCH /rest/v1/challenge_best_scores?user_id=eq.<self>`
+-- with any score: RLS could confirm the row was theirs but not that the score
+-- was earned. That is not only a leaderboard-integrity problem
+-- (`@/lib/db/challenge-queries` ranks straight off this table) — the
+-- `challenge_score` rank requirement reads it too
+-- (`@/lib/db/rank-evaluation`), so a forged score is promoted into a real
+-- `user_ranks` grant on the next challenge save.
+GRANT SELECT ON TABLE public.challenge_best_scores TO authenticated;
 GRANT SELECT ON TABLE public.challenge_best_scores TO anon;
+REVOKE INSERT, UPDATE ON TABLE public.challenge_best_scores FROM authenticated;
 
 -- =============================================================================
 -- feed_items
@@ -296,9 +359,24 @@ GRANT SELECT ON TABLE public.challenge_best_scores TO anon;
 -- FK constraint: feed_items.actor_id → auth.users(id) ON DELETE CASCADE
 SELECT public.ensure_auth_users_fk('feed_items', 'feed_items_actor_id_fkey', 'actor_id', 'CASCADE');
 
--- Grant necessary permissions (public read for timeline, server-side INSERT)
-GRANT SELECT, INSERT ON TABLE public.feed_items TO authenticated;
+-- Grant necessary permissions (public read for timeline; INSERT is server-side
+-- only, which is what "server-side INSERT" was always meant to say).
+--
+-- Every feed row is produced inside the transaction that created the thing being
+-- announced (see `@/lib/db/games-write`,
+-- `@/lib/positions/user-position-mutations`), on the Drizzle connection that
+-- bypasses RLS — so the client grant was never used, only exposed. The old
+-- policy checked `auth.uid() = actor_id` and nothing else, leaving
+-- `entity_type`, `entity_id`, `metadata` and `created_at` free-form. That is
+-- enough to post an arbitrary card to everyone's home timeline: the
+-- `challenge_rank_update` card renders its rank/score straight out of
+-- `metadata` without joining back to the source row, and `created_at` is
+-- caller-supplied, so a fabricated "national #1" pins itself to the top. Naming
+-- someone else's `entity_id` also reattributes their work to the forger. There
+-- was no DB-level rate limit either, so the volume was unbounded.
+GRANT SELECT ON TABLE public.feed_items TO authenticated;
 GRANT SELECT ON TABLE public.feed_items TO anon;
+REVOKE INSERT ON TABLE public.feed_items FROM authenticated;
 
 -- =============================================================================
 -- stripe_customers
@@ -387,9 +465,22 @@ GRANT SELECT ON TABLE public.user_exp TO anon;
 SELECT public.ensure_auth_users_fk('positions', 'positions_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions (public read for catalog listings; authenticated
--- users create and edit their own positions; physical DELETE is service-role only)
-GRANT SELECT, INSERT, UPDATE ON TABLE public.positions TO authenticated;
+-- users create their own positions; UPDATE and physical DELETE are
+-- service-role only)
+--
+-- Editing is deliberately NOT granted here even though owners can edit their
+-- own positions in the app. An owner edit runs through
+-- `@/lib/positions/user-position-mutations`, which re-validates the FEN, keeps
+-- the revision history in `position_content_revisions`, and refuses rows an
+-- admin has soft-deleted. A PostgREST UPDATE has none of that, and RLS can only
+-- say "own row" — not "not the `deleted_at` column" — so the grant let an author
+-- clear `deleted_at` and restore a position an admin had removed, with no
+-- revision row and no audit-log entry for the restore.
+GRANT SELECT, INSERT ON TABLE public.positions TO authenticated;
 GRANT SELECT ON TABLE public.positions TO anon;
+-- See the topic_posts note: narrowing the GRANT does not revoke what earlier
+-- deploys already granted.
+REVOKE UPDATE ON TABLE public.positions FROM authenticated;
 
 -- =============================================================================
 -- chunks
@@ -404,9 +495,13 @@ GRANT SELECT ON TABLE public.positions TO anon;
 SELECT public.ensure_auth_users_fk('chunks', 'chunks_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions (public read for catalog listing; authenticated
--- users create and edit their own chunks; physical DELETE is service-role only)
-GRANT SELECT, INSERT, UPDATE ON TABLE public.chunks TO authenticated;
+-- users create their own chunks; UPDATE and physical DELETE are service-role
+-- only). Same reasoning as positions above: owner edits go through
+-- `@/lib/chunks/user-chunk-mutations`, and a column-blind RLS UPDATE let an
+-- author clear `deleted_at` to undo an admin soft-delete.
+GRANT SELECT, INSERT ON TABLE public.chunks TO authenticated;
 GRANT SELECT ON TABLE public.chunks TO anon;
+REVOKE UPDATE ON TABLE public.chunks FROM authenticated;
 
 -- =============================================================================
 -- chunk_edit_requests

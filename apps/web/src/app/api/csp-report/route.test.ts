@@ -197,4 +197,88 @@ describe('POST /api/csp-report', () => {
       vi.unstubAllEnvs();
     }
   });
+
+  /**
+   * The endpoint has to stay unauthenticated, so every value it forwards is
+   * attacker-supplied. These cover the bounds on that — body size, and the
+   * cardinality of the values Sentry indexes as tags / fingerprints. It has
+   * already exhausted the Sentry quota once and taken the project's error
+   * reporting offline, so "bounded" is a correctness property here.
+   */
+  describe('abuse bounds', () => {
+    function reportWith(overrides: Record<string, unknown>): string {
+      return JSON.stringify({
+        'csp-report': {
+          'effective-directive': 'script-src',
+          'blocked-uri': 'https://evil.example/x.js',
+          ...overrides,
+        },
+      });
+    }
+
+    /** Options passed to the most recent `Sentry.captureMessage` call. */
+    function lastContext(): {
+      fingerprint: string[];
+      tags: Record<string, string | undefined>;
+      extra: Record<string, unknown>;
+    } {
+      return captureMessage.mock.calls.at(-1)?.[1];
+    }
+
+    it('refuses an oversized body rather than buffering it', async () => {
+      const body = JSON.stringify({ 'csp-report': { pad: 'x'.repeat(64 * 1024 + 1) } });
+
+      const res = await POST(makeRequest(body, 'application/csp-report'));
+
+      expect(res.status).toBe(413);
+      expect(captureMessage).not.toHaveBeenCalled();
+    });
+
+    it('refuses a body whose declared Content-Length exceeds the cap', async () => {
+      const req = new Request('https://example.test/api/csp-report', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/csp-report',
+          'user-agent': 'vitest',
+          'content-length': String(64 * 1024 + 1),
+        },
+        body: VALID_REPORT,
+      });
+
+      const res = await POST(req);
+
+      expect(res.status).toBe(413);
+      expect(captureMessage).not.toHaveBeenCalled();
+    });
+
+    it('collapses an unrecognised directive so tags and fingerprints stay bounded', async () => {
+      const invented = `made-up-${'a'.repeat(500)}`;
+
+      await POST(
+        makeRequest(reportWith({ 'effective-directive': invented }), 'application/csp-report')
+      );
+
+      const { tags, fingerprint, extra } = lastContext();
+      expect(tags.csp_directive).toBe('other');
+      expect(fingerprint).toEqual(['csp-violation', 'other']);
+      // Still debuggable: `extra` is not indexed, so the raw value is safe there.
+      expect(extra.rawDirective).toBe(invented);
+    });
+
+    it('keeps only the directive name from a legacy full directive value', async () => {
+      const body = reportWith({ 'effective-directive': "style-src 'self' https://a.example" });
+
+      await POST(makeRequest(body, 'application/csp-report'));
+
+      expect(lastContext().tags.csp_directive).toBe('style-src');
+    });
+
+    it('drops a blocked host that could not be a real hostname', async () => {
+      const body = reportWith({ 'blocked-uri': `https://${'a'.repeat(300)}.example/x.js` });
+
+      await POST(makeRequest(body, 'application/csp-report'));
+
+      expect(lastContext().tags.blocked_host).toBeUndefined();
+    });
+  });
 });
