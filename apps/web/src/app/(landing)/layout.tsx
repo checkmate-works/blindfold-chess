@@ -16,7 +16,7 @@ import { ThemeScript } from '@/lib/theme';
 
 import { getLatestBannerAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
 import { AnnouncementBanner } from '@/app/[locale]/_components/AnnouncementBanner';
-import { isServerOnlyNamespace } from '@/app/[locale]/_lib/i18n-namespaces';
+import { pickScopedMessages } from '@/app/[locale]/_lib/i18n-scopes';
 
 import '../globals.css';
 import { Providers } from './_lib/providers';
@@ -50,11 +50,11 @@ export default async function LandingLayout({ children }: { children: React.Reac
     getLatestBannerAnnouncement(locale),
   ]);
 
-  // Load the full client-side message dictionary so that Client Components
-  // rendered below (e.g. the rank teaser cards via `RanksSection` →
-  // `RankCard`) can resolve translations through `NextIntlClientProvider`.
-  // Mirrors the filtering done in `[locale]/layout.tsx` so server-only
-  // namespaces are excluded from the client payload.
+  // Load only the namespaces the landing tree's Client Components can reach
+  // (the 'landing' scope in `@/app/[locale]/_lib/i18n-scopes`) — the landing
+  // copy itself is server-rendered via getTranslations, so the client
+  // dictionary here is tiny. `scripts/check-i18n-scopes.ts` recomputes the
+  // reachable set and fails the build when this scope's list goes stale.
   let allMessages: Awaited<ReturnType<typeof getMessages>>;
   try {
     allMessages = await getMessages({ locale });
@@ -64,11 +64,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
     }
     allMessages = {};
   }
-  const messages = Object.fromEntries(
-    Object.entries(allMessages as Record<string, unknown>).filter(
-      ([key]) => !isServerOnlyNamespace(key)
-    )
-  );
+  const messages = pickScopedMessages(allMessages as Record<string, unknown>, 'landing');
 
   const dismissedId = cookieStore.get('dismissed-announcement')?.value;
   const showBanner = bannerAnnouncement && bannerAnnouncement.id !== dismissedId;

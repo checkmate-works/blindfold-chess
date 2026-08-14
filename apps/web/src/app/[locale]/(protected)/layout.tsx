@@ -3,6 +3,8 @@ import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { ScopedIntlProvider } from '@/app/_layouts/scoped-intl-layout';
+
 import { getOptionalUser } from '@/lib/auth';
 import { withReturnPath } from '@/lib/auth-return-path';
 import { getCurrentReturnTarget } from '@/lib/current-return-target';
@@ -50,10 +52,16 @@ type Props = {
  */
 export default async function ProtectedLayout({ children, params }: Props) {
   const pathname = (await headers()).get('x-pathname') ?? '';
+  const { locale } = await params;
   return (
-    <Suspense fallback={resolveLoadingFallback(pathname)}>
-      <ProtectedGate params={params}>{children}</ProtectedGate>
-    </Suspense>
+    // The intl provider sits OUTSIDE the Suspense boundary so the loading
+    // skeletons (which are Client Components using useTranslations) resolve
+    // against the mypage dictionary too, not just the global one.
+    <ScopedIntlProvider scope="mypage" locale={locale}>
+      <Suspense fallback={resolveLoadingFallback(pathname)}>
+        <ProtectedGate params={params}>{children}</ProtectedGate>
+      </Suspense>
+    </ScopedIntlProvider>
   );
 }
 

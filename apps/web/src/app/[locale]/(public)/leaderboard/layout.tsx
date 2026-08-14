@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
+import { ScopedIntlProvider } from '@/app/_layouts/scoped-intl-layout';
 import { routing } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -60,18 +61,20 @@ export default async function LeaderboardLayout({ children, params }: Props) {
   const authState: 'authenticated' | 'anonymous' = user ? 'authenticated' : 'anonymous';
 
   return (
-    <div className="space-y-8" data-auth-state={authState}>
-      {/*
-        Hide the SignUpBanner skeleton placeholder for logged-in users. The
-        selector targets any `[data-banner-placeholder]` element nested under
-        an ancestor whose `data-auth-state` is `authenticated`. Scoped inline
-        so we don't leak styles outside this subtree.
-      */}
-      <style>{`[data-auth-state="authenticated"] [data-banner-placeholder]{display:none}`}</style>
+    <ScopedIntlProvider scope="leaderboard" locale={locale}>
+      <div className="space-y-8" data-auth-state={authState}>
+        {/*
+          Hide the SignUpBanner skeleton placeholder for logged-in users. The
+          selector targets any `[data-banner-placeholder]` element nested under
+          an ancestor whose `data-auth-state` is `authenticated`. Scoped inline
+          so we don't leak styles outside this subtree.
+        */}
+        <style>{`[data-auth-state="authenticated"] [data-banner-placeholder]{display:none}`}</style>
 
-      <PageTitle>{t('title')}</PageTitle>
+        <PageTitle>{t('title')}</PageTitle>
 
-      {children}
-    </div>
+        {children}
+      </div>
+    </ScopedIntlProvider>
   );
 }

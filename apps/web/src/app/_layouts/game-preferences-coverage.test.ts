@@ -47,9 +47,12 @@ function hasAncestorWithProvider(filePath: string): boolean {
 }
 
 describe('GamePreferencesProvider coverage under (public)', () => {
-  it('chunks/layout.tsx re-exports GamePreferencesLayout (regression for chunks bug)', () => {
+  it('chunks/layout.tsx mounts GamePreferencesProvider (regression for chunks bug)', () => {
+    // Formerly a bare GamePreferencesLayout re-export; the layout now spells
+    // out the provider alongside the scoped intl provider, so the assertion
+    // targets the provider token rather than the re-export form.
     const layout = join(PUBLIC_ROOT, 'chunks', 'layout.tsx');
-    expect(readFileSync(layout, 'utf8')).toContain(RE_EXPORT_TOKEN);
+    expect(readFileSync(layout, 'utf8')).toContain(PROVIDER_TOKEN);
   });
 
   it('every consumer of useGamePreferences has an ancestor layout that mounts the provider', () => {

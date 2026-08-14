@@ -21,7 +21,7 @@ import '../globals.css';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
 import { MobileTabBar } from './_components/MobileTabBar';
-import { isServerOnlyNamespace } from './_lib/i18n-namespaces';
+import { isGlobalClientNamespace } from './_lib/i18n-scopes';
 import { buildPageTitle } from './_lib/metadata';
 import { Providers } from './_lib/providers';
 import { generateLocaleStaticParams } from './_lib/static-params';
@@ -209,14 +209,15 @@ export default async function Layout({
     allMessages = {};
   }
 
-  // Namespaces used only by Server Components (via getTranslations()) are
-  // excluded from the client-side dictionary payload. The classification lives
-  // in `./_lib/i18n-namespaces.ts` and is validated at check time by
-  // `scripts/check-i18n-namespaces.ts` (run via `pnpm check:i18n`). Adding a
-  // new namespace requires classifying it there or the check will fail.
+  // The root provider ships only the GLOBAL namespace set (~10 KB): the
+  // always-mounted chrome plus the small pages that have no scoped subtree.
+  // Heavy subtrees (practice, topics, games, ...) re-provide their own
+  // dictionaries via nested providers — see `./_lib/i18n-scopes.ts` for the
+  // registry and `scripts/check-i18n-scopes.ts` (run via `pnpm check:i18n`)
+  // for the reachability guard that keeps both layers honest.
   const messages = Object.fromEntries(
-    Object.entries(allMessages as Record<string, unknown>).filter(
-      ([key]) => !isServerOnlyNamespace(key)
+    Object.entries(allMessages as Record<string, unknown>).filter(([key]) =>
+      isGlobalClientNamespace(key)
     )
   );
 
