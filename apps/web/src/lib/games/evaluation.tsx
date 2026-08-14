@@ -2,6 +2,8 @@ import type { ReactElement, ReactNode } from 'react';
 
 import { FaCheck, FaStar } from 'react-icons/fa';
 
+import { EVALUATION_LOSS_THRESHOLDS } from './evaluation-types';
+
 export type { EvaluationMark } from './evaluation-types';
 
 type EvaluationIconSize = 'sm' | 'md';
@@ -43,28 +45,28 @@ export function getEvaluationIcon(
 ): ReactElement | null {
   const classes = sizeClasses[size];
 
-  if (isMate || loss <= 20) {
+  if (isMate || loss <= EVALUATION_LOSS_THRESHOLDS.best) {
     return (
       <EvaluationBadge bgColor="bg-success" classes={classes}>
         <FaStar className={`${classes.icon} text-white`} />
       </EvaluationBadge>
     );
   }
-  if (loss <= 50) {
+  if (loss <= EVALUATION_LOSS_THRESHOLDS.good) {
     return (
       <EvaluationBadge bgColor="bg-success" classes={classes}>
         <FaCheck className={`${classes.icon} text-white`} />
       </EvaluationBadge>
     );
   }
-  if (loss <= 100) {
+  if (loss <= EVALUATION_LOSS_THRESHOLDS.inaccuracy) {
     return (
       <EvaluationBadge bgColor="bg-warning" classes={classes}>
         ?!
       </EvaluationBadge>
     );
   }
-  if (loss <= 300) {
+  if (loss <= EVALUATION_LOSS_THRESHOLDS.mistake) {
     return (
       <EvaluationBadge bgColor="bg-caution" classes={classes}>
         ?
