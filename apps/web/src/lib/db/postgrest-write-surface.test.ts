@@ -145,6 +145,18 @@ describe('PostgREST write surface for `authenticated`', () => {
     });
   });
 
+  // Physical deletion skips the transaction that revokes earned grants and claws
+  // back coins, so it must stay with the service role even for one's own rows.
+  describe.each(['topic_posts'] as const)('%s', (table) => {
+    it('does not grant DELETE (row removal skips the clawback transaction)', () => {
+      expect(effectivePrivileges(grantsSql, table, 'authenticated')).not.toContain('DELETE');
+    });
+
+    it('has no DELETE policy, so a re-added grant fails closed', () => {
+      expect(policyCommandsFor(table)).not.toContain('DELETE');
+    });
+  });
+
   describe.each(READ_ONLY_FOR_AUTHENTICATED)('%s', (table) => {
     it('grants SELECT and nothing else', () => {
       expect([...effectivePrivileges(grantsSql, table, 'authenticated')]).toEqual(['SELECT']);

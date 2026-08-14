@@ -142,9 +142,11 @@ DROP POLICY IF EXISTS "topic_posts_insert" ON "topic_posts";
 CREATE POLICY "topic_posts_insert" ON "topic_posts"
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- No DELETE policy: user-initiated deletion is a soft-delete plus grant revoke
+-- plus coin clawback in one transaction (`@/lib/topic-posts/delete-core`), none
+-- of which a row-level DELETE performs. Physical deletion belongs to the
+-- account-purge cron on the service role.
 DROP POLICY IF EXISTS "topic_posts_delete" ON "topic_posts";
-CREATE POLICY "topic_posts_delete" ON "topic_posts"
-  FOR DELETE USING (auth.uid() = user_id);
 
 -- No UPDATE policy: `authenticated` has no UPDATE grant on this table (see
 -- foreign_keys_and_grants.sql). Dropped rather than left in place so that

@@ -149,12 +149,19 @@ $$;
 -- PATCH `deleted_at` back to NULL and undo a moderation delete. Writes go
 -- through the service-role path (`@/lib/topic-posts/*`), which bypasses RLS, so
 -- dropping the grant costs the app nothing. Same posture as games / repertoires.
-GRANT SELECT, INSERT, DELETE ON TABLE public.topic_posts TO authenticated;
+--
+-- No DELETE either. Deleting a post is not just removing a row: `deletePostCore`
+-- soft-deletes, revokes the grants the post earned, and claws back the coins it
+-- was paid for — all in one transaction, all in application code, with no DB
+-- trigger behind it. A physical `DELETE /rest/v1/topic_posts?id=eq.<own>`
+-- therefore let an author keep the coins for content they had removed. Physical
+-- deletion is service-role only (the account-purge cron).
+GRANT SELECT, INSERT ON TABLE public.topic_posts TO authenticated;
 GRANT SELECT ON TABLE public.topic_posts TO anon;
 -- GRANT is additive and this file is re-applied on every deploy, so narrowing
 -- the statement above does not withdraw a privilege an earlier deploy handed
 -- out. Revoke it explicitly.
-REVOKE UPDATE ON TABLE public.topic_posts FROM authenticated;
+REVOKE UPDATE, DELETE ON TABLE public.topic_posts FROM authenticated;
 
 -- =============================================================================
 -- moderation_actions
