@@ -12,9 +12,7 @@ import type { GifPreviewSource } from '@/lib/games/gif/preview-frames';
 
 import { PublishPromptModal } from './PublishPromptModal';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 // The preview is loaded through next/dynamic and exercised by its own test;
 // here only its presence or absence matters.

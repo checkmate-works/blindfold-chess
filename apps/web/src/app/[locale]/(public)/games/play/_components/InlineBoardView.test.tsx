@@ -26,9 +26,7 @@ import { InlineBoardView } from './InlineBoardView';
 // `IntlAvailableContext`-driven fallback (returns `${namespace}.${key}`) when
 // no provider is mounted. Stubbing the wrapper directly is cleaner than
 // reproducing the fallback format in every assertion.
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('@/app/_components', () => ({
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

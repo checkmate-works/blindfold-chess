@@ -11,9 +11,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 
 import { BoardViewModal } from './BoardViewModal';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 

@@ -24,9 +24,7 @@ import { ChessBoard } from './ChessBoard';
 // Promotion picker renders aria-labels through the safe-translations
 // fallback (which returns the namespaced key path when no provider is
 // mounted). Stub the wrapper so assertions use stable strings.
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 

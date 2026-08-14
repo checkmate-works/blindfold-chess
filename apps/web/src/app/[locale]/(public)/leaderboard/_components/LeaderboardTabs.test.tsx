@@ -7,9 +7,7 @@ import { LeaderboardTabs } from './LeaderboardTabs';
 
 expect.extend(matchers);
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (

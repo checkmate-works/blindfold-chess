@@ -12,9 +12,7 @@ afterEach(() => {
 
 const mockForgotPassword = vi.fn();
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('../_actions/forgotPassword', () => ({
   forgotPassword: (...args: unknown[]) => mockForgotPassword(...args),

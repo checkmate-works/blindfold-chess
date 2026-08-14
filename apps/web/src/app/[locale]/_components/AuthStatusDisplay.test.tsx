@@ -21,9 +21,7 @@ vi.mock('../_contexts/ToastContext', () => ({
 
 let mockLocale = 'en';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('@/i18n/use-safe-locale', () => ({
   useSafeLocale: () => mockLocale,

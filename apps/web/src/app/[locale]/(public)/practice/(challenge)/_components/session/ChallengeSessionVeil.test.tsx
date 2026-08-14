@@ -10,9 +10,7 @@ afterEach(() => {
   cleanup();
 });
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 /**
  * These assertions encode the three properties the veil was consolidated to

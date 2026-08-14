@@ -9,9 +9,7 @@ import { GameInProgressPanel } from './GameInProgressPanel';
 
 // Stub next-intl so all translation keys resolve to the key itself — this
 // makes `title` / `aria-label` values deterministic for role queries.
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 vi.mock('@/i18n/routing', () => ({
   Link: ({ children, ...props }: { children: React.ReactNode }) => <a {...props}>{children}</a>,
 }));

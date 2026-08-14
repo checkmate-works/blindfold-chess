@@ -11,9 +11,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 function renderWithProviders(ui: React.ReactElement) {
   return render(<GamePreferencesProvider>{ui}</GamePreferencesProvider>);

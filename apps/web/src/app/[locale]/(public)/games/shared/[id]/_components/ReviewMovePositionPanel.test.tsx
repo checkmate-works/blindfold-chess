@@ -12,9 +12,7 @@ import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 import { ReviewMovePositionPanel } from './ReviewMovePositionPanel';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('./GameMoveContributions', () => ({
   GameMoveContributions: () => <div data-testid="move-contributions" />,

@@ -12,9 +12,7 @@ afterEach(() => {
   cleanup();
 });
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('@/app/[locale]/_components', () => ({
   SectionTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
