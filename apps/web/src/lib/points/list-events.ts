@@ -1,8 +1,8 @@
-import { type SQL, desc, eq, gt, lt, sql } from 'drizzle-orm';
+import { type SQL, desc, eq, gt, lt } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
-import { combineConditions } from '@/lib/db/list-query';
+import { combineConditions, countRows } from '@/lib/db/list-query';
 
 import {
   ADMIN_GRANT_SOURCE,
@@ -82,11 +82,7 @@ function buildWhere(filters: PointEventFilters): SQL | undefined {
 
 /** Count ledger rows matching `filters` — drives `/admin/coins` pagination. */
 export async function countPointEvents(filters: PointEventFilters = {}): Promise<number> {
-  const [row] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(pointEvents)
-    .where(buildWhere(filters));
-  return row?.count ?? 0;
+  return countRows(pointEvents, buildWhere(filters));
 }
 
 /**

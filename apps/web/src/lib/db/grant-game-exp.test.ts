@@ -23,8 +23,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockGetLevel = vi.fn();
 const mockGetLevelProgress = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@blindfold-chess/features/exp', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@blindfold-chess/features/exp')>();
   return {

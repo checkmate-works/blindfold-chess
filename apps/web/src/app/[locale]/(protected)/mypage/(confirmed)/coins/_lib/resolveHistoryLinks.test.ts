@@ -1,11 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { type ResolvedEntities, grantHref } from './resolveHistoryLinks';
 
 // resolveHistoryLinks.ts is a server module ('server-only' + db); stub the
 // marker so the pure grantHref export can be imported here.
-vi.mock('server-only', () => ({}));
-
 const empty: ResolvedEntities = {
   livePositionIds: new Set(),
   chunkSlugById: new Map(),

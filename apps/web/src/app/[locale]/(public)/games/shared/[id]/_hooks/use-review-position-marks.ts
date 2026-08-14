@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { getLastMoveDetails, isCheckmateFen } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
 import type { TerminationMark } from '@/lib/games/termination-mark';
 import {
@@ -15,9 +15,9 @@ import {
 type Options = {
   notationMoves: AlgebraicNotation[];
   startingFen: string | undefined;
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   /** How the game ended, from `playerColor`'s point of view. */
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
   /** FEN of the game's final position — the only place the end reason is legible. */
   latestFen: string;
 };

@@ -5,8 +5,6 @@ const mockUserHasProfile = vi.fn();
 const mockGetAllRanks = vi.fn();
 const mockGetUserAchievedRankIds = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/auth', () => ({
   getOptionalUser: (...args: unknown[]) => mockGetOptionalUser(...args),
   userHasProfile: (...args: unknown[]) => mockUserHasProfile(...args),

@@ -3,7 +3,7 @@
 import { type ReactNode, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
@@ -18,7 +18,7 @@ type Props = {
   locale: Locale;
   pgn: string;
   moves?: AlgebraicNotation[];
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   initialOffset: number;
   startingFen?: string;
   gameId?: string;

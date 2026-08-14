@@ -3,8 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getAttachmentsForPosts } from './get-attachments-for-posts';
 import type { PostAttachment } from './get-attachments-for-posts';
 
-vi.mock('server-only', () => ({}));
-
 const sentryWarn = vi.fn();
 
 vi.mock('@sentry/nextjs', () => ({

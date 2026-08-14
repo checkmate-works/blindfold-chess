@@ -6,6 +6,9 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRegComment } from 'react-icons/fa';
 
+import type { LikeMeta } from '@/lib/db/like-queries';
+import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
+
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import {
   EngagementCounter,
@@ -14,7 +17,6 @@ import {
 import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 
 import type { ToggleLikeAction } from '../_lib/action-types';
-import type { LikeMeta, ReplyMeta } from '../_lib/shared';
 import { LikeButton } from './LikeButton';
 
 type Props = {

@@ -6,7 +6,7 @@ import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { Side } from '@blindfold-chess/types';
 
 import { MoveReferencePreviewModal } from '@/app/[locale]/(public)/games/shared/[id]/_components/MoveReferencePreviewModal';
-import { LinkedText } from '@/app/[locale]/_components/LinkedText';
+import { MoveSegmentText } from '@/app/[locale]/_components/MoveSegmentText';
 
 import type { FenMoveSegment } from '../_lib/move-references-from-fen';
 import { parseMoveReferencesFromFen } from '../_lib/move-references-from-fen';
@@ -42,26 +42,9 @@ export function MoveNotationText({ text, locale, fen }: Props) {
   // (which flips when Black is to move).
   const orientation: Side = isBlackToMoveFromFen(fen) ? 'black' : 'white';
 
-  if (segments.length === 1 && segments[0].type === 'text') {
-    return <LinkedText text={text} locale={locale} />;
-  }
-
   return (
     <>
-      {segments.map((segment, i) =>
-        segment.type === 'text' ? (
-          <LinkedText key={i} text={segment.value} locale={locale} />
-        ) : (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setOpenRef(segment)}
-            className="underline decoration-dotted underline-offset-2 hover:text-primary transition-colors"
-          >
-            {segment.raw}
-          </button>
-        )
-      )}
+      <MoveSegmentText text={text} segments={segments} locale={locale} onSelect={setOpenRef} />
 
       {openRef && (
         <MoveReferencePreviewModal

@@ -1,3 +1,5 @@
+import { computeMoveNumber } from "./move-numbering";
+
 /**
  * A single move pair in structured PGN representation.
  *
@@ -56,7 +58,7 @@ export function formatMovesToPgn(
       blackMoveIndex: 0,
     });
     for (let i = 1; i < userMoves.length; i += 2) {
-      const moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
+      const { moveNumber } = computeMoveNumber(i, true, startMoveNumber);
       formatted.push({
         moveNumber,
         whiteMove: userMoves[i],
@@ -67,7 +69,7 @@ export function formatMovesToPgn(
     }
   } else {
     for (let i = 0; i < userMoves.length; i += 2) {
-      const moveNumber = startMoveNumber + Math.floor(i / 2);
+      const { moveNumber } = computeMoveNumber(i, false, startMoveNumber);
       formatted.push({
         moveNumber,
         whiteMove: userMoves[i],

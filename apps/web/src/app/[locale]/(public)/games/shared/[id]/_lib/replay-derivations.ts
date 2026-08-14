@@ -1,6 +1,8 @@
+import { computeMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
+import type { Side } from '@blindfold-chess/types';
+
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { getPlayerMoveIndices } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * Pure derivations mapping the replay's navigation position (the
@@ -16,10 +18,7 @@ import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/
  * the default (no param) is the player's own side, and the hook inverts the
  * seed again for a black player.
  */
-export function computeInitialFlipped(
-  orientation: 'white' | 'black' | undefined,
-  playerColor: 'white' | 'black'
-): boolean {
+export function computeInitialFlipped(orientation: Side | undefined, playerColor: Side): boolean {
   if (!orientation) return false;
   const wantBlackAtBottom = orientation === 'black';
   return playerColor === 'black' ? !wantBlackAtBottom : wantBlackAtBottom;
@@ -123,7 +122,7 @@ export function formatSetupMovesLine(
 export function computePlayerMoveIndices(
   movesLength: number,
   startingFen: string | undefined,
-  playerColor: 'white' | 'black',
+  playerColor: Side,
   setupPlies = 0
 ): number[] {
   return getPlayerMoveIndices(movesLength, startingFen, playerColor, setupPlies);

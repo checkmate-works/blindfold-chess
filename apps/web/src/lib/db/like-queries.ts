@@ -1,5 +1,7 @@
 import { and, count, eq, inArray } from 'drizzle-orm';
 
+import { countRows } from '@/lib/db/list-query';
+
 import { db, likes } from './index';
 
 export type LikeMeta = {
@@ -27,10 +29,10 @@ export async function getLikeMeta(
   targetId: string,
   currentUserId?: string
 ): Promise<LikeMeta> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(likes)
-    .where(and(eq(likes.targetType, targetType), eq(likes.targetId, targetId)));
+  const likeCount = await countRows(
+    likes,
+    and(eq(likes.targetType, targetType), eq(likes.targetId, targetId))
+  );
 
   let likedByMe = false;
   if (currentUserId) {
@@ -49,7 +51,7 @@ export async function getLikeMeta(
   }
 
   return {
-    likeCount: result.count,
+    likeCount,
     likedByMe,
   };
 }

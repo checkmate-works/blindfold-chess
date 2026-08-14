@@ -114,21 +114,37 @@ export function mergeTermRows(
     }
   >();
 
+  /**
+   * The term's accumulator, created on first sight.
+   *
+   * Both passes below — aliases, then positions — may be the first to mention
+   * a given term, so each had to be able to seed it, and each had its own copy
+   * of the seed literal. A field added to the entry shape has to reach both or
+   * one pass starts producing entries the other cannot merge into.
+   */
+  function getOrCreateEntry(row: TermWithAliasRow | TermWithPositionRow) {
+    const existing = termMap.get(row.termId);
+    if (existing) return existing;
+
+    const created = {
+      slug: row.slug,
+      termEn: row.termEn,
+      category: row.category,
+      translatedTerm: row.translatedTerm,
+      definition: row.definition,
+      reading: row.reading,
+      aliases: new Set<string>(),
+      positions: new Map<
+        string,
+        { fen: string; sortOrder: number; caption?: string; annotations: BoardAnnotations }
+      >(),
+    };
+    termMap.set(row.termId, created);
+    return created;
+  }
+
   for (const row of aliasRows) {
-    let entry = termMap.get(row.termId);
-    if (!entry) {
-      entry = {
-        slug: row.slug,
-        termEn: row.termEn,
-        category: row.category,
-        translatedTerm: row.translatedTerm,
-        definition: row.definition,
-        reading: row.reading,
-        aliases: new Set(),
-        positions: new Map(),
-      };
-      termMap.set(row.termId, entry);
-    }
+    const entry = getOrCreateEntry(row);
 
     if (row.alias !== null) {
       entry.aliases.add(row.alias);
@@ -136,20 +152,7 @@ export function mergeTermRows(
   }
 
   for (const row of positionRows) {
-    let entry = termMap.get(row.termId);
-    if (!entry) {
-      entry = {
-        slug: row.slug,
-        termEn: row.termEn,
-        category: row.category,
-        translatedTerm: row.translatedTerm,
-        definition: row.definition,
-        reading: row.reading,
-        aliases: new Set(),
-        positions: new Map(),
-      };
-      termMap.set(row.termId, entry);
-    }
+    const entry = getOrCreateEntry(row);
 
     if (row.positionFen !== null && !entry.positions.has(row.positionFen)) {
       entry.positions.set(row.positionFen, {

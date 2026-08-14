@@ -41,44 +41,6 @@ describe('CoordinateQuizChallenge timed mode logic', () => {
     });
   });
 
-  describe('answer tracking', () => {
-    it('tracks correct answers', () => {
-      const answers = [true, true, false, true, false];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(3);
-      expect(incorrect).toBe(2);
-    });
-
-    it('handles empty answers array', () => {
-      const answers: boolean[] = [];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(0);
-      expect(incorrect).toBe(0);
-    });
-
-    it('handles all correct answers', () => {
-      const answers = [true, true, true, true, true];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(5);
-      expect(incorrect).toBe(0);
-    });
-
-    it('handles all incorrect answers', () => {
-      const answers = [false, false, false, false, false];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(0);
-      expect(incorrect).toBe(5);
-    });
-  });
-
   describe('answer validation', () => {
     it('correctly validates a correct answer', () => {
       const targetSquare = 'e4';
@@ -90,76 +52,6 @@ describe('CoordinateQuizChallenge timed mode logic', () => {
       const targetSquare = 'e4';
       const clickedSquare = 'd5';
       expect(checkAnswer(clickedSquare, targetSquare)).toBe(false);
-    });
-  });
-
-  describe('timer behavior', () => {
-    it('uses actual timeLimit', () => {
-      const timeLimit = 60;
-      expect(timeLimit).toBe(60);
-    });
-
-    it('calculates correct timeRemaining', () => {
-      const timeLimit = 60;
-      const timeElapsed = 30;
-      const timeRemaining = Math.max(0, timeLimit - timeElapsed);
-      expect(timeRemaining).toBe(30);
-    });
-
-    it('timeRemaining does not go below 0', () => {
-      const timeLimit = 60;
-      const timeElapsed = 70;
-      const timeRemaining = Math.max(0, timeLimit - timeElapsed);
-      expect(timeRemaining).toBe(0);
-    });
-  });
-
-  describe('onTimeLimitReached behavior', () => {
-    it('sets isFinished when time limit is reached', () => {
-      let isFinished = false;
-
-      const onTimeLimitReached = () => {
-        isFinished = true;
-      };
-
-      onTimeLimitReached();
-      expect(isFinished).toBe(true);
-    });
-  });
-
-  describe('result page redirect logic', () => {
-    it('builds correct result URL params', () => {
-      const correctAnswers = 50;
-      const totalQuestions = 60;
-      const totalTime = 60;
-      const timeLimit = 60;
-      const boardOrientation = 'white';
-      const feedbackSpeed = 'normal';
-
-      const params = new URLSearchParams();
-      params.set('score', correctAnswers.toString());
-      params.set('total', totalQuestions.toString());
-      params.set('time', totalTime.toString());
-      params.set('timeLimit', timeLimit.toString());
-      params.set('orientation', boardOrientation);
-      params.set('speed', feedbackSpeed);
-
-      expect(params.get('score')).toBe('50');
-      expect(params.get('total')).toBe('60');
-      expect(params.get('time')).toBe('60');
-      expect(params.get('timeLimit')).toBe('60');
-      expect(params.get('orientation')).toBe('white');
-      expect(params.get('speed')).toBe('normal');
-    });
-
-    it('redirects when game is finished', () => {
-      const isFinished = true;
-      expect(isFinished).toBe(true);
-    });
-
-    it('does not redirect when game is not finished', () => {
-      const isFinished = false;
-      expect(isFinished).toBe(false);
     });
   });
 });

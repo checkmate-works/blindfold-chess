@@ -1,5 +1,6 @@
 'use client';
 
+import { CHART_TOOLTIP_STYLE } from '@/app/_components/chartStyles';
 import {
   CartesianGrid,
   Legend,
@@ -66,12 +67,7 @@ export function ScoreChart({
           }}
         />
         <Tooltip
-          contentStyle={{
-            backgroundColor: 'var(--color-card)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '8px',
-            color: 'var(--color-foreground)',
-          }}
+          contentStyle={CHART_TOOLTIP_STYLE}
           formatter={(
             value: number | string | readonly (string | number)[] | undefined,
             name?: string | number

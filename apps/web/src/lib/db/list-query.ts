@@ -37,15 +37,25 @@ export function runPaginatedSelect<T extends PgSelect>(
 
 /**
  * Count rows in a table, optionally filtered. Centralizes the
- * `select({ value: count() })` + `(where ? query.where(where) : query)`
- * + `row?.value ?? 0` skeleton that domain query modules were hand-copying.
+ * `select({ count: count() })` + `(where ? query.where(where) : query)`
+ * + `row?.count ?? 0` skeleton that domain query modules were hand-copying.
+ *
+ * The projection is aliased `count` rather than `value` to match how every
+ * hand-rolled site spelled it — the alias is not observable through this
+ * function's number return, but it is what `db.select()` mocks in the callers'
+ * tests assert against.
+ *
+ * Prefer this over hand-rolling: the raw form was written three different ways
+ * (`count()`, `` sql`count(*)` ``, `` sql`count(*)::int` ``), and the middle one
+ * comes back from pg as a *string*, so a site that forgot `Number(...)` around
+ * it silently computed `Math.ceil("41" / 20)`.
  *
  * Not re-exported from the `@/lib/db` barrel — import via
  * `@/lib/db/list-query` (the barrel importing this module would create a
  * require cycle, since this module needs `db` from the barrel's index).
  */
 export async function countRows(table: PgTable, where?: SQL): Promise<number> {
-  const query = db.select({ value: count() }).from(table);
+  const query = db.select({ count: count() }).from(table);
   const [row] = await (where ? query.where(where) : query);
-  return row?.value ?? 0;
+  return row?.count ?? 0;
 }

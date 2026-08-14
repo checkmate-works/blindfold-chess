@@ -5,7 +5,7 @@ import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaArrowRight, FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
 import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
@@ -49,7 +49,7 @@ type Props = {
   pgn: string;
   /** Pre-parsed SAN move list, taking precedence over `pgn` when present. See `useRecallInit`. */
   moves?: AlgebraicNotation[];
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   autoOpponent: boolean;
   initialOffset?: number;
   startingFen?: string;

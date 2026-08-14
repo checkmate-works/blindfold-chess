@@ -1,4 +1,5 @@
 import { SUPPORTED_LOCALES } from '@/config';
+import type { Side } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 
@@ -28,7 +29,7 @@ export type EmbedGameParams = {
    */
   view: 'played' | 'plain';
   /** Side at the bottom of the board. Undefined = the player's own side. */
-  orientation: 'white' | 'black' | undefined;
+  orientation: Side | undefined;
   /** Board colour scheme. Undefined = the app default. */
   theme: BoardTheme | undefined;
   /**

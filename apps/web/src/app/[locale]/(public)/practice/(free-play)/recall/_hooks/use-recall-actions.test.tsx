@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
@@ -25,7 +25,7 @@ function useHarness({
 }: {
   originalMoves?: AlgebraicNotation[];
   autoOpponent?: boolean;
-  playerColor?: 'white' | 'black';
+  playerColor?: Side;
   initialMoveIndex?: number;
 }) {
   const [userMoves, setUserMoves] = useState<AlgebraicNotation[]>(

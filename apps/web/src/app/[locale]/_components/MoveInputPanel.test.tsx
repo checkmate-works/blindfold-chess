@@ -8,9 +8,7 @@ import { MoveInputPanel } from './MoveInputPanel';
 
 // `useSafeTranslations` is used for the inline legal-moves hint etc. Return the
 // key unchanged so the tests don't rely on real message bundles.
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 // `getLegalMoves` is only invoked after a user opens the legal-moves hint,
 // which these tests never trigger — stub it so we don't pull in `chess.js`.

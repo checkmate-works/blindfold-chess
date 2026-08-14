@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { formatMoveAnchor } from '@blindfold-chess/features/chess-core/move-numbering';
+
 import { useAiReplyChip } from '@/app/[locale]/(public)/games/play/_components/AiReplyChip';
 
 import type { MoveLogEntry } from '../_lib';
-import { formatMoveNumberPrefix } from '../_lib/recall-format';
 
 /**
  * Announce the opponent's auto-filled move (from "Auto-fill opponent's
@@ -31,7 +32,7 @@ export function useOpponentMoveAnnouncement({
       const newEntry = entries[entries.length - 1];
       if (newEntry.status === 'auto') {
         setNotation(
-          `${formatMoveNumberPrefix(newEntry.moveNumber, newEntry.isWhiteMove)} ${newEntry.move}`
+          `${formatMoveAnchor(newEntry.moveNumber, newEntry.isWhiteMove)} ${newEntry.move}`
         );
         setSignal((s) => s + 1);
       }

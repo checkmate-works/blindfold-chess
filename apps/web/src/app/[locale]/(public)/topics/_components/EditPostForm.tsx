@@ -2,7 +2,13 @@
 
 import { useActionState, useEffect, useId, useRef, useState } from 'react';
 
-import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
+import {
+  Button,
+  FormActionFooter,
+  FormErrorBanner,
+  Textarea,
+  UnsavedChangesDialog,
+} from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
@@ -125,7 +131,7 @@ export function EditPostForm({
       {/* Save mirrors the full-width primary submit used by the new-comment /
           reply forms (BasePostForm); cancel is a quiet text link below so it
           reads as clearly secondary without crowding the primary action. */}
-      <div className="space-y-4">
+      <FormActionFooter cancel={{ label: t('cancel'), onClick: handleCancel, disabled: isPending }}>
         <Button
           type="submit"
           variant="primary"
@@ -136,15 +142,7 @@ export function EditPostForm({
         >
           {isPending ? t('saving') : t('save')}
         </Button>
-        <button
-          type="button"
-          onClick={handleCancel}
-          disabled={isPending}
-          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-        >
-          {t('cancel')}
-        </button>
-      </div>
+      </FormActionFooter>
 
       <UnsavedChangesDialog
         open={confirmingDiscard}

@@ -12,7 +12,7 @@ import type { ChunkEditRequestValidationError } from './validation';
  * fails at runtime if a locale is missing its sentence.
  *
  * The rule this guards: these codes travel to the client through the
- * mutation's `{ error }`, and `localizeChunkError` renders anything it has no
+ * mutation's `{ error }`, and `localizeActionError` renders anything it has no
  * copy for **verbatim**. Before 2026-08 the validator returned finished
  * English sentences, so a Japanese proposer over the comment cap was told
  * "Comment must be 2000 characters or fewer".

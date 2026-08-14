@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { getMovingSide } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
@@ -18,7 +18,7 @@ type Props = {
   pgn: string;
   /** Pre-parsed SAN move list, taking precedence over `pgn` when present. See `useRecallInit`. */
   moves?: AlgebraicNotation[];
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   autoOpponent: boolean;
   initialOffset?: number;
   startingFen?: string;

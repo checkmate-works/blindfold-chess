@@ -29,8 +29,6 @@ const hoisted = vi.hoisted(() => {
   return { expEventsTable, userExpTable, state };
 });
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('./index', () => {
   const db = {
     select: () => ({

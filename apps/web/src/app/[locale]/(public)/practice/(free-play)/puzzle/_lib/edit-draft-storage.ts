@@ -1,6 +1,7 @@
 import type { EditorTab, SideToMove } from '../../_lib/board-editor-constants';
 import {
   clearSessionDraft,
+  hasCommonDraftFields,
   isStringArray,
   readSessionDraft,
   writeSessionDraft,
@@ -38,15 +39,12 @@ export type PuzzleEditDraftV1 = {
 function isPuzzleEditDraftV1(value: unknown): value is PuzzleEditDraftV1 {
   if (value === null || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  if (v.version !== 1) return false;
-  if (typeof v.fen !== 'string') return false;
-  if (typeof v.title !== 'string') return false;
-  if (typeof v.description !== 'string') return false;
+  if (!hasCommonDraftFields(v)) return false;
   if (!isStringArray(v.moves)) return false;
   if (!isStringArray(v.notes)) return false;
-  if (v.activeTab !== 'board' && v.activeTab !== 'fen') return false;
   if (v.sideToMove !== 'w' && v.sideToMove !== 'b') return false;
-  if (typeof v.flipped !== 'boolean') return false;
+  // Required here, unlike a creation draft: the edit form is seeded from a
+  // saved puzzle, which always has both lists.
   if (!isStringArray(v.themeIds)) return false;
   if (!isStringArray(v.chunkIds)) return false;
   return true;

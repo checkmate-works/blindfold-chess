@@ -10,6 +10,8 @@ import {
   useState,
 } from 'react';
 
+import { localStorageAdapter } from '@/lib/persistent-settings/local-storage-adapter';
+
 import {
   type ResolvedTheme,
   THEME_DARK_CLASS,
@@ -42,14 +44,9 @@ function getSystemTheme(): ResolvedTheme {
 }
 
 function readStoredTheme(): Theme {
-  if (typeof window === 'undefined') return 'system';
-  try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark' || stored === 'system') {
-      return stored;
-    }
-  } catch {
-    // ignore (Safari private mode, etc.)
+  const stored = localStorageAdapter.get(THEME_STORAGE_KEY);
+  if (stored === 'light' || stored === 'dark' || stored === 'system') {
+    return stored;
   }
   return 'system';
 }
@@ -135,11 +132,7 @@ export function ThemeProvider({ children, disableTransitionOnChange = false }: P
         };
       }
 
-      try {
-        window.localStorage.setItem(THEME_STORAGE_KEY, next);
-      } catch {
-        // ignore
-      }
+      localStorageAdapter.set(THEME_STORAGE_KEY, next);
       setThemeState(next);
       const resolved: ResolvedTheme = next === 'system' ? getSystemTheme() : next;
       setResolvedTheme(resolved);

@@ -19,9 +19,7 @@ import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
 import { EmbedGameReplay } from './EmbedGameReplay';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 // The stepper (`MoveNavigationControls`) reads plain next-intl, which needs a
 // provider this test has no reason to mount.

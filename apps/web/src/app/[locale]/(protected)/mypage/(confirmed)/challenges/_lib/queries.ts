@@ -1,6 +1,7 @@
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { db } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { challengeResults } from '@/lib/db/schema';
 import { resolvePagination } from '@/lib/pagination';
@@ -30,12 +31,9 @@ export async function getChallengeResultsPaginated(
 
   const whereClause = and(...conditions);
 
-  const [countResult] = await db
-    .select({ count: count() })
-    .from(challengeResults)
-    .where(whereClause);
+  const totalCount = await countRows(challengeResults, whereClause);
 
-  const { totalPages, offset } = resolvePagination(page, countResult.count, PAGE_SIZE);
+  const { totalPages, offset } = resolvePagination(page, totalCount, PAGE_SIZE);
 
   const items = await db
     .select({

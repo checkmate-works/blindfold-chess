@@ -6,9 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
-
 import { ChallengeSetupShell } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeSetupShell';
+import { StandardChallengeRules } from '@/app/[locale]/(public)/practice/(challenge)/_components/StandardChallengeRules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RoutePlannerSettings } from '../../_components/RoutePlannerSettings';
@@ -38,16 +37,7 @@ export function RoutePlannerChallengeSetup({ locale, piece }: Props) {
   };
 
   return (
-    <ChallengeSetupShell
-      onStart={handleStart}
-      rules={
-        <>
-          <li>{t('challengeSetup.timeLimit', { seconds: CHALLENGE_TIME_LIMIT })}</li>
-          <li>{t('challengeSetup.mistakeLimit', { count: MISTAKE_LIMIT })}</li>
-          <li>{t('challengeSetup.leaderboard')}</li>
-        </>
-      }
-    >
+    <ChallengeSetupShell onStart={handleStart} rules={<StandardChallengeRules t={t} />}>
       <RoutePlannerSettings pieceSelection={pieceSelection} onPieceSelect={setPieceSelection} />
     </ChallengeSetupShell>
   );

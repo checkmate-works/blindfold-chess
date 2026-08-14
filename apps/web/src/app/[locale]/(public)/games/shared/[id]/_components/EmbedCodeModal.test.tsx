@@ -10,9 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EmbedCodeModal } from './EmbedCodeModal';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 const GAME_ID = '019f8e93-32ad-750e-894e-267acf1575e2';
 

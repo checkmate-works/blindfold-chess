@@ -1,5 +1,8 @@
-import { AUTHOR_PROFILE_COLUMNS, profiles, topicPostRatings } from '@/lib/db';
-import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
+import { topicPostRatings } from '@/lib/db';
+import type { TopicPost, TopicPostRating } from '@/lib/db';
+import type { LikeMeta } from '@/lib/db/like-queries';
+import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
+import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
 /**
  * Normalize a rating value: returns the rating if at least one field is non-null,
@@ -13,38 +16,15 @@ export function normalizeRating(
 }
 
 /**
- * Shared Drizzle select fragments reused across topic query files.
+ * Shared Drizzle select fragment reused across topic query files.
  */
-export const authorSelect = {
-  ...AUTHOR_PROFILE_COLUMNS,
-  flair: profiles.flair,
-  country: profiles.country,
-} as const;
-
 export const ratingSelect = {
   preferenceRating: topicPostRatings.preferenceRating,
   proficiencyRating: topicPostRatings.proficiencyRating,
 } as const;
 
 export type TopicPostWithAuthor = TopicPost & {
-  author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl' | 'flair' | 'country'> | null;
-};
-
-export type Replier = {
-  avatarUrl: string | null;
-  displayName: string;
-};
-
-export type ReplyMeta = {
-  replyCount: number;
-  latestReplyAt: Date | null;
-  repliers: Replier[];
-  uniqueReplierCount: number;
-};
-
-export type LikeMeta = {
-  likeCount: number;
-  likedByMe: boolean;
+  author: SocialAuthorProfile | null;
 };
 
 export type PostWithReplyMeta = TopicPostWithAuthor & {

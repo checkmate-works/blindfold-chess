@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import * as Sentry from '@sentry/nextjs';
 
 import { ARTICLE_CATEGORIES } from '@/app/[locale]/(public)/learn/_lib/types';
 import {
@@ -13,29 +12,32 @@ import {
   getManualArticleAvailableLocales,
 } from '@/app/[locale]/(public)/manual/_lib/utils';
 
-import { BASE_URL, generateAlternates } from './shared';
+import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
 export async function buildLearnArticleEntries(now: Date): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [];
 
+  // One section per locale, not one for the whole loop: a locale whose
+  // articles fail to load must not cost the others their entries.
   for (const locale of SUPPORTED_LOCALES) {
-    try {
-      const articles = await getAllArticles(locale);
-      for (const article of articles) {
-        if (article.category) {
+    const localeEntries = await buildSitemapSection(
+      `Error fetching learn articles for locale ${locale}`,
+      async () => {
+        const articles = await getAllArticles(locale);
+        return articles.flatMap((article) => {
+          if (!article.category) return [];
           const path = `/learn/${article.category}/${article.slug}`;
-          const availableLocales = getLearnArticleAvailableLocales(article.slug);
-          entries.push({
-            url: `${BASE_URL}/${locale}${path}`,
-            lastModified: new Date(article.publishedAt),
-            alternates: generateAlternates(path, availableLocales),
-          });
-        }
+          return [
+            {
+              url: `${BASE_URL}/${locale}${path}`,
+              lastModified: new Date(article.publishedAt),
+              alternates: generateAlternates(path, getLearnArticleAvailableLocales(article.slug)),
+            },
+          ];
+        });
       }
-    } catch (error) {
-      console.error(`Error fetching learn articles for locale ${locale}:`, error);
-      Sentry.captureException(error);
-    }
+    );
+    entries.push(...localeEntries);
   }
 
   // Learn category pages — category landing pages are translated for every
@@ -59,22 +61,21 @@ export async function buildLearnArticleEntries(now: Date): Promise<MetadataRoute
 export async function buildManualSectionEntries(now: Date): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [];
 
+  // Per-locale sections, for the same reason as buildLearnArticleEntries.
   for (const locale of SUPPORTED_LOCALES) {
-    try {
-      const sections = await getAllManualArticles(locale);
-      for (const section of sections) {
-        const path = `/manual/${section.slug}`;
-        const availableLocales = getManualArticleAvailableLocales(section.slug);
-        entries.push({
-          url: `${BASE_URL}/${locale}${path}`,
-          lastModified: now,
-          alternates: generateAlternates(path, availableLocales),
-        });
-      }
-    } catch (error) {
-      console.error(`Error fetching manual sections for locale ${locale}:`, error);
-      Sentry.captureException(error);
-    }
+    const localeEntries = await buildSitemapSection(
+      `Error fetching manual sections for locale ${locale}`,
+      async () =>
+        (await getAllManualArticles(locale)).map((section) => {
+          const path = `/manual/${section.slug}`;
+          return {
+            url: `${BASE_URL}/${locale}${path}`,
+            lastModified: now,
+            alternates: generateAlternates(path, getManualArticleAvailableLocales(section.slug)),
+          };
+        })
+    );
+    entries.push(...localeEntries);
   }
 
   return entries;

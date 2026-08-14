@@ -1,17 +1,15 @@
 import type { MetadataRoute } from 'next';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import * as Sentry from '@sentry/nextjs';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, repertoires } from '@/lib/db';
 
-import { BASE_URL, generateAlternates } from './shared';
+import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
 export async function buildRepertoireEntries(now: Date): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [];
-
-  try {
+  return buildSitemapSection('Error fetching repertoires for sitemap', async () => {
+    const entries: MetadataRoute.Sitemap = [];
     const publicRepertoires = await db
       .select({ id: repertoires.id })
       .from(repertoires)
@@ -27,10 +25,6 @@ export async function buildRepertoireEntries(now: Date): Promise<MetadataRoute.S
         });
       }
     }
-  } catch (error) {
-    console.error('Error fetching repertoires for sitemap:', error);
-    Sentry.captureException(error);
-  }
-
-  return entries;
+    return entries;
+  });
 }

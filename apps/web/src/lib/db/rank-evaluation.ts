@@ -41,7 +41,6 @@
  * @see {@link evaluators} — registry of requirement type evaluators
  */
 import { getStartingFen, toPositionKey } from '@blindfold-chess/features/chess-core';
-import * as Sentry from '@sentry/nextjs';
 import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
@@ -56,6 +55,7 @@ import type {
   OperationTotals,
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import type {
   ChallengeScoreRequirement,
@@ -375,8 +375,7 @@ export async function evaluateRanksAfterCreate(
   try {
     return await checkAndGrantRanks(userId);
   } catch (error) {
-    console.error(`Failed to check/grant ranks after ${context}:`, error);
-    Sentry.captureException(error);
+    captureError(error, `Failed to check/grant ranks after ${context}`);
     return [];
   }
 }

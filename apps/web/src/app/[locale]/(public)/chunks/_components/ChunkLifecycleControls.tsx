@@ -8,12 +8,12 @@ import { useRouter } from '@/i18n/routing';
 import { FiSend } from 'react-icons/fi';
 
 import type { ChunkStatus } from '@/lib/chunks/validation';
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 
 import { ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { publishChunk } from '../_actions/publishChunk';
-import { localizeChunkError } from '../_lib/localize-error';
 
 const PUBLISH_ERROR_CODES = new Set([
   'signInRequired',
@@ -76,7 +76,7 @@ export function ChunkLifecycleControls({ chunkId, chunkSlug, status, hasDescript
     setPending(false);
 
     if ('error' in result) {
-      setError(localizeChunkError(result.error, t, PUBLISH_ERROR_CODES, 'form.errors'));
+      setError(localizeActionError(result.error, t, PUBLISH_ERROR_CODES, 'form.errors'));
       return;
     }
     setModal(null);

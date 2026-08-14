@@ -1,5 +1,7 @@
 import {
   clearSessionDraft,
+  hasCommonDraftFields,
+  hasOptionalTagFields,
   isStringArray,
   readSessionDraft,
   writeSessionDraft,
@@ -54,24 +56,12 @@ export type PuzzleDraftV1 = {
 function isPuzzleDraftV1(value: unknown): value is PuzzleDraftV1 {
   if (value === null || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  if (v.version !== 1) return false;
-  if (typeof v.fen !== 'string') return false;
-  if (typeof v.title !== 'string') return false;
-  if (typeof v.description !== 'string') return false;
+  if (!hasCommonDraftFields(v)) return false;
   if (!isStringArray(v.moves)) return false;
   if (!isStringArray(v.notes)) return false;
-  if (v.activeTab !== 'board' && v.activeTab !== 'fen') return false;
   if (v.sideToMove !== 'w' && v.sideToMove !== 'b') return false;
-  if (typeof v.flipped !== 'boolean') return false;
   if (typeof v.userFlipped !== 'boolean') return false;
-  // themeIds / chunkIds are optional — accept missing (legacy drafts) or
-  // valid string arrays. Anything else (e.g. malformed JSON injected by
-  // a buggy producer) is treated as corrupt.
-  if (v.themeIds !== undefined && !isStringArray(v.themeIds)) return false;
-  if (v.chunkIds !== undefined && !isStringArray(v.chunkIds)) return false;
-  // forkedFromId is optional and only carries a UUID string when set;
-  // shape-only validation here (UUID format is re-checked server-side).
-  if (v.forkedFromId !== undefined && typeof v.forkedFromId !== 'string') return false;
+  if (!hasOptionalTagFields(v)) return false;
   return true;
 }
 

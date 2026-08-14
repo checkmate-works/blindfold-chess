@@ -1,5 +1,6 @@
 import type { PgnTree } from '@blindfold-chess/features/chess-core';
 import { enumerateLines, generatePgn, parsePgnTree } from '@blindfold-chess/features/chess-core';
+import type { Side } from '@blindfold-chess/types';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
@@ -20,7 +21,6 @@ import { isRepertoireVisibility } from '@/lib/points/spend-catalog';
  * does the split; `generatePgn` re-emits each line as its own PGN.
  */
 
-export type RepertoireSide = 'white' | 'black';
 export type RepertoirePhase = 'opening' | 'middlegame' | 'endgame';
 
 export const REPERTOIRE_NAME_MAX = 120;
@@ -36,7 +36,7 @@ const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 export type RepertoireImportInput = {
   name: string;
-  side: RepertoireSide;
+  side: Side;
   phase: RepertoirePhase;
   description?: string | null;
   pgn: string;
@@ -72,7 +72,7 @@ export type ImportedLine = { pgn: string; startingFen: string | null };
 
 export type ValidatedRepertoireImport = {
   name: string;
-  side: RepertoireSide;
+  side: Side;
   phase: RepertoirePhase;
   description: string | null;
   /** Visibility to publish at (defaults to `public`). */

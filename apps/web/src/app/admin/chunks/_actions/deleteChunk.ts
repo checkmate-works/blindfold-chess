@@ -7,7 +7,8 @@ import type { DeleteResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { chunks, db, moderationActions } from '@/lib/db';
+import { chunks, db } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
 
 export async function deleteChunk(id: string): Promise<DeleteResult> {
@@ -43,7 +44,7 @@ export async function deleteChunk(id: string): Promise<DeleteResult> {
   await db.transaction(async (tx) => {
     await tx.update(chunks).set({ deletedAt: new Date() }).where(eq(chunks.id, id));
 
-    await tx.insert(moderationActions).values({
+    await logModerationAction(tx, {
       actorId: auth.userId,
       action: 'delete_chunk',
       targetType: 'chunk',

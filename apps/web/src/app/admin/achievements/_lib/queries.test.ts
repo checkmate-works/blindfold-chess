@@ -38,6 +38,7 @@ const {
 
 vi.mock('drizzle-orm', () => ({
   asc: (col: unknown) => ({ __kind: 'asc', col }),
+  count: () => ({ __kind: 'count' }),
   desc: (col: unknown) => ({ __kind: 'desc', col }),
   eq: (a: unknown, b: unknown) => ({ __kind: 'eq', a, b }),
   sql: Object.assign(
@@ -245,10 +246,9 @@ describe('countAchievements', () => {
 
     // Must be FROM achievements
     expect(lastFrom.value).toMatchObject({ id: { __col: 'achievements.id' } });
-    // The selected value must be a count(*) SQL expression
-    const cols = lastSelectColumns.value as Record<string, { __kind?: string; strings?: string[] }>;
-    expect(cols.count.__kind).toBe('sql');
-    expect(cols.count.strings?.join(' ')).toMatch(/count\(\*\)/);
+    // The selected value must be drizzle's count(), i.e. count(*)
+    const cols = lastSelectColumns.value as Record<string, { __kind?: string }>;
+    expect(cols.count.__kind).toBe('count');
   });
 
   it('returns 0 when the underlying query returns no rows', async () => {
@@ -406,11 +406,11 @@ describe('countAchievementHolders', () => {
     expect(where.a).toEqual({ __col: 'user_achievements.achievement_id' });
     expect(where.b).toBe('ach-monthly');
 
-    // count(*) — the total row count, NOT count(DISTINCT user_id)
-    const cols = lastSelectColumns.value as Record<string, { __kind?: string; strings?: string[] }>;
-    expect(cols.count.__kind).toBe('sql');
-    expect(cols.count.strings?.join(' ')).toMatch(/count\(\*\)/);
-    expect(cols.count.strings?.join(' ')).not.toMatch(/distinct/i);
+    // Drizzle's plain count() — i.e. count(*), the total row count, NOT
+    // count(DISTINCT user_id). Shared via countRows(), which takes no column
+    // argument and therefore cannot express a DISTINCT variant.
+    const cols = lastSelectColumns.value as Record<string, { __kind?: string }>;
+    expect(cols.count.__kind).toBe('count');
   });
 
   it('returns 0 when the query returns no rows', async () => {

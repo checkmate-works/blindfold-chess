@@ -1,6 +1,7 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { FinalGameOutcome } from '@blindfold-chess/types';
 
 import {
   RESULT_LABEL_KEY,
@@ -8,7 +9,7 @@ import {
 } from '@/app/[locale]/(public)/games/play/_lib/result-visuals';
 
 type Props = {
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
 };
 
 /**

@@ -8,8 +8,6 @@ const mockIsLinkable = vi.fn();
 const mockInsert = vi.fn();
 const mockNotifyOwner = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/notifications/repertoire-chunk-link-notification', () => ({
   notifyRepertoireOwnerOfChunkLink: (...args: unknown[]) => mockNotifyOwner(...args),
 }));

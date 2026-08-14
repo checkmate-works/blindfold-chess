@@ -1,3 +1,5 @@
+import type { FinalGameOutcome } from '@blindfold-chess/types';
+
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { isGamePublishWinHiddenBoardRequirement, ranksSeedData } from '@/lib/db/data/ranks';
 
@@ -24,7 +26,7 @@ const danSeedRequirement = ranksSeedData
 
 type Args = {
   /** The player's terminal result. Only a win can qualify. */
-  result: 'win' | 'loss' | 'draw' | null;
+  result: FinalGameOutcome | null;
   /**
    * The START-OF-GAME settings snapshot — what publish persists to
    * `games.play_settings` and what the server evaluator grades.

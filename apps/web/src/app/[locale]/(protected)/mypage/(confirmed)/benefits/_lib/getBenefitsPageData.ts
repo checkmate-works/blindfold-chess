@@ -4,11 +4,13 @@ import { getUserSubscription } from '@/lib/billing/subscription';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import { db, userGrants } from '@/lib/db';
 import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
+import type { GrantPeriodStatus } from '@/lib/users/user-grants';
+import { classifyGrantPeriod } from '@/lib/users/user-grants';
 
 import { resolveGrantSources } from './resolve-grant-sources';
 import { resolveGrantSourceMeta } from './source';
 
-export type RowStatus = 'active' | 'upcoming' | 'expired';
+export type RowStatus = GrantPeriodStatus;
 
 /**
  * Discriminator used by the page to pick the i18n key for `sourceLabel`.
@@ -44,12 +46,6 @@ export type BenefitsPageData = {
   /** True when more than 5 grants exist for this user (subscription is not counted). */
   hasMoreGrants: boolean;
 };
-
-function classify(now: Date, startsAt: Date, expiresAt: Date): RowStatus {
-  if (expiresAt <= now) return 'expired';
-  if (startsAt > now) return 'upcoming';
-  return 'active';
-}
 
 /**
  * Aggregates the user's `ad_free` entitlements from both Stripe subscriptions
@@ -134,7 +130,7 @@ export async function getBenefitsPageData(userId: string): Promise<BenefitsPageD
       sourceHref: href,
       startsAt,
       expiresAt,
-      status: classify(now, startsAt, expiresAt),
+      status: classifyGrantPeriod(now, startsAt, expiresAt),
     };
   });
 

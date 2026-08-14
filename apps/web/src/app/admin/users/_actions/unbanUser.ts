@@ -7,8 +7,10 @@ import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions, profiles } from '@/lib/db';
+import { db, profiles } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
+import { captureError } from '@/lib/sentry/capture-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';
@@ -34,8 +36,7 @@ export async function unbanUser(targetUserId: string): Promise<ActionResult> {
   });
 
   if (error) {
-    console.error(`Failed to unban user ${targetUserId} at Supabase Auth level:`, error);
-    Sentry.captureException(error);
+    captureError(error, `Failed to unban user ${targetUserId} at Supabase Auth level`);
     return { error: 'failedToUnban' };
   }
 
@@ -51,7 +52,7 @@ export async function unbanUser(targetUserId: string): Promise<ActionResult> {
         })
         .where(eq(profiles.id, targetUserId));
 
-      await tx.insert(moderationActions).values({
+      await logModerationAction(tx, {
         actorId: auth.userId,
         action: 'unban',
         targetType: 'user',

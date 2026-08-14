@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
+import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
 import { sumOperationLogs } from '@/lib/games/operation-totals';
 import type {
@@ -19,7 +19,7 @@ type LoadedGameData = {
   moves: AlgebraicNotation[];
   lastMove: { from: string; to: string } | null;
   gameStatus: GameStatus;
-  playerResult: 'win' | 'loss' | 'draw' | null;
+  playerResult: FinalGameOutcome | null;
   operationLogs?: MoveOperationLog[];
   operationTotals?: OperationTotals;
   undoneLogs?: UndoneMoveLog[];
@@ -62,7 +62,7 @@ export function useGameState({
 }: UseGameStateOptions) {
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
-  const [playerResult, setPlayerResult] = useState<'win' | 'loss' | 'draw' | null>(null);
+  const [playerResult, setPlayerResult] = useState<FinalGameOutcome | null>(null);
   // Lazy-initialized from the URL-seeded moves: they are fixed for the life
   // of the mount, so this needs no effect (the old mount effect committed a
   // first frame with the highlight missing).

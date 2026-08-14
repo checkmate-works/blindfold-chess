@@ -7,8 +7,6 @@ const mockIsLinkable = vi.fn();
 const mockInsert = vi.fn();
 const mockNotifyGameOwner = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/notifications/game-chunk-link-notification', () => ({
   notifyGameOwnerOfChunkLink: (...args: unknown[]) => mockNotifyGameOwner(...args),
 }));

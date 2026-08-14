@@ -7,7 +7,8 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { validateUserId } from '@/app/admin/_lib/validators';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions } from '@/lib/db';
+import { db } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { createNotification } from '@/lib/notifications/notification';
 import { grantAdminPoints } from '@/lib/points';
 import { getClientIp } from '@/lib/security/client-ip';
@@ -51,7 +52,7 @@ export async function createPointGrant(formData: FormData): Promise<ActionResult
         reason,
       });
 
-      await tx.insert(moderationActions).values({
+      await logModerationAction(tx, {
         actorId: auth.userId,
         action: 'create_point_grant',
         targetType: 'user',

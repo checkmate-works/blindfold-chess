@@ -1,17 +1,10 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, inArray, isNull } from 'drizzle-orm';
 
-import {
-  chessOpenings,
-  db,
-  liveProfileJoinOn,
-  profiles,
-  topicPostRatings,
-  topicPosts,
-} from '@/lib/db';
+import { topicPosts } from '@/lib/db';
 
+import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
 import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { authorSelect, ratingSelect } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 /**
  * Bulk-load the `topic_post` entities referenced by a slice of feed
@@ -32,19 +25,9 @@ export async function loadTopicPostsForFeed(
 
   if (topicPostIds.length === 0) return map;
 
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-      rating: ratingSelect,
-      openingName: chessOpenings.name,
-      openingFen: chessOpenings.fen,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
-    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
-    .where(and(inArray(topicPosts.id, topicPostIds), isNull(topicPosts.deletedAt)));
+  const results = await buildProfilePostQuery().where(
+    and(inArray(topicPosts.id, topicPostIds), isNull(topicPosts.deletedAt))
+  );
 
   const postsWithMeta = await attachProfilePostMeta(results, currentUserId);
   for (const post of postsWithMeta) {

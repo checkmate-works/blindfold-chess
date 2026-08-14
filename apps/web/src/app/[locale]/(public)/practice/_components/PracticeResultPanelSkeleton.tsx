@@ -1,4 +1,9 @@
+import {
+  ExpGainSkeleton,
+  SignUpBannerSkeleton,
+} from '@/app/[locale]/(public)/practice/_components/skeletons';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { CardLinkSkeleton } from '@/app/[locale]/_components/CardLinkSkeleton';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
@@ -76,37 +81,11 @@ export function PracticeResultPanelSkeleton({
       {/* ExpGainDisplay placeholder — only reserved for authenticated runs that
           earn EXP (see `reserveExp`). Mirrors the real card (EXP row +
           level/progress); the "Level Up!" badge is rare and not reserved. */}
-      {reserveExp && (
-        <div className="mt-4 rounded-lg border border-border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">EXP</span>
-            <span className="inline-block h-5 w-20 bg-muted rounded animate-pulse" />
-          </div>
-          <div className="mt-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="inline-block h-4 w-12 bg-muted rounded animate-pulse" />
-              <span className="inline-block h-3 w-8 bg-muted rounded animate-pulse" />
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <Skeleton className="h-2 w-1/3 rounded-full" />
-            </div>
-          </div>
-        </div>
-      )}
+      {reserveExp && <ExpGainSkeleton className="mt-4" />}
 
       {/* SignUpBanner placeholder — only reserved for anonymous users on modules
           that show it (see `reserveSignUpBanner`). Matches SignUpBannerUI. */}
-      {reserveSignUpBanner && (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-            <div className="w-full">
-              <Skeleton className="h-5 w-40 rounded" />
-              <Skeleton className="mt-2 h-4 w-56 max-w-full rounded" />
-            </div>
-            <Skeleton className="h-9 w-28 flex-shrink-0 rounded-md" />
-          </div>
-        </div>
-      )}
+      {reserveSignUpBanner && <SignUpBannerSkeleton />}
 
       {/* Action buttons (Try Again / Change Settings, etc.) */}
       <div className="space-y-4">
@@ -118,15 +97,7 @@ export function PracticeResultPanelSkeleton({
           LeaderboardPreview to match the real flow: PracticeComplete (which
           ends with the related-module card) precedes LeaderboardPreview in
           createPracticeResultClient. */}
-      <div className="p-6 bg-card rounded-md border border-border animate-pulse">
-        <div className="flex items-start gap-4">
-          <div className="w-9 h-9 bg-muted rounded flex-shrink-0" />
-          <div className="flex-1">
-            <div className="h-5 bg-muted rounded w-1/3 mb-2" />
-            <div className="h-4 bg-muted rounded w-2/3" />
-          </div>
-        </div>
-      </div>
+      <CardLinkSkeleton />
 
       {/* LeaderboardPreview — header + 5-row table (rank | name | score) */}
       <div className="space-y-3">

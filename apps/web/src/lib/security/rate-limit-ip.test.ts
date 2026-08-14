@@ -21,8 +21,6 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-vi.mock('server-only', () => ({}));
-
 const { checkIpRateLimitGuard, checkEmailRateLimitGuard, IP_RATE_LIMITS, EMAIL_RATE_LIMITS } =
   await import('./rate-limit-ip');
 

@@ -11,9 +11,7 @@ const mockSelectFromWhereLimit = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockIsUserBanned = vi.fn();
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>

@@ -13,9 +13,7 @@ afterEach(() => {
 // pin that structural contract — a future refactor of BaseTopicPostCard
 // cannot silently expose puzzle solutions to non-clickers.
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('@/i18n/routing', () => ({
   Link: ({

@@ -2,8 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
+import type { Side } from '@blindfold-chess/types';
+
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
-import type { RepertoireSide } from '@/lib/repertoires/validation';
 
 import { LineForm } from '@/app/[locale]/(public)/repertoires/_components/LineForm';
 
@@ -19,7 +20,7 @@ type Props = {
   initialChapterId: string | null;
   initialPgn: string;
   /** The repertoire's side — orients the board in board mode. */
-  side: RepertoireSide;
+  side: Side;
   /**
    * The repertoire's existing "why this move" notes, keyed by position key —
    * prefills the per-move note editor under the board.

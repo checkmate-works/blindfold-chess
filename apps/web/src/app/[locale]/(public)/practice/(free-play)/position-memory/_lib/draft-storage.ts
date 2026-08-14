@@ -1,6 +1,7 @@
 import {
   clearSessionDraft,
-  isStringArray,
+  hasCommonDraftFields,
+  hasOptionalTagFields,
   readSessionDraft,
   writeSessionDraft,
 } from '../../_lib/session-draft-store';
@@ -50,18 +51,8 @@ export type PositionMemoryDraftV1 = {
 function isPositionMemoryDraftV1(value: unknown): value is PositionMemoryDraftV1 {
   if (value === null || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  if (v.version !== 1) return false;
-  if (typeof v.fen !== 'string') return false;
-  if (typeof v.title !== 'string') return false;
-  if (typeof v.description !== 'string') return false;
-  if (v.activeTab !== 'board' && v.activeTab !== 'fen') return false;
-  if (typeof v.flipped !== 'boolean') return false;
-  // themeIds / chunkIds are optional — accept missing or valid string arrays.
-  if (v.themeIds !== undefined && !isStringArray(v.themeIds)) return false;
-  if (v.chunkIds !== undefined && !isStringArray(v.chunkIds)) return false;
-  // forkedFromId is optional and only carries a UUID string when set;
-  // shape-only validation here (UUID format is re-checked server-side).
-  if (v.forkedFromId !== undefined && typeof v.forkedFromId !== 'string') return false;
+  if (!hasCommonDraftFields(v)) return false;
+  if (!hasOptionalTagFields(v)) return false;
   return true;
 }
 

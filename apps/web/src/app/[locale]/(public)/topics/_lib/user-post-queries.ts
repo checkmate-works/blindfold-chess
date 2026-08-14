@@ -1,6 +1,7 @@
-import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 
-import { db, topicPosts } from '@/lib/db';
+import { topicPosts } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 
 import { buildProfilePostQuery } from './build-profile-post-query';
 import { attachProfilePostMeta } from './post-meta';
@@ -44,16 +45,13 @@ export async function getPostsByUserId(
  * Get the count of top-level posts by a specific user (across all topic types).
  */
 export async function getPostCountByUserId(userId: string): Promise<number> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(topicPosts)
-    .where(
-      and(
-        eq(topicPosts.userId, userId),
-        inArray(topicPosts.topicType, ['square', 'opening']),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    );
-  return result.count;
+  return countRows(
+    topicPosts,
+    and(
+      eq(topicPosts.userId, userId),
+      inArray(topicPosts.topicType, ['square', 'opening']),
+      isNull(topicPosts.parentId),
+      isNull(topicPosts.deletedAt)
+    )
+  );
 }

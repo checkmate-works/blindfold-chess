@@ -8,7 +8,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { DAILY_PUZZLE_CACHE_TAG } from '@/lib/cache-tags';
-import { db, featuredPuzzles, moderationActions, positions } from '@/lib/db';
+import { db, featuredPuzzles, positions } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
 
 /**
@@ -62,7 +63,7 @@ export async function setPuzzleFeatured(id: string, featured: boolean): Promise<
           .returning({ positionId: featuredPuzzles.positionId });
 
     if (changedRows.length > 0) {
-      await tx.insert(moderationActions).values({
+      await logModerationAction(tx, {
         actorId: auth.userId,
         action: featured ? 'feature_puzzle' : 'unfeature_puzzle',
         targetType: 'position',

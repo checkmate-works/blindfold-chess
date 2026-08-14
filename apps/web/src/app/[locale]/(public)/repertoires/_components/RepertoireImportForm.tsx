@@ -16,11 +16,13 @@ import {
 } from '@/app/_components';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
+import type { Side } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
 import { FaPlus } from 'react-icons/fa';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
+import { localizeActionErrorOrGeneric } from '@/lib/i18n/localize-action-error';
 // Pure catalog leaf (not the '@/lib/points' barrel) — client-safe, no server-only.
 import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import { REPERTOIRE_VISIBILITIES, REPERTOIRE_VISIBILITY_COST } from '@/lib/points/spend-catalog';
@@ -28,7 +30,7 @@ import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
 import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
 import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
-import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
+import type { RepertoirePhase } from '@/lib/repertoires/validation';
 import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
@@ -69,7 +71,7 @@ type Props = {
   /** Prefills the PGN textarea — e.g. a finished game handed in by another feature. */
   initialPgn?: string;
   /** Prefills the side radio to match {@link initialPgn}'s player colour. */
-  initialSide?: RepertoireSide;
+  initialSide?: Side;
   /**
    * Prefilled kata name (localized "My System - {username}", built server-side
    * where the profile is at hand). Freely editable — just a starting point so
@@ -97,7 +99,7 @@ export function RepertoireImportForm({
 
   const [name, setName] = useState(initialName ?? '');
   const [description, setDescription] = useState('');
-  const [side, setSide] = useState<RepertoireSide>(initialSide ?? 'white');
+  const [side, setSide] = useState<Side>(initialSide ?? 'white');
   const [phase, setPhase] = useState<RepertoirePhase>('opening');
   // Visibility to create-and-publish at. `public` is free; the paid tiers open
   // a coin-confirm modal before submitting.
@@ -194,10 +196,9 @@ export function RepertoireImportForm({
       // An error the form has copy for is shown as itself; anything else (an
       // unexpected server failure) falls back to the generic message. Where it
       // is shown is decided by which control the rejection belongs to.
-      const key = `errors.${result.error}`;
       submitError.report(
         repertoireErrorField(result.error, FIELDS),
-        t.has(key) ? t(key) : t('errors.generic')
+        localizeActionErrorOrGeneric(result.error, t)
       );
       return;
     }

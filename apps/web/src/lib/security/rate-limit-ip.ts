@@ -27,9 +27,11 @@
  * (`rate_limit_key_events`) avoids widening the existing schema and keeps
  * the user-keyed limiter untouched.
  */
-import { and, count, eq, gt, sql } from 'drizzle-orm';
+import { and, eq, gt, sql } from 'drizzle-orm';
 import { createHash } from 'node:crypto';
 import 'server-only';
+
+import { countRows } from '@/lib/db/list-query';
 
 import { db, rateLimitKeyEvents } from '../db';
 import { getClientIp } from './client-ip';
@@ -74,18 +76,14 @@ async function countEventsInWindow(
   action: string,
   windowMs: number
 ): Promise<number> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(rateLimitKeyEvents)
-    .where(
-      and(
-        eq(rateLimitKeyEvents.subjectKey, subjectKey),
-        eq(rateLimitKeyEvents.action, action),
-        gt(rateLimitKeyEvents.createdAt, windowStartSql(windowMs))
-      )
-    );
-
-  return result.count;
+  return countRows(
+    rateLimitKeyEvents,
+    and(
+      eq(rateLimitKeyEvents.subjectKey, subjectKey),
+      eq(rateLimitKeyEvents.action, action),
+      gt(rateLimitKeyEvents.createdAt, windowStartSql(windowMs))
+    )
+  );
 }
 
 /**

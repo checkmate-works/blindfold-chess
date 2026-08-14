@@ -1,9 +1,9 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { formatMoveAnchor } from '@blindfold-chess/features/chess-core/move-numbering';
 
 import type { MoveLogEntry } from '../_lib';
-import { formatMoveNumberPrefix } from '../_lib/recall-format';
 
 type Props = {
   /** Full move-log history. */
@@ -86,7 +86,7 @@ export function RecallMoveStrip({ entries, onEntryClick }: Props) {
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-1">
         {individualEntries.map((entry, index) => {
-          const prefix = formatMoveNumberPrefix(entry.moveNumber, entry.isWhiteMove);
+          const prefix = formatMoveAnchor(entry.moveNumber, entry.isWhiteMove);
           const onClick = interactive ? () => onEntryClick?.(entry) : undefined;
 
           if (entry.status === 'incorrect') {

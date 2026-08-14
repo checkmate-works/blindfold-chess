@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { BoardFrame, ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { boardFlatToFen, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
-import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
+import { isLightSquare } from '@blindfold-chess/features/common';
 import type { PieceType } from '@blindfold-chess/types';
 import { createPortal } from 'react-dom';
 
@@ -15,6 +15,7 @@ import { useBoardAnnotationDrawing } from '@/lib/board-annotations/use-board-ann
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
+import { deriveSquareCell } from './board-square-layout';
 import type { FenPieceChar } from './types';
 import type { EditableBoardDragSource } from './use-editable-board-drag-drop';
 import { useEditableBoardDragDrop } from './use-editable-board-drag-drop';
@@ -218,9 +219,6 @@ export function EditableChessBoard({
     ? { pieces: BLACK_PIECES, label: labels.blackPieces }
     : { pieces: WHITE_PIECES, label: labels.whitePieces };
 
-  const displayFiles = flipped ? [...FILES].reverse() : [...FILES];
-  const displayRanks = flipped ? [...DISPLAY_RANKS].reverse() : [...DISPLAY_RANKS];
-
   const renderPalette = (pieces: FenPieceChar[], title: string) => (
     <div className="flex flex-col items-center gap-2">
       <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
@@ -281,22 +279,17 @@ export function EditableChessBoard({
         >
           <div className="grid grid-cols-8 gap-0 w-full h-full">
             {board.map((piece, squareIndex) => {
-              // Handle board flipping for black side
-              const displayIndex = flipped ? 63 - squareIndex : squareIndex;
+              const {
+                displayIndex,
+                gridFile,
+                gridRank,
+                file,
+                rank,
+                showRankCoordinate,
+                showFileCoordinate,
+              } = deriveSquareCell(squareIndex, flipped);
               const displayPiece = board[displayIndex];
-              const isLight = isLightSquare(squareIndex % 8, Math.floor(squareIndex / 8));
-
-              // Grid position for coordinate display
-              const gridFile = squareIndex % 8;
-              const gridRank = Math.floor(squareIndex / 8);
-
-              // Get file/rank for this grid position
-              const file = displayFiles[gridFile];
-              const rank = displayRanks[gridRank];
-
-              // Show rank on left edge, file on bottom edge (always, like ChessBoard)
-              const showRankCoordinate = gridFile === 0;
-              const showFileCoordinate = gridRank === 7;
+              const isLight = isLightSquare(gridFile, gridRank);
 
               const isDragSource =
                 dragSource?.kind === 'board' && dragSource.index === displayIndex;

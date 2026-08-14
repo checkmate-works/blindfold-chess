@@ -10,9 +10,7 @@ import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/save
 
 import { PlaySettingsChangeLog } from './PlaySettingsChangeLog';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 const baseSettings: GamePlaySettings = {
   boardVisibility: 'peek',

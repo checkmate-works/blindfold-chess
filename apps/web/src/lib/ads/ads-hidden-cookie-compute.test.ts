@@ -15,8 +15,6 @@ vi.mock('@/lib/users/dan-rank', () => ({
   hasDanTierRank: (...args: unknown[]) => mockHasDanTierRank(...args),
 }));
 
-vi.mock('server-only', () => ({}));
-
 const { computeAdsHiddenValueForUser } = await import('./ads-hidden-cookie-compute');
 
 describe('computeAdsHiddenValueForUser', () => {

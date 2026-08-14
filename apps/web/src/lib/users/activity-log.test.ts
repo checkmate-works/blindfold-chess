@@ -11,8 +11,6 @@ vi.mock('@/lib/db', () => ({
   userActivityLog: {},
 }));
 
-vi.mock('server-only', () => ({}));
-
 // Import after mocks are set up
 const { logActivityEvent } = await import('./activity-log');
 

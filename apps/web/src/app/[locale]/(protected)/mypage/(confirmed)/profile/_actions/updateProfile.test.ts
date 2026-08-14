@@ -12,11 +12,7 @@ const mockWhere = vi.fn().mockResolvedValue(undefined);
 // empty result (no prior row); individual tests override with mockResolvedValueOnce.
 const mockSelectWhere = vi.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
 
-vi.mock('server-only', () => ({}));
-
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>

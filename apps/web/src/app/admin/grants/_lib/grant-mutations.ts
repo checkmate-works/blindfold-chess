@@ -1,7 +1,8 @@
 import { addDays } from 'date-fns';
 
-import { moderationActions, userGrants } from '@/lib/db';
+import { userGrants } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { createNotification } from '@/lib/notifications/notification';
 import { calcGrantStartsAt } from '@/lib/users/user-grants';
 
@@ -53,7 +54,7 @@ export async function insertAdminGrant(
     })
     .returning({ id: userGrants.id });
 
-  await tx.insert(moderationActions).values({
+  await logModerationAction(tx, {
     actorId: input.actorId,
     action: 'create_grant',
     targetType: 'user',

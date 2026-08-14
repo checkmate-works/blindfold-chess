@@ -5,6 +5,7 @@ import { useId } from 'react';
 import Link from 'next/link';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { FinalGameOutcome } from '@blindfold-chess/types';
 import { FaBook, FaBrain, FaClipboardList, FaCloudUploadAlt } from 'react-icons/fa';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
@@ -33,7 +34,7 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   /** The player's terminal result, shown at the top of the modal. */
-  result?: 'win' | 'loss' | 'draw' | null;
+  result?: FinalGameOutcome | null;
   /**
    * Go to the result screen — review the game, comment reflections, see stats.
    * Labelled "Game Review".

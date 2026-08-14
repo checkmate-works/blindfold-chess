@@ -22,9 +22,7 @@ import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/save
 
 import { GameStatsOverview } from './GameStatsOverview';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 // `@/i18n/routing`'s `Link` pulls in next-intl's navigation factory, which fails
 // to resolve `next/navigation` under vitest's ESM. The opening-row chain imports

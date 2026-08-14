@@ -1,4 +1,5 @@
 import { toPositionKey } from '@blindfold-chess/features/chess-core';
+import type { Side } from '@blindfold-chess/types';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -27,12 +28,7 @@ import type { ArrangementError, ArrangementItem } from './line-order';
 import { NEW_CHAPTER_KEY_PREFIX, resolveArrangement, validateArrangement } from './line-order';
 import { assertRepertoireOwner } from './queries';
 import { replayRepertoireLine } from './replay-line';
-import type {
-  RepertoireImportInput,
-  RepertoireLineEditError,
-  RepertoirePhase,
-  RepertoireSide,
-} from './validation';
+import type { RepertoireImportInput, RepertoireLineEditError, RepertoirePhase } from './validation';
 import {
   REPERTOIRE_DESCRIPTION_MAX,
   REPERTOIRE_NAME_MAX,
@@ -564,7 +560,7 @@ export async function updateRepertoireDetails(params: {
   repertoireId: string;
   viewerId: string;
   name: string;
-  side: RepertoireSide;
+  side: Side;
   /** Course-level blurb; trimmed to null when blank. */
   description: string | null;
   openingIds: string[];

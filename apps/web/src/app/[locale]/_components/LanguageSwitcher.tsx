@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
+import { LOCALE_LABELS } from '@/i18n/locale-labels';
 import { FaGlobe } from 'react-icons/fa';
 
 /**
@@ -11,17 +12,6 @@ import { FaGlobe } from 'react-icons/fa';
  * adding a new locale to the array without adding a label here is a
  * compile-time error — the switcher can never render an empty option.
  */
-type LocaleLabels = {
-  [K in (typeof SUPPORTED_LOCALES)[number]]: string;
-};
-
-const LOCALE_LABELS: LocaleLabels = {
-  en: 'English',
-  es: 'Español',
-  'pt-BR': 'Português (Brasil)',
-  ja: '日本語',
-} as const;
-
 type Props = {
   currentLocale: string;
 };

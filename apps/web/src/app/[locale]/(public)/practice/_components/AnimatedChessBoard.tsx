@@ -6,6 +6,7 @@ import { BoardLayout, BoardOverlay, ChessPiece } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { executeMove, fenToBoard } from '@blindfold-chess/features/chess-core';
+import { fenToPlacements } from '@blindfold-chess/features/chess-core/fen';
 import type { PieceType } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -43,30 +44,11 @@ function parseFenToPieces(fen: string): Array<{ type: PieceType; color: Color; s
 
     return result;
   } catch (error) {
+    // chess.js rejects positions the practice modules legitimately show —
+    // a board with no king, say — so fall back to the non-validating parser
+    // rather than rendering nothing.
     try {
-      const piecePlacement = fen.split(' ')[0];
-      const result: Array<{ type: PieceType; color: Color; square: string }> = [];
-
-      const ranks = piecePlacement.split('/');
-      for (let rank = 0; rank < ranks.length; rank++) {
-        let file = 0;
-        for (const char of ranks[rank]) {
-          if (/\d/.test(char)) {
-            file += parseInt(char);
-          } else {
-            const square = String.fromCharCode(97 + file) + (8 - rank);
-            const isWhite = char === char.toUpperCase();
-            result.push({
-              type: char.toLowerCase() as PieceType,
-              color: (isWhite ? 'w' : 'b') as Color,
-              square,
-            });
-            file++;
-          }
-        }
-      }
-
-      return result;
+      return fenToPlacements(fen);
     } catch {
       console.error('Error parsing FEN:', error);
       return [];

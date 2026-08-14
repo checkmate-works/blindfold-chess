@@ -1,8 +1,8 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
-import { combineConditions } from '@/lib/db/list-query';
+import { combineConditions, countRows } from '@/lib/db/list-query';
 
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
 import { loadUsersEmailMap } from '../../_lib/users-email-map';
@@ -53,11 +53,7 @@ export async function fetchActivityLogPageData(
   const whereClause = combineConditions(conditions);
 
   // Get total count for pagination
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(userActivityLog)
-    .where(whereClause);
-  const totalCount = Number(countResult.count);
+  const totalCount = await countRows(userActivityLog, whereClause);
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   // Fetch logs for current page

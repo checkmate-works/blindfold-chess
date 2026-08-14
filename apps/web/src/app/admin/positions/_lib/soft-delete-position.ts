@@ -5,7 +5,8 @@ import type { DeleteResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { db, moderationActions, positions } from '@/lib/db';
+import { db, positions } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { type PointPostEntityType, clawbackPointsForPost } from '@/lib/points';
 import { getClientIp } from '@/lib/security/client-ip';
 
@@ -90,7 +91,7 @@ export async function softDeletePosition(
       });
     }
 
-    await tx.insert(moderationActions).values({
+    await logModerationAction(tx, {
       actorId: auth.userId,
       action: 'delete_position',
       targetType: 'position',

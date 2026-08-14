@@ -18,8 +18,6 @@ vi.mock('@/lib/moderation/block', () => ({
   hasBlocked: () => Promise.resolve(false),
 }));
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
 }));

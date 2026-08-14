@@ -1,3 +1,5 @@
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+
 /**
  * Type for preset FEN positions
  */
@@ -44,11 +46,9 @@ const FEN_PROBLEMS = [
  */
 export function getFenPositions() {
   return FEN_PROBLEMS.map((problem) => {
-    const parts = problem.fen.split(' ');
-    const isBlackToMove = parts[1] === 'b';
     return {
       fen: problem.fen,
-      isBlackToMove,
+      isBlackToMove: isBlackToMoveFromFen(problem.fen),
       name: problem.name,
       nameJa: problem.nameJa,
     };

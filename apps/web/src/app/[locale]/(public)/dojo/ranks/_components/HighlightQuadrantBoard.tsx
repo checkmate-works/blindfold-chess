@@ -5,25 +5,9 @@ import { useCallback } from 'react';
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 
+import type { Quadrant } from './quadrant-colors';
+import { QUADRANT_COLORS, getQuadrant } from './quadrant-colors';
 import { useBoardTheme } from './useBoardTheme';
-
-type Quadrant = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-
-const QUADRANT_COLORS: Record<Quadrant, string> = {
-  'top-left': 'bg-blue-500/20',
-  'top-right': 'bg-emerald-500/20',
-  'bottom-left': 'bg-amber-500/20',
-  'bottom-right': 'bg-rose-500/20',
-};
-
-function getQuadrant(fileIndex: number, rankIndex: number): Quadrant {
-  const isTopHalf = rankIndex < 4;
-  const isLeftHalf = fileIndex < 4;
-  if (isTopHalf && isLeftHalf) return 'top-left';
-  if (isTopHalf && !isLeftHalf) return 'top-right';
-  if (!isTopHalf && isLeftHalf) return 'bottom-left';
-  return 'bottom-right';
-}
 
 type Props = {
   quadrant: Quadrant;

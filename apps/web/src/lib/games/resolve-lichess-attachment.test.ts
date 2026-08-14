@@ -2,8 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveLichessAttachmentPgn } from './resolve-lichess-attachment';
 
-vi.mock('server-only', () => ({}));
-
 const fetchLichessGamePgnMock = vi.fn();
 vi.mock('./lichess', () => ({
   fetchLichessGamePgn: (...args: unknown[]) => fetchLichessGamePgnMock(...args),

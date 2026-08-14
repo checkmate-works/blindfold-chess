@@ -3,8 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockGetRepertoireById = vi.fn();
 const mockCreateNotification = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('../repertoires/queries', () => ({
   getRepertoireById: (...args: unknown[]) => mockGetRepertoireById(...args),
 }));

@@ -27,8 +27,6 @@ const mockGetModuleWeight = vi.fn();
 const mockGetLevel = vi.fn();
 const mockGetLevelProgress = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@blindfold-chess/features/exp', () => ({
   // Challenge-path imports kept as no-op stubs so the real module can load.
   calculateExp: vi.fn(),

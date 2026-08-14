@@ -1,9 +1,11 @@
 'use server';
 
+import type { Side } from '@blindfold-chess/types';
+
 import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import type { CreateRepertoireResult } from '@/lib/repertoires/mutations';
 import { createRepertoireEntry } from '@/lib/repertoires/mutations';
-import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
+import type { RepertoirePhase } from '@/lib/repertoires/validation';
 
 /**
  * Create a repertoire (型) for the current user from a pasted PGN.
@@ -15,7 +17,7 @@ import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validati
  */
 export async function createRepertoire(input: {
   name: string;
-  side: RepertoireSide;
+  side: Side;
   phase: RepertoirePhase;
   description?: string | null;
   pgn: string;

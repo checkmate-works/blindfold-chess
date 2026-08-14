@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { fullmoveNumberFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { CircleMarker } from './CircleMarker';
 
@@ -99,12 +100,6 @@ export function groupAttemptsByPlayerStep(attempts: Attempt[]): PlayerStep[] {
  * if the FEN is short or the field is non-numeric — the panel still renders
  * sensibly with a starting count of 1.
  */
-export function getFullmoveFromFen(fen: string): number {
-  const parts = fen.split(' ');
-  if (parts.length < 6) return 1;
-  const n = parseInt(parts[5]!, 10);
-  return Number.isFinite(n) && n >= 1 ? n : 1;
-}
 
 /**
  * Derive the high-level outcome the user reached by the time they landed
@@ -317,7 +312,7 @@ export function AttemptHistoryPanel({ fen, solutionSans, attempts, notes = [] }:
     const groups = groupAttemptsByPlayerStep(attempts);
     const cells = buildCells(solutionSans, groups, notes);
     const firstTurn: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
-    return buildRows(cells, firstTurn, getFullmoveFromFen(fen));
+    return buildRows(cells, firstTurn, fullmoveNumberFromFen(fen));
   }, [fen, solutionSans, attempts, notes]);
 
   if (rows.length === 0) return null;

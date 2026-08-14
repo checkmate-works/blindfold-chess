@@ -2,17 +2,8 @@ import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
 
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 
-import { FEN_MAX_LENGTH } from './constants';
+import { FEN_CAPTION_MAX_LENGTH, FEN_MAX_LENGTH } from './constants';
 import { sanitizeFenCaption } from './sanitize-fen-caption';
-
-/**
- * Maximum length of a stored caption. Aligned with the
- * `post_fen_attachments.caption` column width and `sanitizeFenCaption`'s cap.
- * The sanitizer already slices to this length; this constant is the
- * pre-sanitize gate so we surface a structured error instead of silently
- * truncating.
- */
-const CAPTION_MAX_LENGTH = 200;
 
 /**
  * Stable error kinds returned by `buildFenAttachmentValues` (and the DB-error
@@ -94,7 +85,7 @@ export function buildFenAttachmentValues(
   }
 
   const rawCap = typeof rawCaption === 'string' ? rawCaption : null;
-  if (rawCap !== null && rawCap.length > CAPTION_MAX_LENGTH) {
+  if (rawCap !== null && rawCap.length > FEN_CAPTION_MAX_LENGTH) {
     return { ok: false, error: 'caption_too_long' };
   }
   const caption = sanitizeFenCaption(rawCap);

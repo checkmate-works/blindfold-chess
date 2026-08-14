@@ -18,9 +18,7 @@ import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 const BASE: GamePlaySettings = {
   boardVisibility: 'always',

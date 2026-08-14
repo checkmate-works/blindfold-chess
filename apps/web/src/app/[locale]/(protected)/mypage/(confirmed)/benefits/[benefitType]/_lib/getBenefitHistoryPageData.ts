@@ -1,14 +1,17 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { db, userGrants } from '@/lib/db';
 import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
+import { countRows } from '@/lib/db/list-query';
 import { getPaginationParams } from '@/lib/pagination';
+import type { GrantPeriodStatus } from '@/lib/users/user-grants';
+import { classifyGrantPeriod } from '@/lib/users/user-grants';
 
 import { resolveGrantSources } from '@/app/[locale]/(protected)/mypage/(confirmed)/benefits/_lib/resolve-grant-sources';
 
 import { type GrantSourceMeta, resolveGrantSourceMeta } from '../../_lib/source';
 
-export type GrantHistoryRowStatus = 'active' | 'upcoming' | 'expired' | 'revoked';
+export type GrantHistoryRowStatus = GrantPeriodStatus | 'revoked';
 
 type BenefitHistoryRow = {
   id: string;
@@ -27,16 +30,15 @@ export type BenefitHistoryPageData = {
   totalPages: number;
 };
 
+/** Revocation outranks the window: a revoked grant reads as revoked whether
+ * or not it had already expired. */
 function classifyGrantForHistory(
   now: Date,
   startsAt: Date,
   expiresAt: Date,
   revokedAt: Date | null
 ): GrantHistoryRowStatus {
-  if (revokedAt) return 'revoked';
-  if (expiresAt <= now) return 'expired';
-  if (startsAt > now) return 'upcoming';
-  return 'active';
+  return revokedAt ? 'revoked' : classifyGrantPeriod(now, startsAt, expiresAt);
 }
 
 /**
@@ -59,12 +61,10 @@ export async function getBenefitHistoryPageData({
   page: number;
   pageSize: number;
 }): Promise<BenefitHistoryPageData> {
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(userGrants)
-    .where(and(eq(userGrants.userId, userId), eq(userGrants.benefitType, benefitType)));
-
-  const totalCount = Number(countResult?.count ?? 0);
+  const totalCount = await countRows(
+    userGrants,
+    and(eq(userGrants.userId, userId), eq(userGrants.benefitType, benefitType))
+  );
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     totalCount,

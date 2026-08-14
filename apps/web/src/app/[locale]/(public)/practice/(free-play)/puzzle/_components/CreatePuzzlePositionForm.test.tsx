@@ -117,6 +117,22 @@ vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
 }));
 
 vi.mock('@/app/_components', () => ({
+  FormActionFooter: ({
+    children,
+    cancel,
+  }: {
+    children: ReactNode;
+    cancel?: { label: ReactNode; onClick: () => void; disabled?: boolean };
+  }) => (
+    <div>
+      {children}
+      {cancel && (
+        <button type="button" onClick={cancel.onClick} disabled={cancel.disabled}>
+          {cancel.label}
+        </button>
+      )}
+    </div>
+  ),
   FieldError: ({ id, message }: { id: string; message: string | null }) =>
     message ? (
       <p id={id} role="alert">

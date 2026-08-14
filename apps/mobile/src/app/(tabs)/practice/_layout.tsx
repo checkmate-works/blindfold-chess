@@ -1,156 +1,30 @@
 import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
+
+import type { ModuleRoute } from "../../../navigation/module-stack-screens";
+import {
+  moduleStackScreenOptions,
+  moduleStackScreens,
+} from "../../../navigation/module-stack-screens";
 import { useTheme } from "../../../theme";
+
+const PRACTICE_MODULES: readonly ModuleRoute[] = [
+  { route: "coordinate-quiz", i18nKey: "coordinateQuiz" },
+  { route: "legal-moves", i18nKey: "legalMoves" },
+  { route: "board-symmetry", i18nKey: "boardSymmetry" },
+  { route: "square-colors", i18nKey: "squareColors" },
+  { route: "diagonal-quiz", i18nKey: "diagonalQuiz" },
+  { route: "route-planner", i18nKey: "routePlanner" },
+];
 
 export default function PracticeLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.card,
-        },
-        headerTintColor: colors.primary,
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
-        headerBackTitle: t("common.back"),
-      }}
-    >
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="coordinate-quiz/setup"
-        options={{
-          title: t("coordinateQuiz.setup.title"),
-        }}
-      />
-      <Stack.Screen
-        name="coordinate-quiz/session"
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="coordinate-quiz/result"
-        options={{
-          title: t("coordinateQuiz.result.title"),
-          headerBackVisible: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="legal-moves/setup"
-        options={{
-          title: t("legalMoves.setup.title"),
-        }}
-      />
-      <Stack.Screen
-        name="legal-moves/session"
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="legal-moves/result"
-        options={{
-          title: t("legalMoves.result.title"),
-          headerBackVisible: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="board-symmetry/setup"
-        options={{
-          title: t("boardSymmetry.setup.title"),
-        }}
-      />
-      <Stack.Screen
-        name="board-symmetry/session"
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="board-symmetry/result"
-        options={{
-          title: t("boardSymmetry.result.title"),
-          headerBackVisible: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="square-colors/setup"
-        options={{
-          title: t("squareColors.setup.title"),
-        }}
-      />
-      <Stack.Screen
-        name="square-colors/session"
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="square-colors/result"
-        options={{
-          title: t("squareColors.result.title"),
-          headerBackVisible: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="diagonal-quiz/setup"
-        options={{
-          title: t("diagonalQuiz.setup.title"),
-        }}
-      />
-      <Stack.Screen
-        name="diagonal-quiz/session"
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="diagonal-quiz/result"
-        options={{
-          title: t("diagonalQuiz.result.title"),
-          headerBackVisible: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="route-planner/setup"
-        options={{
-          title: t("routePlanner.setup.title"),
-        }}
-      />
-      <Stack.Screen
-        name="route-planner/session"
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="route-planner/result"
-        options={{
-          title: t("routePlanner.result.title"),
-          headerBackVisible: false,
-          gestureEnabled: false,
-        }}
-      />
+    <Stack screenOptions={moduleStackScreenOptions(colors, t)}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      {moduleStackScreens(t, PRACTICE_MODULES)}
     </Stack>
   );
 }

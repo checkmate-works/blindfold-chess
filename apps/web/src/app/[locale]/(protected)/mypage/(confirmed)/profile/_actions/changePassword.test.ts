@@ -9,8 +9,6 @@ const mockLogActivityEvent = vi.fn();
 const mockSignInWithPassword = vi.fn();
 const mockUpdateUserById = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/auth', () => ({
   getAuthenticatedUser: (...args: unknown[]) => mockGetAuthenticatedUser(...args),
 }));

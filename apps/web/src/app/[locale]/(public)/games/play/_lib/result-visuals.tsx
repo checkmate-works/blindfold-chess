@@ -1,18 +1,16 @@
+import type { FinalGameOutcome } from '@blindfold-chess/types';
 import type { IconType } from 'react-icons';
 import { FaMinus, FaTimes, FaTrophy } from 'react-icons/fa';
 
-/** Terminal result from the player's own perspective. */
-export type GameResult = 'win' | 'loss' | 'draw';
-
 /** Icon per terminal result. */
-const RESULT_ICON: Record<GameResult, IconType> = {
+const RESULT_ICON: Record<FinalGameOutcome, IconType> = {
   win: FaTrophy,
   loss: FaTimes,
   draw: FaMinus,
 };
 
 /** Accent color class per terminal result. */
-const RESULT_COLOR: Record<GameResult, string> = {
+const RESULT_COLOR: Record<FinalGameOutcome, string> = {
   win: 'text-primary',
   loss: 'text-destructive',
   draw: 'text-warning',
@@ -23,14 +21,14 @@ const RESULT_COLOR: Record<GameResult, string> = {
  * the icon so the two stay in lockstep. The shared game review names the winner
  * neutrally instead (see `GameOutcomeLabel`), so it does not use this.
  */
-export const RESULT_LABEL_KEY: Record<GameResult, string> = {
+export const RESULT_LABEL_KEY: Record<FinalGameOutcome, string> = {
   win: 'youWin',
   loss: 'youLose',
   draw: 'draw',
 };
 
 type Props = {
-  result: GameResult;
+  result: FinalGameOutcome;
   /** Sizing (and any extra) classes; the result-accent color is applied for you. */
   className?: string;
 };

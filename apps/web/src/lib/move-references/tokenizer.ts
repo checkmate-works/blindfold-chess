@@ -1,4 +1,4 @@
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
+import { computeMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
 
 /**
  * Shared tokenizer for the app's two move-reference parsers — the one that

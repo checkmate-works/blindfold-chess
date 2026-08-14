@@ -4,8 +4,6 @@ import { POSITION_FORK_SOURCE_TYPES, PUZZLE_FORK_SOURCE_TYPES, validateForkSourc
 
 const mockLimit = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({

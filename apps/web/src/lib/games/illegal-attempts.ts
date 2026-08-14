@@ -1,3 +1,5 @@
+import type { Side } from '@blindfold-chess/types';
+
 import type { MoveOperationLog } from './saved-game-types';
 
 /**
@@ -33,7 +35,7 @@ const TRAILING_SQUARE_RE = /([a-h][1-8])(?:=[QRBNqrbn])?$/;
  */
 export function parseAttemptSquares(
   attempt: string,
-  playerColor: 'white' | 'black'
+  playerColor: Side
 ): IllegalAttemptSquares | null {
   const stripped = attempt.replace(/[+#]+$/, '');
 
@@ -74,7 +76,7 @@ export function parseAttemptSquares(
 export function resolveIllegalAttemptSquares(
   log: MoveOperationLog,
   attemptIndex: number,
-  playerColor: 'white' | 'black'
+  playerColor: Side
 ): IllegalAttemptSquares | null {
   const recorded = log.invalidAttemptSquares?.[attemptIndex];
   if (recorded) return recorded;

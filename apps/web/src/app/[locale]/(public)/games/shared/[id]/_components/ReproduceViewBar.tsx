@@ -1,6 +1,7 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { Side } from '@blindfold-chess/types';
 
 import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
@@ -21,7 +22,7 @@ export function ReproduceViewBar({
   onToggle,
 }: {
   settings: GamePlaySettings;
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   reproduceView: boolean;
   onToggle: () => void;
 }) {

@@ -6,7 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions, topicPosts } from '@/lib/db';
+import { db, topicPosts } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { getClientIp } from '@/lib/security/client-ip';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -60,7 +61,7 @@ export async function deletePostAdmin(postId: string, reason: string): Promise<A
   await deletePostCore(postId, post.userId, {
     requireNotDeleted: false,
     insideTransaction: async (tx) => {
-      await tx.insert(moderationActions).values({
+      await logModerationAction(tx, {
         actorId: auth.userId,
         action: 'delete_post',
         targetType: 'topic_post',

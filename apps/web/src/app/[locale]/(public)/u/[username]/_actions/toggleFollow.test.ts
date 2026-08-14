@@ -17,9 +17,7 @@ vi.mock('@/lib/moderation/block', () => ({
   hasBlocked: () => Promise.resolve(false),
 }));
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),

@@ -1,8 +1,8 @@
-import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, notifications, pointBatchWatermarks } from '@/lib/db';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import {
   LIKE_COIN_AMOUNT,
@@ -191,11 +191,7 @@ export async function grantLikeCoins(): Promise<GrantLikeCoinsResult> {
       // unadvanced watermark guarantees a retry next run. Report it —
       // the cron-route catch never sees a swallowed error.
       recipientsFailed += 1;
-      console.error(
-        `[grantLikeCoins] recipient ${recipientId} failed:`,
-        error instanceof Error ? error.message : error
-      );
-      Sentry.captureException(error);
+      captureError(error, `[grantLikeCoins] recipient ${recipientId} failed`);
     }
   }
 

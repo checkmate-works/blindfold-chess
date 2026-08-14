@@ -1,9 +1,10 @@
-import { and, count, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { db, userFollows } from '@/lib/db';
 import { type UserAchievementGroup, getUserAchievementGroups } from '@/lib/db/achievement-queries';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { countGamesByAuthorId } from '@/lib/db/games-read';
+import { countRows } from '@/lib/db/list-query';
 import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
 import { hasBlocked } from '@/lib/moderation/block';
 import { countPositions } from '@/lib/positions/queries';
@@ -86,27 +87,25 @@ export async function loadProfileShellData({
   const blockedByProfilePromise =
     currentUserId && !isOwnProfile ? hasBlocked(profileId, currentUserId) : Promise.resolve(false);
 
-  const followerCountPromise = db
-    .select({ count: count() })
-    .from(userFollows)
-    .where(and(eq(userFollows.followingId, profileId), profileNotDeleted(userFollows.followerId)));
+  const followerCountPromise = countRows(
+    userFollows,
+    and(eq(userFollows.followingId, profileId), profileNotDeleted(userFollows.followerId))
+  );
 
   const followingCountPromise = isOwnProfile
-    ? db
-        .select({ count: count() })
-        .from(userFollows)
-        .where(
-          and(eq(userFollows.followerId, profileId), profileNotDeleted(userFollows.followingId))
-        )
-    : Promise.resolve([{ count: 0 }]);
+    ? countRows(
+        userFollows,
+        and(eq(userFollows.followerId, profileId), profileNotDeleted(userFollows.followingId))
+      )
+    : Promise.resolve(0);
 
   const [
     existingFollowRows,
     reverseFollowRows,
     viewerHasBlocked,
     blockedByProfile,
-    [followerResult],
-    [followingResult],
+    followerCount,
+    followingCount,
     postsCount,
     userAchievementGroups,
     problemsCount,
@@ -131,8 +130,8 @@ export async function loadProfileShellData({
     followedByProfile: !!reverseFollowRows[0],
     viewerHasBlocked,
     blockedByProfile,
-    followerCount: followerResult.count,
-    followingCount: followingResult.count,
+    followerCount,
+    followingCount,
     postsCount,
     problemsCount,
     gamesCount,

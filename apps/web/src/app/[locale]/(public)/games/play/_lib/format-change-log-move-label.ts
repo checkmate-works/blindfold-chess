@@ -1,4 +1,7 @@
-import { computeMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
+import {
+  computeMoveNumber,
+  formatMoveAnchor,
+} from '@blindfold-chess/features/chess-core/move-numbering';
 
 import { parseFenMeta } from './fen-utils';
 
@@ -26,5 +29,5 @@ export function formatChangeLogMoveLabel(
     startsAsBlack,
     startMoveNumber
   );
-  return isWhiteMove ? `${moveNumber}.` : `${moveNumber}...`;
+  return formatMoveAnchor(moveNumber, isWhiteMove);
 }

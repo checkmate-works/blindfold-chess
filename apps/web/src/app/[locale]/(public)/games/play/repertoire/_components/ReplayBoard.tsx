@@ -6,6 +6,7 @@ import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
+import type { Side } from '@blindfold-chess/types';
 import { FaPlay } from 'react-icons/fa';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
@@ -21,7 +22,7 @@ type Props = {
   positions: { fen: string; lastMove: { from: string; to: string } | null }[];
   /** Numbered move pairs for the horizontal move strip. */
   formatted: FormattedPgnMove[];
-  side: 'white' | 'black';
+  side: Side;
   /**
    * The ply playback stops at: the divergence for deviation/gap, the end of
    * the matched book for in-book. The player can still step past it manually

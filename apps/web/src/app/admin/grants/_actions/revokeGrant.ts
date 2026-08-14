@@ -6,7 +6,8 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions, userGrants } from '@/lib/db';
+import { db, userGrants } from '@/lib/db';
+import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
 
 type RevokeTxResult = { ok: true } | { error: 'notFound' | 'alreadyRevoked' };
@@ -47,7 +48,7 @@ export async function revokeGrant(grantId: string): Promise<ActionResult> {
 
       await tx.update(userGrants).set({ revokedAt: new Date() }).where(eq(userGrants.id, grantId));
 
-      await tx.insert(moderationActions).values({
+      await logModerationAction(tx, {
         actorId: auth.userId,
         action: 'revoke_grant',
         targetType: 'user',

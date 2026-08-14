@@ -12,8 +12,6 @@ import {
 } from './sharp-helpers';
 import { POST_IMAGES_MAX_MEGAPIXELS } from './validation';
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('sharp', () => {
   // Minimal sharp mock that surfaces the chain we use:
   //   sharp(buffer, options).metadata()

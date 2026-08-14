@@ -12,8 +12,6 @@ const mockWhere = vi.fn((..._args: unknown[]) => ({ orderBy: mockOrderBy }));
 const mockFrom = vi.fn((..._args: unknown[]) => ({ where: mockWhere }));
 const mockSelect = vi.fn((..._args: unknown[]) => ({ from: mockFrom }));
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
 }));

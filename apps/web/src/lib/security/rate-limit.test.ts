@@ -21,8 +21,6 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-vi.mock('server-only', () => ({}));
-
 const { checkRateLimit, isRateLimited, createOpeningPostRateLimit, RATE_LIMITS } =
   await import('./rate-limit');
 

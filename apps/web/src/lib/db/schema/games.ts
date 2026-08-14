@@ -10,6 +10,7 @@
 //    hashed capability secret held client-side that lets them delete / unpublish
 //    without an account, and claim the game on later sign-up. Losing the secret
 //    leaves an orphan (admin-moderatable only) — accepted by design.
+import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import {
@@ -104,7 +105,7 @@ export const games = pgTable(
      * Null for legacy rows and plain standard-start games (no prefix).
      */
     setupPlies: integer('setup_plies'),
-    playerColor: varchar('player_color', { length: 5 }).$type<'white' | 'black'>().notNull(),
+    playerColor: varchar('player_color', { length: 5 }).$type<Side>().notNull(),
     engineConfig: jsonb('engine_config').$type<EngineConfig>().notNull(),
     /** Per-move aid counts (self-reported, client-only). Null for legacy/absent. */
     operationLogs: jsonb('operation_logs').$type<MoveOperationLog[]>(),
@@ -143,7 +144,7 @@ export const games = pgTable(
      * common case) and for games published before this column.
      */
     playSettingsLog: jsonb('play_settings_log').$type<PlaySettingsChangeEntry[]>(),
-    result: varchar('result', { length: 4 }).$type<'win' | 'loss' | 'draw'>().notNull(),
+    result: varchar('result', { length: 4 }).$type<FinalGameOutcome>().notNull(),
 
     // --- Denormalized for gallery filter / sort ---
     engineKind: varchar('engine_kind', { length: 20 }).$type<'stockfish' | 'maia'>().notNull(),

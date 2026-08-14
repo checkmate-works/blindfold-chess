@@ -12,6 +12,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { getPasswordValidationError, resolvePasswordSubmitError } from '@/lib/validations/password';
 
+import { NewPasswordFields } from '@/app/[locale]/(public)/_components/NewPasswordFields';
 import { useAuthSubmit } from '@/app/[locale]/(public)/_hooks/use-auth-submit';
 
 import { signUp } from '../_actions/signUp';
@@ -65,26 +66,17 @@ export function EmailSignUpForm({ next }: Props) {
         placeholder={t('emailPlaceholder')}
       />
 
-      <AuthField
-        id="password"
-        type="password"
-        label={t('passwordLabel')}
-        value={password}
-        onChange={setPassword}
-        autoComplete="new-password"
-        minLength={MIN_PASSWORD_LENGTH}
-        placeholder={t('passwordPlaceholder')}
-      />
-
-      <AuthField
-        id="confirmPassword"
-        type="password"
-        label={t('confirmPasswordLabel')}
-        value={confirmPassword}
-        onChange={setConfirmPassword}
-        autoComplete="new-password"
-        minLength={MIN_PASSWORD_LENGTH}
-        placeholder={t('confirmPasswordPlaceholder')}
+      <NewPasswordFields
+        password={password}
+        onPasswordChange={setPassword}
+        confirmPassword={confirmPassword}
+        onConfirmPasswordChange={setConfirmPassword}
+        labels={{
+          password: t('passwordLabel'),
+          passwordPlaceholder: t('passwordPlaceholder'),
+          confirmPassword: t('confirmPasswordLabel'),
+          confirmPasswordPlaceholder: t('confirmPasswordPlaceholder'),
+        }}
       />
 
       <AuthSubmitButton

@@ -1,6 +1,10 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import {
+  fenCharToPiece,
+  fenToBoardFlat,
+  isBlackToMoveFromFen,
+} from '@blindfold-chess/features/chess-core/fen';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceColor, PieceType } from '@blindfold-chess/types';
 
@@ -82,39 +86,18 @@ function renderThumbnailPiece(
   }
 }
 
-// The placement parser below intentionally avoids `fenToBoard` from the
-// chess-core barrel: that implementation depends on `chess.js`, which would
-// defeat the purpose of keeping this file a chess-core-free React Server
-// Component (we do not want chess.js pulled into any client bundle that
-// imports this thumbnail transitively). Side-to-move comes from the
-// chess.js-free `@blindfold-chess/features/chess-core/fen` subentry instead.
-function parseFenChar(ch: string): { type: PieceType; color: Color } | null {
-  if (ch >= 'A' && ch <= 'Z') {
-    const lower = ch.toLowerCase();
-    if (/^[kqrbnp]$/.test(lower)) {
-      return { type: lower as PieceType, color: 'w' };
-    }
-    return null;
-  }
-  if (/^[kqrbnp]$/.test(ch)) {
-    return { type: ch as PieceType, color: 'b' };
-  }
-  return null;
-}
-
+/**
+ * FEN placement as eight rows of eight cells, rank 8 first, `null` for an
+ * empty square. Built from the shared `fenToBoardFlat`, which the
+ * `chess-core/fen` subpath provides without pulling in chess.js — the
+ * hand-written scan this replaces predated that subpath and its comment
+ * claimed no chess.js-free parser existed.
+ */
 function parseFenPlacement(fen: string): (string | null)[][] {
-  const placement = fen.split(' ')[0];
-  return placement.split('/').map((rank) => {
-    const row: (string | null)[] = [];
-    for (const ch of rank) {
-      if (ch >= '1' && ch <= '8') {
-        row.push(...Array<null>(Number(ch)).fill(null));
-      } else {
-        row.push(ch);
-      }
-    }
-    return row;
-  });
+  const flat = fenToBoardFlat(fen);
+  return Array.from({ length: 8 }, (_, rank) =>
+    flat.slice(rank * 8, rank * 8 + 8).map((ch) => ch || null)
+  );
 }
 
 /**
@@ -147,7 +130,7 @@ export function BoardThumbnail({
         {board.map((rank, rankIdx) =>
           rank.map((fenChar, fileIdx) => {
             const isLight = (rankIdx + fileIdx) % 2 === 0;
-            const piece = fenChar ? parseFenChar(fenChar) : null;
+            const piece = fenChar ? fenCharToPiece(fenChar) : null;
             return (
               <div
                 key={`${rankIdx}-${fileIdx}`}

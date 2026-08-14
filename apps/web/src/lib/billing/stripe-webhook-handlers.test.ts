@@ -56,8 +56,6 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock('server-only', () => ({}));
-
 const mockCaptureMessage = vi.fn();
 vi.mock('@sentry/nextjs', () => ({
   captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),

@@ -31,9 +31,7 @@ const mockSelectCount = vi.fn();
 const mockSelectPositionAuthor = vi.fn();
 const mockRevalidatePath = vi.fn();
 
-vi.mock('@/lib/users/activity-log', () => ({
-  logActivityEvent: vi.fn(),
-}));
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),

@@ -3,32 +3,28 @@
  */
 import type { Square } from "@blindfold-chess/types";
 
-import { KNIGHT_OFFSETS } from "../common/piece-moves";
+import { getMovesForPiece } from "../common/piece-mobility";
 import {
-  fileRankToSquare,
   isValidSquare,
   squareToFileIndex,
   squareToRankIndex,
 } from "../common/utils";
 
 /**
- * Get all legal knight moves from a given square
+ * Every square a knight on `square` can reach, ignoring occupancy.
+ *
+ * Delegates to {@link getMovesForPiece}, which the legal-moves and
+ * route-planner modules already use: this had its own copy of the offset
+ * loop, and its own board-bounds test written as `<= 7` rather than against
+ * the board-size constant.
  */
 export function getKnightMoves(square: string): Square[] {
   if (!isValidSquare(square)) return [];
-
-  const fileIndex = squareToFileIndex(square);
-  const rankIndex = squareToRankIndex(square);
-
-  const moves: Square[] = [];
-  for (const [df, dr] of KNIGHT_OFFSETS) {
-    const newFile = fileIndex + df;
-    const newRank = rankIndex + dr;
-    if (newFile >= 0 && newFile <= 7 && newRank >= 0 && newRank <= 7) {
-      moves.push(fileRankToSquare(newFile, newRank));
-    }
-  }
-  return moves;
+  return getMovesForPiece(
+    "n",
+    squareToFileIndex(square),
+    squareToRankIndex(square),
+  );
 }
 
 /**

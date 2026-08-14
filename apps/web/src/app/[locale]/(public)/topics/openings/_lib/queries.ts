@@ -1,9 +1,10 @@
 import { cache } from 'react';
 
-import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
 import {
+  SOCIAL_AUTHOR_COLUMNS,
   chessOpenings,
   db,
   liveProfileJoinOn,
@@ -12,6 +13,8 @@ import {
   topicPosts,
 } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
+import type { LikeMeta } from '@/lib/db/like-queries';
+import { countRows } from '@/lib/db/list-query';
 
 import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
 import {
@@ -20,13 +23,11 @@ import {
 } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import { getPostCountByTopicType } from '@/app/[locale]/(public)/topics/_lib/queries';
 import {
-  authorSelect,
   normalizeRating,
   ratingSelect,
   sortPosts,
 } from '@/app/[locale]/(public)/topics/_lib/shared';
 import type {
-  LikeMeta,
   PostWithReplyMeta,
   ProfilePostWithReplyMeta,
   SortMode,
@@ -56,7 +57,7 @@ async function getPostsForOpening(slug: string): Promise<OpeningPostWithAuthor[]
   const results = await db
     .select({
       post: topicPosts,
-      author: authorSelect,
+      author: SOCIAL_AUTHOR_COLUMNS,
       rating: ratingSelect,
     })
     .from(topicPosts)
@@ -104,7 +105,7 @@ export const getOpeningPostById = cache(
     const results = await db
       .select({
         post: topicPosts,
-        author: authorSelect,
+        author: SOCIAL_AUTHOR_COLUMNS,
         rating: ratingSelect,
       })
       .from(topicPosts)
@@ -219,18 +220,15 @@ export async function getPostCountByFirstMoveSquare(square: string): Promise<num
 
   if (slugs.length === 0) return 0;
 
-  const [result] = await db
-    .select({ count: count() })
-    .from(topicPosts)
-    .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        inArray(topicPosts.topicKey, slugs),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    );
-  return result.count;
+  return countRows(
+    topicPosts,
+    and(
+      eq(topicPosts.topicType, 'opening'),
+      inArray(topicPosts.topicKey, slugs),
+      isNull(topicPosts.parentId),
+      isNull(topicPosts.deletedAt)
+    )
+  );
 }
 
 /**

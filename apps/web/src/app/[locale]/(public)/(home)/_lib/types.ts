@@ -20,43 +20,15 @@
  * `false` when an existing best score is surpassed.
  */
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
+import type { FinalGameOutcome } from '@blindfold-chess/types';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import type { LikeMeta } from '@/lib/db/like-queries';
+import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { PositionType } from '@/lib/positions/types';
+import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-
-/**
- * The profile fields every feed card renders for whoever produced the entry —
- * avatar, display name, and the flag / flair chips beside it. `null` where the
- * entry has no registered author (an anonymous published game).
- */
-export type FeedActor = {
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-  country: string | null;
-  flair: string | null;
-};
-
-/** Like count plus whether the viewer is one of them, for the like button. */
-export type FeedLikeMeta = {
-  likeCount: number;
-  likedByMe: boolean;
-};
-
-/**
- * Aggregate comment-thread meta for a feed entry: the reply count, when the
- * thread was last touched, and a few repliers' avatars to stack on the card.
- * Entries with no thread (a `sequence`-type position) get an empty block
- * rather than an absent one, so cards need no per-type branching.
- */
-export type FeedReplyMeta = {
-  replyCount: number;
-  latestReplyAt: Date | null;
-  repliers: { avatarUrl: string | null; displayName: string }[];
-  uniqueReplierCount: number;
-};
 
 export type PositionFeedData = {
   id: string;
@@ -64,14 +36,14 @@ export type PositionFeedData = {
   type: PositionType;
   fen: string;
   createdAt: string; // ISO 8601
-  author: FeedActor | null;
-  likeMeta: FeedLikeMeta;
+  author: SocialAuthorProfile | null;
+  likeMeta: LikeMeta;
   /**
    * Comments live in `topic_posts` keyed by `(topicType, topicKey)` where
    * `topicKey` is the position's id and `topicType` is `'position_memory'` or
    * `'position_puzzle'`.
    */
-  replyMeta: FeedReplyMeta;
+  replyMeta: ReplyMeta;
 };
 
 type FeedItemBase = {
@@ -98,7 +70,7 @@ export type ChallengeRankUpdateData = {
   isNewEntry: boolean;
   /** Previous rank before the improvement. Only present when isNewEntry is false. */
   previousRank?: number;
-  actor: FeedActor;
+  actor: SocialAuthorProfile;
 };
 
 export type ChallengeRankUpdateFeedItem = FeedItemBase & {
@@ -134,9 +106,9 @@ export type ChunkFeedData = {
   /** Snapshot of the lifecycle event that produced this feed item. */
   kind: 'created' | 'published';
   createdAt: string; // ISO 8601
-  author: FeedActor | null;
-  likeMeta: FeedLikeMeta;
-  replyMeta: FeedReplyMeta;
+  author: SocialAuthorProfile | null;
+  likeMeta: LikeMeta;
+  replyMeta: ReplyMeta;
 };
 
 export type ChunkFeedItem = FeedItemBase & {
@@ -162,11 +134,11 @@ export type GameFeedData = {
    * (plain thumbnail). See {@link playSettingsToThumbnailDisplay}.
    */
   thumbnailDisplay: BlindfoldDisplaySettings | null;
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
   createdAt: string; // ISO 8601
-  author: FeedActor | null;
-  likeMeta: FeedLikeMeta;
-  replyMeta: FeedReplyMeta;
+  author: SocialAuthorProfile | null;
+  likeMeta: LikeMeta;
+  replyMeta: ReplyMeta;
 };
 
 export type GameFeedItem = FeedItemBase & {

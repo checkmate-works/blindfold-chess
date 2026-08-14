@@ -3,6 +3,7 @@
 import { DiscPiece } from '@/app/_components/chess/DiscPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
+import type { Side } from '@blindfold-chess/types';
 import { FaEyeSlash } from 'react-icons/fa';
 
 import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
@@ -10,7 +11,7 @@ import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
 type Props = {
   settings: GamePlaySettings;
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   /**
    * Heading shown before the icons. `undefined` → the shared-page "Setup"
    * default; a string overrides it (the result page uses "Initial Settings");

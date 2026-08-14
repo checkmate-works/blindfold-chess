@@ -1,6 +1,38 @@
+import type { MetadataRoute } from 'next';
+
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
+import { captureError } from '@/lib/sentry/capture-error';
+
 export const BASE_URL = SITE_URL;
+
+/**
+ * Build one section of the sitemap, degrading to an empty section if its
+ * query throws.
+ *
+ * Every section builder shares this policy: the sitemap is assembled from
+ * roughly a dozen independent queries, and one failing table should cost
+ * Google that table's URLs, not the whole document. Each builder used to
+ * spell the policy out itself — the same try / `console.error` /
+ * `captureException` / `return entries` block, eight times — which meant the
+ * only thing keeping a new section from swallowing its error silently, or
+ * from taking the sitemap down with it, was the author copying the previous
+ * one correctly.
+ *
+ * @param label - Describes the section, used as the log context
+ *   (e.g. `'Error fetching announcements for sitemap'`).
+ */
+export async function buildSitemapSection(
+  label: string,
+  build: () => Promise<MetadataRoute.Sitemap>
+): Promise<MetadataRoute.Sitemap> {
+  try {
+    return await build();
+  } catch (error) {
+    captureError(error, label);
+    return [];
+  }
+}
 
 /**
  * Generate the `alternates.languages` entry for a sitemap row — one

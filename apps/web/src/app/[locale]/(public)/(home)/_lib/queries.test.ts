@@ -40,6 +40,9 @@ vi.mock('@/lib/db', () => ({
           leftJoin: () => ({
             leftJoin: () => ({
               where: () => mockDbSelectJoinResult(),
+              // `buildProfilePostQuery` returns a $dynamic() builder so callers
+              // can add their own .where(); the shape is otherwise the same.
+              $dynamic: () => ({ where: () => mockDbSelectJoinResult() }),
             }),
           }),
         }),
@@ -67,6 +70,13 @@ vi.mock('@/lib/db', () => ({
     displayName: 'display_name',
     avatarUrl: 'avatar_url',
   },
+  SOCIAL_AUTHOR_COLUMNS: {
+    username: 'username',
+    displayName: 'display_name',
+    avatarUrl: 'avatar_url',
+    flair: 'flair',
+    country: 'country',
+  },
   liveProfileJoinOn: (ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn],
 }));
 
@@ -82,7 +92,6 @@ vi.mock('@/app/[locale]/(public)/topics/_lib/post-meta', () => ({
 }));
 
 vi.mock('@/app/[locale]/(public)/topics/_lib/shared', () => ({
-  authorSelect: {},
   ratingSelect: {},
 }));
 

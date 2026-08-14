@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import type { QuadrantId } from '@blindfold-chess/features/quadrants';
+import type { Side } from '@blindfold-chess/types';
 
 import { getBoardThemeColors } from '@/lib/games/board-themes';
 
@@ -15,7 +16,7 @@ type Props = {
   wrongQuadrant?: QuadrantId | null;
   onQuadrantClick: (id: QuadrantId) => void;
   disabled?: boolean;
-  orientation?: 'white' | 'black';
+  orientation?: Side;
 };
 
 /**

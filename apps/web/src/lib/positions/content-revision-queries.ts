@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { count, desc, eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 import {
   AUTHOR_PROFILE_COLUMNS,
@@ -9,6 +9,7 @@ import {
   positionContentRevisions,
   profiles,
 } from '@/lib/db';
+import { countRows } from '@/lib/db/list-query';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -54,11 +55,6 @@ export const countContentRevisionsForPosition = cache(
   async (positionId: string): Promise<number> => {
     if (!UUID_RE.test(positionId)) return 0;
 
-    const [row] = await db
-      .select({ count: count() })
-      .from(positionContentRevisions)
-      .where(eq(positionContentRevisions.positionId, positionId));
-
-    return row?.count ?? 0;
+    return countRows(positionContentRevisions, eq(positionContentRevisions.positionId, positionId));
   }
 );

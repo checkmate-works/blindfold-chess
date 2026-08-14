@@ -9,8 +9,6 @@ const mockList = vi.fn();
 const mockRemove = vi.fn();
 const mockIsUserBanned = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/csrf', () => ({
   isValidOrigin: () => true,
 }));

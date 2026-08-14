@@ -9,6 +9,7 @@ import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import {
   Button,
   FieldError,
+  FormActionFooter,
   FormErrorBanner,
   UnsavedChangesDialog,
   fieldBorderClass,
@@ -19,8 +20,8 @@ import { flushSync } from 'react-dom';
 
 import type { ChunkEditRequestValidationError } from '@/lib/chunk-edit-requests/validation';
 import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 
-import { localizeChunkError } from '../../_lib/localize-error';
 import { submitEditRequest } from '../_actions/submitEditRequest';
 
 type Props = {
@@ -71,7 +72,7 @@ const WELL_KNOWN_ERRORS = new Set([
   'chunkNotDraft',
   'alreadyHasPending',
   // Validation verdicts. They were absent here until 2026-08, so
-  // `localizeChunkError` echoed the validator's raw English sentence into the
+  // `localizeActionError` echoed the validator's raw English sentence into the
   // banner — untranslated for every non-English proposer.
   'titleTooLong',
   'titleUnchanged',
@@ -210,7 +211,7 @@ export function EditRequestForm({
     const hidden =
       (field === 'title' && !titlePrimary) || (field === 'description' && !descriptionPrimary);
     if (hidden) flushSync(() => setOtherOpen(true));
-    submitError.report(field ?? null, localizeChunkError(code, t, WELL_KNOWN_ERRORS));
+    submitError.report(field ?? null, localizeActionError(code, t, WELL_KNOWN_ERRORS));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -359,7 +360,13 @@ export function EditRequestForm({
          * page via router.push (not <Link>/back) to stay locale-aware and
          * consistent with those siblings.
          */}
-        <div className="space-y-4">
+        <FormActionFooter
+          cancel={{
+            label: t('actions.cancel'),
+            onClick: () => router.push(`/chunks/${chunkSlug}` as '/chunks/[slug]'),
+            disabled: pending,
+          }}
+        >
           <Button
             type="submit"
             variant="primary"
@@ -370,15 +377,7 @@ export function EditRequestForm({
           >
             {t('actions.submit')}
           </Button>
-          <button
-            type="button"
-            onClick={() => router.push(`/chunks/${chunkSlug}` as '/chunks/[slug]')}
-            disabled={pending}
-            className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-          >
-            {t('actions.cancel')}
-          </button>
-        </div>
+        </FormActionFooter>
       </form>
 
       <UnsavedChangesDialog

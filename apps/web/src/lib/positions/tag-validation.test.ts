@@ -5,8 +5,6 @@ import { validateAndDedupeTagIds } from './tag-validation';
 const mockThemeWhere = vi.fn();
 const mockChunkWhere = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({

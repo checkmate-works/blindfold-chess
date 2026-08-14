@@ -1,10 +1,10 @@
 import { validateMoveSequence } from '@blindfold-chess/features/chess-core';
+import { plyFromMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
 
 import type { CandidateToken, LabelContext } from '@/lib/move-references/tokenizer';
 import { collectCandidates } from '@/lib/move-references/tokenizer';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
-import { plyFromMoveNumber } from '@/app/[locale]/(public)/practice/(free-play)/recall/_lib/compute-move-number';
 
 /**
  * A slice of comment text: either plain text or a run of SAN moves

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('server-only', () => ({}));
 vi.mock('@sentry/nextjs', () => ({ captureMessage: vi.fn() }));
 
 const Sentry = await import('@sentry/nextjs');

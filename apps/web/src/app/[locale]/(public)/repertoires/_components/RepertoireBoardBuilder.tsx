@@ -8,11 +8,11 @@ import { BoardFrame } from '@/app/_components/chess/BoardFrame';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import { FlipBoardButton } from '@/app/_components/chess/FlipBoardButton';
 import { useLatestRef } from '@blindfold-chess/features/common/client';
+import type { Side } from '@blindfold-chess/types';
 import { FaTrash } from 'react-icons/fa';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
-import type { RepertoireSide } from '@/lib/repertoires/validation';
 
 import {
   MOVE_NAV_SIDE_BUTTON_CLASS,
@@ -24,7 +24,7 @@ import { useRepertoireBoardBuilder } from './use-repertoire-board-builder';
 
 type Props = {
   /** The author's side — orients the board; both sides' moves are playable. */
-  side: RepertoireSide;
+  side: Side;
   /** PGN already in the form when board mode opens (carried over from paste mode). */
   initialPgn?: string;
   /** Receives the serialized PGN-with-variations after every authoring action. */

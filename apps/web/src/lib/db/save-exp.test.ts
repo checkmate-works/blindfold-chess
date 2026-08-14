@@ -8,8 +8,6 @@ const mockCalculateExp = vi.fn();
 const mockGetLevel = vi.fn();
 const mockGetLevelProgress = vi.fn();
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@blindfold-chess/features/exp', () => ({
   calculateExp: (...args: unknown[]) => mockCalculateExp(...args),
   getLevel: (...args: unknown[]) => mockGetLevel(...args),

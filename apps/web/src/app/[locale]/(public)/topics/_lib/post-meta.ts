@@ -9,13 +9,9 @@ import {
   topicPosts,
 } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
+import type { Replier } from '@/lib/db/reply-meta-queries';
 
-import type {
-  PostWithReplyMeta,
-  ProfilePostWithReplyMeta,
-  Replier,
-  TopicPostWithAuthor,
-} from './shared';
+import type { PostWithReplyMeta, ProfilePostWithReplyMeta, TopicPostWithAuthor } from './shared';
 
 /**
  * Attach post metadata (reply counts, replier avatars, like counts) to posts.

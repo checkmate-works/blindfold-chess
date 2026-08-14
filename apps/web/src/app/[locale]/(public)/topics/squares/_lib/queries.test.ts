@@ -48,6 +48,13 @@ vi.mock('@/lib/db', () => {
       displayName: 'profiles.display_name',
       avatarUrl: 'profiles.avatar_url',
     },
+    SOCIAL_AUTHOR_COLUMNS: {
+      username: 'username',
+      displayName: 'display_name',
+      avatarUrl: 'avatar_url',
+      flair: 'flair',
+      country: 'country',
+    },
     liveProfileJoinOn: vi.fn((ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn]),
   };
 });

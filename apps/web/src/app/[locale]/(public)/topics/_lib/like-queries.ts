@@ -1,6 +1,7 @@
 import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import {
+  SOCIAL_AUTHOR_COLUMNS,
   chessOpenings,
   db,
   likes,
@@ -11,7 +12,7 @@ import {
 } from '@/lib/db';
 
 import { attachProfilePostMeta } from './post-meta';
-import { authorSelect, ratingSelect } from './shared';
+import { ratingSelect } from './shared';
 import type { ProfilePostWithReplyMeta } from './shared';
 
 /**
@@ -46,7 +47,7 @@ export async function getLikedPostsByUser(
   let query = db
     .select({
       post: topicPosts,
-      author: authorSelect,
+      author: SOCIAL_AUTHOR_COLUMNS,
       rating: ratingSelect,
       openingName: chessOpenings.name,
       openingFen: chessOpenings.fen,

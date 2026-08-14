@@ -13,6 +13,8 @@
  * Browser-only: every function no-ops / returns empty under SSR (`window`
  * guard), so it is safe to import anywhere but only does work client-side.
  */
+import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
+
 const STORAGE_KEY = 'blindfold_chess_shared_games';
 
 export type SharedGameRecord = {
@@ -23,24 +25,16 @@ export type SharedGameRecord = {
 };
 
 function read(): Record<string, SharedGameRecord> {
-  if (typeof window === 'undefined') return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, SharedGameRecord>) : {};
-  } catch {
-    return {};
-  }
+  const parsed = readJson<unknown>(STORAGE_KEY, {});
+  return parsed && typeof parsed === 'object' ? (parsed as Record<string, SharedGameRecord>) : {};
 }
 
+/**
+ * Storage full / disabled loses the author the local link to their published
+ * game, which is the accepted account-less fallback — `writeJson` swallows it.
+ */
 function write(map: Record<string, SharedGameRecord>): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
-  } catch {
-    // Storage full / disabled — the author simply loses the local link to
-    // their published game, which is the accepted account-less fallback.
-  }
+  writeJson(STORAGE_KEY, map);
 }
 
 /** Record that `localGameId` was published as `publishedId` (with optional token). */

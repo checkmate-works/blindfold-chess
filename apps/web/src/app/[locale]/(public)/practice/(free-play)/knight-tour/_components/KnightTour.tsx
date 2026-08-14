@@ -12,6 +12,8 @@ import {
   isValidKnightMove,
 } from '@blindfold-chess/features/knight-tour';
 
+import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
+
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -30,6 +32,9 @@ type Props = {
   isTutorial?: boolean;
 };
 
+/** What this screen persists between visits. */
+type StoredSetup = { startingSquare?: string; blindfoldMode?: boolean };
+
 const STORAGE_KEY = 'knightTour_settings';
 
 export default function KnightTour({
@@ -42,33 +47,13 @@ export default function KnightTour({
   const quitConfirmLabels = useQuitConfirmLabels();
 
   // Settings
-  const [startingSquareOption, setStartingSquareOption] = useState(() => {
-    if (typeof window === 'undefined') return 'random';
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const settings = JSON.parse(saved);
-        return settings.startingSquare || 'random';
-      } catch {
-        // ignore parse errors
-      }
-    }
-    return 'random';
-  });
+  const [startingSquareOption, setStartingSquareOption] = useState(
+    () => readJson<StoredSetup>(STORAGE_KEY, {}).startingSquare || 'random'
+  );
 
-  const [blindfoldMode, setBlindfoldMode] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const settings = JSON.parse(saved);
-        return settings.blindfoldMode || false;
-      } catch {
-        // ignore parse errors
-      }
-    }
-    return false;
-  });
+  const [blindfoldMode, setBlindfoldMode] = useState(
+    () => readJson<StoredSetup>(STORAGE_KEY, {}).blindfoldMode || false
+  );
 
   // Track if blindfold mode is active for current game
   const [isBlindfolded, setIsBlindfolded] = useState(false);
@@ -122,11 +107,8 @@ export default function KnightTour({
 
   // Save settings when they change (only if not autoStart mode)
   useEffect(() => {
-    if (typeof window !== 'undefined' && !autoStart) {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ startingSquare: startingSquareOption, blindfoldMode })
-      );
+    if (!autoStart) {
+      writeJson(STORAGE_KEY, { startingSquare: startingSquareOption, blindfoldMode });
     }
   }, [startingSquareOption, blindfoldMode, autoStart]);
 

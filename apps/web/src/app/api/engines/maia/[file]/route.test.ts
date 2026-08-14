@@ -6,8 +6,6 @@ const { mockGetOptionalUser, mockCanUseMaia, mockLoadMaiaModel } = vi.hoisted(()
   mockLoadMaiaModel: vi.fn(),
 }));
 
-vi.mock('server-only', () => ({}));
-
 vi.mock('@/lib/auth', () => ({
   getOptionalUser: mockGetOptionalUser,
 }));

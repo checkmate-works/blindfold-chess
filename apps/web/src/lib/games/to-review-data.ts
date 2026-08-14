@@ -1,4 +1,4 @@
-import type { Side } from '@blindfold-chess/types';
+import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
 
@@ -35,7 +35,7 @@ export type GameReviewData = {
    * result label and the losing king's end-of-game badge, so it belongs to the
    * view model rather than being re-derived per surface.
    */
-  result: 'win' | 'loss' | 'draw';
+  result: FinalGameOutcome;
   engineConfig: EngineConfig;
   operationLogs: MoveOperationLog[] | null;
   playSettings: GamePlaySettings | null;

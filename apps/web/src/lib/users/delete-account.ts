@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/nextjs';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
@@ -14,6 +13,7 @@ import {
   repertoires,
   topicPosts,
 } from '@/lib/db';
+import { captureError } from '@/lib/sentry/capture-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
@@ -109,8 +109,7 @@ export async function deleteAccount(
   try {
     await cancelAllActiveSubscriptions(userId);
   } catch (err) {
-    console.error(`Failed to cancel subscriptions for user ${userId} during deletion:`, err);
-    Sentry.captureException(err);
+    captureError(err, `Failed to cancel subscriptions for user ${userId} during deletion`);
     return { ok: false, error: 'failed_to_cancel_subscription' };
   }
 

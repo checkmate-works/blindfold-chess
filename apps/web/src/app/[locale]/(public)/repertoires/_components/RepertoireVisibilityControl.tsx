@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { useRouter } from '@/i18n/routing';
 
+import { localizeActionErrorOrGeneric } from '@/lib/i18n/localize-action-error';
 // Pure catalog leaf (not the '@/lib/points' barrel) — client-safe, no server-only.
 import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import { REPERTOIRE_VISIBILITIES, repertoireVisibilityCharge } from '@/lib/points/spend-catalog';
@@ -73,8 +74,7 @@ export function RepertoireVisibilityControl({
     const result = await changeVisibility({ id, target, locale });
     if ('error' in result) {
       setPending(false);
-      const key = `errors.${result.error}`;
-      setError(t.has(key) ? t(key) : t('errors.generic'));
+      setError(localizeActionErrorOrGeneric(result.error, t));
       return;
     }
     setPending(false);

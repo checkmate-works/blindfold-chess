@@ -24,7 +24,7 @@ const DEMO_SELECTED_SQUARE = 'd2';
 
 export function BoardPreview({ settings, playerSide = 'white' }: Props) {
   const t = useTranslations('Preferences');
-  const [previewPerspective, setPreviewPerspective] = useState<'white' | 'black'>(playerSide);
+  const [previewPerspective, setPreviewPerspective] = useState<Side>(playerSide);
 
   // Reset preview perspective when playerSide changes — render-phase
   // adjustment (the standard "reset state on prop change" form) instead of a

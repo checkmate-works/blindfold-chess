@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import type { Side } from '@blindfold-chess/types';
+
 import { resolveIllegalAttemptSquares } from '@/lib/games/illegal-attempts';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 type Options = {
   /** The displayed move's aid-usage log, or null for an AI / unlogged move. */
   moveOperationLog: MoveOperationLog | null;
-  playerColor: 'white' | 'black';
+  playerColor: Side;
   /**
    * The displayed move's ply. Changing it clears the selection: attempt indices
    * are per-move, so a selection kept across a navigation would mark a square
