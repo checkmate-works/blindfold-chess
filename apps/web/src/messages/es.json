@@ -17,7 +17,22 @@
       "goToEnd": "Ir al final"
     },
     "flipBoard": "Girar tablero",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "promotionPicker": {
+      "cancel": "Cancelar coronación",
+      "promoteTo": {
+        "queen": "Coronar a dama",
+        "rook": "Coronar a torre",
+        "bishop": "Coronar a alfil",
+        "knight": "Coronar a caballo"
+      }
+    },
+    "termination": {
+      "checkmate": "Jaque mate",
+      "draw": "Tablas",
+      "resignation": "Abandono",
+      "stalemate": "Ahogado"
+    }
   },
   "Repertoires": {
     "title": "Kata",
@@ -2403,15 +2418,6 @@
         "columnChange": "Cambio"
       }
     },
-    "promotionPicker": {
-      "cancel": "Cancelar coronación",
-      "promoteTo": {
-        "queen": "Coronar a dama",
-        "rook": "Coronar a torre",
-        "bishop": "Coronar a alfil",
-        "knight": "Coronar a caballo"
-      }
-    },
     "settings": {
       "title": "Configuración de la partida"
     },
@@ -2481,12 +2487,6 @@
       "heading": "Esta partida ha terminado",
       "revealPosition": "Revelar la posición",
       "showAsPlayed": "Ver como la jugaste",
-      "termination": {
-        "checkmate": "Jaque mate",
-        "draw": "Tablas",
-        "resignation": "Abandono",
-        "stalemate": "Ahogado"
-      },
       "viewResult": "Ver resultado"
     },
     "finishModal": {

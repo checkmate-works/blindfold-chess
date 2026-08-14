@@ -459,7 +459,7 @@ describe('GameReview — end-of-game mark', () => {
 
     expect(boardViewModalProps.isOpen).toBe(true);
     expect(boardViewModalProps.terminationMark).toEqual({ square: 'e8', kind: 'checkmate' });
-    expect(boardViewModalProps.terminationMarkLabel).toBe('finishedGame.termination.checkmate');
+    expect(boardViewModalProps.terminationMarkLabel).toBe('termination.checkmate');
     // The board behind it is on the overview position and stays unmarked.
     expect(inlineBoardProps.terminationMark).toBeNull();
   });

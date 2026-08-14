@@ -17,7 +17,22 @@
       "goToEnd": "Ir para o fim"
     },
     "flipBoard": "Girar tabuleiro",
-    "close": "Fechar"
+    "close": "Fechar",
+    "promotionPicker": {
+      "cancel": "Cancelar promoção",
+      "promoteTo": {
+        "queen": "Promover a dama",
+        "rook": "Promover a torre",
+        "bishop": "Promover a bispo",
+        "knight": "Promover a cavalo"
+      }
+    },
+    "termination": {
+      "checkmate": "Xeque-mate",
+      "draw": "Empate",
+      "resignation": "Desistência",
+      "stalemate": "Afogamento"
+    }
   },
   "Repertoires": {
     "title": "Kata",
@@ -2403,15 +2418,6 @@
         "columnChange": "Alteração"
       }
     },
-    "promotionPicker": {
-      "cancel": "Cancelar promoção",
-      "promoteTo": {
-        "queen": "Promover a dama",
-        "rook": "Promover a torre",
-        "bishop": "Promover a bispo",
-        "knight": "Promover a cavalo"
-      }
-    },
     "settings": {
       "title": "Configurações da partida"
     },
@@ -2481,12 +2487,6 @@
       "heading": "Esta partida terminou",
       "revealPosition": "Revelar a posição",
       "showAsPlayed": "Ver como você jogou",
-      "termination": {
-        "checkmate": "Xeque-mate",
-        "draw": "Empate",
-        "resignation": "Desistência",
-        "stalemate": "Afogamento"
-      },
       "viewResult": "Ver resultado"
     },
     "finishModal": {

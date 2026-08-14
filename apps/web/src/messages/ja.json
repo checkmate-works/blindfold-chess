@@ -17,7 +17,22 @@
       "goToEnd": "最後へ"
     },
     "flipBoard": "ボードを反転",
-    "close": "閉じる"
+    "close": "閉じる",
+    "promotionPicker": {
+      "cancel": "昇格をキャンセル",
+      "promoteTo": {
+        "queen": "クイーンに昇格",
+        "rook": "ルークに昇格",
+        "bishop": "ビショップに昇格",
+        "knight": "ナイトに昇格"
+      }
+    },
+    "termination": {
+      "checkmate": "チェックメイト",
+      "draw": "引き分け",
+      "resignation": "投了",
+      "stalemate": "ステイルメイト"
+    }
   },
   "Repertoires": {
     "title": "型",
@@ -2403,15 +2418,6 @@
         "columnChange": "変更"
       }
     },
-    "promotionPicker": {
-      "cancel": "昇格をキャンセル",
-      "promoteTo": {
-        "queen": "クイーンに昇格",
-        "rook": "ルークに昇格",
-        "bishop": "ビショップに昇格",
-        "knight": "ナイトに昇格"
-      }
-    },
     "settings": {
       "title": "対局設定"
     },
@@ -2481,12 +2487,6 @@
       "heading": "このゲームは終了しています",
       "revealPosition": "盤面をすべて表示",
       "showAsPlayed": "対局中の見え方に戻す",
-      "termination": {
-        "checkmate": "チェックメイト",
-        "draw": "引き分け",
-        "resignation": "投了",
-        "stalemate": "ステイルメイト"
-      },
       "viewResult": "結果を見る"
     },
     "finishModal": {

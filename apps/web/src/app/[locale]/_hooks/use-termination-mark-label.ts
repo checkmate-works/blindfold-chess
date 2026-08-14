@@ -16,10 +16,14 @@ import type { TerminationMark } from '@/lib/games/termination-mark';
  * mark identically.
  */
 export function useTerminationMarkLabel(): (mark: TerminationMark | null) => string {
-  const t = useTranslations('play');
+  // `Common.termination`, not `play.finishedGame.termination`: finished-game
+  // badges appear on feed cards and profile timelines far outside the play
+  // surface, and this hook was what pulled the whole `play` dictionary into
+  // every one of those pages. The labels live in Common instead.
+  const t = useTranslations('Common');
 
   return useCallback(
-    (mark: TerminationMark | null) => (mark ? t(`finishedGame.termination.${mark.kind}`) : ''),
+    (mark: TerminationMark | null) => (mark ? t(`termination.${mark.kind}`) : ''),
     [t]
   );
 }
