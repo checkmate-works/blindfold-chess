@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation';
 
 import 'server-only';
 
+import { getOptionalUser } from '@/lib/auth';
 import { isBlockedBetween } from '@/lib/moderation/block';
-import { createClient } from '@/lib/supabase/server';
 
 /**
  * The profile sub-pages (followers / achievements) have no restricted view of
@@ -16,10 +16,7 @@ export async function redirectIfBlockedFromProfile(params: {
   username: string;
   profileId: string;
 }): Promise<void> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (!user || user.id === params.profileId) return;
   if (await isBlockedBetween(user.id, params.profileId)) {

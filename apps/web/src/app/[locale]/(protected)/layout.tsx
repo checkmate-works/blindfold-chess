@@ -3,10 +3,10 @@ import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { getOptionalUser } from '@/lib/auth';
 import { withReturnPath } from '@/lib/auth-return-path';
 import { getCurrentReturnTarget } from '@/lib/current-return-target';
 import { isUserBanned } from '@/lib/moderation/ban';
-import { createClient } from '@/lib/supabase/server';
 
 import { resolveLoadingFallback } from './_lib/resolveLoadingFallback';
 
@@ -58,10 +58,10 @@ export default async function ProtectedLayout({ children, params }: Props) {
 }
 
 async function ProtectedGate({ children, params }: Props) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getOptionalUser is React.cache()-wrapped, so the nested (confirmed)/
+  // (provisional) layouts' getAuthenticatedUser share this Auth round-trip
+  // instead of issuing a second one.
+  const user = await getOptionalUser();
 
   const { locale } = await params;
 

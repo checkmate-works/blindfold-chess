@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { and, eq } from 'drizzle-orm';
 import 'server-only';
 
@@ -16,8 +18,7 @@ function toAiReview(row: GameAiReviewRecord): AiReview {
   };
 }
 
-/** The cached review for (game, locale), or null. RSC-serializable. */
-export async function getAiReview(gameId: string, locale: string): Promise<AiReview | null> {
+async function fetchAiReview(gameId: string, locale: string): Promise<AiReview | null> {
   const [row] = await db
     .select()
     .from(gameAiReviews)
@@ -25,6 +26,17 @@ export async function getAiReview(gameId: string, locale: string): Promise<AiRev
     .limit(1);
   return row ? toAiReview(row) : null;
 }
+
+/**
+ * The cached review for (game, locale), or null. RSC-serializable.
+ *
+ * `React.cache`-wrapped so the generation action's pre-check and
+ * `generateReview`'s own `store.find` share one query per request.
+ * `dbAiReviewStore.save`'s conflict path deliberately bypasses the memo
+ * (via {@link fetchAiReview}): after losing an insert race it must see the
+ * winner's row, not the `null` this request memoized before generating.
+ */
+export const getAiReview = cache(fetchAiReview);
 
 /**
  * Persistence port for `generateReview` — injected so its orchestration is
@@ -49,7 +61,7 @@ export const dbAiReviewStore: AiReviewStore = {
     // so the user pays exactly when — and only when — a review is stored.
     const [inserted] = await db.insert(gameAiReviews).values(row).onConflictDoNothing().returning();
     if (inserted) return toAiReview(inserted);
-    const existing = await getAiReview(row.gameId, row.locale);
+    const existing = await fetchAiReview(row.gameId, row.locale);
     if (!existing) {
       // Conflict yet no row: only reachable if the winner was deleted between
       // the two statements — surface as an error rather than fabricate.

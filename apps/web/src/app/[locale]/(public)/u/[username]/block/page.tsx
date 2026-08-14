@@ -2,16 +2,14 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { and, eq, isNull } from 'drizzle-orm';
-
-import { db, profiles } from '@/lib/db';
+import { getOptionalUser } from '@/lib/auth';
 import { hasBlocked } from '@/lib/moderation/block';
-import { createClient } from '@/lib/supabase/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { getProfileByUsername } from '../_lib/queries';
 import { BlockActions } from './_components/BlockActions';
 
 // Per-user, per-locale URL — render dynamically like the rest of /u/[username].
@@ -24,11 +22,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, username } = await params;
 
-  const [profile] = await db
-    .select({ displayName: profiles.displayName })
-    .from(profiles)
-    .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
-    .limit(1);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     return {};
@@ -49,14 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlockUserPage({ params }: Props) {
   const { locale, username } = await params;
 
-  const [[profile], authResult] = await Promise.all([
-    db
-      .select({ id: profiles.id, displayName: profiles.displayName })
-      .from(profiles)
-      .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
-      .limit(1),
-    createClient().then((supabase) => supabase.auth.getUser()),
-  ]);
+  const [profile, user] = await Promise.all([getProfileByUsername(username), getOptionalUser()]);
 
   if (!profile) {
     notFound();
@@ -64,7 +51,6 @@ export default async function BlockUserPage({ params }: Props) {
 
   // Blocking requires being signed in, and blocking yourself is nonsensical —
   // hide the page for anonymous viewers and for the profile owner.
-  const user = authResult.data.user;
   if (!user || user.id === profile.id) {
     notFound();
   }

@@ -27,6 +27,13 @@ type AuthContextValue = {
   /** Whether the signed-in user has completed registration (has a profile row). */
   hasProfile: boolean;
   /**
+   * Header display fields (avatar / display name), resolved by the same
+   * `getSessionUser()` call that resolves `user` — consumers must not fetch
+   * them again (the header once paid a second round-trip for exactly this).
+   * `null` for anonymous and provisional viewers.
+   */
+  profile: SessionUser['profile'];
+  /**
    * Signed in but not yet registered — no profile / username. Such a viewer is
    * routed to `setup-username` and must finish registration before posting
    * (see `useAuthGuard`). Always false for anonymous and confirmed viewers.
@@ -77,6 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   // Whether the signed-in user has a profile row (completed registration).
   const [hasProfile, setHasProfile] = useState(false);
+  const [profile, setProfile] = useState<SessionUser['profile']>(null);
   // We do not know the auth state until `getSessionUser()` resolves, so the
   // initial state is "loading". The layout no longer seeds `initialUser`
   // (that read forced the entire `[locale]/**` subtree dynamic and blocked
@@ -117,6 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const status = await getSessionUser();
       setHasProfile(status.hasProfile);
+      setProfile(status.profile);
     } catch {
       // Keep the prior value on a transient failure.
     }
@@ -125,23 +134,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     let cancelled = false;
     let subscription:
-      | ReturnType<SupabaseClient['auth']['onAuthStateChange']>['data']['subscription']
-      | null = null;
+      ReturnType<SupabaseClient['auth']['onAuthStateChange']>['data']['subscription'] | null = null;
 
     (async () => {
       // Ask the server whether a session cookie is present. This is a thin
       // Server Action call — no Supabase browser SDK is downloaded yet.
-      let serverStatus: SessionUser = { user: null, hasProfile: false };
+      let serverStatus: SessionUser = { user: null, hasProfile: false, profile: null };
       try {
         serverStatus = await getSessionUser();
       } catch {
-        serverStatus = { user: null, hasProfile: false };
+        serverStatus = { user: null, hasProfile: false, profile: null };
       }
 
       if (cancelled) return;
 
       syncAdsHiddenAttribute();
       setHasProfile(serverStatus.hasProfile);
+      setProfile(serverStatus.profile);
 
       const serverUser = serverStatus.user;
 
@@ -194,7 +203,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // (rare — the app re-mounts the provider via a server redirect) keeps
         // the last-known value until `refreshUser`, and the server guard is the
         // real gate regardless.
-        if (!session?.user) setHasProfile(false);
+        if (!session?.user) {
+          setHasProfile(false);
+          setProfile(null);
+        }
 
         if (event === 'SIGNED_OUT') {
           routerRef.current.refresh();
@@ -247,11 +259,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       session,
       isLoading,
       hasProfile,
+      profile,
       isProvisional: user != null && !hasProfile,
       signOut,
       refreshUser,
     }),
-    [user, session, isLoading, hasProfile, signOut, refreshUser]
+    [user, session, isLoading, hasProfile, profile, signOut, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

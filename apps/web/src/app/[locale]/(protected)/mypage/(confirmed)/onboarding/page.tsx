@@ -18,10 +18,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { eq } from 'drizzle-orm';
-
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, profiles } from '@/lib/db';
+import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -48,7 +46,7 @@ export default async function OnboardingPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'onboardingWizard' });
 
   const user = await getAuthenticatedUser();
-  const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
+  const profile = await getViewerProfile(user.id);
 
   if (!profile) {
     notFound();

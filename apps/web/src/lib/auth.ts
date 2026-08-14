@@ -16,6 +16,26 @@ import { checkRateLimit } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 /**
+ * Returns the authenticated user or `null` without redirecting.
+ *
+ * Use this in contexts where unauthenticated access is expected
+ * (e.g., Server Actions called from outside `(protected)/` routes).
+ *
+ * This is the single per-request Auth round-trip: `getAuthenticatedUser`
+ * delegates here, so a layout calling one and a page calling the other still
+ * share one `auth.getUser()` call. `React.cache` memoizes by function
+ * identity, so a second independently-wrapped fetcher would NOT dedupe —
+ * always route new callers through this function.
+ */
+export const getOptionalUser = cache(async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});
+
+/**
  * Returns the authenticated user or redirects to sign-in.
  *
  * For `(protected)/` routes the proxy's own guard fires first, so the
@@ -27,30 +47,13 @@ import { createClient } from '@/lib/supabase/server';
  * page they were denied so signing in resumes it.
  */
 export const getAuthenticatedUser = cache(async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
   if (!user) {
     const locale = await getLocale();
     redirect(
       withReturnPath(`/${locale}/sign-in?toast=sign_in_required`, await getCurrentReturnTarget())
     );
   }
-  return user;
-});
-
-/**
- * Returns the authenticated user or `null` without redirecting.
- *
- * Use this in contexts where unauthenticated access is expected
- * (e.g., Server Actions called from outside `(protected)/` routes).
- */
-export const getOptionalUser = cache(async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   return user;
 });
 

@@ -5,7 +5,7 @@ import type { HelpStep } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
-import { MypageContent } from './_components/MypageContent';
+import { Dashboard } from './_components/Dashboard';
 
 type Props = LocalePageProps;
 
@@ -61,7 +61,11 @@ export default async function ChallengesPage({ params }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
     >
-      <MypageContent />
+      {/* Rendered directly (no auth-context gate): the dashboard's Server
+          Actions authenticate from cookies on the server, so waiting for the
+          client AuthContext to resolve before mounting only chained an extra
+          round-trip in front of the first data fetch. */}
+      <Dashboard locale={locale} />
     </PageLayout>
   );
 }

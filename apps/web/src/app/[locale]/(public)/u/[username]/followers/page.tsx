@@ -15,6 +15,7 @@ import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { getProfileByUsername } from '../_lib/queries';
 import { redirectIfBlockedFromProfile } from '../_lib/redirect-if-blocked';
 
 // Per-user, per-locale URLs explode the on-demand ISR cache (one entry per
@@ -37,11 +38,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, username } = await params;
 
-  const [profile] = await db
-    .select({ displayName: profiles.displayName })
-    .from(profiles)
-    .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
-    .limit(1);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     return {};
@@ -61,11 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function FollowersPage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
-  const [profile] = await db
-    .select({ id: profiles.id, displayName: profiles.displayName })
-    .from(profiles)
-    .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
-    .limit(1);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     notFound();

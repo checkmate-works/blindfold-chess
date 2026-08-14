@@ -29,7 +29,7 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { LeaderboardDetailContent } from '@/app/[locale]/(public)/leaderboard/_components';
@@ -111,17 +111,11 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
 
   const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
 
-  const supabase = await createClient();
   // The viewer is only used to highlight their own row — independent of the
-  // leaderboard query itself.
-  const [
-    {
-      data: { user },
-    },
-    data,
-    t,
-  ] = await Promise.all([
-    supabase.auth.getUser(),
+  // leaderboard query itself. getOptionalUser shares the layout's Auth
+  // round-trip via React.cache.
+  const [user, data, t] = await Promise.all([
+    getOptionalUser(),
     getLeaderboard(validated.module, validated.key, validated.period, page),
     getTranslations({ locale, namespace: 'leaderboard' }),
   ]);
