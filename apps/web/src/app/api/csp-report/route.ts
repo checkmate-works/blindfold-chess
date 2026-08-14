@@ -16,8 +16,10 @@ import * as Sentry from '@sentry/nextjs';
  * The endpoint is intentionally unauthenticated — browsers do not attach
  * cookies / CSRF tokens to these beacon requests, and requiring them would
  * silently drop every report. Because it is therefore an open, unbounded
- * firehose, two guards keep it from exhausting the Sentry quota (which it
+ * firehose, these guards keep it from exhausting the Sentry quota (which it
  * previously did, taking the whole project's error reporting offline):
+ *   - The request body is read under a hard byte cap (see `MAX_REPORT_BYTES`).
+ *     Anything larger is refused without being buffered.
  *   - Reports with no directive are dropped. A well-formed CSP report always
  *     names a directive; payloads without one are empty Safari reports or junk
  *     POSTed by bots, carry no actionable data, and were ~half the volume.
@@ -25,12 +27,136 @@ import * as Sentry from '@sentry/nextjs';
  *   - Reports blamed on a browser extension's own assets are dropped (see
  *     `EXTENSION_INJECTED_HOSTS`) — they describe the visitor's software, not
  *     this site, and no code change here could ever resolve them.
+ *   - The directive that becomes a Sentry tag and fingerprint is clamped to the
+ *     known CSP directive names (see `canonicalDirective`), so a caller cannot
+ *     mint unbounded tag values or issue groups.
  *   - The remainder is probabilistically sampled (see `cspReportSampleRate`)
  *     so the forwarded volume is bounded regardless of report content or abuse.
  *
- * Always responds 204 (no body) regardless of parse success so the browser
- * does not retry or log failures.
+ * What is deliberately NOT done here: a per-IP rate limit. The limiter this repo
+ * has (`@/lib/security/rate-limit-ip`) writes a row to Postgres per request,
+ * which costs more than the work it would prevent — parsing a small JSON body
+ * and, one time in ten, a Sentry call. Capping the *invocation* volume of an
+ * open beacon endpoint has to happen before the function runs (edge firewall /
+ * WAF rule), not inside it.
+ *
+ * Responds 204 (no body) on every path except an oversized body, which gets 413,
+ * so a real browser never sees anything that would make it retry or log a
+ * failure. No legitimate CSP report approaches the cap.
  */
+
+/**
+ * Hard cap on the request body, in bytes.
+ *
+ * A single CSP report is well under 1 KB — the spec caps `script-sample` at 40
+ * characters — and a `reports+json` batch holds a handful of them. 64 KB leaves
+ * two orders of magnitude of headroom while making an unbounded `request.text()`
+ * impossible: without this, any caller could hold arbitrary memory in the
+ * function by POSTing a large body to a public URL.
+ */
+const MAX_REPORT_BYTES = 64 * 1024;
+
+/**
+ * Directive names that may become a Sentry tag value / fingerprint component.
+ *
+ * The reported directive is attacker-controlled on an open endpoint, and it is
+ * used both as `tags.csp_directive` and in `fingerprint`. Feeding it through
+ * unclamped lets a caller create an unbounded number of distinct tag values and
+ * Sentry issues — the same quota exhaustion this endpoint already caused once,
+ * reached by a different route. Anything unrecognised collapses to `other`; the
+ * raw string is still forwarded in `extra`, which is not indexed.
+ */
+const KNOWN_CSP_DIRECTIVES = new Set([
+  'base-uri',
+  'block-all-mixed-content',
+  'child-src',
+  'connect-src',
+  'default-src',
+  'font-src',
+  'form-action',
+  'frame-ancestors',
+  'frame-src',
+  'img-src',
+  'manifest-src',
+  'media-src',
+  'navigate-to',
+  'object-src',
+  'plugin-types',
+  'prefetch-src',
+  'referrer',
+  'report-to',
+  'report-uri',
+  'require-trusted-types-for',
+  'sandbox',
+  'script-src',
+  'script-src-attr',
+  'script-src-elem',
+  'style-src',
+  'style-src-attr',
+  'style-src-elem',
+  'trusted-types',
+  'upgrade-insecure-requests',
+  'worker-src',
+]);
+
+/**
+ * Reduce a reported directive to a bounded label.
+ *
+ * Legacy `violated-directive` carries the whole directive *value*
+ * (`"script-src 'self' https://..."`), so only the first token is meaningful;
+ * modern `effective-directive` is already just the name.
+ */
+function canonicalDirective(directive: string): string {
+  const name = directive.trim().split(/\s+/, 1)[0]?.toLowerCase() ?? '';
+  return KNOWN_CSP_DIRECTIVES.has(name) ? name : 'other';
+}
+
+/**
+ * Read the body as text, refusing anything over `MAX_REPORT_BYTES`.
+ *
+ * Returns `null` when the cap is exceeded. The `Content-Length` header is
+ * checked first as a cheap reject, but it is caller-supplied and may be absent
+ * or wrong, so the stream is also counted as it arrives and abandoned the moment
+ * the budget is blown — the point is never to buffer the whole thing.
+ */
+async function readBodyWithinLimit(request: Request): Promise<string | null> {
+  const declaredLength = Number(request.headers.get('content-length'));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_REPORT_BYTES) return null;
+
+  const body = request.body;
+  if (body === null) return '';
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_REPORT_BYTES) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return new TextDecoder().decode(concat(chunks, total));
+}
+
+function concat(chunks: readonly Uint8Array[], total: number): Uint8Array {
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return merged;
+}
 
 /**
  * Fraction (0..1) of CSP reports forwarded to Sentry.
@@ -108,7 +234,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const raw = await request.text();
+    const raw = await readBodyWithinLimit(request);
+
+    if (raw === null) {
+      return new NextResponse(null, { status: 413 });
+    }
 
     if (!raw) {
       return new NextResponse(null, { status: 204 });
@@ -147,13 +277,18 @@ export async function POST(request: Request): Promise<NextResponse> {
       // Sentry quota again, independent of report content or abuse.
       if (Math.random() >= sampleRate) continue;
 
+      // Bound the indexed forms of the directive: `tags` and `fingerprint` are
+      // both attacker-reachable on an open endpoint. The raw value survives in
+      // `extra.violatedDirective` below.
+      const directiveLabel = canonicalDirective(directive);
+
       Sentry.captureMessage('CSP violation', {
         level: 'warning',
         // Group by directive so a single noisy directive no longer escalates
         // one project-wide mega-issue.
-        fingerprint: ['csp-violation', directive],
+        fingerprint: ['csp-violation', directiveLabel],
         tags: {
-          csp_directive: directive,
+          csp_directive: directiveLabel,
           blocked_scheme: schemeOf(blockedUri),
           // Host of the blocked URI — lets Sentry's tag breakdown enumerate
           // exactly which third-party domains need allow-listing.
@@ -161,6 +296,11 @@ export async function POST(request: Request): Promise<NextResponse> {
         },
         extra: {
           blockedUri: violation['blocked-uri'] ?? violation.blockedURL,
+          // The directive exactly as reported, before `canonicalDirective`
+          // clamped the tag. Carried explicitly because `violatedDirective`
+          // below reads two spellings and misses `effective-directive`, so on a
+          // modern report it would otherwise be the clamped label or nothing.
+          rawDirective: directive,
           violatedDirective: violation['violated-directive'] ?? violation.effectiveDirective,
           documentUri: violation['document-uri'] ?? violation.documentURL,
           sourceFile: violation['source-file'] ?? violation.sourceFile,
@@ -220,10 +360,22 @@ function schemeOf(uri: string | undefined): string | undefined {
   return idx > 0 ? uri.slice(0, idx) : undefined;
 }
 
+/**
+ * Host of the blocked URI, or `undefined` if there isn't a plausible one.
+ *
+ * This becomes a Sentry tag, and on an open endpoint its input is
+ * attacker-supplied, so values that could not be a real host are rejected
+ * rather than indexed: 253 octets is the DNS name ceiling, and a host that is
+ * not made of name/IP-literal characters is not one either. Real hosts are
+ * unaffected — the tag keeps doing its job of enumerating which third-party
+ * domains need allow-listing.
+ */
 function hostOf(uri: string | undefined): string | undefined {
   if (!uri) return undefined;
   try {
-    return new URL(uri).host || undefined;
+    const { host } = new URL(uri);
+    if (!host || host.length > 253) return undefined;
+    return /^[A-Za-z0-9.\-:[\]]+$/.test(host) ? host : undefined;
   } catch {
     // Non-URL blocked-uri values ("inline", "eval", "self") have no host.
     return undefined;
