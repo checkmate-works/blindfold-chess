@@ -1,9 +1,7 @@
 import { redirect } from 'next/navigation';
 
-import { eq } from 'drizzle-orm';
-
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, profiles } from '@/lib/db';
+import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 /**
  * @knownIssue This redirect can intermittently crash the client with a
@@ -21,11 +19,7 @@ export default async function ConfirmedLayout({
 }) {
   const user = await getAuthenticatedUser();
 
-  const [profile] = await db
-    .select({ username: profiles.username })
-    .from(profiles)
-    .where(eq(profiles.id, user.id))
-    .limit(1);
+  const profile = await getViewerProfile(user.id);
 
   if (!profile) {
     const { locale } = await params;

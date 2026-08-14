@@ -5,10 +5,10 @@ import { BoardFrame } from '@/app/_components';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 import { FiEdit2 } from 'react-icons/fi';
 
+import { getOptionalUser } from '@/lib/auth';
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
-import { getChunkBySlug } from '@/lib/chunks/queries';
+import { getChunkBySlugWithProfile } from '@/lib/chunks/queries';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-import { createClient } from '@/lib/supabase/server';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
@@ -86,7 +86,10 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const chunk = await getChunkBySlug(slug);
+  // Same cache()-keyed fetcher the page uses (via loadChunkDetail) — calling
+  // the profile-less getChunkBySlug here would be a second cache entry and a
+  // second chunk query per request.
+  const chunk = (await getChunkBySlugWithProfile(slug))?.chunk;
 
   if (!chunk) {
     return {
@@ -109,10 +112,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ChunkDetailPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   const { sort, tab } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);

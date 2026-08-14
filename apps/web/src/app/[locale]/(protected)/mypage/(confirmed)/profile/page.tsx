@@ -3,10 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { eq } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, profiles } from '@/lib/db';
+import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { Divider, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_DESTRUCTIVE_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -32,7 +31,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const user = await getAuthenticatedUser();
 
-  const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
+  const profile = await getViewerProfile(user.id);
 
   if (!profile) {
     notFound();

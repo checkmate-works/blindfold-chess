@@ -1,14 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
-import { eq } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { FiSettings } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, profiles } from '@/lib/db';
 import { getMutedNotificationTypes } from '@/lib/notifications/mutes';
 import { clampPage } from '@/lib/pagination';
+import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -40,17 +39,13 @@ export default async function NotificationsPage({ params, searchParams }: Props)
 
   const user = await getAuthenticatedUser();
   const { page } = await searchParamsCache.parse(searchParams);
-  const [[{ items, totalPages }, unreadCount, mutedTypes], [profile]] = await Promise.all([
+  const [[{ items, totalPages }, unreadCount, mutedTypes], profile] = await Promise.all([
     Promise.all([
       getNotifications(user.id, page),
       getUnreadCount(user.id),
       getMutedNotificationTypes(user.id),
     ]),
-    db
-      .select({ username: profiles.username })
-      .from(profiles)
-      .where(eq(profiles.id, user.id))
-      .limit(1),
+    getViewerProfile(user.id),
   ]);
   const mutedTypeSet = new Set<string>(mutedTypes);
 
