@@ -230,9 +230,11 @@ DROP POLICY IF EXISTS "challenge_results_select" ON "challenge_results";
 CREATE POLICY "challenge_results_select" ON "challenge_results"
   FOR SELECT USING (true);
 
+-- No INSERT policy: scores are written by the service role only. A client
+-- INSERT is a self-reported achievement that RLS cannot validate — it can prove
+-- the row is yours, not that you earned it. Dropped rather than kept so a
+-- re-added grant denies instead of trusting the client again.
 DROP POLICY IF EXISTS "challenge_results_insert" ON "challenge_results";
-CREATE POLICY "challenge_results_insert" ON "challenge_results"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- challenge_best_scores
@@ -243,15 +245,11 @@ DROP POLICY IF EXISTS "challenge_best_scores_select" ON "challenge_best_scores";
 CREATE POLICY "challenge_best_scores_select" ON "challenge_best_scores"
   FOR SELECT USING (true);
 
+-- No INSERT / UPDATE policy — see challenge_results above. This table is also
+-- the source the `challenge_score` rank requirement evaluates, so a client-
+-- writable score is a client-writable belt rank.
 DROP POLICY IF EXISTS "challenge_best_scores_insert" ON "challenge_best_scores";
-CREATE POLICY "challenge_best_scores_insert" ON "challenge_best_scores"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
 DROP POLICY IF EXISTS "challenge_best_scores_update" ON "challenge_best_scores";
-CREATE POLICY "challenge_best_scores_update" ON "challenge_best_scores"
-  FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- article_images (admin-only write, public read)

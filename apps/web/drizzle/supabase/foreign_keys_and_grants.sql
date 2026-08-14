@@ -284,9 +284,20 @@ GRANT SELECT ON TABLE public.likes TO anon;
 -- FK constraint: challenge_results.user_id → auth.users(id) ON DELETE CASCADE
 SELECT public.ensure_auth_users_fk('challenge_results', 'challenge_results_user_id_fkey', 'user_id', 'CASCADE');
 
--- Grant necessary permissions (public read for leaderboard display)
-GRANT SELECT, INSERT ON TABLE public.challenge_results TO authenticated;
+-- Grant necessary permissions (public read for leaderboard display; writes are
+-- service-role only).
+--
+-- No INSERT for `authenticated`: a score row is a claim about something the user
+-- did, and the only evidence that it happened is that the server wrote it. RLS
+-- can check `auth.uid() = user_id` but cannot check that the score is real, so a
+-- client INSERT is an unbounded self-report. This table feeds the monthly
+-- leaderboard badge grant (`@/lib/achievements/grant-monthly-leaderboard-badges`
+-- ranks the previous month's rows), so fabricated rows win real badges.
+GRANT SELECT ON TABLE public.challenge_results TO authenticated;
 GRANT SELECT ON TABLE public.challenge_results TO anon;
+-- Explicit REVOKE: see the topic_posts note — narrowing the GRANT above does not
+-- withdraw what earlier deploys granted.
+REVOKE INSERT ON TABLE public.challenge_results FROM authenticated;
 
 -- =============================================================================
 -- challenge_best_scores
@@ -295,9 +306,22 @@ GRANT SELECT ON TABLE public.challenge_results TO anon;
 -- FK constraint: challenge_best_scores.user_id → auth.users(id) ON DELETE CASCADE
 SELECT public.ensure_auth_users_fk('challenge_best_scores', 'challenge_best_scores_user_id_fkey', 'user_id', 'CASCADE');
 
--- Grant necessary permissions (public read for leaderboard display, UPDATE for UPSERT)
-GRANT SELECT, INSERT, UPDATE ON TABLE public.challenge_best_scores TO authenticated;
+-- Grant necessary permissions (public read for leaderboard display; writes are
+-- service-role only).
+--
+-- The UPSERT this used to grant INSERT/UPDATE for runs in
+-- `@/lib/db/save-challenge-result` on the Drizzle connection, which bypasses
+-- RLS — the client never needed these privileges. Granting them meant a
+-- signed-in user could `PATCH /rest/v1/challenge_best_scores?user_id=eq.<self>`
+-- with any score: RLS could confirm the row was theirs but not that the score
+-- was earned. That is not only a leaderboard-integrity problem
+-- (`@/lib/db/challenge-queries` ranks straight off this table) — the
+-- `challenge_score` rank requirement reads it too
+-- (`@/lib/db/rank-evaluation`), so a forged score is promoted into a real
+-- `user_ranks` grant on the next challenge save.
+GRANT SELECT ON TABLE public.challenge_best_scores TO authenticated;
 GRANT SELECT ON TABLE public.challenge_best_scores TO anon;
+REVOKE INSERT, UPDATE ON TABLE public.challenge_best_scores FROM authenticated;
 
 -- =============================================================================
 -- feed_items

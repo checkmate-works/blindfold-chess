@@ -103,6 +103,14 @@ function policyCommandsFor(table: string): Set<string> {
  */
 const SOFT_DELETABLE_UGC_TABLES = ['topic_posts', 'positions', 'chunks'] as const;
 
+/**
+ * Tables recording something the user is claimed to have achieved. RLS can
+ * verify the row belongs to the caller but not that the achievement happened, so
+ * a client write is an unbounded self-report. These feed the public leaderboards,
+ * the `challenge_score` belt-rank requirement, and the monthly badge cron.
+ */
+const SELF_REPORTABLE_ACHIEVEMENT_TABLES = ['challenge_results', 'challenge_best_scores'] as const;
+
 describe('PostgREST write surface for `authenticated`', () => {
   describe.each(SOFT_DELETABLE_UGC_TABLES)('%s', (table) => {
     it('does not grant UPDATE (a column-blind RLS policy cannot protect `deleted_at`)', () => {
@@ -116,6 +124,20 @@ describe('PostgREST write surface for `authenticated`', () => {
 
     it('still allows public reads (the catalog is public by design)', () => {
       expect(effectivePrivileges(grantsSql, table, 'anon')).toContain('SELECT');
+    });
+  });
+
+  describe.each(SELF_REPORTABLE_ACHIEVEMENT_TABLES)('%s', (table) => {
+    it('grants no write privilege at all (scores are service-role written)', () => {
+      const privileges = effectivePrivileges(grantsSql, table, 'authenticated');
+      expect([...privileges]).toEqual(['SELECT']);
+    });
+
+    it('has no INSERT or UPDATE policy, so a re-added grant fails closed', () => {
+      const commands = policyCommandsFor(table);
+      expect(commands).not.toContain('INSERT');
+      expect(commands).not.toContain('UPDATE');
+      expect(commands).not.toContain('ALL');
     });
   });
 
