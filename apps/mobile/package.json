@@ -10,8 +10,8 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest",
-    "test:run": "vitest run",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "copy-stockfish": "tsx scripts/copy-stockfish.ts"
   },
   "dependencies": {

@@ -228,7 +228,7 @@ Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm tes
 - `npx drizzle-kit generate --name=<migration_name>` - Generate migrations from schema changes (always specify `--name`)
 - `pnpm db:run-migrate` - Run migrations + Supabase SQL (auto-detects Supabase)
 - `pnpm db:studio` - Open Drizzle Studio (database GUI)
-- `pnpm test:run` - Run unit tests once (CI mode)
+- `pnpm test` - Run unit tests once (use `pnpm test:watch` for watch mode)
 - `pnpm test:e2e` - Run E2E tests in headless mode (auto-starts dev server)
 - `pnpm capture-screenshots` - Capture practice page thumbnails for the practice menu
 

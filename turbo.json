@@ -50,6 +50,10 @@
         "DATABASE_URL"
       ]
     },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    },
     "test:ui": {
       "cache": false,
       "persistent": true
