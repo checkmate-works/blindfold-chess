@@ -6,6 +6,7 @@ import type { Side } from '@blindfold-chess/types';
 
 import { canGenerateAiReview } from '@/lib/ai-review/authorize';
 import { getAiReview } from '@/lib/ai-review/queries';
+import { getOptionalUser } from '@/lib/auth';
 import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
@@ -14,7 +15,6 @@ import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
 import { hasPlayedGifVariant } from '@/lib/games/gif/preview-frames';
 import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
-import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -49,30 +49,31 @@ type Props = {
 export async function SharedGameDetailView({ locale, id, highlightCommentId, orientation }: Props) {
   if (!UUID_RE.test(id)) notFound();
 
-  const detail = await getGameById(id);
+  // Wave 1 — the viewer (registered ownership is known server-side;
+  // account-less ownership via manage token is resolved client-side inside
+  // OwnerActions) and translations are independent of the game row, so they
+  // ride alongside it instead of after it.
+  const [detail, user, t] = await Promise.all([
+    getGameById(id),
+    getOptionalUser(),
+    getTranslations({ locale, namespace: 'sharedGames' }),
+  ]);
   if (!detail) notFound();
 
-  const t = await getTranslations({ locale, namespace: 'sharedGames' });
   const { game, author } = detail;
   const authorDisplayName = author ? resolveDisplayName(author) : t('detail.guest');
-
-  // Opening is derived from the moves (see detectGameOpening); null for
-  // custom-start games or lines outside the master. Rendered (with the player
-  // colour) inside GameReview, above the stats block.
-  const opening = await detectGameOpening({ moves: game.moves, startingFen: game.startingFen });
-
-  // Registered ownership is known server-side; account-less ownership (manage
-  // token) is resolved client-side inside OwnerActions.
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   const isRegisteredOwner = game.authorId != null && user?.id === game.authorId;
 
-  // Advice comments (per-move) plus the viewer's profile, which enables posting
-  // and rendering their own comment optimistically.
-  const [comments, currentUser, likeMeta, gameChunks, availableChunks, aiReview] =
+  // Wave 2 — everything keyed on (game, viewer), all mutually independent:
+  // the derived opening, the advice comments (per-move) plus the viewer's
+  // profile (enables posting and rendering their own comment optimistically),
+  // and the social/AI-review payload.
+  const [opening, comments, currentUser, likeMeta, gameChunks, availableChunks, aiReview] =
     await Promise.all([
+      // Opening is derived from the moves (see detectGameOpening); null for
+      // custom-start games or lines outside the master. Rendered (with the
+      // player colour) inside GameReview, above the stats block.
+      detectGameOpening({ moves: game.moves, startingFen: game.startingFen }),
       listGameComments(game.id, user?.id),
       user ? getCommentUserProfile(user.id) : Promise.resolve(null),
       getLikeMeta(GAME_LIKE_TARGET, game.id, user?.id),
