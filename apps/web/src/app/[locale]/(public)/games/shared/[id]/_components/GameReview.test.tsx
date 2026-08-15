@@ -313,6 +313,52 @@ describe('GameReview — contributions', () => {
   });
 });
 
+describe('GameReview — overview tabs on a move position', () => {
+  // The whole point of the tab row: the Summary and the AI Review describe the
+  // game, not a position, so stepping onto a move must not strand them on the
+  // opening board (it used to replace the entire block with the move's thread).
+  const onMove = (overrides: Partial<LiveSocial> = {}) => {
+    mockStats = { totalMoves: 3 };
+    mockNav.currentPosition = 0;
+    return baseProps({
+      aiReview: { initial: null },
+      social: liveSocial({
+        isAuthenticated: true,
+        comments: [{ id: 'c1', ply: 1, deletedAt: null } as LiveSocial['comments'][number]],
+        ...overrides,
+      }),
+    });
+  };
+
+  it('keeps the tab row rendered while a move is on the board', () => {
+    render(<GameReview {...onMove()} />);
+    expect(screen.getAllByRole('tab').map((el) => el.textContent)).toEqual([
+      'overview.summaryTab',
+      'overview.discussionTab (1)',
+      'aiReview.tab',
+    ]);
+  });
+
+  it('shows the thread of the move on the board under the Discussion tab', () => {
+    render(<GameReview {...onMove()} />);
+    // A game with comments leads with the discussion, which on a move position
+    // is that move's own thread — not the whole-game one.
+    expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
+    expect(screen.queryByTestId('discussion-feed')).toBeNull();
+  });
+
+  it('reaches the Summary and the AI Review without returning to the opening board', () => {
+    render(<GameReview {...onMove()} />);
+
+    fireEvent.click(screen.getByRole('tab', { name: 'overview.summaryTab' }));
+    expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
+    expect(screen.queryByTestId('move-contributions')).toBeNull();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
+    expect(screen.getByTestId('ai-review-panel')).toBeInTheDocument();
+  });
+});
+
 describe('GameReview — stats overview gating', () => {
   it('gates the stats overview behind StatsAuthGate for anonymous viewers', () => {
     mockStats = { totalMoves: 3 };
