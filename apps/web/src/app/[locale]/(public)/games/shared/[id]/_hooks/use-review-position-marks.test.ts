@@ -48,30 +48,30 @@ describe('useReviewPositionMarks — evaluationMarkAt', () => {
 });
 
 describe('useReviewPositionMarks — bestMoveArrowAt', () => {
-  it('draws the arrow one position BEFORE the move it explains', () => {
+  it('draws the arrow on the same board as the grade it explains', () => {
     const { bestMoveArrowAt } = marks();
 
-    // The board the alternative was playable on: after 1...Nf6, before 2.Nd2.
-    expect(bestMoveArrowAt(GRADED_PLY - 1)).toEqual({
+    // The graded move's own board — where its `?!` badge sits too. g1 has just
+    // been vacated by the move being second-guessed; the last-move highlight
+    // on g1/d2 is what tells the two apart.
+    expect(bestMoveArrowAt(GRADED_PLY)).toEqual({
       arrows: [{ from: 'g1', to: 'f3', color: 'blue' }],
       circles: [],
     });
-    // Not on the graded move's own board — g1 is empty there, and the grade
-    // badge is what that position gets instead.
-    expect(bestMoveArrowAt(GRADED_PLY)).toBeNull();
+    expect(bestMoveArrowAt(GRADED_PLY - 1)).toBeNull();
   });
 
-  it('has nothing to draw at the latest position or on an ungraded step', () => {
+  it('has nothing to draw on a step the review did not grade', () => {
     const { bestMoveArrowAt } = marks();
-    expect(bestMoveArrowAt(-1)).toBeNull();
     expect(bestMoveArrowAt(0)).toBeNull();
+    expect(bestMoveArrowAt(-2)).toBeNull();
   });
 
-  it('reaches the opening board when the first move is the graded one', () => {
-    const { bestMoveArrowAt } = marks({
-      bestMoves: new Map([[0, 'e4']]),
-    });
-    expect(bestMoveArrowAt(-2)).toEqual({
+  it('resolves the SAN against the board it was legal on, not the one shown', () => {
+    // `Nf3` is ambiguous on the displayed board (both knights reach f3 after
+    // 2.Nd2) and illegal from g1 there — it only parses one move earlier.
+    const { bestMoveArrowAt } = marks({ bestMoves: new Map([[0, 'e4']]) });
+    expect(bestMoveArrowAt(0)).toEqual({
       arrows: [{ from: 'e2', to: 'e4', color: 'blue' }],
       circles: [],
     });
@@ -81,6 +81,6 @@ describe('useReviewPositionMarks — bestMoveArrowAt', () => {
     const { bestMoveArrowAt } = marks({
       bestMoves: new Map([[GRADED_PLY, 'Qxh8']]),
     });
-    expect(bestMoveArrowAt(GRADED_PLY - 1)).toBeNull();
+    expect(bestMoveArrowAt(GRADED_PLY)).toBeNull();
   });
 });

@@ -311,14 +311,6 @@ export function GameReview({
     [bestMoveArrowAt, quickPeek.nav.currentPosition]
   );
 
-  // "Best move: Nf3" in the review opens the board it was playable on — the
-  // position before the graded move, where the arrow is drawn. Ply 0's
-  // predecessor is the opening board (-2), not the latest position (-1).
-  const previewBestMove = useCallback(
-    (ply: number) => quickPeek.openAtMove(ply > 0 ? ply - 1 : -2),
-    [quickPeek]
-  );
-
   // Same game-statistics overview as the result screen, derived from the
   // per-move operation logs. The effort strip jumps the inline board.
   const stats = useMemo(() => computeGameStats(operationLogs ?? []), [operationLogs]);
@@ -641,7 +633,6 @@ export function GameReview({
                   // footer commits the position for a viewer who wants to go
                   // there — which then switches this block to that move's thread.
                   onJumpToPly={quickPeek.openAtMove}
-                  onPreviewBestMove={previewBestMove}
                   onReviewGenerated={handleReviewGenerated}
                 />
               )}

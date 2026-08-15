@@ -28,13 +28,12 @@ type Props = {
    * one (see `SharedGameDetailView`), so it can offer the CTA unconditionally.
    */
   initialReview: AiReview | null;
-  /** Jump the replay board to the position after the given ply. */
-  onJumpToPly: (ply: number) => void;
   /**
-   * Open the board the given ply was played FROM — where the engine's
-   * preferred alternative is still playable, and is drawn as an arrow.
+   * Jump the replay board to the position after the given ply — the board that
+   * carries both that move's grade badge and the engine arrow for what the
+   * review would have played instead.
    */
-  onPreviewBestMove: (ply: number) => void;
+  onJumpToPly: (ply: number) => void;
   /**
    * Fires once when a generation started here completes. The page above marks
    * graded moves on the board, and this panel is where a brand-new review comes
@@ -74,7 +73,6 @@ export function AiReviewPanel({
   startingFen,
   initialReview,
   onJumpToPly,
-  onPreviewBestMove,
   onReviewGenerated,
 }: Props) {
   const t = useTranslations('sharedGames');
@@ -96,14 +94,7 @@ export function AiReviewPanel({
   }, [generated, onReviewGenerated]);
 
   if (review) {
-    return (
-      <ReviewBody
-        review={review}
-        viewerLocale={locale}
-        onJumpToPly={onJumpToPly}
-        onPreviewBestMove={onPreviewBestMove}
-      />
-    );
+    return <ReviewBody review={review} viewerLocale={locale} onJumpToPly={onJumpToPly} />;
   }
 
   if (state.phase === 'analyzing') {
@@ -207,13 +198,11 @@ function ReviewBody({
   review,
   viewerLocale,
   onJumpToPly,
-  onPreviewBestMove,
 }: {
   review: AiReview;
   /** The page's language, to decide whether the review needs labelling. */
   viewerLocale: Locale;
   onJumpToPly: (ply: number) => void;
-  onPreviewBestMove: (ply: number) => void;
 }) {
   const t = useTranslations('sharedGames');
   const momentsByPly = useMemo(
@@ -348,17 +337,13 @@ function ReviewBody({
                     {formatEval(moment.evalBefore)} → {formatEval(moment.evalAfter)}
                   </span>
                   {moment.bestMoveSan && (
-                    /* Opens the position this move was played FROM, where the
-                       alternative is drawn as an engine arrow — the played
-                       move's own board has already moved the piece away. */
-                    <button
-                      type="button"
-                      onClick={() => onPreviewBestMove(moment.ply)}
-                      className="text-xs text-muted-foreground hover:text-foreground hover:underline"
-                    >
+                    /* Naming it is enough: opening the move (the label beside
+                       this one) puts the same alternative on the board as an
+                       engine arrow. */
+                    <span className="text-xs text-muted-foreground">
                       {t('aiReview.bestMoveLabel')}:{' '}
                       <span className="font-mono">{moment.bestMoveSan}</span>
-                    </button>
+                    </span>
                   )}
                 </div>
                 <p className="text-sm text-foreground">{comment.explanation}</p>

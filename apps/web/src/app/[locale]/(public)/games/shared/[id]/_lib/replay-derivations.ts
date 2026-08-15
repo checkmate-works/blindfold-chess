@@ -36,21 +36,6 @@ export function computeCurrentPly(currentPosition: number, movesLength: number):
 }
 
 /**
- * The ply the game plays FROM the displayed position — the move the viewer is
- * about to step into. Null at the latest position (-1), where nothing follows.
- *
- * The inverse of {@link computeCurrentPly}, and the anchor for anything that
- * belongs to a position rather than to a move already made: the engine's
- * preferred move here is a fact about THIS board, so it is drawn one step
- * earlier than the grade of the move that was actually played.
- */
-export function computeNextPly(currentPosition: number, movesLength: number): number | null {
-  if (currentPosition === -1) return null;
-  const ply = currentPosition === -2 ? 0 : currentPosition + 1;
-  return ply < movesLength ? ply : null;
-}
-
-/**
  * The half-move count to reach the displayed position (`appliedPlies`) and
  * the game's move played FROM that position (`continuationSan`) — seeded as
  * a puzzle's draft solution by CreateFromPositionMenu. `continuationSan` is

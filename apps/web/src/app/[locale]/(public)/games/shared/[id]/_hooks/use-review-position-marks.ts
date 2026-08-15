@@ -19,7 +19,7 @@ import {
   resolveTerminationMark,
 } from '@/lib/games/termination-mark';
 
-import { computeCurrentPly, computeNextPly } from '../_lib/replay-derivations';
+import { computeCurrentPly } from '../_lib/replay-derivations';
 
 type Options = {
   notationMoves: AlgebraicNotation[];
@@ -59,10 +59,9 @@ export type UseReviewPositionMarksReturn = {
    */
   evaluationMarkAt: (position: number) => EvaluationMark | null;
   /**
-   * A lichess-style engine arrow for the move the review would have preferred
-   * FROM a given position — drawn one step before the grade it explains,
-   * because that is the board on which the choice existed. Null everywhere the
-   * review had nothing to say.
+   * An engine arrow for the move the review would have preferred over the one
+   * that produced a given position — drawn on the SAME board as that move's
+   * grade. Null everywhere the review had nothing to say.
    */
   bestMoveArrowAt: (position: number) => BoardAnnotations | null;
 };
@@ -70,14 +69,16 @@ export type UseReviewPositionMarksReturn = {
 /**
  * The board marks a finished-game review resolves PER NAVIGATION POSITION
  * rather than once: the last-move highlight, the end-of-game badge, the AI
- * review's grade for the move just played, and its engine arrow for the move
- * that should have been played next.
+ * review's grade for the move just played, and the engine arrow for what it
+ * should have played instead.
  *
- * The last two read the same review from opposite ends of a move, and that is
- * deliberate: a grade judges a move already made, so it belongs on the board
- * AFTER it; a preferred move is an alternative that was available, so it
- * belongs on the board BEFORE it — the only position where its origin square
- * still holds the piece that would have moved.
+ * The grade and the arrow describe one move and land on one board — the
+ * position AFTER it, matching how a game review reads elsewhere (chess.com
+ * draws its classification badge and its suggestion together; nobody makes the
+ * reader step back to see the alternative). The arrow's origin square is
+ * therefore the one the piece has just left, which the last-move highlight on
+ * the same two squares disambiguates. Only its RESOLUTION needs the earlier
+ * board: a SAN is legal in exactly one position.
  *
  * Both are position-parameterised for the same reason — the review shows two
  * boards at once. The "By Move" quick-peek modal scrubs independently of the
@@ -162,7 +163,7 @@ export function useReviewPositionMarks({
 
   const bestMoveArrowAt = useCallback(
     (position: number) => {
-      const ply = computeNextPly(position, notationMoves.length);
+      const ply = computeCurrentPly(position, notationMoves.length);
       return ply === null ? null : (bestMoveArrows.get(ply) ?? null);
     },
     [bestMoveArrows, notationMoves.length]
