@@ -34,6 +34,8 @@ let mockNav: {
   navigateToEnd: Mock;
 };
 let mockFlip: { effectiveFlipped: boolean; toggleFlip: Mock };
+/** What the (stubbed) chess-core reports as the move reaching any position. */
+let mockLastMove: { from: string; to: string } | null;
 let mockStats: { totalMoves: number };
 let mockNotable: boolean;
 let mockEffectiveSettings: Record<string, unknown> | null;
@@ -78,7 +80,7 @@ vi.mock('@blindfold-chess/features/chess-core', async (orig) => {
   const actual = await (orig as () => Promise<Record<string, unknown>>)();
   return {
     ...actual,
-    getLastMoveDetails: () => null,
+    getLastMoveDetails: () => mockLastMove,
     fenToLichessUrl: () => 'https://lichess.org/analysis',
   };
 });
@@ -204,6 +206,7 @@ beforeEach(() => {
     navigateToEnd: vi.fn(),
   };
   mockFlip = { effectiveFlipped: false, toggleFlip: vi.fn() };
+  mockLastMove = null;
   mockStats = { totalMoves: 0 };
   mockNotable = false;
   mockEffectiveSettings = null;
@@ -356,6 +359,33 @@ describe('GameReview — overview tabs on a move position', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
     expect(screen.getByTestId('ai-review-panel')).toBeInTheDocument();
+  });
+});
+
+describe('GameReview — AI review grade on the board', () => {
+  const withMoment = (ply: number) =>
+    baseProps({
+      aiReview: {
+        initial: {
+          moments: [{ ply, judgment: 'blunder' }],
+        } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
+      },
+    });
+
+  it('marks the graded move on the square it landed on', () => {
+    mockNav.currentPosition = 1;
+    mockLastMove = { from: 'g8', to: 'f6' };
+    render(<GameReview {...withMoment(1)} />);
+    expect(inlineBoardProps.evaluationMark).toEqual({ square: 'f6', judgment: 'blunder' });
+    // The glyph means nothing aloud, so the grade's name rides along.
+    expect(inlineBoardProps.evaluationMarkLabel).toBe('aiReview.judgments.blunder');
+  });
+
+  it('leaves every ply the review did not grade unmarked', () => {
+    mockNav.currentPosition = 0;
+    mockLastMove = { from: 'e2', to: 'e4' };
+    render(<GameReview {...withMoment(1)} />);
+    expect(inlineBoardProps.evaluationMark).toBeNull();
   });
 });
 

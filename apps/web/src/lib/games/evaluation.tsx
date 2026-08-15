@@ -2,7 +2,6 @@ import type { ReactElement, ReactNode } from 'react';
 
 import { FaCheck, FaStar } from 'react-icons/fa';
 
-import { classifyMove } from './analysis/classify-move';
 import type { MoveJudgment } from './analysis/types';
 
 export type { EvaluationMark } from './evaluation-types';
@@ -63,23 +62,4 @@ export function MoveJudgmentBadge({
       {glyph(classes.icon)}
     </span>
   );
-}
-
-/**
- * The same badge keyed by centipawn loss, for surfaces holding a raw
- * evaluation rather than a derived judgment (the board's square mark). The
- * grading itself lives in `classifyMove`, so the badge and the AI review's
- * judgments can never drift apart.
- *
- * @param loss - Centipawn loss from the move
- * @param isMate - Whether this move leads to checkmate. A mating move is the
- *   best move whatever the loss arithmetic says about the position after it.
- * @param size - Icon size: 'sm' for move logs, 'md' for board badges
- */
-export function getEvaluationIcon(
-  loss: number,
-  isMate: boolean = false,
-  size: EvaluationIconSize = 'md'
-): ReactElement {
-  return <MoveJudgmentBadge judgment={isMate ? 'best' : classifyMove(loss)} size={size} />;
 }

@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
+import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
@@ -49,6 +50,12 @@ export type InlineBoardChessProps = {
   movablePieces?: 'own' | 'side-to-move';
   terminationMark?: TerminationMark | null;
   terminationMarkLabel?: string;
+  /**
+   * Move grade for the displayed position, resolved by the caller for THAT
+   * position (the review draws it from the game's AI review).
+   */
+  evaluationMark?: EvaluationMark | null;
+  evaluationMarkLabel?: string;
   /**
    * Enables interactive move input, firing once per completed legal move with
    * the SAN string. The parent gates this on game state (player's turn, not
@@ -200,6 +207,8 @@ export function InlineBoardView({
     movablePieces,
     terminationMark = null,
     terminationMarkLabel,
+    evaluationMark = null,
+    evaluationMarkLabel,
     onMove,
     onIllegalMove,
   } = board;
@@ -312,6 +321,8 @@ export function InlineBoardView({
               movablePieces={movablePieces}
               terminationMark={terminationMark}
               terminationMarkLabel={terminationMarkLabel}
+              evaluationMark={evaluationMark}
+              evaluationMarkLabel={evaluationMarkLabel}
             />
             {/* Navigation Controls & Flip Button */}
             {(movesLength > 0 || onFlipBoard || trailingAction) && (

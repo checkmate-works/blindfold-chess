@@ -34,6 +34,8 @@ type Props = {
   currentPosition: number;
   formattedPgn: FormattedPgnMove[];
   evaluationMark?: EvaluationMark | null;
+  /** Relayed straight to the inner `ChessBoard` — see its prop doc. */
+  evaluationMarkLabel?: string;
   /**
    * Relayed straight to the inner `ChessBoard` — see its prop doc. The modal
    * previews its own position, so the caller must resolve the mark for THAT
@@ -72,6 +74,7 @@ export function BoardViewModal({
   currentPosition,
   formattedPgn,
   evaluationMark,
+  evaluationMarkLabel,
   terminationMark = null,
   terminationMarkLabel,
   onNavigateToStart,
@@ -110,6 +113,7 @@ export function BoardViewModal({
           {...resolveBoardDisplay(preferences, lastMove)}
           rounded={false}
           evaluationMark={evaluationMark}
+          evaluationMarkLabel={evaluationMarkLabel}
           terminationMark={terminationMark}
           terminationMarkLabel={terminationMarkLabel}
         />

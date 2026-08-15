@@ -5,12 +5,16 @@ import { useCallback, useMemo } from 'react';
 import { getLastMoveDetails, isCheckmateFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
+import type { MoveJudgment } from '@/lib/games/analysis/types';
+import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 import {
   isFinalPosition,
   resolveLosingColor,
   resolveTerminationMark,
 } from '@/lib/games/termination-mark';
+
+import { computeCurrentPly } from '../_lib/replay-derivations';
 
 type Options = {
   notationMoves: AlgebraicNotation[];
@@ -20,6 +24,11 @@ type Options = {
   result: FinalGameOutcome;
   /** FEN of the game's final position — the only place the end reason is legible. */
   latestFen: string;
+  /**
+   * Move grades keyed by ply, from the game's AI review (its selected moments
+   * — so most plies are absent, and an ungraded game passes an empty map).
+   */
+  judgmentByPly: ReadonlyMap<number, MoveJudgment>;
 };
 
 /** Derived, not restated: `Square` is narrower than `string`. */
@@ -33,11 +42,18 @@ export type UseReviewPositionMarksReturn = {
   lastMoveAt: (position: number) => LastMove;
   /** The end-of-game badge for a given navigation position; null off the final one. */
   terminationMarkAt: (position: number) => TerminationMark | null;
+  /**
+   * The AI review's grade for the move that produced a given position, pinned
+   * to the square it landed on. Null wherever the review said nothing — which
+   * is most plies, since a review only selects its critical moments.
+   */
+  evaluationMarkAt: (position: number) => EvaluationMark | null;
 };
 
 /**
- * The two board marks a finished-game review resolves PER NAVIGATION POSITION
- * rather than once: the last-move highlight and the end-of-game badge.
+ * The board marks a finished-game review resolves PER NAVIGATION POSITION
+ * rather than once: the last-move highlight, the end-of-game badge, and the
+ * AI review's grade for the move just played.
  *
  * Both are position-parameterised for the same reason — the review shows two
  * boards at once. The "By Move" quick-peek modal scrubs independently of the
@@ -58,6 +74,7 @@ export function useReviewPositionMarks({
   playerColor,
   result,
   latestFen,
+  judgmentByPly,
 }: Options): UseReviewPositionMarksReturn {
   const lastMoveAt = useCallback(
     (position: number) => {
@@ -81,5 +98,22 @@ export function useReviewPositionMarks({
     [notationMoves.length, latestFen, result, playerColor]
   );
 
-  return useMemo(() => ({ lastMoveAt, terminationMarkAt }), [lastMoveAt, terminationMarkAt]);
+  const evaluationMarkAt = useCallback(
+    (position: number) => {
+      const ply = computeCurrentPly(position, notationMoves.length);
+      if (ply == null) return null;
+      const judgment = judgmentByPly.get(ply);
+      if (judgment === undefined) return null;
+      // The graded move IS the last move at this position, so its destination
+      // square is where the badge belongs — the same square the highlight uses.
+      const lastMove = lastMoveAt(position);
+      return lastMove ? { square: lastMove.to, judgment } : null;
+    },
+    [judgmentByPly, lastMoveAt, notationMoves.length]
+  );
+
+  return useMemo(
+    () => ({ lastMoveAt, terminationMarkAt, evaluationMarkAt }),
+    [lastMoveAt, terminationMarkAt, evaluationMarkAt]
+  );
 }

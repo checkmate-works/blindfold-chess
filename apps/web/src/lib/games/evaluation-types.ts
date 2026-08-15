@@ -1,16 +1,21 @@
+import type { MoveJudgment } from './analysis/types';
+
+/**
+ * A move grade pinned to the square the move landed on, for the board to draw
+ * (see `MoveJudgmentBadge`). Grade-keyed rather than centipawn-keyed: every
+ * producer already holds a classified {@link MoveJudgment} (the AI review's
+ * moments), and classifying twice is how two surfaces start disagreeing.
+ */
 export type EvaluationMark = {
   square: string;
-  loss: number;
-  isMate?: boolean;
+  judgment: MoveJudgment;
 };
 
 /**
- * Centipawn-loss thresholds shared by every surface that grades a move
- * (the board badge in `getEvaluationIcon` and the AI-review classifier in
- * `@/lib/games/analysis/classify-move`). A loss at or below a bound earns
- * that grade; anything above `mistake` is a blunder. Single-sourced here so
- * the badge a player sees and the judgment the AI coach reasons about can
- * never disagree.
+ * Centipawn-loss thresholds behind every move grade in the app. `classifyMove`
+ * is the only reader — a caller with a raw loss goes through it rather than
+ * re-deriving the ladder here. A loss at or below a bound earns that grade;
+ * anything above `mistake` is a blunder.
  */
 export const EVALUATION_LOSS_THRESHOLDS = {
   /** ≤ this: the move matches the engine choice for practical purposes. */

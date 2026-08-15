@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 
 import { SUPPORTED_LOCALES } from '@/config';
 import { LOCALE_LABELS } from '@/i18n/locale-labels';
@@ -29,6 +29,14 @@ type Props = {
   initialReview: AiReview | null;
   /** Jump the replay board to the position after the given ply. */
   onJumpToPly: (ply: number) => void;
+  /**
+   * Fires once when a generation started here completes. The page above marks
+   * graded moves on the board, and this panel is where a brand-new review comes
+   * into existence — without this the author would see their own review's
+   * grades on the board only after a reload. Not called for `initialReview`,
+   * which the page already has.
+   */
+  onReviewGenerated?: (review: AiReview) => void;
 };
 
 /** "+0.3" / "−1.7"; saturated mate scores render as a mate marker. */
@@ -60,6 +68,7 @@ export function AiReviewPanel({
   startingFen,
   initialReview,
   onJumpToPly,
+  onReviewGenerated,
 }: Props) {
   const t = useTranslations('sharedGames');
   const { state, start, cancel } = useAiReviewGeneration({ gameId, moves, startingFen });
@@ -71,6 +80,14 @@ export function AiReviewPanel({
 
   // The hook's 'done' phase is terminal, so the fresh review needs no extra state.
   const review = state.phase === 'done' ? state.review : initialReview;
+
+  // Raise a just-generated review to the page. 'done' is terminal, so this
+  // fires once per generation and never for a cached `initialReview`.
+  const generated = state.phase === 'done' ? state.review : null;
+  useEffect(() => {
+    if (generated) onReviewGenerated?.(generated);
+  }, [generated, onReviewGenerated]);
+
   if (review) {
     return <ReviewBody review={review} viewerLocale={locale} onJumpToPly={onJumpToPly} />;
   }

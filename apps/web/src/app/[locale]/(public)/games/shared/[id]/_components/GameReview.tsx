@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useMemo } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -9,9 +9,10 @@ import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-co
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
-import type { AiReview } from '@/lib/ai-review/types';
+import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
+import type { EvaluationMark } from '@/lib/games/evaluation';
 import type {
   GamePlaySettings,
   MoveOperationLog,
@@ -217,15 +218,32 @@ export function GameReview({
     effectiveFlipped,
   });
 
-  // The last-move highlight and the end-of-game badge, both resolved per
-  // navigation position because the live board and the quick-peek modal scrub
-  // independently. See the hook for why neither can be a single value.
-  const { lastMoveAt, terminationMarkAt } = useReviewPositionMarks({
+  // The AI review's graded moves, by ply. Seeded from the server-resolved
+  // review so the board is marked before the tab is ever opened, and raised by
+  // the panel when a fresh review finishes there (the panel owns that
+  // generation, and is unmounted whenever another tab is showing).
+  const [reviewMoments, setReviewMoments] = useState<ReviewMoment[]>(
+    aiReview?.initial?.moments ?? []
+  );
+  const judgmentByPly = useMemo(
+    () => new Map(reviewMoments.map((m) => [m.ply, m.judgment])),
+    [reviewMoments]
+  );
+  const handleReviewGenerated = useCallback(
+    (review: AiReview) => setReviewMoments(review.moments),
+    []
+  );
+
+  // The last-move highlight, the end-of-game badge and the move grade, all
+  // resolved per navigation position because the live board and the quick-peek
+  // modal scrub independently. See the hook for why none can be a single value.
+  const { lastMoveAt, terminationMarkAt, evaluationMarkAt } = useReviewPositionMarks({
     notationMoves,
     startingFen: startingFen ?? undefined,
     playerColor,
     result,
     latestFen,
+    judgmentByPly,
   });
   const lastMove = useMemo(() => lastMoveAt(currentPosition), [lastMoveAt, currentPosition]);
 
@@ -262,6 +280,18 @@ export function GameReview({
     [terminationMarkAt, quickPeek.nav.currentPosition]
   );
   const terminationMarkLabel = useTerminationMarkLabel();
+
+  const evaluationMark = useMemo(
+    () => evaluationMarkAt(currentPosition),
+    [evaluationMarkAt, currentPosition]
+  );
+  const quickPeekEvaluationMark = useMemo(
+    () => evaluationMarkAt(quickPeek.nav.currentPosition),
+    [evaluationMarkAt, quickPeek.nav.currentPosition]
+  );
+  /** The grade's localized name, for the badge's accessible name / tooltip. */
+  const judgmentLabel = (mark: EvaluationMark | null) =>
+    mark ? t(`aiReview.judgments.${mark.judgment}`) : undefined;
 
   // Same game-statistics overview as the result screen, derived from the
   // per-move operation logs. The effort strip jumps the inline board.
@@ -443,6 +473,11 @@ export function GameReview({
               illegalAttempt,
               terminationMark,
               terminationMarkLabel: terminationMarkLabel(terminationMark),
+              // The AI review's verdict on the move just played, on the square
+              // it landed on — so stepping the board reads like an analysis
+              // board, not only the review tab's list.
+              evaluationMark,
+              evaluationMarkLabel: judgmentLabel(evaluationMark),
             }}
             moveList={{
               movesLength: notationMoves.length,
@@ -577,6 +612,7 @@ export function GameReview({
                   // footer commits the position for a viewer who wants to go
                   // there — which then switches this block to that move's thread.
                   onJumpToPly={quickPeek.openAtMove}
+                  onReviewGenerated={handleReviewGenerated}
                 />
               )}
 
@@ -719,6 +755,8 @@ export function GameReview({
         onFlipBoard={toggleFlip}
         terminationMark={quickPeekTerminationMark}
         terminationMarkLabel={terminationMarkLabel(quickPeekTerminationMark)}
+        evaluationMark={quickPeekEvaluationMark}
+        evaluationMarkLabel={judgmentLabel(quickPeekEvaluationMark)}
         footer={
           <button
             type="button"
