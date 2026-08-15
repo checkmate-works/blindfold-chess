@@ -6,6 +6,7 @@ const mockCheckRateLimit = vi.fn();
 const mockDetectOpening = vi.fn();
 const mockGenerateReview = vi.fn();
 const mockStoreFind = vi.fn();
+const mockIsLlmConfigured = vi.fn();
 
 vi.mock('@/lib/auth', () => ({
   authenticateAndCheckBan: (...args: unknown[]) => mockAuth(...args),
@@ -32,6 +33,7 @@ vi.mock('@/lib/ai-review/generate-review', () => ({
 
 vi.mock('@/lib/ai-review/openai', () => ({
   createOpenAiClient: () => ({ model: 'test-model', complete: vi.fn() }),
+  isLlmConfigured: () => mockIsLlmConfigured(),
 }));
 
 vi.mock('@/lib/ai-review/queries', () => ({
@@ -82,6 +84,7 @@ describe('generateAiReviewAction', () => {
     mockAuth.mockResolvedValue({ user: { id: USER_ID } });
     mockGetGameById.mockResolvedValue({ game: { id: GAME_ID, moves: MOVES }, author: null });
     mockStoreFind.mockResolvedValue(null);
+    mockIsLlmConfigured.mockReturnValue(true);
     mockCheckRateLimit.mockResolvedValue({ success: true });
     mockDetectOpening.mockResolvedValue({ slug: 'italian', name: 'Italian Game', ecoCode: 'C50' });
     mockGenerateReview.mockResolvedValue({ ok: true, review: FAKE_REVIEW });
@@ -158,6 +161,29 @@ describe('generateAiReviewAction', () => {
     expect(result).toEqual({ success: true, review: FAKE_REVIEW });
     expect(mockCheckRateLimit).not.toHaveBeenCalled();
     expect(mockGenerateReview).not.toHaveBeenCalled();
+  });
+
+  it('refuses without an LLM key, before spending a rate-limit slot', async () => {
+    mockIsLlmConfigured.mockReturnValue(false);
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(await generateAiReviewAction(validInput())).toEqual({
+      success: false,
+      error: 'llm_error',
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(mockGenerateReview).not.toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
+
+  it('still serves a cached review without an LLM key', async () => {
+    mockIsLlmConfigured.mockReturnValue(false);
+    mockStoreFind.mockResolvedValue(FAKE_REVIEW);
+
+    expect(await generateAiReviewAction(validInput())).toEqual({
+      success: true,
+      review: FAKE_REVIEW,
+    });
   });
 
   it('maps a hit rate limit to rate_limited', async () => {
