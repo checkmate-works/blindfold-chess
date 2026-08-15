@@ -72,8 +72,15 @@ export function ConfirmationModal({
         {error && <p className="text-destructive text-sm mt-2">{error}</p>}
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-3 justify-end">
+      {/*
+        Actions. Stacked on phones, right-aligned in a row from `sm` up — a
+        fixed row overflows once labels are long (a translated "Cancel" plus a
+        verb-phrase confirm), and the buttons are easier to hit full-width.
+        `flex-col-reverse` keeps the confirm above cancel while leaving the
+        confirm last in DOM order, so tab order and screen readers still reach
+        cancel first.
+      */}
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button type="button" onClick={onCancel} disabled={isLoading} variant="secondary">
           {cancelText}
         </Button>
