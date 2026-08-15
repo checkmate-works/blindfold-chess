@@ -2785,14 +2785,13 @@
     "aiReview": {
       "tab": "AI Review",
       "disclaimer": "AI-generated review based on Stockfish analysis (model: {model}). It may contain mistakes.",
-      "generateTitle": "Get an AI coach review",
       "notGenerated": "No AI review has been generated for this game yet.",
       "generateButton": "Generate AI review",
       "analyzing": "Analyzing with Stockfish… ({done}/{total} positions)",
       "generating": "Writing the review…",
       "cancel": "Cancel",
       "retry": "Try again",
-      "publicNotice": "The review you generate becomes visible to everyone.",
+      "publicNotice": "Note: the review you generate becomes visible to everyone.",
       "bestMoveLabel": "Best move",
       "sections": {
         "summary": "Game summary",

@@ -2785,14 +2785,13 @@
     "aiReview": {
       "tab": "AIレビュー",
       "disclaimer": "Stockfishの解析に基づいてAIが生成したレビューです（モデル: {model}）。誤りを含む可能性があります。",
-      "generateTitle": "AIコーチのレビューを見る",
       "notGenerated": "AIレビューはまだ生成されていません。",
       "generateButton": "AIレビューを生成",
       "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
       "generating": "レビューを執筆中…",
       "cancel": "キャンセル",
       "retry": "もう一度試す",
-      "publicNotice": "生成したレビューは全員に公開されます。",
+      "publicNotice": "※ 生成したレビューは全員に公開されます。",
       "bestMoveLabel": "最善手",
       "sections": {
         "summary": "ゲーム総評",

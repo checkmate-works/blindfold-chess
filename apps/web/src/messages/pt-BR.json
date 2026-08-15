@@ -2785,14 +2785,13 @@
     "aiReview": {
       "tab": "Revisão IA",
       "disclaimer": "Revisão gerada por IA com base na análise do Stockfish (modelo: {model}). Pode conter erros.",
-      "generateTitle": "Receba uma revisão do treinador IA",
       "notGenerated": "Ainda não há uma revisão IA gerada para esta partida.",
       "generateButton": "Gerar revisão IA",
       "analyzing": "Analisando com o Stockfish… ({done}/{total} posições)",
       "generating": "Escrevendo a revisão…",
       "cancel": "Cancelar",
       "retry": "Tentar novamente",
-      "publicNotice": "A revisão que você gerar ficará visível para todos.",
+      "publicNotice": "Observação: a revisão que você gerar ficará visível para todos.",
       "bestMoveLabel": "Melhor lance",
       "sections": {
         "summary": "Resumo da partida",

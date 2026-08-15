@@ -118,7 +118,6 @@ export function AiReviewPanel({
           <FaRobot className="h-5 w-5" />
         </span>
       </div>
-      <h3 className="text-lg font-bold text-foreground">{t('aiReview.generateTitle')}</h3>
       <p className="text-sm text-muted-foreground">{t('aiReview.notGenerated')}</p>
       {state.phase === 'error' && (
         <p className="text-sm text-destructive" role="alert">
