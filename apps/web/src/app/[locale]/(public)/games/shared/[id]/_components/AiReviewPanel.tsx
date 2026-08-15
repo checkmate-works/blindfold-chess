@@ -154,10 +154,6 @@ function ReviewBody({
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-muted-foreground">
-        {t('aiReview.disclaimer', { model: review.model })}
-      </p>
-
       <section className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">{t('aiReview.sections.summary')}</h3>
         <p className="whitespace-pre-wrap text-sm text-foreground">{review.content.summary}</p>
@@ -207,6 +203,12 @@ function ReviewBody({
       <ProseList title={t('aiReview.sections.strengths')} items={review.content.strengths} />
       <ProseList title={t('aiReview.sections.weaknesses')} items={review.content.weaknesses} />
       <ProseList title={t('aiReview.sections.advice')} items={review.content.advice} />
+
+      {/* Footnote, not a header: the reader came here for the coaching, and a
+          provenance caveat above it just delays what they opened the tab for. */}
+      <p className="border-t border-border pt-4 text-xs text-muted-foreground">
+        {t('aiReview.disclaimer', { model: review.model })}
+      </p>
     </div>
   );
 }
