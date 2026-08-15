@@ -2801,6 +2801,8 @@
       },
       "gradeFilterLabel": "Filter key moments by grade",
       "noMomentsForGrades": "No key moments match the selected grades.",
+      "collapseAriaLabel": "Collapse the AI review of this move",
+      "expandAriaLabel": "Expand the AI review of this move",
       "judgments": {
         "best": "Best",
         "good": "Good",

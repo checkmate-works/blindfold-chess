@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { ReviewMoment } from '@/lib/ai-review/types';
@@ -45,15 +45,35 @@ describe('ReviewMomentComment', () => {
     expect(screen.getByText('Count first.')).toBeInTheDocument();
   });
 
-  it('offers none of a real comment’s actions', () => {
+  it('collapses to its header and back, like any other thread root', () => {
     render(
       <ReviewMomentComment
         {...props}
         comment={{ ply: 7, explanation: 'Hung the knight.', lesson: 'Count first.' }}
       />
     );
-    // Nothing here acts on a `game_comments` row, so there is nothing to press.
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole('button', { name: 'aiReview.collapseAriaLabel' }));
+    // Who spoke and when stays; what they said folds away.
+    expect(screen.getByText('aiReview.tab')).toBeInTheDocument();
+    expect(screen.queryByText('Hung the knight.')).toBeNull();
+    expect(screen.queryByText('+0.3 → -1.7')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'aiReview.expandAriaLabel' }));
+    expect(screen.getByText('Hung the knight.')).toBeInTheDocument();
+  });
+
+  it('offers none of a real comment’s actions beyond that', () => {
+    render(
+      <ReviewMomentComment
+        {...props}
+        comment={{ ply: 7, explanation: 'Hung the knight.', lesson: 'Count first.' }}
+      />
+    );
+    // Nothing else here acts on a `game_comments` row — no like, no reply.
+    expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'aiReview.collapseAriaLabel',
+    ]);
   });
 
   it('still carries the engine facts when the review wrote no prose for a moment', () => {

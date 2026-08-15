@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot } from 'react-icons/fa';
 
@@ -17,10 +19,13 @@ import { ReviewMomentFacts } from './ReviewMomentFacts';
  * and body typography as a human comment, so the coach reads as one more voice
  * in the discussion rather than as a separate widget.
  *
- * Deliberately inert — no like, no reply, no collapse. Those act on a
- * `game_comments` row; this is a projection of `game_ai_reviews`, which has no
- * such identity and nothing to reply to. The robot mark instead of an avatar
- * is what tells a reader this one is not a person.
+ * It collapses like any other root, which matters more here than in a human
+ * thread: a review paragraph is the longest thing on a move, and a reader who
+ * came to discuss the move wants it out of the way once read. What it does NOT
+ * offer is like and reply — those act on a `game_comments` row, and this is a
+ * projection of `game_ai_reviews`, which has no such identity and nothing to
+ * reply to. The robot mark instead of an avatar is what tells a reader this
+ * one is not a person.
  *
  * The prose stays PLAIN TEXT — no `GameCommentBody`, whose URL linkification
  * and move-reference buttons would let LLM output become interactive markup.
@@ -40,9 +45,19 @@ export function ReviewMomentComment({
   locale: Locale;
 }) {
   const t = useTranslations('sharedGames');
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <CommentNodeLayout id={`ai-review-moment-${moment.ply}`}>
+    <CommentNodeLayout
+      id={`ai-review-moment-${moment.ply}`}
+      toggle={{
+        isCollapsed,
+        onToggle: () => setIsCollapsed((prev) => !prev),
+        // Its own labels: the thread's talk about collapsing REPLIES, and this
+        // one has none — what folds away is the review of the move itself.
+        ariaLabel: t(isCollapsed ? 'aiReview.expandAriaLabel' : 'aiReview.collapseAriaLabel'),
+      }}
+    >
       {/* Mirrors UserAvatar's `block` layout — same 32px circle, gap and name
           typography — with the AI Review's own robot mark in place of a face. */}
       <div className="flex items-start gap-3">
@@ -62,16 +77,22 @@ export function ReviewMomentComment({
         </div>
       </div>
 
-      <ReviewMomentFacts moment={moment} />
-
-      {comment && (
+      {/* Collapsed leaves the header alone, exactly as a reply-less root does
+          in the thread: who spoke and when stays, what they said folds away. */}
+      {!isCollapsed && (
         <>
-          <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-foreground">
-            {comment.explanation}
-          </p>
-          <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-muted-foreground">
-            {comment.lesson}
-          </p>
+          <ReviewMomentFacts moment={moment} />
+
+          {comment && (
+            <>
+              <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-foreground">
+                {comment.explanation}
+              </p>
+              <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-muted-foreground">
+                {comment.lesson}
+              </p>
+            </>
+          )}
         </>
       )}
     </CommentNodeLayout>

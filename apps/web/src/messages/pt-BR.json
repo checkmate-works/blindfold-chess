@@ -2801,6 +2801,8 @@
       },
       "gradeFilterLabel": "Filtrar momentos-chave por avaliação",
       "noMomentsForGrades": "Nenhum momento-chave corresponde às avaliações selecionadas.",
+      "collapseAriaLabel": "Recolher a revisão de IA deste lance",
+      "expandAriaLabel": "Expandir a revisão de IA deste lance",
       "judgments": {
         "best": "Melhor",
         "good": "Boa",

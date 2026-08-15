@@ -2801,6 +2801,8 @@
       },
       "gradeFilterLabel": "Filtrar momentos clave por evaluación",
       "noMomentsForGrades": "Ningún momento clave coincide con las evaluaciones seleccionadas.",
+      "collapseAriaLabel": "Contraer la revisión de IA de esta jugada",
+      "expandAriaLabel": "Expandir la revisión de IA de esta jugada",
       "judgments": {
         "best": "Mejor",
         "good": "Buena",
