@@ -40,6 +40,9 @@ describe('ReviewMomentComment', () => {
     expect(screen.getByRole('time')).toHaveAttribute('datetime', '2026-08-14T00:00:00.000Z');
     expect(screen.getByRole('img', { name: 'aiReview.judgments.mistake' })).toHaveTextContent('?');
     expect(screen.getByText('+0.3 → -1.7')).toBeInTheDocument();
+    // The recommendation is marked with the bulb rather than captioned, so
+    // the words survive only as the icon's accessible name.
+    expect(screen.getByTitle('aiReview.bestMoveLabel')).toBeInTheDocument();
     expect(screen.getByText('Qd2')).toBeInTheDocument();
     expect(screen.getByText('Hung the knight.')).toBeInTheDocument();
     expect(screen.getByText('Count first.')).toBeInTheDocument();

@@ -43,10 +43,15 @@ export function ReviewMomentFacts({ moment }: { moment: ReviewMoment }) {
         {formatEval(moment.evalBefore)} → {formatEval(moment.evalAfter)}
       </span>
       {moment.bestMoveSan && (
-        /* Naming it is enough: the same alternative is on the board as a green
-           engine arrow wherever this row is shown. */
-        <span className="text-xs text-muted-foreground">
-          {t('aiReview.bestMoveLabel')}: <span className="font-mono">{moment.bestMoveSan}</span>
+        /* Marked, not captioned: at this size "Best move:" is longer than the
+           move it introduces and pushes the row to wrap on a phone. The mark
+           is the grade language already in the row — `best` is the green star
+           badge — so the two read as one system instead of a badge next to an
+           unrelated icon. Its localized name stays available as the badge's
+           accessible name and tooltip. */
+        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MoveJudgmentBadge judgment="best" label={t('aiReview.bestMoveLabel')} />
+          <span className="font-mono">{moment.bestMoveSan}</span>
         </span>
       )}
     </div>
