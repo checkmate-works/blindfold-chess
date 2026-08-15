@@ -155,7 +155,12 @@ export function useReviewPositionMarks({
       // review) is dropped rather than drawn wrong.
       const move = getLastMoveDetails([san], fenBefore);
       if (move) {
-        arrows.set(ply, { arrows: [{ ...move, color: 'blue' }], circles: [] });
+        // Green from the shared annotation palette: the grade badges already
+        // say "good move" in green (`best` / `good` in `judgmentStyle`), so a
+        // recommendation reads as one at a glance. The palette's own green,
+        // not the badge's — these are different surfaces, and matching the
+        // family is the point rather than matching the hex.
+        arrows.set(ply, { arrows: [{ ...move, color: 'green' }], circles: [] });
       }
     }
     return arrows;

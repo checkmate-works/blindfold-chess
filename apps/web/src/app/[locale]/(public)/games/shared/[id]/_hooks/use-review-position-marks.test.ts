@@ -55,7 +55,7 @@ describe('useReviewPositionMarks — bestMoveArrowAt', () => {
     // been vacated by the move being second-guessed; the last-move highlight
     // on g1/d2 is what tells the two apart.
     expect(bestMoveArrowAt(GRADED_PLY)).toEqual({
-      arrows: [{ from: 'g1', to: 'f3', color: 'blue' }],
+      arrows: [{ from: 'g1', to: 'f3', color: 'green' }],
       circles: [],
     });
     expect(bestMoveArrowAt(GRADED_PLY - 1)).toBeNull();
@@ -72,7 +72,7 @@ describe('useReviewPositionMarks — bestMoveArrowAt', () => {
     // 2.Nd2) and illegal from g1 there — it only parses one move earlier.
     const { bestMoveArrowAt } = marks({ bestMoves: new Map([[0, 'e4']]) });
     expect(bestMoveArrowAt(0)).toEqual({
-      arrows: [{ from: 'e2', to: 'e4', color: 'blue' }],
+      arrows: [{ from: 'e2', to: 'e4', color: 'green' }],
       circles: [],
     });
   });
