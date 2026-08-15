@@ -34,11 +34,15 @@ let mockNav: {
   navigateToEnd: Mock;
 };
 let mockFlip: { effectiveFlipped: boolean; toggleFlip: Mock };
+/** What the (stubbed) chess-core reports as the move reaching any position. */
+let mockLastMove: { from: string; to: string } | null;
 let mockStats: { totalMoves: number };
 let mockNotable: boolean;
 let mockEffectiveSettings: Record<string, unknown> | null;
 /** The `board` prop group GameReview handed InlineBoardView on the last render. */
 let inlineBoardProps: Record<string, unknown>;
+/** Props GameReview handed the (stubbed) thread on the last render. */
+let moveContributionsProps: Record<string, unknown>;
 let boardViewModalProps: Record<string, unknown>;
 /** moves[] index the stubbed "By Move" strip opens the quick-peek modal at. */
 let quickPeekTarget: number;
@@ -78,7 +82,7 @@ vi.mock('@blindfold-chess/features/chess-core', async (orig) => {
   const actual = await (orig as () => Promise<Record<string, unknown>>)();
   return {
     ...actual,
-    getLastMoveDetails: () => null,
+    getLastMoveDetails: () => mockLastMove,
     fenToLichessUrl: () => 'https://lichess.org/analysis',
   };
 });
@@ -126,7 +130,10 @@ vi.mock('@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate', (
 }));
 
 vi.mock('./GameMoveContributions', () => ({
-  GameMoveContributions: () => <div data-testid="move-contributions" />,
+  GameMoveContributions: (props: Record<string, unknown>) => {
+    moveContributionsProps = props;
+    return <div data-testid="move-contributions" />;
+  },
 }));
 
 vi.mock('./GameDiscussionFeed', () => ({
@@ -204,10 +211,12 @@ beforeEach(() => {
     navigateToEnd: vi.fn(),
   };
   mockFlip = { effectiveFlipped: false, toggleFlip: vi.fn() };
+  mockLastMove = null;
   mockStats = { totalMoves: 0 };
   mockNotable = false;
   mockEffectiveSettings = null;
   inlineBoardProps = {};
+  moveContributionsProps = {};
   boardViewModalProps = {};
   quickPeekTarget = 2;
   pushSpy.mockClear();
@@ -310,6 +319,131 @@ describe('GameReview — contributions', () => {
     expect(screen.queryByTestId('move-contributions')).toBeNull();
     fireEvent.click(screen.getByRole('tab', { name: 'overview.discussionTab' }));
     expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
+  });
+});
+
+describe('GameReview — overview tabs on a move position', () => {
+  // The whole point of the tab row: the Summary and the AI Review describe the
+  // game, not a position, so stepping onto a move must not strand them on the
+  // opening board (it used to replace the entire block with the move's thread).
+  const onMove = (overrides: Partial<LiveSocial> = {}) => {
+    mockStats = { totalMoves: 3 };
+    mockNav.currentPosition = 0;
+    return baseProps({
+      aiReview: { initial: null },
+      social: liveSocial({
+        isAuthenticated: true,
+        comments: [{ id: 'c1', ply: 1, deletedAt: null } as LiveSocial['comments'][number]],
+        ...overrides,
+      }),
+    });
+  };
+
+  it('keeps the tab row rendered while a move is on the board', () => {
+    render(<GameReview {...onMove()} />);
+    expect(screen.getAllByRole('tab').map((el) => el.textContent)).toEqual([
+      'overview.summaryTab',
+      'overview.discussionTab (1)',
+      'aiReview.tab',
+    ]);
+  });
+
+  it('shows the thread of the move on the board under the Discussion tab', () => {
+    render(<GameReview {...onMove()} />);
+    // A game with comments leads with the discussion, which on a move position
+    // is that move's own thread — not the whole-game one.
+    expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
+    expect(screen.queryByTestId('discussion-feed')).toBeNull();
+  });
+
+  it('reaches the Summary and the AI Review without returning to the opening board', () => {
+    render(<GameReview {...onMove()} />);
+
+    fireEvent.click(screen.getByRole('tab', { name: 'overview.summaryTab' }));
+    expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
+    expect(screen.queryByTestId('move-contributions')).toBeNull();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
+    expect(screen.getByTestId('ai-review-panel')).toBeInTheDocument();
+  });
+});
+
+describe('GameReview — AI review grade on the board', () => {
+  const withMoment = (ply: number) =>
+    baseProps({
+      aiReview: {
+        initial: {
+          moments: [{ ply, judgment: 'blunder' }],
+          content: { momentComments: [] },
+        } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
+      },
+    });
+
+  it('marks the graded move on the square it landed on', () => {
+    mockNav.currentPosition = 1;
+    mockLastMove = { from: 'g8', to: 'f6' };
+    render(<GameReview {...withMoment(1)} />);
+    expect(inlineBoardProps.evaluationMark).toEqual({ square: 'f6', judgment: 'blunder' });
+    // The glyph means nothing aloud, so the grade's name rides along.
+    expect(inlineBoardProps.evaluationMarkLabel).toBe('aiReview.judgments.blunder');
+  });
+
+  it('leaves every ply the review did not grade unmarked', () => {
+    mockNav.currentPosition = 0;
+    mockLastMove = { from: 'e2', to: 'e4' };
+    render(<GameReview {...withMoment(1)} />);
+    expect(inlineBoardProps.evaluationMark).toBeNull();
+  });
+
+  const REVIEWED = {
+    moments: [
+      {
+        ply: 1,
+        san: 'Nf6',
+        moveNumber: 1,
+        color: 'black',
+        evalBefore: 30,
+        evalAfter: -170,
+        cpLoss: 200,
+        bestMoveSan: 'd5',
+        judgment: 'blunder',
+      },
+    ],
+    content: {
+      momentComments: [{ ply: 1, explanation: 'Hung the knight.', lesson: 'Count first.' }],
+    },
+    createdAt: '2026-08-14T00:00:00.000Z',
+  } as unknown as NonNullable<ReplayProps['aiReview']>['initial'];
+
+  const onReviewedMove = (position: number) => {
+    mockStats = { totalMoves: 3 };
+    mockNav.currentPosition = position;
+    return baseProps({
+      social: liveSocial({
+        isAuthenticated: true,
+        comments: [{ id: 'c1', ply: position, deletedAt: null } as LiveSocial['comments'][number]],
+      }),
+      aiReview: { initial: REVIEWED },
+    });
+  };
+
+  it("hands the review's take on the move to that move's thread", () => {
+    render(<GameReview {...onReviewedMove(1)} />);
+
+    const handed = moveContributionsProps.aiReviewMoment as {
+      moment: { ply: number; judgment: string };
+      comment: { explanation: string };
+      createdAt: Date;
+    };
+    expect(handed.moment).toMatchObject({ ply: 1, judgment: 'blunder' });
+    expect(handed.comment.explanation).toBe('Hung the knight.');
+    // The review's own timestamp stands in for a posting time.
+    expect(handed.createdAt.toISOString()).toBe('2026-08-14T00:00:00.000Z');
+  });
+
+  it('hands nothing to a move the review passed over', () => {
+    render(<GameReview {...onReviewedMove(2)} />);
+    expect(moveContributionsProps.aiReviewMoment).toBeUndefined();
   });
 });
 

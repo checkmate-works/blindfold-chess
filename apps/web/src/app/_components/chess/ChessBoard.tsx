@@ -34,7 +34,7 @@ import { useBoardAnnotationDrawing } from '@/lib/board-annotations/use-board-ann
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 import type { EvaluationMark } from '@/lib/games/evaluation';
-import { getEvaluationIcon } from '@/lib/games/evaluation';
+import { MoveJudgmentBadge } from '@/lib/games/evaluation';
 import { goStoneStyle } from '@/lib/games/go-stone-style';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 
@@ -112,7 +112,13 @@ type Props = {
   hiddenPieceStyle?: 'absent' | 'ghost';
   boardTheme?: BoardTheme;
   rounded?: boolean;
+  /** Move grade to draw on one square (see `MoveJudgmentBadge`). */
   evaluationMark?: EvaluationMark | null;
+  /**
+   * Accessible name for the grade badge, already localized — same contract as
+   * {@link Props.terminationMarkLabel}, since `?!` reads as nothing aloud.
+   */
+  evaluationMarkLabel?: string;
   className?: string;
   /**
    * Optional pre-parsed display annotations. Passed straight through to
@@ -252,6 +258,7 @@ export const ChessBoard = memo(function ChessBoard({
   boardTheme = DEFAULT_BOARD_THEME,
   rounded = true,
   evaluationMark = null,
+  evaluationMarkLabel,
   className = '',
   annotations = null,
   onAnnotationsChange,
@@ -588,9 +595,9 @@ export const ChessBoard = memo(function ChessBoard({
       });
 
       const showEvalMark = evaluationMark && evaluationMark.square === square;
-      const evalBadge = showEvalMark
-        ? getEvaluationIcon(evaluationMark.loss, evaluationMark.isMate)
-        : undefined;
+      const evalBadge = showEvalMark ? (
+        <MoveJudgmentBadge judgment={evaluationMark.judgment} label={evaluationMarkLabel} />
+      ) : undefined;
 
       // The termination badge outranks the move-quality one on the rare square
       // that qualifies for both: how the game ENDED is the more terminal fact,
@@ -613,6 +620,7 @@ export const ChessBoard = memo(function ChessBoard({
       highlightedSquares,
       illegalAttempt,
       evaluationMark,
+      evaluationMarkLabel,
       onSquareClick,
       interactive,
       moveSource,

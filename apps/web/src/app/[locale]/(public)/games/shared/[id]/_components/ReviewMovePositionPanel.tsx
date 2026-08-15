@@ -2,6 +2,7 @@
 
 import type { Side } from '@blindfold-chess/types';
 
+import type { AiReviewMomentComment, ReviewMoment } from '@/lib/ai-review/types';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
@@ -18,7 +19,8 @@ import { GameMoveContributions } from './GameMoveContributions';
  * The per-move block shown below the board while a move position is on it: the
  * move's PGN-style title, that move's aid-usage stats (peeks / undos / hints /
  * rejected-move texts, when the player used any at this exact move), and that
- * move's comment / chunk-link thread.
+ * move's thread — advice comments, chunk links, and the AI review's own take
+ * on the move when it flagged one.
  *
  * Authoring from the displayed position lives in the board's own control strip
  * (see `CreateFromPositionMenu`), not here — it tracks the board, not the move
@@ -41,6 +43,7 @@ export function ReviewMovePositionPanel({
   onAttemptSelect,
   selectedAttemptIndex,
   isAttemptSelectable,
+  aiReviewMoment,
 }: {
   title: string;
   locale: Locale;
@@ -69,6 +72,17 @@ export function ReviewMovePositionPanel({
   onAttemptSelect?: (attemptIndex: number) => void;
   selectedAttemptIndex?: number | null;
   isAttemptSelectable?: (attemptIndex: number) => boolean;
+  /**
+   * The AI review's take on THIS move, when it selected it as a critical
+   * moment (most moves are not). Relayed to the thread below, where it reads
+   * as one more comment. `comment` is absent when the review's prose skipped a
+   * moment its engine pass kept.
+   */
+  aiReviewMoment?: {
+    moment: ReviewMoment;
+    comment?: AiReviewMomentComment;
+    createdAt: Date;
+  } | null;
 }) {
   return (
     <div className="space-y-4">
@@ -99,6 +113,7 @@ export function ReviewMovePositionPanel({
         moves={moves}
         startingFen={startingFen}
         playerColor={playerColor}
+        aiReviewMoment={aiReviewMoment}
       />
     </div>
   );

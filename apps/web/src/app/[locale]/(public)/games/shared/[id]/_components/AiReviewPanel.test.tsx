@@ -82,7 +82,9 @@ describe('AiReviewPanel', () => {
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
     expect(screen.getByText('3. Nd5')).toBeInTheDocument();
-    expect(screen.getByText('aiReview.judgments.mistake')).toBeInTheDocument();
+    // The grade shows as chess notation, named for assistive tech.
+    const grade = screen.getByRole('img', { name: 'aiReview.judgments.mistake' });
+    expect(grade).toHaveTextContent('?');
     expect(screen.getByText('+0.3 → -1.7')).toBeInTheDocument();
     expect(screen.getByText('Qd2')).toBeInTheDocument();
     expect(screen.getByText('This dropped the knight.')).toBeInTheDocument();
@@ -172,5 +174,95 @@ describe('AiReviewPanel', () => {
     render(<AiReviewPanel {...baseProps} />);
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
+  });
+
+  it('raises a freshly generated review, but not a cached one', () => {
+    const onReviewGenerated = vi.fn();
+
+    mockState = { phase: 'idle' };
+    const { unmount } = render(
+      <AiReviewPanel {...baseProps} initialReview={REVIEW} onReviewGenerated={onReviewGenerated} />
+    );
+    expect(onReviewGenerated).not.toHaveBeenCalled();
+    unmount();
+
+    mockState = { phase: 'done', review: REVIEW };
+    render(<AiReviewPanel {...baseProps} onReviewGenerated={onReviewGenerated} />);
+    expect(onReviewGenerated).toHaveBeenCalledWith(REVIEW);
+  });
+});
+
+describe('AiReviewPanel — key moment grade filter', () => {
+  /** Three grades across four moments, so every filter branch has something. */
+  const MULTI_GRADE: AiReview = {
+    ...REVIEW,
+    content: {
+      ...REVIEW.content,
+      momentComments: [2, 4, 6, 8].map((ply) => ({
+        ply,
+        explanation: `explanation-${ply}`,
+        lesson: `lesson-${ply}`,
+      })),
+    },
+    moments: (['inaccuracy', 'mistake', 'blunder', 'inaccuracy'] as const).map(
+      (judgment, index) => ({
+        ...REVIEW.moments[0],
+        ply: (index + 1) * 2,
+        san: `San${index}`,
+        moveNumber: index + 1,
+        judgment,
+      })
+    ),
+  };
+
+  const grade = (name: string) => screen.getByRole('button', { name: new RegExp(name) });
+
+  beforeEach(() => {
+    mockState = { phase: 'idle' };
+  });
+
+  it('offers one toggle per grade present, with its count, all on by default', () => {
+    render(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+
+    const group = screen.getByRole('group');
+    expect(
+      Array.from(group.querySelectorAll('button')).map((b) => b.textContent?.trim())
+      // glyph + (screen-reader-only) grade name + count.
+    ).toEqual([
+      '?!aiReview.judgments.inaccuracy2',
+      '?aiReview.judgments.mistake1',
+      '??aiReview.judgments.blunder1',
+    ]);
+    // No `good` / `best` bucket — the review never selects those as moments.
+    expect(screen.getAllByText(/^explanation-/)).toHaveLength(4);
+  });
+
+  it('hides the moments of a grade that is toggled off, and brings them back', () => {
+    render(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+
+    fireEvent.click(grade('aiReview.judgments.inaccuracy'));
+    expect(grade('aiReview.judgments.inaccuracy')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getAllByText(/^explanation-/).map((el) => el.textContent)).toEqual([
+      'explanation-4',
+      'explanation-6',
+    ]);
+
+    fireEvent.click(grade('aiReview.judgments.inaccuracy'));
+    expect(screen.getAllByText(/^explanation-/)).toHaveLength(4);
+  });
+
+  it('explains an empty list rather than showing a bare heading', () => {
+    render(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+
+    for (const judgment of ['inaccuracy', 'mistake', 'blunder']) {
+      fireEvent.click(grade(`aiReview.judgments.${judgment}`));
+    }
+    expect(screen.queryByText(/^explanation-/)).toBeNull();
+    expect(screen.getByText('aiReview.noMomentsForGrades')).toBeInTheDocument();
+  });
+
+  it('omits the filter when every moment shares one grade', () => {
+    render(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
+    expect(screen.queryByRole('group')).toBeNull();
   });
 });

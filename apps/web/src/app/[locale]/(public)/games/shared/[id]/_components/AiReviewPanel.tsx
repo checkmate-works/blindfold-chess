@@ -1,20 +1,22 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 
 import { SUPPORTED_LOCALES } from '@/config';
 import { LOCALE_LABELS } from '@/i18n/locale-labels';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot } from 'react-icons/fa';
 
-import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
-import { EVAL_SCORE_LIMIT } from '@/lib/games/analysis/types';
+import type { AiReview } from '@/lib/ai-review/types';
+import { MOVE_JUDGMENTS } from '@/lib/games/analysis/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
+import { MoveJudgmentBadge } from '@/lib/games/evaluation';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useAiReviewGeneration } from '../_hooks/use-ai-review-generation';
+import { ReviewMomentCard } from './ReviewMomentCard';
 
 type Props = {
   gameId: string;
@@ -27,30 +29,21 @@ type Props = {
    * one (see `SharedGameDetailView`), so it can offer the CTA unconditionally.
    */
   initialReview: AiReview | null;
-  /** Jump the replay board to the position after the given ply. */
+  /**
+   * Jump the replay board to the position after the given ply — the board that
+   * carries both that move's grade badge and the engine arrow for what the
+   * review would have played instead.
+   */
   onJumpToPly: (ply: number) => void;
+  /**
+   * Fires once when a generation started here completes. The page above marks
+   * graded moves on the board, and this panel is where a brand-new review comes
+   * into existence — without this the author would see their own review's
+   * grades on the board only after a reload. Not called for `initialReview`,
+   * which the page already has.
+   */
+  onReviewGenerated?: (review: AiReview) => void;
 };
-
-const JUDGMENT_BADGE_CLASS: Record<MoveJudgment, string> = {
-  best: 'bg-success',
-  good: 'bg-success',
-  inaccuracy: 'bg-warning',
-  mistake: 'bg-caution',
-  blunder: 'bg-destructive',
-};
-
-/** "+0.3" / "−1.7"; saturated mate scores render as a mate marker. */
-function formatEval(cp: number): string {
-  if (cp >= EVAL_SCORE_LIMIT) return '+M';
-  if (cp <= -EVAL_SCORE_LIMIT) return '-M';
-  const pawns = cp / 100;
-  return `${pawns > 0 ? '+' : ''}${pawns.toFixed(1)}`;
-}
-
-/** "18. Nd5" for a white move, "18... Nd5" for a black one. */
-function formatMoveLabel(moment: ReviewMoment): string {
-  return `${moment.moveNumber}${moment.color === 'white' ? '.' : '...'} ${moment.san}`;
-}
 
 /**
  * The AI Review tab body: renders the cached/just-generated review, or the
@@ -68,6 +61,7 @@ export function AiReviewPanel({
   startingFen,
   initialReview,
   onJumpToPly,
+  onReviewGenerated,
 }: Props) {
   const t = useTranslations('sharedGames');
   const { state, start, cancel } = useAiReviewGeneration({ gameId, moves, startingFen });
@@ -79,6 +73,14 @@ export function AiReviewPanel({
 
   // The hook's 'done' phase is terminal, so the fresh review needs no extra state.
   const review = state.phase === 'done' ? state.review : initialReview;
+
+  // Raise a just-generated review to the page. 'done' is terminal, so this
+  // fires once per generation and never for a cached `initialReview`.
+  const generated = state.phase === 'done' ? state.review : null;
+  useEffect(() => {
+    if (generated) onReviewGenerated?.(generated);
+  }, [generated, onReviewGenerated]);
+
   if (review) {
     return <ReviewBody review={review} viewerLocale={locale} onJumpToPly={onJumpToPly} />;
   }
@@ -195,6 +197,47 @@ function ReviewBody({
     () => new Map(review.moments.map((m) => [m.ply, m])),
     [review.moments]
   );
+
+  // One row per LLM comment joined to its engine moment. A comment whose
+  // moment is missing is dropped — the numbers are the authority, and prose
+  // about a moment that isn't there has nothing to anchor to.
+  const momentRows = useMemo(
+    () =>
+      review.content.momentComments.flatMap((comment) => {
+        const moment = momentsByPly.get(comment.ply);
+        return moment ? [{ comment, moment }] : [];
+      }),
+    [review.content.momentComments, momentsByPly]
+  );
+
+  // Grades that actually occur, in severity order, with their counts — the
+  // filter offers exactly what there is to filter, never an empty bucket.
+  const gradeCounts = useMemo(() => {
+    const counts = new Map<MoveJudgment, number>();
+    for (const { moment } of momentRows) {
+      counts.set(moment.judgment, (counts.get(moment.judgment) ?? 0) + 1);
+    }
+    return MOVE_JUDGMENTS.flatMap((judgment) => {
+      const count = counts.get(judgment);
+      return count === undefined ? [] : [{ judgment, count }];
+    });
+  }, [momentRows]);
+
+  // Excluded rather than included, so the default (an empty set) means "show
+  // everything" without having to be recomputed when the review changes.
+  const [excluded, setExcluded] = useState<ReadonlySet<MoveJudgment>>(() => new Set());
+  const toggleGrade = (judgment: MoveJudgment) =>
+    setExcluded((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(judgment)) next.add(judgment);
+      return next;
+    });
+  const visibleRows = momentRows.filter(({ moment }) => !excluded.has(moment.judgment));
+
+  // A single-grade review has nothing to separate, so the filter row would be
+  // a control that can only hide the whole list.
+  const showGradeFilter = gradeCounts.length > 1;
+
   // A game has one review, in the language its author chose — so a viewer
   // reading in another language gets it anyway, and is told which it is.
   const reviewLanguage =
@@ -217,44 +260,57 @@ function ReviewBody({
         <p className="whitespace-pre-wrap text-sm text-foreground">{review.content.summary}</p>
       </section>
 
-      {review.content.momentComments.length > 0 && (
+      {momentRows.length > 0 && (
         <section className="space-y-3">
           <h3 className="text-sm font-semibold text-foreground">
             {t('aiReview.sections.keyMoments')}
           </h3>
-          {review.content.momentComments.map((comment) => {
-            const moment = momentsByPly.get(comment.ply);
-            if (!moment) return null;
-            return (
-              <div key={comment.ply} className="space-y-2 rounded-lg border border-border p-4">
-                <div className="flex flex-wrap items-center gap-2">
+
+          {/* Grade filter — the notation IS the control, so each chip is the
+              board's own badge plus how many moves earned it. */}
+          {showGradeFilter && (
+            <div
+              role="group"
+              aria-label={t('aiReview.gradeFilterLabel')}
+              className="flex flex-wrap gap-2"
+            >
+              {gradeCounts.map(({ judgment, count }) => {
+                const label = t(`aiReview.judgments.${judgment}`);
+                const active = !excluded.has(judgment);
+                return (
                   <button
+                    key={judgment}
                     type="button"
-                    onClick={() => onJumpToPly(moment.ply)}
-                    className="font-mono text-sm font-semibold text-primary hover:underline"
+                    aria-pressed={active}
+                    onClick={() => toggleGrade(judgment)}
+                    title={label}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                      active
+                        ? 'border-primary bg-primary/10 text-foreground'
+                        : 'border-border text-muted-foreground opacity-50 hover:opacity-80'
+                    }`}
                   >
-                    {formatMoveLabel(moment)}
+                    <MoveJudgmentBadge judgment={judgment} size="sm" />
+                    <span className="sr-only">{label}</span>
+                    <span className="font-mono">{count}</span>
                   </button>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-bold text-white ${JUDGMENT_BADGE_CLASS[moment.judgment]}`}
-                  >
-                    {t(`aiReview.judgments.${moment.judgment}`)}
-                  </span>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {formatEval(moment.evalBefore)} → {formatEval(moment.evalAfter)}
-                  </span>
-                  {moment.bestMoveSan && (
-                    <span className="text-xs text-muted-foreground">
-                      {t('aiReview.bestMoveLabel')}:{' '}
-                      <span className="font-mono">{moment.bestMoveSan}</span>
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-foreground">{comment.explanation}</p>
-                <p className="text-sm text-muted-foreground">{comment.lesson}</p>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
+
+          {visibleRows.length === 0 && (
+            <p className="text-sm text-muted-foreground">{t('aiReview.noMomentsForGrades')}</p>
+          )}
+
+          {visibleRows.map(({ comment, moment }) => (
+            <ReviewMomentCard
+              key={comment.ply}
+              moment={moment}
+              comment={comment}
+              onJumpToPly={onJumpToPly}
+            />
+          ))}
         </section>
       )}
 

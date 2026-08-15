@@ -12,11 +12,17 @@ type Navigate = {
 
 type Options = {
   /**
-   * Off on the shared game, where the board position alone decides what sits
-   * below it. Only `local` mode (the just-finished result screen) needs the tab
-   * to follow the board. Passing `false` makes every wrapper a pass-through.
+   * What a jump back to the opening board (-2) selects.
+   *
+   * `summary` — the result screen, whose Discussion tab holds only a share CTA
+   * on the opening board, so the Summary is the useful half there.
+   *
+   * `keep` — the shared game, whose opening-board Discussion tab is the
+   * whole-game thread. This page deliberately leads with the discussion when it
+   * has one (see `useReviewOverview`), so stepping back must not overrule the
+   * viewer's tab.
    */
-  enabled: boolean;
+  atInitialPosition: 'summary' | 'keep';
   currentPosition: number;
   navigation: Navigate;
   setOverviewView: (view: 'summary' | 'discussion') => void;
@@ -42,32 +48,35 @@ export type UseOverviewPositionSyncReturn = {
 };
 
 /**
- * Keep the result screen's [Summary | Discussion] tab in step with the board.
+ * Keep the overview's [Summary | Discussion | …] tab in step with the board.
  *
- * On the shared game nothing is needed: the board position alone decides what
- * renders below it — the opening board shows the overview, any move position
- * shows that move's comment thread. The local (result) screen has no per-move
- * thread and its overview does not move with the board, so the TAB is what has
- * to follow it, in both directions: stepping onto a move reveals the Discussion,
- * stepping back to the opening board restores the Summary.
+ * The tabs stay mounted at every board position, so the tab — not the position
+ * — decides what renders below the board. Stepping onto a move is a request to
+ * look at that move, so it selects the Discussion, which is that move's thread
+ * on the shared game and the (position-independent) discussion side on the
+ * result screen. The Summary and AI Review stay one click away instead of
+ * disappearing, which is the point of following rather than swapping.
  *
- * Only real interactions may switch it. The programmatic initial landing (a
- * deep link, or the setup position of a seeded game) must leave the Summary
+ * Only real interactions may switch it. The programmatic initial landing (the
+ * setup position of a seeded game on the result screen) must leave the Summary
  * visible, which is why this wraps the navigation callbacks and flags the
  * intent, rather than watching `currentPosition` directly: an effect on the
- * position alone cannot tell a user's click from the mount-time jump.
+ * position alone cannot tell a user's click from the mount-time jump. A deep
+ * link IS a request to read a given move, so the shared page routes its landing
+ * through `syncToPosition` explicitly (see `useReplayDeepLink`'s `onLand`).
  */
 export function useOverviewPositionSync({
-  enabled,
+  atInitialPosition,
   currentPosition,
   navigation,
   setOverviewView,
 }: Options): UseOverviewPositionSyncReturn {
   const syncToPosition = useCallback(
     (position: number) => {
-      if (enabled) setOverviewView(position === -2 ? 'summary' : 'discussion');
+      if (position !== -2) setOverviewView('discussion');
+      else if (atInitialPosition === 'summary') setOverviewView('summary');
     },
-    [enabled, setOverviewView]
+    [atInitialPosition, setOverviewView]
   );
 
   // Set by the wrappers below, consumed by the effect once the navigation has

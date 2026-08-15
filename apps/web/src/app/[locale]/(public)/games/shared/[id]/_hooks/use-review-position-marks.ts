@@ -2,15 +2,24 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { getLastMoveDetails, isCheckmateFen } from '@blindfold-chess/features/chess-core';
+import {
+  getLastMoveDetails,
+  isCheckmateFen,
+  replayMoves,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import type { MoveJudgment } from '@/lib/games/analysis/types';
+import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 import {
   isFinalPosition,
   resolveLosingColor,
   resolveTerminationMark,
 } from '@/lib/games/termination-mark';
+
+import { computeCurrentPly } from '../_lib/replay-derivations';
 
 type Options = {
   notationMoves: AlgebraicNotation[];
@@ -20,6 +29,16 @@ type Options = {
   result: FinalGameOutcome;
   /** FEN of the game's final position — the only place the end reason is legible. */
   latestFen: string;
+  /**
+   * Move grades keyed by ply, from the game's AI review (its selected moments
+   * — so most plies are absent, and an ungraded game passes an empty map).
+   */
+  judgmentByPly: ReadonlyMap<number, MoveJudgment>;
+  /**
+   * The engine's preferred move (SAN) for the position BEFORE each keyed ply,
+   * from the same review moments. Same sparseness as `judgmentByPly`.
+   */
+  bestMoveSanByPly: ReadonlyMap<number, string>;
 };
 
 /** Derived, not restated: `Square` is narrower than `string`. */
@@ -33,11 +52,33 @@ export type UseReviewPositionMarksReturn = {
   lastMoveAt: (position: number) => LastMove;
   /** The end-of-game badge for a given navigation position; null off the final one. */
   terminationMarkAt: (position: number) => TerminationMark | null;
+  /**
+   * The AI review's grade for the move that produced a given position, pinned
+   * to the square it landed on. Null wherever the review said nothing — which
+   * is most plies, since a review only selects its critical moments.
+   */
+  evaluationMarkAt: (position: number) => EvaluationMark | null;
+  /**
+   * An engine arrow for the move the review would have preferred over the one
+   * that produced a given position — drawn on the SAME board as that move's
+   * grade. Null everywhere the review had nothing to say.
+   */
+  bestMoveArrowAt: (position: number) => BoardAnnotations | null;
 };
 
 /**
- * The two board marks a finished-game review resolves PER NAVIGATION POSITION
- * rather than once: the last-move highlight and the end-of-game badge.
+ * The board marks a finished-game review resolves PER NAVIGATION POSITION
+ * rather than once: the last-move highlight, the end-of-game badge, the AI
+ * review's grade for the move just played, and the engine arrow for what it
+ * should have played instead.
+ *
+ * The grade and the arrow describe one move and land on one board — the
+ * position AFTER it, matching how a game review reads elsewhere (chess.com
+ * draws its classification badge and its suggestion together; nobody makes the
+ * reader step back to see the alternative). The arrow's origin square is
+ * therefore the one the piece has just left, which the last-move highlight on
+ * the same two squares disambiguates. Only its RESOLUTION needs the earlier
+ * board: a SAN is legal in exactly one position.
  *
  * Both are position-parameterised for the same reason — the review shows two
  * boards at once. The "By Move" quick-peek modal scrubs independently of the
@@ -58,6 +99,8 @@ export function useReviewPositionMarks({
   playerColor,
   result,
   latestFen,
+  judgmentByPly,
+  bestMoveSanByPly,
 }: Options): UseReviewPositionMarksReturn {
   const lastMoveAt = useCallback(
     (position: number) => {
@@ -81,5 +124,58 @@ export function useReviewPositionMarks({
     [notationMoves.length, latestFen, result, playerColor]
   );
 
-  return useMemo(() => ({ lastMoveAt, terminationMarkAt }), [lastMoveAt, terminationMarkAt]);
+  const evaluationMarkAt = useCallback(
+    (position: number) => {
+      const ply = computeCurrentPly(position, notationMoves.length);
+      if (ply == null) return null;
+      const judgment = judgmentByPly.get(ply);
+      if (judgment === undefined) return null;
+      // The graded move IS the last move at this position, so its destination
+      // square is where the badge belongs — the same square the highlight uses.
+      const lastMove = lastMoveAt(position);
+      return lastMove ? { square: lastMove.to, judgment } : null;
+    },
+    [judgmentByPly, lastMoveAt, notationMoves.length]
+  );
+
+  // The arrows, resolved once for the handful of graded plies rather than per
+  // navigation: turning a SAN into coordinates needs the position it was
+  // legal in, so this replays the game — too much to redo on every step.
+  const bestMoveArrows = useMemo(() => {
+    const arrows = new Map<number, BoardAnnotations>();
+    if (bestMoveSanByPly.size === 0) return arrows;
+
+    const positions = replayMoves(notationMoves as string[], startingFen);
+    for (const [ply, san] of bestMoveSanByPly) {
+      // `positions[ply]` is the board BEFORE `moves[ply]` — the one the engine
+      // judged, and the only one this SAN is legal in.
+      const fenBefore = positions[ply]?.fen;
+      if (fenBefore === undefined) continue;
+      // A SAN that no longer parses (a record edited out from under a stored
+      // review) is dropped rather than drawn wrong.
+      const move = getLastMoveDetails([san], fenBefore);
+      if (move) {
+        // Green from the shared annotation palette: the grade badges already
+        // say "good move" in green (`best` / `good` in `judgmentStyle`), so a
+        // recommendation reads as one at a glance. The palette's own green,
+        // not the badge's — these are different surfaces, and matching the
+        // family is the point rather than matching the hex.
+        arrows.set(ply, { arrows: [{ ...move, color: 'green' }], circles: [] });
+      }
+    }
+    return arrows;
+  }, [bestMoveSanByPly, notationMoves, startingFen]);
+
+  const bestMoveArrowAt = useCallback(
+    (position: number) => {
+      const ply = computeCurrentPly(position, notationMoves.length);
+      return ply === null ? null : (bestMoveArrows.get(ply) ?? null);
+    },
+    [bestMoveArrows, notationMoves.length]
+  );
+
+  return useMemo(
+    () => ({ lastMoveAt, terminationMarkAt, evaluationMarkAt, bestMoveArrowAt }),
+    [lastMoveAt, terminationMarkAt, evaluationMarkAt, bestMoveArrowAt]
+  );
 }

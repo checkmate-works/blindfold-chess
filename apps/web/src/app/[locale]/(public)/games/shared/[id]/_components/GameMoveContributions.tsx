@@ -5,6 +5,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 import { FaBrain } from 'react-icons/fa';
 
+import type { AiReviewMomentComment, ReviewMoment } from '@/lib/ai-review/types';
 import { groupChunkLinksBySuggester } from '@/lib/chunks/group-chunk-links';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
@@ -22,6 +23,7 @@ import { groupReplies } from '../_lib/game-comment-tree';
 import { type CommentUser, GameCommentProvider } from './GameCommentContext';
 import { GameCommentForm } from './GameCommentForm';
 import { GameCommentNode } from './GameCommentNode';
+import { ReviewMomentComment } from './ReviewMomentComment';
 
 type Props = {
   gameId: string;
@@ -50,11 +52,24 @@ type Props = {
   moves: string[];
   startingFen: string | null;
   playerColor: Side;
+  /**
+   * The AI review's take on this move, when it flagged one. Rendered at the
+   * head of the thread as an inert comment (see `ReviewMomentComment`) — the
+   * coach is one more voice about this move, not a separate widget. Never set
+   * for the whole-game thread, which the review has no per-move entry for.
+   */
+  aiReviewMoment?: {
+    moment: ReviewMoment;
+    comment?: AiReviewMomentComment;
+    /** When the review was generated — the "comment" has no time of its own. */
+    createdAt: Date;
+  } | null;
 };
 
 /**
- * Contributions for the position on the board: the advice comments and the
- * applicable-chunk links, shown one after another (both always visible).
+ * Contributions for the position on the board: the AI review's take on the
+ * move (when it flagged one), the advice comments and the applicable-chunk
+ * links, shown one after another (all always visible).
  * Below them sit two collapsed CTAs — "join the conversation" and "suggest a
  * chunk" — each expanding its own composer on demand. (Previously the posted
  * content itself was tabbed, which hid one axis behind the other.)
@@ -76,6 +91,7 @@ export function GameMoveContributions({
   moves,
   startingFen,
   playerColor,
+  aiReviewMoment,
 }: Props) {
   const t = useTranslations('sharedGames');
   const tCommon = useTranslations('Common');
@@ -181,6 +197,18 @@ export function GameMoveContributions({
           </JoinConversationToggle>
         )}
       </div>
+
+      {/* The AI coach's take, first: it is about the move itself, where the
+          comments below are a conversation about it. Inert by design — see
+          `ReviewMomentComment`. */}
+      {aiReviewMoment && (
+        <ReviewMomentComment
+          moment={aiReviewMoment.moment}
+          comment={aiReviewMoment.comment}
+          createdAt={aiReviewMoment.createdAt}
+          locale={locale}
+        />
+      )}
 
       {/* Posted advice comments for this move. */}
       {thread.roots.length > 0 && (

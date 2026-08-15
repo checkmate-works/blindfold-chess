@@ -2799,6 +2799,10 @@
         "weaknesses": "改善ポイント",
         "advice": "次のゲームへのアドバイス"
       },
+      "gradeFilterLabel": "評価で重要局面を絞り込む",
+      "noMomentsForGrades": "選択した評価に該当する局面はありません。",
+      "collapseAriaLabel": "この手のAIレビューを折りたたむ",
+      "expandAriaLabel": "この手のAIレビューを展開する",
       "judgments": {
         "best": "最善",
         "good": "好手",
