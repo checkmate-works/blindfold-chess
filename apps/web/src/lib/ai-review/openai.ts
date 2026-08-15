@@ -33,6 +33,19 @@ function requireApiKey(): string {
   return key;
 }
 
+/**
+ * Whether an LLM is reachable at all in this deployment.
+ *
+ * Callers use it to skip offering generation (hiding the tab, refusing before
+ * the rate limit) rather than letting the request travel the whole pipeline —
+ * a browser-side engine sweep and a rate-limit slot — only to fail at the
+ * `requireApiKey()` throw. Deliberately mirrors that function's falsy test so
+ * an empty string counts as unset in both places.
+ */
+export function isLlmConfigured(): boolean {
+  return Boolean(process.env.OPENAI_API_KEY);
+}
+
 /** Whether the model takes the `reasoning_effort` knob (gpt-5* / o* families). */
 function isReasoningModel(model: string): boolean {
   return model.startsWith('gpt-5') || model.startsWith('o');

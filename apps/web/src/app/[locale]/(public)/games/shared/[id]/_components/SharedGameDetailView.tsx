@@ -5,6 +5,7 @@ import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
 import { canGenerateAiReview } from '@/lib/ai-review/authorize';
+import { isLlmConfigured } from '@/lib/ai-review/openai';
 import { getAiReview } from '@/lib/ai-review/queries';
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
@@ -97,6 +98,12 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     gameUsedNotablePlaySettings(game.playSettings, game.playSettingsLog);
   const hasPlayedVariant = hasPlayedGifVariant(game);
 
+  // Deployments without an LLM key (preview branches, forks, self-hosters) get
+  // no AI Review tab at all rather than a CTA that can only end in an error —
+  // unless a review was already generated here, which stays readable forever.
+  const llmConfigured = isLlmConfigured();
+  const showAiReview = aiReview != null || llmConfigured;
+
   return (
     <PageLayout
       title={game.title}
@@ -129,12 +136,16 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           statsHeader={
             <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
           }
-          aiReview={{
-            initial: aiReview,
-            // Generation is members-only; viewing a cached review is not.
-            viewerCanGenerate: user != null,
-            gameIsEligible: canGenerateAiReview(game).ok,
-          }}
+          aiReview={
+            showAiReview
+              ? {
+                  initial: aiReview,
+                  // Generation is members-only; viewing a cached review is not.
+                  viewerCanGenerate: user != null && llmConfigured,
+                  gameIsEligible: canGenerateAiReview(game).ok,
+                }
+              : undefined
+          }
           social={{
             mode: 'live',
             // Real auth state — distinct from `currentUser` (the comment

@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { canGenerateAiReview } from '@/lib/ai-review/authorize';
 import { generateReview } from '@/lib/ai-review/generate-review';
-import { createOpenAiClient } from '@/lib/ai-review/openai';
+import { createOpenAiClient, isLlmConfigured } from '@/lib/ai-review/openai';
 import { dbAiReviewStore } from '@/lib/ai-review/queries';
 // Response and error types live in @/lib/ai-review/types — a "use server"
 // file must not re-export types (see the Server Actions convention).
@@ -79,6 +79,14 @@ export async function generateAiReviewAction(
     const cached = await dbAiReviewStore.find(game.id, locale);
     if (cached) {
       return { success: true, review: cached };
+    }
+
+    // The UI hides the tab when no key is configured, but a stale page (or a
+    // direct POST) can still land here. Refuse BEFORE the rate limit so a
+    // deployment-side misconfiguration cannot eat the caller's daily budget.
+    if (!isLlmConfigured()) {
+      console.error('[generateAiReviewAction] OPENAI_API_KEY is not set');
+      return { success: false, error: 'llm_error' };
     }
 
     const rate = await checkRateLimit(auth.user.id, RATE_LIMITS.generateAiReview);
