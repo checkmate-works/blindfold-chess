@@ -6,6 +6,7 @@ import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 
@@ -36,6 +37,8 @@ type Props = {
   evaluationMark?: EvaluationMark | null;
   /** Relayed straight to the inner `ChessBoard` — see its prop doc. */
   evaluationMarkLabel?: string;
+  /** Display-only annotations for the PREVIEWED position — see `evaluationMark`. */
+  annotations?: BoardAnnotations | null;
   /**
    * Relayed straight to the inner `ChessBoard` — see its prop doc. The modal
    * previews its own position, so the caller must resolve the mark for THAT
@@ -75,6 +78,7 @@ export function BoardViewModal({
   formattedPgn,
   evaluationMark,
   evaluationMarkLabel,
+  annotations = null,
   terminationMark = null,
   terminationMarkLabel,
   onNavigateToStart,
@@ -114,6 +118,7 @@ export function BoardViewModal({
           rounded={false}
           evaluationMark={evaluationMark}
           evaluationMarkLabel={evaluationMarkLabel}
+          annotations={annotations}
           terminationMark={terminationMark}
           terminationMarkLabel={terminationMarkLabel}
         />

@@ -229,6 +229,13 @@ export function GameReview({
     () => new Map(reviewMoments.map((m) => [m.ply, m.judgment])),
     [reviewMoments]
   );
+  const bestMoveSanByPly = useMemo(
+    () =>
+      new Map(
+        reviewMoments.flatMap((m) => (m.bestMoveSan ? [[m.ply, m.bestMoveSan] as const] : []))
+      ),
+    [reviewMoments]
+  );
   const handleReviewGenerated = useCallback(
     (review: AiReview) => setReviewMoments(review.moments),
     []
@@ -237,14 +244,16 @@ export function GameReview({
   // The last-move highlight, the end-of-game badge and the move grade, all
   // resolved per navigation position because the live board and the quick-peek
   // modal scrub independently. See the hook for why none can be a single value.
-  const { lastMoveAt, terminationMarkAt, evaluationMarkAt } = useReviewPositionMarks({
-    notationMoves,
-    startingFen: startingFen ?? undefined,
-    playerColor,
-    result,
-    latestFen,
-    judgmentByPly,
-  });
+  const { lastMoveAt, terminationMarkAt, evaluationMarkAt, bestMoveArrowAt } =
+    useReviewPositionMarks({
+      notationMoves,
+      startingFen: startingFen ?? undefined,
+      playerColor,
+      result,
+      latestFen,
+      judgmentByPly,
+      bestMoveSanByPly,
+    });
   const lastMove = useMemo(() => lastMoveAt(currentPosition), [lastMoveAt, currentPosition]);
 
   // "By Move" quick-peek modal: its own navigation (so previewing never moves the
@@ -292,6 +301,23 @@ export function GameReview({
   /** The grade's localized name, for the badge's accessible name / tooltip. */
   const judgmentLabel = (mark: EvaluationMark | null) =>
     mark ? t(`aiReview.judgments.${mark.judgment}`) : undefined;
+
+  const bestMoveArrow = useMemo(
+    () => bestMoveArrowAt(currentPosition),
+    [bestMoveArrowAt, currentPosition]
+  );
+  const quickPeekBestMoveArrow = useMemo(
+    () => bestMoveArrowAt(quickPeek.nav.currentPosition),
+    [bestMoveArrowAt, quickPeek.nav.currentPosition]
+  );
+
+  // "Best move: Nf3" in the review opens the board it was playable on — the
+  // position before the graded move, where the arrow is drawn. Ply 0's
+  // predecessor is the opening board (-2), not the latest position (-1).
+  const previewBestMove = useCallback(
+    (ply: number) => quickPeek.openAtMove(ply > 0 ? ply - 1 : -2),
+    [quickPeek]
+  );
 
   // Same game-statistics overview as the result screen, derived from the
   // per-move operation logs. The effort strip jumps the inline board.
@@ -478,6 +504,9 @@ export function GameReview({
               // board, not only the review tab's list.
               evaluationMark,
               evaluationMarkLabel: judgmentLabel(evaluationMark),
+              // Read-only: no `onAnnotationsChange`, so the board draws the
+              // engine arrow without becoming a drawing surface.
+              annotations: bestMoveArrow,
             }}
             moveList={{
               movesLength: notationMoves.length,
@@ -612,6 +641,7 @@ export function GameReview({
                   // footer commits the position for a viewer who wants to go
                   // there — which then switches this block to that move's thread.
                   onJumpToPly={quickPeek.openAtMove}
+                  onPreviewBestMove={previewBestMove}
                   onReviewGenerated={handleReviewGenerated}
                 />
               )}
@@ -757,6 +787,7 @@ export function GameReview({
         terminationMarkLabel={terminationMarkLabel(quickPeekTerminationMark)}
         evaluationMark={quickPeekEvaluationMark}
         evaluationMarkLabel={judgmentLabel(quickPeekEvaluationMark)}
+        annotations={quickPeekBestMoveArrow}
         footer={
           <button
             type="button"

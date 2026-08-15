@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 
@@ -56,6 +57,12 @@ export type InlineBoardChessProps = {
    */
   evaluationMark?: EvaluationMark | null;
   evaluationMarkLabel?: string;
+  /**
+   * Display-only board annotations (the review's engine arrow). Relayed
+   * without `onAnnotationsChange`, so the board never becomes a drawing
+   * surface here.
+   */
+  annotations?: BoardAnnotations | null;
   /**
    * Enables interactive move input, firing once per completed legal move with
    * the SAN string. The parent gates this on game state (player's turn, not
@@ -209,6 +216,7 @@ export function InlineBoardView({
     terminationMarkLabel,
     evaluationMark = null,
     evaluationMarkLabel,
+    annotations = null,
     onMove,
     onIllegalMove,
   } = board;
@@ -323,6 +331,7 @@ export function InlineBoardView({
               terminationMarkLabel={terminationMarkLabel}
               evaluationMark={evaluationMark}
               evaluationMarkLabel={evaluationMarkLabel}
+              annotations={annotations}
             />
             {/* Navigation Controls & Flip Button */}
             {(movesLength > 0 || onFlipBoard || trailingAction) && (

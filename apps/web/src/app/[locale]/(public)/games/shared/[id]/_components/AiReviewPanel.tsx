@@ -31,6 +31,11 @@ type Props = {
   /** Jump the replay board to the position after the given ply. */
   onJumpToPly: (ply: number) => void;
   /**
+   * Open the board the given ply was played FROM — where the engine's
+   * preferred alternative is still playable, and is drawn as an arrow.
+   */
+  onPreviewBestMove: (ply: number) => void;
+  /**
    * Fires once when a generation started here completes. The page above marks
    * graded moves on the board, and this panel is where a brand-new review comes
    * into existence — without this the author would see their own review's
@@ -69,6 +74,7 @@ export function AiReviewPanel({
   startingFen,
   initialReview,
   onJumpToPly,
+  onPreviewBestMove,
   onReviewGenerated,
 }: Props) {
   const t = useTranslations('sharedGames');
@@ -90,7 +96,14 @@ export function AiReviewPanel({
   }, [generated, onReviewGenerated]);
 
   if (review) {
-    return <ReviewBody review={review} viewerLocale={locale} onJumpToPly={onJumpToPly} />;
+    return (
+      <ReviewBody
+        review={review}
+        viewerLocale={locale}
+        onJumpToPly={onJumpToPly}
+        onPreviewBestMove={onPreviewBestMove}
+      />
+    );
   }
 
   if (state.phase === 'analyzing') {
@@ -194,11 +207,13 @@ function ReviewBody({
   review,
   viewerLocale,
   onJumpToPly,
+  onPreviewBestMove,
 }: {
   review: AiReview;
   /** The page's language, to decide whether the review needs labelling. */
   viewerLocale: Locale;
   onJumpToPly: (ply: number) => void;
+  onPreviewBestMove: (ply: number) => void;
 }) {
   const t = useTranslations('sharedGames');
   const momentsByPly = useMemo(
@@ -333,10 +348,17 @@ function ReviewBody({
                     {formatEval(moment.evalBefore)} → {formatEval(moment.evalAfter)}
                   </span>
                   {moment.bestMoveSan && (
-                    <span className="text-xs text-muted-foreground">
+                    /* Opens the position this move was played FROM, where the
+                       alternative is drawn as an engine arrow — the played
+                       move's own board has already moved the piece away. */
+                    <button
+                      type="button"
+                      onClick={() => onPreviewBestMove(moment.ply)}
+                      className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+                    >
                       {t('aiReview.bestMoveLabel')}:{' '}
                       <span className="font-mono">{moment.bestMoveSan}</span>
-                    </span>
+                    </button>
                   )}
                 </div>
                 <p className="text-sm text-foreground">{comment.explanation}</p>

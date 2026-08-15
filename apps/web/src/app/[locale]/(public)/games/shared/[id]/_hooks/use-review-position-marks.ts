@@ -2,9 +2,14 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { getLastMoveDetails, isCheckmateFen } from '@blindfold-chess/features/chess-core';
+import {
+  getLastMoveDetails,
+  isCheckmateFen,
+  replayMoves,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
@@ -14,7 +19,7 @@ import {
   resolveTerminationMark,
 } from '@/lib/games/termination-mark';
 
-import { computeCurrentPly } from '../_lib/replay-derivations';
+import { computeCurrentPly, computeNextPly } from '../_lib/replay-derivations';
 
 type Options = {
   notationMoves: AlgebraicNotation[];
@@ -29,6 +34,11 @@ type Options = {
    * — so most plies are absent, and an ungraded game passes an empty map).
    */
   judgmentByPly: ReadonlyMap<number, MoveJudgment>;
+  /**
+   * The engine's preferred move (SAN) for the position BEFORE each keyed ply,
+   * from the same review moments. Same sparseness as `judgmentByPly`.
+   */
+  bestMoveSanByPly: ReadonlyMap<number, string>;
 };
 
 /** Derived, not restated: `Square` is narrower than `string`. */
@@ -48,12 +58,26 @@ export type UseReviewPositionMarksReturn = {
    * is most plies, since a review only selects its critical moments.
    */
   evaluationMarkAt: (position: number) => EvaluationMark | null;
+  /**
+   * A lichess-style engine arrow for the move the review would have preferred
+   * FROM a given position — drawn one step before the grade it explains,
+   * because that is the board on which the choice existed. Null everywhere the
+   * review had nothing to say.
+   */
+  bestMoveArrowAt: (position: number) => BoardAnnotations | null;
 };
 
 /**
  * The board marks a finished-game review resolves PER NAVIGATION POSITION
- * rather than once: the last-move highlight, the end-of-game badge, and the
- * AI review's grade for the move just played.
+ * rather than once: the last-move highlight, the end-of-game badge, the AI
+ * review's grade for the move just played, and its engine arrow for the move
+ * that should have been played next.
+ *
+ * The last two read the same review from opposite ends of a move, and that is
+ * deliberate: a grade judges a move already made, so it belongs on the board
+ * AFTER it; a preferred move is an alternative that was available, so it
+ * belongs on the board BEFORE it — the only position where its origin square
+ * still holds the piece that would have moved.
  *
  * Both are position-parameterised for the same reason — the review shows two
  * boards at once. The "By Move" quick-peek modal scrubs independently of the
@@ -75,6 +99,7 @@ export function useReviewPositionMarks({
   result,
   latestFen,
   judgmentByPly,
+  bestMoveSanByPly,
 }: Options): UseReviewPositionMarksReturn {
   const lastMoveAt = useCallback(
     (position: number) => {
@@ -112,8 +137,39 @@ export function useReviewPositionMarks({
     [judgmentByPly, lastMoveAt, notationMoves.length]
   );
 
+  // The arrows, resolved once for the handful of graded plies rather than per
+  // navigation: turning a SAN into coordinates needs the position it was
+  // legal in, so this replays the game — too much to redo on every step.
+  const bestMoveArrows = useMemo(() => {
+    const arrows = new Map<number, BoardAnnotations>();
+    if (bestMoveSanByPly.size === 0) return arrows;
+
+    const positions = replayMoves(notationMoves as string[], startingFen);
+    for (const [ply, san] of bestMoveSanByPly) {
+      // `positions[ply]` is the board BEFORE `moves[ply]` — the one the engine
+      // judged, and the only one this SAN is legal in.
+      const fenBefore = positions[ply]?.fen;
+      if (fenBefore === undefined) continue;
+      // A SAN that no longer parses (a record edited out from under a stored
+      // review) is dropped rather than drawn wrong.
+      const move = getLastMoveDetails([san], fenBefore);
+      if (move) {
+        arrows.set(ply, { arrows: [{ ...move, color: 'blue' }], circles: [] });
+      }
+    }
+    return arrows;
+  }, [bestMoveSanByPly, notationMoves, startingFen]);
+
+  const bestMoveArrowAt = useCallback(
+    (position: number) => {
+      const ply = computeNextPly(position, notationMoves.length);
+      return ply === null ? null : (bestMoveArrows.get(ply) ?? null);
+    },
+    [bestMoveArrows, notationMoves.length]
+  );
+
   return useMemo(
-    () => ({ lastMoveAt, terminationMarkAt, evaluationMarkAt }),
-    [lastMoveAt, terminationMarkAt, evaluationMarkAt]
+    () => ({ lastMoveAt, terminationMarkAt, evaluationMarkAt, bestMoveArrowAt }),
+    [lastMoveAt, terminationMarkAt, evaluationMarkAt, bestMoveArrowAt]
   );
 }

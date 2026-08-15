@@ -69,6 +69,7 @@ const baseProps = {
   startingFen: null,
   initialReview: null,
   onJumpToPly: vi.fn(),
+  onPreviewBestMove: vi.fn(),
 };
 
 describe('AiReviewPanel', () => {
