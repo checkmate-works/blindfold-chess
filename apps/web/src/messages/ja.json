@@ -2786,7 +2786,7 @@
       "tab": "AIレビュー",
       "disclaimer": "Stockfishの解析に基づいてAIが生成したレビューです（モデル: {model}）。誤りを含む可能性があります。",
       "generateTitle": "AIコーチのレビューを見る",
-      "generateDescription": "ブラウザ上でStockfishが全局面を解析し、AIコーチが重要局面・良かった点・改善点を解説します。",
+      "notGenerated": "AIレビューはまだ生成されていません。",
       "generateButton": "AIレビューを生成",
       "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
       "generating": "レビューを執筆中…",

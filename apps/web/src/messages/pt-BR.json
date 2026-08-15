@@ -2786,7 +2786,7 @@
       "tab": "Revisão IA",
       "disclaimer": "Revisão gerada por IA com base na análise do Stockfish (modelo: {model}). Pode conter erros.",
       "generateTitle": "Receba uma revisão do treinador IA",
-      "generateDescription": "Seu navegador analisa cada posição com o Stockfish e um treinador IA explica os momentos-chave, seus pontos fortes e o que melhorar.",
+      "notGenerated": "Ainda não há uma revisão IA gerada para esta partida.",
       "generateButton": "Gerar revisão IA",
       "analyzing": "Analisando com o Stockfish… ({done}/{total} posições)",
       "generating": "Escrevendo a revisão…",

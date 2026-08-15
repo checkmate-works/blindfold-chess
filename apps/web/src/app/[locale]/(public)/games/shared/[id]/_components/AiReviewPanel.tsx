@@ -93,7 +93,7 @@ export function AiReviewPanel({
   if (state.phase === 'analyzing') {
     const percent = Math.round((state.done / state.total) * 100);
     return (
-      <div className="space-y-4 rounded-lg border border-border p-6">
+      <div className="space-y-4 py-6">
         <p className="text-sm text-foreground">
           {t('aiReview.analyzing', { done: state.done, total: state.total })}
         </p>
@@ -119,7 +119,7 @@ export function AiReviewPanel({
 
   if (state.phase === 'generating') {
     return (
-      <div className="flex items-center gap-3 rounded-lg border border-border p-6">
+      <div className="flex items-center justify-center gap-3 py-6">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         <p className="text-sm text-foreground">{t('aiReview.generating')}</p>
       </div>
@@ -127,16 +127,14 @@ export function AiReviewPanel({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-border p-6 text-center">
+    <div className="space-y-4 py-6 text-center">
       <div className="flex justify-center">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
           <FaRobot className="h-5 w-5" />
         </span>
       </div>
       <h3 className="text-lg font-bold text-foreground">{t('aiReview.generateTitle')}</h3>
-      <p className="mx-auto max-w-md text-sm text-muted-foreground">
-        {t('aiReview.generateDescription')}
-      </p>
+      <p className="text-sm text-muted-foreground">{t('aiReview.notGenerated')}</p>
       {state.phase === 'error' && (
         <p className="text-sm text-destructive" role="alert">
           {t(`aiReview.errors.${state.error}`)}
@@ -157,7 +155,7 @@ function SignInPrompt() {
   const t = useTranslations('sharedGames');
   const next = encodeURIComponent(useCurrentPathAsNext());
   return (
-    <div className="space-y-3 rounded-lg border border-border p-6 text-center">
+    <div className="space-y-3 py-6 text-center">
       <p className="text-sm text-muted-foreground">{t('aiReview.signInPrompt')}</p>
       <Link
         href={`/sign-in?next=${next}`}
@@ -171,7 +169,7 @@ function SignInPrompt() {
 
 function Notice({ text }: { text: string }) {
   return (
-    <div className="rounded-lg border border-border p-6 text-center">
+    <div className="py-6 text-center">
       <p className="text-sm text-muted-foreground">{text}</p>
     </div>
   );

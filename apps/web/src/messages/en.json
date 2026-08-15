@@ -2786,7 +2786,7 @@
       "tab": "AI Review",
       "disclaimer": "AI-generated review based on Stockfish analysis (model: {model}). It may contain mistakes.",
       "generateTitle": "Get an AI coach review",
-      "generateDescription": "Your browser analyzes every position with Stockfish, then an AI coach explains the key moments, your strengths, and what to work on.",
+      "notGenerated": "No AI review has been generated for this game yet.",
       "generateButton": "Generate AI review",
       "analyzing": "Analyzing with Stockfish… ({done}/{total} positions)",
       "generating": "Writing the review…",
