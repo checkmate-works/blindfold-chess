@@ -71,6 +71,12 @@ export type AiReviewContent = {
 
 /** The full review as served to the UI (RSC-serializable). */
 export type AiReview = {
+  /**
+   * The language `content` is written in, chosen by the author at generation
+   * time — NOT the viewer's locale. A viewer reading in another language gets
+   * this one anyway (there is one review per game), labelled as such.
+   */
+  locale: string;
   content: AiReviewContent;
   moments: ReviewMoment[];
   summaryStats: AnalysisSummaryStats;

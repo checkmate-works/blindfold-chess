@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, gameAiReviews } from '@/lib/db';
@@ -10,6 +10,7 @@ import type { AiReview } from './types';
 
 function toAiReview(row: GameAiReviewRecord): AiReview {
   return {
+    locale: row.locale,
     content: row.content,
     moments: row.moments,
     summaryStats: row.summaryStats,
@@ -37,6 +38,32 @@ async function fetchAiReview(gameId: string, locale: string): Promise<AiReview |
  * winner's row, not the `null` this request memoized before generating.
  */
 export const getAiReview = cache(fetchAiReview);
+
+/**
+ * The review to SHOW a viewer reading this game in `preferredLocale`: that
+ * locale's review when it exists, otherwise the game's oldest review in any
+ * language (labelled by the UI).
+ *
+ * The fallback is what makes one review serve every visitor. Generation is
+ * the author's alone, so without it a game reviewed in Japanese would offer
+ * nothing at all to its `/en` and `/es` readers — nobody among them is
+ * allowed to fill those slots. The per-locale rows stay in the schema for a
+ * future "also generate in my language" affordance; today the first
+ * generation is the game's review.
+ */
+export const getAiReviewForViewer = cache(
+  async (gameId: string, preferredLocale: string): Promise<AiReview | null> => {
+    const rows = await db
+      .select()
+      .from(gameAiReviews)
+      .where(eq(gameAiReviews.gameId, gameId))
+      // Oldest first, so the fallback is stable as later languages appear.
+      .orderBy(asc(gameAiReviews.createdAt));
+    if (rows.length === 0) return null;
+    const exact = rows.find((row) => row.locale === preferredLocale);
+    return toAiReview(exact ?? rows[0]);
+  }
+);
 
 /**
  * Persistence port for `generateReview` — injected so its orchestration is

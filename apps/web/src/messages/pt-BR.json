@@ -2791,7 +2791,6 @@
       "generating": "Escrevendo a revisão…",
       "cancel": "Cancelar",
       "retry": "Tentar novamente",
-      "publicNotice": "Observação: a revisão que você gerar ficará visível para todos.",
       "bestMoveLabel": "Melhor lance",
       "sections": {
         "summary": "Resumo da partida",
@@ -2817,6 +2816,15 @@
         "llm_error": "O treinador IA não conseguiu gerar a revisão. Tente mais tarde.",
         "unexpected_error": "Algo deu errado. Tente mais tarde.",
         "analysis_failed": "A análise do motor falhou. Recarregue a página e tente novamente."
+      },
+      "languageNote": "Esta revisão está escrita em {language}.",
+      "confirm": {
+        "title": "Gerar uma revisão IA?",
+        "message": "Observação: a revisão ficará visível para todos e não poderá ser excluída depois.",
+        "languageLabel": "Idioma da revisão",
+        "languageHelp": "Cada partida tem uma única revisão. Ela será exibida a todos os visitantes no idioma que você escolher aqui.",
+        "submit": "Gerar",
+        "cancel": "Cancelar"
       }
     },
     "discussion": {

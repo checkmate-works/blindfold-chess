@@ -70,6 +70,7 @@ function memoryStore(initial: AiReview | null = null): AiReviewStore & { saved: 
     save: vi.fn(async (row) => {
       saved.push(row);
       existing = {
+        locale: row.locale,
         content: row.content,
         moments: row.moments,
         summaryStats: row.summaryStats,
@@ -125,6 +126,7 @@ describe('generateReview', () => {
 
   it('returns the cached review without calling the LLM', async () => {
     const cached: AiReview = {
+      locale: 'ja',
       content: validContent([]),
       moments: [],
       summaryStats: {

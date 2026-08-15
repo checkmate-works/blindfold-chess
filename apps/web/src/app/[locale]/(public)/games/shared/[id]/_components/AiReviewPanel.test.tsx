@@ -29,6 +29,7 @@ vi.mock('../_hooks/use-ai-review-generation', () => ({
 }));
 
 const REVIEW: AiReview = {
+  locale: 'en',
   content: {
     summary: 'A hard-fought game with one decisive slip.',
     momentComments: [
@@ -89,6 +90,15 @@ describe('AiReviewPanel', () => {
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
   });
 
+  it('labels a review written in another language, and only then', () => {
+    const { unmount } = render(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
+    expect(screen.queryByText('aiReview.languageNote')).not.toBeInTheDocument();
+    unmount();
+
+    render(<AiReviewPanel {...baseProps} initialReview={{ ...REVIEW, locale: 'ja' }} />);
+    expect(screen.getByText('aiReview.languageNote')).toBeInTheDocument();
+  });
+
   it('jumps the quick-peek preview when a moment header is clicked', () => {
     const onJumpToPly = vi.fn();
     render(<AiReviewPanel {...baseProps} initialReview={REVIEW} onJumpToPly={onJumpToPly} />);
@@ -97,13 +107,38 @@ describe('AiReviewPanel', () => {
     expect(onJumpToPly).toHaveBeenCalledWith(4);
   });
 
-  it('offers generation to the game owner and starts on click', () => {
+  it('confirms before generating, and writes the review in the page language', () => {
     render(<AiReviewPanel {...baseProps} />);
 
     fireEvent.click(screen.getByText('aiReview.generateButton'));
-    expect(mockStart).toHaveBeenCalledTimes(1);
-    // Generation publishes; the panel says so before the click.
-    expect(screen.getByText('aiReview.publicNotice')).toBeInTheDocument();
+    // The click opens the confirmation — nothing has started yet.
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(screen.getByText('aiReview.confirm.message')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('aiReview.confirm.submit'));
+    expect(mockStart).toHaveBeenCalledWith('en');
+  });
+
+  it('lets the author pick another language for the review', () => {
+    render(<AiReviewPanel {...baseProps} />);
+
+    fireEvent.click(screen.getByText('aiReview.generateButton'));
+    fireEvent.change(screen.getByLabelText('aiReview.confirm.languageLabel'), {
+      target: { value: 'ja' },
+    });
+    fireEvent.click(screen.getByText('aiReview.confirm.submit'));
+
+    expect(mockStart).toHaveBeenCalledWith('ja');
+  });
+
+  it('starts nothing when the confirmation is dismissed', () => {
+    render(<AiReviewPanel {...baseProps} />);
+
+    fireEvent.click(screen.getByText('aiReview.generateButton'));
+    fireEvent.click(screen.getByText('aiReview.confirm.cancel'));
+
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(screen.queryByText('aiReview.confirm.message')).not.toBeInTheDocument();
   });
 
   it('shows analysis progress with a cancel control', () => {
@@ -128,6 +163,7 @@ describe('AiReviewPanel', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('aiReview.errors.rate_limited');
     fireEvent.click(screen.getByText('aiReview.retry'));
+    fireEvent.click(screen.getByText('aiReview.confirm.submit'));
     expect(mockStart).toHaveBeenCalledTimes(1);
   });
 

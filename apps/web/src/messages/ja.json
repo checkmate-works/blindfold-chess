@@ -2791,7 +2791,6 @@
       "generating": "レビューを執筆中…",
       "cancel": "キャンセル",
       "retry": "もう一度試す",
-      "publicNotice": "※ 生成したレビューは全員に公開されます。",
       "bestMoveLabel": "最善手",
       "sections": {
         "summary": "ゲーム総評",
@@ -2817,6 +2816,15 @@
         "llm_error": "AIコーチがレビューを生成できませんでした。時間をおいてお試しください。",
         "unexpected_error": "エラーが発生しました。時間をおいてお試しください。",
         "analysis_failed": "エンジン解析に失敗しました。ページを再読み込みしてお試しください。"
+      },
+      "languageNote": "このレビューは{language}で書かれています。",
+      "confirm": {
+        "title": "AIレビューを生成しますか？",
+        "message": "※ 生成したレビューは全員に公開され、あとから削除できません。",
+        "languageLabel": "レビューの言語",
+        "languageHelp": "1つのゲームにつきレビューは1件です。ここで選んだ言語で、どの言語の閲覧者にも表示されます。",
+        "submit": "生成する",
+        "cancel": "キャンセル"
       }
     },
     "discussion": {

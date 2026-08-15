@@ -2791,7 +2791,6 @@
       "generating": "Writing the review…",
       "cancel": "Cancel",
       "retry": "Try again",
-      "publicNotice": "Note: the review you generate becomes visible to everyone.",
       "bestMoveLabel": "Best move",
       "sections": {
         "summary": "Game summary",
@@ -2817,6 +2816,15 @@
         "llm_error": "The AI coach couldn't produce a review. Please try again later.",
         "unexpected_error": "Something went wrong. Please try again later.",
         "analysis_failed": "The engine analysis failed. Please reload the page and try again."
+      },
+      "languageNote": "This review is written in {language}.",
+      "confirm": {
+        "title": "Generate an AI review?",
+        "message": "Note: the review becomes visible to everyone and cannot be deleted afterwards.",
+        "languageLabel": "Review language",
+        "languageHelp": "A game has one review. It is shown to every visitor in the language you pick here.",
+        "submit": "Generate",
+        "cancel": "Cancel"
       }
     },
     "discussion": {

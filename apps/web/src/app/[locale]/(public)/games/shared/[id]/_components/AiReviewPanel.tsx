@@ -1,7 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useId, useMemo, useState } from 'react';
 
+import { SUPPORTED_LOCALES } from '@/config';
+import { LOCALE_LABELS } from '@/i18n/locale-labels';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot } from 'react-icons/fa';
 
@@ -9,6 +11,7 @@ import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
 import { EVAL_SCORE_LIMIT } from '@/lib/games/analysis/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
 
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useAiReviewGeneration } from '../_hooks/use-ai-review-generation';
@@ -67,12 +70,17 @@ export function AiReviewPanel({
   onJumpToPly,
 }: Props) {
   const t = useTranslations('sharedGames');
-  const { state, start, cancel } = useAiReviewGeneration({ gameId, locale, moves, startingFen });
+  const { state, start, cancel } = useAiReviewGeneration({ gameId, moves, startingFen });
+  const [confirming, setConfirming] = useState(false);
+  // The page's language is the obvious default; the picker exists because this
+  // one review is what every visitor will read, whatever page they came from.
+  const [targetLocale, setTargetLocale] = useState<Locale>(locale);
+  const languageSelectId = useId();
 
   // The hook's 'done' phase is terminal, so the fresh review needs no extra state.
   const review = state.phase === 'done' ? state.review : initialReview;
   if (review) {
-    return <ReviewBody review={review} onJumpToPly={onJumpToPly} />;
+    return <ReviewBody review={review} viewerLocale={locale} onJumpToPly={onJumpToPly} />;
   }
 
   if (state.phase === 'analyzing') {
@@ -112,37 +120,74 @@ export function AiReviewPanel({
   }
 
   return (
-    <div className="space-y-4 py-6 text-center">
-      <div className="flex justify-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <FaRobot className="h-5 w-5" />
-        </span>
+    <>
+      <div className="space-y-4 py-6 text-center">
+        <div className="flex justify-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <FaRobot className="h-5 w-5" />
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground">{t('aiReview.notGenerated')}</p>
+        {state.phase === 'error' && (
+          <p className="text-sm text-destructive" role="alert">
+            {t(`aiReview.errors.${state.error}`)}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          {state.phase === 'error' ? t('aiReview.retry') : t('aiReview.generateButton')}
+        </button>
       </div>
-      <p className="text-sm text-muted-foreground">{t('aiReview.notGenerated')}</p>
-      {state.phase === 'error' && (
-        <p className="text-sm text-destructive" role="alert">
-          {t(`aiReview.errors.${state.error}`)}
-        </p>
-      )}
-      <button
-        type="button"
-        onClick={start}
-        className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+
+      {/* Generation publishes something the author cannot take back, spends a
+          slot of their daily budget, and fixes the review's language — all
+          from one click, so it asks first. */}
+      <ConfirmationModal
+        isOpen={confirming}
+        title={t('aiReview.confirm.title')}
+        message={t('aiReview.confirm.message')}
+        confirmText={t('aiReview.confirm.submit')}
+        cancelText={t('aiReview.confirm.cancel')}
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false);
+          start(targetLocale);
+        }}
       >
-        {state.phase === 'error' ? t('aiReview.retry') : t('aiReview.generateButton')}
-      </button>
-      {/* The review is stored per (game, locale) and served to every viewer —
-          say so before the click, not after. */}
-      <p className="text-xs text-muted-foreground">{t('aiReview.publicNotice')}</p>
-    </div>
+        <div className="mt-4 space-y-1">
+          <label htmlFor={languageSelectId} className="block text-sm font-medium text-foreground">
+            {t('aiReview.confirm.languageLabel')}
+          </label>
+          <select
+            id={languageSelectId}
+            value={targetLocale}
+            onChange={(event) => setTargetLocale(event.target.value as Locale)}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+          >
+            {SUPPORTED_LOCALES.map((supported) => (
+              <option key={supported} value={supported}>
+                {LOCALE_LABELS[supported]}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground">{t('aiReview.confirm.languageHelp')}</p>
+        </div>
+      </ConfirmationModal>
+    </>
   );
 }
 
 function ReviewBody({
   review,
+  viewerLocale,
   onJumpToPly,
 }: {
   review: AiReview;
+  /** The page's language, to decide whether the review needs labelling. */
+  viewerLocale: Locale;
   onJumpToPly: (ply: number) => void;
 }) {
   const t = useTranslations('sharedGames');
@@ -150,9 +195,23 @@ function ReviewBody({
     () => new Map(review.moments.map((m) => [m.ply, m])),
     [review.moments]
   );
+  // A game has one review, in the language its author chose — so a viewer
+  // reading in another language gets it anyway, and is told which it is.
+  const reviewLanguage =
+    review.locale === viewerLocale
+      ? null
+      : // A row written before a locale was retired would have no label; show
+        // the raw tag rather than "undefined".
+        (LOCALE_LABELS[review.locale as Locale] ?? review.locale);
 
   return (
     <div className="space-y-6">
+      {reviewLanguage && (
+        <p className="text-xs text-muted-foreground">
+          {t('aiReview.languageNote', { language: reviewLanguage })}
+        </p>
+      )}
+
       <section className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">{t('aiReview.sections.summary')}</h3>
         <p className="whitespace-pre-wrap text-sm text-foreground">{review.content.summary}</p>

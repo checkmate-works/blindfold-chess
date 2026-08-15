@@ -6,7 +6,7 @@ import type { Side } from '@blindfold-chess/types';
 
 import { canGenerateAiReview } from '@/lib/ai-review/authorize';
 import { isLlmConfigured } from '@/lib/ai-review/openai';
-import { getAiReview } from '@/lib/ai-review/queries';
+import { getAiReviewForViewer } from '@/lib/ai-review/queries';
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
@@ -83,8 +83,9 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
       // from a position on this very board can be linked back to it without a
       // publish round-trip. See `linkableChunkPredicate`.
       getLinkableChunkOptionsForViewer(user?.id ?? null),
-      // Cached AI coach review for this locale (null = the tab offers generation).
-      getAiReview(game.id, locale),
+      // The game's AI coach review — this locale's, else the author's own
+      // (see getAiReviewForViewer). Null = the tab offers generation.
+      getAiReviewForViewer(game.id, locale),
     ]);
 
   // Whether to offer the "as played" GIF — shared with the pre-publish teaser

@@ -27,8 +27,12 @@ export type AiReviewGenerationState =
 
 export type UseAiReviewGenerationReturn = {
   state: AiReviewGenerationState;
-  /** Kick off the sweep + server generation. No-op while already running. */
-  start: () => void;
+  /**
+   * Kick off the sweep + server generation, writing the review in `locale`
+   * (the author's choice, not necessarily the page's). No-op while already
+   * running.
+   */
+  start: (locale: string) => void;
   /** Abort a running sweep (between positions) and return to idle. */
   cancel: () => void;
 };
@@ -42,12 +46,10 @@ export type UseAiReviewGenerationReturn = {
  */
 export function useAiReviewGeneration({
   gameId,
-  locale,
   moves,
   startingFen,
 }: {
   gameId: string;
-  locale: string;
   moves: string[];
   startingFen: string | null;
 }): UseAiReviewGenerationReturn {
@@ -66,56 +68,59 @@ export function useAiReviewGeneration({
   // Unmount: kill the Worker and let any in-flight run resolve into the void.
   useEffect(() => teardown, [teardown]);
 
-  const start = useCallback(() => {
-    if (runningRef.current) return;
+  const start = useCallback(
+    (locale: string) => {
+      if (runningRef.current) return;
 
-    const engine = new ChessEngine(() => createWorkerMessageChannel(STOCKFISH_WORKER_PATH));
-    const controller = new AbortController();
-    const run = { engine, controller };
-    runningRef.current = run;
-    // A run that has been cancelled/unmounted must stop touching state.
-    const isCurrent = () => runningRef.current === run;
+      const engine = new ChessEngine(() => createWorkerMessageChannel(STOCKFISH_WORKER_PATH));
+      const controller = new AbortController();
+      const run = { engine, controller };
+      runningRef.current = run;
+      // A run that has been cancelled/unmounted must stop touching state.
+      const isCurrent = () => runningRef.current === run;
 
-    setState({ phase: 'analyzing', done: 0, total: moves.length + 1 });
+      setState({ phase: 'analyzing', done: 0, total: moves.length + 1 });
 
-    void (async () => {
-      try {
-        const evaluations = await evaluatePositions({
-          moves,
-          startingFen: startingFen ?? undefined,
-          evaluator: engine,
-          signal: controller.signal,
-          onProgress: (done, total) => {
-            if (isCurrent()) setState({ phase: 'analyzing', done, total });
-          },
-        });
+      void (async () => {
+        try {
+          const evaluations = await evaluatePositions({
+            moves,
+            startingFen: startingFen ?? undefined,
+            evaluator: engine,
+            signal: controller.signal,
+            onProgress: (done, total) => {
+              if (isCurrent()) setState({ phase: 'analyzing', done, total });
+            },
+          });
 
-        if (!isCurrent()) return;
-        setState({ phase: 'generating' });
+          if (!isCurrent()) return;
+          setState({ phase: 'generating' });
 
-        const response = await generateAiReviewAction({ gameId, locale, evaluations });
-        if (!isCurrent()) return;
-        setState(
-          response.success
-            ? { phase: 'done', review: response.review }
-            : { phase: 'error', error: response.error }
-        );
-      } catch (error) {
-        if (!isCurrent()) return;
-        if (error instanceof DOMException && error.name === 'AbortError') {
-          setState({ phase: 'idle' });
-        } else {
-          console.error('[ai-review] analysis failed', error);
-          setState({ phase: 'error', error: 'analysis_failed' });
+          const response = await generateAiReviewAction({ gameId, locale, evaluations });
+          if (!isCurrent()) return;
+          setState(
+            response.success
+              ? { phase: 'done', review: response.review }
+              : { phase: 'error', error: response.error }
+          );
+        } catch (error) {
+          if (!isCurrent()) return;
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            setState({ phase: 'idle' });
+          } else {
+            console.error('[ai-review] analysis failed', error);
+            setState({ phase: 'error', error: 'analysis_failed' });
+          }
+        } finally {
+          if (isCurrent()) {
+            runningRef.current = null;
+            void engine.destroy();
+          }
         }
-      } finally {
-        if (isCurrent()) {
-          runningRef.current = null;
-          void engine.destroy();
-        }
-      }
-    })();
-  }, [gameId, locale, moves, startingFen]);
+      })();
+    },
+    [gameId, moves, startingFen]
+  );
 
   const cancel = useCallback(() => {
     teardown();
