@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot } from 'react-icons/fa';
 
-import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
+import type { AiReview, AiReviewGenerateGate, ReviewMoment } from '@/lib/ai-review/types';
 import { EVAL_SCORE_LIMIT } from '@/lib/games/analysis/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
 
@@ -22,14 +22,12 @@ type Props = {
   startingFen: string | null;
   /** Cached review resolved server-side, or null when none exists yet. */
   initialReview: AiReview | null;
-  /** Whether the viewer is signed in (generation is members-only). */
-  viewerCanGenerate: boolean;
   /**
-   * Whether this game is within the reviewable ply bounds (mirrors the
-   * server's `canGenerateAiReview`, resolved by the caller so the panel
-   * doesn't duplicate the policy).
+   * What to offer when no review exists yet — mirrors the server's
+   * `canGenerateAiReview`, resolved by the caller so the panel doesn't
+   * duplicate the policy.
    */
-  gameIsEligible: boolean;
+  generateGate: AiReviewGenerateGate;
   /** Jump the replay board to the position after the given ply. */
   onJumpToPly: (ply: number) => void;
 };
@@ -70,8 +68,7 @@ export function AiReviewPanel({
   moves,
   startingFen,
   initialReview,
-  viewerCanGenerate,
-  gameIsEligible,
+  generateGate,
   onJumpToPly,
 }: Props) {
   const t = useTranslations('sharedGames');
@@ -83,10 +80,13 @@ export function AiReviewPanel({
     return <ReviewBody review={review} onJumpToPly={onJumpToPly} />;
   }
 
-  if (!viewerCanGenerate) {
+  if (generateGate === 'sign_in') {
     return <SignInPrompt />;
   }
-  if (!gameIsEligible) {
+  if (generateGate === 'not_owner') {
+    return <Notice text={t('aiReview.ownerOnly')} />;
+  }
+  if (generateGate === 'game_not_eligible') {
     return <Notice text={t('aiReview.notEligible')} />;
   }
 
@@ -147,6 +147,9 @@ export function AiReviewPanel({
       >
         {state.phase === 'error' ? t('aiReview.retry') : t('aiReview.generateButton')}
       </button>
+      {/* The review is stored per (game, locale) and served to every viewer —
+          say so before the click, not after. */}
+      <p className="text-xs text-muted-foreground">{t('aiReview.publicNotice')}</p>
     </div>
   );
 }

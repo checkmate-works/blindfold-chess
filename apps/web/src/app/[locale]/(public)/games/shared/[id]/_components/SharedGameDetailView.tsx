@@ -7,6 +7,7 @@ import type { Side } from '@blindfold-chess/types';
 import { canGenerateAiReview } from '@/lib/ai-review/authorize';
 import { isLlmConfigured } from '@/lib/ai-review/openai';
 import { getAiReview } from '@/lib/ai-review/queries';
+import type { AiReviewGenerateGate } from '@/lib/ai-review/types';
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
@@ -104,6 +105,15 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   const llmConfigured = isLlmConfigured();
   const showAiReview = aiReview != null || llmConfigured;
 
+  // Generation is the author's alone (see canGenerateAiReview); everyone else
+  // reads whatever the author generated. The unconfigured-key case needs no
+  // gate value of its own — the tab only survives above without a key when a
+  // cached review exists, and the panel renders that review before consulting
+  // the gate at all.
+  const verdict = user == null ? null : canGenerateAiReview(game, user.id);
+  const generateGate: AiReviewGenerateGate =
+    verdict == null ? 'sign_in' : verdict.ok ? 'ready' : verdict.reason;
+
   return (
     <PageLayout
       title={game.title}
@@ -136,16 +146,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           statsHeader={
             <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
           }
-          aiReview={
-            showAiReview
-              ? {
-                  initial: aiReview,
-                  // Generation is members-only; viewing a cached review is not.
-                  viewerCanGenerate: user != null && llmConfigured,
-                  gameIsEligible: canGenerateAiReview(game).ok,
-                }
-              : undefined
-          }
+          aiReview={showAiReview ? { initial: aiReview, generateGate } : undefined}
           social={{
             mode: 'live',
             // Real auth state — distinct from `currentUser` (the comment

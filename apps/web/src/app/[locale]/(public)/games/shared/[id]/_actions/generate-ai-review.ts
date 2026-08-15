@@ -66,7 +66,7 @@ export async function generateAiReviewAction(
     }
     const { game } = detail;
 
-    const eligible = canGenerateAiReview(game);
+    const eligible = canGenerateAiReview(game, auth.user.id);
     if (!eligible.ok) {
       return { success: false, error: eligible.reason };
     }

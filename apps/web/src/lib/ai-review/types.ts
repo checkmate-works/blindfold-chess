@@ -81,6 +81,14 @@ export type AiReview = {
 };
 
 /**
+ * What the panel may offer when no review exists yet, resolved server-side so
+ * the client never re-derives ownership policy. Signed-out viewers get
+ * `'sign_in'` rather than `'not_owner'`: they may well be the author, just not
+ * signed in, and the sign-in link is the useful next step either way.
+ */
+export type AiReviewGenerateGate = 'ready' | 'sign_in' | 'not_owner' | 'game_not_eligible';
+
+/**
  * Error codes the generation flow can surface to the UI (mapped to i18n
  * messages under `sharedGames.aiReview.errors`). Kept as a closed union so a
  * future coin charge only needs to add `'insufficient_balance'` here and in
@@ -90,6 +98,7 @@ export type AiReviewError =
   | 'not_authenticated'
   | 'invalid_input'
   | 'not_found'
+  | 'not_owner'
   | 'game_not_eligible'
   | 'rate_limited'
   | 'llm_error'

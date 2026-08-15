@@ -67,8 +67,7 @@ const baseProps = {
   moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Nd5'],
   startingFen: null,
   initialReview: null,
-  viewerCanGenerate: true,
-  gameIsEligible: true,
+  generateGate: 'ready' as const,
   onJumpToPly: vi.fn(),
 };
 
@@ -99,22 +98,32 @@ describe('AiReviewPanel', () => {
     expect(onJumpToPly).toHaveBeenCalledWith(4);
   });
 
-  it('offers generation to signed-in viewers and starts on click', () => {
+  it('offers generation to the game owner and starts on click', () => {
     render(<AiReviewPanel {...baseProps} />);
 
     fireEvent.click(screen.getByText('aiReview.generateButton'));
     expect(mockStart).toHaveBeenCalledTimes(1);
+    // Generation publishes; the panel says so before the click.
+    expect(screen.getByText('aiReview.publicNotice')).toBeInTheDocument();
   });
 
   it('shows a sign-in prompt instead of the CTA for anonymous viewers', () => {
-    render(<AiReviewPanel {...baseProps} viewerCanGenerate={false} />);
+    render(<AiReviewPanel {...baseProps} generateGate="sign_in" />);
 
     expect(screen.getByText('aiReview.signInPrompt')).toBeInTheDocument();
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
   });
 
+  it('withholds the CTA from signed-in viewers who do not own the game', () => {
+    render(<AiReviewPanel {...baseProps} generateGate="not_owner" />);
+
+    expect(screen.getByText('aiReview.ownerOnly')).toBeInTheDocument();
+    expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
+    expect(screen.queryByText('aiReview.signInPrompt')).not.toBeInTheDocument();
+  });
+
   it('refuses ineligible games', () => {
-    render(<AiReviewPanel {...baseProps} gameIsEligible={false} />);
+    render(<AiReviewPanel {...baseProps} generateGate="game_not_eligible" />);
 
     expect(screen.getByText('aiReview.notEligible')).toBeInTheDocument();
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();

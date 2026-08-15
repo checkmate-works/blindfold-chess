@@ -82,7 +82,10 @@ describe('generateAiReviewAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: USER_ID } });
-    mockGetGameById.mockResolvedValue({ game: { id: GAME_ID, moves: MOVES }, author: null });
+    mockGetGameById.mockResolvedValue({
+      game: { id: GAME_ID, moves: MOVES, authorId: USER_ID },
+      author: null,
+    });
     mockStoreFind.mockResolvedValue(null);
     mockIsLlmConfigured.mockReturnValue(true);
     mockCheckRateLimit.mockResolvedValue({ success: true });
@@ -146,8 +149,38 @@ describe('generateAiReviewAction', () => {
     });
   });
 
+  it('refuses a viewer who does not own the game', async () => {
+    mockGetGameById.mockResolvedValue({
+      game: { id: GAME_ID, moves: MOVES, authorId: 'cccccccc-cccc-cccc-cccc-cccccccccccc' },
+      author: null,
+    });
+
+    expect(await generateAiReviewAction(validInput())).toEqual({
+      success: false,
+      error: 'not_owner',
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(mockGenerateReview).not.toHaveBeenCalled();
+  });
+
+  it('refuses an authorless (anonymously published) game', async () => {
+    mockGetGameById.mockResolvedValue({
+      game: { id: GAME_ID, moves: MOVES, authorId: null },
+      author: null,
+    });
+
+    expect(await generateAiReviewAction(validInput())).toEqual({
+      success: false,
+      error: 'not_owner',
+    });
+    expect(mockGenerateReview).not.toHaveBeenCalled();
+  });
+
   it('refuses games too short to coach', async () => {
-    mockGetGameById.mockResolvedValue({ game: { id: GAME_ID, moves: ['e4'] }, author: null });
+    mockGetGameById.mockResolvedValue({
+      game: { id: GAME_ID, moves: ['e4'], authorId: USER_ID },
+      author: null,
+    });
     expect(
       await generateAiReviewAction({ ...validInput(), evaluations: EVALS.slice(0, 2) })
     ).toEqual({ success: false, error: 'game_not_eligible' });
