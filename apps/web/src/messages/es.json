@@ -2793,10 +2793,6 @@
       "cancel": "Cancelar",
       "retry": "Intentar de nuevo",
       "publicNotice": "La revisión que generes será visible para todos.",
-      "signInPrompt": "Todavía no se ha generado una revisión IA de esta partida. Quien la publicó puede iniciar sesión para generarla.",
-      "ownerOnly": "Todavía no se ha generado una revisión IA de esta partida. Solo quien la publicó puede generarla.",
-      "signInLink": "Iniciar sesión",
-      "notEligible": "Esta partida es demasiado corta o demasiado larga para una revisión automática.",
       "bestMoveLabel": "Mejor jugada",
       "sections": {
         "summary": "Resumen de la partida",

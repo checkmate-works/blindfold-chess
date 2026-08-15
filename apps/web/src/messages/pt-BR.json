@@ -2793,10 +2793,6 @@
       "cancel": "Cancelar",
       "retry": "Tentar novamente",
       "publicNotice": "A revisão que você gerar ficará visível para todos.",
-      "signInPrompt": "Ainda não há uma revisão IA gerada para esta partida. Quem a publicou pode entrar para gerá-la.",
-      "ownerOnly": "Ainda não há uma revisão IA gerada para esta partida. Apenas quem a publicou pode gerá-la.",
-      "signInLink": "Fazer login",
-      "notEligible": "Esta partida é curta ou longa demais para uma revisão automática.",
       "bestMoveLabel": "Melhor lance",
       "sections": {
         "summary": "Resumo da partida",

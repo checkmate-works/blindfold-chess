@@ -9,7 +9,7 @@ import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-co
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
-import type { AiReview, AiReviewGenerateGate } from '@/lib/ai-review/types';
+import type { AiReview } from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type {
@@ -106,14 +106,11 @@ type Props = {
   /**
    * AI Review tab wiring — live (shared) page only; omitted on the local
    * result screen, whose game has no server-side identity to cache a review
-   * under. `initial` is the cached review resolved server-side (null = offer
-   * generation); `generateGate` is resolved by the caller so the panel does
-   * not re-derive ownership/eligibility policy.
+   * under. Present only when the viewer has a review to read or the right to
+   * generate one, so the tab never renders as an empty explanation — the
+   * caller owns that policy (see `SharedGameDetailView`).
    */
-  aiReview?: {
-    initial: AiReview | null;
-    generateGate: AiReviewGenerateGate;
-  };
+  aiReview?: { initial: AiReview | null };
 };
 
 /**
@@ -561,7 +558,6 @@ export function GameReview({
                   moves={moves}
                   startingFen={startingFen}
                   initialReview={aiReview.initial}
-                  generateGate={aiReview.generateGate}
                   // Preview in the quick-peek modal (like the By Move strip),
                   // so reading the review never disturbs the live replay —
                   // and never navigates this very tab away.

@@ -2793,10 +2793,6 @@
       "cancel": "Cancel",
       "retry": "Try again",
       "publicNotice": "The review you generate becomes visible to everyone.",
-      "signInPrompt": "No AI review has been generated for this game yet. The player who published it can sign in to generate one.",
-      "ownerOnly": "No AI review has been generated for this game yet. Only the player who published it can generate one.",
-      "signInLink": "Sign in",
-      "notEligible": "This game is too short or too long for an automatic review.",
       "bestMoveLabel": "Best move",
       "sections": {
         "summary": "Game summary",

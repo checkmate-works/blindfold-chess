@@ -7,7 +7,6 @@ import type { Side } from '@blindfold-chess/types';
 import { canGenerateAiReview } from '@/lib/ai-review/authorize';
 import { isLlmConfigured } from '@/lib/ai-review/openai';
 import { getAiReview } from '@/lib/ai-review/queries';
-import type { AiReviewGenerateGate } from '@/lib/ai-review/types';
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
 import { listGameChunks } from '@/lib/db/game-chunks';
@@ -99,20 +98,15 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     gameUsedNotablePlaySettings(game.playSettings, game.playSettingsLog);
   const hasPlayedVariant = hasPlayedGifVariant(game);
 
-  // Deployments without an LLM key (preview branches, forks, self-hosters) get
-  // no AI Review tab at all rather than a CTA that can only end in an error —
-  // unless a review was already generated here, which stays readable forever.
-  const llmConfigured = isLlmConfigured();
-  const showAiReview = aiReview != null || llmConfigured;
-
-  // Generation is the author's alone (see canGenerateAiReview); everyone else
-  // reads whatever the author generated. The unconfigured-key case needs no
-  // gate value of its own — the tab only survives above without a key when a
-  // cached review exists, and the panel renders that review before consulting
-  // the gate at all.
-  const verdict = user == null ? null : canGenerateAiReview(game, user.id);
-  const generateGate: AiReviewGenerateGate =
-    verdict == null ? 'sign_in' : verdict.ok ? 'ready' : verdict.reason;
+  // The AI Review tab exists only when the viewer has something to read or
+  // something to do: a review already generated for this locale, or the right
+  // to generate one (the author's alone — see canGenerateAiReview — and only
+  // where a key is configured at all). Every other viewer would get a tab
+  // whose entire content is an explanation of why it is empty, so they get no
+  // tab instead.
+  const viewerCanGenerate =
+    isLlmConfigured() && user != null && canGenerateAiReview(game, user.id).ok;
+  const showAiReview = aiReview != null || viewerCanGenerate;
 
   return (
     <PageLayout
@@ -146,7 +140,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           statsHeader={
             <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
           }
-          aiReview={showAiReview ? { initial: aiReview, generateGate } : undefined}
+          aiReview={showAiReview ? { initial: aiReview } : undefined}
           social={{
             mode: 'live',
             // Real auth state — distinct from `currentUser` (the comment

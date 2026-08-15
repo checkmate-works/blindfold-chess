@@ -2,15 +2,13 @@
 
 import { useMemo } from 'react';
 
-import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot } from 'react-icons/fa';
 
-import type { AiReview, AiReviewGenerateGate, ReviewMoment } from '@/lib/ai-review/types';
+import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
 import { EVAL_SCORE_LIMIT } from '@/lib/games/analysis/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
 
-import { useCurrentPathAsNext } from '@/app/[locale]/_hooks/use-current-path-as-next';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useAiReviewGeneration } from '../_hooks/use-ai-review-generation';
@@ -20,14 +18,12 @@ type Props = {
   locale: Locale;
   moves: string[];
   startingFen: string | null;
-  /** Cached review resolved server-side, or null when none exists yet. */
-  initialReview: AiReview | null;
   /**
-   * What to offer when no review exists yet — mirrors the server's
-   * `canGenerateAiReview`, resolved by the caller so the panel doesn't
-   * duplicate the policy.
+   * Cached review resolved server-side, or null when none exists yet — in
+   * which case this panel is only mounted for a viewer allowed to generate
+   * one (see `SharedGameDetailView`), so it can offer the CTA unconditionally.
    */
-  generateGate: AiReviewGenerateGate;
+  initialReview: AiReview | null;
   /** Jump the replay board to the position after the given ply. */
   onJumpToPly: (ply: number) => void;
 };
@@ -68,7 +64,6 @@ export function AiReviewPanel({
   moves,
   startingFen,
   initialReview,
-  generateGate,
   onJumpToPly,
 }: Props) {
   const t = useTranslations('sharedGames');
@@ -78,16 +73,6 @@ export function AiReviewPanel({
   const review = state.phase === 'done' ? state.review : initialReview;
   if (review) {
     return <ReviewBody review={review} onJumpToPly={onJumpToPly} />;
-  }
-
-  if (generateGate === 'sign_in') {
-    return <SignInPrompt />;
-  }
-  if (generateGate === 'not_owner') {
-    return <Notice text={t('aiReview.ownerOnly')} />;
-  }
-  if (generateGate === 'game_not_eligible') {
-    return <Notice text={t('aiReview.notEligible')} />;
   }
 
   if (state.phase === 'analyzing') {
@@ -150,30 +135,6 @@ export function AiReviewPanel({
       {/* The review is stored per (game, locale) and served to every viewer —
           say so before the click, not after. */}
       <p className="text-xs text-muted-foreground">{t('aiReview.publicNotice')}</p>
-    </div>
-  );
-}
-
-function SignInPrompt() {
-  const t = useTranslations('sharedGames');
-  const next = encodeURIComponent(useCurrentPathAsNext());
-  return (
-    <div className="space-y-3 py-6 text-center">
-      <p className="text-sm text-muted-foreground">{t('aiReview.signInPrompt')}</p>
-      <Link
-        href={`/sign-in?next=${next}`}
-        className="inline-block rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-      >
-        {t('aiReview.signInLink')}
-      </Link>
-    </div>
-  );
-}
-
-function Notice({ text }: { text: string }) {
-  return (
-    <div className="py-6 text-center">
-      <p className="text-sm text-muted-foreground">{text}</p>
     </div>
   );
 }
