@@ -82,7 +82,9 @@ describe('AiReviewPanel', () => {
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
     expect(screen.getByText('3. Nd5')).toBeInTheDocument();
-    expect(screen.getByText('aiReview.judgments.mistake')).toBeInTheDocument();
+    // The grade shows as chess notation, named for assistive tech.
+    const grade = screen.getByRole('img', { name: 'aiReview.judgments.mistake' });
+    expect(grade).toHaveTextContent('?');
     expect(screen.getByText('+0.3 → -1.7')).toBeInTheDocument();
     expect(screen.getByText('Qd2')).toBeInTheDocument();
     expect(screen.getByText('This dropped the knight.')).toBeInTheDocument();

@@ -9,7 +9,7 @@ import { FaRobot } from 'react-icons/fa';
 
 import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
 import { EVAL_SCORE_LIMIT } from '@/lib/games/analysis/types';
-import type { MoveJudgment } from '@/lib/games/analysis/types';
+import { MoveJudgmentBadge } from '@/lib/games/evaluation';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -29,14 +29,6 @@ type Props = {
   initialReview: AiReview | null;
   /** Jump the replay board to the position after the given ply. */
   onJumpToPly: (ply: number) => void;
-};
-
-const JUDGMENT_BADGE_CLASS: Record<MoveJudgment, string> = {
-  best: 'bg-success',
-  good: 'bg-success',
-  inaccuracy: 'bg-warning',
-  mistake: 'bg-caution',
-  blunder: 'bg-destructive',
 };
 
 /** "+0.3" / "−1.7"; saturated mate scores render as a mate marker. */
@@ -235,11 +227,13 @@ function ReviewBody({
                   >
                     {formatMoveLabel(moment)}
                   </button>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-bold text-white ${JUDGMENT_BADGE_CLASS[moment.judgment]}`}
-                  >
-                    {t(`aiReview.judgments.${moment.judgment}`)}
-                  </span>
+                  {/* The grade as chess notation (`?!` / `?` / `??`), the same
+                      badge the board draws — its localized name rides along as
+                      the accessible name / tooltip. */}
+                  <MoveJudgmentBadge
+                    judgment={moment.judgment}
+                    label={t(`aiReview.judgments.${moment.judgment}`)}
+                  />
                   <span className="font-mono text-xs text-muted-foreground">
                     {formatEval(moment.evalBefore)} → {formatEval(moment.evalAfter)}
                   </span>
