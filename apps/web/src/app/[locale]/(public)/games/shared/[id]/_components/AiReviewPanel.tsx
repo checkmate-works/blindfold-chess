@@ -8,7 +8,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaRobot } from 'react-icons/fa';
 
 import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
-import { EVAL_SCORE_LIMIT } from '@/lib/games/analysis/types';
+import { EVAL_SCORE_LIMIT, MOVE_JUDGMENTS } from '@/lib/games/analysis/types';
+import type { MoveJudgment } from '@/lib/games/analysis/types';
 import { MoveJudgmentBadge } from '@/lib/games/evaluation';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -204,6 +205,47 @@ function ReviewBody({
     () => new Map(review.moments.map((m) => [m.ply, m])),
     [review.moments]
   );
+
+  // One row per LLM comment joined to its engine moment. A comment whose
+  // moment is missing is dropped — the numbers are the authority, and prose
+  // about a moment that isn't there has nothing to anchor to.
+  const momentRows = useMemo(
+    () =>
+      review.content.momentComments.flatMap((comment) => {
+        const moment = momentsByPly.get(comment.ply);
+        return moment ? [{ comment, moment }] : [];
+      }),
+    [review.content.momentComments, momentsByPly]
+  );
+
+  // Grades that actually occur, in severity order, with their counts — the
+  // filter offers exactly what there is to filter, never an empty bucket.
+  const gradeCounts = useMemo(() => {
+    const counts = new Map<MoveJudgment, number>();
+    for (const { moment } of momentRows) {
+      counts.set(moment.judgment, (counts.get(moment.judgment) ?? 0) + 1);
+    }
+    return MOVE_JUDGMENTS.flatMap((judgment) => {
+      const count = counts.get(judgment);
+      return count === undefined ? [] : [{ judgment, count }];
+    });
+  }, [momentRows]);
+
+  // Excluded rather than included, so the default (an empty set) means "show
+  // everything" without having to be recomputed when the review changes.
+  const [excluded, setExcluded] = useState<ReadonlySet<MoveJudgment>>(() => new Set());
+  const toggleGrade = (judgment: MoveJudgment) =>
+    setExcluded((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(judgment)) next.add(judgment);
+      return next;
+    });
+  const visibleRows = momentRows.filter(({ moment }) => !excluded.has(moment.judgment));
+
+  // A single-grade review has nothing to separate, so the filter row would be
+  // a control that can only hide the whole list.
+  const showGradeFilter = gradeCounts.length > 1;
+
   // A game has one review, in the language its author chose — so a viewer
   // reading in another language gets it anyway, and is told which it is.
   const reviewLanguage =
@@ -226,14 +268,50 @@ function ReviewBody({
         <p className="whitespace-pre-wrap text-sm text-foreground">{review.content.summary}</p>
       </section>
 
-      {review.content.momentComments.length > 0 && (
+      {momentRows.length > 0 && (
         <section className="space-y-3">
           <h3 className="text-sm font-semibold text-foreground">
             {t('aiReview.sections.keyMoments')}
           </h3>
-          {review.content.momentComments.map((comment) => {
-            const moment = momentsByPly.get(comment.ply);
-            if (!moment) return null;
+
+          {/* Grade filter — the notation IS the control, so each chip is the
+              board's own badge plus how many moves earned it. */}
+          {showGradeFilter && (
+            <div
+              role="group"
+              aria-label={t('aiReview.gradeFilterLabel')}
+              className="flex flex-wrap gap-2"
+            >
+              {gradeCounts.map(({ judgment, count }) => {
+                const label = t(`aiReview.judgments.${judgment}`);
+                const active = !excluded.has(judgment);
+                return (
+                  <button
+                    key={judgment}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => toggleGrade(judgment)}
+                    title={label}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                      active
+                        ? 'border-primary bg-primary/10 text-foreground'
+                        : 'border-border text-muted-foreground opacity-50 hover:opacity-80'
+                    }`}
+                  >
+                    <MoveJudgmentBadge judgment={judgment} size="sm" />
+                    <span className="sr-only">{label}</span>
+                    <span className="font-mono">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {visibleRows.length === 0 && (
+            <p className="text-sm text-muted-foreground">{t('aiReview.noMomentsForGrades')}</p>
+          )}
+
+          {visibleRows.map(({ comment, moment }) => {
             return (
               <div key={comment.ply} className="space-y-2 rounded-lg border border-border p-4">
                 <div className="flex flex-wrap items-center gap-2">

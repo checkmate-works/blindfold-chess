@@ -2799,6 +2799,8 @@
         "weaknesses": "Aspectos a mejorar",
         "advice": "Consejos para tu próxima partida"
       },
+      "gradeFilterLabel": "Filtrar momentos clave por evaluación",
+      "noMomentsForGrades": "Ningún momento clave coincide con las evaluaciones seleccionadas.",
       "judgments": {
         "best": "Mejor",
         "good": "Buena",
