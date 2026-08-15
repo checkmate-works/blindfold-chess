@@ -41,6 +41,8 @@ let mockNotable: boolean;
 let mockEffectiveSettings: Record<string, unknown> | null;
 /** The `board` prop group GameReview handed InlineBoardView on the last render. */
 let inlineBoardProps: Record<string, unknown>;
+/** Props GameReview handed the (stubbed) thread on the last render. */
+let moveContributionsProps: Record<string, unknown>;
 let boardViewModalProps: Record<string, unknown>;
 /** moves[] index the stubbed "By Move" strip opens the quick-peek modal at. */
 let quickPeekTarget: number;
@@ -128,7 +130,10 @@ vi.mock('@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate', (
 }));
 
 vi.mock('./GameMoveContributions', () => ({
-  GameMoveContributions: () => <div data-testid="move-contributions" />,
+  GameMoveContributions: (props: Record<string, unknown>) => {
+    moveContributionsProps = props;
+    return <div data-testid="move-contributions" />;
+  },
 }));
 
 vi.mock('./GameDiscussionFeed', () => ({
@@ -211,6 +216,7 @@ beforeEach(() => {
   mockNotable = false;
   mockEffectiveSettings = null;
   inlineBoardProps = {};
+  moveContributionsProps = {};
   boardViewModalProps = {};
   quickPeekTarget = 2;
   pushSpy.mockClear();
@@ -389,72 +395,55 @@ describe('GameReview — AI review grade on the board', () => {
     expect(inlineBoardProps.evaluationMark).toBeNull();
   });
 
-  it("repeats the review's take on the move in that move's discussion panel", () => {
-    mockStats = { totalMoves: 3 };
-    mockNav.currentPosition = 1;
-    render(
-      <GameReview
-        {...baseProps({
-          social: liveSocial({
-            isAuthenticated: true,
-            comments: [{ id: 'c1', ply: 1, deletedAt: null } as LiveSocial['comments'][number]],
-          }),
-          aiReview: {
-            initial: {
-              moments: [
-                {
-                  ply: 1,
-                  san: 'Nf6',
-                  moveNumber: 1,
-                  color: 'black',
-                  evalBefore: 30,
-                  evalAfter: -170,
-                  cpLoss: 200,
-                  bestMoveSan: 'd5',
-                  judgment: 'blunder',
-                },
-              ],
-              content: {
-                momentComments: [
-                  { ply: 1, explanation: 'Hung the knight.', lesson: 'Count first.' },
-                ],
-              },
-            } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
-          },
-        })}
-      />
-    );
+  const REVIEWED = {
+    moments: [
+      {
+        ply: 1,
+        san: 'Nf6',
+        moveNumber: 1,
+        color: 'black',
+        evalBefore: 30,
+        evalAfter: -170,
+        cpLoss: 200,
+        bestMoveSan: 'd5',
+        judgment: 'blunder',
+      },
+    ],
+    content: {
+      momentComments: [{ ply: 1, explanation: 'Hung the knight.', lesson: 'Count first.' }],
+    },
+    createdAt: '2026-08-14T00:00:00.000Z',
+  } as unknown as NonNullable<ReplayProps['aiReview']>['initial'];
 
-    // The discussion tab is the move's own thread; the review's verdict on
-    // that same move sits above it rather than one tab away.
-    expect(screen.getByText('Hung the knight.')).toBeInTheDocument();
-    expect(screen.getByText('Count first.')).toBeInTheDocument();
-    expect(screen.getByText('+0.3 → -1.7')).toBeInTheDocument();
-    expect(screen.getByText('d5')).toBeInTheDocument();
+  const onReviewedMove = (position: number) => {
+    mockStats = { totalMoves: 3 };
+    mockNav.currentPosition = position;
+    return baseProps({
+      social: liveSocial({
+        isAuthenticated: true,
+        comments: [{ id: 'c1', ply: position, deletedAt: null } as LiveSocial['comments'][number]],
+      }),
+      aiReview: { initial: REVIEWED },
+    });
+  };
+
+  it("hands the review's take on the move to that move's thread", () => {
+    render(<GameReview {...onReviewedMove(1)} />);
+
+    const handed = moveContributionsProps.aiReviewMoment as {
+      moment: { ply: number; judgment: string };
+      comment: { explanation: string };
+      createdAt: Date;
+    };
+    expect(handed.moment).toMatchObject({ ply: 1, judgment: 'blunder' });
+    expect(handed.comment.explanation).toBe('Hung the knight.');
+    // The review's own timestamp stands in for a posting time.
+    expect(handed.createdAt.toISOString()).toBe('2026-08-14T00:00:00.000Z');
   });
 
-  it('leaves the discussion panel alone on a move the review passed over', () => {
-    mockStats = { totalMoves: 3 };
-    mockNav.currentPosition = 2;
-    render(
-      <GameReview
-        {...baseProps({
-          social: liveSocial({
-            isAuthenticated: true,
-            comments: [{ id: 'c1', ply: 2, deletedAt: null } as LiveSocial['comments'][number]],
-          }),
-          aiReview: {
-            initial: {
-              moments: [{ ply: 1, judgment: 'blunder' }],
-              content: {
-                momentComments: [{ ply: 1, explanation: 'Hung the knight.', lesson: 'x' }],
-              },
-            } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
-          },
-        })}
-      />
-    );
-    expect(screen.queryByText('Hung the knight.')).toBeNull();
+  it('hands nothing to a move the review passed over', () => {
+    render(<GameReview {...onReviewedMove(2)} />);
+    expect(moveContributionsProps.aiReviewMoment).toBeUndefined();
   });
 });
 

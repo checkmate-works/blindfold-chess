@@ -241,9 +241,16 @@ export function GameReview({
   // The moment (engine facts) and its comment (LLM prose) for a given ply,
   // joined the same way the AI Review tab joins them — by ply, never by index.
   const reviewMomentByPly = useMemo(() => {
-    const comments = new Map((review?.content.momentComments ?? []).map((c) => [c.ply, c]));
+    if (!review) return new Map<number, never>();
+    const comments = new Map(review.content.momentComments.map((c) => [c.ply, c]));
+    // The review's own timestamp stands in for a posting time — a moment is a
+    // projection of the review, not a row with a life of its own.
+    const createdAt = new Date(review.createdAt);
     return new Map(
-      reviewMoments.map((moment) => [moment.ply, { moment, comment: comments.get(moment.ply) }])
+      reviewMoments.map((moment) => [
+        moment.ply,
+        { moment, comment: comments.get(moment.ply), createdAt },
+      ])
     );
   }, [review, reviewMoments]);
 
