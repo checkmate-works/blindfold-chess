@@ -106,15 +106,11 @@ type Props = {
   /**
    * AI Review tab wiring — live (shared) page only; omitted on the local
    * result screen, whose game has no server-side identity to cache a review
-   * under. `initial` is the cached review resolved server-side (null = offer
-   * generation); the two flags are resolved by the caller so the panel does
-   * not re-derive auth/eligibility policy.
+   * under. Present only when the viewer has a review to read or the right to
+   * generate one, so the tab never renders as an empty explanation — the
+   * caller owns that policy (see `SharedGameDetailView`).
    */
-  aiReview?: {
-    initial: AiReview | null;
-    viewerCanGenerate: boolean;
-    gameIsEligible: boolean;
-  };
+  aiReview?: { initial: AiReview | null };
 };
 
 /**
@@ -562,8 +558,6 @@ export function GameReview({
                   moves={moves}
                   startingFen={startingFen}
                   initialReview={aiReview.initial}
-                  viewerCanGenerate={aiReview.viewerCanGenerate}
-                  gameIsEligible={aiReview.gameIsEligible}
                   // Preview in the quick-peek modal (like the By Move strip),
                   // so reading the review never disturbs the live replay —
                   // and never navigates this very tab away.

@@ -2785,16 +2785,12 @@
     "aiReview": {
       "tab": "AIレビュー",
       "disclaimer": "Stockfishの解析に基づいてAIが生成したレビューです（モデル: {model}）。誤りを含む可能性があります。",
-      "generateTitle": "AIコーチのレビューを見る",
-      "generateDescription": "ブラウザ上でStockfishが全局面を解析し、AIコーチが重要局面・良かった点・改善点を解説します。",
+      "notGenerated": "AIレビューはまだ生成されていません。",
       "generateButton": "AIレビューを生成",
       "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
       "generating": "レビューを執筆中…",
       "cancel": "キャンセル",
       "retry": "もう一度試す",
-      "signInPrompt": "AIレビューの生成にはサインインが必要です。生成されたレビューは全員に公開されます。",
-      "signInLink": "サインイン",
-      "notEligible": "このゲームは短すぎるか長すぎるため、自動レビューの対象外です。",
       "bestMoveLabel": "最善手",
       "sections": {
         "summary": "ゲーム総評",
@@ -2814,11 +2810,21 @@
         "not_authenticated": "サインインしてから再度お試しください。",
         "invalid_input": "解析データが不正でした。もう一度お試しください。",
         "not_found": "このゲームは利用できなくなりました。",
+        "not_owner": "AIレビューを生成できるのは対局者本人だけです。",
         "game_not_eligible": "このゲームは短すぎるか長すぎるため、自動レビューの対象外です。",
         "rate_limited": "本日のAIレビュー生成回数の上限に達しました。明日以降にお試しください。",
         "llm_error": "AIコーチがレビューを生成できませんでした。時間をおいてお試しください。",
         "unexpected_error": "エラーが発生しました。時間をおいてお試しください。",
         "analysis_failed": "エンジン解析に失敗しました。ページを再読み込みしてお試しください。"
+      },
+      "languageNote": "このレビューは{language}で書かれています。",
+      "confirm": {
+        "title": "AIレビューを生成しますか？",
+        "message": "※ 生成したレビューは全員に公開され、あとから削除できません。",
+        "languageLabel": "レビューの言語",
+        "languageHelp": "1つのゲームにつきレビューは1件です。ここで選んだ言語で、どの言語の閲覧者にも表示されます。",
+        "submit": "生成する",
+        "cancel": "キャンセル"
       }
     },
     "discussion": {

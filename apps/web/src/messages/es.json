@@ -2785,16 +2785,12 @@
     "aiReview": {
       "tab": "Revisión IA",
       "disclaimer": "Revisión generada por IA a partir del análisis de Stockfish (modelo: {model}). Puede contener errores.",
-      "generateTitle": "Obtén una revisión del entrenador IA",
-      "generateDescription": "Tu navegador analiza cada posición con Stockfish y luego un entrenador IA explica los momentos clave, tus fortalezas y qué mejorar.",
+      "notGenerated": "Todavía no se ha generado una revisión IA de esta partida.",
       "generateButton": "Generar revisión IA",
       "analyzing": "Analizando con Stockfish… ({done}/{total} posiciones)",
       "generating": "Escribiendo la revisión…",
       "cancel": "Cancelar",
       "retry": "Intentar de nuevo",
-      "signInPrompt": "Inicia sesión para generar una revisión IA de esta partida. Una vez generada, será visible para todos.",
-      "signInLink": "Iniciar sesión",
-      "notEligible": "Esta partida es demasiado corta o demasiado larga para una revisión automática.",
       "bestMoveLabel": "Mejor jugada",
       "sections": {
         "summary": "Resumen de la partida",
@@ -2814,11 +2810,21 @@
         "not_authenticated": "Inicia sesión e inténtalo de nuevo.",
         "invalid_input": "Los datos del análisis no eran válidos. Inténtalo de nuevo.",
         "not_found": "Esta partida ya no está disponible.",
+        "not_owner": "Solo quien publicó esta partida puede generar su revisión IA.",
         "game_not_eligible": "Esta partida es demasiado corta o demasiado larga para una revisión automática.",
         "rate_limited": "Has alcanzado el límite diario de revisiones IA. Inténtalo mañana.",
         "llm_error": "El entrenador IA no pudo generar la revisión. Inténtalo más tarde.",
         "unexpected_error": "Algo salió mal. Inténtalo más tarde.",
         "analysis_failed": "El análisis del motor falló. Recarga la página e inténtalo de nuevo."
+      },
+      "languageNote": "Esta revisión está escrita en {language}.",
+      "confirm": {
+        "title": "¿Generar una revisión IA?",
+        "message": "Nota: la revisión será visible para todos y no se podrá eliminar después.",
+        "languageLabel": "Idioma de la revisión",
+        "languageHelp": "Cada partida tiene una sola revisión. Se mostrará a todos los visitantes en el idioma que elijas aquí.",
+        "submit": "Generar",
+        "cancel": "Cancelar"
       }
     },
     "discussion": {
