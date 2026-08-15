@@ -326,25 +326,6 @@ export function GameReview({
   // thread takes their place, directly under the move list.
   const isInitialPosition = currentPosition === -2;
 
-  useReplayDeepLink({
-    notationMovesLength: notationMoves.length,
-    navigateToPosition,
-    highlightCommentId,
-    comments,
-    currentPosition,
-    // The result screen opens showing where play actually started (the setup
-    // position of a seeded/custom-FEN game). The shared page keeps the
-    // overview board: any move position there swaps the overview for that
-    // move's comment thread, which must not happen on plain load.
-    fallbackPosition:
-      social.mode === 'local' && startPosition ? startPosition.jumpIndex : undefined,
-  });
-
-  // `#game-overview` deep-link from the home feed's comment-count icon. The
-  // block only exists once `useReplayDeepLink` above has navigated to the
-  // opening board, which is too late for the browser's own scroll-to-hash.
-  useHashScrollOnce('game-overview', isInitialPosition);
-
   // The opening-board stats overview (engine + By Move + change log). Anonymous
   // viewers get it gated behind a members-only sign-up CTA, matching the result
   // page; signed-in viewers see it directly.
@@ -389,11 +370,14 @@ export function GameReview({
     hasSummary: statsOverview !== null,
   });
 
-  // Local (result) mode only: the overview tab follows the board, since this
-  // mode has no per-move thread for the position alone to select. `userNav`
-  // replaces the raw navigation callbacks everywhere the viewer drives them.
+  // The overview tab follows the board: stepping onto a move selects the
+  // Discussion (that move's thread on the shared game), while the Summary and
+  // AI Review stay mounted one click away. `userNav` replaces the raw
+  // navigation callbacks everywhere the viewer drives them.
   const { userNav, syncToPosition } = useOverviewPositionSync({
-    enabled: social.mode === 'local',
+    // Stepping back to the opening board restores the result screen's Summary,
+    // but leaves the shared game's tab alone — see the option's TSDoc.
+    atInitialPosition: social.mode === 'local' ? 'summary' : 'keep',
     currentPosition,
     navigation: {
       navigateToStart,
@@ -404,6 +388,28 @@ export function GameReview({
     },
     setOverviewView: overview.setOverviewView,
   });
+
+  useReplayDeepLink({
+    notationMovesLength: notationMoves.length,
+    navigateToPosition,
+    highlightCommentId,
+    comments,
+    currentPosition,
+    // The result screen opens showing where play actually started (the setup
+    // position of a seeded/custom-FEN game). The shared page keeps the
+    // overview board unless the URL asks for a move.
+    fallbackPosition:
+      social.mode === 'local' && startPosition ? startPosition.jumpIndex : undefined,
+    // A `#14` / `?comment=` landing on the shared page is a request to read
+    // that move, so the tab opens on its thread. The result screen's landing is
+    // a fallback, not a request, and must leave the Summary showing.
+    onLand: social.mode === 'live' ? syncToPosition : undefined,
+  });
+
+  // `#game-overview` deep-link from the home feed's comment-count icon. The
+  // block only exists once `useReplayDeepLink` above has navigated to the
+  // opening board, which is too late for the browser's own scroll-to-hash.
+  useHashScrollOnce('game-overview', isInitialPosition);
 
   // Commit a previewed position from the quick-peek modal onto the live board.
   // The jump doesn't go through `userNav`, so the tab is synced explicitly.
@@ -524,16 +530,23 @@ export function GameReview({
               {overview.overviewView === 'discussion' &&
                 social.discussionContent?.({ isInitialPosition })}
             </div>
-          ) : /* On a move position: that move's comment thread. On the opening
-          board: the description + statistics. */
-          isInitialPosition ? (
+          ) : (
+            /* The tab set is the same at every board position — only the
+            Discussion tab is scoped to the board, holding the whole-game thread
+            on the opening board and that move's thread on a move position. The
+            Summary and the AI Review describe the game, not a position, so they
+            stay reachable while stepping through it (they used to be replaced
+            outright by the per-move thread, which stranded them on the opening
+            board). Stepping DOES select the Discussion — see
+            `useOverviewPositionSync`. */
             // `id` + `scroll-mt-20`: lets a link from elsewhere (e.g. the home
             // feed's comment-count icon, via `#game-overview`) land here instead
             // of the top of the page — this sits below the board/move-list widget.
-            // `space-y-6` replaces the gap the parent's own `space-y-6` used to
-            // apply between these (previously fragment-spread, now grouped) children.
             <div id="game-overview" className="scroll-mt-20 space-y-6">
-              {children}
+              {/* The game's description is header content for the review as a
+                  whole; it introduces the game, so it rides with the opening
+                  board rather than repeating above every move's thread. */}
+              {isInitialPosition && children}
 
               {overview.showOverviewTabs && (
                 <ReviewOverviewTabs
@@ -559,76 +572,81 @@ export function GameReview({
                   startingFen={startingFen}
                   initialReview={aiReview.initial}
                   // Preview in the quick-peek modal (like the By Move strip),
-                  // so reading the review never disturbs the live replay —
-                  // and never navigates this very tab away.
+                  // so following a review's citation never scrolls the live
+                  // replay out from under the paragraph being read. The modal's
+                  // footer commits the position for a viewer who wants to go
+                  // there — which then switches this block to that move's thread.
                   onJumpToPly={quickPeek.openAtMove}
                 />
               )}
 
-              {overview.activeOverviewView === 'discussion' && (
-                <div className="space-y-8">
-                  {/* The whole-game thread, fully interactive (composer, likes,
+              {overview.activeOverviewView === 'discussion' &&
+                (isInitialPosition ? (
+                  <div className="space-y-8">
+                    {/* The whole-game thread, fully interactive (composer, likes,
                       replies) — unlike the per-move index below, `ply = NULL`
                       comments have no per-move view to act in, so THIS is their
                       thread. The heading names the anchor: a game with a custom
                       FEN / seeded-prefix start has a discussable start position,
                       a plain game just "the whole game" — one NULL anchor serves
                       both readings (see the gameComments.ply schema TSDoc). */}
-                  <section className="space-y-4">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {startPosition ? t('discussion.startPosition') : t('discussion.wholeGame')}
-                    </h3>
-                    <GameMoveContributions
+                    <section className="space-y-4">
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {startPosition ? t('discussion.startPosition') : t('discussion.wholeGame')}
+                      </h3>
+                      <GameMoveContributions
+                        gameId={gameId}
+                        currentPly={null}
+                        comments={comments}
+                        gameChunks={gameChunks}
+                        availableChunks={availableChunks}
+                        currentUser={currentUser}
+                        isGameOwner={isGameOwner}
+                        locale={locale}
+                        moves={notationMoves}
+                        startingFen={startingFen}
+                        playerColor={playerColor}
+                      />
+                    </section>
+
+                    {/* Per-move contributions, as a read-only index that jumps
+                      into each move's own thread. Self-hiding when no move has
+                      any. */}
+                    <GameDiscussionFeed
+                      comments={comments}
+                      gameChunks={gameChunks}
+                      notationMoves={notationMoves}
+                      startingFen={startingFen}
+                      playerColor={playerColor}
+                      onJumpToPly={navigateToPosition}
+                      locale={locale}
+                    />
+                  </div>
+                ) : (
+                  /* A move is on the board: the Discussion is that move's own
+                     thread, with its aid-usage detail above it. */
+                  currentPly != null && (
+                    <ReviewMovePositionPanel
+                      title={moveLabel ?? t('comments.title')}
+                      locale={locale}
                       gameId={gameId}
-                      currentPly={null}
+                      currentPly={currentPly}
                       comments={comments}
                       gameChunks={gameChunks}
                       availableChunks={availableChunks}
                       currentUser={currentUser}
                       isGameOwner={isGameOwner}
-                      locale={locale}
                       moves={notationMoves}
                       startingFen={startingFen}
                       playerColor={playerColor}
+                      moveOperationLog={currentMoveOperationLog}
+                      onAttemptSelect={handleAttemptSelect}
+                      selectedAttemptIndex={selectedAttemptIndex}
+                      isAttemptSelectable={isAttemptSelectable}
                     />
-                  </section>
-
-                  {/* Per-move contributions, as a read-only index that jumps
-                      into each move's own thread. Self-hiding when no move has
-                      any. */}
-                  <GameDiscussionFeed
-                    comments={comments}
-                    gameChunks={gameChunks}
-                    notationMoves={notationMoves}
-                    startingFen={startingFen}
-                    playerColor={playerColor}
-                    onJumpToPly={navigateToPosition}
-                    locale={locale}
-                  />
-                </div>
-              )}
+                  )
+                ))}
             </div>
-          ) : (
-            currentPly != null && (
-              <ReviewMovePositionPanel
-                title={moveLabel ?? t('comments.title')}
-                locale={locale}
-                gameId={gameId}
-                currentPly={currentPly}
-                comments={comments}
-                gameChunks={gameChunks}
-                availableChunks={availableChunks}
-                currentUser={currentUser}
-                isGameOwner={isGameOwner}
-                moves={notationMoves}
-                startingFen={startingFen}
-                playerColor={playerColor}
-                moveOperationLog={currentMoveOperationLog}
-                onAttemptSelect={handleAttemptSelect}
-                selectedAttemptIndex={selectedAttemptIndex}
-                isAttemptSelectable={isAttemptSelectable}
-              />
-            )
           )}
         </div>
 

@@ -30,6 +30,14 @@ type Params = {
    * started rather than the standard initial board.
    */
   fallbackPosition?: number;
+  /**
+   * Called once with the position actually opened. The shared page points its
+   * overview tab at it (see `useOverviewPositionSync`): arriving at `#14` or at
+   * a comment's move is a request to READ that move, so its thread is what
+   * should be selected. Omitted on the result screen, whose landing is a
+   * fallback rather than a request and must leave the Summary showing.
+   */
+  onLand?: (position: number) => void;
 };
 
 /**
@@ -47,6 +55,7 @@ export function useReplayDeepLink({
   comments,
   currentPosition,
   fallbackPosition = -2,
+  onLand,
 }: Params) {
   const startedRef = useRef(false);
   useEffect(() => {
@@ -58,9 +67,18 @@ export function useReplayDeepLink({
     const commentPly =
       target && target.ply != null && target.ply < notationMovesLength ? target.ply : null;
     const hashPly = parseHashPly(window.location.hash, notationMovesLength);
-    navigateToPosition(commentPly ?? hashPly ?? fallbackPosition);
+    const landed = commentPly ?? hashPly ?? fallbackPosition;
+    navigateToPosition(landed);
+    onLand?.(landed);
     // startedRef makes re-runs no-ops, so the extra deps cannot re-trigger it.
-  }, [notationMovesLength, navigateToPosition, highlightCommentId, comments, fallbackPosition]);
+  }, [
+    notationMovesLength,
+    navigateToPosition,
+    highlightCommentId,
+    comments,
+    fallbackPosition,
+    onLand,
+  ]);
 
   // Once the deep-linked comment's thread is mounted, scroll it into view.
   // Element presence is the readiness signal — the anchor id exists only when
