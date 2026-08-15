@@ -9,7 +9,7 @@ import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-co
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
-import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
+import type { AiReview } from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { EvaluationMark } from '@/lib/games/evaluation';
@@ -218,13 +218,15 @@ export function GameReview({
     effectiveFlipped,
   });
 
-  // The AI review's graded moves, by ply. Seeded from the server-resolved
-  // review so the board is marked before the tab is ever opened, and raised by
-  // the panel when a fresh review finishes there (the panel owns that
-  // generation, and is unmounted whenever another tab is showing).
-  const [reviewMoments, setReviewMoments] = useState<ReviewMoment[]>(
-    aiReview?.initial?.moments ?? []
-  );
+  // The game's AI review, as the whole page's copy of it: the board marks
+  // graded moves and the per-move panel repeats the review's take on the move
+  // it is discussing, so this cannot live inside the tab that renders it.
+  // Seeded from the server-resolved review so both are right before the tab is
+  // ever opened, and raised by the panel when a fresh review finishes there
+  // (the panel owns that generation, and is unmounted while another tab shows).
+  const [review, setReview] = useState<AiReview | null>(aiReview?.initial ?? null);
+  // Stable identity: `?? []` fresh on every render would defeat the memos below.
+  const reviewMoments = useMemo(() => review?.moments ?? [], [review]);
   const judgmentByPly = useMemo(
     () => new Map(reviewMoments.map((m) => [m.ply, m.judgment])),
     [reviewMoments]
@@ -236,10 +238,14 @@ export function GameReview({
       ),
     [reviewMoments]
   );
-  const handleReviewGenerated = useCallback(
-    (review: AiReview) => setReviewMoments(review.moments),
-    []
-  );
+  // The moment (engine facts) and its comment (LLM prose) for a given ply,
+  // joined the same way the AI Review tab joins them — by ply, never by index.
+  const reviewMomentByPly = useMemo(() => {
+    const comments = new Map((review?.content.momentComments ?? []).map((c) => [c.ply, c]));
+    return new Map(
+      reviewMoments.map((moment) => [moment.ply, { moment, comment: comments.get(moment.ply) }])
+    );
+  }, [review, reviewMoments]);
 
   // The last-move highlight, the end-of-game badge and the move grade, all
   // resolved per navigation position because the live board and the quick-peek
@@ -633,7 +639,7 @@ export function GameReview({
                   // footer commits the position for a viewer who wants to go
                   // there — which then switches this block to that move's thread.
                   onJumpToPly={quickPeek.openAtMove}
-                  onReviewGenerated={handleReviewGenerated}
+                  onReviewGenerated={setReview}
                 />
               )}
 
@@ -700,6 +706,7 @@ export function GameReview({
                       onAttemptSelect={handleAttemptSelect}
                       selectedAttemptIndex={selectedAttemptIndex}
                       isAttemptSelectable={isAttemptSelectable}
+                      aiReviewMoment={reviewMomentByPly.get(currentPly)}
                     />
                   )
                 ))}

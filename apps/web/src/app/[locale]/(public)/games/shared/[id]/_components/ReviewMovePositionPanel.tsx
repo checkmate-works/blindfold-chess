@@ -1,7 +1,9 @@
 'use client';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 
+import type { AiReviewMomentComment, ReviewMoment } from '@/lib/ai-review/types';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
@@ -13,12 +15,19 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { CommentUser } from './GameCommentContext';
 import { GameMoveContributions } from './GameMoveContributions';
+import { ReviewMomentCard } from './ReviewMomentCard';
 
 /**
  * The per-move block shown below the board while a move position is on it: the
- * move's PGN-style title, that move's aid-usage stats (peeks / undos / hints /
- * rejected-move texts, when the player used any at this exact move), and that
- * move's comment / chunk-link thread.
+ * move's PGN-style title, the AI review's verdict on it (when it selected this
+ * move as a critical moment), that move's aid-usage stats (peeks / undos /
+ * hints / rejected-move texts, when the player used any at this exact move),
+ * and that move's comment / chunk-link thread.
+ *
+ * The review's verdict is repeated here rather than left to its own tab
+ * because this is where a reader arrives to discuss the move — the board
+ * already shows its grade and the engine's alternative, so the reasoning
+ * belongs beside them, not one tab away.
  *
  * Authoring from the displayed position lives in the board's own control strip
  * (see `CreateFromPositionMenu`), not here — it tracks the board, not the move
@@ -41,6 +50,7 @@ export function ReviewMovePositionPanel({
   onAttemptSelect,
   selectedAttemptIndex,
   isAttemptSelectable,
+  aiReviewMoment,
 }: {
   title: string;
   locale: Locale;
@@ -69,10 +79,27 @@ export function ReviewMovePositionPanel({
   onAttemptSelect?: (attemptIndex: number) => void;
   selectedAttemptIndex?: number | null;
   isAttemptSelectable?: (attemptIndex: number) => boolean;
+  /**
+   * The AI review's take on THIS move, when it selected it as a critical
+   * moment (most moves are not). `comment` is absent when the review's prose
+   * skipped a moment its engine pass kept.
+   */
+  aiReviewMoment?: { moment: ReviewMoment; comment?: AiReviewMomentComment } | null;
 }) {
+  const t = useTranslations('sharedGames');
+
   return (
     <div className="space-y-4">
       <SectionTitle>{title}</SectionTitle>
+
+      {/* The review's verdict on this move — the same card its own tab lists,
+          minus the move label, which the title above already is. */}
+      {aiReviewMoment && (
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold text-foreground">{t('aiReview.tab')}</h3>
+          <ReviewMomentCard moment={aiReviewMoment.moment} comment={aiReviewMoment.comment} />
+        </section>
+      )}
 
       {/* This move's aid-usage stats — most notably what SAN the player
           actually tried when an illegal-move attempt was rejected here.

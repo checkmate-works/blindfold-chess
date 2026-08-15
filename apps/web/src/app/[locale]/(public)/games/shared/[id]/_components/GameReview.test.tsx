@@ -368,6 +368,7 @@ describe('GameReview — AI review grade on the board', () => {
       aiReview: {
         initial: {
           moments: [{ ply, judgment: 'blunder' }],
+          content: { momentComments: [] },
         } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
       },
     });
@@ -386,6 +387,74 @@ describe('GameReview — AI review grade on the board', () => {
     mockLastMove = { from: 'e2', to: 'e4' };
     render(<GameReview {...withMoment(1)} />);
     expect(inlineBoardProps.evaluationMark).toBeNull();
+  });
+
+  it("repeats the review's take on the move in that move's discussion panel", () => {
+    mockStats = { totalMoves: 3 };
+    mockNav.currentPosition = 1;
+    render(
+      <GameReview
+        {...baseProps({
+          social: liveSocial({
+            isAuthenticated: true,
+            comments: [{ id: 'c1', ply: 1, deletedAt: null } as LiveSocial['comments'][number]],
+          }),
+          aiReview: {
+            initial: {
+              moments: [
+                {
+                  ply: 1,
+                  san: 'Nf6',
+                  moveNumber: 1,
+                  color: 'black',
+                  evalBefore: 30,
+                  evalAfter: -170,
+                  cpLoss: 200,
+                  bestMoveSan: 'd5',
+                  judgment: 'blunder',
+                },
+              ],
+              content: {
+                momentComments: [
+                  { ply: 1, explanation: 'Hung the knight.', lesson: 'Count first.' },
+                ],
+              },
+            } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
+          },
+        })}
+      />
+    );
+
+    // The discussion tab is the move's own thread; the review's verdict on
+    // that same move sits above it rather than one tab away.
+    expect(screen.getByText('Hung the knight.')).toBeInTheDocument();
+    expect(screen.getByText('Count first.')).toBeInTheDocument();
+    expect(screen.getByText('+0.3 → -1.7')).toBeInTheDocument();
+    expect(screen.getByText('d5')).toBeInTheDocument();
+  });
+
+  it('leaves the discussion panel alone on a move the review passed over', () => {
+    mockStats = { totalMoves: 3 };
+    mockNav.currentPosition = 2;
+    render(
+      <GameReview
+        {...baseProps({
+          social: liveSocial({
+            isAuthenticated: true,
+            comments: [{ id: 'c1', ply: 2, deletedAt: null } as LiveSocial['comments'][number]],
+          }),
+          aiReview: {
+            initial: {
+              moments: [{ ply: 1, judgment: 'blunder' }],
+              content: {
+                momentComments: [{ ply: 1, explanation: 'Hung the knight.', lesson: 'x' }],
+              },
+            } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
+          },
+        })}
+      />
+    );
+    expect(screen.queryByText('Hung the knight.')).toBeNull();
   });
 });
 

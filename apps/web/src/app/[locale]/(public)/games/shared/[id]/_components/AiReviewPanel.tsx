@@ -7,8 +7,8 @@ import { LOCALE_LABELS } from '@/i18n/locale-labels';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot } from 'react-icons/fa';
 
-import type { AiReview, ReviewMoment } from '@/lib/ai-review/types';
-import { EVAL_SCORE_LIMIT, MOVE_JUDGMENTS } from '@/lib/games/analysis/types';
+import type { AiReview } from '@/lib/ai-review/types';
+import { MOVE_JUDGMENTS } from '@/lib/games/analysis/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
 import { MoveJudgmentBadge } from '@/lib/games/evaluation';
 
@@ -16,6 +16,7 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useAiReviewGeneration } from '../_hooks/use-ai-review-generation';
+import { ReviewMomentCard } from './ReviewMomentCard';
 
 type Props = {
   gameId: string;
@@ -43,19 +44,6 @@ type Props = {
    */
   onReviewGenerated?: (review: AiReview) => void;
 };
-
-/** "+0.3" / "−1.7"; saturated mate scores render as a mate marker. */
-function formatEval(cp: number): string {
-  if (cp >= EVAL_SCORE_LIMIT) return '+M';
-  if (cp <= -EVAL_SCORE_LIMIT) return '-M';
-  const pawns = cp / 100;
-  return `${pawns > 0 ? '+' : ''}${pawns.toFixed(1)}`;
-}
-
-/** "18. Nd5" for a white move, "18... Nd5" for a black one. */
-function formatMoveLabel(moment: ReviewMoment): string {
-  return `${moment.moveNumber}${moment.color === 'white' ? '.' : '...'} ${moment.san}`;
-}
 
 /**
  * The AI Review tab body: renders the cached/just-generated review, or the
@@ -315,42 +303,14 @@ function ReviewBody({
             <p className="text-sm text-muted-foreground">{t('aiReview.noMomentsForGrades')}</p>
           )}
 
-          {visibleRows.map(({ comment, moment }) => {
-            return (
-              <div key={comment.ply} className="space-y-2 rounded-lg border border-border p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onJumpToPly(moment.ply)}
-                    className="font-mono text-sm font-semibold text-primary hover:underline"
-                  >
-                    {formatMoveLabel(moment)}
-                  </button>
-                  {/* The grade as chess notation (`?!` / `?` / `??`), the same
-                      badge the board draws — its localized name rides along as
-                      the accessible name / tooltip. */}
-                  <MoveJudgmentBadge
-                    judgment={moment.judgment}
-                    label={t(`aiReview.judgments.${moment.judgment}`)}
-                  />
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {formatEval(moment.evalBefore)} → {formatEval(moment.evalAfter)}
-                  </span>
-                  {moment.bestMoveSan && (
-                    /* Naming it is enough: opening the move (the label beside
-                       this one) puts the same alternative on the board as an
-                       engine arrow. */
-                    <span className="text-xs text-muted-foreground">
-                      {t('aiReview.bestMoveLabel')}:{' '}
-                      <span className="font-mono">{moment.bestMoveSan}</span>
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-foreground">{comment.explanation}</p>
-                <p className="text-sm text-muted-foreground">{comment.lesson}</p>
-              </div>
-            );
-          })}
+          {visibleRows.map(({ comment, moment }) => (
+            <ReviewMomentCard
+              key={comment.ply}
+              moment={moment}
+              comment={comment}
+              onJumpToPly={onJumpToPly}
+            />
+          ))}
         </section>
       )}
 
