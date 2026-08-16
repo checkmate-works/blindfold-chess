@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
  * SecurityEngineer Phase 1 baseline (D2) requires the CSP `frame-src`
  * directive to:
  *   - allow `www.chess.com` (the only chess-embed origin remaining
- *     after Phase 13 (#83) — Lichess /embed/{id} URLs are now
+ *     (#83) — Lichess /embed/{id} URLs are now
  *     rendered by the self-hosted PGN replay UI, no iframe needed,
  *     so `lichess.org` is intentionally NOT in frame-src)
  *   - NOT use `*` or `https:` schema-only tokens (regression guard
@@ -48,7 +48,7 @@ function extractFrameSrcDirective(source: string): string {
 
 describe('CSP frame-src — Phase B Tester #43 / #44', () => {
   // #43 — frame-src includes www.chess.com (the only chess-embed origin
-  //         remaining after Phase 13 (#83); Lichess /embed/{id} is now
+  //         remaining (#83); Lichess /embed/{id} is now
   //         rendered by the self-hosted PGN replay UI and no longer
   //         requires an iframe origin in the allow-list).
   it('#43 next.config.ts CSP frame-src directive contains www.chess.com', async () => {
@@ -57,11 +57,11 @@ describe('CSP frame-src — Phase B Tester #43 / #44', () => {
     expect(directive).toContain('www.chess.com');
   });
 
-  // #43-phase13 — Phase 13 (#83) regression: `lichess.org` MUST NOT
-  //                 appear in frame-src. The Lichess iframe was removed;
+  // #43-lichess — regression guard: `lichess.org` MUST NOT appear in
+  //                 frame-src. The Lichess iframe was removed (#83);
   //                 keeping the origin in frame-src would expand the
   //                 attack surface for no user-flow benefit.
-  it('#43-phase13 frame-src directive does NOT contain lichess.org (Phase 13 #83)', async () => {
+  it('#43-lichess frame-src directive does NOT contain lichess.org (#83)', async () => {
     const source = await readNextConfigSource();
     const directive = extractFrameSrcDirective(source);
     const tokens = directive.replace(/^['"]/, '').replace(/['"]$/, '').trim().split(/\s+/).slice(1);

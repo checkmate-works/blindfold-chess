@@ -13,7 +13,7 @@ type Props = {
  * @design Thin wrapper around `BasePostForm` (#84 horizontal rollout)
  *
  * The chunks new-post form was the original attachment-aware form
- * (#80 / Phase 13 / #84). Its UI now lives in `BasePostForm` so any
+ * (#80 / #83 / #84). Its UI now lives in `BasePostForm` so any
  * future tweak (paperclip placement, modal layout, attachment
  * summary text) propagates to every form that opts in. This file
  * is intentionally limited to (a) binding the chunks-specific

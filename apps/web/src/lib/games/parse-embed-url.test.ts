@@ -273,12 +273,11 @@ describe('parseLichessEmbedUrl', () => {
     }
   });
 
-  // Phase 13 (#83): Lichess Share → Embed currently emits the
+  // Lichess Share → Embed currently emits the
   // `/embed/game/{id}` shape. Both this and the older `/embed/{id}`
   // shape resolve to the same canonical 8-char gameId, so the parser
   // accepts both and downstream auto-fetch normalizes the rest.
 
-  // #30 — Phase 13: /embed/game/{id} accepted
   it('accepts https://lichess.org/embed/game/0zeJx5nI (Share→Embed shape)', () => {
     const r = parseLichessEmbedUrl('https://lichess.org/embed/game/0zeJx5nI');
     expect(r.ok).toBe(true);
@@ -287,7 +286,6 @@ describe('parseLichessEmbedUrl', () => {
     }
   });
 
-  // #31 — Phase 13: /embed/game/{id} with query string accepted
   it('accepts /embed/game/{id}?theme=dark', () => {
     const r = parseLichessEmbedUrl('https://lichess.org/embed/game/abcd1234?theme=dark');
     expect(r.ok).toBe(true);
@@ -296,7 +294,6 @@ describe('parseLichessEmbedUrl', () => {
     }
   });
 
-  // #32 — Phase 13: /embed/game/{7-char} rejected
   it('rejects /embed/game/{7-char id}', () => {
     const r = parseLichessEmbedUrl('https://lichess.org/embed/game/abcd123');
     expect(r.ok).toBe(false);
@@ -305,7 +302,6 @@ describe('parseLichessEmbedUrl', () => {
     }
   });
 
-  // #33 — Phase 13: /embed/game/{9-char} rejected
   it('rejects /embed/game/{9-char id}', () => {
     const r = parseLichessEmbedUrl('https://lichess.org/embed/game/abcd12345');
     expect(r.ok).toBe(false);
@@ -314,7 +310,6 @@ describe('parseLichessEmbedUrl', () => {
     }
   });
 
-  // #34 — Phase 13: trailing path after /embed/game/{id} rejected
   it('rejects /embed/game/abcd1234/extra trailing path', () => {
     const r = parseLichessEmbedUrl('https://lichess.org/embed/game/abcd1234/extra');
     expect(r.ok).toBe(false);
@@ -323,7 +318,6 @@ describe('parseLichessEmbedUrl', () => {
     }
   });
 
-  // #35 — Phase 13: /embed/game/ (no id) rejected
   it('rejects /embed/game/ with no id', () => {
     const r = parseLichessEmbedUrl('https://lichess.org/embed/game/');
     expect(r.ok).toBe(false);
@@ -332,7 +326,6 @@ describe('parseLichessEmbedUrl', () => {
     }
   });
 
-  // #36 — Phase 13: nested /embed/game/game/{id} rejected
   it('rejects nested /embed/game/game/abcd1234', () => {
     const r = parseLichessEmbedUrl('https://lichess.org/embed/game/game/abcd1234');
     expect(r.ok).toBe(false);
@@ -341,7 +334,6 @@ describe('parseLichessEmbedUrl', () => {
     }
   });
 
-  // #37 — Phase 13: hyphen in /embed/game/{id} rejected (alnum only)
   it('rejects /embed/game/abcd-234', () => {
     const r = parseLichessEmbedUrl('https://lichess.org/embed/game/abcd-234');
     expect(r.ok).toBe(false);

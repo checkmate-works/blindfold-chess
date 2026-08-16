@@ -31,10 +31,10 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
  * change to these values is therefore a deliberate edit to the literal
  * here, with a corresponding test update.
  *
- * @design Phase 13 narrowing (#83)
+ * @design chess.com is the only provider rendered here (#83)
  *
  * Lichess /embed/{id} URLs were originally rendered as a Lichess
- * iframe alongside chess.com. Phase 13 retired that path: Lichess
+ * iframe alongside chess.com. That path is retired: Lichess
  * embed URLs are now routed through `createChunkPostWithAttachment`
  * and rendered by `AttachedGameCard` + `GameReplayModal`
  * (the self-hosted PGN replay UI). This component is therefore
@@ -45,7 +45,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
  */
 export type AttachedEmbedCardData = {
   id: string;
-  embedProvider: string; // 'chesscom' (Phase 13: Lichess narrowed out)
+  embedProvider: string; // 'chesscom' — Lichess is narrowed out (#83)
   embedId: string;
   attributionPlatform: string | null;
   attributionPath: string | null;
@@ -113,8 +113,8 @@ export function AttachedEmbedCard({ attachment }: Props) {
     );
   }
 
-  // Unknown provider — render nothing. As of Phase 13 (#83), the DB
-  // CHECK constrains embed_provider to 'chesscom' only, so this branch
+  // Unknown provider — render nothing. The DB CHECK constrains
+  // embed_provider to 'chesscom' only (#83), so this branch
   // is unreachable in practice (Lichess embed URLs are routed to the
   // PGN attachment path and rendered by AttachedGameCard instead).
   // Surfacing nothing is the safest fallback for a drifted row.

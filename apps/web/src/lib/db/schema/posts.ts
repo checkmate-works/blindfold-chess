@@ -543,7 +543,7 @@ export const postGameEmbedAttachments = pgTable(
       .notNull()
       .unique()
       .references(() => topicPosts.id, { onDelete: 'cascade' }),
-    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' (Phase 13: Lichess narrowed out)
+    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' — Lichess is narrowed out (#83)
     embedId: varchar('embed_id', { length: 64 }).notNull(),
     /**
      * @design Audit-only canonical embed URL. NEVER read into the rendered

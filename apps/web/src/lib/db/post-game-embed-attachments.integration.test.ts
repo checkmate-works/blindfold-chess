@@ -195,8 +195,8 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
     ).rejects.toThrow(/chk_embed_provider_valid/);
   });
 
-  // #36-lichess — Phase 13 (#83) retired the Lichess /embed iframe and
-  // narrowed the CHECK from IN ('chesscom', 'lichess') to IN ('chesscom').
+  // #36-lichess — retiring the Lichess /embed iframe (#83) narrowed the
+  // CHECK from IN ('chesscom', 'lichess') to IN ('chesscom').
   // Regression guard: a Lichess row must never be insertable again.
   it('#36-lichess rejects an INSERT with embed_provider = "lichess" (chk_embed_provider_valid)', async (ctx) => {
     const db = requireDb(ctx);

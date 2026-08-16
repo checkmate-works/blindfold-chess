@@ -20,8 +20,7 @@ import { pgnSubModeError, urlSubModeError } from '../_lib/attachment-sub-mode-er
  * Both sub-modes emit `mode = { kind: 'pgn', pgn: <raw value> }` so
  * `NewPostForm`'s submit handler keeps a narrow union (`empty | pgn`);
  * the server's `detectAttachmentInput` re-runs on the raw `attachment`
- * field and dispatches Lichess URLs through `resolveLichessAttachmentPgn`
- * (the Phase 13 path).
+ * field and dispatches Lichess URLs through `resolveLichessAttachmentPgn`.
  *
  * Accepted:
  *   - PGN sub-mode: a raw PGN body.

@@ -9,7 +9,7 @@
  *                       `https://lichess.org/embed/game/{gameId}`
  *     (Lichess Share → Embed currently emits the `/embed/game/{id}`
  *     shape; both forms reference the same canonical 8-char gameId,
- *     so Phase 13 (#83) accepts both and normalizes to the same
+ *     so the parser accepts both and normalizes to the same
  *     `embedId` for downstream PGN auto-fetch via
  *     `https://lichess.org/api/game/{id}/pgn`.)
  *
@@ -73,7 +73,7 @@ const CHESSCOM_EMBED_ID_RE = /^[0-9]{1,15}$/;
 const LICHESS_HOSTNAME = 'lichess.org';
 // Accepts both `/embed/{8-alnum}` (PGN-viewer widget URL) and
 // `/embed/game/{8-alnum}` (the shape Lichess Share → Embed currently
-// emits). Phase 13 (#83) routes both to the same PGN auto-fetch path
+// emits). Both route to the same PGN auto-fetch path
 // keyed by the captured 8-char gameId, so downstream code does not
 // need to track which shape the user pasted.
 const LICHESS_EMBED_PATH_RE = /^\/embed(?:\/game)?\/([A-Za-z0-9]{8})$/;

@@ -11,8 +11,8 @@ import { createChunkPostWithEmbedAttachment } from './createChunkPostWithEmbedAt
  * persisted, (b) what canonical source_url is reconstructed, and
  * (c) that the per-attachment rate-limit is consumed.
  *
- * Phase 13 (#83) narrowed `post_game_embed_attachments.embed_provider`
- * to `'chesscom'` only. The Lichess-specific test cases in this file
+ * `post_game_embed_attachments.embed_provider` is narrowed to
+ * `'chesscom'` only (#83). The Lichess-specific test cases in this file
  * were removed; Lichess /embed/{id} URLs are now exercised by
  * createChunkPostWithAttachment.test.ts (PGN auto-fetch path).
  */
@@ -337,7 +337,7 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
 });
 
 /**
- * Phase 13 (#83) regression suite — Lichess provider rejection.
+ * Regression suite — Lichess provider rejection (#83).
  *
  * The action is now chess.com-only. A form pumping `embedProvider='lichess'`
  * (e.g. a stale page load) must fail closed at the action layer BEFORE
@@ -345,7 +345,7 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
  * underlying DB CHECK (narrowed in the same commit) is the second line
  * of defense.
  */
-describe('createChunkPostWithEmbedAttachment — Phase 13 (#83) lichess narrowing', () => {
+describe('createChunkPostWithEmbedAttachment — lichess narrowing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
@@ -357,7 +357,7 @@ describe('createChunkPostWithEmbedAttachment — Phase 13 (#83) lichess narrowin
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
-  it('rejects embedProvider="lichess" with the invalidUrl error key (Phase 13 narrowing)', async () => {
+  it('rejects embedProvider="lichess" with the invalidUrl error key', async () => {
     // A form claiming `lichess` is no longer a valid provider here —
     // Lichess /embed/{id} URLs are routed to createChunkPostWithAttachment.
     // The action returns the same generic error key as malformed input.

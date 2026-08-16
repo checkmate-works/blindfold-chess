@@ -32,8 +32,8 @@ function makeAttachment(overrides: Partial<AttachedEmbedCardData> = {}): Attache
  * the renderer-rebuilt `src` invariant (D7), and the
  * static-string `title` attribute used for a11y (D8 #47).
  *
- * Phase 13 (#83) narrowed `post_game_embed_attachments.embed_provider`
- * to `'chesscom'` only; the corresponding Lichess-iframe assertions
+ * `post_game_embed_attachments.embed_provider` is narrowed to
+ * `'chesscom'` only (#83); the corresponding Lichess-iframe assertions
  * are removed. Lichess /embed/{id} URLs are now rendered by
  * AttachedGameCard (the self-hosted PGN replay UI) — coverage for
  * that path lives in createChunkPostWithAttachment.test.ts and the
@@ -192,12 +192,12 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     expect(title).not.toContain('evilevil');
   });
 
-  // ─── Phase 13 (#83) regression: lichess provider renders nothing ───
+  // ─── Regression: lichess provider renders nothing (#83) ───
   // Even though the DB CHECK now rejects 'lichess' inserts, a drifted
   // legacy row carrying `embed_provider='lichess'` must render as
   // null (no iframe, no broken UI) rather than producing a broken
   // chess.com iframe URL or throwing.
-  it('renders nothing for embed_provider="lichess" (Phase 13 regression — DB CHECK now rejects this)', () => {
+  it('renders nothing for embed_provider="lichess" (the DB CHECK now rejects this)', () => {
     const att: AttachedEmbedCardData = {
       id: 'lichess-legacy',
       embedProvider: 'lichess',
@@ -221,7 +221,7 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     };
     const { container } = render(<AttachedEmbedCard attachment={att} />);
     // Renders nothing — the DB CHECK constrains provider to 'chesscom'
-    // only (Phase 13), so this branch is unreachable in practice. Pin
+    // only (#83), so this branch is unreachable in practice. Pin
     // the safe-fallback behavior anyway.
     expect(container.querySelector('iframe')).toBeNull();
   });
