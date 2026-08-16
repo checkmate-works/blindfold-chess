@@ -153,9 +153,10 @@ describe('HistoryTraversalRecovery', () => {
     });
   });
 
-  // BLINDFOLD-CHESS-5N: `encodeURIComponent`-built hrefs spell a space `%20`,
-  // `useSearchParams().toString()` spells it `+`. Same query, and the recovery
-  // replace cannot heal the difference — so a mismatch here fires forever.
+  // An `encodeURIComponent`-built href spells a space `%20`;
+  // `useSearchParams().toString()` spells it `+`. Same query — but the
+  // recovery replace re-uses the browser's spelling, so a mismatch reported
+  // here can never clear and re-fires for as long as the page stays open.
   describe('query strings encoded differently by the href and by the router', () => {
     const FEN = '6k1/8/8/3KQ3/8/8/8/8 w - - 0 1';
     const PATH = '/en/games/new/position';

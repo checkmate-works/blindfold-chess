@@ -129,12 +129,17 @@ export function HistoryTraversalRecovery() {
      * application/x-www-form-urlencoded. A link built with
      * `encodeURIComponent` — e.g. `games/new/position?fen=${...}` — therefore
      * sits in the address bar as `?fen=…%20w%20-…` and reaches the router as
-     * `?fen=…+w+-…`: one query, two spellings, and a mismatch that never
-     * resolves, because the recovery `replace` re-uses the browser's spelling.
-     * Sentry BLINDFOLD-CHESS-5N was 117 such false recoveries fired every
-     * cooldown window on `/games/new/position`, all with `historyLength: 1`
-     * (no history entry to traverse to at all). Space is the common case;
+     * `?fen=…+w+-…`: one query, two spellings. Compared raw, that reads as a
+     * traversal the router missed — and no recovery can clear it, because the
+     * recovery `replace` re-uses the browser's spelling. It therefore re-fires
+     * every cooldown window for as long as the page stays open, each time
+     * paying a pointless re-navigation. Space is the common case;
      * `~ ! ' ( ) *` also differ between the two encoders.
+     *
+     * Not hypothetical: this reached production on `/games/new/position` in
+     * every locale, on plain page loads reporting `historyLength: 1` — there
+     * was no second history entry to traverse to at all (observed as Sentry
+     * BLINDFOLD-CHESS-5N).
      *
      * Only the comparison is canonicalised — a genuine recovery still replaces
      * to the browser's own URL, so a real traversal is not silently re-spelled.
