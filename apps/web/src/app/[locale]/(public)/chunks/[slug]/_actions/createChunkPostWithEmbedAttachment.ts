@@ -8,8 +8,8 @@
  * intact (rather than deleted) so a future release can re-enable
  * chess.com embed input by restoring the URL sub-mode in
  * `AttachmentInput` + the `kind: 'embed'` arm in `NewPostForm`'s
- * submit handler. The render layer (`AttachedEmbedCard`,
- * chess.com-only after Phase 13) remains wired so existing posts
+ * submit handler. The render layer (`AttachedEmbedCard`, chess.com-only
+ * since Lichess embeds were retired) remains wired so existing posts
  * still display.
  */
 import * as Sentry from '@sentry/nextjs';
@@ -50,13 +50,13 @@ function embedErrorKey(reason: string): string {
  * kind. Differences vs the PGN flow:
  *   1. Input: `embedProvider` + `embedSourceUrl` from the form. The raw
  *      `embedSourceUrl` is re-parsed server-side; we NEVER trust a
- *      client-passed `embedId`. (SecurityEngineer baseline D8 #46.)
+ *      client-passed `embedId`.
  *   2. After validation, the canonical `source_url` is rebuilt from
  *      `(provider, embedId)` and persisted; the raw user input is
  *      discarded so a hostile-but-shaped-correct paste cannot land in
  *      the DB.
- *   3. Attribution: NULL/NULL per Q1 (emboard URL only, no separate
- *      attribution input in Phase B).
+ *   3. Attribution: NULL/NULL — the emboard URL is the only input and
+ *      there is no separate attribution field to populate from.
  *   4. PGN/embed exclusivity: a defensive query against
  *      `post_game_pgn_attachments` ensures we never associate an embed
  *      with a post that already has a PGN attachment. The post is
@@ -69,12 +69,12 @@ function embedErrorKey(reason: string): string {
  * — embed attachments share the same per-user budget as PGN attachments
  * because the hosting cost (iframe / DB row) is comparable.
  *
- * @design Phase 13 narrowing (#83)
+ * @design Lichess is not an embed provider here (#83)
  *
- * Lichess /embed/{id} URLs were originally handled here too, but #83
- * (Phase 13) routed them through `createChunkPostWithAttachment`
- * instead — the self-hosted PGN replay UI replaces the Lichess iframe
- * for license + UX reasons. This action is therefore chess.com-only;
+ * Lichess /embed/{id} URLs were originally handled here too. They now
+ * route through `createChunkPostWithAttachment` instead — the
+ * self-hosted PGN replay UI replaces the Lichess iframe for license +
+ * UX reasons. This action is therefore chess.com-only;
  * the DB CHECK on `post_game_embed_attachments.embed_provider` is
  * narrowed to `IN ('chesscom')` as the load-bearing invariant.
  */
@@ -87,7 +87,7 @@ export async function createChunkPostWithEmbedAttachment(
   const rawProvider = formData.get('embedProvider');
   const rawSourceUrl = formData.get('embedSourceUrl');
 
-  // Phase 13 (#83): only `chesscom` is a valid embed provider now.
+  // `chesscom` is the only valid embed provider (#83).
   // The form may still surface `lichess` as an in-flight client value
   // during a stale page load; we fail closed rather than treating it
   // as chesscom.
@@ -116,7 +116,6 @@ export async function createChunkPostWithEmbedAttachment(
 
   // Server-side re-validation. We re-parse the raw URL here regardless
   // of what the client claimed — never trust a client-passed embed id.
-  // (SecurityEngineer baseline D8 #46.)
   const parsed = parseChesscomEmboardUrl(embedSourceUrl);
   if (!parsed.ok) {
     return { error: embedErrorKey(parsed.reason) };
@@ -138,7 +137,7 @@ export async function createChunkPostWithEmbedAttachment(
   // unambiguous.
   const canonicalSourceUrl = `https://www.chess.com/emboard?id=${embedId}`;
 
-  // Attribution columns. chess.com is NULL/NULL per Q1.
+  // Attribution columns. chess.com carries no attribution input.
   const attributionPlatform: string | null = null;
   const attributionPath: string | null = null;
 

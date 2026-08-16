@@ -62,7 +62,7 @@ const TABLE_BY_1_TO_0_OR_1_KIND = {
  * `topic_posts.image_attachment_count` consistent automatically when the
  * row is deleted, so this action does not touch the counter directly.
  *
- * Not surfaced today: replacing an attachment (DELETE + INSERT). Phase 3.
+ * Not surfaced today: replacing an attachment (DELETE + INSERT).
  */
 export async function removePostAttachment(
   postId: string,

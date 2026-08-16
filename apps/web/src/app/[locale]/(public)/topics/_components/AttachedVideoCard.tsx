@@ -24,7 +24,7 @@
  * @design iframe `sandbox` is a string literal
  *
  * The `sandbox` attribute is the literal `"allow-scripts allow-same-origin"`
- * — the SecurityEngineer judgement for #75 pinned this exact value:
+ * — this exact value, for these reasons (#75):
  *   - `allow-scripts`: required for the YouTube embed JS player.
  *   - `allow-same-origin`: required so the player can read its own
  *     localStorage entries (volume / playback rate persistence). The
@@ -54,7 +54,7 @@ export type AttachedVideoCardData = {
   providerVideoId: string;
   /**
    * Optional human-supplied or oEmbed-derived title. MVP persists
-   * `null` (oEmbed deferred — see issue #75 M-6); the renderer falls
+   * `null` (oEmbed is deferred — see issue #75); the renderer falls
    * back to a localized static title for a11y.
    */
   title: string | null;

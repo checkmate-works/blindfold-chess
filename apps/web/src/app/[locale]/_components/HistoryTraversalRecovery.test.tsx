@@ -153,6 +153,65 @@ describe('HistoryTraversalRecovery', () => {
     });
   });
 
+  // An `encodeURIComponent`-built href spells a space `%20`;
+  // `useSearchParams().toString()` spells it `+`. Same query — but the
+  // recovery replace re-uses the browser's spelling, so a mismatch reported
+  // here can never clear and re-fires for as long as the page stays open.
+  describe('query strings encoded differently by the href and by the router', () => {
+    const FEN = '6k1/8/8/3KQ3/8/8/8/8 w - - 0 1';
+    const PATH = '/en/games/new/position';
+
+    beforeEach(() => {
+      renderedPathname = PATH;
+      renderedSearchParams = new URLSearchParams({ fen: FEN });
+      window.history.replaceState(null, '', `${PATH}?fen=${encodeURIComponent(FEN)}`);
+    });
+
+    it('does not treat the encoding difference as a URL change (watchdog)', () => {
+      vi.useFakeTimers();
+      render(<HistoryTraversalRecovery />);
+
+      advance(1200 * 5);
+
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockCaptureMessage).not.toHaveBeenCalled();
+    });
+
+    it('does not treat the encoding difference as a URL change (null-state popstate)', () => {
+      render(<HistoryTraversalRecovery />);
+
+      dispatchPopState(null);
+
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockCaptureMessage).not.toHaveBeenCalled();
+    });
+
+    it('does not treat the encoding difference as an uncommitted traversal', () => {
+      vi.useFakeTimers();
+      render(<HistoryTraversalRecovery />);
+
+      dispatchPopState({ __NA: true });
+      advance(3500);
+
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockCaptureMessage).not.toHaveBeenCalled();
+    });
+
+    it('still recovers a real mismatch, replacing to the browser’s own spelling', () => {
+      vi.useFakeTimers();
+      render(<HistoryTraversalRecovery />);
+
+      // The browser moved to a different position; the router stayed put.
+      const otherFen = '8/8/8/4k3/8/8/4K3/7R w - - 0 1';
+      const otherUrl = `${PATH}?fen=${encodeURIComponent(otherFen)}`;
+      window.history.replaceState(null, '', otherUrl);
+      advance(1200 * 2);
+
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith(otherUrl);
+    });
+  });
+
   describe('state-carrying popstate the router never commits', () => {
     it('recovers after the commit grace period if the rendered URL never catches up', () => {
       vi.useFakeTimers();

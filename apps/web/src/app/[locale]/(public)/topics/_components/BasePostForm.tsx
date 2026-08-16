@@ -41,7 +41,7 @@ type ImageCreateAction = (formData: FormData) => Promise<ImageAttachResult>;
  *   - `pgn` covers the empty / PGN body / Lichess URL paste paths.
  *     The server's `detectAttachmentInput` re-runs on the raw
  *     `attachment` form field and dispatches Lichess URLs into
- *     `resolveLichessAttachmentPgn` (Phase 13).
+ *     `resolveLichessAttachmentPgn`.
  *   - `fen` covers FEN attachments. The form fields
  *     `attachmentFen` + optional `attachmentFenCaption` are
  *     synthesised here from the modal's emitted mode so the host

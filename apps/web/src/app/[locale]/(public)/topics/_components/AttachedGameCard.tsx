@@ -78,7 +78,7 @@ type Props = {
  *
  * @design Site header links, revised by #84
  *
- * Phase A.2 originally rendered the Site header as plain text on the
+ * The Site header was originally rendered as plain text on the
  * grounds that user-supplied URLs could phish. The cushion redirect
  * page (`/[locale]/redirect?url=...`) added since then surfaces the
  * full destination URL to the user before navigation, mitigating the

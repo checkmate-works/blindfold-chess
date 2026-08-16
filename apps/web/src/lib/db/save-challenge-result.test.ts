@@ -549,7 +549,7 @@ describe('saveChallengeResult', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Additional edge cases (from Tester review)
+  // Additional edge cases
   // -------------------------------------------------------------------------
 
   it('should insert feed_item when improvement and new rank is exactly 10 (boundary)', async () => {

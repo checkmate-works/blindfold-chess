@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * Runtime behavior test for the dev-only console.error filter installed by
- * ThemeScript. Closes the static/runtime gap that masked the Phase 1
- * regression: the previous iteration passed lint/typecheck/build/all-tests
+ * ThemeScript. Closes the static/runtime gap that masked an earlier
+ * regression: that iteration passed lint/typecheck/build/all-tests
  * but the actual filter was bypassed by Next.js's dev-overlay
  * `intercept-console-error` race.
  *

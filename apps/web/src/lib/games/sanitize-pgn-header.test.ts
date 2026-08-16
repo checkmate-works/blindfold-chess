@@ -58,7 +58,7 @@ describe('sanitizePgnHeader', () => {
     expect(sanitizePgnHeader(onlyControls)).toBeNull();
   });
 
-  // ─── Additional Tester-pass coverage ───
+  // ─── Additional coverage ───
   describe('null byte handling', () => {
     it('strips a leading null byte', () => {
       expect(sanitizePgnHeader(`${String.fromCharCode(0)}Alice`)).toBe('Alice');
@@ -108,7 +108,7 @@ describe('sanitizePgnHeader', () => {
     });
   });
 
-  // ─── M-4: Trojan Source / bidi & zero-width strip ───
+  // ─── Trojan Source / bidi & zero-width strip ───
   describe('bidi and zero-width strip (CVE-2021-42574 class)', () => {
     it('strips RIGHT-TO-LEFT OVERRIDE (U+202E)', () => {
       // The classic Trojan Source vector: `evil` followed by U+202E
@@ -175,12 +175,11 @@ describe('sanitizePgnHeader', () => {
       expect(sanitizePgnHeader(hebrew)).toBe(hebrew);
     });
 
-    // ─── Phase H: extended invisible / formatter coverage ───
+    // ─── Extended invisible / formatter coverage ───
     it('strips ARABIC LETTER MARK (U+061C, Bidi_Control)', () => {
       // U+061C is an Arabic-script bidi formatter that, like the
       // U+202A..U+202E family, can flip rendered text without
-      // changing the underlying codepoints. Coverage gap noted in
-      // Phase G review.
+      // changing the underlying codepoints.
       const value = `Magnus${String.fromCharCode(0x061c)}Carlsen`;
       expect(sanitizePgnHeader(value)).toBe('MagnusCarlsen');
     });
@@ -252,7 +251,7 @@ describe('sanitizePgnHeader', () => {
       expect(sanitizePgnHeader(value)).toBeNull();
     });
 
-    // ─── Phase I: range-boundary regression coverage ───
+    // ─── Range-boundary regression coverage ───
     //
     // The strip regex includes two supplementary-plane ranges:
     //   - U+1D173..U+1D17A Musical Symbol formatters

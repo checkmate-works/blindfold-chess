@@ -3,8 +3,8 @@
  * carries (Initial Settings, Change Log) and the i18n key routing across
  * them.
  *
- * Per-move operation counts moved into MovesPanel's inline popovers in
- * Phase 5b; the modal no longer renders that table, so the related tests
+ * Per-move operation counts moved into MovesPanel's inline popovers;
+ * the modal no longer renders that table, so the related tests
  * live alongside MovesPanel now.
  *
  * The translation mocks pass the key path through verbatim so assertions

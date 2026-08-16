@@ -236,7 +236,7 @@ A `specs/<feature>/` directory is a thinking aid for building something, not a r
 
 1. Move the parts that cannot be re-derived from the code — external platform behaviour, and choices deliberately _not_ taken — into TSDoc next to the code they constrain.
 2. Move any still-unimplemented phase into a GitHub issue, verbatim, so the issue stands on its own.
-3. Leave no comment pointing at `specs/...`. `SPEC*.md` is in `.gitignore`, so those files exist only on their author's machine — a reference to one is already broken for every other reader.
+3. Leave no comment pointing at `specs/...`. `SPEC*.md` is in `.gitignore`, so those files exist only on their author's machine — a reference to one is already broken for every other reader. This is the strictest case of "Comments explain; external references only cite" (root `CLAUDE.md`), which governs Sentry and GitHub issue references too.
 
 Delete the build steps, deliverable lists, acceptance checklists, progress checkboxes, and "where the existing parts live" tables outright: the code, its tests, and git history are the source of truth, and a table of file paths rots silently. Keep only the _why_, and keep it beside the code rather than in a file of its own — otherwise documentation grows linearly with every feature.
 

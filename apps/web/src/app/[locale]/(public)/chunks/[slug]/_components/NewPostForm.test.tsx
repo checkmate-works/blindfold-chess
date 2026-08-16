@@ -300,12 +300,12 @@ describe('NewPostForm — Game tab routing via the modal (#84: PGN-only)', () =>
   });
 });
 
-describe('NewPostForm — paperclip + counter row layout (Phase 7)', () => {
+describe('NewPostForm — paperclip + counter row layout', () => {
   it('renders the content character counter inline with the paperclip icon row, not below the textarea', () => {
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     // The Textarea ships its own internal counter slot below the
-    // textarea when `showCount` is unset; Phase 7 disables that and
+    // textarea when `showCount` is unset; this form disables that and
     // re-renders the counter alongside the paperclip icon. The
     // resulting DOM should contain exactly one counter element with
     // the canonical `<current> / <max>` shape.

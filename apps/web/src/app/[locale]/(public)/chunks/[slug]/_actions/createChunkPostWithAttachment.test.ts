@@ -395,9 +395,9 @@ describe('createChunkPostWithAttachment', () => {
     });
   });
 
-  // ─── Phase 13 (#83): Lichess /embed/{id} URLs route through this PGN ───
-  //   action via the same auto-fetch path as plain Lichess game URLs.
-  describe('Phase 13 (#83) — lichess_embed URL routes through PGN auto-fetch', () => {
+  // ─── Lichess /embed/{id} URLs route through this PGN action (#83) ───
+  //   via the same auto-fetch path as plain Lichess game URLs.
+  describe('lichess_embed URL routes through PGN auto-fetch', () => {
     it('resolves a Lichess embed URL via resolveLichessAttachmentPgn (gameId from embedId)', async () => {
       const fetchedPgn = '[White "Foo"]\n[Black "Bar"]\n\n1. d4 d5 2. c4 e6';
       mockResolveLichessAttachmentPgn.mockResolvedValue({
@@ -415,12 +415,12 @@ describe('createChunkPostWithAttachment', () => {
         )
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      // The embedId (8-char) is used as the Lichess gameId — same
-      // namespace per Phase 13 SA Q1 invariant 2.
+      // The embedId (8-char) is used as the Lichess gameId: an embed URL
+      // and a game URL name the same game in the same id namespace.
       expect(mockResolveLichessAttachmentPgn).toHaveBeenCalledWith('wxyz5678');
 
       // The persisted attachment row carries source='lichess' (NOT
-      // 'embed' — embed table is chess.com-only post-Phase-13) and the
+      // 'embed' — the embed table is chess.com-only) and the
       // canonical game URL is normalized to `https://lichess.org/{id}`
       // so the source_game cache index hits across both URL shapes.
       expect(mockAttachmentInsertValues).toHaveBeenCalledTimes(1);

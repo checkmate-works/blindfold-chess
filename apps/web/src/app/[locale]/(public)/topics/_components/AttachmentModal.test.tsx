@@ -274,7 +274,7 @@ describe('AttachmentModal — Game tab radio split (#84: PGN + Lichess URL sub-m
   // sub-mode keeps its own buffer and runs its own client-side
   // whitelist. Both emit `mode = { kind: 'pgn', pgn: <raw value> }`
   // so the server's `detectAttachmentInput` re-runs and dispatches
-  // Lichess URLs into `resolveLichessAttachmentPgn` (Phase 13 path).
+  // Lichess URLs into `resolveLichessAttachmentPgn`.
   const LICHESS_GAME_URL = 'https://lichess.org/0zeJx5nICLsH';
   const LICHESS_EMBED_URL = 'https://lichess.org/embed/abcd1234';
   const LICHESS_EMBED_GAME_URL = 'https://lichess.org/embed/game/abcd1234';

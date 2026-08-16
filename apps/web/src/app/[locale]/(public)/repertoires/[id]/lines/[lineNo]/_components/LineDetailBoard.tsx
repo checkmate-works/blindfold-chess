@@ -261,7 +261,7 @@ export function LineDetailBoard({
         </div>
 
         {/* Only meaningful at the line's final position — a mid-line shared
-            run is Phase 2's indicator, not this one. Plain text links, since
+            run is a different indicator's job. Plain text links, since
             this is a note about the position rather than an action on it. */}
         {clampedPly === maxPly && maxPly >= 1 && continuations.length > 0 && (
           <div className="space-y-1 text-sm text-muted-foreground">

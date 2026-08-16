@@ -69,7 +69,7 @@ export function OperationLogModal({
   // did this game run under, and what changed" surface — open-by-default
   // would put too much detail in front of users who just popped it open
   // for a quick check. Per-move operation counts live next to each move
-  // in the MovesPanel (Phase 5b); the modal no longer carries that table.
+  // in the MovesPanel; the modal no longer carries that table.
   const [isInitialSettingsOpen, setIsInitialSettingsOpen] = useState(false);
   const [isChangeLogOpen, setIsChangeLogOpen] = useState(false);
 

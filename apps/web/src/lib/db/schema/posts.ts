@@ -448,7 +448,7 @@ export const postGamePgnAttachments = pgTable(
       'post_game_pgn_attachments_chk_source_url_required_for_external',
       sql`${table.source} = 'pgn' OR ${table.sourceUrl} IS NOT NULL`
     ),
-    // Phase H (M-3): even though `source_url` is audit-only and never
+    // Even though `source_url` is audit-only and never
     // rendered directly as an href, pin its scheme to `https://` at the
     // DB so that an accidental future render (e.g. a refactor that
     // forgets the rebuild-from-components rule, a debug page that
@@ -458,7 +458,7 @@ export const postGamePgnAttachments = pgTable(
       'post_game_pgn_attachments_chk_source_url_audit_https',
       sql`${table.sourceUrl} IS NULL OR ${table.sourceUrl} ~ '^https://'`
     ),
-    // (M-3) Defense-in-depth against PGN length spoofing: the cached
+    // Defense-in-depth against PGN length spoofing: the cached
     // `pgn_byte_length` column is also a CHECK input for the byte_length check,
     // so a writer that submits a low precomputed length together with an
     // oversized PGN body would otherwise bypass the size cap. This CHECK
@@ -543,7 +543,7 @@ export const postGameEmbedAttachments = pgTable(
       .notNull()
       .unique()
       .references(() => topicPosts.id, { onDelete: 'cascade' }),
-    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' (Phase 13: Lichess narrowed out)
+    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' — Lichess is narrowed out (#83)
     embedId: varchar('embed_id', { length: 64 }).notNull(),
     /**
      * @design Audit-only canonical embed URL. NEVER read into the rendered
@@ -861,8 +861,8 @@ export type NewPostFenAttachment = typeof postFenAttachments.$inferInsert;
  *
  * @design `title` / `thumbnail_url` are NULL in MVP (oEmbed deferred)
  *
- * Issue #75 M-6 defers oEmbed (which would populate title + CDN
- * thumbnail) until the SSRF defense pattern in `lichess.ts` is replicated
+ * oEmbed (which would populate title + CDN thumbnail) is deferred
+ * until the SSRF defense pattern in `lichess.ts` is replicated
  * for the YouTube oEmbed endpoint. The MVP renderer derives the thumbnail
  * URL from `provider_video_id` via the canonical YouTube template
  * (`img.youtube.com/vi/{id}/hqdefault.jpg`) and uses a localized

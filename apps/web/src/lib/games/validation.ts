@@ -28,7 +28,7 @@
  *
  * @design chess.com handling
  *
- * Per Phase F (C-2), a chess.com URL is no longer a hard reject — it
+ * A chess.com URL is no longer a hard reject — it
  * returns `chesscom_attribution` with the validated (platform, path)
  * pair from `parseChesscomAttribution`. The caller is responsible for
  * (a) requiring a PGN body alongside the URL, and (b) persisting the

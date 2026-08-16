@@ -22,7 +22,7 @@ function makeAttachment(overrides: Partial<AttachedVideoCardData> = {}): Attache
 }
 
 /**
- * Tester additions — boundary pins for `AttachedVideoCard` rendering.
+ * Boundary pins for `AttachedVideoCard` rendering.
  *
  * The Coder suite covers sandbox / allow / referrer / loading / fallback
  * title and the canonical embed-src reconstruction.

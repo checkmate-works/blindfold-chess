@@ -51,7 +51,7 @@ import { positions } from './positions';
  *
  * The `solution_line` column is kept as a read-only archive of the pre-migration
  * denormalized form. Newly inserted rows write `solutionMoves` only; `solutionLine`
- * stays NULL. Phase 3 will drop `solution_line` outright once we have confidence
+ * stays NULL. The column can be dropped outright once we have confidence
  * that no external tooling reads it.
  *
  * @design Rationale for SAN format

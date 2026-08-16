@@ -2,9 +2,9 @@ import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 /**
- * Phase B Tester suite — D8 #35〜#41 (DB CHECK + RLS).
- * (#42 application-layer exclusivity is tested via the Server Action
- * mock suite — see `createChunkPostWithEmbedAttachment.test.ts`.)
+ * DB CHECK + RLS pins for `post_game_embed_attachments`.
+ * (PGN/embed exclusivity is enforced in the Server Action, not by a
+ * constraint — see `createChunkPostWithEmbedAttachment.test.ts`.)
  *
  * Mirrors `post-game-attachments.integration.test.ts`. DB-bound tests
  * for the CHECK constraints and RLS policies on
@@ -165,8 +165,8 @@ afterAll(async () => {
 });
 
 describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () => {
-  // #35 — embed_id `/` rejected
-  it('#35 rejects an INSERT with embed_id containing `/` (chk_embed_id_format)', async (ctx) => {
+  // embed_id `/` rejected
+  it('rejects an INSERT with embed_id containing `/` (chk_embed_id_format)', async (ctx) => {
     const db = requireDb(ctx);
     await expect(
       db`
@@ -180,8 +180,8 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
     ).rejects.toThrow(/chk_embed_id_format/);
   });
 
-  // #36 — embed_provider 'youtube' rejected
-  it('#36 rejects an INSERT with embed_provider = "youtube" (chk_embed_provider_valid)', async (ctx) => {
+  // embed_provider 'youtube' rejected
+  it('rejects an INSERT with embed_provider = "youtube" (chk_embed_provider_valid)', async (ctx) => {
     const db = requireDb(ctx);
     await expect(
       db`
@@ -195,10 +195,10 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
     ).rejects.toThrow(/chk_embed_provider_valid/);
   });
 
-  // #36-lichess — Phase 13 (#83) retired the Lichess /embed iframe and
-  // narrowed the CHECK from IN ('chesscom', 'lichess') to IN ('chesscom').
+  // retiring the Lichess /embed iframe (#83) narrowed the
+  // CHECK from IN ('chesscom', 'lichess') to IN ('chesscom').
   // Regression guard: a Lichess row must never be insertable again.
-  it('#36-lichess rejects an INSERT with embed_provider = "lichess" (chk_embed_provider_valid)', async (ctx) => {
+  it('rejects an INSERT with embed_provider = "lichess" (chk_embed_provider_valid)', async (ctx) => {
     const db = requireDb(ctx);
     await expect(
       db`
@@ -212,8 +212,8 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
     ).rejects.toThrow(/chk_embed_provider_valid/);
   });
 
-  // #37 — http:// source_url rejected
-  it('#37 rejects an INSERT with source_url = "http://..." (chk_embed_source_url_https)', async (ctx) => {
+  // http:// source_url rejected
+  it('rejects an INSERT with source_url = "http://..." (chk_embed_source_url_https)', async (ctx) => {
     const db = requireDb(ctx);
     await expect(
       db`
@@ -228,8 +228,8 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
     ).rejects.toThrow(/chk_embed_source_url_https/);
   });
 
-  // #38 — attribution pair invariant (platform set, path NULL)
-  it('#38 rejects INSERT with attribution_platform = "chesscom" + attribution_path = NULL (chk_embed_attribution_pair)', async (ctx) => {
+  // attribution pair invariant (platform set, path NULL)
+  it('rejects INSERT with attribution_platform = "chesscom" + attribution_path = NULL (chk_embed_attribution_pair)', async (ctx) => {
     const db = requireDb(ctx);
     await expect(
       db`
@@ -350,8 +350,8 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
     return captured as T;
   }
 
-  // #39 — anonymous SELECT cannot see attachments under soft-deleted posts
-  it('#39 anonymous client cannot SELECT rows under a soft-deleted post', async (ctx) => {
+  // anonymous SELECT cannot see attachments under soft-deleted posts
+  it('anonymous client cannot SELECT rows under a soft-deleted post', async (ctx) => {
     const db = requireDb(ctx);
 
     // Pre-state: insert one embed row under secondPostId via service
@@ -394,8 +394,8 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
     }
   });
 
-  // #40 — non-author cannot INSERT for someone else's post
-  it('#40 a non-author user cannot INSERT into post_game_embed_attachments for someone else', async (ctx) => {
+  // non-author cannot INSERT for someone else's post
+  it('a non-author user cannot INSERT into post_game_embed_attachments for someone else', async (ctx) => {
     const db = requireDb(ctx);
 
     // Run the INSERT inside a transaction as the OTHER user. The RLS
@@ -432,11 +432,10 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
     expect(denied).toBe(true);
   });
 
-  // #41 — author CAN DELETE their embed row when the parent post is
-  //        NOT soft-deleted (positive control). Companion test below
-  //        (#41-asymmetry) pins the symmetric 0-rows behavior when the
-  //        parent IS soft-deleted.
-  it('#41 author CAN DELETE their embed row when their post is NOT soft-deleted (positive control)', async (ctx) => {
+  // The author CAN DELETE their embed row when the parent post is NOT
+  // soft-deleted (positive control). The companion test below pins the
+  // symmetric 0-rows behaviour when the parent IS soft-deleted.
+  it('author CAN DELETE their embed row when their post is NOT soft-deleted (positive control)', async (ctx) => {
     const db = requireDb(ctx);
 
     // Pre-state: owner inserts a row (post is non-soft-deleted).
@@ -467,14 +466,14 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
     }
   });
 
-  // #41-asymmetry — pins the actual (symmetric) behavior of DELETE under a
+  // pins the actual (symmetric) behavior of DELETE under a
   // soft-deleted post. The SELECT policy's `deleted_at IS NULL` clause hides
   // the row from row-fetch during DELETE (per Postgres docs: "Row Security
   // Policies"), so even the author sees 0 affected rows. ADR §2.3 has been
   // updated to match this reality. Regression guard: a future RLS change
   // that accidentally widens author-side SELECT under soft-deletes would
   // flip this test.
-  it('#41-asymmetry author DELETE under a soft-deleted post returns 0 rows (RLS SELECT policy gates DELETE row-fetch)', async (ctx) => {
+  it('author DELETE under a soft-deleted post returns 0 rows (RLS SELECT policy gates DELETE row-fetch)', async (ctx) => {
     const db = requireDb(ctx);
 
     // Pre-state: insert embed row for secondPostId (not soft-deleted yet).

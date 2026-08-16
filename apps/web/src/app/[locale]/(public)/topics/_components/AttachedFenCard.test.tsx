@@ -63,7 +63,7 @@ describe('AttachedFenCard', () => {
     expect(container.textContent).toContain(fen);
   });
 
-  // ─── Renderer pins (Tester Phase 1) ────────────────────────────────────
+  // ─── Renderer pins ────────────────────────────────────────────────────
 
   it('renders empty caption gracefully when caption is an empty string', () => {
     // The component branches on `attachment.caption &&`, so an empty

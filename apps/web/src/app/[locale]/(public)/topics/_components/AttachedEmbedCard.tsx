@@ -20,21 +20,20 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
  * The persisted `source_url` column is NEVER read into the rendered
  * `src` attribute — `embedId` is regex-validated at write time AND by
  * the DB CHECK, so reconstructing the URL from it makes the rendered
- * src provably safe regardless of what the row carries (D8 #33).
+ * src provably safe regardless of what the row carries.
  *
  * @design iframe sandbox is a string literal
  *
  * The `sandbox` attribute value is a STRING LITERAL per provider, not a
- * dynamically built expression. This is deliberate: the SecurityEngineer
- * Phase 1 baseline (D1) pinned the exact sandbox values, and the Tester
- * suite (#30/#31) verifies them by static-source equality. A future
- * change to these values is therefore a deliberate edit to the literal
- * here, with a corresponding test update.
+ * dynamically built expression, so the granted capabilities can be read
+ * off this file alone and cannot widen at runtime. `AttachedEmbedCard.test.tsx`
+ * asserts the literal by static-source equality, which makes any change
+ * to these values a deliberate edit here plus a matching test update.
  *
- * @design Phase 13 narrowing (#83)
+ * @design chess.com is the only provider rendered here (#83)
  *
  * Lichess /embed/{id} URLs were originally rendered as a Lichess
- * iframe alongside chess.com. Phase 13 retired that path: Lichess
+ * iframe alongside chess.com. That path is retired: Lichess
  * embed URLs are now routed through `createChunkPostWithAttachment`
  * and rendered by `AttachedGameCard` + `GameReplayModal`
  * (the self-hosted PGN replay UI). This component is therefore
@@ -45,7 +44,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
  */
 export type AttachedEmbedCardData = {
   id: string;
-  embedProvider: string; // 'chesscom' (Phase 13: Lichess narrowed out)
+  embedProvider: string; // 'chesscom' — Lichess is narrowed out (#83)
   embedId: string;
   attributionPlatform: string | null;
   attributionPath: string | null;
@@ -67,9 +66,9 @@ export function AttachedEmbedCard({ attachment }: Props) {
               bottom navigation bar (replay controls / fullscreen). The natural
               layout is therefore not square. The aspect ratio matches the
               chess.com Share → Embed default (`width="600" height="430"`,
-              i.e. 600:430 = 60:43). Verified during Phase 10 user acceptance
-              testing — `aspect-square` left a vertical gap below the embed at
-              all breakpoints. */}
+              i.e. 600:430 = 60:43). Verified against the live embed —
+              `aspect-square` left a vertical gap below it at all
+              breakpoints. */}
           <div className="aspect-[60/43] w-full">
             {/*
               sandbox token rationale (chess.com):
@@ -91,9 +90,9 @@ export function AttachedEmbedCard({ attachment }: Props) {
                   allow-scripts and allow-same-origin" warning (which
                   is about same-origin iframes that could clear their
                   own sandbox) does not apply.
-                  Phase B M-2 history note: the original SecurityEngineer
-                  baseline omitted allow-same-origin; live testing showed
-                  the embed cannot initialize without it.
+                  This token was omitted when the sandbox was first
+                  written; live testing showed the embed cannot
+                  initialize without it.
 
               The chess.com emboard is a static diagram with no
               "open in new tab" affordance, so neither allow-popups
@@ -113,8 +112,8 @@ export function AttachedEmbedCard({ attachment }: Props) {
     );
   }
 
-  // Unknown provider — render nothing. As of Phase 13 (#83), the DB
-  // CHECK constrains embed_provider to 'chesscom' only, so this branch
+  // Unknown provider — render nothing. The DB CHECK constrains
+  // embed_provider to 'chesscom' only (#83), so this branch
   // is unreachable in practice (Lichess embed URLs are routed to the
   // PGN attachment path and rendered by AttachedGameCard instead).
   // Surfacing nothing is the safest fallback for a drifted row.

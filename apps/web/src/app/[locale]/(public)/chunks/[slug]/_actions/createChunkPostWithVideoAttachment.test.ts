@@ -269,7 +269,7 @@ describe('createChunkPostWithVideoAttachment', () => {
     ).rejects.toThrow('boom');
   });
 
-  // ─── Hostile URL boundary pins (Tester Phase 1) ───────────────────────
+  // ─── Hostile URL boundary pins ────────────────────────────────────────
   // A subset of #75 SE's 28 cases re-targeted at the integrated action,
   // exercising every YouTubeUrlReason → error-key branch in
   // `reasonToErrorKey`. Lessons §10 / §12 / §16 / §18 apply.

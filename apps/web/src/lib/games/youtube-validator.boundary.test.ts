@@ -4,7 +4,7 @@ import type { ParseYouTubeUrlResult, YouTubeUrlReason } from './youtube-validato
 import { YOUTUBE_VIDEO_ID_RE, parseYouTubeUrl } from './youtube-validator';
 
 /**
- * Tester additions — boundary pins for `parseYouTubeUrl` and the shared
+ * Boundary pins for `parseYouTubeUrl` and the shared
  * id regex.
  *
  * The Coder suite covers the SE 28 hostile-input matrix. This file pins

@@ -144,7 +144,7 @@ describe('Modal — opt-in fullHeightOnMobile', () => {
   });
 });
 
-describe('Modal — opt-in keepMounted (Phase 8 Fix 5)', () => {
+describe('Modal — opt-in keepMounted', () => {
   it('default behavior: omitting keepMounted unmounts on close (regression baseline)', () => {
     const { rerender } = render(
       <Modal isOpen={true} onClose={vi.fn()}>
