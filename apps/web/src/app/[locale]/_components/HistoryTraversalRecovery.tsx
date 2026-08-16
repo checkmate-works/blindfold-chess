@@ -85,7 +85,10 @@ function hasNextInternalState(state: unknown): boolean {
  * instead — by definition no event fires for it. The watchdog requires the
  * same mismatch on two consecutive ticks so a mid-commit render never trips
  * it, and hash-only differences never count as a mismatch (fragment
- * traversals are the browser's business).
+ * traversals are the browser's business). Every mismatch check compares
+ * canonically-encoded queries — see {@link canonicalActualUrl}, without which
+ * a link whose query was built with `encodeURIComponent` reports a permanent
+ * false mismatch.
  */
 export function HistoryTraversalRecovery() {
   const router = useRouter();
@@ -115,6 +118,31 @@ export function HistoryTraversalRecovery() {
     let commitCheckTimer: ReturnType<typeof setTimeout> | undefined;
 
     const actualUrl = () => window.location.pathname + window.location.search;
+
+    /**
+     * The browser URL with its query re-serialised the way
+     * `useSearchParams().toString()` serialises it, so the two sides of every
+     * mismatch check speak the same encoding.
+     *
+     * `window.location.search` preserves whatever spelling the href that
+     * created the entry used, while `URLSearchParams.toString()` always emits
+     * application/x-www-form-urlencoded. A link built with
+     * `encodeURIComponent` — e.g. `games/new/position?fen=${...}` — therefore
+     * sits in the address bar as `?fen=…%20w%20-…` and reaches the router as
+     * `?fen=…+w+-…`: one query, two spellings, and a mismatch that never
+     * resolves, because the recovery `replace` re-uses the browser's spelling.
+     * Sentry BLINDFOLD-CHESS-5N was 117 such false recoveries fired every
+     * cooldown window on `/games/new/position`, all with `historyLength: 1`
+     * (no history entry to traverse to at all). Space is the common case;
+     * `~ ! ' ( ) *` also differ between the two encoders.
+     *
+     * Only the comparison is canonicalised — a genuine recovery still replaces
+     * to the browser's own URL, so a real traversal is not silently re-spelled.
+     */
+    const canonicalActualUrl = () => {
+      const search = new URLSearchParams(window.location.search).toString();
+      return search ? `${window.location.pathname}?${search}` : window.location.pathname;
+    };
 
     const diagnostics = () => {
       const navEntry = performance.getEntriesByType('navigation')[0] as
@@ -163,7 +191,7 @@ export function HistoryTraversalRecovery() {
       if (event.state === null) {
         // Same URL (ignoring hash): nothing to recover. Covers legacy
         // WebKit's load-time popstate and fragment-only traversals.
-        if (actualUrl() !== renderedUrlRef.current) {
+        if (canonicalActualUrl() !== renderedUrlRef.current) {
           recover('popstate with null history state recovered');
         }
         return;
@@ -174,7 +202,7 @@ export function HistoryTraversalRecovery() {
       clearTimeout(commitCheckTimer);
       const hadTree = hasNextInternalState(event.state);
       commitCheckTimer = setTimeout(() => {
-        if (actualUrl() !== renderedUrlRef.current) {
+        if (canonicalActualUrl() !== renderedUrlRef.current) {
           recover('popstate was not applied by the router', { popstateHadNextState: hadTree });
         }
       }, TRAVERSAL_COMMIT_GRACE_MS);
@@ -186,7 +214,7 @@ export function HistoryTraversalRecovery() {
       const idx = readGuardIndex(window.history.state);
       if (idx !== null) lastKnownGuardIndexRef.current = idx;
 
-      const url = actualUrl();
+      const url = canonicalActualUrl();
       if (url === renderedUrlRef.current) {
         pendingMismatchUrl = null;
         return;
