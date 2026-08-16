@@ -43,6 +43,43 @@ This project is a pnpm + Turborepo monorepo.
 
 Why: a single mixed barrel forces every Server Component that touches one helper to load the entire module graph of every other re-export. The directive on the leaf hook file is necessary but not sufficient — the boundary check fires on the unmarked barrel that statically imports the hook. The two-barrel split is the smallest structural change that makes the boundary unambiguous and enforceable in review. Reproduced 2026-04-25 as `useEffect into a React Server Component module` from the landing page Footer chain (`Footer → @/app/_components → BoardLayout → @blindfold-chess/features/common → use-persistent-settings.ts`).
 
+## Comments explain; external references only cite
+
+A comment must make its point without the reader opening anything else. The
+things a comment is tempted to point at all decay faster than the code they
+annotate: Sentry issues get resolved, merged, or age out of retention; a GitHub
+issue is closed and its context collapses to a title; `SPEC*.md` is gitignored
+and therefore never existed for anyone but its author. An explanation that
+lives at the far end of one of those links goes silent when the link does, and
+it goes silent invisibly — the comment still _reads_ fine.
+
+What matters is the job the reference is doing:
+
+- **Citation — allowed, and worth having.** The comment explains the mechanism
+  in full, and the reference is appended as the source for the one claim code
+  cannot re-derive: that this actually happened in production, on which
+  browsers, how often. Put it after the explanation is complete, ideally in its
+  own trailing sentence or paragraph. Never open with it — a leading ID makes
+  the tracker the subject of the sentence. The model to copy is the
+  `unhandledrejection` filter in `apps/web/src/instrumentation-client.ts`.
+- **Forward pointer — allowed.** `Tracking: GitHub issue #89` next to a
+  deliberately-weakened check names where the remaining work lives. Nothing is
+  being explained, so nothing is lost if the issue disappears — the pointer
+  _is_ the content.
+- **Delegation — never.** "See BLINDFOLD-CHESS-5N for why", "see
+  specs/foo/SPEC2.md". Move the reasoning into the comment. If it is too long
+  to sit inline, it belongs in TSDoc on the declaration it constrains — still
+  in this repo, still versioned with the code it describes.
+
+The same test applies to names. A `describe('Phase 13 (#83) …')` block or a
+constant named after a ticket means nothing to a reader without the tracker
+open; name it for the behaviour and append the reference if it is worth citing.
+
+Referencing a spec file is the one case that is never a citation either: it is
+already unreachable for every other reader. See "Specs are scaffolding, not
+artifacts" in `apps/web/CLAUDE.md` for what to do with a spec's contents
+instead.
+
 ## Development
 
 - **Package manager**: pnpm (v10)
