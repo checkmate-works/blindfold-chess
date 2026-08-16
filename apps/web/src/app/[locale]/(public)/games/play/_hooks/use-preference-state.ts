@@ -106,9 +106,9 @@ export function usePreferenceState({
    * no-op and returns `false`.
    *
    * Type-safe via a generic K — `from`/`to` must both be of the value
-   * type for `key`. Pre-Phase-1 games that lack an `initialPerGamePrefs`
+   * type for `key`. Older games that lack an `initialPerGamePrefs`
    * snapshot cannot be edited (no base to layer on); the call is a no-op
-   * in that case and the Phase 2b UI gates the entry point accordingly.
+   * in that case and the UI gates the entry point accordingly.
    *
    * @param atMoveIndex `moves.length` at the time of the change.
    * @returns `true` when an entry was appended (caller should mark a

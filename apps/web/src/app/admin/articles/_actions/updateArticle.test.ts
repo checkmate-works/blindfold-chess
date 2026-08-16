@@ -334,7 +334,7 @@ describe('updateArticle', () => {
     expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
-  // --- Edge case tests added by Tester ---
+  // --- Edge cases ---
 
   it('should succeed when slug is exactly 255 characters', async () => {
     setupAdminWithArticle();

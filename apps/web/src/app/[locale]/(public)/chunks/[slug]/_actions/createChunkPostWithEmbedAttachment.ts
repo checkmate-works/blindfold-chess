@@ -50,13 +50,13 @@ function embedErrorKey(reason: string): string {
  * kind. Differences vs the PGN flow:
  *   1. Input: `embedProvider` + `embedSourceUrl` from the form. The raw
  *      `embedSourceUrl` is re-parsed server-side; we NEVER trust a
- *      client-passed `embedId`. (SecurityEngineer baseline D8 #46.)
+ *      client-passed `embedId`.
  *   2. After validation, the canonical `source_url` is rebuilt from
  *      `(provider, embedId)` and persisted; the raw user input is
  *      discarded so a hostile-but-shaped-correct paste cannot land in
  *      the DB.
- *   3. Attribution: NULL/NULL per Q1 (emboard URL only, no separate
- *      attribution input in Phase B).
+ *   3. Attribution: NULL/NULL — the emboard URL is the only input and
+ *      there is no separate attribution field to populate from.
  *   4. PGN/embed exclusivity: a defensive query against
  *      `post_game_pgn_attachments` ensures we never associate an embed
  *      with a post that already has a PGN attachment. The post is
@@ -116,7 +116,6 @@ export async function createChunkPostWithEmbedAttachment(
 
   // Server-side re-validation. We re-parse the raw URL here regardless
   // of what the client claimed — never trust a client-passed embed id.
-  // (SecurityEngineer baseline D8 #46.)
   const parsed = parseChesscomEmboardUrl(embedSourceUrl);
   if (!parsed.ok) {
     return { error: embedErrorKey(parsed.reason) };
@@ -138,7 +137,7 @@ export async function createChunkPostWithEmbedAttachment(
   // unambiguous.
   const canonicalSourceUrl = `https://www.chess.com/emboard?id=${embedId}`;
 
-  // Attribution columns. chess.com is NULL/NULL per Q1.
+  // Attribution columns. chess.com carries no attribution input.
   const attributionPlatform: string | null = null;
   const attributionPath: string | null = null;
 

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createChunkPostWithEmbedAttachment } from './createChunkPostWithEmbedAttachment';
 
 /**
- * Phase B Tester suite — D8 #45 / #46.
+ * Server-side validation pins for the chess.com embed action.
  *
  * Mocks mirror the createChunkPostWithAttachment.test.ts pattern. We
  * mock the data / auth boundary and the rate-limit so we can drive the
@@ -172,7 +172,7 @@ function makeFormData(opts: {
   return fd;
 }
 
-describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () => {
+describe('createChunkPostWithEmbedAttachment', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
@@ -204,8 +204,8 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
     });
   });
 
-  // #45 — DB CHECK passes but per-provider regex fails
-  describe('#45 per-provider regex stricter than DB CHECK', () => {
+  // DB CHECK passes but per-provider regex fails
+  describe('per-provider regex stricter than DB CHECK', () => {
     it('rejects a chess.com embedSourceUrl whose id is alphabetic (DB CHECK allows letters, per-provider regex does not)', async () => {
       // chess.com per-provider regex is `^[0-9]{1,15}$` — letters are
       // forbidden. The DB CHECK `^[A-Za-z0-9_-]{1,64}$` allows them.
@@ -225,9 +225,9 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
     });
   });
 
-  // #46 — canonical source_url reconstruction; client-passed embedId is
-  //       ignored entirely; raw user input is discarded.
-  describe('#46 canonical source_url reconstruction', () => {
+  // The canonical source_url is reconstructed server-side: a
+  // client-passed embedId is ignored and the raw user input discarded.
+  describe('canonical source_url reconstruction', () => {
     it('persists a chess.com embed with NULL attribution columns and the canonical source_url', async () => {
       const userInput = 'https://www.chess.com/emboard?id=98765&irrelevant=track';
       await expect(
@@ -252,7 +252,8 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
       expect(inserted.embedProvider).toBe('chesscom');
       expect(inserted.embedId).toBe('98765');
 
-      // chess.com path: NULL attribution per Q1.
+      // chess.com embeds carry no attribution: the emboard URL is the
+      // only input, and there is no separate attribution field.
       expect(inserted.attributionPlatform).toBeNull();
       expect(inserted.attributionPath).toBeNull();
     });
@@ -261,7 +262,7 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
       // The form pumps a hostile `embedId='hostileX'` field alongside
       // a legitimate chess.com embedSourceUrl. The Server Action MUST
       // re-parse the URL and discard the hostile id — we never trust
-      // a client-passed id (SecurityEngineer baseline D8 #46).
+      // a client-passed id.
       const userInput = 'https://www.chess.com/emboard?id=98765';
       await expect(
         createChunkPostWithEmbedAttachment(
@@ -309,9 +310,9 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
     });
   });
 
-  // #45 cross-check: a happy-path chess.com insert succeeds (sanity check
-  //                   that the validation tests above are testing real
-  //                   rejection, not generic unhappy-path behavior).
+  // Cross-check: a happy-path chess.com insert succeeds, so the
+  // rejection tests above are pinning real validation rather than
+  // generic unhappy-path behaviour.
   it('happy path: a valid chess.com embed URL passes both DB-CHECK-shape and per-provider regex', async () => {
     await expect(
       createChunkPostWithEmbedAttachment(
@@ -380,7 +381,7 @@ describe('createChunkPostWithEmbedAttachment — lichess narrowing', () => {
 });
 
 /**
- * Phase B Tester suite — D8 #42 application-layer exclusivity invariant.
+ * The PGN/embed exclusivity invariant.
  *
  * The PGN/embed exclusivity invariant is enforced by the Server Action's
  * `afterInsert` defensive check, NOT by a DB constraint. This test pumps
@@ -388,7 +389,7 @@ describe('createChunkPostWithEmbedAttachment — lichess narrowing', () => {
  * the action throws (which surfaces to the user as a transaction
  * rollback / error path).
  */
-describe('createChunkPostWithEmbedAttachment — application-layer exclusivity (#42)', () => {
+describe('createChunkPostWithEmbedAttachment — application-layer exclusivity', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
@@ -399,7 +400,7 @@ describe('createChunkPostWithEmbedAttachment — application-layer exclusivity (
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
-  it('#42 throws when a PGN attachment already exists for the same post (exclusivity invariant)', async () => {
+  it('throws when a PGN attachment already exists for the same post (exclusivity invariant)', async () => {
     // Simulate a row already present in post_game_pgn_attachments for
     // the new postId — the defensive check should detect it and throw
     // before the embed row is inserted.

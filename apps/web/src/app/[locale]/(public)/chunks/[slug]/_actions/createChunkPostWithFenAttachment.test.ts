@@ -310,7 +310,7 @@ describe('createChunkPostWithFenAttachment', () => {
     ).rejects.toThrow('unrelated');
   });
 
-  // ─── Hostile input boundary pins (Tester Phase 1) ─────────────────────
+  // ─── Hostile input boundary pins ──────────────────────────────────────
   // Lessons §10 (trim divergence) / §12 (in-band invisible Unicode) / §16
   // (PG SQLSTATE cause walk). Invisible chars are written via escape
   // sequences (Lessons §18 — `no-irregular-whitespace`-friendly and

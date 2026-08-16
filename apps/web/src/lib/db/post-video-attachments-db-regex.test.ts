@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { parseYouTubeUrl } from '@/lib/games/youtube-validator';
 
 /**
- * Tester additions — DB CHECK regex pins for `post_video_attachments`.
+ * DB CHECK regex pins for `post_video_attachments`.
  *
  * The Coder suite already pins the `provider_video_id` CHECK regex
  * matches `YOUTUBE_VIDEO_ID_RE.source` byte-for-byte (in

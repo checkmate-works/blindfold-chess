@@ -19,8 +19,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * entry to `SUPPORTED_LOCALES` without updating this map is a compile-time
  * error. There is intentionally no `?? 'en-US'` runtime fallback — silently
  * defaulting a missing locale would emit incorrect `inLanguage` metadata to
- * Google's crawler without any warning, which is precisely what Phase 2 of
- * the i18n rollout set out to eliminate.
+ * Google's crawler without any warning.
  */
 export const LANGUAGE_TAGS: Record<Locale, string> = {
   en: 'en-US',

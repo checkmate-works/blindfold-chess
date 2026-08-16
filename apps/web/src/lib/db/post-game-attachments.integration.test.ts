@@ -142,7 +142,7 @@ afterAll(async () => {
 const VALID_PGN = '1. e4 e5 2. Nf3 Nc6';
 
 describe('post_game_pgn_attachments integration', () => {
-  describe('chk_pgn_byte_length_matches_octet_length (M-3)', () => {
+  describe('chk_pgn_byte_length_matches_octet_length', () => {
     it('rejects an INSERT where pgn_byte_length disagrees with octet_length(pgn)', async (ctx) => {
       const db = requireDb(ctx);
       // The CHECK pins the precomputed value to the actual byte
@@ -186,7 +186,7 @@ describe('post_game_pgn_attachments integration', () => {
     });
   });
 
-  describe('chk_attribution_pair (C-2)', () => {
+  describe('chk_attribution_pair', () => {
     it('rejects an INSERT with attribution_platform set but attribution_path NULL', async (ctx) => {
       const db = requireDb(ctx);
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
@@ -239,7 +239,7 @@ describe('post_game_pgn_attachments integration', () => {
     });
   });
 
-  describe('chk_source_url_audit_https (Phase H M-3)', () => {
+  describe('chk_source_url_audit_https', () => {
     // `source_url` is documented as audit-only — the renderer never
     // reads it back as an href (see AttachedGameCard.tsx + the
     // @security TSDoc on the column). The CHECK below is the last

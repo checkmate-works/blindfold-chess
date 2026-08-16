@@ -283,7 +283,7 @@ describe('toggleLike (position-memory)', () => {
     });
   });
 
-  describe('polymorphic targetType filtering (Phase B safety net)', () => {
+  describe('polymorphic targetType filtering (safety net)', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);

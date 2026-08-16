@@ -326,7 +326,7 @@ describe('getAttachmentsForPosts — 5-kind union', () => {
     expect(entry.data.map((d) => d.displayOrder)).toEqual([0, 1, 2]);
   });
 
-  // ─── Boundary pins (Tester Phase 1) ───────────────────────────────────
+  // ─── Boundary pins ────────────────────────────────────────────────────
   // Pairwise conflict pins not directly covered by the 5-way preferring
   // case + cardinality boundary pins for the image branch + an empty-row
   // sanity pin for posts with no attachments at all.

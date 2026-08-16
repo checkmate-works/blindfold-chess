@@ -349,7 +349,7 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(queryByText('card.collapseButton')).toBeNull();
   });
 
-  // ─── Phase I: defense-in-depth — hostile attribution_path render ───
+  // ─── Defense-in-depth: hostile attribution_path render ───
   //
   // Both `parseChesscomAttribution` (write-time) and the
   // `chk_attribution_path_format` DB CHECK pin the path to

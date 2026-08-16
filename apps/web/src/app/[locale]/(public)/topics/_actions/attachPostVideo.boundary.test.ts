@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { attachPostVideo } from './attachPostVideo';
 
 /**
- * Tester additions — boundary / SQLSTATE pins for `attachPostVideo`.
+ * Boundary / SQLSTATE pins for `attachPostVideo`.
  *
  * The Coder suite covers:
  *   - happy path

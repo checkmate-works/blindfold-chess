@@ -22,11 +22,11 @@ function makeAttachment(overrides: Partial<AttachedVideoCardData> = {}): Attache
 }
 
 /**
- * Tester suite for AttachedVideoCard — pins the SecurityEngineer
- * judgement for issue #75 (sandbox / allow / referrer / loading) and
- * the renderer-rebuilt-src invariant.
+ * Security pins for AttachedVideoCard: the iframe's sandbox / allow /
+ * referrer / loading attributes, and the invariant that `src` is rebuilt
+ * by the renderer rather than read from the row.
  */
-describe('AttachedVideoCard — iframe rendering (issue #75)', () => {
+describe('AttachedVideoCard — iframe rendering', () => {
   it('renders an iframe for a YouTube attachment', () => {
     const { container } = render(
       <AttachedVideoCard attachment={makeAttachment()} fallbackTitle={FALLBACK_TITLE} />
@@ -114,7 +114,7 @@ describe('AttachedVideoCard — iframe rendering (issue #75)', () => {
     );
     const iframe = container.querySelector('iframe');
     // The renderer derives the thumbnail URL server-side from
-    // providerVideoId (oEmbed deferred — see issue #75 M-6). It is
+    // providerVideoId (oEmbed is deferred — see issue #75). It is
     // exposed as a data attribute for audit visibility.
     expect(iframe?.getAttribute('data-thumbnail')).toBe(
       `https://img.youtube.com/vi/${VALID_ID}/hqdefault.jpg`

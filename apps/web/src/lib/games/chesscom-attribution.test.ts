@@ -196,7 +196,7 @@ describe('parseChesscomAttribution', () => {
     });
   });
 
-  // ─── Phase I: WHATWG URL parser quirks pinned as regressions ───
+  // ─── WHATWG URL parser quirks pinned as regressions ───
   //
   // `parseChesscomAttribution` outsources protocol / hostname / pathname
   // extraction to `new URL(...)`. The parser performs several silent

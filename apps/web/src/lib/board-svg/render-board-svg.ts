@@ -284,7 +284,7 @@ function badgeMarkup(kind: 'peek' | 'undo', size: number): string {
 /**
  * Render a FEN position to a raw SVG string. React-free, DOM-free, chess.js-
  * free pure function — safe to feed directly into `next/og`'s `ImageResponse`
- * (Phase 1) and sharp's rasterizer (Phase 2 GIF export). Deliberately emits no
+ * and into sharp's rasterizer for GIF export. Deliberately emits no
  * `<text>` elements: the Vercel lambda has no fonts installed, so any text
  * node would render as tofu.
  */

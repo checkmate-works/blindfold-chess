@@ -6,8 +6,8 @@ import ja from './ja.json';
 import ptBR from './pt-BR.json';
 
 /**
- * Tester additions — focused parity / completeness pin for
- * `postVideoAttachment.error.*` (issue #75).
+ * Focused parity / completeness pin for `postVideoAttachment.error.*`
+ * (issue #75).
  *
  * The repo-wide `parity.test.ts` already enforces that every locale
  * carries the same key set as `en` (and tracks deferred drift via a

@@ -9,7 +9,7 @@ import { toggleLikeBase } from './toggleLike';
 // Spy on drizzle-orm's `eq` so tests can assert that DELETE/SELECT filter
 // by `likes.targetType = 'topic_post'`. This guards against future regressions
 // where omitting the targetType filter would cross-delete other polymorphic
-// like rows (e.g. 'position') once Phase B lands.
+// like rows (e.g. 'position').
 // Note: vi.mock is hoisted to the top of the file by Vitest, so it applies
 // before the `eq` import above is resolved — the imported `eq` is the spied
 // version returned from this mock factory.
@@ -292,7 +292,7 @@ describe('toggleLikeBase', () => {
     });
   });
 
-  describe('polymorphic targetType filtering (Phase A safety net)', () => {
+  describe('polymorphic targetType filtering (safety net)', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);

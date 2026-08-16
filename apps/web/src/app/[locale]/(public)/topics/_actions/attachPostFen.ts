@@ -60,8 +60,8 @@ export async function attachPostFenFromForm(
  * @design Why a standalone action (not an `afterInsert` hook)
  *
  * The caller flow is "user attaches a FEN to an existing post" rather than
- * "user creates a post with an attached FEN". UI for this is deferred per
- * issue #74 Q2; this Server Action exists so the insert path is callable
+ * "user creates a post with an attached FEN". The UI for it is deferred
+ * (issue #74); this Server Action exists so the insert path is callable
  * and tested. When the UI lands, it can call this directly, OR a future
  * combined `createChunkPostWithFenAttachment` can mirror the PGN flow and
  * call into the same validation pipeline via a shared helper.

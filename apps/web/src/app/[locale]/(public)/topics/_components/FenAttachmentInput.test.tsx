@@ -128,7 +128,7 @@ describe('FenAttachmentInput', () => {
   });
 });
 
-describe('FenAttachmentInput — onValidationStatusChange (Phase 8 Fix 4)', () => {
+describe('FenAttachmentInput — onValidationStatusChange', () => {
   function setupWithStatus() {
     const onValidationStatusChange = vi.fn<(status: ValidationStatus) => void>();
     const result = render(

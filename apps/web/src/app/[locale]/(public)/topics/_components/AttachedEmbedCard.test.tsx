@@ -25,12 +25,14 @@ function makeAttachment(overrides: Partial<AttachedEmbedCardData> = {}): Attache
 }
 
 /**
- * Phase B Tester suite — D8 #30 〜 #34 + #47.
+ * Security pins for the embed iframe.
  *
- * These tests pin the SecurityEngineer Phase 1 baseline (D1) for the iframe
- * `sandbox` attribute, the `referrerpolicy` / `loading` defaults (D2),
- * the renderer-rebuilt `src` invariant (D7), and the
- * static-string `title` attribute used for a11y (D8 #47).
+ * These tests pin the four properties that keep a third-party iframe from
+ * becoming an injection point: the exact `sandbox` token set, the
+ * `referrerpolicy` / `loading` defaults, the invariant that `src` is rebuilt
+ * by the renderer rather than read from the row, and the static per-provider
+ * `title` used for a11y. Each is a literal in `AttachedEmbedCard.tsx`, so
+ * widening any of them has to be a deliberate edit here too.
  *
  * `post_game_embed_attachments.embed_provider` is narrowed to
  * `'chesscom'` only (#83); the corresponding Lichess-iframe assertions
@@ -39,26 +41,25 @@ function makeAttachment(overrides: Partial<AttachedEmbedCardData> = {}): Attache
  * that path lives in createChunkPostWithAttachment.test.ts and the
  * existing AttachedGameCard suite.
  */
-describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)', () => {
-  // #30 — chess.com sandbox literal
-  it('#30 chess.com renders an iframe with sandbox="allow-scripts allow-same-origin" exactly (string-equality)', () => {
+describe('AttachedEmbedCard — iframe rendering', () => {
+  // chess.com sandbox literal
+  it('chess.com renders an iframe with sandbox="allow-scripts allow-same-origin" exactly (string-equality)', () => {
     const att = makeAttachment();
     const { container } = render(<AttachedEmbedCard attachment={att} />);
     const iframe = container.querySelector('iframe');
     expect(iframe).not.toBeNull();
-    // Exact string-equality, not contains-check. The SecurityEngineer
-    // baseline (D1) pins this literal — anything broader is a regression.
-    // fix-pass #9 (Phase 9): allow-same-origin added — chess.com's Vue +
-    // pinia bootloader unconditionally reads localStorage and fetches
-    // its own /manifest.json, both of which fail as null-origin.
+    // Exact string-equality, not contains-check: anything broader than
+    // this literal is a regression. allow-same-origin is here because
+    // chess.com's Vue + pinia bootloader unconditionally reads
+    // localStorage and fetches its own /manifest.json, both of which
+    // fail as null-origin.
     expect(iframe?.getAttribute('sandbox')).toBe('allow-scripts allow-same-origin');
   });
 
-  // #30b — regression-prevention: allow-same-origin is present (Phase 9
-  //          fix). Token-membership check complements the strict-equality
-  //          test above by making the intent of *this specific token*
-  //          explicit.
-  it('#30b chess.com sandbox includes allow-same-origin (Phase 9 fix-pass #9)', () => {
+  // Regression-prevention: allow-same-origin is present. This
+  // token-membership check complements the strict-equality test above by
+  // making the intent of *this specific token* explicit.
+  it('chess.com sandbox includes allow-same-origin', () => {
     const att = makeAttachment();
     const { container } = render(<AttachedEmbedCard attachment={att} />);
     const iframe = container.querySelector('iframe');
@@ -67,11 +68,11 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     expect(tokens).toContain('allow-same-origin');
   });
 
-  // #30c — regression-prevention: tokens that were never on the
-  //          allowlist must NOT silently appear. allow-top-navigation
-  //          / allow-presentation / allow-forms / allow-modals etc.
-  //          would meaningfully widen the sandbox; pin their absence.
-  it('#30c chess.com sandbox does NOT include unrelated dangerous tokens', () => {
+  // Regression-prevention: tokens that were never on the allowlist must
+  // NOT silently appear. allow-top-navigation / allow-presentation /
+  // allow-forms / allow-modals etc. would meaningfully widen the
+  // sandbox; pin their absence.
+  it('chess.com sandbox does NOT include unrelated dangerous tokens', () => {
     const att = makeAttachment();
     const { container } = render(<AttachedEmbedCard attachment={att} />);
     const iframe = container.querySelector('iframe');
@@ -88,8 +89,8 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     expect(tokens).not.toContain('allow-popups-to-escape-sandbox');
   });
 
-  // #32 — referrerpolicy + loading
-  it('#32 chess.com iframe renders with referrerpolicy="no-referrer" and loading="lazy"', () => {
+  // referrerpolicy + loading
+  it('chess.com iframe renders with referrerpolicy="no-referrer" and loading="lazy"', () => {
     const att = makeAttachment({ embedId: '99999' });
     const { container } = render(<AttachedEmbedCard attachment={att} />);
     const iframe = container.querySelector('iframe');
@@ -100,9 +101,9 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     expect(iframe?.getAttribute('loading')).toBe('lazy');
   });
 
-  // #33 — src is reconstructed from (provider, embedId), NOT from a
-  //       persisted source_url field
-  it('#33 chess.com iframe src is rebuilt from (provider, embedId), NOT a persisted hostile URL', () => {
+  // src is reconstructed from (provider, embedId), NOT from a persisted
+  // source_url field.
+  it('chess.com iframe src is rebuilt from (provider, embedId), NOT a persisted hostile URL', () => {
     const att: AttachedEmbedCardData = {
       id: 'embed-att-cc',
       embedProvider: 'chesscom',
@@ -118,8 +119,8 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     expect(src).not.toContain('attacker');
   });
 
-  // #34 — unsafe characters in embed_id
-  it('#34 unsafe-character embed_id passes through to the rebuilt src as-is (last-line-of-defense documentation)', () => {
+  // unsafe characters in embed_id
+  it('unsafe-character embed_id passes through to the rebuilt src as-is (last-line-of-defense documentation)', () => {
     // The DB CHECK `^[A-Za-z0-9_-]{1,64}$` and the parser's per-provider
     // regex would both reject this input upstream. The renderer is the
     // last line of defense, but it does NOT itself perform character
@@ -158,8 +159,8 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     expect(container.querySelector('script')).toBeNull();
   });
 
-  // #47 — title is a static per-provider string, NOT user-controlled
-  it('#47 chess.com iframe title is the static literal "Chess.com diagram embed"', () => {
+  // title is a static per-provider string, NOT user-controlled
+  it('chess.com iframe title is the static literal "Chess.com diagram embed"', () => {
     const att = makeAttachment();
     const { container } = render(<AttachedEmbedCard attachment={att} />);
     const iframe = container.querySelector('iframe');
@@ -172,7 +173,7 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     expect(title).toBe('Chess.com diagram embed');
   });
 
-  it('#47 user-controlled fields cannot affect the iframe title', () => {
+  it('user-controlled fields cannot affect the iframe title', () => {
     // Pump hostile-looking values into every user-controlled column —
     // the title must remain the static per-provider literal. This
     // protects against a future refactor that accidentally derives the

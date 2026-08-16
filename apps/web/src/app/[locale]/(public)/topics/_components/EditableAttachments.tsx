@@ -19,7 +19,7 @@ type Props = {
    * "Add attachment" affordance whenever the post has no current
    * attachment — clicking it opens `AttachmentModal` and routes the
    * selected kind to the matching action. Omitting both keeps the
-   * component remove-only (Phase 2A contract).
+   * component remove-only.
    */
   attachPgnAction?: AttachAction;
   attachFenAction?: AttachAction;

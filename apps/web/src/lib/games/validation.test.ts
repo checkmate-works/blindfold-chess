@@ -133,7 +133,7 @@ describe('detectAttachmentInput', () => {
     expect(r.kind).toBe('unknown');
   });
 
-  // ─── Phase I: chess.com URL + body shape regressions ───
+  // ─── chess.com URL + body shape regressions ───
   it('treats a chess.com URL followed by many blank lines as URL-only (chesscom_attribution without pgn)', () => {
     // The detector splits on `\r?\n`, then asks "is anything after the
     // URL line non-empty?". Many blank lines after the URL must NOT
