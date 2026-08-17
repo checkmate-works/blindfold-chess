@@ -16,6 +16,8 @@ import {
 import type { ActiveField } from "../../../../features/diagonal-quiz/hooks";
 import { spacing } from "../../../../theme";
 import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
+import { parseIntParam } from "../../../../lib/route-params";
+import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function DiagonalQuizSession() {
   const router = useRouter();
@@ -23,20 +25,13 @@ export default function DiagonalQuizSession() {
     timeLimit: string;
   }>();
 
-  const duration = parseInt(params.timeLimit || "60", 10);
+  const duration = parseIntParam(params.timeLimit, { min: 1, fallback: 60 });
 
   const handleComplete = useCallback(
     (result: DiagonalQuizResult) => {
       router.replace({
         pathname: "/(tabs)/practice/diagonal-quiz/result",
-        params: {
-          correctAnswers: result.correctAnswers.toString(),
-          incorrectAnswers: result.incorrectAnswers.toString(),
-          totalQuestions: result.totalQuestions.toString(),
-          accuracy: result.accuracy.toString(),
-          timeTaken: result.timeTaken.toString(),
-          averageTime: result.averageTime.toString(),
-        },
+        params: serializePracticeStatsParams(result),
       });
     },
     [router],
