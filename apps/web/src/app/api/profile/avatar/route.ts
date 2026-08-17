@@ -6,12 +6,10 @@ import sharp from 'sharp';
 import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { db, profiles } from '@/lib/db';
 import { parseImageUpload } from '@/lib/images/parse-upload';
+import { ALLOWED_IMAGE_MIME_TYPES, AVATAR_MAX_FILE_SIZE } from '@/lib/images/policy';
 import { POST_IMAGES_MAX_MEGAPIXELS } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
-
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
 /**
  * Pre-resize dimensions for stored avatars. 256×256 covers retina up to a
@@ -36,8 +34,8 @@ export async function POST(request: Request) {
   // with the admin image endpoints so the avatar path cannot quietly lose a
   // step; only the allow-list and cap are ours.
   const upload = await parseImageUpload(request, {
-    allowedMimeTypes: ALLOWED_TYPES,
-    maxFileSize: MAX_SIZE,
+    allowedMimeTypes: ALLOWED_IMAGE_MIME_TYPES,
+    maxFileSize: AVATAR_MAX_FILE_SIZE,
   });
   if (upload.error) {
     return upload.error;

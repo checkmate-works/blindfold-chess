@@ -4,10 +4,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Editor } from '@tiptap/core';
 
-import { IMAGE_CLASS } from '../_lib/constants';
+import {
+  ADMIN_IMAGE_MAX_FILE_SIZE,
+  ALLOWED_IMAGE_MIME_TYPES,
+  isAllowedImageMimeType,
+} from '@/lib/images/policy';
 
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+import { IMAGE_CLASS } from '../_lib/constants';
 
 type UseImageUploadOptions = {
   editor: Editor | null;
@@ -46,7 +49,7 @@ export function useImageUpload({ editor, articleId, onImageUploadError }: UseIma
     async (file: File) => {
       if (!articleId || !imageUploadEnabled) return;
 
-      if (file.size > MAX_FILE_SIZE) {
+      if (file.size > ADMIN_IMAGE_MAX_FILE_SIZE) {
         onImageUploadError?.('ファイルサイズが大きすぎます（最大5MB）');
         return;
       }
@@ -102,7 +105,7 @@ export function useImageUpload({ editor, articleId, onImageUploadError }: UseIma
     (files: FileList | File[]) => {
       const fileArray = Array.from(files);
       for (const file of fileArray) {
-        if (ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+        if (isAllowedImageMimeType(file.type)) {
           uploadImage(file);
           break; // Upload one at a time
         }
@@ -116,7 +119,7 @@ export function useImageUpload({ editor, articleId, onImageUploadError }: UseIma
     isUploadingImage,
     imageUploadEnabled,
     handleFiles,
-    acceptedImageTypes: ACCEPTED_IMAGE_TYPES,
+    acceptedImageTypes: ALLOWED_IMAGE_MIME_TYPES,
   };
 }
 

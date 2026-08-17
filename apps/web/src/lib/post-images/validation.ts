@@ -15,6 +15,12 @@
  * when it did exist twice the admin copy silently drifted weaker. See that
  * module's TSDoc.
  *
+ * The same distinction applies to the accepted formats and the extension they
+ * are stored under: those are facts about images, not decisions this surface
+ * makes, so they come from `@/lib/images/policy` — which is also where the
+ * caps live, one named constant per surface. What this module owns is the
+ * choice of WHICH cap applies here, plus the storage-path rules below.
+ *
  * @design Module location
  *
  * Lives under `src/lib/post-images/` (alongside the Sharp helpers and the
@@ -24,14 +30,20 @@
  * for any external consumers that still reach into the API folder, but
  * the source of truth is THIS file.
  */
+import {
+  ALLOWED_IMAGE_MIME_TYPES,
+  IMAGE_MIME_TO_EXTENSION,
+  type ImageMimeType,
+  POST_IMAGE_MAX_FILE_SIZE,
+} from '@/lib/images/policy';
 
 export const POST_IMAGES_BUCKET = 'post-images';
 
-export const POST_IMAGES_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const POST_IMAGES_ALLOWED_MIME_TYPES = ALLOWED_IMAGE_MIME_TYPES;
 
-export type PostImageMimeType = (typeof POST_IMAGES_ALLOWED_MIME_TYPES)[number];
+export type PostImageMimeType = ImageMimeType;
 
-export const POST_IMAGES_MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+export const POST_IMAGES_MAX_FILE_SIZE = POST_IMAGE_MAX_FILE_SIZE;
 
 /** Pixel cap (W*H) — decompression-bomb defense. Mirrors the DB CHECK. */
 export const POST_IMAGES_MAX_MEGAPIXELS = 50_000_000;
@@ -39,11 +51,7 @@ export const POST_IMAGES_MAX_MEGAPIXELS = 50_000_000;
 /** Per-post cap. Mirrors the trigger constant `MAX_IMAGES_PER_POST`. */
 export const MAX_IMAGES_PER_POST = 3;
 
-export const POST_IMAGES_MIME_TO_EXTENSION: Record<PostImageMimeType, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};
+export const POST_IMAGES_MIME_TO_EXTENSION = IMAGE_MIME_TO_EXTENSION;
 
 /**
  * Storage path layout: `${userId}/${postId}/${randomUuid}.${ext}`.

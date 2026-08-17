@@ -4,6 +4,8 @@ import { useRef } from 'react';
 
 import { EditorContent, useEditor } from '@tiptap/react';
 
+import { isAllowedImageMimeType } from '@/lib/images/policy';
+
 import { useImageUpload } from '../_hooks/useImageUpload';
 import type { TiptapJsonContent } from '../_lib/types';
 import { BubbleToolbar } from './BubbleToolbar';
@@ -58,7 +60,7 @@ export function TiptapEditor({
         const files = event.dataTransfer?.files;
         if (!files?.length) return false;
         const file = files[0];
-        if (!acceptedImageTypes.includes(file.type)) return false;
+        if (!isAllowedImageMimeType(file.type)) return false;
         event.preventDefault();
         handleFiles(files);
         return true;
@@ -68,7 +70,7 @@ export function TiptapEditor({
         const items = event.clipboardData?.items;
         if (!items) return false;
         for (const item of items) {
-          if (acceptedImageTypes.includes(item.type)) {
+          if (isAllowedImageMimeType(item.type)) {
             const file = item.getAsFile();
             if (file) {
               event.preventDefault();
