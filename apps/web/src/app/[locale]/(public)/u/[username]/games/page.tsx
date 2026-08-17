@@ -11,6 +11,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
 import { type SharedGameListItem, listGamesByAuthorId } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, type LikeMeta, getLikeMetaMap } from '@/lib/db/like-queries';
 import {
@@ -68,14 +69,16 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
   let games: SharedGameListItem[] = [];
   let likeMetaMap: Map<string, LikeMeta> = new Map();
   let replyMetaMap: Map<string, ReplyMeta> = new Map();
+  let reviewedGameIds: ReadonlySet<string> = new Set();
 
   if (context.shell.gamesCount > 0) {
     games = await listGamesByAuthorId(context.profile.id, PAGE_SIZE, offset);
 
     const gameIds = games.map((g) => g.id);
-    [likeMetaMap, replyMetaMap] = await Promise.all([
+    [likeMetaMap, replyMetaMap, reviewedGameIds] = await Promise.all([
       getLikeMetaMap(GAME_LIKE_TARGET, gameIds, context.currentUserId),
       getGameCommentMetaMap(gameIds),
+      getReviewedGameIdSet(gameIds),
     ]);
   }
 
@@ -88,6 +91,7 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
         likeMetaMap={likeMetaMap}
         replyMetaMap={replyMetaMap}
         emptyReplyMeta={EMPTY_REPLY_META}
+        reviewedGameIds={reviewedGameIds}
         currentPage={currentPage}
         totalPages={totalPages}
         locale={locale}
@@ -100,7 +104,10 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
         resolveOpeningName={(slug, fallbackName) =>
           getOpeningDisplayName(tOpeningNames, slug, fallbackName)
         }
-        labels={{ noGames: t('noGames') }}
+        labels={{
+          noGames: t('noGames'),
+          aiReviewedBadge: tSharedGames('list.aiReviewedBadge'),
+        }}
       />
     </ProfileShell>
   );
