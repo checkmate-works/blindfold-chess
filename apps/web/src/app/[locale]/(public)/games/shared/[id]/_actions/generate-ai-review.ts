@@ -3,7 +3,7 @@
 import { SUPPORTED_LOCALES } from '@/config';
 import { z } from 'zod';
 
-import { canGenerateAiReview } from '@/lib/ai-review/authorize';
+import { resolveAiReviewGenerationState } from '@/lib/ai-review/entitlement';
 import { generateReview } from '@/lib/ai-review/generate-review';
 import { createOpenAiClient, isLlmConfigured } from '@/lib/ai-review/openai';
 import { dbAiReviewStore } from '@/lib/ai-review/queries';
@@ -41,9 +41,10 @@ export type GenerateAiReviewInput = z.infer<typeof inputSchema>;
 
 /**
  * Generate (or fetch, when already cached) the AI coach review for a shared
- * game. Members-only, tightly rate-limited — this is the only path that can
- * spend LLM tokens. See `@/lib/ai-review` for the pipeline and the
- * engine/LLM authorship split.
+ * game. Restricted to the game's author with an active subscription (see
+ * `resolveAiReviewGenerationState`) and tightly rate-limited on top — this is
+ * the only path that can spend LLM tokens. See `@/lib/ai-review` for the
+ * pipeline and the engine/LLM authorship split.
  */
 export async function generateAiReviewAction(
   input: GenerateAiReviewInput
@@ -66,19 +67,29 @@ export async function generateAiReviewAction(
     }
     const { game } = detail;
 
-    const eligible = canGenerateAiReview(game, auth.user.id);
-    if (!eligible.ok) {
-      return { success: false, error: eligible.reason };
+    const access = await resolveAiReviewGenerationState(game, auth.user.id);
+    if (access.kind === 'blocked') {
+      return { success: false, error: access.reason };
     }
     if (evaluations.length !== game.moves.length + 1) {
       return { success: false, error: 'invalid_input' };
     }
 
-    // Cache check BEFORE the rate limit: fetching an existing review is free
-    // and must not consume (or be blocked by) the generation budget.
+    // Cache check BEFORE both the entitlement refusal and the rate limit:
+    // fetching an existing review is free, must not consume (or be blocked by)
+    // the generation budget, and must not stop working for an author whose
+    // subscription has since lapsed — the review is already published.
     const cached = await dbAiReviewStore.find(game.id, locale);
     if (cached) {
       return { success: true, review: cached };
+    }
+
+    // Everything below spends. `allowed` is the only state that may proceed:
+    // a future `payable` state must add its own branch (charge, then
+    // generate) rather than inherit this refusal, but until it exists,
+    // refusing anything unrecognised is the fail-closed default.
+    if (access.kind !== 'allowed') {
+      return { success: false, error: 'subscription_required' };
     }
 
     // The UI hides the tab when no key is configured, but a stale page (or a
