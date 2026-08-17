@@ -2,7 +2,7 @@ import { revalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { SaveResultResponse } from './save-practice-result';
+import type { SaveResultResponse } from '../_lib/save-result-response';
 import { savePracticeResult } from './save-practice-result';
 
 // ---------------------------------------------------------------------------

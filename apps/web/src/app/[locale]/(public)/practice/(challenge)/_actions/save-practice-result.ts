@@ -11,18 +11,7 @@ import { saveChallengeResult } from '@/lib/db/save-challenge-result';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 
-export type SaveResultResponse =
-  | {
-      success: true;
-      grantedRanks?: { slug: string; level: number; color: string | null }[];
-      /**
-       * ID of the challenge_results row just inserted. Passed to the result
-       * page as `?grant=<id>` so the page can refetch the granted EXP event
-       * server-side (see `getExpInfoBySource`).
-       */
-      challengeResultId?: string;
-    }
-  | { success: false; error: string };
+import type { SaveResultResponse } from '../_lib/save-result-response';
 
 export type ChallengeFields = {
   score: number;

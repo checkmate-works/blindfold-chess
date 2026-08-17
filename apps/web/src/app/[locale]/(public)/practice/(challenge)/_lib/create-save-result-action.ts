@@ -1,7 +1,7 @@
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 
-import type { SaveResultResponse } from '../_actions/save-practice-result';
 import { savePracticeResult } from '../_actions/save-practice-result';
+import type { SaveResultResponse } from './save-result-response';
 
 /**
  * The fields every challenge module reports on completion. Module-specific

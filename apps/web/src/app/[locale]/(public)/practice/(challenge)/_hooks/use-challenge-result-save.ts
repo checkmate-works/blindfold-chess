@@ -6,18 +6,11 @@ import { useRouter } from 'next/navigation';
 
 import * as Sentry from '@sentry/nextjs';
 
-import type { GrantedRank } from '@/lib/db/data/ranks';
-
 import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
 import { SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/practice/_lib/session-storage-keys';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
-type SaveResultResponse = {
-  success: boolean;
-  error?: string;
-  grantedRanks?: GrantedRank[];
-  challengeResultId?: string;
-};
+import type { SaveResultResponse } from '../_lib/save-result-response';
 
 type UseChallengeResultSaveOptions = {
   isFinished: boolean;
