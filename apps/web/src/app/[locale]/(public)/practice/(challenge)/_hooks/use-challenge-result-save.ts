@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import * as Sentry from '@sentry/nextjs';
 
+import { writeSessionItem } from '@/lib/storage/session-storage';
+
 import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
 import { SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/practice/_lib/session-storage-keys';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
@@ -72,7 +74,7 @@ export function useChallengeResultSave({
         .then((result) => {
           if (!result.success) {
             console.error(`Failed to save ${moduleName} result:`, result.error);
-            sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
+            writeSessionItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
             return;
           }
           stashGrantedRanks(result.grantedRanks);
@@ -83,7 +85,7 @@ export function useChallengeResultSave({
         .catch((error) => {
           console.error(`Failed to save ${moduleName} result:`, error);
           Sentry.captureException(error);
-          sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
+          writeSessionItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
         })
         .finally(() => {
           router.push(redirectUrl);

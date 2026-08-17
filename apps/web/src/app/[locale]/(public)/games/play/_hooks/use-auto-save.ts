@@ -13,6 +13,7 @@ import type {
   PreferenceChangeLogEntry,
   UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
+import { writeSessionItem } from '@/lib/storage/session-storage';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -258,7 +259,7 @@ export function useAutoSave({
 
         // Show notification if requested
         if (showNotification) {
-          sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST, 'true');
+          writeSessionItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST, 'true');
         }
 
         return savedGameId;

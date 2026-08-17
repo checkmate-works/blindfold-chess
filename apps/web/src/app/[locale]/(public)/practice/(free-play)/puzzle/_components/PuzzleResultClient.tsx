@@ -11,6 +11,7 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import { readSessionItem } from '@/lib/storage/session-storage';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
@@ -76,7 +77,7 @@ export function PuzzleResultClient({
 
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem(puzzleResultStorageKey(positionId));
+      const stored = readSessionItem(puzzleResultStorageKey(positionId));
       if (stored) {
         const data = JSON.parse(stored) as {
           attempts: Attempt[];
