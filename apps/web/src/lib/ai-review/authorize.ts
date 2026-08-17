@@ -8,10 +8,17 @@ import { MAX_ANALYSIS_PLIES } from '@/lib/games/analysis/evaluate-positions';
 export const MIN_REVIEWABLE_PLIES = 4;
 
 export type CanGenerateResult =
-  { ok: true } | { ok: false; reason: 'not_owner' | 'game_not_eligible' };
+  /** The viewer passed the ownership test, so their id is known to be theirs. */
+  { ok: true; authorId: string } | { ok: false; reason: 'not_owner' | 'game_not_eligible' };
 
 /**
- * THE single authorization gate for generating (not viewing) an AI review.
+ * Eligibility half of the generation gate: is this viewer the game's author,
+ * and is the game reviewable at all? Pure and synchronous — it decides nothing
+ * about who pays.
+ *
+ * Callers deciding whether generation may happen must NOT stop here: go
+ * through `resolveAiReviewGenerationState` (`./entitlement`), which composes
+ * this test with the entitlement check and is the single gate.
  *
  * @design Generation is the author's alone; reading is everyone's
  * A review is stored per (game, locale) and served publicly, and its content
@@ -31,11 +38,6 @@ export type CanGenerateResult =
  * is the existing account-claim flow (`ClaimGameBanner`), after which they own
  * the game and can generate normally.
  *
- * This function is also the one place a future coin charge plugs its balance
- * check into: add an `'insufficient_balance'` reason here and to
- * `AiReviewError`, and perform the actual debit inside `generateReview`'s save
- * step (see the note there) so a failed generation never consumes coins.
- *
  * @param viewerId the authenticated viewer, or null when signed out.
  */
 export function canGenerateAiReview(game: GameRecord, viewerId: string | null): CanGenerateResult {
@@ -45,5 +47,5 @@ export function canGenerateAiReview(game: GameRecord, viewerId: string | null): 
   if (game.moves.length < MIN_REVIEWABLE_PLIES || game.moves.length > MAX_ANALYSIS_PLIES) {
     return { ok: false, reason: 'game_not_eligible' };
   }
-  return { ok: true };
+  return { ok: true, authorId: viewerId };
 }
