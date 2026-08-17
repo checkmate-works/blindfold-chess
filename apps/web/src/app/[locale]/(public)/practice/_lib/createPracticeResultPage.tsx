@@ -5,8 +5,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
+import { getOptionalUser } from '@/lib/auth';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
-import { createClient } from '@/lib/supabase/server';
 
 import type {
   LeaderboardModule,
@@ -47,10 +47,7 @@ export async function resolveExpInfoFromGrantParam(
   const grant = typeof grantRaw === 'string' ? grantRaw : undefined;
   if (!grant) return null;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
   if (!user) return null;
 
   return getExpInfoBySource(user.id, expSource, grant);

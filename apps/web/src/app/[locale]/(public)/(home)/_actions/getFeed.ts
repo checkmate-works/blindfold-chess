@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { TOPICS_FEED_ENTITY_TYPES, getFeedData } from '../_lib/queries';
 import type { FeedResponse } from '../_lib/types';
@@ -56,10 +56,7 @@ export async function getFeed(
     ? Math.min(Math.max(Math.trunc(limit as number), MIN_FEED_LIMIT), MAX_FEED_LIMIT)
     : DEFAULT_FEED_LIMIT;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   return getFeedData({
     cursor,

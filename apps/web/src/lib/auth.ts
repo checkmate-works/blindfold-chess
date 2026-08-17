@@ -21,11 +21,12 @@ import { createClient } from '@/lib/supabase/server';
  * Use this in contexts where unauthenticated access is expected
  * (e.g., Server Actions called from outside `(protected)/` routes).
  *
- * This is the single per-request Auth round-trip: `getAuthenticatedUser`
- * delegates here, so a layout calling one and a page calling the other still
- * share one `auth.getUser()` call. `React.cache` memoizes by function
- * identity, so a second independently-wrapped fetcher would NOT dedupe —
- * always route new callers through this function.
+ * This is the single per-request Auth round-trip: every other helper in this
+ * module — `getAuthenticatedUser` and the four action/API guards — delegates
+ * here, so a layout calling one and a page calling another still share one
+ * `auth.getUser()` call. `React.cache` memoizes by function identity, so a
+ * second independently-wrapped fetcher would NOT dedupe — always route new
+ * callers through this function.
  */
 export const getOptionalUser = cache(async () => {
   const supabase = await createClient();
@@ -65,10 +66,7 @@ export const getAuthenticatedUser = cache(async () => {
  * to be applied separately (e.g., after content validation).
  */
 export async function authenticateAndCheckBan(): Promise<{ user: User } | { error: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (!user) {
     return { error: 'signInRequired' };
@@ -90,10 +88,7 @@ export async function authenticateAndCheckBan(): Promise<{ user: User } | { erro
 export async function authenticateAndGuard(
   rateLimitConfig: RateLimitConfig
 ): Promise<{ user: User } | { error: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (!user) {
     return { error: 'signInRequired' };
@@ -178,10 +173,7 @@ export async function authenticateGuardAndRequireProfile(
 export async function authenticateAndGuardApi(
   rateLimitConfig: RateLimitConfig
 ): Promise<{ user: User } | { response: NextResponse }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (!user) {
     return { response: NextResponse.json({ error: 'unauthorized' }, { status: 401 }) };

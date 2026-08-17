@@ -4,6 +4,7 @@ import { SITE_URL } from '@/config';
 import { z } from 'zod';
 
 import type { ActionResult } from '@/lib/action-types';
+import { getOptionalUser } from '@/lib/auth';
 import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -39,9 +40,7 @@ export async function forgotPassword(email: string): Promise<ForgotPasswordResul
   // signed in and requests a reset). In the typical unauthenticated flow,
   // userId will be null and we skip logging because user_activity_log.user_id
   // is NOT NULL.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
   if (user) {
     logActivityEvent({
       userId: user.id,

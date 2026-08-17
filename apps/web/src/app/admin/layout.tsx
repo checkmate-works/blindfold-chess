@@ -10,8 +10,8 @@ import { eq } from 'drizzle-orm';
 import { EnvironmentRibbon } from 'env-ribbon';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, userRoles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 import { ThemeProvider, ThemeScript } from '@/lib/theme';
 
 import { ToastProvider } from '@/app/[locale]/_contexts/ToastContext';
@@ -36,10 +36,7 @@ export const metadata: Metadata = {
 export const maxDuration = 60;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (!user) {
     notFound();

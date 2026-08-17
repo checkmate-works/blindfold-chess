@@ -5,9 +5,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
-import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
@@ -56,27 +56,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function OpeningsContent({ params, searchParams }: Props) {
   const { locale } = await params;
-  const [{ page, first_move }, t, tSquares, tOpenings, nameT, supabase] = await Promise.all([
+  const [{ page, first_move }, t, tSquares, tOpenings, nameT] = await Promise.all([
     searchParamsCache.parse(searchParams),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
     getTranslations({ locale, namespace: 'topics.openings' }),
     getTranslations({ locale, namespace: 'topics.openings.names' }),
-    createClient(),
   ]);
 
   const firstMoveSquare = first_move && isValidSquare(first_move) ? first_move : null;
 
   // The viewer lookup, the post count, and the openings tree are keyed on
   // three different things (session / filter / filter) — one round for all.
-  const [
-    {
-      data: { user },
-    },
-    totalCount,
-    openings,
-  ] = await Promise.all([
-    supabase.auth.getUser(),
+  const [user, totalCount, openings] = await Promise.all([
+    getOptionalUser(),
     firstMoveSquare ? getPostCountByFirstMoveSquare(firstMoveSquare) : getPostCountAcrossOpenings(),
     firstMoveSquare ? getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare) : getOpeningsAsTree(),
   ]);

@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { SignUpBannerSkeleton } from '@/app/[locale]/(public)/practice/_components/skeletons';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
@@ -36,13 +36,12 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  */
 export async function KnightTourResultLoadingSkeleton() {
   const locale = await getLocaleFromPathnameHeader();
-  const supabase = await createClient();
-  const [t, tPractice, userResult] = await Promise.all([
+  const [t, tPractice, user] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.knightTour' }),
     getTranslations({ locale, namespace: 'practice' }),
-    supabase.auth.getUser(),
+    getOptionalUser(),
   ]);
-  const isAuthed = !!userResult.data.user;
+  const isAuthed = !!user;
 
   return (
     <div className="space-y-8">

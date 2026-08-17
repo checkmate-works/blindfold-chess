@@ -5,8 +5,8 @@ import type { User } from '@supabase/supabase-js';
 import { eq } from 'drizzle-orm';
 
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
+import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { createClient as createServerSupabaseClient } from '@/lib/supabase/server';
 
 /**
  * The viewer's session and registration state, resolved server-side.
@@ -40,7 +40,7 @@ export type SessionUser = {
  *
  * Any failure (misconfigured env, transient server error, etc.) is coerced
  * to `null` so the client renders as unauthenticated rather than erroring.
- * Auth-resolution failures (e.g. `supabase.auth.getUser()` throwing due to a
+ * Auth-resolution failures (e.g. `getOptionalUser()` throwing due to a
  * cookie-decode error, transient Supabase outage, or env misconfiguration)
  * are reported to Sentry before the null is returned, so a real
  * authenticated user silently appearing as anonymous is observable in
@@ -62,11 +62,7 @@ export type SessionUser = {
 export async function getSessionUser(): Promise<SessionUser> {
   let user: User | null = null;
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user: resolvedUser },
-    } = await supabase.auth.getUser();
-    user = resolvedUser;
+    user = await getOptionalUser();
   } catch (error) {
     Sentry.captureException(error);
     return { user: null, hasProfile: false, profile: null };

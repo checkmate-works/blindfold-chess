@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
@@ -57,10 +57,7 @@ export async function PracticeResultLoadingSkeleton({
   // that show neither (the default) skip the auth round-trip entirely.
   let isAuthed = false;
   if (grantsExp || showsSignUpBanner) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getOptionalUser();
     isAuthed = !!user;
   }
 

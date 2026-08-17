@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import {
   ExpGainSkeleton,
@@ -36,12 +36,11 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  */
 export async function PuzzleResultContentSkeleton() {
   const locale = await getLocaleFromPathnameHeader();
-  const supabase = await createClient();
-  const [t, userResult] = await Promise.all([
+  const [t, user] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.puzzle' }),
-    supabase.auth.getUser(),
+    getOptionalUser(),
   ]);
-  const isAuthed = !!userResult.data.user;
+  const isAuthed = !!user;
 
   return (
     <div className="space-y-6">

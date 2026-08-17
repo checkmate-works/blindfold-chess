@@ -8,9 +8,9 @@ import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
-import { createClient } from '@/lib/supabase/server';
 
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
@@ -77,19 +77,12 @@ async function SquarePostsContent({ params, searchParams }: Props) {
   const { page, sort } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
 
-  const [t, nameT, supabase] = await Promise.all([
+  const [t, nameT] = await Promise.all([
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.openings.names' }),
-    createClient(),
   ]);
-  const [
-    {
-      data: { user },
-    },
-    totalCount,
-    openingsForSquare,
-  ] = await Promise.all([
-    supabase.auth.getUser(),
+  const [user, totalCount, openingsForSquare] = await Promise.all([
+    getOptionalUser(),
     getPostCountForSquare(square),
     getOpeningsByFirstMoveSquare(square),
   ]);

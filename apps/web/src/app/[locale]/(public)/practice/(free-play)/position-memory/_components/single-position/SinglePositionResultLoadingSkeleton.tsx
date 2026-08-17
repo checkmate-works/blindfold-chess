@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
@@ -38,13 +38,12 @@ type Props = {
  */
 export async function SinglePositionResultLoadingSkeleton({ grantsExp = false }: Props = {}) {
   const locale = await getLocaleFromPathnameHeader();
-  const supabase = await createClient();
-  const [t, tNav, userResult] = await Promise.all([
+  const [t, tNav, user] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.positionMemory' }),
     getTranslations({ locale, namespace: 'navigation' }),
-    supabase.auth.getUser(),
+    getOptionalUser(),
   ]);
-  const isAuthed = !!userResult.data.user;
+  const isAuthed = !!user;
 
   return (
     <div className="space-y-8">

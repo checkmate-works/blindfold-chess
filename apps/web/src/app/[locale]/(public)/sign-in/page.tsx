@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
+import { getOptionalUser } from '@/lib/auth';
 import { resolveReturnPath } from '@/lib/auth-return-path';
-import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -44,10 +44,7 @@ export default async function SignInPage({ params, searchParams }: Props) {
   // Validated to an internal path to prevent open redirects.
   const next = resolveReturnPath(nextRaw);
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (user) {
     redirect(next ?? `/${locale}/mypage?toast=already_logged_in`);

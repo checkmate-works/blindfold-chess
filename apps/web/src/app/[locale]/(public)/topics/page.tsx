@@ -5,7 +5,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { resolveNativeAds } from '@/lib/ads/ad';
 import { FEED_NATIVE_AD_SLOT } from '@/lib/ads/registry';
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
 import { TOPICS_FEED_ENTITY_TYPES, getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
@@ -48,10 +48,7 @@ async function TopicsContent({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'topics' });
   const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
   const tPagination = await getTranslations({ locale, namespace: 'Common.pagination' });
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   const [initialFeed, { showAds, creatives: nativeAdCreatives }] = await Promise.all([
     getFeedData({

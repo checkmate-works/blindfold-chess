@@ -7,12 +7,12 @@ import { notFound } from 'next/navigation';
 import { BoardFrame } from '@/app/_components';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { paginateItems } from '@/lib/pagination';
 import type { RepertoireSort } from '@/lib/repertoires/queries';
 import { countPublicRepertoiresForOpening } from '@/lib/repertoires/queries';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
-import { createClient } from '@/lib/supabase/server';
 
 import { MOVE_NAV_ROW_CLASS } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
@@ -86,7 +86,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function OpeningDetailContent({ params, searchParams }: Props) {
   const { locale, slug } = await params;
-  const [opening, { page, sort, tab }, t, dt, nameT, tRepertoires, supabase, repertoireCount] =
+  const [opening, { page, sort, tab }, t, dt, nameT, tRepertoires, repertoireCount] =
     await Promise.all([
       getOpeningBySlug(slug),
       searchParamsCache.parse(searchParams),
@@ -94,7 +94,6 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
       getTranslations({ locale, namespace: 'topics.openings.detail' }),
       getTranslations({ locale, namespace: 'topics.openings.names' }),
       getTranslations({ locale, namespace: 'Repertoires' }),
-      createClient(),
       countPublicRepertoiresForOpening(slug),
     ]);
 
@@ -110,13 +109,8 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
 
   // The parent opening (breadcrumb, child variations only) is keyed on the
   // opening row; the viewer lookup is keyed on the session — independent.
-  const [
-    {
-      data: { user },
-    },
-    parentOpening,
-  ] = await Promise.all([
-    supabase.auth.getUser(),
+  const [user, parentOpening] = await Promise.all([
+    getOptionalUser(),
     opening.parentSlug ? getOpeningBySlug(opening.parentSlug) : null,
   ]);
   const parentDisplayName = parentOpening

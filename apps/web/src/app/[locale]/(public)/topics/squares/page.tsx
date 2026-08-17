@@ -5,9 +5,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
-import { createClient } from '@/lib/supabase/server';
 
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
@@ -39,17 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function SquaresContent({ params, searchParams }: Props) {
   const { locale } = await params;
-  const [{ page }, t, supabase] = await Promise.all([
+  const [{ page }, t] = await Promise.all([
     searchParamsCache.parse(searchParams),
     getTranslations({ locale, namespace: 'topics' }),
-    createClient(),
   ]);
-  const [
-    {
-      data: { user },
-    },
-    totalCount,
-  ] = await Promise.all([supabase.auth.getUser(), getPostCountAcrossSquares()]);
+  const [user, totalCount] = await Promise.all([getOptionalUser(), getPostCountAcrossSquares()]);
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     totalCount,

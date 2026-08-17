@@ -1,10 +1,10 @@
 'use server';
 
+import { getOptionalUser } from '@/lib/auth';
 import { authorizeGameMutation } from '@/lib/db/games-auth';
 import { softDeleteSharedGame, updateSharedGameFields } from '@/lib/db/games-write';
 import { MAX_DESCRIPTION_LENGTH, MAX_TITLE_LENGTH } from '@/lib/games/publish-constants';
 import { handleServerActionError } from '@/lib/server-action-error';
-import { createClient } from '@/lib/supabase/server';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 export type ManageSharedGameResponse = { success: true } | { success: false; error: string };
@@ -19,10 +19,7 @@ export type UpdateSharedGameInput = {
 
 /** Resolve the current session user once for an owner mutation. */
 async function currentUserId(): Promise<string | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
   return user?.id ?? null;
 }
 

@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation';
 
 import { and, desc, eq } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, moderationActions, profiles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -12,10 +12,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function BannedPage({ params }: LocalePageProps) {
   const { locale } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (!user) {
     redirect(`/${locale}/sign-in`);

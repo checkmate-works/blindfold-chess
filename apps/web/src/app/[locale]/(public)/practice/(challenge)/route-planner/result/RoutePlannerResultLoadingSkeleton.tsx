@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
@@ -43,19 +43,18 @@ import { RoutePlannerResultPanelSkeleton } from './RoutePlannerResultPanelSkelet
  * based on the resolved user — see `reserveExp` / `reserveSignUpBanner`.
  */
 export async function RoutePlannerResultLoadingSkeleton() {
-  const supabase = await createClient();
   const locale = await getLocaleFromPathnameHeader();
-  const [t, tPractice, userResult] = await Promise.all([
+  const [t, tPractice, user] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.routePlanner' }),
     getTranslations({ locale, namespace: 'practice' }),
-    supabase.auth.getUser(),
+    getOptionalUser(),
   ]);
 
   // The EXP card (authenticated) and sign-up banner (anonymous) are mutually
   // exclusive by auth state. `loading.tsx` can't read the `?grant=` param, but a
   // user arriving here from a finished challenge always carries it, so auth
   // state alone is a good predictor of which block the real page will render.
-  const isAuthed = !!userResult.data.user;
+  const isAuthed = !!user;
 
   return (
     <div className="space-y-8">
