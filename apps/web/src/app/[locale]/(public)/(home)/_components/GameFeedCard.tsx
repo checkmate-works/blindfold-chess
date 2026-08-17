@@ -9,6 +9,7 @@ import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleGameLikeAction } from '@/app/[locale]/(public)/games/shared/[id]/_actions/game-like';
+import { AiReviewedBadge } from '@/app/[locale]/(public)/games/shared/_components/AiReviewedBadge';
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
@@ -33,6 +34,7 @@ export const GameFeedCard = memo(function GameFeedCard({
   actionSize,
 }: Props) {
   const tFeed = useTranslations('home.feed.game');
+  const tSharedGames = useTranslations('sharedGames');
   const { preferences } = useGamePreferences();
   const displayName = resolveDisplayName(data.author);
   const href = `/games/shared/${data.id}`;
@@ -89,15 +91,21 @@ export const GameFeedCard = memo(function GameFeedCard({
       }
     >
       <p className="text-sm text-foreground mt-1">{tFeed('action')}</p>
-      <p className="text-sm font-medium text-foreground line-clamp-1">
-        <Link
-          href={href}
-          locale={locale}
-          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-        >
-          {data.title}
-        </Link>
-      </p>
+      {/* Title and badge share a row, as they do on the CatalogListCard
+          surfaces; `min-w-0` + `truncate` keep a long title from pushing the
+          chip out of the card. */}
+      <div className="flex items-center gap-2 min-w-0">
+        <p className="text-sm font-medium text-foreground truncate">
+          <Link
+            href={href}
+            locale={locale}
+            className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          >
+            {data.title}
+          </Link>
+        </p>
+        <AiReviewedBadge reviewed={data.aiReviewed} label={tSharedGames('list.aiReviewedBadge')} />
+      </div>
     </ActivityCard>
   );
 });
