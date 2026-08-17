@@ -1,6 +1,8 @@
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 
+import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
+
 import type { NotificationWithActor } from './queries';
 import type { PositionMetadata } from './type-guards';
 import {
@@ -66,11 +68,6 @@ function resolvePositionEditRequestsLinkFromMetadata(
   return detailPath === null ? null : `${detailPath}/suggestions`;
 }
 
-function getTopicSegment(topicType: string): string {
-  if (topicType === 'opening') return 'openings';
-  return `${topicType}s`;
-}
-
 /**
  * Build the post-detail URL for a notification keyed off `topicType`.
  *
@@ -131,8 +128,7 @@ function buildPostDetailUrl(
     const targetId = replyId ?? postId;
     return `/chunks/${topicKey}?tab=comments#post-${targetId}`;
   }
-  const segment = getTopicSegment(topicType);
-  const baseUrl = `/topics/${segment}/${topicKey}/posts/${postId}`;
+  const baseUrl = buildTopicPostPath(topicType, topicKey, postId);
   return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
 }
 
