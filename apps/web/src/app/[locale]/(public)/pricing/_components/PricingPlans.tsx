@@ -25,6 +25,13 @@ type Props = {
  * and anonymous visitors see the cached HTML directly. Signed-in users see
  * the unauthenticated state for a hydration tick before their personal
  * state replaces it.
+ *
+ * The paid plan is still named "Ad-Free" after the only thing it used to buy.
+ * It now also buys AI review generation (`resolveAiReviewGenerationState`),
+ * which is why the free plan no longer advertises "all features" — that line
+ * became false the day generation was gated. Keep the feature list honest as
+ * further paid-only capabilities land; a plan named after one of its benefits
+ * is not a promise that it has only that one.
  */
 export function PricingPlans({ locale }: Props) {
   const t = useTranslations('pricing');
@@ -67,7 +74,7 @@ export function PricingPlans({ locale }: Props) {
         name={t('adFreePlan.name')}
         price={t('adFreePlan.price')}
         priceUnit={t('adFreePlan.priceUnit')}
-        features={[t('adFreePlan.feature1'), t('adFreePlan.feature2')]}
+        features={[t('adFreePlan.feature1'), t('adFreePlan.feature2'), t('adFreePlan.feature3')]}
         isCurrent={isSubscribed}
         currentLabel={t('currentPlan')}
         ctaLabel={isSubscribed ? t('managePlan') : t('subscribe')}

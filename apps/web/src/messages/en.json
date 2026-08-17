@@ -5869,14 +5869,15 @@
     "freePlan": {
       "name": "Free",
       "price": "$0",
-      "feature1": "All features"
+      "feature1": "Every feature except AI review"
     },
     "adFreePlan": {
       "name": "Ad-Free",
       "price": "$1",
       "priceUnit": "/ month",
       "feature1": "All features",
-      "feature2": "Hide all advertisements"
+      "feature2": "Hide all advertisements",
+      "feature3": "AI review (automatic game analysis and coaching)"
     },
     "currentPlan": "Current plan",
     "subscribe": "Subscribe",

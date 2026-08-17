@@ -5869,14 +5869,15 @@
     "freePlan": {
       "name": "Gratuito",
       "price": "$0",
-      "feature1": "Todas las funciones"
+      "feature1": "Todas las funciones excepto la revisión IA"
     },
     "adFreePlan": {
       "name": "Sin Anuncios",
       "price": "$1",
       "priceUnit": "/ mes",
       "feature1": "Todas las funciones",
-      "feature2": "Ocultar todos los anuncios"
+      "feature2": "Ocultar todos los anuncios",
+      "feature3": "Revisión IA (análisis y comentarios automáticos de la partida)"
     },
     "currentPlan": "Plan actual",
     "subscribe": "Suscribirse",

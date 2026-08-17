@@ -5869,14 +5869,15 @@
     "freePlan": {
       "name": "フリー",
       "price": "$0",
-      "feature1": "サービス内の全機能"
+      "feature1": "AIレビューを除く全機能"
     },
     "adFreePlan": {
       "name": "広告なし",
       "price": "$1",
       "priceUnit": "/ 月",
       "feature1": "サービス内の全機能",
-      "feature2": "すべての広告を非表示"
+      "feature2": "すべての広告を非表示",
+      "feature3": "AIレビュー（ゲームの自動解析と講評）"
     },
     "currentPlan": "現在のプラン",
     "subscribe": "登録する",
