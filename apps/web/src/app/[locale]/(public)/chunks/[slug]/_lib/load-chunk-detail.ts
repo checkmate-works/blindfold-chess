@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 
+import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
 import {
   countPendingEditRequestsForChunk,
   getViewerPendingEditRequestForChunk,
@@ -118,6 +119,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined, 
     memoryReplyMetaMap,
     relatedGamesLikeMetaMap,
     relatedGamesReplyMetaMap,
+    relatedGamesReviewedIds,
     // Same story for the kata cards (RepertoireListCard footer counters).
     relatedRepertoiresCardMeta,
   ] = await Promise.all([
@@ -136,6 +138,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined, 
     relatedGameIds.length > 0
       ? getGameCommentMetaMap(relatedGameIds)
       : Promise.resolve(new Map<string, ReplyMeta>()),
+    getReviewedGameIdSet(relatedGameIds),
     getRepertoireCardMeta(
       relatedRepertoires.map((r) => r.repertoire.id),
       userId
@@ -172,6 +175,7 @@ export async function loadChunkDetail(slug: string, userId: string | undefined, 
     relatedGames,
     relatedGamesLikeMetaMap,
     relatedGamesReplyMetaMap,
+    relatedGamesReviewedIds,
     relatedRepertoires,
     relatedRepertoiresCardMeta,
   };

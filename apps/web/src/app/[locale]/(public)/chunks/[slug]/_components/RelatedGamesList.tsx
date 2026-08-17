@@ -8,6 +8,7 @@ import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 
 import { toggleGameLikeAction } from '@/app/[locale]/(public)/games/shared/[id]/_actions/game-like';
+import { AiReviewedBadge } from '@/app/[locale]/(public)/games/shared/_components/AiReviewedBadge';
 import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -17,12 +18,16 @@ type Props = {
   likeMetaMap: Map<string, LikeMeta>;
   replyMetaMap: Map<string, ReplyMeta>;
   emptyReplyMeta: ReplyMeta;
+  /** Ids of the listed games that already have an AI review. */
+  reviewedGameIds: ReadonlySet<string>;
   locale: Locale;
   justNowLabel: string;
   colorLabels: { white: string; black: string };
   /** Resolves an opening's localized display name from its slug + English fallback. */
   resolveOpeningName: (slug: string, fallbackName: string) => string;
   emptyLabel: string;
+  /** Resolved `sharedGames.list.aiReviewedBadge`. */
+  aiReviewedBadgeLabel: string;
   /** Builds the "Move {n}" chip label for a 1-based move number. */
   moveLabel: (moveNumber: number) => string;
   /** Label for the "Start New Game" CTA shown alongside the empty state. */
@@ -46,11 +51,13 @@ export function RelatedGamesList({
   likeMetaMap,
   replyMetaMap,
   emptyReplyMeta,
+  reviewedGameIds,
   locale,
   justNowLabel,
   colorLabels,
   resolveOpeningName,
   emptyLabel,
+  aiReviewedBadgeLabel,
   moveLabel,
   newGameLabel,
 }: Props) {
@@ -92,6 +99,9 @@ export function RelatedGamesList({
           justNowLabel={justNowLabel}
           locale={locale}
           topicKey=""
+          badge={
+            <AiReviewedBadge reviewed={reviewedGameIds.has(g.id)} label={aiReviewedBadgeLabel} />
+          }
           meta={
             <>
               <GameColorOpeningRow

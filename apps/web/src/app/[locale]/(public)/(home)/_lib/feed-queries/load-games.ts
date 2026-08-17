@@ -1,6 +1,7 @@
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 
+import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
 import { AUTHOR_PROFILE_COLUMNS, db, games, liveProfileJoinOn, profiles } from '@/lib/db';
 import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
@@ -46,9 +47,10 @@ export async function loadGamesForFeed(
     .where(and(inArray(games.id, gameIds), isNull(games.deletedAt), eq(games.status, 'public')));
 
   const foundIds = rows.map((r) => r.id);
-  const [likeMetaMap, commentMetaMap] = await Promise.all([
+  const [likeMetaMap, commentMetaMap, reviewedIds] = await Promise.all([
     getLikeMetaMap(GAME_LIKE_TARGET, foundIds, currentUserId),
     getGameCommentMetaMap(foundIds),
+    getReviewedGameIdSet(foundIds),
   ]);
 
   for (const row of rows) {
@@ -70,6 +72,7 @@ export async function loadGamesForFeed(
         : null,
       likeMeta: likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false },
       replyMeta: commentMetaMap.get(row.id) ?? EMPTY_REPLY_META,
+      aiReviewed: reviewedIds.has(row.id),
     });
   }
 

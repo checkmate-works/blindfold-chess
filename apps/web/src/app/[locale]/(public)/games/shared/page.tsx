@@ -153,9 +153,10 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
               locale={locale}
               topicKey=""
               badge={
-                reviewedIds.has(g.id) ? (
-                  <AiReviewedBadge label={t('list.aiReviewedBadge')} />
-                ) : undefined
+                <AiReviewedBadge
+                  reviewed={reviewedIds.has(g.id)}
+                  label={t('list.aiReviewedBadge')}
+                />
               }
               meta={
                 <GameColorOpeningRow

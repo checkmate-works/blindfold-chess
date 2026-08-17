@@ -287,6 +287,7 @@ describe('FeedCard', () => {
         },
         likeMeta: { likeCount: 0, likedByMe: false },
         replyMeta: { replyCount: 0, latestReplyAt: null, repliers: [], uniqueReplierCount: 0 },
+        aiReviewed: false,
       },
     };
 

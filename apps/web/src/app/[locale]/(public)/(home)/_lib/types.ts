@@ -139,6 +139,8 @@ export type GameFeedData = {
   author: SocialAuthorProfile | null;
   likeMeta: LikeMeta;
   replyMeta: ReplyMeta;
+  /** Whether an AI review of this game already exists, in any locale. */
+  aiReviewed: boolean;
 };
 
 export type GameFeedItem = FeedItemBase & {

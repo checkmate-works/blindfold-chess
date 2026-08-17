@@ -5,6 +5,7 @@ import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 
 import { toggleGameLikeAction } from '@/app/[locale]/(public)/games/shared/[id]/_actions/game-like';
+import { AiReviewedBadge } from '@/app/[locale]/(public)/games/shared/_components/AiReviewedBadge';
 import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -15,6 +16,8 @@ type Props = {
   likeMetaMap: Map<string, LikeMeta>;
   replyMetaMap: Map<string, ReplyMeta>;
   emptyReplyMeta: ReplyMeta;
+  /** Ids of the listed games that already have an AI review. */
+  reviewedGameIds: ReadonlySet<string>;
   currentPage: number;
   totalPages: number;
   locale: Locale;
@@ -28,6 +31,7 @@ type Props = {
   resolveOpeningName: (slug: string, fallbackName: string) => string;
   labels: {
     noGames: string;
+    aiReviewedBadge: string;
   };
 };
 
@@ -44,6 +48,7 @@ export function ProfileGames({
   likeMetaMap,
   replyMetaMap,
   emptyReplyMeta,
+  reviewedGameIds,
   currentPage,
   totalPages,
   locale,
@@ -79,6 +84,12 @@ export function ProfileGames({
               justNowLabel={justNowLabel}
               locale={locale}
               topicKey=""
+              badge={
+                <AiReviewedBadge
+                  reviewed={reviewedGameIds.has(g.id)}
+                  label={labels.aiReviewedBadge}
+                />
+              }
               meta={
                 <GameColorOpeningRow
                   playerColor={g.playerColor}

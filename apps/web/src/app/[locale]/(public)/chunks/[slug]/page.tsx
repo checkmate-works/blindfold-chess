@@ -135,6 +135,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     relatedGames,
     relatedGamesLikeMetaMap,
     relatedGamesReplyMetaMap,
+    relatedGamesReviewedIds,
     relatedRepertoires,
     relatedRepertoiresCardMeta,
   } = data;
@@ -415,6 +416,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           games={relatedGames}
           likeMetaMap={relatedGamesLikeMetaMap}
           replyMetaMap={relatedGamesReplyMetaMap}
+          reviewedGameIds={relatedGamesReviewedIds}
         />
       )}
 
