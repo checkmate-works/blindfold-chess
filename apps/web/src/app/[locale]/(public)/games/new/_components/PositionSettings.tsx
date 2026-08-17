@@ -1,6 +1,7 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FILES } from '@blindfold-chess/types';
 
 export type CastlingRights = {
   K: boolean;
@@ -19,7 +20,6 @@ type Props = {
   onEnPassantChange: (square: string) => void;
 };
 
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const EN_PASSANT_RANKS: Record<'w' | 'b', string> = { w: '6', b: '3' };
 
 function getEnPassantOptions(turn: 'w' | 'b'): string[] {

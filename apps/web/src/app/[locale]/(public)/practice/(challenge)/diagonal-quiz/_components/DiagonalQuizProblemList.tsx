@@ -9,6 +9,7 @@ import {
   getDiagonalSquares,
 } from '@blindfold-chess/features/diagonal-quiz';
 import type { Square as SquareName } from '@blindfold-chess/types';
+import { DISPLAY_RANKS, FILES } from '@blindfold-chess/types';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import {
@@ -22,9 +23,6 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { DiagonalAnswerComparison } from './DiagonalAnswerComparison';
 
 export type { QuestionResult };
-
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
-const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'] as const;
 
 export function DiagonalBoard({
   targetSquare,
@@ -57,7 +55,7 @@ export function DiagonalBoard({
     <div className="w-full max-w-xs mx-auto">
       <div className="relative w-full aspect-square rounded-md overflow-hidden">
         <div className="grid grid-cols-8 gap-0 w-full h-full">
-          {RANKS.map((rank, rankIndex) =>
+          {DISPLAY_RANKS.map((rank, rankIndex) =>
             FILES.map((file, fileIndex) => {
               const square = `${file}${rank}` as const;
               const isLight = (fileIndex + rankIndex) % 2 === 0;
@@ -72,7 +70,7 @@ export function DiagonalBoard({
                     isLight={isLight}
                     showCoordinates={true}
                     showRankCoordinate={fileIndex === 0}
-                    showFileCoordinate={rankIndex === RANKS.length - 1}
+                    showFileCoordinate={rankIndex === DISPLAY_RANKS.length - 1}
                     layoutMode="grid"
                     themeColors={themeColors}
                   >

@@ -7,6 +7,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { generateRandomSquare as getRandomSquare } from '@blindfold-chess/features/common';
+import { DISPLAY_RANKS, FILES } from '@blindfold-chess/types';
 import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
@@ -18,9 +19,6 @@ type Props = {
   blindfoldMode: boolean;
   onBlindfoldModeChange: (value: boolean) => void;
 };
-
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
 export function KnightTourSetup({
   startingSquare,
@@ -63,7 +61,7 @@ export function KnightTourSetup({
               className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground"
             >
               <option value="random">{t('randomSquare')}</option>
-              {RANKS.map((rank) =>
+              {DISPLAY_RANKS.map((rank) =>
                 FILES.map((file) => (
                   <option key={`${file}${rank}`} value={`${file}${rank}`}>
                     {`${file}${rank}`}

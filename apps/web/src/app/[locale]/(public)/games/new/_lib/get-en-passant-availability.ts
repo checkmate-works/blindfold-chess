@@ -1,6 +1,5 @@
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
-
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
+import { FILES } from '@blindfold-chess/types';
 
 /**
  * Given a board FEN (piece placement only) and the side to move,
