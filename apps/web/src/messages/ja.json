@@ -2651,7 +2651,8 @@
         "new": "新着",
         "clean": "クリーン率",
         "strong": "相手の強さ"
-      }
+      },
+      "aiReviewedBadge": "AIレビュー済み"
     },
     "publishPicker": {
       "title": "公開する対局を選択",

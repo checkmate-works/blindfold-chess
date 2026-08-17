@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import 'server-only';
 
 import { db, gameAiReviews } from '@/lib/db';
@@ -64,6 +64,32 @@ export const getAiReviewForViewer = cache(
     return toAiReview(exact ?? rows[0]);
   }
 );
+
+/**
+ * Which of `gameIds` already carry a review, in ANY language — the list
+ * pages' "AI reviewed" badge.
+ *
+ * @design Language-agnostic, matching what the detail page will show
+ * A review exists per (game, locale), but `getAiReviewForViewer` falls back to
+ * the game's oldest review when the viewer's language has none. So a game with
+ * only a Japanese review does show one to an `/en` reader, and the badge would
+ * be lying if it appeared only for an exact locale match. `selectDistinct`
+ * collapses a game's several rows to the one bit the caller needs.
+ *
+ * @design One query per page, never per card
+ * Mirrors `getLikeMetaMap` / `getGameCommentMetaMap`: the list resolves every
+ * card's badge in a single `IN (...)`, served by the `(game_id, locale)`
+ * unique index. Do not "simplify" this into a per-card lookup.
+ */
+export async function getReviewedGameIdSet(gameIds: string[]): Promise<ReadonlySet<string>> {
+  // An empty `IN ()` is a query with no possible rows — skip the round-trip.
+  if (gameIds.length === 0) return new Set();
+  const rows = await db
+    .selectDistinct({ gameId: gameAiReviews.gameId })
+    .from(gameAiReviews)
+    .where(inArray(gameAiReviews.gameId, gameIds));
+  return new Set(rows.map((row) => row.gameId));
+}
 
 /**
  * Persistence port for `generateReview` — injected so its orchestration is
