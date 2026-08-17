@@ -1,7 +1,7 @@
 import type { getTranslations } from 'next-intl/server';
 
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
-import { DEFAULT_PAGE_SIZE } from '@/lib/pagination';
+import { DEFAULT_PAGE_SIZE, getPageRange } from '@/lib/pagination';
 import type { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../../_components/AdminDataTable';
@@ -40,6 +40,7 @@ export async function UsersListTab({
     await fetchUsersPageData(adminClient, page, filters);
 
   const buildHref = (p: number) => buildAdminUsersHref(filters, p);
+  const pageRange = getPageRange(currentPage, DEFAULT_PAGE_SIZE, users.length);
 
   const rankNames: Record<string, string> = {};
   for (const slug of ALL_RANK_SLUGS) {
@@ -81,8 +82,7 @@ export async function UsersListTab({
 
       {totalCount > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
-          Showing {(currentPage - 1) * DEFAULT_PAGE_SIZE + 1}&ndash;
-          {(currentPage - 1) * DEFAULT_PAGE_SIZE + users.length} of {totalCount} users
+          Showing {pageRange.from}&ndash;{pageRange.to} of {totalCount} users
         </p>
       )}
 

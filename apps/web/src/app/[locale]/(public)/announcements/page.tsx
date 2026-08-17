@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getPaginationParams } from '@/lib/pagination';
+
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -49,15 +51,16 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   const { page } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
-  const currentPage = Math.max(1, Number(page) || 1);
   const totalCount = await getPublishedAnnouncementCount();
-  const totalPages = Math.max(1, Math.ceil(totalCount / ANNOUNCEMENTS_PER_PAGE));
+  const { currentPage, totalPages, offset } = getPaginationParams(
+    Number(page) || 1,
+    totalCount,
+    ANNOUNCEMENTS_PER_PAGE
+  );
 
   if (currentPage > totalPages && totalPages > 0) {
     notFound();
   }
-
-  const offset = (currentPage - 1) * ANNOUNCEMENTS_PER_PAGE;
   const announcements = await getPublishedAnnouncementsPaginated(
     locale,
     ANNOUNCEMENTS_PER_PAGE,

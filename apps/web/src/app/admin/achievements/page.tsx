@@ -23,7 +23,7 @@ import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 
 import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
-import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
+import { DEFAULT_PAGE_SIZE, getPageRange, getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
@@ -60,8 +60,7 @@ export default async function AdminAchievementsPage({
       {rows.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
           {t('achievements.showing', {
-            from: (currentPage - 1) * DEFAULT_PAGE_SIZE + 1,
-            to: (currentPage - 1) * DEFAULT_PAGE_SIZE + rows.length,
+            ...getPageRange(currentPage, DEFAULT_PAGE_SIZE, rows.length),
             total: totalCount,
           })}
         </p>

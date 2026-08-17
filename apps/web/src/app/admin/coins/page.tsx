@@ -36,7 +36,7 @@ import { inArray } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, profiles } from '@/lib/db';
-import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
+import { DEFAULT_PAGE_SIZE, getPageRange, getPaginationParams } from '@/lib/pagination';
 import {
   POINT_CATEGORIES,
   POINT_EVENT_SOURCE_OPTIONS,
@@ -168,8 +168,7 @@ export default async function AdminCoinsPage({
       {rows.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
           {t('coins.showing', {
-            from: (currentPage - 1) * DEFAULT_PAGE_SIZE + 1,
-            to: (currentPage - 1) * DEFAULT_PAGE_SIZE + rows.length,
+            ...getPageRange(currentPage, DEFAULT_PAGE_SIZE, rows.length),
             total,
           })}
         </p>

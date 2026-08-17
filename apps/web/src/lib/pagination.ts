@@ -59,6 +59,24 @@ export function clampPage(requestedPage: number, totalPages: number): number {
   return Math.max(1, Math.min(requestedPage, totalPages || 1));
 }
 
+/**
+ * The 1-based row range the current page is showing, for a "Showing 21–40 of
+ * 137" line. `shownCount` is the number of rows actually rendered, so the last
+ * page reports its real end rather than a full page's worth.
+ *
+ * Six list pages computed this inline, each spelling `(currentPage - 1) *
+ * pageSize + 1` out again; two of them are admin pages sitting next to a
+ * component that had already been given the same job.
+ */
+export function getPageRange(
+  currentPage: number,
+  pageSize: number,
+  shownCount: number
+): { from: number; to: number } {
+  const from = (currentPage - 1) * pageSize + 1;
+  return { from, to: from + shownCount - 1 };
+}
+
 /** Result of resolving a requested page against a known total count. */
 export type ResolvedPagination = {
   currentPage: number;
