@@ -2646,6 +2646,7 @@
       "title": "Partidas publicadas",
       "empty": "Nenhuma partida foi compartilhada ainda.",
       "publishExisting": "Publicar uma partida encerrada",
+      "myPublished": "Minhas partidas publicadas",
       "sortBy": "Ordenar por",
       "sort": {
         "new": "Mais recentes",

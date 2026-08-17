@@ -11,6 +11,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { Link } from '@/i18n/routing';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
@@ -25,6 +26,7 @@ import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -35,6 +37,7 @@ import { AiReviewedBadge } from './_components/AiReviewedBadge';
 import { GameColorOpeningRow } from './_components/GameColorOpeningRow';
 import { PublishExistingGameButton } from './_components/PublishExistingGameButton';
 import { SharedGamesSort } from './_components/SharedGamesSort';
+import { getMyPublishedGames } from './_lib/my-published-games';
 import { parseSharedGamesSort } from './_lib/sort';
 
 export const dynamic = 'force-dynamic';
@@ -74,10 +77,11 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
   const items = await listSharedGames(sort, limit, offset);
 
   const ids = items.map((g) => g.id);
-  const [likeMetaMap, commentMetaMap, reviewedIds] = await Promise.all([
+  const [likeMetaMap, commentMetaMap, reviewedIds, myPublished] = await Promise.all([
     getLikeMetaMap(GAME_LIKE_TARGET, ids, currentUser?.id),
     getGameCommentMetaMap(ids),
     getReviewedGameIdSet(ids),
+    currentUser ? getMyPublishedGames(currentUser.id) : null,
   ]);
   const justNowLabel = t('detail.justNow');
 
@@ -96,7 +100,27 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
        */}
       {totalCount >= MIN_GAMES_FOR_MID_AD && <AdSlot slot="content-middle" />}
 
-      <div className="mt-3 mb-4 flex justify-end">
+      {/*
+       * "My published games" points at the viewer's own profile archive
+       * (`/u/[username]/games`) rather than filtering this list in place: the
+       * archive already renders the same cards scoped to one author, so an
+       * owner filter here would be a second copy of it, with `sort` / `page` /
+       * owner to keep combined across the sort control and the pagination
+       * links. Absent for viewers with nothing to show — see
+       * {@link getMyPublishedGames}.
+       */}
+      <div
+        className={`mt-3 mb-4 flex flex-wrap items-center gap-2 ${myPublished ? 'justify-between' : 'justify-end'}`}
+      >
+        {myPublished && (
+          <Link
+            href={`/u/${myPublished.username}/games`}
+            locale={locale}
+            className={`text-sm ${TEXT_LINK_CLASSES}`}
+          >
+            {t('list.myPublished')} ({myPublished.count})
+          </Link>
+        )}
         <SharedGamesSort currentSort={sort} />
       </div>
 
