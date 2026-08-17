@@ -1,14 +1,8 @@
 'use server';
 
-import { authenticateAndCheckBan } from '@/lib/auth';
-import { postGamePgnAttachments } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
-import {
-  buildPgnAttachmentValues,
-  pgnAttachmentErrorKey,
-} from '@/lib/games/build-pgn-attachment-values';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { resolvePgnAttachment } from '@/lib/topic-posts/attachment-steps';
 
 import type { TopicType } from '@/app/[locale]/(public)/topics/_lib/constants';
 
@@ -36,27 +30,18 @@ type ExtraAfterInsert = (tx: DbTx, postId: string) => Promise<void>;
 /**
  * Shared attachment-aware createPost body. Each topicType wrapper
  * forwards a topic-specific spec (validateTopic / redirectPath /
- * etc.) plus the request FormData, and the base handles every step
- * common to every wrapper:
+ * etc.) plus the request FormData; `resolvePgnAttachment` does
+ * everything that concerns the attachment (form fields, the extra
+ * rate limit, the PGN pipeline, and the `post_game_pgn_attachments`
+ * INSERT that has to happen inside the post's own transaction), and
+ * what is left here is the choice of `createPostBase`.
  *
- *   1. Parse `attachment` form field via `detectAttachmentInput`.
- *   2. (Lichess only) resolve canonical PGN through the DB-cached
- *      fetcher.
- *   3. (chesscom attribution) require pasted PGN body, capture the
- *      attribution path.
- *   4. Validate + normalise the PGN through chess-core, optionally
- *      anonymising player names.
- *   5. Charge `RATE_LIMITS.createPostWithAttachment` (in addition
- *      to the topic's base `rateLimit`).
- *   6. Insert the post via `createPostBase`, with the
- *      `post_game_pgn_attachments` row inserted inside the same
- *      transaction via `afterInsert` so the pair is atomic.
- *   7. (optional) chain `extraAfterInsert` for topic-specific extra
- *      writes (e.g. opening rating row).
+ * `extraAfterInsert` lets a topicType add its own rows to that same
+ * transaction — an opening rating row, say.
  *
- * If the `attachment` field is empty, the base fast-paths to a
- * plain createPostBase call with no attachment row and does NOT
- * consume the per-attachment rate limit (chunks contract).
+ * If the `attachment` field is empty, the post is written with no
+ * attachment row and the per-attachment rate limit is NOT consumed
+ * (chunks contract).
  */
 export async function createPostWithAttachmentBase(args: {
   locale: string;
@@ -79,53 +64,15 @@ export async function createPostWithAttachmentBase(args: {
 }): Promise<CreatePostState> {
   const { formData, extraAfterInsert, ...topicSpec } = args;
 
-  const rawAttachment = formData.get('attachment');
-  const attachmentRaw =
-    typeof rawAttachment === 'string' && rawAttachment.trim().length > 0 ? rawAttachment : null;
-
-  const anonymize = formData.get('attachmentAnonymize') === 'on';
-
-  // Fast-path: no attachment → plain createPostBase, no per-
-  // attachment rate-limit consumption.
-  if (attachmentRaw === null) {
-    return createPostBase({
-      ...topicSpec,
-      afterInsert: extraAfterInsert,
-      formData,
-    });
-  }
-
-  // Authenticate first so the per-attachment rate limit is charged
-  // against the actual user.
-  const guardResult = await authenticateAndCheckBan();
-  if ('error' in guardResult) {
-    return { error: guardResult.error };
-  }
-
-  const attachmentRateLimit = await checkRateLimit(
-    guardResult.user.id,
-    RATE_LIMITS.createPostWithAttachment
-  );
-  if ('error' in attachmentRateLimit) {
-    return { error: 'attachment.error.rateLimitedPostWithAttachment' };
-  }
-
-  const built = await buildPgnAttachmentValues(attachmentRaw, { anonymize });
-  if (!built.ok) {
-    return { error: pgnAttachmentErrorKey(built.error) };
+  const attachment = await resolvePgnAttachment(formData);
+  if (attachment.kind === 'error') {
+    return { error: attachment.error };
   }
 
   return createPostBase({
     ...topicSpec,
-    afterInsert: async (tx, postId) => {
-      await tx.insert(postGamePgnAttachments).values({
-        postId,
-        ...built.values,
-      });
-      if (extraAfterInsert) {
-        await extraAfterInsert(tx, postId);
-      }
-    },
+    afterInsert:
+      attachment.kind === 'none' ? extraAfterInsert : attachment.afterInsert(extraAfterInsert),
     formData,
   });
 }

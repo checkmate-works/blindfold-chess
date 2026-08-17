@@ -1,13 +1,7 @@
 'use server';
 
-import { authenticateAndCheckBan } from '@/lib/auth';
-import { postGamePgnAttachments } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
-import {
-  buildPgnAttachmentValues,
-  pgnAttachmentErrorKey,
-} from '@/lib/games/build-pgn-attachment-values';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { resolvePgnAttachment } from '@/lib/topic-posts/attachment-steps';
 
 import type { TopicType } from '@/app/[locale]/(public)/topics/_lib/constants';
 
@@ -47,53 +41,15 @@ export async function createReplyWithAttachmentBase(args: {
 }): Promise<CreateReplyState> {
   const { formData, extraAfterInsert, ...replySpec } = args;
 
-  const rawAttachment = formData.get('attachment');
-  const attachmentRaw =
-    typeof rawAttachment === 'string' && rawAttachment.trim().length > 0 ? rawAttachment : null;
-
-  const anonymize = formData.get('attachmentAnonymize') === 'on';
-
-  // Fast-path: no attachment → plain createReplyBase, no per-
-  // attachment rate-limit consumption.
-  if (attachmentRaw === null) {
-    return createReplyBase({
-      ...replySpec,
-      afterInsert: extraAfterInsert,
-      formData,
-    });
-  }
-
-  // Authenticate first so the per-attachment rate limit is charged
-  // against the actual user.
-  const guardResult = await authenticateAndCheckBan();
-  if ('error' in guardResult) {
-    return { error: guardResult.error };
-  }
-
-  const attachmentRateLimit = await checkRateLimit(
-    guardResult.user.id,
-    RATE_LIMITS.createPostWithAttachment
-  );
-  if ('error' in attachmentRateLimit) {
-    return { error: 'attachment.error.rateLimitedPostWithAttachment' };
-  }
-
-  const built = await buildPgnAttachmentValues(attachmentRaw, { anonymize });
-  if (!built.ok) {
-    return { error: pgnAttachmentErrorKey(built.error) };
+  const attachment = await resolvePgnAttachment(formData);
+  if (attachment.kind === 'error') {
+    return { error: attachment.error };
   }
 
   return createReplyBase({
     ...replySpec,
-    afterInsert: async (tx, replyId) => {
-      await tx.insert(postGamePgnAttachments).values({
-        postId: replyId,
-        ...built.values,
-      });
-      if (extraAfterInsert) {
-        await extraAfterInsert(tx, replyId);
-      }
-    },
+    afterInsert:
+      attachment.kind === 'none' ? extraAfterInsert : attachment.afterInsert(extraAfterInsert),
     formData,
   });
 }
