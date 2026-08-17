@@ -23,7 +23,7 @@ vi.mock('@/lib/db/games-read', () => ({
 
 vi.mock('@/lib/security/rate-limit', () => ({
   RATE_LIMITS: {
-    generateAiReview: { action: 'generate_ai_review', maxAttempts: 5, windowMs: 86_400_000 },
+    generateAiReview: { action: 'generate_ai_review', maxAttempts: 1, windowMs: 86_400_000 },
   },
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
 }));

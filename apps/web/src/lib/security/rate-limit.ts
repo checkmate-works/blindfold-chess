@@ -118,11 +118,24 @@ export const RATE_LIMITS = {
   /**
    * Per-user limit for AI review generation. This is the ONLY spend guard on
    * the paid LLM call (results are cached per (game, locale), so repeat views
-   * are free) — keep it tight. 5 / day covers a normal player's daily games
-   * with room for one retry; a future coin price replaces this as the primary
-   * economic control but the cap stays as an abuse backstop.
+   * are free), and no system-wide counter backs it up: the daily ceiling on
+   * spend is (subscribers × this number). Keep it tight.
+   *
+   * 1 / day is deliberately below what a heavy player could use. The feature
+   * ships subscriber-only while its output is still being tuned, so the cap is
+   * set to learn the per-review cost before opening the tap, not to satisfy
+   * demand. Raise it once real usage and billing data justify the number.
+   *
+   * The consequence to keep in mind: a slot is consumed just before the LLM
+   * call, so a provider error burns the day's only attempt (a cache hit, a
+   * missing key, and a failed entitlement check all refuse earlier and cost
+   * nothing). At 5/day a retry was implicit; at 1/day it is not, and a user who
+   * hits `llm_error` waits until tomorrow.
+   *
+   * A future coin price replaces this as the primary economic control; the cap
+   * then stays on as an abuse backstop.
    */
-  generateAiReview: { action: 'generate_ai_review', maxAttempts: 5, windowMs: 86_400_000 },
+  generateAiReview: { action: 'generate_ai_review', maxAttempts: 1, windowMs: 86_400_000 },
   /** Per-user limit for posting advice comments on a shared game. Matches createReply. */
   createGameComment: { action: 'create_game_comment', maxAttempts: 20, windowMs: 3_600_000 },
   /** Per-user limit for editing one's own shared-game comment. Matches editPost. */
