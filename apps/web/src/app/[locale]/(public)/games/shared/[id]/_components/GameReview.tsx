@@ -224,6 +224,14 @@ export function GameReview({
   // Seeded from the server-resolved review so both are right before the tab is
   // ever opened, and raised by the panel when a fresh review finishes there
   // (the panel owns that generation, and is unmounted while another tab shows).
+  //
+  // It is also what the panel reads back on re-mount. The tab is conditionally
+  // rendered, so leaving another tab destroys the panel's own state; this state
+  // outlives it and is the only place a review generated this session survives
+  // until the next server render.
+  //
+  // Not lifted for the local (result-screen) layout, which has no AI review at
+  // all — `aiReview` is undefined there and the seed is null.
   const [review, setReview] = useState<AiReview | null>(aiReview?.initial ?? null);
   // Stable identity: `?? []` fresh on every render would defeat the memos below.
   const reviewMoments = useMemo(() => review?.moments ?? [], [review]);
@@ -639,7 +647,11 @@ export function GameReview({
                   locale={locale}
                   moves={moves}
                   startingFen={startingFen}
-                  initialReview={aiReview.initial}
+                  // The page's copy, NOT `aiReview.initial` — switching tabs
+                  // unmounts this panel, and the server prop is still null for
+                  // a review generated in this session, so reading it here
+                  // would send the author back to the generate button.
+                  initialReview={review}
                   generation={aiReview.generation}
                   // Preview in the quick-peek modal (like the By Move strip),
                   // so following a review's citation never scrolls the live
