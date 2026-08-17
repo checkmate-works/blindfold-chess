@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -149,9 +149,19 @@ vi.mock('./PlaySettingsIndicator', () => ({
 }));
 
 // Pulls in next-intl routing (Link) and the Stockfish generation hook; its
-// own behaviour is covered by AiReviewPanel.test.tsx.
+// own behaviour is covered by AiReviewPanel.test.tsx. Props are recorded so
+// the page's half of the contract — what it hands the panel back after the
+// panel has been unmounted and re-created — can be asserted here.
+type AiPanelProps = {
+  initialReview: unknown;
+  onReviewGenerated?: (review: unknown) => void;
+};
+let aiPanelProps: AiPanelProps | null = null;
 vi.mock('./AiReviewPanel', () => ({
-  AiReviewPanel: () => <div data-testid="ai-review-panel" />,
+  AiReviewPanel: (props: AiPanelProps) => {
+    aiPanelProps = props;
+    return <div data-testid="ai-review-panel" />;
+  },
 }));
 
 type ReplayProps = Parameters<typeof GameReview>[0];
@@ -365,6 +375,31 @@ describe('GameReview — overview tabs on a move position', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
     expect(screen.getByTestId('ai-review-panel')).toBeInTheDocument();
+  });
+
+  // The tab row renders one panel at a time, so leaving the AI Review tab
+  // destroys the panel and everything it knows. A review generated in this
+  // session exists nowhere on the server prop until the next server render, so
+  // the page has to hand its own copy back — otherwise the author returns to
+  // the tab and is asked to generate the review they just paid for.
+  it('hands a review generated in this session back to the panel after a tab switch', () => {
+    const generated = {
+      moments: [],
+      content: { momentComments: [] },
+      createdAt: '2026-08-16T00:00:00.000Z',
+    } as unknown as NonNullable<ReplayProps['aiReview']>['initial'];
+    render(<GameReview {...onMove()} />);
+
+    fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
+    expect(aiPanelProps?.initialReview).toBeNull();
+
+    act(() => aiPanelProps!.onReviewGenerated!(generated));
+
+    fireEvent.click(screen.getByRole('tab', { name: 'overview.summaryTab' }));
+    expect(screen.queryByTestId('ai-review-panel')).toBeNull();
+    fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
+
+    expect(aiPanelProps?.initialReview).toBe(generated);
   });
 });
 

@@ -25,9 +25,13 @@ type Props = {
   moves: string[];
   startingFen: string | null;
   /**
-   * Cached review resolved server-side, or null when none exists yet — in
-   * which case this panel is mounted only for a viewer with a `generation`
-   * offer (see `SharedGameDetailView`).
+   * The review the page currently holds: the server-resolved one, or the one
+   * generated during this session (see `onReviewGenerated` — the page keeps it
+   * across this panel's unmounts, so it must be read from there rather than
+   * from the server prop, which stays null until the next server render).
+   *
+   * Null when no review exists yet — in which case this panel is mounted only
+   * for a viewer with a `generation` offer (see `SharedGameDetailView`).
    */
   initialReview: AiReview | null;
   /**
@@ -43,11 +47,12 @@ type Props = {
    */
   onJumpToPly: (ply: number) => void;
   /**
-   * Fires once when a generation started here completes. The page above marks
-   * graded moves on the board, and this panel is where a brand-new review comes
-   * into existence — without this the author would see their own review's
-   * grades on the board only after a reload. Not called for `initialReview`,
-   * which the page already has.
+   * Fires once when a generation started here completes. This panel is where a
+   * brand-new review comes into existence, and it is not where the review can
+   * be kept: the page above marks graded moves on the board, and — because the
+   * tab is conditionally rendered — this panel is destroyed the moment the
+   * author looks at another tab. Handing the review up is what makes it
+   * survive both. Not called for `initialReview`, which the page already has.
    */
   onReviewGenerated?: (review: AiReview) => void;
 };
