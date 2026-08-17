@@ -18,20 +18,6 @@ export type ReviewInput = {
   summaryStats: AnalysisSummaryStats;
 };
 
-function toMoment(a: MoveAnalysis): ReviewMoment {
-  return {
-    ply: a.ply,
-    san: a.san,
-    moveNumber: a.moveNumber,
-    color: a.color,
-    evalBefore: a.evalBefore,
-    evalAfter: a.evalAfter,
-    cpLoss: a.cpLoss,
-    bestMoveSan: a.bestMoveSan,
-    judgment: a.judgment,
-  };
-}
-
 /**
  * Select the critical moments and aggregate stats a review is written about.
  *
@@ -54,10 +40,10 @@ export function buildReviewInput(analyses: MoveAnalysis[], playerColor: Side): R
     .filter((a) => a.color !== playerColor && a.judgment === 'blunder')
     .sort(byLossDesc);
 
+  // Already a fresh array from the spread, so `sort` is not mutating a caller's.
   const moments = [...playerCandidates, ...opponentBlunders]
     .slice(0, MAX_REVIEW_MOMENTS)
-    .sort((a, b) => a.ply - b.ply)
-    .map(toMoment);
+    .sort((a, b) => a.ply - b.ply);
 
   const judgmentCountsPlayer = Object.fromEntries(MOVE_JUDGMENTS.map((j) => [j, 0])) as Record<
     MoveJudgment,

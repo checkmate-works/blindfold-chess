@@ -19,27 +19,26 @@
  */
 import type { Side } from '@blindfold-chess/types';
 
-import type { MoveJudgment } from '@/lib/games/analysis/types';
+import type { MoveAnalysis, MoveJudgment } from '@/lib/games/analysis/types';
 
 /**
  * One critical moment selected for the review — server-derived engine fact
  * (see the module TSDoc). Persisted in `game_ai_reviews.moments`.
+ *
+ * The same shape as {@link MoveAnalysis}, because a moment IS an analyzed
+ * move: selection picks a subset of them, it does not reshape them. The two
+ * were declared separately with a nine-field copy function between them, which
+ * meant a field added to the analysis had to be added here and there to reach
+ * storage. The alias keeps the name — this is the persisted vocabulary, and
+ * `games.ts` types the `moments` jsonb column with it — while making the
+ * column follow the analysis automatically.
+ *
+ * That last part is the reason to be careful: widening `MoveAnalysis` now
+ * widens what is written to `game_ai_reviews.moments`. Rows already stored
+ * lack any new field, so anything added must be optional, or read back
+ * defensively, exactly as before.
  */
-export type ReviewMoment = {
-  /** 0-based index into `games.moves[]`. */
-  ply: number;
-  /** The move as played (SAN). */
-  san: string;
-  /** Fullmove number for display ("18. Nd5" / "18... Nd5"). */
-  moveNumber: number;
-  color: Side;
-  /** Centipawns, white perspective, before/after the move. */
-  evalBefore: number;
-  evalAfter: number;
-  cpLoss: number;
-  bestMoveSan: string | null;
-  judgment: MoveJudgment;
-};
+export type ReviewMoment = MoveAnalysis;
 
 /** Aggregate stats over the PLAYER's moves, for display and LLM context. */
 export type AnalysisSummaryStats = {
