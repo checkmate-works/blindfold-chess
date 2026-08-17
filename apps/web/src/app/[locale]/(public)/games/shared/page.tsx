@@ -109,10 +109,8 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
        * links. Absent for viewers with nothing to show — see
        * {@link getMyPublishedGames}.
        */}
-      <div
-        className={`mt-3 mb-4 flex flex-wrap items-center gap-2 ${myPublished ? 'justify-between' : 'justify-end'}`}
-      >
-        {myPublished && (
+      {myPublished && (
+        <div className="mt-3 flex justify-end">
           <Link
             href={`/u/${myPublished.username}/games`}
             locale={locale}
@@ -120,7 +118,11 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
           >
             {t('list.myPublished')} ({myPublished.count})
           </Link>
-        )}
+        </div>
+      )}
+
+      {/* Kept on its own line directly above the list it orders. */}
+      <div className="mt-3 mb-4 flex justify-end">
         <SharedGamesSort currentSort={sort} />
       </div>
 
