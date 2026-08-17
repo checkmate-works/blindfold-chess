@@ -2646,6 +2646,7 @@
       "title": "公開されたゲーム",
       "empty": "まだ公開された対局はありません。",
       "publishExisting": "対局を公開する",
+      "myPublished": "自分の公開対局",
       "sortBy": "並び替え",
       "sort": {
         "new": "新着",

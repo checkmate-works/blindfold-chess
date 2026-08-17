@@ -2646,6 +2646,7 @@
       "title": "Published games",
       "empty": "No games have been shared yet.",
       "publishExisting": "Publish a finished game",
+      "myPublished": "My published games",
       "sortBy": "Sort by",
       "sort": {
         "new": "Newest",
