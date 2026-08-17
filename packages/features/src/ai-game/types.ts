@@ -1,4 +1,8 @@
-import type { AlgebraicNotation, Side } from "@blindfold-chess/types";
+import type {
+  AlgebraicNotation,
+  FinalGameOutcome,
+  Side,
+} from "@blindfold-chess/types";
 
 export type SkillLevel =
   | 1
@@ -24,7 +28,13 @@ export type SkillLevel =
 
 export type GameStatus = "in_progress" | "checkmate" | "stalemate" | "draw";
 
-export type PlayerResult = "win" | "loss" | "draw";
+/**
+ * The player's terminal result. An alias of the shared `FinalGameOutcome`
+ * rather than a fourth spelling of the same three strings — this one, the exp
+ * calculator's `GameExpOutcome`, and the web save action's `VALID_RESULTS`
+ * were independent literals describing one set.
+ */
+export type PlayerResult = FinalGameOutcome;
 
 /** Runtime list of {@link PlayerResult} members, for validating untyped input. */
 export const PLAYER_RESULTS: readonly PlayerResult[] = ["win", "loss", "draw"];

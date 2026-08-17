@@ -1,5 +1,6 @@
 'use server';
 
+import { PLAYER_RESULTS } from '@blindfold-chess/features/ai-game';
 import type { ExpInfo, GameExpEngine, GameExpOutcome } from '@blindfold-chess/features/exp';
 
 import { authenticateAndGuard } from '@/lib/auth';
@@ -19,8 +20,6 @@ export type SaveGameResultInput = {
 
 export type SaveGameResultResponse =
   { success: true; exp?: ExpInfo } | { success: false; error: string };
-
-const VALID_RESULTS: readonly GameExpOutcome[] = ['win', 'loss', 'draw'];
 
 /**
  * Narrow an untrusted engine payload to {@link GameExpEngine}. Difficulty
@@ -60,7 +59,7 @@ export async function saveGameResult(input: SaveGameResultInput): Promise<SaveGa
     if (!input || typeof input.gameId !== 'string' || !UUID_RE.test(input.gameId)) {
       return { success: false, error: 'invalid_input' };
     }
-    if (!VALID_RESULTS.includes(input.result)) {
+    if (!PLAYER_RESULTS.includes(input.result)) {
       return { success: false, error: 'invalid_input' };
     }
     const engine = normalizeEngine(input.engine);
