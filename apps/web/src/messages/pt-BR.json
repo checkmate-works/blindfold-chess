@@ -2651,7 +2651,8 @@
         "new": "Mais recentes",
         "clean": "Mais limpas",
         "strong": "Força do adversário"
-      }
+      },
+      "aiReviewedBadge": "Com revisão IA"
     },
     "publishPicker": {
       "title": "Escolha uma partida para publicar",

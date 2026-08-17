@@ -13,6 +13,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
+import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
 import { getOptionalUser } from '@/lib/auth';
 import { countSharedGames, listSharedGames } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
@@ -30,6 +31,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { GamesTabs } from '../_components/GamesTabs';
 import { MIN_GAMES_FOR_MID_AD } from '../_lib/mid-ad';
 import { toggleGameLikeAction } from './[id]/_actions/game-like';
+import { AiReviewedBadge } from './_components/AiReviewedBadge';
 import { GameColorOpeningRow } from './_components/GameColorOpeningRow';
 import { PublishExistingGameButton } from './_components/PublishExistingGameButton';
 import { SharedGamesSort } from './_components/SharedGamesSort';
@@ -72,9 +74,10 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
   const items = await listSharedGames(sort, limit, offset);
 
   const ids = items.map((g) => g.id);
-  const [likeMetaMap, commentMetaMap] = await Promise.all([
+  const [likeMetaMap, commentMetaMap, reviewedIds] = await Promise.all([
     getLikeMetaMap(GAME_LIKE_TARGET, ids, currentUser?.id),
     getGameCommentMetaMap(ids),
+    getReviewedGameIdSet(ids),
   ]);
   const justNowLabel = t('detail.justNow');
 
@@ -123,6 +126,11 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
               justNowLabel={justNowLabel}
               locale={locale}
               topicKey=""
+              badge={
+                reviewedIds.has(g.id) ? (
+                  <AiReviewedBadge label={t('list.aiReviewedBadge')} />
+                ) : undefined
+              }
               meta={
                 <GameColorOpeningRow
                   playerColor={g.playerColor}

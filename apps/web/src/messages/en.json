@@ -2651,7 +2651,8 @@
         "new": "Newest",
         "clean": "Cleanest",
         "strong": "Opponent strength"
-      }
+      },
+      "aiReviewedBadge": "AI reviewed"
     },
     "publishPicker": {
       "title": "Choose a game to publish",
