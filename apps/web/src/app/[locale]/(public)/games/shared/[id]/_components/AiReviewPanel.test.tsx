@@ -68,6 +68,9 @@ const baseProps = {
   moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Nd5'],
   startingFen: null,
   initialReview: null,
+  // The subscribed author — the viewer every generation-flow case below is
+  // about. The gated variants override this.
+  generation: { kind: 'allowed' } as const,
   onJumpToPly: vi.fn(),
 };
 
@@ -107,6 +110,41 @@ describe('AiReviewPanel', () => {
 
     fireEvent.click(screen.getByText('3. Nd5'));
     expect(onJumpToPly).toHaveBeenCalledWith(4);
+  });
+
+  it('offers the subscription instead of the generate button when nothing pays for it', () => {
+    render(<AiReviewPanel {...baseProps} generation={{ kind: 'subscription_required' }} />);
+
+    expect(screen.getByText('aiReview.upsell.title')).toBeInTheDocument();
+    // Asserted loosely: the locale prefix is next-intl's to add, and it does
+    // not do so outside a request context.
+    expect(screen.getByText('aiReview.upsell.cta').closest('a')).toHaveAttribute(
+      'href',
+      expect.stringContaining('/pricing')
+    );
+    expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
+  });
+
+  // The review is public once published; only spending on a new one is gated.
+  it('shows a cached review to an unentitled viewer, with no upsell over it', () => {
+    render(
+      <AiReviewPanel
+        {...baseProps}
+        initialReview={REVIEW}
+        generation={{ kind: 'subscription_required' }}
+      />
+    );
+
+    expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
+    expect(screen.queryByText('aiReview.upsell.title')).not.toBeInTheDocument();
+  });
+
+  it('offers nothing at all to a viewer with no generation offer', () => {
+    render(<AiReviewPanel {...baseProps} generation={null} />);
+
+    expect(screen.getByText('aiReview.notGenerated')).toBeInTheDocument();
+    expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
+    expect(screen.queryByText('aiReview.upsell.title')).not.toBeInTheDocument();
   });
 
   it('confirms before generating, and writes the review in the page language', () => {

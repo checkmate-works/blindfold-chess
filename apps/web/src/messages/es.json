@@ -2816,6 +2816,7 @@
         "not_found": "Esta partida ya no está disponible.",
         "not_owner": "Solo quien publicó esta partida puede generar su revisión IA.",
         "game_not_eligible": "Esta partida es demasiado corta o demasiado larga para una revisión automática.",
+        "subscription_required": "Generar una revisión IA requiere una suscripción.",
         "rate_limited": "Has alcanzado el límite diario de revisiones IA. Inténtalo mañana.",
         "llm_error": "El entrenador IA no pudo generar la revisión. Inténtalo más tarde.",
         "unexpected_error": "Algo salió mal. Inténtalo más tarde.",
@@ -2829,6 +2830,11 @@
         "languageHelp": "Cada partida tiene una sola revisión. Se mostrará a todos los visitantes en el idioma que elijas aquí.",
         "submit": "Generar",
         "cancel": "Cancelar"
+      },
+      "upsell": {
+        "title": "La revisión IA es una función de pago",
+        "description": "El entrenador IA interpreta tu partida a partir del análisis de Stockfish y explica los momentos que la decidieron, además de en qué trabajar después. Generarla requiere una suscripción.",
+        "cta": "Ver planes"
       }
     },
     "discussion": {

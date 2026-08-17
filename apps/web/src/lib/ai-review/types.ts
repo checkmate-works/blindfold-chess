@@ -116,6 +116,15 @@ export type AiReviewGenerationState =
   | { kind: 'blocked'; reason: 'not_owner' | 'game_not_eligible' };
 
 /**
+ * The generation states worth rendering something for. A blocked viewer is
+ * offered nothing at all — not even an explanation — so the UI takes this
+ * narrowed type and `null` for "no offer", rather than a fourth branch it
+ * would have to remember never to render. Derived by subtraction so that the
+ * planned `payable` state reaches the UI without touching this line.
+ */
+export type AiReviewGenerationOffer = Exclude<AiReviewGenerationState, { kind: 'blocked' }>;
+
+/**
  * Error codes the generation flow can surface to the UI (mapped to i18n
  * messages under `sharedGames.aiReview.errors`). Kept as a closed union so a
  * future coin charge only needs to add `'insufficient_balance'` here and in
