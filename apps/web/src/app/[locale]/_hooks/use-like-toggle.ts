@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from 'react';
 
+import type { ToggleLikeResult } from '@/lib/db/like-actions';
+
 import { useAuthGuard } from './use-auth-guard';
 
-export type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
+export type { ToggleLikeResult };
 
 type Options = {
   initialLikeCount: number;

@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, topicPosts } from '@/lib/db';
+import type { ToggleLikeResult } from '@/lib/db/like-actions';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
 import { isBlockedBetween } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
@@ -12,8 +13,6 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { validateUUID } from '@/lib/validations/uuid';
 
 import type { TopicType } from '../_lib/constants';
-
-type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
 
 /**
  * Shared "like / unlike a topic_post" core, behind a thin `"use server"`

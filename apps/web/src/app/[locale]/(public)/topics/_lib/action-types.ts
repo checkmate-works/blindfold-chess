@@ -1,4 +1,5 @@
 import type { ActionResult } from '@/lib/action-types';
+import type { ToggleLikeResult } from '@/lib/db/like-actions';
 
 import type { AttachmentKind } from '../_actions/removePostAttachment';
 
@@ -24,7 +25,7 @@ export type ToggleLikeAction = (
   postId: string,
   locale: string,
   topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
+) => Promise<ToggleLikeResult>;
 
 export type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
 

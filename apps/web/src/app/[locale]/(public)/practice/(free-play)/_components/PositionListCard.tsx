@@ -5,13 +5,8 @@ import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { Position } from '@/lib/db/schema';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
+import type { ToggleLikeAction } from '@/app/[locale]/(public)/topics/_lib/action-types';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type Props = {
   position: Position;
