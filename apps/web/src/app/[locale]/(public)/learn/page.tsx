@@ -13,7 +13,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -121,17 +121,7 @@ async function LearnSkeleton({ locale }: { locale: string }) {
 
         {/* Breadcrumb: [Home logo] / Learn. Single static crumb mirrors
             `learn/page.tsx`'s `<Breadcrumb items={[{ label: t('navigation.learn') }]} />`. */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
-          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-            <li>
-              <Skeleton className="w-6 h-6 rounded-sm" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-foreground font-medium">{tNav('learn')}</span>
-            </li>
-          </ol>
-        </nav>
+        <BreadcrumbSkeleton crumbs={[{ label: tNav('learn'), current: true }]} />
       </PagePanel>
     </div>
   );

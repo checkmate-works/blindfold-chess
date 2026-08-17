@@ -17,7 +17,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -147,21 +147,7 @@ async function LearnCategorySkeleton({ locale }: { locale: string }) {
         {/* Breadcrumb: [Home logo] / Learn / <category>. The category label is
             data-driven (per-route i18n key not known to this skeleton) — bar
             placeholder. Mirrors `learn/[category]/page.tsx`'s Breadcrumb. */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
-          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-            <li>
-              <Skeleton className="w-6 h-6 rounded-sm" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{tNav('learn')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <Skeleton className="h-4 w-24 rounded" />
-            </li>
-          </ol>
-        </nav>
+        <BreadcrumbSkeleton crumbs={[{ label: tNav('learn') }, { widthClass: 'w-24' }]} />
       </PagePanel>
     </div>
   );
