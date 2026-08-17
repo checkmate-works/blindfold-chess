@@ -6,7 +6,7 @@ import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-
 import type { LeaderboardModuleSlug, LeaderboardPeriod, ModuleFilterValue } from '../_lib/types';
 import { MODULE_TO_SLUG, VALID_MODULE_FILTERS } from '../_lib/types';
 
-type CurrentSlug = LeaderboardModuleSlug | 'all';
+export type CurrentSlug = LeaderboardModuleSlug | 'all';
 
 type Props = {
   currentSlug: CurrentSlug;
