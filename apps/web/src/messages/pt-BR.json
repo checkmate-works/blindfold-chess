@@ -2816,6 +2816,7 @@
         "not_found": "Esta partida não está mais disponível.",
         "not_owner": "Apenas quem publicou esta partida pode gerar a revisão IA.",
         "game_not_eligible": "Esta partida é curta ou longa demais para uma revisão automática.",
+        "subscription_required": "Gerar uma revisão IA exige uma assinatura.",
         "rate_limited": "Você atingiu o limite diário de revisões IA. Tente novamente amanhã.",
         "llm_error": "O treinador IA não conseguiu gerar a revisão. Tente mais tarde.",
         "unexpected_error": "Algo deu errado. Tente mais tarde.",
@@ -2829,6 +2830,11 @@
         "languageHelp": "Cada partida tem uma única revisão. Ela será exibida a todos os visitantes no idioma que você escolher aqui.",
         "submit": "Gerar",
         "cancel": "Cancelar"
+      },
+      "upsell": {
+        "title": "A revisão IA é um recurso pago",
+        "description": "O treinador IA interpreta sua partida a partir da análise do Stockfish e explica os momentos que a decidiram, além do que treinar em seguida. Gerar uma exige uma assinatura.",
+        "cta": "Ver planos"
       }
     },
     "discussion": {
@@ -5863,14 +5869,15 @@
     "freePlan": {
       "name": "Gratuito",
       "price": "$0",
-      "feature1": "Todos os recursos"
+      "feature1": "Todos os recursos, exceto a revisão IA"
     },
     "adFreePlan": {
       "name": "Sem Anúncios",
       "price": "$1",
       "priceUnit": "/ mês",
       "feature1": "Todos os recursos",
-      "feature2": "Ocultar todos os anúncios"
+      "feature2": "Ocultar todos os anúncios",
+      "feature3": "Revisão IA (análise e comentários automáticos da partida)"
     },
     "currentPlan": "Plano atual",
     "subscribe": "Assinar",

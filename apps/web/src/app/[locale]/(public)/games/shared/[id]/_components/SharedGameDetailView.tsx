@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
-import { canGenerateAiReview } from '@/lib/ai-review/authorize';
+import { resolveAiReviewGenerationState } from '@/lib/ai-review/entitlement';
 import { isLlmConfigured } from '@/lib/ai-review/openai';
 import { getAiReviewForViewer } from '@/lib/ai-review/queries';
 import { getOptionalUser } from '@/lib/auth';
@@ -69,24 +69,36 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   // the derived opening, the advice comments (per-move) plus the viewer's
   // profile (enables posting and rendering their own comment optimistically),
   // and the social/AI-review payload.
-  const [opening, comments, currentUser, likeMeta, gameChunks, availableChunks, aiReview] =
-    await Promise.all([
-      // Opening is derived from the moves (see detectGameOpening); null for
-      // custom-start games or lines outside the master. Rendered (with the
-      // player colour) inside GameReview, above the stats block.
-      detectGameOpening({ moves: game.moves, startingFen: game.startingFen }),
-      listGameComments(game.id, user?.id),
-      user ? getCommentUserProfile(user.id) : Promise.resolve(null),
-      getLikeMeta(GAME_LIKE_TARGET, game.id, user?.id),
-      listGameChunks(game.id),
-      // Published catalog + the viewer's own drafts, so a chunk just authored
-      // from a position on this very board can be linked back to it without a
-      // publish round-trip. See `linkableChunkPredicate`.
-      getLinkableChunkOptionsForViewer(user?.id ?? null),
-      // The game's AI coach review — this locale's, else the author's own
-      // (see getAiReviewForViewer). Null = the tab offers generation.
-      getAiReviewForViewer(game.id, locale),
-    ]);
+  const [
+    opening,
+    comments,
+    currentUser,
+    likeMeta,
+    gameChunks,
+    availableChunks,
+    aiReview,
+    aiReviewAccess,
+  ] = await Promise.all([
+    // Opening is derived from the moves (see detectGameOpening); null for
+    // custom-start games or lines outside the master. Rendered (with the
+    // player colour) inside GameReview, above the stats block.
+    detectGameOpening({ moves: game.moves, startingFen: game.startingFen }),
+    listGameComments(game.id, user?.id),
+    user ? getCommentUserProfile(user.id) : Promise.resolve(null),
+    getLikeMeta(GAME_LIKE_TARGET, game.id, user?.id),
+    listGameChunks(game.id),
+    // Published catalog + the viewer's own drafts, so a chunk just authored
+    // from a position on this very board can be linked back to it without a
+    // publish round-trip. See `linkableChunkPredicate`.
+    getLinkableChunkOptionsForViewer(user?.id ?? null),
+    // The game's AI coach review — this locale's, else the author's own
+    // (see getAiReviewForViewer). Null = the tab offers generation.
+    getAiReviewForViewer(game.id, locale),
+    // Resolved alongside the review rather than after it: the answer decides
+    // what the tab offers, and making it wait on the review's round-trip
+    // would serialize two independent reads.
+    resolveAiReviewGenerationState(game, user?.id ?? null),
+  ]);
 
   // Whether to offer the "as played" GIF — shared with the pre-publish teaser
   // on the result screen, so the two never disagree about which variant exists.
@@ -100,14 +112,18 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   const hasPlayedVariant = hasPlayedGifVariant(game);
 
   // The AI Review tab exists only when the viewer has something to read or
-  // something to do: a review already generated for this locale, or the right
-  // to generate one (the author's alone — see canGenerateAiReview — and only
-  // where a key is configured at all). Every other viewer would get a tab
-  // whose entire content is an explanation of why it is empty, so they get no
-  // tab instead.
-  const viewerCanGenerate =
-    isLlmConfigured() && user != null && canGenerateAiReview(game, user.id).ok;
-  const showAiReview = aiReview != null || viewerCanGenerate;
+  // something to do: a review already generated for this locale, or an offer —
+  // generate it, or subscribe so they can. Both offers are the author's alone
+  // (see resolveAiReviewGenerationState), and neither exists where no LLM key
+  // is configured. Every other viewer would get a tab whose entire content is
+  // an explanation of why it is empty, so they get no tab instead.
+  //
+  // The upsell counts as "something to do" on purpose: an author who cannot
+  // generate today is exactly who the subscription is for, and hiding the tab
+  // from them would hide the feature from the only people it can convert.
+  const generationOffer =
+    isLlmConfigured() && aiReviewAccess.kind !== 'blocked' ? aiReviewAccess : null;
+  const showAiReview = aiReview != null || generationOffer != null;
 
   return (
     <PageLayout
@@ -141,7 +157,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           statsHeader={
             <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
           }
-          aiReview={showAiReview ? { initial: aiReview } : undefined}
+          aiReview={showAiReview ? { initial: aiReview, generation: generationOffer } : undefined}
           social={{
             mode: 'live',
             // Real auth state — distinct from `currentUser` (the comment

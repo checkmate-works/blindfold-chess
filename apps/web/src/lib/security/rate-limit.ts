@@ -32,6 +32,19 @@ export type RateLimitConfig = {
   windowMs: number;
 };
 
+/**
+ * How many AI reviews one user may generate per day.
+ *
+ * Named rather than inlined with the other caps because this is the only
+ * number in this file that decides how much money the app spends: nothing
+ * counts LLM calls system-wide, so (subscribers × this) is the daily ceiling.
+ * Anything that has to state or reason about the limit — a UI notice, a
+ * pricing calculation — reads it from here instead of restating the digit.
+ *
+ * See `RATE_LIMITS.generateAiReview` for why it currently sits this low.
+ */
+export const AI_REVIEW_GENERATIONS_PER_DAY = 1;
+
 export const RATE_LIMITS = {
   createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
   /**
@@ -118,11 +131,29 @@ export const RATE_LIMITS = {
   /**
    * Per-user limit for AI review generation. This is the ONLY spend guard on
    * the paid LLM call (results are cached per (game, locale), so repeat views
-   * are free) — keep it tight. 5 / day covers a normal player's daily games
-   * with room for one retry; a future coin price replaces this as the primary
-   * economic control but the cap stays as an abuse backstop.
+   * are free), and no system-wide counter backs it up: the daily ceiling on
+   * spend is (subscribers × this number). Keep it tight.
+   *
+   * The current {@link AI_REVIEW_GENERATIONS_PER_DAY} is deliberately below
+   * what a heavy player could use. The feature ships subscriber-only while its
+   * output is still being tuned, so the cap is set to learn the per-review cost
+   * before opening the tap, not to satisfy demand. Raise it once real usage and
+   * billing data justify the number.
+   *
+   * The consequence to keep in mind at a cap of one: a slot is consumed just
+   * before the LLM call, so a provider error burns the day's only attempt (a
+   * cache hit, a missing key, and a failed entitlement check all refuse earlier
+   * and cost nothing). A retry used to be implicit in a larger budget; it is
+   * not now, and a user who hits `llm_error` waits until tomorrow.
+   *
+   * A future coin price replaces this as the primary economic control; the cap
+   * then stays on as an abuse backstop.
    */
-  generateAiReview: { action: 'generate_ai_review', maxAttempts: 5, windowMs: 86_400_000 },
+  generateAiReview: {
+    action: 'generate_ai_review',
+    maxAttempts: AI_REVIEW_GENERATIONS_PER_DAY,
+    windowMs: 86_400_000,
+  },
   /** Per-user limit for posting advice comments on a shared game. Matches createReply. */
   createGameComment: { action: 'create_game_comment', maxAttempts: 20, windowMs: 3_600_000 },
   /** Per-user limit for editing one's own shared-game comment. Matches editPost. */

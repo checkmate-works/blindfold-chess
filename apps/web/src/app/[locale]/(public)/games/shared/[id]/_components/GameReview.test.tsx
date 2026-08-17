@@ -330,7 +330,7 @@ describe('GameReview — overview tabs on a move position', () => {
     mockStats = { totalMoves: 3 };
     mockNav.currentPosition = 0;
     return baseProps({
-      aiReview: { initial: null },
+      aiReview: { initial: null, generation: { kind: 'allowed' } },
       social: liveSocial({
         isAuthenticated: true,
         comments: [{ id: 'c1', ply: 1, deletedAt: null } as LiveSocial['comments'][number]],
@@ -376,6 +376,7 @@ describe('GameReview — AI review grade on the board', () => {
           moments: [{ ply, judgment: 'blunder' }],
           content: { momentComments: [] },
         } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
+        generation: null,
       },
     });
 
@@ -423,7 +424,7 @@ describe('GameReview — AI review grade on the board', () => {
         isAuthenticated: true,
         comments: [{ id: 'c1', ply: position, deletedAt: null } as LiveSocial['comments'][number]],
       }),
-      aiReview: { initial: REVIEWED },
+      aiReview: { initial: REVIEWED, generation: null },
     });
   };
 

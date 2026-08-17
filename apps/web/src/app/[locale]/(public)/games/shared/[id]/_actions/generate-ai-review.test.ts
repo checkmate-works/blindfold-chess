@@ -7,6 +7,11 @@ const mockDetectOpening = vi.fn();
 const mockGenerateReview = vi.fn();
 const mockStoreFind = vi.fn();
 const mockIsLlmConfigured = vi.fn();
+const mockHasActiveSubscription = vi.fn();
+
+vi.mock('@/lib/billing/subscription', () => ({
+  hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
+}));
 
 vi.mock('@/lib/auth', () => ({
   authenticateAndCheckBan: (...args: unknown[]) => mockAuth(...args),
@@ -18,7 +23,7 @@ vi.mock('@/lib/db/games-read', () => ({
 
 vi.mock('@/lib/security/rate-limit', () => ({
   RATE_LIMITS: {
-    generateAiReview: { action: 'generate_ai_review', maxAttempts: 5, windowMs: 86_400_000 },
+    generateAiReview: { action: 'generate_ai_review', maxAttempts: 1, windowMs: 86_400_000 },
   },
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
 }));
@@ -87,6 +92,7 @@ describe('generateAiReviewAction', () => {
       author: null,
     });
     mockStoreFind.mockResolvedValue(null);
+    mockHasActiveSubscription.mockResolvedValue(true);
     mockIsLlmConfigured.mockReturnValue(true);
     mockCheckRateLimit.mockResolvedValue({ success: true });
     mockDetectOpening.mockResolvedValue({ slug: 'italian', name: 'Italian Game', ecoCode: 'C50' });
@@ -194,6 +200,30 @@ describe('generateAiReviewAction', () => {
     expect(result).toEqual({ success: true, review: FAKE_REVIEW });
     expect(mockCheckRateLimit).not.toHaveBeenCalled();
     expect(mockGenerateReview).not.toHaveBeenCalled();
+  });
+
+  it('refuses the author without a subscription, before spending a rate-limit slot', async () => {
+    mockHasActiveSubscription.mockResolvedValue(false);
+
+    expect(await generateAiReviewAction(validInput())).toEqual({
+      success: false,
+      error: 'subscription_required',
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(mockGenerateReview).not.toHaveBeenCalled();
+  });
+
+  // A review already published stays readable to its author for good: a lapsed
+  // subscription must not retract what the app has been serving to every
+  // visitor of the shared game.
+  it('still serves a cached review to an author whose subscription lapsed', async () => {
+    mockHasActiveSubscription.mockResolvedValue(false);
+    mockStoreFind.mockResolvedValue(FAKE_REVIEW);
+
+    expect(await generateAiReviewAction(validInput())).toEqual({
+      success: true,
+      review: FAKE_REVIEW,
+    });
   });
 
   it('refuses without an LLM key, before spending a rate-limit slot', async () => {

@@ -7,7 +7,7 @@ import { LOCALE_LABELS } from '@/i18n/locale-labels';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot } from 'react-icons/fa';
 
-import type { AiReview } from '@/lib/ai-review/types';
+import type { AiReview, AiReviewGenerationOffer } from '@/lib/ai-review/types';
 import { MOVE_JUDGMENTS } from '@/lib/games/analysis/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
 import { MoveJudgmentBadge } from '@/lib/games/evaluation';
@@ -16,6 +16,7 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useAiReviewGeneration } from '../_hooks/use-ai-review-generation';
+import { AiReviewUpsell } from './AiReviewUpsell';
 import { ReviewMomentCard } from './ReviewMomentCard';
 
 type Props = {
@@ -25,10 +26,16 @@ type Props = {
   startingFen: string | null;
   /**
    * Cached review resolved server-side, or null when none exists yet — in
-   * which case this panel is only mounted for a viewer allowed to generate
-   * one (see `SharedGameDetailView`), so it can offer the CTA unconditionally.
+   * which case this panel is mounted only for a viewer with a `generation`
+   * offer (see `SharedGameDetailView`).
    */
   initialReview: AiReview | null;
+  /**
+   * What this viewer may do about generating a review, or null when they may
+   * do nothing — a reader of someone else's review, or a deployment with no
+   * LLM key. Null renders no generation UI at all, not a locked one.
+   */
+  generation: AiReviewGenerationOffer | null;
   /**
    * Jump the replay board to the position after the given ply — the board that
    * carries both that move's grade badge and the engine arrow for what the
@@ -60,6 +67,7 @@ export function AiReviewPanel({
   moves,
   startingFen,
   initialReview,
+  generation,
   onJumpToPly,
   onReviewGenerated,
 }: Props) {
@@ -83,6 +91,18 @@ export function AiReviewPanel({
 
   if (review) {
     return <ReviewBody review={review} viewerLocale={locale} onJumpToPly={onJumpToPly} />;
+  }
+
+  // No review and nothing this viewer can do about it. The page keeps the tab
+  // out of their reach, so this is the stale-page case, not a normal one.
+  if (generation === null) {
+    return <p className="py-6 text-sm text-muted-foreground">{t('aiReview.notGenerated')}</p>;
+  }
+
+  // Ahead of the in-flight phases below: without an entitlement, generation
+  // never starts, so there is no state for those phases to be in.
+  if (generation.kind === 'subscription_required') {
+    return <AiReviewUpsell locale={locale} />;
   }
 
   if (state.phase === 'analyzing') {
