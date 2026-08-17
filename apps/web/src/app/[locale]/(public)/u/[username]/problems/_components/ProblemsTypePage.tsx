@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
+import type { PositionKind } from '@/lib/positions/kind';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -13,8 +14,6 @@ import { loadProfileArchiveContext, resolveProfileViewer } from '../../_lib/load
 import { loadProblemsPageData } from '../_lib/load-problems-page-data';
 import { ProblemPositionList } from './ProblemPositionList';
 import { ProblemTypeTabs } from './ProblemTypeTabs';
-
-type ProblemType = 'puzzle' | 'memory';
 
 const PAGE_SIZE = 10;
 
@@ -27,14 +26,14 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-const TYPE_ROUTE_SEGMENT: Record<ProblemType, string> = {
+const TYPE_ROUTE_SEGMENT: Record<PositionKind, string> = {
   puzzle: 'puzzles',
   memory: 'position-memory',
 };
 
 export async function generateProblemsTypeMetadata(
   { params }: Props,
-  type: ProblemType
+  type: PositionKind
 ): Promise<Metadata> {
   const { locale, username } = await params;
 
@@ -50,7 +49,7 @@ export async function ProblemsTypePage({
   params,
   searchParams,
   type,
-}: Props & { type: ProblemType }) {
+}: Props & { type: PositionKind }) {
   const { locale, username } = await params;
 
   // The viewer resolves first (both of its lookups are `React.cache`d) so the

@@ -1,12 +1,12 @@
+import type { PositionKind } from '@/lib/positions/kind';
+
 import { LinkTabs } from '@/app/[locale]/_components/LinkTabs';
 import type { LinkTabItem } from '@/app/[locale]/_components/LinkTabs';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-type ProblemType = 'puzzle' | 'memory';
-
 type Props = {
   username: string;
-  activeType: ProblemType;
+  activeType: PositionKind;
   puzzleCount: number;
   memoryCount: number;
   locale: Locale;

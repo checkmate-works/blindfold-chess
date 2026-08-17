@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { listContentRevisionsForPosition } from '@/lib/positions/content-revision-queries';
+import { POSITION_KIND_CONFIG, getPositionListPath } from '@/lib/positions/kind';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import type { PositionType } from '@/lib/positions/types';
 
@@ -16,11 +17,6 @@ type Props = {
   positionType: Extract<PositionType, 'memory' | 'puzzle'>;
   locale: Locale;
 };
-
-const TYPE_CONFIG = {
-  memory: { namespace: 'practice.positionMemory', listPath: '/practice/position-memory' },
-  puzzle: { namespace: 'practice.puzzle', listPath: '/practice/puzzle' },
-} as const;
 
 /**
  * Shared body for a position's edit-history page — the owner's own edits to
@@ -45,7 +41,8 @@ export async function PositionHistoryView({ positionId, positionType, locale }: 
   }
   const { position } = row;
 
-  const { namespace, listPath } = TYPE_CONFIG[positionType];
+  const { namespace } = POSITION_KIND_CONFIG[positionType];
+  const listPath = getPositionListPath(positionType);
   const detailPath = `${listPath}/${position.id}`;
 
   const [revisions, t, tNav, tType] = await Promise.all([

@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
+import { POSITION_KIND_CONFIG, getPositionListPath } from '@/lib/positions/kind';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import type { PositionType } from '@/lib/positions/types';
 
@@ -17,11 +18,6 @@ type Props = {
   positionType: Extract<PositionType, 'memory' | 'puzzle'>;
   locale: Locale;
 };
-
-const TYPE_CONFIG = {
-  memory: { namespace: 'practice.positionMemory', listPath: '/practice/position-memory' },
-  puzzle: { namespace: 'practice.puzzle', listPath: '/practice/puzzle' },
-} as const;
 
 /**
  * Shared body for the dedicated "Chunk suggestions" review-list page on a
@@ -39,7 +35,8 @@ export async function PositionEditRequestsView({ positionId, positionType, local
   }
   const { position } = row;
 
-  const { namespace, listPath } = TYPE_CONFIG[positionType];
+  const { namespace } = POSITION_KIND_CONFIG[positionType];
+  const listPath = getPositionListPath(positionType);
   const detailPath = `${listPath}/${position.id}`;
 
   const [user, t, tNav, tType] = await Promise.all([

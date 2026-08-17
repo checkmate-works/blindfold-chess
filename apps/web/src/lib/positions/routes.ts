@@ -1,3 +1,4 @@
+import { type PositionKind, getPositionKindDetailPath } from './kind';
 import type { PositionType } from './types';
 
 /**
@@ -13,9 +14,8 @@ import type { PositionType } from './types';
 export function getPositionDetailPath(type: PositionType, id: string): string | null {
   switch (type) {
     case 'memory':
-      return `/practice/position-memory/${id}`;
     case 'puzzle':
-      return `/practice/puzzle/${id}`;
+      return getPositionKindDetailPath(type, id);
     case 'sequence':
       // No detail page implemented yet. Cards are rendered without a link.
       return null;
@@ -32,11 +32,6 @@ export function getPositionDetailPath(type: PositionType, id: string): string | 
  * and `sequence` positions have no detail page to link the history from
  * either).
  */
-export function getPositionHistoryPath(
-  type: Extract<PositionType, 'memory' | 'puzzle'>,
-  id: string
-): string {
-  const detailPath =
-    type === 'memory' ? `/practice/position-memory/${id}` : `/practice/puzzle/${id}`;
-  return `${detailPath}/history`;
+export function getPositionHistoryPath(type: PositionKind, id: string): string {
+  return `${getPositionKindDetailPath(type, id)}/history`;
 }

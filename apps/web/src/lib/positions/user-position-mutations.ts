@@ -24,6 +24,8 @@ import { insertPositionTags, replacePositionTags } from '@/lib/positions/tag-wri
 import type { PositionType } from '@/lib/positions/types';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
+import type { PositionKind } from './kind';
+
 /**
  * Shared core for the user-facing `positions` CRUD Server Actions. The
  * position-memory and puzzle entry points are structurally identical —
@@ -38,7 +40,7 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 /** Rate-limit rule shape accepted by `authenticateAndGuard`. */
 type RateLimitRule = Parameters<typeof authenticateAndGuard>[0];
 
-export type PositionKind = 'memory' | 'puzzle';
+export type { PositionKind } from './kind';
 
 type PositionKindConfig = {
   /** The `positions.type` discriminator value. */

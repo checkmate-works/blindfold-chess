@@ -1,15 +1,11 @@
+import { POSITION_KIND_CONFIG, type PositionKind } from '@/lib/positions/kind';
+
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
 import type { PositionDetailData } from '../_lib/load-position-detail';
-import type { PositionKind } from '../_lib/load-position-detail';
 import { PositionEditRequestSummaryLink } from './edit-request/PositionEditRequestLinks';
-
-const I18N_NAMESPACE: Record<PositionKind, string> = {
-  memory: 'practice.positionMemory',
-  puzzle: 'practice.puzzle',
-};
 
 type Props = {
   positionId: string;
@@ -34,7 +30,7 @@ export function PositionEngagementRow({ positionId, kind, locale, likeMeta }: Pr
         initialLikeCount={likeMeta.likeCount}
         initialLikedByMe={likeMeta.likedByMe}
         toggleLikeAction={toggleLike}
-        i18nNamespace={I18N_NAMESPACE[kind]}
+        i18nNamespace={POSITION_KIND_CONFIG[kind].namespace}
       />
       <PositionEditRequestSummaryLink positionId={positionId} positionType={kind} locale={locale} />
     </div>

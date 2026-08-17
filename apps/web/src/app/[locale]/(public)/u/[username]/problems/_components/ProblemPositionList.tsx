@@ -1,6 +1,7 @@
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { Position } from '@/lib/db/schema';
+import { type PositionKind, getPositionKindDetailPath } from '@/lib/positions/kind';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
@@ -8,10 +9,8 @@ import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-type ProblemType = 'puzzle' | 'memory';
-
 type Props = {
-  type: ProblemType;
+  type: PositionKind;
   positions: Position[];
   /** Page-owner profile, reused for every row's avatar slot. */
   authorProfile: AuthorProfile;
@@ -30,8 +29,8 @@ type Props = {
 
 const EMPTY_LIKE_META: LikeMeta = { likeCount: 0, likedByMe: false };
 
-function getPositionHref(type: ProblemType, id: string): string {
-  return type === 'puzzle' ? `/practice/puzzle/${id}` : `/practice/position-memory/${id}`;
+function getPositionHref(type: PositionKind, id: string): string {
+  return getPositionKindDetailPath(type, id);
 }
 
 /**

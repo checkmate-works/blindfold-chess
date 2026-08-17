@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getViewerPendingEditRequestForPosition } from '@/lib/position-edit-requests/queries';
+import { POSITION_KIND_CONFIG, getPositionListPath } from '@/lib/positions/kind';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
 import type { PositionType } from '@/lib/positions/types';
@@ -18,11 +19,6 @@ type Props = {
   positionType: Extract<PositionType, 'memory' | 'puzzle'>;
   locale: Locale;
 };
-
-const TYPE_CONFIG = {
-  memory: { namespace: 'practice.positionMemory', listPath: '/practice/position-memory' },
-  puzzle: { namespace: 'practice.puzzle', listPath: '/practice/puzzle' },
-} as const;
 
 /**
  * Shared body for the "Propose a suggestion" form page on a position
@@ -44,7 +40,8 @@ export async function PositionEditRequestNewView({ positionId, positionType, loc
   }
   const { position } = row;
 
-  const { namespace, listPath } = TYPE_CONFIG[positionType];
+  const { namespace } = POSITION_KIND_CONFIG[positionType];
+  const listPath = getPositionListPath(positionType);
   const detailPath = `${listPath}/${position.id}`;
   const suggestionsPath = `${detailPath}/suggestions`;
 
