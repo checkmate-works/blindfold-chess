@@ -1,3 +1,8 @@
+import {
+  PlayHeaderSkeleton,
+  PlayQuitLinkSkeleton,
+  PlayScoreCounterSkeleton,
+} from '@/app/[locale]/(public)/practice/_components/PlaySkeletonParts';
 import { Skeleton } from '@/app/[locale]/_components';
 
 type Props = {
@@ -30,12 +35,7 @@ export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
     <div className={`min-h-screen mx-auto ${showHeader ? 'max-w-2xl' : 'max-w-md'}`}>
       <div className={showHeader ? '' : 'text-center'}>
         {/* Lives (left) + pause/timer (right) header — challenge only */}
-        {showHeader && (
-          <div className="flex justify-between items-center mb-4">
-            <Skeleton className="h-5 w-28 rounded-md" disableAnimation />
-            <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
-          </div>
-        )}
+        {showHeader && <PlayHeaderSkeleton className="flex justify-between items-center mb-4" />}
 
         {/* Problem header: piece badge + start/target squares */}
         <div
@@ -80,10 +80,10 @@ export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
       </div>
 
       {/* Score counter */}
-      <div className="mt-8 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16 rounded-md" />
-        <Skeleton className="h-8 w-16 rounded-md" />
-      </div>
+      <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
+
+      {/* Quit / end-training link */}
+      <PlayQuitLinkSkeleton className="mt-6 flex justify-center" />
     </div>
   );
 }

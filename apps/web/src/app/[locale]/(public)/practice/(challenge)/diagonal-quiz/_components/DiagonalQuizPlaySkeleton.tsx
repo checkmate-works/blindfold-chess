@@ -1,3 +1,7 @@
+import {
+  PlayHeaderSkeleton,
+  PlayScoreCounterSkeleton,
+} from '@/app/[locale]/(public)/practice/_components/PlaySkeletonParts';
 import { Skeleton } from '@/app/[locale]/_components';
 
 type Props = {
@@ -31,10 +35,7 @@ export function DiagonalQuizPlaySkeleton({ showHeader = false }: Props) {
 
         {/* Lives (left) + timer (right) header */}
         {showHeader && (
-          <div className="flex justify-between items-center mb-4 min-h-[40px]">
-            <Skeleton className="h-5 w-20 rounded-md" disableAnimation />
-            <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
-          </div>
+          <PlayHeaderSkeleton className="flex justify-between items-center mb-4 min-h-[40px]" />
         )}
 
         {/* Target square */}
@@ -61,10 +62,7 @@ export function DiagonalQuizPlaySkeleton({ showHeader = false }: Props) {
       </div>
 
       {/* Score counter */}
-      <div className="mt-8 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16 rounded-md" />
-        <Skeleton className="h-8 w-16 rounded-md" />
-      </div>
+      <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
     </div>
   );
 }

@@ -1,5 +1,10 @@
 import { BoardSkeleton } from '@/app/_components';
 
+import {
+  PlayHeaderSkeleton,
+  PlayQuitLinkSkeleton,
+  PlayScoreCounterSkeleton,
+} from '@/app/[locale]/(public)/practice/_components/PlaySkeletonParts';
 import { Skeleton } from '@/app/[locale]/_components';
 
 type Props = {
@@ -30,10 +35,7 @@ export function CoordinateQuizPlaySkeleton({ showHeader = false }: Props) {
       <div className="max-w-md mx-auto mb-8">
         {/* Lives (left) + pause/timer (right) header — challenge only */}
         {showHeader && (
-          <div className="mb-4 flex items-center justify-between min-h-[50px]">
-            <Skeleton className="h-5 w-28 rounded-md" disableAnimation />
-            <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
-          </div>
+          <PlayHeaderSkeleton className="mb-4 flex items-center justify-between min-h-[50px]" />
         )}
 
         {/* Orientation indicator (dot + label) */}
@@ -49,15 +51,10 @@ export function CoordinateQuizPlaySkeleton({ showHeader = false }: Props) {
       </div>
 
       {/* Score counter */}
-      <div className="mt-4 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16 rounded-md" />
-        <Skeleton className="h-8 w-16 rounded-md" />
-      </div>
+      <PlayScoreCounterSkeleton className="mt-4 flex justify-center items-center gap-12" />
 
       {/* Quit / end-training link */}
-      <div className="mt-6 flex justify-center">
-        <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
-      </div>
+      <PlayQuitLinkSkeleton className="mt-6 flex justify-center" />
     </div>
   );
 }
