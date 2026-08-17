@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
 import { authenticateAndCheckBan } from '@/lib/auth';
+import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { redeemPointsForAdFree } from '@/lib/points';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { hasDanTierRank } from '@/lib/users/dan-rank';
@@ -72,7 +73,7 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
     return { ok: false, error: result.error };
   }
 
-  revalidateTag('grant-status', { expire: 60 });
+  revalidateTag(GRANT_STATUS_CACHE_TAG, { expire: 60 });
   await writeAdsHiddenCookieForUser(auth.user);
   // No revalidatePath: /mypage/coins and /mypage/benefits are both dynamic
   // routes, and `RedeemForm` calls `router.refresh()` on success — which is

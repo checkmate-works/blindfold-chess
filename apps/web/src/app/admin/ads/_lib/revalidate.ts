@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-restricted-imports -- the 'layout' revalidate reaches every /admin/ads/[slot] page, which the callers' router.refresh() (current page only) cannot; see this module's TSDoc
 import { revalidatePath, revalidateTag } from 'next/cache';
 
-import { AD_CREATIVES_CACHE_TAG } from '@/lib/ads/ad';
+import { AD_CREATIVES_CACHE_TAG } from '@/lib/cache-tags';
 
 /**
  * Invalidate everything an ad-creative mutation can affect: the admin surface

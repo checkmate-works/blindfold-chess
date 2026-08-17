@@ -2,6 +2,7 @@ import { revalidateTag } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
+import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 import { clawbackPointsForPost } from '@/lib/points';
@@ -151,5 +152,5 @@ export async function deletePostCore(
   // immediately. Outside the transaction because Next.js' revalidate APIs
   // observe the writes — calling them inside would still work but adds
   // no atomicity guarantee.
-  revalidateTag('grant-status', { expire: 60 });
+  revalidateTag(GRANT_STATUS_CACHE_TAG, { expire: 60 });
 }

@@ -2,6 +2,7 @@
 
 import { revalidateTag } from 'next/cache';
 
+import { ANNOUNCEMENTS_CACHE_TAG } from '@/lib/cache-tags';
 import { announcements } from '@/lib/db';
 
 import { createAdminDeleteAction } from '../../_lib/action-factories';
@@ -14,7 +15,7 @@ const deleteBase = createAdminDeleteAction({
   // revalidatePath here would evict every ISR entry under [locale]/(public),
   // which previously caused a 305x ISR Writes spike on Vercel.
   postDeleteHook: async () => {
-    revalidateTag('announcements', { expire: 60 });
+    revalidateTag(ANNOUNCEMENTS_CACHE_TAG, { expire: 60 });
   },
 });
 

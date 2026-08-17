@@ -3,9 +3,10 @@ import { unstable_cache } from 'next/cache';
 import { and, eq, gte } from 'drizzle-orm';
 import 'server-only';
 
+import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, ranks, userRanks } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
-import { DAN_TIER_MIN_LEVEL, RANK_STATUS_CACHE_TAG } from '@/lib/db/data/ranks';
+import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
 
 /**
  * Whether the user holds any dan-tier rank (`level >= DAN_TIER_MIN_LEVEL`).

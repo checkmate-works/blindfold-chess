@@ -2,7 +2,7 @@ import type { NextResponse } from 'next/server';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { RANK_STATUS_CACHE_TAG } from '@/lib/db/data/ranks';
+import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 
 import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from './ads-hidden-cookie';

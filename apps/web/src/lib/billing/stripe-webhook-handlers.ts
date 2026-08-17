@@ -6,6 +6,7 @@ import 'server-only';
 import type Stripe from 'stripe';
 
 import { getStripe } from '@/lib/billing/stripe';
+import { SUBSCRIPTION_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, stripeCustomers, subscriptions } from '@/lib/db';
 
 /**
@@ -84,7 +85,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
       },
     });
 
-  revalidateTag('subscription-status', { expire: 60 });
+  revalidateTag(SUBSCRIPTION_STATUS_CACHE_TAG, { expire: 60 });
 }
 
 export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -132,7 +133,7 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     }
   }
 
-  revalidateTag('subscription-status', { expire: 60 });
+  revalidateTag(SUBSCRIPTION_STATUS_CACHE_TAG, { expire: 60 });
 }
 
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -153,5 +154,5 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
     );
   }
 
-  revalidateTag('subscription-status', { expire: 60 });
+  revalidateTag(SUBSCRIPTION_STATUS_CACHE_TAG, { expire: 60 });
 }

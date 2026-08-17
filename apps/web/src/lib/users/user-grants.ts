@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { and, eq, gt, isNull, lte, max } from 'drizzle-orm';
 import 'server-only';
 
+import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, userGrants } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
 import type { DbTx } from '@/lib/db/types';
@@ -37,7 +38,7 @@ export const hasActiveGrant = unstable_cache(
     }
   },
   ['has-active-grant'],
-  { tags: ['grant-status'], revalidate: 60 }
+  { tags: [GRANT_STATUS_CACHE_TAG], revalidate: 60 }
 );
 
 /**
