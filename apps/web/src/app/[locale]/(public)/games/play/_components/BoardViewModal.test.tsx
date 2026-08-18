@@ -4,6 +4,7 @@
  * page omits it. The footer must render when provided and must not let a tap
  * fall through to the backdrop's close handler.
  */
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -12,8 +13,6 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { BoardViewModal } from './BoardViewModal';
 
 vi.mock('@/i18n/use-safe-translations');
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 const PREFS: GamePreferences = {
   showCoordinates: true,

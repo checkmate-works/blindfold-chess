@@ -5,8 +5,7 @@ import type {
   FenSemanticResult,
 } from "../validate-fen-semantic";
 import { validateFenSemantic } from "../validate-fen-semantic";
-
-const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+import { STARTING_FEN } from "../../chess-core/fen-pure";
 
 /**
  * Type-narrowing assertion: if the result is `{ ok: true }`, fail the test;

@@ -16,6 +16,7 @@
  * engine via `findLegalMoveByCoords` (no mock); the tests use canonical
  * positions and assert on the SAN string emitted to onMove.
  */
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -25,8 +26,6 @@ import { ChessBoard } from './ChessBoard';
 // fallback (which returns the namespaced key path when no provider is
 // mounted). Stub the wrapper so assertions use stable strings.
 vi.mock('@/i18n/use-safe-translations');
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 /** White pawn on e7 ready to promote; both kings out of the way. */
 const PROMO_FEN = '8/4P3/8/8/8/8/8/4K2k w - - 0 1';

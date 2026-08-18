@@ -10,6 +10,7 @@
  * Lives apart from `PuzzleSessionClient.test.tsx` because it needs a per-test
  * mutable `useGamePreferences` mock + a prop-capturing `InlineBoardView` mock.
  */
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -100,8 +101,6 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
     </div>
   ),
 }));
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 function toSolutionMoves(line: string) {
   return line

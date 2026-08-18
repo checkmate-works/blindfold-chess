@@ -1,3 +1,4 @@
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
@@ -68,7 +69,6 @@ vi.mock('@/lib/security/rate-limit', () => ({
 const userId = 'user-00000000-0000-0000-0000-000000000001';
 const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
 const postId = '00000000-0000-0000-0000-00000000aaaa';
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 beforeEach(() => {
   mockGetUser.mockResolvedValue({ data: { user: { id: userId } } });

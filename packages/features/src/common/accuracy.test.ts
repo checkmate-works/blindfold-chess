@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { calculateAccuracy, calculateSquareDifferences } from "./accuracy";
+import { STARTING_FEN } from "../chess-core/fen-pure";
 
-const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const EMPTY_FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
 // Minimal piece-name map; any string is fine since calculateAccuracy only

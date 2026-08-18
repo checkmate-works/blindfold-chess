@@ -1,3 +1,4 @@
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import { describe, expect, it } from 'vitest';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
@@ -8,7 +9,6 @@ import {
   validatePuzzleMutationData,
 } from './validation';
 
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const USER_ID = '00000000-0000-4000-8000-000000000001';
 
 function buildData(overrides: Partial<Parameters<typeof validatePuzzleMutationData>[0]> = {}) {

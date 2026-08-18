@@ -1,3 +1,4 @@
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -48,8 +49,6 @@ vi.mock('@/app/[locale]/(public)/games/play/_components/MoveSelect', () => ({
     <div data-testid="move-select" data-disabled={disabled ? 'true' : 'false'} />
   ),
 }));
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 // Preferences with 2+ enabled modes so the mode-switch button renders.
 const preferences: GamePreferences = {

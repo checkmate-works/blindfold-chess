@@ -1,5 +1,6 @@
 import type { PgnTree } from '@blindfold-chess/features/chess-core';
 import { enumerateLines, generatePgn, parsePgnTree } from '@blindfold-chess/features/chess-core';
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { Side } from '@blindfold-chess/types';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
@@ -31,8 +32,6 @@ export const REPERTOIRE_PGN_MAX_BYTES = 100 * 1024;
 /** Max length of an owner's per-move "why" annotation. */
 export const REPERTOIRE_ANNOTATION_MAX = 2000;
 export const REPERTOIRE_PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
-
-const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 export type RepertoireImportInput = {
   name: string;
@@ -192,7 +191,7 @@ export function validateRepertoireImport(input: RepertoireImportInput): Validate
     return { ok: false, error: 'invalidPgn' };
   }
 
-  const startingFen = tree.startingFen === STANDARD_FEN ? null : tree.startingFen;
+  const startingFen = tree.startingFen === STARTING_FEN ? null : tree.startingFen;
   const lines: ImportedLine[] = enumerateLines(tree).map((moves) => ({
     pgn: generatePgn(moves, startingFen ?? undefined),
     startingFen,

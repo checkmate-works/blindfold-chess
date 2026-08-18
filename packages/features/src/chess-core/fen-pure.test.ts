@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { fullmoveNumberFromFen, isBlackToMoveFromFen } from "./fen-pure";
+import {
+  STARTING_FEN,
+  fullmoveNumberFromFen,
+  isBlackToMoveFromFen,
+} from "./fen-pure";
 
 /**
  * The fullmove cases came from the puzzle screen's own `getFullmoveFromFen`,
@@ -30,5 +34,14 @@ describe("isBlackToMoveFromFen", () => {
 
   it("treats a FEN with no side-to-move field as white to move", () => {
     expect(isBlackToMoveFromFen("8/8/8/8/8/8/8/8")).toBe(false);
+  });
+});
+
+describe("STARTING_FEN", () => {
+  it("is the position chess.js starts a game from", async () => {
+    // The constant lives in the chess.js-free module so callers can read it
+    // without the library; this is what keeps that copy honest.
+    const { DEFAULT_POSITION } = await import("chess.js");
+    expect(STARTING_FEN).toBe(DEFAULT_POSITION);
   });
 });

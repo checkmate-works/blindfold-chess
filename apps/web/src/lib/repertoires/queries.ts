@@ -1,5 +1,6 @@
 import { cache } from 'react';
 
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { Side } from '@blindfold-chess/types';
 import { and, asc, count, desc, eq, inArray, isNull, ne } from 'drizzle-orm';
 
@@ -45,8 +46,6 @@ export type RepertoireWithProfile = {
    */
   thumbnailFen: string;
 };
-
-const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 /**
  * Force a FEN's side-to-move field to the repertoire's side. The thumbnail is a
@@ -106,7 +105,7 @@ export async function toCards(rows: RepertoireCardRow[]): Promise<RepertoireWith
     // A left join on a deleted author yields a row of nulls, not no row.
     profile: row.profile?.username ? row.profile : null,
     thumbnailFen: orientFenForSide(
-      openingFens.get(row.repertoire.id) ?? row.repertoire.startingFen ?? STANDARD_FEN,
+      openingFens.get(row.repertoire.id) ?? row.repertoire.startingFen ?? STARTING_FEN,
       row.repertoire.side
     ),
   }));

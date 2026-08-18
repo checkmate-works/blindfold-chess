@@ -14,6 +14,22 @@
  * this file.
  */
 
+/**
+ * The standard chess starting position.
+ *
+ * Lives here rather than beside {@link getStartingFen} so a caller that only
+ * needs the string — a placeholder, a "did this game start from the standard
+ * position?" comparison, a test fixture — does not pull `chess.js` in with it.
+ * That is why it had been hand-typed instead: two `lib/repertoires` modules
+ * declared their own `STANDARD_FEN`, form placeholders spelled it out, and
+ * twenty-three test files each opened with their own copy.
+ *
+ * `getStartingFen()` returns this, and `fen-chess.test.ts` pins it to
+ * `chess.js`'s own `DEFAULT_POSITION`, so the two cannot drift.
+ */
+export const STARTING_FEN =
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 import type { PieceColor, PieceType } from "@blindfold-chess/types";
 
 /**

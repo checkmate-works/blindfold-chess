@@ -5,7 +5,9 @@
  * bundle-size benefit of the `@blindfold-chess/features/chess-core/fen`
  * subpath export.
  */
-import { Chess, DEFAULT_POSITION } from "chess.js";
+import { Chess } from "chess.js";
+
+import { STARTING_FEN } from "./fen-pure";
 
 import type { BoardPiece } from "./types";
 
@@ -34,5 +36,5 @@ export function getFenAfterMoves(initialFen: string, moves: string[]): string {
 }
 
 export function getStartingFen(): string {
-  return DEFAULT_POSITION;
+  return STARTING_FEN;
 }

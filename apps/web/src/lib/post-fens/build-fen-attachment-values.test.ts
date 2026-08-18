@@ -1,3 +1,4 @@
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -5,8 +6,6 @@ import {
   fenAttachmentErrorKey,
   fenAttachmentPgErrorKind,
 } from './build-fen-attachment-values';
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 describe('buildFenAttachmentValues — validation', () => {
   it('accepts a valid FEN with no caption (null)', () => {
