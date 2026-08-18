@@ -5,8 +5,8 @@
  * so a reviewer can see what was actually tried at a given position (e.g. via
  * a `#47`-style deep link), not just how many attempts there were.
  */
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
@@ -17,8 +17,6 @@ vi.mock('@/i18n/use-safe-translations');
 vi.mock('./GameMoveContributions', () => ({
   GameMoveContributions: () => <div data-testid="move-contributions" />,
 }));
-
-afterEach(() => cleanup());
 
 const baseProps = {
   title: '4...Nf6',

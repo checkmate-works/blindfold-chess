@@ -4,8 +4,8 @@
  * page omits it. The footer must render when provided and must not let a tap
  * fall through to the backdrop's close handler.
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -51,8 +51,6 @@ function renderModal(props: Partial<React.ComponentProps<typeof BoardViewModal>>
   );
   return { onClose, ...result };
 }
-
-afterEach(() => cleanup());
 
 describe('BoardViewModal footer', () => {
   it('renders the footer when provided', () => {

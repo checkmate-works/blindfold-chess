@@ -5,16 +5,14 @@
  * game's per-move panel and the local result screen, so a rejected board move
  * looks identical in both.
  */
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 import { MoveOpsDetail } from './MoveOpsDetail';
 
 vi.mock('@/i18n/use-safe-translations');
-
-afterEach(() => cleanup());
 
 const log = (overrides: Partial<MoveOperationLog> = {}): MoveOperationLog => ({
   inputMethod: 'text',

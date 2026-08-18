@@ -1,15 +1,11 @@
 // @vitest-environment jsdom
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useLikeToggle } from './use-like-toggle';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('../_contexts/AuthContext', () => ({
   useAuth: () => ({ user: { id: 'user-1', email: 'test@example.com' } }),

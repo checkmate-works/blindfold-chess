@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { MoveInput } from './MoveInput';
 
@@ -17,10 +17,6 @@ vi.mock('../_hooks', () => ({
     hideSuggestions: () => {},
   }),
 }));
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('MoveInput — does not auto-submit a surrounding form', () => {
   // Regression guard for the puzzle-creator bug where MoveInput used to wrap

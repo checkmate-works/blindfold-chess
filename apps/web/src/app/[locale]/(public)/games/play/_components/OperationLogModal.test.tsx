@@ -12,8 +12,8 @@
  * `boardVisibilities.always`). That is enough to verify the routing logic
  * without coupling tests to copy that may change.
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { EngineConfig } from '@/lib/engines';
 import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
@@ -75,10 +75,6 @@ function renderModal(overrides?: {
     />
   );
 }
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('OperationLogModal — Opponent section', () => {
   it('renders Stockfish + level row for a Stockfish engineConfig', () => {

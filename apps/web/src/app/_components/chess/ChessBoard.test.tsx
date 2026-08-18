@@ -16,8 +16,8 @@
  * engine via `findLegalMoveByCoords` (no mock); the tests use canonical
  * positions and assert on the SAN string emitted to onMove.
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ChessBoard } from './ChessBoard';
 
@@ -55,10 +55,6 @@ function dragPiece(
   fireEvent.pointerMove(window, { clientX: endX, clientY: endY });
   fireEvent.pointerUp(squareEl(container, to), { clientX: endX, clientY: endY });
 }
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('ChessBoard interactive mode — click-to-move', () => {
   it('fires onMove with the SAN of a legal move after select → destination clicks', () => {

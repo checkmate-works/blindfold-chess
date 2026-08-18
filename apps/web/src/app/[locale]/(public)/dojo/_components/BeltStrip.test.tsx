@@ -1,6 +1,6 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { BELT_COLOR_HEX, RANK_COLORS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
@@ -8,10 +8,6 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 import { BeltStrip } from './BeltStrip';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const expectedHex = (slug: RankSlug) => BELT_COLOR_HEX[RANK_COLORS[slug]];
 

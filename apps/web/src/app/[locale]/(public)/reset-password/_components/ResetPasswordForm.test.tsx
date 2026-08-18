@@ -1,14 +1,10 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ResetPasswordForm } from './ResetPasswordForm';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockResetPassword = vi.fn();
 const mockPush = vi.fn();

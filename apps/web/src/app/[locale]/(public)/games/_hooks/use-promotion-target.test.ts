@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseAuth = vi.fn();
 const mockGetPublishPromotionTarget = vi.fn();
@@ -14,10 +14,6 @@ vi.mock('@/app/[locale]/(public)/dojo/ranks/_actions/getPublishPromotionTarget',
 }));
 
 const { usePromotionTarget } = await import('./use-promotion-target');
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('usePromotionTarget', () => {
   beforeEach(() => {

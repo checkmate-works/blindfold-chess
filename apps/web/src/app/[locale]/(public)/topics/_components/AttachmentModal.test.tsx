@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AttachmentModal } from './AttachmentModal';
@@ -15,10 +15,6 @@ vi.mock('@/lib/positions/ui/MiniBoard', () => ({
 vi.mock('@/lib/client-images/prepare-image-for-upload', () => ({
   prepareImageForUpload: vi.fn((file: File) => Promise.resolve(file)),
 }));
-
-afterEach(() => {
-  cleanup();
-});
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const PGN_SAMPLE =

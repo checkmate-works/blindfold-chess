@@ -1,14 +1,10 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ResendEmailButton } from './ResendEmailButton';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockResendEmail = vi.fn();
 

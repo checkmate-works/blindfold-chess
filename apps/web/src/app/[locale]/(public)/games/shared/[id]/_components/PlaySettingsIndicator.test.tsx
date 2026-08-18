@@ -11,8 +11,8 @@
  * Translations resolve through the mocked safe-translations fallback (echoes the
  * key), so the label asserts on the stable `pawnsHidden` key.
  */
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
@@ -28,8 +28,6 @@ const BASE: GamePlaySettings = {
   pieceColors: 'normal',
   pawnHideMode: 'none',
 };
-
-afterEach(() => cleanup());
 
 describe('PlaySettingsIndicator — pawn-hide vs side-hide distinction', () => {
   it('renders the pawn-hide chip with the label and NO red slash', () => {

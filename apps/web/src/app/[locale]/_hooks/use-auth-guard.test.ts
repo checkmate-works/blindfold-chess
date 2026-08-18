@@ -1,15 +1,11 @@
 // @vitest-environment jsdom
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { act, cleanup, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthGuard } from './use-auth-guard';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockUseAuth = vi.fn();
 

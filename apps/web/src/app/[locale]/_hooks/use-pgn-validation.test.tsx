@@ -4,14 +4,10 @@ import { NextIntlClientProvider } from 'next-intl';
 
 import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
 import enMessages from '@/messages/en.json';
-import { cleanup, renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { usePgnValidation } from './use-pgn-validation';
-
-afterEach(() => {
-  cleanup();
-});
 
 function wrapper({ children }: { children: ReactNode }) {
   return (

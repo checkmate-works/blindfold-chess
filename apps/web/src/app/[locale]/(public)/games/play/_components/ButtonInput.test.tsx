@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ButtonInput } from './ButtonInput';
 
@@ -35,10 +35,6 @@ const ANNOTATION_LABELS = ['symbol.check', 'symbol.promotion', 'symbol.checkmate
 const CASTLING_LABELS = ['castling.kingside', 'castling.queenside'];
 const UTILITY_LABELS = ['action.backspace', 'action.clear'];
 const SUBMIT_LABEL = 'action.submit';
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('ButtonInput', () => {
   describe('disabled=true', () => {

@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { PositionAuthorHeader } from './PositionAuthorHeader';
 
@@ -28,10 +28,6 @@ const BASE_PROPS = {
   locale: 'en' as const,
   createdAt: new Date('2026-01-01T00:00:00Z'),
 };
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('PositionAuthorHeader', () => {
   it('renders no edited label when edited is false', () => {

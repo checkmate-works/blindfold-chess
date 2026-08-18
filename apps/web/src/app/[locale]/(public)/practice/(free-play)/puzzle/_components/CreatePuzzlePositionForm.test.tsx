@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -210,10 +210,6 @@ beforeEach(() => {
   mockSearchParamsGet.mockReturnValue(null);
   mockNavigationGuard.mockClear();
   sessionStorage.clear();
-});
-
-afterEach(() => {
-  cleanup();
 });
 
 describe('CreatePuzzlePositionForm', () => {

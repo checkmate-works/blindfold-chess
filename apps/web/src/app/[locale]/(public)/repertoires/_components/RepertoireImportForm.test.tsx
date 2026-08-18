@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { RepertoireImportForm } from './RepertoireImportForm';
 
@@ -59,7 +59,6 @@ describe('RepertoireImportForm', () => {
   beforeEach(() => {
     mockCreateRepertoire.mockReset();
   });
-  afterEach(cleanup);
 
   it('reports a rejected PGN at the moves editor, not only in the form banner', async () => {
     mockCreateRepertoire.mockResolvedValue({ error: 'pgnRequired' });

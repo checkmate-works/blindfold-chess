@@ -1,15 +1,11 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { RequirementsList } from './RequirementsList';
 import type { RequirementDivider, RequirementItem } from './RequirementsList';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('RequirementsList', () => {
   it('renders plain string items without a link', () => {

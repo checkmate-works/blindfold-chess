@@ -1,12 +1,8 @@
 import { NOTIFICATIONS_READ_EVENT } from '@/config';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NotificationBadge } from './NotificationBadge';
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockGetUnreadCount = vi.fn();
 const mockUsePathname = vi.fn(() => '/en/mypage');

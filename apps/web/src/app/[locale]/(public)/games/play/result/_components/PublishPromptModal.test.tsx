@@ -5,8 +5,8 @@
  * mocked safe-translations fallback (echoes the key), so the assertions key off
  * the stable message paths.
  */
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GifPreviewSource } from '@/lib/games/gif/preview-frames';
 
@@ -40,8 +40,6 @@ const base = { isOpen: true, onClose: vi.fn(), onShare: vi.fn(), isShared: false
 function modalText(): string {
   return screen.getByRole('dialog').textContent ?? '';
 }
-
-afterEach(() => cleanup());
 
 describe('PublishPromptModal — share', () => {
   it('leads with the replay and lists the shareable artefacts', () => {

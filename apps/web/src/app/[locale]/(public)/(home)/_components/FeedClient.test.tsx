@@ -1,5 +1,5 @@
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getFeed } from '../_actions/getFeed';
 import type { FeedItem } from '../_lib/types';
@@ -31,10 +31,6 @@ function triggerIntersection() {
   // Cast: we only use the fields FeedClient reads.
   lastIntersectionCallback([entry], {} as IntersectionObserver);
 }
-
-afterEach(() => {
-  cleanup();
-});
 
 // --- Mocks ---
 

@@ -11,8 +11,8 @@
  * mutable `useGamePreferences` mock + a prop-capturing `InlineBoardView` mock.
  */
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PuzzleSessionClient } from './PuzzleSessionClient';
 
@@ -128,10 +128,6 @@ beforeEach(() => {
   sessionStorage.clear();
   capturedInline.length = 0;
   currentPreferences = { ...DEFAULT_PREFS };
-});
-
-afterEach(() => {
-  cleanup();
 });
 
 describe('PuzzleSessionClient peek board — pieces reveal', () => {

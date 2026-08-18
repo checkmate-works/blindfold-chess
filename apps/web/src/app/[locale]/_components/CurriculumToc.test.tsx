@@ -1,6 +1,6 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
@@ -11,10 +11,6 @@ import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-co
 import { CurriculumToc } from './CurriculumToc';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const rankName = (slug: RankSlug) => `name:${slug}`;
 const sectionTitle = (key: string) => `section:${key}`;

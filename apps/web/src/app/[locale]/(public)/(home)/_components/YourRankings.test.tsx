@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { UserRankInfo } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 
@@ -74,10 +74,6 @@ vi.mock('@/app/[locale]/(public)/leaderboard/_components/LeaderboardCard', () =>
 
 // Import after mocks
 const { YourRankings } = await import('./YourRankings');
-
-afterEach(() => {
-  cleanup();
-});
 
 // --- Helpers ---
 

@@ -1,5 +1,5 @@
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useStorageAvailabilityContext } from '@/lib/storage/StorageAvailabilityProvider';
 import type { StorageAvailability } from '@/lib/storage/storage-availability';
@@ -84,10 +84,6 @@ const fullyBlocked: StorageAvailability = {
 describe('GoogleScripts', () => {
   beforeEach(() => {
     mockedUseContext.mockReset();
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   describe('gate: context=null (probe not finished or no Provider)', () => {

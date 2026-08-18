@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { StepIndicator } from './StepIndicator';
 
@@ -8,10 +8,6 @@ const STEPS = [
   { key: 'solution', label: 'Solution' },
   { key: 'preview', label: 'Preview' },
 ] as const;
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('StepIndicator', () => {
   it('renders every step in the given order', () => {

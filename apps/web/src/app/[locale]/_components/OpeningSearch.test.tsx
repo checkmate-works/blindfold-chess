@@ -1,12 +1,8 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { Opening } from './OpeningSearch';
 import { OpeningSearch } from './OpeningSearch';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,

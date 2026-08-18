@@ -1,5 +1,5 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -109,10 +109,6 @@ beforeEach(() => {
   mockReplace.mockReset();
   mockUpdatePuzzle.mockReset();
   sessionStorage.clear();
-});
-
-afterEach(() => {
-  cleanup();
 });
 
 describe('EditPuzzlePreviewClient', () => {

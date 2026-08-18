@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   AttemptHistoryPanel,
@@ -18,10 +18,6 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string, args?: Record<string, unknown>) =>
     args ? `${key}:${JSON.stringify(args)}` : key,
 }));
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('groupAttemptsByPlayerStep', () => {
   it('opens a fresh group after each correct attempt', () => {

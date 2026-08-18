@@ -1,16 +1,12 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 
 import { LeaderboardPreview } from './LeaderboardPreview';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('@/i18n/use-safe-translations');
 

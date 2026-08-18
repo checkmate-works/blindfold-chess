@@ -1,12 +1,8 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PositionFeedData } from '../_lib/types';
 import { PositionFeedCard } from './PositionFeedCard';
-
-afterEach(() => {
-  cleanup();
-});
 
 // Mock the GamePreferences hook so we can control the boardTheme value.
 const mockUseGamePreferences = vi.fn();

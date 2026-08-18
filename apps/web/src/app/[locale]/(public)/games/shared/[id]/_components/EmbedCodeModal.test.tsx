@@ -5,8 +5,8 @@
  * Translations resolve through the mocked fallback (which echoes the key), so
  * controls are addressed by their key names.
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EmbedCodeModal } from './EmbedCodeModal';
 
@@ -33,8 +33,6 @@ const snippet = () =>
 
 const previewSrc = () =>
   screen.getByTitle('detail.share.embed.previewLabel').getAttribute('src') ?? '';
-
-afterEach(() => cleanup());
 
 describe('EmbedCodeModal', () => {
   it('offers a snippet with no query at all before anything is changed', () => {

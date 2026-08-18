@@ -1,13 +1,9 @@
 import { NOTIFICATIONS_READ_EVENT } from '@/config';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { NotificationWithActor } from '../_lib/queries';
 import { NotificationItem } from './NotificationItem';
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockMarkAsRead = vi.fn();
 const mockSetNotificationMute = vi.fn();

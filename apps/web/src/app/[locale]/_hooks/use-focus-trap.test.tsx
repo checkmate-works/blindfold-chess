@@ -1,13 +1,9 @@
 import { useEffect } from 'react';
 
-import { act, cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { act, render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { useFocusTrap } from './use-focus-trap';
-
-afterEach(() => {
-  cleanup();
-});
 
 type ProbeProps = {
   active: boolean;

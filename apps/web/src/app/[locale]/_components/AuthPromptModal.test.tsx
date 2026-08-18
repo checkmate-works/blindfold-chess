@@ -1,14 +1,10 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthPromptModal } from './AuthPromptModal';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('@/i18n/use-safe-translations');
 

@@ -1,12 +1,8 @@
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import type { AttachedVideoCardData } from './AttachedVideoCard';
 import { AttachedVideoCard } from './AttachedVideoCard';
-
-afterEach(() => {
-  cleanup();
-});
 
 const VALID_ID = 'VALIDID0001';
 const FALLBACK_TITLE = 'YouTube video';

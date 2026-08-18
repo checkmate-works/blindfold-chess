@@ -14,8 +14,8 @@
  * key), so assertions key off the stable value paths (`boardVisibilities.*`,
  * `pawnHideModes.*`).
  */
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GameStats } from '@/lib/games/compute-game-stats';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
@@ -58,8 +58,6 @@ const baseSettings = (over: Partial<GamePlaySettings> = {}): GamePlaySettings =>
   pawnHideMode: 'none',
   ...over,
 });
-
-afterEach(() => cleanup());
 
 describe('GameStatsOverview change log', () => {
   it('reconstructs from→to for each changed key from the snapshot + to-only log', () => {

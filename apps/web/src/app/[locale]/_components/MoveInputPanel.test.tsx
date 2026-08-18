@@ -1,6 +1,6 @@
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -71,10 +71,6 @@ const preferences: GamePreferences = {
 };
 
 const TOGGLE_TITLE = 'switchInputMode';
-
-afterEach(() => {
-  cleanup();
-});
 
 function renderPanel(disabled: boolean) {
   return render(

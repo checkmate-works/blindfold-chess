@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DRAFT_STORAGE_KEY } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
@@ -132,10 +132,6 @@ beforeEach(() => {
   mockPush.mockReset();
   mockReplace.mockReset();
   sessionStorage.clear();
-});
-
-afterEach(() => {
-  cleanup();
 });
 
 describe('CreatePuzzleSolutionForm', () => {

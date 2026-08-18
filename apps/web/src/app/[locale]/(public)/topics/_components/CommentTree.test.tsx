@@ -1,13 +1,9 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { CommentTreeNode } from '../_lib/comment-tree';
 import { CommentTree } from './CommentTree';
 import type { CommentTreeContextValue } from './CommentTreeContext';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('../_lib/permissions', () => ({
   canUserReply: vi.fn(async () => true),

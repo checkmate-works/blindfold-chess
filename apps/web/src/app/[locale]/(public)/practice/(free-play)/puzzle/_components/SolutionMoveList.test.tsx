@@ -1,11 +1,7 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { SolutionMoveList } from './SolutionMoveList';
-
-afterEach(() => {
-  cleanup();
-});
 
 // `CircleMarker` renders an aria-hidden `<span>` with no text content, so we
 // have to query it structurally. The two color variants are distinguishable

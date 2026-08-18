@@ -2,8 +2,8 @@ import { NextIntlClientProvider } from 'next-intl';
 
 import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
 import enMessages from '@/messages/en.json';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { AttachmentAddButton } from './AttachmentAddButton';
 
@@ -14,10 +14,6 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
 }));
-
-afterEach(() => {
-  cleanup();
-});
 
 const PGN_SAMPLE = '[Event "Test"]\n[White "A"]\n[Black "B"]\n\n1. e4 e5';
 

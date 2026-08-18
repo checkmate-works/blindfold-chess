@@ -1,11 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DeletePostButton } from './DeletePostButton';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('@/i18n/use-safe-translations');
 

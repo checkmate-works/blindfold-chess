@@ -1,11 +1,7 @@
-import { cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Modal } from './Modal';
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('Modal — default behavior (focus-trap opt-in baseline)', () => {
   it('omitting trapFocus does NOT trap Tab — outside elements remain reachable', () => {

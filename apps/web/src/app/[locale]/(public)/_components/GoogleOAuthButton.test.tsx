@@ -1,14 +1,10 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GoogleOAuthButton } from './GoogleOAuthButton';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockSignInWithOAuth = vi.fn().mockResolvedValue({ error: null });
 

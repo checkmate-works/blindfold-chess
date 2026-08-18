@@ -1,6 +1,6 @@
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -87,10 +87,6 @@ function renderPanel(overrides: Overrides = {}) {
     />
   );
 }
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('GameInProgressPanel action bar', () => {
   describe('Undo button', () => {

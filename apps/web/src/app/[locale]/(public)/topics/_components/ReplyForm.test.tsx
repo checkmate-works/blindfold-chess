@@ -1,12 +1,8 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { AttachmentActions } from './BasePostForm';
 import { ReplyForm } from './ReplyForm';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => {

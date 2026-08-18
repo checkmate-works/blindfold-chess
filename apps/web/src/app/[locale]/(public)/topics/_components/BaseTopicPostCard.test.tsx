@@ -1,11 +1,7 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { BaseTopicPostCard } from './BaseTopicPostCard';
-
-afterEach(() => {
-  cleanup();
-});
 
 // The spoiler treatment for puzzle comments is structural: when isSpoiler is
 // true the post body MUST be hidden behind a click-to-reveal overlay so the

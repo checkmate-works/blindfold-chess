@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MUTABLE_NOTIFICATION_TYPES } from '@/lib/notifications/mutable-types';
 
@@ -9,10 +9,6 @@ import { NotificationSettings } from './NotificationSettings';
 // constant, so the counts are derived rather than spelled out — adding a
 // mutable type should not require editing an unrelated magic number here.
 const TYPE_COUNT = MUTABLE_NOTIFICATION_TYPES.length;
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockGetNotificationMutes = vi.fn();
 const mockSetNotificationMute = vi.fn();

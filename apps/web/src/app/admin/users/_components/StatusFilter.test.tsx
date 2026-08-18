@@ -1,12 +1,8 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { StatusFilter } from './StatusFilter';
-
-afterEach(() => {
-  cleanup();
-});
 
 const defaultLabels = {
   filterByStatus: 'Status',

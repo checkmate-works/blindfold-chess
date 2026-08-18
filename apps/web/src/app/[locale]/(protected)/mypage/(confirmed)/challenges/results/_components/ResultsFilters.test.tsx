@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -20,10 +20,6 @@ function renderWithProviders(ui: React.ReactElement) {
 describe('ResultsFilters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   it('renders the menu select with all available menu types', () => {

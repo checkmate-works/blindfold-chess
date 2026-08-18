@@ -1,12 +1,8 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { LoadMoreCommentsResult } from '../_lib/load-more-comments';
 import { CommentTreeLoadMore } from './CommentTreeLoadMore';
-
-afterEach(() => {
-  cleanup();
-});
 
 const LABELS = {
   showMore: 'Show more comments',

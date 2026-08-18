@@ -1,13 +1,9 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Game } from '@/lib/games/saved-game-types';
 
 import { GamesPageClient } from './GamesPageClient';
-
-afterEach(() => {
-  cleanup();
-});
 
 // --- Mocks ---
 
