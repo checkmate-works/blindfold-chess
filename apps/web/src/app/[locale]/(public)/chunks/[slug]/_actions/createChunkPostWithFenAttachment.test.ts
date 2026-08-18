@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { createChunkPostWithFenAttachment } from './createChunkPostWithFenAttachment';
@@ -23,7 +24,6 @@ import { createChunkPostWithFenAttachment } from './createChunkPostWithFenAttach
  *     helper's err.cause walk
  */
 
-const mockIsUserBanned = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 const mockCheckRateLimit = vi.fn();
 const mockInsertValues = vi.fn();
@@ -31,10 +31,7 @@ const mockInsertReturning = vi.fn();
 const mockFenInsertValues = vi.fn();
 const mockSelectProfile = vi.fn();
 
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
@@ -88,9 +85,7 @@ vi.mock('@/lib/db', () => ({
   feedItems: { __name: 'feed_items' },
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),

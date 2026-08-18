@@ -71,9 +71,7 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
-vi.mock('@/lib/security/client-ip', () => ({
-  getClientIp: () => Promise.resolve('127.0.0.1'),
-}));
+vi.mock('@/lib/security/client-ip');
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const targetUserId = 'target-00000000-0000-0000-0000-000000000001';

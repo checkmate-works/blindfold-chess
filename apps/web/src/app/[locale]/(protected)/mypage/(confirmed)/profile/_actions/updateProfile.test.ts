@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { updateProfile } from './updateProfile';
 
-const mockIsUserBanned = vi.fn();
 const mockWhere = vi.fn().mockResolvedValue(undefined);
 // Resolves the "previous profile" row read before the update. Defaults to an
 // empty result (no prior row); individual tests override with mockResolvedValueOnce.
@@ -16,9 +16,7 @@ vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),

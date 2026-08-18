@@ -2,21 +2,18 @@ import { revalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { toggleChunkLike } from './toggleChunkLike';
 
-const mockIsUserBanned = vi.fn();
 const mockInsertValues = vi.fn();
 const mockSelectCount = vi.fn();
 const mockSelectPostAuthor = vi.fn();
 const mockSelectProfile = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/users/activity-log');
 
@@ -26,9 +23,7 @@ vi.mock('@/lib/notifications/notification', () => ({
 
 vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),

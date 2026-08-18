@@ -13,9 +13,7 @@ const mockTransaction = vi.fn();
 
 vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/security/client-ip', () => ({
-  getClientIp: () => Promise.resolve('127.0.0.1'),
-}));
+vi.mock('@/lib/security/client-ip');
 
 vi.mock('@/lib/db', () => {
   const makeDbOps = () => ({

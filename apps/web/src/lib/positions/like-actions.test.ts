@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { createNotification } from '@/lib/notifications/notification';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -10,10 +11,7 @@ import { togglePositionLike as toggleLike } from './like-actions';
 // Spy on drizzle-orm's `eq`/`and` so tests can assert that SELECT/DELETE filter
 // by `likes.targetType = 'position'`. This is the positions-side safety net
 // matching the one in topics/_actions/toggleLike.test.ts.
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('drizzle-orm', async (importOriginal) => {
   const actual = await importOriginal<typeof import('drizzle-orm')>();
@@ -24,7 +22,6 @@ vi.mock('drizzle-orm', async (importOriginal) => {
   };
 });
 
-const mockIsUserBanned = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
 const mockSelectCount = vi.fn();
@@ -39,9 +36,7 @@ vi.mock('@/lib/notifications/notification', () => ({
 
 vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),

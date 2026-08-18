@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { deleteOwnAccount } from './deleteOwnAccount';
 
-const mockIsUserBanned = vi.fn();
 const mockDeleteAccount = vi.fn();
 
 vi.mock('@/lib/supabase/server');
@@ -14,9 +14,7 @@ vi.mock('@/lib/users/delete-account', () => ({
   deleteAccount: (...args: unknown[]) => mockDeleteAccount(...args),
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),

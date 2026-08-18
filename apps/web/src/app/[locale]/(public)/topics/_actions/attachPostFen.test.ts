@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { attachPostFen } from './attachPostFen';
@@ -7,7 +8,6 @@ import { attachPostFen } from './attachPostFen';
 const mockSelectWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
@@ -56,9 +56,7 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
