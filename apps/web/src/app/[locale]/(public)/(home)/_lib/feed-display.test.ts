@@ -37,23 +37,25 @@ describe('buildDisplayItems', () => {
     expect(result.every((d) => d.type === 'feed')).toBe(true);
   });
 
-  it('should insert an ad after every AD_INTERVAL items when showAds is true', () => {
+  it('should place an ad before every AD_INTERVAL-th item, starting with the first', () => {
     const items = createFeedItems(AD_INTERVAL * 3);
     const result = buildDisplayItems(items, true);
 
-    // Total: items + 3 ads
+    // Total: items + 3 ads (before item 1, item AD_INTERVAL+1, item 2*AD_INTERVAL+1)
     expect(result).toHaveLength(AD_INTERVAL * 3 + 3);
+    expect(result[0].type).toBe('ad');
 
-    // Check that ads appear at the correct positions
+    // Every ad is followed by a feed item, and the feed items seen so far are
+    // always a multiple of AD_INTERVAL when an ad appears.
     let feedCount = 0;
-    for (const displayItem of result) {
+    result.forEach((displayItem, i) => {
       if (displayItem.type === 'feed') {
         feedCount++;
       } else {
-        // Each ad should appear right after AD_INTERVAL feed items
         expect(feedCount % AD_INTERVAL).toBe(0);
+        expect(result[i + 1]?.type).toBe('feed');
       }
-    }
+    });
   });
 
   it('should assign a running 0-based adIndex to each inserted ad', () => {
@@ -66,20 +68,24 @@ describe('buildDisplayItems', () => {
     expect(adIndexes).toEqual([0, 1, 2]);
   });
 
-  it('should not insert ads when item count is less than AD_INTERVAL', () => {
+  it('should lead with a single ad when item count is less than AD_INTERVAL', () => {
     const items = createFeedItems(AD_INTERVAL - 1);
     const result = buildDisplayItems(items, true);
 
-    expect(result).toHaveLength(AD_INTERVAL - 1);
-    expect(result.every((d) => d.type === 'feed')).toBe(true);
+    expect(result).toHaveLength(AD_INTERVAL);
+    expect(result[0].type).toBe('ad');
+    expect(result.slice(1).every((d) => d.type === 'feed')).toBe(true);
   });
 
-  it('should insert an ad after exactly AD_INTERVAL items', () => {
+  it('should not end on an ad when item count is exactly AD_INTERVAL', () => {
+    // The second slot precedes item AD_INTERVAL+1, which has not loaded yet,
+    // so an initial page of exactly AD_INTERVAL items carries only the
+    // leading ad and never finishes on an empty-looking slot.
     const items = createFeedItems(AD_INTERVAL);
     const result = buildDisplayItems(items, true);
 
-    // AD_INTERVAL items + 1 ad
     expect(result).toHaveLength(AD_INTERVAL + 1);
-    expect(result[result.length - 1].type).toBe('ad');
+    expect(result[0].type).toBe('ad');
+    expect(result[result.length - 1].type).toBe('feed');
   });
 });
