@@ -1,6 +1,6 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 
@@ -15,10 +15,6 @@ vi.mock('../_actions/forgotPassword', () => ({
 }));
 
 describe('ForgotPasswordForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render the form with email field and submit button', () => {
     render(<ForgotPasswordForm />);
 

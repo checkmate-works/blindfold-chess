@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -84,10 +84,6 @@ const makeAnnouncement = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('announcements queries', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('getPublishedAnnouncements', () => {
     it('should return all published public announcements', async () => {
       const announcements = [

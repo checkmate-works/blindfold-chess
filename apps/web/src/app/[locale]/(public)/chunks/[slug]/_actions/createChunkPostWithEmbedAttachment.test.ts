@@ -174,7 +174,6 @@ function makeFormData(opts: {
 
 describe('createChunkPostWithEmbedAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
@@ -348,7 +347,6 @@ describe('createChunkPostWithEmbedAttachment', () => {
  */
 describe('createChunkPostWithEmbedAttachment — lichess narrowing', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
@@ -391,7 +389,6 @@ describe('createChunkPostWithEmbedAttachment — lichess narrowing', () => {
  */
 describe('createChunkPostWithEmbedAttachment — application-layer exclusivity', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);

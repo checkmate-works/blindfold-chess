@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { checkRateLimit } from '@/lib/security/rate-limit';
 
@@ -58,10 +58,6 @@ const authenticatedUser = {
 };
 
 describe('changePassword', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('normal case', () => {
     it('should change password and return success', async () => {
       mockGetAuthenticatedUser.mockResolvedValue(authenticatedUser);

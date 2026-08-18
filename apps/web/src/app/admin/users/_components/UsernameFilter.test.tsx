@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { UsernameFilter } from './UsernameFilter';
 
@@ -21,10 +21,6 @@ function renderWithNuqs(
 }
 
 describe('UsernameFilter', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('rendering', () => {
     it('renders the labeled input and submit button', () => {
       renderWithNuqs();

@@ -150,7 +150,6 @@ function createArticle(overrides: Record<string, unknown> = {}) {
 
 describe('AdminArticleSlugPage (locale variant detail page)', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetTranslations.mockResolvedValue(createTranslationFn());
   });
 

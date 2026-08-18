@@ -142,7 +142,6 @@ function makeFormData(content: string): FormData {
 
 describe('position-memory parent-page createReply', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetPositionById.mockResolvedValue({ id: positionId, type: 'memory' });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);

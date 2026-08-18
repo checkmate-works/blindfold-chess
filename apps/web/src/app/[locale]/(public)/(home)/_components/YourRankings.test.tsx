@@ -93,10 +93,6 @@ async function renderYourRankings(locale = 'en') {
 // --- Tests ---
 
 describe('YourRankings', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('when user is not logged in', () => {
     beforeEach(() => {
       mockGetOptionalUser.mockResolvedValue(null);

@@ -21,7 +21,6 @@ vi.mock('../_actions/resendEmail', () => ({
 
 describe('ResendEmailButton', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     vi.useFakeTimers();
   });
 

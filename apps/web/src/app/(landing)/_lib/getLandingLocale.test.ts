@@ -10,7 +10,6 @@ const { getLandingLocale } = await import('./getLandingLocale');
 
 describe('getLandingLocale', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetLocaleFromRequest.mockResolvedValue('en');
   });
 

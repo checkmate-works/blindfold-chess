@@ -100,7 +100,6 @@ function setupAdminWithAnnouncement(currentStatus = 'draft') {
 
 describe('updateAnnouncement', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockHasAnnouncementNotification.mockResolvedValue(false);
   });
 

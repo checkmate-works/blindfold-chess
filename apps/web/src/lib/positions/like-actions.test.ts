@@ -96,7 +96,6 @@ const testLocale = 'en';
 
 describe('toggleLike (position-memory)', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSelectPositionAuthor.mockResolvedValue([{ userId: testPositionAuthorId, type: 'memory' }]);
   });
 

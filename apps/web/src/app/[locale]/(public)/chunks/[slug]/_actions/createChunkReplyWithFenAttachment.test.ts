@@ -149,7 +149,6 @@ function setupParentPost() {
 
 describe('createChunkReplyWithFenAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });

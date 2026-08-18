@@ -19,7 +19,6 @@ const { computeAdsHiddenValueForUser } = await import('./ads-hidden-cookie-compu
 
 describe('computeAdsHiddenValueForUser', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockHasActiveSubscription.mockResolvedValue(false);
     mockHasActiveGrant.mockResolvedValue(false);
     mockHasDanTierRank.mockResolvedValue(false);

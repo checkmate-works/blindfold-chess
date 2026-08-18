@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { AnnouncementPreviewForm } from './AnnouncementPreviewForm';
 
@@ -54,10 +54,6 @@ const announcementData = {
 };
 
 describe('AnnouncementPreviewForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render Status and Visibility as radio buttons', () => {
     render(
       <AnnouncementPreviewForm

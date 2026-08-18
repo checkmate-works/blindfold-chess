@@ -41,7 +41,6 @@ function achieve(...slugs: string[]) {
 
 describe('getPublishPromotionTarget', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetOptionalUser.mockResolvedValue({ id: 'user-1' });
     mockUserHasProfile.mockResolvedValue(true);
     mockGetAllRanks.mockResolvedValue(RANK_ROWS);

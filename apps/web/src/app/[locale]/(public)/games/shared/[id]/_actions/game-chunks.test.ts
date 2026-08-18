@@ -41,7 +41,6 @@ const CHUNK_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
 describe('addGameChunkAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
     mockIsLinkable.mockResolvedValue(true);
     mockInsert.mockResolvedValue({ id: LINK_ID, createdAt: new Date('2026-07-30T00:00:00Z') });
@@ -120,7 +119,6 @@ describe('addGameChunkAction', () => {
 
 describe('deleteGameChunkAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
     mockDelete.mockResolvedValue(undefined);
   });

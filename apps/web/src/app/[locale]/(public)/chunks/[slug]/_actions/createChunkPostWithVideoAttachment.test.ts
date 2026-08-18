@@ -122,7 +122,6 @@ function makeFormData(opts: {
 
 describe('createChunkPostWithVideoAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);

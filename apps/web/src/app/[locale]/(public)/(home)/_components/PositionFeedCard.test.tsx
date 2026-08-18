@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { PositionFeedData } from '../_lib/types';
 import { PositionFeedCard } from './PositionFeedCard';
@@ -89,10 +89,6 @@ const defaultProps = {
 // --- Tests ---
 
 describe('PositionFeedCard', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('forwards the user\u2019s selected boardTheme from useGamePreferences to BoardThumbnail', () => {
     // Regression guard: previously PositionFeedCard rendered BoardThumbnail
     // without threading the user's boardTheme preference, so the chess.com

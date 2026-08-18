@@ -193,7 +193,6 @@ function setupSuccessfulUpload() {
 
 describe('POST /api/profile/avatar', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     vi.spyOn(Date, 'now').mockReturnValue(1709700000000);
   });
 

@@ -68,7 +68,6 @@ const TEST_PUZZLE_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 
 describe('deletePuzzle', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockUpdateWhere.mockResolvedValue(undefined);
   });

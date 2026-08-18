@@ -80,7 +80,6 @@ function createTranslationFn() {
 
 describe('AdminArticlesPage (slug-grouped list)', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetTranslations.mockResolvedValue(createTranslationFn());
   });
 

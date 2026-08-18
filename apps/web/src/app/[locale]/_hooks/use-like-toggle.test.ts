@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { useLikeToggle } from './use-like-toggle';
 
@@ -12,10 +12,6 @@ vi.mock('../_contexts/AuthContext', () => ({
 }));
 
 describe('useLikeToggle', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('starts from the initial like state', () => {
     const { result } = renderHook(() =>
       useLikeToggle({ initialLikeCount: 3, initialLikedByMe: false, onToggle: vi.fn() })

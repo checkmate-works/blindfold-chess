@@ -38,7 +38,6 @@ vi.mock('../_contexts/ToastContext', () => ({
 
 describe('ToastContainer query-param toasts', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     sessionStorage.clear();
     setUrl('/en/repertoires/r1/lines/1');
   });

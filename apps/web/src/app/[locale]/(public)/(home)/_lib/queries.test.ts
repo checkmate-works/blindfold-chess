@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { getFeedData } from './queries';
 
@@ -140,10 +140,6 @@ function createPostWithMeta(id: string) {
 // --- Tests ---
 
 describe('getFeedData', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('empty results', () => {
     it('should return empty items and null nextCursor when no feed items exist', async () => {
       mockDbSelectResult.mockResolvedValue([]);

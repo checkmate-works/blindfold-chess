@@ -41,10 +41,6 @@ vi.mock('@/lib/users/dan-rank', () => ({
 const { getAllAdCreatives, shouldShowAdsForUser } = await import('./ad');
 
 describe('getAllAdCreatives', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return creatives array when they exist', async () => {
     const creatives = [
       { id: '1', kind: 'banner', slot: 'content-middle', href: 'https://example.com', payload: {} },
@@ -79,7 +75,6 @@ describe('getAllAdCreatives', () => {
 
 describe('shouldShowAdsForUser', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockHasActiveSubscription.mockResolvedValue(false);
     mockHasActiveGrant.mockResolvedValue(false);
     mockHasDanTierRank.mockResolvedValue(false);

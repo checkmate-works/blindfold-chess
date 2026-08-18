@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -64,10 +64,6 @@ const makeRow = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('getChallengeResultsPaginated', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('returns items and totalPages for a single page of results', async () => {
     // First call: count query
     const countChain = mockChain([{ count: 3 }]);

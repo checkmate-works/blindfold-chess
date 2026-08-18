@@ -83,7 +83,6 @@ const validFormData = () =>
 
 describe('createGrant', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGrantsReturning.mockResolvedValue([{ id: 'grant-id-1' }]);
     mockGetClientIp.mockResolvedValue('203.0.113.5');
   });

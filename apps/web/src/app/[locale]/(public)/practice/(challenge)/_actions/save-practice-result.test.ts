@@ -65,7 +65,6 @@ const validChallengeFields = {
 
 describe('savePracticeResult', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockCheckRateLimit.mockResolvedValue({ success: true });

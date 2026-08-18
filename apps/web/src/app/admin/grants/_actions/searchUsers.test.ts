@@ -80,7 +80,6 @@ const authUserById: Record<string, { user: { email: string; last_sign_in_at: str
 
 describe('searchUsers', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockProfileRows = profileRows;
   });
 

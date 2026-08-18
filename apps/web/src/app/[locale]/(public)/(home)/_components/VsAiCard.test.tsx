@@ -65,10 +65,6 @@ function createMockGame(overrides: Partial<Game> & { id: string }): Game {
 // --- Tests ---
 
 describe('VsAiCard', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('loading state', () => {
     it('should show skeleton placeholder while loading', () => {
       mockUseGameList.mockReturnValue({

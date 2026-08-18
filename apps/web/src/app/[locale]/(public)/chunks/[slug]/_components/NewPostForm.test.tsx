@@ -1,5 +1,5 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { NewPostForm } from './NewPostForm';
 
@@ -79,10 +79,6 @@ vi.mock('react', async () => {
       return [state, formAction, false];
     },
   };
-});
-
-beforeEach(() => {
-  vi.clearAllMocks();
 });
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

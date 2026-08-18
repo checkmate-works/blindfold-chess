@@ -36,7 +36,6 @@ vi.mock('@/i18n/use-safe-translations', () => ({
 
 describe('NotificationSettings', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSetNotificationMute.mockResolvedValue(undefined);
   });
 

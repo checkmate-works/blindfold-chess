@@ -70,10 +70,6 @@ vi.mock('@/lib/content/lame-name', () => ({
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 
 describe('updateProfile', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('authentication', () => {
     it('should return signInRequired when user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });

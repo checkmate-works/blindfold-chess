@@ -43,7 +43,6 @@ const mockToggleLike = vi.fn();
 
 describe('LikeButton', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockToggleLike.mockResolvedValue({ liked: true, likeCount: 1 });
   });
 

@@ -65,7 +65,6 @@ const targetUserId = '00000000-0000-0000-0000-000000000abc';
 
 describe('revokeGrant', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetClientIp.mockResolvedValue('203.0.113.5');
     mockSelectFor.mockResolvedValue([
       {

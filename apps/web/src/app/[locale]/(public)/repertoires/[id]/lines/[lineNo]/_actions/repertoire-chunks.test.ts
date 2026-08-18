@@ -59,7 +59,6 @@ function mockLineForViewer() {
 
 describe('addRepertoireChunkAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
     mockLineForViewer();
     mockIsLinkable.mockResolvedValue(true);
@@ -215,7 +214,6 @@ describe('addRepertoireChunkAction', () => {
 
 describe('deleteRepertoireChunkAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
     mockDelete.mockResolvedValue(undefined);
   });

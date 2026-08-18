@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { clawbackPointsForPost } from '@/lib/points';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -107,10 +107,6 @@ const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
 const testPostId = 'post-00000000-0000-0000-0000-000000000001';
 
 describe('deletePost', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return signInRequired when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

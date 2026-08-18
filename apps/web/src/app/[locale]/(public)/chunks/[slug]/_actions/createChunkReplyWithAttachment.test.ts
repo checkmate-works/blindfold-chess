@@ -181,7 +181,6 @@ function setupParentPost(overrides: { userId?: string; replyPermission?: string 
 
 describe('createChunkReplyWithAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });

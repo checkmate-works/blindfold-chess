@@ -112,7 +112,6 @@ function setupAuthUser(userId: string | null) {
 
 describe('getLeaderboard', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     setupAuthUser(null); // Default: not logged in
     // Default: empty results
     mockGetAllTimeRanking.mockResolvedValue(makeLeaderboardPage());

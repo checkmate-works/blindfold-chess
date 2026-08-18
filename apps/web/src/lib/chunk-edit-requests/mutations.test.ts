@@ -129,7 +129,6 @@ function mockDraftChunk(overrides: Partial<Record<string, unknown>> = {}) {
 
 describe('submitEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
     mockInsertReturning.mockResolvedValue([{ id: REQUEST_ID }]);
     // Default: viewer has no pending suggestion. Tests covering the
@@ -308,7 +307,6 @@ describe('submitEditRequestEntry', () => {
 
 describe('acceptEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
   });
 
@@ -439,7 +437,6 @@ describe('acceptEditRequestEntry', () => {
 
 describe('rejectEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
   });
 
@@ -491,7 +488,6 @@ describe('rejectEditRequestEntry', () => {
 
 describe('withdrawEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
   });
 

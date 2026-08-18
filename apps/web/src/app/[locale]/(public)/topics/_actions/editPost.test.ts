@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -76,10 +76,6 @@ function makeFormData(content: string, isSpoiler?: 'on' | undefined): FormData {
 }
 
 describe('editPost', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return signInRequired when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

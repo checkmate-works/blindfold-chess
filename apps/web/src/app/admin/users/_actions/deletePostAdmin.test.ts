@@ -1,6 +1,6 @@
 import { revalidatePath } from 'next/cache';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { deletePostAdmin } from './deletePostAdmin';
 
@@ -134,10 +134,6 @@ function setupAdmin() {
 }
 
 describe('deletePostAdmin', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

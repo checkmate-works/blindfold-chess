@@ -78,7 +78,6 @@ const rankRow = { id: 'rank-id-1dan', slug: '1dan', level: 110, color: 'black' }
 
 describe('grantRank', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetClientIp.mockResolvedValue('203.0.113.5');
     mockSelectFromWhereLimit.mockResolvedValue([rankRow]);
     mockUserRanksReturning.mockResolvedValue([{ id: 'user-rank-row-1' }]);

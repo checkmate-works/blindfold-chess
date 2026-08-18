@@ -43,7 +43,6 @@ vi.mock('./PrivacySettings', () => ({
 
 describe('PreferencesTabs', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockTabParam = null;
   });
 

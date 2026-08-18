@@ -114,7 +114,6 @@ const validParams = {
 
 describe('toggleLikeBase', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     validParams.validateTopic.mockResolvedValue(true);
     mockSelectPostAuthor.mockResolvedValue([{ userId: testPostAuthorId }]);
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);

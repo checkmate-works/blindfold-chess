@@ -32,7 +32,6 @@ const mockUserId = 'user-00000000-0000-0000-0000-000000000001';
 
 describe('forgotPassword', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGuardByIpRateLimit.mockResolvedValue(null);
     mockGetUser.mockResolvedValue({ data: { user: null } });
   });

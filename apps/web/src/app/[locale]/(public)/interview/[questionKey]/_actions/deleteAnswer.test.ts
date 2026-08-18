@@ -66,10 +66,6 @@ const testQuestionKey = 'favorite_opening';
 const testLocale = 'en';
 
 describe('deleteAnswerAction', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('authentication', () => {
     it('should return unauthorized when user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });

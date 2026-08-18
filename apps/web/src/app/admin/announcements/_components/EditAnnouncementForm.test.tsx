@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EditAnnouncementForm } from './EditAnnouncementForm';
 
@@ -83,10 +83,6 @@ const draftDefaultValues = {
 };
 
 describe('EditAnnouncementForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should open the confirm modal on Save for a published announcement and not call updateAnnouncement yet', async () => {
     mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
 

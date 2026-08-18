@@ -66,7 +66,6 @@ describe('AuthPromptModal', () => {
   let onClose: () => void;
 
   beforeEach(() => {
-    vi.clearAllMocks();
     onClose = vi.fn<() => void>();
     authState.isProvisional = false;
   });

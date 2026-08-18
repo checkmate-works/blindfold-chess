@@ -75,7 +75,6 @@ const VALID_ID = 'VALIDID0001';
 const VALID_URL = `https://www.youtube.com/watch?v=${VALID_ID}`;
 
 beforeEach(() => {
-  vi.clearAllMocks();
   mockGetUser.mockResolvedValue({ data: { user: { id: userId } } });
   mockIsUserBanned.mockResolvedValue(false);
   mockCheckRateLimit.mockResolvedValue({ allowed: true });

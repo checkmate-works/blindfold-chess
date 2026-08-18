@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveLichessAttachmentPgn } from './resolve-lichess-attachment';
 
@@ -35,10 +35,6 @@ function selectChainResolving(rows: { pgn: string }[]) {
 }
 
 describe('resolveLichessAttachmentPgn', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   afterEach(() => {
     vi.restoreAllMocks();
   });

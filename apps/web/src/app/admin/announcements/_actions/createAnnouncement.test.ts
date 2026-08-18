@@ -86,7 +86,6 @@ const validData = {
 
 describe('createAnnouncement', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockHasAnnouncementNotification.mockResolvedValue(false);
   });
 

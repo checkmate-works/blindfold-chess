@@ -1,5 +1,5 @@
 import { SUPPORTED_LOCALES } from '@/config';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createArticle } from './createArticle';
 
@@ -87,10 +87,6 @@ const validData = {
 };
 
 describe('createArticle', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

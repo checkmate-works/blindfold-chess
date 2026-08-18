@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { DeletePostButton } from './DeletePostButton';
 
@@ -20,10 +20,6 @@ vi.mock('next/navigation', () => ({
 const mockDeleteAction = vi.fn();
 
 describe('DeletePostButton', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render the delete button', () => {
     render(
       <DeletePostButton

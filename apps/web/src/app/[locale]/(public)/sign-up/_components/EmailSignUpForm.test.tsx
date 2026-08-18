@@ -1,6 +1,6 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EmailSignUpForm } from './EmailSignUpForm';
 
@@ -24,10 +24,6 @@ vi.mock('../_actions/signUp', () => ({
 }));
 
 describe('EmailSignUpForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render the form with email, password, and confirm password fields', () => {
     render(<EmailSignUpForm />);
 

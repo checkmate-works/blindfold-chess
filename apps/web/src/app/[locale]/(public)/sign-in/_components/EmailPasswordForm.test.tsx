@@ -39,7 +39,6 @@ describe('EmailPasswordForm', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
-    vi.clearAllMocks();
     // Replace window.location with a writable mock
     Object.defineProperty(window, 'location', {
       writable: true,

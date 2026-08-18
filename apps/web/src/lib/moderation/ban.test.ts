@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 const mockSelectFromWhere = vi.fn();
 
@@ -19,10 +19,6 @@ vi.mock('@/lib/db', () => ({
 const { isUserBanned } = await import('./ban');
 
 describe('isUserBanned', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return true when user has bannedAt set', async () => {
     mockSelectFromWhere.mockResolvedValue([{ bannedAt: new Date() }]);
 

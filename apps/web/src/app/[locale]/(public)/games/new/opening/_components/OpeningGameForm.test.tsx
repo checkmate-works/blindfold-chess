@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { Opening } from '@/app/[locale]/_components/OpeningSearch';
 
@@ -72,10 +72,6 @@ const sampleOpenings: Opening[] = [
 ];
 
 describe('OpeningGameForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('initial state', () => {
     it('should render the search input and opening list', () => {
       render(<OpeningGameForm openings={sampleOpenings} />);

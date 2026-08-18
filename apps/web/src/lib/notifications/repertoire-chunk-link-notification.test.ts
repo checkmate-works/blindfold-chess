@@ -19,7 +19,6 @@ const { isMutableNotificationType } = await import('./mutable-types');
 
 describe('notifyRepertoireOwnerOfChunkLink', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetRepertoireById.mockResolvedValue({ userId: 'owner-1' });
   });
 

@@ -19,7 +19,6 @@ const { getLocaleFromRequest } = await import('./locale');
 
 describe('getLocaleFromRequest', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockCookieGet.mockReturnValue(undefined);
     mockHeadersGet.mockReturnValue(null);
   });

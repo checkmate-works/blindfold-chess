@@ -18,7 +18,6 @@ const EMPTY = { items: [], nextCursor: null };
 
 describe('getProfileFeed', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetUser.mockResolvedValue({ data: { user: null } });
     mockGetFeedData.mockResolvedValue(EMPTY);
   });

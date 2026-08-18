@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -118,10 +118,6 @@ const sampleOpeningD4 = {
 };
 
 describe('getOpenings', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return all openings', async () => {
     const chain = mockChain([sampleOpening, sampleOpening2, sampleOpeningD4]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
@@ -145,10 +141,6 @@ describe('getOpenings', () => {
 });
 
 describe('getOpeningsByFirstMoveSquare', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return openings matching the given square', async () => {
     const chain = mockChain([sampleOpening, sampleOpening2]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
@@ -171,10 +163,6 @@ describe('getOpeningsByFirstMoveSquare', () => {
 });
 
 describe('getOpeningBySlug', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return the opening when slug exists', async () => {
     const chain = mockChain([sampleOpening]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
@@ -207,10 +195,6 @@ describe('getOpeningBySlug', () => {
 });
 
 describe('isValidOpening', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return true when the slug exists in the database', async () => {
     const chain = mockChain([sampleOpening]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
@@ -231,10 +215,6 @@ describe('isValidOpening', () => {
 });
 
 describe('getPostCountByFirstMoveSquare', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return 0 when no openings match the square', async () => {
     // First call: select slugs from chessOpenings — returns empty
     const slugChain = mockChain([]);
@@ -278,10 +258,6 @@ describe('getPostCountByFirstMoveSquare', () => {
 });
 
 describe('getOpeningPostById — UUID guard', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('returns null without hitting the DB when postId is not a UUID', async () => {
     // Defends against a 500 when users hand-craft URLs like /posts/1 — the raw
     // string would otherwise reach Postgres and throw
@@ -299,10 +275,6 @@ describe('getOpeningPostById — UUID guard', () => {
 });
 
 describe('getPostsByFirstMoveSquarePaginated', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return empty array when no openings match the square', async () => {
     const slugChain = mockChain([]);
     mockDb.select.mockReturnValueOnce(slugChain as unknown as ReturnType<typeof mockDb.select>);

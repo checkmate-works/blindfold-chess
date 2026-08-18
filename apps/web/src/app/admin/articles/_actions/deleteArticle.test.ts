@@ -1,5 +1,5 @@
 import { SUPPORTED_LOCALES } from '@/config';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { deleteArticle } from './deleteArticle';
 
@@ -52,10 +52,6 @@ const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const articleId = 'art-00000000-0000-0000-0000-000000000001';
 
 describe('deleteArticle', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

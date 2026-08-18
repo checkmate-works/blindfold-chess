@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { importLichessGame } from './importLichessGame';
 
@@ -8,10 +8,6 @@ vi.mock('@/lib/games/lichess', () => ({
 }));
 
 describe('importLichessGame', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   afterEach(() => {
     vi.restoreAllMocks();
   });

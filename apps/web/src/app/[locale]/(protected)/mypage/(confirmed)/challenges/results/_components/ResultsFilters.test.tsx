@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -18,10 +18,6 @@ function renderWithProviders(ui: React.ReactElement) {
 }
 
 describe('ResultsFilters', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('renders the menu select with all available menu types', () => {
     renderWithProviders(
       <ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />

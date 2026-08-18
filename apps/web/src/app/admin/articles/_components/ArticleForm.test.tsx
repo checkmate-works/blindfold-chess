@@ -138,7 +138,6 @@ describe('ArticleForm', () => {
   // stub here so individual tests do not need to remember.
   let originalLocation: Location;
   beforeEach(() => {
-    vi.clearAllMocks();
     originalLocation = window.location;
     Object.defineProperty(window, 'location', {
       value: { ...originalLocation, replace: vi.fn(), assign: vi.fn() },

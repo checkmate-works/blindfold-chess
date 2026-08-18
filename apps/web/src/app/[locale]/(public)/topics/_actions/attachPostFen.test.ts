@@ -79,7 +79,6 @@ const postId = '00000000-0000-0000-0000-00000000aaaa';
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 beforeEach(() => {
-  vi.clearAllMocks();
   mockGetUser.mockResolvedValue({ data: { user: { id: userId } } });
   mockIsUserBanned.mockResolvedValue(false);
   mockCheckRateLimit.mockResolvedValue({ allowed: true });

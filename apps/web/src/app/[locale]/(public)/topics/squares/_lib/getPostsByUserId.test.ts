@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -163,10 +163,6 @@ function makePostRow(
 }
 
 describe('getPostsByUserId', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return empty array when user has no posts', async () => {
     const chain = mockChain([]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);

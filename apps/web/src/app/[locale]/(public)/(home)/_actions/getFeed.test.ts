@@ -23,7 +23,6 @@ const TOPICS_FEED_ENTITY_TYPES = ['topic_post', 'chunk'];
 
 describe('getFeed', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetUser.mockResolvedValue({ data: { user: null } });
   });
 

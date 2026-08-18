@@ -1,6 +1,6 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { GoogleOAuthButton } from './GoogleOAuthButton';
 
@@ -19,10 +19,6 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 describe('GoogleOAuthButton', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render the button with OAuth text', () => {
     render(<GoogleOAuthButton namespace="signIn" />);
 

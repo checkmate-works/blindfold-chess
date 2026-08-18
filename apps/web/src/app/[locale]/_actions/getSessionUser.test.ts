@@ -43,7 +43,6 @@ const mockUser = { id: 'user-123', email: 'u@example.com' } as unknown as User;
 
 describe('getSessionUser', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockWriteAdsHiddenCookieForUser.mockResolvedValue(undefined);
     // Default: the user has a profile (confirmed member).
     mockProfileRows.mockReturnValue([

@@ -101,7 +101,6 @@ const { notifyFollowersOfNewPost, notifyPositionForked, createNotification } =
 
 describe('notifyFollowersOfNewPost', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockFollowers = [];
     mockMutedRows = [];
     mockNotificationSelects = [];
@@ -207,7 +206,6 @@ describe('notifyFollowersOfNewPost', () => {
 
 describe('createNotification', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockMutedRows = [];
     mockNotificationSelects = [];
     notificationSelectCall = 0;
@@ -313,7 +311,6 @@ describe('createNotification', () => {
 
 describe('notifyPositionForked', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockMutedRows = [];
     mockNotificationSelects = [];
     notificationSelectCall = 0;
@@ -429,7 +426,6 @@ describe('notifyPositionForked', () => {
  */
 describe('createNotification — supersede', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockMutedRows = [];
     mockNotificationSelects = [];
     notificationSelectCall = 0;

@@ -70,7 +70,6 @@ const { createCheckoutSession } = await import('./createCheckoutSession');
 
 describe('createCheckoutSession — Stripe success_url regression', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetAuthenticatedUser.mockResolvedValue({ id: 'user-123', email: 'u@example.com' });
     mockCheckRateLimit.mockResolvedValue({ success: true });
     mockGetOrCreateStripeCustomerId.mockResolvedValue('cus_test_123');

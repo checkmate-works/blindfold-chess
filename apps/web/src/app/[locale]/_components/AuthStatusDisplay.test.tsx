@@ -45,7 +45,6 @@ vi.mock('next/navigation', () => ({
 
 describe('AuthStatusDisplay', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockLocale = 'en';
     mockPathname = '/en';
     mockPush.mockClear();

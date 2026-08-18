@@ -323,10 +323,6 @@ describe('fillDateRange', () => {
 });
 
 describe('getNewUsersPerDay', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return daily counts and total for users in range', async () => {
     mockListUsers.mockResolvedValueOnce({
       data: {
@@ -523,7 +519,6 @@ describe('getNewUsersPerDay', () => {
 
 describe('getPostsPerDay', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     dbResultsQueue.length = 0;
     whereCalls.length = 0;
     innerJoinCalls.length = 0;
@@ -792,7 +787,6 @@ describe('getPostsPerDay', () => {
 
 describe('getKpiSummary', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     dbResultsQueue.length = 0;
     whereCalls.length = 0;
     innerJoinCalls.length = 0;

@@ -119,7 +119,6 @@ function createNotification(overrides: Partial<NotificationWithActor> = {}): Not
 
 describe('NotificationItem', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockMarkAsRead.mockResolvedValue(undefined);
     mockSetNotificationMute.mockResolvedValue(undefined);
     // Default: the helper yields a link, so the item renders as an anchor.

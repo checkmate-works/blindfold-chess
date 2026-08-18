@@ -15,7 +15,6 @@ function createRequest(path: string): NextRequest {
 
 describe('updateSession', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     vi.unstubAllEnvs();
 
     mockCreateServerClient.mockReturnValue({

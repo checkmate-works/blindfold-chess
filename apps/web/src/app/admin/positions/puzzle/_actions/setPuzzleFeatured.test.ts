@@ -117,7 +117,6 @@ function setupAdminWithPuzzle() {
 
 describe('setPuzzleFeatured', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     // Happy-path defaults: the pool write reports one changed row. Idempotency
     // tests override these with [] to simulate "already in requested state".
     mockFeaturedInsertReturning.mockReturnValue([{ positionId: testPositionId }]);

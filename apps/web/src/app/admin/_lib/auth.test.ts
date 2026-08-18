@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { requireAdmin } from './auth';
 
@@ -35,10 +35,6 @@ vi.mock('@/lib/db', () => ({
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 
 describe('requireAdmin', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return error when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

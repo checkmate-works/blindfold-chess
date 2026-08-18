@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -107,10 +107,6 @@ const validatedValues = {
 };
 
 describe('attachPostPgn', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('returns signInRequired when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
     const result = await attachPostPgn(testPostId, 'en', fdWithAttachment('1. e4 e5'));

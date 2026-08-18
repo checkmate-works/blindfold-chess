@@ -1,5 +1,5 @@
 import { SUPPORTED_LOCALES } from '@/config';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { updateArticle } from './updateArticle';
 
@@ -103,10 +103,6 @@ function setupAdminWithArticle(currentStatus = 'draft') {
 }
 
 describe('updateArticle', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

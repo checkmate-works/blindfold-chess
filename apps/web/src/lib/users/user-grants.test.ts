@@ -35,7 +35,6 @@ const { calcGrantStartsAt } = await import('./user-grants');
 
 describe('calcGrantStartsAt', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     vi.useRealTimers();
   });
 

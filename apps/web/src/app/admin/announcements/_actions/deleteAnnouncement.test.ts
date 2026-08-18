@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { deleteAnnouncement } from './deleteAnnouncement';
 
@@ -50,10 +50,6 @@ const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const announcementId = 'ann-00000000-0000-0000-0000-000000000001';
 
 describe('deleteAnnouncement', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

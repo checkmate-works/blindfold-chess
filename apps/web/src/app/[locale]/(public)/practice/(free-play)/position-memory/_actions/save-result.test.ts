@@ -40,7 +40,6 @@ const TEST_USER_ID = 'user-00000000-0000-0000-0000-000000000001';
 
 describe('savePositionMemoryResult', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockSaveFreePlayResult.mockResolvedValue({
       expEventId: 'evt-000',

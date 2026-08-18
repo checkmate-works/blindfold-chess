@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EditArticleForm } from './EditArticleForm';
 
@@ -158,10 +158,6 @@ function openMetadataPanel() {
 }
 
 describe('EditArticleForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should call updateArticle with status draft and preserved publish settings on Save Draft', async () => {
     mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
 

@@ -153,7 +153,6 @@ const SIMPLE_PGN = '1. e4 e5 2. Nf3 Nc6';
 
 describe('createChunkPostWithAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);

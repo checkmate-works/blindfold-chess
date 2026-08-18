@@ -1,6 +1,6 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ResetPasswordForm } from './ResetPasswordForm';
 
@@ -24,10 +24,6 @@ vi.mock('../_actions/resetPassword', () => ({
 }));
 
 describe('ResetPasswordForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render the form with password and confirm password fields', () => {
     render(<ResetPasswordForm />);
 

@@ -117,7 +117,6 @@ const ownedPostRow = {
 
 describe('removePostAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockStorageRemove.mockResolvedValue({ error: null });
   });
 

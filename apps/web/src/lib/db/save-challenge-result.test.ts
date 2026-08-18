@@ -127,7 +127,6 @@ const validInput: ChallengeResultInput = {
 
 describe('saveChallengeResult', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
   });

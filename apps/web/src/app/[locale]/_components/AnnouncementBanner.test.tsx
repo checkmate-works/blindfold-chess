@@ -14,7 +14,6 @@ describe('AnnouncementBanner', () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
     // Reset document.cookie
     document.cookie = 'dismissed-announcement=; max-age=0';
   });

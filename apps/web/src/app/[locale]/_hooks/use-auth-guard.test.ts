@@ -14,10 +14,6 @@ vi.mock('../_contexts/AuthContext', () => ({
 }));
 
 describe('useAuthGuard', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('initial state', () => {
     it('isModalOpen should be false initially', () => {
       mockUseAuth.mockReturnValue({ user: null });

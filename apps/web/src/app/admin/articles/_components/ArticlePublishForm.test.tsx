@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ArticlePublishForm } from './ArticlePublishForm';
 
@@ -53,10 +53,6 @@ const articleData = {
 };
 
 describe('ArticlePublishForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should NOT render status radio buttons (always publishes)', () => {
     render(
       <ArticlePublishForm

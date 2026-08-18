@@ -40,7 +40,6 @@ function createLogoutRequest(): Request {
 
 describe('POST /auth/logout', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockInsert.mockReturnValue({ values: mockValues });
     mockValues.mockReturnValue(Promise.resolve());
   });

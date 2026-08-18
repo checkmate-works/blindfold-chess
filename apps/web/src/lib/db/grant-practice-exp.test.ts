@@ -184,7 +184,6 @@ const baseParams = {
 
 describe('grantPracticeExp', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetModuleWeight.mockReturnValue(5);
     mockCalculatePracticeExp.mockReturnValue({
       baseExp: 50,
@@ -288,7 +287,6 @@ describe('grantPracticeExp', () => {
 
 describe('grantPracticeExp idempotent replay', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetModuleWeight.mockReturnValue(5);
     mockCalculatePracticeExp.mockReturnValue({
       baseExp: 50,

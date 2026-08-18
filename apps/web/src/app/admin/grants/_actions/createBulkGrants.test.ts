@@ -73,7 +73,6 @@ const validUserId2 = '00000000-0000-0000-0000-000000000002';
 
 describe('createBulkGrants', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     insertCounter = 0;
     mockUserGrantsInsert.mockResolvedValue(undefined);
     mockGetClientIp.mockResolvedValue('203.0.113.5');

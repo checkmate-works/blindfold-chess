@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { RatingInput } from './RatingInput';
 
@@ -12,10 +12,6 @@ const defaultLabels: Record<string, string> = {
 };
 
 describe('RatingInput', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render the label', () => {
     render(<RatingInput name="rating" label="My Rating" labels={defaultLabels} />);
     expect(screen.getByText('My Rating')).toBeInTheDocument();

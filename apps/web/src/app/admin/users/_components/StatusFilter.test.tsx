@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { StatusFilter } from './StatusFilter';
 
@@ -25,10 +25,6 @@ function renderWithNuqs(
 }
 
 describe('StatusFilter', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('rendering', () => {
     it('should render a label with the filterByStatus text', () => {
       renderWithNuqs();

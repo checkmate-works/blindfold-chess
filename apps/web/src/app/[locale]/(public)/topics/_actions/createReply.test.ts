@@ -172,7 +172,6 @@ function setupParentPostExists(overrides: { userId?: string; replyPermission?: s
 
 describe('createReplyBase', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     baseParams.validateTopic.mockResolvedValue(true);
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });

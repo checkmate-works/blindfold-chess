@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { Game } from '@/lib/games/saved-game-types';
 
@@ -81,10 +81,6 @@ function createMockGames(count: number): Game[] {
 // --- Tests ---
 
 describe('GameListClient', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('loading state', () => {
     it('should show skeleton while loading', () => {
       mockUseGameList.mockReturnValue({

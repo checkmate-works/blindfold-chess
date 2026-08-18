@@ -1,6 +1,6 @@
 import { revalidatePath } from 'next/cache';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { deleteChunk } from './deleteChunk';
 
@@ -97,10 +97,6 @@ function setupAdminWithChunk() {
 }
 
 describe('deleteChunk', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

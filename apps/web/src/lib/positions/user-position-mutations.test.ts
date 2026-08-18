@@ -158,7 +158,6 @@ const baseCreateParams = {
 
 describe('createPositionEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockValidateAndDedupeTagIds.mockResolvedValue({
       ok: true,
@@ -532,7 +531,6 @@ const ownedRow = {
 
 describe('updatePositionEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockValidateAndDedupeTagIds.mockResolvedValue({
       ok: true,
@@ -728,7 +726,6 @@ const baseDeleteParams = {
 
 describe('deletePositionEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockSelectLimit.mockResolvedValue([ownedRow]);
   });

@@ -145,7 +145,6 @@ function makeFormData(content: string, options: { isSpoiler?: string } = {}): Fo
 
 describe('puzzle parent-page createReply', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetPositionById.mockResolvedValue({ id: positionId, type: 'puzzle' });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);

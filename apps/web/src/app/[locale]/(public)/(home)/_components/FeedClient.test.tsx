@@ -104,7 +104,6 @@ function makeTopicPostItem(id: string): FeedItem {
 
 describe('FeedClient', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     lastIntersectionCallback = null;
   });
 

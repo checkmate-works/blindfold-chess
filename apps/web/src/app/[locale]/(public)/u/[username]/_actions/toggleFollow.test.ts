@@ -85,7 +85,6 @@ const targetProfileId = 'target-00000000-0000-0000-0000-000000000001';
 
 describe('toggleFollow', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
     mockIsBlockedBetween.mockResolvedValue(false);
   });

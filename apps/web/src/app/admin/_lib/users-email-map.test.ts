@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { loadUsersEmailMap } from './users-email-map';
 
@@ -20,10 +20,6 @@ function makeUser(id: string, email?: string): User {
 }
 
 describe('loadUsersEmailMap', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('returns an empty Map without calling listUsers when userIds is empty', async () => {
     const result = await loadUsersEmailMap([]);
 

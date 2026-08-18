@@ -114,7 +114,6 @@ function makeFormData(content: string, replyPermission: string = 'everyone'): Fo
 
 describe('createChunkPost', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
