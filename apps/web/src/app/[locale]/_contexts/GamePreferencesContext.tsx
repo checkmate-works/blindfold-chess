@@ -1,6 +1,14 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { useLatestRef } from '@blindfold-chess/features/common/client';
 import type { PawnHideMode, PieceColorMode, PieceShapeMode } from '@blindfold-chess/types';
@@ -245,10 +253,63 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   );
 }
 
-export function useGamePreferences() {
+/**
+ * `useSyncExternalStore` with a constant store: `false` for the server render
+ * and for every hydration render, `true` for any render after that. React
+ * uses `getServerSnapshot` whenever the fiber being rendered is hydrating,
+ * and after committing the hydration it compares that snapshot with
+ * `getSnapshot()` and forces a re-render when they differ. That forced
+ * re-render is a normal update, so it patches the DOM.
+ */
+const subscribeToNothing = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
+function useIsHydrated(): boolean {
+  return useSyncExternalStore(subscribeToNothing, getClientSnapshot, getServerSnapshot);
+}
+
+/**
+ * Read the game preferences.
+ *
+ * @design Hydration renders see the server's state, not the provider's
+ *
+ * The provider seeds `defaultPreferences` and reads localStorage in a mount
+ * effect, so the server always renders the defaults with `isLoaded: false`.
+ * A consumer that hydrates *after* that effect ran — the home feed streams
+ * inside a `<Suspense>` boundary below the provider, and hydrates whenever
+ * its HTML arrives — would otherwise render its hydration pass with the
+ * loaded preferences against HTML that was rendered with the defaults. React
+ * does not repair attribute differences it meets during hydration (the
+ * production build never even compares them), so the SSR'd markup keeps the
+ * default board theme for good while the fiber believes it has rendered the
+ * user's; every later re-render is a no-op against that DOM. Observed as the
+ * first page of home-feed thumbnails intermittently showing the default
+ * `lichess` colours while every infinite-scroll page showed the user's theme.
+ *
+ * So the value returned while the calling fiber is hydrating is exactly what
+ * the server saw — `defaultPreferences`, `isLoaded: false` — regardless of
+ * what the provider holds. `useIsHydrated` then forces one re-render with the
+ * live value, and that update writes the real theme into the DOM. Consumers
+ * mounted outside hydration (infinite-scroll pages, client-only mounts) get
+ * the live value from their first render, so they pay nothing.
+ */
+export function useGamePreferences(): GamePreferencesContextType {
   const context = useContext(GamePreferencesContext);
   if (!context) {
     throw new Error('useGamePreferences must be used within a GamePreferencesProvider');
   }
-  return context;
+  const isHydrated = useIsHydrated();
+  return useMemo<GamePreferencesContextType>(
+    () =>
+      isHydrated
+        ? context
+        : {
+            ...context,
+            preferences: defaultPreferences,
+            isLoaded: false,
+            isHydrated: false,
+          },
+    [context, isHydrated]
+  );
 }
